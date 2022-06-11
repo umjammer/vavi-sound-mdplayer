@@ -215,7 +215,7 @@ FakesAssemblies/
 # Node.js Tools for Visual Studio
 .ntvs_analysis.dat
 
-# Visual Studio 6 build log
+# Visual Studio 6 build Log
 *.plg
 
 # Visual Studio 6 workspace options file
@@ -238,3 +238,4 @@ MDPlayer/MDPlayer/lib/MDSoundCopy.bat
 output
 lib
 plugin
+tmp/
