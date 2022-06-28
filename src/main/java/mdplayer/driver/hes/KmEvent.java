@@ -9,64 +9,67 @@ import mdsound.Common.TriConsumer;
 */
 public class KmEvent {
 
-    public static final int KMEVENT_ITEM_MAX = 31; /* MAX 255 */
+    public static final int KMEVENT_ITEM_MAX = 31; /**  MAX 255 */
 
-    public interface dlgProc extends TriConsumer<KMEVENT, Integer, M_Hes.HESHES> {
+    public interface dlgProc extends TriConsumer<Event, Integer, M_Hes.HESHES> {
     }
 
-    public static class KMEVENT_ITEM {
-        /* メンバ直接アクセス禁止 */
+    public static class Item {
+        // メンバ直接アクセス禁止
         //public Object user;
         public M_Hes.HESHES user;
         public dlgProc proc;
-        public int count;   /* イベント発生時間 */
-        public byte prev;     /* 双方向リンクリスト */
-        public byte next;     /* 双方向リンクリスト */
-        public byte sysflag;  /* 内部状態フラグ */
-        public byte flag2;    /* 未使用 */
+        /** イベント発生時間 */
+        public int count;
+        /** 双方向リンクリスト */
+        public byte prev;
+        /** 双方向リンクリスト */
+        public byte next;
+        /** 内部状態フラグ */
+        public byte sysflag;
+        /** 未使用 */
+        public byte flag2;
     }
 
-    public static class KMEVENT {
-        /* メンバ直接アクセス禁止 */
-        public KMEVENT_ITEM[] item = new KMEVENT_ITEM[KMEVENT_ITEM_MAX + 1];
+    public static class Event {
+        // メンバ直接アクセス禁止
+        public Item[] item = new Item[KMEVENT_ITEM_MAX + 1];
     }
 
-    private enum KMEVENT_FLAG {
-        KMEVENT_FLAG_BREAKED((byte) 0x01),//(1 << 0),
-        KMEVENT_FLAG_DISPATCHED((byte) 0x02),//(1 << 1),
-        KMEVENT_FLAG_ALLOCED((byte) 0x80);//(1 << 7)
-        byte v;
+    private enum Flag {
+        BREAKED((byte) 0x01),
+        DISPATCHED((byte) 0x02),
+        ALLOCED((byte) 0x80);
+        final byte v;
 
-        KMEVENT_FLAG(byte v) {
+        Flag(byte v) {
             this.v = v;
         }
     }
 
-    private void kmevent_reset(KMEVENT kme) {
-        int id;
+    private void kmevent_reset(Event kme) {
         kme.item[0].count = 0;
-        for (id = 0; id <= KMEVENT_ITEM_MAX; id++) {
-            kme.item[id].sysflag &= (byte) ~KMEVENT_FLAG.KMEVENT_FLAG_ALLOCED.v;
+        for (int id = 0; id <= KMEVENT_ITEM_MAX; id++) {
+            kme.item[id].sysflag &= (byte) ~Flag.ALLOCED.v;
             kme.item[id].count = 0;
             kme.item[id].next = (byte) id;
             kme.item[id].prev = (byte) id;
         }
     }
 
-    public void kmevent_init(KMEVENT kme) {
-        int id;
-        for (id = 0; id <= KMEVENT_ITEM_MAX; id++) {
-            kme.item[id] = new KMEVENT_ITEM();
+    public void kmevent_init(Event kme) {
+        for (int id = 0; id <= KMEVENT_ITEM_MAX; id++) {
+            kme.item[id] = new Item();
             kme.item[id].sysflag = 0;
         }
         kmevent_reset(kme);
     }
 
-    public int kmevent_alloc(KMEVENT kme) {
+    public int kmevent_alloc(Event kme) {
         int id;
         for (id = 1; id <= KMEVENT_ITEM_MAX; id++) {
             if (kme.item[id].sysflag == 0) {
-                kme.item[id].sysflag = (byte) KMEVENT_FLAG.KMEVENT_FLAG_ALLOCED.v;
+                kme.item[id].sysflag = Flag.ALLOCED.v;
                 return id;
             }
         }
@@ -74,8 +77,8 @@ public class KmEvent {
     }
 
     /** リストから取り外す */
-    private void kmevent_itemunlist(KMEVENT kme, int curid) {
-        KMEVENT_ITEM cur, next, prev;
+    private void kmevent_itemunlist(Event kme, int curid) {
+        Item cur, next, prev;
         cur = kme.item[curid];
         next = kme.item[cur.next];
         prev = kme.item[cur.prev];
@@ -84,8 +87,8 @@ public class KmEvent {
     }
 
     /** リストの指定位置(baseid)の直前に挿入 */
-    private void kmevent_itemlist(KMEVENT kme, int curid, int baseid) {
-        KMEVENT_ITEM cur, next, prev;
+    private void kmevent_itemlist(Event kme, int curid, int baseid) {
+        Item cur, next, prev;
         cur = kme.item[curid];
         next = kme.item[baseid];
         prev = kme.item[next.prev];
@@ -96,7 +99,7 @@ public class KmEvent {
     }
 
     /** ソート済リストに挿入 */
-    private void kmevent_iteminsert(KMEVENT kme, int curid) {
+    private void kmevent_iteminsert(Event kme, int curid) {
         int baseid;
         for (baseid = kme.item[0].next; baseid != 0; baseid = kme.item[baseid].next) {
             if (kme.item[baseid].count != 0) {
@@ -106,18 +109,18 @@ public class KmEvent {
         kmevent_itemlist(kme, curid, baseid);
     }
 
-    public void kmevent_free(KMEVENT kme, int curid) {
+    public void kmevent_free(Event kme, int curid) {
         kmevent_itemunlist(kme, curid);
         kme.item[curid].sysflag = 0;
     }
 
-    public void kmevent_settimer(KMEVENT kme, int curid, int time) {
-        kmevent_itemunlist(kme, curid); /* 取り外し */
+    public void kmevent_settimer(Event kme, int curid, int time) {
+        kmevent_itemunlist(kme, curid); // 取り外し */
         kme.item[curid].count = time != 0 ? kme.item[0].count + time : 0;
-        if (kme.item[curid].count != 0) kmevent_iteminsert(kme, curid); /* ソート */
+        if (kme.item[curid].count != 0) kmevent_iteminsert(kme, curid); // ソート */
     }
 
-    public int kmevent_gettimer(KMEVENT kme, int curid, int time) {
+    public int kmevent_gettimer(Event kme, int curid, int time) {
         int nextcount;
         nextcount = kme.item[curid != 0 ? curid : kme.item[0].next].count;
         if (nextcount == 0) return 0;
@@ -126,13 +129,13 @@ public class KmEvent {
         return 1;
     }
 
-    public void kmevent_setevent(KMEVENT kme, int curid, dlgProc proc, M_Hes.HESHES user) {
+    public void kmevent_setevent(Event kme, int curid, dlgProc proc, M_Hes.HESHES user) {
         kme.item[curid].proc = proc;
         kme.item[curid].user = user;
     }
 
     /** 指定サイクル分実行 */
-    public void kmevent_process(KMEVENT kme, int cycles) {
+    public void kmevent_process(Event kme, int cycles) {
         int id;
         int nextcount;
         kme.item[0].count += cycles;
@@ -145,7 +148,7 @@ public class KmEvent {
         while (nextcount != 0 && kme.item[0].count >= nextcount) {
             /* イベント発生済フラグのリセット */
             for (id = kme.item[0].next; id != 0; id = kme.item[id].next) {
-                kme.item[id].sysflag &= 0xfc;// ~((byte)KMEVENT_FLAG.KMEVENT_FLAG_BREAKED + (byte)KMEVENT_FLAG.KMEVENT_FLAG_DISPATCHED);
+                kme.item[id].sysflag &= 0xfc;// ~((byte)Flag.KMEVENT_FLAG_BREAKED + (byte)Flag.KMEVENT_FLAG_DISPATCHED);
             }
             /* nextcount分進行 */
             kme.item[0].count -= nextcount;
@@ -154,14 +157,14 @@ public class KmEvent {
                 kme.item[id].count -= nextcount;
                 if (kme.item[id].count != 0) continue;
                 /* イベント発生フラグのセット */
-                kme.item[id].sysflag |= (byte) KMEVENT_FLAG.KMEVENT_FLAG_BREAKED.v;
+                kme.item[id].sysflag |= Flag.BREAKED.v;
             }
             for (id = kme.item[0].next; id != 0; id = kme.item[id].next) {
                 /* イベント発生済フラグの確認 */
-                if ((kme.item[id].sysflag & (byte) KMEVENT_FLAG.KMEVENT_FLAG_DISPATCHED.v) != 0) continue;
-                kme.item[id].sysflag |= (byte) KMEVENT_FLAG.KMEVENT_FLAG_DISPATCHED.v;
+                if ((kme.item[id].sysflag & Flag.DISPATCHED.v) != 0) continue;
+                kme.item[id].sysflag |= Flag.DISPATCHED.v;
                 /* イベント発生フラグの確認 */
-                if ((kme.item[id].sysflag & (byte) KMEVENT_FLAG.KMEVENT_FLAG_BREAKED.v) == 0) continue;
+                if ((kme.item[id].sysflag & Flag.BREAKED.v) == 0) continue;
                 /* 対象イベント起動 */
                 kme.item[id].proc.accept(kme, id, kme.item[id].user);
                 /* 先頭から再走査 */

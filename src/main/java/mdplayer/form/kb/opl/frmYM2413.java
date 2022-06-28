@@ -29,7 +29,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmYM2413 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -53,7 +53,7 @@ public class frmYM2413 extends frmBase {
         this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getplaneYM2413(), null, zoom);
 
-        Boolean YM2413Type = (chipID == 0)
+        boolean YM2413Type = (chipID == 0)
                 ? parent.setting.getYM2413Type()[0].getUseReal()[0]
                 : parent.setting.getYM2413Type()[1].getUseReal()[0];
         int YM2413SoundLocation = (chipID == 0)
@@ -70,7 +70,7 @@ public class frmYM2413 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -231,11 +231,11 @@ public class frmYM2413 extends frmBase {
             int d = 99;
             DrawBuff.volume(screen, 256, 8 + y * 8, 0, d, 0, tp);
 
-            Boolean db = null;
+            boolean db = null;
             DrawBuff.chYM2413(screen, y, db, newParam.channels[y].mask, tp);
         }
 
-        Boolean dm;
+        boolean dm;
         dm = null;
         DrawBuff.chYM2413(frameBuffer, 9, dm, newParam.channels[9].mask, tp);
         dm = null;
@@ -261,7 +261,7 @@ public class frmYM2413 extends frmBase {
     }
 
     public void screenDrawParams() {
-        Boolean YM2413Type = (chipID == 0)
+        boolean YM2413Type = (chipID == 0)
                 ? parent.setting.getYM2413Type()[0].getUseReal()[0]
                 : parent.setting.getYM2413Type()[1].getUseReal()[0];
         int YM2413SoundLocation = (chipID == 0)
@@ -352,7 +352,7 @@ public class frmYM2413 extends frmBase {
         newParam.channels[0].inst[26] = 0;
         newParam.channels[0].inst[27] = 0;
 
-        Boolean YM2413Type = (chipID == 0)
+        boolean YM2413Type = (chipID == 0)
                 ? parent.setting.getYM2413Type()[0].getUseReal()[0]
                 : parent.setting.getYM2413Type()[1].getUseReal()[0];
         int YM2413SoundLocation = (chipID == 0)
@@ -375,7 +375,7 @@ public class frmYM2413 extends frmBase {
                 //但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (int ch = 0; ch < 14; ch++) {
-                        if (newParam.channels[ch].mask == true)
+                        if (newParam.channels[ch].mask)
                             parent.resetChannelMask(EnmChip.YM2413, chipID, ch);
                         else
                             parent.setChannelMask(EnmChip.YM2413, chipID, ch);

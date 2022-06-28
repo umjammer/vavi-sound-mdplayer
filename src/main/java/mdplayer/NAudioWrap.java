@@ -1,9 +1,9 @@
 package mdplayer;
 
 import java.util.UUID;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-import javafx.event.EventHandler;
+import javax.sound.sampled.LineEvent;
 
 
 public class NAudioWrap {
@@ -11,7 +11,7 @@ public class NAudioWrap {
     public interface naudioCallBack extends Common.TriFunction<short[], Integer, Integer, Integer> {
     }
 
-    public EventHandler<StoppedEventArgs> PlaybackStopped;
+    public Consumer<LineEvent> playbackStopped;
 
     private WaveOutEvent waveOut;
     private WasapiOut wasapiOut;
@@ -35,7 +35,7 @@ public class NAudioWrap {
         Stop();
 
         waveProvider = new SineWaveProvider16();
-        waveProvider.SetWaveFormat(sampleRate, 2);
+        waveProvider.setWaveFormat(sampleRate, 2);
 
         callBack = nCallBack;
 
@@ -110,7 +110,7 @@ public class NAudioWrap {
                 if (AsioOut.isSupported()) {
                     int i = 0;
                     for (String s : AsioOut.GetDriverNames()) {
-                        if (setting.getOutputDevice().getAsioDeviceName() == s) {
+                        if (setting.getOutputDevice().getAsioDeviceName().equals(s)) {
                             break;
                         }
                         i++;
@@ -140,13 +140,13 @@ public class NAudioWrap {
 
     }
 
-    private void DeviceOut_PlaybackStopped(Object sender, StoppedEventArgs e) {
-        BiConsumer handler = this::PlaybackStopped;
+    private void DeviceOut_PlaybackStopped(LineEvent e) {
+        Consumer handler = this.playbackStopped;
         if (handler != null) {
             if (this.syncContext == null) {
-                handler.accept(this, e);
+                handler.accept(e);
             } else {
-                syncContext.Post(state -> handler.accept(this, e), null);
+                syncContext.Post(state -> handler.accept(e), null);
             }
         }
     }
@@ -159,7 +159,7 @@ public class NAudioWrap {
             try {
                 //waveOut.Pause();
                 waveOut.Stop();
-                while (waveOut.PlaybackState != PlaybackState.Stopped) {
+                while (waveOut.playbackState != LineEvent.Type.STOP) {
                     Thread.sleep(1);
                 }
                 waveOut.Dispose();
@@ -172,7 +172,7 @@ public class NAudioWrap {
             try {
                 //wasapiOut.Pause();
                 wasapiOut.Stop();
-                while (wasapiOut.PlaybackState != PlaybackState.Stopped) {
+                while (wasapiOut.PlaybackState != LineEvent.Type.STOP) {
                     Thread.sleep(1);
                 }
                 wasapiOut.Dispose();
@@ -185,7 +185,7 @@ public class NAudioWrap {
             try {
                 //dsOut.Pause();
                 dsOut.Stop();
-                while (dsOut.PlaybackState != PlaybackState.Stopped) {
+                while (dsOut.PlaybackState != LineEvent.Type.STOP) {
                     Thread.sleep(1);
                 }
                 dsOut.Dispose();
@@ -198,7 +198,7 @@ public class NAudioWrap {
             try {
                 //asioOut.Pause();
                 asioOut.Stop();
-                while (asioOut.PlaybackState != PlaybackState.Stopped) {
+                while (asioOut.PlaybackState != LineEvent.Type.STOP) {
                     Thread.sleep(1);
                 }
                 asioOut.Dispose();
@@ -210,7 +210,7 @@ public class NAudioWrap {
         if (nullOut != null) {
             try {
                 nullOut.Stop();
-                while (nullOut.PlaybackState != PlaybackState.Stopped) {
+                while (nullOut.PlaybackState != LineEvent.Type.STOP) {
                     Thread.sleep(1);
                 }
                 nullOut.Dispose();
@@ -227,7 +227,7 @@ public class NAudioWrap {
         //}
     }
 
-    public class SineWaveProvider16 extends WaveProvider16 {
+    public static class SineWaveProvider16 extends WaveProvider16 {
         public SineWaveProvider16() {
         }
 
@@ -237,26 +237,26 @@ public class NAudioWrap {
         }
     }
 
-    public NAudio.Wave.PlaybackState GetPlaybackState() {
-        Boolean notNull = false;
+    public LineEvent.Type GetPlaybackState() {
+        boolean notNull = false;
 
         if (waveOut != null) {
-            if (waveOut.PlaybackState != PlaybackState.Stopped) return waveOut.PlaybackState;
+            if (waveOut.PlaybackState != LineEvent.Type.STOP) return waveOut.PlaybackState;
         }
         if (dsOut != null) {
-            if (dsOut.PlaybackState != PlaybackState.Stopped) return dsOut.PlaybackState;
+            if (dsOut.PlaybackState != LineEvent.Type.STOP) return dsOut.PlaybackState;
         }
         if (wasapiOut != null) {
-            if (wasapiOut.PlaybackState != PlaybackState.Stopped) return wasapiOut.PlaybackState;
+            if (wasapiOut.PlaybackState != LineEvent.Type.STOP) return wasapiOut.PlaybackState;
         }
         if (asioOut != null) {
-            if (asioOut.PlaybackState != PlaybackState.Stopped) return asioOut.PlaybackState;
+            if (asioOut.PlaybackState != LineEvent.Type.STOP) return asioOut.PlaybackState;
         }
         if (nullOut != null) {
-            if (nullOut.PlaybackState != PlaybackState.Stopped) return nullOut.PlaybackState;
+            if (nullOut.PlaybackState != LineEvent.Type.STOP) return nullOut.PlaybackState;
         }
 
-        return notNull ? (PlaybackState) PlaybackState.Stopped : null;
+        return notNull ? (PlaybackState) LineEvent.Type.STOP : null;
     }
 
     public int getAsioLatency() {

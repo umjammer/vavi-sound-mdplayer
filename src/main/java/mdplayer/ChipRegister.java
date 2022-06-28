@@ -34,11 +34,12 @@ import mdsound.np.memory.NesMem;
 
 
 public class ChipRegister {
-    private VstMng vstMng = null;
 
-    private Setting setting = null;
+    private final VstMng vstMng;
 
-    private mdsound.MDSound mds = null;
+    private final Setting setting;
+
+    private final mdsound.MDSound mds;
 
     private MidiOutInfo[] midiOutInfos = null;
 
@@ -51,81 +52,43 @@ public class ChipRegister {
     private Map<mdsound.MDSound.InstrumentType, mdsound.MDSound.Chip> dicChipsInfo = new HashMap<>();
 
     private Setting.ChipType2[] ctSN76489;
-
     private Setting.ChipType2[] ctYM2612;
-
     private Setting.ChipType2[] ctYM2608;
-
     private Setting.ChipType2[] ctYM2151;
-
     private Setting.ChipType2[] ctYM2203;
-
     private Setting.ChipType2[] ctYM2610;
-
     private Setting.ChipType2[] ctYM3526;
-
     private Setting.ChipType2[] ctYM3812;
-
     private Setting.ChipType2[] ctYMF262;
-
     private Setting.ChipType2[] ctYMF271;
-
     private Setting.ChipType2[] ctYMF278B;
-
     private Setting.ChipType2[] ctYMZ280B;
-
     private Setting.ChipType2[] ctAY8910;
-
     private Setting.ChipType2[] ctK051649;
-
     private Setting.ChipType2[] ctYM2413;
-
     private Setting.ChipType2[] ctHuC6280;
-
     private Setting.ChipType2[] ctY8950;
-
     private Setting.ChipType2[] ctSEGAPCM;
-
     private Setting.ChipType2[] ctC140;
-
-    private RealChip realChip = null;
-
+    private RealChip realChip;
     private RSoundChip[] scSN76489;
-
     private RSoundChip[] scYM2612;
-
     private RSoundChip[] scYM2608;
-
     private RSoundChip[] scYM2151;
-
     private RSoundChip[] scYM2203;
-
     private RSoundChip[] scAY8910;
-
     private RSoundChip[] scK051649;
-
     private RSoundChip[] scYM2413;
-
     private RSoundChip[] scYM2610;
-
     private RSoundChip[] scYM2610EA;
-
     private RSoundChip[] scYM2610EB;
-
     private RSoundChip[] scYM3526;
-
     private RSoundChip[] scYM3812;
-
     private RSoundChip[] scYMF262;
-
     private RSoundChip[] scYMF271 = new RSoundChip[] {null, null};
-
     private RSoundChip[] scYMF278B = new RSoundChip[] {null, null};
-
     private RSoundChip[] scYMZ280B = new RSoundChip[] {null, null};
-
     private RSoundChip[] scSEGAPCM;
-
     private RSoundChip[] scC140;
 
     private static final byte[] algM = new byte[] {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
@@ -552,25 +515,15 @@ public class ChipRegister {
     };
 
     public NesBank nes_bank = null;
-
     public NesMem nes_mem = null;
-
     public Km6502 nes_cpu = null;
-
     public NesApu nes_apu = null;
-
     public NesDmc nes_dmc = null;
-
     public NesFds nes_fds = null;
-
     public NesN106 nes_n106 = null;
-
     public NesVrc6 nes_vrc6 = null;
-
     public NesMmc5 nes_mmc5 = null;
-
     public NesFme7 nes_fme7 = null;
-
     public NesVrc7 nes_vrc7 = null;
 
     private int[] LatchedRegister = new int[] {
@@ -713,8 +666,8 @@ public class ChipRegister {
 
             fmRegisterYM2612[chipID] = new int[][] {new int[0x100], new int[0x100]};
             for (int i = 0; i < 0x100; i++) {
-                fmRegisterYM2612[chipID][0][i] = 0;// -1;
-                fmRegisterYM2612[chipID][1][i] = 0;// -1;
+                fmRegisterYM2612[chipID][0][i] = 0; // -1;
+                fmRegisterYM2612[chipID][1][i] = 0; // -1;
             }
             fmRegisterYM2612[chipID][0][0xb4] = 0xc0;
             fmRegisterYM2612[chipID][0][0xb5] = 0xc0;
@@ -726,8 +679,8 @@ public class ChipRegister {
 
             fmRegisterYM2608[chipID] = new int[][] {new int[0x100], new int[0x100]};
             for (int i = 0; i < 0x100; i++) {
-                fmRegisterYM2608[chipID][0][i] = 0;// -1;
-                fmRegisterYM2608[chipID][1][i] = 0;// -1;
+                fmRegisterYM2608[chipID][0][i] = 0; // -1;
+                fmRegisterYM2608[chipID][1][i] = 0; // -1;
             }
             fmRegisterYM2608[chipID][0][0xb4] = 0xc0;
             fmRegisterYM2608[chipID][0][0xb5] = 0xc0;
@@ -739,8 +692,8 @@ public class ChipRegister {
 
             fmRegisterYM2610[chipID] = new int[][] {new int[0x100], new int[0x100]};
             for (int i = 0; i < 0x100; i++) {
-                fmRegisterYM2610[chipID][0][i] = 0;// -1;
-                fmRegisterYM2610[chipID][1][i] = 0;// -1;
+                fmRegisterYM2610[chipID][0][i] = 0; // -1;
+                fmRegisterYM2610[chipID][1][i] = 0; // -1;
             }
             fmRegisterYM2610[chipID][0][0xb4] = 0xc0;
             fmRegisterYM2610[chipID][0][0xb5] = 0xc0;
@@ -865,7 +818,6 @@ public class ChipRegister {
         nes_mmc5 = null;
         nes_fme7 = null;
         nes_vrc7 = null;
-
     }
 
     public void initChipRegisterNSF(mdsound.MDSound.Chip[] chipInfos) {
@@ -1094,7 +1046,6 @@ public class ChipRegister {
                 setYM2151Register((byte) chipID, 0, 0x78 + c, 127, EnmModel.RealModel, 0, -1);
             }
         }
-
     }
 
     public MidiOutInfo[] GetMIDIoutInfo() {
@@ -1197,10 +1148,10 @@ public class ChipRegister {
 
     public void resetAllMIDIout() {
         if (midiOuts != null) {
-            for (int i = 0; i < midiOuts.size(); i++) {
-                if (midiOuts.get(i) == null)
+            for (Receiver midiOut : midiOuts) {
+                if (midiOut == null)
                     continue;
-                midiOuts.get(i).close(); // TODO
+                midiOut.close(); // TODO
             }
         }
 
@@ -1563,7 +1514,7 @@ public class ChipRegister {
         }
     }
 
-    public MultiPcm._MultiPCM getMultiPCMRegister(int chipID) {
+    public MultiPcm.MultiPCM getMultiPCMRegister(int chipID) {
         if (chipID == 0)
             chipLED.PriMPCM = 2;
         else
@@ -1583,7 +1534,7 @@ public class ChipRegister {
             chipLED.SecMPCM = 2;
 
         if (model == EnmModel.VirtualModel) {
-            mds.WriteMultiPCMSetBank((byte) chipID, (byte) dCh, (int) dAddr);
+            mds.WriteMultiPCMSetBank((byte) chipID, (byte) dCh, dAddr);
         } else {
         }
     }
@@ -1597,7 +1548,7 @@ public class ChipRegister {
             mds.WriteQSoundCtr((byte) chipID, 1, ll);
             mds.WriteQSoundCtr((byte) chipID, 2, rr);
 
-            qSoundRegister[chipID][rr] = (int) (mm * 0x100 + ll);
+            qSoundRegister[chipID][rr] = mm * 0x100 + ll;
         } else {
         }
     }
@@ -1617,7 +1568,7 @@ public class ChipRegister {
             chipLED.SecX1010 = 2;
 
         if (model == EnmModel.VirtualModel) {
-            mds.writeX1_010(chipID, (byte) 0, (int) (mm * 0x100 + ll), rr);
+            mds.writeX1_010(chipID, (byte) 0, mm * 0x100 + ll, rr);
 
         } else {
         }
@@ -1791,9 +1742,9 @@ public class ChipRegister {
                     HuC6280CurrentCh[chipID] = dData & 7;
                 }
                 if (dAddr == 4) {
-                    dData = (int) (maskChHuC6280[chipID][HuC6280CurrentCh[chipID]] ? 0 : dData);
+                    dData = maskChHuC6280[chipID][HuC6280CurrentCh[chipID]] ? 0 : dData;
                 }
-                // System.System.err.println("chipID:{0} Adr:{1} Dat:{2}",
+                // System.System.err.println("chipID:%d Adr:%d Dat:%d",
                 // chipID, dAddr, dData);
                 mds.writeHuC6280((byte) chipID, (byte) dAddr, (byte) dData);
             }
@@ -2310,7 +2261,7 @@ public class ChipRegister {
 
             int twoOpChannel = (ch / 8) * 3 + ((ch % 8) % 3);
             int fourOpChannel = twoOpChannel > 5 ? -1 : ((twoOpChannel % 3) + dPort * 3);
-            boolean fourOpMode = fourOpChannel != -1 ? ((conSel & (1 << fourOpChannel)) != 0) : false;
+            boolean fourOpMode = fourOpChannel != -1 && ((conSel & (1 << fourOpChannel)) != 0);
             int slotNumber = ((ch % 8) / 3) + (twoOpChannel > 2 ? 2 : 0);
             twoOpChannel += dPort * 9;
 
@@ -2443,7 +2394,7 @@ public class ChipRegister {
     public void setYM2608Register(int chipID, int dPort, int dAddr, int dData, EnmModel model) {
         // if (chipID == 0 && dPort == 1 && dAddr == 0x01)
         // {
-        // Log.Write(String.format("FM P1 Out:Adr[{0:x02}] val[{1:x02}]",
+        // Log.Write(String.format("FM P1 Out:Adr[%02x] val[%02x]",
         // (int)dAddr, (int)dData));
         // }
 
@@ -2599,7 +2550,7 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             if (!ctYM2608[chipID].getUseReal()[0] && ctYM2608[chipID].getUseEmu()[0]) {
-                // if(dAddr==0x29) System.err.printf("{0:x2}:{1:x2}:{2:x2} ", dPort,
+                // if(dAddr==0x29) System.err.printf("%2x:%2x:%2x ", dPort,
                 // dAddr, dData);
                 mds.writeYM2608((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
             }
@@ -2739,7 +2690,7 @@ public class ChipRegister {
         }
 
 // #if DEBUG
-        //System.err.println("OPNB P:{0:X02} A:{1:X02} D:{2:X02}", dPort, dAddr, dData);
+        //System.err.println("OPNB P:%02X A:%02X D:%02X", dPort, dAddr, dData);
 // #endif
 
         if ((model == EnmModel.RealModel && ctYM2610[chipID].getUseReal()[0]) || (model == EnmModel.VirtualModel && !ctYM2610[chipID].getUseReal()[0])) {
@@ -2930,9 +2881,9 @@ public class ChipRegister {
                 // pushReg(CMD_YM2610|0x02,0x03,0x01);
                 scYM2610[chipID].setRegister((dPort << 8) | 0x03, 0x01);
                 // データ転送
-                for (int cnt = 0; cnt < ym2610AdpcmA.length; cnt++) {
+                for (byte b : ym2610AdpcmA) {
                     // pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
-                    scYM2610[chipID].setRegister((dPort << 8) | 0x04, ym2610AdpcmA[cnt]);
+                    scYM2610[chipID].setRegister((dPort << 8) | 0x04, b);
                 }
 
                 realChip.SendData();
@@ -2947,9 +2898,9 @@ public class ChipRegister {
                 // pushReg(CMD_YM2610|0x02,0x03,0x01);
                 scYM2610EB[chipID].setRegister((dPort << 8) | 0x10003, 0x01);
                 // データ転送
-                for (int cnt = 0; cnt < ym2610AdpcmA.length; cnt++) {
+                for (byte b : ym2610AdpcmA) {
                     // pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
-                    scYM2610EB[chipID].setRegister((dPort << 8) | 0x10004, ym2610AdpcmA[cnt]);
+                    scYM2610EB[chipID].setRegister((dPort << 8) | 0x10004, b);
                 }
 
                 realChip.SendData();
@@ -2959,7 +2910,6 @@ public class ChipRegister {
 
     public void writeYM2610_SetAdpcmA(int chipID, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr) {
         if (model == EnmModel.VirtualModel) {
-            return;
         } else {
             if (scYM2610[chipID] != null) {
                 byte dPort = 2;
@@ -3010,9 +2960,9 @@ public class ChipRegister {
                 // pushReg(CMD_YM2610|0x02,0x03,0x01);
                 scYM2610[chipID].setRegister((dPort << 8) | 0x03, 0x00);
                 // データ転送
-                for (int cnt = 0; cnt < ym2610AdpcmB.length; cnt++) {
+                for (byte b : ym2610AdpcmB) {
                     // pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
-                    scYM2610[chipID].setRegister((dPort << 8) | 0x04, ym2610AdpcmB[cnt]);
+                    scYM2610[chipID].setRegister((dPort << 8) | 0x04, b);
                 }
 
                 realChip.SendData();
@@ -3027,9 +2977,9 @@ public class ChipRegister {
                 // pushReg(CMD_YM2610|0x02,0x03,0x01);
                 scYM2610EB[chipID].setRegister((dPort << 8) | 0x10003, 0x00);
                 // データ転送
-                for (int cnt = 0; cnt < ym2610AdpcmB.length; cnt++) {
+                for (byte b : ym2610AdpcmB) {
                     // pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
-                    scYM2610EB[chipID].setRegister((dPort << 8) | 0x10004, ym2610AdpcmB[cnt]);
+                    scYM2610EB[chipID].setRegister((dPort << 8) | 0x10004, b);
                 }
 
                 realChip.SendData();
@@ -3039,7 +2989,6 @@ public class ChipRegister {
 
     public void WriteYM2610_SetAdpcmB(int chipID, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr) {
         if (model == EnmModel.VirtualModel) {
-            return;
         } else {
             if (scYM2610[chipID] != null) {
                 byte dPort = 2;
@@ -3114,7 +3063,7 @@ public class ChipRegister {
 
             // if (dPort == 2)
             // {
-            // System.err.println("p=2:adr{0:x02} dat{1:x02}", dAddr, dData);
+            // System.err.println("p=2:adr%02x dat%02x", dAddr, dData);
             // }
 
             if (dAddr >= 0xb0 && dAddr <= 0xb8) {
@@ -3364,7 +3313,7 @@ public class ChipRegister {
         if (dAddr == 0x2a) {
             //PCMデータをマスクする
             if (maskFMChYM2612[chipID][5]) dData = 0x00;
-            //System.err.println("{0:x02}",dData);
+            //System.err.println("%02x",dData);
         }
 
         if (model == EnmModel.VirtualModel) {
@@ -3419,7 +3368,7 @@ public class ChipRegister {
                     return;//TESTレジスタへのデータ送信をキャンセルする
 
                 //エミュを使用する場合のみMDSoundへデータを送る
-                //System.err.println("{0}:{1:X02}:{2:X02}:{3:X02}", chipID, dPort, dAddr, dData);
+                //System.err.println("%d:%02X:%02X:%02X", chipID, dPort, dAddr, dData);
                 if (ctYM2612[chipID].getUseEmu()[0])
                     mds.writeYM2612((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
                 if (ctYM2612[chipID].getUseEmu()[1])
@@ -4099,7 +4048,7 @@ public class ChipRegister {
         if (scYM2151[chipID] == null)
             return -1;
 
-        return (int) scYM2151[chipID].dClock;
+        return scYM2151[chipID].dClock;
     }
 
     public void setSN76489RegisterGGpanning(int chipID, int dData, EnmModel model) {
@@ -4113,8 +4062,8 @@ public class ChipRegister {
 
         if (model == EnmModel.RealModel) {
             if (ctSN76489[chipID].getUseReal()[0]) {
-                if (scSN76489[chipID] == null)
-                    return;
+                if (scSN76489[chipID] == null) {
+                }
             }
         } else {
             if (!ctSN76489[chipID].getUseReal()[0]) {
@@ -4190,56 +4139,28 @@ public class ChipRegister {
             /* Latch/data byte %1 cc t dddd */
             LatchedRegister[chipID] = (data >> 4) & 0x07;
             sn76489Register[chipID][LatchedRegister[chipID]] = (sn76489Register[chipID][LatchedRegister[chipID]] &
-                    0x3f0) /*
-                                                                        //zero
-                                                                        //low 4
-                                                                        //bits
-                                                                        */
-                    | (data & 0xf); /*
-                                                                                //and
-                                                                                //replace
-                                                                                //with
-                                                                                //data
-                                                                                */
+                    0x3f0) // zero low 4 bits
+                    | (data & 0xf); // and replace with data
         } else {
             /* Data byte %0 - dddddd */
             if ((LatchedRegister[chipID] % 2) == 0 && (LatchedRegister[chipID] < 5))
                 /* Tone register */
                 sn76489Register[chipID][LatchedRegister[chipID]] = (sn76489Register[chipID][LatchedRegister[chipID]] &
-                        0x00f) /*
-                                                                            //zero
-                                                                            //high
-                                                                            //6
-                                                                            //bits
-                                                                            */
-                        | ((data & 0x3f) << 4); /*
-                                                                                            //and
-                                                                                            //replace
-                                                                                            //with
-                                                                                            //data
-                                                                                            */
+                        0x00f) // zero high 6 bits
+                        | ((data & 0x3f) << 4); // and replace with data
             else
                 /* Other register */
-                sn76489Register[chipID][LatchedRegister[chipID]] = data & 0x0f; /*
-                                                                                 //Replace
-                                                                                 //with
-                                                                                 //data
-                                                                                 */
+                sn76489Register[chipID][LatchedRegister[chipID]] = data & 0x0f; // Replace with data
         }
         switch (LatchedRegister[chipID]) {
         case 0:
         case 2:
-        case 4: /* Tone channels */
-            // if (sn76489Register[chipID][LatchedRegister[chipID]] == 0)
-            // sn76489Register[chipID][LatchedRegister[chipID]] = 1; /* Zero
-            // frequency changed to 1 to avoid div/0 */
+        case 4: // Tone channels */
+            //if (sn76489Register[chipID][LatchedRegister[chipID]] == 0)
+            // sn76489Register[chipID][LatchedRegister[chipID]] = 1; // Zero frequency changed to 1 to avoid div/0
             break;
-        case 6: /* Noise */
-            NoiseFreq[chipID] = 0x10 << (sn76489Register[chipID][6] &
-                    0x3); /*
-                                                //set noise signal generator
-                                                //frequency
-                                                */
+        case 6: // Noise */
+            NoiseFreq[chipID] = 0x10 << (sn76489Register[chipID][6] & 0x3); // set noise signal generator frequency
             break;
         }
     }
@@ -4292,7 +4213,7 @@ public class ChipRegister {
             chipLED.SecNES = 2;
 
         if (model == EnmModel.VirtualModel)
-            mds.WriteNESRam(chipid, (int) stAdr, (int) dataSize, vgmBuf, (int) vgmAdr);
+            mds.WriteNESRam(chipid, stAdr, dataSize, vgmBuf, vgmAdr);
     }
 
     public void writeRF5C164(byte chipid, byte adr, byte data, EnmModel model) {
@@ -4346,17 +4267,17 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             if (!ctK051649[chipid].getUseReal()[0]) {
-                mds.WriteK051649(chipid, (int) adr, data);
+                mds.WriteK051649(chipid, adr, data);
 
                 // レジスタのデータを退避
-                scc_k051649.write(chipid, 0, (int) adr, data);
+                scc_k051649.write(chipid, 0, adr, data);
             }
         } else {
             if (scK051649[chipid] == null)
                 return;
 
             // レジスタのデータを退避
-            scc_k051649.write(chipid, 0, (int) adr, data);
+            scc_k051649.write(chipid, 0, adr, data);
 
             if ((adr & 1) == 0) {
                 sccR_port = (adr >> 1);
@@ -4379,7 +4300,7 @@ public class ChipRegister {
                     break;
                 }
 
-                scK051649[chipid].setRegister((int) ((int) setting.getDebug_SCCbaseAddress() | sccR_offset), (int) sccR_dat);
+                scK051649[chipid].setRegister(setting.getDebug_SCCbaseAddress() | sccR_offset, sccR_dat);
             }
         }
     }
@@ -4389,10 +4310,10 @@ public class ChipRegister {
 
         // 全チャネルボリュームzero
         for (i = 0; i < 5; i++) {
-            writeK051649((byte) chipID, (int) ((0x00 << 1) + 0), (byte) i, model);
-            writeK051649((byte) chipID, (int) ((0x02 << 1) + 1), (byte) 0x00, model);
-            writeK051649((byte) chipID, (int) ((0x00 << 1) + 0), (byte) i, model);
-            writeK051649((byte) chipID, (int) ((0x03 << 1) + 1), (byte) 0x00, model);
+            writeK051649((byte) chipID, (0x00 << 1) + 0, (byte) i, model);
+            writeK051649((byte) chipID, (0x02 << 1) + 1, (byte) 0x00, model);
+            writeK051649((byte) chipID, (0x00 << 1) + 0, (byte) i, model);
+            writeK051649((byte) chipID, (0x03 << 1) + 1, (byte) 0x00, model);
         }
 
     }
@@ -4414,7 +4335,7 @@ public class ChipRegister {
             chipLED.SecK054539 = 2;
 
         if (model == EnmModel.VirtualModel)
-            mds.WriteK054539(chipid, (int) adr, data);
+            mds.WriteK054539(chipid, adr, data);
     }
 
     public void writeK053260PCMData(byte chipid,
@@ -4486,8 +4407,8 @@ public class ChipRegister {
             chipLED.SecC352 = 2;
 
         if (adr < pcmRegisterC352[chipid].length)
-            pcmRegisterC352[chipid][adr] = (int) data;
-        int c = (int) adr / 8;
+            pcmRegisterC352[chipid][adr] = data;
+        int c = adr / 8;
         if (adr < 0x100 && (adr % 8) == 3 && maskChC352[chipid][adr / 8]) {
             data &= 0xbfff;
         }
@@ -4564,7 +4485,7 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             mds.WriteOKIM6295(ChipID, Port, Data);
-            // System.System.err.println("ChipID={0} Port={1:X} Data={2:X}
+            // System.System.err.println("ChipID=%d Port=%X Data=%X
             // ",ChipID,Port,Data);
         }
     }
@@ -4746,7 +4667,7 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
             if (!ctSEGAPCM[chipID].getUseReal()[0])
                 mds.WriteSEGAPCM(chipID, offset, data);
-            // System.System.err.println("ChipID={0} Offset={1:X} Data={2:X} ",
+            // System.System.err.println("ChipID=%d Offset=%X Data=%X ",
             // ChipID, Offset, Data);
         } else {
             if (scSEGAPCM != null && scSEGAPCM[chipID] != null)
@@ -4778,7 +4699,7 @@ public class ChipRegister {
                 for (int cnt = 0; cnt < DataLength; cnt++) {
                     scSEGAPCM[chipID].setRegister(0x10004, romdata[SrcStartAdr + cnt]);
                 }
-                scSEGAPCM[chipID].setRegister(0x10006, (int) ROMSize);
+                scSEGAPCM[chipID].setRegister(0x10006, ROMSize);
 
                 realChip.SendData();
             }
@@ -4789,7 +4710,7 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYM2151 != null && scYM2151[chipID] != null) {
-                scYM2151[chipID].dClock = scYM2151[chipID].SetMasterClock((int) clock);
+                scYM2151[chipID].dClock = scYM2151[chipID].setMasterClock(clock);
             }
         }
     }
@@ -4805,7 +4726,7 @@ public class ChipRegister {
 //                        clock *= 2;
 //                    }
                 }
-                scYM2203[chipID].dClock = scYM2203[chipID].SetMasterClock((int) clock);
+                scYM2203[chipID].dClock = scYM2203[chipID].setMasterClock(clock);
             }
         }
     }
@@ -4821,7 +4742,7 @@ public class ChipRegister {
 //                        clock *= 2;
 //                    }
                 }
-                scAY8910[chipID].dClock = scAY8910[chipID].SetMasterClock((int) clock);
+                scAY8910[chipID].dClock = scAY8910[chipID].setMasterClock(clock);
             }
         }
     }
@@ -4830,7 +4751,7 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYM2608 != null && scYM2608[chipID] != null) {
-                scYM2608[chipID].dClock = scYM2608[chipID].SetMasterClock((int) clock);
+                scYM2608[chipID].dClock = scYM2608[chipID].setMasterClock(clock);
             }
         }
     }
@@ -4850,7 +4771,7 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYM3812 != null && scYM3812[chipID] != null) {
-                scYM3812[chipID].dClock = scYM3812[chipID].SetMasterClock((int) clock);
+                scYM3812[chipID].dClock = scYM3812[chipID].setMasterClock(clock);
             }
         }
     }
@@ -4859,7 +4780,7 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYMF262 != null && scYMF262[chipID] != null) {
-                scYMF262[chipID].dClock = scYMF262[chipID].SetMasterClock((int) clock);
+                scYMF262[chipID].dClock = scYMF262[chipID].setMasterClock(clock);
             }
         }
     }
@@ -4886,7 +4807,7 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scSEGAPCM != null && scSEGAPCM[chipID] != null) {
-                scSEGAPCM[chipID].setRegister(0x10005, (int) clock);
+                scSEGAPCM[chipID].setRegister(0x10005, clock);
             }
         }
     }
@@ -4916,7 +4837,7 @@ public class ChipRegister {
                 mds.WriteC140(chipID, adr, data);
         } else {
             if (scC140 != null && scC140[chipID] != null)
-                scC140[chipID].setRegister((int) adr, data);
+                scC140[chipID].setRegister(adr, data);
         }
     }
 

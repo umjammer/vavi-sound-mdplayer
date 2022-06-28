@@ -8,8 +8,8 @@ import java.io.Serializable;
 public class VstInfo implements Serializable {
     public String key = "";
     public String fileName = "";
-    public Boolean power = false;
-    public Boolean editor = false;
+    public boolean power = false;
+    public boolean editor = false;
     public String effectName = "";
     public String productName = "";
     public String vendorName = "";

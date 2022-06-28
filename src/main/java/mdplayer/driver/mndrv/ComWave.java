@@ -91,7 +91,7 @@ public class ComWave {
     }
 
     public void _wave_init_kon_common_a(byte val) {
-        if ((byte) val >= 0) {
+        if (val >= 0) {
             _wave_init_compatible_a();
             return;
         }
@@ -120,7 +120,7 @@ public class ComWave {
     }
 
     public void _wave_init_kon_common(byte val) {
-        if ((byte) val >= 0) {
+        if (val >= 0) {
             _wave_init_compatible();
             return;
         }
@@ -221,7 +221,7 @@ public class ComWave {
     }
 
     public void _wave_init_kof_common(byte val) {
-        if ((byte) val >= 0) {
+        if (val >= 0) {
             return;
         }
 
@@ -450,7 +450,7 @@ public class ComWave {
 
                         if (mm.readByte(reg.a3 + W_We.loop_flag) != 0) { // break _weffect_10;
 
-                            mm.write(reg.a3 + W_We.lp_cnt_work, (int) (mm.readInt(reg.a3 + W_We.lp_cnt_work) - 1));
+                            mm.write(reg.a3 + W_We.lp_cnt_work, mm.readInt(reg.a3 + W_We.lp_cnt_work) - 1);
                             if (mm.readInt(reg.a3 + W_We.lp_cnt_work) == 0) {
                                 mm.write(reg.a3 + W_We.exec_flag, (byte) 0xff);
                             }
@@ -613,7 +613,7 @@ public class ComWave {
                 reg.a0 = mm.readInt(reg.a3 + W_W.adrs_work);
                 reg.D0_L = 0;
                 reg.setD0_B(mm.readByte(reg.a3 + W_W.depth));
-                reg.D0_L = (short) ((short) mm.readShort(reg.a0) * (short) reg.getD0_W()); // 68020未満のCPUはw*W=lのみ?
+                reg.D0_L = (short) (mm.readShort(reg.a0) * (short) reg.getD0_W()); // 68020未満のCPUはw*W=lのみ?
 
                 if (reg.a0 - mm.readInt(reg.a3 + W_W.end_adrs_work) == 0) { // break _com_w10;
 
@@ -695,7 +695,7 @@ public class ComWave {
             reg.D0_L = 0;
             reg.setD0_B(mm.readByte(reg.a0++));
             if (reg.D0_L - mm.readInt(reg.a3 + W_W.lp_cnt_work) == 0) {
-                mm.write(reg.a3 + W_W.lp_cnt_work, (int) 0);
+                mm.write(reg.a3 + W_W.lp_cnt_work, 0);
                 if (reg.getD0_B() - 0xff != 0) {
                     reg.D0_L = 0xff;
                     mm.write(reg.a3 + W_W.lp_cnt_work, reg.D0_L);
@@ -714,11 +714,11 @@ public class ComWave {
             mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
 
             reg.D0_L = mm.readInt(reg.a3 + W_W.ko_loop_end);
-            mm.write(reg.a3 + W_W.ko_loop_count, (int) (mm.readInt(reg.a3 + W_W.ko_loop_count) + (int) reg.D0_L));
+            mm.write(reg.a3 + W_W.ko_loop_count, mm.readInt(reg.a3 + W_W.ko_loop_count) + reg.D0_L);
             mm.write(reg.a3 + W_W.ko_loop_start, (short) (mm.readShort(reg.a3 + W_W.ko_loop_start) - 1));
             if (mm.readShort(reg.a3 + W_W.ko_loop_start) == 0) {
                 mm.write(reg.a3 + W_W.ko_loop_start, mm.readShort(reg.a3 + W_W.start));
-                mm.write(reg.a3 + W_W.ko_loop_count, (int) (-(int) mm.readByte(reg.a3 + W_W.ko_loop_count)));
+                mm.write(reg.a3 + W_W.ko_loop_count, -(int) mm.readByte(reg.a3 + W_W.ko_loop_count));
             }
             mm.write(reg.a4 + W_L.bendwork, mm.readShort(reg.a3 + W_W.ko_loop_count));
         }
@@ -738,7 +738,7 @@ public class ComWave {
             mm.write(reg.a3 + W_W.ko_loop_start, (short) (mm.readShort(reg.a3 + W_W.ko_loop_start) - 1));
             if (mm.readShort(reg.a3 + W_W.ko_loop_start) == 0) {
                 mm.write(reg.a3 + W_W.ko_loop_start, mm.readShort(reg.a3 + W_W.start));
-                mm.write(reg.a3 + W_W.ko_loop_end, (int) (-(int) mm.readInt(reg.a3 + W_W.ko_loop_end)));
+                mm.write(reg.a3 + W_W.ko_loop_end, -(int) mm.readInt(reg.a3 + W_W.ko_loop_end));
             }
             mm.write(reg.a4 + W_L.bendwork, mm.readShort(reg.a3 + W_W.ko_loop_count));
         }
@@ -758,7 +758,7 @@ public class ComWave {
             mm.write(reg.a3 + W_W.ko_loop_start, (short) (mm.readShort(reg.a3 + W_W.ko_loop_start) - 1));
             if (mm.readShort(reg.a3 + W_W.ko_loop_start) == 0) {
                 mm.write(reg.a3 + W_W.ko_loop_start, mm.readShort(reg.a3 + W_W.start));
-                mm.write(reg.a3 + W_W.ko_loop_end, (int) (-(int) mm.readInt(reg.a3 + W_W.ko_loop_end)));
+                mm.write(reg.a3 + W_W.ko_loop_end, -(int) mm.readInt(reg.a3 + W_W.ko_loop_end));
             }
             mm.write(reg.a4 + W_L.bendwork, mm.readShort(reg.a3 + W_W.ko_loop_count));
         }
@@ -776,7 +776,7 @@ public class ComWave {
             mm.write(reg.a3 + W_W.ko_loop_start, (short) (mm.readShort(reg.a3 + W_W.ko_loop_start) - 1));
             if (mm.readShort(reg.a3 + W_W.ko_loop_start) == 0) {
                 mm.write(reg.a3 + W_W.ko_loop_start, mm.readShort(reg.a3 + W_W.start));
-                comlfo.GETRND();
+                comlfo.getRandom();
                 reg.D1_L = mm.readInt(reg.a3 + W_W.ko_loop_end);
                 reg.D0_L = (short) ((short) reg.getD1_W() * (short) reg.getD0_W());
                 mm.write(reg.a3 + W_W.ko_loop_count, reg.D0_L);
@@ -799,7 +799,7 @@ public class ComWave {
             mm.write(reg.a3 + W_W.ko_start, (short) (mm.readShort(reg.a3 + W_W.ko_start) - 1));
             if (mm.readShort(reg.a3 + W_W.ko_start) == 0) {
                 mm.write(reg.a3 + W_W.ko_start, mm.readShort(reg.a3 + W_W.start));
-                mm.write(reg.a3 + W_W.ko_loop_end, (short) (mm.readShort(reg.a3 + W_W.loop_end)));
+                mm.write(reg.a3 + W_W.ko_loop_end, mm.readShort(reg.a3 + W_W.loop_end));
             }
             reg.setD0_B(mm.readByte(reg.a3 + W_W.ko_loop_end));
             reg.setD0_W((short) (byte) reg.getD0_B());
@@ -866,7 +866,7 @@ public class ComWave {
             mm.write(reg.a3 + W_W.ko_start, (short) (mm.readShort(reg.a3 + W_W.ko_start) - 1));
             if (mm.readShort(reg.a3 + W_W.ko_start) == 0) {
                 mm.write(reg.a3 + W_W.ko_start, mm.readShort(reg.a3 + W_W.start));
-                comlfo.GETRND();
+                comlfo.getRandom();
                 reg.setD1_W(mm.readShort(reg.a3 + W_W.ko_loop_start));
                 reg.D0_L = (short) ((short) reg.getD1_W() * (short) reg.getD0_W());
                 mm.write(reg.a3 + W_W.ko_loop_end, (short) reg.getD0_W());

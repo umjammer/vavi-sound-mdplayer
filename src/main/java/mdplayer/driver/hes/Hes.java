@@ -113,7 +113,7 @@ public class Hes extends BaseDriver {
     private int silent_length = 0;
     private HESDetector ld = null;
     private double time_in_ms;
-    public Boolean playtime_detected = false;
+    public boolean playtime_detected = false;
 
     private int[] buf = new int[2];
 
@@ -208,7 +208,7 @@ public class Hes extends BaseDriver {
                         break;
                     }
                 }
-                //System.err.println("j  :{0}", j);
+                //System.err.println("j  :%d", j);
                 if (j == match_size) {
                     loopStart = timeBuf[(bIdx + i) & bufMask];
                     loopEnd = timeBuf[(bIdx + match_length) & bufMask];

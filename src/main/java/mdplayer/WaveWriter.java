@@ -26,7 +26,7 @@ public class WaveWriter {
         String fn = Path.combine(setting.getOther().getWavPath(), Path.getFileNameWithoutExtension(filename) + ".wav");
         int i = 0;
         while (filename.equals(fn)) {
-            fn = Path.combine(setting.getOther().getWavPath(), Path.getFileNameWithoutExtension(filename) + String.format("_{0}.wav", i));
+            fn = Path.combine(setting.getOther().getWavPath(), Path.getFileNameWithoutExtension(filename) + String.format("_%d.wav", i));
         }
 
         dest = new FileStream(fn, FileMode.Create, FileAccess.Write);

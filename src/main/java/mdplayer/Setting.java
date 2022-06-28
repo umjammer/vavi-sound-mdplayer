@@ -22,211 +22,209 @@ import vavi.util.serdes.Serdes;
 public class Setting implements Serializable {
 
     public static class ChipType2 implements Serializable {
-        private Boolean[] _UseEmu = null;
+        private boolean[] useEmu = null;
 
-        public Boolean[] getUseEmu() {
-            return _UseEmu;
+        public boolean[] getUseEmu() {
+            return useEmu;
         }
 
-        public void setUseEmu(Boolean[] value) {
-            _UseEmu = value;
+        public void setUseEmu(boolean[] value) {
+            useEmu = value;
         }
 
-        private Boolean[] _UseReal = null;
+        private boolean[] useReal = null;
 
-        public Boolean[] getUseReal() {
-            return _UseReal;
+        public boolean[] getUseReal() {
+            return useReal;
         }
 
-        public void setUseReal(Boolean[] value) {
-            _UseReal = value;
+        public void setUseReal(boolean[] value) {
+            useReal = value;
         }
 
-        private RealChipInfo[] _realChipInfo = null;
+        private RealChipInfo[] realChipInfos = null;
 
         public RealChipInfo[] getRealChipInfo() {
-            return _realChipInfo;
+            return realChipInfos;
         }
 
         public void setrealChipInfo(RealChipInfo[] value) {
-            _realChipInfo = value;
+            realChipInfos = value;
         }
 
         public static class RealChipInfo {
-            // Chip共通 識別情報
 
-            private int _InterfaceType = -1;
+            /** Chip共通 識別情報 */
+            private int interfaceType = -1;
 
             public int getInterfaceType() {
-                return _InterfaceType;
+                return interfaceType;
             }
 
             void setInterfaceType(int value) {
-                _InterfaceType = value;
+                interfaceType = value;
             }
 
-            private int _SoundLocation = -1;
+            private int soundLocation = -1;
 
             public int getSoundLocation() {
-                return _SoundLocation;
+                return soundLocation;
             }
 
             public void setSoundLocation(int value) {
-                _SoundLocation = value;
+                soundLocation = value;
             }
 
-            private int _BusID = -1;
+            private int busID = -1;
 
             public int getBusID() {
-                return _BusID;
+                return busID;
             }
 
             public void setBusID(int value) {
-                _BusID = value;
+                busID = value;
             }
 
-            private int _SoundChip = -1;
+            private int soundChip = -1;
 
             public int getSoundChip() {
-                return _SoundChip;
+                return soundChip;
             }
 
             public void setSoundChip(int value) {
-                _SoundChip = value;
+                soundChip = value;
             }
 
-            private int _ChipType = 0;
+            private int chipType = 0;
 
             public int getChipType() {
-                return _ChipType;
+                return chipType;
             }
 
             void setChipType(int value) {
-                _ChipType = value;
+                chipType = value;
             }
 
-            private String _InterfaceName = "";
+            private String interfaceName = "";
 
             public String getInterfaceName() {
-                return _InterfaceName;
+                return interfaceName;
             }
 
             public void setInterfaceName(String value) {
-                _InterfaceName = value;
+                interfaceName = value;
             }
 
-            private String _ChipName = "";
+            private String chipName = "";
 
             public String getChipName() {
-                return _ChipName;
+                return chipName;
             }
 
             void setChipName(String value) {
-                _ChipName = value;
+                chipName = value;
             }
 
             // Chip固有の追加設定
 
-            // ウエイトコマンドをSCCIに送るか
-            private Boolean _UseWait = true;
+            /** ウエイトコマンドをSCCIに送るか */
+            private boolean useWait = true;
 
-            public Boolean getUseWait() {
-                return _UseWait;
+            public boolean getUseWait() {
+                return useWait;
             }
 
-            public void setUseWait(Boolean value) {
-                _UseWait = value;
+            public void setUseWait(boolean value) {
+                useWait = value;
             }
 
-            // ウエイトコマンドを2倍にするか
-            private Boolean _UseWaitBoost = false;
+            /** ウエイトコマンドを2倍にするか */
+            private boolean useWaitBoost = false;
 
-            public Boolean getUseWaitBoost() {
-                return _UseWaitBoost;
+            public boolean getUseWaitBoost() {
+                return useWaitBoost;
             }
 
-            public void setUseWaitBoost(Boolean value) {
-                _UseWaitBoost = value;
+            public void setUseWaitBoost(boolean value) {
+                useWaitBoost = value;
             }
 
-            // PCMのみエミュレーションするか
-            private Boolean _OnlyPCMEmulation = false;
+            /** PCMのみエミュレーションするか */
+            private boolean onlyPCMEmulation = false;
 
-            public Boolean getOnlyPCMEmulation() {
-                return _OnlyPCMEmulation;
+            public boolean getOnlyPCMEmulation() {
+                return onlyPCMEmulation;
             }
 
-            public void setOnlyPCMEmulation(Boolean value) {
-                _OnlyPCMEmulation = value;
+            public void setOnlyPCMEmulation(boolean value) {
+                onlyPCMEmulation = value;
             }
 
             public RealChipInfo copy() {
                 RealChipInfo ret = new RealChipInfo();
 
-                ret._InterfaceType = this._InterfaceType;
-                ret._SoundLocation = this._SoundLocation;
-                ret._BusID = this._BusID;
-                ret._SoundChip = this._SoundChip;
-                ret._ChipType = this._ChipType;
-                ret._InterfaceName = this._InterfaceName;
-                ret._ChipName = this._ChipName;
+                ret.interfaceType = this.interfaceType;
+                ret.soundLocation = this.soundLocation;
+                ret.busID = this.busID;
+                ret.soundChip = this.soundChip;
+                ret.chipType = this.chipType;
+                ret.interfaceName = this.interfaceName;
+                ret.chipName = this.chipName;
 
-                ret._UseWait = this._UseWait;
-                ret._UseWaitBoost = this._UseWaitBoost;
-                ret._OnlyPCMEmulation = this._OnlyPCMEmulation;
+                ret.useWait = this.useWait;
+                ret.useWaitBoost = this.useWaitBoost;
+                ret.onlyPCMEmulation = this.onlyPCMEmulation;
 
                 return ret;
             }
         }
 
-        // Emulation時の遅延時間
-        private int _LatencyForEmulation = 0;
+        /** Emulation時の遅延時間 */
+        private int latencyForEmulation = 0;
 
         public int getLatencyForEmulation() {
-            return _LatencyForEmulation;
+            return latencyForEmulation;
         }
 
         void setLatencyForEmulation(int value) {
-            _LatencyForEmulation = value;
+            latencyForEmulation = value;
         }
 
-        private int _LatencyForReal = 0;
+        private int latencyForReal = 0;
 
         public int getLatencyForReal() {
-            return _LatencyForReal;
+            return latencyForReal;
         }
 
         void setLatencyForReal(int value) {
-            _LatencyForReal = value;
+            latencyForReal = value;
         }
 
         public ChipType2 copy() {
             ChipType2 ct = new ChipType2();
 
-            ct._UseEmu = null;
-            if (this._UseEmu != null) {
-                ct._UseEmu = new Boolean[this._UseEmu.length];
-                for (int i = 0; i < this._UseEmu.length; i++)
-                    ct._UseEmu[i] = this._UseEmu[i];
+            ct.useEmu = null;
+            if (this.useEmu != null) {
+                ct.useEmu = new boolean[this.useEmu.length];
+                System.arraycopy(this.useEmu, 0, ct.useEmu, 0, this.useEmu.length);
             }
 
-            ct._UseReal = null;
-            if (this._UseReal != null) {
-                ct._UseReal = new Boolean[this._UseReal.length];
-                for (int i = 0; i < this._UseReal.length; i++)
-                    ct._UseReal[i] = this._UseReal[i];
+            ct.useReal = null;
+            if (this.useReal != null) {
+                ct.useReal = new boolean[this.useReal.length];
+                System.arraycopy(this.useReal, 0, ct.useReal, 0, this.useReal.length);
             }
 
-            ct._realChipInfo = null;
-            if (this._realChipInfo != null) {
-                ct._realChipInfo = new RealChipInfo[this._realChipInfo.length];
-                for (int i = 0; i < this._realChipInfo.length; i++)
-                    if (this._realChipInfo[i] != null)
-                        ct._realChipInfo[i] = this._realChipInfo[i].copy();
+            ct.realChipInfos = null;
+            if (this.realChipInfos != null) {
+                ct.realChipInfos = new RealChipInfo[this.realChipInfos.length];
+                for (int i = 0; i < this.realChipInfos.length; i++)
+                    if (this.realChipInfos[i] != null)
+                        ct.realChipInfos[i] = this.realChipInfos[i].copy();
             }
 
-            ct._LatencyForEmulation = this._LatencyForEmulation;
-            ct._LatencyForReal = this._LatencyForReal;
+            ct.latencyForEmulation = this.latencyForEmulation;
+            ct.latencyForReal = this.latencyForReal;
 
             return ct;
         }
@@ -239,9 +237,9 @@ public class Setting implements Serializable {
         public int quality = 1;
         public int outputBufferSize = 5000;
         public int c64model = 0;
-        public Boolean c64modelForce = false;
+        public boolean c64modelForce = false;
         public int sidModel = 0;
-        public Boolean sidmodelForce = false;
+        public boolean sidmodelForce = false;
 
         public SID copy() {
             SID sid = new SID();
@@ -261,77 +259,77 @@ public class Setting implements Serializable {
     }
 
     public static class NukedOPN2 implements Serializable {
-        public int EmuType = 0;
+        public int emuType = 0;
 
         // ごめんGensのオプションもここ。。。
-        public Boolean GensDACHPF = true;
 
-        public Boolean GensSSGEG = true;
+        public boolean gensDACHPF = true;
+        public boolean gensSSGEG = true;
 
         public NukedOPN2 Copy() {
             NukedOPN2 no = new NukedOPN2();
-            no.EmuType = this.EmuType;
-            no.GensDACHPF = this.GensDACHPF;
-            no.GensSSGEG = this.GensSSGEG;
+            no.emuType = this.emuType;
+            no.gensDACHPF = this.gensDACHPF;
+            no.gensSSGEG = this.gensSSGEG;
 
             return no;
         }
     }
 
     public static class AutoBalance implements Serializable {
-        private Boolean _UseThis = false;
-        private Boolean _LoadSongBalance = false;
-        private Boolean _LoadDriverBalance = false;
-        private Boolean _SaveSongBalance = false;
-        private Boolean _SamePositionAsSongData = false;
+        private boolean useThis = false;
+        private boolean loadSongBalance = false;
+        private boolean loadDriverBalance = false;
+        private boolean saveSongBalance = false;
+        private boolean samePositionAsSongData = false;
 
-        public Boolean getUseThis() {
-            return _UseThis;
+        public boolean getUseThis() {
+            return useThis;
         }
 
-        public void setUseThis(Boolean value) {
-            _UseThis = value;
+        public void setUseThis(boolean value) {
+            useThis = value;
         }
 
-        public Boolean getLoadSongBalance() {
-            return _LoadSongBalance;
+        public boolean getLoadSongBalance() {
+            return loadSongBalance;
         }
 
-        public void setLoadSongBalance(Boolean value) {
-            _LoadSongBalance = value;
+        public void setLoadSongBalance(boolean value) {
+            loadSongBalance = value;
         }
 
-        public Boolean getLoadDriverBalance() {
-            return _LoadDriverBalance;
+        public boolean getLoadDriverBalance() {
+            return loadDriverBalance;
         }
 
-        public void setLoadDriverBalance(Boolean value) {
-            _LoadDriverBalance = value;
+        public void setLoadDriverBalance(boolean value) {
+            loadDriverBalance = value;
         }
 
-        public Boolean getSaveSongBalance() {
-            return _SaveSongBalance;
+        public boolean getSaveSongBalance() {
+            return saveSongBalance;
         }
 
-        public void setSaveSongBalance(Boolean value) {
-            _SaveSongBalance = value;
+        public void setSaveSongBalance(boolean value) {
+            saveSongBalance = value;
         }
 
-        public Boolean getSamePositionAsSongData() {
-            return _SamePositionAsSongData;
+        public boolean getSamePositionAsSongData() {
+            return samePositionAsSongData;
         }
 
-        public void setSamePositionAsSongData(Boolean value) {
-            _SamePositionAsSongData = value;
+        public void setSamePositionAsSongData(boolean value) {
+            samePositionAsSongData = value;
         }
 
         public AutoBalance copy() {
             AutoBalance AutoBalance = new AutoBalance();
-            AutoBalance._UseThis = this._UseThis;
-            AutoBalance._LoadSongBalance = this._LoadSongBalance;
-            AutoBalance._LoadDriverBalance = this._LoadDriverBalance;
-            AutoBalance._SaveSongBalance = this._SaveSongBalance;
-            AutoBalance._SamePositionAsSongData = this._SamePositionAsSongData;
+            AutoBalance.useThis = this.useThis;
+            AutoBalance.loadSongBalance = this.loadSongBalance;
+            AutoBalance.loadDriverBalance = this.loadDriverBalance;
+            AutoBalance.saveSongBalance = this.saveSongBalance;
+            AutoBalance.samePositionAsSongData = this.samePositionAsSongData;
 
             return AutoBalance;
         }
@@ -339,15 +337,15 @@ public class Setting implements Serializable {
 
     public static class PMDDotNET implements Serializable {
         public String compilerArguments = "/v /C";
-        public Boolean isAuto = true;
+        public boolean isAuto = true;
         public int soundBoard = 1;
-        public Boolean usePPSDRV = true;
-        public Boolean usePPZ8 = true;
+        public boolean usePPSDRV = true;
+        public boolean usePPZ8 = true;
         public String driverArguments = "";
-        public Boolean setManualVolume = false;
-        public Boolean usePPSDRVUseInterfaceDefaultFreq = true;
-        public int PPSDRVManualFreq = 2000;
-        public int PPSDRVManualWait = 1;
+        public boolean setManualVolume = false;
+        public boolean usePPSDRVUseInterfaceDefaultFreq = true;
+        public int ppsDrvManualFreq = 2000;
+        public int ppsDrvManualWait = 1;
         public int volumeFM = 0;
         public int volumeSSG = 0;
         public int volumeRhythm = 0;
@@ -364,8 +362,8 @@ public class Setting implements Serializable {
             p.driverArguments = this.driverArguments;
             p.setManualVolume = this.setManualVolume;
             p.usePPSDRVUseInterfaceDefaultFreq = this.usePPSDRVUseInterfaceDefaultFreq;
-            p.PPSDRVManualFreq = this.PPSDRVManualFreq;
-            p.PPSDRVManualWait = this.PPSDRVManualWait;
+            p.ppsDrvManualFreq = this.ppsDrvManualFreq;
+            p.ppsDrvManualWait = this.ppsDrvManualWait;
             p.volumeFM = this.volumeFM;
             p.volumeSSG = this.volumeSSG;
             p.volumeRhythm = this.volumeRhythm;
@@ -378,229 +376,229 @@ public class Setting implements Serializable {
 
     public static class MidiExport implements Serializable {
 
-        private Boolean _UseMIDIExport = false;
+        private boolean useMIDIExport = false;
 
-        public Boolean getUseMIDIExport() {
-            return _UseMIDIExport;
+        public boolean getUseMIDIExport() {
+            return useMIDIExport;
         }
 
-        public void setUseMIDIExport(Boolean value) {
-            _UseMIDIExport = value;
+        public void setUseMIDIExport(boolean value) {
+            useMIDIExport = value;
         }
 
-        private Boolean _UseYM2151Export = false;
+        private boolean useYM2151Export = false;
 
-        public Boolean getUseYM2151Export() {
-            return _UseYM2151Export;
+        public boolean getUseYM2151Export() {
+            return useYM2151Export;
         }
 
-        public void setUseYM2151Export(Boolean value) {
-            _UseYM2151Export = value;
+        public void setUseYM2151Export(boolean value) {
+            useYM2151Export = value;
         }
 
-        private Boolean _UseYM2612Export = true;
+        private boolean useYM2612Export = true;
 
-        public Boolean getUseYM2612Export() {
-            return _UseYM2612Export;
+        public boolean getUseYM2612Export() {
+            return useYM2612Export;
         }
 
-        public void setUseYM2612Export(Boolean value) {
-            _UseYM2612Export = value;
+        public void setUseYM2612Export(boolean value) {
+            useYM2612Export = value;
         }
 
-        private String _ExportPath = "";
+        private String exportPath = "";
 
         public String getExportPath() {
-            return _ExportPath;
+            return exportPath;
         }
 
         public void setExportPath(String value) {
-            _ExportPath = value;
+            exportPath = value;
         }
 
-        private Boolean _UseVOPMex = false;
+        private boolean useVOPMex = false;
 
-        public Boolean getUseVOPMex() {
-            return _UseVOPMex;
+        public boolean getUseVOPMex() {
+            return useVOPMex;
         }
 
-        public void setUseVOPMex(Boolean value) {
-            _UseVOPMex = value;
+        public void setUseVOPMex(boolean value) {
+            useVOPMex = value;
         }
 
-        private Boolean _KeyOnFnum = false;
+        private boolean keyOnFnum = false;
 
-        public Boolean getKeyOnFnum() {
-            return _KeyOnFnum;
+        public boolean getKeyOnFnum() {
+            return keyOnFnum;
         }
 
-        public void setKeyOnFnum(Boolean value) {
-            _KeyOnFnum = value;
+        public void setKeyOnFnum(boolean value) {
+            keyOnFnum = value;
         }
 
         public MidiExport copy() {
-            MidiExport MidiExport = new MidiExport();
+            MidiExport midiExport = new MidiExport();
 
-            MidiExport._UseMIDIExport = this._UseMIDIExport;
-            MidiExport._UseYM2151Export = this._UseYM2151Export;
-            MidiExport._UseYM2612Export = this._UseYM2612Export;
-            MidiExport._ExportPath = this._ExportPath;
-            MidiExport._UseVOPMex = this._UseVOPMex;
-            MidiExport._KeyOnFnum = this._KeyOnFnum;
+            midiExport.useMIDIExport = this.useMIDIExport;
+            midiExport.useYM2151Export = this.useYM2151Export;
+            midiExport.useYM2612Export = this.useYM2612Export;
+            midiExport.exportPath = this.exportPath;
+            midiExport.useVOPMex = this.useVOPMex;
+            midiExport.keyOnFnum = this.keyOnFnum;
 
-            return MidiExport;
+            return midiExport;
         }
     }
 
     public static class MidiKbd implements Serializable {
 
-        private Boolean _UseMIDIKeyboard = false;
-        public Boolean getUseMIDIKeyboard() {
-            return _UseMIDIKeyboard;
+        private boolean useMIDIKeyboard = false;
+        public boolean getUseMIDIKeyboard() {
+            return useMIDIKeyboard;
         }
-        public void setUseMIDIKeyboard(Boolean value) {
-            _UseMIDIKeyboard = value;
+        public void setUseMIDIKeyboard(boolean value) {
+            useMIDIKeyboard = value;
         }
-        private String _MidiInDeviceName = "";
+        private String midiInDeviceName = "";
         public String getMidiInDeviceName() {
-            return _MidiInDeviceName;
+            return midiInDeviceName;
         }
         public void setMidiInDeviceName(String value) {
-            _MidiInDeviceName = value;
+            midiInDeviceName = value;
         }
-        private Boolean _IsMONO = true;
-        public Boolean getIsMONO() {
-            return _IsMONO;
+        private boolean isMono = true;
+        public boolean isMono() {
+            return isMono;
         }
-        public void setIsMONO(Boolean value) {
-            _IsMONO = value;
+        public void setMono(boolean value) {
+            isMono = value;
         }
-        private int _useFormat = 0;
+        private int useFormat = 0;
         public int getUseFormat() {
-            return _useFormat;
+            return useFormat;
         }
         public void setUseFormat(int value) {
-            _useFormat = value;
+            useFormat = value;
         }
-        private int _UseMONOChannel = 0;
-        public int getUseMONOChannel() {
-            return _UseMONOChannel;
+        private int useMonoChannel = 0;
+        public int getUseMonoChannel() {
+            return useMonoChannel;
         }
-        public void setUseMONOChannel(int value) {
-            _UseMONOChannel = value;
+        public void setUseMonoChannel(int value) {
+            useMonoChannel = value;
         }
-        private Boolean[] _UseChannel = new Boolean[9];
-        public Boolean[] getUseChannel() {
-            return _UseChannel;
+        private boolean[] useChannel = new boolean[9];
+        public boolean[] getUseChannel() {
+            return useChannel;
         }
-        void setUseChannel(Boolean[] value) {
-            _UseChannel = value;
+        void setUseChannel(boolean[] value) {
+            useChannel = value;
         }
-        private Tone[] _Tones = new Tone[6];
+        private Tone[] tones = new Tone[6];
         public Tone[] getTones() {
-            return _Tones;
+            return tones;
         }
         void setTones(Tone[] value) {
-            _Tones = value;
+            tones = value;
         }
-        private int _MidiCtrl_CopyToneFromYM2612Ch1 = 97;
+        private int midiCtrlCopyToneFromYM2612Ch1 = 97;
         public int getMidiCtrl_CopyToneFromYM2612Ch1() {
-            return _MidiCtrl_CopyToneFromYM2612Ch1;
+            return midiCtrlCopyToneFromYM2612Ch1;
         }
         public void setMidiCtrl_CopyToneFromYM2612Ch1(int value) {
-            _MidiCtrl_CopyToneFromYM2612Ch1 = value;
+            midiCtrlCopyToneFromYM2612Ch1 = value;
         }
-        private int _MidiCtrl_DelOneLog = 96;
+        private int midiCtrlDelOneLog = 96;
         public int getMidiCtrl_DelOneLog() {
-            return _MidiCtrl_DelOneLog;
+            return midiCtrlDelOneLog;
         }
         public void setMidiCtrl_DelOneLog(int value) {
-            _MidiCtrl_DelOneLog = value;
+            midiCtrlDelOneLog = value;
         }
-        private int _MidiCtrl_CopySelecttingLogToClipbrd = 66;
+        private int midiCtrlCopySelecttingLogToClipbrd = 66;
         public int getMidiCtrl_CopySelecttingLogToClipbrd() {
-            return _MidiCtrl_CopySelecttingLogToClipbrd;
+            return midiCtrlCopySelecttingLogToClipbrd;
         }
         public void setMidiCtrl_CopySelecttingLogToClipbrd(int value) {
-            _MidiCtrl_CopySelecttingLogToClipbrd = value;
+            midiCtrlCopySelecttingLogToClipbrd = value;
         }
-        private int _MidiCtrl_Stop = -1;
+        private int midiCtrlStop = -1;
         public int getMidiCtrl_Stop() {
-            return _MidiCtrl_Stop;
+            return midiCtrlStop;
         }
         public void setMidiCtrl_Stop(int value) {
-            _MidiCtrl_Stop = value;
+            midiCtrlStop = value;
         }
-        private int _MidiCtrl_Pause = -1;
+        private int midiCtrlPause = -1;
         public int getMidiCtrl_Pause() {
-            return _MidiCtrl_Pause;
+            return midiCtrlPause;
         }
         public void setMidiCtrl_Pause(int value) {
-            _MidiCtrl_Pause = value;
+            midiCtrlPause = value;
         }
-        private int _MidiCtrl_Fadeout = -1;
+        private int midiCtrlFadeout = -1;
         public int getMidiCtrl_Fadeout() {
-            return _MidiCtrl_Fadeout;
+            return midiCtrlFadeout;
         }
         public void setMidiCtrl_Fadeout(int value) {
-            _MidiCtrl_Fadeout = value;
+            midiCtrlFadeout = value;
         }
-        private int _MidiCtrl_Previous = -1;
+        private int midiCtrlPrevious = -1;
         public int getMidiCtrl_Previous() {
-            return _MidiCtrl_Previous;
+            return midiCtrlPrevious;
         }
         public void setMidiCtrl_Previous(int value) {
-            _MidiCtrl_Previous = value;
+            midiCtrlPrevious = value;
         }
-        private int _MidiCtrl_Slow = -1;
-        public int getMidiCtrl_Slow() {
-            return _MidiCtrl_Slow;
+        private int midiCtrlSlow = -1;
+        public int getMidiCtrlSlow() {
+            return midiCtrlSlow;
         }
-        public void setMidiCtrl_Slow(int value) {
-            _MidiCtrl_Slow = value;
+        public void setMidiCtrlSlow(int value) {
+            midiCtrlSlow = value;
         }
-        private int _MidiCtrl_Play = -1;
+        private int midiCtrlPlay = -1;
         public int getMidiCtrl_Play() {
-            return _MidiCtrl_Play;
+            return midiCtrlPlay;
         }
         public void setMidiCtrl_Play(int value) {
-            _MidiCtrl_Play = value;
+            midiCtrlPlay = value;
         }
-        private int _MidiCtrl_Fast = -1;
+        private int midiCtrlFast = -1;
         public int getMidiCtrl_Fast() {
-            return _MidiCtrl_Fast;
+            return midiCtrlFast;
         }
         public void setMidiCtrl_Fast(int value) {
-            _MidiCtrl_Fast = value;
+            midiCtrlFast = value;
         }
-        private int _MidiCtrl_Next = -1;
+        private int midiCtrlNext = -1;
         public int getMidiCtrl_Next() {
-            return _MidiCtrl_Next;
+            return midiCtrlNext;
         }
         public void setMidiCtrl_Next(int value) {
-            _MidiCtrl_Next = value;
+            midiCtrlNext = value;
         }
 
         public MidiKbd copy() {
             MidiKbd midiKbd = new MidiKbd();
 
-            midiKbd._MidiInDeviceName = this._MidiInDeviceName;
-            midiKbd._UseMIDIKeyboard = this._UseMIDIKeyboard;
-            System.arraycopy(this._UseChannel, 0, midiKbd._UseChannel, 0, midiKbd._UseChannel.length);
-            midiKbd._IsMONO = this._IsMONO;
-            midiKbd._UseMONOChannel = this._UseMONOChannel;
+            midiKbd.midiInDeviceName = this.midiInDeviceName;
+            midiKbd.useMIDIKeyboard = this.useMIDIKeyboard;
+            System.arraycopy(this.useChannel, 0, midiKbd.useChannel, 0, midiKbd.useChannel.length);
+            midiKbd.isMono = this.isMono;
+            midiKbd.useMonoChannel = this.useMonoChannel;
 
-            midiKbd._MidiCtrl_CopySelecttingLogToClipbrd = this._MidiCtrl_CopySelecttingLogToClipbrd;
-            midiKbd._MidiCtrl_CopyToneFromYM2612Ch1 = this._MidiCtrl_CopyToneFromYM2612Ch1;
-            midiKbd._MidiCtrl_DelOneLog = this._MidiCtrl_DelOneLog;
-            midiKbd._MidiCtrl_Fadeout = this._MidiCtrl_Fadeout;
-            midiKbd._MidiCtrl_Fast = this._MidiCtrl_Fast;
-            midiKbd._MidiCtrl_Next = this._MidiCtrl_Next;
-            midiKbd._MidiCtrl_Pause = this._MidiCtrl_Pause;
-            midiKbd._MidiCtrl_Play = this._MidiCtrl_Play;
-            midiKbd._MidiCtrl_Previous = this._MidiCtrl_Previous;
-            midiKbd._MidiCtrl_Slow = this._MidiCtrl_Slow;
-            midiKbd._MidiCtrl_Stop = this._MidiCtrl_Stop;
+            midiKbd.midiCtrlCopySelecttingLogToClipbrd = this.midiCtrlCopySelecttingLogToClipbrd;
+            midiKbd.midiCtrlCopyToneFromYM2612Ch1 = this.midiCtrlCopyToneFromYM2612Ch1;
+            midiKbd.midiCtrlDelOneLog = this.midiCtrlDelOneLog;
+            midiKbd.midiCtrlFadeout = this.midiCtrlFadeout;
+            midiKbd.midiCtrlFast = this.midiCtrlFast;
+            midiKbd.midiCtrlNext = this.midiCtrlNext;
+            midiKbd.midiCtrlPause = this.midiCtrlPause;
+            midiKbd.midiCtrlPlay = this.midiCtrlPlay;
+            midiKbd.midiCtrlPrevious = this.midiCtrlPrevious;
+            midiKbd.midiCtrlSlow = this.midiCtrlSlow;
+            midiKbd.midiCtrlStop = this.midiCtrlStop;
 
             return midiKbd;
         }
@@ -608,131 +606,131 @@ public class Setting implements Serializable {
 
     public static class KeyBoardHook implements Serializable {
         public static class HookKeyInfo implements Serializable {
-            private Boolean _Shift = false;
-            private Boolean _Ctrl = false;
-            private Boolean _Win = false;
-            private Boolean _Alt = false;
-            private String _Key = "(None)";
+            private boolean shift = false;
+            private boolean ctrl = false;
+            private boolean win = false;
+            private boolean alt = false;
+            private String key = "(None)";
 
-            public Boolean getShift() {
-                return _Shift;
+            public boolean getShift() {
+                return shift;
             }
-            public void setShift(Boolean value) {
-                _Shift = value;
+            public void setShift(boolean value) {
+                shift = value;
             }
-            public Boolean getCtrl() {
-                return _Ctrl;
+            public boolean getCtrl() {
+                return ctrl;
             }
-            public void setCtrl(Boolean value) {
-                _Ctrl = value;
+            public void setCtrl(boolean value) {
+                ctrl = value;
             }
-            public Boolean getWin() {
-                return _Win;
+            public boolean getWin() {
+                return win;
             }
-            public void setWin(Boolean value) {
-                _Win = value;
+            public void setWin(boolean value) {
+                win = value;
             }
-            public Boolean getAlt() {
-                return _Alt;
+            public boolean getAlt() {
+                return alt;
             }
-            public void setAlt(Boolean value) {
-                _Alt = value;
+            public void setAlt(boolean value) {
+                alt = value;
             }
             public String getKey() {
-                return _Key;
+                return key;
             }
             public void setKey(String value) {
-                _Key = value;
+                key = value;
             }
 
             public HookKeyInfo copy() {
                 HookKeyInfo hookKeyInfo = new HookKeyInfo();
-                hookKeyInfo._Shift = this._Shift;
-                hookKeyInfo._Ctrl = this._Ctrl;
-                hookKeyInfo._Win = this._Win;
-                hookKeyInfo._Alt = this._Alt;
-                hookKeyInfo._Key = this._Key;
+                hookKeyInfo.shift = this.shift;
+                hookKeyInfo.ctrl = this.ctrl;
+                hookKeyInfo.win = this.win;
+                hookKeyInfo.alt = this.alt;
+                hookKeyInfo.key = this.key;
 
                 return hookKeyInfo;
             }
         }
 
-        private Boolean _UseKeyBoardHook = false;
-        public Boolean getUseKeyBoardHook() {
-            return _UseKeyBoardHook;
+        private boolean useKeyBoardHook = false;
+        public boolean getUseKeyBoardHook() {
+            return useKeyBoardHook;
         }
-        public void setUseKeyBoardHook(Boolean value) {
-            _UseKeyBoardHook = value;
+        public void setUseKeyBoardHook(boolean value) {
+            useKeyBoardHook = value;
         }
         public HookKeyInfo getStop() {
-            return _Stop;
+            return stop;
         }
         void setStop(HookKeyInfo value) {
-            _Stop = value;
+            stop = value;
         }
         public HookKeyInfo getPause() {
-            return _Pause;
+            return pause;
         }
         void setPause(HookKeyInfo value) {
-            _Pause = value;
+            pause = value;
         }
         public HookKeyInfo getFadeout() {
-            return _Fadeout;
+            return fadeout;
         }
         void setFadeout(HookKeyInfo value) {
-            _Fadeout = value;
+            fadeout = value;
         }
         public HookKeyInfo getPrev() {
-            return _Prev;
+            return prev;
         }
         void setPrev(HookKeyInfo value) {
-            _Prev = value;
+            prev = value;
         }
         public HookKeyInfo getSlow() {
-            return _Slow;
+            return slow;
         }
         void setSlow(HookKeyInfo value) {
-            _Slow = value;
+            slow = value;
         }
         public HookKeyInfo getPlay() {
-            return _Play;
+            return play;
         }
         void setPlay(HookKeyInfo value) {
-            _Play = value;
+            play = value;
         }
         public HookKeyInfo getNext() {
-            return _Next;
+            return next;
         }
         void setNext(HookKeyInfo value) {
-            _Next = value;
+            next = value;
         }
         public HookKeyInfo getFast() {
-            return _Fast;
+            return fast;
         }
         void setFast(HookKeyInfo value) {
-            _Fast = value;
+            fast = value;
         }
 
-        private HookKeyInfo _Stop = new HookKeyInfo();
-        private HookKeyInfo _Pause = new HookKeyInfo();
-        private HookKeyInfo _Fadeout = new HookKeyInfo();
-        private HookKeyInfo _Prev = new HookKeyInfo();
-        private HookKeyInfo _Slow = new HookKeyInfo();
-        private HookKeyInfo _Play = new HookKeyInfo();
-        private HookKeyInfo _Next = new HookKeyInfo();
-        private HookKeyInfo _Fast = new HookKeyInfo();
+        private HookKeyInfo stop = new HookKeyInfo();
+        private HookKeyInfo pause = new HookKeyInfo();
+        private HookKeyInfo fadeout = new HookKeyInfo();
+        private HookKeyInfo prev = new HookKeyInfo();
+        private HookKeyInfo slow = new HookKeyInfo();
+        private HookKeyInfo play = new HookKeyInfo();
+        private HookKeyInfo next = new HookKeyInfo();
+        private HookKeyInfo fast = new HookKeyInfo();
 
         public KeyBoardHook copy() {
             KeyBoardHook keyBoard = new KeyBoardHook();
-            keyBoard._UseKeyBoardHook = this._UseKeyBoardHook;
-            keyBoard._Stop = this._Stop.copy();
-            keyBoard._Pause = this._Pause.copy();
-            keyBoard._Fadeout = this._Fadeout.copy();
-            keyBoard._Prev = this._Prev.copy();
-            keyBoard._Slow = this._Slow.copy();
-            keyBoard._Play = this._Play.copy();
-            keyBoard._Next = this._Next.copy();
-            keyBoard._Fast = this._Fast.copy();
+            keyBoard.useKeyBoardHook = this.useKeyBoardHook;
+            keyBoard.stop = this.stop.copy();
+            keyBoard.pause = this.pause.copy();
+            keyBoard.fadeout = this.fadeout.copy();
+            keyBoard.prev = this.prev.copy();
+            keyBoard.slow = this.slow.copy();
+            keyBoard.play = this.play.copy();
+            keyBoard.next = this.next.copy();
+            keyBoard.fast = this.fast.copy();
 
             return keyBoard;
         }
@@ -740,33 +738,33 @@ public class Setting implements Serializable {
 
     public static class Vst implements Serializable {
 
-        private String _DefaultPath = "";
-        private String[] _VSTPluginPath = null;
-        public String[] getVSTPluginPath() {
-            return _VSTPluginPath;
+        private String defaultPath = "";
+        private String[] vstPluginPath = null;
+        public String[] getVstPluginPath() {
+            return vstPluginPath;
         }
-        void setVSTPluginPath(String[] value) {
-            _VSTPluginPath = value;
+        void setVstPluginPath(String[] value) {
+            vstPluginPath = value;
         }
-        private VstInfo[] _VSTInfo = null;
+        private VstInfo[] vstInfos = null;
         public VstInfo[] getVSTInfo() {
-            return _VSTInfo;
+            return vstInfos;
         }
         public void setVSTInfo(VstInfo[] value) {
-            _VSTInfo = value;
+            vstInfos = value;
         }
         public String getDefaultPath() {
-            return _DefaultPath;
+            return defaultPath;
         }
         public void setDefaultPath(String value) {
-            _DefaultPath = value;
+            defaultPath = value;
         }
 
         public Vst copy() {
             Vst vst = new Vst();
 
-            vst._VSTInfo = this._VSTInfo;
-            vst._DefaultPath = this._DefaultPath;
+            vst.vstInfos = this.vstInfos;
+            vst.defaultPath = this.defaultPath;
 
             return vst;
         }
@@ -774,50 +772,50 @@ public class Setting implements Serializable {
 
     public static class MidiOut implements Serializable {
 
-        private String _GMReset = "30:F0,7E,7F,09,01,F7";
+        private String gmReset = "30:F0,7E,7F,09,01,F7";
         public String getGMReset() {
-            return _GMReset;
+            return gmReset;
         }
         public void setGMReset(String value) {
-            _GMReset = value;
+            gmReset = value;
         }
-        private String _XGReset = "30:F0,43,10,4C,00,00,7E,00,F7";
+        private String xgReset = "30:F0,43,10,4C,00,00,7E,00,F7";
         public String getXGReset() {
-            return _XGReset;
+            return xgReset;
         }
         public void setXGReset(String value) {
-            _XGReset = value;
+            xgReset = value;
         }
-        private String _GSReset = "30:F0,41,10,42,12,40,00,7F,00,41,F7";
+        private String gsReset = "30:F0,41,10,42,12,40,00,7F,00,41,F7";
         public String getGSReset() {
-            return _GSReset;
+            return gsReset;
         }
         public void setGSReset(String value) {
-            _GSReset = value;
+            gsReset = value;
         }
-        private String _Custom = "";
+        private String custom = "";
         public String getCustom() {
-            return _Custom;
+            return custom;
         }
         public void setCustom(String value) {
-            _Custom = value;
+            custom = value;
         }
-        private List<MidiOutInfo[]> _lstMidiOutInfo = null;
-        public List<MidiOutInfo[]> getlstMidiOutInfo() {
-            return _lstMidiOutInfo;
+        private List<MidiOutInfo[]> midiOutInfos = null;
+        public List<MidiOutInfo[]> getMidiOutInfos() {
+            return midiOutInfos;
         }
-        public void setlstMidiOutInfo(List<MidiOutInfo[]> value) {
-            _lstMidiOutInfo = value;
+        public void setMidiOutInfos(List<MidiOutInfo[]> value) {
+            midiOutInfos = value;
         }
 
         public MidiOut copy() {
             MidiOut MidiOut = new MidiOut();
 
-            MidiOut._GMReset = this._GMReset;
-            MidiOut._XGReset = this._XGReset;
-            MidiOut._GSReset = this._GSReset;
-            MidiOut._Custom = this._Custom;
-            MidiOut._lstMidiOutInfo = this._lstMidiOutInfo;
+            MidiOut.gmReset = this.gmReset;
+            MidiOut.xgReset = this.xgReset;
+            MidiOut.gsReset = this.gsReset;
+            MidiOut.custom = this.custom;
+            MidiOut.midiOutInfos = this.midiOutInfos;
 
             return MidiOut;
         }
@@ -830,26 +828,26 @@ public class Setting implements Serializable {
     }
 
     // 多音源対応
-    private String _FileSearchPathList;
+    private String fileSearchPathList;
     public String getFileSearchPathList() {
-        return _FileSearchPathList;
+        return fileSearchPathList;
     }
     public void setFileSearchPathList(String value) {
-        _FileSearchPathList = value;
+        fileSearchPathList = value;
     }
-    private OutputDevice _outputDevice = new OutputDevice();
+    private OutputDevice outputDevice = new OutputDevice();
     public OutputDevice getOutputDevice() {
-        return _outputDevice;
+        return outputDevice;
     }
     void setOutputDevice(OutputDevice value) {
-        _outputDevice = value;
+        outputDevice = value;
     }
-    private ChipType2[] _AY8910Type = null;
+    private ChipType2[] ay8910Type = null;
     public ChipType2[] getAY8910Type() {
-        return _AY8910Type;
+        return ay8910Type;
     }
     public void setAY8910Type(ChipType2[] value) {
-        _AY8910Type = value;
+        ay8910Type = value;
     }
 
     // private ChipType2[] _AY8910SType = new ChipType2();
@@ -857,89 +855,82 @@ public class Setting implements Serializable {
     // get() {
     // return _AY8910SType;
     // }
-
     // set {
     // _AY8910SType = value;
     // }
-    // }
 
-    private ChipType2[] _YM2151Type = null;
+    private ChipType2[] ym2151Type = null;
     public ChipType2[] getYM2151Type() {
-        return _YM2151Type;
+        return ym2151Type;
     }
     public void setYM2151Type(ChipType2[] value) {
-        _YM2151Type = value;
+        ym2151Type = value;
     }
-    private ChipType2[] _YM2203Type = null;
+    private ChipType2[] ym2203Type = null;
     public ChipType2[] getYM2203Type() {
-        return _YM2203Type;
+        return ym2203Type;
     }
     public void setYM2203Type(ChipType2[] value) {
-        _YM2203Type = value;
+        ym2203Type = value;
     }
-    private ChipType2[] _YM2413Type = null;
+    private ChipType2[] ym2413Type = null;
     public ChipType2[] getYM2413Type() {
-        return _YM2413Type;
+        return ym2413Type;
     }
     public void setYM2413Type(ChipType2[] value) {
-        _YM2413Type = value;
+        ym2413Type = value;
     }
-    private ChipType2[] _HuC6280Type = null;
+    private ChipType2[] huC6280Type = null;
     public ChipType2[] getHuC6280Type() {
-        return _HuC6280Type;
+        return huC6280Type;
     }
     void setHuC6280Type(ChipType2[] value) {
-        _HuC6280Type = value;
+        huC6280Type = value;
     }
-    private ChipType2[] _K051649Type = null;
+    private ChipType2[] k051649Type = null;
     public ChipType2[] getK051649Type() {
-        return _K051649Type;
+        return k051649Type;
     }
     public void setK051649Type(ChipType2[] value) {
-        _K051649Type = value;
+        k051649Type = value;
     }
 
     // private ChipType2[] _YM2413SType = null;
     // public ChipType2[] YM2413SType
-    // {
-    // get()
-    // {
+    // get() {
     // return _YM2413SType;
     // }
-
-    // set
-    // {
+    // set {
     // _YM2413SType = value;
     // }
-    // }
 
-    private ChipType2[] _YM2608Type = null;
+    private ChipType2[] ym2608Type = null;
     public ChipType2[] getYM2608Type() {
-        return _YM2608Type;
+        return ym2608Type;
     }
     public void setYM2608Type(ChipType2[] value) {
-        _YM2608Type = value;
+        ym2608Type = value;
     }
-    private ChipType2[] _YM2610Type = null;
+    private ChipType2[] ym2610Type = null;
     public ChipType2[] getYM2610Type() {
-        return _YM2610Type;
+        return ym2610Type;
     }
     public void setYM2610Type(ChipType2[] value) {
-        _YM2610Type = value;
+        ym2610Type = value;
     }
-    private ChipType2[] _YMF262Type = null;
+    private ChipType2[] ymf262Type = null;
     public ChipType2[] getYMF262Type() {
-        return _YMF262Type;
+        return ymf262Type;
     }
     public void setYMF262Type(ChipType2[] value) {
-        _YMF262Type = value;
+        ymf262Type = value;
     }
-    private ChipType2[] _YMF271Type = null;
+    private ChipType2[] ymf271Type = null;
     public ChipType2[] getYMF271Type() {
-        return _YMF271Type;
+        return ymf271Type;
     }
     void setYMF271Type(ChipType2[] value) {
-        _YMF271Type = value;
+        ymf271Type = value;
     }
     private ChipType2[] _YMF278BType = null;
     public ChipType2[] getYMF278BType() {
@@ -972,16 +963,11 @@ public class Setting implements Serializable {
 
     // private ChipType2 _YM2151SType = new ChipType2();
     // public ChipType2 YM2151SType
-    // {
-    // get()
-    // {
+    // get() {
     // return _YM2151SType;
     // }
-
-    // set
-    // {
+    // set {
     // _YM2151SType = value;
-    // }
     // }
 
     // private ChipType2 _YM2203SType = new ChipType2();
@@ -1227,232 +1213,232 @@ public class Setting implements Serializable {
     // }
     // }
 
-    private int _LatencyEmulation = 0;
+    private int latencyEmulation = 0;
     public int getLatencyEmulation() {
-        return _LatencyEmulation;
+        return latencyEmulation;
     }
     public void setLatencyEmulation(int value) {
-        _LatencyEmulation = value;
+        latencyEmulation = value;
     }
-    private int _LatencySCCI = 0;
+    private int latencySCCI = 0;
     public int getLatencySCCI() {
-        return _LatencySCCI;
+        return latencySCCI;
     }
     public void setLatencySCCI(int value) {
-        _LatencySCCI = value;
+        latencySCCI = value;
     }
-    private Boolean _HiyorimiMode = true;
-    public Boolean getHiyorimiMode() {
-        return _HiyorimiMode;
+    private boolean hiyorimiMode = true;
+    public boolean getHiyorimiMode() {
+        return hiyorimiMode;
     }
-    public void setHiyorimiMode(Boolean value) {
-        _HiyorimiMode = value;
+    public void setHiyorimiMode(boolean value) {
+        hiyorimiMode = value;
     }
-    private Boolean _Debug_DispFrameCounter = false;
-    public Boolean getDebug_DispFrameCounter() {
-        return _Debug_DispFrameCounter;
+    private boolean debugDispFrameCounter = false;
+    public boolean getDebug_DispFrameCounter() {
+        return debugDispFrameCounter;
     }
-    public void setDebug_DispFrameCounter(Boolean value) {
-        _Debug_DispFrameCounter = value;
+    public void setDebug_DispFrameCounter(boolean value) {
+        debugDispFrameCounter = value;
     }
-    private int _Debug_SCCbaseAddress = 0x9800;
+    private int debugSCCbaseAddress = 0x9800;
     public int getDebug_SCCbaseAddress() {
-        return _Debug_SCCbaseAddress;
+        return debugSCCbaseAddress;
     }
     public void setDebug_SCCbaseAddress(int value) {
-        _Debug_SCCbaseAddress = value;
+        debugSCCbaseAddress = value;
     }
-    private Other _other = new Other();
+    private Other other = new Other();
     public Other getOther() {
-        return _other;
+        return other;
     }
-    void setother(Other value) {
-        _other = value;
+    void setOther(Other value) {
+        other = value;
     }
-    private Balance _balance = new Balance();
-    public Balance getbalance() {
-        return _balance;
+    private Balance balance = new Balance();
+    public Balance getBalance() {
+        return balance;
     }
     void setbalance(Balance value) {
-        _balance = value;
+        balance = value;
     }
-    private Location _location = new Location();
+    private Location location = new Location();
     public Location getLocation() {
-        return _location;
+        return location;
     }
     public void setlocation(Location value) {
-        _location = value;
+        location = value;
     }
-    private MidiExport _midiExport = new MidiExport();
+    private MidiExport midiExport = new MidiExport();
     public MidiExport getMidiExport() {
-        return _midiExport;
+        return midiExport;
     }
     void setmidiExport(MidiExport value) {
-        _midiExport = value;
+        midiExport = value;
     }
-    private MidiKbd _midiKbd = new MidiKbd();
+    private MidiKbd midiKbd = new MidiKbd();
     public MidiKbd getMidiKbd() {
-        return _midiKbd;
+        return midiKbd;
     }
     void setmidiKbd(MidiKbd value) {
-        _midiKbd = value;
+        midiKbd = value;
     }
-    private Vst _vst = new Vst();
-    public Vst getvst() {
-        return _vst;
+    private Vst vst = new Vst();
+    public Vst getVst() {
+        return vst;
     }
-    void setvst(Vst value) {
-        _vst = value;
+    void setVst(Vst value) {
+        vst = value;
     }
-    private MidiOut _midiOut = new MidiOut();
+    private MidiOut midiOut = new MidiOut();
     public MidiOut getMidiOut() {
-        return _midiOut;
+        return midiOut;
     }
-    void setmidiOut(MidiOut value) {
-        _midiOut = value;
+    void setMidiOut(MidiOut value) {
+        midiOut = value;
     }
-    private NSF _nsf = new NSF();
+    private NSF nsf = new NSF();
     public NSF getNsf() {
-        return _nsf;
+        return nsf;
     }
-    void setnsf(NSF value) {
-        _nsf = value;
+    void setNsf(NSF value) {
+        nsf = value;
     }
-    private SID _sid = new SID();
+    private SID sid = new SID();
     public SID getSid() {
-        return _sid;
+        return sid;
     }
-    public void setsid(SID value) {
-        _sid = value;
+    public void setSid(SID value) {
+        sid = value;
     }
 
-    private NukedOPN2 _NukedOPN2 = new NukedOPN2();
+    private NukedOPN2 nukedOPN2 = new NukedOPN2();
 
     public NukedOPN2 getNukedOPN2() {
-        return _NukedOPN2;
+        return nukedOPN2;
     }
 
-    public void setnukedOPN2(NukedOPN2 value) {
-        _NukedOPN2 = value;
+    public void setNukedOPN2(NukedOPN2 value) {
+        nukedOPN2 = value;
     }
 
-    private AutoBalance _autoBalance = new AutoBalance();
+    private AutoBalance autoBalance = new AutoBalance();
 
     public AutoBalance getAutoBalance() {
-        return _autoBalance;
+        return autoBalance;
     }
 
-    public void setautoBalance(AutoBalance value) {
-        _autoBalance = value;
+    public void setAutoBalance(AutoBalance value) {
+        autoBalance = value;
     }
 
-    private PMDDotNET _PMDDotNET = new PMDDotNET();
+    private PMDDotNET pmdDotNET = new PMDDotNET();
 
     public PMDDotNET getPmdDotNET() {
-        return _PMDDotNET;
+        return pmdDotNET;
     }
 
     void setPMDDotNET(PMDDotNET value) {
-        _PMDDotNET = value;
+        pmdDotNET = value;
     }
 
-    public KeyBoardHook getkeyBoardHook() {
+    public KeyBoardHook getKeyBoardHook() {
         return _keyBoardHook;
     }
 
-    void setkeyBoardHook(KeyBoardHook value) {
+    void setKeyBoardHook(KeyBoardHook value) {
         _keyBoardHook = value;
     }
 
-    private Boolean _unuseRealChip;
+    private boolean unuseRealChip;
 
-    public Boolean getunuseRealChip() {
-        return _unuseRealChip;
+    public boolean getUnuseRealChip() {
+        return unuseRealChip;
     }
 
-    public void setunuseRealChip(Boolean value) {
-        _unuseRealChip = value;
+    public void setUnuseRealChip(boolean value) {
+        unuseRealChip = value;
     }
 
     private KeyBoardHook _keyBoardHook = new KeyBoardHook();
 
     public static class OutputDevice implements Serializable {
 
-        private int _DeviceType = 0;
+        private int deviceType = 0;
         public int getDeviceType() {
-            return _DeviceType;
+            return deviceType;
         }
         public void setDeviceType(int value) {
-            _DeviceType = value;
+            deviceType = value;
         }
-        private int _Latency = 300;
+        private int latency = 300;
         public int getLatency() {
-            return _Latency;
+            return latency;
         }
         public void setLatency(int value) {
-            _Latency = value;
+            latency = value;
         }
-        private int _WaitTime = 500;
+        private int waitTime = 500;
         public int getWaitTime() {
-            return _WaitTime;
+            return waitTime;
         }
         public void setWaitTime(int value) {
-            _WaitTime = value;
+            waitTime = value;
         }
-        private String _WaveOutDeviceName = "";
+        private String waveOutDeviceName = "";
         public String getWaveOutDeviceName() {
-            return _WaveOutDeviceName;
+            return waveOutDeviceName;
         }
         public void setWaveOutDeviceName(String value) {
-            _WaveOutDeviceName = value;
+            waveOutDeviceName = value;
         }
-        private String _DirectSoundDeviceName = "";
+        private String directSoundDeviceName = "";
         public String getDirectSoundDeviceName() {
-            return _DirectSoundDeviceName;
+            return directSoundDeviceName;
         }
         public void setDirectSoundDeviceName(String value) {
-            _DirectSoundDeviceName = value;
+            directSoundDeviceName = value;
         }
-        private String _WasapiDeviceName = "";
+        private String wasapiDeviceName = "";
         public String getWasapiDeviceName() {
-            return _WasapiDeviceName;
+            return wasapiDeviceName;
         }
         public void setWasapiDeviceName(String value) {
-            _WasapiDeviceName = value;
+            wasapiDeviceName = value;
         }
-        private Boolean _WasapiShareMode = true;
-        public Boolean getWasapiShareMode() {
-            return _WasapiShareMode;
+        private boolean wasapiShareMode = true;
+        public boolean getWasapiShareMode() {
+            return wasapiShareMode;
         }
-        public void setWasapiShareMode(Boolean value) {
-            _WasapiShareMode = value;
+        public void setWasapiShareMode(boolean value) {
+            wasapiShareMode = value;
         }
-        private String _AsioDeviceName = "";
+        private String asioDeviceName = "";
         public String getAsioDeviceName() {
-            return _AsioDeviceName;
+            return asioDeviceName;
         }
         public void setAsioDeviceName(String value) {
-            _AsioDeviceName = value;
+            asioDeviceName = value;
         }
-        private int _SampleRate = 44100;
+        private int sampleRate = 44100;
         public int getSampleRate() {
-            return _SampleRate;
+            return sampleRate;
         }
         public void setSampleRate(int value) {
-            _SampleRate = value;
+            sampleRate = value;
         }
 
         public OutputDevice copy() {
             OutputDevice outputDevice = new OutputDevice();
-            outputDevice._DeviceType = this._DeviceType;
-            outputDevice._Latency = this._Latency;
-            outputDevice._WaitTime = this._WaitTime;
-            outputDevice._WaveOutDeviceName = this._WaveOutDeviceName;
-            outputDevice._DirectSoundDeviceName = this._DirectSoundDeviceName;
-            outputDevice._WasapiDeviceName = this._WasapiDeviceName;
-            outputDevice._WasapiShareMode = this._WasapiShareMode;
-            outputDevice._AsioDeviceName = this._AsioDeviceName;
-            outputDevice._SampleRate = this._SampleRate;
+            outputDevice.deviceType = this.deviceType;
+            outputDevice.latency = this.latency;
+            outputDevice.waitTime = this.waitTime;
+            outputDevice.waveOutDeviceName = this.waveOutDeviceName;
+            outputDevice.directSoundDeviceName = this.directSoundDeviceName;
+            outputDevice.wasapiDeviceName = this.wasapiDeviceName;
+            outputDevice.wasapiShareMode = this.wasapiShareMode;
+            outputDevice.asioDeviceName = this.asioDeviceName;
+            outputDevice.sampleRate = this.sampleRate;
 
             return outputDevice;
         }
@@ -1460,50 +1446,44 @@ public class Setting implements Serializable {
     // implements Serializable;
     // public class ChipType2
     // {
-    // private Boolean _UseEmu = true;
-    // public Boolean UseEmu
+    // private boolean _UseEmu = true;
+    // public boolean UseEmu
     // {
-    // get()
-    // {
+    // get() {
     // return _UseEmu;
     // }
 
-    // set
-    // {
+    // set {
     // _UseEmu = value;
     // }
     // }
 
-    // private Boolean _UseEmu2 = false;
-    // public Boolean UseEmu2
+    // private boolean _UseEmu2 = false;
+    // public boolean UseEmu2
     // {
-    // get()
-    // {
+    // get() {
     // return _UseEmu2;
     // }
 
-    // set
-    // {
+    // set {
     // _UseEmu2 = value;
     // }
     // }
 
-    // private Boolean _UseEmu3 = false;
-    // public Boolean UseEmu3
+    // private boolean _UseEmu3 = false;
+    // public boolean UseEmu3
     // {
-    // get()
-    // {
+    // get() {
     // return _UseEmu3;
     // }
 
-    // set
-    // {
+    // set {
     // _UseEmu3 = value;
     // }
     // }
 
-    // private Boolean _UseScci = false;
-    // public Boolean UseScci
+    // private boolean _UseScci = false;
+    // public boolean UseScci
     // {
     // get()
     // {
@@ -1586,8 +1566,8 @@ public class Setting implements Serializable {
     // }
     // }
 
-    // private Boolean _UseScci2 = false;
-    // public Boolean UseScci2
+    // private boolean _UseScci2 = false;
+    // public boolean UseScci2
     // {
     // get()
     // {
@@ -1754,8 +1734,8 @@ public class Setting implements Serializable {
     // }
     // }
 
-    // private Boolean _UseWait = true;
-    // public Boolean UseWait
+    // private boolean _UseWait = true;
+    // public boolean UseWait
     // {
     // get()
     // {
@@ -1768,8 +1748,8 @@ public class Setting implements Serializable {
     // }
     // }
 
-    // private Boolean _UseWaitBoost = false;
-    // public Boolean UseWaitBoost
+    // private boolean _UseWaitBoost = false;
+    // public boolean UseWaitBoost
     // {
     // get()
     // {
@@ -1782,8 +1762,8 @@ public class Setting implements Serializable {
     // }
     // }
 
-    // private Boolean _OnlyPCMEmulation = false;
-    // public Boolean OnlyPCMEmulation
+    // private boolean _OnlyPCMEmulation = false;
+    // public boolean OnlyPCMEmulation
     // {
     // get()
     // {
@@ -1863,193 +1843,193 @@ public class Setting implements Serializable {
     // }
 
     public static class Other implements Serializable {
-        private Boolean _UseLoopTimes = true;
-        public Boolean getUseLoopTimes() {
-            return _UseLoopTimes;
+        private boolean useLoopTimes = true;
+        public boolean getUseLoopTimes() {
+            return useLoopTimes;
         }
-        public void setUseLoopTimes(Boolean value) {
-            _UseLoopTimes = value;
+        public void setUseLoopTimes(boolean value) {
+            useLoopTimes = value;
         }
-        private int _LoopTimes = 2;
+        private int loopTimes = 2;
         public int getLoopTimes() {
-            return _LoopTimes;
+            return loopTimes;
         }
         public void setLoopTimes(int value) {
-            _LoopTimes = value;
+            loopTimes = value;
         }
-        private Boolean _UseGetInst = true;
-        public Boolean getUseGetInst() {
-            return _UseGetInst;
+        private boolean useGetInst = true;
+        public boolean getUseGetInst() {
+            return useGetInst;
         }
-        public void setUseGetInst(Boolean value) {
-            _UseGetInst = value;
+        public void setUseGetInst(boolean value) {
+            useGetInst = value;
         }
-        private String _DefaultDataPath = "";
+        private String defaultDataPath = "";
         public String getDefaultDataPath() {
-            return _DefaultDataPath;
+            return defaultDataPath;
         }
         public void setDefaultDataPath(String value) {
-            _DefaultDataPath = value;
+            defaultDataPath = value;
         }
-        private EnmInstFormat _InstFormat = EnmInstFormat.MML2VGM;
+        private EnmInstFormat instFormat = EnmInstFormat.MML2VGM;
         public EnmInstFormat getInstFormat() {
-            return _InstFormat;
+            return instFormat;
         }
         public void setInstFormat(EnmInstFormat value) {
-            _InstFormat = value;
+            instFormat = value;
         }
-        private int _Zoom = 1;
+        private int zoom = 1;
         public int getZoom() {
-            return _Zoom;
+            return zoom;
         }
         public void setZoom(int value) {
-            _Zoom = value;
+            zoom = value;
         }
-        private int _ScreenFrameRate = 60;
+        private int screenFrameRate = 60;
         public int getScreenFrameRate() {
-            return _ScreenFrameRate;
+            return screenFrameRate;
         }
         public void setScreenFrameRate(int value) {
-            _ScreenFrameRate = value;
+            screenFrameRate = value;
         }
-        private Boolean _AutoOpen = false;
-        public Boolean getAutoOpen() {
-            return _AutoOpen;
+        private boolean autoOpen = false;
+        public boolean getAutoOpen() {
+            return autoOpen;
         }
-        public void setAutoOpen(Boolean value) {
-            _AutoOpen = value;
+        public void setAutoOpen(boolean value) {
+            autoOpen = value;
         }
-        private Boolean _DumpSwitch = false;
-        public Boolean getDumpSwitch() {
-            return _DumpSwitch;
+        private boolean dumpSwitch = false;
+        public boolean getDumpSwitch() {
+            return dumpSwitch;
         }
-        public void setDumpSwitch(Boolean value) {
-            _DumpSwitch = value;
+        public void setDumpSwitch(boolean value) {
+            dumpSwitch = value;
         }
-        private String _DumpPath = "";
+        private String dumpPath = "";
         public String getDumpPath() {
-            return _DumpPath;
+            return dumpPath;
         }
         public void setDumpPath(String value) {
-            _DumpPath = value;
+            dumpPath = value;
         }
-        private Boolean _WavSwitch = false;
-        public Boolean getWavSwitch() {
-            return _WavSwitch;
+        private boolean wavSwitch = false;
+        public boolean getWavSwitch() {
+            return wavSwitch;
         }
-        public void setWavSwitch(Boolean value) {
-            _WavSwitch = value;
+        public void setWavSwitch(boolean value) {
+            wavSwitch = value;
         }
-        private String _WavPath = "";
+        private String wavPath = "";
         public String getWavPath() {
-            return _WavPath;
+            return wavPath;
         }
         public void setWavPath(String value) {
-            _WavPath = value;
+            wavPath = value;
         }
-        private int _FilterIndex = 0;
+        private int filterIndex = 0;
         public int getFilterIndex() {
-            return _FilterIndex;
+            return filterIndex;
         }
         public void setFilterIndex(int value) {
-            _FilterIndex = value;
+            filterIndex = value;
         }
-        private String _TextExt = "txt;doc;hed";
+        private String textExt = "txt;doc;hed";
         public String getTextExt() {
-            return _TextExt;
+            return textExt;
         }
         public void setTextExt(String value) {
-            _TextExt = value;
+            textExt = value;
         }
-        private String _MMLExt = "mml;gwi;muc;mdl";
+        private String mmlExt = "mml;gwi;muc;mdl";
         public String getMMLExt() {
-            return _MMLExt;
+            return mmlExt;
         }
         public void setMMLExt(String value) {
-            _MMLExt = value;
+            mmlExt = value;
         }
-        private String _ImageExt = "jpg;gif;png;mag";
+        private String imageExt = "jpg;gif;png;mag";
         public String getImageExt() {
-            return _ImageExt;
+            return imageExt;
         }
         public void setImageExt(String value) {
-            _ImageExt = value;
+            imageExt = value;
         }
-        private Boolean _AutoOpenText = false;
-        public Boolean getAutoOpenText() {
-            return _AutoOpenText;
+        private boolean autoOpenText = false;
+        public boolean getAutoOpenText() {
+            return autoOpenText;
         }
-        public void setAutoOpenText(Boolean value) {
-            _AutoOpenText = value;
+        public void setAutoOpenText(boolean value) {
+            autoOpenText = value;
         }
-        private Boolean _AutoOpenMML = false;
-        public Boolean getAutoOpenMML() {
-            return _AutoOpenMML;
+        private boolean autoOpenMML = false;
+        public boolean getAutoOpenMML() {
+            return autoOpenMML;
         }
-        public void setAutoOpenMML(Boolean value) {
-            _AutoOpenMML = value;
+        public void setAutoOpenMML(boolean value) {
+            autoOpenMML = value;
         }
-        private Boolean _AutoOpenImg = false;
-        public Boolean getAutoOpenImg() {
-            return _AutoOpenImg;
+        private boolean autoOpenImg = false;
+        public boolean getAutoOpenImg() {
+            return autoOpenImg;
         }
-        public void setAutoOpenImg(Boolean value) {
-            _AutoOpenImg = value;
+        public void setAutoOpenImg(boolean value) {
+            autoOpenImg = value;
         }
-        private Boolean _InitAlways = false;
-        public Boolean getInitAlways() {
-            return _InitAlways;
+        private boolean initAlways = false;
+        public boolean getInitAlways() {
+            return initAlways;
         }
-        public void setInitAlways(Boolean value) {
-            _InitAlways = value;
+        public void setInitAlways(boolean value) {
+            initAlways = value;
         }
-        private Boolean _EmptyPlayList = false;
-        public Boolean getEmptyPlayList() {
-            return _EmptyPlayList;
+        private boolean emptyPlayList = false;
+        public boolean getEmptyPlayList() {
+            return emptyPlayList;
         }
-        public void setEmptyPlayList(Boolean value) {
-            _EmptyPlayList = value;
+        public void setEmptyPlayList(boolean value) {
+            emptyPlayList = value;
         }
-        Boolean _ExAll = false;
-        public Boolean getExAll() {
-            return _ExAll;
+        boolean exAll = false;
+        public boolean getExAll() {
+            return exAll;
         }
-        public void setExAll(Boolean value) {
-            _ExAll = value;
+        public void setExAll(boolean value) {
+            exAll = value;
         }
-        Boolean _NonRenderingForPause = false;
-        public Boolean getNonRenderingForPause() {
-            return _NonRenderingForPause;
+        boolean nonRenderingForPause = false;
+        public boolean getNonRenderingForPause() {
+            return nonRenderingForPause;
         }
-        public void setNonRenderingForPause(Boolean value) {
-            _NonRenderingForPause = value;
+        public void setNonRenderingForPause(boolean value) {
+            nonRenderingForPause = value;
         }
 
         public Other copy() {
             Other other = new Other();
-            other._UseLoopTimes = this._UseLoopTimes;
-            other._LoopTimes = this._LoopTimes;
-            other._UseGetInst = this._UseGetInst;
-            other._DefaultDataPath = this._DefaultDataPath;
-            other._InstFormat = this._InstFormat;
-            other._Zoom = this._Zoom;
-            other._ScreenFrameRate = this._ScreenFrameRate;
-            other._AutoOpen = this._AutoOpen;
-            other._DumpSwitch = this._DumpSwitch;
-            other._DumpPath = this._DumpPath;
-            other._WavSwitch = this._WavSwitch;
-            other._WavPath = this._WavPath;
-            other._FilterIndex = this._FilterIndex;
-            other._TextExt = this._TextExt;
-            other._MMLExt = this._MMLExt;
-            other._ImageExt = this._ImageExt;
-            other._AutoOpenText = this._AutoOpenText;
-            other._AutoOpenMML = this._AutoOpenMML;
-            other._AutoOpenImg = this._AutoOpenImg;
-            other._InitAlways = this._InitAlways;
-            other._EmptyPlayList = this._EmptyPlayList;
-            other._ExAll = this._ExAll;
-            other._NonRenderingForPause = this._NonRenderingForPause;
+            other.useLoopTimes = this.useLoopTimes;
+            other.loopTimes = this.loopTimes;
+            other.useGetInst = this.useGetInst;
+            other.defaultDataPath = this.defaultDataPath;
+            other.instFormat = this.instFormat;
+            other.zoom = this.zoom;
+            other.screenFrameRate = this.screenFrameRate;
+            other.autoOpen = this.autoOpen;
+            other.dumpSwitch = this.dumpSwitch;
+            other.dumpPath = this.dumpPath;
+            other.wavSwitch = this.wavSwitch;
+            other.wavPath = this.wavPath;
+            other.filterIndex = this.filterIndex;
+            other.textExt = this.textExt;
+            other.mmlExt = this.mmlExt;
+            other.imageExt = this.imageExt;
+            other.autoOpenText = this.autoOpenText;
+            other.autoOpenMML = this.autoOpenMML;
+            other.autoOpenImg = this.autoOpenImg;
+            other.initAlways = this.initAlways;
+            other.emptyPlayList = this.emptyPlayList;
+            other.exAll = this.exAll;
+            other.nonRenderingForPause = this.nonRenderingForPause;
 
             return other;
         }
@@ -2057,116 +2037,116 @@ public class Setting implements Serializable {
 
     public static class Balance implements Serializable {
 
-        private int _MasterVolume = 0;
+        private int masterVolume = 0;
 
         public int getMasterVolume() {
-            if (_MasterVolume > 20 || _MasterVolume < -192)
-                _MasterVolume = 0;
-            return _MasterVolume;
+            if (masterVolume > 20 || masterVolume < -192)
+                masterVolume = 0;
+            return masterVolume;
         }
 
         void setMasterVolume(int value) {
-            _MasterVolume = value;
-            if (_MasterVolume > 20 || _MasterVolume < -192)
-                _MasterVolume = 0;
+            masterVolume = value;
+            if (masterVolume > 20 || masterVolume < -192)
+                masterVolume = 0;
         }
 
-        private int _YM2612Volume = 0;
+        private int ym2612Volume = 0;
 
         public int getYM2612Volume() {
-            if (_YM2612Volume > 20 || _YM2612Volume < -192)
-                _YM2612Volume = 0;
-            return _YM2612Volume;
+            if (ym2612Volume > 20 || ym2612Volume < -192)
+                ym2612Volume = 0;
+            return ym2612Volume;
         }
 
         void setYM2612Volume(int value) {
-            _YM2612Volume = value;
-            if (_YM2612Volume > 20 || _YM2612Volume < -192)
-                _YM2612Volume = 0;
+            ym2612Volume = value;
+            if (ym2612Volume > 20 || ym2612Volume < -192)
+                ym2612Volume = 0;
         }
 
-        private int _SN76489Volume = 0;
+        private int sn76489Volume = 0;
 
         public int getSN76489Volume() {
-            if (_SN76489Volume > 20 || _SN76489Volume < -192)
-                _SN76489Volume = 0;
-            return _SN76489Volume;
+            if (sn76489Volume > 20 || sn76489Volume < -192)
+                sn76489Volume = 0;
+            return sn76489Volume;
         }
 
         void setSN76489Volume(int value) {
-            _SN76489Volume = value;
-            if (_SN76489Volume > 20 || _SN76489Volume < -192)
-                _SN76489Volume = 0;
+            sn76489Volume = value;
+            if (sn76489Volume > 20 || sn76489Volume < -192)
+                sn76489Volume = 0;
         }
 
-        private int _RF5C68Volume = 0;
+        private int rf5C68Volume = 0;
 
         public int getRF5C68Volume() {
-            if (_RF5C68Volume > 20 || _RF5C68Volume < -192)
-                _RF5C68Volume = 0;
-            return _RF5C68Volume;
+            if (rf5C68Volume > 20 || rf5C68Volume < -192)
+                rf5C68Volume = 0;
+            return rf5C68Volume;
         }
 
         void setRF5C68Volume(int value) {
-            _RF5C68Volume = value;
-            if (_RF5C68Volume > 20 || _RF5C68Volume < -192)
-                _RF5C68Volume = 0;
+            rf5C68Volume = value;
+            if (rf5C68Volume > 20 || rf5C68Volume < -192)
+                rf5C68Volume = 0;
         }
 
-        private int _RF5C164Volume = 0;
+        private int rf5C164Volume = 0;
 
         public int getRF5C164Volume() {
-            if (_RF5C164Volume > 20 || _RF5C164Volume < -192)
-                _RF5C164Volume = 0;
-            return _RF5C164Volume;
+            if (rf5C164Volume > 20 || rf5C164Volume < -192)
+                rf5C164Volume = 0;
+            return rf5C164Volume;
         }
 
         void setRF5C164Volume(int value) {
-            _RF5C164Volume = value;
-            if (_RF5C164Volume > 20 || _RF5C164Volume < -192)
-                _RF5C164Volume = 0;
+            rf5C164Volume = value;
+            if (rf5C164Volume > 20 || rf5C164Volume < -192)
+                rf5C164Volume = 0;
         }
 
-        private int _PWMVolume = 0;
+        private int pwmVolume = 0;
 
         public int getPWMVolume() {
-            if (_PWMVolume > 20 || _PWMVolume < -192)
-                _PWMVolume = 0;
-            return _PWMVolume;
+            if (pwmVolume > 20 || pwmVolume < -192)
+                pwmVolume = 0;
+            return pwmVolume;
         }
 
         void setPWMVolume(int value) {
-            _PWMVolume = value;
-            if (_PWMVolume > 20 || _PWMVolume < -192)
-                _PWMVolume = 0;
+            pwmVolume = value;
+            if (pwmVolume > 20 || pwmVolume < -192)
+                pwmVolume = 0;
         }
 
-        private int _C140Volume = 0;
+        private int c140Volume = 0;
 
         public int getC140Volume() {
-            if (_C140Volume > 20 || _C140Volume < -192)
-                _C140Volume = 0;
-            return _C140Volume;
+            if (c140Volume > 20 || c140Volume < -192)
+                c140Volume = 0;
+            return c140Volume;
         }
 
         void setC140Volume(int value) {
-            _C140Volume = value;
-            if (_C140Volume > 20 || _C140Volume < -192)
-                _C140Volume = 0;
+            c140Volume = value;
+            if (c140Volume > 20 || c140Volume < -192)
+                c140Volume = 0;
         }
 
-        private int _OKIM6258Volume = 0;
+        private int OkiM6258Volume = 0;
 
         public int getOKIM6258Volume() {
-            if (_OKIM6258Volume > 20 || _OKIM6258Volume < -192)
-                _OKIM6258Volume = 0;
-            return _OKIM6258Volume;
+            if (OkiM6258Volume > 20 || OkiM6258Volume < -192)
+                OkiM6258Volume = 0;
+            return OkiM6258Volume;
         }
 
         void setOKIM6258Volume(int value) {
-            _OKIM6258Volume = value;
-            if (_OKIM6258Volume > 20 || _OKIM6258Volume < -192)
-                _OKIM6258Volume = 0;
+            OkiM6258Volume = value;
+            if (OkiM6258Volume > 20 || OkiM6258Volume < -192)
+                OkiM6258Volume = 0;
         }
 
         private int _OKIM6295Volume = 0;
@@ -2211,18 +2191,18 @@ public class Setting implements Serializable {
                 _AY8910Volume = 0;
         }
 
-        private int _YM2413Volume = 0;
+        private int ym2413Volume = 0;
 
         public int getYM2413Volume() {
-            if (_YM2413Volume > 20 || _YM2413Volume < -192)
-                _YM2413Volume = 0;
-            return _YM2413Volume;
+            if (ym2413Volume > 20 || ym2413Volume < -192)
+                ym2413Volume = 0;
+            return ym2413Volume;
         }
 
         void setYM2413Volume(int value) {
-            _YM2413Volume = value;
-            if (_YM2413Volume > 20 || _YM2413Volume < -192)
-                _YM2413Volume = 0;
+            ym2413Volume = value;
+            if (ym2413Volume > 20 || ym2413Volume < -192)
+                ym2413Volume = 0;
         }
 
         private int _YM3526Volume = 0;
@@ -2267,32 +2247,32 @@ public class Setting implements Serializable {
                 _HuC6280Volume = 0;
         }
 
-        private int _YM2151Volume = 0;
+        private int ym2151Volume = 0;
 
         public int getYM2151Volume() {
-            if (_YM2151Volume > 20 || _YM2151Volume < -192)
-                _YM2151Volume = 0;
-            return _YM2151Volume;
+            if (ym2151Volume > 20 || ym2151Volume < -192)
+                ym2151Volume = 0;
+            return ym2151Volume;
         }
 
         void setYM2151Volume(int value) {
-            _YM2151Volume = value;
-            if (_YM2151Volume > 20 || _YM2151Volume < -192)
-                _YM2151Volume = 0;
+            ym2151Volume = value;
+            if (ym2151Volume > 20 || ym2151Volume < -192)
+                ym2151Volume = 0;
         }
 
-        private int _YM2608Volume = 0;
+        private int ym2608Volume = 0;
 
         public int getYM2608Volume() {
-            if (_YM2608Volume > 20 || _YM2608Volume < -192)
-                _YM2608Volume = 0;
-            return _YM2608Volume;
+            if (ym2608Volume > 20 || ym2608Volume < -192)
+                ym2608Volume = 0;
+            return ym2608Volume;
         }
 
         void setYM2608Volume(int value) {
-            _YM2608Volume = value;
-            if (_YM2608Volume > 20 || _YM2608Volume < -192)
-                _YM2608Volume = 0;
+            ym2608Volume = value;
+            if (ym2608Volume > 20 || ym2608Volume < -192)
+                ym2608Volume = 0;
         }
 
         private int _YM2608FMVolume = 0;
@@ -2351,46 +2331,46 @@ public class Setting implements Serializable {
                 _YM2608AdpcmVolume = 0;
         }
 
-        private int _YM2203Volume = 0;
+        private int ym2203Volume = 0;
 
         public int getYM2203Volume() {
-            if (_YM2203Volume > 20 || _YM2203Volume < -192)
-                _YM2203Volume = 0;
-            return _YM2203Volume;
+            if (ym2203Volume > 20 || ym2203Volume < -192)
+                ym2203Volume = 0;
+            return ym2203Volume;
         }
 
         void setYM2203Volume(int value) {
-            _YM2203Volume = value;
-            if (_YM2203Volume > 20 || _YM2203Volume < -192)
-                _YM2203Volume = 0;
+            ym2203Volume = value;
+            if (ym2203Volume > 20 || ym2203Volume < -192)
+                ym2203Volume = 0;
         }
 
-        private int _YM2203FMVolume = 0;
+        private int ym2203Fmvolume = 0;
 
         public int getYM2203FMVolume() {
-            if (_YM2203FMVolume > 20 || _YM2203FMVolume < -192)
-                _YM2203FMVolume = 0;
-            return _YM2203FMVolume;
+            if (ym2203Fmvolume > 20 || ym2203Fmvolume < -192)
+                ym2203Fmvolume = 0;
+            return ym2203Fmvolume;
         }
 
         void setYM2203FMVolume(int value) {
-            _YM2203FMVolume = value;
-            if (_YM2203FMVolume > 20 || _YM2203FMVolume < -192)
-                _YM2203FMVolume = 0;
+            ym2203Fmvolume = value;
+            if (ym2203Fmvolume > 20 || ym2203Fmvolume < -192)
+                ym2203Fmvolume = 0;
         }
 
-        private int _YM2203PSGVolume = 0;
+        private int ym2203Psgvolume = 0;
 
         public int getYM2203PSGVolume() {
-            if (_YM2203PSGVolume > 20 || _YM2203PSGVolume < -192)
-                _YM2203PSGVolume = 0;
-            return _YM2203PSGVolume;
+            if (ym2203Psgvolume > 20 || ym2203Psgvolume < -192)
+                ym2203Psgvolume = 0;
+            return ym2203Psgvolume;
         }
 
         void setYM2203PSGVolume(int value) {
-            _YM2203PSGVolume = value;
-            if (_YM2203PSGVolume > 20 || _YM2203PSGVolume < -192)
-                _YM2203PSGVolume = 0;
+            ym2203Psgvolume = value;
+            if (ym2203Psgvolume > 20 || ym2203Psgvolume < -192)
+                ym2203Psgvolume = 0;
         }
 
         private int _YM2610Volume = 0;
@@ -2857,13 +2837,13 @@ public class Setting implements Serializable {
 
         public Balance copy() {
             Balance balance = new Balance();
-            balance._MasterVolume = this._MasterVolume;
-            balance._YM2151Volume = this._YM2151Volume;
-            balance._YM2203Volume = this._YM2203Volume;
-            balance._YM2203FMVolume = this._YM2203FMVolume;
-            balance._YM2203PSGVolume = this._YM2203PSGVolume;
-            balance._YM2413Volume = this._YM2413Volume;
-            balance._YM2608Volume = this._YM2608Volume;
+            balance.masterVolume = this.masterVolume;
+            balance.ym2151Volume = this.ym2151Volume;
+            balance.ym2203Volume = this.ym2203Volume;
+            balance.ym2203Fmvolume = this.ym2203Fmvolume;
+            balance.ym2203Psgvolume = this.ym2203Psgvolume;
+            balance.ym2413Volume = this.ym2413Volume;
+            balance.ym2608Volume = this.ym2608Volume;
             balance._YM2608FMVolume = this._YM2608FMVolume;
             balance._YM2608PSGVolume = this._YM2608PSGVolume;
             balance._YM2608RhythmVolume = this._YM2608RhythmVolume;
@@ -2874,18 +2854,18 @@ public class Setting implements Serializable {
             balance._YM2610AdpcmAVolume = this._YM2610AdpcmAVolume;
             balance._YM2610AdpcmBVolume = this._YM2610AdpcmBVolume;
 
-            balance._YM2612Volume = this._YM2612Volume;
+            balance.ym2612Volume = this.ym2612Volume;
             balance._AY8910Volume = this._AY8910Volume;
-            balance._SN76489Volume = this._SN76489Volume;
+            balance.sn76489Volume = this.sn76489Volume;
             balance._HuC6280Volume = this._HuC6280Volume;
             balance._SAA1099Volume = this._SAA1099Volume;
 
-            balance._RF5C164Volume = this._RF5C164Volume;
-            balance._RF5C68Volume = this._RF5C68Volume;
-            balance._PWMVolume = this._PWMVolume;
-            balance._OKIM6258Volume = this._OKIM6258Volume;
+            balance.rf5C164Volume = this.rf5C164Volume;
+            balance.rf5C68Volume = this.rf5C68Volume;
+            balance.pwmVolume = this.pwmVolume;
+            balance.OkiM6258Volume = this.OkiM6258Volume;
             balance._OKIM6295Volume = this._OKIM6295Volume;
-            balance._C140Volume = this._C140Volume;
+            balance.c140Volume = this.c140Volume;
             balance._SEGAPCMVolume = this._SEGAPCMVolume;
             balance._C352Volume = this._C352Volume;
             balance._K051649Volume = this._K051649Volume;
@@ -2967,13 +2947,13 @@ public class Setting implements Serializable {
             _PInfo = value;
         }
 
-        private Boolean _OInfo = false;
+        private boolean _OInfo = false;
 
-        public Boolean getOInfo() {
+        public boolean getOInfo() {
             return _OInfo;
         }
 
-        public void setOInfo(Boolean value) {
+        public void setOInfo(boolean value) {
             _OInfo = value;
         }
 
@@ -2990,13 +2970,13 @@ public class Setting implements Serializable {
             _PPlayList = value;
         }
 
-        private Boolean _OPlayList = false;
+        private boolean _OPlayList = false;
 
-        public Boolean getOPlayList() {
+        public boolean getOPlayList() {
             return _OPlayList;
         }
 
-        public void setOPlayList(Boolean value) {
+        public void setOPlayList(boolean value) {
             _OPlayList = value;
         }
 
@@ -3026,13 +3006,13 @@ public class Setting implements Serializable {
             _PMixer = value;
         }
 
-        private Boolean _OMixer = false;
+        private boolean _OMixer = false;
 
-        public Boolean getOMixer() {
+        public boolean getOMixer() {
             return _OMixer;
         }
 
-        public void setOMixer(Boolean value) {
+        public void setOMixer(boolean value) {
             _OMixer = value;
         }
 
@@ -3061,15 +3041,15 @@ public class Setting implements Serializable {
             _PosRf5c164 = value;
         }
 
-        private Boolean[] _OpenRf5c164 = new Boolean[] {
+        private boolean[] _OpenRf5c164 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenRf5c164() {
+        public boolean[] getOpenRf5c164() {
             return _OpenRf5c164;
         }
 
-        void setOpenRf5c164(Boolean[] value) {
+        void setOpenRf5c164(boolean[] value) {
             _OpenRf5c164 = value;
         }
 
@@ -3085,15 +3065,15 @@ public class Setting implements Serializable {
             _PosRf5c68 = value;
         }
 
-        private Boolean[] _OpenRf5c68 = new Boolean[] {
+        private boolean[] _OpenRf5c68 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenRf5c68() {
+        public boolean[] getOpenRf5c68() {
             return _OpenRf5c68;
         }
 
-        void setOpenRf5c68(Boolean[] value) {
+        void setOpenRf5c68(boolean[] value) {
             _OpenRf5c68 = value;
         }
 
@@ -3109,15 +3089,15 @@ public class Setting implements Serializable {
             _PosYMF271 = value;
         }
 
-        private Boolean[] _OpenYMF271 = new Boolean[] {
+        private boolean[] _OpenYMF271 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenYMF271() {
+        public boolean[] getOpenYMF271() {
             return _OpenYMF271;
         }
 
-        void setOpenYMF271(Boolean[] value) {
+        void setOpenYMF271(boolean[] value) {
             _OpenYMF271 = value;
         }
 
@@ -3133,39 +3113,39 @@ public class Setting implements Serializable {
             _PosC140 = value;
         }
 
-        private Boolean[] _OpenC140 = new Boolean[] {
+        private boolean[] openC140 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenC140() {
-            return _OpenC140;
+        public boolean[] getOpenC140() {
+            return openC140;
         }
 
-        void setOpenC140(Boolean[] value) {
-            _OpenC140 = value;
+        void setOpenC140(boolean[] value) {
+            openC140 = value;
         }
 
-        private Point[] _PosS5B = new Point[] {
+        private Point[] posS5B = new Point[] {
                 EmptyPoint, EmptyPoint
         };
 
         public Point[] getPosS5B() {
-            return _PosS5B;
+            return posS5B;
         }
 
         void setPosS5B(Point[] value) {
-            _PosS5B = value;
+            posS5B = value;
         }
 
-        private Boolean[] _OpenS5B = new Boolean[] {
+        private boolean[] _OpenS5B = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenS5B() {
+        public boolean[] getOpenS5B() {
             return _OpenS5B;
         }
 
-        void setOpenS5B(Boolean[] value) {
+        void setOpenS5B(boolean[] value) {
             _OpenS5B = value;
         }
 
@@ -3181,15 +3161,15 @@ public class Setting implements Serializable {
             _PosDMG = value;
         }
 
-        private Boolean[] _OpenDMG = new Boolean[] {
+        private boolean[] _OpenDMG = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenDMG() {
+        public boolean[] getOpenDMG() {
             return _OpenDMG;
         }
 
-        void setOpenDMG(Boolean[] value) {
+        void setOpenDMG(boolean[] value) {
             _OpenDMG = value;
         }
 
@@ -3205,15 +3185,15 @@ public class Setting implements Serializable {
             _PosPPZ8 = value;
         }
 
-        private Boolean[] _OpenPPZ8 = new Boolean[] {
+        private boolean[] _OpenPPZ8 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenPPZ8() {
+        public boolean[] getOpenPPZ8() {
             return _OpenPPZ8;
         }
 
-        void setOpenPPZ8(Boolean[] value) {
+        void setOpenPPZ8(boolean[] value) {
             _OpenPPZ8 = value;
         }
 
@@ -3229,15 +3209,15 @@ public class Setting implements Serializable {
             _PosYMZ280B = value;
         }
 
-        private Boolean[] _OpenYMZ280B = new Boolean[] {
+        private boolean[] _OpenYMZ280B = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenYMZ280B() {
+        public boolean[] getOpenYMZ280B() {
             return _OpenYMZ280B;
         }
 
-        void setOpenYMZ280B(Boolean[] value) {
+        void setOpenYMZ280B(boolean[] value) {
             _OpenYMZ280B = value;
         }
 
@@ -3253,16 +3233,16 @@ public class Setting implements Serializable {
             _PosC352 = value;
         }
 
-        private Boolean[] _OpenC352 = new Boolean[] {
+        private boolean[] openC352 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenC352() {
-            return _OpenC352;
+        public boolean[] getOpenC352() {
+            return openC352;
         }
 
-        void setOpenC352(Boolean[] value) {
-            _OpenC352 = value;
+        void setOpenC352(boolean[] value) {
+            openC352 = value;
         }
 
         private Point[] _PosMultiPCM = new Point[] {
@@ -3277,27 +3257,27 @@ public class Setting implements Serializable {
             _PosMultiPCM = value;
         }
 
-        private Boolean[] _OpenMultiPCM = new Boolean[] {
+        private boolean[] _OpenMultiPCM = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenMultiPCM() {
+        public boolean[] getOpenMultiPCM() {
             return _OpenMultiPCM;
         }
 
-        void setOpenMultiPCM(Boolean[] value) {
+        void setOpenMultiPCM(boolean[] value) {
             _OpenMultiPCM = value;
         }
 
-        private Boolean[] _OpenQSound = new Boolean[] {
+        private boolean[] _OpenQSound = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenQSound() {
+        public boolean[] getOpenQSound() {
             return _OpenQSound;
         }
 
-        void setOpenQSound(Boolean[] value) {
+        void setOpenQSound(boolean[] value) {
             _OpenQSound = value;
         }
 
@@ -3313,15 +3293,15 @@ public class Setting implements Serializable {
             _PosYm2151 = value;
         }
 
-        private Boolean[] _OpenYm2151 = new Boolean[] {
+        private boolean[] _OpenYm2151 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenYm2151() {
+        public boolean[] getOpenYm2151() {
             return _OpenYm2151;
         }
 
-        void setOpenYm2151(Boolean[] value) {
+        void setOpenYm2151(boolean[] value) {
             _OpenYm2151 = value;
         }
 
@@ -3337,15 +3317,15 @@ public class Setting implements Serializable {
             _PosYm2608 = value;
         }
 
-        private Boolean[] _OpenYm2608 = new Boolean[] {
+        private boolean[] _OpenYm2608 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenYm2608() {
+        public boolean[] getOpenYm2608() {
             return _OpenYm2608;
         }
 
-        void setOpenYm2608(Boolean[] value) {
+        void setOpenYm2608(boolean[] value) {
             _OpenYm2608 = value;
         }
 
@@ -3361,15 +3341,15 @@ public class Setting implements Serializable {
             _PosYm2203 = value;
         }
 
-        private Boolean[] _OpenYm2203 = new Boolean[] {
+        private boolean[] _OpenYm2203 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenYm2203() {
+        public boolean[] getOpenYm2203() {
             return _OpenYm2203;
         }
 
-        void setOpenYm2203(Boolean[] value) {
+        void setOpenYm2203(boolean[] value) {
             _OpenYm2203 = value;
         }
 
@@ -3385,15 +3365,15 @@ public class Setting implements Serializable {
             _PosYm2610 = value;
         }
 
-        private Boolean[] _OpenYm2610 = new Boolean[] {
+        private boolean[] _OpenYm2610 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenYm2610() {
+        public boolean[] getOpenYm2610() {
             return _OpenYm2610;
         }
 
-        void setOpenYm2610(Boolean[] value) {
+        void setOpenYm2610(boolean[] value) {
             _OpenYm2610 = value;
         }
 
@@ -3409,15 +3389,15 @@ public class Setting implements Serializable {
             _PosYm2612 = value;
         }
 
-        private Boolean[] _OpenYm2612 = new Boolean[] {
+        private boolean[] _OpenYm2612 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenYm2612() {
+        public boolean[] getOpenYm2612() {
             return _OpenYm2612;
         }
 
-        void setOpenYm2612(Boolean[] value) {
+        void setOpenYm2612(boolean[] value) {
             _OpenYm2612 = value;
         }
 
@@ -3433,15 +3413,15 @@ public class Setting implements Serializable {
             _PosOKIM6258 = value;
         }
 
-        private Boolean[] _OpenOKIM6258 = new Boolean[] {
+        private boolean[] _OpenOKIM6258 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenOKIM6258() {
+        public boolean[] getOpenOKIM6258() {
             return _OpenOKIM6258;
         }
 
-        void setOpenOKIM6258(Boolean[] value) {
+        void setOpenOKIM6258(boolean[] value) {
             _OpenOKIM6258 = value;
         }
 
@@ -3457,16 +3437,16 @@ public class Setting implements Serializable {
             _PosOKIM6295 = value;
         }
 
-        private Boolean[] _OpenOKIM6295 = new Boolean[] {
+        private boolean[] openOKIM6295 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenOKIM6295() {
-            return _OpenOKIM6295;
+        public boolean[] getOpenOKIM6295() {
+            return openOKIM6295;
         }
 
-        void setOpenOKIM6295(Boolean[] value) {
-            _OpenOKIM6295 = value;
+        void setOpenOKIM6295(boolean[] value) {
+            openOKIM6295 = value;
         }
 
         private Point[] _PosSN76489 = new Point[] {
@@ -3481,15 +3461,15 @@ public class Setting implements Serializable {
             _PosSN76489 = value;
         }
 
-        private Boolean[] _OpenSN76489 = new Boolean[] {
+        private boolean[] _OpenSN76489 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenSN76489() {
+        public boolean[] getOpenSN76489() {
             return _OpenSN76489;
         }
 
-        void setOpenSN76489(Boolean[] value) {
+        void setOpenSN76489(boolean[] value) {
             _OpenSN76489 = value;
         }
 
@@ -3505,15 +3485,15 @@ public class Setting implements Serializable {
             _PosMIDI = value;
         }
 
-        private Boolean[] _OpenMIDI = new Boolean[] {
+        private boolean[] _OpenMIDI = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenMIDI() {
+        public boolean[] getOpenMIDI() {
             return _OpenMIDI;
         }
 
-        public void setOpenMIDI(Boolean[] value) {
+        public void setOpenMIDI(boolean[] value) {
             _OpenMIDI = value;
         }
 
@@ -3529,15 +3509,15 @@ public class Setting implements Serializable {
             _PosSegaPCM = value;
         }
 
-        private Boolean[] _OpenSegaPCM = new Boolean[] {
+        private boolean[] _OpenSegaPCM = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenSegaPCM() {
+        public boolean[] getOpenSegaPCM() {
             return _OpenSegaPCM;
         }
 
-        void setOpenSegaPCM(Boolean[] value) {
+        void setOpenSegaPCM(boolean[] value) {
             _OpenSegaPCM = value;
         }
 
@@ -3553,15 +3533,15 @@ public class Setting implements Serializable {
             _PosAY8910 = value;
         }
 
-        private Boolean[] _OpenAY8910 = new Boolean[] {
+        private boolean[] _OpenAY8910 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenAY8910() {
+        public boolean[] getOpenAY8910() {
             return _OpenAY8910;
         }
 
-        void setOpenAY8910(Boolean[] value) {
+        void setOpenAY8910(boolean[] value) {
             _OpenAY8910 = value;
         }
 
@@ -3577,15 +3557,15 @@ public class Setting implements Serializable {
             _PosHuC6280 = value;
         }
 
-        private Boolean[] _OpenHuC6280 = new Boolean[] {
+        private boolean[] _OpenHuC6280 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenHuC6280() {
+        public boolean[] getOpenHuC6280() {
             return _OpenHuC6280;
         }
 
-        void setOpenHuC6280(Boolean[] value) {
+        void setOpenHuC6280(boolean[] value) {
             _OpenHuC6280 = value;
         }
 
@@ -3601,15 +3581,15 @@ public class Setting implements Serializable {
             _PosK051649 = value;
         }
 
-        private Boolean[] _OpenK051649 = new Boolean[] {
+        private boolean[] _OpenK051649 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenK051649() {
+        public boolean[] getOpenK051649() {
             return _OpenK051649;
         }
 
-        void setOpenK051649(Boolean[] value) {
+        void setOpenK051649(boolean[] value) {
             _OpenK051649 = value;
         }
 
@@ -3625,15 +3605,15 @@ public class Setting implements Serializable {
             _PosYm2413 = value;
         }
 
-        private Boolean[] _OpenYm2413 = new Boolean[] {
+        private boolean[] _OpenYm2413 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenYm2413() {
+        public boolean[] getOpenYm2413() {
             return _OpenYm2413;
         }
 
-        void setOpenYm2413(Boolean[] value) {
+        void setOpenYm2413(boolean[] value) {
             _OpenYm2413 = value;
         }
 
@@ -3649,15 +3629,15 @@ public class Setting implements Serializable {
             _PosYm3526 = value;
         }
 
-        private Boolean[] _OpenYm3526 = new Boolean[] {
+        private boolean[] _OpenYm3526 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenYm3526() {
+        public boolean[] getOpenYm3526() {
             return _OpenYm3526;
         }
 
-        void setOpenYm3526(Boolean[] value) {
+        void setOpenYm3526(boolean[] value) {
             _OpenYm3526 = value;
         }
 
@@ -3673,15 +3653,15 @@ public class Setting implements Serializable {
             _PosY8950 = value;
         }
 
-        private Boolean[] _OpenY8950 = new Boolean[] {
+        private boolean[] _OpenY8950 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenY8950() {
+        public boolean[] getOpenY8950() {
             return _OpenY8950;
         }
 
-        void setOpenY8950(Boolean[] value) {
+        void setOpenY8950(boolean[] value) {
             _OpenY8950 = value;
         }
 
@@ -3697,15 +3677,15 @@ public class Setting implements Serializable {
             _PosYm3812 = value;
         }
 
-        private Boolean[] _OpenYm3812 = new Boolean[] {
+        private boolean[] _OpenYm3812 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenYm3812() {
+        public boolean[] getOpenYm3812() {
             return _OpenYm3812;
         }
 
-        void setOpenYm3812(Boolean[] value) {
+        void setOpenYm3812(boolean[] value) {
             _OpenYm3812 = value;
         }
 
@@ -3721,15 +3701,15 @@ public class Setting implements Serializable {
             _PosYmf262 = value;
         }
 
-        private Boolean[] _OpenYmf262 = new Boolean[] {
+        private boolean[] _OpenYmf262 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenYmf262() {
+        public boolean[] getOpenYmf262() {
             return _OpenYmf262;
         }
 
-        void setOpenYmf262(Boolean[] value) {
+        void setOpenYmf262(boolean[] value) {
             _OpenYmf262 = value;
         }
 
@@ -3745,15 +3725,15 @@ public class Setting implements Serializable {
             _PosYmf278b = value;
         }
 
-        private Boolean[] _OpenYmf278b = new Boolean[] {
+        private boolean[] _OpenYmf278b = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenYmf278b() {
+        public boolean[] getOpenYmf278b() {
             return _OpenYmf278b;
         }
 
-        void setOpenYmf278b(Boolean[] value) {
+        void setOpenYmf278b(boolean[] value) {
             _OpenYmf278b = value;
         }
 
@@ -3767,13 +3747,13 @@ public class Setting implements Serializable {
             _PosYm2612MIDI = value;
         }
 
-        private Boolean _OpenYm2612MIDI = false;
+        private boolean _OpenYm2612MIDI = false;
 
-        public Boolean getOpenYm2612MIDI() {
+        public boolean getOpenYm2612MIDI() {
             return _OpenYm2612MIDI;
         }
 
-        public void setOpenYm2612MIDI(Boolean value) {
+        public void setOpenYm2612MIDI(boolean value) {
             _OpenYm2612MIDI = value;
         }
 
@@ -3787,13 +3767,13 @@ public class Setting implements Serializable {
             _PosMixer = value;
         }
 
-        private Boolean _OpenMixer = false;
+        private boolean _OpenMixer = false;
 
-        public Boolean getOpenMixer() {
+        public boolean getOpenMixer() {
             return _OpenMixer;
         }
 
-        void setOpenMixer(Boolean value) {
+        void setOpenMixer(boolean value) {
             _OpenMixer = value;
         }
 
@@ -3807,13 +3787,13 @@ public class Setting implements Serializable {
             _PosVSTeffectList = value;
         }
 
-        private Boolean _OpenVSTeffectList = false;
+        private boolean _OpenVSTeffectList = false;
 
-        public Boolean getOpenVSTeffectList() {
+        public boolean getOpenVSTeffectList() {
             return _OpenVSTeffectList;
         }
 
-        public void setOpenVSTeffectList(Boolean value) {
+        public void setOpenVSTeffectList(boolean value) {
             _OpenVSTeffectList = value;
         }
 
@@ -3829,15 +3809,15 @@ public class Setting implements Serializable {
             _PosNESDMC = value;
         }
 
-        private Boolean[] _OpenNESDMC = new Boolean[] {
+        private boolean[] _OpenNESDMC = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenNESDMC() {
+        public boolean[] getOpenNESDMC() {
             return _OpenNESDMC;
         }
 
-        void setOpenNESDMC(Boolean[] value) {
+        void setOpenNESDMC(boolean[] value) {
             _OpenNESDMC = value;
         }
 
@@ -3853,15 +3833,15 @@ public class Setting implements Serializable {
             _PosFDS = value;
         }
 
-        private Boolean[] _OpenFDS = new Boolean[] {
+        private boolean[] _OpenFDS = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenFDS() {
+        public boolean[] getOpenFDS() {
             return _OpenFDS;
         }
 
-        void setOpenFDS(Boolean[] value) {
+        void setOpenFDS(boolean[] value) {
             _OpenFDS = value;
         }
 
@@ -3877,15 +3857,15 @@ public class Setting implements Serializable {
             _PosMMC5 = value;
         }
 
-        private Boolean[] _OpenMMC5 = new Boolean[] {
+        private boolean[] _OpenMMC5 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenMMC5() {
+        public boolean[] getOpenMMC5() {
             return _OpenMMC5;
         }
 
-        void setOpenMMC5(Boolean[] value) {
+        void setOpenMMC5(boolean[] value) {
             _OpenMMC5 = value;
         }
 
@@ -3901,15 +3881,15 @@ public class Setting implements Serializable {
             _PosVrc6 = value;
         }
 
-        private Boolean[] _OpenVrc6 = new Boolean[] {
+        private boolean[] _OpenVrc6 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenVrc6() {
+        public boolean[] getOpenVrc6() {
             return _OpenVrc6;
         }
 
-        void setOpenVrc6(Boolean[] value) {
+        void setOpenVrc6(boolean[] value) {
             _OpenVrc6 = value;
         }
 
@@ -3925,15 +3905,15 @@ public class Setting implements Serializable {
             _PosVrc7 = value;
         }
 
-        private Boolean[] _OpenVrc7 = new Boolean[] {
+        private boolean[] _OpenVrc7 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenVrc7() {
+        public boolean[] getOpenVrc7() {
             return _OpenVrc7;
         }
 
-        void setOpenVrc7(Boolean[] value) {
+        void setOpenVrc7(boolean[] value) {
             _OpenVrc7 = value;
         }
 
@@ -3949,15 +3929,15 @@ public class Setting implements Serializable {
             _PosN106 = value;
         }
 
-        private Boolean[] _OpenN106 = new Boolean[] {
+        private boolean[] _OpenN106 = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenN106() {
+        public boolean[] getOpenN106() {
             return _OpenN106;
         }
 
-        void setOpenN106(Boolean[] value) {
+        void setOpenN106(boolean[] value) {
             _OpenN106 = value;
         }
 
@@ -3985,15 +3965,15 @@ public class Setting implements Serializable {
             _PosRegTest = value;
         }
 
-        private Boolean[] _OpenRegTest = new Boolean[] {
+        private boolean[] _OpenRegTest = new boolean[] {
                 false, false
         };
 
-        public Boolean[] getOpenRegTest() {
+        public boolean[] getOpenRegTest() {
             return _OpenRegTest;
         }
 
-        void setOpenRegTest(Boolean[] value) {
+        void setOpenRegTest(boolean[] value) {
             _OpenRegTest = value;
         }
 
@@ -4007,13 +3987,13 @@ public class Setting implements Serializable {
             _PosVisWave = value;
         }
 
-        private Boolean _OpenVisWave = false;
+        private boolean _OpenVisWave = false;
 
-        public Boolean getOpenVisWave() {
+        public boolean getOpenVisWave() {
             return _OpenVisWave;
         }
 
-        public void setOpenVisWave(Boolean value) {
+        public void setOpenVisWave(boolean value) {
             _OpenVisWave = value;
         }
 
@@ -4046,17 +4026,17 @@ public class Setting implements Serializable {
             location._PosRf5c68 = this._PosRf5c68;
             location._OpenRf5c68 = this._OpenRf5c68;
             location._PosC140 = this._PosC140;
-            location._OpenC140 = this._OpenC140;
+            location.openC140 = this.openC140;
             location._PosPPZ8 = this._PosPPZ8;
             location._OpenPPZ8 = this._OpenPPZ8;
-            location._PosS5B = this._PosS5B;
+            location.posS5B = this.posS5B;
             location._OpenS5B = this._OpenS5B;
             location._PosDMG = this._PosDMG;
             location._OpenDMG = this._OpenDMG;
             location._PosYMZ280B = this._PosYMZ280B;
             location._OpenYMZ280B = this._OpenYMZ280B;
             location._PosC352 = this._PosC352;
-            location._OpenC352 = this._OpenC352;
+            location.openC352 = this.openC352;
             location._PosQSound = this._PosQSound;
             location._OpenQSound = this._OpenQSound;
             location._PosYm2151 = this._PosYm2151;
@@ -4084,7 +4064,7 @@ public class Setting implements Serializable {
             location._PosOKIM6258 = this._PosOKIM6258;
             location._OpenOKIM6258 = this._OpenOKIM6258;
             location._PosOKIM6295 = this._PosOKIM6295;
-            location._OpenOKIM6295 = this._OpenOKIM6295;
+            location.openOKIM6295 = this.openOKIM6295;
             location._PosSN76489 = this._PosSN76489;
             location._OpenSN76489 = this._OpenSN76489;
             location._PosSegaPCM = this._PosSegaPCM;
@@ -4114,47 +4094,47 @@ public class Setting implements Serializable {
     }
 
     public static class NSF implements Serializable {
-        private Boolean _NESUnmuteOnReset = true;
-        private Boolean _NESNonLinearMixer = true;
-        private Boolean _NESPhaseRefresh = true;
-        private Boolean _NESDutySwap = false;
+        private boolean _NESUnmuteOnReset = true;
+        private boolean _NESNonLinearMixer = true;
+        private boolean _NESPhaseRefresh = true;
+        private boolean _NESDutySwap = false;
         private int _FDSLpf = 2000;
-        private Boolean _FDS4085Reset = false;
-        private Boolean _FDSWriteDisable8000 = true;
-        private Boolean _DMCUnmuteOnReset = true;
-        private Boolean _DMCNonLinearMixer = true;
-        private Boolean _DMCEnable4011 = true;
-        private Boolean _DMCEnablePnoise = true;
-        private Boolean _DMCDPCMAntiClick = false;
-        private Boolean _DMCRandomizeNoise = true;
-        private Boolean _DMCTRImute = true;
-        private Boolean _DMCTRINull = true;
-        private Boolean _MMC5NonLinearMixer = true;
-        private Boolean _MMC5PhaseRefresh = true;
-        private Boolean _N160Serial = false;
+        private boolean _FDS4085Reset = false;
+        private boolean _FDSWriteDisable8000 = true;
+        private boolean _DMCUnmuteOnReset = true;
+        private boolean _DMCNonLinearMixer = true;
+        private boolean _DMCEnable4011 = true;
+        private boolean _DMCEnablePnoise = true;
+        private boolean _DMCDPCMAntiClick = false;
+        private boolean _DMCRandomizeNoise = true;
+        private boolean _DMCTRImute = true;
+        private boolean _DMCTRINull = true;
+        private boolean _MMC5NonLinearMixer = true;
+        private boolean _MMC5PhaseRefresh = true;
+        private boolean _N160Serial = false;
 
-        public Boolean getNESUnmuteOnReset() {
+        public boolean getNESUnmuteOnReset() {
             return _NESUnmuteOnReset;
         }
-        public void setNESUnmuteOnReset(Boolean value) {
+        public void setNESUnmuteOnReset(boolean value) {
             _NESUnmuteOnReset = value;
         }
-        public Boolean getNESNonLinearMixer() {
+        public boolean getNESNonLinearMixer() {
             return _NESNonLinearMixer;
         }
-        public void setNESNonLinearMixer(Boolean value) {
+        public void setNESNonLinearMixer(boolean value) {
             _NESNonLinearMixer = value;
         }
-        public Boolean getNESPhaseRefresh() {
+        public boolean getNESPhaseRefresh() {
             return _NESPhaseRefresh;
         }
-        public void setNESPhaseRefresh(Boolean value) {
+        public void setNESPhaseRefresh(boolean value) {
             _NESPhaseRefresh = value;
         }
-        public Boolean getNESDutySwap() {
+        public boolean getNESDutySwap() {
             return _NESDutySwap;
         }
-        public void setNESDutySwap(Boolean value) {
+        public void setNESDutySwap(boolean value) {
             _NESDutySwap = value;
         }
         public int getFDSLpf() {
@@ -4163,82 +4143,82 @@ public class Setting implements Serializable {
         public void setFDSLpf(int value) {
             _FDSLpf = value;
         }
-        public Boolean getFDS4085Reset() {
+        public boolean getFDS4085Reset() {
             return _FDS4085Reset;
         }
-        public void setFDS4085Reset(Boolean value) {
+        public void setFDS4085Reset(boolean value) {
             _FDS4085Reset = value;
         }
-        public Boolean getFDSWriteDisable8000() {
+        public boolean getFDSWriteDisable8000() {
             return _FDSWriteDisable8000;
         }
-        public void setFDSWriteDisable8000(Boolean value) {
+        public void setFDSWriteDisable8000(boolean value) {
             _FDSWriteDisable8000 = value;
         }
-        public Boolean getDMCUnmuteOnReset() {
+        public boolean getDMCUnmuteOnReset() {
             return _DMCUnmuteOnReset;
         }
-        public void setDMCUnmuteOnReset(Boolean value) {
+        public void setDMCUnmuteOnReset(boolean value) {
             _DMCUnmuteOnReset = value;
         }
-        public Boolean getDMCNonLinearMixer() {
+        public boolean getDMCNonLinearMixer() {
             return _DMCNonLinearMixer;
         }
-        public void setDMCNonLinearMixer(Boolean value) {
+        public void setDMCNonLinearMixer(boolean value) {
             _DMCNonLinearMixer = value;
         }
-        public Boolean getDMCEnable4011() {
+        public boolean getDMCEnable4011() {
             return _DMCEnable4011;
         }
-        public void setDMCEnable4011(Boolean value) {
+        public void setDMCEnable4011(boolean value) {
             _DMCEnable4011 = value;
         }
-        public Boolean getDMCEnablePnoise() {
+        public boolean getDMCEnablePnoise() {
             return _DMCEnablePnoise;
         }
-        public void setDMCEnablePnoise(Boolean value) {
+        public void setDMCEnablePnoise(boolean value) {
             _DMCEnablePnoise = value;
         }
-        public Boolean getDMCDPCMAntiClick() {
+        public boolean getDMCDPCMAntiClick() {
             return _DMCDPCMAntiClick;
         }
-        public void setDMCDPCMAntiClick(Boolean value) {
+        public void setDMCDPCMAntiClick(boolean value) {
             _DMCDPCMAntiClick = value;
         }
-        public Boolean getDMCRandomizeNoise() {
+        public boolean getDMCRandomizeNoise() {
             return _DMCRandomizeNoise;
         }
-        public void setDMCRandomizeNoise(Boolean value) {
+        public void setDMCRandomizeNoise(boolean value) {
             _DMCRandomizeNoise = value;
         }
-        public Boolean getDMCTRImute() {
+        public boolean getDMCTRImute() {
             return _DMCTRImute;
         }
-        public void setDMCTRImute(Boolean value) {
+        public void setDMCTRImute(boolean value) {
             _DMCTRImute = value;
         }
-        public Boolean getDMCTRINull() {
+        public boolean getDMCTRINull() {
             return _DMCTRINull;
         }
-        void setDMCTRINull(Boolean value) {
+        void setDMCTRINull(boolean value) {
             _DMCTRINull = value;
         }
-        public Boolean getMMC5NonLinearMixer() {
+        public boolean getMMC5NonLinearMixer() {
             return _MMC5NonLinearMixer;
         }
-        public void setMMC5NonLinearMixer(Boolean value) {
+        public void setMMC5NonLinearMixer(boolean value) {
             _MMC5NonLinearMixer = value;
         }
-        public Boolean getMMC5PhaseRefresh() {
+        public boolean getMMC5PhaseRefresh() {
             return _MMC5PhaseRefresh;
         }
-        public void setMMC5PhaseRefresh(Boolean value) {
+        public void setMMC5PhaseRefresh(boolean value) {
             _MMC5PhaseRefresh = value;
         }
-        public Boolean getN160Serial() {
+        public boolean getN160Serial() {
             return _N160Serial;
         }
-        public void setN160Serial(Boolean value) {
+        public void setN160Serial(boolean value) {
             _N160Serial = value;
         }
         private int _HPF = 92;
@@ -4255,18 +4235,18 @@ public class Setting implements Serializable {
         public void setLPF(int value) {
             _LPF = value;
         }
-        private Boolean _DMCRandomizeTRI = false;
-        public Boolean getDMCRandomizeTRI() {
+        private boolean _DMCRandomizeTRI = false;
+        public boolean getDMCRandomizeTRI() {
             return _DMCRandomizeTRI;
         }
-        public void setDMCRandomizeTRI(Boolean value) {
+        public void setDMCRandomizeTRI(boolean value) {
             _DMCRandomizeTRI = value;
         }
-        private Boolean _DMCDPCMReverse = false;
-        public Boolean getDMCDPCMReverse() {
+        private boolean _DMCDPCMReverse = false;
+        public boolean getDMCDPCMReverse() {
             return _DMCDPCMReverse;
         }
-        public void setDMCDPCMReverse(Boolean value) {
+        public void setDMCDPCMReverse(boolean value) {
             _DMCDPCMReverse = value;
         }
 
@@ -4307,55 +4287,55 @@ public class Setting implements Serializable {
 
     public Setting copy() {
         Setting setting = new Setting();
-        setting._outputDevice = this._outputDevice.copy();
+        setting.outputDevice = this.outputDevice.copy();
 
-        setting._AY8910Type = null;
-        if (this._AY8910Type != null) {
-            setting._AY8910Type = new ChipType2[this._AY8910Type.length];
-            for (int i = 0; i < this._AY8910Type.length; i++)
-                setting._AY8910Type[i] = this._AY8910Type[i].copy();
+        setting.ay8910Type = null;
+        if (this.ay8910Type != null) {
+            setting.ay8910Type = new ChipType2[this.ay8910Type.length];
+            for (int i = 0; i < this.ay8910Type.length; i++)
+                setting.ay8910Type[i] = this.ay8910Type[i].copy();
         }
 
-        setting._K051649Type = null;
-        if (this._K051649Type != null) {
-            setting._K051649Type = new ChipType2[this._K051649Type.length];
-            for (int i = 0; i < this._K051649Type.length; i++)
-                setting._K051649Type[i] = this._K051649Type[i].copy();
+        setting.k051649Type = null;
+        if (this.k051649Type != null) {
+            setting.k051649Type = new ChipType2[this.k051649Type.length];
+            for (int i = 0; i < this.k051649Type.length; i++)
+                setting.k051649Type[i] = this.k051649Type[i].copy();
         }
 
-        setting._YM2151Type = null;
-        if (this._YM2151Type != null) {
-            setting._YM2151Type = new ChipType2[this._YM2151Type.length];
-            for (int i = 0; i < this._YM2151Type.length; i++)
-                setting._YM2151Type[i] = this._YM2151Type[i].copy();
+        setting.ym2151Type = null;
+        if (this.ym2151Type != null) {
+            setting.ym2151Type = new ChipType2[this.ym2151Type.length];
+            for (int i = 0; i < this.ym2151Type.length; i++)
+                setting.ym2151Type[i] = this.ym2151Type[i].copy();
         }
 
-        setting._YM2203Type = null;
-        if (this._YM2203Type != null) {
-            setting._YM2203Type = new ChipType2[this._YM2203Type.length];
-            for (int i = 0; i < this._YM2203Type.length; i++)
-                setting._YM2203Type[i] = this._YM2203Type[i].copy();
+        setting.ym2203Type = null;
+        if (this.ym2203Type != null) {
+            setting.ym2203Type = new ChipType2[this.ym2203Type.length];
+            for (int i = 0; i < this.ym2203Type.length; i++)
+                setting.ym2203Type[i] = this.ym2203Type[i].copy();
         }
 
-        setting._YM2413Type = null;
-        if (this._YM2413Type != null) {
-            setting._YM2413Type = new ChipType2[this._YM2413Type.length];
-            for (int i = 0; i < this._YM2413Type.length; i++)
-                setting._YM2413Type[i] = this._YM2413Type[i].copy();
+        setting.ym2413Type = null;
+        if (this.ym2413Type != null) {
+            setting.ym2413Type = new ChipType2[this.ym2413Type.length];
+            for (int i = 0; i < this.ym2413Type.length; i++)
+                setting.ym2413Type[i] = this.ym2413Type[i].copy();
         }
 
-        setting._YM2608Type = null;
-        if (this._YM2608Type != null) {
-            setting._YM2608Type = new ChipType2[this._YM2608Type.length];
-            for (int i = 0; i < this._YM2608Type.length; i++)
-                setting._YM2608Type[i] = this._YM2608Type[i].copy();
+        setting.ym2608Type = null;
+        if (this.ym2608Type != null) {
+            setting.ym2608Type = new ChipType2[this.ym2608Type.length];
+            for (int i = 0; i < this.ym2608Type.length; i++)
+                setting.ym2608Type[i] = this.ym2608Type[i].copy();
         }
 
-        setting._YM2610Type = null;
-        if (this._YM2610Type != null) {
-            setting._YM2610Type = new ChipType2[this._YM2610Type.length];
-            for (int i = 0; i < this._YM2610Type.length; i++)
-                setting._YM2610Type[i] = this._YM2610Type[i].copy();
+        setting.ym2610Type = null;
+        if (this.ym2610Type != null) {
+            setting.ym2610Type = new ChipType2[this.ym2610Type.length];
+            for (int i = 0; i < this.ym2610Type.length; i++)
+                setting.ym2610Type[i] = this.ym2610Type[i].copy();
         }
 
         setting._YM2612Type = null;
@@ -4379,11 +4359,11 @@ public class Setting implements Serializable {
                 setting._YM3812Type[i] = this._YM3812Type[i].copy();
         }
 
-        setting._YMF262Type = null;
-        if (this._YMF262Type != null) {
-            setting._YMF262Type = new ChipType2[this._YMF262Type.length];
-            for (int i = 0; i < this._YMF262Type.length; i++)
-                setting._YMF262Type[i] = this._YMF262Type[i].copy();
+        setting.ymf262Type = null;
+        if (this.ymf262Type != null) {
+            setting.ymf262Type = new ChipType2[this.ymf262Type.length];
+            for (int i = 0; i < this.ymf262Type.length; i++)
+                setting.ymf262Type[i] = this.ymf262Type[i].copy();
         }
 
         setting._SN76489Type = null;
@@ -4407,8 +4387,8 @@ public class Setting implements Serializable {
                 setting._SEGAPCMType[i] = this._SEGAPCMType[i].copy();
         }
 
-        setting._unuseRealChip = this._unuseRealChip;
-        setting._FileSearchPathList = this._FileSearchPathList;
+        setting.unuseRealChip = this.unuseRealChip;
+        setting.fileSearchPathList = this.fileSearchPathList;
 
         // setting._YM2151SType = this._YM2151SType.Copy();
         // setting._YM2203SType = this._YM2203SType.Copy();
@@ -4424,22 +4404,22 @@ public class Setting implements Serializable {
         // setting._C140SType = this._C140SType.Copy();
         // setting._SEGAPCMSType = this._SEGAPCMSType.Copy();
 
-        setting._other = this._other.copy();
-        setting._balance = this._balance.copy();
-        setting._LatencyEmulation = this._LatencyEmulation;
-        setting._LatencySCCI = this._LatencySCCI;
-        setting._Debug_DispFrameCounter = this._Debug_DispFrameCounter;
-        setting._HiyorimiMode = this._HiyorimiMode;
-        setting._location = this._location.Copy();
-        setting._midiExport = this._midiExport.copy();
-        setting._midiKbd = this._midiKbd.copy();
-        setting._vst = this._vst.copy();
-        setting._midiOut = this._midiOut.copy();
-        setting._nsf = this._nsf.copy();
-        setting._sid = this._sid.copy();
-        setting._NukedOPN2 = this._NukedOPN2.Copy();
-        setting._autoBalance = this._autoBalance.copy();
-        setting._PMDDotNET = this._PMDDotNET.copy();
+        setting.other = this.other.copy();
+        setting.balance = this.balance.copy();
+        setting.latencyEmulation = this.latencyEmulation;
+        setting.latencySCCI = this.latencySCCI;
+        setting.debugDispFrameCounter = this.debugDispFrameCounter;
+        setting.hiyorimiMode = this.hiyorimiMode;
+        setting.location = this.location.Copy();
+        setting.midiExport = this.midiExport.copy();
+        setting.midiKbd = this.midiKbd.copy();
+        setting.vst = this.vst.copy();
+        setting.midiOut = this.midiOut.copy();
+        setting.nsf = this.nsf.copy();
+        setting.sid = this.sid.copy();
+        setting.nukedOPN2 = this.nukedOPN2.Copy();
+        setting.autoBalance = this.autoBalance.copy();
+        setting.pmdDotNET = this.pmdDotNET.copy();
 
         setting._keyBoardHook = this._keyBoardHook.copy();
 
@@ -4475,7 +4455,7 @@ public class Setting implements Serializable {
                 return new Setting();
             }
             try (InputStream sr = Files.newInputStream(Paths.get(fullPath))) {
-                return (Setting) Serdes.Util.deserialize(sr, new Setting());
+                return Serdes.Util.deserialize(sr, new Setting());
             }
         } catch (Exception ex) {
             Log.forcedWrite(ex);

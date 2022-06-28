@@ -7,13 +7,14 @@ import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import mdplayer.ChipRegister;
+import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Log;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.ReSIDBuilder;
-import mdplayer.driver.sid.libsidplayfp.sidemu.output;
+import mdplayer.driver.sid.libsidplayfp.SidEmu;
+import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.ReSidBuilder;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidPlayFp;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
@@ -22,13 +23,14 @@ import mdsound.VisWaveBuffer;
 
 
 public class Sid extends BaseDriver {
+
     public static final int FCC_PSID = 0x44495350;
     public static final int FCC_RSID = 0x44495352;
     public int songs;
     public int song;
 
-    private SidPlayFp m_engine;
-    private Boolean initial = false;
+    private SidPlayFp engine;
+    private boolean initial = false;
 
     public SidConfig cfg;
     public SidTuneInfo tuneInfo;
@@ -37,10 +39,10 @@ public class Sid extends BaseDriver {
     public Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3) {
         if (buf == null) return null;
 
-        if (mdplayer.Common.getLE32(buf, 0) != FCC_PSID && mdplayer.Common.getLE32(buf, 0) != FCC_RSID)
+        if (Common.getLE32(buf, 0) != FCC_PSID && Common.getLE32(buf, 0) != FCC_RSID)
             return null;
 
-        songs = mdplayer.Common.getBE16(buf, 0x0e);
+        songs = Common.getBE16(buf, 0x0e);
 
         Vgm.Gd3 gd3 = new Vgm.Gd3();
         try {
@@ -138,18 +140,18 @@ public class Sid extends BaseDriver {
         }
 
         chipRegister.SID = this;
-        m_engine.fastForward(100);
-        m_engine.play(b, length);
+        engine.fastForward(100);
+        engine.play(b, length);
         for (int i = 0; i < length / 2; i++) {
             oneFrameProc();
-            visWB.Enq(b[i * 2 + 0], b[i * 2 + 1]);
+            visWB.enq(b[i * 2 + 0], b[i * 2 + 1]);
         }
 
         return length;
     }
 
     private void SidInit(byte[] vgmBuf) {
-        output.OUTPUTBUFFERSIZE = setting.getSid().outputBufferSize;
+        SidEmu.Output.outputBufferSize = setting.getSid().outputBufferSize;
 
         byte[] aryKernal = null;
         byte[] aryBasic = null;
@@ -170,20 +172,20 @@ public class Sid extends BaseDriver {
                 fs.read(aryCharacter, 0, aryCharacter.length);
             }
 
-        m_engine = new SidPlayFp(setting);
-        m_engine.debug(false, null);
-        m_engine.setRoms(aryKernal, aryBasic, aryCharacter);
+        engine = new SidPlayFp(setting);
+        engine.debug(false, null);
+        engine.setRoms(aryKernal, aryBasic, aryCharacter);
 
-        ReSIDBuilder rs = new ReSIDBuilder("ReSID", setting);
+        ReSidBuilder rs = new ReSidBuilder("ReSid", setting);
 
-        int maxsids = (m_engine.info()).maxsids();
+        int maxsids = (engine.info()).maxsids();
         rs.create(maxsids);
 
-        SidTune tune = new SidTune(vgmBuf, (int) vgmBuf.length);
-        tune.selectSong((int) song);
+        SidTune tune = new SidTune(vgmBuf, vgmBuf.length);
+        tune.selectSong(song);
 
-        if (!m_engine.load(tune)) {
-            System.err.println("Error: " + m_engine.error());
+        if (!engine.load(tune)) {
+            System.err.println("Error: " + engine.error());
             return;
         }
 
@@ -191,47 +193,45 @@ public class Sid extends BaseDriver {
         tuneInfo = tune.getInfo();
         //if (!m_track.single)
         //    m_track.songs = (short)tuneInfo.songs();
-        //if (!createOutput(m_driver.output, tuneInfo))
+        //if (!createOutput(m_driver.Output, tuneInfo))
         //    return false;
         //if (!createSidEmu(m_driver.Sid))
         //    return false;
 
         cfg = new SidConfig(setting);
-        cfg.frequency = (int) setting.getOutputDevice().getSampleRate();
-        cfg.samplingMethod = (setting.getSid().quality & 2) == 0 ? SidConfig.sampling_method_t.INTERPOLATE : SidConfig.sampling_method_t.RESAMPLE_INTERPOLATE;
+        cfg.frequency = setting.getOutputDevice().getSampleRate();
+        cfg.samplingMethod = (setting.getSid().quality & 2) == 0 ? SidConfig.SamplingMethod.INTERPOLATE : SidConfig.SamplingMethod.RESAMPLE_INTERPOLATE;
         cfg.fastSampling = (setting.getSid().quality & 1) == 0;
-        cfg.playback = SidConfig.playback_t.STEREO;
-        cfg.defaultC64Model = setting.getSid().c64model == 0 ? SidConfig.c64_model_t.PAL : (
-                setting.getSid().c64model == 1 ? SidConfig.c64_model_t.NTSC : (
-                        setting.getSid().c64model == 2 ? SidConfig.c64_model_t.OLD_NTSC : (
-                                setting.getSid().c64model == 3 ? SidConfig.c64_model_t.DREAN : SidConfig.c64_model_t.PAL)));// SidConfig.c64_model_t.PAL;
-        cfg.defaultSidModel = setting.getSid().sidModel == 0 ? SidConfig.sid_model_t.MOS6581 : (
-                setting.getSid().sidModel == 1 ? SidConfig.sid_model_t.MOS8580 : SidConfig.sid_model_t.MOS6581);// SidConfig.sid_model_t.MOS6581;
-        cfg.forceC64Model = setting.getSid().c64modelForce;//強制的にdefaultC64Modelを使用するか
-        cfg.forceSidModel = setting.getSid().sidmodelForce;//強制的にdefaultSidModelを使用するか
+        cfg.playback = SidConfig.Playback.STEREO;
+        cfg.defaultC64Model = setting.getSid().c64model == 0 ? SidConfig.C64Model.PAL : (
+                setting.getSid().c64model == 1 ? SidConfig.C64Model.NTSC : (
+                        setting.getSid().c64model == 2 ? SidConfig.C64Model.OLD_NTSC : (
+                                setting.getSid().c64model == 3 ? SidConfig.C64Model.DREAN : SidConfig.C64Model.PAL)));
+        cfg.defaultSidModel = setting.getSid().sidModel == 0 ? SidConfig.SidModel.MOS6581 : (
+                setting.getSid().sidModel == 1 ? SidConfig.SidModel.MOS8580 : SidConfig.SidModel.MOS6581);
+        cfg.forceC64Model = setting.getSid().c64modelForce; // 強制的に defaultC64Model を使用するか
+        cfg.forceSidModel = setting.getSid().sidmodelForce; // 強制的に defaultSidModel を使用するか
 
         cfg.sidEmulation = rs;
 
-        if (!m_engine.config(cfg)) {
-            System.err.println("Error: " + m_engine.error());
-            return;
+        if (!engine.config(cfg)) {
+            System.err.println("Error: " + engine.error());
         }
-
     }
 
     public void visWaveBufferCopy(short[][] dest) {
-        visWB.Copy(dest);
+        visWB.copy(dest);
     }
 
     VisWaveBuffer visWB = new VisWaveBuffer();
 
     public Integer[][] GetRegisterFromSid() {
-        if (m_engine == null) return null;
-        return m_engine.GetSidRegister();
+        if (engine == null) return null;
+        return engine.getSidRegister();
     }
 
     public SidPlayFp GetCurrentEngineContext() {
-        if (m_engine == null) return null;
-        return m_engine;
+        if (engine == null) return null;
+        return engine;
     }
 }

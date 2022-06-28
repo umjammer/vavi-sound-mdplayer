@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  *  Copyright 2011-2015 Leandro Nini
  *  Copyright 2007-2010 Antti Lankila
@@ -33,27 +33,27 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidInfo;
  */
 public class SidInfoImpl extends SidInfo {
 
-    public String m_name;
+    public String name;
 
-    public String m_version;
+    public String version;
 
-    public List<String> m_credits = new ArrayList<>();
+    public List<String> credits = new ArrayList<>();
 
-    public String m_speedString;
+    public String speedString;
 
-    public String m_kernalDesc;
+    public String kernalDesc;
 
-    public String m_basicDesc;
+    public String basicDesc;
 
-    public String m_chargenDesc;
+    public String chargenDesc;
 
-    public int m_maxsids;
+    public int maxSids;
 
-    public int m_channels;
+    public int channels;
 
-    public short m_driverAddr;
+    public short driverAddress;
 
-    public short m_driverLength;
+    public short driverLength;
 
     // prevent copying
     private SidInfoImpl(SidInfoImpl s) {
@@ -64,76 +64,75 @@ public class SidInfoImpl extends SidInfo {
     }
 
     public SidInfoImpl() {
-        m_name = Const.PACKAGE_NAME;
-        m_version = Const.PACKAGE_VERSION;
-        m_maxsids = (Mixer.MAX_SIDS);
-        m_channels = (1);
-        m_driverAddr = (0);
-        m_driverLength = (0);
+        name = Const.PACKAGE_NAME;
+        version = Const.PACKAGE_VERSION;
+        maxSids = (Mixer.MAX_SIDS);
+        channels = 1;
+        driverAddress = 0;
+        driverLength = 0;
 
-        m_credits.add(Const.PACKAGE_NAME + " V" + Const.PACKAGE_VERSION + " Engine:\n" + "\tCopyright (C) 2000 Simon White\n" +
+        credits.add(Const.PACKAGE_NAME + " V" + Const.PACKAGE_VERSION + " Engine:\n" + "\tCopyright (C) 2000 Simon White\n" +
                       "\tCopyright (C) 2007-2010 Antti Lankila\n" + "\tCopyright (C) 2010-2015 Leandro Nini\n" + "\t" +
                       Const.PACKAGE_URL + "\n");
     }
 
     @Override
     public String getName() {
-        return m_name;
+        return name;
     }
 
     @Override
     public String getVersion() {
-        return m_version;
+        return version;
     }
 
     @Override
     public int getNumberOfCredits() {
-        return (int) m_credits.size();
+        return credits.size();
     }
 
     @Override
     public String getCredits(int i) {
-        return i < m_credits.size() ? m_credits.get((int) i) : "";
+        return i < credits.size() ? credits.get(i) : "";
     }
 
     @Override
     public int getMaxsids() {
-        return m_maxsids;
+        return maxSids;
     }
 
     @Override
     public int getChannels() {
-        return m_channels;
+        return channels;
     }
 
     @Override
-    public short getDriverAddr() {
-        return m_driverAddr;
+    public short getDriverAddress() {
+        return driverAddress;
     }
 
     @Override
     public short getDriverLength() {
-        return m_driverLength;
+        return driverLength;
     }
 
     @Override
     public String getSpeedString() {
-        return m_speedString;
+        return speedString;
     }
 
     @Override
     public String getKernalDesc() {
-        return m_kernalDesc;
+        return kernalDesc;
     }
 
     @Override
     public String getBasicDesc() {
-        return m_basicDesc;
+        return basicDesc;
     }
 
     @Override
     public String getChargenDesc() {
-        return m_chargenDesc;
+        return chargenDesc;
     }
-
 }

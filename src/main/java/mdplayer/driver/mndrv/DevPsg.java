@@ -4,7 +4,7 @@ import mdplayer.driver.mxdrv.XMemory;
 
 
 //
-// part of YM2608 - PSG
+// part of YM2608 - Psg
 //
 public class DevPsg {
 
@@ -23,7 +23,7 @@ public class DevPsg {
         mm.write(reg.a5 + W.key, (byte) reg.getD0_B());
         //    pea _psg_env_keyon(pc)
         _psg_freq();
-        comlfo._init_lfo();
+        comlfo.initLfo();
         _init_lfo_psg();
         _psg_env_keyon();
     }
@@ -58,7 +58,7 @@ public class DevPsg {
 
         mm.write(reg.a5 + W.freqbase, (short) reg.getD0_W());
         mm.write(reg.a5 + W.freqwork, (short) reg.getD0_W());
-        reg.setD0_W(reg.getD0_W() >> (int) reg.getD1_W());
+        reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
         reg.setD0_W(reg.getD0_W() + mm.readShort(reg.a5 + W.detune));
         if ((short) reg.getD0_W() < 0) {
             reg.D0_L = 0;
@@ -71,7 +71,7 @@ public class DevPsg {
     public void _set_psg_mako() {
         mm.write(reg.a5 + W.freqbase, (short) reg.getD0_W());
         mm.write(reg.a5 + W.freqwork, (short) reg.getD0_W());
-        reg.setD0_W(reg.getD0_W() >> (int) reg.getD1_W());
+        reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
         reg.setD1_W(mm.readShort(reg.a5 + W.detune));
         reg.setD1_W((short) (-(short) reg.getD1_W()));
 
@@ -89,7 +89,7 @@ public class DevPsg {
 
         mm.write(reg.a5 + W.freqbase, (short) reg.getD0_W());
         mm.write(reg.a5 + W.freqwork, (short) reg.getD0_W());
-        reg.setD0_W(reg.getD0_W() >> (int) reg.getD1_W());
+        reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
         mm.write(reg.a5 + W.keycode2, (short) reg.getD0_W());
         _set_psg_bend();
     }
@@ -248,7 +248,7 @@ public class DevPsg {
 
         mm.write(reg.a5 + W.revexec, 0xff);
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x98));
-        mm.write(reg.a5 + W.reverb_time_work, (byte) (mm.readByte(reg.a5 + W.reverb_time)));
+        mm.write(reg.a5 + W.reverb_time_work, mm.readByte(reg.a5 + W.reverb_time));
 
         reg.D5_L = 7;
         reg.setD5_B(reg.getD5_B() & mm.readByte(reg.a5 + W.reverb));
@@ -371,7 +371,7 @@ public class DevPsg {
 
     /** */
     public void _psg_env() {
-        if ((byte) mm.readByte(reg.a5 + W.e_sw) >= 0) return;
+        if (mm.readByte(reg.a5 + W.e_sw) >= 0) return;
         mm.write(reg.a5 + W.e_sp, (byte) (mm.readByte(reg.a5 + W.e_sp) - 1));
         if (mm.readByte(reg.a5 + W.e_sp) == 0) {
             _psg_env_next();
@@ -392,7 +392,7 @@ public class DevPsg {
         reg.setD1_B(reg.getD1_B() & 0x7f);
         mm.write(reg.a5 + W.e_sp, (byte) reg.getD1_B());
         reg.setD0_B(mm.readByte(reg.a5 + W.e_ini));
-        Boolean f = reg.cryADD((byte) reg.getD0_B(), mm.readByte(reg.a5 + W.e_dl));
+        boolean f = reg.cryADD((byte) reg.getD0_B(), mm.readByte(reg.a5 + W.e_dl));
         reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a5 + W.e_dl));
         if (f) {
             _psg_env_common();
@@ -506,24 +506,24 @@ public class DevPsg {
         reg.setD5_B(reg.getD5_B() << 2);
         if (f != 0) {
             reg.a4 = reg.a5 + W.v_pattern3;
-            comlfo._init_lfo_common_a();
+            comlfo.initLfoCommonA();
         }
         f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
             reg.a4 = reg.a5 + W.v_pattern2;
-            comlfo._init_lfo_common_a();
+            comlfo.initLfoCommonA();
         }
         f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
             reg.a4 = reg.a5 + W.v_pattern1;
-            comlfo._init_lfo_common_a();
+            comlfo.initLfoCommonA();
         }
     }
 
     /**
-     * MML コマンド処理 ( PSG 部 )
+     * MML コマンド処理 ( Psg 部 )
      */
     public void _psg_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
@@ -991,7 +991,7 @@ public class DevPsg {
 
         reg.setD1_W(reg.getD1_W() - (int) (short) reg.getD0_W());
         reg.D1_L = (short) reg.getD1_W();
-        reg.D1_L = (short) ((int) reg.D1_L / (short) reg.getD2_W()) | (int) (((short) ((int) reg.D1_L % (short) reg.getD2_W())) << 16);
+        reg.D1_L = (short) (reg.D1_L / (short) reg.getD2_W()) | (((short) (reg.D1_L % (short) reg.getD2_W())) << 16);
         mm.write(reg.a4 + W_L.henka, (short) reg.getD1_W());
         reg.D1_L = (reg.D1_L << 16) | (reg.D1_L >> 16);
         mm.write(reg.a4 + W_L.henka_work, (short) reg.getD1_W());
@@ -1476,7 +1476,7 @@ public class DevPsg {
     }
 
     public void _psg_lfo() {
-        if ((byte) mm.readByte(reg.a5 + W.reverb) >= 0) {
+        if (mm.readByte(reg.a5 + W.reverb) >= 0) {
             if ((mm.readByte(reg.a5 + W.flag) & 0x20) == 0) return;
         }
         reg.setD0_W(reg.getD0_W() & 0xf);
@@ -1497,7 +1497,7 @@ public class DevPsg {
             reg.D0_L = 0xf;
         }
         mm.write(reg.a5 + W.vol, (byte) reg.getD0_B());
-        if ((byte) mm.readByte(reg.a5 + W.e_sw) >= 0) {
+        if (mm.readByte(reg.a5 + W.e_sw) >= 0) {
             _psg_lfo();
         }
     }
@@ -1512,7 +1512,7 @@ public class DevPsg {
             reg.D0_L = 0;
         }
         mm.write(reg.a5 + W.vol, (byte) reg.getD0_B());
-        if ((byte) mm.readByte(reg.a5 + W.e_sw) >= 0) {
+        if (mm.readByte(reg.a5 + W.e_sw) >= 0) {
             _psg_lfo();
         }
     }
@@ -1543,7 +1543,7 @@ public class DevPsg {
         reg.a0 = reg.a6 + Dw.TRACKWORKADR;
 
         do {
-            if ((byte) mm.readByte(reg.a0 + W.flag) < 0) {
+            if (mm.readByte(reg.a0 + W.flag) < 0) {
                 mm.write(reg.a0 + W.flag2, (byte) (mm.readByte(reg.a0 + W.flag2) | 1));
             }
             reg.a0 = reg.a0 + W._track_work_size;
@@ -1704,7 +1704,7 @@ public class DevPsg {
         reg.setD0_W(mm.readShort(reg.a5 + W.makotune));
         reg.D1_L = 0;
         reg.setD1_B(mm.readByte(reg.a5 + W.octave));
-        reg.setD0_W(reg.getD0_W() >> (int) reg.getD1_W());
+        reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
         reg.setD0_W(reg.getD0_W() + mm.readShort(reg.a5 + W.detune));
         if ((short) reg.getD0_W() < 0) {
             reg.D0_L = 0;
@@ -1855,13 +1855,13 @@ public class DevPsg {
         //_psg_velocity_pattern:
         switch (reg.getD0_W()) {
         case 2:
-            comlfo._com_lfo_saw();
+            comlfo.comLfoSaw();
             break;
         case 4:
-            comlfo._com_lfo_portament();
+            comlfo.comLfoPortament();
             break;
         case 6:
-            comlfo._com_lfo_triangle();
+            comlfo.comLfoTriangle();
             break;
         }
 
@@ -1891,32 +1891,32 @@ public class DevPsg {
         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD0_B());
 
-        if ((byte) mm.readByte(reg.a6 + Dw.LFO_FLAG) >= 0) {
+        if (mm.readByte(reg.a6 + Dw.LFO_FLAG) >= 0) {
             //_psg_pitch_pattern:
             switch (reg.getD0_W()) {
             case 2:
-                comlfo._com_lfo_saw();
+                comlfo.comLfoSaw();
                 break;
             case 4:
-                comlfo._com_lfo_portament();
+                comlfo.comLfoPortament();
                 break;
             case 6:
-                comlfo._com_lfo_triangle();
+                comlfo.comLfoTriangle();
                 break;
             case 8:
-                comlfo._com_lfo_portament();
+                comlfo.comLfoPortament();
                 break;
             case 10:
-                comlfo._com_lfo_triangle();
+                comlfo.comLfoTriangle();
                 break;
             case 12:
-                comlfo._com_lfo_triangle();
+                comlfo.comLfoTriangle();
                 break;
             case 14:
-                comlfo._com_lfo_oneshot();
+                comlfo.comLfoOneshot();
                 break;
             case 16:
-                comlfo._com_lfo_oneshot();
+                comlfo.comLfoOneshot();
                 break;
             }
             mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
@@ -1926,22 +1926,22 @@ public class DevPsg {
         //_pitch_extend:
         switch (reg.getD0_W()) {
         case 2:
-            comlfo._com_lfo_saw();
+            comlfo.comLfoSaw();
             break;
         case 4:
-            comlfo._com_lfo_portament();
+            comlfo.comLfoPortament();
             break;
         case 6:
-            comlfo._com_lfo_triangle();
+            comlfo.comLfoTriangle();
             break;
         case 8:
-            comlfo._com_lfo_oneshot();
+            comlfo.comLfoOneshot();
             break;
         case 10:
-            comlfo._com_lfo_square();
+            comlfo.comLfoSquare();
             break;
         case 12:
-            comlfo._com_lfo_randome();
+            comlfo.comLfoRandom();
             break;
         }
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
@@ -1981,7 +1981,7 @@ public class DevPsg {
             mm.write(reg.a4 + W_L.bendwork, (short) (mm.readShort(reg.a4 + W_L.bendwork) - reg.getD2_W()));
             reg.setD0_W(reg.getD0_W() - (int) (short) reg.getD2_W());
             mm.write(reg.a5 + W.freqbase, (short) reg.getD0_W());
-            reg.setD0_W(reg.getD0_W() >> (int) reg.getD1_W());
+            reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
             if (reg.getD0_W() < mm.readShort(reg.a4 + W_L.mokuhyou)) {
                 _ch_psg_bend_end();
                 return;
@@ -1993,7 +1993,7 @@ public class DevPsg {
         mm.write(reg.a4 + W_L.bendwork, (short) (mm.readShort(reg.a4 + W_L.bendwork) - reg.getD2_W()));
         reg.setD0_W(reg.getD0_W() - (int) (short) reg.getD2_W());
         mm.write(reg.a5 + W.freqbase, (short) reg.getD0_W());
-        reg.setD0_W(reg.getD0_W() >> (int) reg.getD1_W());
+        reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
         if (reg.getD0_W() >= mm.readShort(reg.a4 + W_L.mokuhyou)) {
             _ch_psg_bend_end();
             return;
@@ -2347,7 +2347,7 @@ public class DevPsg {
         if (reg.getD0_B() != 0) break _ex_soft4_sr;
 
         reg.setD0_B(mm.readByte(reg.a5 + W.e_sub));
-        Boolean cf = reg.getD0_B() < mm.readByte(reg.a5 + W.e_dr);
+        boolean cf = reg.getD0_B() < mm.readByte(reg.a5 + W.e_dr);
         reg.setD0_B(reg.getD0_B() - mm.readByte(reg.a5 + W.e_dr));
         if (cf) break _ex_soft4_dr2;
         if (reg.getD0_B() >= mm.readByte(reg.a5 + W.e_sl)) break _ex_soft4_ok;

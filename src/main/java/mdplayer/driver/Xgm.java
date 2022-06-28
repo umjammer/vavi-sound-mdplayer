@@ -1,5 +1,7 @@
 package mdplayer.driver;
 
+import java.util.Arrays;
+
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
@@ -11,14 +13,14 @@ public class Xgm extends BaseDriver {
 
     public Xgm(Setting setting) {
         this.setting = setting;
-        musicStep = Common.VGMProcSampleRate / 60.0;// setting.getoutputDevice().SampleRate / 60.0;
+        musicStep = Common.VGMProcSampleRate / 60.0; // setting.getoutputDevice().SampleRate / 60.0;
         pcmStep = setting.getOutputDevice().getSampleRate() / 14000.0;
     }
 
-    public static final int FCC_XGM = 0x204d4758;    // "XGM "
-    public static final int FCC_GD3 = 0x20336447;  // "Gd3 "
+    public static final int FCC_XGM = 0x204d4758; // "XGM "
+    public static final int FCC_GD3 = 0x20336447; // "Gd3 "
 
-    private class XGMSampleID {
+    private static class XGMSampleID {
         public int addr = 0;
         public int size = 0;
     }
@@ -30,9 +32,9 @@ public class Xgm extends BaseDriver {
     private int musicDataBlockAddr = 0;
     private byte versionInformation = 0;
     private byte dataInformation = 0;
-    private Boolean isNTSC = false;
-    private Boolean existGD3 = false;
-    private Boolean multiTrackFile = false;
+    private boolean isNTSC = false;
+    private boolean existGD3 = false;
+    private boolean multiTrackFile = false;
     private int gd3InfoStartAddr = 0;
 
 
@@ -117,7 +119,7 @@ public class Xgm extends BaseDriver {
 
     }
 
-    private Boolean getXGMInfo(byte[] vgmBuf) {
+    private boolean getXGMInfo(byte[] vgmBuf) {
         if (vgmBuf == null) return false;
 
         try {
@@ -155,14 +157,14 @@ public class Xgm extends BaseDriver {
                 return false;
             }
         } catch (Exception e) {
-            Log.write(String.format("XGMの情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), e.getStackTrace()));
+            Log.write(String.format("XGMの情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), Arrays.toString(e.getStackTrace())));
             return false;
         }
 
         return true;
     }
 
-    public Boolean isPlaying() {
+    public boolean isPlaying() {
         return true;
     }
 
@@ -243,16 +245,16 @@ public class Xgm extends BaseDriver {
             cmd &= 0xf0;
 
             if (cmd == 0x10) {
-                //PSG register write:
+                //Psg register write:
                 writePSG(X);
             } else if (cmd == 0x20) {
-                //YM2612 port 0 register write:
+                //Ym2612 port 0 register write:
                 writeYM2612P0(X);
             } else if (cmd == 0x30) {
-                //YM2612 port 1 register write:
+                //Ym2612 port 1 register write:
                 writeYM2612P1(X);
             } else if (cmd == 0x40) {
-                //YM2612 key off/on ($28) command write:
+                //Ym2612 key off/on ($28) command write:
                 writeYM2612Key(X);
             } else if (cmd == 0x50) {
                 //PCM play command:
@@ -298,7 +300,7 @@ public class Xgm extends BaseDriver {
         public int endAddr = 0;
         public int addr = 0;
         public int inst = 0;
-        public Boolean isPlaying = false;
+        public boolean isPlaying = false;
         public byte data = 0;
     }
 

@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2011-2015 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2007-2010 Antti Lankila
@@ -25,26 +25,26 @@ package mdplayer.driver.sid.libsidplayfp.c64;
 import java.nio.ByteBuffer;
 
 import mdplayer.driver.sid.libsidplayfp.EventScheduler;
+import mdplayer.driver.sid.libsidplayfp.SidEndian;
 import mdplayer.driver.sid.libsidplayfp.c64.banks.IBank;
 import mdplayer.driver.sid.libsidplayfp.c64.banks.IOBank;
 import mdplayer.driver.sid.libsidplayfp.c64.banks.IPLA;
 import mdplayer.driver.sid.libsidplayfp.c64.banks.RomBank;
 import mdplayer.driver.sid.libsidplayfp.c64.banks.SystemRAMBank;
 import mdplayer.driver.sid.libsidplayfp.c64.banks.ZeroRAMBank;
-import mdplayer.driver.sid.libsidplayfp.sidendian;
-import mdplayer.driver.sid.libsidplayfp.sidmemory;
+import mdplayer.driver.sid.libsidplayfp.SidMemory;
 import mdplayer.driver.sid.mem;
 
 
 /**
  * The C64 MMU chip.
  */
-public final class MMU implements sidmemory, IPLA {
+public final class MMU implements SidMemory, IPLA {
 
     private EventScheduler eventScheduler = null;
 
     /** CPU port signals */
-    private Boolean loram, hiram, charen;
+    private boolean loRam, hiRam, charEn;
 
     /** CPU read memory mapping : 4k chunks */
     private IBank[] cpuReadMap = new IBank[16];
@@ -76,16 +76,8 @@ public final class MMU implements sidmemory, IPLA {
     }
 
     public long getPhi2Time() {
-        return eventScheduler.getTime(EventScheduler.event_phase_t.EVENT_CLOCK_PHI2);
+        return eventScheduler.getTime(EventScheduler.EventPhase.CLOCK_PHI2);
     }
-
-    // private void updateMappingPHI2() { }
-
-    // public MMU(EventScheduler eventScheduler, IOBank ioBank) { }
-    protected void finalize() {
-    }
-
-    // public void reset() { }
 
     public void setRoms(ByteBuffer kernal, ByteBuffer basic, ByteBuffer character) {
         kernalRomBank.set(kernal);
@@ -101,7 +93,7 @@ public final class MMU implements sidmemory, IPLA {
 
     @Override
     public short readMemWord(short addr) {
-        return sidendian.endian_little16(ByteBuffer.wrap(ramBank.ram, addr, ramBank.ram.length - addr));
+        return SidEndian.toLittle16(ByteBuffer.wrap(ramBank.ram, addr, ramBank.ram.length - addr));
     }
 
     @Override
@@ -111,7 +103,7 @@ public final class MMU implements sidmemory, IPLA {
 
     @Override
     public void writeMemWord(short addr, short value) {
-        sidendian.endian_little16(ByteBuffer.wrap(ramBank.ram, addr, ramBank.ram.length - addr), value);
+        SidEndian.toLittle16(ByteBuffer.wrap(ramBank.ram, addr, ramBank.ram.length - addr), value);
     }
 
     @Override
@@ -131,7 +123,7 @@ public final class MMU implements sidmemory, IPLA {
         mem.memcpy(buf, source, size);
     }
 
-    // SID specific hacks
+    // Sid specific hacks
     @Override
     public void installResetHook(short addr) {
         kernalRomBank.installResetHook(addr);
@@ -167,37 +159,11 @@ public final class MMU implements sidmemory, IPLA {
         cpuWriteMap[addr >> 12].poke(addr, data);
     }
 
-    // @formatter:off
-
-    /*
-     * This file instanceof part of libsidplayfp, a SID player engine.
-     *
-     * Copyright 2011-2015 Leandro Nini <drfiemost@users.sourceforge.net>
-     * Copyright 2007-2010 Antti Lankila
-     * Copyright 2000 Simon White
-     *
-     * This program instanceof free software; you can redistribute it and/or modify
-     * it under the terms of the GNU General Public License as published by
-     * the Free Software Foundation; either version 2 of the License, or
-     * (at your option) any later version.
-     *
-     * This program instanceof distributed : the hope that it will be useful,
-     * but WITHOUT ANY WARRANTY; without even the implied warranty of
-     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     * GNU General Public License for more details.
-     *
-     * You should have received a copy of the GNU General Public License
-     * along with this program; if not, write to the Free Software
-     * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-     */
-
-    // @formatter:on
-
     public MMU(EventScheduler scheduler, IOBank ioBank) {
         this.eventScheduler = scheduler;
-        this.loram = false;
-        this.hiram = false;
-        this.charen = false;
+        this.loRam = false;
+        this.hiRam = false;
+        this.charEn = false;
         this.ioBank = ioBank;
         this.zeroRAMBank = new ZeroRAMBank(this, ramBank);
         cpuReadMap[0] = zeroRAMBank;
@@ -210,21 +176,21 @@ public final class MMU implements sidmemory, IPLA {
     }
 
     public void setCpuPort(byte state) {
-        loram = (state & 1) != 0;
-        hiram = (state & 2) != 0;
-        charen = (state & 4) != 0;
+        loRam = (state & 1) != 0;
+        hiRam = (state & 2) != 0;
+        charEn = (state & 4) != 0;
 
         updateMappingPHI2();
     }
 
     private void updateMappingPHI2() {
-        cpuReadMap[0xe] = cpuReadMap[0xf] = hiram ? kernalRomBank : ramBank;
-        cpuReadMap[0xa] = cpuReadMap[0xb] = (loram && hiram) ? basicRomBank : ramBank;
+        cpuReadMap[0xe] = cpuReadMap[0xf] = hiRam ? kernalRomBank : ramBank;
+        cpuReadMap[0xa] = cpuReadMap[0xb] = (loRam && hiRam) ? basicRomBank : ramBank;
 
-        if (charen && (loram || hiram)) {
+        if (charEn && (loRam || hiRam)) {
             cpuReadMap[0xd] = cpuWriteMap[0xd] = ioBank;
         } else {
-            cpuReadMap[0xd] = (!charen && (loram || hiram)) ? characterRomBank : ramBank;
+            cpuReadMap[0xd] = (!charEn && (loRam || hiRam)) ? characterRomBank : ramBank;
             cpuWriteMap[0xd] = ramBank;
         }
     }
@@ -237,9 +203,9 @@ public final class MMU implements sidmemory, IPLA {
         kernalRomBank.reset();
         basicRomBank.reset();
 
-        loram = false;
-        hiram = false;
-        charen = false;
+        loRam = false;
+        hiRam = false;
+        charEn = false;
 
         updateMappingPHI2();
     }

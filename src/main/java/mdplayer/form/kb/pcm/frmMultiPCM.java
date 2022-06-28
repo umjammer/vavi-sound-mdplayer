@@ -25,10 +25,11 @@ import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
+import mdsound.MultiPcm;
 
 
 public class frmMultiPCM extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -61,7 +62,7 @@ public class frmMultiPCM extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -135,7 +136,6 @@ public class frmMultiPCM extends frmBase {
                 }
 
                 for (ch = 0; ch < 28; ch++) parent.resetChannelMask(EnmChip.MultiPCM, chipID, ch);
-                return;
 
             }
         }
@@ -184,43 +184,43 @@ public class frmMultiPCM extends frmBase {
     }
 
     public void screenChangeParams() {
-        mdsound.MultiPcm._MultiPCM MultiPCMRegister = Audio.getMultiPCMRegister(chipID);
-        if (MultiPCMRegister == null) return;
+        MultiPcm.MultiPCM multiPCMRegister = Audio.getMultiPCMRegister(chipID);
+        if (multiPCMRegister == null) return;
 
         for (int ch = 0; ch < 28; ch++) {
-            int oct = ((MultiPCMRegister.slots[ch].regs[3] >> 4) - 1) & 0xf;
+            int oct = ((multiPCMRegister.slots[ch].regs[3] >> 4) - 1) & 0xf;
             oct = ((oct & 0x8) != 0) ? (oct - 16) : oct;
-            oct = oct + 4; //基音を o5 にしてます
-            int pitch = (int) (((MultiPCMRegister.slots[ch].regs[3] & 0xf) << 6) | (MultiPCMRegister.slots[ch].regs[2] >> 2));
+            oct = oct + 4; // 基音を o5 にしてます
+            int pitch = ((multiPCMRegister.slots[ch].regs[3] & 0xf) << 6) | (multiPCMRegister.slots[ch].regs[2] >> 2);
 
             int nt = Math.max(Math.min(oct * 12 + pitch / 85, 7 * 12), 0);
             newParam.channels[ch].note = nt;
 
-            int d = (int) (MultiPCMRegister.slots[ch].pan);
+            int d = multiPCMRegister.slots[ch].pan;
             d = (d == 0) ? 0xf : d;
             newParam.channels[ch].pan = ((((d & 0xc) >> 2) * 4) << 4) | (((d & 0x3) * 4) << 0);
 
-            newParam.channels[ch].bit[0] = (MultiPCMRegister.slots[ch].regs[4] & 0x80) != 0;
-            newParam.channels[ch].freq = ((MultiPCMRegister.slots[ch].regs[3] & 0xf) << 6) | (MultiPCMRegister.slots[ch].regs[2] >> 2);
-            newParam.channels[ch].bit[1] = (MultiPCMRegister.slots[ch].regs[5] & 1) != 0; // TL Interpolation
-            newParam.channels[ch].inst[1] = (MultiPCMRegister.slots[ch].regs[5] >> 1) & 0x7f; // TL
-            newParam.channels[ch].inst[2] = (MultiPCMRegister.slots[ch].regs[6] >> 3) & 7; // LFO freq
-            newParam.channels[ch].inst[3] = (MultiPCMRegister.slots[ch].regs[6]) & 7; // PLFO
-            newParam.channels[ch].inst[4] = (MultiPCMRegister.slots[ch].regs[7]) & 7; // ALFO
+            newParam.channels[ch].bit[0] = (multiPCMRegister.slots[ch].regs[4] & 0x80) != 0;
+            newParam.channels[ch].freq = ((multiPCMRegister.slots[ch].regs[3] & 0xf) << 6) | (multiPCMRegister.slots[ch].regs[2] >> 2);
+            newParam.channels[ch].bit[1] = (multiPCMRegister.slots[ch].regs[5] & 1) != 0; // TL Interpolation
+            newParam.channels[ch].inst[1] = (multiPCMRegister.slots[ch].regs[5] >> 1) & 0x7f; // TL
+            newParam.channels[ch].inst[2] = (multiPCMRegister.slots[ch].regs[6] >> 3) & 7; // LFO freq
+            newParam.channels[ch].inst[3] = (multiPCMRegister.slots[ch].regs[6]) & 7; // PLFO
+            newParam.channels[ch].inst[4] = (multiPCMRegister.slots[ch].regs[7]) & 7; // ALFO
 
-            if (MultiPCMRegister.slots[ch].sample != null) {
-                newParam.channels[ch].inst[0] = (int) MultiPCMRegister.slots[ch].regs[1];
-                newParam.channels[ch].sadr = (int) MultiPCMRegister.slots[ch].sample.start;
-                newParam.channels[ch].eadr = (int) MultiPCMRegister.slots[ch].sample.end;
-                newParam.channels[ch].ladr = (int) MultiPCMRegister.slots[ch].sample.loop;
-                newParam.channels[ch].inst[5] = (int) MultiPCMRegister.slots[ch].sample.lfovib;
-                newParam.channels[ch].inst[6] = (int) MultiPCMRegister.slots[ch].sample.ar;
-                newParam.channels[ch].inst[7] = (int) MultiPCMRegister.slots[ch].sample.dr1;
-                newParam.channels[ch].inst[8] = (int) MultiPCMRegister.slots[ch].sample.dr2;
-                newParam.channels[ch].inst[9] = (int) MultiPCMRegister.slots[ch].sample.dl;
-                newParam.channels[ch].inst[10] = (int) MultiPCMRegister.slots[ch].sample.rr;
-                newParam.channels[ch].inst[11] = (int) MultiPCMRegister.slots[ch].sample.krs;
-                newParam.channels[ch].inst[12] = (int) MultiPCMRegister.slots[ch].sample.am;
+            if (multiPCMRegister.slots[ch].sample != null) {
+                newParam.channels[ch].inst[0] = multiPCMRegister.slots[ch].regs[1];
+                newParam.channels[ch].sadr = multiPCMRegister.slots[ch].sample.start;
+                newParam.channels[ch].eadr = multiPCMRegister.slots[ch].sample.end;
+                newParam.channels[ch].ladr = multiPCMRegister.slots[ch].sample.loop;
+                newParam.channels[ch].inst[5] = multiPCMRegister.slots[ch].sample.lfoVib;
+                newParam.channels[ch].inst[6] = multiPCMRegister.slots[ch].sample.ar;
+                newParam.channels[ch].inst[7] = multiPCMRegister.slots[ch].sample.dr1;
+                newParam.channels[ch].inst[8] = multiPCMRegister.slots[ch].sample.dr2;
+                newParam.channels[ch].inst[9] = multiPCMRegister.slots[ch].sample.dl;
+                newParam.channels[ch].inst[10] = multiPCMRegister.slots[ch].sample.rr;
+                newParam.channels[ch].inst[11] = multiPCMRegister.slots[ch].sample.krs;
+                newParam.channels[ch].inst[12] = multiPCMRegister.slots[ch].sample.am;
             }
 
             if (newParam.channels[ch].bit[0]) {

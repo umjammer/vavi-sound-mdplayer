@@ -28,7 +28,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmYM2203 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -51,7 +51,7 @@ public class frmYM2203 extends frmBase {
         this.newParam = newParam;
         this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getplaneYM2203(), null, zoom);
-        Boolean YM2203Type = (chipID == 0)
+        boolean YM2203Type = (chipID == 0)
                 ? parent.setting.getYM2203Type()[0].getUseReal()[0]
                 : parent.setting.getYM2203Type()[1].getUseReal()[0];
         int YM2203SoundLocation = (chipID == 0)
@@ -67,7 +67,7 @@ public class frmYM2203 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -249,8 +249,8 @@ public class frmYM2203 extends frmBase {
         for (int ch = 0; ch < 3; ch++) { //SSG
             MDChipParams.Channel channel = newParam.channels[ch + 6];
 
-            Boolean t = (ym2203Register[0x07] & (0x1 << ch)) == 0;
-            Boolean n = (ym2203Register[0x07] & (0x8 << ch)) == 0;
+            boolean t = (ym2203Register[0x07] & (0x1 << ch)) == 0;
+            boolean n = (ym2203Register[0x07] & (0x8 << ch)) == 0;
             channel.tn = (t ? 1 : 0) + (n ? 2 : 0);
             channel.volume = (int) (((t || n) ? 1 : 0) * (ym2203Register[0x08 + ch] & 0xf) * (20.0 / 16.0));
             if (!t && !n && channel.volume > 0) {
@@ -276,7 +276,7 @@ public class frmYM2203 extends frmBase {
 
 
     public void screenDrawParams() {
-        Boolean YM2203Type = (chipID == 0)
+        boolean YM2203Type = (chipID == 0)
                 ? parent.setting.getYM2203Type()[0].getUseReal()[0]
                 : parent.setting.getYM2203Type()[1].getUseReal()[0];
         int YM2203SoundLocation = (chipID == 0)
@@ -323,7 +323,7 @@ public class frmYM2203 extends frmBase {
     }
 
     public void screenInit() {
-        Boolean YM2203Type = (chipID == 0)
+        boolean YM2203Type = (chipID == 0)
                 ? parent.setting.getYM2203Type()[0].getUseReal()[0]
                 : parent.setting.getYM2203Type()[1].getUseReal()[0];
         int YM2203SoundLocation = (chipID == 0)

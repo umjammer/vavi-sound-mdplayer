@@ -27,7 +27,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmMMC5 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -61,7 +61,7 @@ public class frmMMC5 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -181,13 +181,13 @@ public class frmMMC5 extends frmBase {
                 //但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (int ch = 0; ch < 2; ch++) {
-                        if (newParam.sqrChannels[ch].mask == true)
+                        if (newParam.sqrChannels[ch].mask)
                             parent.resetChannelMask(EnmChip.MMC5, chipID, ch);
                         else
                             parent.setChannelMask(EnmChip.MMC5, chipID, ch);
                     }
 
-                    if (newParam.pcmChannel.mask == true)
+                    if (newParam.pcmChannel.mask)
                         parent.resetChannelMask(EnmChip.MMC5, chipID, 0);
                     else
                         parent.setChannelMask(EnmChip.MMC5, chipID, 0);
@@ -226,7 +226,6 @@ public class frmMMC5 extends frmBase {
                     //マスク
                     parent.setChannelMask(EnmChip.MMC5, chipID, ch);
 
-                    return;
                 }
             }
         }

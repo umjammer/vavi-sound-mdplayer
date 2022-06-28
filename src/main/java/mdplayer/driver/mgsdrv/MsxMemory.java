@@ -1,11 +1,12 @@
 
 package mdplayer.driver.mgsdrv;
 
+import konamiman.z80.interfaces.Memory;
 import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 
 
-public class MsxMemory implements IMemory {
+public class MsxMemory implements Memory {
 
     private mdplayer.ChipRegister chipRegister;
     private EnmModel model;
@@ -27,13 +28,17 @@ public class MsxMemory implements IMemory {
         slot.pages[page].set(address, value);
     }
 
-    public int Size = 65536;
+    public int size = 65536;
 
-    public byte[] GetContents(int startAddress, int length) {
-        if (startAddress >= this.Size)
+    public int getSize() {
+        return size;
+    }
+
+    public byte[] getContents(int startAddress, int length) {
+        if (startAddress >= this.size)
             throw new IndexOutOfBoundsException("startAddress cannot go beyond memory size");
 
-        if (startAddress + length > this.Size)
+        if (startAddress + length > this.size)
             throw new IndexOutOfBoundsException("startAddress + length cannot go beyond memory size");
 
         if (startAddress < 0)
@@ -61,7 +66,7 @@ public class MsxMemory implements IMemory {
         if (startIndex < 0)
             throw new IndexOutOfBoundsException("startIndex cannot be negative");
 
-        if (startAddress + length > Size)
+        if (startAddress + length > size)
             throw new IndexOutOfBoundsException("startAddress + length cannot go beyond the memory size");
 
         for (int i = 0; i < length; i++)
@@ -72,7 +77,7 @@ public class MsxMemory implements IMemory {
         slot.setPageFromSlot(toMemoryPage, basicSlot, extendSlot);
     }
 
-    public byte ReadSlotMemoryAdr(int slot, int exSlot, int address) {
+    public byte readSlotMemoryAdr(int slot, int exSlot, int address) {
         return this.slot.slots[slot][exSlot].get(address);
     }
 }

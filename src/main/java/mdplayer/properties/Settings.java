@@ -10,14 +10,12 @@
 
 package mdplayer.properties;
 
-import javax.security.auth.login.Configuration;
-
 
 //@System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
 //@System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.8.1.0")]
-class Settings extends Configuration.ApplicationSettingsBase {
+class Settings {
 
-    private static Settings defaultInstance = ((Settings) (Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
+    private static Settings defaultInstance = new Settings();
 
     public static Settings getDefault() {
         return defaultInstance;

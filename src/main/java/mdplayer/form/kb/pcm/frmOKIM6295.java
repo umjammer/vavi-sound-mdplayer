@@ -28,7 +28,7 @@ import mdsound.OkiM6295;
 
 
 public class frmOKIM6295 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -62,7 +62,7 @@ public class frmOKIM6295 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -163,7 +163,7 @@ public class frmOKIM6295 extends frmBase {
                 //但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (int ch = 0; ch < 4; ch++) {
-                        if (newParam.channels[ch].mask == true)
+                        if (newParam.channels[ch].mask)
                             parent.resetChannelMask(EnmChip.OKIM6295, chipID, ch);
                         else
                             parent.setChannelMask(EnmChip.OKIM6295, chipID, ch);
@@ -185,7 +185,6 @@ public class frmOKIM6295 extends frmBase {
 
                 //マスク解除
                 for (ch = 0; ch < 4; ch++) parent.resetChannelMask(EnmChip.OKIM6295, chipID, ch);
-                return;
             }
         }
     };

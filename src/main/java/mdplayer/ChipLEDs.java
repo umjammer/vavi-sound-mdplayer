@@ -82,11 +82,11 @@ public class ChipLEDs {
     public byte SecNES = 0;
     public byte SecDMC = 0;
     public byte SecFDS = 0;
-    public byte SecFME7 = 0;
+    public final byte SecFME7 = 0;
     public byte SecMMC5 = 0;
-    public byte SecVRC6 = 0;
-    public byte SecVRC7 = 0;
-    public byte SecN106 = 0;
+    public final byte SecVRC6 = 0;
+    public final byte SecVRC7 = 0;
+    public final byte SecN106 = 0;
     public byte SecHuC8 = 0;
     public byte SecMPCM = 0;
     public byte SecYMZ = 0;
@@ -99,5 +99,5 @@ public class ChipLEDs {
     public byte SecPPZ8 = 0;
     public byte SecPPSDRV = 0;
     public byte SecP86 = 0;
-    public byte SecQsnd = 0;
+    public final byte SecQsnd = 0;
 }

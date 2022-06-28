@@ -2,29 +2,30 @@ package mdplayer.form.sys;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.PointerInfo;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
-import java.awt.dnd.DragSourceAdapter;
-import java.awt.dnd.DragSourceEvent;
-import java.awt.dnd.DragSourceListener;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -35,10 +36,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.zip.ZipFile;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Transmitter;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -47,7 +46,6 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolTip;
 import javax.swing.SwingUtilities;
@@ -57,7 +55,6 @@ import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
-import com.sun.tools.javac.file.ZipArchive;
 import dotnet4j.Tuple;
 import dotnet4j.io.Directory;
 import dotnet4j.io.File;
@@ -68,11 +65,9 @@ import dotnet4j.io.FileStream;
 import dotnet4j.io.IOException;
 import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
-import dotnet4j.io.Stream;
 import dotnet4j.io.StreamWriter;
 import dotnet4j.io.compression.CompressionMode;
 import dotnet4j.io.compression.GZipStream;
-import javafx.scene.input.DragEvent;
 import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
@@ -93,6 +88,7 @@ import mdplayer.Request;
 import mdplayer.Request.enmRequest;
 import mdplayer.Setting;
 import mdplayer.TonePallet;
+import mdplayer.YM2612MIDI;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mxdrv.MXDRV;
@@ -135,15 +131,19 @@ import mdplayer.form.kb.psg.frmAY8910;
 import mdplayer.form.kb.psg.frmSN76489;
 import mdplayer.form.kb.wf.frmHuC6280;
 import mdplayer.form.kb.wf.frmK051649;
-import mdplayer.form.sys.frmMain.COPYDATASTRUCT;
 import mdplayer.properties.Resources;
 import mdplayer.vst.frmVSTeffectList;
 import mdsound.K051649;
 import mdsound.OotakePsg;
 import mdsound.np.chip.NesN106;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.tools.ant.taskdefs.email.Message;
+import org.apache.tools.ant.types.Environment;
+import vavi.util.archive.Archive;
+import vavi.util.archive.Archives;
+import vavi.util.archive.Entry;
+import vavi.util.archive.zip.ZipEntry;
 
+import static dotnet4j.io.Path.getDirectoryName;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
@@ -210,10 +210,10 @@ public class frmMain extends JFrame {
     private int[] oldButtonMode = new int[18];
     private int[] newButtonMode = new int[18];
 
-    private Boolean isRunning = false;
-    private Boolean stopped = false;
+    private boolean isRunning = false;
+    private boolean stopped = false;
 
-    private Boolean IsInitialOpenFolder = true;
+    private boolean IsInitialOpenFolder = true;
 
     private byte[] srcBuf;
 
@@ -223,12 +223,11 @@ public class frmMain extends JFrame {
     private int frameSizeW = 0;
     private int frameSizeH = 0;
 
-
     private Transmitter midiin = null;
-    private Boolean forcedExit = false;
-    private mdplayer.YM2612MIDI YM2612MIDI = null;
-    private Boolean flgReinit = false;
-    public Boolean reqAllScreenInit = true;
+    private boolean forcedExit = false;
+    private YM2612MIDI ym2612MIDI = null;
+    private boolean flgReinit = false;
+    public boolean reqAllScreenInit = true;
 
     private static final String[] modeTip = new String[] {
             "Mode\nNow:Step\nNext:Random",
@@ -249,7 +248,7 @@ public class frmMain extends JFrame {
     private long now = 0;
     private String opeFolder = "";
     private final Object remoteLockObj = new Object();
-    private Boolean remoteBusy = false;
+    private boolean remoteBusy = false;
     private List<String[]> remoteReq = new ArrayList<>();
 
     public frmMain() {
@@ -290,7 +289,7 @@ public class frmMain extends JFrame {
 
         Log.forcedWrite("frmMain(コンストラクタ):STEP 01");
 
-        //引数が指定されている場合のみプロセスチェックを行い、自分と同じアプリケーションが実行中ならばそちらに引数を渡し終了する
+        // 引数が指定されている場合のみプロセスチェックを行い、自分と同じアプリケーションが実行中ならばそちらに引数を渡し終了する
         if (Common.getCommandLineArgs().length > 1) {
             Process prc = GetPreviousProcess();
             if (prc != null) {
@@ -306,7 +305,7 @@ public class frmMain extends JFrame {
 
         Log.forcedWrite("frmMain(コンストラクタ):STEP 02");
 
-        pbScreen.AllowDrop = true;
+//        pbScreen.AllowDrop = true;
 
         Log.forcedWrite("frmMain(コンストラクタ):STEP 03");
         if (setting == null) {
@@ -328,7 +327,7 @@ public class frmMain extends JFrame {
         Audio.frmMain = this;
         Audio.init(setting);
 
-        YM2612MIDI = new mdplayer.YM2612MIDI(this, Audio.mdsMIDI, newParam);
+        ym2612MIDI = new mdplayer.YM2612MIDI(this, Audio.mdsMIDI, newParam);
 
         Log.forcedWrite("起動時のAudio初期化処理完了");
 
@@ -601,7 +600,7 @@ public class frmMain extends JFrame {
                     tsmiPlay_Click(null);
                 break;
             case "STOP":
-                tsmiStop_Click((ActionEvent) null);
+                tsmiStop_Click(null);
                 break;
             case "NEXT":
                 tsmiNext_Click(null);
@@ -642,7 +641,7 @@ public class frmMain extends JFrame {
                 lin = lin.substring(lin.indexOf(" ")).trim();
                 String path = lin.trim();
                 MmfControl mml2vgmMmf = new MmfControl(true, mName, count);
-                byte[] buf = mml2vgmMmf.GetBytes();
+                byte[] buf = mml2vgmMmf.getBytes();
 
                 bufferPlay(buf, path);
 
@@ -1031,7 +1030,7 @@ public class frmMain extends JFrame {
             frmPlayList.stop();
 
             PlayList pl = frmPlayList.getPlayList();
-            if (pl.getLstMusic().size() < 1 || pl.getLstMusic().get(pl.getLstMusic().size() - 1).fileName != args[1]) {
+            if (pl.getLstMusic().size() < 1 || !pl.getLstMusic().get(pl.getLstMusic().size() - 1).fileName.equals(args[1])) {
                 pl.AddFile(args[1]);
                 //frmPlayList.AddList(args[1]);
             }
@@ -1108,7 +1107,7 @@ public class frmMain extends JFrame {
 
         Log.forcedWrite("frmMain_FormClosing:STEP 03");
 
-        YM2612MIDI.close();
+        ym2612MIDI.close();
 
         // 解放
         screen.close();
@@ -1353,9 +1352,9 @@ public class frmMain extends JFrame {
         Log.forcedWrite("終了処理完了");
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private MouseMotionListener pbScreen_MouseMove = new MouseMotionAdapter() {
         @Override
-        public void mouseClicked(MouseEvent ev) {
+        public void mouseMoved(MouseEvent ev) {
             int px = ev.getX() / setting.getOther().getZoom();
             int py = ev.getY() / setting.getOther().getZoom();
 
@@ -1370,13 +1369,16 @@ public class frmMain extends JFrame {
                 else newButton[n] = 0;
             }
         }
+    };
 
+    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseExited(MouseEvent e) {
             Arrays.fill(newButton, 0);
         }
 
-        private void pbScreen_MouseClick(MouseEvent ev) {
+        @Override
+        public void mouseClicked(MouseEvent ev) {
             if (ev.getButton() == MouseEvent.BUTTON2) {
                 cmsMenu.setVisible(true);
                 cmsMenu.setLocation(ev.getX(), ev.getY());
@@ -1385,100 +1387,83 @@ public class frmMain extends JFrame {
             //int px = ev.getX() / setting.getother().getZoom();
             //int py = ev.getY() / setting.getother().getZoom();
 
-            //if (py < 16)
-            //{
+            //if (py < 16) {
             //    if (px < 8 * 2) return;
-            //    if (px < 8 * 5 + 4)
-            //    {
+            //    if (px < 8 * 5 + 4) {
             //        if (py < 8) tsmiPAY8910_Click(null);
             //        else tsmiSAY8910_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 7)
-            //    {
+            //    if (px < 8 * 7) {
             //        if (py < 8) tsmiPOPLL_Click(null);
             //        else tsmiSOPLL_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 9)
-            //    {
+            //    if (px < 8 * 9) {
             //        if (py < 8) tsmiPOPN_Click(null);
             //        else tsmiSOPN_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 11)
-            //    {
+            //    if (px < 8 * 11) {
             //        if (py < 8) tsmiPOPN2_Click(null);
             //        else tsmiSOPN2_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 13 + 4)
-            //    {
+            //    if (px < 8 * 13 + 4) {
             //        if (py < 8) tsmiPOPNA_Click(null);
             //        else tsmiSOPNA_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 16)
-            //    {
+            //    if (px < 8 * 16) {
             //        if (py < 8) tsmiPOPNB_Click(null);
             //        else tsmiSOPNB_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 18 + 4)
-            //    {
+            //    if (px < 8 * 18 + 4) {
             //        if (py < 8) tsmiPOPM_Click(null);
             //        else tsmiSOPM_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 20 + 4)
-            //    {
+            //    if (px < 8 * 20 + 4) {
             //        if (py < 8) tsmiPDCSG_Click(null);
             //        else tsmiSDCSG_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 23)
-            //    {
+            //    if (px < 8 * 23) {
             //        if (py < 8) tsmiPRF5C164_Click(null);
             //        else tsmiSRF5C164_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 25 + 4)
-            //    {
+            //    if (px < 8 * 25 + 4) {
             //        return;
             //    }
-            //    if (px < 8 * 27 + 4)
-            //    {
+            //    if (px < 8 * 27 + 4) {
             //        if (py < 8) tsmiPOKIM6258_Click(null);
             //        else tsmiSOKIM6258_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 30)
-            //    {
+            //    if (px < 8 * 30) {
             //        if (py < 8) tsmiPOKIM6295_Click(null);
             //        else tsmiSOKIM6295_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 32 + 4)
-            //    {
+            //    if (px < 8 * 32 + 4) {
             //        if (py < 8) tsmiPC140_Click(null);
             //        else tsmiSC140_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 35)
-            //    {
+            //    if (px < 8 * 35) {
             //        if (py < 8) tsmiPSegaPCM_Click(null);
             //        else tsmiSSegaPCM_Click(null);
             //        return;
             //    }
-            //    if (px < 8 * 37 + 4)
-            //    {
+            //    if (px < 8 * 37 + 4) {
             //        if (py < 8) tsmiPHuC6280_Click(null);
             //        else tsmiSHuC6280_Click(null);
             //        return;
             //    }
             //    return;
             //}
-
         }
     };
 
@@ -1783,7 +1768,7 @@ public class frmMain extends JFrame {
     }
 
 
-    private void OpenFormMegaCD(int chipID, Boolean force/* = false*/) {
+    private void OpenFormMegaCD(int chipID, boolean force/* = false*/) {
         if (frmMCD[chipID] != null) {
             if (!force) {
                 CloseFormMegaCD(chipID);
@@ -1826,7 +1811,7 @@ public class frmMain extends JFrame {
         frmMCD[chipID] = null;
     }
 
-    private void OpenFormRf5c68(int chipID, Boolean force/* = false*/) {
+    private void OpenFormRf5c68(int chipID, boolean force/* = false*/) {
         if (frmRf5c68[chipID] != null) {
             if (!force) {
                 CloseFormRf5c68(chipID);
@@ -1870,7 +1855,7 @@ public class frmMain extends JFrame {
     }
 
 
-    private void OpenFormYMF271(int chipID, Boolean force/* = false*/) {
+    private void OpenFormYMF271(int chipID, boolean force/* = false*/) {
         if (frmYMF271[chipID] != null)// && frmInfo.isClosed)
         {
             if (!force) {
@@ -1914,7 +1899,7 @@ public class frmMain extends JFrame {
         frmYMF271[chipID] = null;
     }
 
-    private void OpenFormYM2608(int chipID, Boolean force/* = false*/) {
+    private void OpenFormYM2608(int chipID, boolean force/* = false*/) {
         if (frmYM2608[chipID] != null)// && frmInfo.isClosed)
         {
             if (!force) {
@@ -1958,7 +1943,7 @@ public class frmMain extends JFrame {
         frmYM2608[chipID] = null;
     }
 
-    private void OpenFormYM2151(int chipID, Boolean force/* = false*/) {
+    private void OpenFormYM2151(int chipID, boolean force/* = false*/) {
         if (frmYM2151[chipID] != null)// && frmInfo.isClosed)
         {
             if (!force) {
@@ -2001,7 +1986,7 @@ public class frmMain extends JFrame {
         frmYM2151[chipID] = null;
     }
 
-    private void OpenFormC140(int chipID, Boolean force/* = false*/) {
+    private void OpenFormC140(int chipID, boolean force/* = false*/) {
         if (frmC140[chipID] != null) {
             if (!force) {
                 CloseFormC140(chipID);
@@ -2043,7 +2028,7 @@ public class frmMain extends JFrame {
         frmC140[chipID] = null;
     }
 
-    private void OpenFormPPZ8(int chipID, Boolean force/* = false*/) {
+    private void OpenFormPPZ8(int chipID, boolean force/* = false*/) {
         if (frmPPZ8[chipID] != null) {
             if (!force) {
                 CloseFormPPZ8(chipID);
@@ -2085,7 +2070,7 @@ public class frmMain extends JFrame {
         frmPPZ8[chipID] = null;
     }
 
-    private void OpenFormS5B(int chipID, Boolean force/* = false*/) {
+    private void OpenFormS5B(int chipID, boolean force/* = false*/) {
         if (frmS5B[chipID] != null) {
             if (!force) {
                 CloseFormS5B(chipID);
@@ -2127,7 +2112,7 @@ public class frmMain extends JFrame {
         frmS5B[chipID] = null;
     }
 
-    private void OpenFormDMG(int chipID, Boolean force/* = false*/) {
+    private void OpenFormDMG(int chipID, boolean force/* = false*/) {
         if (frmDMG[chipID] != null) {
             if (!force) {
                 CloseFormDMG(chipID);
@@ -2169,7 +2154,7 @@ public class frmMain extends JFrame {
         frmDMG[chipID] = null;
     }
 
-    private void OpenFormYMZ280B(int chipID, Boolean force/* = false*/) {
+    private void OpenFormYMZ280B(int chipID, boolean force/* = false*/) {
         if (frmYMZ280B[chipID] != null) {
             if (!force) {
                 CloseFormYMZ280B(chipID);
@@ -2211,7 +2196,7 @@ public class frmMain extends JFrame {
         frmYMZ280B[chipID] = null;
     }
 
-    private void OpenFormC352(int chipID, Boolean force/* = false*/) {
+    private void OpenFormC352(int chipID, boolean force/* = false*/) {
         if (frmC352[chipID] != null) {
             if (!force) {
                 CloseFormC352(chipID);
@@ -2253,7 +2238,7 @@ public class frmMain extends JFrame {
         frmC352[chipID] = null;
     }
 
-    private void OpenFormMultiPCM(int chipID, Boolean force/* = false*/) {
+    private void OpenFormMultiPCM(int chipID, boolean force/* = false*/) {
         if (frmMultiPCM[chipID] != null)// && frmInfo.isClosed)
         {
             if (!force) {
@@ -2296,7 +2281,7 @@ public class frmMain extends JFrame {
         frmMultiPCM[chipID] = null;
     }
 
-    private void OpenFormQSound(int chipID, Boolean force/* = false*/) {
+    private void OpenFormQSound(int chipID, boolean force/* = false*/) {
         if (frmQSound[chipID] != null) {
             if (!force) {
                 CloseFormQSound(chipID);
@@ -2338,7 +2323,7 @@ public class frmMain extends JFrame {
         frmQSound[chipID] = null;
     }
 
-    private void OpenFormYM2203(int chipID, Boolean force/* = false*/) {
+    private void OpenFormYM2203(int chipID, boolean force/* = false*/) {
         if (frmYM2203[chipID] != null) {
             if (!force) {
                 CloseFormYM2203(chipID);
@@ -2380,7 +2365,7 @@ public class frmMain extends JFrame {
         frmYM2203[chipID] = null;
     }
 
-    private void OpenFormYM2610(int chipID, Boolean force/* = false*/) {
+    private void OpenFormYM2610(int chipID, boolean force/* = false*/) {
         if (frmYM2610[chipID] != null) {
             if (!force) {
                 CloseFormYM2610(chipID);
@@ -2422,7 +2407,7 @@ public class frmMain extends JFrame {
         frmYM2610[chipID] = null;
     }
 
-    private void openFormYM2612(int chipID, Boolean force/* = false*/) {
+    private void openFormYM2612(int chipID, boolean force/* = false*/) {
         if (frmYM2612[chipID] != null)// && frmInfo.isClosed)
         {
             if (!force) {
@@ -2447,7 +2432,7 @@ public class frmMain extends JFrame {
 
         frmYM2612[chipID].setVisible(true);
         frmYM2612[chipID].update();
-        frmYM2612[chipID].setTitle(String.format("YM2612 (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmYM2612[chipID].setTitle(String.format("Ym2612 (%s)", chipID == 0 ? "Primary" : "Secondary"));
 
         checkAndSetForm(frmYM2612[chipID]);
     }
@@ -2467,7 +2452,7 @@ public class frmMain extends JFrame {
         frmYM2612[chipID] = null;
     }
 
-    private void OpenFormOKIM6258(int chipID, Boolean force/* = false*/) {
+    private void OpenFormOKIM6258(int chipID, boolean force/* = false*/) {
         if (frmOKIM6258[chipID] != null) {
             if (!force) {
                 CloseFormOKIM6258(chipID);
@@ -2508,7 +2493,7 @@ public class frmMain extends JFrame {
         frmOKIM6258[chipID] = null;
     }
 
-    private void OpenFormOKIM6295(int chipID, Boolean force/* = false*/) {
+    private void OpenFormOKIM6295(int chipID, boolean force/* = false*/) {
         if (frmOKIM6295[chipID] != null) {
             if (!force) {
                 CloseFormOKIM6295(chipID);
@@ -2549,7 +2534,7 @@ public class frmMain extends JFrame {
         frmOKIM6295[chipID] = null;
     }
 
-    private void OpenFormSN76489(int chipID, Boolean force/* = false*/) {
+    private void OpenFormSN76489(int chipID, boolean force/* = false*/) {
         if (frmSN76489[chipID] != null) {
             if (!force) {
                 CloseFormSN76489(chipID);
@@ -2591,7 +2576,7 @@ public class frmMain extends JFrame {
         frmSN76489[chipID] = null;
     }
 
-    private void OpenFormSegaPCM(int chipID, Boolean force/* = false*/) {
+    private void OpenFormSegaPCM(int chipID, boolean force/* = false*/) {
         if (frmSegaPCM[chipID] != null) {
             if (!force) {
                 CloseFormSegaPCM(chipID);
@@ -2634,7 +2619,7 @@ public class frmMain extends JFrame {
     }
 
 
-    private void OpenFormAY8910(int chipID, Boolean force /*= false*/) {
+    private void OpenFormAY8910(int chipID, boolean force /*= false*/) {
         if (frmAY8910[chipID] != null) {
             if (!force) {
                 CloseFormAY8910(chipID);
@@ -2676,7 +2661,7 @@ public class frmMain extends JFrame {
         frmAY8910[chipID] = null;
     }
 
-    private void OpenFormHuC6280(int chipID, Boolean force/* = false*/) {
+    private void OpenFormHuC6280(int chipID, boolean force/* = false*/) {
         if (frmHuC6280[chipID] != null) {
             if (!force) {
                 CloseFormHuC6280(chipID);
@@ -2718,7 +2703,7 @@ public class frmMain extends JFrame {
         frmHuC6280[chipID] = null;
     }
 
-    private void OpenFormK051649(int chipID, Boolean force/* = false*/) {
+    private void OpenFormK051649(int chipID, boolean force/* = false*/) {
         if (frmK051649[chipID] != null)// && frmInfo.isClosed)
         {
             if (!force) {
@@ -2761,7 +2746,7 @@ public class frmMain extends JFrame {
         frmK051649[chipID] = null;
     }
 
-    private void OpenFormYM2413(int chipID, Boolean force/* = false*/) {
+    private void OpenFormYM2413(int chipID, boolean force/* = false*/) {
         if (frmYM2413[chipID] != null) {
             if (!force) {
                 CloseFormYM2413(chipID);
@@ -2803,7 +2788,7 @@ public class frmMain extends JFrame {
         frmYM2413[chipID] = null;
     }
 
-    private void OpenFormYM3526(int chipID, Boolean force/* = false*/) {
+    private void OpenFormYM3526(int chipID, boolean force/* = false*/) {
         if (frmYM3526[chipID] != null) {
             if (!force) {
                 CloseFormYM3526(chipID);
@@ -2845,7 +2830,7 @@ public class frmMain extends JFrame {
         frmYM3526[chipID] = null;
     }
 
-    private void OpenFormY8950(int chipID, Boolean force/* = false*/) {
+    private void OpenFormY8950(int chipID, boolean force/* = false*/) {
         if (frmY8950[chipID] != null) {
             if (!force) {
                 CloseFormY8950(chipID);
@@ -2887,7 +2872,7 @@ public class frmMain extends JFrame {
         frmY8950[chipID] = null;
     }
 
-    private void OpenFormYM3812(int chipID, Boolean force/* = false*/) {
+    private void OpenFormYM3812(int chipID, boolean force/* = false*/) {
         if (frmYM3812[chipID] != null) {
             if (!force) {
                 CloseFormYM3812(chipID);
@@ -2929,7 +2914,7 @@ public class frmMain extends JFrame {
         frmYM3812[chipID] = null;
     }
 
-    private void OpenFormYMF262(int chipID, Boolean force/* = false*/) {
+    private void OpenFormYMF262(int chipID, boolean force/* = false*/) {
         if (frmYMF262[chipID] != null) {
             if (!force) {
                 CloseFormYMF262(chipID);
@@ -2971,7 +2956,7 @@ public class frmMain extends JFrame {
         frmYMF262[chipID] = null;
     }
 
-    private void OpenFormYMF278B(int chipID, Boolean force/* = false*/) {
+    private void OpenFormYMF278B(int chipID, boolean force/* = false*/) {
         if (frmYMF278B[chipID] != null) {
             if (!force) {
                 CloseFormYMF278B(chipID);
@@ -3013,7 +2998,7 @@ public class frmMain extends JFrame {
         frmYMF278B[chipID] = null;
     }
 
-    private void OpenFormMIDI(int chipID, Boolean force/* = false*/) {
+    private void OpenFormMIDI(int chipID, boolean force/* = false*/) {
         if (frmMIDI[chipID] != null) {
             if (!force) {
                 closeFormMIDI(chipID);
@@ -3055,7 +3040,7 @@ public class frmMain extends JFrame {
         frmMIDI[chipID] = null;
     }
 
-    private void openFormNESDMC(int chipID, Boolean force/* = false*/) {
+    private void openFormNESDMC(int chipID, boolean force/* = false*/) {
         if (frmNESDMC[chipID] != null) {
             if (!force) {
                 closeFormNESDMC(chipID);
@@ -3097,7 +3082,7 @@ public class frmMain extends JFrame {
         frmNESDMC[chipID] = null;
     }
 
-    private void openFormFDS(int chipID, Boolean force/* = false*/) {
+    private void openFormFDS(int chipID, boolean force/* = false*/) {
         if (frmFDS[chipID] != null) {
             if (!force) {
                 closeFormFDS(chipID);
@@ -3139,7 +3124,7 @@ public class frmMain extends JFrame {
         frmFDS[chipID] = null;
     }
 
-    private void openFormVRC6(int chipID, Boolean force/* = false*/) {
+    private void openFormVRC6(int chipID, boolean force/* = false*/) {
         if (frmVRC6[chipID] != null) {
             if (!force) {
                 closeFormVRC6(chipID);
@@ -3185,7 +3170,7 @@ public class frmMain extends JFrame {
         frmVRC6[chipID] = null;
     }
 
-    private void openFormVRC7(int chipID, Boolean force/* = false*/) {
+    private void openFormVRC7(int chipID, boolean force/* = false*/) {
         if (frmVRC7[chipID] != null)// && frmInfo.isClosed)
         {
             if (!force) {
@@ -3228,7 +3213,7 @@ public class frmMain extends JFrame {
         frmVRC7[chipID] = null;
     }
 
-    private void openFormMMC5(int chipID, Boolean force/* = false*/) {
+    private void openFormMMC5(int chipID, boolean force/* = false*/) {
         if (frmMMC5[chipID] != null) {
             if (!force) {
                 closeFormMMC5(chipID);
@@ -3270,7 +3255,7 @@ public class frmMain extends JFrame {
         frmMMC5[chipID] = null;
     }
 
-    private void openFormRegTest(int chipID, EnmChip selectedChip/* = EnmChip.Unuse*/, Boolean force/* = false*/) {
+    private void openFormRegTest(int chipID, EnmChip selectedChip/* = EnmChip.Unuse*/, boolean force/* = false*/) {
         if (frmRegTest != null) {
             frmRegTest.changeChip(selectedChip);
             return;
@@ -3315,7 +3300,7 @@ public class frmMain extends JFrame {
         checkAndSetForm(frmVisWave);
     }
 
-    private void openFormN106(int chipID, Boolean force/* = false*/) {
+    private void openFormN106(int chipID, boolean force/* = false*/) {
         if (frmN106[chipID] != null) {
             if (!force) {
                 closeFormN106(chipID);
@@ -3424,9 +3409,9 @@ public class frmMain extends JFrame {
             frmInfo.y = setting.getLocation().getPInfo().y;
         }
 
-        Dimension s = Toolkit.getDefaultToolkit().getScreenSize();
+        Rectangle s = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
         Rectangle rc = new Rectangle(frmInfo.getLocation(), frmInfo.getSize());
-        if (s.WorkingArea.contains(rc)) {
+        if (s.contains(rc)) {
             frmInfo.setLocation(rc.getLocation());
             frmInfo.setPreferredSize(rc.getSize());
         } else {
@@ -3469,9 +3454,10 @@ public class frmMain extends JFrame {
             frmYM2612MIDI.y = setting.getLocation().getPosYm2612MIDI().y;
         }
 
-        Screen s = Screen.FromControl(frmYM2612MIDI);
+//        Screen s = Screen.FromControl(frmYM2612MIDI);
+        Rectangle s = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
         Rectangle rc = new Rectangle(frmYM2612MIDI.getLocation(), frmYM2612MIDI.getSize());
-        if (s.WorkingArea.contains(rc)) {
+        if (s.contains(rc)) {
             frmYM2612MIDI.setLocation(rc.getLocation());
             frmYM2612MIDI.setPreferredSize(rc.getSize());
         } else {
@@ -3486,7 +3472,7 @@ public class frmMain extends JFrame {
 
     private void openSetting() {
         frmSetting frm = new frmSetting(setting);
-        if (frm.showDialog(this) == JFileChooser.APPROVE_OPTION) {
+        if (frm.showDialog() == JFileChooser.APPROVE_OPTION) {
             flgReinit = true;
             reinit(frm.setting);
         }
@@ -3544,14 +3530,14 @@ public class frmMain extends JFrame {
         IsInitialOpenFolder = true;
         flgReinit = false;
 
-        for (int i = 0; i < 5; i++) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            Application.DoEvents();
-        }
+//        for (int i = 0; i < 5; i++) {
+//            try {
+//                Thread.sleep(100);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//            Application.DoEvents();
+//        }
     }
 
     private void openMixer() {
@@ -3585,9 +3571,10 @@ public class frmMain extends JFrame {
             frmMixer2.y = setting.getLocation().getPosMixer().y;
         }
 
-        Screen s = Screen.FromControl(frmMixer2);
+//        Screen s = Screen.FromControl(frmMixer2);
+        Rectangle s = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
         Rectangle rc = new Rectangle(frmMixer2.getLocation(), frmMixer2.getSize());
-        if (s.WorkingArea.contains(rc)) {
+        if (s.contains(rc)) {
             frmMixer2.setLocation(rc.getLocation());
             frmMixer2.setPreferredSize(rc.getSize());
         } else {
@@ -3602,44 +3589,37 @@ public class frmMain extends JFrame {
         oldParam.mixer = new MDChipParams.Mixer();
     }
 
-    private void pbScreen_DragEnter(DragEvent e) {
-        e.Effect = DragDropEffects.All;
+//    private void pbScreen_DragEnter(DragEvent e) {
+//        e.Effect = DragDropEffects.All;
+//    }
+
+    private void pbScreen_DragDrop(List<java.io.File> files) {
+        String filename = files.get(0).getPath();
+
+        try {
+            //曲を停止
+            frmPlayList.stop();
+            this.stop();
+//            while (!Audio.isStopped())
+//                Application.DoEvents();
+
+            frmPlayList.getPlayList().AddFile(filename);
+            //frmPlayList.AddList(filename);
+
+            if (filename.toLowerCase().lastIndexOf(".zip") == -1) {
+                loadAndPlay(0, 0, filename, null);
+                frmPlayList.setStart(-1);
+                oldParam = new MDChipParams();
+
+                frmPlayList.play();
+            }
+        } catch (Exception ex) {
+            Log.forcedWrite(ex);
+            JOptionPane.showConfirmDialog(null, "ファイルの読み込みに失敗しました。");
+        }
     }
 
-    private DragSourceListener pbScreen_DragDrop = new DragSourceAdapter() {
-
-        void whenDrag(DragSourceEvent ev) {
-            if (ev.Data.GetDataPresent(DataFormats.FileDrop)) {
-                String filename = ((String[]) ev.Data.GetData(DataFormats.FileDrop))[0];
-
-                try {
-
-                    //曲を停止
-                    frmPlayList.stop();
-                    this.stop();
-                    while (!Audio.isStopped())
-                        Application.DoEvents();
-
-                    frmPlayList.getPlayList().AddFile(filename);
-                    //frmPlayList.AddList(filename);
-
-                    if (filename.toLowerCase().lastIndexOf(".zip") == -1) {
-                        loadAndPlay(0, 0, filename, null);
-                        frmPlayList.setStart(-1);
-                        oldParam = new MDChipParams();
-
-                        frmPlayList.play();
-                    }
-                } catch (Exception ex) {
-                    Log.forcedWrite(ex);
-                    JOptionPane.showConfirmDialog(null, "ファイルの読み込みに失敗しました。");
-                }
-            }
-        }
-    };
-
-//        @Override protected Boolean getShowWithoutActivation()
-//            {
+//        @Override protected boolean getShowWithoutActivation() {
 //                return true;
 //            }
 
@@ -3740,10 +3720,10 @@ public class frmMain extends JFrame {
                 }
             }
 
-            //remote対応
-            String msg = mmf.GetMessage();
+            // remote対応
+            String msg = mmf.getMessage();
             if (msg != null && msg.isEmpty()) {
-                if (msg.trim().toUpperCase().equals("CLOSE")) {
+                if (msg.trim().equalsIgnoreCase("CLOSE")) {
                     this.BeginInvoke(this::close);
                 } else {
                     this.Invoke(//Asyncしないこと
@@ -3768,7 +3748,7 @@ public class frmMain extends JFrame {
                 }
 
                 try {
-                    Audio.setVisible(false);
+                    Audio.close();
                 } catch (Exception ex) {
                     Log.forcedWrite(ex);
                 }
@@ -3786,7 +3766,7 @@ public class frmMain extends JFrame {
     private void screenChangeParams() {
 
         long w = Audio.getCounter();
-        double sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate; //  setting.getoutputDevice().SampleRate;
+        double sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate;
         newParam.Cminutes = (int) (sec / 60);
         sec -= newParam.Cminutes * 60;
         newParam.Csecond = (int) sec;
@@ -3794,7 +3774,7 @@ public class frmMain extends JFrame {
         newParam.Cmillisecond = (int) (sec * 100.0);
 
         w = Audio.getTotalCounter();
-        sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate; // setting.getoutputDevice().SampleRate;
+        sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate;
         newParam.TCminutes = (int) (sec / 60);
         sec -= newParam.TCminutes * 60;
         newParam.TCsecond = (int) sec;
@@ -3802,7 +3782,7 @@ public class frmMain extends JFrame {
         newParam.TCmillisecond = (int) (sec * 100.0);
 
         w = Audio.getLoopCounter();
-        sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate; // setting.getoutputDevice().SampleRate;
+        sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate;
         newParam.LCminutes = (int) (sec / 60);
         sec -= newParam.LCminutes * 60;
         newParam.LCsecond = (int) sec;
@@ -4398,7 +4378,7 @@ public class frmMain extends JFrame {
             //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2413, chipID, ch, newParam.ym2413[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2608, chipID, ch, newParam.ym2608[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2610, chipID, ch, newParam.ym2610[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.YM2612, chipID, ch, newParam.ym2612[chipID].channels[ch].mask);
+            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.Ym2612, chipID, ch, newParam.ym2612[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 4; ch++) ForceChannelMask(EnmChip.SN76489, chipID, ch, newParam.sn76489[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 8; ch++) ForceChannelMask(EnmChip.RF5C164, chipID, ch, newParam.rf5c164[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 24; ch++) ForceChannelMask(EnmChip.C140, chipID, ch, newParam.c140[chipID].channels[ch].mask);
@@ -4751,7 +4731,7 @@ public class frmMain extends JFrame {
         opeButtonMode.setToolTipText(modeTip[newButtonMode[9]]);
     }
 
-    private String[] fileOpen(Boolean flg) {
+    private String[] fileOpen(boolean flg) {
         JFileChooser ofd = new JFileChooser();
         Arrays.stream(Resources.getCntSupportFile().split("\\s")).forEach(l -> {
             String[] p = l.split("|");
@@ -4790,43 +4770,41 @@ public class frmMain extends JFrame {
 
     private void dispPlayList() {
         frmPlayList.setting = setting;
-        //if (!setting.getlocation().PPlayList.equals(empty))
-        //{
+        //if (!setting.getlocation().PPlayList.equals(empty)) {
         //    frmPlayList.setLocation(setting.getlocation().PPlayList);
-
         //}
-        //if (!setting.getlocation().PPlayListWH.equals(empty))
-        //{
+        //if (!setting.getlocation().PPlayListWH.equals(empty)) {
         //    frmPlayList.getWidth() = setting.getlocation().PPlayListWH.X;
         //    frmPlayList.getHeight() = setting.getlocation().PPlayListWH.Y;
         //}
         frmPlayList.setVisible(!frmPlayList.isVisible());
         if (frmPlayList.isVisible()) checkAndSetForm(frmPlayList);
-        frmPlayList.TopMost = true;
-        frmPlayList.TopMost = false;
+        frmPlayList.toFront();
+        frmPlayList.toBack();
     }
 
     private void dispVSTList() {
         frmVSTeffectList.setVisible(!frmVSTeffectList.isVisible());
         if (frmVSTeffectList.isVisible()) checkAndSetForm(frmVSTeffectList);
-        frmVSTeffectList.TopMost = true;
-        frmVSTeffectList.TopMost = false;
+        frmVSTeffectList.toFront();
+        frmVSTeffectList.toBack();
     }
 
     private void showContextMenu() {
         cmsOpenOtherPanel.setVisible(true);
-        Point p = Toolkit.getDefaultToolkit().Control.MousePosition;
+        PointerInfo pi = MouseInfo.getPointerInfo();
+        Point p = pi.getLocation();
         cmsOpenOtherPanel.setLocation(p.x, p.y);
     }
 
-    public static final int FCC_VGM = 0x206D6756;    // "Vgm "
+    public static final int FCC_VGM = 0x206D6756; // "Vgm "
 
     public byte[] getAllBytes(String filename, FileFormat format) {
         format = FileFormat.unknown;
 
         String ext = Path.getExtension(filename).toLowerCase();
 
-        //wav/mp3/aiffはnaudioに任せるのでここの処理はスキップ
+        // wav/mp3/aiffはnaudioに任せるのでここの処理はスキップ
         if (ext.equals(".wav")) {
             format = FileFormat.WAV;
             return new byte[] {(byte) 'W', (byte) 'A', (byte) 'V'};
@@ -4842,10 +4820,10 @@ public class frmMain extends JFrame {
             return new byte[] {(byte) 'A', (byte) 'I', (byte) 'F', (byte) 'F'};
         }
 
-        //先ずは丸ごと読み込む
+        // 先ずは丸ごと読み込む
         byte[] buf = File.readAllBytes(filename);
 
-        //.NRDファイルの場合は拡張子判定
+        // .NRDファイルの場合は拡張子判定
         if (ext.equals(".nrd")) {
             format = FileFormat.NRT;
             return buf;
@@ -4956,7 +4934,7 @@ public class frmMain extends JFrame {
                      CompressionMode.Decompress); // 解凍（圧縮解除）を指定
 
              MemoryStream outStream // 出力ストリーム
-                     = new MemoryStream();
+                     = new MemoryStream()
 
         ) {
             while ((num = decompStream.read(buf, 0, buf.length)) > 0) {
@@ -4972,7 +4950,7 @@ public class frmMain extends JFrame {
 
     public void getInstCh(EnmChip chip, int ch, int chipID) {
         try {
-            YM2612MIDI.setVoiceFromChipRegister(chip, chipID, ch);
+            ym2612MIDI.setVoiceFromChipRegister(chip, chipID, ch);
 
             if (!setting.getOther().getUseGetInst()) return;
 
@@ -5189,7 +5167,7 @@ public class frmMain extends JFrame {
 
         MmfControl mmf = new MmfControl(true, "mml2vgmFMVoicePool", 1024 * 4);
         try {
-            mmf.SendMessage(String.join(":", "SendVoice", n));
+            mmf.sendMessage(String.join(":", "SendVoice", n));
         } catch (IndexOutOfBoundsException e) {
             System.err.println("メッセージが長すぎ");
         } catch (FileNotFoundException e) {
@@ -5260,7 +5238,7 @@ public class frmMain extends JFrame {
         } else if (chip == EnmChip.HuC6280) {
             OotakePsg.HuC6280State huc6280Register = Audio.getHuC6280Register(chipID);
             if (huc6280Register == null) return null;
-            mdsound.OotakePsg.HuC6280State.PSG psg = huc6280Register.psg[ch];
+            OotakePsg.HuC6280State.Psg psg = huc6280Register.psgs[ch];
             if (psg == null) return null;
             if (psg.wave == null) return null;
             if (psg.wave.length != 32) return null;
@@ -5579,7 +5557,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.HuC6280) {
             OotakePsg.HuC6280State huc6280Register = Audio.getHuC6280Register(chipID);
             if (huc6280Register == null) return;
-            mdsound.OotakePsg.HuC6280State.PSG psg = huc6280Register.psg[ch];
+            OotakePsg.HuC6280State.Psg psg = huc6280Register.psgs[ch];
             if (psg == null) return;
             if (psg.wave == null) return;
             if (psg.wave.length != 32) return;
@@ -5670,7 +5648,7 @@ public class frmMain extends JFrame {
         mdsound.K051649.K051649State.Channel psg = chip.channelList[ch];
         if (psg == null) return;
         int[] register = new int[32];
-        for (int i = 0; i < 32; i++) register[i] = (int) psg.waveRam[i];
+        for (int i = 0; i < 32; i++) register[i] = psg.waveRam[i];
 
         StringBuilder n = new StringBuilder("@sXX = {");
         for (int i = 0; i < 8; i++) {
@@ -5690,7 +5668,7 @@ public class frmMain extends JFrame {
         mdsound.K051649.K051649State.Channel psg = chip.channelList[ch];
         if (psg == null) return;
         int[] register = new int[32];
-        for (int i = 0; i < 32; i++) register[i] = (int) psg.waveRam[i];
+        for (int i = 0; i < 32; i++) register[i] = psg.waveRam[i];
 
         StringBuilder n = new StringBuilder();
         for (int i = 0; i < 8; i++) {
@@ -5822,10 +5800,10 @@ public class frmMain extends JFrame {
 
             n[1] = 0x02; // SYSTEM_GENESIS
 
-            n[3] = (byte) (fmRegister[p][0xb4 + c] & 0x03); // LFO (FMS on YM2612, PMS on YM2151)
+            n[3] = (byte) (fmRegister[p][0xb4 + c] & 0x03); // LFO (FMS on Ym2612, PMS on YM2151)
             n[4] = (byte) ((fmRegister[p][0xb0 + c] & 0x38) >> 3); // FB
             n[5] = (byte) (fmRegister[p][0xb0 + c] & 0x07); // ALG
-            n[6] = (byte) ((fmRegister[p][0xb4 + c] & 0x30) >> 4); // LFO2(AMS on YM2612, AMS on YM2151)
+            n[6] = (byte) ((fmRegister[p][0xb4 + c] & 0x30) >> 4); // LFO2(AMS on Ym2612, AMS on YM2151)
 
             for (int i = 0; i < 4; i++) {
                 //int ops = (i == 0) ? 0 : ((i == 1) ? 4 : ((i == 2) ? 8 : 12));
@@ -5853,10 +5831,10 @@ public class frmMain extends JFrame {
 
             n[1] = 0x08; // SYSTEM_YM2151
 
-            n[3] = (byte) ((ym2151Register[0x38 + ch] & 0x70) >> 4); // LFO (FMS on YM2612, PMS on YM2151)
+            n[3] = (byte) ((ym2151Register[0x38 + ch] & 0x70) >> 4); // LFO (FMS on Ym2612, PMS on YM2151)
             n[4] = (byte) ((ym2151Register[0x20 + ch] & 0x38) >> 3); // FB
             n[5] = (byte) (ym2151Register[0x20 + ch] & 0x07); // AL
-            n[6] = (byte) (ym2151Register[0x38 + ch] & 0x03); // LFO2(AMS on YM2612, AMS on YM2151)
+            n[6] = (byte) (ym2151Register[0x38 + ch] & 0x03); // LFO2(AMS on Ym2612, AMS on YM2151)
 
             for (int i = 0; i < 4; i++) {
                 //int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 16 : 24));
@@ -6475,7 +6453,7 @@ public class frmMain extends JFrame {
                 frmPlayList.stop();
 
                 PlayList pl = frmPlayList.getPlayList();
-                if (pl.getLstMusic().size() < 1 || pl.getLstMusic().get(pl.getLstMusic().size() - 1).fileName != sParam) {
+                if (pl.getLstMusic().size() < 1 || !pl.getLstMusic().get(pl.getLstMusic().size() - 1).fileName.equals(sParam)) {
                     frmPlayList.getPlayList().AddFile(sParam);
                     //frmPlayList.AddList(sParam);
                 }
@@ -6552,7 +6530,7 @@ public class frmMain extends JFrame {
         return null;
     }
 
-    public Boolean loadAndPlay(int m, int songNo, String fn, String zfn/* = null*/) {
+    public boolean loadAndPlay(int m, int songNo, String fn, String zfn/* = null*/) {
         try {
             if (Audio.flgReinit) flgReinit = true;
             if (setting.getOther().getInitAlways()) flgReinit = true;
@@ -6569,37 +6547,39 @@ public class frmMain extends JFrame {
 
             if (zfn == null || zfn.isEmpty()) {
                 srcBuf = getAllBytes(fn, format);
-                extFile = getExtendFile(fn, srcBuf, format, null);
+                extFile = getExtendFile(fn, srcBuf, format, null, null);
             } else {
 
                 playingArcFileName = zfn;
 
                 if (Path.getExtension(zfn).equalsIgnoreCase(".ZIP")) {
-                    try (ZipArchive archive = ZipFile.OpenRead(zfn)) {
-                        ZipArchiveEntry entry = archive.GetEntry(fn);
-                        String arcFn = "";
+                    Archive archive = Archives.getArchive(new java.io.File(zfn));
+                    Entry entry = archive.getEntry(fn);
 
-                        format = mdplayer.Common.FileFormat.checkExt(fn);
-                        if (format != FileFormat.unknown) {
-                            srcBuf = getBytesFromZipFile(entry, arcFn);
-                            if (!arcFn.isEmpty()) playingFileName = arcFn;
-                            extFile = getExtendFile(fn, srcBuf, format, archive);
-                        }
+                    format = mdplayer.Common.FileFormat.checkExt(fn);
+                    if (format != FileFormat.unknown) {
+                        String[] arcFn = new String[1];
+                        srcBuf = getBytesFromZipFile(archive, entry, arcFn);
+                        if (!arcFn[0].isEmpty()) playingFileName = arcFn[0];
+                        extFile = getExtendFile(fn, srcBuf, format, archive, entry);
                     }
                 } else {
                     format = mdplayer.Common.FileFormat.checkExt(fn);
                     if (format != FileFormat.unknown) {
-                        UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-                        srcBuf = cmd.GetFileByte(zfn, fn);
+                        Archive archive = Archives.getArchive(new java.io.File(zfn));
+                        Entry entry = archive.getEntry(fn);
+                        srcBuf = archive.getInputStream(entry).readAllBytes();
                         playingFileName = fn;
-                        extFile = getExtendFile(fn, srcBuf, format, new Tuple<String, String>(zfn, fn));
+                        extFile = getExtendFile(fn, srcBuf, format, archive, entry);
                     }
                 }
             }
 
             if (Path.getExtension(playingFileName).equalsIgnoreCase(".MDX")) {
                 if (setting.getOutputDevice().getSampleRate() != 44100) {
-                    JOptionPane.showConfirmDialog(this, "MDXファイルを再生する場合はサンプリングレートを44.1kHzに設定してください。", "MDPlayer", JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showConfirmDialog(this,
+                            "MDXファイルを再生する場合はサンプリングレートを44.1kHzに設定してください。",
+                            "MDPlayer", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
                     return false;
                 }
             }
@@ -6619,14 +6599,16 @@ public class frmMain extends JFrame {
         } catch (Exception ex) {
             Log.forcedWrite(ex);
             srcBuf = null;
-            JOptionPane.showConfirmDialog(this, String.format("ファイルの読み込みに失敗しました。\nメッセージ=%s", ex.getMessage()), "MDPlayer", JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showConfirmDialog(this,
+                    String.format("ファイルの読み込みに失敗しました。\nメッセージ=%s", ex.getMessage()),
+                    "MDPlayer", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
         return true;
     }
 
-    public Boolean bufferPlay(byte[] buf, String fullPath) {
+    public boolean bufferPlay(byte[] buf, String fullPath) {
         try {
             if (Audio.flgReinit) flgReinit = true;
             if (setting.getOther().getInitAlways()) flgReinit = true;
@@ -6657,44 +6639,54 @@ public class frmMain extends JFrame {
         } catch (Exception ex) {
             Log.forcedWrite(ex);
             srcBuf = null;
-            JOptionPane.showConfirmDialog(this, String.format("ファイルの読み込みに失敗しました。\nメッセージ=%s", ex.getMessage()), "MDPlayer", JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showConfirmDialog(this,
+                    String.format("ファイルの読み込みに失敗しました。\nメッセージ=%s", ex.getMessage()),
+                    "MDPlayer", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
             return false;
         }
         frmPlayList.play();
         return true;
     }
 
-    private List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, FileFormat format, Object archive/* = null*/) {
+    /**
+     *
+     * @param fn
+     * @param srcBuf extracted
+     * @param format
+     * @param entry
+     * @return
+     */
+    private List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, FileFormat format, Archive archive/* = null*/, Entry entry/* = null*/) {
         List<Tuple<String, byte[]>> ret = new ArrayList<>();
         byte[] buf;
         switch (format) {
         case RCP:
-            String[] CM6 = new String[1], GSD = new String[1], GSD2 = new String[1];
-            RCP.getControlFileName(srcBuf, CM6, GSD, GSD2);
-            if (CM6[0] != null && CM6[0].isEmpty()) {
-                buf = getExtendFileAllBytes(fn, CM6[0], archive);
-                if (buf != null) ret.add(new Tuple<>(".CM6", buf));
+            String[] cm6 = new String[1], gsd = new String[1], gsd2 = new String[1];
+            RCP.getControlFileName(srcBuf, cm6, gsd, gsd2);
+            if (cm6[0] != null && !cm6[0].isEmpty()) {
+                buf = getExtendFileAllBytes(fn, cm6[0], archive, entry);
+                if (buf != null) ret.add(new Tuple<>(".cm6", buf));
             }
-            if (GSD[0] != null && GSD[0].isEmpty()) {
-                buf = getExtendFileAllBytes(fn, GSD[0], archive);
-                if (buf != null) ret.add(new Tuple<>(".GSD", buf));
+            if (gsd[0] != null && !gsd[0].isEmpty()) {
+                buf = getExtendFileAllBytes(fn, gsd[0], archive, entry);
+                if (buf != null) ret.add(new Tuple<>(".gsd", buf));
             }
-            if (GSD2[0] != null && GSD2[0].isEmpty()) {
-                buf = getExtendFileAllBytes(fn, GSD2[0], archive);
-                if (buf != null) ret.add(new Tuple<>(".GSD", buf));
+            if (gsd2[0] != null && !gsd2[0].isEmpty()) {
+                buf = getExtendFileAllBytes(fn, gsd2[0], archive, entry);
+                if (buf != null) ret.add(new Tuple<>(".gsd", buf));
             }
             break;
         case MDR:
-            buf = getExtendFileAllBytes(fn, Path.getFileNameWithoutExtension(fn) + ".PCM", archive);
+            buf = getExtendFileAllBytes(fn, Path.getFileNameWithoutExtension(fn) + ".PCM", archive, entry);
             if (buf != null) ret.add(new Tuple<>(".PCM", buf));
             break;
         case MDX:
             String[] PDX = new String[1];
             MXDRV.getPDXFileName(srcBuf, PDX);
             if (PDX[0] != null && PDX[0].isEmpty()) {
-                buf = getExtendFileAllBytes(fn, PDX[0], archive);
+                buf = getExtendFileAllBytes(fn, PDX[0], archive, entry);
                 if (buf == null) {
-                    buf = getExtendFileAllBytes(fn, PDX[0] + ".PDX", archive);
+                    buf = getExtendFileAllBytes(fn, PDX[0] + ".PDX", archive, entry);
                 }
                 if (buf != null) ret.add(new Tuple<>(".PDX", buf));
             }
@@ -6708,7 +6700,7 @@ public class frmMain extends JFrame {
                 pcmptr += 2;
                 for (int i = 0; i < pcmnum; i++) {
                     String mndPcmFn = mdplayer.Common.getNRDString(srcBuf, pcmptr);
-                    buf = getExtendFileAllBytes(fn, mndPcmFn, archive);
+                    buf = getExtendFileAllBytes(fn, mndPcmFn, archive, entry);
                     if (buf != null) ret.add(new Tuple<>(".PND", buf));
                 }
             }
@@ -6720,38 +6712,32 @@ public class frmMain extends JFrame {
         return ret;
     }
 
-    private List<String> GetFileSearchPathList(String srcFn) {
+    private List<String> getFileSearchPathList(String srcFn) {
         List<String> result = new ArrayList<>();
-        result.add(Path.getDirectoryName(srcFn));
+        result.add(getDirectoryName(srcFn));
         String fileSearchPathList = this.setting.getFileSearchPathList() != null ? this.setting.getFileSearchPathList() : "";
         Arrays.stream(fileSearchPathList.split(";"))
-                .filter(path -> {
-                    return path != null && path.isEmpty();
-                })
+                .filter(path -> path != null && path.isEmpty())
                 .forEach(result::add);
         return result;
     }
 
-    private byte[] getExtendFileAllBytes(String srcFn, String extFn, Object archive) {
+    private byte[] getExtendFileAllBytes(String srcFn, String extFn, Archive archive, Entry entry) {
         try {
-            if (archive == null) {
-                String trgFn =
-                        this.GetFileSearchPathList(srcFn).stream()
+            if (entry == null) {
+                return this.getFileSearchPathList(srcFn).stream()
                                 .map(dirPath -> Path.combine(dirPath, extFn).trim())
-                                .filter(path -> File.exists(path));
-                if (trgFn == defaultX(String)) return null;
-                return File.readAllBytes(trgFn);
+                                .filter(File::exists).findFirst()
+                                .map(File::readAllBytes).orElse(null);
             } else {
-                String trgFn = Path.getPath(getDirectoryName(srcFn), extFn);
+                String trgFn = Path.combine(getDirectoryName(srcFn), extFn);
                 trgFn = trgFn.replace("\\", "/").trim();
-                if (archive == ZipArchive) {
-                    ZipArchiveEntry entry = ((ZipArchive) archive).GetEntry(trgFn);
-                    if (entry == null) return null;
-                    String arcFn = "";
-                    return getBytesFromZipFile(entry, arcFn);
+
+                if (entry instanceof ZipEntry) {
+                    String[] arcFn = new String[1];
+                    return getBytesFromZipFile(archive, entry, arcFn);
                 } else {
-                    UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-                    return cmd.GetFileByte(((Tuple<String, String>) archive).Item1, trgFn);
+                    return archive.getInputStream(entry).readAllBytes();
                 }
             }
         } catch (Exception e) {
@@ -6759,39 +6745,31 @@ public class frmMain extends JFrame {
         }
     }
 
-    public byte[] getBytesFromZipFile(ZipArchiveEntry entry, String arcFn) {
-        byte[] buf = null;
-        arcFn = "";
+    /**
+     * @param archive
+     * @param entry
+     * @param arcFn   OUT entry file name resolved by the entry
+     * @return extracted
+     */
+    public byte[] getBytesFromZipFile(Archive archive, Entry entry, String[] arcFn) {
+        byte[] buf;
         if (entry == null) return null;
-        arcFn = entry.FullName;
-        try (BinaryReader reader = new BinaryReader(entry.Open())) {
-            buf = reader.readBytes((int) entry.length);
+        arcFn[0] = entry.getName();
+        try (InputStream reader = archive.getInputStream(entry)) {
+            buf = reader.readAllBytes();
+        } catch (java.io.IOException e) {
+            throw new UncheckedIOException(e);
         }
 
-        if (mdplayer.Common.FileFormat.checkExt(entry.FullName) == FileFormat.VGM) {
+        if (mdplayer.Common.FileFormat.checkExt(entry.getName()) == FileFormat.VGM) {
             try {
                 int vgm = (int) buf[0] + (int) buf[1] * 0x100 + (int) buf[2] * 0x10000 + (int) buf[3] * 0x1000000;
                 if (vgm != FCC_VGM) {
-                    int num;
-                    buf = new byte[1024]; // 1Kbytesずつ処理する
 
-                    try (Stream inStream // 入力ストリーム
-                                 = entry.Open();
-
-                         GZipStream decompStream // 解凍ストリーム
-                                 = new GZipStream(
-                                 inStream, // 入力元となるストリームを指定
-                                 CompressionMode.Decompress); // 解凍（圧縮解除）を指定
-
-                         MemoryStream outStream // 出力ストリーム
-                                 = new MemoryStream();
-
+                    try (InputStream inStream = archive.getInputStream(entry);
+                         InputStream decompStream = Archives.getInputStream(inStream)
                     ) {
-                        while ((num = decompStream.read(buf, 0, buf.length)) > 0) {
-                            outStream.write(buf, 0, num);
-                        }
-
-                        buf = outStream.toArray();
+                        buf = decompStream.readAllBytes();
                     }
                 }
             } catch (Exception ex) {
@@ -7361,7 +7339,7 @@ public class frmMain extends JFrame {
         }
     }
 
-    public void forceChannelMask(EnmChip chip, int chipID, int ch, Boolean mask) {
+    public void forceChannelMask(EnmChip chip, int chipID, int ch, boolean mask) {
         switch (chip) {
         case AY8910:
             if (mask)
@@ -7687,8 +7665,8 @@ public class frmMain extends JFrame {
             try {
                 midiin.close();
                 midiin.dispose();
-                midiin.MessageReceived -= midiIn_MessageReceived;
-                midiin.ErrorReceived -= midiIn_ErrorReceived;
+                midiin.setReceiver(midiIn_MessageReceived);
+//                midiin.ErrorReceived -= this::midiIn_ErrorReceived;
                 midiin = null;
             } catch (Exception e) {
                 midiin = null;
@@ -7712,18 +7690,18 @@ public class frmMain extends JFrame {
 
     }
 
-    void midiIn_ErrorReceived(Object source, MidiInMessageEventArgs e) {
-        System.err.println(String.format("Error Time %s Message 0x%08x Event %s",
-                e.Timestamp, e.RawMessage, e.MidiEvent));
-    }
+//    void midiIn_ErrorReceived(Object source, MidiInMessageEventArgs e) {
+//        System.err.printf("Error Time %s Message 0x%08x Event %s",
+//                e.Timestamp, e.RawMessage, e.MidiEvent));
+//    }
 
     private void StopMIDIInMonitoring() {
         if (midiin != null) {
             try {
                 midiin.close();
                 midiin.dispose();
-                midiin.removeReceiver(midiIn_MessageReceived);
-                midiin.ErrorReceived -= midiIn_ErrorReceived;
+                midiin.setReceiver(this::midiIn_MessageReceived);
+//                midiin.ErrorReceived -= midiIn_ErrorReceived;
                 midiin = null;
             } catch (Exception e) {
                 midiin = null;
@@ -7734,105 +7712,105 @@ public class frmMain extends JFrame {
     void midiIn_MessageReceived(MidiMessage e) {
         if (!setting.getMidiKbd().getUseMIDIKeyboard()) return;
 
-        YM2612MIDI.midiIn_MessageReceived(e);
+        ym2612MIDI.midiIn_MessageReceived(e);
     }
 
     public void ym2612Midi_ClearNoteLog() {
-        YM2612MIDI.clearNoteLog();
+        ym2612MIDI.clearNoteLog();
     }
 
     public void ym2612Midi_ClearNoteLog(int ch) {
-        YM2612MIDI.clearNoteLog(ch);
+        ym2612MIDI.clearNoteLog(ch);
     }
 
     public void ym2612Midi_Log2MML(int ch) {
-        YM2612MIDI.log2MML(ch);
+        ym2612MIDI.log2MML(ch);
     }
 
     public void ym2612Midi_Log2MML66(int ch) {
-        YM2612MIDI.log2MML66(ch);
+        ym2612MIDI.log2MML66(ch);
     }
 
     public void ym2612Midi_AllNoteOff() {
-        YM2612MIDI.allNoteOff();
+        ym2612MIDI.allNoteOff();
     }
 
     public void ym2612Midi_SetMode(int m) {
-        YM2612MIDI.setMode(m);
+        ym2612MIDI.setMode(m);
     }
 
     public void ym2612Midi_SelectChannel(int ch) {
-        YM2612MIDI.selectChannel(ch);
+        ym2612MIDI.selectChannel(ch);
     }
 
     public void ym2612Midi_SetTonesToSetting() {
-        YM2612MIDI.setTonesToSettng();
+        ym2612MIDI.setTonesToSettng();
     }
 
     public void ym2612Midi_SetTonesFromSetting() {
-        YM2612MIDI.setTonesFromSettng();
+        ym2612MIDI.setTonesFromSettng();
     }
 
     /**
      * @param tp 1 origin
      */
     public void ym2612Midi_SaveTonePallet(String fn, int tp) {
-        YM2612MIDI.saveTonePallet(fn, tp, tonePallet);
+        ym2612MIDI.saveTonePallet(fn, tp, tonePallet);
     }
 
     /**
      * @param tp 1 origin
      */
     public void ym2612Midi_LoadTonePallet(String fn, int tp) {
-        YM2612MIDI.loadTonePallet(fn, tp, tonePallet);
+        ym2612MIDI.loadTonePallet(fn, tp, tonePallet);
     }
 
     public void ym2612Midi_CopyToneToClipboard() {
-        if (setting.getMidiKbd().getIsMONO()) {
-            YM2612MIDI.copyToneToClipboard(new int[] {setting.getMidiKbd().getUseMONOChannel()});
+        if (setting.getMidiKbd().isMono()) {
+            ym2612MIDI.copyToneToClipboard(new int[] {setting.getMidiKbd().getUseMonoChannel()});
         } else {
             List<Integer> uc = new ArrayList<>();
             for (int i = 0; i < setting.getMidiKbd().getUseChannel().length; i++) {
                 if (setting.getMidiKbd().getUseChannel()[i]) uc.add(i);
             }
-            YM2612MIDI.copyToneToClipboard(uc.stream().mapToInt(Integer::intValue).toArray());
+            ym2612MIDI.copyToneToClipboard(uc.stream().mapToInt(Integer::intValue).toArray());
         }
     }
 
     public void ym2612Midi_PasteToneFromClipboard() {
-        if (setting.getMidiKbd().getIsMONO()) {
-            YM2612MIDI.pasteToneFromClipboard(new int[] {setting.getMidiKbd().getUseMONOChannel()});
+        if (setting.getMidiKbd().isMono()) {
+            ym2612MIDI.pasteToneFromClipboard(new int[] {setting.getMidiKbd().getUseMonoChannel()});
         } else {
             List<Integer> uc = new ArrayList<>();
             for (int i = 0; i < setting.getMidiKbd().getUseChannel().length; i++) {
                 if (setting.getMidiKbd().getUseChannel()[i]) uc.add(i);
             }
-            YM2612MIDI.pasteToneFromClipboard(uc.stream().mapToInt(Integer::intValue).toArray());
+            ym2612MIDI.pasteToneFromClipboard(uc.stream().mapToInt(Integer::intValue).toArray());
         }
     }
 
     public void ym2612Midi_CopyToneToClipboard(int ch) {
-        YM2612MIDI.copyToneToClipboard(new int[] {ch});
+        ym2612MIDI.copyToneToClipboard(new int[] {ch});
     }
 
     public void ym2612Midi_PasteToneFromClipboard(int ch) {
-        YM2612MIDI.pasteToneFromClipboard(new int[] {ch});
+        ym2612MIDI.pasteToneFromClipboard(new int[] {ch});
     }
 
     public void ym2612Midi_SetSelectInstParam(int ch, int n) {
-        YM2612MIDI.newParam.ym2612Midi.selectCh = ch;
-        YM2612MIDI.newParam.ym2612Midi.selectParam = n;
+        ym2612MIDI.newParam.ym2612Midi.selectCh = ch;
+        ym2612MIDI.newParam.ym2612Midi.selectParam = n;
     }
 
     public void ym2612Midi_AddSelectInstParam(int n) {
-        int p = YM2612MIDI.newParam.ym2612Midi.selectParam;
+        int p = ym2612MIDI.newParam.ym2612Midi.selectParam;
         p += n;
         if (p > 47) p = 0;
-        YM2612MIDI.newParam.ym2612Midi.selectParam = p;
+        ym2612MIDI.newParam.ym2612Midi.selectParam = p;
     }
 
     public void ym2612Midi_ChangeSelectedParamValue(int n) {
-        YM2612MIDI.changeSelectedParamValue(n);
+        ym2612MIDI.changeSelectedParamValue(n);
     }
 
     private void LoadPresetMixerBalance(String playingFileName, String playingArcFileName, FileFormat format) {
@@ -7849,9 +7827,9 @@ public class frmMain extends JFrame {
             //曲ごとのプリセットを読み込むモード
             if (setting.getAutoBalance().getLoadSongBalance()) {
                 if (setting.getAutoBalance().getSamePositionAsSongData()) {
-                    fullPath = Path.getDirectoryName(playingFileName);
+                    fullPath = getDirectoryName(playingFileName);
                     if (playingArcFileName != null && playingArcFileName.isEmpty()) {
-                        fullPath = Path.getDirectoryName(playingArcFileName);
+                        fullPath = getDirectoryName(playingArcFileName);
                     }
                 }
                 fn = Path.getFileName(playingFileName);
@@ -7929,11 +7907,11 @@ public class frmMain extends JFrame {
 
             }
 
-            if (fn == "") return;
+            if (fn.equals("")) return;
 
 
             //存在確認。無い場合は作成。
-            if (!File.exists(fullPath) && defMbc != "") File.writeAllText(fullPath, defMbc);
+            if (!File.exists(fullPath) && !defMbc.equals("")) File.writeAllText(fullPath, defMbc);
             //データフォルダに存在するファイルを読み込む
             balance = Setting.Balance.load(fullPath);
 
@@ -7949,7 +7927,7 @@ public class frmMain extends JFrame {
         }
     }
 
-    private void ManualSavePresetMixerBalance(Boolean isDriverBalance, String playingFileName, String playingArcFileName, FileFormat format, Setting.Balance balance) {
+    private void ManualSavePresetMixerBalance(boolean isDriverBalance, String playingFileName, String playingArcFileName, FileFormat format, Setting.Balance balance) {
         if (!setting.getAutoBalance().getUseThis()) return;
 
         try {
@@ -8048,54 +8026,54 @@ public class frmMain extends JFrame {
             }
 
             String k = String.valueOf(e.getKeyCode());
-            Boolean shift = (e.getModifiers() & NativeKeyEvent.SHIFT_MASK) != 0;
-            Boolean ctrl = (e.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0;
-            Boolean alt = (e.getModifiers() & NativeKeyEvent.ALT_MASK) != 0;
+            boolean shift = (e.getModifiers() & NativeKeyEvent.SHIFT_MASK) != 0;
+            boolean ctrl = (e.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0;
+            boolean alt = (e.getModifiers() & NativeKeyEvent.ALT_MASK) != 0;
             Setting.KeyBoardHook.HookKeyInfo info;
 
-            info = setting.getkeyBoardHook().getStop();
+            info = setting.getKeyBoardHook().getStop();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 stop();
                 return;
             }
 
-            info = setting.getkeyBoardHook().getPause();
+            info = setting.getKeyBoardHook().getPause();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 pause();
                 return;
             }
 
-            info = setting.getkeyBoardHook().getFadeout();
+            info = setting.getKeyBoardHook().getFadeout();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 fadeout();
                 return;
             }
 
-            info = setting.getkeyBoardHook().getPrev();
+            info = setting.getKeyBoardHook().getPrev();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 prev();
                 return;
             }
 
-            info = setting.getkeyBoardHook().getSlow();
+            info = setting.getKeyBoardHook().getSlow();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 slow();
                 return;
             }
 
-            info = setting.getkeyBoardHook().getPlay();
+            info = setting.getKeyBoardHook().getPlay();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 play();
                 return;
             }
 
-            info = setting.getkeyBoardHook().getNext();
+            info = setting.getKeyBoardHook().getNext();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 next();
                 return;
             }
 
-            info = setting.getkeyBoardHook().getFast();
+            info = setting.getKeyBoardHook().getFast();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 ff();
             }
@@ -8329,12 +8307,12 @@ public class frmMain extends JFrame {
             Resources.getciLoop(),
             Resources.getciLoopOne()
     };
-    private Boolean[] lstOpeButtonActive = new Boolean[] {
+    private boolean[] lstOpeButtonActive = new boolean[] {
             false, false, false, false, false, false, false, false,
             false, false, false, false, false, false, false, false,
             false, false, false, false, false
     };
-    private Boolean[] lstOpeButtonActiveOld = new Boolean[] {
+    private boolean[] lstOpeButtonActiveOld = new boolean[] {
             false, false, false, false, false, false, false, false,
             false, false, false, false, false, false, false, false,
             false, false, false, false, false
@@ -8382,7 +8360,8 @@ public class frmMain extends JFrame {
         RedrawButton(opeButtonZoom, setting.getOther().getZoom(), lstOpeButtonLeaveImage[17]);
     }
 
-    MouseMotionListener opeButton_Mouse = new MouseAdapter() {
+    MouseListener opeButton_Mouse = new MouseAdapter() {
+        @Override
         public void mouseEntered(MouseEvent ev) {
             JButton btn = (JButton) ev.getSource();
             int index = Integer.parseInt(btn.getActionCommand());
@@ -8393,6 +8372,7 @@ public class frmMain extends JFrame {
             RedrawButton(btn, setting.getOther().getZoom(), lstOpeButtonEnterImage[m]);
         }
 
+        @Override
         public void mouseExited(MouseEvent ev) {
             JButton btn = (JButton) ev.getSource();
             int index = Integer.parseInt(btn.getActionCommand());
@@ -8465,7 +8445,7 @@ public class frmMain extends JFrame {
 
     private void opeButtonMode_Click(ActionEvent ev) {
         tsmiPlayMode_Click(null);
-        opeButton_MouseEnter(null); // opeButtonMode
+        opeButton_Mouse.mouseEntered(null); // opeButtonMode
     }
 
     private void opeButtonOpen_Click(ActionEvent ev) {
@@ -8675,22 +8655,22 @@ public class frmMain extends JFrame {
         // pbScreen
         //
         this.pbScreen.setBackground(Color.black);
+        new DropTarget(this.pbScreen, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         //resources.ApplyResources(this.pbScreen, "pbScreen");
         this.pbScreen.setIcon(new ImageIcon(mdplayer.properties.Resources.getPlaneControl()));
         this.pbScreen.setName("pbScreen");
         // this.pbScreen.TabStop = false;
-        this.pbScreen.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.pbScreen.addDragAndDropListenr(this.pbScreen_DragEnter);
+//        this.pbScreen.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.pbScreen.addDragAndDropListenr(this.pbScreen_DragEnter);
         this.pbScreen.addMouseListener(this.pbScreen_MouseClick);
-        this.pbScreen.addMouseListener(this.pbScreen_MouseLeave);
+//        this.pbScreen.addMouseListener(this.pbScreen_MouseLeave);
         this.pbScreen.addMouseMotionListener(this.pbScreen_MouseMove);
         //
         // cmsOpenOtherPanel
         //
-        this.cmsOpenOtherPanel.ImageScalin.setPreferredSize(new Dimension(20, 20));
-        this.cmsOpenOtherPanel.Items.AddRange(new JMenuItem[] {
-                this.primaryToolStripMenuItem,
-                this.sencondryToolStripMenuItem});
+//        this.cmsOpenOtherPanel.ImageScalingSize(new Dimension(20, 20));
+        this.cmsOpenOtherPanel.add(this.primaryToolStripMenuItem);
+        this.cmsOpenOtherPanel.add(this.sencondryToolStripMenuItem);
         this.cmsOpenOtherPanel.setName("cmsOpenOtherPanel");
         //resources.ApplyResources(this.cmsOpenOtherPanel, "cmsOpenOtherPanel");
         //
@@ -9295,7 +9275,7 @@ public class frmMain extends JFrame {
         //
         // cmsMenu
         //
-        this.cmsMenu.ImageScalingSize(new Dimension(20, 20));
+//        this.cmsMenu.ImageScalingSize(new Dimension(20, 20));
         this.cmsMenu.add(this.ファイルToolStripMenuItem);
         this.cmsMenu.add(this.操作ToolStripMenuItem);
         this.cmsMenu.add(this.tsmiOption);
@@ -9457,12 +9437,11 @@ public class frmMain extends JFrame {
         //
         // tsmiChangeZoom
         //
-        this.tsmiChangeZoom.DropDownItems.AddRange(new JMenuItem[] {
-                this.tsmiChangeZoomX1,
-                this.tsmiChangeZoomX2,
-                this.tsmiChangeZoomX3,
-                this.tsmiChangeZoomX4});
-        this.tsmiChangeZoom.setIcon(new ImageIcon(mdplayer.properties.Resources.ccZoom));
+        this.tsmiChangeZoom.add(this.tsmiChangeZoomX1);
+        this.tsmiChangeZoom.add(this.tsmiChangeZoomX2);
+        this.tsmiChangeZoom.add(this.tsmiChangeZoomX3);
+        this.tsmiChangeZoom.add(this.tsmiChangeZoomX4);
+        this.tsmiChangeZoom.setIcon(new ImageIcon(mdplayer.properties.Resources.getccZoom()));
         this.tsmiChangeZoom.setName("tsmiChangeZoom");
         //resources.ApplyResources(this.tsmiChangeZoom, "tsmiChangeZoom");
         this.tsmiChangeZoom.addActionListener(this::tsmiChangeZoom_Click);
@@ -9623,7 +9602,8 @@ public class frmMain extends JFrame {
         //
         // opeButtonSetting
         //
-        this.opeButtonSetting.AllowDrop = true;
+//        this.opeButtonSetting.AllowDrop = true;
+        new DropTarget(this.opeButtonSetting, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonSetting.setBackground(Color.black);
         this.opeButtonSetting.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonSetting, "opeButtonSetting");
@@ -9636,13 +9616,14 @@ public class frmMain extends JFrame {
         this.opeButtonSetting.setToolTipText(Resources.getResourceManager().getString("opeButtonSetting.ToolTip"));
         // this.opeButtonSetting.UseVisualStyl.setBackground(false);
         this.opeButtonSetting.addActionListener(this::opeButtonSetting_Click);
-        this.opeButtonSetting.addDragAndDropListenr(this::pbScreen_DragDrop);
-        this.opeButtonSetting.addDragAndDropListenr(this::pbScreen_DragEnter);
-        this.opeButtonSetting.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonSetting.addDragAndDropListenr(this::pbScreen_DragDrop);
+//        this.opeButtonSetting.addDragAndDropListenr(this::pbScreen_DragEnter);
+        this.opeButtonSetting.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonStop
         //
-        this.opeButtonStop.AllowDrop = true;
+//        this.opeButtonStop.AllowDrop = true;
+        new DropTarget(this.opeButtonStop, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonStop.setBackground(Color.black);
         this.opeButtonStop.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonStop, "opeButtonStop");
@@ -9655,13 +9636,14 @@ public class frmMain extends JFrame {
         this.opeButtonStop.setToolTipText(Resources.getResourceManager().getString("opeButtonStop.ToolTip"));
         // this.opeButtonStop.UseVisualStyl.setBackground(false);
         this.opeButtonStop.addActionListener(this::opeButtonStop_Click);
-        this.opeButtonStop.addDragAndDropListenr(this::pbScreen_DragDrop);
-        this.opeButtonStop.addDragAndDropListenr(this::pbScreen_DragEnter);
-        this.opeButtonStop.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonStop.addDragAndDropListenr(this::pbScreen_DragDrop);
+//        this.opeButtonStop.addDragAndDropListenr(this::pbScreen_DragEnter);
+        this.opeButtonStop.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonPause
         //
-        this.opeButtonPause.AllowDrop = true;
+//        this.opeButtonPause.AllowDrop = true;
+        new DropTarget(this.opeButtonPause, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonPause.setBackground(Color.black);
         this.opeButtonPause.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonPause, "opeButtonPause");
@@ -9674,13 +9656,14 @@ public class frmMain extends JFrame {
         this.opeButtonPause.setToolTipText(Resources.getResourceManager().getString("opeButtonPause.ToolTip"));
         // this.opeButtonPause.UseVisualStyl.setBackground(false);
         this.opeButtonPause.addActionListener(this::opeButtonPause_Click);
-        this.opeButtonPause.addDragAndDropListenr(this::pbScreen_DragDrop);
-        this.opeButtonPause.addDragAndDropListenr(this::pbScreen_DragEnter);
-        this.opeButtonPause.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonPause.addDragAndDropListenr(this::pbScreen_DragDrop);
+//        this.opeButtonPause.addDragAndDropListenr(this::pbScreen_DragEnter);
+        this.opeButtonPause.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonFadeout
         //
-        this.opeButtonFadeout.AllowDrop = true;
+//        this.opeButtonFadeout.AllowDrop = true;
+        new DropTarget(this.opeButtonFadeout, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonFadeout.setBackground(Color.black);
         this.opeButtonFadeout.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonFadeout, "opeButtonFadeout");
@@ -9693,13 +9676,14 @@ public class frmMain extends JFrame {
         this.opeButtonFadeout.setToolTipText(Resources.getResourceManager().getString("opeButtonFadeout.ToolTip"));
         // this.opeButtonFadeout.UseVisualStyl.setBackground(false);
         this.opeButtonFadeout.addActionListener(this::opeButtonFadeout_Click);
-        this.opeButtonFadeout.addDragAndDropListenr(this::pbScreen_DragDrop);
-        this.opeButtonFadeout.addDragAndDropListenr(this::pbScreen_DragEnter);
-        this.opeButtonFadeout.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonFadeout.addDragAndDropListenr(this::pbScreen_DragDrop);
+//        this.opeButtonFadeout.addDragAndDropListenr(this::pbScreen_DragEnter);
+        this.opeButtonFadeout.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonPrevious
         //
-        this.opeButtonPrevious.AllowDrop = true;
+//        this.opeButtonPrevious.AllowDrop = true;
+        new DropTarget(this.opeButtonPrevious, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonPrevious.setBackground(Color.black);
         this.opeButtonPrevious.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonPrevious, "opeButtonPrevious");
@@ -9712,13 +9696,14 @@ public class frmMain extends JFrame {
         this.opeButtonPrevious.setToolTipText(Resources.getResourceManager().getString("opeButtonPrevious.ToolTip"));
         // this.opeButtonPrevious.UseVisualStyl.setBackground(false);
         this.opeButtonPrevious.addActionListener(this::opeButtonPrevious_Click);
-        this.opeButtonPrevious.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonPrevious.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonPrevious.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonPrevious.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonPrevious.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonPrevious.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonSlow
         //
-        this.opeButtonSlow.AllowDrop = true;
+//        this.opeButtonSlow.AllowDrop = true;
+        new DropTarget(this.opeButtonSlow, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonSlow.setBackground(Color.black);
         this.opeButtonSlow.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonSlow, "opeButtonSlow");
@@ -9731,13 +9716,14 @@ public class frmMain extends JFrame {
         this.opeButtonSlow.setToolTipText(Resources.getResourceManager().getString("opeButtonSlow.ToolTip"));
         // this.opeButtonSlow.UseVisualStyl.setBackground(false);
         this.opeButtonSlow.addActionListener(this::opeButtonSlow_Click);
-        this.opeButtonSlow.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonSlow.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonSlow.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonSlow.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonSlow.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonSlow.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonPlay
         //
-        this.opeButtonPlay.AllowDrop = true;
+//        this.opeButtonPlay.AllowDrop = true;
+        new DropTarget(this.opeButtonPlay, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonPlay.setBackground(Color.black);
         this.opeButtonPlay.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonPlay, "opeButtonPlay");
@@ -9750,13 +9736,14 @@ public class frmMain extends JFrame {
         this.opeButtonPlay.setToolTipText(Resources.getResourceManager().getString("opeButtonPlay.ToolTip"));
         // this.opeButtonPlay.UseVisualStyl.setBackground(false);
         this.opeButtonPlay.addActionListener(this::opeButtonPlay_Click);
-        this.opeButtonPlay.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonPlay.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonPlay.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonPlay.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonPlay.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonPlay.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonFast
         //
-        this.opeButtonFast.AllowDrop = true;
+//        this.opeButtonFast.AllowDrop = true;
+        new DropTarget(this.opeButtonFast, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonFast.setBackground(Color.black);
         this.opeButtonFast.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonFast, "opeButtonFast");
@@ -9769,13 +9756,14 @@ public class frmMain extends JFrame {
         this.opeButtonFast.setToolTipText(Resources.getResourceManager().getString("opeButtonFast.ToolTip"));
         // this.opeButtonFast.UseVisualStyl.setBackground(false);
         this.opeButtonFast.addActionListener(this::opeButtonFast_Click);
-        this.opeButtonFast.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonFast.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonFast.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonFast.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonFast.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonFast.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonNext
         //
-        this.opeButtonNext.AllowDrop = true;
+//        this.opeButtonNext.AllowDrop = true;
+        new DropTarget(this.opeButtonNext, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonNext.setBackground(Color.black);
         this.opeButtonNext.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonNext, "opeButtonNext");
@@ -9788,13 +9776,14 @@ public class frmMain extends JFrame {
         this.opeButtonNext.setToolTipText(Resources.getResourceManager().getString("opeButtonNext.ToolTip"));
         // this.opeButtonNext.UseVisualStyl.setBackground(false);
         this.opeButtonNext.addActionListener(this::opeButtonNext_Click);
-        this.opeButtonNext.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonNext.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonNext.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonNext.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonNext.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonNext.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonZoom
         //
-        this.opeButtonZoom.AllowDrop = true;
+//        this.opeButtonZoom.AllowDrop = true;
+        new DropTarget(this.opeButtonZoom, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonZoom.setBackground(Color.black);
         this.opeButtonZoom.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonZoom, "opeButtonZoom");
@@ -9807,13 +9796,14 @@ public class frmMain extends JFrame {
         this.opeButtonZoom.setToolTipText(Resources.getResourceManager().getString("opeButtonZoom.ToolTip"));
         // this.opeButtonZoom.UseVisualStyl.setBackground(false);
         this.opeButtonZoom.addActionListener(this::opeButtonZoom_Click);
-        this.opeButtonZoom.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonZoom.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonZoom.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonZoom.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonZoom.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonZoom.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonMIDIKBD
         //
-        this.opeButtonMIDIKBD.AllowDrop = true;
+//        this.opeButtonMIDIKBD.AllowDrop = true;
+        new DropTarget(this.opeButtonMIDIKBD, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonMIDIKBD.setBackground(Color.black);
         this.opeButtonMIDIKBD.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonMIDIKBD, "opeButtonMIDIKBD");
@@ -9826,13 +9816,14 @@ public class frmMain extends JFrame {
         this.opeButtonMIDIKBD.setToolTipText(Resources.getResourceManager().getString("opeButtonMIDIKBD.ToolTip"));
         // this.opeButtonMIDIKBD.UseVisualStyl.setBackground(false);
         this.opeButtonMIDIKBD.addActionListener(this::opeButtonMIDIKBD_Click);
-        this.opeButtonMIDIKBD.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonMIDIKBD.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonMIDIKBD.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonMIDIKBD.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonMIDIKBD.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonMIDIKBD.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonVST
         //
-        this.opeButtonVST.AllowDrop = true;
+//        this.opeButtonVST.AllowDrop = true;
+        new DropTarget(this.opeButtonVST, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonVST.setBackground(Color.black);
         this.opeButtonVST.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonVST, "opeButtonVST");
@@ -9845,13 +9836,14 @@ public class frmMain extends JFrame {
         this.opeButtonVST.setToolTipText(Resources.getResourceManager().getString("opeButtonVST.ToolTip"));
         // this.opeButtonVST.UseVisualStyl.setBackground(false);
         this.opeButtonVST.addActionListener(this::opeButtonVST_Click);
-        this.opeButtonVST.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonVST.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonVST.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonVST.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonVST.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonVST.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonKBD
         //
-        this.opeButtonKBD.AllowDrop = true;
+//        this.opeButtonKBD.AllowDrop = true;
+        new DropTarget(this.opeButtonKBD, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonKBD.setBackground(Color.black);
         this.opeButtonKBD.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonKBD, "opeButtonKBD");
@@ -9864,13 +9856,14 @@ public class frmMain extends JFrame {
         this.opeButtonKBD.setToolTipText(Resources.getResourceManager().getString("opeButtonKBD.ToolTip"));
         // this.opeButtonKBD.UseVisualStyl.setBackground(false);
         this.opeButtonKBD.addActionListener(this::opeButtonKBD_Click);
-        this.opeButtonKBD.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonKBD.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonKBD.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonKBD.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonKBD.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonKBD.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonMixer
         //
 //            this.opeButtonMixer.AllowDrop = true;
+        new DropTarget(this.opeButtonMixer, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonMixer.setBackground(Color.black);
         this.opeButtonMixer.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonMixer, "opeButtonMixer");
@@ -9883,13 +9876,14 @@ public class frmMain extends JFrame {
         this.opeButtonMixer.setToolTipText(Resources.getResourceManager().getString("opeButtonMixer.ToolTip"));
         // this.opeButtonMixer.UseVisualStyl.setBackground(false);
         this.opeButtonMixer.addActionListener(this::opeButtonMixer_Click);
-        this.opeButtonMixer.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonMixer.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonMixer.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonMixer.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonMixer.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonMixer.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonInformation
         //
 //            this.opeButtonInformation.AllowDrop = true;
+        new DropTarget(this.opeButtonInformation, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonInformation.setBackground(Color.black);
         this.opeButtonInformation.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonInformation, "opeButtonInformation");
@@ -9902,13 +9896,14 @@ public class frmMain extends JFrame {
         this.opeButtonInformation.setToolTipText(Resources.getResourceManager().getString("opeButtonInformation.ToolTip"));
         // this.opeButtonInformation.UseVisualStyl.setBackground(false);
         this.opeButtonInformation.addActionListener(this::opeButtonInformation_Click);
-        this.opeButtonInformation.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonInformation.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonInformation.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonInformation.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonInformation.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonInformation.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonPlayList
         //
-        this.opeButtonPlayList.AllowDrop = true;
+//        this.opeButtonPlayList.AllowDrop = true;
+        new DropTarget(this.opeButtonPlayList, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonPlayList.setBackground(Color.black);
         this.opeButtonPlayList.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonPlayList, "opeButtonPlayList");
@@ -9921,13 +9916,14 @@ public class frmMain extends JFrame {
         this.opeButtonPlayList.setToolTipText(Resources.getResourceManager().getString("opeButtonPlayList.ToolTip"));
         // this.opeButtonPlayList.UseVisualStyl.setBackground(false);
         this.opeButtonPlayList.addActionListener(this::opeButtonPlayList_Click);
-        this.opeButtonPlayList.addDragDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonPlayList.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonPlayList.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonPlayList.addDragDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonPlayList.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonPlayList.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonOpen
         //
-        this.opeButtonOpen.AllowDrop = true;
+//        this.opeButtonOpen.AllowDrop = true;
+        new DropTarget(this.opeButtonOpen, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonOpen.setBackground(Color.black);
         this.opeButtonOpen.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonOpen, "opeButtonOpen");
@@ -9940,13 +9936,14 @@ public class frmMain extends JFrame {
         this.opeButtonOpen.setToolTipText(Resources.getResourceManager().getString("opeButtonOpen.ToolTip"));
         // this.opeButtonOpen.UseVisualStyl.setBackground(false);
         this.opeButtonOpen.addActionListener(this::opeButtonOpen_Click);
-        this.opeButtonOpen.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonOpen.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonOpen.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonOpen.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonOpen.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonOpen.addMouseListener(this.opeButton_Mouse);
         //
         // opeButtonMode
         //
-        this.opeButtonMode.AllowDrop = true;
+//        this.opeButtonMode.AllowDrop = true;
+        new DropTarget(this.opeButtonMode, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonMode.setBackground(Color.black);
         this.opeButtonMode.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
         //resources.ApplyResources(this.opeButtonMode, "opeButtonMode");
@@ -9959,9 +9956,9 @@ public class frmMain extends JFrame {
         this.opeButtonMode.setToolTipText(Resources.getResourceManager().getString("opeButtonMode.ToolTip"));
         // this.opeButtonMode.UseVisualStyl.setBackground(false);
         this.opeButtonMode.addActionListener(this::opeButtonMode_Click);
-        this.opeButtonMode.addDragAndDropListenr(this.pbScreen_DragDrop);
-        this.opeButtonMode.addDragAndDropListenr(this.pbScreen_DragEnter);
-        this.opeButtonMode.addMouseMotionListener(this.opeButton_Mouse);
+//        this.opeButtonMode.addDragAndDropListenr(this.pbScreen_DragDrop);
+//        this.opeButtonMode.addDragAndDropListenr(this.pbScreen_DragEnter);
+        this.opeButtonMode.addMouseListener(this.opeButton_Mouse);
         //
         // keyboardHook1
         //

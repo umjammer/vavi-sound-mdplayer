@@ -46,7 +46,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmMixer2 extends JFrame {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     public frmMain parent;
@@ -92,7 +92,7 @@ public class frmMixer2 extends JFrame {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -149,64 +149,64 @@ public class frmMixer2 extends JFrame {
 
     public void screenChangeParams() {
 
-        newParam.Master.Volume = parent.setting.getbalance().getMasterVolume();
-        newParam.YM2151.Volume = parent.setting.getbalance().getYM2151Volume();
-        newParam.YM2203.Volume = parent.setting.getbalance().getYM2203Volume();
-        newParam.YM2203FM.Volume = parent.setting.getbalance().getYM2203FMVolume();
-        newParam.YM2203PSG.Volume = parent.setting.getbalance().getYM2203PSGVolume();
-        newParam.YM2612.Volume = parent.setting.getbalance().getYM2612Volume();
-        newParam.YM2608.Volume = parent.setting.getbalance().getYM2608Volume();
-        newParam.YM2608FM.Volume = parent.setting.getbalance().getYM2608FMVolume();
-        newParam.YM2608PSG.Volume = parent.setting.getbalance().getYM2608PSGVolume();
-        newParam.YM2608Rhythm.Volume = parent.setting.getbalance().getYM2608RhythmVolume();
-        newParam.YM2608Adpcm.Volume = parent.setting.getbalance().getYM2608AdpcmVolume();
-        newParam.YM2610.Volume = parent.setting.getbalance().getYM2610Volume();
-        newParam.YM2610FM.Volume = parent.setting.getbalance().getYM2610FMVolume();
-        newParam.YM2610PSG.Volume = parent.setting.getbalance().getYM2610PSGVolume();
-        newParam.YM2610AdpcmA.Volume = parent.setting.getbalance().getYM2610AdpcmAVolume();
-        newParam.YM2610AdpcmB.Volume = parent.setting.getbalance().getYM2610AdpcmBVolume();
+        newParam.Master.Volume = parent.setting.getBalance().getMasterVolume();
+        newParam.YM2151.Volume = parent.setting.getBalance().getYM2151Volume();
+        newParam.YM2203.Volume = parent.setting.getBalance().getYM2203Volume();
+        newParam.YM2203FM.Volume = parent.setting.getBalance().getYM2203FMVolume();
+        newParam.YM2203PSG.Volume = parent.setting.getBalance().getYM2203PSGVolume();
+        newParam.YM2612.Volume = parent.setting.getBalance().getYM2612Volume();
+        newParam.YM2608.Volume = parent.setting.getBalance().getYM2608Volume();
+        newParam.YM2608FM.Volume = parent.setting.getBalance().getYM2608FMVolume();
+        newParam.YM2608PSG.Volume = parent.setting.getBalance().getYM2608PSGVolume();
+        newParam.YM2608Rhythm.Volume = parent.setting.getBalance().getYM2608RhythmVolume();
+        newParam.YM2608Adpcm.Volume = parent.setting.getBalance().getYM2608AdpcmVolume();
+        newParam.YM2610.Volume = parent.setting.getBalance().getYM2610Volume();
+        newParam.YM2610FM.Volume = parent.setting.getBalance().getYM2610FMVolume();
+        newParam.YM2610PSG.Volume = parent.setting.getBalance().getYM2610PSGVolume();
+        newParam.YM2610AdpcmA.Volume = parent.setting.getBalance().getYM2610AdpcmAVolume();
+        newParam.YM2610AdpcmB.Volume = parent.setting.getBalance().getYM2610AdpcmBVolume();
 
-        newParam.YM2413.Volume = parent.setting.getbalance().getYM2413Volume();
-        newParam.YM3526.Volume = parent.setting.getbalance().getYM3526Volume();
-        newParam.Y8950.Volume = parent.setting.getbalance().getY8950Volume();
-        newParam.YM3812.Volume = parent.setting.getbalance().getYM3812Volume();
-        newParam.YMF262.Volume = parent.setting.getbalance().getYMF262Volume();
-        newParam.YMF278B.Volume = parent.setting.getbalance().getYMF278BVolume();
-        newParam.YMZ280B.Volume = parent.setting.getbalance().getYMZ280BVolume();
-        newParam.YMF271.Volume = parent.setting.getbalance().getYMF271Volume();
-        newParam.AY8910.Volume = parent.setting.getbalance().getAY8910Volume();
-        newParam.SN76489.Volume = parent.setting.getbalance().getSN76489Volume();
-        newParam.HuC6280.Volume = parent.setting.getbalance().getHuC6280Volume();
+        newParam.YM2413.Volume = parent.setting.getBalance().getYM2413Volume();
+        newParam.YM3526.Volume = parent.setting.getBalance().getYM3526Volume();
+        newParam.Y8950.Volume = parent.setting.getBalance().getY8950Volume();
+        newParam.YM3812.Volume = parent.setting.getBalance().getYM3812Volume();
+        newParam.YMF262.Volume = parent.setting.getBalance().getYMF262Volume();
+        newParam.YMF278B.Volume = parent.setting.getBalance().getYMF278BVolume();
+        newParam.YMZ280B.Volume = parent.setting.getBalance().getYMZ280BVolume();
+        newParam.YMF271.Volume = parent.setting.getBalance().getYMF271Volume();
+        newParam.AY8910.Volume = parent.setting.getBalance().getAY8910Volume();
+        newParam.SN76489.Volume = parent.setting.getBalance().getSN76489Volume();
+        newParam.HuC6280.Volume = parent.setting.getBalance().getHuC6280Volume();
 
-        newParam.RF5C164.Volume = parent.setting.getbalance().getRF5C164Volume();
-        newParam.RF5C68.Volume = parent.setting.getbalance().getRF5C68Volume();
-        newParam.PWM.Volume = parent.setting.getbalance().getPWMVolume();
-        newParam.OKIM6258.Volume = parent.setting.getbalance().getOKIM6258Volume();
-        newParam.OKIM6295.Volume = parent.setting.getbalance().getOKIM6295Volume();
-        newParam.C140.Volume = parent.setting.getbalance().getC140Volume();
-        newParam.C352.Volume = parent.setting.getbalance().getC352Volume();
-        newParam.SAA1099.Volume = parent.setting.getbalance().getSAA1099Volume();
-        newParam.PPZ8.Volume = parent.setting.getbalance().getPPZ8Volume();
-        newParam.SEGAPCM.Volume = parent.setting.getbalance().getSEGAPCMVolume();
-        newParam.MultiPCM.Volume = parent.setting.getbalance().getMultiPCMVolume();
-        newParam.K051649.Volume = parent.setting.getbalance().getK051649Volume();
-        newParam.K053260.Volume = parent.setting.getbalance().getK053260Volume();
-        newParam.K054539.Volume = parent.setting.getbalance().getK054539Volume();
-        newParam.QSound.Volume = parent.setting.getbalance().getQSoundVolume();
-        newParam.GA20.Volume = parent.setting.getbalance().getGA20Volume();
+        newParam.RF5C164.Volume = parent.setting.getBalance().getRF5C164Volume();
+        newParam.RF5C68.Volume = parent.setting.getBalance().getRF5C68Volume();
+        newParam.PWM.Volume = parent.setting.getBalance().getPWMVolume();
+        newParam.OKIM6258.Volume = parent.setting.getBalance().getOKIM6258Volume();
+        newParam.OKIM6295.Volume = parent.setting.getBalance().getOKIM6295Volume();
+        newParam.C140.Volume = parent.setting.getBalance().getC140Volume();
+        newParam.C352.Volume = parent.setting.getBalance().getC352Volume();
+        newParam.SAA1099.Volume = parent.setting.getBalance().getSAA1099Volume();
+        newParam.PPZ8.Volume = parent.setting.getBalance().getPPZ8Volume();
+        newParam.SEGAPCM.Volume = parent.setting.getBalance().getSEGAPCMVolume();
+        newParam.MultiPCM.Volume = parent.setting.getBalance().getMultiPCMVolume();
+        newParam.K051649.Volume = parent.setting.getBalance().getK051649Volume();
+        newParam.K053260.Volume = parent.setting.getBalance().getK053260Volume();
+        newParam.K054539.Volume = parent.setting.getBalance().getK054539Volume();
+        newParam.QSound.Volume = parent.setting.getBalance().getQSoundVolume();
+        newParam.GA20.Volume = parent.setting.getBalance().getGA20Volume();
 
-        newParam.APU.Volume = parent.setting.getbalance().getAPUVolume();
-        newParam.DMC.Volume = parent.setting.getbalance().getDMCVolume();
-        newParam.FDS.Volume = parent.setting.getbalance().getFDSVolume();
-        newParam.MMC5.Volume = parent.setting.getbalance().getMMC5Volume();
-        newParam.N160.Volume = parent.setting.getbalance().getN160Volume();
-        newParam.VRC6.Volume = parent.setting.getbalance().getVRC6Volume();
-        newParam.VRC7.Volume = parent.setting.getbalance().getVRC7Volume();
-        newParam.FME7.Volume = parent.setting.getbalance().getFME7Volume();
-        newParam.DMG.Volume = parent.setting.getbalance().getDMGVolume();
+        newParam.APU.Volume = parent.setting.getBalance().getAPUVolume();
+        newParam.DMC.Volume = parent.setting.getBalance().getDMCVolume();
+        newParam.FDS.Volume = parent.setting.getBalance().getFDSVolume();
+        newParam.MMC5.Volume = parent.setting.getBalance().getMMC5Volume();
+        newParam.N160.Volume = parent.setting.getBalance().getN160Volume();
+        newParam.VRC6.Volume = parent.setting.getBalance().getVRC6Volume();
+        newParam.VRC7.Volume = parent.setting.getBalance().getVRC7Volume();
+        newParam.FME7.Volume = parent.setting.getBalance().getFME7Volume();
+        newParam.DMG.Volume = parent.setting.getBalance().getDMGVolume();
 
-        newParam.GimicOPN.Volume = parent.setting.getbalance().getGimicOPNVolume();
-        newParam.GimicOPNA.Volume = parent.setting.getbalance().getGimicOPNAVolume();
+        newParam.GimicOPN.Volume = parent.setting.getBalance().getGimicOPNVolume();
+        newParam.GimicOPNA.Volume = parent.setting.getBalance().getGimicOPNAVolume();
 
 
         newParam.Master.VisVolume1 = Common.Range(Audio.visVolume.master / 250, 0, 44);
@@ -897,12 +897,12 @@ public class frmMixer2 extends JFrame {
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 if (chipn < 62) {
                     if (py < 18) {
-                        n = (18 - py) > 8 ? 8 : (18 - py);
+                        n = Math.min((18 - py), 8);
                         n = (int) (n * 2.5);
                     } else if (py == 18) {
                         n = 0;
                     } else {
-                        n = (18 - py) < -35 ? -35 : (18 - py);
+                        n = Math.max((18 - py), -35);
                         n = (int) (n * (192.0 / 35.0));
                     }
                 } else {
@@ -958,9 +958,9 @@ public class frmMixer2 extends JFrame {
 
     private void tsmiSaveDriverBalance_Click(ActionEvent ev) {
         try {
-            String retMsg = parent.SaveDriverBalance(parent.setting.getbalance().copy());
-            if (retMsg != "") {
-                JOptionPane.showConfirmDialog(null, String.format("ドライバーのミキサーバランス[%s]を設定フォルダーに保存しました。", retMsg), "保存", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE);
+            String retMsg = parent.SaveDriverBalance(parent.setting.getBalance().copy());
+            if (!retMsg.equals("")) {
+                JOptionPane.showConfirmDialog(null, String.format("ドライバーのミキサーバランス[%s]を設定フォルダーに保存しました。", retMsg), "保存", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
             }
 
         } catch (Exception ex) {
@@ -971,10 +971,10 @@ public class frmMixer2 extends JFrame {
 
     private void tsmiSaveSongBalance_Click(ActionEvent ev) {
         try {
-            Setting.Balance bln = parent.setting.getbalance().copy();
+            Setting.Balance bln = parent.setting.getBalance().copy();
             PlayList.Music ms = parent.GetPlayingMusicInfo();
             if (ms == null) {
-                JOptionPane.showConfirmDialog(null, "演奏情報が取得できませんでした。\n演奏中又は演奏完了直後に再度お試しください。", "情報取得失敗", JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showConfirmDialog(null, "演奏情報が取得できませんでした。\n演奏中又は演奏完了直後に再度お試しください。", "情報取得失敗", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
                 return;
             }
 

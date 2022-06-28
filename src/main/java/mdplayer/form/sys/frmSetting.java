@@ -40,11 +40,11 @@ import javax.swing.JProgressBar;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import dotnet4j.io.Directory;
@@ -54,6 +54,7 @@ import mdplayer.Common;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.Common.EnmRealChipType;
 import mdplayer.Log;
+import mdplayer.Manufacturers;
 import mdplayer.MidiOutInfo;
 import mdplayer.Setting;
 import mdplayer.Setting.ChipType2;
@@ -62,13 +63,22 @@ import mdplayer.vst.VstInfo;
 
 
 public class frmSetting extends JDialog {
-    private Boolean asioSupported = true;
-    private Boolean wasapiSupported = true;
+
+    private boolean asioSupported = true;
+    private boolean wasapiSupported = true;
     public Setting setting;
-    private Boolean IsInitialOpenFolder;
+    private boolean IsInitialOpenFolder;
     JTable[] dgv;
 
+    private int dialogResult;
+
+    int showDialog() {
+        setVisible(true);
+        return dialogResult;
+    }
+
     public frmSetting(Setting setting) {
+        setModal(true);
         this.setting = setting.copy();
 
         initializeComponent();
@@ -91,22 +101,22 @@ public class frmSetting extends JDialog {
 
         this.cmbLatency.setSelectedIndex(5);
         this.cmbWaitTime.setSelectedIndex(0);
-        cbUnuseRealChip.setSelected(setting.getunuseRealChip());
+        cbUnuseRealChip.setSelected(setting.getUnuseRealChip());
 
         // ASIOサポートチェック
-        if (!AsioOut.isSupported()) {
-            rbAsioOut.setEnabled(false);
-            gbAsioOut.setEnabled(false);
-            asioSupported = false;
-        }
+//        if (!AsioOut.isSupported()) {
+//            rbAsioOut.setEnabled(false);
+//            gbAsioOut.setEnabled(false);
+//            asioSupported = false;
+//        }
 
         // wasapiサポートチェック
-        String os = System.getProperty("");
-        if (os.Platform == PlatformID.Win32NT && os.Version.Major < 6) {
-            rbWasapiOut.setEnabled(false);
-            gbWasapiOut.setEnabled(false);
-            wasapiSupported = false;
-        }
+//        String os = System.getProperty("os.name");
+//        if (os.contains("win") && os.Version.Major < 6) {
+//            rbWasapiOut.setEnabled(false);
+//            gbWasapiOut.setEnabled(false);
+//            wasapiSupported = false;
+//        }
 
 
         // Comboboxへデバイスを列挙
@@ -127,11 +137,11 @@ public class frmSetting extends JDialog {
             }
         }
 
-        if (asioSupported) {
-            for (String s : AsioOut.GetDriverNames()) {
-                cmbAsioDevice.add(s);
-            }
-        }
+//        if (asioSupported) {
+//            for (String s : AsioOut.GetDriverNames()) {
+//                cmbAsioDevice.add(s);
+//            }
+//        }
 
         for (MidiDevice.Info info : MidiSystem.getMidiDeviceInfo()) {
             try {
@@ -268,45 +278,45 @@ public class frmSetting extends JDialog {
 
         if (cmbWaveOutDevice.getItemCount() > 0) {
             cmbWaveOutDevice.setSelectedIndex(0);
-            for (String item : cmbWaveOutDevice.getModel(). Items) {
-                if (item.equals(setting.getOutputDevice().getWaveOutDeviceName())) {
-                    cmbWaveOutDevice.setSelectedItem(item);
+            for (int i = 0; i < cmbWaveOutDevice.getItemCount(); i++) {
+                if (cmbWaveOutDevice.getItemAt(i).equals(setting.getOutputDevice().getWaveOutDeviceName())) {
+                    cmbWaveOutDevice.setSelectedIndex(i);
                 }
             }
         }
 
         if (cmbDirectSoundDevice.getItemCount() > 0) {
             cmbDirectSoundDevice.setSelectedIndex(0);
-            for (String item : cmbDirectSoundDevice.Items) {
-                if (item.equals(setting.getOutputDevice().getDirectSoundDeviceName())) {
-                    cmbDirectSoundDevice.setSelectedItem(item);
+            for (int i = 0; i < cmbDirectSoundDevice.getItemCount(); i++) {
+                if (cmbDirectSoundDevice.getItemAt(i).equals(setting.getOutputDevice().getDirectSoundDeviceName())) {
+                    cmbDirectSoundDevice.setSelectedIndex(i);
                 }
             }
         }
 
         if (cmbWasapiDevice.getItemCount() > 0) {
             cmbWasapiDevice.setSelectedIndex(0);
-            for (String item : cmbWasapiDevice.Items) {
-                if (item.equals(setting.getOutputDevice().getWasapiDeviceName())) {
-                    cmbWasapiDevice.setSelectedItem(item);
+            for (int i = 0; i < cmbWasapiDevice.getItemCount(); i++) {
+                if (cmbWasapiDevice.getItemAt(i).equals(setting.getOutputDevice().getWasapiDeviceName())) {
+                    cmbWasapiDevice.setSelectedIndex(i);
                 }
             }
         }
 
         if (cmbAsioDevice.getItemCount() > 0) {
             cmbAsioDevice.setSelectedIndex(0);
-            for (String item : cmbAsioDevice.Items) {
-                if (item.equals(setting.getOutputDevice().getAsioDeviceName())) {
-                    cmbAsioDevice.setSelectedItem(item);
+            for (int i = 0; i < cmbAsioDevice.getItemCount(); i++) {
+                if (cmbAsioDevice.getItemAt(i).equals(setting.getOutputDevice().getAsioDeviceName())) {
+                    cmbAsioDevice.setSelectedIndex(i);
                 }
             }
         }
 
         if (cmbMIDIIN.getItemCount() > 0) {
             cmbMIDIIN.setSelectedIndex(0);
-            for (String item : cmbMIDIIN.Items) {
-                if (item.equals(setting.getMidiKbd().getMidiInDeviceName())) {
-                    cmbMIDIIN.setSelectedItem(item);
+            for (int i = 0; i < cmbMIDIIN.getItemCount(); i++) {
+                if (cmbMIDIIN.getItemAt(i).equals(setting.getMidiKbd().getMidiInDeviceName())) {
+                    cmbMIDIIN.setSelectedIndex(i);
                 }
             }
         }
@@ -318,11 +328,11 @@ public class frmSetting extends JDialog {
         lblLatencyUnit.setEnabled(!rbAsioOut.isSelected());
         cmbLatency.setEnabled(!rbAsioOut.isSelected());
 
-        if (cmbLatency.Items.contains(String.valueOf(setting.getOutputDevice().getLatency()))) {
+        if (((DefaultComboBoxModel) cmbLatency.getModel()).getIndexOf(String.valueOf(setting.getOutputDevice().getLatency())) > -1) {
             cmbLatency.setSelectedItem(String.valueOf(setting.getOutputDevice().getLatency()));
         }
 
-        if (cmbWaitTime.Items.contains(String.valueOf(setting.getOutputDevice().getWaitTime()))) {
+        if (((DefaultComboBoxModel) cmbWaitTime.getModel()).getIndexOf(String.valueOf(setting.getOutputDevice().getWaitTime())) > -1) {
             cmbWaitTime.setSelectedItem(String.valueOf(setting.getOutputDevice().getWaitTime()));
         }
 
@@ -531,15 +541,15 @@ public class frmSetting extends JDialog {
         cbFM5.setSelected(setting.getMidiKbd().getUseChannel()[4]);
         cbFM6.setSelected(setting.getMidiKbd().getUseChannel()[5]);
 
-        rbMONO.setSelected(setting.getMidiKbd().getIsMONO());
-        rbPOLY.setSelected(!setting.getMidiKbd().getIsMONO());
+        rbMONO.setSelected(setting.getMidiKbd().isMono());
+        rbPOLY.setSelected(!setting.getMidiKbd().isMono());
 
-        rbFM1.setSelected(setting.getMidiKbd().getUseMONOChannel() == 0);
-        rbFM2.setSelected(setting.getMidiKbd().getUseMONOChannel() == 1);
-        rbFM3.setSelected(setting.getMidiKbd().getUseMONOChannel() == 2);
-        rbFM4.setSelected(setting.getMidiKbd().getUseMONOChannel() == 3);
-        rbFM5.setSelected(setting.getMidiKbd().getUseMONOChannel() == 4);
-        rbFM6.setSelected(setting.getMidiKbd().getUseMONOChannel() == 5);
+        rbFM1.setSelected(setting.getMidiKbd().getUseMonoChannel() == 0);
+        rbFM2.setSelected(setting.getMidiKbd().getUseMonoChannel() == 1);
+        rbFM3.setSelected(setting.getMidiKbd().getUseMonoChannel() == 2);
+        rbFM4.setSelected(setting.getMidiKbd().getUseMonoChannel() == 3);
+        rbFM5.setSelected(setting.getMidiKbd().getUseMonoChannel() == 4);
+        rbFM6.setSelected(setting.getMidiKbd().getUseMonoChannel() == 5);
 
         tbLatencyEmu.setText(String.valueOf(setting.getLatencyEmulation()));
         tbLatencySCCI.setText(String.valueOf(setting.getLatencySCCI()));
@@ -556,7 +566,7 @@ public class frmSetting extends JDialog {
         cbUseGetInst_CheckedChanged(null);
         tbDataPath.setText(setting.getOther().getDefaultDataPath());
         tbSearchPath.setText(setting.getFileSearchPathList());
-        cmbInstFormat.setSelectedIndex((int) setting.getOther().getInstFormat().ordinal());
+        cmbInstFormat.setSelectedIndex(setting.getOther().getInstFormat().ordinal());
         tbScreenFrameRate.setText(String.valueOf(setting.getOther().getScreenFrameRate()));
         cbAutoOpen.setSelected(setting.getOther().getAutoOpen());
         cbDumpSwitch.setSelected(setting.getOther().getDumpSwitch());
@@ -591,24 +601,33 @@ public class frmSetting extends JDialog {
         tbCCPause.setText(setting.getMidiKbd().getMidiCtrl_Pause() == -1 ? "" : String.valueOf(setting.getMidiKbd().getMidiCtrl_Pause()));
         tbCCPlay.setText(setting.getMidiKbd().getMidiCtrl_Play() == -1 ? "" : String.valueOf(setting.getMidiKbd().getMidiCtrl_Play()));
         tbCCPrevious.setText(setting.getMidiKbd().getMidiCtrl_Previous() == -1 ? "" : String.valueOf(setting.getMidiKbd().getMidiCtrl_Previous()));
-        tbCCSlow.setText(setting.getMidiKbd().getMidiCtrl_Slow() == -1 ? "" : String.valueOf(setting.getMidiKbd().getMidiCtrl_Slow()));
+        tbCCSlow.setText(setting.getMidiKbd().getMidiCtrlSlow() == -1 ? "" : String.valueOf(setting.getMidiKbd().getMidiCtrlSlow()));
         tbCCStop.setText(setting.getMidiKbd().getMidiCtrl_Stop() == -1 ? "" : String.valueOf(setting.getMidiKbd().getMidiCtrl_Stop()));
 
 
-        if (setting.getMidiOut().getlstMidiOutInfo() != null && setting.getMidiOut().getlstMidiOutInfo().size() > 0) {
-            for (int i = 0; i < setting.getMidiOut().getlstMidiOutInfo().size(); i++) {
-                dgv[i].setModel(new DefaultTableModel());
+        if (setting.getMidiOut().getMidiOutInfos() != null && setting.getMidiOut().getMidiOutInfos().size() > 0) {
+            for (int i = 0; i < setting.getMidiOut().getMidiOutInfos().size(); i++) {
+                DefaultTableModel m = (DefaultTableModel) dgv[i].getModel();
+                m.setRowCount(0);
                 Set<Integer> midioutNotFound = new HashSet<>();
-                if (setting.getMidiOut().getlstMidiOutInfo().get(i) != null && setting.getMidiOut().getlstMidiOutInfo().get(i).length > 0) {
-                    for (int j = 0; j < setting.getMidiOut().getlstMidiOutInfo().get(i).length; j++) {
-                        MidiOutInfo moi = setting.getMidiOut().getlstMidiOutInfo().get(i)[j];
+                if (setting.getMidiOut().getMidiOutInfos().get(i) != null && setting.getMidiOut().getMidiOutInfos().get(i).length > 0) {
+                    for (int j = 0; j < setting.getMidiOut().getMidiOutInfos().get(i).length; j++) {
+                        MidiOutInfo moi = setting.getMidiOut().getMidiOutInfos().get(i)[j];
                         int found = -999;
-                        for (int k = 0; k < NAudio.Midi.MidiOut.NumberOfDevices; k++) {
-                            NAudio.Midi.MidiOutCapabilities moc = NAudio.Midi.MidiOut.DeviceInfo(k);
-                            if (moi.name == moc.ProductName) {
-                                midioutNotFound.add(k);
-                                found = k;
-                                break;
+                        int k = 0;
+                        for (MidiDevice.Info info : MidiSystem.getMidiDeviceInfo()) {
+                            try {
+                                MidiDevice device = MidiSystem.getMidiDevice(info);
+                                if (device.getMaxReceivers() == 0) {
+                                    continue;
+                                }
+                                if (moi.name.equals(device.getDeviceInfo().getName())) {
+                                    midioutNotFound.add(k);
+                                    found = k++;
+                                    break;
+                                }
+                            } catch (MidiUnavailableException e) {
+                                e.printStackTrace();
                             }
                         }
 
@@ -649,16 +668,15 @@ public class frmSetting extends JDialog {
                             break;
                         }
 
-                        ((DefaultTableModel) dgv[i].getModel()).addRow(
+                        m.addRow(new Object[] {
                                 moi.id
                                 , moi.isVST
                                 , moi.fileName
                                 , moi.name
                                 , stype
                                 , sbeforeSend
-                                , moi.isVST ? moi.vendor : (moi.manufacturer != -1 ? ((NAudio.Manufacturers) moi.manufacturer).toString() : "Unknown")
-                        );
-
+                                , moi.isVST ? moi.vendor : (moi.manufacturer != -1 ? String.valueOf(moi.manufacturer) : "Unknown")
+                        });
                     }
                 }
             }
@@ -669,13 +687,18 @@ public class frmSetting extends JDialog {
         tbBeforeSend_GSReset.setText(setting.getMidiOut().getGSReset());
         tbBeforeSend_Custom.setText(setting.getMidiOut().getCustom());
 
-        dgvMIDIoutPallet.setModel(new DefaultTableModel());
-        for (int i = 0; i < NAudio.Midi.MidiOut.NumberOfDevices; i++) {
-            //if (!midioutNotFound.contains(i))
-            //{
-            NAudio.Midi.MidiOutCapabilities moc = NAudio.Midi.MidiOut.DeviceInfo(i);
-            ((DefaultTableModel) dgvMIDIoutPallet.getModel()).addRow(i, moc.ProductName, moc.Manufacturer.toString() != "-1" ? moc.Manufacturer.toString() : "Unknown");
-            //}
+        DefaultTableModel m = (DefaultTableModel) dgvMIDIoutPallet.getModel();
+        int i = 0;
+        for (MidiDevice.Info info : MidiSystem.getMidiDeviceInfo()) {
+            try {
+                MidiDevice device = MidiSystem.getMidiDevice(info);
+                if (device.getMaxReceivers() == 0) {
+                    continue;
+                }
+                m.addRow(new Object[] { i++, device.getDeviceInfo().getName(), device.getDeviceInfo().getVendor()});
+            } catch (MidiUnavailableException e) {
+                e.printStackTrace();
+            }
         }
 
         trkbNSFHPF.setValue(setting.getNsf().getHPF());
@@ -733,7 +756,7 @@ public class frmSetting extends JDialog {
         rbSIDModel_8580.setSelected((setting.getSid().sidModel == 1));
         cbSIDModel_Force.setSelected(setting.getSid().sidmodelForce);
 
-        switch (setting.getNukedOPN2().EmuType) {
+        switch (setting.getNukedOPN2().emuType) {
         case 0:
             rbNukedOPN2OptionDiscrete.setSelected(true);
             break;
@@ -751,8 +774,8 @@ public class frmSetting extends JDialog {
             break;
         }
 
-        cbGensDACHPF.setSelected(setting.getNukedOPN2().GensDACHPF);
-        cbGensSSGEG.setSelected(setting.getNukedOPN2().GensSSGEG);
+        cbGensDACHPF.setSelected(setting.getNukedOPN2().gensDACHPF);
+        cbGensSSGEG.setSelected(setting.getNukedOPN2().gensSSGEG);
 
         cbAutoBalanceUseThis.setSelected(setting.getAutoBalance().getUseThis());
         rbAutoBalanceLoadSongBalance.setSelected(setting.getAutoBalance().getLoadSongBalance());
@@ -764,63 +787,63 @@ public class frmSetting extends JDialog {
         rbAutoBalanceSamePositionAsSongData.setSelected(setting.getAutoBalance().getSamePositionAsSongData());
         rbAutoBalanceNotSamePositionAsSongData.setSelected(!setting.getAutoBalance().getSamePositionAsSongData());
 
-        cbUseKeyBoardHook.setSelected(setting.getkeyBoardHook().getUseKeyBoardHook());
-        gbUseKeyBoardHook.setEnabled(setting.getkeyBoardHook().getUseKeyBoardHook());
+        cbUseKeyBoardHook.setSelected(setting.getKeyBoardHook().getUseKeyBoardHook());
+        gbUseKeyBoardHook.setEnabled(setting.getKeyBoardHook().getUseKeyBoardHook());
 
-        cbStopShift.setSelected(setting.getkeyBoardHook().getStop().getShift());
-        cbStopCtrl.setSelected(setting.getkeyBoardHook().getStop().getCtrl());
-        cbStopWin.setSelected(setting.getkeyBoardHook().getStop().getWin());
-        cbStopAlt.setSelected(setting.getkeyBoardHook().getStop().getAlt());
-        lblStopKey.setText(setting.getkeyBoardHook().getStop().getKey());
+        cbStopShift.setSelected(setting.getKeyBoardHook().getStop().getShift());
+        cbStopCtrl.setSelected(setting.getKeyBoardHook().getStop().getCtrl());
+        cbStopWin.setSelected(setting.getKeyBoardHook().getStop().getWin());
+        cbStopAlt.setSelected(setting.getKeyBoardHook().getStop().getAlt());
+        lblStopKey.setText(setting.getKeyBoardHook().getStop().getKey());
         btStopClr.setEnabled((!lblStopKey.getText().equals("(None)") && (lblStopKey.getText() != null && !lblStopKey.getText().isEmpty())));
 
-        cbPauseShift.setSelected(setting.getkeyBoardHook().getPause().getShift());
-        cbPauseCtrl.setSelected(setting.getkeyBoardHook().getPause().getCtrl());
-        cbPauseWin.setSelected(setting.getkeyBoardHook().getPause().getWin());
-        cbPauseAlt.setSelected(setting.getkeyBoardHook().getPause().getAlt());
-        lblPauseKey.setText(setting.getkeyBoardHook().getPause().getKey());
+        cbPauseShift.setSelected(setting.getKeyBoardHook().getPause().getShift());
+        cbPauseCtrl.setSelected(setting.getKeyBoardHook().getPause().getCtrl());
+        cbPauseWin.setSelected(setting.getKeyBoardHook().getPause().getWin());
+        cbPauseAlt.setSelected(setting.getKeyBoardHook().getPause().getAlt());
+        lblPauseKey.setText(setting.getKeyBoardHook().getPause().getKey());
         btPauseClr.setEnabled((!lblPauseKey.getText().equals("(None)") && (lblPauseKey.getText() != null && !lblPauseKey.getText().isEmpty())));
 
-        cbFadeoutShift.setSelected(setting.getkeyBoardHook().getFadeout().getShift());
-        cbFadeoutCtrl.setSelected(setting.getkeyBoardHook().getFadeout().getCtrl());
-        cbFadeoutWin.setSelected(setting.getkeyBoardHook().getFadeout().getWin());
-        cbFadeoutAlt.setSelected(setting.getkeyBoardHook().getFadeout().getAlt());
-        lblFadeoutKey.setText(setting.getkeyBoardHook().getFadeout().getKey());
+        cbFadeoutShift.setSelected(setting.getKeyBoardHook().getFadeout().getShift());
+        cbFadeoutCtrl.setSelected(setting.getKeyBoardHook().getFadeout().getCtrl());
+        cbFadeoutWin.setSelected(setting.getKeyBoardHook().getFadeout().getWin());
+        cbFadeoutAlt.setSelected(setting.getKeyBoardHook().getFadeout().getAlt());
+        lblFadeoutKey.setText(setting.getKeyBoardHook().getFadeout().getKey());
         btFadeoutClr.setEnabled((!lblFadeoutKey.getText().equals("(None)") && (lblFadeoutKey.getText() != null && !lblFadeoutKey.getText().isEmpty())));
 
-        cbPrevShift.setSelected(setting.getkeyBoardHook().getPrev().getShift());
-        cbPrevCtrl.setSelected(setting.getkeyBoardHook().getPrev().getCtrl());
-        cbPrevWin.setSelected(setting.getkeyBoardHook().getPrev().getWin());
-        cbPrevAlt.setSelected(setting.getkeyBoardHook().getPrev().getAlt());
-        lblPrevKey.setText(setting.getkeyBoardHook().getPrev().getKey());
+        cbPrevShift.setSelected(setting.getKeyBoardHook().getPrev().getShift());
+        cbPrevCtrl.setSelected(setting.getKeyBoardHook().getPrev().getCtrl());
+        cbPrevWin.setSelected(setting.getKeyBoardHook().getPrev().getWin());
+        cbPrevAlt.setSelected(setting.getKeyBoardHook().getPrev().getAlt());
+        lblPrevKey.setText(setting.getKeyBoardHook().getPrev().getKey());
         btPrevClr.setEnabled((!lblPrevKey.getText().equals("(None)") && (lblPrevKey.getText() != null && !lblPrevKey.getText().isEmpty())));
 
-        cbSlowShift.setSelected(setting.getkeyBoardHook().getSlow().getShift());
-        cbSlowCtrl.setSelected(setting.getkeyBoardHook().getSlow().getCtrl());
-        cbSlowWin.setSelected(setting.getkeyBoardHook().getSlow().getWin());
-        cbSlowAlt.setSelected(setting.getkeyBoardHook().getSlow().getAlt());
-        lblSlowKey.setText(setting.getkeyBoardHook().getSlow().getKey());
+        cbSlowShift.setSelected(setting.getKeyBoardHook().getSlow().getShift());
+        cbSlowCtrl.setSelected(setting.getKeyBoardHook().getSlow().getCtrl());
+        cbSlowWin.setSelected(setting.getKeyBoardHook().getSlow().getWin());
+        cbSlowAlt.setSelected(setting.getKeyBoardHook().getSlow().getAlt());
+        lblSlowKey.setText(setting.getKeyBoardHook().getSlow().getKey());
         btSlowClr.setEnabled((!lblSlowKey.getText().equals("(None)") && (lblSlowKey.getText() != null && !lblSlowKey.getText().isEmpty())));
 
-        cbPlayShift.setSelected(setting.getkeyBoardHook().getPlay().getShift());
-        cbPlayCtrl.setSelected(setting.getkeyBoardHook().getPlay().getCtrl());
-        cbPlayWin.setSelected(setting.getkeyBoardHook().getPlay().getWin());
-        cbPlayAlt.setSelected(setting.getkeyBoardHook().getPlay().getAlt());
-        lblPlayKey.setText(setting.getkeyBoardHook().getPlay().getKey());
+        cbPlayShift.setSelected(setting.getKeyBoardHook().getPlay().getShift());
+        cbPlayCtrl.setSelected(setting.getKeyBoardHook().getPlay().getCtrl());
+        cbPlayWin.setSelected(setting.getKeyBoardHook().getPlay().getWin());
+        cbPlayAlt.setSelected(setting.getKeyBoardHook().getPlay().getAlt());
+        lblPlayKey.setText(setting.getKeyBoardHook().getPlay().getKey());
         btPlayClr.setEnabled((!lblPlayKey.getText().equals("(None)") && (lblPlayKey.getText() != null && !lblPlayKey.getText().isEmpty())));
 
-        cbFastShift.setSelected(setting.getkeyBoardHook().getFast().getShift());
-        cbFastCtrl.setSelected(setting.getkeyBoardHook().getFast().getCtrl());
-        cbFastWin.setSelected(setting.getkeyBoardHook().getFast().getWin());
-        cbFastAlt.setSelected(setting.getkeyBoardHook().getFast().getAlt());
-        lblFastKey.setText(setting.getkeyBoardHook().getFast().getKey());
+        cbFastShift.setSelected(setting.getKeyBoardHook().getFast().getShift());
+        cbFastCtrl.setSelected(setting.getKeyBoardHook().getFast().getCtrl());
+        cbFastWin.setSelected(setting.getKeyBoardHook().getFast().getWin());
+        cbFastAlt.setSelected(setting.getKeyBoardHook().getFast().getAlt());
+        lblFastKey.setText(setting.getKeyBoardHook().getFast().getKey());
         btFastClr.setEnabled((!lblFastKey.getText().equals("(None)") && (lblFastKey.getText() != null && !lblFastKey.getText().isEmpty())));
 
-        cbNextShift.setSelected(setting.getkeyBoardHook().getNext().getShift());
-        cbNextCtrl.setSelected(setting.getkeyBoardHook().getNext().getCtrl());
-        cbNextWin.setSelected(setting.getkeyBoardHook().getNext().getWin());
-        cbNextAlt.setSelected(setting.getkeyBoardHook().getNext().getAlt());
-        lblNextKey.setText(setting.getkeyBoardHook().getNext().getKey());
+        cbNextShift.setSelected(setting.getKeyBoardHook().getNext().getShift());
+        cbNextCtrl.setSelected(setting.getKeyBoardHook().getNext().getCtrl());
+        cbNextWin.setSelected(setting.getKeyBoardHook().getNext().getWin());
+        cbNextAlt.setSelected(setting.getKeyBoardHook().getNext().getAlt());
+        lblNextKey.setText(setting.getKeyBoardHook().getNext().getKey());
         btNextClr.setEnabled((!lblNextKey.getText().equals("(None)") && (lblNextKey.getText() != null && !lblNextKey.getText().isEmpty())));
 
         cbExALL.setSelected(setting.getOther().getExAll());
@@ -839,8 +862,8 @@ public class frmSetting extends JDialog {
         tbPMDDriverArguments.setText(setting.getPmdDotNET().driverArguments);
         rbPMDUsePPSDRVFreqDefault.setSelected(setting.getPmdDotNET().usePPSDRVUseInterfaceDefaultFreq);
         rbPMDUsePPSDRVManualFreq.setSelected(!setting.getPmdDotNET().usePPSDRVUseInterfaceDefaultFreq);
-        tbPMDPPSDRVFreq.setText(String.valueOf(setting.getPmdDotNET().PPSDRVManualFreq));
-        tbPMDPPSDRVManualWait.setText(String.valueOf(setting.getPmdDotNET().PPSDRVManualWait));
+        tbPMDPPSDRVFreq.setText(String.valueOf(setting.getPmdDotNET().ppsDrvManualFreq));
+        tbPMDPPSDRVManualWait.setText(String.valueOf(setting.getPmdDotNET().ppsDrvManualWait));
         tbPMDVolumeFM.setText(String.valueOf(setting.getPmdDotNET().volumeFM));
         tbPMDVolumeSSG.setText(String.valueOf(setting.getPmdDotNET().volumeSSG));
         tbPMDVolumeRhythm.setText(String.valueOf(setting.getPmdDotNET().volumeRhythm));
@@ -993,18 +1016,18 @@ public class frmSetting extends JDialog {
 
     private void copyFromMIDIoutListA(JTable dgv) {
 
-        dgv.setColumns.clear();
+        ((DefaultTableModel) dgv.getModel()).setRowCount(0);
 
-        for (JListColumn col : dgvMIDIoutListA.Columns) {
+        for (JListColumn col : Columns) {
             dgv.Columns.add((JListColumn) col.Clone());
         }
     }
 
     private void btnASIOControlPanel_Click(ActionEvent ev) {
         try {
-            try (AsioOut asio = new AsioOut(cmbAsioDevice.getSelectedItem().toString())) {
-                asio.ShowControlPanel();
-            }
+//            try (AsioOut asio = new AsioOut(cmbAsioDevice.getSelectedItem().toString())) {
+//                asio.ShowControlPanel();
+//            }
         } catch (Exception ex) {
             Log.forcedWrite(ex);
             JOptionPane.showConfirmDialog(null, ex.getMessage());
@@ -1016,7 +1039,7 @@ public class frmSetting extends JDialog {
 
         int i = 0;
 
-        // // #region 出力
+        // #region 出力
 
         setting.getOutputDevice().setDeviceType(Common.DEV_WaveOut);
         if (rbWaveOut.isSelected()) setting.getOutputDevice().setDeviceType(Common.DEV_WaveOut);
@@ -1036,11 +1059,11 @@ public class frmSetting extends JDialog {
         setting.getOutputDevice().setWaitTime(Integer.parseInt(cmbWaitTime.getSelectedItem().toString()));
         setting.getOutputDevice().setSampleRate(Integer.parseInt(cmbSampleRate.getSelectedItem().toString()));
 
-        // // #endregion
+// #endregion
 
-        // // #region Sound
+// #region Sound
 
-        setting.setunuseRealChip(cbUnuseRealChip.isSelected());
+        setting.setUnuseRealChip(cbUnuseRealChip.isSelected());
         setting.setYM2612Type(new ChipType2[2]);
         setting.getYM2612Type()[0] = new ChipType2();
         setChipType2FromControls(
@@ -1075,13 +1098,11 @@ public class frmSetting extends JDialog {
         setting.getYM2612Type()[0].getRealChipInfo()[0].setOnlyPCMEmulation(ucSI.cbEmulationPCMOnly.isSelected());
 
         //setting.YM2612Type.LatencyForEmulation = 0;
-        //if (Integer.parseInt(tbYM2612EmuDelay.getText(),  i))
-        //{
+        //if (Integer.parseInt(tbYM2612EmuDelay.getText(),  i)) {
         //    setting.YM2612Type.LatencyForEmulation = Math.max(Math.min(i, 999), 0);
         //}
         //setting.YM2612Type.LatencyForScci = 0;
-        //if (Integer.parseInt(tbYM2612ScciDelay.getText(),  i))
-        //{
+        //if (Integer.parseInt(tbYM2612ScciDelay.getText(),  i)) {
         //    setting.YM2612Type.LatencyForScci = Math.max(Math.min(i, 999), 0);
         //}
 
@@ -1113,13 +1134,11 @@ public class frmSetting extends JDialog {
         );
 
         //setting.SN76489Type.LatencyForEmulation = 0;
-        //if (Integer.parseInt(tbSN76489EmuDelay.getText(),  i))
-        //{
+        //if (Integer.parseInt(tbSN76489EmuDelay.getText(),  i)) {
         //    setting.SN76489Type.LatencyForEmulation = Math.max(Math.min(i, 999), 0);
         //}
         //setting.SN76489Type.LatencyForScci = 0;
-        //if (Integer.parseInt(tbSN76489ScciDelay.getText(),  i))
-        //{
+        //if (Integer.parseInt(tbSN76489ScciDelay.getText(),  i)) {
         //    setting.SN76489Type.LatencyForScci = Math.max(Math.min(i, 999), 0);
         //}
 
@@ -1153,13 +1172,11 @@ public class frmSetting extends JDialog {
         //setting.YM2608Type.UseWaitBoost = cbYM2608UseWaitBoost.isSelected();
         //setting.YM2608Type.OnlyPCMEmulation = cbOnlyPCMEmulation.isSelected();
         //setting.YM2608Type.LatencyForEmulation = 0;
-        //if (Integer.parseInt(tbYM2608EmuDelay.getText(),  i))
-        //{
+        //if (Integer.parseInt(tbYM2608EmuDelay.getText(),  i)) {
         //    setting.YM2608Type.LatencyForEmulation = Math.max(Math.min(i, 999), 0);
         //}
         //setting.YM2608Type.LatencyForScci = 0;
-        //if (Integer.parseInt(tbYM2608ScciDelay.getText(),  i))
-        //{
+        //if (Integer.parseInt(tbYM2608ScciDelay.getText(),  i)) {
         //    setting.YM2608Type.LatencyForScci = Math.max(Math.min(i, 999), 0);
         //}
 
@@ -1392,7 +1409,7 @@ public class frmSetting extends JDialog {
                 , null, null, null, null, null
         );
 
-        // // #endregion
+// #endregion
 
 
         setting.getMidiKbd().setMidiInDeviceName(cmbMIDIIN.getSelectedItem() != null ? cmbMIDIIN.getSelectedItem().toString() : "");
@@ -1405,8 +1422,8 @@ public class frmSetting extends JDialog {
 
         setting.getMidiKbd().setUseMIDIKeyboard(cbUseMIDIKeyboard.isSelected());
 
-        setting.getMidiKbd().setIsMONO(rbMONO.isSelected());
-        setting.getMidiKbd().setUseMONOChannel(rbFM1.isSelected() ? 0 : (rbFM2.isSelected() ? 1 : (rbFM3.isSelected() ? 2 : (rbFM4.isSelected() ? 3 : (rbFM5.isSelected() ? 4 : (rbFM6.isSelected() ? 5 : -1))))));
+        setting.getMidiKbd().setMono(rbMONO.isSelected());
+        setting.getMidiKbd().setUseMonoChannel(rbFM1.isSelected() ? 0 : (rbFM2.isSelected() ? 1 : (rbFM3.isSelected() ? 2 : (rbFM4.isSelected() ? 3 : (rbFM5.isSelected() ? 4 : (rbFM6.isSelected() ? 5 : -1))))));
 
         setting.getMidiKbd().setMidiCtrl_CopySelecttingLogToClipbrd(-1);
         try {
@@ -1461,11 +1478,11 @@ public class frmSetting extends JDialog {
             i = Integer.parseInt(tbCCPrevious.getText());
             setting.getMidiKbd().setMidiCtrl_Previous(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
-            setting.getMidiKbd().setMidiCtrl_Slow(-1);
+            setting.getMidiKbd().setMidiCtrlSlow(-1);
         }
         try {
             i = Integer.parseInt(tbCCSlow.getText());
-            setting.getMidiKbd().setMidiCtrl_Slow(Math.min(Math.max(i, 0), 127));
+            setting.getMidiKbd().setMidiCtrlSlow(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
             setting.getMidiKbd().setMidiCtrl_Stop(-1);
         }
@@ -1532,7 +1549,7 @@ public class frmSetting extends JDialog {
         setting.getMidiExport().setUseYM2151Export(cbMIDIYM2151.isSelected());
         setting.getMidiExport().setUseYM2612Export(cbMIDIYM2612.isSelected());
 
-        setting.getMidiOut().setlstMidiOutInfo(new ArrayList<>());
+        setting.getMidiOut().setMidiOutInfos(new ArrayList<>());
 
         for (JTable d : dgv) {
             if (d.getRowCount() > 0) {
@@ -1540,7 +1557,7 @@ public class frmSetting extends JDialog {
                 for (i = 0; i < d.getRowCount(); i++) {
                     MidiOutInfo moi = new MidiOutInfo();
                     moi.id = (int) d.getModel().getValueAt(i, 0);
-                    moi.isVST = (Boolean) d.getModel().getValueAt(i, 1);
+                    moi.isVST = (boolean) d.getModel().getValueAt(i, 1);
                     moi.fileName = (String) d.getModel().getValueAt(i, 2);
                     moi.name = (String) d.getModel().getValueAt(i, 3);
                     String stype = (String) d.getModel().getValueAt(i, 4);
@@ -1564,14 +1581,14 @@ public class frmSetting extends JDialog {
                         moi.manufacturer = -1;
                     } else {
                         moi.vendor = "";
-                        moi.manufacturer = (mn == null || mn.equals("Unknown")) ? -1 : (int) (Enum.Parse(typeof(NAudio.Manufacturers), mn));
+                        moi.manufacturer = mn == null || mn.equals("Unknown") ? -1 : Manufacturers.byManufacture(mn).id;
                     }
 
                     lstMoi.add(moi);
                 }
-                setting.getMidiOut().getlstMidiOutInfo().add(lstMoi.toArray(new MidiOutInfo[0]));
+                setting.getMidiOut().getMidiOutInfos().add(lstMoi.toArray(new MidiOutInfo[0]));
             } else {
-                setting.getMidiOut().getlstMidiOutInfo().add(null);
+                setting.getMidiOut().getMidiOutInfos().add(null);
             }
         }
 
@@ -1609,7 +1626,7 @@ public class frmSetting extends JDialog {
         setting.getNsf().setHPF(trkbNSFHPF.getValue());
         setting.getNsf().setLPF(trkbNSFLPF.getValue());
 
-        setting.setsid(new Setting.SID());
+        setting.setSid(new Setting.SID());
         setting.getSid().romKernalPath = tbSIDKernal.getText();
         setting.getSid().romBasicPath = tbSIDBasic.getText();
         setting.getSid().romCharacterPath = tbSIDCharacter.getText();
@@ -1634,16 +1651,16 @@ public class frmSetting extends JDialog {
         setting.getSid().sidmodelForce = cbSIDModel_Force.isSelected();
 
 
-        setting.setnukedOPN2(new Setting.NukedOPN2());
-        if (rbNukedOPN2OptionYM2612.isSelected()) setting.getNukedOPN2().EmuType = 2;
-        if (rbNukedOPN2OptionASIC.isSelected()) setting.getNukedOPN2().EmuType = 1;
-        if (rbNukedOPN2OptionDiscrete.isSelected()) setting.getNukedOPN2().EmuType = 0;
-        if (rbNukedOPN2OptionYM2612u.isSelected()) setting.getNukedOPN2().EmuType = 3;
-        if (rbNukedOPN2OptionASIClp.isSelected()) setting.getNukedOPN2().EmuType = 4;
-        setting.getNukedOPN2().GensDACHPF = cbGensDACHPF.isSelected();
-        setting.getNukedOPN2().GensSSGEG = cbGensSSGEG.isSelected();
+        setting.setNukedOPN2(new Setting.NukedOPN2());
+        if (rbNukedOPN2OptionYM2612.isSelected()) setting.getNukedOPN2().emuType = 2;
+        if (rbNukedOPN2OptionASIC.isSelected()) setting.getNukedOPN2().emuType = 1;
+        if (rbNukedOPN2OptionDiscrete.isSelected()) setting.getNukedOPN2().emuType = 0;
+        if (rbNukedOPN2OptionYM2612u.isSelected()) setting.getNukedOPN2().emuType = 3;
+        if (rbNukedOPN2OptionASIClp.isSelected()) setting.getNukedOPN2().emuType = 4;
+        setting.getNukedOPN2().gensDACHPF = cbGensDACHPF.isSelected();
+        setting.getNukedOPN2().gensSSGEG = cbGensSSGEG.isSelected();
 
-        setting.setautoBalance(new Setting.AutoBalance());
+        setting.setAutoBalance(new Setting.AutoBalance());
         setting.getAutoBalance().setUseThis(cbAutoBalanceUseThis.isSelected());
         setting.getAutoBalance().setLoadSongBalance(rbAutoBalanceLoadSongBalance.isSelected());
         setting.getAutoBalance().setLoadDriverBalance(rbAutoBalanceLoadDriverBalance.isSelected());
@@ -1665,14 +1682,14 @@ public class frmSetting extends JDialog {
         } catch (NumberFormatException e) {
             nn = 2000;
         }
-        setting.getPmdDotNET().PPSDRVManualFreq = nn;
+        setting.getPmdDotNET().ppsDrvManualFreq = nn;
         try {
             nn = Integer.parseInt(tbPMDPPSDRVManualWait.getText());
         } catch (NumberFormatException e) {
             nn = 1;
         }
         nn = Math.min(Math.max(nn, 0), 100);
-        setting.getPmdDotNET().PPSDRVManualWait = nn;
+        setting.getPmdDotNET().ppsDrvManualWait = nn;
         try {
             nn = Integer.parseInt(tbPMDVolumeFM.getText());
         } catch (NumberFormatException e) {
@@ -1710,62 +1727,60 @@ public class frmSetting extends JDialog {
         setting.getPmdDotNET().volumeGIMICSSG = nn;
 
 
-        setting.getkeyBoardHook().setUseKeyBoardHook(cbUseKeyBoardHook.isSelected());
+        setting.getKeyBoardHook().setUseKeyBoardHook(cbUseKeyBoardHook.isSelected());
 
-        setting.getkeyBoardHook().getStop().setShift(cbStopShift.isSelected());
-        setting.getkeyBoardHook().getStop().setCtrl(cbStopCtrl.isSelected());
-        setting.getkeyBoardHook().getStop().setWin(cbStopWin.isSelected());
-        setting.getkeyBoardHook().getStop().setAlt(cbStopAlt.isSelected());
-        setting.getkeyBoardHook().getStop().setKey(lblStopKey.getText() == null || lblStopKey.getText().isEmpty() ? "(None)" : lblStopKey.getText());
+        setting.getKeyBoardHook().getStop().setShift(cbStopShift.isSelected());
+        setting.getKeyBoardHook().getStop().setCtrl(cbStopCtrl.isSelected());
+        setting.getKeyBoardHook().getStop().setWin(cbStopWin.isSelected());
+        setting.getKeyBoardHook().getStop().setAlt(cbStopAlt.isSelected());
+        setting.getKeyBoardHook().getStop().setKey(lblStopKey.getText() == null || lblStopKey.getText().isEmpty() ? "(None)" : lblStopKey.getText());
 
-        setting.getkeyBoardHook().getPause().setShift(cbPauseShift.isSelected());
-        setting.getkeyBoardHook().getPause().setCtrl(cbPauseCtrl.isSelected());
-        setting.getkeyBoardHook().getPause().setWin(cbPauseWin.isSelected());
-        setting.getkeyBoardHook().getPause().setAlt(cbPauseAlt.isSelected());
-        setting.getkeyBoardHook().getPause().setKey(lblPauseKey.getText() == null || lblPauseKey.getText().isEmpty() ? "(None)" : lblPauseKey.getText());
+        setting.getKeyBoardHook().getPause().setShift(cbPauseShift.isSelected());
+        setting.getKeyBoardHook().getPause().setCtrl(cbPauseCtrl.isSelected());
+        setting.getKeyBoardHook().getPause().setWin(cbPauseWin.isSelected());
+        setting.getKeyBoardHook().getPause().setAlt(cbPauseAlt.isSelected());
+        setting.getKeyBoardHook().getPause().setKey(lblPauseKey.getText() == null || lblPauseKey.getText().isEmpty() ? "(None)" : lblPauseKey.getText());
 
-        setting.getkeyBoardHook().getFadeout().setShift(cbFadeoutShift.isSelected());
-        setting.getkeyBoardHook().getFadeout().setCtrl(cbFadeoutCtrl.isSelected());
-        setting.getkeyBoardHook().getFadeout().setWin(cbFadeoutWin.isSelected());
-        setting.getkeyBoardHook().getFadeout().setAlt(cbFadeoutAlt.isSelected());
-        setting.getkeyBoardHook().getFadeout().setKey(lblFadeoutKey.getText() == null || lblFadeoutKey.getText().isEmpty() ? "(None)" : lblFadeoutKey.getText());
+        setting.getKeyBoardHook().getFadeout().setShift(cbFadeoutShift.isSelected());
+        setting.getKeyBoardHook().getFadeout().setCtrl(cbFadeoutCtrl.isSelected());
+        setting.getKeyBoardHook().getFadeout().setWin(cbFadeoutWin.isSelected());
+        setting.getKeyBoardHook().getFadeout().setAlt(cbFadeoutAlt.isSelected());
+        setting.getKeyBoardHook().getFadeout().setKey(lblFadeoutKey.getText() == null || lblFadeoutKey.getText().isEmpty() ? "(None)" : lblFadeoutKey.getText());
 
-        setting.getkeyBoardHook().getPrev().setShift(cbPrevShift.isSelected());
-        setting.getkeyBoardHook().getPrev().setCtrl(cbPrevCtrl.isSelected());
-        setting.getkeyBoardHook().getPrev().setWin(cbPrevWin.isSelected());
-        setting.getkeyBoardHook().getPrev().setAlt(cbPrevAlt.isSelected());
-        setting.getkeyBoardHook().getPrev().setKey(lblPrevKey.getText() == null || lblPrevKey.getText().isEmpty() ? "(None)" : lblPrevKey.getText());
+        setting.getKeyBoardHook().getPrev().setShift(cbPrevShift.isSelected());
+        setting.getKeyBoardHook().getPrev().setCtrl(cbPrevCtrl.isSelected());
+        setting.getKeyBoardHook().getPrev().setWin(cbPrevWin.isSelected());
+        setting.getKeyBoardHook().getPrev().setAlt(cbPrevAlt.isSelected());
+        setting.getKeyBoardHook().getPrev().setKey(lblPrevKey.getText() == null || lblPrevKey.getText().isEmpty() ? "(None)" : lblPrevKey.getText());
 
-        setting.getkeyBoardHook().getSlow().setShift(cbSlowShift.isSelected());
-        setting.getkeyBoardHook().getSlow().setCtrl(cbSlowCtrl.isSelected());
-        setting.getkeyBoardHook().getSlow().setWin(cbSlowWin.isSelected());
-        setting.getkeyBoardHook().getSlow().setAlt(cbSlowAlt.isSelected());
-        setting.getkeyBoardHook().getSlow().setKey(lblSlowKey.getText() == null || lblSlowKey.getText().isEmpty() ? "(None)" : lblSlowKey.getText());
+        setting.getKeyBoardHook().getSlow().setShift(cbSlowShift.isSelected());
+        setting.getKeyBoardHook().getSlow().setCtrl(cbSlowCtrl.isSelected());
+        setting.getKeyBoardHook().getSlow().setWin(cbSlowWin.isSelected());
+        setting.getKeyBoardHook().getSlow().setAlt(cbSlowAlt.isSelected());
+        setting.getKeyBoardHook().getSlow().setKey(lblSlowKey.getText() == null || lblSlowKey.getText().isEmpty() ? "(None)" : lblSlowKey.getText());
 
-        setting.getkeyBoardHook().getPlay().setShift(cbPlayShift.isSelected());
-        setting.getkeyBoardHook().getPlay().setCtrl(cbPlayCtrl.isSelected());
-        setting.getkeyBoardHook().getPlay().setWin(cbPlayWin.isSelected());
-        setting.getkeyBoardHook().getPlay().setAlt(cbPlayAlt.isSelected());
-        setting.getkeyBoardHook().getPlay().setKey(lblPlayKey.getText() == null || lblPlayKey.getText().isEmpty() ? "(None)" : lblPlayKey.getText());
+        setting.getKeyBoardHook().getPlay().setShift(cbPlayShift.isSelected());
+        setting.getKeyBoardHook().getPlay().setCtrl(cbPlayCtrl.isSelected());
+        setting.getKeyBoardHook().getPlay().setWin(cbPlayWin.isSelected());
+        setting.getKeyBoardHook().getPlay().setAlt(cbPlayAlt.isSelected());
+        setting.getKeyBoardHook().getPlay().setKey(lblPlayKey.getText() == null || lblPlayKey.getText().isEmpty() ? "(None)" : lblPlayKey.getText());
 
-        setting.getkeyBoardHook().getFast().setShift(cbFastShift.isSelected());
-        setting.getkeyBoardHook().getFast().setCtrl(cbFastCtrl.isSelected());
-        setting.getkeyBoardHook().getFast().setWin(cbFastWin.isSelected());
-        setting.getkeyBoardHook().getFast().setAlt(cbFastAlt.isSelected());
-        setting.getkeyBoardHook().getFast().setKey(lblFastKey.getText() == null || lblFastKey.getText().isEmpty() ? "(None)" : lblFastKey.getText());
+        setting.getKeyBoardHook().getFast().setShift(cbFastShift.isSelected());
+        setting.getKeyBoardHook().getFast().setCtrl(cbFastCtrl.isSelected());
+        setting.getKeyBoardHook().getFast().setWin(cbFastWin.isSelected());
+        setting.getKeyBoardHook().getFast().setAlt(cbFastAlt.isSelected());
+        setting.getKeyBoardHook().getFast().setKey(lblFastKey.getText() == null || lblFastKey.getText().isEmpty() ? "(None)" : lblFastKey.getText());
 
-        setting.getkeyBoardHook().getNext().setShift(cbNextShift.isSelected());
-        setting.getkeyBoardHook().getNext().setCtrl(cbNextCtrl.isSelected());
-        setting.getkeyBoardHook().getNext().setWin(cbNextWin.isSelected());
-        setting.getkeyBoardHook().getNext().setAlt(cbNextAlt.isSelected());
-        setting.getkeyBoardHook().getNext().setKey(lblNextKey.getText() == null || lblNextKey.getText().isEmpty() ? "(None)" : lblNextKey.getText());
+        setting.getKeyBoardHook().getNext().setShift(cbNextShift.isSelected());
+        setting.getKeyBoardHook().getNext().setCtrl(cbNextCtrl.isSelected());
+        setting.getKeyBoardHook().getNext().setWin(cbNextWin.isSelected());
+        setting.getKeyBoardHook().getNext().setAlt(cbNextAlt.isSelected());
+        setting.getKeyBoardHook().getNext().setKey(lblNextKey.getText() == null || lblNextKey.getText().isEmpty() ? "(None)" : lblNextKey.getText());
 
 
-        this.DialogResult = JFileChooser.APPROVE_OPTION;
+        this.dialogResult = JFileChooser.APPROVE_OPTION;
         this.setVisible(false);
     }
-
-    int DialogResult;
 
     private static void setChipType2FromControls(
             ChipType2 ct
@@ -1778,7 +1793,7 @@ public class frmSetting extends JDialog {
             , JComboBox cmb_SCCI_E1
             , JComboBox cmb_SCCI_E2
     ) {
-        ct.setUseReal(new Boolean[rb_SCCI_E == null ? 1 : 3]);
+        ct.setUseReal(new boolean[rb_SCCI_E == null ? 1 : 3]);
         ct.getUseReal()[0] = rb_SCCI.isSelected();
         ct.setrealChipInfo(new ChipType2.RealChipInfo[rb_SCCI_E == null ? 1 : 3]);
         for (int i = 0; i < ct.getRealChipInfo().length; i++) ct.getRealChipInfo()[i] = new ChipType2.RealChipInfo();
@@ -1790,7 +1805,7 @@ public class frmSetting extends JDialog {
                 n = n.substring(0, n.indexOf(")")).substring(1);
                 String[] ns = n.split(":");
                 rci = ct.getRealChipInfo()[0];
-                rci.setInterfaceName(String.join(":", ns, 0, ns.length - 3));
+                rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
                 try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) { v = 0; }
                 rci.setSoundLocation(v);
                 try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) { v = 0; }
@@ -1801,9 +1816,9 @@ public class frmSetting extends JDialog {
         }
 
         ct.setUseEmu(null);
-        if (rb_EMU2 != null) ct.setUseEmu(new Boolean[3]);
-        else if (rb_EMU1 != null) ct.setUseEmu(new Boolean[2]);
-        else if (rb_EMU0 != null) ct.setUseEmu(new Boolean[1]);
+        if (rb_EMU2 != null) ct.setUseEmu(new boolean[3]);
+        else if (rb_EMU1 != null) ct.setUseEmu(new boolean[2]);
+        else if (rb_EMU0 != null) ct.setUseEmu(new boolean[1]);
         if (rb_EMU0 != null) ct.getUseEmu()[0] = rb_EMU0.isSelected();// (rb_EMU0.isSelected() || rb_SCCI.isSelected());
         if (rb_EMU1 != null) ct.getUseEmu()[1] = rb_EMU1.isSelected();
         if (rb_EMU2 != null) ct.getUseEmu()[2] = rb_EMU2.isSelected();
@@ -1841,8 +1856,8 @@ public class frmSetting extends JDialog {
     /**
      * 入力値チェック
      */
-    private Boolean checkSetting() {
-        HashSet<String> hsSCCIs = new HashSet<String>();
+    private boolean checkSetting() {
+        HashSet<String> hsSCCIs = new HashSet<>();
         boolean ret = false;
 
         // SCCI重複設定チェック
@@ -1982,15 +1997,12 @@ public class frmSetting extends JDialog {
                 else ret = true;
 
         if (ret) {
-            if (JOptionPane.showConfirmDialog(null,
+            return JOptionPane.showConfirmDialog(null,
                     "SCCI/GIMICのデバイスが重複して設定されています。強行しますか"
                     , "警告"
                     , JOptionPane.YES_NO_OPTION
                     , JOptionPane.ERROR_MESSAGE
-            ) == JOptionPane.YES_OPTION) {
-                return true;
-            }
-            return false;
+            ) == JOptionPane.YES_OPTION;
         }
 
         return true;
@@ -2115,7 +2127,7 @@ public class frmSetting extends JDialog {
         tbSearchPath.setText(fbd.getSelectedFile().getPath());
     }
 
-    private void cbUseGetInst_CheckedChanged(ActionEvent ev) {
+    private void cbUseGetInst_CheckedChanged(ChangeEvent ev) {
         lblInstFormat.setEnabled(cbUseGetInst.isSelected());
         cmbInstFormat.setEnabled(cbUseGetInst.isSelected());
     }
@@ -2137,7 +2149,9 @@ public class frmSetting extends JDialog {
     }
 
     private void btnResetPosition_Click(ActionEvent ev) {
-        int res = JOptionPane.showConfirmDialog("表示位置を全てリセットします。よろしいですか。(現在開いているウィンドウの位置はリセットできません。)", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+        int res = JOptionPane.showConfirmDialog(null,
+                "表示位置を全てリセットします。よろしいですか。(現在開いているウィンドウの位置はリセットできません。)",
+                "確認", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (res == JOptionPane.NO_OPTION) return;
 
         setting.setlocation(new Setting.Location());
@@ -2171,7 +2185,7 @@ public class frmSetting extends JDialog {
         tbWavPath.setText(fbd.getSelectedFile().getPath());
     }
 
-    private void cbWavSwitch_CheckedChanged(ActionEvent ev) {
+    private void cbWavSwitch_CheckedChanged(ChangeEvent ev) {
         gbWav.setEnabled(cbWavSwitch.isSelected());
     }
 
@@ -2258,7 +2272,7 @@ public class frmSetting extends JDialog {
                     m.getValueAt(row, 5),
             });
             m.removeRow(row);
-            m.Rows[i].Selected = true;
+            dgv[p].setRowSelectionInterval(i, i);
         }
     }
 
@@ -2281,7 +2295,7 @@ public class frmSetting extends JDialog {
                     m.getValueAt(row, 5),
             });
             m.removeRow(row);
-            dgv[p].Rows[i].Selected = true;
+            dgv[p].setRowSelectionInterval(i, i);
         }
     }
 
@@ -2294,8 +2308,8 @@ public class frmSetting extends JDialog {
         ofd.setDialogTitle("ファイルを選択してください");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
-        if (!setting.getvst().getDefaultPath().isEmpty() && Directory.exists(setting.getvst().getDefaultPath()) && IsInitialOpenFolder) {
-            ofd.setCurrentDirectory(new File(setting.getvst().getDefaultPath()));
+        if (!setting.getVst().getDefaultPath().isEmpty() && Directory.exists(setting.getVst().getDefaultPath()) && IsInitialOpenFolder) {
+            ofd.setCurrentDirectory(new File(setting.getVst().getDefaultPath()));
 //        } else {
 //            ofd.RestoreDirectory = true;
         }
@@ -2309,7 +2323,7 @@ public class frmSetting extends JDialog {
         VstInfo s = Audio.getVSTInfo(ofd.getSelectedFile().getName());
         if (s == null) return;
 
-        setting.getvst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
+        setting.getVst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
 
         int p = tbcMIDIoutList.getSelectedIndex();
         ((DefaultTableModel) dgv[p].getModel()).addRow(new Object[] {
@@ -2578,14 +2592,17 @@ public class frmSetting extends JDialog {
         btClr.setEnabled(true);
     }
 
-    private void llOpenGithub_LinkClicked(ActionEvent e) {
-        try {
+    private MouseListener llOpenGithub_LinkClicked = new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            try {
 //            llOpenGithub.LinkVisited = true; // TODO
-            Desktop.getDesktop().browse(URI.create("https://github.com/kuma4649/MDPlayer/releases/latest"));
-        } catch (IOException ex) {
-            throw new UncheckedIOException(ex);
+                Desktop.getDesktop().browse(URI.create("https://github.com/kuma4649/MDPlayer/releases/latest"));
+            } catch (IOException ex) {
+                throw new UncheckedIOException(ex);
+            }
         }
-    }
+    };
 
     private void rbPMDManual_CheckedChanged(ChangeEvent ev) {
         gbPMDManual.setEnabled(rbPMDManual.isSelected());
@@ -2796,7 +2813,7 @@ public class frmSetting extends JDialog {
         this.tbcMIDIoutList = new JTabbedPane();
         this.tabPage1 = new JTabbedPane();
         this.dgvMIDIoutListA = new JTable();
-        this.JListTextBoxColumn1 = new TableColumn();
+        this.JListTextBoxColumn1 = new JTextField();
         this.clmIsVST = new JCheckBox();
         this.clmFileName = new JTextArea();
         this.JListTextBoxColumn2 = new JTextArea();
@@ -3207,7 +3224,7 @@ public class frmSetting extends JDialog {
         // btnCancel
         //
         //resources.ApplyResources(this.btnCancel, "btnCancel");
-        this.btnCancel.DialogResult = JDialogResult.Cancel;
+        this.btnCancel.addActionListener(e -> dialogResult = JOptionPane.NO_OPTION);
         this.btnCancel.setName("btnCancel");
         // this.btnCancel.UseVisualStyl.setBackground(true);
         //
@@ -3267,7 +3284,7 @@ public class frmSetting extends JDialog {
         //
         //resources.ApplyResources(this.cmbAsioDevice, "cmbAsioDevice");
 //        this.cmbAsioDevice.DropDownStyle = JComboBoxStyle.DropDownList;
-        this.cmbAsioDevice.FormattingEnabled = true;
+//        this.cmbAsioDevice.FormattingEnabled = true;
         this.cmbAsioDevice.setName("cmbAsioDevice");
         //
         // rbDirectSoundOut
@@ -3655,7 +3672,7 @@ public class frmSetting extends JDialog {
         //resources.ApplyResources(this.trkbNSFLPF, "trkbNSFLPF");
         this.trkbNSFLPF.setMaximum(400);
         this.trkbNSFLPF.setName("trkbNSFLPF");
-        this.trkbNSFLPF.TickFrequency = 10;
+//        this.trkbNSFLPF.TickFrequency = 10;
         //
         // label53
         //
@@ -3672,7 +3689,7 @@ public class frmSetting extends JDialog {
         //resources.ApplyResources(this.trkbNSFHPF, "trkbNSFHPF");
         this.trkbNSFHPF.setMaximum(256);
         this.trkbNSFHPF.setName("trkbNSFHPF");
-        this.trkbNSFHPF.TickFrequency = 10;
+//        this.trkbNSFHPF.TickFrequency = 10;
         //
         // groupBox10
         //
@@ -4379,38 +4396,38 @@ public class frmSetting extends JDialog {
         this.tabPage1.add(this.btnDOWN_A);
         //resources.ApplyResources(this.tabPage1, "tabPage1");
         this.tabPage1.setName("tabPage1");
-        this.tabPage1.setActionCommand("0");
+//        this.tabPage1.setActionCommand("0");
         // this.tabPage1.UseVisualStyl.setBackground(true);
         //
         // dgvMIDIoutListA
         //
-        this.dgvMIDIoutListA.AllowUserToAddRows = false;
-        this.dgvMIDIoutListA.AllowUserToDeleteRows = false;
-        this.dgvMIDIoutListA.AllowUserToResizeRows = false;
+//        this.dgvMIDIoutListA.AllowUserToAddRows = false;
+//        this.dgvMIDIoutListA.AllowUserToDeleteRows = false;
+//        this.dgvMIDIoutListA.AllowUserToResizeRows = false;
         //resources.ApplyResources(this.dgvMIDIoutListA, "dgvMIDIoutListA");
-        this.dgvMIDIoutListA.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
-        this.dgvMIDIoutListA.Columns.AddRange(new JListColumn[] {
-                this.JListTextBoxColumn1,
-                this.clmIsVST,
-                this.clmFileName,
-                this.JListTextBoxColumn2,
-                this.clmType,
-                this.ClmBeforeSend,
-                this.JListTextBoxColumn3,
-                this.JListTextBoxColumn4});
-        this.dgvMIDIoutListA.MultiSelect = false;
+//        this.dgvMIDIoutListA.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
+//        this.dgvMIDIoutListA.Columns.AddRange(new JListColumn[] {
+//                this.JListTextBoxColumn1,
+//                this.clmIsVST,
+//                this.clmFileName,
+//                this.JListTextBoxColumn2,
+//                this.clmType,
+//                this.ClmBeforeSend,
+//                this.JListTextBoxColumn3,
+//                this.JListTextBoxColumn4});
+        this.dgvMIDIoutListA.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvMIDIoutListA.setName("dgvMIDIoutListA");
-        this.dgvMIDIoutListA.RowHeadersVisible = false;
-        this.dgvMIDIoutListA.RowTemplate.getHeight() = 21;
-        this.dgvMIDIoutListA.SelectionMode = JListSelectionMode.FullRowSelect;
+//        this.dgvMIDIoutListA.RowHeadersVisible = false;
+//        this.dgvMIDIoutListA.RowTemplate.getHeight() = 21;
+//        this.dgvMIDIoutListA.SelectionMode = JListSelectionMode.FullRowSelect;
         //
         // JListTextBoxColumn1
         //
         this.JListTextBoxColumn1.setEditable(false);
         //resources.ApplyResources(this.JListTextBoxColumn1, "JListTextBoxColumn1");
         this.JListTextBoxColumn1.setName("JListTextBoxColumn1");
-        this.JListTextBoxColumn1.setEditable(true);
-        this.JListTextBoxColumn1.SortMode = JListColumnSortMode.NotSortable;
+//        this.JListTextBoxColumn1.setEditable(true);
+//        this.JListTextBoxColumn1.SortMode = JListColumnSortMode.NotSortable;
         //
         // clmIsVST
         //
@@ -4421,15 +4438,15 @@ public class frmSetting extends JDialog {
         //
         //resources.ApplyResources(this.clmFileName, "clmFileName");
         this.clmFileName.setName("clmFileName");
-        this.clmFileName.Resizable = JListTriState.True;
-        this.clmFileName.SortMode = JListColumnSortMode.NotSortable;
+//        this.clmFileName.Resizable = JListTriState.True;
+//        this.clmFileName.SortMode = JListColumnSortMode.NotSortable;
         //
         // JListTextBoxColumn2
         //
         //resources.ApplyResources(this.JListTextBoxColumn2, "JListTextBoxColumn2");
         this.JListTextBoxColumn2.setName("JListTextBoxColumn2");
         this.JListTextBoxColumn2.setEditable(true);
-        this.JListTextBoxColumn2.SortMode = JListColumnSortMode.NotSortable;
+//        this.JListTextBoxColumn2.SortMode = JListColumnSortMode.NotSortable;
         //
         // clmType
         //
@@ -4442,7 +4459,7 @@ public class frmSetting extends JDialog {
                 "GS(SC-55_1)",
                 "GS(SC-55_2)"}));
         this.clmType.setName("clmType");
-        this.clmType.Resizable = JListTriState.True;
+//        this.clmType.Resizable = ListTriState.True;
         //
         // ClmBeforeSend
         //
@@ -4454,23 +4471,23 @@ public class frmSetting extends JDialog {
                 "GS Reset",
                 "Custom"}));
         this.ClmBeforeSend.setName("ClmBeforeSend");
-        this.ClmBeforeSend.Resizable = JListTriState.True;
-        this.ClmBeforeSend.SortMode = JListColumnSortMode.Automatic;
+//        this.ClmBeforeSend.Resizable = JListTriState.True;
+//        this.ClmBeforeSend.SortMode = JListColumnSortMode.Automatic;
         //
         // JListTextBoxColumn3
         //
         //resources.ApplyResources(this.JListTextBoxColumn3, "JListTextBoxColumn3");
         this.JListTextBoxColumn3.setName("JListTextBoxColumn3");
         this.JListTextBoxColumn3.setEditable(true);
-        this.JListTextBoxColumn3.SortMode = JListColumnSortMode.NotSortable;
+//        this.JListTextBoxColumn3.SortMode = JListColumnSortMode.NotSortable;
         //
         // JListTextBoxColumn4
         //
-        this.JListTextBoxColumn4.AutoSizeMode = JListAutoSizeColumnMode.Fill;
+//        this.JListTextBoxColumn4.AutoSizeMode = JListAutoSizeColumnMode.Fill;
         //resources.ApplyResources(this.JListTextBoxColumn4, "JListTextBoxColumn4");
         this.JListTextBoxColumn4.setName("JListTextBoxColumn4");
         this.JListTextBoxColumn4.setEditable(true);
-        this.JListTextBoxColumn4.SortMode = JListColumnSortMode.NotSortable;
+//        this.JListTextBoxColumn4.SortMode = JListColumnSortMode.NotSortable;
         //
         // btnUP_A
         //
@@ -4493,20 +4510,20 @@ public class frmSetting extends JDialog {
         this.tabPage2.add(this.btnDOWN_B);
         //resources.ApplyResources(this.tabPage2, "tabPage2");
         this.tabPage2.setName("tabPage2");
-        this.tabPage2.setActionCommand("1");
+//        this.tabPage2.setActionCommand("1");
         // this.tabPage2.UseVisualStyl.setBackground(true);
         //
         // dgvMIDIoutListB
         //
-        this.dgvMIDIoutListB.AllowUserToAddRows = false;
-        this.dgvMIDIoutListB.AllowUserToDeleteRows = false;
-        this.dgvMIDIoutListB.AllowUserToResizeRows = false;
-        this.dgvMIDIoutListB.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
+//        this.dgvMIDIoutListB.AllowUserToAddRows = false;
+//        this.dgvMIDIoutListB.AllowUserToDeleteRows = false;
+//        this.dgvMIDIoutListB.AllowUserToResizeRows = false;
+//        this.dgvMIDIoutListB.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
         //resources.ApplyResources(this.dgvMIDIoutListB, "dgvMIDIoutListB");
         this.dgvMIDIoutListB.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvMIDIoutListB.setName("dgvMIDIoutListB");
-        this.dgvMIDIoutListB.RowHeadersVisible = false;
-        this.dgvMIDIoutListB.RowTemplate.getHeight() = 21;
+//        this.dgvMIDIoutListB.RowHeadersVisible = false;
+//        this.dgvMIDIoutListB.RowTemplate.getHeight() = 21;
 //        this.dgvMIDIoutListB.SelectionMode = JListSelectionMode.FullRowSelect;
         //
         // btnUP_B
@@ -4530,20 +4547,20 @@ public class frmSetting extends JDialog {
         this.tabPage3.add(this.btnDOWN_C);
         //resources.ApplyResources(this.tabPage3, "tabPage3");
         this.tabPage3.setName("tabPage3");
-        this.tabPage3.setActionCommand("2");
+//        this.tabPage3.setActionCommand("2");
         // this.tabPage3.UseVisualStyl.setBackground(true);
         //
         // dgvMIDIoutListC
         //
-        this.dgvMIDIoutListC.AllowUserToAddRows = false;
-        this.dgvMIDIoutListC.AllowUserToDeleteRows = false;
-        this.dgvMIDIoutListC.AllowUserToResizeRows = false;
-        this.dgvMIDIoutListC.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
+//        this.dgvMIDIoutListC.AllowUserToAddRows = false;
+//        this.dgvMIDIoutListC.AllowUserToDeleteRows = false;
+//        this.dgvMIDIoutListC.AllowUserToResizeRows = false;
+//        this.dgvMIDIoutListC.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
         //resources.ApplyResources(this.dgvMIDIoutListC, "dgvMIDIoutListC");
         this.dgvMIDIoutListC.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvMIDIoutListC.setName("dgvMIDIoutListC");
-        this.dgvMIDIoutListC.RowHeadersVisible = false;
-        this.dgvMIDIoutListC.RowTemplate.getHeight() = 21;
+//        this.dgvMIDIoutListC.RowHeadersVisible = false;
+//        this.dgvMIDIoutListC.RowTemplate.getHeight() = 21;
 //        this.dgvMIDIoutListC.SelectionMode = JListSelectionMode.FullRowSelect;
         //
         // btnUP_C
@@ -4567,20 +4584,20 @@ public class frmSetting extends JDialog {
         this.tabPage4.add(this.btnDOWN_D);
         //resources.ApplyResources(this.tabPage4, "tabPage4");
         this.tabPage4.setName("tabPage4");
-        this.tabPage4.setActionCommand("3");
+//        this.tabPage4.setActionCommand("3");
         // this.tabPage4.UseVisualStyl.setBackground(true);
         //
         // dgvMIDIoutListD
         //
-        this.dgvMIDIoutListD.AllowUserToAddRows = false;
-        this.dgvMIDIoutListD.AllowUserToDeleteRows = false;
-        this.dgvMIDIoutListD.AllowUserToResizeRows = false;
-        this.dgvMIDIoutListD.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
+//        this.dgvMIDIoutListD.AllowUserToAddRows = false;
+//        this.dgvMIDIoutListD.AllowUserToDeleteRows = false;
+//        this.dgvMIDIoutListD.AllowUserToResizeRows = false;
+//        this.dgvMIDIoutListD.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
         //resources.ApplyResources(this.dgvMIDIoutListD, "dgvMIDIoutListD");
         this.dgvMIDIoutListD.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvMIDIoutListD.setName("dgvMIDIoutListD");
-        this.dgvMIDIoutListD.RowHeadersVisible = false;
-        this.dgvMIDIoutListD.RowTemplate.getHeight() = 21;
+//        this.dgvMIDIoutListD.RowHeadersVisible = false;
+//        this.dgvMIDIoutListD.RowTemplate.getHeight() = 21;
 //        this.dgvMIDIoutListD.SelectionMode = JListSelectionMode.FullRowSelect;
         //
         // btnUP_D
@@ -4604,20 +4621,20 @@ public class frmSetting extends JDialog {
         this.tabPage5.add(this.btnDOWN_E);
         //resources.ApplyResources(this.tabPage5, "tabPage5");
         this.tabPage5.setName("tabPage5");
-        this.tabPage5.setActionCommand("4");
+//        this.tabPage5.setActionCommand("4");
         // this.tabPage5.UseVisualStyl.setBackground(true);
         //
         // dgvMIDIoutListE
         //
-        this.dgvMIDIoutListE.AllowUserToAddRows = false;
-        this.dgvMIDIoutListE.AllowUserToDeleteRows = false;
-        this.dgvMIDIoutListE.AllowUserToResizeRows = false;
-        this.dgvMIDIoutListE.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
+//        this.dgvMIDIoutListE.AllowUserToAddRows = false;
+//        this.dgvMIDIoutListE.AllowUserToDeleteRows = false;
+//        this.dgvMIDIoutListE.AllowUserToResizeRows = false;
+//        this.dgvMIDIoutListE.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
         //resources.ApplyResources(this.dgvMIDIoutListE, "dgvMIDIoutListE");
         this.dgvMIDIoutListE.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvMIDIoutListE.setName("dgvMIDIoutListE");
-        this.dgvMIDIoutListE.RowHeadersVisible = false;
-        this.dgvMIDIoutListE.RowTemplate.getHeight() = 21;
+//        this.dgvMIDIoutListE.RowHeadersVisible = false;
+//        this.dgvMIDIoutListE.RowTemplate.getHeight() = 21;
 //        this.dgvMIDIoutListE.SelectionMode = JListSelectionMode.FullRowSelect;
         //
         // btnUP_E
@@ -4641,20 +4658,20 @@ public class frmSetting extends JDialog {
         this.tabPage6.add(this.btnDOWN_F);
         //resources.ApplyResources(this.tabPage6, "tabPage6");
         this.tabPage6.setName("tabPage6");
-        this.tabPage6.setActionCommand("5");
+//        this.tabPage6.setActionCommand("5");
         // this.tabPage6.UseVisualStyl.setBackground(true);
         //
         // dgvMIDIoutListF
         //
-        this.dgvMIDIoutListF.AllowUserToAddRows = false;
-        this.dgvMIDIoutListF.AllowUserToDeleteRows = false;
-        this.dgvMIDIoutListF.AllowUserToResizeRows = false;
-        this.dgvMIDIoutListF.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
+//        this.dgvMIDIoutListF.AllowUserToAddRows = false;
+//        this.dgvMIDIoutListF.AllowUserToDeleteRows = false;
+//        this.dgvMIDIoutListF.AllowUserToResizeRows = false;
+//        this.dgvMIDIoutListF.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
         //resources.ApplyResources(this.dgvMIDIoutListF, "dgvMIDIoutListF");
         this.dgvMIDIoutListF.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvMIDIoutListF.setName("dgvMIDIoutListF");
-        this.dgvMIDIoutListF.RowHeadersVisible = false;
-        this.dgvMIDIoutListF.RowTemplate.setHeight(21);
+//        this.dgvMIDIoutListF.RowHeadersVisible = false;
+//        this.dgvMIDIoutListF.RowTemplate.setHeight(21);
 //        this.dgvMIDIoutListF.SelectionMode = JListSelectionMode.FullRowSelect;
         //
         // btnUP_F
@@ -4678,20 +4695,20 @@ public class frmSetting extends JDialog {
         this.tabPage7.add(this.btnDOWN_G);
         //resources.ApplyResources(this.tabPage7, "tabPage7");
         this.tabPage7.setName("tabPage7");
-        this.tabPage7.setActionCommand("6");
+//        this.tabPage7.setActionCommand("6");
         // this.tabPage7.UseVisualStyl.setBackground(true);
         //
         // dgvMIDIoutListG
         //
-        this.dgvMIDIoutListG.AllowUserToAddRows = false;
-        this.dgvMIDIoutListG.AllowUserToDeleteRows = false;
-        this.dgvMIDIoutListG.AllowUserToResizeRows = false;
-        this.dgvMIDIoutListG.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
+//        this.dgvMIDIoutListG.AllowUserToAddRows = false;
+//        this.dgvMIDIoutListG.AllowUserToDeleteRows = false;
+//        this.dgvMIDIoutListG.AllowUserToResizeRows = false;
+//        this.dgvMIDIoutListG.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
         //resources.ApplyResources(this.dgvMIDIoutListG, "dgvMIDIoutListG");
         this.dgvMIDIoutListG.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvMIDIoutListG.setName("dgvMIDIoutListG");
-        this.dgvMIDIoutListG.RowHeadersVisible = false;
-        this.dgvMIDIoutListG.RowTemplate.getHeight() = 21;
+//        this.dgvMIDIoutListG.RowHeadersVisible = false;
+//        this.dgvMIDIoutListG.RowTemplate.getHeight() = 21;
 //        this.dgvMIDIoutListG.SelectionMode = JListSelectionMode.FullRowSelect;
         //
         // btnUP_G
@@ -4715,20 +4732,20 @@ public class frmSetting extends JDialog {
         this.tabPage8.add(this.btnDOWN_H);
         //resources.ApplyResources(this.tabPage8, "tabPage8");
         this.tabPage8.setName("tabPage8");
-        this.tabPage8.setActionCommand("7");
+//        this.tabPage8.setActionCommand("7");
         // this.tabPage8.UseVisualStyl.setBackground(true);
         //
         // dgvMIDIoutListH
         //
-        this.dgvMIDIoutListH.AllowUserToAddRows = false;
-        this.dgvMIDIoutListH.AllowUserToDeleteRows = false;
-        this.dgvMIDIoutListH.AllowUserToResizeRows = false;
-        this.dgvMIDIoutListH.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
+//        this.dgvMIDIoutListH.AllowUserToAddRows = false;
+//        this.dgvMIDIoutListH.AllowUserToDeleteRows = false;
+//        this.dgvMIDIoutListH.AllowUserToResizeRows = false;
+//        this.dgvMIDIoutListH.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
         //resources.ApplyResources(this.dgvMIDIoutListH, "dgvMIDIoutListH");
         this.dgvMIDIoutListH.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvMIDIoutListH.setName("dgvMIDIoutListH");
-        this.dgvMIDIoutListH.RowHeadersVisible = false;
-        this.dgvMIDIoutListH.RowTemplate.getHeight() = 21;
+//        this.dgvMIDIoutListH.RowHeadersVisible = false;
+//        this.dgvMIDIoutListH.RowTemplate.getHeight() = 21;
 //        this.dgvMIDIoutListH.SelectionMode = JListSelectionMode.FullRowSelect;
         //
         // btnUP_H
@@ -4752,20 +4769,20 @@ public class frmSetting extends JDialog {
         this.tabPage9.add(this.btnDOWN_I);
         //resources.ApplyResources(this.tabPage9, "tabPage9");
         this.tabPage9.setName("tabPage9");
-        this.tabPage9.setActionCommand("8");
+//        this.tabPage9.setActionCommand("8");
         // this.tabPage9.UseVisualStyl.setBackground(true);
         //
         // dgvMIDIoutListI
         //
-        this.dgvMIDIoutListI.AllowUserToAddRows = false;
-        this.dgvMIDIoutListI.AllowUserToDeleteRows = false;
-        this.dgvMIDIoutListI.AllowUserToResizeRows = false;
-        this.dgvMIDIoutListI.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
+//        this.dgvMIDIoutListI.AllowUserToAddRows = false;
+//        this.dgvMIDIoutListI.AllowUserToDeleteRows = false;
+//        this.dgvMIDIoutListI.AllowUserToResizeRows = false;
+//        this.dgvMIDIoutListI.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
         //resources.ApplyResources(this.dgvMIDIoutListI, "dgvMIDIoutListI");
         this.dgvMIDIoutListI.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvMIDIoutListI.setName("dgvMIDIoutListI");
-        this.dgvMIDIoutListI.RowHeadersVisible = false;
-        this.dgvMIDIoutListI.RowTemplate.getHeight() = 21;
+//        this.dgvMIDIoutListI.RowHeadersVisible = false;
+//        this.dgvMIDIoutListI.RowTemplate.getHeight() = 21;
 //        this.dgvMIDIoutListI.SelectionMode = JListSelectionMode.FullRowSelect;
         //
         // btnUP_I
@@ -4789,20 +4806,20 @@ public class frmSetting extends JDialog {
         this.tabPage10.add(this.btnDOWN_J);
         //resources.ApplyResources(this.tabPage10, "tabPage10");
         this.tabPage10.setName("tabPage10");
-        this.tabPage10.setActionCommand("9");
+//        this.tabPage10.setActionCommand("9");
         // this.tabPage10.UseVisualStyl.setBackground(true);
         //
         // dgvMIDIoutListJ
         //
-        this.dgvMIDIoutListJ.AllowUserToAddRows = false;
-        this.dgvMIDIoutListJ.AllowUserToDeleteRows = false;
-        this.dgvMIDIoutListJ.AllowUserToResizeRows = false;
-        this.dgvMIDIoutListJ.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
+//        this.dgvMIDIoutListJ.AllowUserToAddRows = false;
+//        this.dgvMIDIoutListJ.AllowUserToDeleteRows = false;
+//        this.dgvMIDIoutListJ.AllowUserToResizeRows = false;
+//        this.dgvMIDIoutListJ.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
         //resources.ApplyResources(this.dgvMIDIoutListJ, "dgvMIDIoutListJ");
         this.dgvMIDIoutListJ.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvMIDIoutListJ.setName("dgvMIDIoutListJ");
-        this.dgvMIDIoutListJ.RowHeadersVisible = false;
-        this.dgvMIDIoutListJ.RowTemplate.getHeight() = 21;
+//        this.dgvMIDIoutListJ.RowHeadersVisible = false;
+//        this.dgvMIDIoutListJ.RowTemplate.getHeight() = 21;
 //        this.dgvMIDIoutListJ.SelectionMode = JListSelectionMode.FullRowSelect;
         //
         // button17
@@ -4840,52 +4857,52 @@ public class frmSetting extends JDialog {
         //
         // dgvMIDIoutPallet
         //
-        this.dgvMIDIoutPallet.AllowUserToAddRows = false;
-        this.dgvMIDIoutPallet.AllowUserToDeleteRows = false;
-        this.dgvMIDIoutPallet.AllowUserToResizeRows = false;
+//        this.dgvMIDIoutPallet.AllowUserToAddRows = false;
+//        this.dgvMIDIoutPallet.AllowUserToDeleteRows = false;
+//        this.dgvMIDIoutPallet.AllowUserToResizeRows = false;
         //resources.ApplyResources(this.dgvMIDIoutPallet, "dgvMIDIoutPallet");
-        this.dgvMIDIoutPallet.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
-        this.dgvMIDIoutPallet.Columns.AddRange(new JListColumn[] {
-                this.clmID,
-                this.clmDeviceName,
-                this.clmManufacturer,
-                this.clmSpacer});
+//        this.dgvMIDIoutPallet.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
+//        this.dgvMIDIoutPallet.Columns.AddRange(new JListColumn[] {
+//                this.clmID,
+//                this.clmDeviceName,
+//                this.clmManufacturer,
+//                this.clmSpacer});
         this.dgvMIDIoutPallet.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvMIDIoutPallet.setName("dgvMIDIoutPallet");
-        this.dgvMIDIoutPallet.RowHeadersVisible = false;
-        this.dgvMIDIoutPallet.RowTemplate.getHeight() = 21;
+//        this.dgvMIDIoutPallet.RowHeadersVisible = false;
+//        this.dgvMIDIoutPallet.RowTemplate.getHeight() = 21;
 //        this.dgvMIDIoutPallet.SelectionMode = JListSelectionMode.FullRowSelect;
         //
         // clmID
         //
-        this.clmID.Frozen = true;
+//        this.clmID.Frozen = true;
         //resources.ApplyResources(this.clmID, "clmID");
         this.clmID.setName("clmID");
         this.clmID.setEditable(true);
         //
         // clmDeviceName
         //
-        this.clmDeviceName.Frozen = true;
+//        this.clmDeviceName.Frozen = true;
         //resources.ApplyResources(this.clmDeviceName, "clmDeviceName");
         this.clmDeviceName.setName("clmDeviceName");
         this.clmDeviceName.setEditable(true);
-        this.clmDeviceName.SortMode = JListColumnSortMode.NotSortable;
+//        this.clmDeviceName.SortMode = JListColumnSortMode.NotSortable;
         //
         // clmManufacturer
         //
-        this.clmManufacturer.Frozen = true;
+//        this.clmManufacturer.Frozen = true;
         //resources.ApplyResources(this.clmManufacturer, "clmManufacturer");
         this.clmManufacturer.setName("clmManufacturer");
         this.clmManufacturer.setEditable(true);
-        this.clmManufacturer.SortMode = JListColumnSortMode.NotSortable;
+//        this.clmManufacturer.SortMode = JListColumnSortMode.NotSortable;
         //
         // clmSpacer
         //
-        this.clmSpacer.AutoSizeMode = JListAutoSizeColumnMode.Fill;
+//        this.clmSpacer.AutoSizeMode = JListAutoSizeColumnMode.Fill;
         //resources.ApplyResources(this.clmSpacer, "clmSpacer");
         this.clmSpacer.setName("clmSpacer");
         this.clmSpacer.setEditable(true);
-        this.clmSpacer.SortMode = JListColumnSortMode.NotSortable;
+//        this.clmSpacer.SortMode = JListColumnSortMode.NotSortable;
         //
         // label16
         //
@@ -6604,12 +6621,12 @@ public class frmSetting extends JDialog {
         //
         //resources.ApplyResources(this, "$this");
 //            this.AutoScaleMode = JAutoScaleMode.Font;
-        this.CancelButton = this.btnCancel;
+//        this.CancelButton = this.btnCancel;
         this.getContentPane().add(this.tcSetting);
         this.getContentPane().add(this.btnCancel);
         this.getContentPane().add(this.btnOK);
-        this.MaximizeBox = false;
-        this.MinimizeBox = false;
+//        this.MaximizeBox = false;
+//        this.MinimizeBox = false;
         this.setTitle("frmSetting");
         this.addWindowListener(this.windowListener);
         // this.gbWaveOut.ResumeLayout(false);
@@ -7006,7 +7023,7 @@ public class frmSetting extends JDialog {
     private JCheckBox rdSIDQ4;
     private JLabel lblWaitTime;
     private JLabel label28;
-    private JComboBox cmbWaitTime;
+    private JComboBox<String> cmbWaitTime;
     private JTabbedPane tpMIDIOut2;
     private JPanel groupBox15;
     private JButton btnBeforeSend_Default;
@@ -7018,7 +7035,7 @@ public class frmSetting extends JDialog {
     private JLabel label33;
     private JTextArea tbBeforeSend_GMReset;
     private JLabel label31;
-    private TableColumn JListTextBoxColumn1;
+    private JTextField JListTextBoxColumn1;
     private JCheckBox clmIsVST;
     private JTextArea clmFileName;
     private JTextArea JListTextBoxColumn2;
@@ -7030,7 +7047,7 @@ public class frmSetting extends JDialog {
     private JLabel label36;
     private JCheckBox rbSPPCM;
     private JPanel groupBox16;
-    private JComboBox cmbSPPCMDevice;
+    private JComboBox<String> cmbSPPCMDevice;
     private JPanel groupBox17;
     private JTextArea tbImageExt;
     private JTextArea tbMMLExt;
@@ -7235,7 +7252,7 @@ class BindData implements PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (propertyChanged != null) {
-            propertyChanged.propertyChange(this, new PropertyChangeEvent(info));
+            propertyChanged.propertyChange(new PropertyChangeEvent(this, "Value", null, null));
         }
     }
 

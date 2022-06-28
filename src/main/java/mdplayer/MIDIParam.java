@@ -68,7 +68,7 @@ public class MIDIParam {
 
     private byte[] msg = null;
     private int msgInd = 0;
-    private Boolean NowSystemMsg = false;
+    private boolean NowSystemMsg = false;
 
     private static final int[] tblRevTypeXG = new int[] {
             0x0000
@@ -235,7 +235,7 @@ public class MIDIParam {
 
             if (msgInd < msg.length) {
                 msg[msgInd] = d;
-                //System.err.printf("{0:X2}:", msg[msgInd]);
+                //System.err.printf("%2X:", msg[msgInd]);
                 msgInd++;
             }
 

@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  *  Copyright (C) 2012-2016 Leandro Nini
  *
@@ -20,29 +20,29 @@
 
 package mdplayer.driver.sid.libsidplayfp.c64;
 
-import mdplayer.driver.sid.libsidplayfp.c64.cpu.MOS6510;
+import mdplayer.driver.sid.libsidplayfp.c64.cpu.Mos6510;
 
-public class C64Cpu extends MOS6510 {
 
-    private C64Env m_env;
+public class C64Cpu extends Mos6510 {
+
+    private final C64Env env;
 
     @Override
     protected byte cpuRead(short addr) {
-        return m_env.cpuRead(addr);
+        return env.cpuRead(addr);
     }
 
     @Override
-    protected void cpuWrite(short addr, byte data) {
-        m_env.cpuWrite(addr, data);
+    protected void writeCpu(short addr, byte data) {
+        env.cpuWrite(addr, data);
     }
 
     public C64Cpu(C64Env env) {
         super(env.scheduler());
-        m_env = env;
+        this.env = env;
     }
 
 // # if PC64_TESTSUITE
 //@Override public void loadFile(String file)  { m_env.loadFile(file); }
 // #endif
-
 }

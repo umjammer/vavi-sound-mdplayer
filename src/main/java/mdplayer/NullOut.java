@@ -1,20 +1,18 @@
 package mdplayer;
 
 import java.io.Closeable;
-
-import javax.sound.sampled.Clip;
-
-import javafx.event.EventHandler;
+import java.util.function.Consumer;
+import javax.sound.sampled.LineEvent;
 
 
-public class NullOut implements Clip, Closeable {
-    private Boolean isNoWaitMode;
+public class NullOut implements Closeable {
+    private boolean isNoWaitMode;
 
-    public NullOut(Boolean isNoWaitMode) {
+    public NullOut(boolean isNoWaitMode) {
         this.isNoWaitMode = isNoWaitMode;
     }
 
-    public PlaybackState getPlaybackState() {
+    public LineEvent.Type getPlaybackState() {
         return pbState;
     }
 
@@ -23,10 +21,9 @@ public class NullOut implements Clip, Closeable {
     }
 
     public void setVolume(float value) {
-        ;
     }
 
-    public EventHandler<StoppedEventArgs> PlaybackStopped;
+    public Consumer<LineEvent> playbackStopped;
 
     public void close() {
     }
@@ -52,8 +49,8 @@ public class NullOut implements Clip, Closeable {
     private Thread trdMain;
     private IWaveProvider wP;
     private byte[] buf = new byte[4000];
-    private PlaybackState pbState = PlaybackState.Stopped;
-    private Boolean reqStop = false;
+    private LineEvent.Type pbState = LineEvent.Type.STOP;
+    private boolean reqStop = false;
 
     private void RequestPlay() {
         if (trdMain != null) {

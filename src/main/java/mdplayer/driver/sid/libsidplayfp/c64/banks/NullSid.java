@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2012-2014 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2010 Antti Lankila
@@ -25,28 +25,22 @@ import mdplayer.driver.sid.libsidplayfp.c64.C64Sid;
 
 
 /**
- * SID chip placeholder which does nothing and returns 0xff on reading.
+ * Sid chip placeholder which does nothing and returns 0xff on reading.
  */
 public class NullSid extends C64Sid {
 
-    private static NullSid nullsid;
-
-    // # include "C64/C64Sid.h"
-    // # include "sidcxx11.h"
+    private static NullSid nullSid;
 
     private NullSid() {
     }
 
-    protected void finalize() {
-    }
-
     /**
-     //Returns singleton instance.
+     * Returns singleton instance.
      */
     public static NullSid getInstance() {
-        if (nullsid == null)
-            nullsid = new NullSid();
-        return nullsid;
+        if (nullSid == null)
+            nullSid = new NullSid();
+        return nullSid;
     }
 
     @Override

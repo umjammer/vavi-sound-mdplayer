@@ -1,11 +1,13 @@
 package mdplayer.driver.mgsdrv;
 
+import konamiman.z80.interfaces.Memory;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Log;
 
 
-public class MsxPort implements IMemory {
+public class MsxPort implements Memory {
+
     private MSXSlot slot;
     private ChipRegister chipRegister;
     private Common.EnmModel model;
@@ -26,7 +28,7 @@ public class MsxPort implements IMemory {
         outPort(address, value);
     }
 
-    public int size() {
+    public int getSize() {
         throw new UnsupportedOperationException();
     }
 
@@ -48,7 +50,7 @@ public class MsxPort implements IMemory {
             chipRegister.setAY8910Register(0, ay8910Adr, value, model);
             break;
         case 0xa2:
-            //Log.Write("PSG Port Adr:{0:x04} Dat:{1:x02}", address, value);
+            //Log.Write("Psg Port Adr:%04x Dat:%02x", address, value);
             break;
         case 0x7c:
             opllAdr = value;
@@ -65,13 +67,12 @@ public class MsxPort implements IMemory {
             Log.write(String.format("Port  Adr:%04x Dat:%02x", address, value));
             break;
         }
-
     }
 
     private byte inPort(int address) {
 
         if (address == 0xa8) {
-            //Log.write("ChangeSlot Port :  Adr:{0:x04}", address);
+            //Log.write("ChangeSlot Port :  Adr:%04x", address);
             return readSlot();
         }
 

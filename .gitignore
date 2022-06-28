@@ -118,7 +118,7 @@ AutoTest.Net/
 # Web workbench (sass)
 .sass-cache/
 
-# Installshield output folder
+# Installshield Output folder
 [Ee]xpress/
 
 # DocProject is a documentation generator add-in
@@ -221,7 +221,7 @@ FakesAssemblies/
 # Visual Studio 6 workspace options file
 *.opt
 
-# Visual Studio LightSwitch build output
+# Visual Studio LightSwitch build Output
 **/*.HTMLClient/GeneratedArtifacts
 **/*.DesktopClient/GeneratedArtifacts
 **/*.DesktopClient/ModelManifest.xml

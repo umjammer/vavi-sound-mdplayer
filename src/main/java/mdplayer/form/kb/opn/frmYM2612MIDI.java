@@ -42,7 +42,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmYM2612MIDI extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -73,7 +73,7 @@ public class frmYM2612MIDI extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -121,10 +121,10 @@ public class frmYM2612MIDI extends frmBase {
         int[][] fmRegister = Audio.getYM2612MIDIRegister();
         //int[] fmKey = Audio.GetFMKeyOn();
 
-        newParam.IsMONO = parent.setting.getMidiKbd().getIsMONO();
-        if (parent.setting.getMidiKbd().getIsMONO()) {
+        newParam.IsMONO = parent.setting.getMidiKbd().isMono();
+        if (parent.setting.getMidiKbd().isMono()) {
             for (int i = 0; i < 6; i++) {
-                newParam.useChannel[i] = (parent.setting.getMidiKbd().getUseMONOChannel() == i);
+                newParam.useChannel[i] = (parent.setting.getMidiKbd().getUseMonoChannel() == i);
             }
         } else {
             for (int i = 0; i < 6; i++) {
@@ -187,7 +187,7 @@ public class frmYM2612MIDI extends frmBase {
             MDChipParams.Channel oyc = oldParam.channels[c];
             MDChipParams.Channel nyc = newParam.channels[c];
 
-            Boolean YM2612type = parent.setting.getYM2612Type()[0].getUseReal()[0];
+            boolean YM2612type = parent.setting.getYM2612Type()[0].getUseReal()[0];
             int tp = YM2612type ? 1 : 0;
 
             DrawBuff.Inst(frameBuffer, 1, 6 + (c > 2 ? 3 : 0), c, oyc.inst, nyc.inst, oyc.typ, nyc.typ);
@@ -220,7 +220,6 @@ public class frmYM2612MIDI extends frmBase {
 
             if (py < 16) {
                 //System.err.println("鍵盤");
-                return;
             } else if (py < 32) {
                 //System.err.println("各機能メニュー");
                 int u = (py - 16) / 8;
@@ -316,42 +315,42 @@ public class frmYM2612MIDI extends frmBase {
     };
 
     /**
-     * //MONO/POLY
+     * MONO/POLY
      */
     private void cmdSetMode(int m) {
         parent.ym2612Midi_SetMode(m);
     }
 
     /**
-     * //PANIC
+     * PANIC
      */
     private void cmdAllNoteOff() {
         parent.ym2612Midi_AllNoteOff();
     }
 
     /**
-     * //L.CLS
+     * L.CLS
      */
     private void cmdLogClear() {
         parent.ym2612Midi_ClearNoteLog();
     }
 
     /**
-     * //LogClear
+     * LogClear
      */
     private void cmdLogClear(int ch) {
         parent.ym2612Midi_ClearNoteLog(ch);
     }
 
     /**
-     * //MML変換
+     * MML変換
      */
     private void cmdLog2MML(int ch) {
         parent.ym2612Midi_Log2MML(ch);
     }
 
     /**
-     * //
+     * 
      */
     private void cmdSelectChannel(int ch) {
         parent.ym2612Midi_SelectChannel(ch);
@@ -370,7 +369,7 @@ public class frmYM2612MIDI extends frmBase {
         parent.ym2612Midi_SetTonesFromSetting();
     }
 
-    private Boolean IsInitialOpenFolder = true;
+    private boolean IsInitialOpenFolder = true;
 
     private void cmdTSave() {
         JFileChooser sfd = new JFileChooser();
@@ -607,7 +606,7 @@ public class frmYM2612MIDI extends frmBase {
         this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
 //        this.MaximizeBox = false;
         this.setName("frmYM2612MIDI");
-        this.setTitle("MIDI(YM2612)");
+        this.setTitle("MIDI(Ym2612)");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         this.addKeyListener(this.frmYM2612MIDI_KeyDown);

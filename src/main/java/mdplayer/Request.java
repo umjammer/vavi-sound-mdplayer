@@ -13,7 +13,7 @@ public class Request {
 
     public Consumer<Object> callBack;
 
-    private Object objlock = new Object();
+    private final Object objlock = new Object();
 
     private boolean _end = false;
 

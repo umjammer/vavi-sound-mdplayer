@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2011-2016 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2007-2010 Antti Lankila
@@ -23,90 +23,123 @@
 package mdplayer.driver.sid.libsidplayfp.c64.cpu;
 
 /**
-     //Processor Status Register
-     */
-    public class Flags
-    {
+ * Processor Status Register
+ */
+public class Flags {
 
+    /** Carry */
+    private boolean c;
+    /** Zero */
+    private boolean z;
+    /** Interrupt disabled */
+    private boolean i;
+    /** Decimal */
+    private boolean d;
+    /** Break */
+    private boolean b;
+    /** Overflow */
+    private boolean v;
+    /** Negative */
+    private boolean n;
 
-
-        //# include <stdint.h>
-
-        private Boolean C; ///< Carry
-        private Boolean Z; ///< Zero
-        private Boolean I; ///< Interrupt disabled
-        private Boolean D; ///< Decimal
-        private Boolean B; ///< Break
-        private Boolean V; ///< Overflow
-        private Boolean N; ///< Negative
-
-
-        public void reset()
-        {
-            C = Z = I = D = V = N = false;
-            B = true;
-        }
-
-        /**
-         //Set N and Z flag values.
-         *
-         //@param value to set flags from
-         */
-        public void setNZ(byte value)
-        {
-            Z = value == 0;
-            N = (value & 0x80) != 0;
-        }
-
-        /**
-         //Get status register value.
-         */
-        public byte get()
-        {
-            byte sr = 0x20;
-
-            if (C) sr |= 0x01;
-            if (Z) sr |= 0x02;
-            if (I) sr |= 0x04;
-            if (D) sr |= 0x08;
-            if (B) sr |= 0x10;
-            if (V) sr |= 0x40;
-            if (N) sr |= 0x80;
-
-            return sr;
-        }
-
-        /**
-         //Set status register value.
-         */
-        public void set(byte sr)
-        {
-            Z = (sr & 0x02) != 0;
-            C = (sr & 0x01) != 0;
-            I = (sr & 0x04) != 0;
-            D = (sr & 0x08) != 0;
-            B = (sr & 0x10) != 0;
-            V = (sr & 0x40) != 0;
-            N = (sr & 0x80) != 0;
-        }
-
-        public Boolean getN() { return N; }
-        public Boolean getC() { return C; }
-        public Boolean getD() { return D; }
-        public Boolean getZ() { return Z; }
-        public Boolean getV() { return V; }
-        public Boolean getI() { return I; }
-        public Boolean getB() { return B; }
-
-        public void setN(Boolean f) { N = f; }
-        public void setC(Boolean f) { C = f; }
-        public void setD(Boolean f) { D = f; }
-        public void setZ(Boolean f) { Z = f; }
-        public void setV(Boolean f) { V = f; }
-        public void setI(Boolean f) { I = f; }
-        public void setB(Boolean f) { B = f; }
-
-
-
-
+    public void reset() {
+        c = z = i = d = v = n = false;
+        b = true;
     }
+
+    /**
+     * Set N and Z flag values.
+     * <p>
+     * @param value to set flags from
+     */
+    public void setNZ(byte value) {
+        z = value == 0;
+        n = (value & 0x80) != 0;
+    }
+
+    /**
+     * Get status register value.
+     */
+    public byte get() {
+        byte sr = 0x20;
+
+        if (c) sr |= 0x01;
+        if (z) sr |= 0x02;
+        if (i) sr |= 0x04;
+        if (d) sr |= 0x08;
+        if (b) sr |= 0x10;
+        if (v) sr |= 0x40;
+        if (n) sr |= 0x80;
+
+        return sr;
+    }
+
+    /**
+     * Set status register value.
+     */
+    public void set(byte sr) {
+        z = (sr & 0x02) != 0;
+        c = (sr & 0x01) != 0;
+        i = (sr & 0x04) != 0;
+        d = (sr & 0x08) != 0;
+        b = (sr & 0x10) != 0;
+        v = (sr & 0x40) != 0;
+        n = (sr & 0x80) != 0;
+    }
+
+    public boolean getN() {
+        return n;
+    }
+
+    public boolean getC() {
+        return c;
+    }
+
+    public boolean getD() {
+        return d;
+    }
+
+    public boolean getZ() {
+        return z;
+    }
+
+    public boolean getV() {
+        return v;
+    }
+
+    public boolean getI() {
+        return i;
+    }
+
+    public boolean getB() {
+        return b;
+    }
+
+    public void setN(boolean f) {
+        n = f;
+    }
+
+    public void setC(boolean f) {
+        c = f;
+    }
+
+    public void setD(boolean f) {
+        d = f;
+    }
+
+    public void setZ(boolean f) {
+        z = f;
+    }
+
+    public void setV(boolean f) {
+        v = f;
+    }
+
+    public void setI(boolean f) {
+        i = f;
+    }
+
+    public void setB(boolean f) {
+        b = f;
+    }
+}

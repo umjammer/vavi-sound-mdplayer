@@ -29,7 +29,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmQSound extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -62,7 +62,7 @@ public class frmQSound extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -117,7 +117,7 @@ public class frmQSound extends frmBase {
                 //但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (ch = 0; ch < 19; ch++) {
-                        if (newParam.channels[ch].mask == true)
+                        if (newParam.channels[ch].mask)
                             parent.resetChannelMask(EnmChip.QSound, chipID, ch);
                         else
                             parent.setChannelMask(EnmChip.QSound, chipID, ch);
@@ -136,7 +136,6 @@ public class frmQSound extends frmBase {
                 }
 
                 for (ch = 0; ch < 19; ch++) parent.resetChannelMask(EnmChip.QSound, chipID, ch);
-                return;
             }
         }
     };
@@ -250,9 +249,9 @@ public class frmQSound extends frmBase {
         DrawBuff.font4Hex16Bit(frameBuffer, 4 * 51, 18 * 8 + 8, 0, oldParam.channels[0].inst[3], newParam.channels[0].inst[3]);//next_state
 
         //Wet
-        DrawBuff.font4Hex16Bit(frameBuffer, 4 * 07, 17 * 8 + 8, 0, oldParam.channels[0].inst[4], newParam.channels[0].inst[4]);//delay l
+        DrawBuff.font4Hex16Bit(frameBuffer, 4 * 7, 17 * 8 + 8, 0, oldParam.channels[0].inst[4], newParam.channels[0].inst[4]);//delay l
         DrawBuff.font4Hex16Bit(frameBuffer, 4 * 12, 17 * 8 + 8, 0, oldParam.channels[0].inst[5], newParam.channels[0].inst[5]);//delay r
-        DrawBuff.font4Hex16Bit(frameBuffer, 4 * 07, 18 * 8 + 8, 0, oldParam.channels[0].inst[6], newParam.channels[0].inst[6]);//vol l
+        DrawBuff.font4Hex16Bit(frameBuffer, 4 * 7, 18 * 8 + 8, 0, oldParam.channels[0].inst[6], newParam.channels[0].inst[6]);//vol l
         DrawBuff.font4Hex16Bit(frameBuffer, 4 * 12, 18 * 8 + 8, 0, oldParam.channels[0].inst[7], newParam.channels[0].inst[7]);//vol r
 
         //Dry

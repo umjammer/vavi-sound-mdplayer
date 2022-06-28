@@ -16,8 +16,7 @@ public class mem {
     }
 
     public static void memcpy(byte[] des, byte[] src, int length) {
-        for (int i = 0; i < length; i++)
-            des[i] = src[i];
+        if (length >= 0) System.arraycopy(src, 0, des, 0, length);
     }
 
     public static void memcpy(byte[] des, ByteBuffer src, int length) {

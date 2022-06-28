@@ -29,7 +29,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmYM2610 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -61,7 +61,7 @@ public class frmYM2610 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -210,7 +210,7 @@ public class frmYM2610 extends frmBase {
             d = 99;
             DrawBuff.VolumeYM2610Rhythm(frameBuffer, y, 2, d, 0, tp);
         }
-        Boolean f = true;
+        boolean f = true;
         DrawBuff.ChYM2610Rhythm(frameBuffer, 0, f, false, tp);
     }
 
@@ -240,7 +240,7 @@ public class frmYM2610 extends frmBase {
         int[][] YM2610Rhythm = Audio.getYM2610RhythmVolume(chipID);
         int[] YM2610AdpcmVol = Audio.getYM2610AdpcmVolume(chipID);
 
-        Boolean isFmEx = (YM2610Register[chipID][0x27] & 0x40) > 0;
+        boolean isFmEx = (YM2610Register[chipID][0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
 
         int defaultMasterClock = 8000000;
@@ -370,8 +370,8 @@ public class frmYM2610 extends frmBase {
         {
             MDChipParams.Channel channel = newParam.channels[ch + 9];
 
-            Boolean t = (YM2610Register[0][0x07] & (0x1 << ch)) == 0;
-            Boolean n = (YM2610Register[0][0x07] & (0x8 << ch)) == 0;
+            boolean t = (YM2610Register[0][0x07] & (0x1 << ch)) == 0;
+            boolean n = (YM2610Register[0][0x07] & (0x8 << ch)) == 0;
             channel.tn = (t ? 1 : 0) + (n ? 2 : 0);
 
             channel.volume = (int) (((t || n) ? 1 : 0) * (YM2610Register[0][0x08 + ch] & 0xf) * (20.0 / 16.0));
@@ -413,7 +413,7 @@ public class frmYM2610 extends frmBase {
             if (newParam.channels[12].volumeR > 0) newParam.channels[12].volumeR--;
         }
         delta = (YM2610Register[0][0x1a] << 8) | YM2610Register[0][0x19];
-        frq = (float) (delta / 9447.0f);//Delta=9447 at freq=8kHz
+        frq = delta / 9447.0f;//Delta=9447 at freq=8kHz
         newParam.channels[12].note = (YM2610Register[0][0x10] & 0x80) != 0 ? Common.searchYM2608Adpcm(frq) : -1;
         if ((YM2610Register[0][0x11] & 0xc0) == 0) {
             newParam.channels[12].note = -1;

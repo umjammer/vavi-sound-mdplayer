@@ -5,15 +5,13 @@ package mdplayer.driver.sid.libsidplayfp.sidtune;
 import java.nio.ByteBuffer;
 
 
-class SmartPtrBase_sidtt<T> {
-
-    // # include "sidcxx11.h"
+class SmartPtrBase<T> {
 
     public long ulint_smartpt;
 
-    public SmartPtrBase_sidtt(byte[] buffer,
-                              long bufferLen,
-                              Boolean bufOwner/* = false */) {
+    public SmartPtrBase(byte[] buffer,
+                        long bufferLen,
+                        boolean bufOwner/* = false */) {
         bufBegin = null;
         bufEnd = null;
         pBufCurrent = null;
@@ -31,13 +29,7 @@ class SmartPtrBase_sidtt<T> {
         }
     }
 
-    protected void finalize() {
-        if (doFree && (bufBegin != null)) {
-            bufBegin = null;
-        }
-    }
-
-    /* --- public member functions --- */
+    // public member functions
 
     public ByteBuffer tellBegin() {
         return bufBegin;
@@ -48,14 +40,14 @@ class SmartPtrBase_sidtt<T> {
     }
 
     public long tellPos() {
-        return (long) (pBufCurrent.position() - bufBegin.position());
+        return pBufCurrent.position() - bufBegin.position();
     }
 
-    public Boolean checkIndex(long index) {
+    public boolean checkIndex(long index) {
         return (pBufCurrent.position() + (int) index) < bufEnd.position();
     }
 
-    public Boolean reset() {
+    public boolean reset() {
         if (bufLen != 0) {
             pBufCurrent = bufBegin;
             status = true;
@@ -65,11 +57,11 @@ class SmartPtrBase_sidtt<T> {
         return status;
     }
 
-    public Boolean good() {
+    public boolean good() {
         return pBufCurrent.position() < bufEnd.position();
     }
 
-    public Boolean fail() {
+    public boolean fail() {
         return pBufCurrent == bufEnd;
     }
 
@@ -139,7 +131,7 @@ class SmartPtrBase_sidtt<T> {
         }
     }
 
-    public Boolean opeBool() {
+    public boolean opeBool() {
         return status;
     }
 
@@ -147,24 +139,24 @@ class SmartPtrBase_sidtt<T> {
     protected ByteBuffer bufEnd;
     protected ByteBuffer pBufCurrent;
     protected long bufLen;
-    protected Boolean status;
-    protected Boolean doFree;
+    protected boolean status;
+    protected boolean doFree;
     protected ByteBuffer dummy;
 
-    public static class SmartPtr_sidtt extends SmartPtrBase_sidtt {
-        public SmartPtr_sidtt(byte[] buffer,
-                              long bufferLen,
-                              Boolean bufOwner /* = false */) {
+    public static class SmartPtr extends SmartPtrBase {
+        public SmartPtr(byte[] buffer,
+                        long bufferLen,
+                        boolean bufOwner /* = false */) {
             super(buffer, bufferLen, bufOwner);
         }
 
-        SmartPtr_sidtt() {
+        SmartPtr() {
             super(null, 0, false);
         }
 
         public void setBuffer(byte[] b, long bufferLen) {
             ByteBuffer buffer = ByteBuffer.wrap(b);
-            if ((buffer != null) && (bufferLen != 0)) {
+            if (bufferLen != 0) {
                 this.bufBegin = buffer;
                 this.pBufCurrent = buffer;
                 this.bufEnd = buffer; bufEnd.position((int) bufferLen);

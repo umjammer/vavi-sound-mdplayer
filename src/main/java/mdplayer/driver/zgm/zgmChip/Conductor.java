@@ -31,8 +31,7 @@ public class Conductor extends ZgmChip {
     public void setup(int chipIndex, int dataPos, Map<Integer, Zgm.RefRunnable<Byte, Integer>> cmdTable) {
         super.setup(chipIndex, dataPos, cmdTable);
 
-        if (cmdTable.containsKey(defineInfo.commandNo))
-            cmdTable.remove(defineInfo.commandNo);
+        cmdTable.remove(defineInfo.commandNo);
         cmdTable.put(defineInfo.commandNo, this::sendPort0);
     }
 

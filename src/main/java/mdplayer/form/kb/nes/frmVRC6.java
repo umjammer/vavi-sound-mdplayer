@@ -29,7 +29,7 @@ import mdsound.np.chip.DeviceInfo.BasicTrackInfo;
 
 
 public class frmVRC6 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -61,7 +61,7 @@ public class frmVRC6 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 

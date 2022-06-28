@@ -1,12 +1,16 @@
 package mdplayer;
 
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 
 public class MmfControl {
-    private final Object lockobj = new Object();
-    private MemoryMappedFile _map;
+    private final Object lockObj = new Object();
+    private MappedByteBuffer _map;
     private byte[] mmfBuf;
     public String mmfName = "dummy";
     public int mmfSize = 1024;
@@ -14,92 +18,72 @@ public class MmfControl {
     public MmfControl() {
     }
 
-    public MmfControl(Boolean isClient, String mmfName, int mmfSize) {
+    public MmfControl(boolean isClient, String mmfName, int mmfSize) {
         this.mmfName = mmfName;
         this.mmfSize = mmfSize;
-        if (!isClient) Open(mmfName, mmfSize);
+        if (!isClient) open(mmfName, mmfSize);
     }
 
-    public void Open(String mmfName, int mmfSize) {
+    public void open(String mmfName, int mmfSize) {
         try {
             mmfBuf = new byte[mmfSize];
 
-            synchronized (lockobj) {
-                _map = MemoryMappedFile.CreateNew(mmfName, mmfSize);
-                try {
-                    MemoryMappedFileSecurity permission = _map.GetAccessControl();
-                    permission.AddAccessRule(
-                            new AccessRule<MemoryMappedFileRights>("Everyone",
-                                    MemoryMappedFileRights.FullControl, AccessControlType.Allow));
-                    _map.SetAccessControl(permission);
-                } catch (Exception ex) {
-                    Log.write(ex.getMessage() + ex.getStackTrace());
-                }
+            synchronized (lockObj) {
+                _map = ((FileChannel) Files.newByteChannel(Paths.get(mmfName))).map(FileChannel.MapMode.READ_ONLY, 0, mmfSize);
             }
         } catch (Exception ex) {
-            Log.write(ex.getMessage() + ex.getStackTrace());
+            Log.write(ex.getMessage() + Arrays.toString(ex.getStackTrace()));
         }
     }
 
     public void close() {
-        synchronized (lockobj) {
+        synchronized (lockObj) {
             if (_map == null) return;
-            try {
-                _map.close();
-            } catch (Exception ex) {
-                Log.write(ex.getMessage() + ex.getStackTrace());
-            }
+            _map = null;
         }
     }
 
-    public String GetMessage() {
+    public String getMessage() {
         String msg = "";
 
         try {
-            synchronized (lockobj) {
-                try (MemoryMappedViewAccessor view = _map.CreateViewAccessor()) {
-                    view.readArray(0, mmfBuf, 0, mmfBuf.length);
-                    msg = new String(mmfBuf, StandardCharsets.UTF_8);
-                    msg = msg.substring(0, msg.indexOf('\0'));
-                    Arrays.fill(mmfBuf, 0, mmfBuf.length, (byte) 0);
-                    view.WriteArray(0, mmfBuf, 0, mmfBuf.length);
-                }
+            synchronized (lockObj) {
+                _map.get(mmfBuf, 0, mmfBuf.length);
+                msg = new String(mmfBuf, StandardCharsets.UTF_8);
+                msg = msg.substring(0, msg.indexOf('\0'));
+                Arrays.fill(mmfBuf, 0, mmfBuf.length, (byte) 0);
+                _map.put(mmfBuf, 0, mmfBuf.length);
             }
         } catch (Exception ex) {
-            Log.write(ex.getMessage() + ex.getStackTrace());
+            Log.write(ex.getMessage() + Arrays.toString(ex.getStackTrace()));
         }
 
         return msg;
     }
 
-    public byte[] GetBytes() {
+    public byte[] getBytes() {
         try {
-            synchronized (lockobj) {
-                try (var map = MemoryMappedFile.OpenExisting(mmfName);
-                     MemoryMappedViewAccessor view = map.CreateViewAccessor()) {
+            synchronized (lockObj) {
+                MappedByteBuffer map = ((FileChannel) Files.newByteChannel(Paths.get(mmfName))).map(FileChannel.MapMode.READ_ONLY, 0, mmfSize);
                     mmfBuf = new byte[mmfSize];
-                    view.readArray(0, mmfBuf, 0, mmfBuf.length);
-                }
+                    map.get(mmfBuf, 0, mmfBuf.length);
             }
         } catch (Exception ex) {
-            Log.write(ex.getMessage() + ex.getStackTrace());
+            Log.write(ex.getMessage() + Arrays.toString(ex.getStackTrace()));
         }
 
         return mmfBuf;
     }
 
-    public void SendMessage(String msg) {
+    public void sendMessage(String msg) {
         try {
             byte[] ary = msg.getBytes(StandardCharsets.UTF_8);
-            if (ary.length > mmfSize) throw new ArgumentOutOfRangeException();
+            if (ary.length > mmfSize) throw new IndexOutOfBoundsException();
 
-            try (var map = MemoryMappedFile.OpenExisting(mmfName);
-                 var view = map.CreateViewAccessor()) {
-                view.WriteArray(0, ary, 0, ary.length);
-            }
+            MappedByteBuffer map = ((FileChannel) Files.newByteChannel(Paths.get(mmfName))).map(FileChannel.MapMode.READ_ONLY, 0, mmfSize);
+            map.put(ary, 0, ary.length);
         } catch (Exception ex) {
-            Log.write(ex.getMessage() + ex.getStackTrace());
+            Log.write(ex.getMessage() + Arrays.toString(ex.getStackTrace()));
         }
     }
-
 }

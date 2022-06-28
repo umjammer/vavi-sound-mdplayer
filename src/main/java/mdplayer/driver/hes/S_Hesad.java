@@ -6,12 +6,12 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
     private static final int PCE_VOLUME = 1; //1
     private static final int ADPCM_VOLUME = 50;
 
-    public class HESADPCM {
+    public static class HESADPCM {
 
         public KMIF_SOUND_DEVICE kmif;
         public KMIF_SOUND_DEVICE deltadev;
 
-        public class common_ {
+        public static class common_ {
             public int mastervolume;
             public int cps;
             public int pt;
@@ -90,7 +90,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         sndp.outfreq = freq;
         sndp.fadetimer = 0;
         sndp.fadecount = 0;
-        sndp.common.cps = (int) (100000000 / freq);
+        sndp.common.cps = 100000000 / freq;
         sndp.common.pt = 0;
         sndp.volume = 0xff;
         sndp.deltadev.reset.accept(clock, freq);
@@ -149,12 +149,12 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
             sndp.repeatflag = (byte) (((v & 0x20) == 0x20) ? 1 : 0);
             sndp.playflag = (byte) (((v & 0x40) == 0x40) ? 1 : 0);
             if (sndp.playflag != 0) {
-                sndp.deltadev.write.accept(2, (int) (sndp.readptr & 0xff));
-                sndp.deltadev.write.accept(3, (int) ((sndp.readptr >> 8) & 0xff));
-                sndp.deltadev.write.accept(4, (int) ((sndp.length + sndp.readptr) & 0xff));
-                sndp.deltadev.write.accept(5, (int) (((sndp.length + sndp.readptr) >> 8) & 0xff));
+                sndp.deltadev.write.accept(2, sndp.readptr & 0xff);
+                sndp.deltadev.write.accept(3, (sndp.readptr >> 8) & 0xff);
+                sndp.deltadev.write.accept(4, (sndp.length + sndp.readptr) & 0xff);
+                sndp.deltadev.write.accept(5, ((sndp.length + sndp.readptr) >> 8) & 0xff);
                 sndp.deltadev.write.accept(0, 1);
-                sndp.deltadev.write.accept(0, (int) ((0x80 | (sndp.repeatflag >> 1))));
+                sndp.deltadev.write.accept(0, (0x80 | (sndp.repeatflag >> 1)));
             }
             break;
         case 0xE:
@@ -206,7 +206,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         case 0xa:
             return sndp.pcmbuf[sndp.readptr++];
         case 0xb:
-            return (int) (sndp.port[0xb] & ~1);
+            return sndp.port[0xb] & ~1;
         case 0xc:
             if (sndp.playflag == 0) {
                 sndp.port[0xc] |= 1;
@@ -331,11 +331,8 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         sndp.kmif.read = this::sndread;
         sndp.kmif.setinst = this.setinst;
         /* RAM */
-        if (pcmbuf != null) {
-            sndp.rambuf = pcmbuf;
-        } else {
-            sndp.rambuf = null;// ram_size != 0 ? (byte[])(sndp + 1) : 0;
-        }
+        // ram_size != 0 ? (byte[])(sndp + 1) : 0;
+        sndp.rambuf = pcmbuf;
         sndp.rammask = ram_size != 0 ? (ram_size - 1) : 0;
         /* ROM */
         sndp.rombuf = null;

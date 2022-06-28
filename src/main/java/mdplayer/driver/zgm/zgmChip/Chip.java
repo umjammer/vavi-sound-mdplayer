@@ -6,7 +6,7 @@ import mdplayer.driver.zgm.EnmZGMDevice;
 
 
 public class Chip {
-    public Boolean use;
+    public boolean use;
     public long delay;
     public EnmModel model;
     public EnmZGMDevice device;
@@ -14,15 +14,15 @@ public class Chip {
     public int number;
     public int hosei;
     private final Object lockObj = new Object();
-    private Boolean[] _chMasks = null;
+    private boolean[] _chMasks = null;
 
-    public void setChMasks(Boolean[] value) {
+    public void setChMasks(boolean[] value) {
         synchronized (lockObj) {
             _chMasks = value;
         }
     }
 
-    Boolean[] getChMasks() {
+    boolean[] getChMasks() {
         synchronized (lockObj) {
             return _chMasks;
         }
@@ -35,7 +35,7 @@ public class Chip {
     }
 
     public Chip(int ch) {
-        _chMasks = new Boolean[ch];
+        _chMasks = new boolean[ch];
     }
 
     public void move(Chip chip) {

@@ -34,7 +34,7 @@ public class DevOpm {
         mm.write(reg.a5 + W.keycode_s4, (short) reg.getD2_W());
         //    pea _opm_keyon(pc)
         _set_kckf();
-        comlfo._init_lfo();
+        comlfo.initLfo();
         _init_lfo_opm();
         _opm_keyon();
     }
@@ -487,19 +487,19 @@ public class DevOpm {
         reg.setD5_B(reg.getD5_B() << 2);
         if (f != 0) {
             reg.a4 = reg.a5 + W.v_pattern3;
-            comlfo._init_lfo_common_a();
+            comlfo.initLfoCommonA();
         }
         f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
             reg.a4 = reg.a5 + W.v_pattern2;
-            comlfo._init_lfo_common_a();
+            comlfo.initLfoCommonA();
         }
         f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
             reg.a4 = reg.a5 + W.v_pattern1;
-            comlfo._init_lfo_common_a();
+            comlfo.initLfoCommonA();
         }
     }
 
@@ -746,7 +746,7 @@ public class DevOpm {
             comcmds._COM_BF();
             break;// BF
 
-        // PSG 系
+        // Psg 系
         case 0x40:
             comcmds._COM_C0();
             break;// C0	ソフトウェアエンベロープ 1
@@ -2167,13 +2167,13 @@ public class DevOpm {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         switch (reg.getD0_W() / 2) {
         case 1:
-            comlfo._com_lfo_saw();
+            comlfo.comLfoSaw();
             break;
         case 2:
-            comlfo._com_lfo_portament();
+            comlfo.comLfoPortament();
             break;
         case 3:
-            comlfo._com_lfo_triangle();
+            comlfo.comLfoTriangle();
             break;
         }
         mm.write(reg.a5 + W.addvolume, (short) reg.getD1_W());
@@ -2331,28 +2331,28 @@ public class DevOpm {
         if (mm.readByte(reg.a6 + Dw.LFO_FLAG) >= 0) {
             switch (reg.getD0_W() / 2) {
             case 1:
-                comlfo._com_lfo_saw();
+                comlfo.comLfoSaw();
                 break;
             case 2:
-                comlfo._com_lfo_portament();
+                comlfo.comLfoPortament();
                 break;
             case 3:
-                comlfo._com_lfo_triangle();
+                comlfo.comLfoTriangle();
                 break;
             case 4:
-                comlfo._com_lfo_portament();
+                comlfo.comLfoPortament();
                 break;
             case 5:
-                comlfo._com_lfo_triangle();
+                comlfo.comLfoTriangle();
                 break;
             case 6:
-                comlfo._com_lfo_triangle();
+                comlfo.comLfoTriangle();
                 break;
             case 7:
-                comlfo._com_lfo_oneshot();
+                comlfo.comLfoOneshot();
                 break;
             case 8:
-                comlfo._com_lfo_oneshot();
+                comlfo.comLfoOneshot();
                 break;
             }
             mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
@@ -2361,22 +2361,22 @@ public class DevOpm {
         reg.a0 = Ab.dummyAddress;// _pitch_extend;
         switch (reg.getD0_W()) {
         case 2:
-            comlfo._com_lfo_saw();
+            comlfo.comLfoSaw();
             break;
         case 4:
-            comlfo._com_lfo_portament();
+            comlfo.comLfoPortament();
             break;
         case 6:
-            comlfo._com_lfo_triangle();
+            comlfo.comLfoTriangle();
             break;
         case 8:
-            comlfo._com_lfo_oneshot();
+            comlfo.comLfoOneshot();
             break;
         case 10:
-            comlfo._com_lfo_square();
+            comlfo.comLfoSquare();
             break;
         case 12:
-            comlfo._com_lfo_randome();
+            comlfo.comLfoRandom();
             break;
         }
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
@@ -2642,7 +2642,7 @@ public class DevOpm {
 
     //─────────────────────────────────────
     public void _ch_opm_softenv_job() {
-        comlfo._soft_env();
+        comlfo.softEnv();
         _OPM_F2_softenv();
     }
 

@@ -28,7 +28,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmSN76489 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -53,7 +53,7 @@ public class frmSN76489 extends frmBase {
         this.newParam = newParam;
         this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getplaneSN76489(), null, zoom);
-        Boolean SN76489Type = (chipID == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
+        boolean SN76489Type = (chipID == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
         int tp = SN76489Type ? 1 : 0;
         DrawBuff.screenInitSN76489(frameBuffer, tp);
         update();
@@ -64,7 +64,7 @@ public class frmSN76489 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -115,7 +115,7 @@ public class frmSN76489 extends frmBase {
         int psgRegisterPan = Audio.getPSGRegisterGGPanning(chipID);
         int[][] psgVol = Audio.getPSGVolume(chipID);
         int[][] psgVol1 = null;
-        Boolean NGPFlag = Audio.getSn76489NGPFlag();
+        boolean NGPFlag = Audio.getSn76489NGPFlag();
 
         if (NGPFlag && chipID == 1) {
             for (int ch = 0; ch < 4; ch++) {
@@ -185,11 +185,11 @@ public class frmSN76489 extends frmBase {
     }
 
     public void screenDrawParams() {
-        Boolean SN76489Type = (chipID == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
+        boolean SN76489Type = (chipID == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
         int tp = SN76489Type ? 1 : 0;
         MDChipParams.Channel osc;
         MDChipParams.Channel nsc;
-        Boolean NGPFlag = Audio.getSn76489NGPFlag();
+        boolean NGPFlag = Audio.getSn76489NGPFlag();
 
         for (int c = 0; c < 3; c++) {
             osc = oldParam.channels[c];

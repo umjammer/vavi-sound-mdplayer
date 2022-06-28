@@ -28,7 +28,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmYMF262 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -51,7 +51,7 @@ public class frmYMF262 extends frmBase {
         this.newParam = newParam;
         this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getplaneYMF262(), null, zoom);
-        Boolean YMF262Type = (chipID == 0)
+        boolean YMF262Type = (chipID == 0)
                 ? parent.setting.getYMF262Type()[0].getUseReal()[0]
                 : parent.setting.getYMF262Type()[1].getUseReal()[0];
         int YMF262SoundLocation = (chipID == 0)
@@ -67,7 +67,7 @@ public class frmYMF262 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -119,7 +119,7 @@ public class frmYMF262 extends frmBase {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;
         }
-        Boolean YMF262Type = (chipID == 0)
+        boolean YMF262Type = (chipID == 0)
                 ? parent.setting.getYMF262Type()[0].getUseReal()[0]
                 : parent.setting.getYMF262Type()[1].getUseReal()[0];
         int YMF262SoundLocation = (chipID == 0)
@@ -341,7 +341,7 @@ public class frmYMF262 extends frmBase {
     }
 
     public void screenDrawParams() {
-        Boolean ChipType2 = (chipID == 0)
+        boolean ChipType2 = (chipID == 0)
                 ? parent.setting.getYMF262Type()[0].getUseReal()[0]
                 : parent.setting.getYMF262Type()[1].getUseReal()[0];
         int chipSoundLocation = (chipID == 0)
@@ -417,7 +417,7 @@ public class frmYMF262 extends frmBase {
                 //但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (ch = 0; ch < 23; ch++) {
-                        if (newParam.channels[ch].mask == true)
+                        if (newParam.channels[ch].mask)
                             parent.resetChannelMask(EnmChip.YMF262, chipID, ch);
                         else
                             parent.setChannelMask(EnmChip.YMF262, chipID, ch);
@@ -458,7 +458,6 @@ public class frmYMF262 extends frmBase {
 
             //マスク解除
             for (ch = 0; ch < 18 + 5; ch++) parent.resetChannelMask(EnmChip.YMF262, chipID, ch);
-            return;
         }
     };
 

@@ -15,8 +15,8 @@ public class Depend {
     }
 
     public static int getblong(XMemory mm, int a) {
-        return (int) ((mm.readByte(a + 0) * 16777216) + (mm.readByte(a + 1) * 65536) +
-                      (mm.readByte(a + 2) * 256) + mm.readByte(a + 3));
+        return (mm.readByte(a + 0) * 16777216) + (mm.readByte(a + 1) * 65536) +
+                      (mm.readByte(a + 2) * 256) + mm.readByte(a + 3);
     }
 
     public static void putbword(ByteBuffer a, short b) {

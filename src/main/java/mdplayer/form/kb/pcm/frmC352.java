@@ -29,7 +29,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmC352 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -63,7 +63,7 @@ public class frmC352 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -118,7 +118,7 @@ public class frmC352 extends frmBase {
                 //但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (ch = 0; ch < 32; ch++) {
-                        if (newParam.channels[ch].mask == true)
+                        if (newParam.channels[ch].mask)
                             parent.resetChannelMask(EnmChip.C352, chipID, ch);
                         else
                             parent.setChannelMask(EnmChip.C352, chipID, ch);
@@ -137,14 +137,13 @@ public class frmC352 extends frmBase {
                 }
 
                 for (ch = 0; ch < 32; ch++) parent.resetChannelMask(EnmChip.C352, chipID, ch);
-                return;
 
             }
         }
     };
 
     public void screenInit() {
-        Boolean C352Type = false;// (chipID == 0) ? parent.setting.C352Type.UseScci : parent.setting.C352SType.UseScci;
+        boolean C352Type = false;// (chipID == 0) ? parent.setting.C352Type.UseScci : parent.setting.C352SType.UseScci;
         int tp = C352Type ? 1 : 0;
         for (int ch = 0; ch < 32; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {
@@ -167,13 +166,11 @@ public class frmC352 extends frmBase {
 
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
-            int a = (int) (
-                    0x10000 //1sample進むのに必要なカウント数
-                            //8000.0
-                            //Tables.pcmMulTbl[i % 12 + 12]
-                            //Math.pow(2, (i / 12 - 3 + 2))
-                            / clock
-            );
+            int a = 0x10000 //1sample進むのに必要なカウント数
+                    //8000.0
+                    //Tables.pcmMulTbl[i % 12 + 12]
+                    //Math.pow(2, (i / 12 - 3 + 2))
+                    / clock;
 
             if (freq > a) {
                 m = a;
@@ -199,14 +196,14 @@ public class frmC352 extends frmBase {
                     newParam.channels[ch].volumeRR = Common.Range((int) (((short) c352Register[ch * 8 + 1] & 0xff) / 11.7), 0, 19);
                 }
 
-                if (newParam.channels[ch].mask == null || newParam.channels[ch].mask == true) {
+                if (newParam.channels[ch].mask == null || newParam.channels[ch].mask) {
                     newParam.channels[ch].pan = 0;
                 }
 
                 if ((c352key[ch] & 0x8000) == 0) {
                     newParam.channels[ch].note = -1;
 
-                    c352Register[ch * 8 + 3] = (int) (c352Register[ch * 8 + 3] & 0xbfff);
+                    c352Register[ch * 8 + 3] = c352Register[ch * 8 + 3] & 0xbfff;
                     if (newParam.channels[ch].volumeL > 0) newParam.channels[ch].volumeL--;
                     if (newParam.channels[ch].volumeR > 0) newParam.channels[ch].volumeR--;
                     if (newParam.channels[ch].volumeRL > 0) newParam.channels[ch].volumeRL--;

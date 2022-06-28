@@ -4,14 +4,20 @@ import java.awt.Button;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableModel;
 
 import mdplayer.Setting;
 import mdplayer.Tone;
@@ -21,6 +27,7 @@ import mdplayer.TonePallet;
 public class frmTPPut extends JFrame {
     private Setting setting = null;
     private TonePallet tonePallet = null;
+    int DialogResult;
 
     public frmTPPut() {
         initializeComponent();
@@ -30,43 +37,46 @@ public class frmTPPut extends JFrame {
         this.setting = setting;
         this.tonePallet = tonePallet;
 
-        return this.setVisible(true);
+        this.setVisible(true);
+        return DialogResult;
     }
 
-    private void frmTPPut_Load(ActionEvent ev) {
-        dgvTonePallet.Rows.clear();
-        if (tonePallet == null) tonePallet = new TonePallet();
-        if (tonePallet.getLstTone() == null) tonePallet.setLstTone(new ArrayList<Tone>(256));
+    private WindowListener frmTPPut_Load = new WindowAdapter() {
+        @Override
+        public void windowActivated(WindowEvent e) {
+            DefaultTableModel m = (DefaultTableModel) dgvTonePallet.getModel();
+            m.setRowCount(0);
+            if (tonePallet == null) tonePallet = new TonePallet();
+            if (tonePallet.getLstTone() == null) tonePallet.setLstTone(new ArrayList<>(256));
 
-        for (int i = 0; i < 256; i++) {
-            String toneName = "";
-            if (tonePallet.getLstTone().size() < i + 1 || tonePallet.getLstTone().get(i) == null) {
-                tonePallet.getLstTone().add(new Tone());
+            for (int i = 0; i < 256; i++) {
+                String toneName = "";
+                if (tonePallet.getLstTone().size() < i + 1 || tonePallet.getLstTone().get(i) == null) {
+                    tonePallet.getLstTone().add(new Tone());
+                }
+
+                toneName = tonePallet.getLstTone().get(i).name;
+
+                m.addRow(new Object[] {i, toneName});
             }
-
-            toneName = tonePallet.getLstTone().get(i).name;
-
-            dgvTonePallet.Rows.add();
-            dgvTonePallet.Rows[i].Cells["clmNo"].Value = i;
-            dgvTonePallet.Rows[i].Cells["clmName"].Value = toneName;
-
         }
-    }
+    };
 
     private void dgvTonePallet_CellEndEdit(Object sender, JListCellEventArgs e) {
-        dgvTonePallet.Rows[e.RowIndex].Cells[0].Value = e.RowIndex + "*";
+        dgvTonePallet.getModel().setValueAt(e.RowIndex + "*", e.RowIndex, 0);
         btApply.setEnabled(true);
     }
 
     private void btChn_Click(ActionEvent ev) {
         int[] cc = dgvTonePallet.getSelectedColumns();
         if (cc.length != 1) return;
-        JListRow row = cc[0].OwningRow;
-        if (row == null) return;
+        if (dgvTonePallet.getSelectedRowCount() < 1) return;
+        int row = dgvTonePallet.getSelectedRows()[0];
 
         String m = String.format("from Ch.%s", ((Button) ev.getSource()).getActionCommand());
-        String n = row.Cells["clmSpacer"].Value == null ? "" : row.Cells["clmSpacer"].Value.toString();
-        row.Cells["clmSpacer"].Value = (m.equals(n)) ? "" : m;
+        Object v = dgvTonePallet.getModel().getValueAt(row, 2);
+        String n = v == null ? "" : v.toString();
+        dgvTonePallet.getModel().setValueAt(m.equals(n) ? "" : m, row, 2);
 
         btApply.setEnabled(true);
     }
@@ -85,42 +95,42 @@ public class frmTPPut extends JFrame {
 
     private void updateToneNames() {
         for (int i = 0; i < 256; i++) {
-            dgvTonePallet.getModel().Rows[i].Cells["clmNo"].Value = i;
-            tonePallet.getLstTone().get(i).name = dgvTonePallet.Rows[i].Cells["clmName"].Value.toString();
+            dgvTonePallet.getModel().setValueAt(i, 0, i);
+            tonePallet.getLstTone().get(i).name = dgvTonePallet.getModel().getValueAt(i, 1).toString();
         }
     }
 
     private void updateTone() {
         for (int i = 0; i < 256; i++) {
-            Object o = dgvTonePallet.Rows[i].Cells["clmSpacer"].Value;
+            Object o = dgvTonePallet.getModel().getValueAt(i, 2);
             String n = o == null ? "" : o.toString();
-            if (n == "") continue;
+            if (n.isEmpty()) continue;
 
             int ch = Integer.parseInt(n.replace("from Ch.", "")) - 1;
 
             CopySettingToneToTonePallet(ch, i);
 
-            dgvTonePallet.Rows[i].Cells["clmSpacer"].Value = "";
+            dgvTonePallet.getModel().setValueAt("", i, 2);
         }
     }
 
     private void CopySettingToneToTonePallet(int ch, int ind) {
         for (int i = 0; i < 4; i++) {
-            tonePallet.getLstTone().get(ind).ops[i].ar = setting.getMidiKbd().getTones()[ch].ops[i].ar;//AR
-            tonePallet.getLstTone().get(ind).ops[i].ks = setting.getMidiKbd().getTones()[ch].ops[i].ks;//KS
-            tonePallet.getLstTone().get(ind).ops[i].dr = setting.getMidiKbd().getTones()[ch].ops[i].dr;//DR
-            tonePallet.getLstTone().get(ind).ops[i].am = setting.getMidiKbd().getTones()[ch].ops[i].am;//AM
-            tonePallet.getLstTone().get(ind).ops[i].sr = setting.getMidiKbd().getTones()[ch].ops[i].sr;//SR
-            tonePallet.getLstTone().get(ind).ops[i].rr = setting.getMidiKbd().getTones()[ch].ops[i].rr;//RR
-            tonePallet.getLstTone().get(ind).ops[i].sl = setting.getMidiKbd().getTones()[ch].ops[i].sl;//SL
-            tonePallet.getLstTone().get(ind).ops[i].tl = setting.getMidiKbd().getTones()[ch].ops[i].tl;//TL
-            tonePallet.getLstTone().get(ind).ops[i].ml = setting.getMidiKbd().getTones()[ch].ops[i].ml;//ML
-            tonePallet.getLstTone().get(ind).ops[i].dt = setting.getMidiKbd().getTones()[ch].ops[i].dt;//DT
-            tonePallet.getLstTone().get(ind).ops[i].dt2 = setting.getMidiKbd().getTones()[ch].ops[i].dt2;//DT2
+            tonePallet.getLstTone().get(ind).ops[i].ar = setting.getMidiKbd().getTones()[ch].ops[i].ar; // AR
+            tonePallet.getLstTone().get(ind).ops[i].ks = setting.getMidiKbd().getTones()[ch].ops[i].ks; // KS
+            tonePallet.getLstTone().get(ind).ops[i].dr = setting.getMidiKbd().getTones()[ch].ops[i].dr; // DR
+            tonePallet.getLstTone().get(ind).ops[i].am = setting.getMidiKbd().getTones()[ch].ops[i].am; // AM
+            tonePallet.getLstTone().get(ind).ops[i].sr = setting.getMidiKbd().getTones()[ch].ops[i].sr; // SR
+            tonePallet.getLstTone().get(ind).ops[i].rr = setting.getMidiKbd().getTones()[ch].ops[i].rr; // RR
+            tonePallet.getLstTone().get(ind).ops[i].sl = setting.getMidiKbd().getTones()[ch].ops[i].sl; // SL
+            tonePallet.getLstTone().get(ind).ops[i].tl = setting.getMidiKbd().getTones()[ch].ops[i].tl; // TL
+            tonePallet.getLstTone().get(ind).ops[i].ml = setting.getMidiKbd().getTones()[ch].ops[i].ml; // ML
+            tonePallet.getLstTone().get(ind).ops[i].dt = setting.getMidiKbd().getTones()[ch].ops[i].dt; // DT
+            tonePallet.getLstTone().get(ind).ops[i].dt2 = setting.getMidiKbd().getTones()[ch].ops[i].dt2; // DT2
         }
 
-        tonePallet.getLstTone().get(ind).al = setting.getMidiKbd().getTones()[ch].al;//AL
-        tonePallet.getLstTone().get(ind).fb = setting.getMidiKbd().getTones()[ch].fb;//FB
+        tonePallet.getLstTone().get(ind).al = setting.getMidiKbd().getTones()[ch].al; // AL
+        tonePallet.getLstTone().get(ind).fb = setting.getMidiKbd().getTones()[ch].fb; // FB
         tonePallet.getLstTone().get(ind).ams = setting.getMidiKbd().getTones()[ch].ams;
         tonePallet.getLstTone().get(ind).pms = setting.getMidiKbd().getTones()[ch].pms;
 
@@ -159,7 +169,7 @@ public class frmTPPut extends JFrame {
         this.groupBox1.setPreferredSize(new Dimension(264, 81));
         // this.groupBox1.TabIndex = 1
         // this.groupBox1.TabStop = false;
-        this.groupBox1.setToolTipText("YM2612(From)");
+        this.groupBox1.setToolTipText("Ym2612(From)");
         //
         // btCh6
         //
@@ -229,50 +239,50 @@ public class frmTPPut extends JFrame {
         //
         // dgvTonePallet
         //
-        this.dgvTonePallet.AllowUserToAddRows = false;
-        this.dgvTonePallet.AllowUserToDeleteRows = false;
-        this.dgvTonePallet.AllowUserToOrderColumns = true;
-        this.dgvTonePallet.AllowUserToResizeRows = false;
+//        this.dgvTonePallet.AllowUserToAddRows = false;
+//        this.dgvTonePallet.AllowUserToDeleteRows = false;
+        this.dgvTonePallet.getTableHeader().setReorderingAllowed(true);
+        this.dgvTonePallet.getTableHeader().setResizingAllowed(false);
 //        this.dgvTonePallet.Anchor = ((JAnchorStyles) ((((JAnchorStyles.Top | JAnchorStyles.Bottom)
 //                | JAnchorStyles.Left)
 //                | JAnchorStyles.Right)));
-        this.dgvTonePallet.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
-        this.dgvTonePallet.Columns.AddRange(new JListColumn[] {
-                this.clmNo,
-                this.clmName,
-                this.clmSpacer});
+//        this.dgvTonePallet.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
+//        this.dgvTonePallet.Columns.AddRange(new JListColumn[] {
+//                this.clmNo,
+//                this.clmName,
+//                this.clmSpacer});
         this.dgvTonePallet.setLocation(new Point(12, 121));
-        this.dgvTonePallet.MultiSelect = false;
+        this.dgvTonePallet.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvTonePallet.setName("dgvTonePallet");
-        this.dgvTonePallet.RowHeadersVisible = false;
-        this.dgvTonePallet.RowTemplate.getHeight() = 21;
+//        this.dgvTonePallet.RowHeadersVisible = false;
+//        this.dgvTonePallet.RowTemplate.getHeight() = 21;
         this.dgvTonePallet.setPreferredSize(new Dimension(264, 81));
         // this.dgvTonePallet.TabIndex = 3
-        this.dgvTonePallet.CellEndEdit += new JListCellEventHandler(this.dgvTonePallet_CellEndEdit);
+//        this.dgvTonePallet.CellEndEdit += new JListCellEventHandler(this.dgvTonePallet_CellEndEdit);
         //
         // clmNo
         //
-        this.clmNo.Frozen = true;
-        this.clmNo.HeaderText = "No.";
-        this.clmNo.setName("clmNo");
-        this.clmNo.readOnly = true;
-        this.clmNo.Resizable = JListTriState.False;
-        this.clmNo.setWidth(60);
+//        this.clmNo.Frozen = true;
+//        this.clmNo.HeaderText = "No.";
+//        this.clmNo.setName("clmNo");
+//        this.clmNo.readOnly = true;
+//        this.clmNo.Resizable = JListTriState.False;
+//        this.clmNo.setWidth(60);
         //
         // clmName
         //
-        this.clmName.Frozen = true;
-        this.clmName.HeaderText = "Name";
-        this.clmName.setName("clmName");
-        this.clmName.setWidth(150);
+//        this.clmName.Frozen = true;
+//        this.clmName.HeaderText = "Name";
+//        this.clmName.setName("clmName");
+//        this.clmName.setWidth(150);
         //
         // clmSpacer
         //
-        this.clmSpacer.AutoSizeMode = JListAutoSizeColumnMode.Fill;
-        this.clmSpacer.HeaderText = "";
+//        this.clmSpacer.AutoSizeMode = JListAutoSizeColumnMode.Fill;
+//        this.clmSpacer.HeaderText = "";
         this.clmSpacer.setName("clmSpacer");
-        this.clmSpacer.readOnly = true;
-        this.clmSpacer.Resizable = JListTriState.False;
+//        this.clmSpacer.readOnly = true;
+//        this.clmSpacer.Resizable = JListTriState.False;
         //
         // label1
         //
@@ -287,7 +297,7 @@ public class frmTPPut extends JFrame {
         //
         this.btnCancel.setHorizontalAlignment(SwingConstants.RIGHT);
         this.btnCancel.setVerticalAlignment(SwingConstants.BOTTOM);
-        this.btnCancel.DialogResult = JDialogResult.Cancel;
+        this.btnCancel.addActionListener(e -> DialogResult = JOptionPane.NO_OPTION);
         this.btnCancel.setLocation(new Point(120, 208));
         this.btnCancel.setName("btnCancel");
         this.btnCancel.setPreferredSize(new Dimension(75, 23));
@@ -324,7 +334,7 @@ public class frmTPPut extends JFrame {
         //
 //            this.AutoScaleDimensions = new DimensionF(6F, 12F);
 //            this.AutoScaleMode = JAutoScaleMode.Font;
-        this.CancelButton = this.btnCancel;
+//        this.addActionListener(e -> { dialogResult = JOptionPane.NO_OPTION; });
         this.setPreferredSize(new Dimension(288, 243));
         this.getContentPane().add(this.btApply);
         this.getContentPane().add(this.btOK);
@@ -336,9 +346,9 @@ public class frmTPPut extends JFrame {
 //        this.MinimizeBox = false;
         this.setMinimumSize(new Dimension(304, 282));
         this.setName("frmTPPut");
-        this.StartPosition = JFormStartPosition.CenterParent;
+//        this.StartPosition = JFormStartPosition.CenterParent;
         this.setTitle("Put to Tone Pallet");
-        this.addComponentListener(this.componentListener);
+        this.addWindowListener(this.frmTPPut_Load);
         // this.groupBox1.ResumeLayout(false);
         //((System.ComponentModel.ISupportInitialize)(this.dgvTonePallet)).EndInit();
 //        this.ResumeLayout(false);

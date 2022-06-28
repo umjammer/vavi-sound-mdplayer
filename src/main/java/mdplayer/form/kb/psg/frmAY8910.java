@@ -72,7 +72,7 @@ public class frmAY8910 extends frmChipBase {
 
         frameBuffer.Add(this.pbScreen, Resources.getplaneAY8910(), null, zoom);
 
-        Boolean AY8910Type = (chipID == 0) ? parent.setting.getAY8910Type()[0].getUseReal()[0] : parent.setting.getAY8910Type()[1].getUseReal()[0];
+        boolean AY8910Type = (chipID == 0) ? parent.setting.getAY8910Type()[0].getUseReal()[0] : parent.setting.getAY8910Type()[1].getUseReal()[0];
         int AY8910SoundLocation = (chipID == 0) ? parent.setting.getAY8910Type()[0].getRealChipInfo()[0].getSoundLocation()
                                                 : parent.setting.getAY8910Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !AY8910Type ? 0 : (AY8910SoundLocation < 0 ? 2 : 1);
@@ -118,9 +118,9 @@ public class frmAY8910 extends frmChipBase {
         {
             MDChipParams.Channel channel = newParam.channels[ch];
 
-            Boolean t = (AY8910Register[0x07] & (0x1 << ch)) == 0;
-            Boolean n = (AY8910Register[0x07] & (0x8 << ch)) == 0;
-            // System.err.println("r[8]={0:x} r[9]={1:x} r[10]={2:x}",
+            boolean t = (AY8910Register[0x07] & (0x1 << ch)) == 0;
+            boolean n = (AY8910Register[0x07] & (0x8 << ch)) == 0;
+            // System.err.println("r[8]=%x r[9]=%x r[10]=%x",
             // AY8910Register[0x8], AY8910Register[0x9], AY8910Register[0xa]);
             channel.tn = (t ? 1 : 0) + (n ? 2 : 0);
             newParam.nfrq = AY8910Register[0x06] & 0x1f;
@@ -128,7 +128,7 @@ public class frmAY8910 extends frmChipBase {
             newParam.etype = (AY8910Register[0x0d] & 0xf);
 
             int v = (AY8910Register[0x08 + ch] & 0x1f);
-            v = v > 15 ? 15 : v;
+            v = Math.min(v, 15);
             channel.volume = (int) (((t || n) ? 1 : 0) * v * (20.0 / 16.0));
             if (!t && !n && channel.volume > 0) {
                 channel.volume--;
@@ -169,7 +169,7 @@ public class frmAY8910 extends frmChipBase {
 
     @Override
     public void screenDrawParams() {
-        Boolean AY8910Type = (chipID == 0) ? parent.setting.getAY8910Type()[0].getUseReal()[0] : parent.setting.getAY8910Type()[1].getUseReal()[0];
+        boolean AY8910Type = (chipID == 0) ? parent.setting.getAY8910Type()[0].getUseReal()[0] : parent.setting.getAY8910Type()[1].getUseReal()[0];
         int AY8910SoundLocation = (chipID == 0) ? parent.setting.getAY8910Type()[0].getRealChipInfo()[0].getSoundLocation()
                                                 : parent.setting.getAY8910Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !AY8910Type ? 0 : (AY8910SoundLocation < 0 ? 2 : 1);
@@ -181,7 +181,7 @@ public class frmAY8910 extends frmChipBase {
 
             DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 0, oyc.volume, nyc.volume, tp);
             DrawBuff.keyBoard(frameBuffer, c, oyc.note, nyc.note, tp);
-            DrawBuff.ToneNoise(frameBuffer, 6, 2, c, oyc.tn, nyc.tn, oyc.tntp, tp * 2 + (nyc.mask == true ? 1 : 0));
+            DrawBuff.ToneNoise(frameBuffer, 6, 2, c, oyc.tn, nyc.tn, oyc.tntp, tp * 2 + (nyc.mask ? 1 : 0));
 
             DrawBuff.ChAY8910(frameBuffer, c, oyc.mask, nyc.mask, tp);
 
@@ -203,7 +203,7 @@ public class frmAY8910 extends frmChipBase {
         newParam.efrq = 0;
         newParam.etype = 0;
 
-        Boolean AY8910Type = (chipID == 0) ? parent.setting.getAY8910Type()[0].getUseReal()[0] : parent.setting.getAY8910Type()[1].getUseReal()[0];
+        boolean AY8910Type = (chipID == 0) ? parent.setting.getAY8910Type()[0].getUseReal()[0] : parent.setting.getAY8910Type()[1].getUseReal()[0];
         int AY8910SoundLocation = (chipID == 0) ? parent.setting.getAY8910Type()[0].getRealChipInfo()[0].getSoundLocation()
                                                 : parent.setting.getAY8910Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !AY8910Type ? 0 : (AY8910SoundLocation < 0 ? 2 : 1);
@@ -222,7 +222,7 @@ public class frmAY8910 extends frmChipBase {
                 // 但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (int ch = 0; ch < 3; ch++) {
-                        if (newParam.channels[ch].mask == true)
+                        if (newParam.channels[ch].mask)
                             parent.resetChannelMask(EnmChip.AY8910, chipID, ch);
                         else
                             parent.setChannelMask(EnmChip.AY8910, chipID, ch);
@@ -246,7 +246,6 @@ public class frmAY8910 extends frmChipBase {
                 // マスク解除
                 for (ch = 0; ch < 3; ch++)
                     parent.resetChannelMask(EnmChip.AY8910, chipID, ch);
-                return;
             }
         }
     };

@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2011-2015 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2009-2014 VICE Project
@@ -22,9 +22,11 @@
  */
 package mdplayer.driver.sid.libsidplayfp.c64.cia;
 
+import java.util.Arrays;
+
 import mdplayer.driver.sid.libsidplayfp.Event;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler;
-import mdplayer.driver.sid.libsidplayfp.EventScheduler.event_phase_t;
+import mdplayer.driver.sid.libsidplayfp.EventScheduler.EventPhase;
 import mdplayer.driver.sid.mem;
 
 
@@ -55,8 +57,8 @@ import mdplayer.driver.sid.mem;
         // Event scheduler.
         private EventScheduler eventScheduler;
 
-        // Pointer to the MOS6526 which this Timer belongs to.
-        private MOS6526 parent;
+        // Pointer to the Mos6526 which this Timer belongs to.
+        private Mos6526 parent;
 
         private byte cra;
         private byte crb;
@@ -64,8 +66,8 @@ import mdplayer.driver.sid.mem;
         private long cycles;
         private long period;
 
-        private Boolean isLatched;
-        private Boolean isStopped;
+        private boolean isLatched;
+        private boolean isStopped;
 
         private byte[] clock = new byte[4];
         private byte[] latch = new byte[4];
@@ -75,7 +77,7 @@ import mdplayer.driver.sid.mem;
 
         //private void event_() { }
 
-        public Tod(EventScheduler scheduler, MOS6526 parent, byte[] regs)
+        public Tod(EventScheduler scheduler, Mos6526 parent, byte[] regs)
         {
             super("CIA Time of Day");//, byte[] regs[0x10])
             eventScheduler = scheduler;
@@ -119,7 +121,7 @@ import mdplayer.driver.sid.mem;
 
 
         /*
-        //This file instanceof part of libsidplayfp, a SID player engine.
+        //This file instanceof part of libsidplayfp, a Sid player engine.
         *
         //Copyright 2011-2014 Leandro Nini <drfiemost@users.sourceforge.net>
         //Copyright 2009-2014 VICE Project
@@ -149,15 +151,15 @@ import mdplayer.driver.sid.mem;
         {
             cycles = 0;
 
-            for (int i = 0; i < clock.length; i++) clock[i] = 0;
-            clock[(int)timeUnit.HOURS.ordinal()] = 1; // the most common value
+            Arrays.fill(clock, (byte) 0);
+            clock[timeUnit.HOURS.ordinal()] = 1; // the most common value
             System.arraycopy(clock, 0, latch, 0, latch.length);
-            for (int i = 0; i < alarm.length; i++) alarm[i] = 0;
+            Arrays.fill(alarm, (byte) 0);
 
             isLatched = false;
             isStopped = true;
 
-            eventScheduler.schedule(this, 0, event_phase_t.EVENT_CLOCK_PHI1);
+            eventScheduler.schedule(this, 0, EventPhase.CLOCK_PHI1);
         }
 
         public byte read(byte reg)
@@ -200,7 +202,7 @@ import mdplayer.driver.sid.mem;
                     break;
             }
 
-            Boolean changed = false;
+            boolean changed = false;
             if ((crb & 0x80) != 0)
             {
                 // set alarm
@@ -243,7 +245,7 @@ import mdplayer.driver.sid.mem;
             }
         }
 
-        @Override public void event_()
+        @Override public void event()
         {
             // Reload divider according to 50/60 Hz flag
             // Only performed on expiry according to Frodo

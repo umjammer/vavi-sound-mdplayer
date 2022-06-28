@@ -192,7 +192,7 @@ public class MoonDriver extends BaseDriver {
 
     private double ntscStep = 0.0;
     private double ntscCounter = 0.0;
-    private Boolean nextFlg = false;
+    private boolean nextFlg = false;
     public Tuple<String, byte[]> ExtendFile = null;
     private int[] pcmKeyon = new int[] {
             -1, -1, -1, -1, -1, -1,
@@ -201,7 +201,7 @@ public class MoonDriver extends BaseDriver {
             -1, -1, -1, -1, -1, -1
     };
     private int[] pcmKeyonB = new int[24];
-    public Boolean isOPL3 = false;
+    public boolean isOPL3 = false;
 
     public int[] GetPCMKeyOn() {
         for (int i = 0; i < pcmKeyonB.length; i++) {
@@ -303,7 +303,7 @@ public class MoonDriver extends BaseDriver {
             public short addr = 0x0000;
             public byte stBank = 0x00;
             public short stAddr = 0x0000;
-            public Boolean endFlg = false;
+            public boolean endFlg = false;
             public short tadr = 0x0000;
             public short tone = 0x0000;
             public byte key = 0x00;
@@ -819,7 +819,7 @@ public class MoonDriver extends BaseDriver {
     // dest : AF
      */
     private void changePage3() {
-        //System.err.println("ChangePage3:{0}", a);
+        //System.err.println("ChangePage3:%d", a);
         a >>= 1;//srl
         a += 0x04;// The system uses 4pages for initial work area
         outport(RAM_PAGE3, a);
@@ -905,7 +905,7 @@ public class MoonDriver extends BaseDriver {
 
         d = 0x00;
         e = 0x18;//24channels; OPL4
-        Boolean cry = (b & 1) != 0;
+        boolean cry = (b & 1) != 0;
         b >>= 1;
         b |= (byte) (cry ? 0x80 : 0);
         if (cry) {
@@ -1133,7 +1133,7 @@ public class MoonDriver extends BaseDriver {
                 if (CP_CF(e)) {
                     work.seq_cur_ch = a;
                 }
-                //System.err.println("a:{0}", a);
+                //System.err.println("a:%d", a);
 
             } while (CP_CF(e));
 
@@ -1141,7 +1141,7 @@ public class MoonDriver extends BaseDriver {
                 stopped = true;
             }
 
-            vgmCurLoop = (int) loop;
+            vgmCurLoop = loop;
 
             //proc_tracks_end:
             a = work.seq_jump_flag;
@@ -1306,7 +1306,6 @@ public class MoonDriver extends BaseDriver {
         work.ch[ix].note = a;
         moon_set_fmnote();
         set_note_fin(hlb);
-        return;
     }
 
     private void seq_note_opl4(short hlb, byte af) {
@@ -1333,7 +1332,6 @@ public class MoonDriver extends BaseDriver {
         work.ch[ix].cnt = a;
         hl++;
         seq_next();
-        return;
 
     }
 
@@ -1649,9 +1647,7 @@ public class MoonDriver extends BaseDriver {
 
         if (!CP_ZF((byte) 0xff)) {
             moon_set_freq_ch();
-            return;
         }
-        return;
         //proc_freq_to_moon:
         //jp moon_set_freq_ch
     }
@@ -1888,7 +1884,7 @@ public class MoonDriver extends BaseDriver {
         // A = drum bits, BC = count
         //drumbit_fnum_lp:
         do {
-            Boolean cry = (a & 0x80) != 0;
+            boolean cry = (a & 0x80) != 0;
             a = (byte) ((a << 1) + (cry ? 1 : 0));//rlca
             if (cry) {
                 byte af = a;
@@ -1990,7 +1986,7 @@ public class MoonDriver extends BaseDriver {
         // A = drum bits, BC = count
         //drumnote_lp:
         do {
-            Boolean cry = (a & 0x80) != 0;
+            boolean cry = (a & 0x80) != 0;
             a = (byte) ((a << 1) + (cry ? 1 : 0));//    rlca
 
             if (!cry) {
@@ -2750,11 +2746,11 @@ public class MoonDriver extends BaseDriver {
     private void moon_calc_midinote() {
         a += 0xc4;// a -= $3c
         hl &= 0xff00;
-        Boolean cry = (a & 1) != 0;
+        boolean cry = (a & 1) != 0;
         a >>= 1;
         hl = (short) ((hl & 0xff) + (a << 8));
         byte l = (byte) (hl & 0xff);
-        Boolean cry2 = (l & 0x1) != 0;
+        boolean cry2 = (l & 0x1) != 0;
         l = (byte) ((l >> 1) + (cry ? 0x80 : 0));
         if (cry2) l |= 0x80;
         hl = (short) ((hl & 0xff00) + l);
@@ -2869,7 +2865,7 @@ public class MoonDriver extends BaseDriver {
 
         c = a;
         b = 0;
-        hl = (short) c;
+        hl = c;
         //hl += (short)((b << 8) + c);
         //hl += (short)((b << 8) + c);
 
@@ -2882,8 +2878,8 @@ public class MoonDriver extends BaseDriver {
         a = af;
 
         a >>= 4;
-        //Boolean cry = false;
-        //Boolean cryB;
+        //boolean cry = false;
+        //boolean cryB;
         //cryB = (a & 1) != 0; a = (byte)((a >> 1) | (cry ? 0x80 : 0x00)); cry = cryB;
         //cryB = (a & 1) != 0; a = (byte)((a >> 1) | (cry ? 0x80 : 0x00)); cry = cryB;
         //cryB = (a & 1) != 0; a = (byte)((a >> 1) | (cry ? 0x80 : 0x00)); cry = cryB;
@@ -2996,7 +2992,7 @@ public class MoonDriver extends BaseDriver {
             chipRegister.setYMF262Register(0, 0, d, e, model);
         } else {
             chipRegister.setYMF278BRegister(0, 0, d, e, model);
-            //System.err.println("fm1out:{0:x02}:{1:x02}:", d, e);
+            //System.err.println("fm1out:%02x:%02x:", d, e);
         }
     }
 
@@ -3013,7 +3009,7 @@ public class MoonDriver extends BaseDriver {
         } else {
             chipRegister.setYMF278BRegister(0, 1, d, e, model);
         }
-        //System.err.println("fm2out:{0:x02}:{1:x02}:", d, e);
+        //System.err.println("fm2out:%02x:%02x:", d, e);
     }
 
     private void moon_wave_out() {
@@ -3031,7 +3027,7 @@ public class MoonDriver extends BaseDriver {
         }
 
         backDat = e;
-        //System.err.println("wave out:{0:x02}:{1:x02}:", d, e);
+        //System.err.println("wave out:%02x:%02x:", d, e);
     }
 
     private byte backDat = 0;
@@ -3150,7 +3146,7 @@ public class MoonDriver extends BaseDriver {
         int i = 0;
         do {
             byte h = (byte) (hl >> 8);
-            Boolean cry = false, cryb;
+            boolean cry = false, cryb;
             cryb = (h & 1) != 0;
             h = (byte) ((h >> 1) + (cry ? 0x80 : 0x00));
             hl = (short) ((h << 8) + (hl & 0xff));
@@ -3342,7 +3338,6 @@ public class MoonDriver extends BaseDriver {
             a = work.seq_cur_ch;
             a += 0x03;
             moon_write_fmreg_nch();
-            return;
         }
 
         //moon_write_fmpan_4op_fin:
@@ -3442,7 +3437,6 @@ public class MoonDriver extends BaseDriver {
 
         moon_add_reg_ch();
         moon_wave_out();// key-on
-        return;
 
     }
 
@@ -3608,7 +3602,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     // check SRAM
-    private Boolean moon_check_sram() {
+    private boolean moon_check_sram() {
         //スキップ
         return false;
         // $77-> ($200000)
@@ -3680,7 +3674,7 @@ public class MoonDriver extends BaseDriver {
 
         // instanceof PCM packed song file?
         a = readMemory(MDR_PACKED);
-        // output status for debug
+        // Output status for debug
         MDB_BASE[MDB_LDFLAG] = a;
 
         if (a == 0) return;
@@ -3715,7 +3709,7 @@ public class MoonDriver extends BaseDriver {
     private void check_sram_start() {
         // check sram
 
-        Boolean flg = moon_check_sram();
+        boolean flg = moon_check_sram();
         if (!flg) {
             sram_found();
             return;
@@ -3876,27 +3870,27 @@ public class MoonDriver extends BaseDriver {
         default:
             if (seg0x0000 == null)
                 return mem[adr];
-            if (extMem[(byte) seg0x0000] == null)
-                extMem[(byte) seg0x0000] = new byte[1024 * 16];
-            return extMem[(byte) seg0x0000][adr & 0x3fff];
+            if (extMem[seg0x0000] == null)
+                extMem[seg0x0000] = new byte[1024 * 16];
+            return extMem[seg0x0000][adr & 0x3fff];
         case 1://0x4000 - 0x7fff
             if (seg0x4000 == null)
                 return mem[adr];
-            if (extMem[(byte) seg0x4000] == null)
-                extMem[(byte) seg0x4000] = new byte[1024 * 16];
-            return extMem[(byte) seg0x4000][adr & 0x3fff];
+            if (extMem[seg0x4000] == null)
+                extMem[seg0x4000] = new byte[1024 * 16];
+            return extMem[seg0x4000][adr & 0x3fff];
         case 2://0x8000 - 0xbfff
             if (seg0x8000 == null || seg0x8000 == 0)
                 return mem[adr];
-            if (extMem[(byte) seg0x8000] == null)
-                extMem[(byte) seg0x8000] = new byte[1024 * 16];
-            return extMem[(byte) seg0x8000][adr & 0x3fff];
+            if (extMem[seg0x8000] == null)
+                extMem[seg0x8000] = new byte[1024 * 16];
+            return extMem[seg0x8000][adr & 0x3fff];
         case 3://0xc000 - 0xffff
             if (seg0xc000 == null)
                 return mem[adr];
-            if (extMem[(byte) seg0xc000] == null)
-                extMem[(byte) seg0xc000] = new byte[1024 * 16];
-            return extMem[(byte) seg0xc000][adr & 0x3fff];
+            if (extMem[seg0xc000] == null)
+                extMem[seg0xc000] = new byte[1024 * 16];
+            return extMem[seg0xc000][adr & 0x3fff];
         }
     }
 
@@ -3909,7 +3903,7 @@ public class MoonDriver extends BaseDriver {
             } else {
                 if (extMem[seg0x0000] == null)
                     extMem[seg0x0000] = new byte[1024 * 16];
-                extMem[(byte) seg0x0000][adr & 0x3fff] = dat;
+                extMem[seg0x0000][adr & 0x3fff] = dat;
             }
             break;
         case 1: // 0x4000 - 0x7fff
@@ -3942,16 +3936,14 @@ public class MoonDriver extends BaseDriver {
         }
     }
 
-    private Boolean CP_CF(byte n) {
+    private boolean CP_CF(byte n) {
         int ans = (int) a - (int) n;
-        if (ans < 0) return true;
-        return false;
+        return ans < 0;
     }
 
-    private Boolean CP_ZF(byte n) {
+    private boolean CP_ZF(byte n) {
         int ans = (int) a - (int) n;
-        if (ans == 0) return true;
-        return false;
+        return ans == 0;
     }
 }
 

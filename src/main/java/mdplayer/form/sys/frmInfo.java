@@ -19,6 +19,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
@@ -30,7 +31,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmInfo extends JFrame {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     public frmMain parent = null;
@@ -90,7 +91,7 @@ public class frmInfo extends JFrame {
         lblUsedChips.setText(gd3.usedChips);
 
         if (gd3.lyrics == null) {
-            timer.stop();;
+            timer.stop();
         } else {
             lyrics = gd3.lyrics;
             timer.start();
@@ -103,7 +104,7 @@ public class frmInfo extends JFrame {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -158,20 +159,20 @@ public class frmInfo extends JFrame {
                             break;
                         case 'c':
                             ind++;
-                            String n = String.valueOf(lyrics.get(lyricsIndex).Item1.Item2[ind++]);
+                            String n = String.valueOf(lyrics.get(lyricsIndex).Item2.charAt(ind++));
                             int r, g, b;
                             if (n.equals("s")) {
                                 r = 192;
                                 g = 192;
                                 b = 255; //192,192,255 system color
                             } else {
-                                n += lyrics.get(lyricsIndex).Item2[ind++].toString();
+                                n += lyrics.get(lyricsIndex).Item2.charAt(ind++);
                                 r = Integer.parseInt(n, 16);
-                                n = lyrics.get(lyricsIndex).Item2[ind++].toString();
-                                n += lyrics.get(lyricsIndex).Item2[ind++].toString();
+                                n = String.valueOf(lyrics.get(lyricsIndex).Item2.charAt(ind++));
+                                n += lyrics.get(lyricsIndex).Item2.charAt(ind++);
                                 g = Integer.parseInt(n, 16);
-                                n = lyrics.get(lyricsIndex).Item2[ind++].toString();
-                                n += lyrics.get(lyricsIndex).Item2[ind++].toString();
+                                n = String.valueOf(lyrics.get(lyricsIndex).Item2.charAt(ind++));
+                                n += lyrics.get(lyricsIndex).Item2.charAt(ind++);
                                 b = Integer.parseInt(n, 16);
                             }
                             culColor = new Color(r, g, b);
@@ -213,7 +214,7 @@ public class frmInfo extends JFrame {
         this.lblSystemJ = new JLabel();
         this.lblComposerJ = new JLabel();
         this.timer = new Timer(10, this::timer_Tick);
-        this.rtbLyrics = new JTextArea();
+        this.rtbLyrics = new JTextField();
 
         //
         // lblTitle
@@ -396,16 +397,16 @@ public class frmInfo extends JFrame {
 //            this.rtbLyrics.Anchor = ((JAnchorStyles)(((JAnchorStyles.Top | JAnchorStyles.Left) | JAnchorStyles.Right)));
         this.rtbLyrics.setBackground(Color.black);
         this.rtbLyrics.setBorder(null);
-        this.rtbLyrics.Cursor = Cursor.Arrow;
-        this.rtbLyrics.DetectUrls = false;
+//        this.rtbLyrics.Cursor = Cursor.Arrow;
+//        this.rtbLyrics.DetectUrls = false;
         this.rtbLyrics.setFont(new Font("メイリオ", Font.BOLD, 9));
         this.rtbLyrics.setForeground(new Color(192, 192, 255));
         this.rtbLyrics.setLocation(new Point(41, 209));
-        this.rtbLyrics.Multiline = false;
+//        this.rtbLyrics.Multiline = false;
         this.rtbLyrics.setName("rtbLyrics");
         this.rtbLyrics.setEditable(false);
-        this.rtbLyrics.ScrollBars = JTextAreaScrollBars.None;
-        this.rtbLyrics.ShortcutsEnabled = false;
+//        this.rtbLyrics.ScrollBars = JTextAreaScrollBars.None;
+//        this.rtbLyrics.ShortcutsEnabled = false;
         this.rtbLyrics.setPreferredSize(new Dimension(283, 20));
         // this.rtbLyrics.TabIndex = 16
         // this.rtbLyrics.TabStop = false;
@@ -456,5 +457,5 @@ public class frmInfo extends JFrame {
     private JLabel lblSystemJ;
     private JLabel lblComposerJ;
     private Timer timer;
-    private JTextArea rtbLyrics;
+    private JTextField rtbLyrics;
 }

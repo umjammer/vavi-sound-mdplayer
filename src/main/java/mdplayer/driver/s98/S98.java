@@ -3,6 +3,7 @@ package mdplayer.driver.s98;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import mdplayer.ChipRegister;
@@ -42,16 +43,16 @@ public class S98 extends BaseDriver
 
             Vgm.Gd3 gd3 = new Gd3();
             s98Info = new S98Info();
-            chips = new ArrayList<String>();
+            chips = new ArrayList<>();
 
             try
             {
                 if (Common.getLE24(buf, 0) != FCC_S98) return null;
-                int Format = (int)(buf[3] - '0');
+                int Format = buf[3] - '0';
                 int TAGAdr = Common.getLE32(buf, 0x10);
                 if (Format < 2)
                 {
-                    List<Byte> strLst = new ArrayList<Byte>();
+                    List<Byte> strLst = new ArrayList<>();
                     String str;
                     while (buf[TAGAdr] != 0x0a && buf[TAGAdr] != 0x00)
                     {
@@ -68,7 +69,7 @@ public class S98 extends BaseDriver
                     if (buf[TAGAdr++] != 0x39) return null;
                     if (buf[TAGAdr++] != 0x38) return null;
                     if (buf[TAGAdr++] != 0x5d) return null;
-                    Boolean IsUTF8 = false;
+                    boolean IsUTF8 = false;
                     if (Common.getLE24(buf, TAGAdr) == FCC_BOM)
                     {
                         IsUTF8 = true;
@@ -77,7 +78,7 @@ public class S98 extends BaseDriver
 
                     while (buf.length>TAGAdr && buf[TAGAdr] != 0x00)
                     {
-                        List<Byte> strLst = new ArrayList<Byte>();
+                        List<Byte> strLst = new ArrayList<>();
                         String str;
                         while (buf[TAGAdr] != 0x0a && buf[TAGAdr] != 0x00)
                         {
@@ -93,7 +94,7 @@ public class S98 extends BaseDriver
                         }
                         TAGAdr++;
 
-                        if (str.toLowerCase().indexOf("artist=") != -1)
+                        if (str.toLowerCase().contains("artist="))
                         {
                             try
                             {
@@ -103,7 +104,7 @@ public class S98 extends BaseDriver
                             catch (Exception e)
                             { }
                         }
-                        if (str.toLowerCase().indexOf("s98by=") != -1)
+                        if (str.toLowerCase().contains("s98by="))
                         {
                             try
                             {
@@ -112,7 +113,7 @@ public class S98 extends BaseDriver
                             catch (Exception e)
                             { }
                         }
-                        if (str.toLowerCase().indexOf("game=") != -1)
+                        if (str.toLowerCase().contains("game="))
                         {
                             try
                             {
@@ -123,7 +124,7 @@ public class S98 extends BaseDriver
                             { }
                         }
                         SSGVolumeFromTAG = -1;
-                        if (str.toLowerCase().indexOf("system=") != -1)
+                        if (str.toLowerCase().contains("system="))
                         {
                             try
                             {
@@ -136,7 +137,7 @@ public class S98 extends BaseDriver
                             catch (Exception e)
                             { }
                         }
-                        if (str.toLowerCase().indexOf("title=") != -1)
+                        if (str.toLowerCase().contains("title="))
                         {
                             try
                             {
@@ -146,7 +147,7 @@ public class S98 extends BaseDriver
                             catch (Exception e)
                             { }
                         }
-                        if (str.toLowerCase().indexOf("year=") != -1)
+                        if (str.toLowerCase().contains("year="))
                         {
                             try
                             {
@@ -161,7 +162,7 @@ public class S98 extends BaseDriver
             }
             catch (Exception e)
             {
-                Log.write(String.format("S98のTAG情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), e.getStackTrace()));
+                Log.write(String.format("S98のTAG情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), Arrays.toString(e.getStackTrace())));
                 return null;
             }
 
@@ -231,10 +232,10 @@ public class S98 extends BaseDriver
             }
         }
 
-        private Boolean getInformationHeader()
+        private boolean getInformationHeader()
         {
 
-            s98Info.FormatVersion = (int)(vgmBuf[3] - '0');
+            s98Info.FormatVersion = vgmBuf[3] - '0';
             s98Info.DeviceCount = Integer.MAX_VALUE;
             switch (s98Info.FormatVersion)
             {
@@ -276,7 +277,7 @@ public class S98 extends BaseDriver
 
             byte[] devIDs = new byte[256];
 
-            s98Info.DeviceInfos = new ArrayList<S98DevInfo>();
+            s98Info.DeviceInfos = new ArrayList<>();
             if (s98Info.DeviceCount == 0)
             {
                 S98DevInfo info = new S98DevInfo();
@@ -312,7 +313,7 @@ public class S98 extends BaseDriver
                                 chips.add("YM2203");
                                 break;
                             case 3:
-                                chips.add("YM2612");
+                                chips.add("Ym2612");
                                 break;
                             case 4:
                                 chips.add("YM2608");
@@ -332,11 +333,11 @@ public class S98 extends BaseDriver
                     for (int i = 0; i < s98Info.DeviceCount; i++)
                     {
                         S98DevInfo info = new S98DevInfo();
-                        info.DeviceType = Common.getLE32(vgmBuf, (int)(0x20 + i * 0x10));
+                        info.DeviceType = Common.getLE32(vgmBuf, 0x20 + i * 0x10);
                         if (devIDs[info.DeviceType] > 1) continue;//同じchipは2こまで
 
-                        info.clock = Common.getLE32(vgmBuf, (int)(0x24 + i * 0x10));
-                        info.Pan = Common.getLE32(vgmBuf, (int)(0x28 + i * 0x10));
+                        info.clock = Common.getLE32(vgmBuf, 0x24 + i * 0x10);
+                        info.Pan = Common.getLE32(vgmBuf, 0x28 + i * 0x10);
                         switch (info.DeviceType)
                         {
                             case 1:
@@ -346,7 +347,7 @@ public class S98 extends BaseDriver
                                 chips.add("YM2203");
                                 break;
                             case 3:
-                                chips.add("YM2612");
+                                chips.add("Ym2612");
                                 break;
                             case 4:
                                 chips.add("YM2608");
@@ -386,7 +387,7 @@ public class S98 extends BaseDriver
             return true;
         }
 
-        public class S98Info
+        public static class S98Info
         {
             public int FormatVersion = 0;
             public int SyncNumerator = 0;
@@ -399,7 +400,7 @@ public class S98 extends BaseDriver
             public List<S98DevInfo> DeviceInfos = null;
         }
 
-        public class S98DevInfo
+        public static class S98DevInfo
         {
             public byte ChipID = 0;
             public int DeviceType = 0;
@@ -433,7 +434,7 @@ public class S98 extends BaseDriver
         }
 
         private int ym2608WaitCounter = 0;
-        //private Boolean ym2608WaitSw = false;
+        //private boolean ym2608WaitSw = false;
 
         private void oneFrameS98()
         {

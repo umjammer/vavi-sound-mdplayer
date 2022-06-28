@@ -28,7 +28,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmYMF278B extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -50,7 +50,7 @@ public class frmYMF278B extends frmBase {
 
         this.newParam = newParam;
         frameBuffer.Add(pbScreen, Resources.getplaneYMF278B(), null, zoom);
-        Boolean ymF278BType = (chipID == 0)
+        boolean ymF278BType = (chipID == 0)
                 ? parent.setting.getYMF278BType()[0].getUseReal()[0]
                 : parent.setting.getYMF278BType()[1].getUseReal()[0];
         int ymF278BSoundLocation = (chipID == 0)
@@ -66,7 +66,7 @@ public class frmYMF278B extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -254,8 +254,7 @@ public class frmYMF278B extends frmBase {
 
             int cnt2 = fouropControl ? ymf278bRegister[p][0xc3 + adr] & 1 : 0;
 
-            boolean chmask = false;
-            if (fouropMode && !fouropControl) chmask = true;
+            boolean chmask = fouropMode && !fouropControl;
 
             if ((ko & (1 << (adr + p * 9))) != 0) {
                 if (nyc.note != nt && !chmask) {
@@ -390,7 +389,7 @@ public class frmYMF278B extends frmBase {
                 if (pcmKey[c - 23] == 1) {
                     //note
                     nyc.note = ((nyc.inst[13] + 7) & 0xf) * 12 + Common.searchPCMNote(nyc.inst[14], 1) - 5;
-                    //System.err.println("{0:x} {1:x}", nyc.inst[13], nyc.inst[14]);
+                    //System.err.println("%x %x", nyc.inst[13], nyc.inst[14]);
                     nyc.volumeL = (127 - (ymf278bRegister[2][0x50 + (c - 23)] >> 1)) * (nyc.pan & 0xf) / 16 / 6;
                     nyc.volumeR = (127 - (ymf278bRegister[2][0x50 + (c - 23)] >> 1)) * (nyc.pan >> 4) / 16 / 6;
                 } else {
@@ -407,7 +406,7 @@ public class frmYMF278B extends frmBase {
                 if (mdPCMKey[c - 23] > -1) {
                     //note
                     nyc.note = mdPCMKey[c - 23];
-                    //System.err.println("{0:x} {1:x}", nyc.inst[13], nyc.inst[14]);
+                    //System.err.println("%x %x", nyc.inst[13], nyc.inst[14]);
                     nyc.volumeL = (127 - (ymf278bRegister[2][0x50 + (c - 23)] >> 1)) * (nyc.pan & 0xf) / 16 / 6;
                     nyc.volumeR = (127 - (ymf278bRegister[2][0x50 + (c - 23)] >> 1)) * (nyc.pan >> 4) / 16 / 6;
                 } else {
@@ -449,7 +448,7 @@ public class frmYMF278B extends frmBase {
     }
 
     public void screenDrawParams() {
-        Boolean YMF278BType = (chipID == 0)
+        boolean YMF278BType = (chipID == 0)
                 ? parent.setting.getYMF278BType()[0].getUseReal()[0]
                 : parent.setting.getYMF278BType()[1].getUseReal()[0];
         int YMF278BSoundLocation = (chipID == 0)

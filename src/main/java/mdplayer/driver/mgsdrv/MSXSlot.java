@@ -5,6 +5,7 @@ import mdplayer.Common.EnmModel;
 
 
 public class MSXSlot extends Slot {
+
     public MSXSlot(ChipRegister chipRegister, EnmModel model) {
         slots = new Cartridge[][] {
             // Slot0 MapperROM 64k

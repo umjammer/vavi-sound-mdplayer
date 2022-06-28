@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2011-2015 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2009-2014 VICE Project
@@ -30,7 +30,7 @@ public class SerialPort {
 
     private InterruptSource interruptSource;
     private int count;
-    private Boolean buffered;
+    private boolean buffered;
     private byte out_;
 
     public SerialPort(InterruptSource intSource) {

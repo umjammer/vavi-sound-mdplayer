@@ -13,6 +13,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
@@ -67,7 +68,7 @@ public class frmHuC6280 extends frmBase {
     BufferedImage image;
     public JPanel pbScreen;
 
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -101,7 +102,7 @@ public class frmHuC6280 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -150,24 +151,24 @@ public class frmHuC6280 extends frmBase {
         OotakePsg.HuC6280State chip = Audio.getHuC6280Register(chipID);
         if (chip == null) return;
 
-        //System.err.println("{0}  {1}", chip.MainVolumeL,chip.MainVolumeR);
+        //System.err.println("%d  %d", chip.MainVolumeL,chip.MainVolumeR);
         for (int ch = 0; ch < 6; ch++) {
-            OotakePsg.HuC6280State.PSG psg = chip.psg[ch];
+            OotakePsg.HuC6280State.Psg psg = chip.psgs[ch];
             if (psg == null) continue;
             MDChipParams.Channel channel = newParam.channels[ch];
-            //System.err.println("{0}  {1}",psg.outVolumeL, psg.outVolumeR);
+            //System.err.println("%d  %d",psg.outVolumeL, psg.outVolumeR);
             channel.volumeL = psg.outVolumeL >> 10;
             channel.volumeR = psg.outVolumeR >> 10;
             channel.volumeL = Math.min(channel.volumeL, 19);
             channel.volumeR = Math.min(channel.volumeR, 19);
 
-            channel.pan = (int) ((psg.volumeL & 0xf) | ((psg.volumeR & 0xf) << 4));
+            channel.pan = (psg.volumeL & 0xf) | ((psg.volumeR & 0xf) << 4);
 
             channel.inst = psg.wave;
 
-            channel.dda = psg.bDDA;
+            channel.dda = psg.dda;
 
-            int tp = (int) psg.frq;
+            int tp = psg.frq;
             if (tp == 0) tp = 1;
 
             float ftone = 3579545.0f / 32.0f / (float) tp;
@@ -177,13 +178,13 @@ public class frmHuC6280 extends frmBase {
             if (ch < 4) continue;
 
             channel.noise = psg.bNoiseOn;
-            channel.nfrq = (int) psg.noiseFrq;
+            channel.nfrq = psg.noiseFrq;
         }
 
         newParam.mvolL = chip.mainVolumeL;
         newParam.mvolR = chip.mainVolumeR;
-        newParam.LfoCtrl = chip.lfoCtrl;
-        newParam.LfoFrq = chip.lfoFrq;
+        newParam.LfoCtrl = chip.lfoControl;
+        newParam.LfoFrq = chip.lfoFreq;
     }
 
     public void screenDrawParams() {
@@ -290,9 +291,7 @@ public class frmHuC6280 extends frmBase {
             newParam.channels[c].volumeL = -1;
             newParam.channels[c].volumeR = -1;
             newParam.channels[c].pan = -1;
-            for (int i = 0; i < newParam.channels[c].inst.length; i++) {
-                newParam.channels[c].inst[i] = 0;
-            }
+            Arrays.fill(newParam.channels[c].inst, 0);
             newParam.channels[c].dda = false;
             newParam.channels[c].noise = false;
             newParam.channels[c].nfrq = 0;

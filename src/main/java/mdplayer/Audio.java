@@ -10,19 +10,13 @@ import java.util.Set;
 import java.util.function.Function;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Receiver;
+import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.spi.AudioFileReader;
 import javax.swing.JOptionPane;
 
 import dotnet4j.Tuple;
-import dotnet4j.io.FileAccess;
-import dotnet4j.io.FileMode;
-import dotnet4j.io.FileStream;
-import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
-import dotnet4j.io.compression.CompressionMode;
-import dotnet4j.io.compression.GZipStream;
-import mdplayer.Common.EnmArcType;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Common.EnmRealChipType;
@@ -55,20 +49,19 @@ import mdsound.Ym3438Const.Type;
 import mdsound.np.chip.DeviceInfo;
 import mdsound.x68sound.SoundIocs;
 import mdsound.x68sound.X68Sound;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import vavi.util.ByteUtil;
 
 
 public class Audio {
     public static frmMain frmMain = null;
-    public static VstMng vstMng = new VstMng();
+    public static final VstMng vstMng = new VstMng();
     public static Setting setting = null;
 
     public static int clockAY8910 = 1789750;
-    public static int clockS5B = 1789772;
+    public static final int clockS5B = 1789772;
     public static int clockK051649 = 1500000;
-    public static int clockC140 = 21390;
-    public static int clockPPZ8 = 44100; // setting.getOutputDevice().getSampleRate();
+    public static final int clockC140 = 21390;
+    public static final int clockPPZ8 = 44100;
     public static int clockC352 = 24192000;
     public static int clockFDS = 0;
     public static int clockHuC6280 = 0;
@@ -88,52 +81,52 @@ public class Audio {
     public static int clockYMF278B = 0;
 
     private static final Object lockObj = new Object();
-    private static Boolean _fatalError = false;
+    private static boolean _fatalError = false;
 
-    public static Boolean getFatalError() {
+    public static boolean getFatalError() {
         synchronized (lockObj) {
             return _fatalError;
         }
     }
 
-    void setDatalError(boolean value) {
+    public static void setFatalError(boolean value) {
         synchronized (lockObj) {
             _fatalError = value;
         }
     }
 
-    private static int samplingBuffer = 1024;
+    private static final int samplingBuffer = 1024;
     private static mdsound.MDSound mds = null;
     public static mdsound.MDSound mdsMIDI = null;
     private static NAudioWrap naudioWrap;
     private static WaveWriter waveWriter = null;
 
-    private static RSoundChip[] scYM2612 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scSN76489 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scYM2151 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scYM2608 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scYM2203 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scAY8910 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scK051649 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scYM2413 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scYM3526 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scYM3812 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scYMF262 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scYM2610 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scYM2610EA = new RSoundChip[] {null, null};
-    private static RSoundChip[] scYM2610EB = new RSoundChip[] {null, null};
-    private static RSoundChip[] scC140 = new RSoundChip[] {null, null};
-    private static RSoundChip[] scSEGAPCM = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scYM2612 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scSN76489 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scYM2151 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scYM2608 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scYM2203 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scAY8910 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scK051649 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scYM2413 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scYM3526 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scYM3812 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scYMF262 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scYM2610 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scYM2610EA = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scYM2610EB = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scC140 = new RSoundChip[] {null, null};
+    private static final RSoundChip[] scSEGAPCM = new RSoundChip[] {null, null};
     private static RealChip realChip;
     private static ChipRegister chipRegister = null;
-    public static Set<EnmChip> useChip = new HashSet<>();
+    public static final Set<EnmChip> useChip = new HashSet<>();
 
 
     private static Thread trdMain = null;
-    public static Boolean trdClosed = false;
-    private static Boolean _trdStopped = true;
+    public static boolean trdClosed = false;
+    private static boolean _trdStopped = true;
 
-    public static Boolean getTrdStopped() {
+    public static boolean getTrdStopped() {
         synchronized (lockObj) {
             return _trdStopped;
         }
@@ -158,32 +151,32 @@ public class Audio {
     }
 
     private static long sw = System.currentTimeMillis();
-    private static double swFreq = Stopwatch.Frequency;
+    private static final double swFreq = 1000d / 44100;
 
     private static byte[] vgmBuf = null;
     private static double vgmSpeed;
-    private static Boolean vgmFadeout;
+    private static boolean vgmFadeout;
     private static double vgmFadeoutCounter;
     private static double vgmFadeoutCounterV;
     private static int vgmRealFadeoutVol = 0;
     private static int vgmRealFadeoutVolWait = 4;
 
-    private static Boolean paused = false;
-    public static Boolean stopped = false;
+    private static boolean paused = false;
+    public static boolean stopped = false;
     private static int stepCounter = 0;
 
     public static BaseDriver driverVirtual = null;
     public static BaseDriver driverReal = null;
 
-    private static Boolean oneTimeReset = false;
+    private static boolean oneTimeReset = false;
     private static int hiyorimiEven = 0;
-    private static Boolean hiyorimiNecessary = false;
+    private static boolean hiyorimiNecessary = false;
 
     public static ChipLEDs chipLED = new ChipLEDs();
-    public static VisVolume visVolume = new VisVolume();
+    public static final VisVolume visVolume = new VisVolume();
 
     private static int masterVolume = 0;
-    private static byte[] chips = new byte[256];
+    private static final byte[] chips = new byte[256];
     private static String playingFileName;
     private static String playingArcFileName;
     private static int midiMode = 0;
@@ -191,32 +184,17 @@ public class Audio {
     private static List<Tuple<String, byte[]>> extendFile = null;
     private static FileFormat playingFileFormat;
 
-    private static long stwh = System.currentTimeMillis();
+    private static final long stwh = System.currentTimeMillis();
     public static int ProcTimePer1Frame = 0;
 
-    private static List<Receiver> midiOuts = new ArrayList<>();
-    private static List<Integer> midiOutsType = new ArrayList<>();
+    private static final List<Receiver> midiOuts = new ArrayList<>();
+    private static final List<Integer> midiOutsType = new ArrayList<>();
     public static String errMsg = "";
-    public static Boolean flgReinit = false;
+    public static boolean flgReinit = false;
 
-    public static Boolean getemuOnly() {
+    public static boolean getemuOnly() {
         return false;
     }
-
-    public static InstanceMarker mucomDotNETim;
-
-    static InstanceMarker getmucomDotNETim() {
-        return mucomDotNETim;
-    }
-
-    public static InstanceMarker getPMDDotNETim() {
-        return null;
-    }
-
-    public static InstanceMarker getmoonDriverDotNETim() {
-        return null;
-    }
-
 
     public static List<VstMng.VstInfo2> getVSTInfos() {
         return vstMng.getVSTInfos();
@@ -226,11 +204,11 @@ public class Audio {
         return vstMng.getVSTInfo(filename);
     }
 
-    public static Boolean addVSTeffect(String fileName) {
+    public static boolean addVSTeffect(String fileName) {
         return vstMng.addVSTeffect(fileName);
     }
 
-    public static Boolean delVSTeffect(String key) {
+    public static boolean delVSTeffect(String key) {
         return vstMng.delVSTeffect(key);
     }
 
@@ -248,461 +226,12 @@ public class Audio {
     }
 
     public static List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Object entry/* = null*/) {
-        List<PlayList.Music> musics = new ArrayList<>();
-        PlayList.Music music = new PlayList.Music();
-
-        music.format = FileFormat.unknown;
-        music.fileName = file;
-        music.arcFileName = zipFile;
-        music.arcType = EnmArcType.unknown;
-        if (zipFile != null && !zipFile.isEmpty())
-            music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-        music.title = "unknown";
-        music.game = "unknown";
-        music.type = "-";
-
-        if (file.toLowerCase().lastIndexOf(".nrd") != -1) {
-
-            music.format = FileFormat.NRT;
-            int index = 42;
-            Vgm.Gd3 gd3 = (new NRTDRV(setting)).getGD3Info(buf, index);
-            music.title = gd3.trackName;
-            music.titleJ = gd3.trackNameJ;
-            music.game = gd3.gameName;
-            music.gameJ = gd3.gameNameJ;
-            music.composer = gd3.composer;
-            music.composerJ = gd3.composerJ;
-            music.vgmby = gd3.vgmBy;
-
-            music.converted = gd3.converted;
-            music.notes = gd3.notes;
-
-        } else if (file.toLowerCase().lastIndexOf(".mgs") != -1) {
-
-            music.format = FileFormat.MGS;
-            int index = 8;
-            Gd3 gd3 = (new MGSDRV()).getGD3Info(buf, index);
-            music.title = gd3.trackName;
-            music.titleJ = gd3.trackNameJ;
-            music.game = "";
-            music.gameJ = "";
-            music.composer = "";
-            music.composerJ = "";
-            music.vgmby = "";
-
-            music.converted = "";
-            music.notes = "";
-
-        } else if (file.toLowerCase().lastIndexOf(".mdr") != -1) {
-
-            music.format = FileFormat.MDR;
-            int index = 0;
-            Vgm.Gd3 gd3 = (new MoonDriver()).getGD3Info(buf, index);
-            music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-            music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-            music.game = gd3.gameName;
-            music.gameJ = gd3.gameNameJ;
-            music.composer = gd3.composer;
-            music.composerJ = gd3.composerJ;
-            music.vgmby = gd3.vgmBy;
-
-            music.converted = gd3.converted;
-            music.notes = gd3.notes;
-
-        } else if (file.toLowerCase().lastIndexOf(".mdx") != -1) {
-
-            music.format = FileFormat.MDX;
-            int index = 0;
-            Gd3 gd3 = (new MXDRV()).getGD3Info(buf, index);
-            music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-            music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-            music.game = gd3.gameName;
-            music.gameJ = gd3.gameNameJ;
-            music.composer = gd3.composer;
-            music.composerJ = gd3.composerJ;
-            music.vgmby = gd3.vgmBy;
-
-            music.converted = gd3.converted;
-            music.notes = gd3.notes;
-
-        } else if (file.toLowerCase().lastIndexOf(".mnd") != -1) {
-
-            music.format = FileFormat.MND;
-            int index = 0;
-            Vgm.Gd3 gd3 = (new MnDrv()).getGD3Info(buf, index);
-            music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-            music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-            music.game = gd3.gameName;
-            music.gameJ = gd3.gameNameJ;
-            music.composer = gd3.composer;
-            music.composerJ = gd3.composerJ;
-            music.vgmby = gd3.vgmBy;
-
-            music.converted = gd3.converted;
-            music.notes = gd3.notes;
-
-        } else if (file.toLowerCase().lastIndexOf(".mub") != -1) {
-
-            music.format = FileFormat.MUB;
-            int index = 0;
-            //Gd3 gd3 = (new MUCOM88.MUCOM88()).getGD3InfoMUB(buf, index);
-            Gd3 gd3 = new MucomDotNET(mucomDotNETim).getGD3Info(buf, index);
-            music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-            music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-            music.game = gd3.gameName;
-            music.gameJ = gd3.gameNameJ;
-            music.composer = gd3.composer;
-            music.composerJ = gd3.composerJ;
-            music.vgmby = gd3.vgmBy;
-
-            music.converted = gd3.converted;
-            music.notes = gd3.notes;
-
-        } else if (file.toLowerCase().lastIndexOf(".muc") != -1) {
-
-            music.format = FileFormat.MUC;
-            int index = 0;
-            //Gd3 gd3 = (new MUCOM88.MUCOM88()).getGD3Info(buf, index);
-            Vgm.Gd3 gd3 = new MucomDotNET(mucomDotNETim).getGD3Info(buf, index);
-            music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-            music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-            music.game = gd3.gameName;
-            music.gameJ = gd3.gameNameJ;
-            music.composer = gd3.composer;
-            music.composerJ = gd3.composerJ;
-            music.vgmby = gd3.vgmBy;
-
-            music.converted = gd3.converted;
-            music.notes = gd3.notes;
-
-        } else if (file.toLowerCase().lastIndexOf(".mml") != -1) {
-
-            music.format = FileFormat.MML;
-            int index = 0;
-            PMDDotNET pmd = new PMDDotNET(PMDDotNETim);
-            pmd.setPlayingFileName(file);
-            Vgm.Gd3 gd3 = pmd.getGD3Info(buf, index, PMDDotNET.enmPMDFileType.MML);
-            music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-            music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-            music.game = gd3.gameName;
-            music.gameJ = gd3.gameNameJ;
-            music.composer = gd3.composer;
-            music.composerJ = gd3.composerJ;
-            music.vgmby = gd3.vgmBy;
-
-            music.converted = gd3.converted;
-            music.notes = gd3.notes;
-
-        } else if (file.toLowerCase().lastIndexOf(".m") != -1 || file.toLowerCase().lastIndexOf(".m2") != -1 || file.toLowerCase().lastIndexOf(".mz") != -1) {
-
-            music.format = FileFormat.M;
-            int index = 0;
-            Gd3 gd3 = new PMDDotNET(PMDDotNETim).getGD3Info(buf, index, PMDDotNET.enmPMDFileType.M);
-            music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-            music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-            music.game = gd3.gameName;
-            music.gameJ = gd3.gameNameJ;
-            music.composer = gd3.composer;
-            music.composerJ = gd3.composerJ;
-            music.vgmby = gd3.vgmBy;
-
-            music.converted = gd3.converted;
-            music.notes = gd3.notes;
-
-        } else if (file.toLowerCase().lastIndexOf(".xgm") != -1) {
-            music.format = FileFormat.XGM;
-            Vgm.Gd3 gd3 = new Xgm(setting).getGD3Info(buf, 0);
-            music.title = gd3.trackName;
-            music.titleJ = gd3.trackNameJ;
-            music.game = gd3.gameName;
-            music.gameJ = gd3.gameNameJ;
-            music.composer = gd3.composer;
-            music.composerJ = gd3.composerJ;
-            music.vgmby = gd3.vgmBy;
-
-            music.converted = gd3.converted;
-            music.notes = gd3.notes;
-
-            if (music.title.isEmpty() && music.titleJ.isEmpty() && music.game.isEmpty() && music.gameJ.isEmpty() && music.composer.isEmpty() && music.composerJ.isEmpty()) {
-                music.title = String.format("(%s)", Path.getFileName(file));
-            }
-        } else if (file.toLowerCase().lastIndexOf(".zgm") != -1) {
-            music.format = FileFormat.ZGM;
-            Gd3 gd3 = new Zgm().getGD3Info(buf, 0);
-            music.title = gd3.trackName;
-            music.titleJ = gd3.trackNameJ;
-            music.game = gd3.gameName;
-            music.gameJ = gd3.gameNameJ;
-            music.composer = gd3.composer;
-            music.composerJ = gd3.composerJ;
-            music.vgmby = gd3.vgmBy;
-
-            music.converted = gd3.converted;
-            music.notes = gd3.notes;
-
-            if (music.title.isEmpty() && music.titleJ.isEmpty() && music.game.isEmpty() && music.gameJ.isEmpty() && music.composer.isEmpty() && music.composerJ.isEmpty()) {
-                music.title = String.format("(%s)", Path.getFileName(file));
-            }
-        } else if (file.toLowerCase().lastIndexOf(".s98") != -1) {
-            music.format = FileFormat.S98;
-            Gd3 gd3 = new S98(setting).getGD3Info(buf, 0);
-            if (gd3 != null) {
-                music.title = gd3.trackName;
-                music.titleJ = gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-            } else {
-                music.title = String.format("(%s)", Path.getFileName(file));
-            }
-
-        } else if (file.toLowerCase().lastIndexOf(".nsf") != -1) {
-            Nsf nsf = new Nsf(setting);
-            Gd3 gd3 = nsf.getGD3Info(buf, 0);
-
-            if (gd3 != null) {
-                for (int s = 0; s < nsf.songs; s++) {
-                    music = new PlayList.Music();
-                    music.format = FileFormat.NSF;
-                    music.fileName = file;
-                    music.arcFileName = zipFile;
-                    music.arcType = EnmArcType.unknown;
-                    if (zipFile != null && zipFile.isEmpty())
-                        music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-                    music.title = String.format("%s - Trk %d", gd3.gameName, s + 1);
-                    music.titleJ = String.format("%s - Trk %d", gd3.gameNameJ, s + 1);
-                    music.game = gd3.gameName;
-                    music.gameJ = gd3.gameNameJ;
-                    music.composer = gd3.composer;
-                    music.composerJ = gd3.composerJ;
-                    music.vgmby = gd3.vgmBy;
-                    music.converted = gd3.converted;
-                    music.notes = gd3.notes;
-                    music.songNo = s;
-
-                    musics.add(music);
-                }
-
-                return musics;
-            } else {
-                music.format = FileFormat.NSF;
-                music.fileName = file;
-                music.arcFileName = zipFile;
-                music.game = "unknown";
-                music.type = "-";
-                music.title = String.format("(%s)", Path.getFileName(file));
-            }
-
-        } else if (file.toLowerCase().lastIndexOf(".hes") != -1) {
-            Hes hes = new Hes();
-            Vgm.Gd3 gd3 = hes.getGD3Info(buf, 0);
-
-            for (int s = 0; s < 256; s++) {
-                music = new PlayList.Music();
-                music.format = FileFormat.HES;
-                music.fileName = file;
-                music.arcFileName = zipFile;
-                music.arcType = EnmArcType.unknown;
-                if (zipFile != null && zipFile.isEmpty())
-                    music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-                music.title = String.format("%s - Trk %d", Path.getFileName(file), s + 1);
-                music.titleJ = String.format("%s - Trk %d", Path.getFileName(file), s + 1);
-                music.game = "";
-                music.gameJ = "";
-                music.composer = "";
-                music.composerJ = "";
-                music.vgmby = "";
-                music.converted = "";
-                music.notes = "";
-                music.songNo = s;
-
-                musics.add(music);
-            }
-
-            return musics;
-
-        } else if (file.toLowerCase().lastIndexOf(".sid") != -1) {
-            Sid sid = new Sid();
-            Gd3 gd3 = sid.getGD3Info(buf, 0);
-
-            for (int s = 0; s < sid.songs; s++) {
-                music = new PlayList.Music();
-                music.format = FileFormat.SID;
-                music.fileName = file;
-                music.arcFileName = zipFile;
-                music.arcType = EnmArcType.unknown;
-                if (zipFile != null && zipFile.isEmpty())
-                    music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-                music.title = String.format("%s - Trk %d", gd3.trackName, s + 1);
-                music.titleJ = String.format("%s - Trk %d", gd3.trackName, s + 1);
-                music.game = "";
-                music.gameJ = "";
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composer;
-                music.vgmby = "";
-                music.converted = "";
-                music.notes = gd3.notes;
-                music.songNo = s;
-
-                musics.add(music);
-            }
-
-            return musics;
-
-        } else if (file.toLowerCase().lastIndexOf(".mid") != -1) {
-            music.format = FileFormat.MID;
-            Gd3 gd3 = new MID().getGD3Info(buf, 0);
-            if (gd3 != null) {
-                music.title = gd3.trackName;
-                music.titleJ = gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-            } else {
-                music.title = String.format("(%s)", Path.getFileName(file));
-            }
-
-            if (music.title.isEmpty() && music.titleJ.isEmpty()) {
-                music.title = String.format("(%s)", Path.getFileName(file));
-            }
-
-        } else if (file.toLowerCase().lastIndexOf(".rcp") != -1) {
-            music.format = FileFormat.RCP;
-            Gd3 gd3 = new RCP().getGD3Info(buf, 0);
-            if (gd3 != null) {
-                music.title = gd3.trackName;
-                music.titleJ = gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-            } else {
-                music.title = String.format("(%s)", Path.getFileName(file));
-            }
-
-            if (music.title.isEmpty() && music.titleJ.isEmpty()) {
-                music.title = String.format("(%s)", Path.getFileName(file));
-            }
-
-        } else if (file.toLowerCase().lastIndexOf(".wav") != -1) {
-            music.format = FileFormat.WAV;
-            music.title = String.format("(%s)", Path.getFileName(file));
-        } else if (file.toLowerCase().lastIndexOf(".mp3") != -1) {
-            music.format = FileFormat.MP3;
-            music.title = String.format("(%s)", Path.getFileName(file));
-        } else if (file.toLowerCase().lastIndexOf(".aiff") != -1) {
-            music.format = FileFormat.AIFF;
-            music.title = String.format("(%s)", Path.getFileName(file));
-        } else {
-            if (buf.length < 0x40) {
-                musics.add(music);
-                return musics;
-            }
-            if (Common.getLE32(buf, 0x00) != Vgm.FCC_VGM) {
-                //musics.add(Music);
-                //return musics;
-                //VGZかもしれないので確認する
-                try {
-                    int num;
-                    buf = new byte[1024]; // 1Kbytesずつ処理する
-
-                    if (entry == null || entry instanceof ZipArchiveEntry) {
-                        try (Stream inStream =  // 入力ストリーム
-                                     (entry == null) ?
-
-                                             new FileStream(file, FileMode.Open, FileAccess.Read)
-
-                                             :
-                                             ((ZipArchiveEntry) entry).Open();
-
-                             GZipStream decompStream // 解凍ストリーム
-                                     = new GZipStream(
-                                     inStream, // 入力元となるストリームを指定
-                                     CompressionMode.Decompress); // 解凍（圧縮解除）を指定
-
-                             MemoryStream outStream // 出力ストリーム
-                                     = new MemoryStream()
-                        ) {
-                            while ((num = decompStream.read(buf, 0, buf.length)) > 0) {
-                                outStream.write(buf, 0, num);
-                            }
-                        }
-
-                        buf = outStream.toArray(new MDSound.Chip[0]);
-                    } else {
-                        UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-                        buf = cmd.GetFileByte(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2);
-                    }
-                } catch (Exception e) {
-                    //vgzではなかった
-                }
-            }
-
-            if (Common.getLE32(buf, 0x00) != Vgm.FCC_VGM) {
-                musics.add(music);
-                return musics;
-            }
-
-            music.format = FileFormat.VGM;
-            int version = Common.getLE32(buf, 0x08);
-            String _version = String.format("%d.%d%d", (version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
-
-            int vgmGd3 = Common.getLE32(buf, 0x14);
-            Gd3 gd3 = new Vgm.Gd3();
-            if (vgmGd3 != 0) {
-                int vgmGd3Id = Common.getLE32(buf, vgmGd3 + 0x14);
-                if (vgmGd3Id != Vgm.FCC_GD3) {
-                    musics.add(music);
-                    return musics;
-                }
-                gd3 = (new Vgm(setting)).getGD3Info(buf, vgmGd3);
-            }
-
-            int TotalCounter = Common.getLE32(buf, 0x18);
-            int vgmLoopOffset = Common.getLE32(buf, 0x1c);
-            int loopCounter = Common.getLE32(buf, 0x20);
-
-            music.title = gd3.trackName;
-            music.titleJ = gd3.trackNameJ;
-            music.game = gd3.gameName;
-            music.gameJ = gd3.gameNameJ;
-            music.composer = gd3.composer;
-            music.composerJ = gd3.composerJ;
-            music.vgmby = gd3.vgmBy;
-
-            music.converted = gd3.converted;
-            music.notes = gd3.notes;
-
-            double sec = (double) TotalCounter / (double) setting.getOutputDevice().getSampleRate();
-            int TCminutes = (int) (sec / 60);
-            sec -= TCminutes * 60;
-            int TCsecond = (int) sec;
-            sec -= TCsecond;
-            int TCmillisecond = (int) (sec * 100.0);
-            music.duration = String.format("%2d:%2d:%2d", TCminutes, TCsecond, TCmillisecond);
-        }
-
-        musics.add(music);
-        return musics;
+        return null;
     }
 
     public static void realChipClose() {
         if (realChip != null) {
-            realChip.Close();
+            realChip.close();
         }
     }
 
@@ -966,11 +495,11 @@ public class Audio {
         Log.forcedWrite("Audio:Init:STEP 01");
 
         naudioWrap = new NAudioWrap(setting.getOutputDevice().getSampleRate(), Audio::trdVgmVirtualFunction);
-        naudioWrap.PlaybackStopped(this::naudioWrap_PlaybackStopped);
+        naudioWrap.playbackStopped.accept(Audio::naudioWrapPlaybackStopped);
 
         Log.forcedWrite("Audio:Init:STEP 02");
 
-        Audio.setting = setting;// Copy();
+        Audio.setting = setting;
         vstMng.setting = setting;
 
         waveWriter = new WaveWriter(setting);
@@ -981,99 +510,99 @@ public class Audio {
             Audio.setting.setAY8910Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getAY8910Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getAY8910Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getAY8910Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getAY8910Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getAY8910Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getAY8910Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getK051649Type() == null || Audio.setting.getK051649Type().length < 2) {
             Audio.setting.setK051649Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getK051649Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getK051649Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getK051649Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getK051649Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getK051649Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getK051649Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getC140Type() == null || Audio.setting.getC140Type().length < 2) {
             Audio.setting.setC140Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getC140Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getC140Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getC140Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getC140Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getC140Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getC140Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getHuC6280Type() == null || Audio.setting.getHuC6280Type().length < 2) {
             Audio.setting.setHuC6280Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getHuC6280Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getHuC6280Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getHuC6280Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getHuC6280Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getHuC6280Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getHuC6280Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getSEGAPCMType() == null || Audio.setting.getSEGAPCMType().length < 2) {
             Audio.setting.setSEGAPCMType(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getSEGAPCMType()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getSEGAPCMType()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getSEGAPCMType()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getSEGAPCMType()[i].getUseEmu()[0] = true;
-                Audio.setting.getSEGAPCMType()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getSEGAPCMType()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getSN76489Type() == null || Audio.setting.getSN76489Type().length < 2) {
             Audio.setting.setSN76489Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getSN76489Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getSN76489Type()[i].setUseEmu(new Boolean[2]);
+                Audio.setting.getSN76489Type()[i].setUseEmu(new boolean[2]);
                 Audio.setting.getSN76489Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getSN76489Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getSN76489Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getY8950Type() == null || Audio.setting.getY8950Type().length < 2) {
             Audio.setting.setY8950Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getY8950Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getY8950Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getY8950Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getY8950Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getY8950Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getY8950Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getYM2151Type() == null || Audio.setting.getYM2151Type().length < 2) {
             Audio.setting.setYM2151Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getYM2151Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getYM2151Type()[i].setUseEmu(new Boolean[3]);
+                Audio.setting.getYM2151Type()[i].setUseEmu(new boolean[3]);
                 Audio.setting.getYM2151Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getYM2151Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getYM2151Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getYM2203Type() == null || Audio.setting.getYM2203Type().length < 2) {
             Audio.setting.setYM2203Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getYM2203Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getYM2203Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getYM2203Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYM2203Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getYM2203Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getYM2203Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getYM2413Type() == null || Audio.setting.getYM2413Type().length < 2) {
             Audio.setting.setYM2413Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getYM2413Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getYM2413Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getYM2413Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYM2413Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getYM2413Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getYM2413Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getYM2608Type() == null || Audio.setting.getYM2608Type().length < 2) {
             Audio.setting.setYM2608Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getYM2608Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getYM2608Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getYM2608Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYM2608Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getYM2608Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getYM2608Type()[i].setUseReal(new boolean[1]);
             }
         }
 
@@ -1087,9 +616,9 @@ public class Audio {
             Audio.setting.setYM2610Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getYM2610Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getYM2610Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getYM2610Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYM2610Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getYM2610Type()[i].setUseReal(new Boolean[3]);
+                Audio.setting.getYM2610Type()[i].setUseReal(new boolean[3]);
             }
         }
 
@@ -1097,77 +626,77 @@ public class Audio {
             Audio.setting.setYM2612Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getYM2612Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getYM2612Type()[i].setUseEmu(new Boolean[3]);
+                Audio.setting.getYM2612Type()[i].setUseEmu(new boolean[3]);
                 Audio.setting.getYM2612Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getYM2612Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getYM2612Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getYM3526Type() == null || Audio.setting.getYM3526Type().length < 2) {
             Audio.setting.setYM3526Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getYM3526Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getYM3526Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getYM3526Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYM3526Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getYM3526Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getYM3526Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getYM3812Type() == null || Audio.setting.getYM3812Type().length < 2) {
             Audio.setting.setYM3812Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getYM3812Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getYM3812Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getYM3812Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYM3812Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getYM3812Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getYM3812Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getYMF262Type() == null || Audio.setting.getYMF262Type().length < 2) {
             Audio.setting.setYMF262Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getYMF262Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getYMF262Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getYMF262Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYMF262Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getYMF262Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getYMF262Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getYMF271Type() == null || Audio.setting.getYMF271Type().length < 2) {
             Audio.setting.setYMF271Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getYMF271Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getYMF271Type()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getYMF271Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYMF271Type()[i].getUseEmu()[0] = true;
-                Audio.setting.getYMF271Type()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getYMF271Type()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getYMF278BType() == null || Audio.setting.getYMF278BType().length < 2) {
             Audio.setting.setYMF278BType(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getYMF278BType()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getYMF278BType()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getYMF278BType()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYMF278BType()[i].getUseEmu()[0] = true;
-                Audio.setting.getYMF278BType()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getYMF278BType()[i].setUseReal(new boolean[1]);
             }
         }
         if (Audio.setting.getYMZ280BType() == null || Audio.setting.getYMZ280BType().length < 2) {
             Audio.setting.setYMZ280BType(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 Audio.setting.getYMZ280BType()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                Audio.setting.getYMZ280BType()[i].setUseEmu(new Boolean[1]);
+                Audio.setting.getYMZ280BType()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYMZ280BType()[i].getUseEmu()[0] = true;
-                Audio.setting.getYMZ280BType()[i].setUseReal(new Boolean[1]);
+                Audio.setting.getYMZ280BType()[i].setUseReal(new boolean[1]);
             }
         }
 
         if (mds == null)
-            mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, null);
+            mds = new MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, null);
         else
             mds.init(setting.getOutputDevice().getSampleRate(), samplingBuffer, null);
 
-        List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
-        mdsound.MDSound.Chip chip;
+        List<MDSound.Chip> lstChips = new ArrayList<>();
+        MDSound.Chip chip;
 
         Ym2612 ym2612 = new Ym2612();
-        chip = new mdsound.MDSound.Chip();
-        chip.type = mdsound.MDSound.InstrumentType.YM2612;
+        chip = new MDSound.Chip();
+        chip.type = MDSound.InstrumentType.YM2612;
         chip.id = (byte) 0;
         chip.instrument = ym2612;
         chip.update = ym2612::update;
@@ -1175,15 +704,15 @@ public class Audio {
         chip.stop = ym2612::stop;
         chip.reset = ym2612::reset;
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
-        chip.volume = setting.getbalance().getYM2612Volume();
+        chip.volume = setting.getBalance().getYM2612Volume();
         chip.clock = 7670454;
         chip.option = null;
         chipLED.PriOPN2 = 1;
         lstChips.add(chip);
 
         Sn76489 sn76489 = new Sn76489();
-        chip = new mdsound.MDSound.Chip();
-        chip.type = mdsound.MDSound.InstrumentType.SN76489;
+        chip = new MDSound.Chip();
+        chip.type = MDSound.InstrumentType.SN76489;
         chip.id = (byte) 0;
         chip.instrument = sn76489;
         chip.update = sn76489::update;
@@ -1191,7 +720,7 @@ public class Audio {
         chip.stop = sn76489::stop;
         chip.reset = sn76489::reset;
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
-        chip.volume = setting.getbalance().getSN76489Volume();
+        chip.volume = setting.getBalance().getSN76489Volume();
         chip.clock = 3579545;
         chip.option = null;
         chipLED.PriDCSG = 1;
@@ -1204,7 +733,7 @@ public class Audio {
 
         if (realChip == null && !getemuOnly()) {
             Log.forcedWrite("Audio:Init:STEP 04");
-            realChip = new RealChip(!setting.getunuseRealChip());
+            realChip = new RealChip(!setting.getUnuseRealChip());
         }
 
         if (realChip != null) {
@@ -1273,7 +802,7 @@ public class Audio {
 
         paused = false;
         stopped = true;
-        fatalError = false;
+        _fatalError = false;
         oneTimeReset = false;
 
         Log.forcedWrite("Audio:Init:STEP 06");
@@ -1286,8 +815,8 @@ public class Audio {
 
         //複数のmidioutの設定から必要なVSTを絞り込む
         Map<String, Integer> dicVst = new HashMap<>();
-        if (setting.getMidiOut().getlstMidiOutInfo() != null) {
-            for (MidiOutInfo[] aryMoi : setting.getMidiOut().getlstMidiOutInfo()) {
+        if (setting.getMidiOut().getMidiOutInfos() != null) {
+            for (MidiOutInfo[] aryMoi : setting.getMidiOut().getMidiOutInfos()) {
                 if (aryMoi == null) continue;
                 Map<String, Integer> dicVst2 = new HashMap<>();
                 for (MidiOutInfo moi : aryMoi) {
@@ -1317,34 +846,25 @@ public class Audio {
         }
 
 
-        if (setting.getvst() != null && setting.getvst().getVSTInfo() != null) {
+        if (setting.getVst() != null && setting.getVst().getVSTInfo() != null) {
             Log.forcedWrite("Audio:Init:VST:STEP 03"); //Load VST Effect
             vstMng.SetUpVstEffect();
         }
 
         Log.forcedWrite("Audio:Init:STEP 07");
 
-        //midi outをリリース
+        // midi outをリリース
         releaseAllMIDIout();
 
         Log.forcedWrite("Audio:Init:STEP 08");
 
-        //midi  のインスタンスを作成
+        // midi  のインスタンスを作成
         makeMIDIout(setting, 1);
         chipRegister.resetAllMIDIout();
 
         Log.forcedWrite("Audio:Init:STEP 09");
 
-        //各外部dllの動的読み込み
-        mucomDotNETim = new InstanceMarker();
-        mucomDotNETim.LoadCompilerDll(Path.combine(JApplication.StartupPath, "plugin\\driver\\mucomDotNETCompiler.dll"));
-        mucomDotNETim.LoadDriverDll(Path.combine(JApplication.StartupPath, "plugin\\driver\\mucomDotNETdll"));
-        PMDDotNETim = new InstanceMarker();
-        PMDDotNETim.LoadCompilerDll(Path.combine(JApplication.StartupPath, "plugin\\driver\\PMDDotNETCompiler.dll"));
-        PMDDotNETim.LoadDriverDll(Path.combine(JApplication.StartupPath, "plugin\\driver\\PMDDotNETdll"));
-        moonDriverDotNETim = new InstanceMarker();
-        moonDriverDotNETim.LoadCompilerDll(Path.combine(JApplication.StartupPath, "plugin\\driver\\moonDriverDotNETCompiler.dll"));
-        moonDriverDotNETim.LoadDriverDll(Path.combine(JApplication.StartupPath, "plugin\\driver\\moonDriverDotNETdll"));
+        // 各外部dllの動的読み込み
 
         Log.forcedWrite("Audio:Init:STEP 10");
 
@@ -1358,11 +878,7 @@ public class Audio {
         while (true) {
             Request req = OpeManager.getRequestToAudio();
             if (req == null) {
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                Thread.yield();
                 continue;
             }
 
@@ -1386,22 +902,22 @@ public class Audio {
     }
 
     private static void makeMIDIout(Setting setting, int m) {
-        if (setting.getMidiOut().getlstMidiOutInfo() == null || setting.getMidiOut().getlstMidiOutInfo().size() < 1)
+        if (setting.getMidiOut().getMidiOutInfos() == null || setting.getMidiOut().getMidiOutInfos().size() < 1)
             return;
-        if (setting.getMidiOut().getlstMidiOutInfo().get(m) == null || setting.getMidiOut().getlstMidiOutInfo().get(m).length < 1)
+        if (setting.getMidiOut().getMidiOutInfos().get(m) == null || setting.getMidiOut().getMidiOutInfos().get(m).length < 1)
             return;
 
-        for (int i = 0; i < setting.getMidiOut().getlstMidiOutInfo().get(m).length; i++) {
+        for (int i = 0; i < setting.getMidiOut().getMidiOutInfos().get(m).length; i++) {
             int n = -1;
             int t = 0;
             Receiver mo = null;
 
             for (int j = 0; j < MidiSystem.NAudio.Midi.MidiOut.NumberOfDevices; j++) {
-                if (setting.getMidiOut().getlstMidiOutInfo().get(m)[i].name != NAudio.Midi.MidiOut.DeviceInfo(j).ProductName)
+                if (setting.getMidiOut().getMidiOutInfos().get(m)[i].name != NAudio.Midi.MidiOut.DeviceInfo(j).ProductName)
                     continue;
 
                 n = j;
-                t = setting.getMidiOut().getlstMidiOutInfo().get(m)[i].type;
+                t = setting.getMidiOut().getMidiOutInfos().get(m)[i].type;
                 break;
             }
 
@@ -1413,9 +929,8 @@ public class Audio {
                 }
             }
 
-
             if (n == -1) {
-                vstMng.SetupVstMidiOut(setting.getMidiOut().getlstMidiOutInfo().get(m)[i]);
+                vstMng.SetupVstMidiOut(setting.getMidiOut().getMidiOutInfos().get(m)[i]);
             }
 
             if (mo != null) {
@@ -1429,7 +944,6 @@ public class Audio {
         if (midiOuts.size() > 0) {
             for (int i = 0; i < midiOuts.size(); i++) {
                 if (midiOuts.get(i) != null) {
-                    midiOuts.get(i).Reset();
                     midiOuts.get(i).close();
                     midiOuts.set(i, null);
                 }
@@ -1441,7 +955,7 @@ public class Audio {
         vstMng.ReleaseAllMIDIout();
     }
 
-    public static mdsound.MDSound.Chip getMDSChipInfo(mdsound.MDSound.InstrumentType typ) {
+    public static MDSound.Chip getMDSChipInfo(MDSound.InstrumentType typ) {
         return chipRegister.GetChipInfo(typ);
     }
 
@@ -1456,12 +970,12 @@ public class Audio {
         //Stop();
         playingFileFormat = format;
         vgmBuf = srcBuf;
-        Audio.playingFileName = playingFileName;//WaveWriter向け
+        Audio.playingFileName = playingFileName; // WaveWriter向け
         Audio.playingArcFileName = playingArcFileName;
         Audio.midiMode = midiMode;
         Audio.songNo = songNo;
-        chipRegister.SetFileName(playingFileName);//ExportMIDI向け
-        extendFile = extFile;//追加ファイル
+        chipRegister.SetFileName(playingFileName); // ExportMIDI向け
+        extendFile = extFile; // 追加ファイル
         Common.playingFilePath = Path.getDirectoryName(playingFileName);
 
         if (naudioFileReader != null) {
@@ -1480,7 +994,7 @@ public class Audio {
         playingArcFileName = Audio.playingArcFileName;
     }
 
-    public static Boolean play(Setting setting) {
+    public static boolean play(Setting setting) {
         errMsg = "";
 
         stop();
@@ -1492,14 +1006,14 @@ public class Audio {
             return false;
         }
 
-        mdsound.MDSound.np_nes_apu_volume = 0;
-        mdsound.MDSound.np_nes_dmc_volume = 0;
-        mdsound.MDSound.np_nes_fds_volume = 0;
-        mdsound.MDSound.np_nes_fme7_volume = 0;
-        mdsound.MDSound.np_nes_mmc5_volume = 0;
-        mdsound.MDSound.np_nes_n106_volume = 0;
-        mdsound.MDSound.np_nes_vrc6_volume = 0;
-        mdsound.MDSound.np_nes_vrc7_volume = 0;
+        MDSound.np_nes_apu_volume = 0;
+        MDSound.np_nes_dmc_volume = 0;
+        MDSound.np_nes_fds_volume = 0;
+        MDSound.np_nes_fme7_volume = 0;
+        MDSound.np_nes_mmc5_volume = 0;
+        MDSound.np_nes_n106_volume = 0;
+        MDSound.np_nes_vrc6_volume = 0;
+        MDSound.np_nes_vrc7_volume = 0;
 
 
         if (playingFileFormat == FileFormat.MGS) {
@@ -1516,12 +1030,12 @@ public class Audio {
         }
 
         if (playingFileFormat == FileFormat.MUB) {
-            driverVirtual = new MucomDotNET(getmucomDotNETim());
+            driverVirtual = new MucomDotNET();
             driverVirtual.setting = setting;
             ((MucomDotNET) driverVirtual).setPlayingFileName(playingFileName);
             driverReal = null;
             if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
-                driverReal = new MucomDotNET(getmucomDotNETim());
+                driverReal = new MucomDotNET();
                 driverReal.setting = setting;
                 ((MucomDotNET) driverReal).setPlayingFileName(playingFileName);
             }
@@ -1529,12 +1043,12 @@ public class Audio {
         }
 
         if (playingFileFormat == FileFormat.MUC) {
-            driverVirtual = new MucomDotNET(getmucomDotNETim());
+            driverVirtual = new MucomDotNET();
             driverVirtual.setting = setting;
             ((MucomDotNET) driverVirtual).setPlayingFileName(playingFileName);
             driverReal = null;
             if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
-                driverReal = new MucomDotNET(getmucomDotNETim());
+                driverReal = new MucomDotNET();
                 driverReal.setting = setting;
                 ((MucomDotNET) driverReal).setPlayingFileName(playingFileName);
             }
@@ -1543,12 +1057,12 @@ public class Audio {
         }
 
         if (playingFileFormat == FileFormat.MML || playingFileFormat == FileFormat.M) {
-            driverVirtual = new PMDDotNET(getPMDDotNETim());
+            driverVirtual = new PMDDotNET();
             driverVirtual.setting = setting;
             ((PMDDotNET) driverVirtual).setPlayingFileName(playingFileName);
             driverReal = null;
             if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
-                driverReal = new PMDDotNET(getPMDDotNETim());
+                driverReal = new PMDDotNET();
                 driverReal.setting = setting;
                 ((PMDDotNET) driverReal).setPlayingFileName(playingFileName);
             }
@@ -1580,12 +1094,12 @@ public class Audio {
         }
 
         if (playingFileFormat == FileFormat.MDL) {
-            driverVirtual = new MoonDriverDotNET(getmoonDriverDotNETim());
+            driverVirtual = new MoonDriverDotNET();
             driverVirtual.setting = setting;
             ((MoonDriverDotNET) driverVirtual).setPlayingFileName(playingFileName);
             driverReal = null;
             if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
-                driverReal = new MoonDriverDotNET(getmoonDriverDotNETim());
+                driverReal = new MoonDriverDotNET();
                 driverReal.setting = setting;
                 ((MoonDriverDotNET) driverReal).setPlayingFileName(playingFileName);
             }
@@ -1697,8 +1211,7 @@ public class Audio {
             driverVirtual.setting = setting;
 
             driverReal = null;
-            //if (setting.getoutputDevice().DeviceType != Common.DEV_Null)
-            //{
+            //if (setting.getoutputDevice().DeviceType != Common.DEV_Null) {
             //    driverReal = new Hes();
             //    driverReal.setting = setting;
             //}
@@ -1710,9 +1223,8 @@ public class Audio {
             driverVirtual.setting = setting;
 
             driverReal = null;
-            //if (setting.getoutputDevice().DeviceType != Common.DEV_Null)
-            //{
-            //    driverReal = new SID.Sid();
+            //if (setting.getoutputDevice().DeviceType != Common.DEV_Null) {
+            //    driverReal = new Sid.Sid();
             //    driverReal.setting = setting;
             //}
             return sidPlay(setting);
@@ -1746,7 +1258,7 @@ public class Audio {
         return false;
     }
 
-    public static Boolean mgsPlay_mgsdrv(Setting setting) {
+    public static boolean mgsPlay_mgsdrv(Setting setting) {
 
         try {
 
@@ -1777,28 +1289,28 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
-            mdsound.MDSound.Chip chip;
+            List<MDSound.Chip> lstChips = new ArrayList<>();
+            MDSound.Chip chip;
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
             chipLED = new ChipLEDs();
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             if (useAY) {
                 Ay8910 ay8910;
-                chip = new mdsound.MDSound.Chip();
+                chip = new MDSound.Chip();
                 ay8910 = new Ay8910();
                 chip.id = 0;
                 chipLED.PriAY10 = 1;
-                chip.type = mdsound.MDSound.InstrumentType.AY8910;
+                chip.type = MDSound.InstrumentType.AY8910;
                 chip.instrument = ay8910;
                 chip.update = ay8910::update;
                 chip.start = ay8910::start;
                 chip.stop = ay8910::stop;
                 chip.reset = ay8910::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getAY8910Volume();
+                chip.volume = setting.getBalance().getAY8910Volume();
                 chip.clock = MGSDRV.baseclockAY8910 / 2;
                 chip.option = null;
                 lstChips.add(chip);
@@ -1808,18 +1320,18 @@ public class Audio {
 
             if (useOPLL) {
                 Ym2413 ym2413;
-                chip = new mdsound.MDSound.Chip();
+                chip = new MDSound.Chip();
                 ym2413 = new Ym2413();
                 chip.id = 0;
                 chipLED.PriOPLL = 1;
-                chip.type = mdsound.MDSound.InstrumentType.YM2413;
+                chip.type = MDSound.InstrumentType.YM2413;
                 chip.instrument = ym2413;
                 chip.update = ym2413::update;
                 chip.start = ym2413::start;
                 chip.stop = ym2413::stop;
                 chip.reset = ym2413::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2413Volume();
+                chip.volume = setting.getBalance().getYM2413Volume();
                 chip.clock = MGSDRV.baseclockYM2413;
                 chip.option = null;
                 lstChips.add(chip);
@@ -1829,18 +1341,18 @@ public class Audio {
 
             if (useSCC) {
                 K051649 K051649;
-                chip = new mdsound.MDSound.Chip();
+                chip = new MDSound.Chip();
                 K051649 = new K051649();
                 chip.id = 0;
                 chipLED.PriK051649 = 1;
-                chip.type = mdsound.MDSound.InstrumentType.K051649;
+                chip.type = MDSound.InstrumentType.K051649;
                 chip.instrument = K051649;
                 chip.update = K051649::update;
                 chip.start = K051649::start;
                 chip.stop = K051649::stop;
                 chip.reset = K051649::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getK051649Volume();
+                chip.volume = setting.getBalance().getK051649Volume();
                 chip.clock = MGSDRV.baseclockK051649;
                 chip.option = null;
                 lstChips.add(chip);
@@ -1848,8 +1360,7 @@ public class Audio {
                 clockK051649 = MGSDRV.baseclockK051649;
             }
 
-            if (hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiNecessary;
 
             if (mds == null)
                 mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
@@ -1882,7 +1393,7 @@ public class Audio {
 
     }
 
-    public static Boolean mucPlay_mucomDotNET(Setting setting, MucomDotNET.enmMUCOMFileType fileType) {
+    public static boolean mucPlay_mucomDotNET(Setting setting, MucomDotNET.enmMUCOMFileType fileType) {
 
         try {
 
@@ -1900,13 +1411,13 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
-            mdsound.MDSound.Chip chip;
+            List<MDSound.Chip> lstChips = new ArrayList<>();
+            MDSound.Chip chip;
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
             chipLED = new ChipLEDs();
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             Ym2608 ym2608;
             ym2608 = new Ym2608();
@@ -1917,17 +1428,17 @@ public class Audio {
             Function<String, Stream> fn = Common::getOPNARyhthmStream;
 
             if (useChipFromMub[0] != EnmChip.Unuse) {
-                chip = new mdsound.MDSound.Chip();
+                chip = new MDSound.Chip();
                 chip.id = 0;
                 chipLED.PriOPNA = 1;
-                chip.type = mdsound.MDSound.InstrumentType.YM2608;
+                chip.type = MDSound.InstrumentType.YM2608;
                 chip.instrument = ym2608;
                 chip.update = ym2608::update;
                 chip.start = ym2608::start;
                 chip.stop = ym2608::stop;
                 chip.reset = ym2608::reset;
                 chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2608Volume();
+                chip.volume = setting.getBalance().getYM2608Volume();
                 chip.clock = MucomDotNET.OPNAbaseclock;
                 chip.option = new Object[] {fn};
                 lstChips.add(chip);
@@ -1936,17 +1447,17 @@ public class Audio {
             }
 
             if (useChipFromMub[1] != EnmChip.Unuse) {
-                chip = new mdsound.MDSound.Chip();
+                chip = new MDSound.Chip();
                 chip.id = 1;
                 chipLED.SecOPNA = 1;
-                chip.type = mdsound.MDSound.InstrumentType.YM2608;
+                chip.type = MDSound.InstrumentType.YM2608;
                 chip.instrument = ym2608;
                 chip.update = ym2608::update;
                 chip.start = ym2608::start;
                 chip.stop = ym2608::stop;
                 chip.reset = ym2608::reset;
                 chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2608Volume();
+                chip.volume = setting.getBalance().getYM2608Volume();
                 chip.clock = MucomDotNET.OPNAbaseclock;
                 chip.option = new Object[] {fn};
                 lstChips.add(chip);
@@ -1954,17 +1465,17 @@ public class Audio {
             }
 
             if (useChipFromMub[2] != EnmChip.Unuse) {
-                chip = new mdsound.MDSound.Chip();
+                chip = new MDSound.Chip();
                 chip.id = 0;
                 chipLED.PriOPNB = 1;
-                chip.type = mdsound.MDSound.InstrumentType.YM2610;
+                chip.type = MDSound.InstrumentType.YM2610;
                 chip.instrument = ym2610;
                 chip.update = ym2610::update;
                 chip.start = ym2610::start;
                 chip.stop = ym2610::stop;
                 chip.reset = ym2610::reset;
                 chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2610Volume();
+                chip.volume = setting.getBalance().getYM2610Volume();
                 chip.clock = MucomDotNET.OPNBbaseclock;
                 chip.option = null;
                 lstChips.add(chip);
@@ -1973,17 +1484,17 @@ public class Audio {
             }
 
             if (useChipFromMub[3] != EnmChip.Unuse) {
-                chip = new mdsound.MDSound.Chip();
+                chip = new MDSound.Chip();
                 chip.id = 1;
                 chipLED.SecOPNB = 1;
-                chip.type = mdsound.MDSound.InstrumentType.YM2610;
+                chip.type = MDSound.InstrumentType.YM2610;
                 chip.instrument = ym2610;
                 chip.update = ym2610::update;
                 chip.start = ym2610::start;
                 chip.stop = ym2610::stop;
                 chip.reset = ym2610::reset;
                 chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2610Volume();
+                chip.volume = setting.getBalance().getYM2610Volume();
                 chip.clock = MucomDotNET.OPNBbaseclock;
                 chip.option = null;
                 lstChips.add(chip);
@@ -1991,25 +1502,24 @@ public class Audio {
             }
 
             if (useChipFromMub[4] != EnmChip.Unuse) {
-                chip = new mdsound.MDSound.Chip();
+                chip = new MDSound.Chip();
                 chip.id = 0;
                 chipLED.PriOPM = 1;
-                chip.type = mdsound.MDSound.InstrumentType.YM2151;
+                chip.type = MDSound.InstrumentType.YM2151;
                 chip.instrument = ym2151;
                 chip.update = ym2151::update;
                 chip.start = ym2151::start;
                 chip.stop = ym2151::stop;
                 chip.reset = ym2151::reset;
                 chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2151Volume();
+                chip.volume = setting.getBalance().getYM2151Volume();
                 chip.clock = MucomDotNET.OPMbaseclock;
                 chip.option = null;
                 lstChips.add(chip);
                 useChip.add(EnmChip.YM2151);
             }
 
-            if (hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiNecessary;
 
             if (mds == null)
                 mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
@@ -2018,11 +1528,11 @@ public class Audio {
 
             chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
-            setYM2608Volume(true, setting.getbalance().getYM2608Volume());
-            setYM2608FMVolume(true, setting.getbalance().getYM2608FMVolume());
-            setYM2608PSGVolume(true, setting.getbalance().getYM2608PSGVolume());
-            setYM2608RhythmVolume(true, setting.getbalance().getYM2608RhythmVolume());
-            setYM2608AdpcmVolume(true, setting.getbalance().getYM2608AdpcmVolume());
+            setYM2608Volume(true, setting.getBalance().getYM2608Volume());
+            setYM2608FMVolume(true, setting.getBalance().getYM2608FMVolume());
+            setYM2608PSGVolume(true, setting.getBalance().getYM2608PSGVolume());
+            setYM2608RhythmVolume(true, setting.getBalance().getYM2608RhythmVolume());
+            setYM2608AdpcmVolume(true, setting.getBalance().getYM2608AdpcmVolume());
 
             chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel);
             chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel);
@@ -2030,7 +1540,7 @@ public class Audio {
             chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
             chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
             chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-            chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //PSG TONE でリセット
+            chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //Psg TONE でリセット
             chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
             chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.VirtualModel);
             chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.RealModel);
@@ -2041,8 +1551,8 @@ public class Audio {
 
             chipRegister.writeYM2608Clock((byte) 0, MucomDotNET.OPNAbaseclock, EnmModel.RealModel);
             chipRegister.writeYM2608Clock((byte) 1, MucomDotNET.OPNAbaseclock, EnmModel.RealModel);
-            chipRegister.setYM2608SSGVolume((byte) 0, setting.getbalance().getGimicOPNAVolume(), EnmModel.RealModel);
-            chipRegister.setYM2608SSGVolume((byte) 1, setting.getbalance().getGimicOPNAVolume(), EnmModel.RealModel);
+            chipRegister.setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
+            chipRegister.setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
 
             if (!driverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] {EnmChip.YM2608}
@@ -2074,7 +1584,7 @@ public class Audio {
 
     }
 
-    public static Boolean mmlPlay_PMDDotNET(Setting setting, int fileType) {
+    public static boolean mmlPlay_PMDDotNET(Setting setting, int fileType) {
 
         try {
 
@@ -2088,27 +1598,27 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
-            mdsound.MDSound.Chip chip;
+            List<MDSound.Chip> lstChips = new ArrayList<>();
+            MDSound.Chip chip;
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
             chipLED = new ChipLEDs();
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             Ym2608 ym2608;
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             ym2608 = new Ym2608();
             chip.id = 0;
             chipLED.PriOPNA = 1;
-            chip.type = mdsound.MDSound.InstrumentType.YM2608;
+            chip.type = MDSound.InstrumentType.YM2608;
             chip.instrument = ym2608;
             chip.update = ym2608::update;
             chip.start = ym2608::start;
             chip.stop = ym2608::stop;
             chip.reset = ym2608::reset;
             chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
-            chip.volume = setting.getbalance().getYM2608Volume();
+            chip.volume = setting.getBalance().getYM2608Volume();
             chip.clock = PMDDotNET.baseclock;
             Function<String, Stream> fn = Common::getOPNARyhthmStream;
             chip.option = new Object[] {fn};
@@ -2117,17 +1627,17 @@ public class Audio {
             clockYM2608 = PMDDotNET.baseclock;
 
             mdsound.PPZ8 ppz8;
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = (byte) 0;
             ppz8 = new mdsound.PPZ8();
-            chip.type = mdsound.MDSound.InstrumentType.PPZ8;
+            chip.type = MDSound.InstrumentType.PPZ8;
             chip.instrument = ppz8;
             chip.update = ppz8::update;
             chip.start = ppz8::start;
             chip.stop = ppz8::stop;
             chip.reset = ppz8::reset;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = setting.getbalance().getPPZ8Volume();
+            chip.volume = setting.getBalance().getPPZ8Volume();
             chip.clock = PMDDotNET.baseclock;
             chip.option = null;
             chipLED.PriPPZ8 = 1;
@@ -2136,10 +1646,10 @@ public class Audio {
 
 
             mdsound.PPSDRV ppsdrv;
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = (byte) 0;
             ppsdrv = new PPSDRV();
-            chip.type = mdsound.MDSound.InstrumentType.PPSDRV;
+            chip.type = MDSound.InstrumentType.PPSDRV;
             chip.instrument = ppsdrv;
             chip.update = ppsdrv::update;
             chip.start = ppsdrv::start;
@@ -2155,10 +1665,10 @@ public class Audio {
 
 
             mdsound.P86 P86;
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = (byte) 0;
             P86 = new mdsound.P86();
-            chip.type = mdsound.MDSound.InstrumentType.P86;
+            chip.type = MDSound.InstrumentType.P86;
             chip.instrument = P86;
             chip.update = P86::update;
             chip.start = P86::start;
@@ -2173,8 +1683,7 @@ public class Audio {
             useChip.add(EnmChip.P86);
 
 
-            if (hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiNecessary;
 
             if (mds == null)
                 mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
@@ -2183,11 +1692,11 @@ public class Audio {
 
             chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
-            setYM2608Volume(true, setting.getbalance().getYM2608Volume());
-            setYM2608FMVolume(true, setting.getbalance().getYM2608FMVolume());
-            setYM2608PSGVolume(true, setting.getbalance().getYM2608PSGVolume());
-            setYM2608RhythmVolume(true, setting.getbalance().getYM2608RhythmVolume());
-            setYM2608AdpcmVolume(true, setting.getbalance().getYM2608AdpcmVolume());
+            setYM2608Volume(true, setting.getBalance().getYM2608Volume());
+            setYM2608FMVolume(true, setting.getBalance().getYM2608FMVolume());
+            setYM2608PSGVolume(true, setting.getBalance().getYM2608PSGVolume());
+            setYM2608RhythmVolume(true, setting.getBalance().getYM2608RhythmVolume());
+            setYM2608AdpcmVolume(true, setting.getBalance().getYM2608AdpcmVolume());
 
             chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel);
             chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel);
@@ -2195,13 +1704,13 @@ public class Audio {
             chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
             chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
             chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-            chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //PSG TONE でリセット
+            chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //Psg TONE でリセット
             chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
 
             chipRegister.writeYM2608Clock((byte) 0, PMDDotNET.baseclock, EnmModel.RealModel);
             chipRegister.writeYM2608Clock((byte) 1, PMDDotNET.baseclock, EnmModel.RealModel);
-            chipRegister.setYM2608SSGVolume((byte) 0, setting.getbalance().getGimicOPNAVolume(), EnmModel.RealModel);
-            chipRegister.setYM2608SSGVolume((byte) 1, setting.getbalance().getGimicOPNAVolume(), EnmModel.RealModel);
+            chipRegister.setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
+            chipRegister.setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
 
             if (!driverVirtual.init(vgmBuf, fileType, chipRegister, EnmModel.VirtualModel, new EnmChip[] {EnmChip.YM2608}
@@ -2232,7 +1741,7 @@ public class Audio {
         }
     }
 
-    public static Boolean mdlPlay_moonDriverDotNET(Setting setting, MoonDriverDotNET.enmMoonDriverFileType fileType) {
+    public static boolean mdlPlay_moonDriverDotNET(Setting setting, MoonDriverDotNET.enmMoonDriverFileType fileType) {
 
         try {
 
@@ -2250,29 +1759,29 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
-            mdsound.MDSound.Chip chip;
+            List<MDSound.Chip> lstChips = new ArrayList<>();
+            MDSound.Chip chip;
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
             chipLED = new ChipLEDs();
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
-            Ymf278b ymf278b = new Ymf278b();
+            YmF278b ymf278b = new YmF278b();
             //Func<String, Stream> fn = Common.GetOPNARyhthmStream;
 
             if (useChipFromMdr[0] != EnmChip.Unuse) {
-                chip = new mdsound.MDSound.Chip();
+                chip = new MDSound.Chip();
                 chip.id = 0;
                 chipLED.PriOPL4 = 1;
-                chip.type = mdsound.MDSound.InstrumentType.YMF278B;
+                chip.type = MDSound.InstrumentType.YMF278B;
                 chip.instrument = ymf278b;
                 chip.update = ymf278b::update;
                 chip.start = ymf278b::start;
                 chip.stop = ymf278b::stop;
                 chip.reset = ymf278b::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYMF278BVolume();
+                chip.volume = setting.getBalance().getYMF278BVolume();
                 chip.clock = 33868800;
                 chip.option = null;// new Object[] { fn };
                 lstChips.add(chip);
@@ -2280,8 +1789,7 @@ public class Audio {
                 //clockYM2608 = MucomDotNET.OPNAbaseclock;
             }
 
-            if (hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiNecessary;
 
             if (mds == null)
                 mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
@@ -2302,7 +1810,7 @@ public class Audio {
             //chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
             //chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
             //chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-            //chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //PSG TONE でリセット
+            //chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //Psg TONE でリセット
             //chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
             //chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.VirtualModel);
             //chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.RealModel);
@@ -2347,7 +1855,7 @@ public class Audio {
     }
 
 
-    public static Boolean nrdPlay(Setting setting) {
+    public static boolean nrdPlay(Setting setting) {
 
         try {
 
@@ -2375,28 +1883,28 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
+            List<MDSound.Chip> lstChips = new ArrayList<>();
 
-            mdsound.MDSound.Chip chip;
+            MDSound.Chip chip;
 
             hiyorimiNecessary = setting.getHiyorimiMode();
             int hiyorimiDeviceFlag = 0;
 
             chipLED = new ChipLEDs();
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             mdsound.Ym2151 ym2151 = null;
             mdsound.Ym2151Mame ym2151_mame = null;
             mdsound.Ym2151X68Sound ym2151_x68sound = null;
             for (int i = 0; i < 2; i++) {
                 if ((i == 0 && (r & 0x3) != 0) || (i == 1 && (r & 0x2) != 0)) {
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     chip.id = (byte) i;
 
                     if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[0]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[0])) {
                         if (ym2151 == null) ym2151 = new mdsound.Ym2151();
-                        chip.type = mdsound.MDSound.InstrumentType.YM2151;
+                        chip.type = MDSound.InstrumentType.YM2151;
                         chip.instrument = ym2151;
                         chip.update = ym2151::update;
                         chip.start = ym2151::start;
@@ -2404,7 +1912,7 @@ public class Audio {
                         chip.reset = ym2151::reset;
                     } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[1]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[1])) {
                         if (ym2151_mame == null) ym2151_mame = new mdsound.Ym2151Mame();
-                        chip.type = mdsound.MDSound.InstrumentType.YM2151mame;
+                        chip.type = MDSound.InstrumentType.YM2151mame;
                         chip.instrument = ym2151_mame;
                         chip.update = ym2151_mame::update;
                         chip.start = ym2151_mame::start;
@@ -2412,7 +1920,7 @@ public class Audio {
                         chip.reset = ym2151_mame::reset;
                     } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[2]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[2])) {
                         if (ym2151_x68sound == null) ym2151_x68sound = new mdsound.Ym2151X68Sound();
-                        chip.type = mdsound.MDSound.InstrumentType.YM2151x68sound;
+                        chip.type = MDSound.InstrumentType.YM2151x68sound;
                         chip.instrument = ym2151_x68sound;
                         chip.update = ym2151_x68sound::update;
                         chip.start = ym2151_x68sound::start;
@@ -2421,7 +1929,7 @@ public class Audio {
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM2151Volume();
+                    chip.volume = setting.getBalance().getYM2151Volume();
                     chip.clock = 4000000;
                     chip.option = null;
 
@@ -2439,8 +1947,8 @@ public class Audio {
 
             if ((r & 0x4) != 0) {
                 mdsound.Ay8910 ay8910 = new mdsound.Ay8910();
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.AY8910;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.AY8910;
                 chip.id = (byte) 0;
                 chip.instrument = ay8910;
                 chip.update = ay8910::update;
@@ -2448,7 +1956,7 @@ public class Audio {
                 chip.stop = ay8910::stop;
                 chip.reset = ay8910::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getAY8910Volume();
+                chip.volume = setting.getBalance().getAY8910Volume();
                 chip.clock = 2000000 / 2;
                 clockAY8910 = chip.clock;
                 chip.option = null;
@@ -2460,8 +1968,7 @@ public class Audio {
                 useChip.add(EnmChip.AY8910);
             }
 
-            if (hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
             if (mds == null)
                 mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
@@ -2471,9 +1978,9 @@ public class Audio {
             chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
             if (useChip.contains(EnmChip.YM2151) || useChip.contains(EnmChip.S_YM2151))
-                setYM2151Volume(true, setting.getbalance().getYM2151Volume());
+                setYM2151Volume(true, setting.getBalance().getYM2151Volume());
             if (useChip.contains(EnmChip.AY8910))
-                setAY8910Volume(true, setting.getbalance().getAY8910Volume());
+                setAY8910Volume(true, setting.getBalance().getAY8910Volume());
 
             if (useChip.contains(EnmChip.YM2151))
                 chipRegister.writeYM2151Clock((byte) 0, 4000000, EnmModel.RealModel);
@@ -2546,7 +2053,7 @@ public class Audio {
         chipRegister.setFadeoutVolYMF262(1, 0);
     }
 
-    public static Boolean mdrPlay(Setting setting) {
+    public static boolean mdrPlay(Setting setting) {
 
         try {
 
@@ -2575,27 +2082,26 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
+            List<MDSound.Chip> lstChips = new ArrayList<>();
 
-            mdsound.MDSound.Chip chip;
+            MDSound.Chip chip;
 
             hiyorimiNecessary = setting.getHiyorimiMode();
             int hiyorimiDeviceFlag = 0;
 
             chipLED = new ChipLEDs();
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             byte sg = vgmBuf[7];
 
-            Boolean isOPL3 = false;
-            if ((sg & 2) != 0) isOPL3 = true;
+            boolean isOPL3 = (sg & 2) != 0;
 
             if (isOPL3) {
-                mdsound.Ymf262 ymf262 = new Ymf262();
+                YmF262 ymf262 = new YmF262();
 
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.YMF262;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.YMF262;
                 chip.id = 0;
                 chip.instrument = ymf262;
                 chip.update = ymf262::update;
@@ -2603,7 +2109,7 @@ public class Audio {
                 chip.stop = ymf262::stop;
                 chip.reset = ymf262::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYMF262Volume();
+                chip.volume = setting.getBalance().getYMF262Volume();
                 chip.clock = 14318180;
                 chip.option = new Object[] {Common.getApplicationFolder()};
 
@@ -2614,10 +2120,10 @@ public class Audio {
                 lstChips.add(chip);
                 useChip.add(EnmChip.YMF262);
             } else {
-                mdsound.Ymf278b ymf278b = new mdsound.Ymf278b();
+                YmF278b ymf278b = new YmF278b();
 
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.YMF278B;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.YMF278B;
                 chip.id = 0;
                 chip.instrument = ymf278b;
                 chip.update = ymf278b::update;
@@ -2625,7 +2131,7 @@ public class Audio {
                 chip.stop = ymf278b::stop;
                 chip.reset = ymf278b::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYMF278BVolume();
+                chip.volume = setting.getBalance().getYMF278BVolume();
                 chip.clock = 33868800;
                 chip.option = new Object[] {Common.getApplicationFolder()};
 
@@ -2637,8 +2143,7 @@ public class Audio {
                 useChip.add(EnmChip.YMF278B);
             }
 
-            if (hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
             if (mds == null)
                 mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
@@ -2647,8 +2152,8 @@ public class Audio {
 
             chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
-            if (isOPL3) setYMF262Volume(true, setting.getbalance().getYMF262Volume());
-            else setYMF278BVolume(true, setting.getbalance().getYMF278BVolume());
+            if (isOPL3) setYMF262Volume(true, setting.getBalance().getYMF262Volume());
+            else setYMF278BVolume(true, setting.getBalance().getYMF278BVolume());
             //chipRegister.setYM2203SSGVolume(0, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
             //chipRegister.setYM2203SSGVolume(1, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
             //chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
@@ -2678,7 +2183,7 @@ public class Audio {
         }
     }
 
-    public static Boolean mdxPlay(Setting setting) {
+    public static boolean mdxPlay(Setting setting) {
 
         try {
 
@@ -2708,15 +2213,15 @@ public class Audio {
 
             chipLED = new ChipLEDs();
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
-            mdsound.MDSound.Chip chip = null;
+            List<MDSound.Chip> lstChips = new ArrayList<>();
+            MDSound.Chip chip = null;
 
             if (setting.getYM2151Type()[0].getUseEmu()[0]) {
                 mdsound.Ym2151 ym2151 = new mdsound.Ym2151();
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.YM2151;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.YM2151;
                 chip.id = (byte) 0;
                 chip.instrument = ym2151;
                 chip.update = ym2151::update;
@@ -2724,13 +2229,13 @@ public class Audio {
                 chip.stop = ym2151::stop;
                 chip.reset = ym2151::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2151Volume();
+                chip.volume = setting.getBalance().getYM2151Volume();
                 chip.clock = 4000000;
                 chip.option = null;
             } else if (setting.getYM2151Type()[0].getUseEmu()[1]) {
                 mdsound.Ym2151Mame ym2151mame = new mdsound.Ym2151Mame();
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.YM2151mame;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.YM2151mame;
                 chip.id = (byte) 0;
                 chip.instrument = ym2151mame;
                 chip.update = ym2151mame::update;
@@ -2738,13 +2243,13 @@ public class Audio {
                 chip.stop = ym2151mame::stop;
                 chip.reset = ym2151mame::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2151Volume();
+                chip.volume = setting.getBalance().getYM2151Volume();
                 chip.clock = 4000000;
                 chip.option = null;
             } else if (setting.getYM2151Type()[0].getUseEmu()[2]) {
                 mdsound.Ym2151X68Sound mdxOPM = new mdsound.Ym2151X68Sound();
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.YM2151x68sound;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.YM2151x68sound;
                 chip.id = (byte) 0;
                 chip.instrument = mdxOPM;
                 chip.update = mdxOPM::update;
@@ -2752,7 +2257,7 @@ public class Audio {
                 chip.stop = mdxOPM::stop;
                 chip.reset = mdxOPM::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2151Volume();
+                chip.volume = setting.getBalance().getYM2151Volume();
                 chip.clock = 4000000;
                 chip.option = new Object[] {1, 0, 0};
             }
@@ -2773,17 +2278,16 @@ public class Audio {
             chipLED.PriOKI5 = 1;
 
 
-            if (hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
             if (mds == null)
-                mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new mdsound.MDSound.Chip[0]));
+                mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
             else
-                mds.init(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new mdsound.MDSound.Chip[0]));
+                mds.init(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
 
-            chipRegister.initChipRegister(lstChips.toArray(new mdsound.MDSound.Chip[0]));
+            chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
-            setYM2151Volume(true, setting.getbalance().getYM2151Volume());
+            setYM2151Volume(true, setting.getBalance().getYM2151Volume());
 
             if (useChip.contains(EnmChip.YM2151))
                 chipRegister.writeYM2151Clock((byte) 0, 4000000, EnmModel.RealModel);
@@ -2796,11 +2300,11 @@ public class Audio {
             //chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
             //chipRegister.setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
 
-            Boolean retV = ((mdplayer.driver.mxdrv.MXDRV) driverVirtual).init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] {EnmChip.Unuse}
+            boolean retV = ((mdplayer.driver.mxdrv.MXDRV) driverVirtual).init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] {EnmChip.Unuse}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
                     , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000
                     , mdxPCM_V);
-            Boolean retR = true;
+            boolean retR = true;
             if (driverReal != null) {
                 retR = ((mdplayer.driver.mxdrv.MXDRV) driverReal).init(vgmBuf, chipRegister, EnmModel.RealModel, new EnmChip[] {EnmChip.Unuse}
                         , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
@@ -2826,7 +2330,7 @@ public class Audio {
 
     }
 
-    public static Boolean mndPlay(Setting setting) {
+    public static boolean mndPlay(Setting setting) {
 
         try {
 
@@ -2856,15 +2360,15 @@ public class Audio {
 
             chipLED = new ChipLEDs();
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
-            mdsound.MDSound.Chip chip = null;
+            List<MDSound.Chip> lstChips = new ArrayList<>();
+            MDSound.Chip chip = null;
 
             if (setting.getYM2151Type()[0].getUseEmu()[0]) {
                 mdsound.Ym2151 ym2151 = new mdsound.Ym2151();
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.YM2151;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.YM2151;
                 chip.id = (byte) 0;
                 chip.instrument = ym2151;
                 chip.update = ym2151::update;
@@ -2872,13 +2376,13 @@ public class Audio {
                 chip.stop = ym2151::stop;
                 chip.reset = ym2151::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2151Volume();
+                chip.volume = setting.getBalance().getYM2151Volume();
                 chip.clock = 4000000;
                 chip.option = null;
             } else if (setting.getYM2151Type()[0].getUseEmu()[1]) {
                 mdsound.Ym2151Mame ym2151mame = new mdsound.Ym2151Mame();
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.YM2151mame;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.YM2151mame;
                 chip.id = (byte) 0;
                 chip.instrument = ym2151mame;
                 chip.update = ym2151mame::update;
@@ -2886,13 +2390,13 @@ public class Audio {
                 chip.stop = ym2151mame::stop;
                 chip.reset = ym2151mame::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2151Volume();
+                chip.volume = setting.getBalance().getYM2151Volume();
                 chip.clock = 4000000;
                 chip.option = null;
             } else if (setting.getYM2151Type()[0].getUseEmu()[2]) {
                 mdsound.Ym2151X68Sound mdxOPM = new mdsound.Ym2151X68Sound();
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.YM2151x68sound;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.YM2151x68sound;
                 chip.id = (byte) 0;
                 chip.instrument = mdxOPM;
                 chip.update = mdxOPM::update;
@@ -2900,7 +2404,7 @@ public class Audio {
                 chip.stop = mdxOPM::stop;
                 chip.reset = mdxOPM::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2151Volume();
+                chip.volume = setting.getBalance().getYM2151Volume();
                 chip.clock = 4000000;
                 chip.option = new Object[] {1, 0, 0};
             }
@@ -2911,8 +2415,8 @@ public class Audio {
 
             mdsound.Ym2608 opna = new Ym2608();
             if (setting.getYM2608Type()[0].getUseEmu()[0]) {
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.YM2608;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.YM2608;
                 chip.id = (byte) 0;
                 chip.instrument = opna;
                 chip.update = opna::update;
@@ -2920,7 +2424,7 @@ public class Audio {
                 chip.stop = opna::stop;
                 chip.reset = opna::reset;
                 chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2608Volume();
+                chip.volume = setting.getBalance().getYM2608Volume();
                 chip.clock = 8000000;// 7987200;
                 Function<String, Stream> fn = Common::getOPNARyhthmStream;
                 chip.option = new Object[] {fn};
@@ -2930,8 +2434,8 @@ public class Audio {
             useChip.add(EnmChip.YM2608);
 
             if (setting.getYM2608Type()[1].getUseEmu()[0]) {
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.YM2608;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.YM2608;
                 chip.id = (byte) 1;
                 chip.instrument = opna;
                 chip.update = opna::update;
@@ -2939,7 +2443,7 @@ public class Audio {
                 chip.stop = opna::stop;
                 chip.reset = opna::reset;
                 chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getYM2608Volume();
+                chip.volume = setting.getBalance().getYM2608Volume();
                 chip.clock = 8000000;// 7987200;
                 chip.option = new Object[] {Common.getApplicationFolder()};
                 lstChips.add(chip);
@@ -2948,8 +2452,8 @@ public class Audio {
             useChip.add(EnmChip.S_YM2608);
 
             mdsound.MPcmX68k mpcm = new MPcmX68k();
-            chip = new mdsound.MDSound.Chip();
-            chip.type = mdsound.MDSound.InstrumentType.mpcmX68k;
+            chip = new MDSound.Chip();
+            chip.type = MDSound.InstrumentType.mpcmX68k;
             chip.id = (byte) 0;
             chip.instrument = mpcm;
             chip.update = mpcm::update;
@@ -2957,7 +2461,7 @@ public class Audio {
             chip.stop = mpcm::stop;
             chip.reset = mpcm::reset;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = setting.getbalance().getOKIM6258Volume();
+            chip.volume = setting.getBalance().getOKIM6258Volume();
             chip.clock = 15600;
             chip.option = new Object[] {Common.getApplicationFolder()};
             lstChips.add(chip);
@@ -2968,8 +2472,7 @@ public class Audio {
             chipLED.SecOPNA = 1;
             chipLED.PriOKI5 = 1;
 
-            if (hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
             if (mds == null)
                 mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
@@ -2979,14 +2482,14 @@ public class Audio {
             chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
             if (useChip.contains(EnmChip.YM2151) || useChip.contains(EnmChip.S_YM2151))
-                setYM2151Volume(true, setting.getbalance().getYM2151Volume());
+                setYM2151Volume(true, setting.getBalance().getYM2151Volume());
 
             if (useChip.contains(EnmChip.YM2608) || useChip.contains(EnmChip.S_YM2608)) {
-                setYM2608Volume(true, setting.getbalance().getYM2608Volume());
-                setYM2608FMVolume(true, setting.getbalance().getYM2608FMVolume());
-                setYM2608PSGVolume(true, setting.getbalance().getYM2608PSGVolume());
-                setYM2608RhythmVolume(true, setting.getbalance().getYM2608RhythmVolume());
-                setYM2608AdpcmVolume(true, setting.getbalance().getYM2608AdpcmVolume());
+                setYM2608Volume(true, setting.getBalance().getYM2608Volume());
+                setYM2608FMVolume(true, setting.getBalance().getYM2608FMVolume());
+                setYM2608PSGVolume(true, setting.getBalance().getYM2608PSGVolume());
+                setYM2608RhythmVolume(true, setting.getBalance().getYM2608RhythmVolume());
+                setYM2608AdpcmVolume(true, setting.getBalance().getYM2608AdpcmVolume());
             }
 
             Thread.sleep(500);
@@ -2996,10 +2499,10 @@ public class Audio {
                 chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel);
                 chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel);
                 chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
-                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //PSG TONE でリセット
+                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //Psg TONE でリセット
                 chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
                 chipRegister.writeYM2608Clock((byte) 0, 8000000, EnmModel.RealModel);
-                chipRegister.setYM2608SSGVolume((byte) 0, setting.getbalance().getGimicOPNAVolume(), EnmModel.RealModel);
+                chipRegister.setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
             }
 
             if (useChip.contains(EnmChip.S_YM2608)) {
@@ -3007,10 +2510,10 @@ public class Audio {
                 chipRegister.setYM2608Register(1, 0, 0x2d, 0x00, EnmModel.RealModel);
                 chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
                 chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-                chipRegister.setYM2608Register(1, 0, 0x07, 0x38, EnmModel.VirtualModel); //PSG TONE でリセット
+                chipRegister.setYM2608Register(1, 0, 0x07, 0x38, EnmModel.VirtualModel); //Psg TONE でリセット
                 chipRegister.setYM2608Register(1, 0, 0x07, 0x38, EnmModel.RealModel);
                 chipRegister.writeYM2608Clock((byte) 1, 8000000, EnmModel.RealModel);
-                chipRegister.setYM2608SSGVolume((byte) 1, setting.getbalance().getGimicOPNAVolume(), EnmModel.RealModel);
+                chipRegister.setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
             }
 
             if (useChip.contains(EnmChip.YM2151))
@@ -3022,9 +2525,9 @@ public class Audio {
             if (driverReal != null) driverReal.setYm2151Hosei(4000000);
 
             if (useChip.contains(EnmChip.YM2203))
-                chipRegister.setYM2203SSGVolume((byte) 0, setting.getbalance().getGimicOPNVolume(), EnmModel.RealModel);
+                chipRegister.setYM2203SSGVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
             if (useChip.contains(EnmChip.S_YM2203))
-                chipRegister.setYM2203SSGVolume((byte) 1, setting.getbalance().getGimicOPNVolume(), EnmModel.RealModel);
+                chipRegister.setYM2203SSGVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
 
             boolean retV = driverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] {EnmChip.YM2151, EnmChip.YM2608}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
@@ -3055,7 +2558,7 @@ public class Audio {
         }
     }
 
-    public static Boolean xgmPlay(Setting setting) {
+    public static boolean xgmPlay(Setting setting) {
 
         try {
 
@@ -3080,17 +2583,17 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
+            List<MDSound.Chip> lstChips = new ArrayList<>();
 
-            mdsound.MDSound.Chip chip;
+            MDSound.Chip chip;
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
             chipLED = new ChipLEDs();
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = (byte) 0;
             chip.option = null;
             mdsound.Ym2612 ym2612;
@@ -3099,25 +2602,25 @@ public class Audio {
 
             if (setting.getYM2612Type()[0].getUseEmu()[0]) {
                 ym2612 = new Ym2612();
-                chip.type = mdsound.MDSound.InstrumentType.YM2612;
+                chip.type = MDSound.InstrumentType.YM2612;
                 chip.instrument = ym2612;
                 chip.update = ym2612::update;
                 chip.start = ym2612::start;
                 chip.stop = ym2612::stop;
                 chip.reset = ym2612::reset;
                 chip.option = new Object[] {
-                                (setting.getNukedOPN2().GensDACHPF ? 0x01 : 0x00)
-                                        | (setting.getNukedOPN2().GensSSGEG ? 0x02 : 0x00)
+                                (setting.getNukedOPN2().gensDACHPF ? 0x01 : 0x00)
+                                        | (setting.getNukedOPN2().gensSSGEG ? 0x02 : 0x00)
                         };
             } else if (setting.getYM2612Type()[0].getUseEmu()[1]) {
                 ym3438 = new Ym3438();
-                chip.type = mdsound.MDSound.InstrumentType.YM3438;
+                chip.type = MDSound.InstrumentType.YM3438;
                 chip.instrument = ym3438;
                 chip.update = ym3438::update;
                 chip.start = ym3438::start;
                 chip.stop = ym3438::stop;
                 chip.reset = ym3438::reset;
-                switch (setting.getNukedOPN2().EmuType) {
+                switch (setting.getNukedOPN2().emuType) {
                 case 0:
                     ym3438.setChipType(Type.discrete);
                     break;
@@ -3136,7 +2639,7 @@ public class Audio {
                 }
             } else if (setting.getYM2612Type()[0].getUseEmu()[2]) {
                 ym2612mame = new Ym2612Mame();
-                chip.type = mdsound.MDSound.InstrumentType.YM2612mame;
+                chip.type = MDSound.InstrumentType.YM2612mame;
                 chip.instrument = ym2612mame;
                 chip.update = ym2612mame::update;
                 chip.start = ym2612mame::start;
@@ -3145,7 +2648,7 @@ public class Audio {
             }
 
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = setting.getbalance().getYM2612Volume();
+            chip.volume = setting.getBalance().getYM2612Volume();
             chip.clock = 7670454;
             clockYM2612 = 7670454;
             chipLED.PriOPN2 = 1;
@@ -3153,8 +2656,8 @@ public class Audio {
             useChip.add(EnmChip.YM2612);
 
             Sn76489 sn76489 = new Sn76489();
-            chip = new mdsound.MDSound.Chip();
-            chip.type = mdsound.MDSound.InstrumentType.SN76489;
+            chip = new MDSound.Chip();
+            chip.type = MDSound.InstrumentType.SN76489;
             chip.id = (byte) 0;
             chip.instrument = sn76489;
             chip.update = sn76489::update;
@@ -3162,15 +2665,14 @@ public class Audio {
             chip.stop = sn76489::stop;
             chip.reset = sn76489::reset;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = setting.getbalance().getSN76489Volume();
+            chip.volume = setting.getBalance().getSN76489Volume();
             chip.clock = 3579545;
             chip.option = null;
             chipLED.PriDCSG = 1;
             lstChips.add(chip);
             useChip.add(EnmChip.SN76489);
 
-            if (hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiNecessary;
 
             if (mds == null)
                 mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
@@ -3179,8 +2681,8 @@ public class Audio {
 
             chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
-            setYM2612Volume(true, setting.getbalance().getYM2612Volume());
-            setSN76489Volume(true, setting.getbalance().getSN76489Volume());
+            setYM2612Volume(true, setting.getBalance().getYM2612Volume());
+            setSN76489Volume(true, setting.getBalance().getSN76489Volume());
             //chipRegister.setYM2203SSGVolume(0, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
             //chipRegister.setYM2203SSGVolume(1, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
             //chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
@@ -3211,7 +2713,7 @@ public class Audio {
 
     }
 
-    public static Boolean zgmPlay(Setting setting) {
+    public static boolean zgmPlay(Setting setting) {
         if (vgmBuf == null || setting == null) return false;
 
         try {
@@ -3233,13 +2735,13 @@ public class Audio {
             //MIDIに対応するまで封印
             //startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
+            List<MDSound.Chip> lstChips = new ArrayList<>();
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
             chipLED = new ChipLEDs();
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             if (!driverVirtual.init(vgmBuf
                     , chipRegister
@@ -3263,15 +2765,14 @@ public class Audio {
 
             chipLED = new ChipLEDs();
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             //
             //chips initialization
             //
 
 
-            if (hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
             if (mds == null)
                 mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
@@ -3292,7 +2793,7 @@ public class Audio {
         }
     }
 
-    public static Boolean s98Play(Setting setting) {
+    public static boolean s98Play(Setting setting) {
 
         try {
 
@@ -3315,15 +2816,15 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
+            List<MDSound.Chip> lstChips = new ArrayList<>();
 
-            mdsound.MDSound.Chip chip;
+            MDSound.Chip chip;
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
             chipLED = new ChipLEDs();
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             if (!driverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] {EnmChip.YM2203}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
@@ -3350,7 +2851,7 @@ public class Audio {
             Ym2413 ym2413 = null;
             Ym3526 ym3526 = null;
             Ym3812 ym3812 = null;
-            Ymf262 ymf262 = null;
+            YmF262 ymf262 = null;
             Ay8910 ay8910 = null;
 
             int YM2151ClockValue = 4000000;
@@ -3362,7 +2863,7 @@ public class Audio {
             for (S98.S98DevInfo dInfo : s98DInfo) {
                 switch (dInfo.DeviceType) {
                 case 1:
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     if (ym2149 == null) {
                         ym2149 = new Ay8910();
                         chip.id = 0;
@@ -3371,14 +2872,14 @@ public class Audio {
                         chip.id = 1;
                         chipLED.SecAY10 = 1;
                     }
-                    chip.type = mdsound.MDSound.InstrumentType.AY8910;
+                    chip.type = MDSound.InstrumentType.AY8910;
                     chip.instrument = ym2149;
                     chip.update = ym2149::update;
                     chip.start = ym2149::start;
                     chip.stop = ym2149::stop;
                     chip.reset = ym2149::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getAY8910Volume();
+                    chip.volume = setting.getBalance().getAY8910Volume();
                     chip.clock = dInfo.clock / 4;
                     clockAY8910 = chip.clock;
                     chip.option = null;
@@ -3387,7 +2888,7 @@ public class Audio {
                     useChip.add(chip.id == 0 ? EnmChip.AY8910 : EnmChip.S_AY8910);
                     break;
                 case 2:
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     if (ym2203 == null) {
                         ym2203 = new Ym2203();
                         chip.id = 0;
@@ -3396,14 +2897,14 @@ public class Audio {
                         chip.id = 1;
                         chipLED.SecOPN = 1;
                     }
-                    chip.type = mdsound.MDSound.InstrumentType.YM2203;
+                    chip.type = MDSound.InstrumentType.YM2203;
                     chip.instrument = ym2203;
                     chip.update = ym2203::update;
                     chip.start = ym2203::start;
                     chip.stop = ym2203::stop;
                     chip.reset = ym2203::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM2203Volume();
+                    chip.volume = setting.getBalance().getYM2203Volume();
                     chip.clock = dInfo.clock;
                     YM2203ClockValue = chip.clock;
                     chip.option = null;
@@ -3412,7 +2913,7 @@ public class Audio {
 
                     break;
                 case 3:
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     chip.option = null;
                     if (ym2612 == null) {
                         ym2612 = new Ym2612();
@@ -3426,24 +2927,24 @@ public class Audio {
                     }
 
                     if ((chip.id == 0 && setting.getYM2612Type()[0].getUseEmu()[0]) || (chip.id == 1 && setting.getYM2612Type()[1].getUseEmu()[0])) {
-                        chip.type = mdsound.MDSound.InstrumentType.YM2612;
+                        chip.type = MDSound.InstrumentType.YM2612;
                         chip.instrument = ym2612;
                         chip.update = ym2612::update;
                         chip.start = ym2612::start;
                         chip.stop = ym2612::stop;
                         chip.reset = ym2612::reset;
                         chip.option = new Object[] {
-                                        (setting.getNukedOPN2().GensDACHPF ? 0x01 : 0x00)
-                                                | (setting.getNukedOPN2().GensSSGEG ? 0x02 : 0x00)
+                                        (setting.getNukedOPN2().gensDACHPF ? 0x01 : 0x00)
+                                                | (setting.getNukedOPN2().gensSSGEG ? 0x02 : 0x00)
                                 };
                     } else if ((chip.id == 0 && setting.getYM2612Type()[0].getUseEmu()[1]) || (chip.id == 1 && setting.getYM2612Type()[1].getUseEmu()[1])) {
-                        chip.type = mdsound.MDSound.InstrumentType.YM3438;
+                        chip.type = MDSound.InstrumentType.YM3438;
                         chip.instrument = ym3438;
                         chip.update = ym3438::update;
                         chip.start = ym3438::start;
                         chip.stop = ym3438::stop;
                         chip.reset = ym3438::reset;
-                        switch (setting.getNukedOPN2().EmuType) {
+                        switch (setting.getNukedOPN2().emuType) {
                         case 0:
                             ym3438.setChipType(Type.discrete);
                             break;
@@ -3461,7 +2962,7 @@ public class Audio {
                             break;
                         }
                     } else if ((chip.id == 0 && setting.getYM2612Type()[0].getUseEmu()[2]) || (chip.id == 1 && setting.getYM2612Type()[1].getUseEmu()[2])) {
-                        chip.type = mdsound.MDSound.InstrumentType.YM2612mame;
+                        chip.type = MDSound.InstrumentType.YM2612mame;
                         chip.instrument = ym2612mame;
                         chip.update = ym2612mame::update;
                         chip.start = ym2612mame::start;
@@ -3470,14 +2971,14 @@ public class Audio {
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM2612Volume();
+                    chip.volume = setting.getBalance().getYM2612Volume();
                     chip.clock = dInfo.clock;
                     lstChips.add(chip);
                     useChip.add(chip.id == 0 ? EnmChip.YM2612 : EnmChip.S_YM2612);
 
                     break;
                 case 4:
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     if (ym2608 == null) {
                         ym2608 = new Ym2608();
                         chip.id = 0;
@@ -3486,14 +2987,14 @@ public class Audio {
                         chip.id = 1;
                         chipLED.SecOPNA = 1;
                     }
-                    chip.type = mdsound.MDSound.InstrumentType.YM2608;
+                    chip.type = MDSound.InstrumentType.YM2608;
                     chip.instrument = ym2608;
                     chip.update = ym2608::update;
                     chip.start = ym2608::start;
                     chip.stop = ym2608::stop;
                     chip.reset = ym2608::reset;
                     chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM2608Volume();
+                    chip.volume = setting.getBalance().getYM2608Volume();
                     chip.clock = dInfo.clock;
                     YM2608ClockValue = chip.clock;
                     Function<String, Stream> fn = Common::getOPNARyhthmStream;
@@ -3503,7 +3004,7 @@ public class Audio {
 
                     break;
                 case 5:
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     if (ym2151 == null && ym2151mame == null) {
                         chip.id = 0;
                         chipLED.PriOPM = 1;
@@ -3514,7 +3015,7 @@ public class Audio {
 
                     if ((chip.id == 0 && setting.getYM2151Type()[0].getUseEmu()[0]) || (chip.id == 1 && setting.getYM2151Type()[1].getUseEmu()[0])) {
                         if (ym2151 == null) ym2151 = new mdsound.Ym2151();
-                        chip.type = mdsound.MDSound.InstrumentType.YM2151;
+                        chip.type = MDSound.InstrumentType.YM2151;
                         chip.instrument = ym2151;
                         chip.update = ym2151::update;
                         chip.start = ym2151::start;
@@ -3522,7 +3023,7 @@ public class Audio {
                         chip.reset = ym2151::reset;
                     } else if ((chip.id == 0 && setting.getYM2151Type()[0].getUseEmu()[1]) || (chip.id == 1 && setting.getYM2151Type()[1].getUseEmu()[1])) {
                         if (ym2151mame == null) ym2151mame = new mdsound.Ym2151Mame();
-                        chip.type = mdsound.MDSound.InstrumentType.YM2151mame;
+                        chip.type = MDSound.InstrumentType.YM2151mame;
                         chip.instrument = ym2151mame;
                         chip.update = ym2151mame::update;
                         chip.start = ym2151mame::start;
@@ -3530,7 +3031,7 @@ public class Audio {
                         chip.reset = ym2151mame::reset;
                     } else if ((chip.id == 0 && setting.getYM2151Type()[0].getUseEmu()[2]) || (chip.id == 1 && setting.getYM2151Type()[1].getUseEmu()[2])) {
                         if (ym2151_x68sound == null) ym2151_x68sound = new mdsound.Ym2151X68Sound();
-                        chip.type = mdsound.MDSound.InstrumentType.YM2151x68sound;
+                        chip.type = MDSound.InstrumentType.YM2151x68sound;
                         chip.instrument = ym2151_x68sound;
                         chip.update = ym2151_x68sound::update;
                         chip.start = ym2151_x68sound::start;
@@ -3539,7 +3040,7 @@ public class Audio {
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM2151Volume();
+                    chip.volume = setting.getBalance().getYM2151Volume();
                     chip.clock = dInfo.clock;
                     YM2151ClockValue = chip.clock;
                     chip.option = null;
@@ -3550,7 +3051,7 @@ public class Audio {
 
                     break;
                 case 6:
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     if (ym2413 == null) {
                         ym2413 = new Ym2413();
                         chip.id = 0;
@@ -3559,14 +3060,14 @@ public class Audio {
                         chip.id = 1;
                         chipLED.SecOPLL = 1;
                     }
-                    chip.type = mdsound.MDSound.InstrumentType.YM2413;
+                    chip.type = MDSound.InstrumentType.YM2413;
                     chip.instrument = ym2413;
                     chip.update = ym2413::update;
                     chip.start = ym2413::start;
                     chip.stop = ym2413::stop;
                     chip.reset = ym2413::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM2413Volume();
+                    chip.volume = setting.getBalance().getYM2413Volume();
                     chip.clock = dInfo.clock;
                     chip.option = null;
                     //hiyorimiDeviceFlag |= 0x2;
@@ -3575,7 +3076,7 @@ public class Audio {
 
                     break;
                 case 7:
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     if (ym3526 == null) {
                         ym3526 = new Ym3526();
                         chip.id = 0;
@@ -3584,14 +3085,14 @@ public class Audio {
                         chip.id = 1;
                         chipLED.SecOPL = 1;
                     }
-                    chip.type = mdsound.MDSound.InstrumentType.YM3526;
+                    chip.type = MDSound.InstrumentType.YM3526;
                     chip.instrument = ym3526;
                     chip.update = ym3526::update;
                     chip.start = ym3526::start;
                     chip.stop = ym3526::stop;
                     chip.reset = ym3526::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM3526Volume();
+                    chip.volume = setting.getBalance().getYM3526Volume();
                     chip.clock = dInfo.clock;
                     chip.option = null;
                     //hiyorimiDeviceFlag |= 0x2;
@@ -3600,7 +3101,7 @@ public class Audio {
 
                     break;
                 case 8:
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     if (ym3812 == null) {
                         ym3812 = new Ym3812();
                         chip.id = 0;
@@ -3609,14 +3110,14 @@ public class Audio {
                         chip.id = 1;
                         chipLED.SecOPL2 = 1;
                     }
-                    chip.type = mdsound.MDSound.InstrumentType.YM3812;
+                    chip.type = MDSound.InstrumentType.YM3812;
                     chip.instrument = ym3812;
                     chip.update = ym3812::update;
                     chip.start = ym3812::start;
                     chip.stop = ym3812::stop;
                     chip.reset = ym3812::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM3812Volume();
+                    chip.volume = setting.getBalance().getYM3812Volume();
                     chip.clock = dInfo.clock;
                     chip.option = null;
                     //hiyorimiDeviceFlag |= 0x2;
@@ -3625,23 +3126,23 @@ public class Audio {
 
                     break;
                 case 9:
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     if (ymf262 == null) {
-                        ymf262 = new Ymf262();
+                        ymf262 = new YmF262();
                         chip.id = 0;
                         chipLED.PriOPL3 = 1;
                     } else {
                         chip.id = 1;
                         chipLED.SecOPL3 = 1;
                     }
-                    chip.type = mdsound.MDSound.InstrumentType.YMF262;
+                    chip.type = MDSound.InstrumentType.YMF262;
                     chip.instrument = ymf262;
                     chip.update = ymf262::update;
                     chip.start = ymf262::start;
                     chip.stop = ymf262::stop;
                     chip.reset = ymf262::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYMF262Volume();
+                    chip.volume = setting.getBalance().getYMF262Volume();
                     chip.clock = dInfo.clock;
                     YMF262ClockValue = chip.clock;
                     chip.option = null;
@@ -3651,7 +3152,7 @@ public class Audio {
 
                     break;
                 case 15:
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     if (ay8910 == null) {
                         ay8910 = new Ay8910();
                         chip.id = 0;
@@ -3660,14 +3161,14 @@ public class Audio {
                         chip.id = 1;
                         chipLED.SecAY10 = 1;
                     }
-                    chip.type = mdsound.MDSound.InstrumentType.AY8910;
+                    chip.type = MDSound.InstrumentType.AY8910;
                     chip.instrument = ay8910;
                     chip.update = ay8910::update;
                     chip.start = ay8910::start;
                     chip.stop = ay8910::stop;
                     chip.reset = ay8910::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getAY8910Volume();
+                    chip.volume = setting.getBalance().getAY8910Volume();
                     chip.clock = dInfo.clock;
                     clockAY8910 = chip.clock;
                     chip.option = null;
@@ -3679,8 +3180,7 @@ public class Audio {
                 }
             }
 
-            if (hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiNecessary;
 
             if (mds == null)
                 mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
@@ -3690,20 +3190,20 @@ public class Audio {
             chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
             if (useChip.contains(EnmChip.YM2203) || useChip.contains(EnmChip.S_YM2203)) {
-                setYM2203Volume(true, setting.getbalance().getYM2203Volume());
-                setYM2203FMVolume(true, setting.getbalance().getYM2203FMVolume());
-                setYM2203PSGVolume(true, setting.getbalance().getYM2203PSGVolume());
+                setYM2203Volume(true, setting.getBalance().getYM2203Volume());
+                setYM2203FMVolume(true, setting.getBalance().getYM2203FMVolume());
+                setYM2203PSGVolume(true, setting.getBalance().getYM2203PSGVolume());
             }
 
             if (useChip.contains(EnmChip.YM2612) || useChip.contains(EnmChip.S_YM2612))
-                setYM2612Volume(true, setting.getbalance().getYM2612Volume());
+                setYM2612Volume(true, setting.getBalance().getYM2612Volume());
 
             if (useChip.contains(EnmChip.YM2608) || useChip.contains(EnmChip.S_YM2608)) {
-                setYM2608Volume(true, setting.getbalance().getYM2608Volume());
-                setYM2608FMVolume(true, setting.getbalance().getYM2608FMVolume());
-                setYM2608PSGVolume(true, setting.getbalance().getYM2608PSGVolume());
-                setYM2608RhythmVolume(true, setting.getbalance().getYM2608RhythmVolume());
-                setYM2608AdpcmVolume(true, setting.getbalance().getYM2608AdpcmVolume());
+                setYM2608Volume(true, setting.getBalance().getYM2608Volume());
+                setYM2608FMVolume(true, setting.getBalance().getYM2608FMVolume());
+                setYM2608PSGVolume(true, setting.getBalance().getYM2608PSGVolume());
+                setYM2608RhythmVolume(true, setting.getBalance().getYM2608RhythmVolume());
+                setYM2608AdpcmVolume(true, setting.getBalance().getYM2608AdpcmVolume());
             }
 
             if (useChip.contains(EnmChip.YM2608)) {
@@ -3715,13 +3215,13 @@ public class Audio {
                 chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
             }
             if (useChip.contains(EnmChip.YM2151) || useChip.contains(EnmChip.S_YM2151))
-                setYM2151Volume(true, setting.getbalance().getYM2151Volume());
+                setYM2151Volume(true, setting.getBalance().getYM2151Volume());
             if (useChip.contains(EnmChip.YM2413) || useChip.contains(EnmChip.S_YM2413))
-                setYM2413Volume(true, setting.getbalance().getYM2413Volume());
+                setYM2413Volume(true, setting.getBalance().getYM2413Volume());
             if (useChip.contains(EnmChip.YM3526) || useChip.contains(EnmChip.S_YM3526))
-                setYM3526Volume(true, setting.getbalance().getYM3526Volume());
+                setYM3526Volume(true, setting.getBalance().getYM3526Volume());
             if (useChip.contains(EnmChip.AY8910) || useChip.contains(EnmChip.S_AY8910))
-                setAY8910Volume(true, setting.getbalance().getAY8910Volume());
+                setAY8910Volume(true, setting.getBalance().getAY8910Volume());
 
             if (useChip.contains(EnmChip.AY8910))
                 chipRegister.writeAY8910Clock((byte) 0, clockAY8910, EnmModel.RealModel);
@@ -3754,13 +3254,13 @@ public class Audio {
 
             if (driverReal == null || ((S98) driverReal).SSGVolumeFromTAG == -1) {
                 if (useChip.contains(EnmChip.YM2203))
-                    chipRegister.setYM2203SSGVolume((byte) 0, setting.getbalance().getGimicOPNVolume(), EnmModel.RealModel);
+                    chipRegister.setYM2203SSGVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
                 if (useChip.contains(EnmChip.S_YM2203))
-                    chipRegister.setYM2203SSGVolume((byte) 1, setting.getbalance().getGimicOPNVolume(), EnmModel.RealModel);
+                    chipRegister.setYM2203SSGVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
                 if (useChip.contains(EnmChip.YM2608))
-                    chipRegister.setYM2608SSGVolume((byte) 0, setting.getbalance().getGimicOPNAVolume(), EnmModel.RealModel);
+                    chipRegister.setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
                 if (useChip.contains(EnmChip.S_YM2608))
-                    chipRegister.setYM2608SSGVolume((byte) 1, setting.getbalance().getGimicOPNAVolume(), EnmModel.RealModel);
+                    chipRegister.setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
             } else {
                 if (useChip.contains(EnmChip.YM2203))
                     chipRegister.setYM2203SSGVolume((byte) 0, ((S98) driverReal).SSGVolumeFromTAG, EnmModel.RealModel);
@@ -3785,7 +3285,7 @@ public class Audio {
         }
     }
 
-    public static Boolean midPlay(Setting setting) {
+    public static boolean midPlay(Setting setting) {
 
         try {
 
@@ -3810,7 +3310,7 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
+            List<MDSound.Chip> lstChips = new ArrayList<>();
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
@@ -3818,12 +3318,12 @@ public class Audio {
             chipLED.PriMID = 1;
             chipLED.SecMID = 1;
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             chipRegister.initChipRegister(null);
             releaseAllMIDIout();
             makeMIDIout(setting, midiMode);
-            chipRegister.setMIDIout(setting.getMidiOut().getlstMidiOutInfo().get(midiMode), midiOuts, midiOutsType);
+            chipRegister.setMIDIout(setting.getMidiOut().getMidiOutInfos().get(midiMode), midiOuts, midiOutsType);
 
             if (!driverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] {EnmChip.Unuse}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
@@ -3836,8 +3336,7 @@ public class Audio {
                     return false;
             }
 
-            if (hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiNecessary;
 
 
             //Play
@@ -3856,7 +3355,7 @@ public class Audio {
         }
     }
 
-    public static Boolean rcpPlay(Setting setting) {
+    public static boolean rcpPlay(Setting setting) {
 
         try {
 
@@ -3881,7 +3380,7 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
+            List<MDSound.Chip> lstChips = new ArrayList<>();
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
@@ -3889,12 +3388,12 @@ public class Audio {
             chipLED.PriMID = 1;
             chipLED.SecMID = 1;
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             chipRegister.initChipRegister(null);
             releaseAllMIDIout();
             makeMIDIout(setting, midiMode);
-            chipRegister.setMIDIout(setting.getMidiOut().getlstMidiOutInfo().get(midiMode), midiOuts, midiOutsType);
+            chipRegister.setMIDIout(setting.getMidiOut().getMidiOutInfos().get(midiMode), midiOuts, midiOutsType);
 
             if (!driverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] {EnmChip.Unuse}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
@@ -3907,8 +3406,7 @@ public class Audio {
                     return false;
             }
 
-            if (hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiNecessary;
 
             //Play
 
@@ -3925,7 +3423,7 @@ public class Audio {
 
     }
 
-    public static Boolean nsfPlay(Setting setting) {
+    public static boolean nsfPlay(Setting setting) {
 
         try {
 
@@ -3951,7 +3449,7 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
+            List<MDSound.Chip> lstChips = new ArrayList<>();
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
@@ -3959,7 +3457,7 @@ public class Audio {
             chipLED.PriNES = 1;
             chipLED.PriDMC = 1;
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             ((Nsf) driverVirtual).song = songNo;
             if (!driverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] {EnmChip.Unuse}
@@ -3982,28 +3480,28 @@ public class Audio {
             if (((Nsf) driverVirtual).useVrc7) chipLED.PriVRC7 = 1;
 
             //nes_intf nes = new nes_intf();
-            mdsound.MDSound.Chip chip;
+            MDSound.Chip chip;
             NesIntF nes = new NesIntF();
 
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = 0;
-            chip.type = mdsound.MDSound.InstrumentType.Nes;
+            chip.type = MDSound.InstrumentType.Nes;
             chip.instrument = nes;
             chip.update = nes::update;
             chip.start = nes::start;
             chip.stop = nes::stop;
             chip.reset = nes::reset;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = setting.getbalance().getAPUVolume();
+            chip.volume = setting.getBalance().getAPUVolume();
             chip.clock = 0;
             chip.option = null;
             lstChips.add(chip);
             ((Nsf) driverVirtual).cAPU = chip;
             useChip.add(EnmChip.NES);
 
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = 0;
-            chip.type = mdsound.MDSound.InstrumentType.DMC;
+            chip.type = MDSound.InstrumentType.DMC;
             chip.instrument = nes;
             chip.update = nes::update;
             chip.start = nes::start;
@@ -4012,14 +3510,14 @@ public class Audio {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.clock = 0;
             chip.option = null;
-            chip.volume = setting.getbalance().getDMCVolume();
+            chip.volume = setting.getBalance().getDMCVolume();
             lstChips.add(chip);
             ((Nsf) driverVirtual).cDMC = chip;
             useChip.add(EnmChip.DMC);
 
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = 0;
-            chip.type = mdsound.MDSound.InstrumentType.FDS;
+            chip.type = MDSound.InstrumentType.FDS;
             chip.instrument = nes;
             chip.update = nes::update;
             chip.start = nes::start;
@@ -4028,14 +3526,14 @@ public class Audio {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.clock = 0;
             chip.option = null;
-            chip.volume = setting.getbalance().getFDSVolume();
+            chip.volume = setting.getBalance().getFDSVolume();
             lstChips.add(chip);
             ((Nsf) driverVirtual).cFDS = chip;
             useChip.add(EnmChip.FDS);
 
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = 0;
-            chip.type = mdsound.MDSound.InstrumentType.MMC5;
+            chip.type = MDSound.InstrumentType.MMC5;
             chip.instrument = nes;
             chip.update = nes::update;
             chip.start = nes::start;
@@ -4044,14 +3542,14 @@ public class Audio {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.clock = 0;
             chip.option = null;
-            chip.volume = setting.getbalance().getMMC5Volume();
+            chip.volume = setting.getBalance().getMMC5Volume();
             lstChips.add(chip);
             ((Nsf) driverVirtual).cMMC5 = chip;
             useChip.add(EnmChip.MMC5);
 
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = 0;
-            chip.type = mdsound.MDSound.InstrumentType.N160;
+            chip.type = MDSound.InstrumentType.N160;
             chip.instrument = nes;
             chip.update = nes::update;
             chip.start = nes::start;
@@ -4060,14 +3558,14 @@ public class Audio {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.clock = 0;
             chip.option = null;
-            chip.volume = setting.getbalance().getN160Volume();
+            chip.volume = setting.getBalance().getN160Volume();
             lstChips.add(chip);
             ((Nsf) driverVirtual).cN160 = chip;
             useChip.add(EnmChip.N163);
 
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = 0;
-            chip.type = mdsound.MDSound.InstrumentType.VRC6;
+            chip.type = MDSound.InstrumentType.VRC6;
             chip.instrument = nes;
             chip.update = nes::update;
             chip.start = nes::start;
@@ -4076,14 +3574,14 @@ public class Audio {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.clock = 0;
             chip.option = null;
-            chip.volume = setting.getbalance().getVRC6Volume();
+            chip.volume = setting.getBalance().getVRC6Volume();
             lstChips.add(chip);
             ((Nsf) driverVirtual).cVRC6 = chip;
             useChip.add(EnmChip.VRC6);
 
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = 0;
-            chip.type = mdsound.MDSound.InstrumentType.VRC7;
+            chip.type = MDSound.InstrumentType.VRC7;
             chip.instrument = nes;
             chip.update = nes::update;
             chip.start = nes::start;
@@ -4092,14 +3590,14 @@ public class Audio {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.clock = 0;
             chip.option = null;
-            chip.volume = setting.getbalance().getVRC7Volume();
+            chip.volume = setting.getBalance().getVRC7Volume();
             lstChips.add(chip);
             ((Nsf) driverVirtual).cVRC7 = chip;
             useChip.add(EnmChip.VRC7);
 
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = 0;
-            chip.type = mdsound.MDSound.InstrumentType.FME7;
+            chip.type = MDSound.InstrumentType.FME7;
             chip.instrument = nes;
             chip.update = nes::update;
             chip.start = nes::start;
@@ -4108,13 +3606,12 @@ public class Audio {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.clock = 0;
             chip.option = null;
-            chip.volume = setting.getbalance().getFME7Volume();
+            chip.volume = setting.getBalance().getFME7Volume();
             lstChips.add(chip);
             ((Nsf) driverVirtual).cFME7 = chip;
             useChip.add(EnmChip.FME7);
 
-            if (hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiNecessary;
 
             if (mds == null)
                 mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
@@ -4142,7 +3639,7 @@ public class Audio {
         stopped = false;
     }
 
-    public static Boolean hesPlay(Setting setting) {
+    public static boolean hesPlay(Setting setting) {
 
         try {
 
@@ -4167,26 +3664,26 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
+            List<MDSound.Chip> lstChips = new ArrayList<>();
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
             chipLED = new ChipLEDs();
             chipLED.PriHuC = 1;
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             //((Hes)driverVirtual).song = (byte)SongNo;
             //((Hes)driverReal).song = (byte)SongNo;
             //if (!driverVirtual.init(vgmBuf, chipRegister, enmModel.VirtualModel, new enmUseChip[] { enmUseChip.Unuse }, 0)) return false;
             //if (!driverReal.init(vgmBuf, chipRegister, enmModel.RealModel, new enmUseChip[] { enmUseChip.Unuse }, 0)) return false;
 
-            mdsound.MDSound.Chip chip;
+            MDSound.Chip chip;
             mdsound.OotakePsg huc = new OotakePsg();
 
-            chip = new mdsound.MDSound.Chip();
+            chip = new MDSound.Chip();
             chip.id = 0;
-            chip.type = mdsound.MDSound.InstrumentType.HuC6280;
+            chip.type = MDSound.InstrumentType.HuC6280;
             chip.instrument = huc;
             chip.update = huc::update;
             chip.start = huc::start;
@@ -4194,15 +3691,14 @@ public class Audio {
             chip.reset = huc::reset;
             chip.additionalUpdate = ((Hes) driverVirtual)::additionalUpdate;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = setting.getbalance().getHuC6280Volume();
+            chip.volume = setting.getBalance().getHuC6280Volume();
             chip.clock = 3579545;
             chip.option = null;
             lstChips.add(chip);
             ((Hes) driverVirtual).c6280 = chip;
             useChip.add(EnmChip.HuC6280);
 
-            if (hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiNecessary;
 
             if (mds == null)
                 mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
@@ -4237,7 +3733,7 @@ public class Audio {
         }
     }
 
-    public static Boolean sidPlay(Setting setting) {
+    public static boolean sidPlay(Setting setting) {
 
         try {
 
@@ -4264,14 +3760,14 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
+            List<MDSound.Chip> lstChips = new ArrayList<>();
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
             chipLED = new ChipLEDs();
             chipLED.priSID = 1;
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             ((Sid) driverVirtual).song = (byte) songNo + 1;
             if (!driverVirtual.init(vgmBuf, chipRegister, EnmModel.VirtualModel, new EnmChip[] {EnmChip.Unuse}
@@ -4298,7 +3794,7 @@ public class Audio {
         }
     }
 
-    public static Boolean vgmPlay(Setting setting) {
+    public static boolean vgmPlay(Setting setting) {
 
         try {
 
@@ -4323,15 +3819,15 @@ public class Audio {
 
             startTrdVgmReal();
 
-            List<mdsound.MDSound.Chip> lstChips = new ArrayList<>();
+            List<MDSound.Chip> lstChips = new ArrayList<>();
 
-            mdsound.MDSound.Chip chip;
+            MDSound.Chip chip;
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
             chipLED = new ChipLEDs();
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             if (!driverVirtual.init(vgmBuf
                     , chipRegister
@@ -4354,21 +3850,21 @@ public class Audio {
 
             chipLED = new ChipLEDs();
 
-            masterVolume = setting.getbalance().getMasterVolume();
+            masterVolume = setting.getBalance().getMasterVolume();
 
             if (((Vgm) driverVirtual).sn76489ClockValue != 0) {
                 mdsound.Sn76489 sn76489 = null;
                 mdsound.Sn76496 sn76496 = null;
 
                 for (int i = 0; i < (((Vgm) driverVirtual).sn76489DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     chip.id = (byte) i;
                     chip.option = null;
 
                     if ((i == 0 && setting.getSN76489Type()[0].getUseEmu()[0])
                             || (i == 1 && setting.getSN76489Type()[1].getUseEmu()[0])) {
                         if (sn76489 == null) sn76489 = new Sn76489();
-                        chip.type = mdsound.MDSound.InstrumentType.SN76489;
+                        chip.type = MDSound.InstrumentType.SN76489;
                         chip.instrument = sn76489;
                         chip.update = sn76489::update;
                         chip.start = sn76489::start;
@@ -4377,7 +3873,7 @@ public class Audio {
                     } else if ((i == 0 && setting.getSN76489Type()[0].getUseEmu()[1])
                             || (i == 1 && setting.getSN76489Type()[1].getUseEmu()[1])) {
                         if (sn76496 == null) sn76496 = new Sn76496();
-                        chip.type = mdsound.MDSound.InstrumentType.SN76496;
+                        chip.type = MDSound.InstrumentType.SN76496;
                         chip.instrument = sn76496;
                         chip.update = sn76496::update;
                         chip.start = sn76496::start;
@@ -4387,7 +3883,7 @@ public class Audio {
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getSN76489Volume();
+                    chip.volume = setting.getBalance().getSN76489Volume();
                     chip.clock = ((Vgm) driverVirtual).sn76489ClockValue
                             | (((Vgm) driverVirtual).sn76489NGPFlag ? 0x80000000 : 0);
                     clockSN76489 = chip.clock & 0x7fff_ffff;
@@ -4409,7 +3905,7 @@ public class Audio {
 
                 for (int i = 0; i < (((Vgm) driverVirtual).ym2612DualChipFlag ? 2 : 1); i++) {
                     //mdsound.ym2612 ym2612 = new mdsound.ym2612();
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     chip.id = (byte) i;
                     chip.option = null;
 
@@ -4422,24 +3918,24 @@ public class Audio {
                                     setting.getYM2612Type()[1].getUseReal()[0])
                     ) {
                         if (ym2612 == null) ym2612 = new Ym2612();
-                        chip.type = mdsound.MDSound.InstrumentType.YM2612;
+                        chip.type = MDSound.InstrumentType.YM2612;
                         chip.instrument = ym2612;
                         chip.update = ym2612::update;
                         chip.start = ym2612::start;
                         chip.stop = ym2612::stop;
                         chip.reset = ym2612::reset;
                         chip.option = new Object[] {
-                            (setting.getNukedOPN2().GensDACHPF ? 0x01 : 0x00) | (setting.getNukedOPN2().GensSSGEG ? 0x02 : 0x00)
+                            (setting.getNukedOPN2().gensDACHPF ? 0x01 : 0x00) | (setting.getNukedOPN2().gensSSGEG ? 0x02 : 0x00)
                         };
                     } else if ((i == 0 && setting.getYM2612Type()[0].getUseEmu()[1]) || (i == 1 && setting.getYM2612Type()[1].getUseEmu()[1])) {
                         if (ym3438 == null) ym3438 = new Ym3438();
-                        chip.type = mdsound.MDSound.InstrumentType.YM3438;
+                        chip.type = MDSound.InstrumentType.YM3438;
                         chip.instrument = ym3438;
                         chip.update = ym3438::update;
                         chip.start = ym3438::start;
                         chip.stop = ym3438::stop;
                         chip.reset = ym3438::reset;
-                        switch (setting.getNukedOPN2().EmuType) {
+                        switch (setting.getNukedOPN2().emuType) {
                         case 0:
                             ym3438.setChipType(Type.discrete);
                             break;
@@ -4458,7 +3954,7 @@ public class Audio {
                         }
                     } else if ((i == 0 && setting.getYM2612Type()[0].getUseEmu()[2]) || (i == 1 && setting.getYM2612Type()[0].getUseEmu()[2])) {
                         if (ym2612mame == null) ym2612mame = new Ym2612Mame();
-                        chip.type = mdsound.MDSound.InstrumentType.YM2612mame;
+                        chip.type = MDSound.InstrumentType.YM2612mame;
                         chip.instrument = ym2612mame;
                         chip.update = ym2612mame::update;
                         chip.start = ym2612mame::start;
@@ -4467,7 +3963,7 @@ public class Audio {
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM2612Volume();
+                    chip.volume = setting.getBalance().getYM2612Volume();
                     chip.clock = ((Vgm) driverVirtual).ym2612ClockValue;
                     clockYM2612 = ((Vgm) driverVirtual).ym2612ClockValue;
 
@@ -4487,8 +3983,8 @@ public class Audio {
                 mdsound.Rf5c68 rf5c68 = new mdsound.Rf5c68();
 
                 for (int i = 0; i < (((Vgm) driverVirtual).rf5C68DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.RF5C68;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.RF5C68;
                     chip.id = (byte) i;
                     chip.instrument = rf5c68;
                     chip.update = rf5c68::update;
@@ -4496,7 +3992,7 @@ public class Audio {
                     chip.stop = rf5c68::stop;
                     chip.reset = rf5c68::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getRF5C68Volume();
+                    chip.volume = setting.getBalance().getRF5C68Volume();
                     chip.clock = ((Vgm) driverVirtual).rf5C68ClockValue;
                     chip.option = null;
 
@@ -4514,8 +4010,8 @@ public class Audio {
                 mdsound.ScdPcm rf5c164 = new mdsound.ScdPcm();
 
                 for (int i = 0; i < (((Vgm) driverVirtual).rf5C164DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.RF5C164;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.RF5C164;
                     chip.id = (byte) i;
                     chip.instrument = rf5c164;
                     chip.update = rf5c164::update;
@@ -4523,7 +4019,7 @@ public class Audio {
                     chip.stop = rf5c164::stop;
                     chip.reset = rf5c164::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getRF5C164Volume();
+                    chip.volume = setting.getBalance().getRF5C164Volume();
                     chip.clock = ((Vgm) driverVirtual).rf5C164ClockValue;
                     chip.option = null;
 
@@ -4538,8 +4034,8 @@ public class Audio {
             }
 
             if (((Vgm) driverVirtual).pwmClockValue != 0) {
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.PWM;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.PWM;
                 chip.id = 0;
                 mdsound.Pwm pwm = new mdsound.Pwm();
                 chip.instrument = pwm;
@@ -4548,7 +4044,7 @@ public class Audio {
                 chip.stop = pwm::stop;
                 chip.reset = pwm::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getPWMVolume();
+                chip.volume = setting.getBalance().getPWMVolume();
                 chip.clock = ((Vgm) driverVirtual).pwmClockValue;
                 chip.option = null;
 
@@ -4563,8 +4059,8 @@ public class Audio {
             if (((Vgm) driverVirtual).c140ClockValue != 0) {
                 mdsound.C140 c140 = new mdsound.C140();
                 for (int i = 0; i < (((Vgm) driverVirtual).c140DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.C140;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.C140;
                     chip.id = (byte) i;
                     chip.instrument = c140;
                     chip.update = c140::update;
@@ -4572,7 +4068,7 @@ public class Audio {
                     chip.stop = c140::stop;
                     chip.reset = c140::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getC140Volume();
+                    chip.volume = setting.getBalance().getC140Volume();
                     chip.clock = ((Vgm) driverVirtual).c140ClockValue;
                     chip.option = new Object[] {((Vgm) driverVirtual).C140Type};
 
@@ -4589,8 +4085,8 @@ public class Audio {
             if (((Vgm) driverVirtual).multiPCMClockValue != 0) {
                 mdsound.MultiPcm multipcm = new mdsound.MultiPcm();
                 for (int i = 0; i < (((Vgm) driverVirtual).multiPCMDualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.MultiPCM;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.MultiPCM;
                     chip.id = (byte) i;
                     chip.instrument = multipcm;
                     chip.update = multipcm::update;
@@ -4598,7 +4094,7 @@ public class Audio {
                     chip.stop = multipcm::stop;
                     chip.reset = multipcm::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getMultiPCMVolume();
+                    chip.volume = setting.getBalance().getMultiPCMVolume();
                     chip.clock = ((Vgm) driverVirtual).multiPCMClockValue;
                     chip.option = null;
 
@@ -4613,8 +4109,8 @@ public class Audio {
             }
 
             if (((Vgm) driverVirtual).okiM6258ClockValue != 0) {
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.OKIM6258;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.OKIM6258;
                 chip.id = 0;
                 mdsound.OkiM6258 okim6258 = new mdsound.OkiM6258();
                 chip.instrument = okim6258;
@@ -4623,7 +4119,7 @@ public class Audio {
                 chip.stop = okim6258::stop;
                 chip.reset = okim6258::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getOKIM6258Volume();
+                chip.volume = setting.getBalance().getOKIM6258Volume();
                 chip.clock = ((Vgm) driverVirtual).okiM6258ClockValue;
                 chip.option = new Object[] {(int) ((Vgm) driverVirtual).okiM6258Type};
                 //chip.option = new Object[1] { 6 };
@@ -4640,8 +4136,8 @@ public class Audio {
             if (((Vgm) driverVirtual).okiM6295ClockValue != 0) {
                 mdsound.OkiM6295 okim6295 = new mdsound.OkiM6295();
                 for (byte i = 0; i < (((Vgm) driverVirtual).okiM6295DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.OKIM6295;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.OKIM6295;
                     chip.id = i;
                     chip.instrument = okim6295;
                     chip.update = okim6295::update;
@@ -4649,7 +4145,7 @@ public class Audio {
                     chip.stop = okim6295::stop;
                     chip.reset = okim6295::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getOKIM6295Volume();
+                    chip.volume = setting.getBalance().getOKIM6295Volume();
                     chip.clock = ((Vgm) driverVirtual).okiM6295ClockValue;
                     chip.option = null;
                     okim6295.okim6295_set_srchg_cb(i, Audio::changeChipSampleRate, chip);
@@ -4665,8 +4161,8 @@ public class Audio {
             }
 
             if (((Vgm) driverVirtual).segaPCMClockValue != 0) {
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.SEGAPCM;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.SEGAPCM;
                 chip.id = 0;
                 mdsound.SegaPcm segapcm = new mdsound.SegaPcm();
                 chip.instrument = segapcm;
@@ -4675,7 +4171,7 @@ public class Audio {
                 chip.stop = segapcm::stop;
                 chip.reset = segapcm::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getSEGAPCMVolume();
+                chip.volume = setting.getBalance().getSEGAPCMVolume();
                 chip.clock = ((Vgm) driverVirtual).segaPCMClockValue;
                 chip.option = new Object[] {((Vgm) driverVirtual).segaPCMInterface};
 
@@ -4690,8 +4186,8 @@ public class Audio {
             if (((Vgm) driverVirtual).yn2608ClockValue != 0) {
                 mdsound.Ym2608 ym2608 = new mdsound.Ym2608();
                 for (int i = 0; i < (((Vgm) driverVirtual).ym2608DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.YM2608;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.YM2608;
                     chip.id = (byte) i;
                     chip.instrument = ym2608;
                     chip.update = ym2608::update;
@@ -4699,7 +4195,7 @@ public class Audio {
                     chip.stop = ym2608::stop;
                     chip.reset = ym2608::reset;
                     chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM2608Volume();
+                    chip.volume = setting.getBalance().getYM2608Volume();
                     chip.clock = ((Vgm) driverVirtual).yn2608ClockValue;
                     Function<String, Stream> fn = Common::getOPNARyhthmStream;
                     chip.option = new Object[] {fn};
@@ -4719,12 +4215,12 @@ public class Audio {
                 mdsound.Ym2151Mame ym2151_mame = null;
                 mdsound.Ym2151X68Sound ym2151_x68sound = null;
                 for (int i = 0; i < (((Vgm) driverVirtual).ym2151DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
+                    chip = new MDSound.Chip();
                     chip.id = (byte) i;
 
                     if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[0]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[0])) {
                         if (ym2151 == null) ym2151 = new mdsound.Ym2151();
-                        chip.type = mdsound.MDSound.InstrumentType.YM2151;
+                        chip.type = MDSound.InstrumentType.YM2151;
                         chip.instrument = ym2151;
                         chip.update = ym2151::update;
                         chip.start = ym2151::start;
@@ -4732,7 +4228,7 @@ public class Audio {
                         chip.reset = ym2151::reset;
                     } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[1]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[1])) {
                         if (ym2151_mame == null) ym2151_mame = new mdsound.Ym2151Mame();
-                        chip.type = mdsound.MDSound.InstrumentType.YM2151mame;
+                        chip.type = MDSound.InstrumentType.YM2151mame;
                         chip.instrument = ym2151_mame;
                         chip.update = ym2151_mame::update;
                         chip.start = ym2151_mame::start;
@@ -4740,7 +4236,7 @@ public class Audio {
                         chip.reset = ym2151_mame::reset;
                     } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[2]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[2])) {
                         if (ym2151_x68sound == null) ym2151_x68sound = new mdsound.Ym2151X68Sound();
-                        chip.type = mdsound.MDSound.InstrumentType.YM2151x68sound;
+                        chip.type = MDSound.InstrumentType.YM2151x68sound;
                         chip.instrument = ym2151_x68sound;
                         chip.update = ym2151_x68sound::update;
                         chip.start = ym2151_x68sound::start;
@@ -4749,7 +4245,7 @@ public class Audio {
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM2151Volume()
+                    chip.volume = setting.getBalance().getYM2151Volume()
                     ;
                     chip.clock = ((Vgm) driverVirtual).yn2151ClockValue;
                     chip.option = null;
@@ -4769,8 +4265,8 @@ public class Audio {
             if (((Vgm) driverVirtual).ym2203ClockValue != 0) {
                 mdsound.Ym2203 ym2203 = new mdsound.Ym2203();
                 for (int i = 0; i < (((Vgm) driverVirtual).ym2203DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.YM2203;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.YM2203;
                     chip.id = (byte) i;
                     chip.instrument = ym2203;
                     chip.update = ym2203::update;
@@ -4778,7 +4274,7 @@ public class Audio {
                     chip.stop = ym2203::stop;
                     chip.reset = ym2203::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM2203Volume();
+                    chip.volume = setting.getBalance().getYM2203Volume();
                     chip.clock = ((Vgm) driverVirtual).ym2203ClockValue;
                     chip.option = null;
 
@@ -4797,8 +4293,8 @@ public class Audio {
             if (((Vgm) driverVirtual).ym2610ClockValue != 0) {
                 mdsound.Ym2610 ym2610 = new mdsound.Ym2610();
                 for (int i = 0; i < (((Vgm) driverVirtual).ym2610DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.YM2610;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.YM2610;
                     chip.id = (byte) i;
                     chip.instrument = ym2610;
                     chip.update = ym2610::update;
@@ -4806,7 +4302,7 @@ public class Audio {
                     chip.stop = ym2610::stop;
                     chip.reset = ym2610::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM2610Volume();
+                    chip.volume = setting.getBalance().getYM2610Volume();
                     chip.clock = ((Vgm) driverVirtual).ym2610ClockValue & 0x7fffffff;
                     chip.option = null;
 
@@ -4823,8 +4319,8 @@ public class Audio {
             if (((Vgm) driverVirtual).ym3812ClockValue != 0) {
                 mdsound.Ym3812 ym3812 = new mdsound.Ym3812();
                 for (int i = 0; i < (((Vgm) driverVirtual).ym3812DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.YM3812;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.YM3812;
                     chip.id = (byte) i;
                     chip.instrument = ym3812;
                     chip.update = ym3812::update;
@@ -4832,7 +4328,7 @@ public class Audio {
                     chip.stop = ym3812::stop;
                     chip.reset = ym3812::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM3812Volume()
+                    chip.volume = setting.getBalance().getYM3812Volume()
                     ;
                     chip.clock = ((Vgm) driverVirtual).ym3812ClockValue & 0x7fffffff;
                     chip.option = null;
@@ -4848,10 +4344,10 @@ public class Audio {
             }
 
             if (((Vgm) driverVirtual).ymF262ClockValue != 0) {
-                mdsound.Ymf262 ymf262 = new mdsound.Ymf262();
+                YmF262 ymf262 = new YmF262();
                 for (int i = 0; i < (((Vgm) driverVirtual).ymF262DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.YMF262;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.YMF262;
                     chip.id = (byte) i;
                     chip.instrument = ymf262;
                     chip.update = ymf262::update;
@@ -4859,7 +4355,7 @@ public class Audio {
                     chip.stop = ymf262::stop;
                     chip.reset = ymf262::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYMF262Volume();
+                    chip.volume = setting.getBalance().getYMF262Volume();
                     chip.clock = ((Vgm) driverVirtual).ymF262ClockValue & 0x7fffffff;
                     chip.option = null;
 
@@ -4876,8 +4372,8 @@ public class Audio {
             if (((Vgm) driverVirtual).ymF271ClockValue != 0) {
                 mdsound.Ymf271 ymf271 = new mdsound.Ymf271();
                 for (int i = 0; i < (((Vgm) driverVirtual).ymF271DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.YMF271;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.YMF271;
                     chip.id = (byte) i;
                     chip.instrument = ymf271;
                     chip.update = ymf271::update;
@@ -4885,7 +4381,7 @@ public class Audio {
                     chip.stop = ymf271::stop;
                     chip.reset = ymf271::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYMF271Volume();
+                    chip.volume = setting.getBalance().getYMF271Volume();
                     chip.clock = ((Vgm) driverVirtual).ymF271ClockValue & 0x7fffffff;
                     chip.option = null;
 
@@ -4900,10 +4396,10 @@ public class Audio {
             }
 
             if (((Vgm) driverVirtual).ymF278BClockValue != 0) {
-                mdsound.Ymf278b ymf278b = new mdsound.Ymf278b();
+                YmF278b ymf278b = new YmF278b();
                 for (int i = 0; i < (((Vgm) driverVirtual).ymF278BDualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.YMF278B;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.YMF278B;
                     chip.id = (byte) i;
                     chip.instrument = ymf278b;
                     chip.update = ymf278b::update;
@@ -4911,7 +4407,7 @@ public class Audio {
                     chip.stop = ymf278b::stop;
                     chip.reset = ymf278b::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYMF278BVolume();
+                    chip.volume = setting.getBalance().getYMF278BVolume();
                     chip.clock = ((Vgm) driverVirtual).ymF278BClockValue & 0x7fffffff;
                     chip.option = new Object[] {Common.getApplicationFolder()};
 
@@ -4926,10 +4422,10 @@ public class Audio {
             }
 
             if (((Vgm) driverVirtual).ymZ280BClockValue != 0) {
-                mdsound.Ymz280b ymz280b = new mdsound.Ymz280b();
+                YmZ280b ymz280b = new YmZ280b();
                 for (int i = 0; i < (((Vgm) driverVirtual).ymZ280BDualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.YMZ280B;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.YMZ280B;
                     chip.id = (byte) i;
                     chip.instrument = ymz280b;
                     chip.update = ymz280b::update;
@@ -4937,7 +4433,7 @@ public class Audio {
                     chip.stop = ymz280b::stop;
                     chip.reset = ymz280b::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYMZ280BVolume();
+                    chip.volume = setting.getBalance().getYMZ280BVolume();
                     chip.clock = ((Vgm) driverVirtual).ymZ280BClockValue & 0x7fffffff;
                     chip.option = null;
 
@@ -4956,14 +4452,14 @@ public class Audio {
                 mdsound.Ay8910Mame ay8910mame = null;
 
                 for (int i = 0; i < (((Vgm) driverVirtual).ay8910DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.AY8910;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.AY8910;
                     chip.id = (byte) i;
 
                     if ((i == 0 && setting.getAY8910Type()[0].getUseEmu()[0])
                             || (i == 1 && setting.getAY8910Type()[1].getUseEmu()[0])) {
                         if (ay8910 == null) ay8910 = new Ay8910();
-                        chip.type = mdsound.MDSound.InstrumentType.AY8910;
+                        chip.type = MDSound.InstrumentType.AY8910;
                         chip.instrument = ay8910;
                         chip.update = ay8910::update;
                         chip.start = ay8910::start;
@@ -4972,7 +4468,7 @@ public class Audio {
                     } else if ((i == 0 && setting.getAY8910Type()[0].getUseEmu()[1])
                             || (i == 1 && setting.getAY8910Type()[1].getUseEmu()[1])) {
                         if (ay8910mame == null) ay8910mame = new Ay8910Mame();
-                        chip.type = mdsound.MDSound.InstrumentType.AY8910mame;
+                        chip.type = MDSound.InstrumentType.AY8910mame;
                         chip.instrument = ay8910mame;
                         chip.update = ay8910mame::update;
                         chip.start = ay8910mame::start;
@@ -4981,7 +4477,7 @@ public class Audio {
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getAY8910Volume();
+                    chip.volume = setting.getBalance().getAY8910Volume();
                     chip.clock = (((Vgm) driverVirtual).ay8910ClockValue & 0x7fffffff) / 2;
                     clockAY8910 = chip.clock;
                     chip.option = null;
@@ -5005,8 +4501,8 @@ public class Audio {
                 }
 
                 for (int i = 0; i < (((Vgm) driverVirtual).ym2413DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.YM2413;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.YM2413;
                     chip.id = (byte) i;
                     chip.instrument = opll;
                     chip.update = opll::update;
@@ -5014,7 +4510,7 @@ public class Audio {
                     chip.stop = opll::stop;
                     chip.reset = opll::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM2413Volume();
+                    chip.volume = setting.getBalance().getYM2413Volume();
                     chip.clock = (((Vgm) driverVirtual).ym2413ClockValue & 0x7fffffff);
                     chip.option = null;
 
@@ -5031,8 +4527,8 @@ public class Audio {
             if (((Vgm) driverVirtual).huC6280ClockValue != 0) {
                 mdsound.OotakePsg huc6280 = new mdsound.OotakePsg();
                 for (int i = 0; i < (((Vgm) driverVirtual).huC6280DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.HuC6280;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.HuC6280;
                     chip.id = (byte) i;
                     chip.instrument = huc6280;
                     chip.update = huc6280::update;
@@ -5040,7 +4536,7 @@ public class Audio {
                     chip.stop = huc6280::stop;
                     chip.reset = huc6280::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getHuC6280Volume();
+                    chip.volume = setting.getBalance().getHuC6280Volume();
                     chip.clock = (((Vgm) driverVirtual).huC6280ClockValue & 0x7fffffff);
                     chip.option = null;
 
@@ -5056,8 +4552,8 @@ public class Audio {
 
             if (((Vgm) driverVirtual).qSoundClockValue != 0) {
                 mdsound.QSoundCtr qsound = new mdsound.QSoundCtr();
-                chip = new mdsound.MDSound.Chip();
-                chip.type = mdsound.MDSound.InstrumentType.QSoundCtr;
+                chip = new MDSound.Chip();
+                chip.type = MDSound.InstrumentType.QSoundCtr;
                 chip.id = (byte) 0;
                 chip.instrument = qsound;
                 chip.update = qsound::update;
@@ -5065,7 +4561,7 @@ public class Audio {
                 chip.stop = qsound::stop;
                 chip.reset = qsound::reset;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getbalance().getQSoundVolume();
+                chip.volume = setting.getBalance().getQSoundVolume();
                 chip.clock = (((Vgm) driverVirtual).qSoundClockValue);// & 0x7fffffff);
                 chip.option = null;
 
@@ -5082,8 +4578,8 @@ public class Audio {
             if (((Vgm) driverVirtual).saa1099ClockValue != 0) {
                 mdsound.Saa1099 saa1099 = new Saa1099();
                 for (int i = 0; i < (((Vgm) driverVirtual).saA1099DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.SAA1099;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.SAA1099;
                     chip.id = (byte) i;
                     chip.instrument = saa1099;
                     chip.update = saa1099::update;
@@ -5091,7 +4587,7 @@ public class Audio {
                     chip.stop = saa1099::stop;
                     chip.reset = saa1099::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getSAA1099Volume();
+                    chip.volume = setting.getBalance().getSAA1099Volume();
                     chip.clock = (((Vgm) driverVirtual).saa1099ClockValue & 0x3fffffff);
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -5106,8 +4602,8 @@ public class Audio {
             if (((Vgm) driverVirtual).wSwanClockValue != 0) {
                 mdsound.WsAudio WSwan = new WsAudio();
                 for (int i = 0; i < (((Vgm) driverVirtual).wSwanDualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.WSwan;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.WSwan;
                     chip.id = (byte) i;
                     chip.instrument = WSwan;
                     chip.update = WSwan::update;
@@ -5115,7 +4611,7 @@ public class Audio {
                     chip.stop = WSwan::stop;
                     chip.reset = WSwan::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getWSwanVolume();
+                    chip.volume = setting.getBalance().getWSwanVolume();
                     chip.clock = (((Vgm) driverVirtual).wSwanClockValue & 0x3fffffff);
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -5130,8 +4626,8 @@ public class Audio {
             if (((Vgm) driverVirtual).pokeyClockValue != 0) {
                 mdsound.Pokey pokey = new Pokey();
                 for (int i = 0; i < (((Vgm) driverVirtual).pokeyDualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.POKEY;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.POKEY;
                     chip.id = (byte) i;
                     chip.instrument = pokey;
                     chip.update = pokey::update;
@@ -5139,7 +4635,7 @@ public class Audio {
                     chip.stop = pokey::stop;
                     chip.reset = pokey::reset;
                     chip.samplingRate = (((Vgm) driverVirtual).pokeyClockValue & 0x3fffffff);// (int)setting.getoutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getPOKEYVolume();
+                    chip.volume = setting.getBalance().getPOKEYVolume();
                     chip.clock = (((Vgm) driverVirtual).pokeyClockValue & 0x3fffffff);
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -5154,8 +4650,8 @@ public class Audio {
             if (((Vgm) driverVirtual).x1_010ClockValue != 0) {
                 mdsound.X1_010 X1_010 = new X1_010();
                 for (int i = 0; i < (((Vgm) driverVirtual).x1_010DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.X1_010;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.X1_010;
                     chip.id = (byte) i;
                     chip.instrument = X1_010;
                     chip.update = X1_010::update;
@@ -5163,7 +4659,7 @@ public class Audio {
                     chip.stop = X1_010::stop;
                     chip.reset = X1_010::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getX1_010Volume();
+                    chip.volume = setting.getBalance().getX1_010Volume();
                     chip.clock = (((Vgm) driverVirtual).x1_010ClockValue & 0x3fffffff);
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -5178,8 +4674,8 @@ public class Audio {
             if (((Vgm) driverVirtual).c352ClockValue != 0) {
                 mdsound.C352 c352 = new C352();
                 for (int i = 0; i < (((Vgm) driverVirtual).c352DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.C352;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.C352;
                     chip.id = (byte) i;
                     chip.instrument = c352;
                     chip.update = c352::update;
@@ -5187,7 +4683,7 @@ public class Audio {
                     chip.stop = c352::stop;
                     chip.reset = c352::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getC352Volume();
+                    chip.volume = setting.getBalance().getC352Volume();
                     chip.clock = (((Vgm) driverVirtual).c352ClockValue & 0x7fffffff);
                     chip.option = new Object[] {(((Vgm) driverVirtual).c352ClockDivider)};
                     int divider = (((Vgm) driverVirtual).c352ClockDivider) != 0 ? (((Vgm) driverVirtual).c352ClockDivider) : 288;
@@ -5206,8 +4702,8 @@ public class Audio {
             if (((Vgm) driverVirtual).ga20ClockValue != 0) {
                 mdsound.Iremga20 ga20 = new Iremga20();
                 for (int i = 0; i < (((Vgm) driverVirtual).ga20DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.GA20;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.GA20;
                     chip.id = (byte) i;
                     chip.instrument = ga20;
                     chip.update = ga20::update;
@@ -5215,7 +4711,7 @@ public class Audio {
                     chip.stop = ga20::stop;
                     chip.reset = ga20::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getGA20Volume();
+                    chip.volume = setting.getBalance().getGA20Volume();
                     chip.clock = (((Vgm) driverVirtual).ga20ClockValue & 0x7fffffff);
                     chip.option = null;
                     hiyorimiDeviceFlag |= 0x2;
@@ -5232,8 +4728,8 @@ public class Audio {
                 mdsound.K053260 k053260 = new mdsound.K053260();
 
                 for (int i = 0; i < (((Vgm) driverVirtual).k053260DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.K053260;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.K053260;
                     chip.id = (byte) i;
                     chip.instrument = k053260;
                     chip.update = k053260::update;
@@ -5241,7 +4737,7 @@ public class Audio {
                     chip.stop = k053260::stop;
                     chip.reset = k053260::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getK053260Volume();
+                    chip.volume = setting.getBalance().getK053260Volume();
                     chip.clock = ((Vgm) driverVirtual).k053260ClockValue;
                     chip.option = null;
                     if (i == 0) chipLED.PriK053260 = 1;
@@ -5258,8 +4754,8 @@ public class Audio {
                 mdsound.K054539 k054539 = new mdsound.K054539();
 
                 for (int i = 0; i < (((Vgm) driverVirtual).k054539DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.K054539;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.K054539;
                     chip.id = (byte) i;
                     chip.instrument = k054539;
                     chip.update = k054539::update;
@@ -5267,7 +4763,7 @@ public class Audio {
                     chip.stop = k054539::stop;
                     chip.reset = k054539::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getK054539Volume();
+                    chip.volume = setting.getBalance().getK054539Volume();
                     chip.clock = ((Vgm) driverVirtual).k054539ClockValue;
                     chip.option = null;
                     if (i == 0) chipLED.PriK054539 = 1;
@@ -5284,8 +4780,8 @@ public class Audio {
                 mdsound.K051649 k051649 = new mdsound.K051649();
 
                 for (int i = 0; i < (((Vgm) driverVirtual).k051649DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.K051649;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.K051649;
                     chip.id = (byte) i;
                     chip.instrument = k051649;
                     chip.update = k051649::update;
@@ -5293,7 +4789,7 @@ public class Audio {
                     chip.stop = k051649::stop;
                     chip.reset = k051649::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getK051649Volume();
+                    chip.volume = setting.getBalance().getK051649Volume();
                     chip.clock = ((Vgm) driverVirtual).k051649ClockValue;
                     clockK051649 = chip.clock;
                     chip.option = null;
@@ -5311,8 +4807,8 @@ public class Audio {
                 mdsound.Ym3526 ym3526 = new mdsound.Ym3526();
 
                 for (int i = 0; i < (((Vgm) driverVirtual).ym3526DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.YM3526;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.YM3526;
                     chip.id = (byte) i;
                     chip.instrument = ym3526;
                     chip.update = ym3526::update;
@@ -5320,7 +4816,7 @@ public class Audio {
                     chip.stop = ym3526::stop;
                     chip.reset = ym3526::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getYM3526Volume();
+                    chip.volume = setting.getBalance().getYM3526Volume();
                     chip.clock = ((Vgm) driverVirtual).ym3526ClockValue;
                     chip.option = null;
                     if (i == 0) chipLED.PriOPL = 1;
@@ -5337,8 +4833,8 @@ public class Audio {
                 mdsound.Y8950 y8950 = new mdsound.Y8950();
 
                 for (int i = 0; i < (((Vgm) driverVirtual).y8950DualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.Y8950;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.Y8950;
                     chip.id = (byte) i;
                     chip.instrument = y8950;
                     chip.update = y8950::update;
@@ -5346,7 +4842,7 @@ public class Audio {
                     chip.stop = y8950::stop;
                     chip.reset = y8950::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getY8950Volume();
+                    chip.volume = setting.getBalance().getY8950Volume();
                     chip.clock = ((Vgm) driverVirtual).y8950ClockValue;
                     chip.option = null;
                     if (i == 0) chipLED.PriY8950 = 1;
@@ -5363,8 +4859,8 @@ public class Audio {
                 mdsound.Gb dmg = new mdsound.Gb();
 
                 for (int i = 0; i < (((Vgm) driverVirtual).dmgDualChipFlag ? 2 : 1); i++) {
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.DMG;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.DMG;
                     chip.id = (byte) i;
                     chip.instrument = dmg;
                     chip.update = dmg::update;
@@ -5372,7 +4868,7 @@ public class Audio {
                     chip.stop = dmg::stop;
                     chip.reset = dmg::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getDMGVolume();
+                    chip.volume = setting.getBalance().getDMGVolume();
                     chip.clock = ((Vgm) driverVirtual).dmgClockValue;
                     chip.option = null;
                     if (i == 0) chipLED.PriDMG = 1;
@@ -5389,8 +4885,8 @@ public class Audio {
 
                 for (int i = 0; i < (((Vgm) driverVirtual).nesDualChipFlag ? 2 : 1); i++) {
                     mdsound.NesIntF nes = new mdsound.NesIntF();
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.Nes;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.Nes;
                     chip.id = (byte) i;
                     chip.instrument = nes;
                     chip.update = nes::update;
@@ -5398,7 +4894,7 @@ public class Audio {
                     chip.stop = nes::stop;
                     chip.reset = nes::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getAPUVolume();
+                    chip.volume = setting.getBalance().getAPUVolume();
                     chip.clock = ((Vgm) driverVirtual).nesClockValue;
                     chip.option = null;
                     if (i == 0) chipLED.PriNES = 1;
@@ -5407,8 +4903,8 @@ public class Audio {
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.NES : EnmChip.S_NES);
 
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.DMC;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.DMC;
                     chip.id = (byte) i;
                     chip.instrument = nes;
                     //chip.update = nes::update;
@@ -5416,7 +4912,7 @@ public class Audio {
                     chip.stop = nes::stop;
                     chip.reset = nes::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getDMCVolume();
+                    chip.volume = setting.getBalance().getDMCVolume();
                     chip.clock = ((Vgm) driverVirtual).nesClockValue;
                     chip.option = null;
                     if (i == 0) chipLED.PriDMC = 1;
@@ -5426,8 +4922,8 @@ public class Audio {
                     useChip.add(i == 0 ? EnmChip.DMC : EnmChip.S_DMC);
 
 
-                    chip = new mdsound.MDSound.Chip();
-                    chip.type = mdsound.MDSound.InstrumentType.FDS;
+                    chip = new MDSound.Chip();
+                    chip.type = MDSound.InstrumentType.FDS;
                     chip.id = (byte) i;
                     chip.instrument = nes;
                     //chip.update = nes::update;
@@ -5435,7 +4931,7 @@ public class Audio {
                     chip.stop = nes::stop;
                     chip.reset = nes::reset;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getbalance().getFDSVolume();
+                    chip.volume = setting.getBalance().getFDSVolume();
                     chip.clock = ((Vgm) driverVirtual).nesClockValue;
                     chip.option = null;
                     if (i == 0) chipLED.PriFDS = 1;
@@ -5451,8 +4947,7 @@ public class Audio {
             }
 
 
-            if (hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary) hiyorimiNecessary = true;
-            else hiyorimiNecessary = false;
+            hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
 
             if (mds == null)
@@ -5472,23 +4967,23 @@ public class Audio {
                 chipRegister.setYM2203Register(1, 0x9, 0x0, EnmModel.RealModel);
                 chipRegister.setYM2203Register(0, 0xa, 0x0, EnmModel.RealModel);
                 chipRegister.setYM2203Register(1, 0xa, 0x0, EnmModel.RealModel);
-                setYM2203FMVolume(true, setting.getbalance().getYM2203FMVolume());
-                setYM2203PSGVolume(true, setting.getbalance().getYM2203PSGVolume());
+                setYM2203FMVolume(true, setting.getBalance().getYM2203FMVolume());
+                setYM2203PSGVolume(true, setting.getBalance().getYM2203PSGVolume());
             }
 
             if (useChip.contains(EnmChip.YM2608) || useChip.contains(EnmChip.S_YM2608)) {
-                setYM2608FMVolume(true, setting.getbalance().getYM2608FMVolume());
-                setYM2608PSGVolume(true, setting.getbalance().getYM2608PSGVolume());
-                setYM2608RhythmVolume(true, setting.getbalance().getYM2608RhythmVolume());
-                setYM2608AdpcmVolume(true, setting.getbalance().getYM2608AdpcmVolume());
+                setYM2608FMVolume(true, setting.getBalance().getYM2608FMVolume());
+                setYM2608PSGVolume(true, setting.getBalance().getYM2608PSGVolume());
+                setYM2608RhythmVolume(true, setting.getBalance().getYM2608RhythmVolume());
+                setYM2608AdpcmVolume(true, setting.getBalance().getYM2608AdpcmVolume());
             }
 
             if (useChip.contains(EnmChip.YM2610) || useChip.contains(EnmChip.S_YM2610)) {
 
-                setYM2610FMVolume(true, setting.getbalance().getYM2610FMVolume());
-                setYM2610PSGVolume(true, setting.getbalance().getYM2610PSGVolume());
-                setYM2610AdpcmAVolume(true, setting.getbalance().getYM2610AdpcmAVolume());
-                setYM2610AdpcmBVolume(true, setting.getbalance().getYM2610AdpcmBVolume());
+                setYM2610FMVolume(true, setting.getBalance().getYM2610FMVolume());
+                setYM2610PSGVolume(true, setting.getBalance().getYM2610PSGVolume());
+                setYM2610AdpcmAVolume(true, setting.getBalance().getYM2610AdpcmAVolume());
+                setYM2610AdpcmBVolume(true, setting.getBalance().getYM2610AdpcmBVolume());
             }
 
             if (useChip.contains(EnmChip.AY8910))
@@ -5572,13 +5067,13 @@ public class Audio {
 
             if (SSGVolumeFromTAG == -1) {
                 if (useChip.contains(EnmChip.YM2203))
-                    chipRegister.setYM2203SSGVolume((byte) 0, setting.getbalance().getGimicOPNVolume(), EnmModel.RealModel);
+                    chipRegister.setYM2203SSGVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
                 if (useChip.contains(EnmChip.S_YM2203))
-                    chipRegister.setYM2203SSGVolume((byte) 1, setting.getbalance().getGimicOPNVolume(), EnmModel.RealModel);
+                    chipRegister.setYM2203SSGVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
                 if (useChip.contains(EnmChip.YM2608))
-                    chipRegister.setYM2608SSGVolume((byte) 0, setting.getbalance().getGimicOPNAVolume(), EnmModel.RealModel);
+                    chipRegister.setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
                 if (useChip.contains(EnmChip.S_YM2608))
-                    chipRegister.setYM2608SSGVolume((byte) 1, setting.getbalance().getGimicOPNAVolume(), EnmModel.RealModel);
+                    chipRegister.setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
             } else {
                 if (useChip.contains(EnmChip.YM2203))
                     chipRegister.setYM2203SSGVolume((byte) 0, SSGVolumeFromTAG, EnmModel.RealModel);
@@ -5594,7 +5089,7 @@ public class Audio {
             if (driverReal != null) driverReal.setYm2151Hosei(((Vgm) driverReal).yn2151ClockValue);
 
 
-            //frmMain.ForceChannelMask(EnmChip.YM2612, 0, 0, true);
+            //frmMain.ForceChannelMask(EnmChip.Ym2612, 0, 0, true);
 
             paused = false;
             oneTimeReset = false;
@@ -5625,8 +5120,8 @@ public class Audio {
         chipRegister.resetChips();
     }
 
-    public static void changeChipSampleRate(mdsound.MDSound.Chip chip, int NewSmplRate) {
-        mdsound.MDSound.Chip caa = chip;
+    public static void changeChipSampleRate(MDSound.Chip chip, int NewSmplRate) {
+        MDSound.Chip caa = chip;
 
         if (caa.samplingRate == NewSmplRate)
             return;
@@ -5733,13 +5228,13 @@ public class Audio {
             }
 
             if (!paused) {
-                PlaybackState ps = naudioWrap.GetPlaybackState();
-                if (ps != null && ps != PlaybackState.Stopped) {
+                LineEvent.Type ps = naudioWrap.GetPlaybackState();
+                if (ps != null && ps != LineEvent.Type.STOP) {
                     vgmFadeoutCounterV = 0.1;
                     vgmFadeout = true;
                     int cnt = 0;
                     while (!stopped && cnt < 100) {
-                        Thread.sleep(1);
+                        Thread.yield();
                         JApplication.DoEvents();
                         cnt++;
                     }
@@ -5757,12 +5252,12 @@ public class Audio {
 
             int timeout = 5000;
             while (!_trdStopped) {
-                Thread.sleep(1);
+                Thread.yield();
                 timeout--;
                 if (timeout < 1) break;
             }
             while (!stopped) {
-                Thread.sleep(1);
+                Thread.yield();
                 timeout--;
                 if (timeout < 1) break;
             }
@@ -5777,12 +5272,11 @@ public class Audio {
                 waveWriter.close();
             }
 
-            //DEBUG
+            // DEBUG
             //vstparse();
         } catch (Exception ex) {
             Log.forcedWrite(ex);
         }
-
     }
 
     private static void nAudioStop() {
@@ -5859,18 +5353,18 @@ public class Audio {
 
 
         if (driverVirtual == null) {
-            if (driverReal instanceof NRTDRV) return ((NRTDRV) driverReal).work.TOTALCOUNT;
+            if (driverReal instanceof NRTDRV) return ((NRTDRV) driverReal).work.totalCount;
             else if (driverReal instanceof Vgm) return driverReal.vgmFrameCounter;
             else return 0;
         }
         if (driverReal == null) {
-            if (driverVirtual instanceof NRTDRV) return ((NRTDRV) driverVirtual).work.TOTALCOUNT;
+            if (driverVirtual instanceof NRTDRV) return ((NRTDRV) driverVirtual).work.totalCount;
             else if (driverVirtual instanceof Vgm) return driverVirtual.vgmFrameCounter;
             else return 0;
         }
 
         if (driverVirtual instanceof NRTDRV && driverReal instanceof NRTDRV) {
-            return ((NRTDRV) driverVirtual).work.TOTALCOUNT > ((NRTDRV) driverReal).work.TOTALCOUNT ? ((NRTDRV) driverVirtual).work.TOTALCOUNT : ((NRTDRV) driverReal).work.TOTALCOUNT;
+            return ((NRTDRV) driverVirtual).work.totalCount > ((NRTDRV) driverReal).work.totalCount ? ((NRTDRV) driverVirtual).work.totalCount : ((NRTDRV) driverReal).work.totalCount;
         } else if (driverVirtual instanceof Vgm && driverReal instanceof Vgm) {
             return Math.max(driverVirtual.vgmFrameCounter, driverReal.vgmFrameCounter);
         } else {
@@ -6019,7 +5513,7 @@ public class Audio {
         }
     }
 
-    private static void naudioWrapPlaybackStopped(Object sender, NAudio.Wave.StoppedEventArgs e) {
+    private static void naudioWrapPlaybackStopped(LineEvent e) {
         if (e.getException != null) {
             JOptionPane.showConfirmDialog(null,
                     String.format("デバイスが何らかの原因で停止しました。\nメッセージ:\n%s\nスタックトレース:\n%s"
@@ -6139,19 +5633,14 @@ public class Audio {
                 }
 
                 if (hiyorimiNecessary) {
-                    //long v;
-                    //v = driverReal.vgmFrameCounter - driverVirtual.vgmFrameCounter;
+                    //long v = driverReal.vgmFrameCounter - driverVirtual.vgmFrameCounter;
                     //long d = setting.getoutputDevice().getSampleRate() * (setting.LatencySCCI - setting.getoutputDevice().getSampleRate() * setting.LatencyEmulation) / 1000;
                     //long l = getLatency() / 4;
-
                     //int m = 0;
-                    //if (d >= 0)
-                    //{
+                    //if (d >= 0) {
                     //    if (v >= d - l && v <= d + l) m = 0;
                     //    else m = (v + d > l) ? 1 : 2;
-                    //}
-                    //else
-                    //{
+                    //} else {
                     //    d = Math.abs(setting.getoutputDevice().getSampleRate() * ((int)setting.LatencyEmulation - (int)setting.LatencySCCI) / 1000);
                     //    if (v >= d - l && v <= d + l) m = 0;
                     //    else m = (v - d > l) ? 1 : 2;
@@ -6167,17 +5656,17 @@ public class Audio {
                     }
 
                     switch (m) {
-                    case 0: //x1
+                    case 0: // x1
                         driverReal.oneFrameProc();
                         break;
-                    case 1: //x1/2
+                    case 1: // x1/2
                         hiyorimiEven++;
                         if (hiyorimiEven > 1) {
                             driverReal.oneFrameProc();
                             hiyorimiEven = 0;
                         }
                         break;
-                    case 2: //x2
+                    case 2: // x2
                         driverReal.oneFrameProc();
                         driverReal.oneFrameProc();
                         break;
@@ -6299,8 +5788,8 @@ public class Audio {
                 }
 
                 driverVirtual.vstDelta = 0;
-                stwh.reset();
-                stwh.start();
+//                stwh.reset();
+//                stwh.start();
                 cnt = mds.update(buffer, offset, sampleCount, driverVirtual::oneFrameProc);
                 ProcTimePer1Frame = (int) ((double) System.currentTimeMillis() / (sampleCount + 1) * 1000000.0);
             }
@@ -6366,7 +5855,7 @@ public class Audio {
 
         } catch (Exception ex) {
             Log.forcedWrite(ex);
-            fatalError = true;
+            _fatalError = true;
             stopped = true;
         }
 
@@ -6400,7 +5889,7 @@ public class Audio {
     private static void convert2ByteToShort(short[] destBuffer, int offset, byte[] source, int shortCount) {
         int samplesRead = shortCount;
         for (int n = 0; n < samplesRead; n++) {
-            destBuffer[n] = ByteUtil.readLeShort(source, offset + n * Short.BYTES);// volume;
+            destBuffer[n] = ByteUtil.readLeShort(source, offset + n * Short.BYTES); // volume;
         }
     }
 
@@ -6555,35 +6044,35 @@ public class Audio {
 
         vol = mds.getNESVisVolume();
         if (vol != null) visVolume.APU = (short) getMonoVolume(vol[0][0][0], vol[0][0][1], vol[1][0][0], vol[1][0][1]);
-        else visVolume.APU = (short) mdsound.MDSound.np_nes_apu_volume;
+        else visVolume.APU = (short) MDSound.np_nes_apu_volume;
 
         vol = mds.getDMCVisVolume();
         if (vol != null) visVolume.DMC = (short) getMonoVolume(vol[0][0][0], vol[0][0][1], vol[1][0][0], vol[1][0][1]);
-        else visVolume.DMC = (short) mdsound.MDSound.np_nes_dmc_volume;
+        else visVolume.DMC = (short) MDSound.np_nes_dmc_volume;
 
         vol = mds.getFDSVisVolume();
         if (vol != null) visVolume.FDS = (short) getMonoVolume(vol[0][0][0], vol[0][0][1], vol[1][0][0], vol[1][0][1]);
-        else visVolume.FDS = (short) mdsound.MDSound.np_nes_fds_volume;
+        else visVolume.FDS = (short) MDSound.np_nes_fds_volume;
 
         vol = mds.getMMC5VisVolume();
         if (vol != null) visVolume.MMC5 = (short) getMonoVolume(vol[0][0][0], vol[0][0][1], vol[1][0][0], vol[1][0][1]);
-        if (visVolume.MMC5 == 0) visVolume.MMC5 = (short) mdsound.MDSound.np_nes_mmc5_volume;
+        if (visVolume.MMC5 == 0) visVolume.MMC5 = (short) MDSound.np_nes_mmc5_volume;
 
         vol = mds.getN160VisVolume();
         if (vol != null) visVolume.N160 = (short) getMonoVolume(vol[0][0][0], vol[0][0][1], vol[1][0][0], vol[1][0][1]);
-        if (visVolume.N160 == 0) visVolume.N160 = (short) mdsound.MDSound.np_nes_n106_volume;
+        if (visVolume.N160 == 0) visVolume.N160 = (short) MDSound.np_nes_n106_volume;
 
         vol = mds.getVRC6VisVolume();
         if (vol != null) visVolume.VRC6 = (short) getMonoVolume(vol[0][0][0], vol[0][0][1], vol[1][0][0], vol[1][0][1]);
-        if (visVolume.VRC6 == 0) visVolume.VRC6 = (short) mdsound.MDSound.np_nes_vrc6_volume;
+        if (visVolume.VRC6 == 0) visVolume.VRC6 = (short) MDSound.np_nes_vrc6_volume;
 
         vol = mds.getVRC7VisVolume();
         if (vol != null) visVolume.VRC7 = (short) getMonoVolume(vol[0][0][0], vol[0][0][1], vol[1][0][0], vol[1][0][1]);
-        if (visVolume.VRC7 == 0) visVolume.VRC7 = (short) mdsound.MDSound.np_nes_vrc7_volume;
+        if (visVolume.VRC7 == 0) visVolume.VRC7 = (short) MDSound.np_nes_vrc7_volume;
 
         vol = mds.getFME7VisVolume();
         if (vol != null) visVolume.FME7 = (short) getMonoVolume(vol[0][0][0], vol[0][0][1], vol[1][0][0], vol[1][0][1]);
-        if (visVolume.FME7 == 0) visVolume.FME7 = (short) mdsound.MDSound.np_nes_fme7_volume;
+        if (visVolume.FME7 == 0) visVolume.FME7 = (short) MDSound.np_nes_fme7_volume;
 
         vol = mds.getDMGVisVolume();
         if (vol != null) visVolume.DMG = (short) getMonoVolume(vol[0][0][0], vol[0][0][1], vol[1][0][0], vol[1][0][1]);
@@ -6679,7 +6168,7 @@ public class Audio {
 
     public static int[] getMoonDriverPCMKeyOn() {
         if (driverVirtual instanceof MoonDriver) {
-            if (driverVirtual != null) return ((MoonDriver) driverVirtual).GetPCMKeyOn();
+            return ((MoonDriver) driverVirtual).GetPCMKeyOn();
         }
         return null;
     }
@@ -6741,7 +6230,7 @@ public class Audio {
         return chipRegister.pcmRegisterC352[chipID];
     }
 
-    public static MultiPcm._MultiPCM getMultiPCMRegister(int chipID) {
+    public static MultiPcm.MultiPCM getMultiPCMRegister(int chipID) {
         return chipRegister.getMultiPCMRegister(chipID);
     }
 
@@ -6820,7 +6309,7 @@ public class Audio {
         return reg;
     }
 
-    private static byte[] s5bregs = new byte[0x20];
+    private static final byte[] s5bregs = new byte[0x20];
 
     public static byte[] getS5BRegister(int chipID) {
         // nsf 向け
@@ -6844,7 +6333,7 @@ public class Audio {
         return mds.ReadDMG((byte) chipID);
     }
 
-    private static byte[] mmc5regs = new byte[10];
+    private static final byte[] mmc5regs = new byte[10];
 
     public static byte[] getMMC5Register(int chipID) {
         // nsf 向け
@@ -6874,7 +6363,7 @@ public class Audio {
         return chipRegister.fmKeyOnYM2151[chipID];
     }
 
-    public static Boolean getOKIM6258KeyOn(int chipID) {
+    public static boolean getOKIM6258KeyOn(int chipID) {
         return chipRegister.okim6258Keyon[chipID];
     }
 
@@ -6955,24 +6444,24 @@ public class Audio {
     }
 
 
-    public static void setMasterVolume(Boolean isAbs, int volume) {
-        masterVolume = Common.Range((isAbs ? 0 : setting.getbalance().getMasterVolume()) + volume, -192, 20);
-        setting.getbalance().setMasterVolume(masterVolume);
+    public static void setMasterVolume(boolean isAbs, int volume) {
+        masterVolume = Common.Range((isAbs ? 0 : setting.getBalance().getMasterVolume()) + volume, -192, 20);
+        setting.getBalance().setMasterVolume(masterVolume);
     }
 
-    public static void setAY8910Volume(Boolean isAbs, int volume) {
+    public static void setAY8910Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getAY8910Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getAY8910Volume()) + volume, -192, 20);
             mds.setVolumeAY8910(v);
-            setting.getbalance().setAY8910Volume(v);
+            setting.getBalance().setAY8910Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2151Volume(Boolean isAbs, int volume) {
+    public static void setYM2151Volume(boolean isAbs, int volume) {
         try {
-            int vol = Common.Range((isAbs ? 0 : setting.getbalance().getYM2151Volume()) + volume, -192, 20);
-            setting.getbalance().setYM2151Volume(vol);
+            int vol = Common.Range((isAbs ? 0 : setting.getBalance().getYM2151Volume()) + volume, -192, 20);
+            setting.getBalance().setYM2151Volume(vol);
 
             mds.setVolumeYM2151(vol);
             mds.setVolumeYM2151Mame(vol);
@@ -6981,226 +6470,226 @@ public class Audio {
         }
     }
 
-    public static void setYM2203Volume(Boolean isAbs, int volume) {
+    public static void setYM2203Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2203Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2203Volume()) + volume, -192, 20);
             mds.SetVolumeYM2203(v);
-            setting.getbalance().setYM2203Volume(v);
+            setting.getBalance().setYM2203Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2203FMVolume(Boolean isAbs, int volume) {
+    public static void setYM2203FMVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2203FMVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2203FMVolume()) + volume, -192, 20);
             mds.SetVolumeYM2203FM(v);
-            setting.getbalance().setYM2203FMVolume(v);
+            setting.getBalance().setYM2203FMVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2203PSGVolume(Boolean isAbs, int volume) {
+    public static void setYM2203PSGVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2203PSGVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2203PSGVolume()) + volume, -192, 20);
             mds.SetVolumeYM2203PSG(v);
-            setting.getbalance().setYM2203PSGVolume(v);
+            setting.getBalance().setYM2203PSGVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2413Volume(Boolean isAbs, int volume) {
+    public static void setYM2413Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2413Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2413Volume()) + volume, -192, 20);
             mds.SetVolumeYM2413(v);
-            setting.getbalance().setYM2413Volume(v);
+            setting.getBalance().setYM2413Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setK053260Volume(Boolean isAbs, int volume) {
+    public static void setK053260Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getK053260Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getK053260Volume()) + volume, -192, 20);
             mds.SetVolumeK053260(v);
-            setting.getbalance().setK053260Volume(v);
+            setting.getBalance().setK053260Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setRF5C68Volume(Boolean isAbs, int volume) {
+    public static void setRF5C68Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getRF5C68Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getRF5C68Volume()) + volume, -192, 20);
             mds.SetVolumeRF5C68(v);
-            setting.getbalance().setRF5C68Volume(v);
+            setting.getBalance().setRF5C68Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM3812Volume(Boolean isAbs, int volume) {
+    public static void setYM3812Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM3812Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM3812Volume()) + volume, -192, 20);
             mds.SetVolumeYM3812(v);
-            setting.getbalance().setYM3812Volume(v);
+            setting.getBalance().setYM3812Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setY8950Volume(Boolean isAbs, int volume) {
+    public static void setY8950Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getY8950Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getY8950Volume()) + volume, -192, 20);
             mds.SetVolumeY8950(v);
-            setting.getbalance().setY8950Volume(v);
+            setting.getBalance().setY8950Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM3526Volume(Boolean isAbs, int volume) {
+    public static void setYM3526Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM3526Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM3526Volume()) + volume, -192, 20);
             mds.SetVolumeYM3526(v);
-            setting.getbalance().setYM3526Volume(v);
+            setting.getBalance().setYM3526Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2608Volume(Boolean isAbs, int volume) {
+    public static void setYM2608Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2608Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2608Volume()) + volume, -192, 20);
             mds.SetVolumeYM2608(v);
-            setting.getbalance().setYM2608Volume(v);
+            setting.getBalance().setYM2608Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2608FMVolume(Boolean isAbs, int volume) {
+    public static void setYM2608FMVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2608FMVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2608FMVolume()) + volume, -192, 20);
             mds.SetVolumeYM2608FM(v);
-            setting.getbalance().setYM2608FMVolume(v);
+            setting.getBalance().setYM2608FMVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2608PSGVolume(Boolean isAbs, int volume) {
+    public static void setYM2608PSGVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2608PSGVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2608PSGVolume()) + volume, -192, 20);
             mds.SetVolumeYM2608PSG(v);
-            setting.getbalance().setYM2608PSGVolume(v);
+            setting.getBalance().setYM2608PSGVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2608RhythmVolume(Boolean isAbs, int volume) {
+    public static void setYM2608RhythmVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2608RhythmVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2608RhythmVolume()) + volume, -192, 20);
             mds.SetVolumeYM2608Rhythm(v);
-            setting.getbalance().setYM2608RhythmVolume(v);
+            setting.getBalance().setYM2608RhythmVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2608AdpcmVolume(Boolean isAbs, int volume) {
+    public static void setYM2608AdpcmVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2608AdpcmVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2608AdpcmVolume()) + volume, -192, 20);
             mds.SetVolumeYM2608Adpcm(v);
-            setting.getbalance().setYM2608AdpcmVolume(v);
+            setting.getBalance().setYM2608AdpcmVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2610Volume(Boolean isAbs, int volume) {
+    public static void setYM2610Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2610Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2610Volume()) + volume, -192, 20);
             mds.SetVolumeYM2610(v);
-            setting.getbalance().setYM2610Volume(v);
+            setting.getBalance().setYM2610Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2610FMVolume(Boolean isAbs, int volume) {
+    public static void setYM2610FMVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2610FMVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2610FMVolume()) + volume, -192, 20);
             mds.SetVolumeYM2610FM(v);
-            setting.getbalance().setYM2610FMVolume(v);
+            setting.getBalance().setYM2610FMVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2610PSGVolume(Boolean isAbs, int volume) {
+    public static void setYM2610PSGVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2610PSGVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2610PSGVolume()) + volume, -192, 20);
             mds.SetVolumeYM2610PSG(v);
-            setting.getbalance().setYM2610PSGVolume(v);
+            setting.getBalance().setYM2610PSGVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2610AdpcmAVolume(Boolean isAbs, int volume) {
+    public static void setYM2610AdpcmAVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2610AdpcmAVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2610AdpcmAVolume()) + volume, -192, 20);
             mds.SetVolumeYM2610AdpcmA(v);
-            setting.getbalance().setYM2610AdpcmAVolume(v);
+            setting.getBalance().setYM2610AdpcmAVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2610AdpcmBVolume(Boolean isAbs, int volume) {
+    public static void setYM2610AdpcmBVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2610AdpcmBVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2610AdpcmBVolume()) + volume, -192, 20);
             mds.SetVolumeYM2610AdpcmB(v);
-            setting.getbalance().setYM2610AdpcmBVolume(v);
+            setting.getBalance().setYM2610AdpcmBVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYM2612Volume(Boolean isAbs, int volume) {
+    public static void setYM2612Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYM2612Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2612Volume()) + volume, -192, 20);
             mds.SetVolumeYM2612(v);
-            setting.getbalance().setYM2612Volume(v);
+            setting.getBalance().setYM2612Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setSN76489Volume(Boolean isAbs, int volume) {
+    public static void setSN76489Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getSN76489Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getSN76489Volume()) + volume, -192, 20);
             mds.SetVolumeSN76489(v);
-            setting.getbalance().setSN76489Volume(v);
+            setting.getBalance().setSN76489Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setHuC6280Volume(Boolean isAbs, int volume) {
+    public static void setHuC6280Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getHuC6280Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getHuC6280Volume()) + volume, -192, 20);
             mds.setVolumeHuC6280(v);
-            setting.getbalance().setHuC6280Volume(v);
+            setting.getBalance().setHuC6280Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setRF5C164Volume(Boolean isAbs, int volume) {
+    public static void setRF5C164Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getRF5C164Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getRF5C164Volume()) + volume, -192, 20);
             mds.SetVolumeRF5C164(v);
-            setting.getbalance().setRF5C164Volume(v);
+            setting.getBalance().setRF5C164Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setPWMVolume(Boolean isAbs, int volume) {
+    public static void setPWMVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getPWMVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getPWMVolume()) + volume, -192, 20);
             mds.SetVolumePWM(v);
-            setting.getbalance().setPWMVolume(v);
+            setting.getBalance().setPWMVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setOKIM6258Volume(Boolean isAbs, int volume) {
+    public static void setOKIM6258Volume(boolean isAbs, int volume) {
         try {
-            int vol = Common.Range((isAbs ? 0 : setting.getbalance().getOKIM6258Volume()) + volume, -192, 20);
-            setting.getbalance().setOKIM6258Volume(vol);
+            int vol = Common.Range((isAbs ? 0 : setting.getBalance().getOKIM6258Volume()) + volume, -192, 20);
+            setting.getBalance().setOKIM6258Volume(vol);
 
             mds.SetVolumeOKIM6258(vol);
             mds.SetVolumeMpcmX68k(vol);
@@ -7208,229 +6697,229 @@ public class Audio {
         }
     }
 
-    public static void setOKIM6295Volume(Boolean isAbs, int volume) {
+    public static void setOKIM6295Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getOKIM6295Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getOKIM6295Volume()) + volume, -192, 20);
             mds.SetVolumeOKIM6295(v);
-            setting.getbalance().setOKIM6295Volume(v);
+            setting.getBalance().setOKIM6295Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setC140Volume(Boolean isAbs, int volume) {
+    public static void setC140Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getC140Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getC140Volume()) + volume, -192, 20);
             mds.SetVolumeC140(v);
-            setting.getbalance().setC140Volume(v);
+            setting.getBalance().setC140Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setSegaPCMVolume(Boolean isAbs, int volume) {
+    public static void setSegaPCMVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getSEGAPCMVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getSEGAPCMVolume()) + volume, -192, 20);
             mds.setVolumeSegaPCM(v);
-            setting.getbalance().setSEGAPCMVolume(v);
+            setting.getBalance().setSEGAPCMVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setC352Volume(Boolean isAbs, int volume) {
+    public static void setC352Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getC352Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getC352Volume()) + volume, -192, 20);
             mds.SetVolumeC352(v);
-            setting.getbalance().setC352Volume(v);
+            setting.getBalance().setC352Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setSA1099Volume(Boolean isAbs, int volume) {
+    public static void setSA1099Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getSAA1099Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getSAA1099Volume()) + volume, -192, 20);
             mds.SetVolumeSAA1099(v);
-            setting.getbalance().setSAA1099Volume(v);
+            setting.getBalance().setSAA1099Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setPPZ8Volume(Boolean isAbs, int volume) {
+    public static void setPPZ8Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getPPZ8Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getPPZ8Volume()) + volume, -192, 20);
             mds.SetVolumePPZ8(v);
-            setting.getbalance().setPPZ8Volume(v);
+            setting.getBalance().setPPZ8Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setK051649Volume(Boolean isAbs, int volume) {
+    public static void setK051649Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getK051649Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getK051649Volume()) + volume, -192, 20);
             mds.SetVolumeK051649(v);
-            setting.getbalance().setK051649Volume(v);
+            setting.getBalance().setK051649Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setK054539Volume(Boolean isAbs, int volume) {
+    public static void setK054539Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getK054539Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getK054539Volume()) + volume, -192, 20);
             mds.SetVolumeK054539(v);
-            setting.getbalance().setK054539Volume(v);
+            setting.getBalance().setK054539Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setQSoundVolume(Boolean isAbs, int volume) {
+    public static void setQSoundVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getQSoundVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getQSoundVolume()) + volume, -192, 20);
             mds.SetVolumeQSoundCtr(v);
-            setting.getbalance().setQSoundVolume(v);
+            setting.getBalance().setQSoundVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setDMGVolume(Boolean isAbs, int volume) {
+    public static void setDMGVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getDMGVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getDMGVolume()) + volume, -192, 20);
             mds.setVolumeDMG(v);
-            setting.getbalance().setDMGVolume(v);
+            setting.getBalance().setDMGVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setGA20Volume(Boolean isAbs, int volume) {
+    public static void setGA20Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getGA20Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getGA20Volume()) + volume, -192, 20);
             mds.setVolumeGA20(v);
-            setting.getbalance().setGA20Volume(v);
+            setting.getBalance().setGA20Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYMZ280BVolume(Boolean isAbs, int volume) {
+    public static void setYMZ280BVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYMZ280BVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYMZ280BVolume()) + volume, -192, 20);
             mds.setVolumeYMZ280B(v);
-            setting.getbalance().setYMZ280BVolume(v);
+            setting.getBalance().setYMZ280BVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYMF271Volume(Boolean isAbs, int volume) {
+    public static void setYMF271Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYMF271Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYMF271Volume()) + volume, -192, 20);
             mds.setVolumeYMF271(v);
-            setting.getbalance().setYMF271Volume(v);
+            setting.getBalance().setYMF271Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setYMF262Volume(Boolean isAbs, int volume) {
+    public static void setYMF262Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYMF262Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYMF262Volume()) + volume, -192, 20);
             mds.SetVolumeYMF262(v);
-            setting.getbalance().setYMF262Volume(v);
+            setting.getBalance().setYMF262Volume(v);
         } catch (Exception ignoredd) {
         }
     }
 
-    public static void setYMF278BVolume(Boolean isAbs, int volume) {
+    public static void setYMF278BVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getYMF278BVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getYMF278BVolume()) + volume, -192, 20);
             mds.SetVolumeYMF278B(v);
-            setting.getbalance().setYMF278BVolume(v);
+            setting.getBalance().setYMF278BVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setMultiPCMVolume(Boolean isAbs, int volume) {
+    public static void setMultiPCMVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getMultiPCMVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getMultiPCMVolume()) + volume, -192, 20);
             mds.setVolumeMultiPCM(v);
-            setting.getbalance().setMultiPCMVolume(v);
+            setting.getBalance().setMultiPCMVolume(v);
         } catch (Exception ignored) {
         }
     }
 
 
-    public static void setAPUVolume(Boolean isAbs, int volume) {
+    public static void setAPUVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getAPUVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getAPUVolume()) + volume, -192, 20);
             mds.SetVolumeNES(v);
-            setting.getbalance().setAPUVolume(v);
+            setting.getBalance().setAPUVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setDMCVolume(Boolean isAbs, int volume) {
+    public static void setDMCVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getDMCVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getDMCVolume()) + volume, -192, 20);
             mds.SetVolumeDMC(v);
-            setting.getbalance().setDMCVolume(v);
+            setting.getBalance().setDMCVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setFDSVolume(Boolean isAbs, int volume) {
+    public static void setFDSVolume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getFDSVolume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getFDSVolume()) + volume, -192, 20);
             mds.SetVolumeFDS(v);
-            setting.getbalance().setFDSVolume(v);
+            setting.getBalance().setFDSVolume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setMMC5Volume(Boolean isAbs, int volume) {
+    public static void setMMC5Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getMMC5Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getMMC5Volume()) + volume, -192, 20);
             mds.SetVolumeMMC5(v);
-            setting.getbalance().setMMC5Volume(v);
+            setting.getBalance().setMMC5Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setN160Volume(Boolean isAbs, int volume) {
+    public static void setN160Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getN160Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getN160Volume()) + volume, -192, 20);
             mds.SetVolumeN160(v);
-            setting.getbalance().setN160Volume(v);
+            setting.getBalance().setN160Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setVRC6Volume(Boolean isAbs, int volume) {
+    public static void setVRC6Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getVRC6Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getVRC6Volume()) + volume, -192, 20);
             mds.SetVolumeVRC6(v);
-            setting.getbalance().setVRC6Volume(v);
+            setting.getBalance().setVRC6Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setVRC7Volume(Boolean isAbs, int volume) {
+    public static void setVRC7Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getVRC7Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getVRC7Volume()) + volume, -192, 20);
             mds.SetVolumeVRC7(v);
-            setting.getbalance().setVRC7Volume(v);
+            setting.getBalance().setVRC7Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setFME7Volume(Boolean isAbs, int volume) {
+    public static void setFME7Volume(boolean isAbs, int volume) {
         try {
-            int v = Common.Range((isAbs ? 0 : setting.getbalance().getFME7Volume()) + volume, -192, 20);
+            int v = Common.Range((isAbs ? 0 : setting.getBalance().getFME7Volume()) + volume, -192, 20);
             mds.SetVolumeFME7(v);
-            setting.getbalance().setFME7Volume(v);
+            setting.getBalance().setFME7Volume(v);
         } catch (Exception ignored) {
         }
     }
 
-    public static void setGimicOPNVolume(Boolean isAbs, int volume) {
-        setting.getbalance().setGimicOPNVolume(Common.Range((isAbs ? 0 : setting.getbalance().getGimicOPNVolume()) + volume, 0, 127));
+    public static void setGimicOPNVolume(boolean isAbs, int volume) {
+        setting.getBalance().setGimicOPNVolume(Common.Range((isAbs ? 0 : setting.getBalance().getGimicOPNVolume()) + volume, 0, 127));
     }
 
-    public static void setGimicOPNAVolume(Boolean isAbs, int volume) {
-        setting.getbalance().setGimicOPNAVolume(Common.Range((isAbs ? 0 : setting.getbalance().getGimicOPNAVolume()) + volume, 0, 127));
+    public static void setGimicOPNAVolume(boolean isAbs, int volume) {
+        setting.getBalance().setGimicOPNAVolume(Common.Range((isAbs ? 0 : setting.getBalance().getGimicOPNAVolume()) + volume, 0, 127));
     }
 
 

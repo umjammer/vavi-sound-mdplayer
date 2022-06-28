@@ -29,7 +29,7 @@ import mdsound.Rf5c68;
 
 
 public class frmRf5c68 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -84,7 +84,7 @@ public class frmRf5c68 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -193,7 +193,7 @@ public class frmRf5c68 extends frmBase {
         double m = Double.MAX_VALUE;
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
-            double a = Math.abs(freq - (0x0800 * Tables.pcmMulTbl[i % 12 + 12] * Math.pow(2, ((int) (i / 12) - 4))));
+            double a = Math.abs(freq - (0x0800 * Tables.pcmMulTbl[i % 12 + 12] * Math.pow(2, ((i / 12) - 4))));
             if (m > a) {
                 m = a;
                 n = i;

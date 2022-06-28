@@ -317,8 +317,8 @@ public class Nsf extends BaseDriver {
         dcf.reset();
         dcf.setParam(270, 256 - setting.getNsf().getHPF());//HPF:256-(Range0-256(Def:92))
         lpf.SetParam(4700.0, setting.getNsf().getLPF()); //LPF:(Range 0-400(Def:112))
-        //System.err.println("dcf:{0}", dcf.GetFactor());
-        //System.err.println("lpf:{0}", lpf.GetFactor());
+        //System.err.println("dcf:%d", dcf.GetFactor());
+        //System.err.println("lpf:%d", lpf.GetFactor());
 
         int i, bmax = 0;
 
@@ -326,10 +326,10 @@ public class Nsf extends BaseDriver {
             if (bmax < bankSwitch[i])
                 bmax = bankSwitch[i];
 
-        chipRegister.nes_mem.setImage(body, load_address, (int) bodySize);
+        chipRegister.nes_mem.setImage(body, load_address, bodySize);
 
         if (bmax != 0) {
-            chipRegister.nes_bank.setImage(body, load_address, (int) bodySize);
+            chipRegister.nes_bank.setImage(body, load_address, bodySize);
             for (i = 0; i < 8; i++)
                 chipRegister.nes_bank.setBankDefault((byte) (i + 8), bankSwitch[i]);
         }
@@ -495,8 +495,8 @@ public class Nsf extends BaseDriver {
             cpu_clock_rest += cpu_clock_per_sample;
             int cpu_clocks = (int) (cpu_clock_rest);
             if (cpu_clocks > 0) {
-                int real_cpu_clocks = chipRegister.nes_cpu.exec((int) cpu_clocks);
-                cpu_clock_rest -= (double) (real_cpu_clocks);
+                int real_cpu_clocks = chipRegister.nes_cpu.exec(cpu_clocks);
+                cpu_clock_rest -= real_cpu_clocks;
 
                 // tick APU frame sequencer
                 chipRegister.nes_dmc.dmc.tickFrameSequence(real_cpu_clocks);
@@ -513,7 +513,7 @@ public class Nsf extends BaseDriver {
                 apu_clock_rest -= apu_clocks;
             }
 
-            // render output
+            // render Output
             chipRegister.nes_apu.tick(apu_clocks);
             chipRegister.nes_apu.render(buf);
 
@@ -521,7 +521,7 @@ public class Nsf extends BaseDriver {
             _out[0] = (buf[0] * mul) >> 13;
             _out[1] = (buf[1] * mul) >> 13;
 
-            chipRegister.nes_dmc.tick((int) apu_clocks);
+            chipRegister.nes_dmc.tick(apu_clocks);
             chipRegister.nes_dmc.render(buf);
             mul = (int) (16384.0 * Math.pow(10.0, cDMC.getTVolume() / 40.0));
             _out[0] += (buf[0] * mul) >> 13;
@@ -583,8 +583,8 @@ public class Nsf extends BaseDriver {
             dcf.fastRender(_out);
             lpf.fastRender(_out);
 
-            _out[0] = (int) ((_out[0] * master_volume) >> 9);
-            _out[1] = (int) ((_out[1] * master_volume) >> 9);
+            _out[0] = (_out[0] * master_volume) >> 9;
+            _out[1] = (_out[1] * master_volume) >> 9;
 
             if (_out[0] < -32767)
                 _out[0] = -32767;
@@ -629,21 +629,21 @@ public class Nsf extends BaseDriver {
 
     mdsound.VisWaveBuffer visWB = new mdsound.VisWaveBuffer();
 
-    public Boolean playtime_detected = false;
+    public boolean playtime_detected = false;
 
     public void DetectLoop() {
         if (ld.isLooped(time_in_ms, 30000, 5000) && !playtime_detected) {
             playtime_detected = true;
-            totalCounter = (long) (ld.getLoopEnd() * setting.getOutputDevice().getSampleRate() / 1000L);
+            totalCounter = (long) ld.getLoopEnd() * setting.getOutputDevice().getSampleRate() / 1000L;
             if (totalCounter == 0) totalCounter = counter;
-            loopCounter = (long) ((ld.getLoopEnd() - ld.getLoopStart()) * setting.getOutputDevice().getSampleRate() / 1000L);
+            loopCounter = (long) (ld.getLoopEnd() - ld.getLoopStart()) * setting.getOutputDevice().getSampleRate() / 1000L;
         }
     }
 
     public void DetectSilent() {
-        if (silent_length > setting.getOutputDevice().getSampleRate() * 3 && !playtime_detected) {
+        if (silent_length > setting.getOutputDevice().getSampleRate() * 3L && !playtime_detected) {
             playtime_detected = true;
-            totalCounter = (long) (ld.getLoopEnd() * setting.getOutputDevice().getSampleRate() / 1000L);
+            totalCounter = (long) ld.getLoopEnd() * setting.getOutputDevice().getSampleRate() / 1000L;
             if (totalCounter == 0) totalCounter = counter;
             loopCounter = 0;
             stopped = true;

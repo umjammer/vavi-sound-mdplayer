@@ -11,14 +11,14 @@ public class XMemory {
     public void realloc(int size) {
         byte[] m = new byte[size];
         if (mm != null && mm.length > 0) {
-            int s = (mm.length < size ? mm.length : (int) size);
+            int s = (Math.min(mm.length, size));
             System.arraycopy(mm, 0, m, 0, s);
             mm = m;
         }
     }
 
     public void write(int v1, byte v2) {
-// System.err.println("{0:x08}:{1:x02}", v1, v2);
+// System.err.println("%08x:%02x", v1, v2);
         mm[v1] = v2;
     }
 
@@ -43,6 +43,6 @@ public class XMemory {
     }
 
     public int readInt(int v1) {
-        return (int) (mm[v1] << 24) + (int) (mm[v1 + 1] << 16) + (int) (mm[v1 + 2] << 8) + (int) (mm[v1 + 3] << 0);
+        return (mm[v1] << 24) + (mm[v1 + 1] << 16) + (mm[v1 + 2] << 8) + (mm[v1 + 3] << 0);
     }
 }

@@ -29,7 +29,7 @@ import mdsound.np.chip.NesN106;
 
 
 public class frmN106 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -61,7 +61,7 @@ public class frmN106 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -176,7 +176,7 @@ public class frmN106 extends frmBase {
             nyc.volume = Math.min(v, 19);
             nyc.volumeR = info[ch].getVolume();
 
-            nyc.freq = (int) info[ch].getFreq();
+            nyc.freq = info[ch].getFreq();
             v = info[ch].getNote(info[ch].getFreqHz()) - 4 * 12;
             nyc.note = (nyc.volumeL == 0 || !nyc.bit[0]) ? -1 : v;
 

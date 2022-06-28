@@ -2,7 +2,6 @@ package mdplayer.vst;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -38,9 +37,9 @@ import mdplayer.properties.Resources;
 
 public class frmVSTeffectList extends JFrame {
     private frmMain parent;
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public Setting setting;
-    private Boolean isInitialOpenFolder = true;
+    private boolean isInitialOpenFolder = true;
 
     static Preferences prefs = Preferences.userNodeForPackage(frmVSTeffectList.class);
 
@@ -60,8 +59,8 @@ public class frmVSTeffectList extends JFrame {
         ofd.setDialogTitle("ファイルを選択してください");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
-        if (!setting.getvst().getDefaultPath().isEmpty() && Directory.exists(setting.getvst().getDefaultPath()) && isInitialOpenFolder) {
-            ofd.setCurrentDirectory(new File(setting.getvst().getDefaultPath()));
+        if (!setting.getVst().getDefaultPath().isEmpty() && Directory.exists(setting.getVst().getDefaultPath()) && isInitialOpenFolder) {
+            ofd.setCurrentDirectory(new File(setting.getVst().getDefaultPath()));
 //        } else {
 //            ofd.RestoreDirectory = true;
         }
@@ -72,7 +71,7 @@ public class frmVSTeffectList extends JFrame {
             return;
         }
 
-        setting.getvst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
+        setting.getVst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
         parent.stop();
         while (!Audio.getTrdStopped()) {
             try { Thread.sleep(1); } catch (InterruptedException e) {}
@@ -114,8 +113,8 @@ public class frmVSTeffectList extends JFrame {
 
         vstInfos = Audio.getVSTInfos();
 
-        for (VstInfo vi : vstInfos) {
-            if (((VstMng.VstInfo2) vi).isInstrument) continue;
+        for (VstMng.VstInfo2 vi : vstInfos) {
+            if (vi.isInstrument) continue;
 
             dgvList.Rows.add(vi.key, vi.fileName, vi.power ? "ON" : "OFF", vi.editor ? "OPENED" : "CLOSED", vi.effectName);
         }
@@ -175,7 +174,7 @@ public class frmVSTeffectList extends JFrame {
                     vstInfos[e.RowIndex].location = vstInfos[e.RowIndex].vstPluginsForm.Location;
                     vstInfos[e.RowIndex].vstPluginsForm.Close();
                 } else {
-                    frmVST dlg = new frmVST();
+                    frmVST dlg = new frmVST(this);
                     dlg.PluginCommandStub = vstInfos[e.RowIndex].vstPlugins.PluginCommandStub;
                     dlg.Show(vstInfos[e.RowIndex]);
                     vstInfos[e.RowIndex].vstPluginsForm = dlg;

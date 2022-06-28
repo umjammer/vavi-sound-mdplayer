@@ -184,7 +184,7 @@ interface W {
     int envnum = envbank + 1;                                  //.ds.b	1			    * $91
 
     //	                      * $92
-    int octave = envnum + 1;                                   //			            * PSG octave
+    int octave = envnum + 1;                                   //			            * Psg octave
     int ch3mode = octave + 0;                                  //				        * bit7 効果音モード
     int pcm_tone = ch3mode + 0;                                //.ds.b	1			    * MPCM TONE MODE
     //                      * 0 : tone mode
@@ -363,7 +363,7 @@ interface W {
     int mmljob_adrs = we_pattern4 + W_We._work_size;           //.ds.l   1			    * mml analyze
     int softenv_adrs = mmljob_adrs + 4;                        //.ds.l   1			    * software envelope
     int lfojob_adrs = softenv_adrs + 4;                        //.ds.l   1			    * LFO JOB
-    int psgenv_adrs = lfojob_adrs + 4;                         //.ds.l   1			    * PSG ENV PATTERN
+    int psgenv_adrs = lfojob_adrs + 4;                         //.ds.l   1			    * Psg ENV PATTERN
     int qtjob = psgenv_adrs + 4;                               //.ds.l   1			    * address work
     int rrcut_adrs = qtjob + 4;                                //.ds.l   1			    * RR cut job
     int echo_adrs = rrcut_adrs + 4;                            //.ds.l   1			    * reverb
@@ -472,8 +472,8 @@ interface Dw {
     int TEMPO2 = 154;                //.ds.b   1			* $9A
     int TEMPO3 = 155;              //.ds.b   1			* $9B
 
-    int NOISE_M = 156;                //.ds.b   1			* $9C NOISE FREQ PSG MASTER
-    int NOISE_S = 157;                //.ds.b   1			* $9D NOISE FREQ PSG SLAVE
+    int NOISE_M = 156;                //.ds.b   1			* $9C NOISE FREQ Psg MASTER
+    int NOISE_S = 157;                //.ds.b   1			* $9D NOISE FREQ Psg SLAVE
     int NOISE_O = 158;             //.ds.b   1			* $9E NOISE FREQ OPM
 
     //.ds.b   639

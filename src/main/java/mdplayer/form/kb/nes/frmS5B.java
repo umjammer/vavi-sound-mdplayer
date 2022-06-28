@@ -28,7 +28,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmS5B extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -60,7 +60,7 @@ public class frmS5B extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -111,16 +111,16 @@ public class frmS5B extends frmBase {
         for (int ch = 0; ch < 3; ch++) { //SSG
             MDChipParams.Channel channel = newParam.channels[ch];
 
-            Boolean t = (S5BRegister[0x07] & (0x1 << ch)) == 0;
-            Boolean n = (S5BRegister[0x07] & (0x8 << ch)) == 0;
-            //System.err.println("r[8]={0:x} r[9]={1:x} r[10]={2:x}", S5BRegister[0x8], S5BRegister[0x9], S5BRegister[0xa]);
+            boolean t = (S5BRegister[0x07] & (0x1 << ch)) == 0;
+            boolean n = (S5BRegister[0x07] & (0x8 << ch)) == 0;
+            //System.err.println("r[8]=%x r[9]=%x r[10]=%x", S5BRegister[0x8], S5BRegister[0x9], S5BRegister[0xa]);
             channel.tn = (t ? 1 : 0) + (n ? 2 : 0);
             newParam.nfrq = S5BRegister[0x06] & 0x1f;
             newParam.efrq = S5BRegister[0x0c] * 0x100 + S5BRegister[0x0b];
             newParam.etype = (S5BRegister[0x0d] & 0xf);
 
             int v = (S5BRegister[0x08 + ch] & 0x1f);
-            v = v > 15 ? 15 : v;
+            v = Math.min(v, 15);
             channel.volume = (int) (((t || n) ? 1 : 0) * v * (20.0 / 16.0));
             if (!t && !n && channel.volume > 0) {
                 channel.volume--;

@@ -1,5 +1,6 @@
 package mdplayer.driver.zgm;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -56,9 +57,7 @@ public class Zgm extends BaseDriver {
         vgmSpeed = 1;
         vgmSpeedCounter = 0;
 
-        if (!getZGMInfo(vgmBuf)) return false;
-
-        return true;
+        return getZGMInfo(vgmBuf);
     }
 
     @Override
@@ -71,7 +70,7 @@ public class Zgm extends BaseDriver {
         throw new UnsupportedOperationException();
     }
 
-    private Boolean getZGMGD3Info(byte[] buf) {
+    private boolean getZGMGD3Info(byte[] buf) {
         if (buf == null) return false;
 
         int vgmGd3 = Common.getLE32(buf, (byte) 0x18);
@@ -106,9 +105,9 @@ public class Zgm extends BaseDriver {
         int fcc = Common.getLE24(vgmBuf, trackAddress);
         if (fcc != FCC_TRK) return false;
         int trackLength = Common.getLE32(vgmBuf, trackAddress + 3);
-        vgmLoopOffset = (int) Common.getLE32(vgmBuf, trackAddress + 7);
+        vgmLoopOffset = Common.getLE32(vgmBuf, trackAddress + 7);
         if (vgmLoopOffset != 0) loopCounter = 1;
-        vgmEof = (int) (trackAddress + trackLength);
+        vgmEof = trackAddress + trackLength;
 
         int pos = defineAddress;
 
@@ -135,7 +134,7 @@ public class Zgm extends BaseDriver {
         return true;
     }
 
-    private Boolean getZGMInfo(byte[] vgmBuf) {
+    private boolean getZGMInfo(byte[] vgmBuf) {
         if (vgmBuf == null) return false;
 
         try {
@@ -143,7 +142,7 @@ public class Zgm extends BaseDriver {
 
             if (!getZGMGD3Info(vgmBuf)) return false;
         } catch (Exception e) {
-            Log.write(String.format("XGMの情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), e.getStackTrace()));
+            Log.write(String.format("XGMの情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), Arrays.toString(e.getStackTrace())));
             return false;
         }
 

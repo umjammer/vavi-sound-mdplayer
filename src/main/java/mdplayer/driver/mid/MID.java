@@ -189,7 +189,7 @@ public class MID extends BaseDriver {
         return true;
     }
 
-    private Boolean getInformationHeader() {
+    private boolean getInformationHeader() {
         if (vgmBuf == null) return false;
         if (Common.getLE32(vgmBuf, 0) != FCC_MID) return false;
 
@@ -301,12 +301,12 @@ public class MID extends BaseDriver {
 // #endif
 
                     if ((cmd & 0xff) == 0xf0 || (cmd & 0xff) == 0xf7) {
-                        int eventLen = (int) Common.getDelta(ptr, vgmBuf);
+                        int eventLen = Common.getDelta(ptr, vgmBuf);
 // #if DEBUG
-                        //System.err.printf("evntLen:{0:D10} ", eventLen);
+                        //System.err.printf("evntLen:%10D ", eventLen);
                         System.err.printf("%2x ", cmd);
 // #endif
-                        List<Byte> eventData = new ArrayList<Byte>();
+                        List<Byte> eventData = new ArrayList<>();
                         eventData.add(cmd);
                         for (int j = 0; j < eventLen; j++) {
                             eventData.add(vgmBuf[ptr + j]);
@@ -321,13 +321,13 @@ public class MID extends BaseDriver {
 
                     } else if ((cmd & 0xff) == 0xff) {
                         byte eventType = vgmBuf[ptr++];
-                        int eventLen = (int) Common.getDelta(ptr, vgmBuf);
+                        int eventLen = Common.getDelta(ptr, vgmBuf);
 
 // #if DEBUG
                         System.err.printf("evntTyp:%2x evntLen:%10d ", eventType, eventLen);
 // #endif
 
-                        List<Byte> eventData = new ArrayList<Byte>();
+                        List<Byte> eventData = new ArrayList<>();
                         for (int j = 0; j < eventLen; j++) {
                             eventData.add(vgmBuf[ptr + j]);
 // #if DEBUG
@@ -447,14 +447,14 @@ public class MID extends BaseDriver {
                             if ((cmd & 0xf0) != 0xC0 && (cmd & 0xf0) != 0xD0) {
                                 chipRegister.sendMIDIout(model, trkPort.get(trk), cmd, vgmBuf[ptr], vgmBuf[ptr + 1], vstDelta);
 // #if DEBUG
-                                //System.err.printf("V1:%2x V2:{1:X2} ", vgmBuf[ptr], vgmBuf[ptr + 1]);
+                                //System.err.printf("V1:%2x V2:%2X ", vgmBuf[ptr], vgmBuf[ptr + 1]);
                                 System.err.printf("%2x %2x %2x", cmd, vgmBuf[ptr], vgmBuf[ptr + 1]);
 // #endif
                                 ptr += 2;
                             } else {
                                 chipRegister.sendMIDIout(model, trkPort.get(trk), cmd, vgmBuf[ptr], vstDelta);
 // #if DEBUG
-                                //System.err.printf("V1:{0:X2} V2:-- ", vgmBuf[ptr]);
+                                //System.err.printf("V1:%2X V2:-- ", vgmBuf[ptr]);
                                 System.err.printf("%2x %2x", cmd, vgmBuf[ptr]);
 // #endif
                                 ptr++;
@@ -467,14 +467,14 @@ public class MID extends BaseDriver {
                             if ((midiEvent & 0xf0) != 0xC0 && (midiEvent & 0xf0) != 0xD0) {
                                 chipRegister.sendMIDIout(model, trkPort.get(trk), midiEvent, cmd, vgmBuf[ptr], vstDelta);
 // #if DEBUG
-                                //System.err.printf("RunSta V1:{0:X2} V2:{1:X2} ", cmd, vgmBuf[ptr]);
+                                //System.err.printf("RunSta V1:%2X V2:%2X ", cmd, vgmBuf[ptr]);
                                 System.err.printf("%2x %2x %2x", midiEvent, cmd, vgmBuf[ptr]);
 // #endif
                                 ptr++;
                             } else {
                                 chipRegister.sendMIDIout(model, trkPort.get(trk), midiEvent, cmd, vstDelta);
 // #if DEBUG
-                                //System.err.printf("RunSta V1:{0:X2} V2:-- ", cmd);
+                                //System.err.printf("RunSta V1:%2X V2:-- ", cmd);
                                 System.err.printf("%2x %2x ", midiEvent, cmd);
 // #endif
                             }
@@ -532,7 +532,7 @@ public class MID extends BaseDriver {
         }
     }
 
-    private Boolean makeBeforeSendCommand() {
+    private boolean makeBeforeSendCommand() {
         try {
             MidiOutInfo[] infos = chipRegister.GetMIDIoutInfo();
             if (infos == null || infos.length < 1) return true;

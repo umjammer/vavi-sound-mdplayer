@@ -31,8 +31,8 @@ public abstract class ZgmChip extends Chip {
         defineInfo = new Zgm.DefineInfo();
         defineInfo.length = vgmBuf[dataPos + 0x03];
         defineInfo.chipIdentNo = Common.getLE32(vgmBuf, dataPos + 0x4);
-        defineInfo.commandNo = (int) Common.getLE16(vgmBuf, dataPos + 0x8);
-        defineInfo.clock = (int) Common.getLE32(vgmBuf, dataPos + 0xa);
+        defineInfo.commandNo = Common.getLE16(vgmBuf, dataPos + 0x8);
+        defineInfo.clock = Common.getLE32(vgmBuf, dataPos + 0xa);
         defineInfo.option = null;
         if (defineInfo.length > 14) {
             defineInfo.option = new byte[defineInfo.length - 14];

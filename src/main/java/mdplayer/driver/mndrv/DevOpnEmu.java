@@ -41,7 +41,7 @@ public class DevOpnEmu {
         reg.setD2_W(reg.getD2_W() | DevOpn._fnum_table[reg.getD0_W() / 2]);// mm.Readshort(Reg.a0 + reg.getD0_W());
         //    pea _opm_keyon(pc)
         _emu_set_fnum();
-        comlfo._init_lfo();
+        comlfo.initLfo();
         devopn._init_lfo_fm();
         devopm._opm_keyon();
     }
@@ -289,7 +289,7 @@ public class DevOpnEmu {
             comcmds._COM_BF();
             break;// BF
 
-        // PSG 系
+        // Psg 系
         case 0x40:
             comcmds._COM_C0();
             break;// C0 ソフトウェアエンベロープ 1
@@ -888,7 +888,7 @@ public class DevOpnEmu {
     //	pitch LFO 鋸波
     //
     public void _ch_fme_p_0() {
-        comlfo._com_lfo_saw();
+        comlfo.comLfoSaw();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc3();
     }
@@ -897,7 +897,7 @@ public class DevOpnEmu {
     //	pitch LFO portament
     //
     public void _ch_fme_p_1() {
-        comlfo._com_lfo_portament();
+        comlfo.comLfoPortament();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc3();
     }
@@ -906,7 +906,7 @@ public class DevOpnEmu {
     //	pitch LFO delta
     //
     public void _ch_fme_p_2() {
-        comlfo._com_lfo_triangle();
+        comlfo.comLfoTriangle();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc3();
     }
@@ -915,7 +915,7 @@ public class DevOpnEmu {
     //	pitch LFO portament2
     //
     public void _ch_fme_p_3() {
-        comlfo._com_lfo_portament();
+        comlfo.comLfoPortament();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc2();
     }
@@ -924,7 +924,7 @@ public class DevOpnEmu {
     //	pitch LFO delta2
     //
     public void _ch_fme_p_4() {
-        comlfo._com_lfo_triangle();
+        comlfo.comLfoTriangle();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc2();
     }
@@ -981,7 +981,7 @@ public class DevOpnEmu {
     //	pitch LFO 1shot
     //
     public void _ch_fme_p_6() {
-        comlfo._com_lfo_oneshot();
+        comlfo.comLfoOneshot();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc3();
     }
@@ -990,7 +990,7 @@ public class DevOpnEmu {
     //	pitch LFO 1shot 2
     //
     public void _ch_fme_p_7() {
-        comlfo._com_lfo_oneshot();
+        comlfo.comLfoOneshot();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc2();
     }

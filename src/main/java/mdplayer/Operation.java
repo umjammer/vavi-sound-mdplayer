@@ -8,24 +8,25 @@ import dotnet4j.Tuple;
 import mdplayer.form.sys.frmMain;
 
 
-enum Ope {
-    END,
-    PLAY,
-    STOP,
-    PAUSE,
-    RELEASE
-}
-
 public class Operation {
-    private Object lockObj = new Object();
 
-    private List<Tuple<Ope, Object[]>> cmdBuf = new ArrayList<Tuple<Ope, Object[]>>();
+    private enum Ope {
+        END,
+        PLAY,
+        STOP,
+        PAUSE,
+        RELEASE
+    }
+
+    private final Object lockObj = new Object();
+
+    private List<Tuple<Ope, Object[]>> cmdBuf = new ArrayList<>();
 
     private frmMain parent;
 
     public void SendCommand(Ope cmd, Object... option) {
         synchronized (lockObj) {
-            cmdBuf.add(new Tuple<Ope, Object[]>(cmd, option));
+            cmdBuf.add(new Tuple<>(cmd, option));
         }
     }
 
@@ -38,7 +39,7 @@ public class Operation {
 
     private void start() {
         while (true) {
-            Thread.sleep(10);
+            try { Thread.sleep(10); } catch (InterruptedException e) {}
             if (cmdBuf.size() < 1)
                 continue;
 
@@ -53,10 +54,10 @@ public class Operation {
 
                 switch (cmd.Item1) {
                 case PLAY:
-                    parent.opePlay();
+                    parent.play();
                     break;
                 case STOP:
-                    parent.opeStop();
+                    parent.stop();
                     break;
                 case PAUSE:
                     parent.pause();
@@ -66,7 +67,7 @@ public class Operation {
 
             // RELEASEを受け取るまで待ち状態
             while (true) {
-                Thread.sleep(10);
+                try { Thread.sleep(10); } catch (InterruptedException e) {}
                 if (cmdBuf.size() < 1)
                     continue;
 
@@ -81,8 +82,6 @@ public class Operation {
                     cmdBuf.remove(0);
                 }
             }
-
         }
     }
-
 }

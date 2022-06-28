@@ -9,7 +9,7 @@ import mdplayer.Setting;
 
 
 public abstract class BaseDriver {
-    public Setting setting = null;
+    public Setting setting;
 
     public double vgmSpeed = 1;
 
@@ -23,7 +23,7 @@ public abstract class BaseDriver {
 
     public int vgmCurLoop = 0;
 
-    public Boolean stopped = false;
+    public boolean stopped = false;
 
     public long vgmFrameCounter;
 
@@ -35,9 +35,9 @@ public abstract class BaseDriver {
 
     public int vstDelta = 0;
 
-    public Boolean isDataBlock = false;
+    public boolean isDataBlock = false;
 
-    public int[] ym2151Hosei = new int[] {
+    public final int[] ym2151Hosei = new int[] {
         0, 0
     };
 

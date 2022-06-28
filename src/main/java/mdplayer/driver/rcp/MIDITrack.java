@@ -10,6 +10,7 @@ import mdplayer.driver.rcp.MIDIEvent.MIDIRythm;
 
 
 public class MIDITrack implements Serializable {
+
     private Integer beforeIndex = null;
     private Integer afterIndex = null;
     private int number = 0;
@@ -22,46 +23,45 @@ public class MIDITrack implements Serializable {
     private String outUserDeviceName = "";
     private Integer outChannel = 0;
     private Integer inDeviceNumber = 0;
-    private String _InDeviceName = "";
-    private Integer _InUserDeviceNumber = 0;
-    private String _InUserDeviceName = "";
-    private Integer _InChannel = 0;
-    private Boolean _Solo = false;
-    private Boolean _Mute = false;
-    private Color _Color = Color.black;
-    private List<MIDIPart> _Part = new ArrayList<>();
-    private List<MIDIRythm> _Rythm = new ArrayList<>();
-    private Boolean _RythmMode = false;
-    private int _Key = 0;
-    private int _St = 0;
-    private Integer _StartPartIndex = null;
-    private Integer _EndPartIndex = null;
-    private int _NumberPart = 0;
-    //private int _NowPartIndex = 0;
-    private MIDIPart _NowPart = null;
-    private int _NowTick = 0;
-    private int _NextEventTick = 0;
-    private Boolean _EndMark = false;
-    private int _TrackNumber = 0;
-    private Stack<MIDIEvent> _LoopTargetEvent = new Stack<MIDIEvent>();
-    private Integer _LoopOrSameTargetEventIndex = null;
-    private Integer _SameMeasure = null;
-    private byte _RolandBase_gt = 0;
-    private byte _RolandBase_vel = 0;
-    private byte _RolandDev_gt = 0;
-    private byte _RolandDev_vel = 0;
-    private byte _RolandPara_gt = 0;
-    private byte _RolandPara_vel = 0;
-    private byte _YAMAHABase_gt = 0;
-    private byte _YAMAHABase_vel = 0;
-    private byte _YAMAHA_dev = 0;
-    private byte _YAMAHA_model = 0;
-    private byte _YAMAHAPara_gt = 0;
-    private byte _YAMAHAPara_vel = 0;
-    private int _KeySIG_SF = 0;
-    private int _KeySIG_MI = 0;
-    private int[] _NoteGateTime = new int[128];
-
+    private String inDeviceName = "";
+    private Integer inUserDeviceNumber = 0;
+    private String inUserDeviceName = "";
+    private Integer inChannel = 0;
+    private boolean solo = false;
+    private boolean mute = false;
+    private transient Color color = Color.black;
+    private List<MIDIPart> parts = new ArrayList<>();
+    private List<MIDIRythm> rythms = new ArrayList<>();
+    private boolean rythmMode = false;
+    private int key = 0;
+    private int st = 0;
+    private Integer startPartIndex = null;
+    private Integer endPartIndex = null;
+    private int numberPart = 0;
+    //private int nowPartIndex = 0;
+    private transient MIDIPart nowPart = null;
+    private transient int nowTick = 0;
+    private transient int nextEventTick = 0;
+    private transient boolean endMark = false;
+    private int trackNumber = 0;
+    private transient Stack<MIDIEvent> loopTargetEvents = new Stack<>();
+    private transient Integer loopOrSameTargetEventIndex = null;
+    private transient Integer sameMeasure = null;
+    private transient byte rolandBaseGt = 0;
+    private transient byte rolandBaseVel = 0;
+    private transient byte rolandDevGt = 0;
+    private transient byte rolandDevVel = 0;
+    private transient byte rolandParaGt = 0;
+    private transient byte rolandParaVel = 0;
+    private byte yamahaBaseGt = 0;
+    private byte yamahaBaseVel = 0;
+    private byte yamahaDev = 0;
+    private byte yamahaModel = 0;
+    private byte yamahaParagt = 0;
+    private byte yamahaParaVel = 0;
+    private int keySigSf = 0;
+    private int keySigMi = 0;
+    private transient int[] noteGateTime = new int[128];
 
     public void setBeforeIndex(Integer value) {
         beforeIndex = value;
@@ -160,132 +160,131 @@ public class MIDITrack implements Serializable {
     }
 
     public void setInDeviceName(String value) {
-        _InDeviceName = value;
+        inDeviceName = value;
     }
 
     String getInDeviceName() {
-        return _InDeviceName;
+        return inDeviceName;
     }
 
     public void setInUserDeviceNumber(Integer value) {
-        _InUserDeviceNumber = value;
+        inUserDeviceNumber = value;
     }
 
     Integer getInUserDeviceNumber() {
-        return _InUserDeviceNumber;
+        return inUserDeviceNumber;
     }
 
     public void setInUserDeviceName(String value) {
-        _InUserDeviceName = value;
+        inUserDeviceName = value;
     }
 
     String getInUserDeviceName() {
-        return _InUserDeviceName;
+        return inUserDeviceName;
     }
 
     public void setInChannel(Integer value) {
-        _InChannel = value;
+        inChannel = value;
     }
 
     Integer getInChannel() {
-        return _InChannel;
+        return inChannel;
     }
 
-    public void setSolo(Boolean value) {
-        _Solo = value;
+    public void setSolo(boolean value) {
+        solo = value;
     }
 
-    Boolean getSolo() {
-        return _Solo;
+    boolean getSolo() {
+        return solo;
     }
 
-    public void setMute(Boolean value) {
-        _Mute = value;
+    public void setMute(boolean value) {
+        mute = value;
     }
 
-    Boolean getMute() {
-        return _Mute;
+    boolean getMute() {
+        return mute;
     }
 
-    //@XmlIgnore
     public void setColor(Color value) {
-        _Color = value;
+        color = value;
     }
 
     Color getColor() {
-        return _Color;
+        return color;
     }
 
     public void setPart(List<MIDIPart> value) {
-        _Part = value;
+        parts = value;
     }
 
     List<MIDIPart> getPart() {
-        return _Part;
+        return parts;
     }
 
     public void setRythm(List<MIDIRythm> value) {
-        _Rythm = value;
+        rythms = value;
     }
 
     List<MIDIRythm> getRythm() {
-        return _Rythm;
+        return rythms;
     }
 
-    public void setRythmMode(Boolean value) {
-        _RythmMode = value;
+    public void setRythmMode(boolean value) {
+        rythmMode = value;
     }
 
-    Boolean getRythmMode() {
-        return _RythmMode;
+    boolean getRythmMode() {
+        return rythmMode;
     }
 
     public void setKey(int value) {
-        _Key = value;
+        key = value;
     }
 
     int getKey() {
-        return _Key;
+        return key;
     }
 
     public void setSt(int value) {
-        _St = value;
+        st = value;
     }
 
     int getSt() {
-        return _St;
+        return st;
     }
 
     public void setStartPartIndex(Integer value) {
-        _StartPartIndex = value;
+        startPartIndex = value;
     }
 
     Integer getStartPartIndex() {
-        return _StartPartIndex;
+        return startPartIndex;
     }
 
     public void setEndPartIndex(Integer value) {
-        _EndPartIndex = value;
+        endPartIndex = value;
     }
 
     Integer getEndPartIndex() {
-        return _EndPartIndex;
+        return endPartIndex;
     }
 
     public void setNumberPart(int value) {
-        _NumberPart = value;
+        numberPart = value;
     }
 
     int getNumberPart() {
-        return _NumberPart;
+        return numberPart;
     }
 
     public void setTrackNumber(int value) {
-        _TrackNumber = value;
+        trackNumber = value;
     }
 
     int getTrackNumber() {
-        return _TrackNumber;
+        return trackNumber;
     }
 
     private int mCounter = 0;
@@ -293,282 +292,268 @@ public class MIDITrack implements Serializable {
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
     public void setNowPart(MIDIPart value) {
-        _NowPart = value;
+        nowPart = value;
     }
 
     MIDIPart getNowPart() {
-        return _NowPart;
+        return nowPart;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
     public void setNowTick(int value) {
-        _NowTick = value;
+        nowTick = value;
     }
 
     int getNowTick() {
-        return _NowTick;
+        return nowTick;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
     public void setNextEventTick(int value) {
-        _NextEventTick = value;
+        nextEventTick = value;
     }
 
     int getNextEventTick() {
-        return _NextEventTick;
+        return nextEventTick;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
-    public void setEndMark(Boolean value) {
-        _EndMark = value;
+    public void setEndMark(boolean value) {
+        endMark = value;
     }
 
-    Boolean getEndMark() {
-        return _EndMark;
-    }
-
-    /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
-     */
-    //@XmlIgnore
-    public void setLoopTargetEvent(Stack<MIDIEvent> value) {
-        _LoopTargetEvent = value;
-    }
-
-    Stack<MIDIEvent> getLoopTargetEvent() {
-        return _LoopTargetEvent;
+    boolean getEndMark() {
+        return endMark;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
+    public void setLoopTargetEvents(Stack<MIDIEvent> value) {
+        loopTargetEvents = value;
+    }
+
+    Stack<MIDIEvent> getLoopTargetEvents() {
+        return loopTargetEvents;
+    }
+
+    /**
+     * 演奏時専用なのでそれ以外の用途で使用不可
+     */
     public void setLoopOrSameTargetEventIndex(Integer value) {
-        _LoopOrSameTargetEventIndex = value;
+        loopOrSameTargetEventIndex = value;
     }
 
     Integer getLoopOrSameTargetEventIndex() {
-        return _LoopOrSameTargetEventIndex;
+        return loopOrSameTargetEventIndex;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
     public void setSameMeasure(Integer value) {
-        _SameMeasure = value;
+        sameMeasure = value;
     }
 
     Integer getSameMeasure() {
-        return _SameMeasure;
+        return sameMeasure;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
     public void setRolandBase_gt(byte value) {
-        _RolandBase_gt = value;
+        rolandBaseGt = value;
     }
 
     byte getRolandBase_gt() {
-        return _RolandBase_gt;
+        return rolandBaseGt;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
     public void setRolandBase_vel(byte value) {
-        _RolandBase_vel = value;
+        rolandBaseVel = value;
     }
 
     byte getRolandBase_vel() {
-        return _RolandBase_vel;
+        return rolandBaseVel;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
     public void setRolandDev_gt(byte value) {
-        _RolandDev_gt = value;
+        rolandDevGt = value;
     }
 
     byte getRolandDev_gt() {
-        return _RolandDev_gt;
+        return rolandDevGt;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
     public void setRolandDev_vel(byte value) {
-        _RolandDev_vel = value;
+        rolandDevVel = value;
     }
 
     byte getRolandDev_vel() {
-        return _RolandDev_vel;
+        return rolandDevVel;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
     public void RolandPara_gt(byte value) {
-        _RolandPara_gt = value;
+        rolandParaGt = value;
     }
 
     byte getRolandPara_gt() {
-        return _RolandPara_gt;
+        return rolandParaGt;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
     public void RolandPara_vel(byte value) {
-        _RolandPara_vel = value;
+        rolandParaVel = value;
     }
 
     byte getRolandPara_vel() {
-        return _RolandPara_vel;
+        return rolandParaVel;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使用不可
      */
-    //@XmlIgnore
     public void setNoteGateTime(int[] value) {
-        _NoteGateTime = value;
+        noteGateTime = value;
     }
 
     int[] getNoteGateTime() {
-        return _NoteGateTime;
+        return noteGateTime;
     }
 
     public byte getYAMAHABase_gt() {
-        return _YAMAHABase_gt;
+        return yamahaBaseGt;
     }
 
     void setYAMAHABase_gt(byte value) {
-        _YAMAHABase_gt = value;
+        yamahaBaseGt = value;
     }
 
     public byte getYAMAHABase_vel() {
-        return _YAMAHABase_vel;
+        return yamahaBaseVel;
     }
 
     void setYAMAHABase_vel(byte value) {
-        _YAMAHABase_vel = value;
+        yamahaBaseVel = value;
     }
 
     public byte getYAMAHA_dev() {
-        return _YAMAHA_dev;
+        return yamahaDev;
     }
 
     void setYAMAHA_dev(byte value) {
-        _YAMAHA_dev = value;
+        yamahaDev = value;
     }
 
     public byte getYAMAHA_model() {
-        return _YAMAHA_model;
+        return yamahaModel;
     }
 
     void setYAMAHA_model(byte value) {
-        _YAMAHA_model = value;
+        yamahaModel = value;
     }
 
     public byte getYAMAHAPara_gt() {
-        return _YAMAHAPara_gt;
+        return yamahaParagt;
     }
 
     void setYAMAHAPara_gt(byte value) {
-        _YAMAHAPara_gt = value;
+        yamahaParagt = value;
     }
 
     public byte getYAMAHAPara_vel() {
-        return _YAMAHAPara_vel;
+        return yamahaParaVel;
     }
 
     void setYAMAHAPara_vel(byte value) {
-        _YAMAHAPara_vel = value;
+        yamahaParaVel = value;
     }
 
     public int getKeySIG_SF() {
-        return _KeySIG_SF;
+        return keySigSf;
     }
 
     void setKeySIG_SF(int value) {
-        _KeySIG_SF = value;
+        keySigSf = value;
     }
 
     public int getKeySIG_MI() {
-        return _KeySIG_MI;
+        return keySigMi;
     }
 
     void setKeySIG_MI(int value) {
-        _KeySIG_MI = value;
+        keySigMi = value;
     }
 
-    //初めのpartを得る
+    /** 初めのpartを得る */
     public MIDIPart getStartPart() {
         if (getStartPartIndex() == null) return null;
 
-        return _Part.get(getStartPartIndex());
+        return parts.get(getStartPartIndex());
     }
 
-    //最後のpartを得る
+    /** 最後のpartを得る */
     public MIDIPart getEndPart() {
         if (getEndPartIndex() == null) return null;
 
-        return _Part.get(getEndPartIndex());
+        return parts.get(getEndPartIndex());
     }
 
-    //指定したpartの次のpartを得る
-    public MIDIPart getNextPart(MIDIPart prt) {
-        if (prt == null || prt.getAfterIndex() == null) return null;
+    /** 指定したpartの次のpartを得る */
+    public MIDIPart getNextPart(MIDIPart part) {
+        if (part == null || part.getAfterIndex() == null) return null;
 
-        return _Part.get(prt.getAfterIndex());
+        return parts.get(part.getAfterIndex());
     }
 
-    //指定したpartの前の小節を得る
+    /** 指定したpartの前の小節を得る */
     public MIDIPart getPrevPart(MIDIPart prt) {
         if (prt == null || prt.getBeforeIndex() == null) return null;
 
-        return _Part.get(prt.getBeforeIndex());
+        return parts.get(prt.getBeforeIndex());
     }
 
-    //インデックスからpartを得る
+    /** インデックスからpartを得る */
     public MIDIPart searchPart(int index) {
-        int st_d = Integer.MAX_VALUE;
-        int ed_d = Integer.MAX_VALUE;
-        int now_d = Integer.MAX_VALUE;
-        int mode = -1;
-        if (this.getStartPartIndex() != null) st_d = Math.abs((int) this.getStartPartIndex() - index);
-        if (this.getEndPartIndex() != null) ed_d = Math.abs((int) this.getEndPartIndex() - index);
-        if (this._NowPart != null) now_d = Math.abs(this._NowPart.getENumber() - index);
-        MIDIPart prt = null;
-        if (st_d < ed_d && st_d < now_d) {
-            prt = this.getStartPart();
+        int stD = Integer.MAX_VALUE;
+        int edD = Integer.MAX_VALUE;
+        int nowD = Integer.MAX_VALUE;
+        int mode;
+        if (this.getStartPartIndex() != null) stD = Math.abs(this.getStartPartIndex() - index);
+        if (this.getEndPartIndex() != null) edD = Math.abs(this.getEndPartIndex() - index);
+        if (this.nowPart != null) nowD = Math.abs(this.nowPart.getENumber() - index);
+        MIDIPart part;
+        if (stD < edD && stD < nowD) {
+            part = this.getStartPart();
             mode = 0;
-        } else if (ed_d < st_d && ed_d < now_d) {
-            prt = this.getEndPart();
+        } else if (edD < stD && edD < nowD) {
+            part = this.getEndPart();
             mode = 1;
-        } else if (now_d <= st_d && now_d <= ed_d) {
-            prt = this._NowPart;
-            if (prt.getNumber() < index) {
+        } else if (nowD <= stD && nowD <= edD) {
+            part = this.nowPart;
+            if (part.getNumber() < index) {
                 mode = 0;
             } else {
                 mode = 1;
@@ -577,17 +562,17 @@ public class MIDITrack implements Serializable {
 
         switch (mode) {
         case 0:
-            while (prt != null) {
-                if (prt.getNumber() == index)
-                    return prt;
-                prt = this.getNextPart(prt);
+            while (part != null) {
+                if (part.getNumber() == index)
+                    return part;
+                part = this.getNextPart(part);
             }
             break;
         case 1:
-            while (prt != null) {
-                if (prt.getNumber() == index)
-                    return prt;
-                prt = this.getPrevPart(prt);
+            while (part != null) {
+                if (part.getNumber() == index)
+                    return part;
+                part = this.getPrevPart(part);
             }
             break;
         }
@@ -595,16 +580,16 @@ public class MIDITrack implements Serializable {
         return null;
     }
 
-    //全てのPartをメモリから消去する
+    /** 全てのPartをメモリから消去する */
     public void clearAllPartMemory() {
-        this._Part.clear();
+        this.parts.clear();
         this.mCounter = 0;
         this.setStartPartIndex(null);
         this.setEndPartIndex(null);
         this.setNumberPart(0);
     }
 
-    //全てのPartを消去する
+    /** 全てのPartを消去する */
     public void clearEvent() {
         this.mCounter = 0;
         this.setStartPartIndex(null);
@@ -614,21 +599,21 @@ public class MIDITrack implements Serializable {
     /**
      * partを挿入する
      * (既存partが増えると挿入位置を特定するのに時間がかかるようになるので注意)
-     * @param StartTick 絶対値によるTick値
-     * @param prt part
+     * @param startTick 絶対値によるTick値
+     * @param part part
      */
-    public void insertPart(int StartTick, MIDIPart prt) {
-        if (prt == null) return;
-        prt.setStartTick(StartTick);
+    public void insertPart(int startTick, MIDIPart part) {
+        if (part == null) return;
+        part.setStartTick(startTick);
 
-        if (this._Part == null) {
-            this._Part = new ArrayList<>();
+        if (this.parts == null) {
+            this.parts = new ArrayList<>();
         }
-        if (this._Part.size() == 0 || this.getStartPartIndex() == null) { // 初めの prt
-            prt.setAfterIndex(null);
-            prt.setBeforeIndex(null);
-            prt.setNumber(this.getNumber());
-            this.getPart().add(prt);
+        if (this.parts.size() == 0 || this.getStartPartIndex() == null) { // 初めの part
+            part.setAfterIndex(null);
+            part.setBeforeIndex(null);
+            part.setNumber(this.getNumber());
+            this.getPart().add(part);
             this.setStartPartIndex(0);
             this.setEndPartIndex(0);
             this.mCounter = 1;
@@ -639,7 +624,7 @@ public class MIDITrack implements Serializable {
         // 遅くなる原因になっているループ
         MIDIPart pPrt = getStartPart();
         while (true) {
-            if (pPrt.getStartTick() > prt.getStartTick()) {
+            if (pPrt.getStartTick() > part.getStartTick()) {
                 pPrt = getPrevPart(pPrt);
                 break;
             }
@@ -648,16 +633,16 @@ public class MIDITrack implements Serializable {
             pPrt = ppPrt;
         }
 
-        prt.setBeforeIndex(pPrt.getNumber());
-        prt.setAfterIndex(pPrt.getAfterIndex());
-        prt.setNumber(this.getNumberPart());
-        pPrt.setAfterIndex(prt.getNumber());
-        this._Part.add(prt);
-        if (prt.getAfterIndex() == null) {
+        part.setBeforeIndex(pPrt.getNumber());
+        part.setAfterIndex(pPrt.getAfterIndex());
+        part.setNumber(this.getNumberPart());
+        pPrt.setAfterIndex(part.getNumber());
+        this.parts.add(part);
+        if (part.getAfterIndex() == null) {
             this.setEndPartIndex(this.getNumberPart());
         } else {
-            pPrt = getNextPart(prt);
-            pPrt.setBeforeIndex(prt.getNumber());
+            pPrt = getNextPart(part);
+            pPrt.setBeforeIndex(part.getNumber());
         }
         this.mCounter++;
         this.setNumberPart(this.getNumberPart() + 1);

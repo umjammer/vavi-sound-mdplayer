@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2011-2014 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2009-2014 VICE Project
@@ -32,23 +32,22 @@ import mdplayer.driver.sid.mem;
 public class Sprites {
 
     public static final int SPRITES = 8;
-    private byte enable, y_expansion;
-    private byte exp_flop;
+    private byte enable, yExpansion;
+    private byte expFlop;
     private byte dma;
-    private byte[] mc_base = new byte[SPRITES];
+    private byte[] mcBase = new byte[SPRITES];
     private byte[] mc = new byte[SPRITES];
 
-    public Sprites(byte[] regs) // [0x40]) :
-    {
+    public Sprites(byte[] regs) {
         enable = regs[0x15];
-        y_expansion = regs[0x17];
+        yExpansion = regs[0x17];
     }
 
     public void reset() {
-        exp_flop = (byte) 0xff;
+        expFlop = (byte) 0xff;
         dma = 0;
 
-        mem.memset(mc_base, (byte) 0, mc_base.length);
+        mem.memset(mcBase, (byte) 0, mcBase.length);
         mem.memset(mc, (byte) 0, mc.length);
     }
 
@@ -69,9 +68,9 @@ public class Sprites {
     public void updateMcBase() {
         byte mask = 1;
         for (int i = 0; i < SPRITES; i++, mask <<= 1) {
-            if ((exp_flop & mask) != 0) {
-                mc_base[i] = mc[i];
-                if (mc_base[i] == 0x3f)
+            if ((expFlop & mask) != 0) {
+                mcBase[i] = mc[i];
+                if (mcBase[i] == 0x3f)
                     dma &= (byte) ~mask;
             }
         }
@@ -81,33 +80,30 @@ public class Sprites {
      * Calculate sprite expansion.
      */
     public void checkExp() {
-        exp_flop ^= (byte) (dma & y_expansion);
+        expFlop ^= (byte) (dma & yExpansion);
     }
 
     /**
      * Check if sprite instanceof displayed.
      */
     public void checkDisplay() {
-        for (int i = 0; i < SPRITES; i++) {
-            mc[i] = mc_base[i];
-        }
+        System.arraycopy(mcBase, 0, mc, 0, SPRITES);
     }
 
     /**
      * Calculate sprite DMA.
      *
-     * @rasterY y raster position
-     * @regs the VIC registers
+     * @param rasterY y raster position
+     * @param regs the VIC registers
      */
-    public void checkDma(int rasterY, byte[] regs)// [0x40])
-    {
+    public void checkDma(int rasterY, byte[] regs) {
         byte y = (byte) (rasterY & 0xff);
         byte mask = 1;
         for (int i = 0; i < SPRITES; i++, mask <<= 1) {
             if ((enable & mask) != 0 && (y == regs[(i << 1) + 1]) && (dma & mask) == 0) {
                 dma |= mask;
-                mc_base[i] = 0;
-                exp_flop |= mask;
+                mcBase[i] = 0;
+                expFlop |= mask;
             }
         }
     }
@@ -121,18 +117,16 @@ public class Sprites {
     public void lineCrunch(byte data, int lineCycle) {
         byte mask = 1;
         for (int i = 0; i < SPRITES; i++, mask <<= 1) {
-            if ((data & mask) == 0 && (exp_flop & mask) == 0) {
+            if ((data & mask) == 0 && (expFlop & mask) == 0) {
                 // sprite crunch
                 if (lineCycle == 14) {
-                    byte mc_i = mc[i];
-                    byte mcBase_i = mc_base[i];
 
-                    mc[i] = (byte) ((0x2a & (mcBase_i & mc_i)) | (0x15 & (mcBase_i | mc_i)));
+                    mc[i] = (byte) ((0x2a & (mcBase[i] & mc[i])) | (0x15 & (mcBase[i] | mc[i])));
 
-                    // mcbase will be set from mc on the following clock call
+                    // mcBase will be set from mc on the following clock call
                 }
 
-                exp_flop |= mask;
+                expFlop |= mask;
             }
         }
     }
@@ -142,7 +136,7 @@ public class Sprites {
      *
      * @param val bitmask for selected sprites
      */
-    public Boolean isDma(int val) {
+    public boolean isDma(int val) {
         return (dma & val) != 0;
     }
 }

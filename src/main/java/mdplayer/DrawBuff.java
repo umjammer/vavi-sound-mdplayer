@@ -310,14 +310,14 @@ public class DrawBuff {
         }
     }
 
-    public static void screenInitYM2612(FrameBuffer screen, int tp, Boolean onlyPCM, Boolean isXGM) {
+    public static void screenInitYM2612(FrameBuffer screen, int tp, boolean onlyPCM, boolean isXGM) {
         if (screen == null)
             return;
 
         for (int y = 0; y < 9; y++) {
 
             int d = 99;
-            // Boolean YM2612type = chipID==0 ?
+            // boolean YM2612type = chipID==0 ?
             // parent.setting.YM2612Type.UseScci : setting.YM2612SType.UseScci;
             int tp6 = tp;
             if (tp6 == 1 && onlyPCM) {
@@ -382,7 +382,7 @@ public class DrawBuff {
                 drawKbn(screen, 32 + kx, y * 8 + 8, kt, tp);
             }
 
-            Boolean dm = true;
+            boolean dm = true;
             DrawBuff.ChYM3526(screen, y, dm, false, tp);
 
             // Volume
@@ -423,7 +423,7 @@ public class DrawBuff {
                 drawKbn(screen, 32 + kx, y * 8 + 8, kt, tp);
             }
 
-            Boolean dm = true;
+            boolean dm = true;
             DrawBuff.ChYM3812(screen, y, dm, false, tp);
 
             // Volume
@@ -448,7 +448,7 @@ public class DrawBuff {
                 drawKbn(screen, 32 + kx, y * 8 + 8, kt, tp);
             }
 
-            // Boolean bd = false;
+            // boolean bd = false;
             // ChYMF262(screen, y,bd, true, tp);
             // ChYMF262(screen, y,bd, false, tp);
             drawPanP(screen, 24, y * 8 + 8, 3, tp);
@@ -520,7 +520,7 @@ public class DrawBuff {
                 drawKbn(screen, 32 + kx, ch * 16 + 8, kt, 0);
             }
             drawFont8(screen, 296, ch * 16 + 8, 1, "   ");
-            Boolean m = true;
+            boolean m = true;
             ChNESDMC(screen, ch, m, false, 0);
         }
     }
@@ -535,7 +535,7 @@ public class DrawBuff {
             drawKbn(screen, 32 + kx, 8, kt, 0);
         }
         drawFont8(screen, 296, 8, 1, "   ");
-        Boolean m = true;
+        boolean m = true;
         ChFDS(screen, 0, m, false, 0);
     }
 
@@ -712,11 +712,11 @@ public class DrawBuff {
 
     /**
      * ボリュームメータ描画
-     * @param screen 描画対象バッファ@param 
-     * @param x x座標(x1)@param  @param y y座標(x1)@param 
-     * @param c 0:Mono 1:Stereo(L) 2:Stereo(R)@param 
-     * @param ov 前回の値(ref)@param  @param nv 今回の値@param 
-     * @param tp 0:EMU 1:Real @param 
+     * @param screen 描画対象バッファ@param
+     * @param x x座標(x1)@param  @param y y座標(x1)@param
+     * @param c 0:Mono 1:Stereo(L) 2:Stereo(R)@param
+     * @param ov 前回の値(ref)@param  @param nv 今回の値@param
+     * @param tp 0:EMU 1:Real @param
      */
     public static void volume(FrameBuffer screen, int x, int y, int c, int ov, int nv, int tp) {
         if (ov == nv)
@@ -1395,120 +1395,120 @@ public class DrawBuff {
             return;
         }
 
-        ChAY8910_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : nm, tp);
+        ChAY8910_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         om = nm;
     }
 
-    public static void ChS5B(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChS5B(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChS5B_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : nm, tp);
+        ChS5B_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         om = nm;
     }
 
-    public static void ChC140(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChC140(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChC140_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, tp);
+        ChC140_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         om = nm;
     }
 
-    public static void ChQSound(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChQSound(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
         if (ch < 16) {
-            ChQSound_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : nm, tp);
+            ChQSound_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         } else {
-            ChQSoundAdpcm_P(screen, 224, 8 + ch * 8, ch - 16, nm == null ? false : (Boolean) nm, tp);
+            ChQSoundAdpcm_P(screen, 224, 8 + ch * 8, ch - 16, nm != null && nm, tp);
         }
         om = nm;
     }
 
-    public static void ChC352(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChC352(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChC352_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : nm, tp);
+        ChC352_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         om = nm;
     }
 
-    public static void ChHuC6280(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChHuC6280(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChHuC6280_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : nm, tp);
+        ChHuC6280_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         om = nm;
     }
 
-    public static void ChOKIM6295(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChOKIM6295(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChOKIM6295_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, tp);
+        ChOKIM6295_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         om = nm;
     }
 
-    public static void ChK051649(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChK051649(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChK051649_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, tp);
+        ChK051649_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         om = nm;
     }
 
-    public static void ChRF5C164(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChRF5C164(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChRF5C164_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, tp);
+        ChRF5C164_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         om = nm;
     }
 
-    public static void ChOKIM6258(FrameBuffer screen, Boolean om, Boolean nm, int tp) {
+    public static void ChOKIM6258(FrameBuffer screen, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChOKIM6258_P(screen, 0, 8 + 0 * 8, nm == null ? false : (Boolean) nm, tp);
+        ChOKIM6258_P(screen, 0, 8 + 0 * 8, nm != null && nm, tp);
         om = nm;
     }
 
-    public static void ChSegaPCM(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChSegaPCM(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChSegaPCM_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, tp);
+        ChSegaPCM_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         om = nm;
     }
 
-    public static void ChSN76489(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChSN76489(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChSN76489_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, tp);
+        ChSN76489_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         om = nm;
     }
 
@@ -1526,48 +1526,48 @@ public class DrawBuff {
         osc.note = nsc.note;
     }
 
-    public static void ChYM2151(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChYM2151(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChYM2151_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, tp);
+        ChYM2151_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         om = nm;
     }
 
-    public static void ChYM2203(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChYM2203(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChYM2203_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, tp);
+        ChYM2203_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void Ch3YM2203(FrameBuffer screen, int ch, Boolean om, Boolean nm, Boolean oe, Boolean ne, int tp) {
+    public static void Ch3YM2203(FrameBuffer screen, int ch, boolean om, Boolean nm, boolean oe, boolean ne, int tp) {
 
         if (om == nm && oe == ne) {
             return;
         }
 
-        Ch3YM2612_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, ne, tp);
+        Ch3YM2612_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : nm, ne, tp);
         om = nm;
         oe = ne;
     }
 
-    public static void chYM2413(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void chYM2413(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChYM2413_P(screen, 0, ch < 9 ? (8 + ch * 8) : (8 + 9 * 8), ch, nm == null ? false : (Boolean) nm, tp);
+        ChYM2413_P(screen, 0, ch < 9 ? (8 + ch * 8) : (8 + 9 * 8), ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void ChY8950(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChY8950(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
@@ -1576,48 +1576,48 @@ public class DrawBuff {
                 0,
                 ch < 9 ? (8 + ch * 8) : (ch < 14 ? (8 + 10 * 8) : (8 + 9 * 8)),
                 ch,
-                nm == null ? false : (Boolean) nm,
+                nm == null ? false : nm,
                 tp);
         om = nm;
     }
 
-    public static void ChYM3526(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChYM3526(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
-        ChYM3526_P(screen, 0, ch < 9 ? (8 + ch * 8) : (8 + 9 * 8), ch, nm == null ? false : (Boolean) nm, tp);
+        ChYM3526_P(screen, 0, ch < 9 ? (8 + ch * 8) : (8 + 9 * 8), ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void ChYM3812(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChYM3812(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
-        ChYM3812_P(screen, 0, ch < 9 ? (8 + ch * 8) : (8 + 9 * 8), ch, nm == null ? false : (Boolean) nm, tp);
+        ChYM3812_P(screen, 0, ch < 9 ? (8 + ch * 8) : (8 + 9 * 8), ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    private static byte[] YMF262Ch = new byte[] {
+    private static final byte[] YMF262Ch = new byte[] {
             0, 3, 1, 4, 2, 5, 6, 7, 8, 9, 12, 10, 13, 11, 14, 15, 16, 17, 18, 19, 20, 21, 22
     };
 
-    public static void ChYMF262(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChYMF262(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
-        ChYMF262_P(screen, 0, ch < 18 ? (8 + ch * 8) : (8 + 18 * 8), YMF262Ch[ch], nm == null ? false : (Boolean) nm, tp);
+        ChYMF262_P(screen, 0, ch < 18 ? (8 + ch * 8) : (8 + 18 * 8), YMF262Ch[ch], nm == null ? false : nm, tp);
         om = nm;
     }
 
-    private static byte[] YMF278BCh = new byte[] {
+    private static final byte[] YMF278BCh = new byte[] {
             0, 3, 1, 4, 2, 5, 6, 7, 8, 9, 12, 10, 13, 11, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
             32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46
     };
 
-    public static void ChYMF278B(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChYMF278B(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
@@ -1626,175 +1626,175 @@ public class DrawBuff {
                 0,
                 ch < 18 ? (8 + ch * 8) : (ch < 23 ? (8 + 18 * 8) : (8 + (ch - 4) * 8)),
                 YMF278BCh[ch],
-                nm == null ? false : (Boolean) nm,
+                nm == null ? false : nm,
                 tp);
         om = nm;
     }
 
-    public static void ChYM2608(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChYM2608(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChYM2608_P(screen, 1, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, tp);
+        ChYM2608_P(screen, 1, 8 + ch * 8, ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void Ch3YM2608(FrameBuffer screen, int ch, Boolean om, Boolean nm, Boolean oe, Boolean ne, int tp) {
+    public static void Ch3YM2608(FrameBuffer screen, int ch, boolean om, Boolean nm, boolean oe, boolean ne, int tp) {
 
         if (om == nm && oe == ne) {
             return;
         }
 
-        Ch3YM2612_P(screen, 1, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, ne, tp);
+        Ch3YM2612_P(screen, 1, 8 + ch * 8, ch, nm == null ? false : nm, ne, tp);
         om = nm;
         oe = ne;
     }
 
-    public static void ChYM2608Rhythm(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChYM2608Rhythm(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChYM2608Rhythm_P(screen, 0, 8 * 14, ch, nm == null ? false : (Boolean) nm, tp);
+        ChYM2608Rhythm_P(screen, 0, 8 * 14, ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void ChYM2610(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChYM2610(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChYM2610_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, tp);
+        ChYM2610_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void Ch3YM2610(FrameBuffer screen, int ch, Boolean om, Boolean nm, Boolean oe, Boolean ne, int tp) {
+    public static void Ch3YM2610(FrameBuffer screen, int ch, boolean om, Boolean nm, boolean oe, boolean ne, int tp) {
 
         if (om == nm && oe == ne) {
             return;
         }
 
-        Ch3YM2612_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, ne, tp);
+        Ch3YM2612_P(screen, 0, 8 + ch * 8, ch, nm == null ? false : nm, ne, tp);
         om = nm;
         oe = ne;
     }
 
-    public static void ChYM2610Rhythm(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChYM2610Rhythm(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChYM2610Rhythm_P(screen, 0, 8 * 13, ch, nm == null ? false : (Boolean) nm, tp);
+        ChYM2610Rhythm_P(screen, 0, 8 * 13, ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void ChYM2612(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChYM2612(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChYM2612_P(screen, 1, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, tp);
+        ChYM2612_P(screen, 1, 8 + ch * 8, ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void Ch3YM2612(FrameBuffer screen, int ch, Boolean om, Boolean nm, Boolean oe, Boolean ne, int tp) {
+    public static void Ch3YM2612(FrameBuffer screen, int ch, boolean om, Boolean nm, boolean oe, boolean ne, int tp) {
 
         if (om == nm && oe == ne) {
             return;
         }
 
-        Ch3YM2612_P(screen, 1, 8 + ch * 8, ch, nm == null ? false : (Boolean) nm, ne, tp);
+        Ch3YM2612_P(screen, 1, 8 + ch * 8, ch, nm == null ? false : nm, ne, tp);
         om = nm;
         oe = ne;
     }
 
-    public static void Ch6YM2612(FrameBuffer screen, int buff, int ot, int nt, Boolean om, Boolean nm, int otp, int ntp) {
+    public static void Ch6YM2612(FrameBuffer screen, int buff, int ot, int nt, boolean om, Boolean nm, int otp, int ntp) {
         if (buff == 0) {
             if (ot == nt && om == nm && otp == ntp) {
                 return;
             }
         }
 
-        Ch6YM2612_P(screen, 1, 48, nt, nm == null ? false : (Boolean) nm, ntp);
+        Ch6YM2612_P(screen, 1, 48, nt, nm == null ? false : nm, ntp);
         ot = nt;
         om = nm;
         otp = ntp;
     }
 
-    public static void Ch6YM2612XGM(FrameBuffer screen, int buff, int ot, int nt, Boolean om, Boolean nm, int otp, int ntp) {
+    public static void Ch6YM2612XGM(FrameBuffer screen, int buff, int ot, int nt, boolean om, Boolean nm, int otp, int ntp) {
         if (buff == 0) {
             if (ot == nt && om == nm && otp == ntp) {
                 return;
             }
         }
 
-        Ch6YM2612XGM_P(screen, 1, 48, nt, nm == null ? false : (Boolean) nm, ntp);
+        Ch6YM2612XGM_P(screen, 1, 48, nt, nm == null ? false : nm, ntp);
         ot = nt;
         om = nm;
         otp = ntp;
     }
 
-    public static void ChNESDMC(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChNESDMC(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChNESDMC_P(screen, ch, nm == null ? false : (Boolean) nm, tp);
+        ChNESDMC_P(screen, ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void ChFDS(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChFDS(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChFDS_P(screen, ch, nm == null ? false : (Boolean) nm, tp);
+        ChFDS_P(screen, ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void ChMMC5(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChMMC5(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChMMC5_P(screen, ch, nm == null ? false : (Boolean) nm, tp);
+        ChMMC5_P(screen, ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void ChDMG(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChDMG(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
         if (om == nm)
             return;
 
-        ChDMG_P(screen, ch, nm == null ? false : (Boolean) nm, tp);
+        ChDMG_P(screen, ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void chVRC6(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void chVRC6(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChVRC6_P(screen, ch, nm == null ? false : (Boolean) nm, tp);
+        ChVRC6_P(screen, ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
-    public static void ChN163(FrameBuffer screen, int ch, Boolean om, Boolean nm, int tp) {
+    public static void ChN163(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
             return;
         }
 
-        ChN163_P(screen, ch, nm == null ? false : (Boolean) nm, tp);
+        ChN163_P(screen, ch, nm == null ? false : nm, tp);
         om = nm;
     }
 
@@ -1828,7 +1828,7 @@ public class DrawBuff {
 
         x *= 4;
         y *= 4;
-        drawFont4(screen, x, y, 0, String.format("{0:D5}", nefrq));
+        drawFont4(screen, x, y, 0, String.format("%5d", nefrq));
 
         oefrq = nefrq;
     }
@@ -1857,11 +1857,11 @@ public class DrawBuff {
             int m = 0;
             m = (n > 7) ? 8 : n;
             screen.drawByteArray(x, y, rWavGraph, 64, m, 0, 1, 8);
-            m = (n > 15) ? 8 : ((n - 8) < 0 ? 0 : (n - 8));
+            m = (n > 15) ? 8 : (Math.max((n - 8), 0));
             screen.drawByteArray(x, y - 8, rWavGraph, 64, m, 0, 1, 8);
-            m = (n > 23) ? 8 : ((n - 16) < 0 ? 0 : (n - 16));
+            m = (n > 23) ? 8 : (Math.max((n - 16), 0));
             screen.drawByteArray(x, y - 16, rWavGraph, 64, m, 0, 1, 8);
-            m = (n > 31) ? 8 : ((n - 24) < 0 ? 0 : (n - 24));
+            m = (n > 31) ? 8 : (Math.max((n - 24), 0));
             screen.drawByteArray(x, y - 23, rWavGraph, 64, m + 1, 0, 1, 7);
 
             oi[i] = ni[i];
@@ -1882,11 +1882,11 @@ public class DrawBuff {
             int m = 0;
             m = (n > 7) ? 8 : n;
             screen.drawByteArray(x, y, rWavGraph, 64, m, 0, 1, 8);
-            m = (n > 15) ? 8 : ((n - 8) < 0 ? 0 : (n - 8));
+            m = (n > 15) ? 8 : (Math.max((n - 8), 0));
             screen.drawByteArray(x, y - 8, rWavGraph, 64, m, 0, 1, 8);
-            m = (n > 23) ? 8 : ((n - 16) < 0 ? 0 : (n - 16));
+            m = (n > 23) ? 8 : (Math.max((n - 16), 0));
             screen.drawByteArray(x, y - 16, rWavGraph, 64, m, 0, 1, 8);
-            m = (n > 31) ? 8 : ((n - 24) < 0 ? 0 : (n - 24));
+            m = (n > 31) ? 8 : (Math.max((n - 24), 0));
             screen.drawByteArray(x, y - 23, rWavGraph, 64, m + 1, 0, 1, 7);
 
             oi[i] = ni[i];
@@ -1905,11 +1905,11 @@ public class DrawBuff {
             int m = 0;
             m = (n > 7) ? 8 : n;
             screen.drawByteArray(x, y, rWavGraph, 64, m, 0, 1, 8);
-            m = (n > 15) ? 8 : ((n - 8) < 0 ? 0 : (n - 8));
+            m = (n > 15) ? 8 : (Math.max((n - 8), 0));
             screen.drawByteArray(x, y - 8, rWavGraph, 64, m, 0, 1, 8);
-            m = (n > 23) ? 8 : ((n - 16) < 0 ? 0 : (n - 16));
+            m = (n > 23) ? 8 : (Math.max((n - 16), 0));
             screen.drawByteArray(x, y - 16, rWavGraph, 64, m, 0, 1, 8);
-            m = (n > 31) ? 8 : ((n - 24) < 0 ? 0 : (n - 24));
+            m = (n > 31) ? 8 : (Math.max((n - 24), 0));
             screen.drawByteArray(x, y - 23, rWavGraph, 64, m + 1, 0, 1, 7);
 
             oi[i] = ni[i];
@@ -1940,7 +1940,7 @@ public class DrawBuff {
             int m = 0;
             m = (n > 7) ? 8 : n;
             screen.drawByteArray(x + i, y, rWavGraph, 64, m, 0, 1, 8);
-            m = (n > 15) ? 8 : ((n - 8) < 0 ? 0 : (n - 8));
+            m = (n > 15) ? 8 : (Math.max((n - 8), 0));
             screen.drawByteArray(x + i, y - 8, rWavGraph, 64, m, 0, 1, 8);
             // m = (n > 23) ? 8 : ((n - 16) < 0 ? 0 : (n - 16));
             // screen.drawByteArray(x + i, y - 16, rWavGraph, 64, m, 0, 1, 8);
@@ -1952,7 +1952,7 @@ public class DrawBuff {
         }
     }
 
-    public static void DDAToHuC6280(FrameBuffer screen, int c, Boolean od, Boolean nd) {
+    public static void DDAToHuC6280(FrameBuffer screen, int c, boolean od, boolean nd) {
         if (od == nd)
             return;
 
@@ -1963,7 +1963,7 @@ public class DrawBuff {
         od = nd;
     }
 
-    public static void NoiseToHuC6280(FrameBuffer screen, int c, Boolean od, Boolean nd) {
+    public static void NoiseToHuC6280(FrameBuffer screen, int c, boolean od, boolean nd) {
         if (od == nd)
             return;
 
@@ -1981,7 +1981,7 @@ public class DrawBuff {
         int x = (((c > 2) ? c - 3 : c) * 8 * 13) + 4 * 22;
         int y = (((c > 2) ? 1 : 0) * 8 * 5) + 4 * 22;
 
-        drawFont4(screen, x, y, 0, String.format("{0:d2}", nd));
+        drawFont4(screen, x, y, 0, String.format("%2d", nd));
         od = nd;
     }
 
@@ -1992,7 +1992,7 @@ public class DrawBuff {
         int x = 8 * 9;
         int y = c * 8 + 8 * 17;
 
-        drawFont4(screen, x, y, 0, String.format("{0:d2}", nd));
+        drawFont4(screen, x, y, 0, String.format("%2d", nd));
         od = nd;
     }
 
@@ -2003,7 +2003,7 @@ public class DrawBuff {
         int x = 8 * 17;
         int y = 8 * 17;
 
-        drawFont4(screen, x, y, 0, String.format("{0:d1}", nd));
+        drawFont4(screen, x, y, 0, String.format("%1d", nd));
         od = nd;
     }
 
@@ -2014,7 +2014,7 @@ public class DrawBuff {
         int x = 8 * 16;
         int y = 8 * 18;
 
-        drawFont4(screen, x, y, 0, String.format("{0:d3}", nd));
+        drawFont4(screen, x, y, 0, String.format("%3d", nd));
         od = nd;
     }
 
@@ -2074,7 +2074,7 @@ public class DrawBuff {
     }
 
     public static void drawFont4MIDINotes(FrameBuffer screen, int x, int y, int t, String oldnotes, String notes) {
-        if (oldnotes == notes)
+        if (oldnotes.equals(notes))
             return;
         oldnotes = notes;
 
@@ -2082,8 +2082,6 @@ public class DrawBuff {
             return;
 
         drawFont4(screen, x, y, t, notes);
-
-        return;
     }
 
     public static void drawMIDI_Lyric(FrameBuffer screen, int chipID, int x, int y, String oldValue1, String value1) {
@@ -2192,7 +2190,6 @@ public class DrawBuff {
         x += 4;
         screen.drawByteArray(x, y, rFont2[t], 128, n * 4 + 64, 0, 4, 8);
 
-        return;
     }
 
     public static void drawFont4IntMIDIInstrument(FrameBuffer screen, int x, int y, int t, byte oldnum, byte num) {
@@ -2221,7 +2218,6 @@ public class DrawBuff {
         x += 4;
         screen.drawByteArray(x, y, rFont2[t], 128, n * 4 + 64, 0, 4, 8);
 
-        return;
     }
 
     public static void drawFader(FrameBuffer screen, int x, int y, int t, int od, int nd) {
@@ -2447,7 +2443,7 @@ public class DrawBuff {
         }
     }
 
-    public static void LfoSw(FrameBuffer screen, int x, int y, Boolean olfosw, Boolean nlfosw) {
+    public static void LfoSw(FrameBuffer screen, int x, int y, boolean olfosw, boolean nlfosw) {
         if (olfosw == nlfosw) {
             return;
         }
@@ -2479,7 +2475,7 @@ public class DrawBuff {
         oln = nln;
     }
 
-    public static void UseChannelYM2612MIDI(FrameBuffer screen, int x, int y, Boolean olm, Boolean nlm) {
+    public static void UseChannelYM2612MIDI(FrameBuffer screen, int x, int y, boolean olm, boolean nlm) {
         // if (olm == nlm) return;
 
         drawFont8(screen, x, y, 1, nlm ? "^" : "-");
@@ -2487,7 +2483,7 @@ public class DrawBuff {
         olm = nlm;
     }
 
-    public static void MONOPOLYYM2612MIDI(FrameBuffer screen, Boolean olm, Boolean nlm) {
+    public static void MONOPOLYYM2612MIDI(FrameBuffer screen, boolean olm, boolean nlm) {
         if (olm == nlm)
             return;
 
@@ -2653,7 +2649,7 @@ public class DrawBuff {
         op = np;
     }
 
-    public static void drawNESSw(FrameBuffer screen, int x, int y, Boolean os, Boolean ns) {
+    public static void drawNESSw(FrameBuffer screen, int x, int y, boolean os, boolean ns) {
         if (os == ns)
             return;
 
@@ -2817,7 +2813,7 @@ public class DrawBuff {
 
         int n;
         if (k == 3) {
-            Boolean f = false;
+            boolean f = false;
             n = num / 100;
             num -= n * 100;
             n = (n > 9) ? 0 : n;
@@ -2917,7 +2913,7 @@ public class DrawBuff {
 
         int n;
         if (k == 3) {
-            Boolean f = false;
+            boolean f = false;
             n = num / 100;
             num -= n * 100;
             n = (n > 9) ? 0 : n;
@@ -2979,7 +2975,7 @@ public class DrawBuff {
         }
 
         if (k == 3) {
-            Boolean f = false;
+            boolean f = false;
             n = num / 100;
             num -= n * 100;
             n = (n > 9) ? 0 : n;
@@ -3107,7 +3103,6 @@ public class DrawBuff {
         n = num;
         drawFont4(screen, x, y, t, Tables.hexCh[n]);
 
-        return;
     }
 
     public static void drawFont4HexByte(FrameBuffer screen, int x, int y, int t, int num) {
@@ -3126,7 +3121,6 @@ public class DrawBuff {
         x += 4;
         drawFont4(screen, x, y, t, Tables.hexCh[n]);
 
-        return;
     }
 
     public static void drawFont4Hex12Bit(FrameBuffer screen, int x, int y, int t, int num) {
@@ -3134,7 +3128,7 @@ public class DrawBuff {
             return;
 
         int n;
-        num = Common.Range((int) num, 0, 0xfff);
+        num = Common.Range(num, 0, 0xfff);
 
         n = num / 0x100;
         num -= n * 0x100;
@@ -3151,7 +3145,6 @@ public class DrawBuff {
         x += 4;
         drawFont4(screen, x, y, t, Tables.hexCh[n]);
 
-        return;
     }
 
     public static void drawFont4Hex16Bit(FrameBuffer screen, int x, int y, int t, int num) {
@@ -3159,7 +3152,7 @@ public class DrawBuff {
             return;
 
         int n;
-        num = Common.Range((int) num, 0, 0xffff);
+        num = Common.Range(num, 0, 0xffff);
 
         n = num / 0x1000;
         num -= n * 0x1000;
@@ -3182,7 +3175,6 @@ public class DrawBuff {
         x += 4;
         drawFont4(screen, x, y, t, Tables.hexCh[n]);
 
-        return;
     }
 
     public static void drawFont4Hex20Bit(FrameBuffer screen, int x, int y, int t, int num) {
@@ -3190,7 +3182,7 @@ public class DrawBuff {
             return;
 
         int n;
-        num = Common.Range((int) num, 0, 0xf_ffff);
+        num = Common.Range(num, 0, 0xf_ffff);
 
         n = num / 0x1_0000;
         num -= n * 0x1_0000;
@@ -3219,7 +3211,6 @@ public class DrawBuff {
         x += 4;
         drawFont4(screen, x, y, t, Tables.hexCh[n]);
 
-        return;
     }
 
     public static void drawFont4Hex24Bit(FrameBuffer screen, int x, int y, int t, int num) {
@@ -3227,7 +3218,7 @@ public class DrawBuff {
             return;
 
         int n;
-        num = Common.Range((int) num, 0, 0xff_ffff);
+        num = Common.Range(num, 0, 0xff_ffff);
 
         n = num / 0x10_0000;
         num -= n * 0x10_0000;
@@ -3262,7 +3253,6 @@ public class DrawBuff {
         x += 4;
         drawFont4(screen, x, y, t, Tables.hexCh[n]);
 
-        return;
     }
 
     public static void drawFont4Hex32Bit(FrameBuffer screen, int x, int y, int t, int num) {
@@ -3317,7 +3307,6 @@ public class DrawBuff {
         x += 4;
         drawFont4(screen, x, y, t, Tables.hexCh[n]);
 
-        return;
     }
 
     public static void drawFont4V(FrameBuffer screen, int x, int y, int t, String msg) {
@@ -3387,7 +3376,7 @@ public class DrawBuff {
                 8);
     }
 
-    private static void ChAY8910_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChAY8910_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3395,7 +3384,7 @@ public class DrawBuff {
         drawFont8(screen, x + 16, y, mask ? 1 : 0, String.valueOf(1 + ch));
     }
 
-    private static void ChS5B_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChS5B_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3403,7 +3392,7 @@ public class DrawBuff {
         drawFont8(screen, x + 16, y, mask ? 1 : 0, String.valueOf(1 + ch));
     }
 
-    public static void ChC140_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    public static void ChC140_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3414,7 +3403,7 @@ public class DrawBuff {
         drawFont4(screen, x + 16, y, mask ? 1 : 0, String.format("%2d", 1 + ch));
     }
 
-    public static void ChQSound_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    public static void ChQSound_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3425,7 +3414,7 @@ public class DrawBuff {
         drawFont4(screen, x + 16, y, mask ? 1 : 0, String.format("%2d", 1 + ch));
     }
 
-    public static void ChQSoundAdpcm_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    public static void ChQSoundAdpcm_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3436,7 +3425,7 @@ public class DrawBuff {
         drawFont4(screen, x + 20, y, mask ? 1 : 0, String.format("%1d", 1 + ch));
     }
 
-    public static void ChC352_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    public static void ChC352_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3447,7 +3436,7 @@ public class DrawBuff {
         drawFont4(screen, x + 16, y, mask ? 1 : 0, String.format("%2d", 1 + ch));
     }
 
-    private static void ChHuC6280_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChHuC6280_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3455,7 +3444,7 @@ public class DrawBuff {
         drawFont8(screen, x + 16, y, mask ? 1 : 0, String.valueOf(1 + ch));
     }
 
-    private static void ChOKIM6295_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChOKIM6295_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3463,7 +3452,7 @@ public class DrawBuff {
         drawFont8(screen, x + 24, y, mask ? 1 : 0, String.valueOf(1 + ch));
     }
 
-    private static void ChK051649_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChK051649_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3471,7 +3460,7 @@ public class DrawBuff {
         drawFont8(screen, x + 16, y, mask ? 1 : 0, String.valueOf(1 + ch));
     }
 
-    private static void ChRF5C164_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChRF5C164_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3479,14 +3468,14 @@ public class DrawBuff {
         drawFont8(screen, x + 16, y, mask ? 1 : 0, String.valueOf(ch + 1));
     }
 
-    private static void ChOKIM6258_P(FrameBuffer screen, int x, int y, Boolean mask, int tp) {
+    private static void ChOKIM6258_P(FrameBuffer screen, int x, int y, boolean mask, int tp) {
         if (screen == null)
             return;
 
         screen.drawByteArray(x, y, rType[tp * 2 + (mask ? 1 : 0)], 128, 8 * 8, 0, 24, 8);
     }
 
-    public static void ChSegaPCM_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    public static void ChSegaPCM_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3497,7 +3486,7 @@ public class DrawBuff {
         drawFont4(screen, x + 16, y, mask ? 1 : 0, String.format("%2d", 1 + ch));
     }
 
-    private static void ChSN76489_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChSN76489_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3505,7 +3494,7 @@ public class DrawBuff {
         drawFont8(screen, x + 16, y, mask ? 1 : 0, String.valueOf(1 + ch));
     }
 
-    public static void ChYM2151_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    public static void ChYM2151_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3513,7 +3502,7 @@ public class DrawBuff {
         drawFont8(screen, x + 16, y, mask ? 1 : 0, String.valueOf(1 + ch));
     }
 
-    private static void ChYM2203_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChYM2203_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3530,7 +3519,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChYM2413_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChYM2413_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3559,7 +3548,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChYM3526_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChYM3526_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3588,7 +3577,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChY8950_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChY8950_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3619,7 +3608,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChYM3812_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChYM3812_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3648,7 +3637,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChYMF262_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChYMF262_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3680,7 +3669,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChYMF278B_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChYMF278B_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3713,7 +3702,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChYM2608_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChYM2608_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3730,7 +3719,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChYM2608Rhythm_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChYM2608Rhythm_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3742,7 +3731,7 @@ public class DrawBuff {
         drawFont4(screen, x + 75 * 4, y, mask ? 1 : 0, "R");
     }
 
-    public static void ChYM2610_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    public static void ChYM2610_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3759,7 +3748,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChYM2610Rhythm_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChYM2610Rhythm_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3771,7 +3760,7 @@ public class DrawBuff {
         drawFont4(screen, x + 66 * 4, y, mask ? 1 : 0, "6");
     }
 
-    private static void Ch6YM2612_P(FrameBuffer screen, int x, int y, int m, Boolean mask, int tp) {
+    private static void Ch6YM2612_P(FrameBuffer screen, int x, int y, int m, boolean mask, int tp) {
         if (m == 0) {
             screen.drawByteArray(x, y, rType[tp * 2 + (mask ? 1 : 0)], 128, 0, 0, 16, 8);
             drawFont8(screen, x + 16, y, mask ? 1 : 0, "6");
@@ -3781,7 +3770,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChYM2612_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, int tp) {
+    private static void ChYM2612_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
         if (ch == 5) {
             return;
         }
@@ -3794,7 +3783,7 @@ public class DrawBuff {
         }
     }
 
-    private static void Ch3YM2612_P(FrameBuffer screen, int x, int y, int ch, Boolean mask, Boolean ex, int tp) {
+    private static void Ch3YM2612_P(FrameBuffer screen, int x, int y, int ch, boolean mask, boolean ex, int tp) {
         if (!ex) {
             screen.drawByteArray(x, y, rType[tp * 2 + (mask ? 1 : 0)], 128, 0, 0, 16, 8);
             drawFont8(screen, x + 16, y, mask ? 1 : 0, String.valueOf(ch + 1));
@@ -3803,7 +3792,7 @@ public class DrawBuff {
         }
     }
 
-    private static void Ch6YM2612XGM_P(FrameBuffer screen, int x, int y, int m, Boolean mask, int tp) {
+    private static void Ch6YM2612XGM_P(FrameBuffer screen, int x, int y, int m, boolean mask, int tp) {
         if (m == 0) {
             // FM mode
 
@@ -3823,7 +3812,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChNESDMC_P(FrameBuffer screen, int ch, Boolean mask, int tp) {
+    private static void ChNESDMC_P(FrameBuffer screen, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3848,14 +3837,14 @@ public class DrawBuff {
         }
     }
 
-    private static void ChFDS_P(FrameBuffer screen, int ch, Boolean mask, int tp) {
+    private static void ChFDS_P(FrameBuffer screen, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
         screen.drawByteArray(0, 8, rType[tp * 2 + (mask ? 1 : 0)], 128, 14 * 8, 0 * 8, 16, 8);
     }
 
-    private static void ChMMC5_P(FrameBuffer screen, int ch, Boolean mask, int tp) {
+    private static void ChMMC5_P(FrameBuffer screen, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3874,7 +3863,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChDMG_P(FrameBuffer screen, int ch, Boolean mask, int tp) {
+    private static void ChDMG_P(FrameBuffer screen, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3896,7 +3885,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChVRC6_P(FrameBuffer screen, int ch, Boolean mask, int tp) {
+    private static void ChVRC6_P(FrameBuffer screen, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 
@@ -3915,7 +3904,7 @@ public class DrawBuff {
         }
     }
 
-    private static void ChN163_P(FrameBuffer screen, int ch, Boolean mask, int tp) {
+    private static void ChN163_P(FrameBuffer screen, int ch, boolean mask, int tp) {
         if (screen == null)
             return;
 

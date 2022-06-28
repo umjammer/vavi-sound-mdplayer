@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2011-2015 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2007-2010 Antti Lankila
@@ -26,18 +26,13 @@ import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 
 
 /**
- * An implementation of of this class can be created to perform the C64
+ * An implementation of this class can be created to perform the C64
  * specifics. A pointer to this child class can then be passed to each of the
- * components so they can interact with it.
+ * components, so they can interact with it.
  */
 public class C64Env {
 
-    // # include "EventScheduler.h"
-    // # ifdef HAVE_CONFIG_H
-    // # include "config.h"
-    // #endif
-
-    public EventScheduler eventScheduler;
+    public final EventScheduler eventScheduler;
 
     public C64Env(EventScheduler scheduler) {
         eventScheduler = scheduler;
@@ -58,7 +53,7 @@ public class C64Env {
 //    public void loadFile(String file) {}
 // #endif
 
-    public void interruptIRQ(Boolean state) {
+    public void interruptIRQ(boolean state) {
     }
 
     public void interruptNMI() {
@@ -67,12 +62,9 @@ public class C64Env {
     public void interruptRST() {
     }
 
-    public void setBA(Boolean state) {
+    public void setBA(boolean state) {
     }
 
-    public void lightpen(Boolean state) {
-    }
-
-    protected void finalize() {
+    public void lightpen(boolean state) {
     }
 }

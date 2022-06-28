@@ -10,7 +10,7 @@ public class ChipFactory {
     switch (chipIdentNo) {
         case 0x0000_000C: return null; // new SN76489(chipRegister, setting, vgmBuf);
         case 0x0000_0010: return null; // new YM2413(chipRegister, setting, vgmBuf);
-        case 0x0000_002c: return null; // new YM2612(chipRegister, setting, vgmBuf);
+        case 0x0000_002c: return null; // new Ym2612(chipRegister, setting, vgmBuf);
         case 0x0000_0030: return null; // new YM2151(chipRegister, setting, vgmBuf);
         case 0x0000_0038: return null; // new SEGAPCM(chipRegister, setting, vgmBuf);
         case 0x0000_0040: return null; // RF5C68

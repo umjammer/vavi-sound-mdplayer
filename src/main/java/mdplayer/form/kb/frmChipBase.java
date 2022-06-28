@@ -17,7 +17,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmChipBase extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     protected int frameSizeW = 0;
@@ -83,7 +83,7 @@ public class frmChipBase extends frmBase {
     }
 
     //@Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 

@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2011-2015 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2007-2010 Antti Lankila
@@ -27,9 +27,6 @@ package mdplayer.driver.sid.libsidplayfp;
  */
 public class Event implements IEvent {
 
-    // # include <stdint.h>
-    // friend class EventScheduler;
-
     // The next event : sequence.
     private IEvent next;
 
@@ -37,49 +34,46 @@ public class Event implements IEvent {
     private long triggerTime;
 
     // Describe event for humans.
-    private String m_name;
+    private String name;
 
     /**
-     //Events are used for delayed execution. Name is not used by code, but
-     //instanceof useful for debugging.
-     *
-     //@param name Descriptive String of the event.
+     * Events are used for delayed execution. Name is not used by code, but
+     * instanceof useful for debugging.
+     * <p>
+     * @param name Descriptive String of the event.
      */
     public Event(String name) {
-        m_name = name;
+        this.name = name;
     }
 
     /**
-     //Event code to be executed. Events are allowed to safely reschedule
-     //themselves with the EventScheduler during invocations.
+     * Event code to be executed. Events are allowed to safely reschedule
+     * themselves with the EventScheduler during invocations.
      */
-    public void event_() {
+    public void event() {
     }
 
-    public void SetM_next(IEvent val) {
+    public void setNext(IEvent val) {
         next = val;
     }
 
-    public IEvent GetM_next() {
+    public IEvent getNext() {
         return next;
     }
 
-    public void SetTriggerTime(long val) {
+    public void setTriggerTime(long val) {
         triggerTime = val;
     }
 
-    public long GetTriggerTime() {
+    public long getTriggerTime() {
         return triggerTime;
     }
 
-    public void SetM_name(String val) {
-        m_name = val;
+    public void setName(String val) {
+        name = val;
     }
 
-    public String GetM_name() {
-        return m_name;
-    }
-
-    protected void finalize() {
+    public String getName() {
+        return name;
     }
 }

@@ -8,15 +8,13 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 import com.sun.tools.javac.file.ZipArchive;
 import dotnet4j.Tuple;
@@ -30,6 +28,7 @@ import mdplayer.Common.FileFormat;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 import vavi.util.archive.zip.ZipEntry;
+import vavi.util.serdes.Serdes;
 
 
 public class PlayList implements Serializable {
@@ -83,9 +82,9 @@ public class PlayList implements Serializable {
     }
 
     public void save(String fileName) {
-        String fullPath = "";
+        String fullPath;
 
-        if (fileName == null || fileName == "") {
+        if (fileName == null || fileName.isEmpty()) {
             fullPath = Common.settingFilePath;
             fullPath = Path.getFullPath("DefaultPlayList.xml");
         } else {
@@ -105,7 +104,7 @@ public class PlayList implements Serializable {
         try (PrintWriter sw = new PrintWriter(new FileWriter(fileName))) {
             for (Music ms : this._lstMusic) {
                 String path = Path.getDirectoryName(ms.fileName);
-                if (path == basePath) {
+                if (path.equals(basePath)) {
                     sw.println(Path.getFileName(ms.fileName));
                 } else {
                     sw.println(ms.fileName);
@@ -118,16 +117,17 @@ public class PlayList implements Serializable {
 
     public static PlayList Load(String fileName) {
         try {
-            String fullPath = "";
-            if (fileName == null || fileName == "") {
+            String fullPath;
+            if (fileName == null || fileName.isEmpty()) {
                 fullPath = Common.settingFilePath;
                 fullPath = Path.getFullPath("DefaultPlayList.xml");
             } else {
                 fullPath = fileName;
             }
 
-            try (StreamReader sr = new StreamReader(new FileStream(fullPath, FileMode.Open), StandardCharsets.UTF_8)) {
-                PlayList pl = (PlayList) serializer.Deserialize(sr);
+            try (InputStream sr = Files.newInputStream(java.nio.file.Path.of(fullPath))) {
+                PlayList pl = new PlayList();
+                Serdes.Util.deserialize(sr, pl);
                 return pl;
             }
         } catch (Exception ex) {
@@ -144,7 +144,7 @@ public class PlayList implements Serializable {
                 String line;
                 while ((line = sr.readLine()) != null) {
                     line = line.trim();
-                    if (line == "") continue;
+                    if (line.isEmpty()) continue;
                     if (line.charAt(0) == '#') continue;
 
                     if (!Path.isPathRooted(line)) {
@@ -164,43 +164,41 @@ public class PlayList implements Serializable {
         }
     }
 
-    public List<TableColumnModel> makeRow(List<Music> musics) {
-        List<TableColumnModel> ret = new ArrayList<>();
+    public List<Object[]> makeRow(List<Music> musics) {
+        List<Object[]> ret = new ArrayList<>();
 
         for (Music music : musics) {
-            TableColumnModel row = new DefaultTableColumnModel();
-            row.CreateCells(dgvList);
-            row.getColumn(dgvList.Columns["clmPlayingNow"].Index).setVslue(" ");
-            row.getColumn(dgvList.Columns["clmKey"].Index).setVslue(0);
-            row.getColumn(dgvList.Columns["clmFileName"].Index).setVslue(music.fileName);
-            row.getColumn(dgvList.Columns["clmZipFileName"].Index).setVslue(music.arcFileName);
-            row.getColumn(dgvList.Columns["clmDispFileName"].Index).setVslue(Path.getFileName(music.fileName));
-            row.getColumn(dgvList.Columns["clmDispFileName"].Index).ToolTipText = music.fileName;
-            row.getColumn(dgvList.Columns["clmEXT"].Index).setVslue(Path.getExtension(music.fileName).toUpperCase());
-            row.getColumn(dgvList.Columns["clmType"].Index).setVslue(music.type);
-            row.getColumn(dgvList.Columns["clmTitle"].Index).setVslue(music.title);
-            row.getColumn(dgvList.Columns["clmTitleJ"].Index).setVslue(music.titleJ);
-            row.getColumn(dgvList.Columns["clmGame"].Index).setVslue(music.game);
-            row.getColumn(dgvList.Columns["clmGameJ"].Index).setVslue(music.gameJ);
-            //row.getColumn(dgvList.Columns["clmRemark"].Index).setVslue(Music.remark);
-            row.getColumn(dgvList.Columns["clmComposer"].Index).setVslue(music.composer);
-            row.getColumn(dgvList.Columns["clmComposerJ"].Index).setVslue(music.composerJ);
-            row.getColumn(dgvList.Columns["clmConverted"].Index).setVslue(music.converted);
-            row.getColumn(dgvList.Columns["clmNotes"].Index).setVslue(music.notes);
-            row.getColumn(dgvList.Columns["clmDuration"].Index).setVslue(music.duration);
-            row.getColumn(dgvList.Columns["clmVGMby"].Index).setVslue(music.vgmby);
-            row.getColumn(dgvList.Columns["clmSongNo"].Index).setVslue(music.songNo);
-            row.setActionCommand(music);
-
+            Object[] row = new Object[] {
+                " ", // clmPlayingNow
+                0, // clmKey
+                music.fileName, // clmFileName
+                music.arcFileName, // clmZipFileName
+                Path.getFileName(music.fileName), // clmDispFileName
+                music.fileName, // clmDispFileName
+                Path.getExtension(music.fileName).toUpperCase(), // clmEXT
+                music.type, // clmType
+                music.title, // clmTitle
+                music.titleJ, // clmTitleJ
+                music.game, // clmGame
+                music.gameJ, // clmGameJ
+//                music.remark, // clmRemark
+                music.composer, // clmComposer
+                music.composerJ, // clmComposerJ
+                music.converted, // clmConverted
+                music.notes, // clmNotes
+                music.duration, // clmDuration
+                music.vgmby, // clmVGMby
+                music.songNo, // clmSongNo
+            };
             ret.add(row);
         }
         return ret;
     }
 
     private String rootPath = "";
-    private TableModel dgvList;
+    private JTable dgvList;
 
-    public void SetDGV(TableModel dgv) {
+    public void SetDGV(JTable dgv) {
         dgvList = dgv;
     }
 
@@ -215,7 +213,7 @@ public class PlayList implements Serializable {
         } catch (Exception ex) {
             JOptionPane.showConfirmDialog(null, String.format("ファイル追加に失敗しました。\n詳細\nMessage=%s", ex.getMessage())
                     , "エラー"
-                    , JOptionPane.OK_OPTION
+                    , JOptionPane.YES_NO_OPTION
                     , JOptionPane.ERROR_MESSAGE);
             Log.forcedWrite(ex);
         }
@@ -223,11 +221,9 @@ public class PlayList implements Serializable {
 
     public void InsertFile(int index, String[] filenames) {
         try {
-            for (int i = 0; i < filenames.length; i++) {
-                String filename = filenames[i];
-
+            for (String filename : filenames) {
                 Music mc = new Music();
-                mc.format = Common.FileFormat.checkExt(filename);
+                mc.format = FileFormat.checkExt(filename);
                 mc.fileName = filename;
                 rootPath = Path.getDirectoryName(filename);
 
@@ -236,7 +232,7 @@ public class PlayList implements Serializable {
         } catch (Exception ex) {
             JOptionPane.showConfirmDialog(null, String.format("ファイル追加に失敗しました。\n詳細\nMessage=%s", ex.getMessage())
                     , "エラー"
-                    , JOptionPane.OK_OPTION
+                    , JOptionPane.YES_NO_OPTION
                     , JOptionPane.ERROR_MESSAGE);
             Log.forcedWrite(ex);
         }
@@ -395,7 +391,7 @@ public class PlayList implements Serializable {
             addFileHES(index, mc, entry);
             break;
         case SID:
-            addFileSID(index, mc, entry);
+            addFileSID(index, mc, entry, null);
             break;
         }
     }
@@ -414,58 +410,7 @@ public class PlayList implements Serializable {
                     buf = null;
                 }
                 if (buf == null && mc.format == FileFormat.VGM) {
-                    if (Path.getExtension(mc.fileName).toLowerCase() == ".Vgm") {
-                        mc.fileName = Path.changeExtension(mc.fileName, ".vgz");
-                    } else {
-                        mc.fileName = Path.changeExtension(mc.fileName, ".Vgm");
-                    }
-                    try {
-                        buf = File.readAllBytes(mc.fileName);
-                    } catch (Exception ex) {
-                        Log.forcedWrite(ex);
-                        buf = null;
-                    }
-                }
-            } else {
-                if (entry instanceof ZipEntry) {
-                    try (BinaryReader reader = new BinaryReader(((ZipEntry) entry).Open())) {
-                        try {
-                            buf = reader.readBytes((int) ((ZipEntry) entry).length);
-                        } catch (Exception ex) {
-                            Log.forcedWrite(ex);
-                            buf = null;
-                        }
-                    }
-                } else {
-                    UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-                    buf = cmd.GetFileByte(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2);
-                }
-            }
-
-            List<Music> musics;
-            if (entry == null) musics = Audio.getMusic(mc.fileName, buf);
-            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
-            List<TableColumnModel> rows = makeRow(musics);
-
-            dgvList.Rows.AddRange(rows.toArray());
-            _lstMusic.addAll(musics);
-        } catch (Exception ex) {
-            Log.forcedWrite(ex);
-        }
-    }
-
-    private void addFileXxx(int index, Music mc, Object entry/* = null*/) {
-        try {
-            byte[] buf = null;
-            if (entry == null) {
-                try {
-                    buf = File.readAllBytes(mc.fileName);
-                } catch (Exception ex) {
-                    Log.forcedWrite(ex);
-                    buf = null;
-                }
-                if (buf == null && mc.format == FileFormat.VGM) {
-                    if (Path.getExtension(mc.fileName).toLowerCase() == ".Vgm") {
+                    if (Path.getExtension(mc.fileName).equalsIgnoreCase(".vgm")) {
                         mc.fileName = Path.changeExtension(mc.fileName, ".vgz");
                     } else {
                         mc.fileName = Path.changeExtension(mc.fileName, ".Vgm");
@@ -496,9 +441,61 @@ public class PlayList implements Serializable {
             List<Music> musics;
             if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null);
             else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
-            List<TableColumnModel> rows = makeRow(musics);
+            List<Object[]> rows = makeRow(musics);
+            for (Object[] row : rows)
+                ((DefaultTableModel) dgvList.getModel()).addRow(row);
+            _lstMusic.addAll(musics);
+        } catch (Exception ex) {
+            Log.forcedWrite(ex);
+        }
+    }
 
-            dgvList.Rows.InsertRange(index, rows.toArray());
+    private void addFileXxx(int index, Music mc, Object entry/* = null*/) {
+        try {
+            byte[] buf;
+            if (entry == null) {
+                try {
+                    buf = File.readAllBytes(mc.fileName);
+                } catch (Exception ex) {
+                    Log.forcedWrite(ex);
+                    buf = null;
+                }
+                if (buf == null && mc.format == FileFormat.VGM) {
+                    if (Path.getExtension(mc.fileName).equalsIgnoreCase(".vgm")) {
+                        mc.fileName = Path.changeExtension(mc.fileName, ".vgz");
+                    } else {
+                        mc.fileName = Path.changeExtension(mc.fileName, ".Vgm");
+                    }
+                    try {
+                        buf = File.readAllBytes(mc.fileName);
+                    } catch (Exception ex) {
+                        Log.forcedWrite(ex);
+                        buf = null;
+                    }
+                }
+            } else {
+                if (entry instanceof ZipEntry) {
+                    try (BinaryReader reader = new BinaryReader(((ZipEntry) entry).Open())) {
+                        try {
+                            buf = reader.readBytes((int) ((ZipEntry) entry).length);
+                        } catch (Exception ex) {
+                            Log.forcedWrite(ex);
+                            buf = null;
+                        }
+                    }
+                } else {
+                    UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
+                    buf = cmd.GetFileByte(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2);
+                }
+            }
+
+            List<Music> musics;
+            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null);
+            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
+            List<Object[]> rows = makeRow(musics);
+
+            for (Object[] row : rows)
+                ((DefaultTableModel) dgvList.getModel()).insertRow(index, row);
             _lstMusic.addAll(index, musics);
             index += rows.size();
         } catch (Exception ex) {
@@ -650,21 +647,20 @@ public class PlayList implements Serializable {
         addFileXxx(index, mc, entry);
     }
 
-
     private void addFileZIP(Music mc, Object entry/* = null*/) {
         if (entry != null) return;
 
         try (ZipArchive archive = ZipFile.OpenRead(mc.fileName)) {
             mc.arcFileName = mc.fileName;
             mc.arcType = EnmArcType.ZIP;
-            List<String> zipMember = new ArrayList<String>();
-            List<Music> mMember = new ArrayList<Music>();
+            List<String> zipMember = new ArrayList<>();
+            List<Music> mMember = new ArrayList<>();
             for (ZipEntry ent : archive.Entries) {
                 if (Common.FileFormat.checkExt(ent.FullName) != FileFormat.M3U) {
                     zipMember.add(ent.FullName);
                 } else {
                     PlayList pl = M3U.LoadM3U(ent, mc.arcFileName);
-                    for (Music m : pl._lstMusic) mMember.add(m);
+                    mMember.addAll(pl._lstMusic);
                 }
             }
 
@@ -677,8 +673,8 @@ public class PlayList implements Serializable {
                     }
                 }
                 if (!found && Common.FileFormat.checkExt(zm) == FileFormat.VGM) {
-                    String vzm = "";
-                    if (Path.getExtension(zm).toLowerCase().equals(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
+                    String vzm;
+                    if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
                     else vzm = Path.changeExtension(zm, ".vgm");
                     for (Music m : mMember) {
                         if (m.fileName.equals(vzm)) {
@@ -696,14 +692,14 @@ public class PlayList implements Serializable {
                 }
             }
 
-            List<Music> tMember = new ArrayList<Music>();
+            List<Music> tMember = new ArrayList<>();
 
             for (ZipEntry ent : archive.Entries) {
                 for (Music m : mMember) {
                     String vzm = "";
-                    if (Path.getExtension(m.fileName).toLowerCase() == ".Vgm")
+                    if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
                         vzm = Path.changeExtension(m.fileName, ".vgz");
-                    else if (Path.getExtension(m.fileName).toLowerCase() == ".vgz")
+                    else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
                         vzm = Path.changeExtension(m.fileName, ".Vgm");
 
                     if (ent.FullName == m.fileName || ent.FullName == vzm) {
@@ -727,14 +723,14 @@ public class PlayList implements Serializable {
         try (ZipArchive archive = ZipFile.OpenRead(mc.fileName)) {
             mc.arcFileName = mc.fileName;
             mc.arcType = EnmArcType.ZIP;
-            List<String> zipMember = new ArrayList<String>();
-            List<Music> mMember = new ArrayList<Music>();
+            List<String> zipMember = new ArrayList<>();
+            List<Music> mMember = new ArrayList<>();
             for (ZipEntry ent : archive.Entries) {
                 if (Common.FileFormat.checkExt(ent.FullName) != FileFormat.M3U) {
                     zipMember.add(ent.FullName);
                 } else {
                     PlayList pl = M3U.LoadM3U(ent, mc.arcFileName);
-                    for (Music m : pl._lstMusic) mMember.add(m);
+                    mMember.addAll(pl._lstMusic);
                 }
             }
 
@@ -747,8 +743,8 @@ public class PlayList implements Serializable {
                     }
                 }
                 if (!found && Common.FileFormat.checkExt(zm) == FileFormat.VGM) {
-                    String vzm = "";
-                    if (Path.getExtension(zm).toLowerCase().equals(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
+                    String vzm;
+                    if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
                     else vzm = Path.changeExtension(zm, ".vgm");
                     for (Music m : mMember) {
                         if (m.fileName.equals(vzm)) {
@@ -766,14 +762,14 @@ public class PlayList implements Serializable {
                 }
             }
 
-            List<Music> tMember = new ArrayList<Music>();
+            List<Music> tMember = new ArrayList<>();
 
             for (ZipEntry ent : archive.Entries) {
                 for (Music m : mMember) {
                     String vzm = "";
-                    if (Path.getExtension(m.fileName).toLowerCase().equals(".Vgm"))
+                    if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
                         vzm = Path.changeExtension(m.fileName, ".vgz");
-                    else if (Path.getExtension(m.fileName).toLowerCase().equals(".vgz"))
+                    else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
                         vzm = Path.changeExtension(m.fileName, ".Vgm");
 
                     if (ent.FullName == m.fileName || ent.FullName == vzm) {
@@ -785,12 +781,9 @@ public class PlayList implements Serializable {
                         //m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
                         //それを防ぐためここでbreakする
                         break;
-
                     }
                 }
-
             }
-
         }
     }
 
@@ -801,15 +794,15 @@ public class PlayList implements Serializable {
         List<Tuple<String, Long>> res = cmd.GetFileList(mc.fileName, "*.*");
         mc.arcFileName = mc.fileName;
         mc.arcType = EnmArcType.LZH;
-        List<String> zipMember = new ArrayList<String>();
-        List<Music> mMember = new ArrayList<Music>();
+        List<String> zipMember = new ArrayList<>();
+        List<Music> mMember = new ArrayList<>();
 
         for (Tuple<String, Long> ent : res) {
             if (Common.FileFormat.checkExt(ent.Item1) != FileFormat.M3U) {
                 zipMember.add(ent.Item1);
             } else {
                 PlayList pl = M3U.LoadM3U(ent, mc.arcFileName);
-                for (Music m : pl._lstMusic) mMember.add(m);
+                mMember.addAll(pl._lstMusic);
             }
         }
 
@@ -822,8 +815,8 @@ public class PlayList implements Serializable {
                 }
             }
             if (!found && Common.FileFormat.checkExt(zm) == FileFormat.VGM) {
-                String vzm = "";
-                if (Path.getExtension(zm).toLowerCase().equals(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
+                String vzm;
+                if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
                 else vzm = Path.changeExtension(zm, ".vgm");
                 for (Music m : mMember) {
                     if (m.fileName.equals(vzm)) {
@@ -844,19 +837,19 @@ public class PlayList implements Serializable {
         for (Tuple<String, Long> ent : res) {
             for (Music m : mMember) {
                 String vzm = "";
-                if (Path.getExtension(m.fileName).toLowerCase().equals(".vgm"))
+                if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
                     vzm = Path.changeExtension(m.fileName, ".vgz");
-                else if (Path.getExtension(m.fileName).toLowerCase().equals(".vgz"))
+                else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
                     vzm = Path.changeExtension(m.fileName, ".Vgm");
 
                 if (ent.Item1.equals(m.fileName) || ent.Item1.equals(vzm)) {
                     m.format = Common.FileFormat.checkExt(m.fileName);
                     m.arcFileName = mc.arcFileName;
                     m.arcType = mc.arcType;
-                    addFileLoop(m, new Tuple<String, String>(m.arcFileName, ent.Item1));
+                    addFileLoop(m, new Tuple<>(m.arcFileName, ent.Item1));
 
-                    //m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
-                    //それを防ぐためここでbreakする
+                    // m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
+                    // それを防ぐためここでbreakする
                     break;
                 }
             }
@@ -870,15 +863,15 @@ public class PlayList implements Serializable {
         List<Tuple<String, Long>> res = cmd.GetFileList(mc.fileName, "*.*");
         mc.arcFileName = mc.fileName;
         mc.arcType = EnmArcType.LZH;
-        List<String> zipMember = new ArrayList<String>();
-        List<Music> mMember = new ArrayList<Music>();
+        List<String> zipMember = new ArrayList<>();
+        List<Music> mMember = new ArrayList<>();
 
         for (Tuple<String, Long> ent : res) {
             if (Common.FileFormat.checkExt(ent.Item1) != FileFormat.M3U) {
                 zipMember.add(ent.Item1);
             } else {
                 PlayList pl = M3U.LoadM3U(ent, mc.arcFileName);
-                for (Music m : pl._lstMusic) mMember.add(m);
+                mMember.addAll(pl._lstMusic);
             }
         }
 
@@ -891,8 +884,8 @@ public class PlayList implements Serializable {
                 }
             }
             if (!found && Common.FileFormat.checkExt(zm) == FileFormat.VGM) {
-                String vzm = "";
-                if (Path.getExtension(zm).toLowerCase().equals(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
+                String vzm;
+                if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
                 else vzm = Path.changeExtension(zm, ".vgm");
                 for (Music m : mMember) {
                     if (m.fileName.equals(vzm)) {
@@ -913,16 +906,16 @@ public class PlayList implements Serializable {
         for (Tuple<String, Long> ent : res) {
             for (Music m : mMember) {
                 String vzm = "";
-                if (Path.getExtension(m.fileName).toLowerCase() == ".vgm")
+                if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
                     vzm = Path.changeExtension(m.fileName, ".vgz");
-                else if (Path.getExtension(m.fileName).toLowerCase() == ".vgz")
+                else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
                     vzm = Path.changeExtension(m.fileName, ".Vgm");
 
-                if (ent.Item1.equals(m.fileName) || ent.Item1 == vzm) {
+                if (ent.Item1.equals(m.fileName) || ent.Item1.equals(vzm)) {
                     m.format = Common.FileFormat.checkExt(m.fileName);
                     m.arcFileName = mc.arcFileName;
                     m.arcType = mc.arcType;
-                    addFileLoop(index, m, new Tuple<String, String>(m.arcFileName, ent.Item1));
+                    addFileLoop(index, m, new Tuple<>(m.arcFileName, ent.Item1));
 
                     //m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
                     //それを防ぐためここでbreakする
@@ -956,7 +949,7 @@ public class PlayList implements Serializable {
 
     private void addFileNSF(Music mc, Object entry/* = null*/) {
         try {
-            byte[] buf = null;
+            byte[] buf;
             if (entry == null) {
                 buf = File.readAllBytes(mc.fileName);
             } else {
@@ -969,7 +962,6 @@ public class PlayList implements Serializable {
                     UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
                     buf = cmd.GetFileByte(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2);
                 }
-
             }
 
             List<Music> musics;
@@ -977,7 +969,7 @@ public class PlayList implements Serializable {
             else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
 
             if (mc.songNo != -1) {
-                Music music = null;
+                Music music;
                 if (musics.size() > 0) {
                     music = musics.get(0);
                     music.songNo = mc.songNo;
@@ -991,9 +983,9 @@ public class PlayList implements Serializable {
                 }
             }
 
-            List<TableColumnModel> rows = makeRow(musics);
-            for (TableColumnModel row : rows) dgvList.Rows.add(row);
-            for (Music music : musics) _lstMusic.add(music);
+            List<Object[]> rows = makeRow(musics);
+            for (Object[] row : rows) ((DefaultTableModel) dgvList.getModel()).addRow(row);
+            _lstMusic.addAll(musics);
         } catch (Exception ex) {
             Log.forcedWrite(ex);
         }
@@ -1022,7 +1014,7 @@ public class PlayList implements Serializable {
             else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
 
             if (mc.songNo != -1) {
-                Music music = null;
+                Music music;
                 if (musics.size() > 0) {
                     music = musics.get(0);
                     music.songNo = mc.songNo;
@@ -1036,8 +1028,9 @@ public class PlayList implements Serializable {
                 }
             }
 
-            List<TableColumnModel> rows = makeRow(musics);
-            dgvList.Rows.InsertRange(index, rows.toArray());
+            List<Object[]> rows = makeRow(musics);
+            for (Object[] row : rows)
+                ((DefaultTableModel) dgvList.getModel()).insertRow(index, row);
             _lstMusic.addAll(index, musics);
             index += rows.size();
         } catch (Exception ex) {
@@ -1047,7 +1040,7 @@ public class PlayList implements Serializable {
 
     private void addFileHES(Music mc, Object entry/* = null*/) {
         try {
-            byte[] buf = null;
+            byte[] buf;
             if (entry == null) {
                 buf = File.readAllBytes(mc.fileName);
             } else {
@@ -1067,7 +1060,7 @@ public class PlayList implements Serializable {
             else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
 
             if (mc.songNo != -1) {
-                Music music = null;
+                Music music;
                 if (musics.size() > 0) {
                     music = musics.get(0);
                     music.songNo = mc.songNo;
@@ -1081,9 +1074,9 @@ public class PlayList implements Serializable {
                 }
             }
 
-            List<TableColumnModel> rows = makeRow(musics);
-            for (TableColumnModel row : rows) dgvList.Rows.add(row);
-            for (Music music : musics) _lstMusic.add(music);
+            List<Object[]> rows = makeRow(musics);
+            for (Object[] row : rows) ((DefaultTableModel) dgvList.getModel()).addRow(row);
+            _lstMusic.addAll(musics);
         } catch (Exception ex) {
             Log.forcedWrite(ex);
         }
@@ -1091,7 +1084,7 @@ public class PlayList implements Serializable {
 
     private void addFileHES(int index, Music mc, Object entry/* = null*/) {
         try {
-            byte[] buf = null;
+            byte[] buf;
             if (entry == null) {
                 buf = File.readAllBytes(mc.fileName);
             } else {
@@ -1111,7 +1104,7 @@ public class PlayList implements Serializable {
             else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
 
             if (mc.songNo != -1) {
-                Music music = null;
+                Music music;
                 if (musics.size() > 0) {
                     music = musics.get(0);
                     music.songNo = mc.songNo;
@@ -1125,8 +1118,9 @@ public class PlayList implements Serializable {
                 }
             }
 
-            List<TableColumnModel> rows = makeRow(musics);
-            dgvList.Rows.InsertRange(index, rows.toArray());
+            List<Object[]> rows = makeRow(musics);
+            for (Object[] row : rows)
+                ((DefaultTableModel) dgvList.getModel()).insertRow(index, row);
             _lstMusic.addAll(index, musics);
             index += rows.size();
         } catch (Exception ex) {
@@ -1136,7 +1130,7 @@ public class PlayList implements Serializable {
 
     private void addFileSID(Music mc, Object entry/* = null*/) {
         try {
-            byte[] buf = null;
+            byte[] buf;
             if (entry == null) {
                 buf = File.readAllBytes(mc.fileName);
             } else {
@@ -1156,7 +1150,7 @@ public class PlayList implements Serializable {
             else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
 
             if (mc.songNo != -1) {
-                Music music = null;
+                Music music;
                 if (musics.size() > 0) {
                     music = musics.get(0);
                     music.songNo = mc.songNo;
@@ -1170,8 +1164,8 @@ public class PlayList implements Serializable {
                 }
             }
 
-            List<TableColumnModel> rows = makeRow(musics);
-            for (TableColumnModel row : rows) dgvList.Rows.add(row);
+            List<Object[]> rows = makeRow(musics);
+            for (Object[] row : rows) ((DefaultTableModel) dgvList.getModel()).addRow(row);
             _lstMusic.addAll(musics);
         } catch (Exception ex) {
             Log.forcedWrite(ex);
@@ -1180,7 +1174,7 @@ public class PlayList implements Serializable {
 
     private void addFileSID(int index, Music mc, Archive archive, Entry entry/* = null*/) {
         try {
-            byte[] buf = null;
+            byte[] buf;
             if (entry == null) {
                 buf = File.readAllBytes(mc.fileName);
             } else {
@@ -1200,7 +1194,7 @@ public class PlayList implements Serializable {
             else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
 
             if (mc.songNo != -1) {
-                Music music = null;
+                Music music;
                 if (musics.size() > 0) {
                     music = musics.get(0);
                     music.songNo = mc.songNo;
@@ -1214,8 +1208,9 @@ public class PlayList implements Serializable {
                 }
             }
 
-            List<TableColumnModel> rows = makeRow(musics);
-            dgvList.Rows.InsertRange(index, rows.toArray());
+            List<Object[]> rows = makeRow(musics);
+            for (Object[] row : rows)
+                ((DefaultTableModel) dgvList.getModel()).insertRow(index, row);
             _lstMusic.addAll(index, musics);
             index += rows.size();
         } catch (Exception ex) {

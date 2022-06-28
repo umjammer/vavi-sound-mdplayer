@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2012-2013 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2010 Antti Lankila
@@ -21,6 +21,9 @@
 
 package mdplayer.driver.sid.libsidplayfp.c64.banks;
 
+import java.util.Arrays;
+
+
 /**
  * Area backed by RAM.
  *
@@ -35,8 +38,7 @@ public class SystemRAMBank implements IBank {
      //Initialize RAM with powerup pattern.
      */
     public void reset() {
-        for (int i = 0; i < ram.length; i++)
-            ram[i] = 0;
+        Arrays.fill(ram, (byte) 0);
         for (int i = 0x40; i < 0x10000; i += 0x80) {
             for (int j = 0; j < 0x40; j++)
                 ram[i + j] = (byte) 0xff;

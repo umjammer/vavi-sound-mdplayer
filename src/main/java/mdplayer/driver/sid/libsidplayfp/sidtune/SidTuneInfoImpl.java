@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  *  Copyright 2011-2015 Leandro Nini
  *  Copyright 2007-2010 Antti Lankila
@@ -33,35 +33,29 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
  */
 public class SidTuneInfoImpl extends SidTuneInfo {
 
-    // # include <stdint.h>
-    // # include <vector>
-    // # include <String>
-    // # include "SidPlayFp/SidTuneInfo.h"
-    // # include "sidcxx11.h"
+    public String formatString;
 
-    public String m_formatString;
-
-    public int m_songs;
-    public int m_startSong;
-    public int m_currentSong;
-    public int m_songSpeed;
-    public clock_t m_clockSpeed;
-    public compatibility_t m_compatibility;
-    public int m_dataFileLen;
-    public int m_c64dataLen;
-    public short m_loadAddr;
-    public short m_initAddr;
-    public short m_playAddr;
-    public byte m_relocStartPage;
-    public byte m_relocPages;
-    public String m_path;
-    public String m_dataFileName;
-    public String m_infoFileName;
-    public List<model_t> m_sidModels;// vector
-    public List<Short> m_sidChipAddresses;// vector
-    public List<String> m_infoString = new ArrayList<String>();// vector
-    public List<String> m_commentString;// vector
-    public Boolean m_fixLoad;
+    public int songs;
+    public int startSong;
+    public int currentSong;
+    public int songSpeed;
+    public Clock clockSpeed;
+    public Compatibility compatibility;
+    public int dataFileLen;
+    public int c64DataLen;
+    public short loadAddress;
+    public short initAddress;
+    public short playAddress;
+    public byte relocatedStartPage;
+    public byte relocatedPages;
+    public String path;
+    public String dataFileName;
+    public String infoFileName;
+    public List<Model> sidModels;
+    public List<Short> sidChipAddresses;
+    public List<String> infoString = new ArrayList<>();
+    public List<String> commentString;
+    public boolean fixLoad;
 
     // prevent copying
     private SidTuneInfoImpl(SidTuneInfoImpl s) {
@@ -72,150 +66,150 @@ public class SidTuneInfoImpl extends SidTuneInfo {
     }
 
     public SidTuneInfoImpl() {
-        m_formatString = "N/A";
-        m_songs = 0;
-        m_startSong = 0;
-        m_currentSong = 0;
-        m_songSpeed = SPEED_VBI;
-        m_clockSpeed = clock_t.CLOCK_UNKNOWN;
-        m_compatibility = compatibility_t.COMPATIBILITY_C64;
-        m_dataFileLen = 0;
-        m_c64dataLen = 0;
-        m_loadAddr = 0;
-        m_initAddr = 0;
-        m_playAddr = 0;
-        m_relocStartPage = 0;
-        m_relocPages = 0;
-        m_fixLoad = false;
+        formatString = "N/A";
+        songs = 0;
+        startSong = 0;
+        currentSong = 0;
+        songSpeed = SPEED_VBI;
+        clockSpeed = Clock.UNKNOWN;
+        compatibility = Compatibility.C64;
+        dataFileLen = 0;
+        c64DataLen = 0;
+        loadAddress = 0;
+        initAddress = 0;
+        playAddress = 0;
+        relocatedStartPage = 0;
+        relocatedPages = 0;
+        fixLoad = false;
 
-        m_sidModels = new ArrayList<model_t>();
-        m_sidModels.add(model_t.SIDMODEL_UNKNOWN);
-        m_sidChipAddresses = new ArrayList<Short>();
-        m_sidChipAddresses.add((short) 0xd400);
+        sidModels = new ArrayList<>();
+        sidModels.add(Model.SID_UNKNOWN);
+        sidChipAddresses = new ArrayList<>();
+        sidChipAddresses.add((short) 0xd400);
     }
 
     @Override
     public short getLoadAddr() {
-        return m_loadAddr;
+        return loadAddress;
     }
 
     @Override
-    public short getInitAddr() {
-        return m_initAddr;
+    public short getInitAddress() {
+        return initAddress;
     }
 
     @Override
-    public short getPlayAddr() {
-        return m_playAddr;
+    public short getPlayAddress() {
+        return playAddress;
     }
 
     @Override
     public int getSongs() {
-        return m_songs;
+        return songs;
     }
 
     @Override
     public int getStartSong() {
-        return m_startSong;
+        return startSong;
     }
 
     @Override
     public int getCurrentSong() {
-        return m_currentSong;
+        return currentSong;
     }
 
     @Override
     public short getSidChipBase(int i) {
-        return (short) (i < m_sidChipAddresses.size() ? m_sidChipAddresses.get((int) i) : 0);
+        return (short) (i < sidChipAddresses.size() ? sidChipAddresses.get(i) : 0);
     }
 
     @Override
     public int getSidChips() {
-        return m_sidChipAddresses.size();
+        return sidChipAddresses.size();
     }
 
     @Override
     public int getSongSpeed() {
-        return m_songSpeed;
+        return songSpeed;
     }
 
     @Override
     public byte getRelocStartPage() {
-        return m_relocStartPage;
+        return relocatedStartPage;
     }
 
     @Override
     public byte getRelocPages() {
-        return m_relocPages;
+        return relocatedPages;
     }
 
     @Override
-    public model_t getSidModel(int i) {
-        return i < m_sidModels.size() ? m_sidModels.get((int) i) : model_t.SIDMODEL_UNKNOWN;
+    public Model getSidModel(int i) {
+        return i < sidModels.size() ? sidModels.get(i) : Model.SID_UNKNOWN;
     }
 
     @Override
-    public compatibility_t getCompatibility() {
-        return m_compatibility;
+    public Compatibility getCompatibility() {
+        return compatibility;
     }
 
     @Override
     public int getNumberOfInfoStrings() {
-        return (int) m_infoString.size();
+        return infoString.size();
     }
 
     @Override
     public String getInfoString(int i) {
-        return i < getNumberOfInfoStrings() ? m_infoString.get((int) i) : "";
+        return i < getNumberOfInfoStrings() ? infoString.get(i) : "";
     }
 
     @Override
     public int getNumberOfCommentStrings() {
-        return (int) m_commentString.size();
+        return commentString.size();
     }
 
     @Override
     public String getCommentString(int i) {
-        return i < getNumberOfCommentStrings() ? m_commentString.get((int) i) : "";
+        return i < getNumberOfCommentStrings() ? commentString.get(i) : "";
     }
 
     @Override
     public int getDataFileLen() {
-        return m_dataFileLen;
+        return dataFileLen;
     }
 
     @Override
-    public int getC64dataLen() {
-        return m_c64dataLen;
+    public int getC64DataLen() {
+        return c64DataLen;
     }
 
     @Override
-    public clock_t getClockSpeed() {
-        return m_clockSpeed;
+    public Clock getClockSpeed() {
+        return clockSpeed;
     }
 
     @Override
     public String getFormatString() {
-        return m_formatString;
+        return formatString;
     }
 
     @Override
-    public Boolean getFixLoad() {
-        return m_fixLoad;
+    public boolean getFixLoad() {
+        return fixLoad;
     }
 
     @Override
     public String getPath() {
-        return m_path;
+        return path;
     }
 
     @Override
     public String getDataFileName() {
-        return m_dataFileName;
+        return dataFileName;
     }
 
     @Override
     public String getInfoFileName() {
-        return m_infoFileName != "" ? m_infoFileName : null;
+        return !infoFileName.isEmpty() ? infoFileName : null;
     }
 }

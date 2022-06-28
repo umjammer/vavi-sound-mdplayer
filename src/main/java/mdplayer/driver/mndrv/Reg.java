@@ -30,7 +30,6 @@ public class Reg {
 
     public List<Integer> arg = new ArrayList<>();
 
-
     public int getD0_B() {
         return (byte) D0_L;
     }
@@ -222,69 +221,69 @@ public class Reg {
         D7_L = v;
     }
 
-    //        public void SetD0_L(int v) { D0_L = (int)v; }
-//        public void SetD1_L(int v) { D1_L = (int)v; }
-//        public void SetD2_L(int v) { D2_L = (int)v; }
-//        public void SetD3_L(int v) { D3_L = (int)v; }
-//        public void SetD4_L(int v) { D4_L = (int)v; }
-//        public void SetD5_L(int v) { D5_L = (int)v; }
-//        public void SetD6_L(int v) { D6_L = (int)v; }
-//        public void SetD7_L(int v) { D7_L = (int)v; }
     public void setSR(int v) {
-        sr = (int) v;
+        sr = v;
     }
 
-    public Boolean cryADD(byte a, byte b) {
-        return a + b > 0xff;
+    public boolean cryADD(byte a, byte b) {
+        return (a & 0xff) + (b & 0xff) > 0xff;
     }
 
-    public Boolean cryADD(short a, short b) {
-        return a + b > 0xffff;
+    public boolean cryADD(short a, short b) {
+        return (a  & 0xffff) + (b  & 0xffff) > 0xffff;
     }
 
-    public Boolean cryADD(int a, int b) {
+    public boolean cryADD(int a, int b) {
         return (long) a + (long) b > (long) 0xffffffff;
     }
 }
 
 class Ab {
-    static int dummyAddress = 0xffffffff;
+    static final int dummyAddress = 0xffffffff;
 
-    Map<Integer, Runnable> hlTRKANA_RESTADR = new HashMap<>();
-    Map<Integer, Runnable> hlw_qtjob = new HashMap<>();
-    Map<Integer, Runnable> hlw_mmljob_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlw_lfojob_adrs = new HashMap<>();
-    //Map<Integer, Runnable> hlw_psgenv_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlw_softenv_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlw_rrcut_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlw_echo_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlw_keyoff_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlw_keyoff_adrs2 = new HashMap<>();
-    Map<Integer, Runnable> hlw_subcmd_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlw_setnote_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlw_inithlfo_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlw_we_exec_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlw_we_ycom_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlw_we_tone_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlw_we_pan_adrs = new HashMap<>();
-    Map<Integer, Runnable> hlINTEXECBUF = new HashMap<>();
+    final Map<Integer, Runnable> hlTRKANA_RESTADR = new HashMap<>();
+    final Map<Integer, Runnable> hlw_qtjob = new HashMap<>();
+    final Map<Integer, Runnable> hlw_mmljob_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlw_lfojob_adrs = new HashMap<>();
+//    final Map<Integer, Runnable> hlw_psgenv_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlw_softenv_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlw_rrcut_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlw_echo_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlw_keyoff_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlw_keyoff_adrs2 = new HashMap<>();
+    final Map<Integer, Runnable> hlw_subcmd_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlw_setnote_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlw_inithlfo_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlw_we_exec_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlw_we_ycom_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlw_we_tone_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlw_we_pan_adrs = new HashMap<>();
+    final Map<Integer, Runnable> hlINTEXECBUF = new HashMap<>();
 }
 
 class FMTimer {
-    private int timerAregH;     // タイマーAの上位8ビット
-    private int timerAregL;     // タイマーAの下位2ビット
-    private int timerA;         // タイマーAのオーバーフロー設定値
-    private double timerACounter;  // タイマーAのカウンター値
-    private int timerB;         // タイマーBのオーバーフロー設定値
-    private double timerBCounter;  // タイマーBのカウンター値
-    private int timerReg;       // タイマー制御レジスタ (下位4ビット+7ビット)
-    private int statReg;        // ステータスレジスタ (下位2ビット)
-    private Boolean isOPM = false;
+    // タイマーAの上位8ビット
+    private int timerAregH;
+    // タイマーAの下位2ビット
+    private int timerAregL;
+    // タイマーAのオーバーフロー設定値
+    private int timerA;
+    // タイマーAのカウンター値
+    private double timerACounter;
+    // タイマーBのオーバーフロー設定値
+    private int timerB;
+    // タイマーBのカウンター値
+    private double timerBCounter;
+    // タイマー制御レジスタ (下位4ビット+7ビット)
+    private int timerReg;
+    // ステータスレジスタ (下位2ビット)
+    private int statReg;
+    private boolean isOPM = false;
     private Runnable csmKeyOn;
     private double step = 0.0;
     private double masterClock = 3579545.0;
 
-    public FMTimer(Boolean isOPM, Runnable csmKeyOn, double masterClock) {
+    public FMTimer(boolean isOPM, Runnable csmKeyOn, double masterClock) {
         this.isOPM = isOPM;
         this.csmKeyOn = csmKeyOn;
         this.masterClock = masterClock;
@@ -298,7 +297,7 @@ class FMTimer {
     public void timer() {
         int flag_set = 0;
 
-        if ((timerReg & 0x01) != 0) {   // TimerA 動作中
+        if ((timerReg & 0x01) != 0) { // TimerA 動作中
             timerACounter += step;
             if (timerACounter >= timerA) {
                 flag_set |= ((timerReg >> 2) & 0x01);
@@ -307,7 +306,7 @@ class FMTimer {
             }
         }
 
-        if ((timerReg & 0x02) != 0) {   // TimerB 動作中
+        if ((timerReg & 0x02) != 0) { // TimerB 動作中
             timerBCounter += step;
             if (timerBCounter >= timerB) {
                 flag_set |= ((timerReg >> 2) & 0x02);

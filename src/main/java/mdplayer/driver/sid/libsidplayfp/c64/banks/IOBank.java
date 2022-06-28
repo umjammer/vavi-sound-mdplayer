@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2012-2013 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2010 Antti Lankila
@@ -49,7 +49,7 @@ public class IOBank implements IBank {
     }
 
     public void poke(short addr, byte data) {
-        // System.err.println("{0}", addr >> 8 & 0xf);
+        // System.err.println("%d", addr >> 8 & 0xf);
         map[addr >> 8 & 0xf].poke(addr, data);
     }
 

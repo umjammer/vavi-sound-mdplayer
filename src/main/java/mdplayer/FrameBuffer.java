@@ -4,6 +4,7 @@ package mdplayer;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.function.BiConsumer;
 import javax.swing.JPanel;
@@ -25,7 +26,7 @@ public class FrameBuffer {
         currentContext = Graphics2DManager.Current;
         imageSize = new Dimension(initialImage.getWidth(), initialImage.getHeight());
 
-        pbScreen.setPreferredSize(new Dimension(imageSize.getWidth() * zoom, imageSize.getHeight() * zoom));
+        pbScreen.setPreferredSize(new Dimension(imageSize.width * zoom, imageSize.height * zoom));
 
         bgPlane = currentContext.Allocate(pbScreen.CreateGraphics(), pbScreen.DisplayRectangle);
         if (p != null)
@@ -62,93 +63,66 @@ public class FrameBuffer {
         baPlaneBuffer = null;
     }
 
-    private void drawScreen()
-        {
-            if (bmpPlane == null) return;
+    private void drawScreen() {
+        if (bmpPlane == null) return;
 
-            BufferedImage bdPlane = bmpPlane.LockBits(new Rectangle(0, 0, bmpPlane.getWidth(), bmpPlane.getHeight()), ImageLockMode.WriteOnly, bmpPlane.PixelFormat);
+        BufferedImage bdPlane = bmpPlane.LockBits(new Rectangle(0, 0, bmpPlane.getWidth(), bmpPlane.getHeight()), ImageLockMode.WriteOnly, bmpPlane.PixelFormat);
 //            unsafe
-            {
-                byte[] bdP = (byte[])bdPlane.Scan0;
-                int adr;
-                for (int y = 0; y < bdPlane.getHeight(); y++)
-                {
-                    adr = bdPlane.Stride * y;
-                    for (int x = 0; x < bdPlane.Stride; x++)
-                    {
-                        bdP[adr + x] = baPlaneBuffer[bdPlane.Stride * y + x];
-                    }
+        {
+            byte[] bdP = (byte[])bdPlane.Scan0;
+            int adr;
+            for (int y = 0; y < bdPlane.getHeight(); y++) {
+                adr = bdPlane.Stride * y;
+                for (int x = 0; x < bdPlane.Stride; x++) {
+                    bdP[adr + x] = baPlaneBuffer[bdPlane.Stride * y + x];
                 }
             }
-            bmpPlane.UnlockBits(bdPlane);
-
-            bgPlane.Graphics.InterpolationMode = Drawing2D.InterpolationMode.NearestNeighbor;
-            bgPlane.Graphics.DrawImage(bmpPlane, 0, 0, bmpPlane.getWidth() * zoom, bmpPlane.getHeight() * zoom);
-
-            //IntPtr hBmp = bmpPlane.GetHbitmap();
-            //IntPtr hFormDC = bgPlane.Graphics.GetHdc(), hDC = CreateCompatibleDC(hFormDC);
-            //IntPtr hPrevBmp = SelectObject(hDC, hBmp);
-            //BitBlt(hFormDC, 0, 0, bmpPlane.getWidth(), bmpPlane.getHeight(), hDC, 0, 0, SRCCOPY);
-            //bgPlane.Graphics.ReleaseHdc(hFormDC);
-            //SelectObject(hDC, hPrevBmp);
-            //DeleteDC(hDC);
-            //DeleteObject(hBmp);
         }
+        bmpPlane.UnlockBits(bdPlane);
+
+        bgPlane.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        bgPlane.drawImage(bmpPlane, 0, 0, bmpPlane.getWidth() * zoom, bmpPlane.getHeight() * zoom, null);
+
+        //IntPtr hBmp = bmpPlane.GetHbitmap();
+        //IntPtr hFormDC = bgPlane.Graphics.GetHdc(), hDC = CreateCompatibleDC(hFormDC);
+        //IntPtr hPrevBmp = SelectObject(hDC, hBmp);
+        //BitBlt(hFormDC, 0, 0, bmpPlane.getWidth(), bmpPlane.getHeight(), hDC, 0, 0, SRCCOPY);
+        //bgPlane.Graphics.ReleaseHdc(hFormDC);
+        //SelectObject(hDC, hPrevBmp);
+        //DeleteDC(hDC);
+        //DeleteObject(hBmp);
+    }
 
     public void clearScreen() {
         for (int i = 0; i < baPlaneBuffer.length; i += 4) {
             baPlaneBuffer[i] = 0x00; // R
             baPlaneBuffer[i + 1] = 0x00; // G
             baPlaneBuffer[i + 2] = 0x00; // B
-            baPlaneBuffer[i + 3] = 0xFF; // A
+            baPlaneBuffer[i + 3] = (byte) 0xFF; // A
         }
         // Arrays.fill(baPlaneBuffer, 0, baPlaneBuffer.length);
     }
 
-    public static int SRCINVERT = 0x00660046;
+    public void Refresh(Graphics2D g) {
+        Runnable act;
 
-    public static int SRCCOPY = 0x00CC0020;
-    // [DllImport("gdi32.dll")]
-    public static native Boolean BitBlt(IntPtr hdcDest, int nXDest, int nYDest, int nWidth, int nHeight, IntPtr hdcSrc,
-                int nXSrc, int nYSrc, int dwRop);
-    //[DllImport("gdi32.dll", EntryPoint = "SelectObject")]
-    public static native IntPtr SelectObject(IntPtr hdc, IntPtr h);
-    // [DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
+        if (pbScreen == null) return;
+        if (pbScreen.IsDisposed) return;
 
-    static native IntPtr CreateCompatibleDC(IntPtr hdc);
-
-    //[DllImport("gdi32.dll", ExactSpelling = true, SetLastError = true)]
-    static native Boolean DeleteDC(IntPtr hdc);
-
-    //[DllImport("gdi32.dll")]
-    public static native Boolean DeleteObject(IntPtr hObject);
-
-    public void Refresh(BiConsumer<Object, PaintEventArgs> p)
-        {
-            Runnable act;
-
-            if (pbScreen == null) return;
-            if (pbScreen.IsDisposed) return;
-
-            try
-            {
-                pbScreen.Invoke(act = () ->
-                {
-                    try
-                    {
-                        drawScreen();
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.forcedWrite(ex);
-                        Remove(p);
-                    }
-                    if (bgPlane != null) bgPlane.Render();
-                });
-            } catch (ObjectDisposedException e) {
-                //握りつぶす
-            }
+        try {
+            pbScreen.Invoke(act = () -> {
+                try {
+                    drawScreen();
+                } catch (Exception ex) {
+                    Log.forcedWrite(ex);
+                    Remove(p);
+                }
+                if (bgPlane != null) bgPlane.Render();
+            });
+        } catch (Exception e) {
+            //握りつぶす
         }
+    }
 
     public void drawByteArray(int x, int y, byte[] src, int srcWidth, int imgX, int imgY, int imgWidth, int imgHeight) {
         if (bmpPlane == null) {

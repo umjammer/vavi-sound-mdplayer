@@ -38,7 +38,7 @@ public class DevMPcm {
 
         // pea _mpcm_keyon(pc)
         _mpcm_freq();
-        comlfo._init_lfo();
+        comlfo.initLfo();
         _init_lfo_mpcm();
         _mpcm_keyon();
     }
@@ -60,21 +60,21 @@ public class DevMPcm {
         reg.setD5_B(reg.getD5_B() << 2);
         if (f != 0) {
             reg.a4 = reg.a5 + W.v_pattern3;
-            comlfo._init_lfo_common_a();
+            comlfo.initLfoCommonA();
         }
 
         f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
             reg.a4 = reg.a5 + W.v_pattern2;
-            comlfo._init_lfo_common_a();
+            comlfo.initLfoCommonA();
         }
 
         f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
             reg.a4 = reg.a5 + W.v_pattern1;
-            comlfo._init_lfo_common_a();
+            comlfo.initLfoCommonA();
         }
     }
 
@@ -232,7 +232,7 @@ public class DevMPcm {
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x02) != 0) {
             comwave._wave_init_kon();
             mm.write(reg.a5 + W.revexec, 0x00);
-            if ((byte) mm.readByte(reg.a5 + W.flag2) >= 0) {
+            if (mm.readByte(reg.a5 + W.flag2) >= 0) {
                 _mpcm_keyon_nomask();
                 return;
             }
@@ -251,7 +251,7 @@ public class DevMPcm {
 
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0xfb));
 
-        if ((byte) mm.readByte(reg.a5 + W.reverb) < 0) {
+        if (mm.readByte(reg.a5 + W.reverb) < 0) {
             _mpcm_echo_ret();
         }
         mm.write(reg.a5 + W.e_p, 5);
@@ -766,7 +766,7 @@ public class DevMPcm {
             comcmds._COM_BF();
             break;// BF
 
-        // PSG 系
+        // Psg 系
         case 0x40:
             comcmds._COM_C0();
             break;// C0	ソフトウェアエンベロープ 1
@@ -1125,7 +1125,7 @@ public class DevMPcm {
     //	tone set
     //		[$F0] + [num]b
     public void _MPCM_F0() {
-        if ((byte) mm.readByte(reg.a5 + W.reverb) < 0) {
+        if (mm.readByte(reg.a5 + W.reverb) < 0) {
             _mpcm_keyoff();
         }
         reg.D5_L = 0;
@@ -1376,7 +1376,7 @@ public class DevMPcm {
             reg.setD0_W(mm.readShort(reg.a6 + Dw.USE_TRACK));
             reg.a0 = reg.a6 + Dw.TRACKWORKADR;
             do {
-                if ((byte) mm.readByte(reg.a0 + W.flag) < 0) {
+                if (mm.readByte(reg.a0 + W.flag) < 0) {
                     mm.write(reg.a0 + W.flag2, (byte) (mm.readByte(reg.a0 + W.flag2) | 0x01));
                 }
                 reg.a0 = reg.a0 + W._track_work_size;
@@ -1677,13 +1677,13 @@ public class DevMPcm {
         //_mpcm_velocity_pattern
         switch (reg.getD0_W() / 2) {
         case 1:
-            comlfo._com_lfo_saw();
+            comlfo.comLfoSaw();
             break;
         case 2:
-            comlfo._com_lfo_portament();
+            comlfo.comLfoPortament();
             break;
         case 3:
-            comlfo._com_lfo_triangle();
+            comlfo.comLfoTriangle();
             break;
         }
         mm.write(reg.a5 + W.addvolume, (short) reg.getD1_W());
@@ -1725,32 +1725,32 @@ public class DevMPcm {
         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
 
-        if ((byte) mm.readByte(reg.a6 + Dw.LFO_FLAG) >= 0) {
+        if (mm.readByte(reg.a6 + Dw.LFO_FLAG) >= 0) {
             //_mpcm_pitch_pattern:
             switch (reg.getD0_W() / 2) {
             case 1:
-                comlfo._com_lfo_saw();
+                comlfo.comLfoSaw();
                 break;
             case 2:
-                comlfo._com_lfo_portament();
+                comlfo.comLfoPortament();
                 break;
             case 3:
-                comlfo._com_lfo_triangle();
+                comlfo.comLfoTriangle();
                 break;
             case 4:
-                comlfo._com_lfo_portament();
+                comlfo.comLfoPortament();
                 break;
             case 5:
-                comlfo._com_lfo_triangle();
+                comlfo.comLfoTriangle();
                 break;
             case 6:
-                comlfo._com_lfo_triangle();
+                comlfo.comLfoTriangle();
                 break;
             case 7:
-                comlfo._com_lfo_oneshot();
+                comlfo.comLfoOneshot();
                 break;
             case 8:
-                comlfo._com_lfo_oneshot();
+                comlfo.comLfoOneshot();
                 break;
             }
             mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
@@ -1759,22 +1759,22 @@ public class DevMPcm {
         reg.a0 = Ab.dummyAddress;// _pitch_extend;
         switch (reg.getD0_W()) {
         case 2:
-            comlfo._com_lfo_saw();
+            comlfo.comLfoSaw();
             break;
         case 4:
-            comlfo._com_lfo_portament();
+            comlfo.comLfoPortament();
             break;
         case 6:
-            comlfo._com_lfo_triangle();
+            comlfo.comLfoTriangle();
             break;
         case 8:
-            comlfo._com_lfo_oneshot();
+            comlfo.comLfoOneshot();
             break;
         case 10:
-            comlfo._com_lfo_square();
+            comlfo.comLfoSquare();
             break;
         case 12:
-            comlfo._com_lfo_randome();
+            comlfo.comLfoRandom();
             break;
         }
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
@@ -1905,7 +1905,7 @@ public class DevMPcm {
             return;
         }
         reg.setD0_W(mm.readShort(reg.a4 + W_L.mokuhyou));
-        Boolean cf = (short) reg.getD0_W() - mm.readShort(reg.a5 + W.keycode) < 0;
+        boolean cf = (short) reg.getD0_W() - mm.readShort(reg.a5 + W.keycode) < 0;
         reg.setD0_W((short) ((short) reg.getD0_W() - mm.readShort(reg.a5 + W.keycode)));
         if (reg.getD0_W() == 0) {
             _ch_mpcm_lw_porta_end();
@@ -1937,7 +1937,7 @@ public class DevMPcm {
 
     //─────────────────────────────────────
     public void _ch_mpcm_softenv_job() {
-        comlfo._soft_env();
+        comlfo.softEnv();
         _MPCM_F2_softenv();
     }
 

@@ -43,18 +43,18 @@ public class MDChipParams {
         public byte slot = 0;
         public int tp = -1;
         public int kf = -1;//OPM only
-        public int tn = 0;//PSG only
-        public Boolean ex = false;//OPN/2/A/B
+        public int tn = 0;//Psg only
+        public boolean ex = false;//OPN/2/A/B
         public int tntp = -1;
-        public Boolean dda = false;//HuC6280
-        public Boolean noise = false;//HuC6280
+        public boolean dda = false;//HuC6280
+        public boolean noise = false;//HuC6280
         public int nfrq = -1;//HuC6280
-        public Boolean loopFlg = false;//YMZ280B
+        public boolean loopFlg = false;//YMZ280B
         public int echo = -1;
 
         public int[] inst = new int[48];
         public int[] typ = new int[48];
-        public Boolean[] bit = new Boolean[48];
+        public boolean[] bit = new boolean[48];
         public short[] aryWave16bit = null;
 
         public Channel() {
@@ -79,7 +79,7 @@ public class MDChipParams {
 
     public static class YM2612 {
         public FileFormat fileFormat = FileFormat.unknown;
-        public Boolean lfoSw = false;
+        public boolean lfoSw = false;
         public int lfoFrq = -1;
         public int timerA = -1;
         public int timerB = -1;
@@ -180,7 +180,7 @@ public class MDChipParams {
         public int pbFreq = -1;
         public int volumeL = -1;
         public int volumeR = -1;
-        public Boolean keyon = false;
+        public boolean keyon = false;
         public Boolean mask = false;
 
     }
@@ -243,7 +243,7 @@ public class MDChipParams {
     public YM2151[] ym2151 = new YM2151[] {new YM2151(), new YM2151()};
 
     public static class YM2608 {
-        public Boolean lfoSw = false;
+        public boolean lfoSw = false;
         public int lfoFrq = -1;
         public int nfrq = -1;
         public int efrq = -1;
@@ -265,7 +265,7 @@ public class MDChipParams {
     public YM2608[] ym2608 = new YM2608[] {new YM2608(), new YM2608()};
 
     public static class YM2610 {
-        public Boolean lfoSw = false;
+        public boolean lfoSw = false;
         public int lfoFrq = -1;
         public int nfrq = -1;
         public int efrq = -1;
@@ -312,9 +312,9 @@ public class MDChipParams {
     public YM2413[] ym2413 = new YM2413[] {new YM2413(), new YM2413()};
 
     public static class YM2612MIDI {
-        public Boolean lfoSw = false;
+        public boolean lfoSw = false;
         public int lfoFrq = -1;
-        public Boolean IsMONO = true;
+        public boolean IsMONO = true;
         public int useFormat = 0;
         public int selectCh = -1;
         public int selectParam = -1;
@@ -322,7 +322,7 @@ public class MDChipParams {
         public Channel[] channels = new Channel[] {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
 
         public int[][] noteLog = new int[][] {new int[10], new int[10], new int[10], new int[10], new int[10], new int[10]};
-        public Boolean[] useChannel = new Boolean[] {false, false, false, false, false, false};
+        public boolean[] useChannel = new boolean[] {false, false, false, false, false, false};
     }
 
     public YM2612MIDI ym2612Midi = new YM2612MIDI();
@@ -423,26 +423,26 @@ public class MDChipParams {
         public int[] wave = new int[32];
         public int[] mod = new int[32];
 
-        public Boolean VolDir = false;
+        public boolean VolDir = false;
         public int VolSpd = 0;
         public int VolGain = 0;
-        public Boolean VolDi = false;
+        public boolean VolDi = false;
         public int VolFrq = 0;
-        public Boolean VolHlR = false;
+        public boolean VolHlR = false;
 
-        public Boolean ModDir = false;
+        public boolean ModDir = false;
         public int ModSpd = 0;
         public int ModGain = 0;
-        public Boolean ModDi = false;
+        public boolean ModDi = false;
         public int ModFrq = 0;
         public int ModCnt = 0;
 
         public int EnvSpd = 0;
-        public Boolean EnvVolSw = false;
-        public Boolean EnvModSw = false;
+        public boolean EnvVolSw = false;
+        public boolean EnvModSw = false;
 
         public int MasterVol = 0;
-        public Boolean WE = false;
+        public boolean WE = false;
     }
 
     public FDS[] fds = new FDS[] {new FDS(), new FDS()};

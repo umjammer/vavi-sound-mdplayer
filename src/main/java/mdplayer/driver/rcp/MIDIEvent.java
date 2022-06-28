@@ -11,7 +11,7 @@ public class MIDIEvent implements Serializable {
     private Integer sameMeasureIndex = null;
     private MIDIEventType eventType;
     private byte[] midiMessage = null;
-    private byte[][] midiMessageLst = null;
+    private byte[][] midiMessages = null;
     private int gate = 0;
     private int gs = 0;
 
@@ -71,12 +71,12 @@ public class MIDIEvent implements Serializable {
         return midiMessage;
     }
 
-    public void setMIDIMessageLst(byte[][] value) {
-        midiMessageLst = value;
+    public void setMIDIMessages(byte[][] value) {
+        midiMessages = value;
     }
 
-    byte[][] getMIDIMessageLst() {
-        return midiMessageLst;
+    byte[][] getMIDIMessages() {
+        return midiMessages;
     }
 
     public void setGate(int value) {
@@ -91,10 +91,9 @@ public class MIDIEvent implements Serializable {
         gs = value;
     }
 
-    int getgosa() {
+    int getGosa() {
         return gs;
     }
-
 
     public enum MIDIEventType {
         MetaSeqNumber(0x00),
@@ -124,7 +123,7 @@ public class MIDIEvent implements Serializable {
         PitchBend(0xE0),
         SysExF0(0xF0),
         SysExF7(0xF7);
-        int v;
+        final int v;
 
         MIDIEventType(int v) {
             this.v = v;
@@ -156,7 +155,7 @@ public class MIDIEvent implements Serializable {
         SameMeasure(0xFC),
         MeasureEnd(0xFD),
         EndOfTrack(0xFE);
-        int v;
+        final int v;
 
         MIDISpEventType(int v) {
             this.v = v;

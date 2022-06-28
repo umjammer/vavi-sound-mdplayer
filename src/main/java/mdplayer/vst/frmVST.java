@@ -1,14 +1,12 @@
 package mdplayer.vst;
 
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
-import javax.swing.Icon;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.Timer;
 
 import mdplayer.properties.Resources;
@@ -16,24 +14,32 @@ import org.urish.jnavst.VstPlugin;
 
 
 public class frmVST extends JDialog {
+
+    int dialogResult;
+
     Rectangle wndRect = new Rectangle();
 
-    public frmVST() {
+    public frmVST(Frame owner) {
+        super(owner, true);
         initializeComponent();
     }
 
+    private VstPlugin PluginCommandStub;
     /**
      * Gets or sets the Plugin Command Stub.
      */
     public VstPlugin getPluginCommandStub() {
-        return null;
+        return PluginCommandStub;
+    }
+
+    public void setPluginCommandStub(VstPlugin value) {
+        PluginCommandStub = value;
     }
 
     /**
      * Shows the custom plugin editor UI.
-     * @param owner
      */
-    public int ShowDialog(Window owner) {
+    public int ShowDialog() {
 
         this.setTitle(PluginCommandStub.GetEffectName());
 
@@ -42,7 +48,8 @@ public class frmVST extends JDialog {
             PluginCommandStub.EditorOpen(this.Handle);
         }
 
-        return super.ShowDialog(owner);
+        super.setVisible(true);
+        return dialogResult;
     }
 
     public void Show(VstMng.VstInfo2 vi) {

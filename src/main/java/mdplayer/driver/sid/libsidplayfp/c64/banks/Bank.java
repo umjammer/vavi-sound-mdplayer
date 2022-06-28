@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2012-2013 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2010 Antti Lankila
@@ -24,36 +24,29 @@ package mdplayer.driver.sid.libsidplayfp.c64.banks;
 /**
  * Base interface for memory and I/O banks.
  */
-public class Bank implements IBank {
-
-    // #include <stdint.h>
-    // #include "SidPlayFp/siddefs.h"
+public abstract class Bank implements IBank {
 
     /**
-     //Bank write.
-     *
-     //@Override this method if you expect write operations on your bank. Leave
-     //          unimplemented if it's logically/operationally impossible for
-     //          writes to ever arrive to bank.
-     *
-     //@param address address to write to
-     //@param value value to write
+     * Bank write.
+     * <p>
+     * @Override this method if you expect write operations on your bank. Leave
+     *           unimplemented if it's logically/operationally impossible for
+     *           writes to ever arrive to bank.
+     * <p>
+     * @param address address to write to
+     * @param value value to write
      */
     public void poke(short address, byte value) {
     }
 
     /**
-     //Bank read. You probably should @Override this method, except if the Bank
-     //instanceof only used in write context.
-     *
-     //@param address value to read from
-     //@return value at address
+     * Bank read. You probably should @Override this method, except if the Bank
+     * instanceof only used in write context.
+     * <p>
+     * @param address value to read from
+     * @return value at address
      */
     public byte peek(short address) {
         return 0;
     }
-
-    protected void finalize() {
-    }
-
 }

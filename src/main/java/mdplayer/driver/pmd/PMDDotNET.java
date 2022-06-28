@@ -2,10 +2,13 @@
 package mdplayer.driver.pmd;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import javax.swing.JOptionPane;
 
 import dotnet4j.Tuple;
 import dotnet4j.io.File;
@@ -28,7 +31,6 @@ import mdplayer.driver.Vgm.Gd3;
 
 
 public class PMDDotNET extends BaseDriver {
-    private InstanceMarker im = null;
 
     private iCompiler PMDCompiler = null;
 
@@ -38,15 +40,15 @@ public class PMDDotNET extends BaseDriver {
 
     private static String[] envPmdOpt = null;
 
-    private Boolean isNRM;
+    private boolean isNRM;
 
-    private Boolean isSPB;
+    private boolean isSPB;
 
-    private Boolean isVA;
+    private boolean isVA;
 
-    private Boolean usePPS;
+    private boolean usePPS;
 
-    private Boolean usePPZ;
+    private boolean usePPZ;
 
     private String PlayingFileName;
     public String getPlayingFileName() { return PlayingFileName; }
@@ -56,8 +58,9 @@ public class PMDDotNET extends BaseDriver {
 
     private enmPMDFileType mtype;
 
-    public PMDDotNET(InstanceMarker PMDDotNET_Im) {
-        im = PMDDotNET_Im;
+    public PMDDotNET() {
+        // "plugin\\driver\\PMDDotNETCompiler.dll"
+        // "plugin\\driver\\PMDDotNETdll"
     }
 
     public Gd3 getGD3Info(byte[] buf, int vgmGd3, enmPMDFileType mtype) {
@@ -152,8 +155,8 @@ public class PMDDotNET extends BaseDriver {
             }
 
             int lp = PMDDriver.GetNowLoopCounter();
-            lp = lp < 0 ? 0 : lp;
-            vgmCurLoop = (int) lp;
+            lp = Math.max(lp, 0);
+            vgmCurLoop = lp;
 
             if (PMDDriver.GetStatus() < 1) {
                 if (PMDDriver.GetStatus() == 0) {
@@ -187,7 +190,7 @@ public class PMDDotNET extends BaseDriver {
         return enmPMDFileType.MML;
     }
 
-    private Boolean initMML()
+    private boolean initMML()
         {
             PMDCompiler.Init();
 
@@ -196,7 +199,7 @@ public class PMDDotNET extends BaseDriver {
             try
             {
                 PMDCompiler.SetCompileSwitch(String.format(
-                    "PmdOption={0} \"{1}\""
+                    "PmdOption=%d \"%d\""
                     , setting.pmdDotNET.compilerArguments
                     , PlayingFileName));
                 try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
@@ -205,34 +208,30 @@ public class PMDDotNET extends BaseDriver {
 
                 info = PMDCompiler.GetCompilerInfo();
 
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 ret = null;
                 info = null;
             }
 
             if (ret == null || info == null) return false;
-            if (info.errorList.size() > 0)
-            {
-                if (model == EnmModel.VirtualModel)
-                {
-                    JJOptionPane.showConfirmDialog("Compile error");
+            if (info.errorList.size() > 0) {
+                if (model == EnmModel.VirtualModel) {
+                    JOptionPane.showConfirmDialog(null, "Compile error");
                 }
                 return false;
             }
 
             if (PMDDriver == null) PMDDriver = im.GetDriver("PMDDotNET.Driver.Driver");
 
-            //Boolean notSoundBoard2 = false;
-            Boolean isLoadADPCM = true;
-            Boolean loadADPCMOnly = false;
+            //boolean notSoundBoard2 = false;
+            boolean isLoadADPCM = true;
+            boolean loadADPCMOnly = false;
 
-            isNRM = setting.pmdDotNET.soundBoard == 0;
-            isSPB = setting.pmdDotNET.soundBoard == 1;
+            isNRM = setting.getPmdDotNET().soundBoard == 0;
+            isSPB = setting.getPmdDotNET().soundBoard == 1;
             isVA = false;
-            usePPS = setting.pmdDotNET.usePPSDRV;
-            usePPZ = setting.pmdDotNET.usePPZ8;
+            usePPS = setting.getPmdDotNET().usePPSDRV;
+            usePPZ = setting.getPmdDotNET().usePPZ8;
 
             EnvironmentE env = new EnvironmentE();
             env.AddEnv("pmd");
@@ -241,18 +240,18 @@ public class PMDDotNET extends BaseDriver {
             envPmdOpt = env.GetEnvVal("pmdopt");
 
             Object[] addtionalPMDDotNETOption = new Object[] {
-                isLoadADPCM,//bool
-                loadADPCMOnly,//bool
-                setting.pmdDotNET.isAuto,//Boolean isAUTO;
-                isVA,//bool
-                isNRM,//bool
-                usePPS,//bool
-                usePPZ,//bool
-                isSPB,//bool
-                envPmd,//String[] 環境変数PMD
-                envPmdOpt,//String[] 環境変数PMDOpt
-                PlayingFileName,//String srcFile;
-                "",//String PPCFileHeader無視されます(設定不要)
+                isLoadADPCM, // bool
+                loadADPCMOnly, // bool
+                setting.getPmdDotNET().isAuto, // boolean isAUTO;
+                isVA, // bool
+                isNRM, // bool
+                usePPS, // bool
+                usePPZ, // bool
+                isSPB, // bool
+                envPmd, // String[] 環境変数PMD
+                envPmdOpt, // String[] 環境変数PMDOpt
+                PlayingFileName, // String srcFile;
+                "", // String PPCFileHeader無視されます(設定不要)
                 (Function<String,Stream>)this::appendFileReaderCallback
             };
 
@@ -292,7 +291,7 @@ public class PMDDotNET extends BaseDriver {
 
 
             PMDDriver.StartRendering(Common.VGMProcSampleRate
-                , new Tuple[] { new Tuple<String, Integer>("YM2608", baseclock) });
+                , new Tuple[] {new Tuple<>("YM2608", baseclock) });
             PMDDriver.MusicSTART(0);
             return true;
         }
@@ -312,7 +311,7 @@ public class PMDDotNET extends BaseDriver {
 
     private void OPNAWaitSend(long size, int elapsed) {
         if (model == EnmModel.VirtualModel) {
-            // JOptionPane.showConfirmDialog(String.format("elapsed:{0} size:{1}", elapsed,
+            // JOptionPane.showConfirmDialog(String.format("elapsed:%d size:%d", elapsed,
             // size));
             // int n = Math.max((int)(size / 20 - elapsed), 0);//20 閾値(magic
             // number)
@@ -325,7 +324,7 @@ public class PMDDotNET extends BaseDriver {
         Thread.sleep(m);
     }
 
-    public class PMDChipRunnable extends ChipRunnable {
+    public static class PMDChipRunnable extends ChipRunnable {
         private Consumer<ChipDatum> oPNAWrite;
 
         private BiConsumer<Long, Integer> oPNAWaitSend;
@@ -356,13 +355,13 @@ public class PMDDotNET extends BaseDriver {
         }
     }
 
-    private Boolean initM() {
+    private boolean initM() {
         if (PMDDriver == null)
             PMDDriver = im.GetDriver("PMDDotNET.Driver.Driver");
 
-        // Boolean notSoundBoard2 = false;
-        Boolean isLoadADPCM = true;
-        Boolean loadADPCMOnly = false;
+        // boolean notSoundBoard2 = false;
+        boolean isLoadADPCM = true;
+        boolean loadADPCMOnly = false;
         List<MmlDatum> buf = new ArrayList<MmlDatum>();
         for (byte b : vgmBuf)
             buf.add(new MmlDatum(b));
@@ -382,7 +381,7 @@ public class PMDDotNET extends BaseDriver {
         Object[] addtionalPMDDotNETOption = new Object[] {
             isLoadADPCM, // bool
             loadADPCMOnly, // bool
-            setting.pmdDotNET.isAuto, // Boolean isAUTO;
+            setting.pmdDotNET.isAuto, // boolean isAUTO;
             isVA, // bool
             isNRM, // bool
             usePPS, // bool
@@ -428,7 +427,7 @@ public class PMDDotNET extends BaseDriver {
 
         PMDDriver.StartRendering(Common.VGMProcSampleRate,
                                  new Tuple[] {
-                                     new Tuple<String, Integer>("YM2608", baseclock)
+                                         new Tuple<>("YM2608", baseclock)
                                  });
         PMDDriver.MusicSTART(0);
 
@@ -437,7 +436,7 @@ public class PMDDotNET extends BaseDriver {
 
     private void chipWaitSend(long elapsed, int size) {
         if (model == EnmModel.VirtualModel) {
-            // JOptionPane.showConfirmDialog(String.format("elapsed:{0} size:{1}", elapsed,
+            // JOptionPane.showConfirmDialog(String.format("elapsed:%d size:%d", elapsed,
             // size));
             // int n = Math.max((int)(size / 20 - elapsed), 0);//20 閾値(magic
             // number)
@@ -461,7 +460,7 @@ public class PMDDotNET extends BaseDriver {
             return;
 
         chipRegister.setYM2608Register(0, dat.port, dat.address, dat.data, model);
-        // System.err.println("{0} {1}", dat.address, dat.data);
+        // System.err.println("%d %d", dat.address, dat.data);
     }
 
     private int PPSDRVWrite(ChipDatum arg) {
@@ -542,17 +541,17 @@ public class PMDDotNET extends BaseDriver {
         throw new UnsupportedOperationException();
     }
 
-    public class EnvironmentE {
+    public static class EnvironmentE {
         private List<String> envs = null;
 
         public EnvironmentE() {
-            envs = new ArrayList<String>();
+            envs = new ArrayList<>();
         }
 
         public void AddEnv(String envname) {
             String env = System.getenv(envname);
             if (env != null && !env.isEmpty()) {
-                envs.add(String.format("{0}={1}", envname, env));
+                envs.add(String.format("%s=%s", envname, env));
             }
         }
 
@@ -570,7 +569,7 @@ public class PMDDotNET extends BaseDriver {
                     continue;
                 if (kv.length != 2)
                     continue;
-                if (kv[0].toUpperCase() != envname.toUpperCase())
+                if (!kv[0].equalsIgnoreCase(envname))
                     continue;
 
                 String[] vals = kv[1].split(";");
@@ -583,18 +582,16 @@ public class PMDDotNET extends BaseDriver {
     }
 
     private String[] GetPMDOption() {
-        List<String> op = new ArrayList<String>();
+        List<String> op = new ArrayList<>();
 
         // envPMDOpt
         if (envPmdOpt != null && envPmdOpt.length > 0)
-            for (String opt : envPmdOpt)
-                op.add(opt);
+            op.addAll(Arrays.asList(envPmdOpt));
 
         // 引数(IDEではオプション設定)
         String[] drvArgs = setting.pmdDotNET.driverArguments.split(" ");
         if (drvArgs != null && drvArgs.length > 0)
-            for (String drvArg : drvArgs)
-                op.add(drvArg);
+            op.addAll(Arrays.asList(drvArgs));
 
         return op.toArray(new String[0]);
     }

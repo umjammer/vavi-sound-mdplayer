@@ -25,7 +25,6 @@ import mdplayer.Log;
 
 
 public class MoonDriverDotNET extends BaseDriver {
-    private InstanceMarker im = null;
     private iCompiler moonDriverCompiler = null;
     private iDriver moonDriverDriver = null;
     private enmMoonDriverFileType mtype;
@@ -40,8 +39,9 @@ public class MoonDriverDotNET extends BaseDriver {
         PlayingFileName = value;
     }
 
-    public MoonDriverDotNET(InstanceMarker moonDriverDotNET_Im) {
-        im = moonDriverDotNET_Im;
+    public MoonDriverDotNET() {
+        // "plugin\\driver\\moonDriverDotNETCompiler.dll"
+        // "plugin\\driver\\moonDriverDotNETdll"
     }
 
     @Override
@@ -123,8 +123,8 @@ public class MoonDriverDotNET extends BaseDriver {
             }
 
             int lp = moonDriverDriver.GetNowLoopCounter();
-            lp = lp < 0 ? 0 : lp;
-            vgmCurLoop = (int) lp;
+            lp = Math.max(lp, 0);
+            vgmCurLoop = lp;
 
             if (moonDriverDriver.GetStatus() < 1) {
                 if (moonDriverDriver.GetStatus() == 0) {
@@ -142,7 +142,7 @@ public class MoonDriverDotNET extends BaseDriver {
         moonDriverCompiler.Init();
         moonDriverCompiler.SetCompileSwitch("SRC");
         moonDriverCompiler.SetCompileSwitch("MoonDriverOption=-i");
-        moonDriverCompiler.SetCompileSwitch(String.format("MoonDriverOption={0}", PlayingFileName));
+        moonDriverCompiler.SetCompileSwitch(String.format("MoonDriverOption=%s", PlayingFileName));
 
         MmlDatum[] ret;
         CompilerInfo info = null;
@@ -166,7 +166,7 @@ public class MoonDriverDotNET extends BaseDriver {
             return null;
         }
 
-        List<Byte> dest = new ArrayList<Byte>();
+        List<Byte> dest = new ArrayList<>();
         for (MmlDatum md : ret) {
             dest.add(md != null ? (byte) md.dat : (byte) 0);
         }
@@ -196,7 +196,7 @@ public class MoonDriverDotNET extends BaseDriver {
         return enmMoonDriverFileType.MDL;
     }
 
-    private Boolean initMDL() {
+    private boolean initMDL() {
         moonDriverCompiler.Init();
 
         MmlDatum[] ret;
@@ -223,9 +223,9 @@ public class MoonDriverDotNET extends BaseDriver {
 
         if (moonDriverDriver == null) moonDriverDriver = im.GetDriver("MoonDriverDotNET.Driver.Driver");
 
-        //Boolean notSoundBoard2 = false;
-        //Boolean isLoadADPCM = true;
-        //Boolean loadADPCMOnly = false;
+        //boolean notSoundBoard2 = false;
+        //boolean isLoadADPCM = true;
+        //boolean loadADPCMOnly = false;
 
         ////mucomDriver.Init(PlayingFileName,chipWriteRegister,chipWaitSend, ret, new Object[] {
         //         notSoundBoard2
@@ -257,7 +257,7 @@ public class MoonDriverDotNET extends BaseDriver {
         return true;
     }
 
-    private Boolean initMDR() {
+    private boolean initMDR() {
         if (moonDriverDriver == null) moonDriverDriver = im.GetDriver("MoonDriverDotNET.Driver.Driver");
 
         List<MmlDatum> buf = new ArrayList<MmlDatum>();
@@ -269,7 +269,7 @@ public class MoonDriverDotNET extends BaseDriver {
         Object additionalOption = new Object[] {
                 PlayingFileName,
                 (double) 44100,
-                (int) 0
+                0
         };
         moonDriverDriver.Init(
                 lca,
@@ -279,7 +279,7 @@ public class MoonDriverDotNET extends BaseDriver {
         );
 
         moonDriverDriver.StartRendering(Common.VGMProcSampleRate
-                , new Tuple[] {new Tuple<String, Integer>("YMF278B", (int) 33868800)});
+                , new Tuple[] {new Tuple<>("YMF278B", 33868800)});
         moonDriverDriver.MusicSTART(0);
 
         return true;
@@ -306,8 +306,8 @@ public class MoonDriverDotNET extends BaseDriver {
 
     //public void WriteRegister(ChipDatum dat)
     //{
-    //    //Log.WriteLine(LogLevel.TRACE, String.format("FM P{2} Out:Adr[{0:x02}] val[{1:x02}]", (int)dat.address, (int)dat.data, dat.port));
-    //    //System.err.println("FM P{2} Out:Adr[{0:x02}] val[{1:x02}]", (int)dat.address, (int)dat.data, dat.port);
+    //    //Log.WriteLine(LogLevel.TRACE, String.format("FM P%d Out:Adr[%02x] val[%02x]", (int)dat.address, (int)dat.data, dat.port));
+    //    //System.err.println("FM P%d Out:Adr[%02x] val[%02x]", (int)dat.address, (int)dat.data, dat.port);
     //    outDatum od = null;
 
     //    if (pcmdata.size() > 0)
@@ -329,7 +329,7 @@ public class MoonDriverDotNET extends BaseDriver {
 
     //    //if (od != null && od.linePos != null)
     //    //{
-    //    //System.err.println("{0}", od.linePos.col);
+    //    //System.err.println("%d", od.linePos.col);
     //    //}
 
     //    //chipRegister.YM2608SetRegister(od, (long)dat.time, 0, dat.port, dat.address, dat.data);
@@ -347,10 +347,9 @@ public class MoonDriverDotNET extends BaseDriver {
 
     private void opl4WaitSend(long size, int elapsed) {
         if (model == EnmModel.VirtualModel) {
-            //JOptionPane.showConfirmDialog(String.format("elapsed:{0} size:{1}", elapsed, size));
+            //JOptionPane.showConfirmDialog(String.format("elapsed:%d size:%d", elapsed, size));
             //int n = Math.max((int)(size / 20 - elapsed), 0);//20 閾値(magic number)
             //Thread.sleep(n);
-            return;
         }
 
         ////サイズと経過時間から、追加でウエイトする。

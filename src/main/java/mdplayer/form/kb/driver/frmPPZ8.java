@@ -29,7 +29,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmPPZ8 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -61,7 +61,7 @@ public class frmPPZ8 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -121,7 +121,6 @@ public class frmPPZ8 extends frmBase {
                 }
 
                 for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.PPZ8, chipID, ch);
-                return;
             }
         }
     };
@@ -131,7 +130,7 @@ public class frmPPZ8 extends frmBase {
 
         int clock = Audio.clockPPZ8;
         if (clock >= 1000000)
-            clock = (int) clock / 384;
+            clock = clock / 384;
 
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
@@ -154,7 +153,7 @@ public class frmPPZ8 extends frmBase {
 
 
     public void screenInit() {
-        Boolean PPZ8Type = false;//  (chipID == 0) ? parent.setting.PPZ8Type.UseScci : parent.setting.PPZ8SType.UseScci;
+        boolean PPZ8Type = false;//  (chipID == 0) ? parent.setting.PPZ8Type.UseScci : parent.setting.PPZ8SType.UseScci;
         int tp = PPZ8Type ? 1 : 0;
         for (int ch = 0; ch < 8; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {
@@ -192,8 +191,8 @@ public class frmPPZ8 extends frmBase {
                 newParam.channels[ch].volumeR -= newParam.channels[ch].volumeR > 0 ? 1 : 0;
             }
 
-            newParam.channels[ch].srcFreq = (int) ppz8State[ch].srcFrequency;
-            newParam.channels[ch].freq = (int) ppz8State[ch].frequency;
+            newParam.channels[ch].srcFreq = ppz8State[ch].srcFrequency;
+            newParam.channels[ch].freq = ppz8State[ch].frequency;
 
             newParam.channels[ch].note = Common.searchSegaPCMNote(ppz8State[ch].frequency / (double) 0x8000);
             if (!ppz8State[ch].playing) newParam.channels[ch].note = -1;
@@ -232,25 +231,25 @@ public class frmPPZ8 extends frmBase {
             DrawBuff.font4Hex16Bit(frameBuffer, 4 * 9, c * 8 + 8 * 10, 0, orc.flg16, nrc.flg16);
             DrawBuff.font4Hex16Bit(frameBuffer, 4 * 15, c * 8 + 8 * 10, 0, orc.srcFreq, nrc.srcFreq);
 
-            dmy = (int) orc.freq;
-            DrawBuff.font4Hex32Bit(frameBuffer, 4 * 21, c * 8 + 8 * 10, 0, dmy, (int) nrc.freq);
-            orc.freq = (int) dmy;
+            dmy = orc.freq;
+            DrawBuff.font4Hex32Bit(frameBuffer, 4 * 21, c * 8 + 8 * 10, 0, dmy, nrc.freq);
+            orc.freq = dmy;
 
-            dmy = (int) orc.sadr;
-            DrawBuff.font4Hex32Bit(frameBuffer, 4 * 31, c * 8 + 8 * 10, 0, dmy, (int) nrc.sadr);
-            orc.sadr = (int) dmy;
+            dmy = orc.sadr;
+            DrawBuff.font4Hex32Bit(frameBuffer, 4 * 31, c * 8 + 8 * 10, 0, dmy, nrc.sadr);
+            orc.sadr = dmy;
 
-            dmy = (int) orc.eadr;
-            DrawBuff.font4Hex32Bit(frameBuffer, 4 * 41, c * 8 + 8 * 10, 0, dmy, (int) nrc.eadr);
-            orc.eadr = (int) dmy;
+            dmy = orc.eadr;
+            DrawBuff.font4Hex32Bit(frameBuffer, 4 * 41, c * 8 + 8 * 10, 0, dmy, nrc.eadr);
+            orc.eadr = dmy;
 
-            dmy = (int) orc.ladr;
-            DrawBuff.font4Hex32Bit(frameBuffer, 4 * 51, c * 8 + 8 * 10, 0, dmy, (int) nrc.ladr);
-            orc.ladr = (int) dmy;
+            dmy = orc.ladr;
+            DrawBuff.font4Hex32Bit(frameBuffer, 4 * 51, c * 8 + 8 * 10, 0, dmy, nrc.ladr);
+            orc.ladr = dmy;
 
-            dmy = (int) orc.leadr;
-            DrawBuff.font4Hex32Bit(frameBuffer, 4 * 61, c * 8 + 8 * 10, 0, dmy, (int) nrc.leadr);
-            orc.leadr = (int) dmy;
+            dmy = orc.leadr;
+            DrawBuff.font4Hex32Bit(frameBuffer, 4 * 61, c * 8 + 8 * 10, 0, dmy, nrc.leadr);
+            orc.leadr = dmy;
 
             DrawBuff.font4HexByte(frameBuffer, 4 * 71, c * 8 + 8 * 10, 0, orc.volumeRL, nrc.volumeRL);
             DrawBuff.font4HexByte(frameBuffer, 4 * 75, c * 8 + 8 * 10, 0, orc.volumeRR, nrc.volumeRR);

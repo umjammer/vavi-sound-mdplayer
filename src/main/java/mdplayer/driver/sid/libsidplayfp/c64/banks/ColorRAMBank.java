@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2012-2013 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2010 Antti Lankila
@@ -21,6 +21,9 @@
 
 package mdplayer.driver.sid.libsidplayfp.c64.banks;
 
+import java.util.Arrays;
+
+
 /**
  * Color RAM.
  *
@@ -33,8 +36,7 @@ public class ColorRAMBank implements IBank {
     private byte[] ram = new byte[0x400];
 
     public void reset() {
-        for (int i = 0; i < ram.length; i++)
-            ram[i] = 0;
+        Arrays.fill(ram, (byte) 0);
     }
 
     public void poke(short address, byte value) {

@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  *  Copyright (C) 2011-2015 Leandro Nini
  *  Copyright (C) 2009 Antti S. Lankila
@@ -22,32 +22,28 @@
 
 package mdplayer.driver.sid.libsidplayfp;
 
-//template< class This >
 public class EventCallback<This> extends Event {
-
-    // # include "Event.h"
-    // # include "sidcxx11.h"
 
     public interface Callback extends Runnable {}
 
-    private This m_this;
+    private This _this;
 
-    public Callback m_callback;
+    public Callback callback;
 
     @Override
-    public void event_() {
-        m_callback.run();
+    public void event() {
+        callback.run();
     }
 
     /**
-     * 注意：callbackはObject_インスタンスのメソッドをセットすること
+     * 注意：Callback は object インスタンスのメソッドをセットすること
+     * @param name
+     * @param object
+     * @param callback
      */
-    // <param name="name"></param>
-    // <param name="Object_"></param>
-    // <param name="callback"></param>
-    public EventCallback(String name, This Object_, Callback callback) {
+    public EventCallback(String name, This object, Callback callback) {
         super(name);
-        m_this = Object_;
-        m_callback = callback;
+        _this = object;
+        this.callback = callback;
     }
 }

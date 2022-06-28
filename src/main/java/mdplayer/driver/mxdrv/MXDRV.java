@@ -180,7 +180,7 @@ public class MXDRV extends BaseDriver {
 
     public enum MXDRV_ERR {
         MEMORY(1);
-        int v;
+        final int v;
 
         MXDRV_ERR(int v) {
             this.v = v;
@@ -305,7 +305,7 @@ public class MXDRV extends BaseDriver {
         //chipRegister.x68Sound_MountMemory(mm.mm,model);
 
         //int playtime=MXDRV_MeasurePlayTime(mdx, mdxsize, mdxPtr, pdx, pdxsize, pdxPtr, 1, Depend.TRUE);
-        //System.err.println("({0}:{1:d02}) {2}", playtime / 1000 / 60, playtime / 1000 % 60, "");
+        //System.err.println("(%d:%02d) %d", playtime / 1000 / 60, playtime / 1000 % 60, "");
         //MXDRV_Play(mdx, mdxsize, mdxPtr, pdx, pdxsize, pdxPtr);
 
         //System.err.println("********************");
@@ -313,7 +313,7 @@ public class MXDRV extends BaseDriver {
         return true;
     }
 
-    public Boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime, Ym2151X68Sound mdxPCM) {
+    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime, Ym2151X68Sound mdxPCM) {
         this.vgmBuf = vgmBuf;
         this.chipRegister = chipRegister;
         this.model = model;
@@ -375,7 +375,7 @@ public class MXDRV extends BaseDriver {
         mdxPCM.x68sound[0].MountMemory(mm.mm);
 
         int playtime = MXDRV_MeasurePlayTime(mdx[0], mdxsize[0], mdxPtr, pdx[0], pdxsize[0], pdxPtr, 1, Depend.TRUE);
-        //System.err.println("({0}:{1:d02}) {2}", playtime / 1000 / 60, playtime / 1000 % 60, "");
+        //System.err.println("(%d:%02d) %d", playtime / 1000 / 60, playtime / 1000 % 60, "");
         totalCounter = (long) playtime * setting.getOutputDevice().getSampleRate() / 1000;
         terminatePlay = false;
         MXDRV_Play(mdx[0], mdxsize[0], mdxPtr, pdx[0], pdxsize[0], pdxPtr);
@@ -397,7 +397,7 @@ public class MXDRV extends BaseDriver {
         Render(dummyBuf, 0, 2);
     }
 
-    public void oneFrameProc2(Runnable timer, Boolean firstFlg) {
+    public void oneFrameProc2(Runnable timer, boolean firstFlg) {
 
         try {
             vgmSpeedCounter += vgmSpeed;
@@ -416,7 +416,7 @@ public class MXDRV extends BaseDriver {
             }
 
             MXDRV_MeasurePlayTime_OPMINT();
-            vgmCurLoop = (int) loopCount;
+            vgmCurLoop = loopCount;
             if (terminatePlay) {
                 stopped = true;
             }
@@ -606,7 +606,7 @@ public class MXDRV extends BaseDriver {
     private Runnable OPMINT_FUNC;
     private Runnable MXCALLBACK_OPMINT;
 
-    private Boolean measurePlayTime;
+    private boolean measurePlayTime;
 
     private final Object CS_OPMINT = new Object();
 
@@ -782,7 +782,7 @@ public class MXDRV extends BaseDriver {
         L0019b2 = memInd;
         memInd += 3;
         mm = new XMemory();
-        mm.alloc((int) memInd);
+        mm.alloc(memInd);
 
         mm.write(G + MXWORK_GLOBAL.MEASURETIMELIMIT, (int) ((long) ((1000 * (60 * 20 - 2))) * 4000 / 1024)); // 20min-2sec
         mm.write(L0019b2 + 0, 0x7f);
@@ -918,11 +918,11 @@ public class MXDRV extends BaseDriver {
 
     //
 
-    private Boolean terminatePlay;
+    private boolean terminatePlay;
     private int loopCount;
     private int loopLimit;
-    private Boolean fadeoutStart;
-    private Boolean reqFadeout;
+    private boolean fadeoutStart;
+    private boolean reqFadeout;
 
     private void MXDRV_MeasurePlayTime_OPMINT() {
         if (mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) >= mm.readInt(G + MXWORK_GLOBAL.MEASURETIMELIMIT)) {
@@ -1084,7 +1084,7 @@ public class MXDRV extends BaseDriver {
 // #endif
         if (measurePlayTime) return;
 
-        //Debug.WriteLine("{0:x02} {1:x02}", D1 & 0xff, D2 & 0xff);
+        //Debug.WriteLine("%02x %02x", D1 & 0xff, D2 & 0xff);
 
         mdxPCM.sound_Iocs[0].opmSet((byte) D1, (byte) D2);
         chipRegister.setYM2151Register(0, 0, D1, D2, model, ym2151Hosei[0], 0);
@@ -1092,7 +1092,7 @@ public class MXDRV extends BaseDriver {
         if (D1 == 0x10) {
             timerA = ((byte) D2 << 2) + (timerA & 0x3);
         } else if (D1 == 0x11) {
-            timerA = (int) ((D2 & 0x3) + (timerA & 0x3fc));
+            timerA = (D2 & 0x3) + (timerA & 0x3fc);
         } else if (D1 == 0x12) {
             timerB = (byte) D2;
         } else if (D1 == 0x14) {
@@ -4221,7 +4221,7 @@ L000174:
 
 // L000bfa:
             do {
-                //System.err.println("Ch{0:d02} Adr:{1:x04}",D7,mm.Readint(A6+MXWORK_CH.S0000));
+                //System.err.println("Ch%02d Adr:%04x",D7,mm.Readint(A6+MXWORK_CH.S0000));
             /*
                                                                     bsr     L001050
                                                                     bsr     L0011b4

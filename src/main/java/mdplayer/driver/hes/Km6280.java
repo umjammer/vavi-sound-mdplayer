@@ -15,19 +15,19 @@ public class Km6280 {
         public interface dlgWriterHandler extends TriConsumer<M_Hes.HESHES, Integer, Integer> {
         }
 
-        public int A;            /* Accumulator */
-        public int P;            /* Status register */
-        public int X;            /* X register */
-        public int Y;            /* Y register */
-        public int S;            /* Stack pointer */
-        public int PC;           /* Program Counter */
+        public int A; /** Accumulator */
+        public int P; /** Status register */
+        public int X; /** X register */
+        public int Y; /** Y register */
+        public int S; /** Stack pointer */
+        public int PC; /** Program Counter */
 
-        public int iRequest;     /* Interrupt request */
-        public int iMask;        /* Interrupt mask */
-        public int clock;        /* (incremental)cycle counter */
+        public int iRequest; /** Interrupt request */
+        public int iMask; /** Interrupt mask */
+        public int clock; /** (incremental)cycle counter */
         public int lastcode;
-        //public Km6280 user;         /* pointer to user area */
-        public M_Hes.HESHES user;         /* pointer to user area */
+        //public Km6280 user; /** pointer to user area */
+        public M_Hes.HESHES user; /** pointer to user area */
 
         public int lowClockMode;
 
@@ -47,7 +47,7 @@ public class Km6280 {
             K6280_T_FLAG(0x20),
             K6280_V_FLAG(0x40),
             K6280_N_FLAG(0x80);
-            int v;
+            final int v;
 
             K6280_FLAGS(int v) {
                 this.v = v;
@@ -62,7 +62,7 @@ public class Km6280 {
             K6280_TIMER(16),
             K6280_INT1(32),
             K6280_INT2(64);
-            int v;
+            final int v;
 
             K6280_IRQ(int v) {
                 this.v = v;
@@ -169,8 +169,8 @@ public class Km6280 {
                 //#if 0
                 //cycle += (cycle << 2);	/* x5 */
                 //#else
-                cycle += cycle + cycle; /*    */
-                cycle += cycle;         /* x6 */
+                cycle += cycle + cycle; //    */
+                cycle += cycle; // x6 */
                 //#endif
             }
             this.clock += cycle;
@@ -277,7 +277,7 @@ public class Km6280 {
         public void KM_ALUADDER(int src) {
             int w = this.A + src + (this.P & C_FLAG);
             this.P &= ~(int) (N_FLAG | V_FLAG | Z_FLAG | C_FLAG | T_FLAG);
-            this.P += FLAG_NZC((int) w)
+            this.P += FLAG_NZC(w)
                     + ((((~this.A ^ src) & (this.A ^ w)) >> 1) & V_FLAG);
             this.A = w & 0xff;
         }
@@ -461,7 +461,7 @@ public class Km6280 {
         public void KM_TST(int imm, int mem) {
             int w = imm & mem;
             this.P &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
-            this.P += (int) ((mem & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG));
+            this.P += (mem & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
         }
 
         /* --- ADC ---  */
@@ -942,44 +942,44 @@ public class Km6280 {
 
         /* --- BSR --- */
 
-        public void Opcode44()  /* 44 - BSR */ {
-            KM_PUSH((this.PC >> 8) & 0xff);  /* !!! PC = NEXT - 1; !!! */
+        public void Opcode44() { // 44 - BSR */
+            KM_PUSH((this.PC >> 8) & 0xff); // !!! PC = NEXT - 1; !!! */
             KM_PUSH((this.PC) & 0xff);
             KM_BRA(K_READ(KA_IMM()));
         }
 
         /* --- CLA --- */
-        public void Opcode62()  /* 62 - CLA */ {
+        public void Opcode62() { // 62 - CLA
             this.A = 0;
         }
 
         /* --- CLX --- */
-        public void Opcode82()  /* 82 - CLX */ {
+        public void Opcode82() { // 82 - CLX
             this.X = 0;
         }
 
         /* --- CLY --- */
-        public void OpcodeC2()  /* C2 - CLY */ {
+        public void OpcodeC2() { // C2 - CLY
             this.Y = 0;
         }
 
         /* --- CLC --- */
-        public void Opcode18()  /* 18 - CLC */ {
+        public void Opcode18() { // 18 - CLC
             this.P &= ~(int) C_FLAG;
         }
 
         /* --- CLD --- */
-        public void OpcodeD8()  /* D8 - CLD */ {
+        public void OpcodeD8() { // D8 - CLD
             this.P &= ~(int) D_FLAG;
         }
 
         /* --- CLI --- */
-        public void Opcode58()  /* 58 - CLI */ {
+        public void Opcode58() { // 58 - CLI
             this.P &= ~(int) I_FLAG;
         }
 
         /* --- CLV --- */
-        public void OpcodeB8()  /* B8 - CLV */ {
+        public void OpcodeB8() { // B8 - CLV
             this.P &= ~(int) V_FLAG;
         }
 
@@ -1071,15 +1071,15 @@ public class Km6280 {
             K_WRITE(adr, KM_DEC(K_READ(adr)));
         }
 
-        public void Opcode3A()    /* 3A - DEA */ {
+        public void Opcode3A() { // 3A - DEA
             this.A = KM_DEC(this.A);
         }
 
-        public void OpcodeCA()  /* CA - DEX */ {
+        public void OpcodeCA() { // CA - DEX
             this.X = KM_DEC(this.X);
         }
 
-        public void Opcode88()    /* 88 - DEY */ {
+        public void Opcode88() { // 88 - DEY
             this.Y = KM_DEC(this.Y);
         }
 
@@ -1197,15 +1197,15 @@ public class Km6280 {
             K_WRITE(adr, KM_INC(K_READ(adr)));
         }
 
-        public void Opcode1A()  /* 1A - INA */ {
+        public void Opcode1A() { // 1A - INA
             this.A = KM_INC(this.A);
         }
 
-        public void OpcodeE8()  /* E8 - INX */ {
+        public void OpcodeE8() { // E8 - INX
             this.X = KM_INC(this.X);
         }
 
-        public void OpcodeC8()  /* C8 - INY */ {
+        public void OpcodeC8() { // C8 - INY
             this.Y = KM_INC(this.Y);
         }
 
@@ -1224,7 +1224,7 @@ public class Km6280 {
         }
 
         /* --- JSR --- */
-        public void Opcode20()  /* 20 - JSR */ {
+        public void Opcode20() { // 20 - JSR
             int adr = KA_IMM();
             KM_PUSH((this.PC >> 8) & 0xff);   /* !!! PC = NEXT - 1; !!! */
             KM_PUSH((this.PC) & 0xff);
@@ -1335,12 +1335,12 @@ public class Km6280 {
             K_WRITE(adr, KM_LSR(K_READ(adr)));
         }
 
-        public void Opcode4A()  /* 4A - LSR - Accumulator */ {
+        public void Opcode4A() { // 4A - LSR - Accumulator
             this.A = KM_LSR(this.A);
         }
 
         /* --- NOP ---  */
-        public void OpcodeEA()  /* EA - NOP */ {
+        public void OpcodeEA() { // EA - NOP
         }
 
         /* --- ORA ---  */
@@ -1436,35 +1436,35 @@ public class Km6280 {
         }
 
         /* --- PHr PLr  --- */
-        public void Opcode48()  /* 48 - PHA */ {
+        public void Opcode48() { // 48 - PHA
             KM_PUSH(this.A);
         }
 
-        public void Opcode08()  /* 08 - PHP */ {
-            KM_PUSH((int) ((this.P | B_FLAG | R_FLAG) & ~T_FLAG));
+        public void Opcode08() { // 08 - PHP
+            KM_PUSH((this.P | B_FLAG | R_FLAG) & ~T_FLAG);
         }
 
-        public void Opcode68()  /* 68 - PLA */ {
+        public void Opcode68() { // 68 - PLA
             this.A = KM_LD(KM_POP());
         }
 
-        public void Opcode28()  /* 28 - PLP */ {
-            this.P = (int) (KM_POP() & ~T_FLAG);
+        public void Opcode28() { // 28 - PLP
+            this.P = KM_POP() & ~T_FLAG;
         }
 
-        public void OpcodeDA()  /* DA - PHX */ {
+        public void OpcodeDA() { // DA - PHX
             KM_PUSH(this.X);
         }
 
-        public void Opcode5A()  /* 5A - PHY */ {
+        public void Opcode5A() { // 5A - PHY
             KM_PUSH(this.Y);
         }
 
-        public void OpcodeFA()  /* FA - PLX */ {
+        public void OpcodeFA() { // FA - PLX
             this.X = KM_LD(KM_POP());
         }
 
-        public void Opcode7A()  /* 7A - PLY */ {
+        public void Opcode7A() { // 7A - PLY
             this.Y = KM_LD(KM_POP());
         }
 
@@ -1472,84 +1472,84 @@ public class Km6280 {
 
         public void Opcode07() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) & (~(1 << 0))));
+            K_WRITE(adr, K_READ(adr) & (~(1 << 0)));
         }
 
         public void Opcode17() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) & (~(1 << 1))));
+            K_WRITE(adr, K_READ(adr) & (~(1 << 1)));
         }
 
         public void Opcode27() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) & (~(1 << 2))));
+            K_WRITE(adr, K_READ(adr) & (~(1 << 2)));
         }
 
         public void Opcode37() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) & (~(1 << 3))));
+            K_WRITE(adr, K_READ(adr) & (~(1 << 3)));
         }
 
         public void Opcode47() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) & (~(1 << 4))));
+            K_WRITE(adr, K_READ(adr) & (~(1 << 4)));
         }
 
         public void Opcode57() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) & (~(1 << 5))));
+            K_WRITE(adr, K_READ(adr) & (~(1 << 5)));
         }
 
         public void Opcode67() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) & (~(1 << 6))));
+            K_WRITE(adr, K_READ(adr) & (~(1 << 6)));
         }
 
         public void Opcode77() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) & (~(1 << 7))));
+            K_WRITE(adr, K_READ(adr) & (~(1 << 7)));
         }
 
         /* --- SMBi --- */
 
         public void Opcode87() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) | (1 << 0)));
+            K_WRITE(adr, K_READ(adr) | (1 << 0));
         }
 
         public void Opcode97() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) | (1 << 1)));
+            K_WRITE(adr, K_READ(adr) | (1 << 1));
         }
 
         public void OpcodeA7() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) | (1 << 2)));
+            K_WRITE(adr, K_READ(adr) | (1 << 2));
         }
 
         public void OpcodeB7() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) | (1 << 3)));
+            K_WRITE(adr, K_READ(adr) | (1 << 3));
         }
 
         public void OpcodeC7() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) | (1 << 4)));
+            K_WRITE(adr, K_READ(adr) | (1 << 4));
         }
 
         public void OpcodeD7() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) | (1 << 5)));
+            K_WRITE(adr, K_READ(adr) | (1 << 5));
         }
 
         public void OpcodeE7() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) | (1 << 6)));
+            K_WRITE(adr, K_READ(adr) | (1 << 6));
         }
 
         public void OpcodeF7() {
             int adr = KA_ZP();
-            K_WRITE(adr, (int) (K_READ(adr) | (1 << 7)));
+            K_WRITE(adr, K_READ(adr) | (1 << 7));
         }
 
         /* --- ROL ---  */
@@ -1574,7 +1574,7 @@ public class Km6280 {
             K_WRITE(adr, KM_ROL(K_READ(adr)));
         }
 
-        public void Opcode2A()  /* 2A - ROL - Accumulator */ {
+        public void Opcode2A() { // 2A - ROL - Accumulator
             this.A = KM_ROL(this.A);
         }
 
@@ -1600,36 +1600,36 @@ public class Km6280 {
             K_WRITE(adr, KM_ROR(K_READ(adr)));
         }
 
-        public void Opcode6A()  /* 6A - ROR - Accumulator */ {
+        public void Opcode6A() { // 6A - ROR - Accumulator
             this.A = KM_ROR(this.A);
         }
 
-        public void Opcode40()  /* 40 - RTI */ {
+        public void Opcode40() { // 40 - RTI
 
             this.P = KM_POP();
             this.PC = KM_POP();
             this.PC += KM_POP() << 8;
         }
 
-        public void Opcode60()  /* 60 - RTS */ {
+        public void Opcode60() { // 60 - RTS
             this.PC = KM_POP();
             this.PC += KM_POP() << 8;
             this.PC = (this.PC + 1) & 0xffff;
         }
 
-        public void Opcode22()  /* 22 - SAX */ {
+        public void Opcode22() { // 22 - SAX
             int temp = this.A;
             this.A = this.X;
             this.X = temp;
         }
 
-        public void Opcode42()  /* 42 - SAY */ {
+        public void Opcode42() { // 42 - SAY
             int temp = this.A;
             this.A = this.Y;
             this.Y = temp;
         }
 
-        public void Opcode02()  /* 02 - SXY */ {
+        public void Opcode02() { // 02 - SXY
             int temp = this.Y;
             this.Y = this.X;
             this.X = temp;
@@ -1710,34 +1710,34 @@ public class Km6280 {
         }
 
         /* --- SEC --- */
-        public void Opcode38()  /* 38 - SEC */ {
+        public void Opcode38() { // 38 - SEC
             this.P |= C_FLAG;
         }
 
         /* --- SED --- */
-        public void OpcodeF8()  /* F8 - SED */ {
+        public void OpcodeF8() { // F8 - SED
             this.P |= D_FLAG;
         }
 
         /* --- SEI --- */
-        public void Opcode78()  /* 78 - SEI */ {
+        public void Opcode78() { // 78 - SEI
             this.P |= I_FLAG;
         }
 
         /* --- SET --- */
-        public void OpcodeF4()  /* F4 - SET */ {
+        public void OpcodeF4() { // F4 - SET
             this.P |= T_FLAG;
         }
 
-        public void Opcode03()  /* 03 - ST0 */ {
+        public void Opcode03() { // 03 - ST0
             K_WRITE6270(0, K_READ(KA_IMM()));
         }
 
-        public void Opcode13()  /* 13 - ST1 */ {
+        public void Opcode13() { // 13 - ST1
             K_WRITE6270(2, K_READ(KA_IMM()));
         }
 
-        public void Opcode23()  /* 23 - ST2 */ {
+        public void Opcode23() { // 23 - ST2
             K_WRITE6270(3, K_READ(KA_IMM()));
         }
 
@@ -1823,13 +1823,13 @@ public class Km6280 {
 
         /* --- TAMi ---  */
 
-        public void Opcode53()  /* 53 - TAMi */ {
+        public void Opcode53() { // 53 - TAMi
             K_WRITEMPR(K_READ(KA_IMM()), this.A);
         }
 
         /* --- TMAi ---  */
 
-        public void Opcode43()  /* 43 - TMAi */ {
+        public void Opcode43() { // 43 - TMAi
             this.A = K_READMPR(K_READ(KA_IMM()));
         }
 
@@ -1881,42 +1881,42 @@ public class Km6280 {
         //#endif
 
         /* --- TAX ---  */
-        public void OpcodeAA()  /* AA - TAX */ {
+        public void OpcodeAA() { // AA - TAX
             this.X = KM_LD(this.A);
         }
 
         /* --- TAY ---  */
-        public void OpcodeA8()  /* A8 - TAY */ {
+        public void OpcodeA8() { // A8 - TAY
             this.Y = KM_LD(this.A);
         }
 
         /* --- TSX ---  */
-        public void OpcodeBA()  /* BA - TSX */ {
+        public void OpcodeBA() { // BA - TSX
             this.X = KM_LD(this.S);
         }
 
         /* --- TXA ---  */
-        public void Opcode8A()  /* 8A - TXA */ {
+        public void Opcode8A() { // 8A - TXA
             this.A = KM_LD(this.X);
         }
 
         /* --- TXS ---  */
-        public void Opcode9A()  /* 9A - TXS */ {
+        public void Opcode9A() { // 9A - TXS
             this.S = this.X;
         }
 
         /* --- TYA ---  */
-        public void Opcode98()  /* 98 - TYA */ {
+        public void Opcode98() { // 98 - TYA
             this.A = KM_LD(this.Y);
         }
 
         //#if BUILD_HUC6280
-        public void Opcode73()  /* 73 - TII */ {
+        public void Opcode73() { // 73 - TII
             int src, des, len;
             src = KI_READWORD(KA_IMM16());
             des = KI_READWORD(KA_IMM16());
             len = KI_READWORD(KA_IMM16());
-            KI_ADDCLOCK((int) (len != 0 ? len * 6 : (int) 0x60000));
+            KI_ADDCLOCK(len != 0 ? len * 6 : 0x60000);
             do {
                 K_WRITE(des, K_READ(src));
                 src = (src + 1) & 0xffff;
@@ -1925,12 +1925,12 @@ public class Km6280 {
             } while (len != 0);
         }
 
-        public void OpcodeC3()  /* C3 - TDD */ {
+        public void OpcodeC3() { // C3 - TDD
             int src, des, len;
             src = KI_READWORD(KA_IMM16());
             des = KI_READWORD(KA_IMM16());
             len = KI_READWORD(KA_IMM16());
-            KI_ADDCLOCK((int) (len != 0 ? len * 6 : (int) 0x60000));
+            KI_ADDCLOCK(len != 0 ? len * 6 : 0x60000);
             do {
                 K_WRITE(des, K_READ(src));
                 src = (src - 1) & 0xffff;
@@ -1939,12 +1939,12 @@ public class Km6280 {
             } while (len != 0);
         }
 
-        public void OpcodeD3()  /* D3 - TIN */ {
+        public void OpcodeD3() { // D3 - TIN
             int src, des, len;
             src = KI_READWORD(KA_IMM16());
             des = KI_READWORD(KA_IMM16());
             len = KI_READWORD(KA_IMM16());
-            KI_ADDCLOCK((int) (len != 0 ? len * 6 : (int) 0x60000));
+            KI_ADDCLOCK(len != 0 ? len * 6 : 0x60000);
             do {
                 K_WRITE(des, K_READ(src));
                 src = (src + 1) & 0xffff;
@@ -1952,43 +1952,43 @@ public class Km6280 {
             } while (len != 0);
         }
 
-        public void OpcodeE3()  /* E3 - TIA */ {
-            int add = +1;
+        public void OpcodeE3() { // E3 - TIA
+            int add = 1;
             int src, des, len;
             src = KI_READWORD(KA_IMM16());
             des = KI_READWORD(KA_IMM16());
             len = KI_READWORD(KA_IMM16());
-            KI_ADDCLOCK((int) (len != 0 ? len * 6 : (int) 0x60000));
+            KI_ADDCLOCK(len != 0 ? len * 6 : 0x60000);
             do {
                 K_WRITE(des, K_READ(src));
                 src = (src + 1) & 0xffff;
-                des = (int) ((des + add) & 0xffff);
+                des = (des + add) & 0xffff;
                 add = -add;
                 len = (len - 1) & 0xffff;
             } while (len != 0);
         }
 
-        public void OpcodeF3()  /* F3 - TAI */ {
-            int add = +1;
+        public void OpcodeF3() { // F3 - TAI
+            int add = 1;
             int src, des, len;
             src = KI_READWORD(KA_IMM16());
             des = KI_READWORD(KA_IMM16());
             len = KI_READWORD(KA_IMM16());
-            KI_ADDCLOCK((int) (len != 0 ? len * 6 : (int) 0x60000));
+            KI_ADDCLOCK(len != 0 ? len * 6 : 0x60000);
             do {
                 K_WRITE(des, K_READ(src));
-                src = (int) ((src + add) & 0xffff);
+                src = (src + add) & 0xffff;
                 des = (des + 1) & 0xffff;
                 add = -add;
                 len = (len - 1) & 0xffff;
             } while (len != 0);
         }
 
-        public void Opcode54()  /* 54 - CSL */ {
+        public void Opcode54() { // 54 - CSL
             this.lowClockMode = 1;
         }
 
-        public void OpcodeD4()  /* D4 - CSH */ {
+        public void OpcodeD4() { // D4 - CSH
             this.lowClockMode = 0;
         }
 
@@ -2959,7 +2959,7 @@ public class Km6280 {
                     KM_PUSH((this.PC) & 0xff);
                     KM_PUSH(this.P | R_FLAG | B_FLAG);
                     //#if BUILD_M65C02 || BUILD_HUC6280
-                    this.P = (int) ((this.P & ~(D_FLAG | T_FLAG)) | I_FLAG);
+                    this.P = (this.P & ~(D_FLAG | T_FLAG)) | I_FLAG;
                     //#else
                     //__THIS__.P = (__THIS__.P & ~T_FLAG) | I_FLAG;   /* 6502 bug */
                     //#endif

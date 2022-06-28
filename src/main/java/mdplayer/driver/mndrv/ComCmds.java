@@ -74,7 +74,7 @@ public class ComCmds {
         if (mm.readByte(reg.a6 + Dw.MND_VER) < 8) {
             reg.a0 = Ab.dummyAddress;// _atq_old;
             mm.write(reg.a5 + W.qtjob, reg.a0);//_atq_old = 0 とする
-            if (ab.hlw_qtjob.containsKey(reg.a5)) ab.hlw_qtjob.remove(reg.a5);
+            ab.hlw_qtjob.remove(reg.a5);
             ab.hlw_qtjob.put(reg.a5, this::_atq_old);
             return;
         }
@@ -84,7 +84,7 @@ public class ComCmds {
 //        reg.a0 = _com_90_table;
         reg.a0 = Ab.dummyAddress;
         mm.write(reg.a5 + W.qtjob, reg.a0); // d0(q:0x01-0x10)
-        if (ab.hlw_qtjob.containsKey(reg.a5)) ab.hlw_qtjob.remove(reg.a5);
+        ab.hlw_qtjob.remove(reg.a5);
         switch (reg.getD0_W() / 2) {
         case 1:
             ab.hlw_qtjob.put(reg.a5, this::_atq_01);
@@ -442,7 +442,6 @@ public class ComCmds {
         }
 
         if (reg.getD0_B() == 0x80) {
-            return;
         }
     }
 
@@ -527,7 +526,6 @@ public class ComCmds {
             _COM_B0_3();
             break;
         }
-        return;
     }
 
     public void _COM_B0_0() {
@@ -573,7 +571,7 @@ public class ComCmds {
         if (reg.getD0_B() != 0) mm.write(reg.a6 + Dw.VOLMODE, (byte) 0xff);
     }
 
-    // PSG LFO MODE
+    // Psg LFO MODE
     public void _COM_B0_3() {
         mm.write(reg.a6 + Dw.DRV_FLAG2, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0xfc));
         reg.setD0_B(mm.readByte(reg.a1++));

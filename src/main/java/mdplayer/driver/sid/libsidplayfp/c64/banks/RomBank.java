@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2012-2015 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2010 Antti Lankila
@@ -23,8 +23,8 @@ package mdplayer.driver.sid.libsidplayfp.c64.banks;
 
 import java.nio.ByteBuffer;
 
+import mdplayer.driver.sid.libsidplayfp.SidEndian;
 import mdplayer.driver.sid.libsidplayfp.c64.cpu.OpCodes;
-import mdplayer.driver.sid.libsidplayfp.sidendian;
 
 
 /**
@@ -147,8 +147,8 @@ public class RomBank implements IBank {
          * //@param addr the new addres to point to
          */
         public void installResetHook(short addr) {
-            setVal((short) 0xfffc, sidendian.endian_16lo8(addr));
-            setVal((short) 0xfffd, sidendian.endian_16hi8(addr));
+            setVal((short) 0xfffc, SidEndian.to16lo8(addr));
+            setVal((short) 0xfffd, SidEndian.to16hi8(addr));
         }
     }
 
@@ -199,8 +199,8 @@ public class RomBank implements IBank {
          */
         public void installTrap(short addr) {
             setVal((short) 0xa7ae, (byte) OpCodes.JMPw);
-            setVal((short) 0xa7af, sidendian.endian_16lo8(addr));
-            setVal((short) 0xa7b0, sidendian.endian_16hi8(addr));
+            setVal((short) 0xa7af, SidEndian.to16lo8(addr));
+            setVal((short) 0xa7b0, SidEndian.to16hi8(addr));
         }
 
         public void setSubtune(byte tune) {

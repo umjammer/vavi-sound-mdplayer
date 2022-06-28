@@ -30,7 +30,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmYM2612 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -58,7 +58,7 @@ public class frmYM2612 extends frmBase {
     }
 
     public void screenInit() {
-        Boolean YM2612Type = (chipID == 0) ? parent.setting.getYM2612Type()[0].getUseReal()[0] : parent.setting.getYM2612Type()[1].getUseReal()[0];
+        boolean YM2612Type = (chipID == 0) ? parent.setting.getYM2612Type()[0].getUseReal()[0] : parent.setting.getYM2612Type()[1].getUseReal()[0];
         int tp = YM2612Type ? 1 : 0;
         DrawBuff.screenInitYM2612(frameBuffer, tp, (chipID == 0)
                         ? parent.setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation()
@@ -72,7 +72,7 @@ public class frmYM2612 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -198,7 +198,7 @@ public class frmYM2612 extends frmBase {
                     n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
                     //if (ch == 0)
                     //{
-                    //    System.err.println("freq:{0}  masterClock:{1}  fmDiv:{2}  octav:{3} ff:{4}  n:{5}", freq, masterClock, fmDiv, octav,ff,n);
+                    //    System.err.println("freq:%d  masterClock:%d  fmDiv:%d  octav:%d ff:%d  n:%d", freq, masterClock, fmDiv, octav,ff,n);
                     //}
                 }
 
@@ -286,7 +286,7 @@ public class frmYM2612 extends frmBase {
             if (Audio.driverVirtual != null && ((Xgm) Audio.driverVirtual).xgmpcm != null) {
                 for (int i = 0; i < 4; i++) {
                     if (((Xgm) Audio.driverVirtual).xgmpcm[i].isPlaying) {
-                        newParam.xpcmInst[i] = (int) (((Xgm) Audio.driverVirtual).xgmpcm[i].inst);
+                        newParam.xpcmInst[i] = ((Xgm) Audio.driverVirtual).xgmpcm[i].inst;
                         int d = (((Xgm) Audio.driverVirtual).xgmpcm[i].data / 6);
                         d = Math.min(d, 19);
                         newParam.xpcmVolL[i] = d;
@@ -307,7 +307,7 @@ public class frmYM2612 extends frmBase {
             MDChipParams.Channel oyc = oldParam.channels[c];
             MDChipParams.Channel nyc = newParam.channels[c];
 
-            Boolean YM2612type = (chipID == 0)
+            boolean YM2612type = (chipID == 0)
                     ? parent.setting.getYM2612Type()[0].getUseReal()[0]
                     : parent.setting.getYM2612Type()[1].getUseReal()[0];
             int tp = YM2612type ? 1 : 0;
@@ -480,7 +480,7 @@ public class frmYM2612 extends frmBase {
         this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
 //        this.MaximizeBox = false;
         this.setName("frmYM2612");
-        this.setTitle("YM2612");
+        this.setTitle("Ym2612");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();

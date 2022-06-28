@@ -70,7 +70,7 @@ public class YM2612MIDI {
         int oct = noteNumber / 12 - 1;
         oct = Math.min(Math.max(oct, 0), 7);
 
-        int ch = parent.setting.getMidiKbd().getUseMONOChannel();
+        int ch = parent.setting.getMidiKbd().getUseMonoChannel();
         if (ch < 0 || ch > 5) return -1;
 
         mdsMIDI.writeYM2612((byte) 0, (byte) (ch / 3), (byte) (0xa4 + (ch % 3)), (byte) (((fnum & 0x700) >> 8) | (oct << 3)));
@@ -84,7 +84,7 @@ public class YM2612MIDI {
     }
 
     private void noteOFFMONO(int noteNumber) {
-        int ch = parent.setting.getMidiKbd().getUseMONOChannel();
+        int ch = parent.setting.getMidiKbd().getUseMonoChannel();
         if (ch < 0 || ch > 5) return;
 
         if (noteNumber == latestNoteNumberMONO)
@@ -92,7 +92,7 @@ public class YM2612MIDI {
     }
 
     private int noteON(int noteNumber) {
-        if (parent.setting.getMidiKbd().getIsMONO()) {
+        if (parent.setting.getMidiKbd().isMono()) {
             return noteONMONO(noteNumber);
         }
 
@@ -121,7 +121,7 @@ public class YM2612MIDI {
     }
 
     private void noteOFF(int noteNumber) {
-        if (parent.setting.getMidiKbd().getIsMONO()) {
+        if (parent.setting.getMidiKbd().isMono()) {
             noteOFFMONO(noteNumber);
             return;
         }
@@ -322,23 +322,20 @@ public class YM2612MIDI {
         case 0:
             //MONO
             for (int ch = 0; ch < 6; ch++) {
-                parent.setting.getMidiKbd().getUseChannel()[ch] = false;
-                if (ch == parent.setting.getMidiKbd().getUseMONOChannel()) {
-                    parent.setting.getMidiKbd().getUseChannel()[ch] = true;
-                }
+                parent.setting.getMidiKbd().getUseChannel()[ch] = ch == parent.setting.getMidiKbd().getUseMonoChannel();
             }
-            parent.setting.getMidiKbd().setIsMONO(true);
+            parent.setting.getMidiKbd().setMono(true);
             break;
         default:
             //POLY
-            parent.setting.getMidiKbd().setIsMONO(false);
+            parent.setting.getMidiKbd().setMono(false);
             break;
         }
     }
 
     public void selectChannel(int ch) {
-        if (parent.setting.getMidiKbd().getIsMONO()) {
-            parent.setting.getMidiKbd().setUseMONOChannel(ch);
+        if (parent.setting.getMidiKbd().isMono()) {
+            parent.setting.getMidiKbd().setUseMonoChannel(ch);
             setMode(0);
         } else {
             parent.setting.getMidiKbd().getUseChannel()[ch] = !parent.setting.getMidiKbd().getUseChannel()[ch];
@@ -507,16 +504,16 @@ public class YM2612MIDI {
                 ShortMessage ne = (ShortMessage) e;
                 noteOFF(ne.getData1());
             } else if (e.getStatus() == ShortMessage.CONTROL_CHANGE) {
-                int cc = (int) (((ShortMessage) e).getData1());
+                int cc = ((ShortMessage) e).getData1();
                 Setting.MidiKbd mk = parent.setting.getMidiKbd();
                 if (cc == mk.getMidiCtrl_CopyToneFromYM2612Ch1()) voiceCopy();
                 if (cc == mk.getMidiCtrl_CopySelecttingLogToClipbrd()) {
-                    if (parent.setting.getMidiKbd().getIsMONO())
-                        log2MML66(parent.setting.getMidiKbd().getUseMONOChannel());
+                    if (parent.setting.getMidiKbd().isMono())
+                        log2MML66(parent.setting.getMidiKbd().getUseMonoChannel());
                 }
                 if (cc == mk.getMidiCtrl_DelOneLog()) {
-                    if (parent.setting.getMidiKbd().getIsMONO()) {
-                        int ch = parent.setting.getMidiKbd().getUseMONOChannel();
+                    if (parent.setting.getMidiKbd().isMono()) {
+                        int ch = parent.setting.getMidiKbd().getUseMonoChannel();
                         int ptr = _noteLogPtr[ch];
                         ptr--;
                         if (ptr < 0) ptr += 100;
@@ -549,7 +546,7 @@ public class YM2612MIDI {
                 if (cc == mk.getMidiCtrl_Previous()) {
                     parent.prev();
                 }
-                if (cc == mk.getMidiCtrl_Slow()) {
+                if (cc == mk.getMidiCtrlSlow()) {
                     parent.slow();
                 }
                 if (cc == mk.getMidiCtrl_Stop()) {
@@ -558,7 +555,7 @@ public class YM2612MIDI {
             }
         } catch (Exception ex) {
             JOptionPane.showConfirmDialog(null,
-                    String.format("Exception:\n%s\nStackTrace:\n%s\n", ex.getMessage(), ex.getStackTrace())
+                    String.format("Exception:\n%s\nStackTrace:\n%s\n", ex.getMessage(), Arrays.toString(ex.getStackTrace()))
                     , "ERROR"
                     , JOptionPane.DEFAULT_OPTION
                     , JOptionPane.ERROR_MESSAGE

@@ -67,6 +67,6 @@ public enum EnmZGMDevice {
         , Wave(0x0007_0000)
         , RawWave(0x0007_0000);
 
-    int v;
+    final int v;
     EnmZGMDevice(int v) {this.v = v;}
 }

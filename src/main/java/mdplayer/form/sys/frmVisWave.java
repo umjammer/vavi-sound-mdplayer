@@ -30,7 +30,7 @@ import vavi.util.SplitRadixFft;
 
 
 public class frmVisWave extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
 
@@ -39,7 +39,7 @@ public class frmVisWave extends frmBase {
     private BufferedImage bmp;
     private int dispType = 1;
     private double dispHeight = 1.0;
-    private Boolean fft = false;
+    private boolean fft = false;
 
     static Preferences prefs = Preferences.userNodeForPackage(frmVisWave.class);
 
@@ -118,7 +118,7 @@ public class frmVisWave extends frmBase {
     };
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -219,7 +219,7 @@ public class frmVisWave extends frmBase {
             return ret;
         }
 
-        private void rfft(int n, int isign, double x[]) {
+        private void rfft(int n, int isign, double[] x) {
             int ipsize = 0, wsize = 0;
             int[] ip = null;
             double[] w = null;

@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2011-2015 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2007-2010 Antti Lankila
@@ -23,8 +23,8 @@
 package mdplayer.driver.sid.libsidplayfp.c64;
 
 import mdplayer.driver.sid.libsidplayfp.c64.banks.IBank;
-import mdplayer.driver.sid.libsidplayfp.c64.cia.MOS6526;
-import mdplayer.driver.sid.libsidplayfp.sidendian;
+import mdplayer.driver.sid.libsidplayfp.c64.cia.Mos6526;
+import mdplayer.driver.sid.libsidplayfp.SidEndian;
 
 
 /**
@@ -34,55 +34,52 @@ import mdplayer.driver.sid.libsidplayfp.sidendian;
  * <p>
  * Located at $DC00-$DCFF
  */
-class C64cia1 extends MOS6526 implements IBank {
-
+class C64Cia1 extends Mos6526 implements IBank {
 
     // The CIA emulations are very generic and here we need to effectively
     // wire them into the computer (like adding a chip to a PCB).
 
-    private C64Env m_env;
-    private short last_ta;
+    private final C64Env env;
+    private short lastTA;
 
     @Override
-    public void interrupt(Boolean state) {
-        m_env.interruptIRQ(state);
+    public void interrupt(boolean state) {
+        env.interruptIRQ(state);
     }
 
     @Override
     protected void portB() {
-        m_env.lightpen(((prb | ~ddrb) & 0x10) != 0);
+        env.lightpen(((prb | ~ddrb) & 0x10) != 0);
     }
 
-    public C64cia1(C64Env env) {
+    public C64Cia1(C64Env env) {
         super(env.scheduler());
-        m_env = env;
+        this.env = env;
     }
 
     public void poke(short address, byte value) {
-        write(sidendian.endian_16lo8(address), value);
+        write(SidEndian.to16lo8(address), value);
 
         // Save the value written to Timer A
-        if (address == 0xDC04 || address == 0xDC05) {
+        if ((address & 0xffff) == 0xDC04 || (address & 0xffff) == 0xDC05) {
             if (timerA.getTimer() != 0)
-                last_ta = timerA.getTimer();
+                lastTA = timerA.getTimer();
         }
     }
 
     public byte peek(short address) {
-        return read(sidendian.endian_16lo8(address));
+        return read(SidEndian.to16lo8(address));
     }
 
     @Override
     public void reset() {
-        last_ta = 0;
+        lastTA = 0;
         super.reset();
     }
 
     public short getTimerA() {
-        return last_ta;
+        return lastTA;
     }
-
-
 }
 
 /**
@@ -92,18 +89,19 @@ class C64cia1 extends MOS6526 implements IBank {
  * <p>
  * Located at $DD00-$DDFF
  */
-class C64cia2 extends MOS6526 implements IBank {
-    private C64Env m_env;
+class C64Cia2 extends Mos6526 implements IBank {
+
+    private final C64Env env;
 
     @Override
-    public void interrupt(Boolean state) {
+    public void interrupt(boolean state) {
         if (state)
-            m_env.interruptNMI();
+            env.interruptNMI();
     }
 
-    public C64cia2(C64Env env) {
+    public C64Cia2(C64Env env) {
         super(env.scheduler());
-        m_env = env;
+        this.env = env;
     }
 
     public void poke(short address, byte value) {

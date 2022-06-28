@@ -22,12 +22,14 @@ public class M3U {
                 while ((line = sr.readLine()) != null) {
 
                     line = line.trim();
-                    if (line == "") continue;
+                    if (line.isEmpty()) continue;
                     if (line.charAt(0) == '#') continue;
 
                     PlayList.Music ms = analyzeLine(line, rootPath);
-                    ms.format = Common.FileFormat.checkExt(ms.fileName);
-                    if (ms != null) pl.getLstMusic().add(ms);
+                    if (ms != null) {
+                        ms.format = Common.FileFormat.checkExt(ms.fileName);
+                        pl.getLstMusic().add(ms);
+                    }
 
                 }
             }
@@ -54,7 +56,7 @@ public class M3U {
                 while ((line = sr.readLine()) != null) {
 
                     line = line.trim();
-                    if (line == "") continue;
+                    if (line.equals("")) continue;
                     if (line.charAt(0) == '#') continue;
 
                     PlayList.Music ms = analyzeLine(line, "");
@@ -82,7 +84,7 @@ public class M3U {
 
             for (String txt : text) {
                 String line = txt.trim();
-                if (line == "") continue;
+                if (line.equals("")) continue;
                 if (line.charAt(0) == '#') continue;
 
                 PlayList.Music ms = analyzeLine(line, "");
@@ -105,9 +107,9 @@ public class M3U {
 
         try {
             // ::が無い場合は全てをファイル名として処理終了
-            if (line.indexOf("::") < 0) {
+            if (!line.contains("::")) {
                 ms.fileName = line;
-                if (!Path.isPathRooted(ms.fileName) && rootPath != "") {
+                if (!Path.isPathRooted(ms.fileName) && rootPath.isEmpty()) {
                     ms.fileName = Path.combine(rootPath, ms.fileName);
                 }
 
@@ -117,7 +119,7 @@ public class M3U {
             String[] buf = line.split("::");
 
             ms.fileName = buf[0].trim();
-            if (!Path.isPathRooted(ms.fileName) && rootPath != "") {
+            if (!Path.isPathRooted(ms.fileName) && !rootPath.isEmpty()) {
                 ms.fileName = Path.combine(rootPath, ms.fileName);
             }
             if (buf.length < 1) return ms;
@@ -125,25 +127,25 @@ public class M3U {
             buf = buf[1].split(",");
             List<String> lbuf = new ArrayList<>();
             for (int i = 0; i < buf.length; ) {
-                String s = "";
-                Boolean flg = false;
+                StringBuilder s = new StringBuilder();
+                boolean flg = false;
                 do {
                     flg = false;
-                    s += buf[i];
+                    s.append(buf[i]);
                     if (buf[i].length() != 0 && buf[i].lastIndexOf('\\') == buf[i].length() - 1) {
-                        s += ",";
+                        s.append(",");
                         flg = true;
                     }
                     i++;
                 } while (flg);
-                lbuf.add(s.replace("\\", ""));
+                lbuf.add(s.toString().replace("\\", ""));
             }
             buf = lbuf.toArray(new String[0]);
 
             String fType = buf[0].trim().toUpperCase();
             if (buf.length < 2) return ms;
 
-            ms.songNo = analyzeSongNo(buf[1].trim()) - (fType == "NSF" ? 1 : 0);
+            ms.songNo = analyzeSongNo(buf[1].trim()) - (fType.equals("NSF") ? 1 : 0);
             if (buf.length < 3) return ms;
 
             ms.title = buf[2].trim();
@@ -159,7 +161,7 @@ public class M3U {
             ms.fadeoutTime = buf[5].trim();
             if (buf.length < 7) return ms;
 
-            if (ms.loopCount = Integer.parseInt(buf[6].trim())) ms.loopCount = -1;
+            try { ms.loopCount = Integer.parseInt(buf[6].trim()); } catch (NumberFormatException e) { ms.loopCount = -1; }
         } catch (Exception ex) {
             Log.forcedWrite(ex);
             return null;
@@ -172,11 +174,20 @@ public class M3U {
         int n = -1;
 
         if (s.length() > 0 && s.charAt(0) == '$') {
-            if (s.length() < 1 || !Integer.parseInt(s.substring(1), 16, n)) {
+            if (s.length() < 1) {
+                return -1;
+            }
+            try {
+                n = Integer.parseInt(s.substring(1), 16);
+            } catch (NumberFormatException e) {
                 return -1;
             }
         } else {
-            if (!n = Integer.parseInt(s)) return -1;
+            try {
+                n = Integer.parseInt(s);
+            } catch (NumberFormatException e) {
+                return -1;
+            }
         }
 
         return n;

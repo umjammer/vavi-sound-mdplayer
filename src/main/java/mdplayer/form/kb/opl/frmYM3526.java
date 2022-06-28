@@ -28,7 +28,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmYM3526 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -51,7 +51,7 @@ public class frmYM3526 extends frmBase {
         this.newParam = newParam;
         this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getplaneYM3526(), null, zoom);
-        Boolean YM3526Type = (chipID == 0)
+        boolean YM3526Type = (chipID == 0)
                 ? parent.setting.getYM3526Type()[0].getUseReal()[0]
                 : parent.setting.getYM3526Type()[1].getUseReal()[0];
         int YM3526SoundLocation = (chipID == 0)
@@ -68,7 +68,7 @@ public class frmYM3526 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -222,7 +222,7 @@ public class frmYM3526 extends frmBase {
     }
 
     public void screenDrawParams() {
-        Boolean YM3526Type = (chipID == 0)
+        boolean YM3526Type = (chipID == 0)
                 ? parent.setting.getYM3526Type()[0].getUseReal()[0]
                 : parent.setting.getYM3526Type()[1].getUseReal()[0];
         int YM3526SoundLocation = (chipID == 0)
@@ -285,7 +285,7 @@ public class frmYM3526 extends frmBase {
                 //但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (ch = 0; ch < 9 + 5; ch++) {
-                        if (newParam.channels[ch].mask == true)
+                        if (newParam.channels[ch].mask)
                             parent.resetChannelMask(EnmChip.YM3526, chipID, ch);
                         else
                             parent.setChannelMask(EnmChip.YM3526, chipID, ch);
@@ -314,7 +314,6 @@ public class frmYM3526 extends frmBase {
 
             //マスク解除
             for (ch = 0; ch < 9 + 5; ch++) parent.resetChannelMask(EnmChip.YM3526, chipID, ch);
-            return;
         }
     };
 

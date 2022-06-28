@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2011-2017 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2007-2010 Antti Lankila
@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dotnet4j.io.FileStream;
+import mdplayer.Setting;
 import mdplayer.driver.sid.libsidplayfp.c64.C64;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidInfo;
@@ -36,346 +37,286 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidBuilder;
 
 public class Player {
 
-    private enum state_t {
+    private enum State {
         STOPPED,
         PLAYING,
         STOPPING
     }
 
     // Commodore 64 emulator
-    private C64 m_c64 = new C64();
+    private C64 c64 = new C64();
 
     // Mixer
-    private Mixer m_mixer = new Mixer();
+    private Mixer mixer = new Mixer();
 
     // Emulator info
-    private SidTune m_tune;
+    private SidTune tune;
 
     // User Configuration Settings
-    private SidInfoImpl m_info = new SidInfoImpl();
+    private SidInfoImpl info = new SidInfoImpl();
 
     // User Configuration Settings
-    private SidConfig m_cfg = null;
+    private SidConfig config;
 
     // Error message
-    private String m_errorString;
+    private String errorString;
 
-    private volatile state_t m_isPlaying;
+    private volatile State isPlaying;
 
     // PAL/NTSC switch value
     private byte videoSwitch;
 
-
-    /**
-     //Get the C64 model for the current loaded tune.
-     *
-     //@param defaultModel the default model
-     //@param forced true if the default model shold be forced : spite of tune model
-     */
-    //private C64.C64.model_t c64model(SidPlayFp.SidConfig.c64_model_t defaultModel, Boolean forced) { return C64.C64.model_t.NTSC_M; }
-
-    /**
-     //Initialize the emulation.
-     *
-     //@throw configError
-     */
-    //private void initialise() { }
-
-    /**
-     //Release the SID builders.
-     */
-    //private void sidRelease() { }
-
-    /**
-     //Create the SID emulation(s).
-     *
-     //@throw configError
-     */
-    //private void sidCreate(SidPlayFp.SidBuilder[] builder, SidPlayFp.SidConfig.sid_model_t defaultModel,
-    //Boolean forced,List<Integer> extraSidAddresses)
-    //{ }
-
-    /**
-     * //Set the SID emulation parameters.
-     * <p>
-     * //@param cpuFreq the CPU clock frequency
-     * //@param frequency the output sampling frequency
-     * //@param sampling the sampling method to use
-     * //@param fastSampling true to enable fast low quality resampling (only for reSID)
-     */
-    //private void sidParams(double cpuFreq, int frequency,
-    //SidPlayFp.SidConfig.sampling_method_t sampling, Boolean fastSampling)
-    //{ }
-
-    //# ifdef PC64_TESTSUITE
-    //private void load(String file) { }
-    //#endif
-
-    //private void run(int events) { }
-
-    //public Player() { }
-    protected void finalize() {
-    }
-
     public SidConfig config() {
-        return m_cfg;
+        return config;
     }
 
     public SidInfo info() {
-        return m_info;
+        return info;
     }
 
-    //public Boolean config( SidPlayFp.SidConfig cfg, Boolean force = false) { return false; }
-
-    //public Boolean fastForward(int percent) { return false; }
-
-    //public Boolean load(SidPlayFp.SidTune tune) { return false; }
-
-    //public int play(short[] buffer, int samples) { return 0; }
-
-    public Boolean isPlaying() {
-        return m_isPlaying != state_t.STOPPED;
+    public boolean isPlaying() {
+        return isPlaying != State.STOPPED;
     }
-
-    //public void stop() { }
 
     public int time() {
-        return m_c64.getTime();
+        return c64.getTime();
     }
 
-    public void debug(Boolean enable, FileStream out_) {
-        m_c64.debug(enable, out_);
+    public void debug(boolean enable, FileStream out) {
+        c64.debug(enable, out);
     }
-
-    //public void mute(int sidNum, int voice, Boolean enable) { }
 
     public String error() {
-        return m_errorString;
+        return errorString;
     }
 
-    //public void setRoms(byte[] kernal, byte[] basic, byte[] character) { }
-
     public short getCia1TimerA() {
-        return m_c64.getCia1TimerA();
+        return c64.getCia1TimerA();
     }
 
     // Speed Strings
-    String TXT_PAL_VBI = "50 Hz VBI (PAL)";
-    String TXT_PAL_VBI_FIXED = "60 Hz VBI (PAL FIXED)";
-    String TXT_PAL_CIA = "CIA (PAL)";
-    //String TXT_PAL_UNKNOWN = "UNKNOWN (PAL)";
-    String TXT_NTSC_VBI = "60 Hz VBI (NTSC)";
-    String TXT_NTSC_VBI_FIXED = "50 Hz VBI (NTSC FIXED)";
-    String TXT_NTSC_CIA = "CIA (NTSC)";
-    //String TXT_NTSC_UNKNOWN = "UNKNOWN (NTSC)";
+    static final String TXT_PAL_VBI = "50 Hz VBI (PAL)";
+    static final String TXT_PAL_VBI_FIXED = "60 Hz VBI (PAL FIXED)";
+    static final String TXT_PAL_CIA = "CIA (PAL)";
+    //static final String TXT_PAL_UNKNOWN = "UNKNOWN (PAL)";
+    static final String TXT_NTSC_VBI = "60 Hz VBI (NTSC)";
+    static final String TXT_NTSC_VBI_FIXED = "50 Hz VBI (NTSC FIXED)";
+    static final String TXT_NTSC_CIA = "CIA (NTSC)";
+    //static final String TXT_NTSC_UNKNOWN = "UNKNOWN (NTSC)";
 
     // Error Strings
-    String ERR_NA = "NA";
-    String ERR_UNSUPPORTED_FREQ = "SIDPLAYER ERROR: Unsupported sampling frequency.";
-    String ERR_UNSUPPORTED_SID_ADDR = "SIDPLAYER ERROR: Unsupported SID address.";
-    String ERR_UNSUPPORTED_SIZE = "SIDPLAYER ERROR: Size of Music data exceeds C64 memory.";
-    String ERR_INVALID_PERCENTAGE = "SIDPLAYER ERROR: Percentage value  of range.";
+    static final String ERR_NA = "NA";
+    static final String ERR_UNSUPPORTED_FREQ = "SIDPLAYER ERROR: Unsupported sampling frequency.";
+    static final String ERR_UNSUPPORTED_SID_ADDR = "SIDPLAYER ERROR: Unsupported Sid address.";
+    static final String ERR_UNSUPPORTED_SIZE = "SIDPLAYER ERROR: size of Music data exceeds C64 memory.";
+    static final String ERR_INVALID_PERCENTAGE = "SIDPLAYER ERROR: Percentage value  of range.";
 
     /**
      * Configuration error exception.
      */
-    public class configError extends RuntimeException {
-        private String m_msg;
+    public static class ConfigError extends RuntimeException {
+        private String message;
 
-        public configError(String msg) {
-            m_msg = msg;
+        public ConfigError(String message) {
+            this.message = message;
         }
 
         public String message() {
-            return m_msg;
+            return message;
         }
     }
 
-    private mdplayer.Setting setting;
+    private Setting setting;
 
 //        public Player(MDPlayer.Setting setting) {
 //            this.setting = setting;
 //            m_cfg = new SidPlayFp.SidConfig(setting);
 //        }
 
-    public Player(mdplayer.Setting setting) {
+    public Player(Setting setting) {
         this.setting = setting;
-        m_cfg = new SidConfig(setting);
+        config = new SidConfig(setting);
 
         // Set default settings for system
-        m_tune = null;
-        m_errorString = ERR_NA;
-        m_isPlaying = state_t.STOPPED;
+        tune = null;
+        errorString = ERR_NA;
+        isPlaying = State.STOPPED;
 //# ifdef PC64_TESTSUITE
 //            m_c64.setTestEnv(this);
 //#endif
 
-        m_c64.setRoms(null, null, null);
-        config(m_cfg, false);
+        c64.setRoms(null, null, null);
+        config(config, false);
 
         // Get component credits
-        m_info.m_credits.add(m_c64.cpuCredits());
-        m_info.m_credits.add(m_c64.ciaCredits());
-        m_info.m_credits.add(m_c64.vicCredits());
+        info.credits.add(c64.cpuCredits());
+        info.credits.add(c64.ciaCredits());
+        info.credits.add(c64.vicCredits());
     }
 
-    //template<class T>
-    public void checkRomkernalCheck(byte[] rom, String desc) {
+    /** @param desc TODO OUT ? */
+    public void checkRomByKernalChecker(byte[] rom, String desc) {
 
         if (rom != null) {
-            kernalCheck romCheck = new kernalCheck(rom);
-            desc = romCheck.info();
+            KernalChecker romChecker = new KernalChecker(rom);
+            desc = romChecker.info();
         } else
             desc = "";
     }
 
-    public void checkRombasicCheck(byte[] rom, String desc) {
+    /** @param desc TODO OUT ? */
+    public void checkRomByBasicChecker(byte[] rom, String desc) {
         if (rom != null) {
-            basicCheck romCheck = new basicCheck(rom);
-            desc = romCheck.info();
+            BasicChecker romChecker = new BasicChecker(rom);
+            desc = romChecker.info();
         } else
             desc = "";
     }
 
-    public void checkRomchargenCheck(byte[] rom, String desc) {
+    /** @param desc TODO OUT ? */
+    public void checkRomByChargenChecker(byte[] rom, String desc) {
         if (rom != null) {
-            chargenCheck romCheck = new chargenCheck(rom);
-            desc = romCheck.info();
+            ChargenChecker romChecker = new ChargenChecker(rom);
+            desc = romChecker.info();
         } else
             desc = "";
     }
 
     public void setRoms(byte[] kernal, byte[] basic, byte[] character) {
-        checkRomkernalCheck(kernal, m_info.m_kernalDesc);
-        checkRombasicCheck(basic, m_info.m_basicDesc);
-        checkRomchargenCheck(character, m_info.m_chargenDesc);
+        checkRomByKernalChecker(kernal, info.kernalDesc);
+        checkRomByBasicChecker(basic, info.basicDesc);
+        checkRomByChargenChecker(character, info.chargenDesc);
 
-        m_c64.setRoms(kernal, basic, character);
+        c64.setRoms(kernal, basic, character);
     }
 
-    public Boolean fastForward(int percent) {
-        if (!m_mixer.setFastForward((int) (percent / 100))) {
-            m_errorString = ERR_INVALID_PERCENTAGE;
+    public boolean fastForward(int percent) {
+        if (!mixer.setFastForward(percent / 100)) {
+            errorString = ERR_INVALID_PERCENTAGE;
             return false;
         }
 
         return true;
     }
 
+    /**
+     * Initialize the emulation.
+     *
+     * @throws ConfigError
+     */
     private void initialise() {
-        m_isPlaying = state_t.STOPPED;
+        isPlaying = State.STOPPED;
 
-        m_c64.reset();
+        c64.reset();
 
-        SidTuneInfo tuneInfo = m_tune.getInfo();
+        SidTuneInfo tuneInfo = tune.getInfo();
 
         int size = (int) (tuneInfo.loadAddr()) + tuneInfo.c64dataLen() - 1;
         if (size > 0xffff) {
-            throw new configError(ERR_UNSUPPORTED_SIZE);
+            throw new ConfigError(ERR_UNSUPPORTED_SIZE);
         }
 
-        psiddrv driver = new psiddrv(m_tune.getInfo());
-        if (!driver.drvReloc()) {
-            throw new configError(driver.errorString());
+        PSidDrv driver = new PSidDrv(tune.getInfo());
+        if (!driver.relocateDriver()) {
+            throw new ConfigError(driver.errorString());
         }
 
-        m_info.m_driverAddr = driver.driverAddr();
-        m_info.m_driverLength = driver.driverLength();
+        info.driverAddress = driver.driverAddr();
+        info.driverLength = driver.driverLength();
 
-        sidmemory sm = m_c64.getMemInterface();
+        SidMemory sm = c64.getMemInterface();
         driver.install(sm, videoSwitch);
 
-        sm = m_c64.getMemInterface();
-        if (!m_tune.placeSidTuneInC64mem(sm)) {
-            throw new configError(m_tune.statusString());
+        sm = c64.getMemInterface();
+        if (!tune.placeSidTuneInC64mem(sm)) {
+            throw new ConfigError(tune.statusString());
         }
 
-        m_c64.resetCpu();
-        //System.err.println("{0:x}", sm.readMemByte(0x17e3));
+        c64.resetCpu();
+        //System.err.println("%x", sm.readMemByte(0x17e3));
     }
 
-    public Boolean load(SidTune tune) {
-        m_tune = tune;
+    public boolean load(SidTune tune) {
+        this.tune = tune;
 
         if (tune != null) {
             // Must re-configure on fly for stereo support!
-            if (!config(m_cfg, true)) {
+            if (!config(config, true)) {
                 // Failed configuration with new tune, reject it
-                m_tune = null;
+                this.tune = null;
                 return false;
             }
         }
         return true;
     }
 
-    public void mute(int sidNum, int voice, Boolean enable) {
-        sidemu s = m_mixer.getSid(sidNum);
+    public void mute(int sidNum, int voice, boolean enable) {
+        SidEmu s = mixer.getSid(sidNum);
         if (s != null)
             s.voice(voice, enable);
     }
 
     /**
-     * //@throws MOS6510::haltInstruction
+     * @throws "Mos6510#haltInstruction"
      */
     private void run(int events) {
-        for (int i = 0; m_isPlaying != state_t.STOPPED && i < events; i++) {
-            //System.err.println("run counter i : {0}",i);
-            m_c64.clock();
+        for (int i = 0; isPlaying != State.STOPPED && i < events; i++) {
+            //System.err.println("run counter i : %d",i);
+            c64.clock();
         }
     }
 
     public int play(short[] buffer, int count) {
         // Make sure a tune instanceof loaded
-        if (m_tune == null)
+        if (tune == null)
             return 0;
 
         // Start the player loop
-        if (m_isPlaying == state_t.STOPPED)
-            m_isPlaying = state_t.PLAYING;
+        if (isPlaying == State.STOPPED)
+            isPlaying = State.PLAYING;
 
-        if (m_isPlaying == state_t.PLAYING) {
-            m_mixer.begin(buffer, count);
-            //MDPlayer.Log.Write(String.format("{0}", count));
+        if (isPlaying == State.PLAYING) {
+            mixer.begin(buffer, count);
+            //Log.Write(String.format("%d", count));
             try {
-                if (m_mixer.getSid(0) != null) {
+                if (mixer.getSid(0) != null) {
                     if (count != 0 && buffer != null) {
-                        //.Clock chips and mix into output buffer
-                        while (m_isPlaying != state_t.STOPPED && m_mixer.notFinished()) {
-                            run((int) sidemu.output.OUTPUTBUFFERSIZE);
+                        // clock chips and mix into Output buffer
+                        while (isPlaying != State.STOPPED && mixer.notFinished()) {
+                            run(SidEmu.Output.outputBufferSize);
 
-                            m_mixer.clockChips();
-                            m_mixer.doMix();
+                            mixer.clockChips();
+                            mixer.doMix();
                         }
-                        count = m_mixer.samplesGenerated();
+                        count = mixer.samplesGenerated();
                     } else {
-                        //.Clock chips and discard buffers
-                        int size = (int) (m_c64.getMainCpuSpeed() / m_cfg.frequency);
-                        while (m_isPlaying != state_t.STOPPED && (--size) != 0) {
-                            run((int) sidemu.output.OUTPUTBUFFERSIZE);
+                        // clock chips and discard buffers
+                        int size = (int) (c64.getMainCpuSpeed() / config.frequency);
+                        while (isPlaying != State.STOPPED && (--size) != 0) {
+                            run(SidEmu.Output.outputBufferSize);
 
-                            m_mixer.clockChips();
-                            m_mixer.resetBufs();
+                            mixer.clockChips();
+                            mixer.resetBufs();
                         }
                     }
                 } else {
-                    //.Clock the machine
-                    int size = (int) (m_c64.getMainCpuSpeed() / m_cfg.frequency);
-                    while (m_isPlaying != state_t.STOPPED && (--size) != 0) {
-                        run((int) sidemu.output.OUTPUTBUFFERSIZE);
+                    // clock the machine
+                    int size = (int) (c64.getMainCpuSpeed() / config.frequency);
+                    while (isPlaying != State.STOPPED && (--size) != 0) {
+                        run(SidEmu.Output.outputBufferSize);
                     }
                 }
-            } catch (Exception e) //(MOS6510.haltInstruction )
-            {
-                m_errorString = "Illegal instruction executed";
-                m_isPlaying = state_t.STOPPING;
+            } catch (Exception e) { // Mos6510.haltInstruction
+                errorString = "Illegal instruction executed";
+                isPlaying = State.STOPPING;
             }
         }
 
-        if (m_isPlaying == state_t.STOPPING) {
+        if (isPlaying == State.STOPPING) {
             try {
                 initialise();
-            } catch (Exception e) { //(configError final &) { }
-                m_isPlaying = state_t.STOPPED;
+            } catch (Exception e) { // ConfigError
+                isPlaying = State.STOPPED;
             }
         }
 
@@ -383,26 +324,26 @@ public class Player {
     }
 
     public void stop() {
-        if (m_tune != null && m_isPlaying == state_t.PLAYING) {
-            m_isPlaying = state_t.STOPPING;
+        if (tune != null && isPlaying == State.PLAYING) {
+            isPlaying = State.STOPPING;
         }
     }
 
-    public Boolean config(SidConfig cfg, Boolean force /*= false*/) {
+    public boolean config(SidConfig cfg, boolean force /*= false*/) {
         // Check if configuration have been changed or forced
-        if (!force && !m_cfg.compare(cfg)) {
+        if (!force && !config.compare(cfg)) {
             return true;
         }
 
         // Check for base sampling frequency
         if (cfg.frequency < 8000) {
-            m_errorString = ERR_UNSUPPORTED_FREQ;
+            errorString = ERR_UNSUPPORTED_FREQ;
             return false;
         }
 
         // Only do these if we have a loaded tune
-        if (m_tune != null) {
-            SidTuneInfo tuneInfo = m_tune.getInfo();
+        if (tune != null) {
+            SidTuneInfo tuneInfo = tune.getInfo();
 
             try {
                 sidRelease();
@@ -420,103 +361,110 @@ public class Player {
                 if (thirdSidAddress != 0)
                     addresses.add(thirdSidAddress & 0xffff);
 
-                // SID emulation setup (must be performed before the
+                // Sid emulation setup (must be performed before the
                 // environment setup call)
                 sidCreate(cfg.sidEmulation, cfg.defaultSidModel, cfg.forceSidModel, addresses);
 
                 // Determine clock speed
-                C64.model_t model = c64model(cfg.defaultC64Model, cfg.forceC64Model);
+                C64.Clock model = c64model(cfg.defaultC64Model, cfg.forceC64Model);
 
-                m_c64.setModel(model);
+                c64.setModel(model);
 
-                sidParams(m_c64.getMainCpuSpeed(), (int) cfg.frequency, cfg.samplingMethod, cfg.fastSampling);
+                sidParams(c64.getMainCpuSpeed(), cfg.frequency, cfg.samplingMethod, cfg.fastSampling);
 
                 // Configure, setup and install C64 environment/events
                 initialise();
-            } catch (configError e) {
-                m_errorString = e.message();
-                m_cfg.sidEmulation = null;
-                if (m_cfg != cfg) {
-                    config(m_cfg, false);
+            } catch (ConfigError e) {
+                errorString = e.message();
+                config.sidEmulation = null;
+                if (config != cfg) {
+                    config(config, false);
                 }
                 return false;
             }
         }
 
-        Boolean isStereo = cfg.playback == SidConfig.playback_t.STEREO;
-        m_info.m_channels = (int) (isStereo ? 2 : 1);
+        boolean isStereo = cfg.playback == SidConfig.Playback.STEREO;
+        info.channels = isStereo ? 2 : 1;
 
-        m_mixer.setStereo(isStereo);
-        m_mixer.setVolume((int) cfg.leftVolume, (int) cfg.rightVolume);
+        mixer.setStereo(isStereo);
+        mixer.setVolume(cfg.leftVolume, cfg.rightVolume);
 
         // Update Configuration
-        m_cfg = cfg;
+        config = cfg;
 
         return true;
     }
 
-    //.Clock speed changes due to loading a new song
-    private C64.model_t c64model(SidConfig.c64_model_t defaultModel, Boolean forced) {
-        SidTuneInfo tuneInfo = m_tune.getInfo();
+    /**
+     * Get the C64 model for the current loaded tune.
+     * <p>
+     * .Clock speed changes due to loading a new song
+     *
+     * @param defaultModel the default model
+     * @param forced true if the default model should be forced : spite of tune model
+     */
+    private C64.Clock c64model(SidConfig.C64Model defaultModel, boolean forced) {
+        SidTuneInfo tuneInfo = tune.getInfo();
 
-        SidTuneInfo.clock_t clockSpeed = tuneInfo.clockSpeed();
+        SidTuneInfo.Clock clockSpeed = tuneInfo.clockSpeed();
 
-        C64.model_t model = C64.model_t.PAL_B;
+        C64.Clock model = C64.Clock.PAL_B;
 
         // Use preferred speed if forced or if song speed instanceof unknown
-        if (forced || clockSpeed == SidTuneInfo.clock_t.CLOCK_UNKNOWN || clockSpeed == SidTuneInfo.clock_t.CLOCK_ANY) {
+        if (forced || clockSpeed == SidTuneInfo.Clock.UNKNOWN || clockSpeed == SidTuneInfo.Clock.ANY) {
             switch (defaultModel) {
             case PAL:
-                clockSpeed = SidTuneInfo.clock_t.CLOCK_PAL;
-                model = C64.model_t.PAL_B;
+                clockSpeed = SidTuneInfo.Clock.PAL;
+                model = C64.Clock.PAL_B;
                 videoSwitch = 1;
                 break;
             case DREAN:
-                clockSpeed = SidTuneInfo.clock_t.CLOCK_PAL;
-                model = C64.model_t.PAL_N;
+                clockSpeed = SidTuneInfo.Clock.PAL;
+                model = C64.Clock.PAL_N;
                 videoSwitch = 1; // TODO verify
                 break;
             case NTSC:
-                clockSpeed = SidTuneInfo.clock_t.CLOCK_NTSC;
-                model = C64.model_t.NTSC_M;
+                clockSpeed = SidTuneInfo.Clock.NTSC;
+                model = C64.Clock.NTSC_M;
                 videoSwitch = 0;
                 break;
             case OLD_NTSC:
-                clockSpeed = SidTuneInfo.clock_t.CLOCK_NTSC;
-                model = C64.model_t.OLD_NTSC_M;
+                clockSpeed = SidTuneInfo.Clock.NTSC;
+                model = C64.Clock.OLD_NTSC_M;
                 videoSwitch = 0;
                 break;
             }
         } else {
             switch (clockSpeed) {
             default:
-            case CLOCK_PAL:
-                model = C64.model_t.PAL_B;
+            case PAL:
+                model = C64.Clock.PAL_B;
                 videoSwitch = 1;
                 break;
-            case CLOCK_NTSC:
-                model = C64.model_t.NTSC_M;
+            case NTSC:
+                model = C64.Clock.NTSC_M;
                 videoSwitch = 0;
                 break;
             }
         }
 
         switch (clockSpeed) {
-        case CLOCK_PAL:
+        case PAL:
             if (tuneInfo.songSpeed() == SidTuneInfo.SPEED_CIA_1A)
-                m_info.m_speedString = TXT_PAL_CIA;
-            else if (tuneInfo.clockSpeed() == SidTuneInfo.clock_t.CLOCK_NTSC)
-                m_info.m_speedString = TXT_PAL_VBI_FIXED;
+                info.speedString = TXT_PAL_CIA;
+            else if (tuneInfo.clockSpeed() == SidTuneInfo.Clock.NTSC)
+                info.speedString = TXT_PAL_VBI_FIXED;
             else
-                m_info.m_speedString = TXT_PAL_VBI;
+                info.speedString = TXT_PAL_VBI;
             break;
-        case CLOCK_NTSC:
+        case NTSC:
             if (tuneInfo.songSpeed() == SidTuneInfo.SPEED_CIA_1A)
-                m_info.m_speedString = TXT_NTSC_CIA;
-            else if (tuneInfo.clockSpeed() == SidTuneInfo.clock_t.CLOCK_PAL)
-                m_info.m_speedString = TXT_NTSC_VBI_FIXED;
+                info.speedString = TXT_NTSC_CIA;
+            else if (tuneInfo.clockSpeed() == SidTuneInfo.Clock.PAL)
+                info.speedString = TXT_NTSC_VBI_FIXED;
             else
-                m_info.m_speedString = TXT_NTSC_VBI;
+                info.speedString = TXT_NTSC_VBI;
             break;
         default:
             break;
@@ -526,49 +474,52 @@ public class Player {
     }
 
     /**
-     * //Get the SID model.
-     * <p>
-     * //@param sidModel the tune requested model
-     * //@param defaultModel the default model
-     * //@param forced true if the default model shold be forced : spite of tune model
+     * Get the Sid model.
+     *
+     * @param sidModel the tune requested model
+     * @param defaultModel the default model
+     * @param forced true if the default model should be forced : spite of tune model
      */
-    public SidConfig.sid_model_t getSidModel(SidTuneInfo.model_t sidModel, SidConfig.sid_model_t defaultModel, Boolean forced) {
-        SidTuneInfo.model_t tuneModel = sidModel;
+    public SidConfig.SidModel getSidModel(SidTuneInfo.Model sidModel, SidConfig.SidModel defaultModel, boolean forced) {
+        SidTuneInfo.Model tuneModel = sidModel;
 
         // Use preferred speed if forced or if song speed instanceof unknown
-        if (forced || tuneModel == SidTuneInfo.model_t.SIDMODEL_UNKNOWN || tuneModel == SidTuneInfo.model_t.SIDMODEL_ANY) {
+        if (forced || tuneModel == SidTuneInfo.Model.SID_UNKNOWN || tuneModel == SidTuneInfo.Model.SID_ANY) {
             switch (defaultModel) {
             case MOS6581:
-                tuneModel = SidTuneInfo.model_t.SIDMODEL_6581;
+                tuneModel = SidTuneInfo.Model.SID_6581;
                 break;
             case MOS8580:
-                tuneModel = SidTuneInfo.model_t.SIDMODEL_8580;
+                tuneModel = SidTuneInfo.Model.SID_8580;
                 break;
             default:
                 break;
             }
         }
 
-        SidConfig.sid_model_t newModel;
+        SidConfig.SidModel newModel;
 
         switch (tuneModel) {
         default:
-        case SIDMODEL_6581:
-            newModel = SidConfig.sid_model_t.MOS6581;
+        case SID_6581:
+            newModel = SidConfig.SidModel.MOS6581;
             break;
-        case SIDMODEL_8580:
-            newModel = SidConfig.sid_model_t.MOS8580;
+        case SID_8580:
+            newModel = SidConfig.SidModel.MOS8580;
             break;
         }
 
         return newModel;
     }
 
+    /**
+     * Release the Sid builders.
+     */
     private void sidRelease() {
-        m_c64.clearSids();
+        c64.clearSids();
 
         for (int i = 0; ; i++) {
-            sidemu s = m_mixer.getSid(i);
+            SidEmu s = mixer.getSid(i);
             if (s == null)
                 break;
             SidBuilder b = s.builder();
@@ -577,53 +528,66 @@ public class Player {
             }
         }
 
-        m_mixer.clearSids();
+        mixer.clearSids();
     }
 
-    private void sidCreate(SidBuilder builder, SidConfig.sid_model_t defaultModel,
-                           Boolean forced, List<Integer> extraSidAddresses) {
+    /**
+     * Create the Sid emulation(s).
+     *
+     * @throws ConfigError
+     */
+    private void sidCreate(SidBuilder builder, SidConfig.SidModel defaultModel,
+                           boolean forced, List<Integer> extraSidAddresses) {
         if (builder != null) {
-            SidTuneInfo tuneInfo = m_tune.getInfo();
+            SidTuneInfo tuneInfo = tune.getInfo();
 
-            // Setup base SID
-            SidConfig.sid_model_t userModel = getSidModel(tuneInfo.sidModel(0), defaultModel, forced);
-            sidemu s = builder.lock_(m_c64.getEventScheduler(), userModel);
+            // Setup base Sid
+            SidConfig.SidModel userModel = getSidModel(tuneInfo.sidModel(0), defaultModel, forced);
+            SidEmu s = builder.lock(c64.getEventScheduler(), userModel);
             if (!builder.getStatus()) {
-                throw new configError(builder.error());
+                throw new ConfigError(builder.error());
             }
 
-            m_c64.setBaseSid(s);
-            m_mixer.addSid(s);
+            c64.setBaseSid(s);
+            mixer.addSid(s);
 
             // Setup extra SIDs if needed
             if (extraSidAddresses.size() != 0) {
-                // If bits 6-7 are set to Unknown then the second SID will be set to the same SID
-                // model as the first SID.
+                // If bits 6-7 are set to Unknown then the second Sid will be set to the same Sid
+                // model as the first Sid.
                 defaultModel = userModel;
 
-                int extraSidChips = (int) extraSidAddresses.size();
+                int extraSidChips = extraSidAddresses.size();
 
                 for (int i = 0; i < extraSidChips; i++) {
-                    SidConfig.sid_model_t userModel_1 = getSidModel(tuneInfo.sidModel(i + 1), defaultModel, forced);
+                    SidConfig.SidModel userModel_1 = getSidModel(tuneInfo.sidModel(i + 1), defaultModel, forced);
 
-                    sidemu s1 = builder.lock_(m_c64.getEventScheduler(), userModel_1);
+                    SidEmu s1 = builder.lock(c64.getEventScheduler(), userModel_1);
                     if (!builder.getStatus()) {
-                        throw new configError(builder.error());
+                        throw new ConfigError(builder.error());
                     }
 
-                    if (!m_c64.addExtraSid(s1, (int) extraSidAddresses.get((int) i)))
-                        throw new configError(ERR_UNSUPPORTED_SID_ADDR);
+                    if (!c64.addExtraSid(s1, extraSidAddresses.get(i)))
+                        throw new ConfigError(ERR_UNSUPPORTED_SID_ADDR);
 
-                    m_mixer.addSid(s1);
+                    mixer.addSid(s1);
                 }
             }
         }
     }
 
+    /**
+     * Set the Sid emulation parameters.
+     *
+     * @param cpuFreq the CPU clock frequency
+     * @param frequency the Output sampling frequency
+     * @param sampling the sampling method to use
+     * @param fastSampling true to enable fast low quality resampling (only for reSID)
+     */
     private void sidParams(double cpuFreq, int frequency,
-                           SidConfig.sampling_method_t sampling, Boolean fastSampling) {
+                           SidConfig.SamplingMethod sampling, boolean fastSampling) {
         for (int i = 0; ; i++) {
-            sidemu s = m_mixer.getSid(i);
+            SidEmu s = mixer.getSid(i);
             if (s == null)
                 break;
 
@@ -636,16 +600,16 @@ public class Player {
 //    public void load(String file) {
 //        String name = "$enable_testsuite";// PC64_TESTSUITE;
 //        name += file;
-//        name += ".prg";
+//        name += ".Prg";
 //
 //        m_tune.load(name, false);
 //        m_tune.selectSong(0);
 //        initialise();
 //    }
 //
-//    public Integer[][] GetSidRegister() {
-//        return m_mixer.GetSidRegister();
-//    }
+    public Integer[][] getSidRegister() {
+        return mixer.getSidRegister();
+    }
 //#endif
 }
 

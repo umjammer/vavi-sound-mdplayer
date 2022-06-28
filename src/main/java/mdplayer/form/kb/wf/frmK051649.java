@@ -68,7 +68,7 @@ public class frmK051649 extends frmBase {
 
     BufferedImage image;
     public JPanel pbScreen;
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -101,7 +101,7 @@ public class frmK051649 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -149,7 +149,7 @@ public class frmK051649 extends frmBase {
             if (psg == null) continue;
 
             MDChipParams.Channel channel = newParam.channels[ch];
-            for (int i = 0; i < 32; i++) channel.inst[i] = (int) psg.waveRam[i];
+            for (int i = 0; i < 32; i++) channel.inst[i] = psg.waveRam[i];
             float ftone = Audio.clockK051649 / (8.0f * (float) psg.frequency);
             channel.freq = psg.frequency;
             channel.volume = psg.key != 0 ? (int) (psg.volume * 1.33) : 0;
@@ -198,7 +198,7 @@ public class frmK051649 extends frmBase {
                 //但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (int ch = 0; ch < 5; ch++) {
-                        if (newParam.channels[ch].mask == true)
+                        if (newParam.channels[ch].mask)
                             parent.resetChannelMask(EnmChip.K051649, chipID, ch);
                         else
                             parent.setChannelMask(EnmChip.K051649, chipID, ch);

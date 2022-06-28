@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2011-2015 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2007-2010 Antti Lankila
@@ -25,7 +25,7 @@ import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 
 
     /**
-     //This instanceof the base class for the MOS6526 Interrupt sources.
+     //This instanceof the base class for the Mos6526 Interrupt sources.
      */
     public class InterruptSource extends Event
     {
@@ -39,13 +39,13 @@ import mdplayer.driver.sid.libsidplayfp.EventScheduler;
             INTERRUPT_SP ( 1 << 3),
             INTERRUPT_FLAG ( 1 << 4),
             INTERRUPT_REQUEST ( 1 << 7);
-            int v;
+            final int v;
             INTERRUPT(int v) { this.v = v; }
         }
 
 
-         //Pointer to the MOS6526 which this Interrupt belongs to.
-        protected MOS6526 parent;
+         //Pointer to the Mos6526 which this Interrupt belongs to.
+        protected Mos6526 parent;
 
          //Event scheduler.
         protected EventScheduler eventScheduler;
@@ -56,9 +56,9 @@ import mdplayer.driver.sid.libsidplayfp.EventScheduler;
          //Interrupt data register
         private byte idr;
 
-        protected Boolean interruptMasked() { return (icr & idr) != 0; }
+        protected boolean interruptMasked() { return (icr & idr) != 0; }
 
-        protected Boolean interruptTriggered() { return (idr & (byte)INTERRUPT.INTERRUPT_REQUEST.v) == 0; }
+        protected boolean interruptTriggered() { return (idr & (byte)INTERRUPT.INTERRUPT_REQUEST.v) == 0; }
 
         protected void triggerInterrupt() { idr |= (byte)INTERRUPT.INTERRUPT_REQUEST.v; }
 
@@ -67,9 +67,9 @@ import mdplayer.driver.sid.libsidplayfp.EventScheduler;
          //Create a new InterruptSource.
          *
          //@param scheduler event scheduler
-         //@param parent the MOS6526 which this Interrupt belongs to
+         //@param parent the Mos6526 which this Interrupt belongs to
          */
-        protected InterruptSource(EventScheduler scheduler, MOS6526 parent) {
+        protected InterruptSource(EventScheduler scheduler, Mos6526 parent) {
         super("CIA Interrupt");
 
             this.parent = parent;

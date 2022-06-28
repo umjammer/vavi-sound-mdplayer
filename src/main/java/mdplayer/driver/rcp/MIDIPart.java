@@ -9,67 +9,67 @@ import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
 
 
 public class MIDIPart implements Serializable {
-    private Integer _BeforeIndex = null;
-    private Integer _AfterIndex = null;
-    private int _Number = 0;
-    private String _Name = "";
-    private int _StartTick = 0;
-    private List<MIDIEvent> _Event = new ArrayList<MIDIEvent>();
-    private int _eNumber = 0;
-    private Integer _eStartIndex = null;
-    private Integer _eEndIndex = null;
-    private Integer _eNowIndex = 0;
+    private Integer beforeIndex = null;
+    private Integer afterIndex = null;
+    private int number = 0;
+    private String name = "";
+    private int startTick = 0;
+    private List<MIDIEvent> events = new ArrayList<>();
+    private int eNumber = 0;
+    private Integer eStartIndex = null;
+    private Integer eEndIndex = null;
+    private Integer eNowIndex = 0;
 
 
     public void setBeforeIndex(Integer value) {
-        _BeforeIndex = value;
+        beforeIndex = value;
     }
 
     Integer getBeforeIndex() {
-        return _BeforeIndex;
+        return beforeIndex;
     }
 
     public void setAfterIndex(Integer value) {
-        _AfterIndex = value;
+        afterIndex = value;
     }
 
     Integer getAfterIndex() {
-        return _AfterIndex;
+        return afterIndex;
     }
 
     public void setNumber(int value) {
-        _Number = value;
+        number = value;
     }
 
     int getNumber() {
-        return _Number;
+        return number;
     }
 
     public void setName(String value) {
-        _Name = value;
+        name = value;
     }
 
     String getName() {
-        return _Name;
+        return name;
     }
 
     public void setStartTick(int value) {
-        _StartTick = value;
+        startTick = value;
     }
 
     int getStartTick() {
-        return _StartTick;
+        return startTick;
     }
 
     /**
      * イベントリスト
      */
-    public void setEvent(List<MIDIEvent> value) {
-        _Event = value;
+    public void setEvents(List<MIDIEvent> value) {
+        events = value;
     }
 
-    List<MIDIEvent> getEvent() {
-        return _Event;
+    List<MIDIEvent> getEvents() {
+        return events;
     }
 
     /**
@@ -81,81 +81,81 @@ public class MIDIPart implements Serializable {
      * イベントの通し番号
      */
     public void setENumber(int value) {
-        _eNumber = value;
+        eNumber = value;
     }
 
     int getENumber() {
-        return _eNumber;
+        return eNumber;
     }
 
     /**
      * 開始イベントの番号
      */
     public void setEStartIndex(Integer value) {
-        _eStartIndex = value;
+        eStartIndex = value;
     }
 
     Integer getEStartIndex() {
-        return _eStartIndex;
+        return eStartIndex;
     }
 
     /**
      * 終了イベントの番号
      */
     public void setEEndIndex(Integer value) {
-        _eEndIndex = value;
+        eEndIndex = value;
     }
 
     Integer getEEndIndex() {
-        return _eEndIndex;
+        return eEndIndex;
     }
 
     /**
      * 演奏時専用なのでそれ以外の用途で使っちゃだめ
      */
     public void setENowIndex(Integer value) {
-        _eNowIndex = value;
+        eNowIndex = value;
     }
 
     Integer getENowIndex() {
-        return _eNowIndex;
+        return eNowIndex;
     }
 
     //初めのイベントを得る
     public MIDIEvent getStartEvent() {
-        if (_eStartIndex == null) return null;
+        if (eStartIndex == null) return null;
 
-        return _Event.get((int) _eStartIndex);
+        return events.get(eStartIndex);
     }
 
     /** 最後のイベントを得る */
     public MIDIEvent getEndEvent() {
-        if (_eEndIndex == null) return null;
+        if (eEndIndex == null) return null;
 
-        return _Event.get((int) _eEndIndex);
+        return events.get(eEndIndex);
     }
 
     /** 指定したイベントの次のイベントを得る */
     public MIDIEvent getNextEvent(MIDIEvent eve) {
         if (eve == null || eve.getAfterIndex() == null) return null;
 
-        return _Event.get((int) eve.getAfterIndex());
+        return events.get(eve.getAfterIndex());
     }
 
     /** 指定したイベントの前のイベントを得る */
     public MIDIEvent getPrevEvent(MIDIEvent eve) {
         if (eve == null || eve.getBeforeIndex() == null) return null;
 
-        return _Event.get((int) eve.getBeforeIndex());
+        return events.get(eve.getBeforeIndex());
     }
 
     /** 指定したイベントを除外する (メモリには残る) */
-    public Boolean removeEvent(MIDIEvent eve) {
+    public boolean removeEvent(MIDIEvent eve) {
         if (eve == null) return false;
         MIDIEvent pEvent = getPrevEvent(eve);
         MIDIEvent nEvent = getNextEvent(eve);
-        if (pEvent != null) pEvent.setAfterIndex((nEvent == null) ? null : (Integer) nEvent.getNumber());
-        if (nEvent != null) nEvent.setBeforeIndex((pEvent == null) ? null : (Integer) pEvent.getNumber());
+        if (pEvent != null) pEvent.setAfterIndex((nEvent == null) ? null : nEvent.getNumber());
+        if (nEvent != null) nEvent.setBeforeIndex((pEvent == null) ? null : pEvent.getNumber());
         pEvent.setStep(pEvent.getStep() + eve.getStep());
         this.eCounter--;
 
@@ -163,20 +163,20 @@ public class MIDIPart implements Serializable {
     }
 
     /** 指定したイベントをメモリから消去する(removeEventに比べ低速) */
-    public Boolean clearEvent(MIDIEvent eve) {
+    public boolean clearEvent(MIDIEvent eve) {
         if (eve == null) return false;
         MIDIEvent pEvent = getPrevEvent(eve);
         MIDIEvent nEvent = getNextEvent(eve);
-        if (pEvent != null) pEvent.setAfterIndex((nEvent == null) ? null : (Integer) nEvent.getNumber());
-        if (nEvent != null) nEvent.setBeforeIndex((pEvent == null) ? null : (Integer) pEvent.getNumber());
+        if (pEvent != null) pEvent.setAfterIndex((nEvent == null) ? null : nEvent.getNumber());
+        if (nEvent != null) nEvent.setBeforeIndex((pEvent == null) ? null : pEvent.getNumber());
         pEvent.setStep(pEvent.getStep() + eve.getStep());
         this.eCounter--;
-        this._eNumber--;
+        this.eNumber--;
 
         int num = eve.getNumber();
-        this._Event.remove(eve);
+        this.events.remove(eve);
 
-        for (MIDIEvent evt : this._Event) {
+        for (MIDIEvent evt : this.events) {
             if (evt.getNumber() >= num) evt.setNumber(evt.getNumber() - 1);
             if (evt.getAfterIndex() >= num) evt.setAfterIndex(evt.getAfterIndex() - 1);
             if (evt.getBeforeIndex() >= num) evt.setBeforeIndex(evt.getBeforeIndex() - 1);
@@ -187,7 +187,7 @@ public class MIDIPart implements Serializable {
 
     /** 全てのイベントをメモリから消去する */
     public void clearAllEventMemory() {
-        this._Event.clear();
+        this.events.clear();
         this.eCounter = 0;
         this.setEStartIndex(null);
         this.setEEndIndex(null);
@@ -204,21 +204,21 @@ public class MIDIPart implements Serializable {
     /**
      * 指定されたイベントの後ろにイベントを挿入する
      *
-     * @param TargetEvent このイベントの後ろに新たに入る
-     * @param Step        Step値
-     * @param EventType   イベントタイプ
-     * @param MIDImessage MIDIメッセージ(Chは0固定であること)
+     * @param targetEvent このイベントの後ろに新たに入る
+     * @param step        Step値
+     * @param eventType   イベントタイプ
+     * @param midiMessage MIDIメッセージ(Chは0固定であること)
      * @return 新たに挿入したイベント
      */
-    public MIDIEvent insertEvent(MIDIEvent TargetEvent, int Step, MIDIEventType EventType, byte[] MIDImessage) {
-        if (MIDImessage == null) return null;
+    public MIDIEvent insertEvent(MIDIEvent targetEvent, int step, MIDIEventType eventType, byte[] midiMessage) {
+        if (midiMessage == null) return null;
         MIDIEvent eve = new MIDIEvent();
-        eve.setEventType(EventType);
-        eve.setMIDIMessage(MIDImessage);
-        eve.setMIDIMessageLst(null);
-        eve.setStep(Step);
+        eve.setEventType(eventType);
+        eve.setMIDIMessage(midiMessage);
+        eve.setMIDIMessages(null);
+        eve.setStep(step);
 
-        insertEve(TargetEvent, Step, eve);
+        insertEve(targetEvent, step, eve);
 
         return eve;
     }
@@ -226,23 +226,23 @@ public class MIDIPart implements Serializable {
     /**
      * 指定されたイベントの後ろにイベントを挿入する
      *
-     * @param TargetEvent このイベントの後ろに新たに入る
-     * @param Step        Step 値
-     * @param EventType   イベントタイプ
-     * @param MIDImessage MIDIメッセージ(Chは0固定であること)
+     * @param targetEvent このイベントの後ろに新たに入る
+     * @param step        step 値
+     * @param eventType   イベントタイプ
+     * @param midiMessage MIDIメッセージ(Chは0固定であること)
      * @param gt          ゲートタイム
      * @return 新たに挿入したイベント
      */
-    public MIDIEvent insertEvent(MIDIEvent TargetEvent, int Step, MIDIEventType EventType, byte[] MIDImessage, int gt) {
-        if (MIDImessage == null) return null;
+    public MIDIEvent insertEvent(MIDIEvent targetEvent, int step, MIDIEventType eventType, byte[] midiMessage, int gt) {
+        if (midiMessage == null) return null;
         MIDIEvent eve = new MIDIEvent();
-        eve.setEventType(EventType);
-        eve.setMIDIMessage(MIDImessage);
-        eve.setMIDIMessageLst(null);
-        eve.setStep(Step);
+        eve.setEventType(eventType);
+        eve.setMIDIMessage(midiMessage);
+        eve.setMIDIMessages(null);
+        eve.setStep(step);
         eve.setGate(gt);
 
-        insertEve(TargetEvent, Step, eve);
+        insertEve(targetEvent, step, eve);
 
         return eve;
     }
@@ -250,35 +250,35 @@ public class MIDIPart implements Serializable {
     /**
      * 指定されたイベントの後ろにイベントを挿入する
      *
-     * @param TargetEvent    このイベントの後ろに新たに入る
-     * @param Step           Step 値
-     * @param EventType      イベントタイプ
-     * @param MIDImessageLst MIDI メッセージ
+     * @param targetEvent    このイベントの後ろに新たに入る
+     * @param step           step 値
+     * @param eventType      イベントタイプ
+     * @param midiMessageList MIDI メッセージ
      * @return 新たに挿入したイベント
      */
-    public MIDIEvent insertSpEvent(MIDIEvent TargetEvent, int Step, MIDISpEventType EventType, byte[][] MIDImessageLst) {
-        //if (MIDImessageLst == null) return null;
+    public MIDIEvent insertSpEvent(MIDIEvent targetEvent, int step, MIDISpEventType eventType, byte[][] midiMessageList) {
+        //if (midiMessageList == null) return null;
         MIDIEvent eve = new MIDIEvent();
         eve.setEventType(MIDIEventType.MetaSequencerSpecific);
-        eve.setMIDIMessage(new byte[] {(byte) EventType.ordinal()});
-        eve.setMIDIMessageLst(MIDImessageLst);
-        eve.setStep(Step);
+        eve.setMIDIMessage(new byte[] {(byte) eventType.ordinal()});
+        eve.setMIDIMessages(midiMessageList);
+        eve.setStep(step);
 
-        insertEve(TargetEvent, Step, eve);
+        insertEve(targetEvent, step, eve);
 
         return eve;
     }
 
-    private void insertEve(MIDIEvent TargetEvent, int Step, MIDIEvent eve) {
+    private void insertEve(MIDIEvent targetEvent, int step, MIDIEvent event) {
         //イベントリストを生成
-        if (this.getEvent() == null) {
-            this.setEvent(new ArrayList<MIDIEvent>());
+        if (this.getEvents() == null) {
+            this.setEvents(new ArrayList<>());
         }
-        if (TargetEvent == null || this.getEvent().size() == 0 || this.getEStartIndex() == null) { //初めのイベント
-            eve.setAfterIndex(null);
-            eve.setBeforeIndex(null);
-            eve.setNumber(this.getENumber());
-            this.getEvent().add(eve);
+        if (targetEvent == null || this.getEvents().size() == 0 || this.getEStartIndex() == null) { //初めのイベント
+            event.setAfterIndex(null);
+            event.setBeforeIndex(null);
+            event.setNumber(this.getENumber());
+            this.getEvents().add(event);
             this.setEStartIndex(0);
             this.setEEndIndex(0);
             this.eCounter = 1;
@@ -286,16 +286,16 @@ public class MIDIPart implements Serializable {
             return;
         }
 
-        eve.setBeforeIndex(TargetEvent.getNumber());
-        eve.setAfterIndex(TargetEvent.getAfterIndex());
-        eve.setNumber(this.getENumber());
-        TargetEvent.setAfterIndex(eve.getNumber());
-        this.getEvent().add(eve);
-        if (eve.getAfterIndex() == null) {
+        event.setBeforeIndex(targetEvent.getNumber());
+        event.setAfterIndex(targetEvent.getAfterIndex());
+        event.setNumber(this.getENumber());
+        targetEvent.setAfterIndex(event.getNumber());
+        this.getEvents().add(event);
+        if (event.getAfterIndex() == null) {
             this.setEEndIndex(this.getENumber());
         } else {
-            TargetEvent = getNextEvent(eve);
-            TargetEvent.setBeforeIndex(eve.getNumber());
+            targetEvent = getNextEvent(event);
+            targetEvent.setBeforeIndex(event.getNumber());
         }
         this.eCounter++;
         this.setENumber(this.getENumber() + 1);
@@ -313,15 +313,15 @@ public class MIDIPart implements Serializable {
         MIDIEvent eve = new MIDIEvent();
         eve.setEventType(eventType);
         eve.setMIDIMessage(midiMessage);
-        eve.setMIDIMessageLst(null);
+        eve.setMIDIMessages(null);
         eve.setStep(step);
 
         MIDIEvent lastEvent = this.getEndEvent();
-        if (lastEvent == null) { //初めのイベント
+        if (lastEvent == null) { // 初めのイベント
             eve.setAfterIndex(null);
             eve.setBeforeIndex(null);
             eve.setNumber(this.getENumber());
-            this.getEvent().add(eve);
+            this.getEvents().add(eve);
             this.setEStartIndex(0);
             this.setEEndIndex(0);
             this.eCounter = 1;
@@ -333,7 +333,7 @@ public class MIDIPart implements Serializable {
         eve.setAfterIndex(null);
         eve.setNumber(this.getENumber());
         this.setEEndIndex(this.getENumber());
-        this.getEvent().add(eve);
+        this.getEvents().add(eve);
         this.eCounter++;
         this.setENumber(this.getENumber() + 1);
         lastEvent.setAfterIndex(eve.getNumber());

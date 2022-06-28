@@ -28,7 +28,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmYM2608 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -51,7 +51,7 @@ public class frmYM2608 extends frmBase {
         this.newParam = newParam;
         this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneD(), null, zoom);
-        Boolean YM2608Type = (chipID == 0)
+        boolean YM2608Type = (chipID == 0)
                 ? parent.setting.getYM2608Type()[0].getUseReal()[0]
                 : parent.setting.getYM2608Type()[1].getUseReal()[0];
         int YM2608SoundLocation = (chipID == 0)
@@ -67,7 +67,7 @@ public class frmYM2608 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -114,7 +114,7 @@ public class frmYM2608 extends frmBase {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;
         }
-        Boolean YM2608Type = (chipID == 0)
+        boolean YM2608Type = (chipID == 0)
                 ? parent.setting.getYM2608Type()[0].getUseReal()[0]
                 : parent.setting.getYM2608Type()[1].getUseReal()[0];
         int YM2608SoundLocation = (chipID == 0)
@@ -280,8 +280,8 @@ public class frmYM2608 extends frmBase {
         for (int ch = 0; ch < 3; ch++) { // SSG
             MDChipParams.Channel channel = newParam.channels[ch + 9];
 
-            Boolean t = (ym2608Register[0][0x07] & (0x1 << ch)) == 0;
-            Boolean n = (ym2608Register[0][0x07] & (0x8 << ch)) == 0;
+            boolean t = (ym2608Register[0][0x07] & (0x1 << ch)) == 0;
+            boolean n = (ym2608Register[0][0x07] & (0x8 << ch)) == 0;
             channel.tn = (t ? 1 : 0) + (n ? 2 : 0);
 
             channel.volume = (int) (((t || n) ? 1 : 0) * (ym2608Register[0][0x08 + ch] & 0xf) * (20.0 / 16.0));
@@ -316,7 +316,7 @@ public class frmYM2608 extends frmBase {
         newParam.channels[12].volumeR = Math.min(Math.max(ym2608AdpcmVol[1] / 80, 0), 19);
         int delta = (ym2608Register[1][0x0a] << 8) | ym2608Register[1][0x09];
         newParam.channels[12].freq = delta;
-        float frq = (float) (delta / 9447.0f);
+        float frq = delta / 9447.0f;
         newParam.channels[12].note = (ym2608Register[1][0x00] & 0x80) != 0 ? (Common.searchYM2608Adpcm(frq) - 1) : -1;
         if ((ym2608Register[1][0x01] & 0xc0) == 0) {
             newParam.channels[12].note = -1;
@@ -331,7 +331,7 @@ public class frmYM2608 extends frmBase {
     }
 
     public void screenDrawParams() {
-        Boolean ChipType2 = (chipID == 0)
+        boolean ChipType2 = (chipID == 0)
                 ? parent.setting.getYM2608Type()[0].getUseReal()[0]
                 : parent.setting.getYM2608Type()[1].getUseReal()[0];
         int chipSoundLocation = (chipID == 0)
@@ -365,13 +365,13 @@ public class frmYM2608 extends frmBase {
             } else {
                 DrawBuff.volume(frameBuffer, 288 + 1, 8 + (c + 3) * 8, 0, oyc.volumeL, nyc.volumeL, tp);
                 //if (c == 7 && oyc.note != nyc.note) {
-                //System.err.println("note:{0}", nyc.note);
+                //System.err.println("note:%d", nyc.note);
                 //int[][] ym2608Register = Audio.GetYM2608Register(chipID);
                 //int freq1 = ym2608Register[0][0xa9] + (ym2608Register[0][0xad] ) * 0x100;
                 //int freq2 = ym2608Register[0][0xa8] + (ym2608Register[0][0xac] ) * 0x100;
                 //int freq3 = ym2608Register[0][0xaa] + (ym2608Register[0][0xae] ) * 0x100;
                 //int freq4 = ym2608Register[0][0xa2] + (ym2608Register[0][0xa6] ) * 0x100;
-                //System.err.println("frq:{0:x4} {1:x4} {2:x4} {3:x4}", freq1, freq2, freq3, freq4);
+                //System.err.println("frq:%4x %4x %4x %4x", freq1, freq2, freq3, freq4);
                 //}
                 DrawBuff.KeyBoardOPNA(frameBuffer, 33, 8 + (c + 3) * 8, oyc.note, nyc.note, tp);
                 DrawBuff.ChYM2608(frameBuffer, c, oyc.mask, nyc.mask, tp);

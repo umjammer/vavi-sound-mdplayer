@@ -27,7 +27,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmMIDI extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -60,7 +60,7 @@ public class frmMIDI extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -108,14 +108,10 @@ public class frmMIDI extends frmBase {
         MIDIParam prm = Audio.getMIDIInfos(chipID);
 
         for (int ch = 0; ch < 16; ch++) {
-            for (int i = 0; i < 256; i++) {
-                newParam.cc[ch][i] = prm.cc[ch][i];
-            }
+            System.arraycopy(prm.cc[ch], 0, newParam.cc[ch], 0, 256);
             newParam.bend[ch] = prm.bend[ch];
 
-            for (int i = 0; i < 128; i++) {
-                newParam.note[ch][i] = prm.note[ch][i];
-            }
+            System.arraycopy(prm.note[ch], 0, newParam.note[ch], 0, 128);
 
             newParam.level[ch][0] = prm.level[ch][0];
             newParam.level[ch][1] = prm.level[ch][1];
@@ -166,16 +162,12 @@ public class frmMIDI extends frmBase {
         newParam.MIDIModule = prm.MIDIModule;
 
         //Display Data
-        for (int i = 0; i < 64; i++) {
-            newParam.LCDDisplay[i] = prm.LCDDisplay[i];
-        }
+        System.arraycopy(prm.LCDDisplay, 0, newParam.LCDDisplay, 0, 64);
         newParam.LCDDisplayTime = prm.LCDDisplayTime;
         prm.LCDDisplayTime -= 3;
         if (prm.LCDDisplayTime < 0) prm.LCDDisplayTime = 0;
 
-        for (int i = 0; i < prm.LCD8850Display.length; i++) {
-            newParam.LCD8850Display[i] = prm.LCD8850Display[i];
-        }
+        System.arraycopy(prm.LCD8850Display, 0, newParam.LCD8850Display, 0, prm.LCD8850Display.length);
         newParam.LCD8850DisplayTime = prm.LCD8850DisplayTime;
         if (newParam.LCD8850DisplayTime != 400) prm.LCD8850DisplayTime -= 3;
         if (prm.LCD8850DisplayTime < 0) prm.LCD8850DisplayTime = 0;
@@ -185,9 +177,7 @@ public class frmMIDI extends frmBase {
         if (prm.LCDDisplayTimeXG < 0) prm.LCDDisplayTimeXG = 0;
 
         //Display Letter Data
-        for (int i = 0; i < 32; i++) {
-            newParam.LCDDisplayLetter[i] = prm.LCDDisplayLetter[i];
-        }
+        System.arraycopy(prm.LCDDisplayLetter, 0, newParam.LCDDisplayLetter, 0, 32);
         newParam.LCDDisplayLetterLen = prm.LCDDisplayLetterLen;
         newParam.LCDDisplayLetterTime = prm.LCDDisplayLetterTime;
         prm.LCDDisplayLetterTime -= 3;

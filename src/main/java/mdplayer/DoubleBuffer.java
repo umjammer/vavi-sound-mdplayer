@@ -19,10 +19,6 @@ public class DoubleBuffer implements Closeable {
         mainScreen.Add(pbMainScreen, initialImage, this.Graphics2D, zoom);
     }
 
-    protected void finalize() {
-        close();
-    }
-
     public void close() {
         if (mainScreen != null)
             mainScreen.Remove(this.Graphics2D);

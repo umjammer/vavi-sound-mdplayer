@@ -58,7 +58,7 @@ public class frmRegTest extends frmChipBase {
 
     static class RegisterManager {
         int select;
-        public Boolean needRefresh = false;
+        public boolean needRefresh = false;
         List<ChipData> chipData = new ArrayList<>();
 
         public RegisterManager() {
@@ -82,55 +82,31 @@ public class frmRegTest extends frmChipBase {
                 return Audio.getYM2608Register(0);
             });
 
-            addChip("YM2612", 1, 0x200, select -> {
-                return Audio.getFMRegister(0);
-            });
+            addChip("Ym2612", 1, 0x200, select -> Audio.getFMRegister(0));
 
-            addChip("C140", 1, 0x200, select -> {
-                return Audio.getC140Register(0);
-            });
+            addChip("C140", 1, 0x200, select -> Audio.getC140Register(0));
 
-            addChip("QSOUND", 1, 0x200, select -> {
-                return Audio.getQSoundRegister(0);
-            });
+            addChip("QSOUND", 1, 0x200, select -> Audio.getQSoundRegister(0));
 
-            addChip("SEGAPCM", 1, 0x200, select -> {
-                return Audio.getSEGAPCMRegister(0);
-            });
+            addChip("SEGAPCM", 1, 0x200, select -> Audio.getSEGAPCMRegister(0));
 
-            addChip("YMZ280B", 1, 0x100, select -> {
-                return Audio.getYMZ280BRegister(0);
-            });
+            addChip("YMZ280B", 1, 0x100, select -> Audio.getYMZ280BRegister(0));
 
-            addChip("SN76489", 1, 8, select -> {
-                return Audio.getPSGRegister(0);
-            });
+            addChip("SN76489", 1, 8, select -> Audio.getPSGRegister(0));
 
-            addChip("AY", 1, 16, select -> {
-                return Audio.getAY8910Register(0);
-            });
+            addChip("AY", 1, 16, select -> Audio.getAY8910Register(0));
 
-            addChip("C352", 1, 0x400, select -> {
-                return Audio.getC352Register(0);
-            });
+            addChip("C352", 1, 0x400, select -> Audio.getC352Register(0));
 
-            addChip("YM2203", 1, 0x200, select -> {
-                return Audio.getym2203Register(0);
-            });
+            addChip("YM2203", 1, 0x200, select -> Audio.getym2203Register(0));
 
-            addChip("YM2413", 1, 0x100, select -> {
-                return Audio.getYM2413Register(0);
-            });
+            addChip("YM2413", 1, 0x100, select -> Audio.getYM2413Register(0));
 
-            addChip("YM3812", 1, 0x100, select -> {
-                return Audio.getYM3812Register(0);
-            });
+            addChip("YM3812", 1, 0x100, select -> Audio.getYM3812Register(0));
 
-            addChip("NES", 1, 0x30, select -> {
-                return Audio.getAPURegister(0);
-            });
+            addChip("NES", 1, 0x30, select -> Audio.getAPURegister(0));
 
-            addChip("SID", 3, 0x19, Audio::getSIDRegister);
+            addChip("Sid", 3, 0x19, Audio::getSIDRegister);
         }
 
         private void addChip(String ChipName, int Max, int regSize, ChipData.GetRegisterDelegate p) {
@@ -199,7 +175,7 @@ public class frmRegTest extends frmChipBase {
 
     RegisterManager regMan = new RegisterManager();
 
-    private final Map<EnmChip, Integer> pageDict = new HashMap<EnmChip, Integer>() {{
+    private final Map<EnmChip, Integer> pageDict = new HashMap<>() {{
         put(EnmChip.YMF278B, 0);
         put(EnmChip.YMF262, 3);
         put(EnmChip.YM2151, 5);
@@ -251,7 +227,7 @@ public class frmRegTest extends frmChipBase {
     }
 
     @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -328,10 +304,10 @@ public class frmRegTest extends frmChipBase {
 
         int y = 17;
 
-        if (regMan.getName().contains("SID")) {
+        if (regMan.getName().contains("Sid")) {
             //y += 8;
             Sid curSID = Audio.getCurrentSIDContext();
-            //Sid curSID = ChipRegister.SID;
+            //Sid curSID = ChipRegister.Sid;
             Object a = regMan.getData();
             if (a == null) return;
             Integer[] r = (Integer[]) a;
@@ -369,7 +345,7 @@ public class frmRegTest extends frmChipBase {
             int filterreso = r[0x17] >> 4; // D417.4-7 Filter Resonanse
             int filterroute = r[0x17] & 0x0F; // D417.0-3 Filter Route (Enable bit)
             int filtermode = r[0x18] >> 4; // D418.4-7 Filter Type (Mode... Hi/Band/Lo)
-            int mainvolume = r[0x18] & 0x0F; // D418.0-3 Main Volume (SID Volume instanceof 4 bits)
+            int mainvolume = r[0x18] & 0x0F; // D418.0-3 Main Volume (Sid Volume instanceof 4 bits)
 
             // Paddle reg
             /*
@@ -457,8 +433,8 @@ public class frmRegTest extends frmChipBase {
             SidInfo si = curEngine.info();
 
             DrawBuff.drawFont4(frameBuffer, 2, y, 0, String.format("LOAD ADDR %04xh", sti.getLoadAddr()));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, String.format("INIT ADDR %04xh", sti.getInitAddr()));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, String.format("PLAY ADDR %04xh", sti.getPlayAddr()));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, String.format("INIT ADDR %04xh", sti.getInitAddress()));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, String.format("PLAY ADDR %04xh", sti.getPlayAddress()));
             DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, String.format("%s %s; CUR:%s SPD:%s", sti.sidModel(Integer.parseInt(p)), sti.getClockSpeed(), cfg.defaultSidModel, si.getSpeedString()));
 
             y += 32;
@@ -478,8 +454,7 @@ public class frmRegTest extends frmChipBase {
 
         Object reg = regMan.getData();
 
-        if (reg instanceof byte[]) {
-            byte[] r = (byte[]) reg;
+        if (reg instanceof byte[] r) {
             for (int i = 0; i < r.length; i++) {
                 if (i % 16 == 0) {
                     y += 8;
@@ -488,8 +463,7 @@ public class frmRegTest extends frmChipBase {
                 byte v = r[i];
                 DrawBuff.drawFont4(frameBuffer, 34 + ((i % 16) * 12), y - 8, 0, String.format("%2x:", v));
             }
-        } else if (reg instanceof short[]) {
-            short[] r = (short[]) reg;
+        } else if (reg instanceof short[] r) {
             int ms = regMan.getRegisterSize();
             for (int i = 0; i < Math.min(r.length, ms); i++) {
                 if (i % 16 == 0) {
@@ -499,8 +473,7 @@ public class frmRegTest extends frmChipBase {
                 byte v = (byte) r[i];
                 DrawBuff.drawFont4(frameBuffer, 34 + ((i % 16) * 12), y - 8, 0, String.format("%2x:", v));
             }
-        } else if (reg instanceof int[]) {
-            int[] r = (int[]) reg;
+        } else if (reg instanceof int[] r) {
             for (int i = 0; i < r.length; i++) {
                 if (i % 16 == 0) {
                     y += 8;
@@ -509,8 +482,7 @@ public class frmRegTest extends frmChipBase {
                 int v = r[i];
                 DrawBuff.drawFont4(frameBuffer, 30 + ((i % 8) * 18), y - 8, 0, String.format("%4x:", v));
             }
-        } else if (reg instanceof int[][]) {
-            int[][] r = (int[][]) reg;
+        } else if (reg instanceof int[][] r) {
             for (int j = 0; j < r.length; j++) {
                 for (int i = 0; i < r[j].length; i++) {
                     if (i % 16 == 0) {
@@ -539,7 +511,7 @@ public class frmRegTest extends frmChipBase {
             /*
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
-            //System.err.println("{0} {1}", px, py);
+            //System.err.println("%d %d", px, py);
             if (py > 8) return;
             if (px < 210) return;
             int xc = (px-210) / 4;

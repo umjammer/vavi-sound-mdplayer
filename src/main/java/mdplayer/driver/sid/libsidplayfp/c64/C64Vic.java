@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2011-2015 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2007-2010 Antti Lankila
@@ -23,8 +23,8 @@
 package mdplayer.driver.sid.libsidplayfp.c64;
 
 import mdplayer.driver.sid.libsidplayfp.c64.banks.IBank;
-import mdplayer.driver.sid.libsidplayfp.c64.vic_ii.MOS656X;
-import mdplayer.driver.sid.libsidplayfp.sidendian;
+import mdplayer.driver.sid.libsidplayfp.c64.vic_ii.Mos656X;
+import mdplayer.driver.sid.libsidplayfp.SidEndian;
 
 
 /**
@@ -32,33 +32,33 @@ import mdplayer.driver.sid.libsidplayfp.sidendian;
  *
  * Located at $D000-$D3FF
  */
-public class C64Vic extends MOS656X implements IBank {
+public class C64Vic extends Mos656X implements IBank {
 
     // The VIC emulation instanceof very generic and here we need to effectively
     // wire it into the computer (like adding a chip to a PCB).
 
-    private C64Env m_env;
+    private final C64Env env;
 
     @Override
-    protected void interrupt(Boolean state) {
-        m_env.interruptIRQ(state);
+    protected void interrupt(boolean state) {
+        env.interruptIRQ(state);
     }
 
     @Override
-    protected void setBA(Boolean state) {
-        m_env.setBA(state);
+    protected void setBA(boolean state) {
+        env.setBA(state);
     }
 
     public C64Vic(C64Env env) {
         super(env.scheduler());
-        m_env = env;
+        this.env = env;
     }
 
     public void poke(short address, byte value) {
-        write(sidendian.endian_16lo8(address), value);
+        write(SidEndian.to16lo8(address), value);
     }
 
     public byte peek(short address) {
-        return read(sidendian.endian_16lo8(address));
+        return read(SidEndian.to16lo8(address));
     }
 }

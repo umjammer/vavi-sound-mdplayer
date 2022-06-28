@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2012-2014 Leandro Nini <drfiemost@users.sourceforge.net>
  *
@@ -27,39 +27,30 @@ import mdplayer.driver.sid.libsidplayfp.c64.C64Sid;
 
 
 /**
- * Extra SID bank.
+ * Extra Sid bank.
  */
 public class ExtraSidBank implements IBank {
 
-    // # include "Bank.h"
-    // # include <vector>
-    // # include <algorithm>
-    // # include "C64/C64Sid.h"
-    // # include "sidcxx11.h"
-
     /**
-     //Size of mapping table. Each 32 bytes another SID chip base address can be
-     //assigned to.
+     * size of mapping table. Each 32 bytes another Sid chip base address can be
+     * assigned to.
      */
     private static final int MAPPER_SIZE = 8;
 
     /**
-     //SID mapping table. Maps a SID chip base address to a SID or to the
-     //underlying bank.
+     * Sid mapping table. Maps a Sid chip base address to a Sid or to the
+     * underlying bank.
      */
     private IBank[] mapper = new IBank[MAPPER_SIZE];
 
-    private List<C64Sid> sids = new ArrayList<C64Sid>();
+    private List<C64Sid> sids = new ArrayList<>();
 
     private static void resetSID(C64Sid e) {
         e.reset((byte) 0xf);
     }
 
     private int mapperIndex(int address) {
-        return (int) (address >> 5 & (MAPPER_SIZE - 1));
-    }
-
-    protected void finalize() {
+        return address >> 5 & (MAPPER_SIZE - 1);
     }
 
     public void reset() {
@@ -82,14 +73,13 @@ public class ExtraSidBank implements IBank {
     }
 
     /**
-     //Set SID emulation.
-     *
-     //@param s the emulation
-     //@param address the address where to put the chip
+     * Set Sid emulation.
+     * <p>
+     * @param s the emulation
+     * @param address the address where to put the chip
      */
     public void addSID(C64Sid s, int address) {
         sids.add(s);
         mapper[mapperIndex(address)] = s;
     }
-
 }

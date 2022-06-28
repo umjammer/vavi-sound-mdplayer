@@ -28,7 +28,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmC140 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -61,7 +61,7 @@ public class frmC140 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -144,7 +144,7 @@ public class frmC140 extends frmBase {
 
         int clock = Audio.clockC140;
         if (clock >= 1000000)
-            clock = (int) clock / 384;
+            clock = clock / 384;
 
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
@@ -167,7 +167,7 @@ public class frmC140 extends frmBase {
 
 
     public void screenInit() {
-        Boolean C140Type = (chipID == 0) ? parent.setting.getC140Type()[0].getUseReal()[0] : parent.setting.getC140Type()[1].getUseReal()[0];
+        boolean C140Type = (chipID == 0) ? parent.setting.getC140Type()[0].getUseReal()[0] : parent.setting.getC140Type()[1].getUseReal()[0];
         int tp = C140Type ? 1 : 0;
         for (int ch = 0; ch < 24; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {

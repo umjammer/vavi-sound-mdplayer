@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2012-2013 Leandro Nini <drfiemost@users.sourceforge.net>
  * Copyright 2010 Antti Lankila
@@ -25,7 +25,7 @@ import mdplayer.driver.sid.libsidplayfp.c64.C64Sid;
 
 
 /**
- * SID
+ * Sid
  *
  * Located at $D400-$D7FF, mirrored each 32 bytes
  */
@@ -35,7 +35,7 @@ public class SidBank implements IBank {
     // # include "C64/C64Sid.h"
     // # include "sidcxx11.h"
     // # include "NullSid.h"
-    // SID chip
+    // Sid chip
     private C64Sid sid;
 
     public SidBank() {
@@ -56,7 +56,7 @@ public class SidBank implements IBank {
     }
 
     /**
-     //Set SID emulation.
+     //Set Sid emulation.
      *
      //@param s the emulation, nullptr to remove current Sid
      */

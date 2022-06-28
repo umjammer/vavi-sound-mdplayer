@@ -28,7 +28,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmYM2151 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -60,7 +60,7 @@ public class frmYM2151 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -117,7 +117,7 @@ public class frmYM2151 extends frmBase {
                 //但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
-                        if (newParam.channels[ch].mask == true)
+                        if (newParam.channels[ch].mask)
                             parent.resetChannelMask(EnmChip.YM2151, chipID, ch);
                         else
                             parent.setChannelMask(EnmChip.YM2151, chipID, ch);
@@ -154,7 +154,7 @@ public class frmYM2151 extends frmBase {
     };
 
     public void screenInit() {
-        Boolean YM2151Type = (chipID == 0)
+        boolean YM2151Type = (chipID == 0)
                 ? parent.setting.getYM2151Type()[0].getUseReal()[0]
                 : parent.setting.getYM2151Type()[1].getUseReal()[0];
         int YM2151SoundLocation = (chipID == 0)
@@ -272,7 +272,7 @@ public class frmYM2151 extends frmBase {
             MDChipParams.Channel oyc = oldParam.channels[c];
             MDChipParams.Channel nyc = newParam.channels[c];
 
-            Boolean YM2151Type = (chipID == 0)
+            boolean YM2151Type = (chipID == 0)
                     ? parent.setting.getYM2151Type()[0].getUseReal()[0]
                     : parent.setting.getYM2151Type()[1].getUseReal()[0];
             int YM2151SoundLocation = (chipID == 0)

@@ -29,7 +29,7 @@ import mdsound.ScdPcm;
 
 
 public class frmMegaCD extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -63,7 +63,7 @@ public class frmMegaCD extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -113,14 +113,14 @@ public class frmMegaCD extends frmBase {
             for (int ch = 0; ch < 8; ch++) {
                 if (rf5c164Register.channels[ch].enable != 0) {
                     newParam.channels[ch].note = searchRf5c164Note(rf5c164Register.channels[ch].stepB);
-                    newParam.channels[ch].volumeL = Math.min(Math.max((int) rf5c164Register.channels[ch].mulL / 3, 0), 19);
-                    newParam.channels[ch].volumeR = Math.min(Math.max((int) rf5c164Register.channels[ch].mulR / 3, 0), 19);
+                    newParam.channels[ch].volumeL = Math.min(Math.max(rf5c164Register.channels[ch].mulL / 3, 0), 19);
+                    newParam.channels[ch].volumeR = Math.min(Math.max(rf5c164Register.channels[ch].mulR / 3, 0), 19);
                 } else {
                     newParam.channels[ch].note = -1;
                     newParam.channels[ch].volumeL = 0;
                     newParam.channels[ch].volumeR = 0;
                 }
-                newParam.channels[ch].pan = (int) rf5c164Register.channels[ch].pan;
+                newParam.channels[ch].pan = rf5c164Register.channels[ch].pan;
             }
         }
     }
@@ -150,7 +150,7 @@ public class frmMegaCD extends frmBase {
                 //但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
-                        if (newParam.channels[ch].mask == true)
+                        if (newParam.channels[ch].mask)
                             parent.resetChannelMask(EnmChip.RF5C164, chipID, ch);
                         else
                             parent.setChannelMask(EnmChip.RF5C164, chipID, ch);
@@ -175,7 +175,7 @@ public class frmMegaCD extends frmBase {
         double m = Double.MAX_VALUE;
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
-            double a = Math.abs(freq - (0x0800 * Tables.pcmMulTbl[i % 12 + 12] * Math.pow(2, ((int) (i / 12) - 4))));
+            double a = Math.abs(freq - (0x0800 * Tables.pcmMulTbl[i % 12 + 12] * Math.pow(2, ((i / 12) - 4))));
             if (m > a) {
                 m = a;
                 n = i;

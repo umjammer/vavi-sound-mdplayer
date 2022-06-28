@@ -27,22 +27,21 @@ public class VRC7 extends mdsound.Ym2413 {
     }
 
     @Override
-    public int start(byte ChipID, int clock) {
-        return start(ChipID, clock, 0);
+    public int start(byte ChipID, int samplingRate) {
+        return start(ChipID, samplingRate, 0);
     }
 
     @Override
-    public int start(byte ChipID, int clock, int ClockValue, Object... option) {
+    public int start(byte ChipID, int samplingRate, int ClockValue, Object... option) {
         nv.setClock(ClockValue / 2);// masterclock(NES:1789773)
-        nv.setRate(clock);// samplerate
+        nv.setRate(samplingRate);// samplerate
         nv.reset();
-        rate = (double) clock;
-        return clock;
+        rate = samplingRate;
+        return samplingRate;
     }
 
     @Override
     public void stop(byte ChipID) {
-        ;
     }
 
     private int[] b = new int[2];
@@ -56,12 +55,12 @@ public class VRC7 extends mdsound.Ym2413 {
             apu_clock_rest += apu_clock_per_sample;
             int apu_clocks = (int) (apu_clock_rest);
             if (apu_clocks > 0) {
-                apu_clock_rest -= (double) (apu_clocks);
+                apu_clock_rest -= apu_clocks;
             }
 
-            nv.tick((int) apu_clocks);
+            nv.tick(apu_clocks);
             nv.render(b);
-            // if(b[0]!=0)System.System.err.println("{0}",b[0]);
+            // if(b[0]!=0)System.System.err.println("%d",b[0]);
             outputs[0][i] += b[0] << 2;
             outputs[1][i] += b[1] << 2;
         }
@@ -69,8 +68,8 @@ public class VRC7 extends mdsound.Ym2413 {
 
     @Override
     public int write(byte ChipID, int port, int adr, int data) {
-        nv.write(0x9010, (int) adr);
-        nv.write(0x9030, (int) data);
+        nv.write(0x9010, adr);
+        nv.write(0x9030, data);
         return 0;
     }
 }

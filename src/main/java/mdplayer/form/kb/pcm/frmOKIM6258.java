@@ -28,7 +28,7 @@ import mdsound.OkiM6258;
 
 
 public class frmOKIM6258 extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -61,7 +61,7 @@ public class frmOKIM6258 extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -122,10 +122,10 @@ public class frmOKIM6258 extends frmBase {
             break;
         }
 
-        newParam.masterFreq = (int) okim6258State.masterClock / 1000;
-        newParam.divider = (int) okim6258State.divider;
+        newParam.masterFreq = okim6258State.masterClock / 1000;
+        newParam.divider = okim6258State.divider;
         if (okim6258State.divider == 0) newParam.pbFreq = 0;
-        else newParam.pbFreq = (int) (okim6258State.masterClock / okim6258State.divider / 1000);
+        else newParam.pbFreq = okim6258State.masterClock / okim6258State.divider / 1000;
 
         int v = (int) (((Math.abs(okim6258State.dataIn - 128) * 2) >> 3) * 1.2);
         if ((okim6258State.status & 0x2) == 0) v = 0;
@@ -189,7 +189,7 @@ public class frmOKIM6258 extends frmBase {
             if (py < 1 * 8) {
                 //但しchをクリックした場合はマスク反転
                 if (px < 8) {
-                    if (newParam.mask == true)
+                    if (newParam.mask)
                         parent.resetChannelMask(EnmChip.OKIM6258, chipID, 0);
                     else
                         parent.setChannelMask(EnmChip.OKIM6258, chipID, 0);

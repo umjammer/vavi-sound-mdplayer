@@ -1,5 +1,5 @@
 /*
- * This file instanceof part of libsidplayfp, a SID player engine.
+ * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  * Copyright 2013-2015 Leandro Nini <drfiemost@users.sourceforge.net>
  *
@@ -23,12 +23,9 @@ package mdplayer.driver.sid.libsidplayfp.c64;
 import mdplayer.driver.sid.libsidplayfp.c64.banks.IBank;
 
 /**
- * SID interface.
+ * Sid interface.
  */
 public class C64Sid implements IBank {
-
-    protected void finalize() {
-    }
 
     public byte read(byte addr) {
         return 0;

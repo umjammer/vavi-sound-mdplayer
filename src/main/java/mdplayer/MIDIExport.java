@@ -137,18 +137,15 @@ import mdplayer.Common.EnmChip;
 
             try
             {
-                String fn = PlayingFileName == "" ? "Temp.mid" : PlayingFileName;
-                List<Byte> buf = new ArrayList<Byte>();
+                String fn = PlayingFileName.equals("") ? "Temp.mid" : PlayingFileName;
 
-                for (byte d : cData) buf.add(d);
+                List<Byte> buf = new ArrayList<>(cData);
 
-                if (setting.getMidiExport().getUseYM2151Export()) for (List<Byte> dat : midi2151.data) for (byte d : dat) buf.add(d);
-                if (setting.getMidiExport().getUseYM2612Export()) for (List<Byte> dat : midi2612.data) for (byte d : dat) buf.add(d);
+                if (setting.getMidiExport().getUseYM2151Export()) for (List<Byte> dat : midi2151.data) buf.addAll(dat);
+                if (setting.getMidiExport().getUseYM2612Export()) for (List<Byte> dat : midi2612.data) buf.addAll(dat);
 
                 File.writeAllBytes(Path.combine(setting.getMidiExport().getExportPath(), Path.changeExtension(Path.getFileName(fn), ".mid")), mdsound.Common.toByteArray(buf));
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
             }
 
             cData = null;
@@ -448,7 +445,6 @@ import mdplayer.Common.EnmChip;
                 midi2151.data[ch].add((byte)(75));
                 midi2151.data[ch].add((byte)((dData & 0x70) >> 4));
 
-                return;
             }
 
         }
@@ -774,7 +770,6 @@ import mdplayer.Common.EnmChip;
                     midi2612.data[ch].add((byte)(75));
                     midi2612.data[ch].add((byte)((dData & 0x03) >> 0));
                 }
-                return;
             }
 
         }
@@ -811,7 +806,7 @@ import mdplayer.Common.EnmChip;
             long step = (long)(sub / (double)setting.getOutputDevice().getSampleRate() * 960.0);
             chip.oldFrameCounter[ch] += (long)(step * (double)setting.getOutputDevice().getSampleRate() / 960.0);
 
-            Boolean flg = true;
+            boolean flg = true;
             for (int i = 0; i < 4; i++)
             {
                 byte d = (byte)((step & (0x0fe00000 >> (7 * i))) >> (21 - 7 * i));
@@ -825,7 +820,7 @@ import mdplayer.Common.EnmChip;
 
         private void MakeHeader()
         {
-            cData = new ArrayList<Byte>();
+            cData = new ArrayList<>();
 
             cData.add((byte)0x4d); //チャンクタイプ'MThd'
             cData.add((byte)0x54);
@@ -902,7 +897,7 @@ import mdplayer.Common.EnmChip;
             {
                 midi2151.oldCode[i] = -1;
                 midi2151.oldFreq[i] = -1;
-                midi2151.data[i] = new ArrayList<Byte>();
+                midi2151.data[i] = new ArrayList<>();
                 midi2151.oldFrameCounter[i] = 0L;
             }
 
@@ -983,7 +978,7 @@ import mdplayer.Common.EnmChip;
             {
                 midi2612.oldCode[i] = -1;
                 midi2612.oldFreq[i] = -1;
-                midi2612.data[i] = new ArrayList<Byte>();
+                midi2612.data[i] = new ArrayList<>();
                 midi2612.oldFrameCounter[i] = 0L;
             }
 

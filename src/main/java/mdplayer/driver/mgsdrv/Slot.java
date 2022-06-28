@@ -1,6 +1,7 @@
 package mdplayer.driver.mgsdrv;
 
 public class Slot {
+
     public Cartridge[][] slots;
 
     public Cartridge[] pages = new Cartridge[4];

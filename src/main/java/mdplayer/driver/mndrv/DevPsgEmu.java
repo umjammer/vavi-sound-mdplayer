@@ -4,7 +4,7 @@ import mdplayer.driver.mxdrv.XMemory;
 
 
 //
-//	part of YM2608 - PSG emulation
+//	part of YM2608 - Psg emulation
 //
 public class DevPsgEmu {
     public Reg reg;
@@ -23,7 +23,7 @@ public class DevPsgEmu {
 
         //    pea _opm_keyon(pc)
         _emu_psg_freq();
-        comlfo._init_lfo();
+        comlfo.initLfo();
         devopm._opm_keyon();
     }
 
@@ -92,7 +92,7 @@ public class DevPsgEmu {
     }
 
     //─────────────────────────────────────
-    //	MML コマンド処理(PSG 部)
+    //	MML コマンド処理(Psg 部)
     //
     public void _psge_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
@@ -294,7 +294,7 @@ public class DevPsgEmu {
             comcmds._COM_BF();
             break; // BF
 
-        // PSG 系
+        // Psg 系
         case 0x40:
             comcmds._COM_C0();
             break; // C0 ソフトウェアエンベロープ 1

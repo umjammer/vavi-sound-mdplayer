@@ -42,8 +42,8 @@ public class Resources {
     //@System.ComponentModel.EditorBrowsableAttribute(ComponentModel.EditorBrowsableState.Advanced)]
     public static ResourceBundle getResourceManager() {
 
-        if (Object.ReferenceEquals(resourceMan, null)) {
-            ResourceBundle temp = new ResourceBundle("mdplayer.Properties.Resources", typeof(Resources).Assembly);
+        if (resourceMan ==  null) {
+            ResourceBundle temp = ResourceBundle.getBundle("mdplayer.Properties.Resources");
             resourceMan = temp;
         }
         return resourceMan;
@@ -654,7 +654,7 @@ public class Resources {
      *
      * [概要]
      * このツールは、鍵盤表示を行いながらVGMファイルの再生を行います。
-     * (NRD,XGM,S98,MID,RCP,NSF,HES,SID,MDR,MDX,MND,MUC(TBD),MUB(TBD)ファイルにも対応。)
+     * (NRD,XGM,S98,MID,RCP,NSF,HES,Sid,MDR,MDX,MND,MUC(TBD),MUB(TBD)ファイルにも対応。)
      *
      * [注意]
      *  ・再生時の音量に注意してください。バグによる雑音が大音量で再生される場合もあります。
@@ -673,15 +673,15 @@ public class Resources {
     }
 
     /**
-     * 例外発生:\n- Type ------\n{0}\n- Message ------\n{1}\n- Source ------\n{2}\n- StackTrace ------\n{3}\n に類似しているローカライズされた文字列を検索します。
+     * 例外発生:\n- Type ------\n%d\n- Message ------\n%d\n- Source ------\n%d\n- StackTrace ------\n%d\n に類似しているローカライズされた文字列を検索します。
      */
-    public static String getcntExceptionFormat() {
+    public static String getCntExceptionFormat() {
 
         return resourceMan.getString("cntExceptionFormat");
     }
 
     /**
-     * 内部例外:\n- Type ------\n{0}\n- Message ------\n{1}\n- Source ------\n{2}\n- StackTrace ------\n{3}\n に類似しているローカライズされた文字列を検索します。
+     * 内部例外:\n- Type ------\n%d\n- Message ------\n%d\n- Source ------\n%d\n- StackTrace ------\n%d\n に類似しているローカライズされた文字列を検索します。
      */
     public static String getcntInnerExceptionFormat() {
 
@@ -691,7 +691,7 @@ public class Resources {
     /**
      * Log.txt に類似しているローカライズされた文字列を検索します。
      */
-    public static String getcntLogFilename() {
+    public static String getCntLogFilename() {
 
         return resourceMan.getString("cntLogFilename");
     }
@@ -734,7 +734,7 @@ public class Resources {
     /**
      * yyyy/MM/dd HH:mm:ss     に類似しているローカライズされた文字列を検索します。
      */
-    public static String getcntTimeFormat() {
+    public static String getCntTimeFormat() {
 
         return resourceMan.getString("cntTimeFormat");
     }

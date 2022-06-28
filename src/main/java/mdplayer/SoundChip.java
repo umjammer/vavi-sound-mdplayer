@@ -17,7 +17,7 @@ public class SoundChip {
         nSoundInterfaceManager.sendData();
     }
 
-    public Boolean isBufferEmpty() {
+    public boolean isBufferEmpty() {
         return nSoundInterfaceManager.isBufferEmpty();
     }
 

@@ -27,7 +27,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmFDS extends frmBase {
-    public Boolean isClosed = false;
+    public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
     private int frameSizeW = 0;
@@ -59,7 +59,7 @@ public class frmFDS extends frmBase {
     }
 
 //    @Override
-    protected Boolean getShowWithoutActivation() {
+    protected boolean getShowWithoutActivation() {
         return true;
     }
 
@@ -113,8 +113,8 @@ public class frmFDS extends frmBase {
         int vol;
         int note;
         if (reg != null) {
-            freq = (int) reg.lastFreq;
-            vol = (int) reg.lastVol;
+            freq = reg.lastFreq;
+            vol = reg.lastVol;
             note = -15 + (int) ((12 * (Math.log(freq) / LOG_2 - LOG2_440) + NOTE_440HZ + 0.5));
             note = note < 0 ? -1 : (note > 120 ? -1 : note);
             note = vol == 0 ? -1 : note;
@@ -128,20 +128,20 @@ public class frmFDS extends frmBase {
             }
 
             newParam.VolDir = reg.envMode[1];
-            newParam.VolSpd = (int) reg.envSpeed[1];
-            newParam.VolGain = (int) reg.envOut[1];
+            newParam.VolSpd = reg.envSpeed[1];
+            newParam.VolGain = reg.envOut[1];
             newParam.VolDi = reg.envHalt;
-            newParam.VolFrq = (int) reg.freq[1];
+            newParam.VolFrq = reg.freq[1];
             newParam.VolHlR = reg.wavHalt;
 
             newParam.ModDir = reg.envMode[0];
-            newParam.ModSpd = (int) reg.envSpeed[0];
-            newParam.ModGain = (int) reg.envOut[0];
+            newParam.ModSpd = reg.envSpeed[0];
+            newParam.ModGain = reg.envOut[0];
             newParam.ModDi = reg.modHalt;
-            newParam.ModFrq = (int) reg.freq[0];
-            newParam.ModCnt = (int) reg.modPos;
+            newParam.ModFrq = reg.freq[0];
+            newParam.ModCnt = reg.modPos;
 
-            newParam.EnvSpd = (int) reg.masterEnvSpeed;
+            newParam.EnvSpd = reg.masterEnvSpeed;
             newParam.EnvVolSw = !reg.envDisable[1];
             newParam.EnvModSw = !reg.envDisable[0];
 
@@ -210,7 +210,6 @@ public class frmFDS extends frmBase {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
                     parent.setChannelMask(EnmChip.FDS, chipID, 0);
-                    return;
                 }
             }
         }
