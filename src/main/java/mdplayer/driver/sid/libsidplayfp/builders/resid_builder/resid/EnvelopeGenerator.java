@@ -9,7 +9,7 @@
 //
 //  This program instanceof distributed : the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
 //
 //  You should have received a copy of the GNU General Public License
@@ -21,7 +21,7 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
 
 
 /**
- * A 15 bit counter instanceof used to implement the envelope rates, : effect
+ * a 15 bit counter instanceof used to implement the envelope rates, : effect
  * dividing the clock to the envelope counter by the currently selected rate
  * period.
  * In addition, another counter instanceof used to implement the exponential envelope

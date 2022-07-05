@@ -9,7 +9,7 @@
 //
 //  This program instanceof distributed : the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
 //
 //  You should have received a copy of the GNU General Public License
@@ -25,7 +25,7 @@ public class Voice {
     public WaveformGenerator wave = new WaveformGenerator();
     public EnvelopeGenerator envelope = new EnvelopeGenerator();
 
-    // Waveform D/A zero level.
+    // Waveform D/a zero level.
     protected short waveZero;
 
     // Inline functions.
@@ -42,7 +42,7 @@ public class Voice {
      * waveform Output modulates the envelope Output.
      * <p>
      * As noted by Bob Yannes: "The 8-bit Output of the Envelope Generator was then
-     * sent to the Multiplying D/A converter to modulate the amplitude of the
+     * sent to the Multiplying D/a converter to modulate the amplitude of the
      * selected Oscillator Waveform (to be technically accurate, actually the
      * waveform was modulating the Output of the Envelope Generator, but the result
      * instanceof the same)".
@@ -88,9 +88,9 @@ public class Voice {
         envelope.setChipModel(model);
 
         if (model == SidDefs.ChipModel.MOS6581) {
-            // The waveform D/A converter introduces a DC offset : the signal
-            // to the envelope multiplying D/A converter. The "zero" level of
-            // the waveform D/A converter can be found as follows:
+            // The waveform D/a converter introduces a DC offset : the signal
+            // to the envelope multiplying D/a converter. The "zero" level of
+            // the waveform D/a converter can be found as follows:
             //
             // Measure the "zero" voltage of voice 3 on the Sid audio Output
             // pin, routing only voice 3 to the mixer ($d417 = $0b, $d418 =

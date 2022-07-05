@@ -1,6 +1,11 @@
 package mdplayer;
 
 import java.io.Closeable;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.function.Consumer;
 import javax.sound.sampled.LineEvent;
 
@@ -28,9 +33,13 @@ public class NullOut implements Closeable {
     public void close() {
     }
 
-    public void Init(IWaveProvider waveProvider) {
+    public void Init() {
         //初期化
-        wP = waveProvider;
+        try {
+            os = Files.newOutputStream(Path.of(System.getProperty("dev.null")));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     public void pause() {
@@ -46,8 +55,8 @@ public class NullOut implements Closeable {
         reqStop = true;
     }
 
+    OutputStream os;
     private Thread trdMain;
-    private IWaveProvider wP;
     private byte[] buf = new byte[4000];
     private LineEvent.Type pbState = LineEvent.Type.STOP;
     private boolean reqStop = false;
@@ -58,20 +67,24 @@ public class NullOut implements Closeable {
         }
 
         reqStop = false;
-        trdMain = new Thread(new ThreadStart(trdFunction));
-        trdMain.Priority = ThreadPriority.Highest;
-        trdMain.IsBackground = true;
+        trdMain = new Thread(this::trdFunction);
+        trdMain.setPriority(Thread.MAX_PRIORITY);
+        trdMain.setDaemon(true);
         trdMain.setName("trdNullOutFunction");
-        trdMain.Start();
+        trdMain.start();
     }
 
     private void trdFunction() {
-        pbState = PlaybackState.Playing;
+        pbState = LineEvent.Type.START;
 
         while (!reqStop) {
-            wP.read(buf, 0, 4000);
+            try {
+                os.write(buf, 0, 4000);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
 
-        pbState = PlaybackState.Stopped;
+        pbState = LineEvent.Type.STOP;
     }
 }

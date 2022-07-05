@@ -3,26 +3,32 @@ package mdplayer;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.Line;
 import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.Mixer;
+import javax.sound.sampled.SourceDataLine;
+
+import dotnet4j.threading.SynchronizationContext;
+import dotnet4j.util.compat.TriFunction;
 
 
 public class NAudioWrap {
 
-    public interface naudioCallBack extends Common.TriFunction<short[], Integer, Integer, Integer> {
+    public interface naudioCallBack extends TriFunction<short[], Integer, Integer, Integer> {
     }
 
     public Consumer<LineEvent> playbackStopped;
 
-    private WaveOutEvent waveOut;
-    private WasapiOut wasapiOut;
-    private DirectSoundOut dsOut;
-    private AsioOut asioOut;
+    private SourceDataLine dsOut;
     private NullOut nullOut;
-    private SineWaveProvider16 waveProvider;
 
+    int sampleRate;
     private static naudioCallBack callBack = null;
     private Setting setting = null;
-    private SynchronizationContext syncContext = SynchronizationContext.Current;
+    private SynchronizationContext syncContext = SynchronizationContext.getCurrent();
 
     static final UUID Empty = new UUID(0, 0);
 
@@ -34,110 +40,59 @@ public class NAudioWrap {
 
         Stop();
 
-        waveProvider = new SineWaveProvider16();
-        waveProvider.setWaveFormat(sampleRate, 2);
-
+        this.sampleRate = sampleRate;
         callBack = nCallBack;
-
     }
 
     public void Start(Setting setting) {
         this.setting = setting;
-        if (waveOut != null) waveOut.close();
-        waveOut = null;
-        if (wasapiOut != null) wasapiOut.Dispose();
-        wasapiOut = null;
-        if (dsOut != null) dsOut.Dispose();
+        if (dsOut != null) dsOut.close();
         dsOut = null;
-        if (asioOut != null) asioOut.Dispose();
-        asioOut = null;
-        if (nullOut != null) nullOut.Dispose();
+        if (nullOut != null) nullOut.close();
         nullOut = null;
 
         try {
             switch (setting.getOutputDevice().getDeviceType()) {
             case 0:
-                waveOut = new WaveOutEvent();
-                waveOut.DeviceNumber = 0;
-                waveOut.DesiredLatency = setting.getOutputDevice().getLatency();
-                for (int i = 0; i < WaveOut.DeviceCount; i++) {
-                    if (setting.getOutputDevice().WaveOutDeviceName == WaveOut.GetCapabilities(i).ProductName) {
-                        waveOut.DeviceNumber = i;
-                        break;
-                    }
-                }
-                waveOut.PlaybackStopped += DeviceOut_PlaybackStopped;
-                waveOut.Init(waveProvider);
-                waveOut.Play();
                 break;
             case 1:
-                UUID g = Empty;
-                for (DirectSoundDeviceInfo d : DirectSoundOut.Devices) {
-                    if (setting.getOutputDevice().DirectSoundDeviceName == d.Description) {
-                        g = d.Guid;
-                        break;
+                Line.Info g = null;
+                Mixer.Info [] mixersInfo = AudioSystem.getMixerInfo();
+                for (Mixer.Info mixerInfo : mixersInfo) {
+                    Mixer mixer = AudioSystem.getMixer(mixerInfo);
+                    Line.Info [] sourceLineInfo = mixer.getSourceLineInfo();
+                    for (Line.Info info : sourceLineInfo) {
+                        if (info instanceof DataLine.Info dataLineInfo)
+                            if (setting.getOutputDevice().getDirectSoundDeviceName().equals(dataLineInfo.toString())) {
+                                g = info;
+                                break;
+                            }
                     }
                 }
-                if (g == Empty) {
-                    dsOut = new DirectSoundOut(setting.getOutputDevice().getLatency());
+                AudioFormat format = new AudioFormat(sampleRate, 16, 2, true, false);
+                if (g == null) {
+                    dsOut = AudioSystem.getSourceDataLine(format);
                 } else {
-                    dsOut = new DirectSoundOut(g, setting.getOutputDevice().getLatency());
+                    dsOut = AudioSystem.getSourceDataLine(format);
                 }
-                dsOut.PlaybackStopped(this::DeviceOut_PlaybackStopped);
-                dsOut.Init(waveProvider);
-                dsOut.Play();
+                dsOut.addLineListener(this::DeviceOut_PlaybackStopped);
+                dsOut.open();
+                dsOut.start();
                 break;
             case 2:
-                MMDevice dev = null;
-                var enumerator = new MMDeviceEnumerator();
-                var endPoints = enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
-                for (var endPoint : endPoints) {
-                    if (setting.getOutputDevice().getWasapiDeviceName().equals(String.format("%s (%s)", endPoint.FriendlyName, endPoint.DeviceFriendlyName))) {
-                        dev = endPoint;
-                        break;
-                    }
-                }
-                if (dev == null) {
-                    wasapiOut = new WasapiOut(setting.getOutputDevice().WasapiShareMode ? AudioClientShareMode.Shared : AudioClientShareMode.Exclusive, setting.getOutputDevice().Latency);
-                } else {
-                    wasapiOut = new WasapiOut(dev, setting.getOutputDevice().WasapiShareMode ? AudioClientShareMode.Shared : AudioClientShareMode.Exclusive, false, setting.getOutputDevice().Latency);
-                }
-                wasapiOut.PlaybackStopped(this::DeviceOut_PlaybackStopped);
-                wasapiOut.Init(waveProvider);
-                wasapiOut.Play();
                 break;
             case 3:
-                if (AsioOut.isSupported()) {
-                    int i = 0;
-                    for (String s : AsioOut.GetDriverNames()) {
-                        if (setting.getOutputDevice().getAsioDeviceName().equals(s)) {
-                            break;
-                        }
-                        i++;
-                    }
-                    asioOut = new AsioOut(i);
-                    asioOut.PlaybackStopped(this::DeviceOut_PlaybackStopped);
-                    asioOut.Init(waveProvider);
-                    asioOut.Play();
-                }
                 break;
 
             case 5:
                 nullOut = new NullOut(true);
-                nullOut.PlaybackStopped(this::DeviceOut_PlaybackStopped);
-                nullOut.Init(waveProvider);
-                nullOut.Play();
+                nullOut.Init();
+                nullOut.play();
                 break;
             }
         } catch (Exception ex) {
             Log.forcedWrite(ex);
-            waveOut = new WaveOutEvent();
-            waveOut.PlaybackStopped(this::DeviceOut_PlaybackStopped);
-            waveOut.Init(waveProvider);
-            waveOut.DeviceNumber = 0;
-            waveOut.Play();
         }
-
     }
 
     private void DeviceOut_PlaybackStopped(LineEvent e) {
@@ -146,7 +101,7 @@ public class NAudioWrap {
             if (this.syncContext == null) {
                 handler.accept(e);
             } else {
-                syncContext.Post(state -> handler.accept(e), null);
+                syncContext.post(state -> handler.accept(e), null);
             }
         }
     }
@@ -155,113 +110,42 @@ public class NAudioWrap {
      * コールバックの中から呼び出さないこと(ハングします)
      */
     public void Stop() {
-        if (waveOut != null) {
-            try {
-                //waveOut.Pause();
-                waveOut.Stop();
-                while (waveOut.playbackState != LineEvent.Type.STOP) {
-                    Thread.sleep(1);
-                }
-                waveOut.Dispose();
-            } catch (Exception e) {
-            }
-            waveOut = null;
-        }
-
-        if (wasapiOut != null) {
-            try {
-                //wasapiOut.Pause();
-                wasapiOut.Stop();
-                while (wasapiOut.PlaybackState != LineEvent.Type.STOP) {
-                    Thread.sleep(1);
-                }
-                wasapiOut.Dispose();
-            } catch (Exception e) {
-            }
-            wasapiOut = null;
-        }
-
         if (dsOut != null) {
             try {
-                //dsOut.Pause();
-                dsOut.Stop();
-                while (dsOut.PlaybackState != LineEvent.Type.STOP) {
-                    Thread.sleep(1);
-                }
-                dsOut.Dispose();
+                dsOut.drain();
+                dsOut.stop();
+                dsOut.close();
             } catch (Exception e) {
             }
             dsOut = null;
         }
 
-        if (asioOut != null) {
-            try {
-                //asioOut.Pause();
-                asioOut.Stop();
-                while (asioOut.PlaybackState != LineEvent.Type.STOP) {
-                    Thread.sleep(1);
-                }
-                asioOut.Dispose();
-            } catch (Exception e) {
-            }
-            asioOut = null;
-        }
-
         if (nullOut != null) {
             try {
-                nullOut.Stop();
-                while (nullOut.PlaybackState != LineEvent.Type.STOP) {
+                nullOut.stop();
+                while (nullOut.getPlaybackState() != LineEvent.Type.STOP) {
                     Thread.sleep(1);
                 }
-                nullOut.Dispose();
+                nullOut.close();
             } catch (Exception e) {
             }
             nullOut = null;
         }
 
         //一休み
-        //for (int i = 0; i < 10; i++)
-        //{
+        //for (int i = 0; i < 10; i++) {
         //    Thread.sleep(1);
         //    JApplication.DoEvents();
         //}
     }
 
-    public static class SineWaveProvider16 extends WaveProvider16 {
-        public SineWaveProvider16() {
-        }
-
-        @Override
-        public int Read(short[] buffer, int offset, int count) {
-            return callBack(buffer, offset, count);
-        }
-    }
-
     public LineEvent.Type GetPlaybackState() {
-        boolean notNull = false;
-
-        if (waveOut != null) {
-            if (waveOut.PlaybackState != LineEvent.Type.STOP) return waveOut.PlaybackState;
-        }
         if (dsOut != null) {
-            if (dsOut.PlaybackState != LineEvent.Type.STOP) return dsOut.PlaybackState;
-        }
-        if (wasapiOut != null) {
-            if (wasapiOut.PlaybackState != LineEvent.Type.STOP) return wasapiOut.PlaybackState;
-        }
-        if (asioOut != null) {
-            if (asioOut.PlaybackState != LineEvent.Type.STOP) return asioOut.PlaybackState;
+            if (!dsOut.isRunning()) return LineEvent.Type.STOP;
         }
         if (nullOut != null) {
-            if (nullOut.PlaybackState != LineEvent.Type.STOP) return nullOut.PlaybackState;
+            return nullOut.getPlaybackState();
         }
-
-        return notNull ? (PlaybackState) LineEvent.Type.STOP : null;
-    }
-
-    public int getAsioLatency() {
-        if (asioOut == null) return 0;
-
-        return asioOut.PlaybackLatency;
+        return null;
     }
 }

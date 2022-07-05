@@ -20,11 +20,11 @@ public class frmBase extends JFrame {
         //
         // frmBase
         //
-        this.AutoScaleDimensions = new DimensionF(6F, 12F);
-        this.AutoScaleMode = JAutoScaleMode.Font;
+//        this.AutoScaleDimensions = new DimensionF(6F, 12F);
+//        this.AutoScaleMode = JAutoScaleMode.Font;
         this.setPreferredSize(new Dimension(323, 303));
         this.setName("frmBase");
-        this.setText("frmBase");
+        this.setTitle("frmBase");
 //        this.ResumeLayout(false);
     }
 

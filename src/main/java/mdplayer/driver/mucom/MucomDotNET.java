@@ -6,7 +6,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.swing.JOptionPane;
 
-import dotnet4j.Tuple;
+import dotnet4j.util.compat.TriConsumer;
+import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
@@ -20,9 +21,20 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.Log;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
-import mdplayer.Log;
+import mucom88.compiler.Compiler;
+import mucom88.driver.Driver;
+import musicDriverInterface.ChipAction;
+import musicDriverInterface.ChipDatum;
+import musicDriverInterface.CompilerInfo;
+import musicDriverInterface.GD3Tag;
+import musicDriverInterface.InstanceMarker;
+import musicDriverInterface.MmlDatum;
+import musicDriverInterface.enmTag;
+import musicDriverInterface.iCompiler;
+import musicDriverInterface.iDriver;
 
 
 public class MucomDotNET extends BaseDriver {
@@ -44,11 +56,7 @@ public class MucomDotNET extends BaseDriver {
     public static final int OPMbaseclock = 3579545;
     private enmMUCOMFileType mtype;
 
-
-    public MucomDotNET() {
-        // "plugin\\driver\\mucomDotNETCompiler.dll"
-        // "plugin\\driver\\mucomDotNETdll"
-    }
+    InstanceMarker im;
 
     @Override
     public Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3) {
@@ -56,20 +64,20 @@ public class MucomDotNET extends BaseDriver {
         GD3Tag gt;
 
         if (mtype == enmMUCOMFileType.MUC) {
-            mucomCompiler = im.GetCompiler("mucomDotNET.Compiler.Compiler");
-            gt = mucomCompiler.GetGD3TagInfo(buf);
+            mucomCompiler = new Compiler(null);
+            gt = mucomCompiler.getGD3TagInfo(buf);
         } else {
-            mucomDriver = im.GetDriver("mucomDotNET.Driver.Driver");
-            gt = mucomDriver.GetGD3TagInfo(buf);
+            mucomDriver = new Driver(null);
+            gt = mucomDriver.getGD3TagInfo(buf);
         }
 
         Vgm.Gd3 g = new Vgm.Gd3();
-        g.trackName = gt.dicItem.containsKey(enmTag.Title) ? gt.dicItem[enmTag.Title][0] : "";
-        g.trackNameJ = gt.dicItem.containsKey(enmTag.TitleJ) ? gt.dicItem[enmTag.TitleJ][0] : "";
-        g.composer = gt.dicItem.containsKey(enmTag.Composer) ? gt.dicItem[enmTag.Composer][0] : "";
-        g.composerJ = gt.dicItem.containsKey(enmTag.ComposerJ) ? gt.dicItem[enmTag.ComposerJ][0] : "";
-        g.vgmBy = gt.dicItem.containsKey(enmTag.Artist) ? gt.dicItem[enmTag.Artist][0] : "";
-        g.converted = gt.dicItem.containsKey(enmTag.ReleaseDate) ? gt.dicItem[enmTag.ReleaseDate][0] : "";
+        g.trackName = gt.dicItem.containsKey(enmTag.Title) ? gt.dicItem.get(enmTag.Title)[0] : "";
+        g.trackNameJ = gt.dicItem.containsKey(enmTag.TitleJ) ? gt.dicItem.get(enmTag.TitleJ)[0] : "";
+        g.composer = gt.dicItem.containsKey(enmTag.Composer) ? gt.dicItem.get(enmTag.Composer)[0] : "";
+        g.composerJ = gt.dicItem.containsKey(enmTag.ComposerJ) ? gt.dicItem.get(enmTag.ComposerJ)[0] : "";
+        g.vgmBy = gt.dicItem.containsKey(enmTag.Artist) ? gt.dicItem.get(enmTag.Artist)[0] : "";
+        g.converted = gt.dicItem.containsKey(enmTag.ReleaseDate) ? gt.dicItem.get(enmTag.ReleaseDate)[0] : "";
 
         return g;
     }
@@ -87,14 +95,14 @@ public class MucomDotNET extends BaseDriver {
                 && buf[1] == 0x55
                 && buf[2] == 0x43
                 && buf[3] == 0x38) {
-            return ret.toArray(new EnmChip[0]);
+            return ret.toArray(EnmChip[]::new);
         }
         //標準的なmubファイル
         if (buf[0] == 0x4d
                 && buf[1] == 0x55
                 && buf[2] == 0x42
                 && buf[3] == 0x38) {
-            return ret.toArray(new EnmChip[0]);
+            return ret.toArray(EnmChip[]::new);
         }
         //拡張mubファイル？
         if (buf[0] != 'm'
@@ -193,7 +201,7 @@ public class MucomDotNET extends BaseDriver {
             }
         }
 
-        return ret.toArray(new EnmChip[0]);
+        return ret.toArray(EnmChip[]::new);
     }
 
     @Override
@@ -245,18 +253,18 @@ public class MucomDotNET extends BaseDriver {
             while (vgmSpeedCounter >= 1.0) {
                 vgmSpeedCounter -= 1.0;
 
-                mucomDriver.rendering();
+                mucomDriver.Rendering();
 
                 counter++;
                 vgmFrameCounter++;
             }
 
-            int lp = mucomDriver.getNowLoopCounter();
+            int lp = mucomDriver.GetNowLoopCounter();
             lp = Math.max(lp, 0);
             vgmCurLoop = lp;
 
-            if (mucomDriver.getStatus() < 1) {
-                if (mucomDriver.getStatus() == 0) {
+            if (mucomDriver.GetStatus() < 1) {
+                if (mucomDriver.GetStatus() == 0) {
                     Thread.sleep((int) (latency * 2.0));//実際の音声が発音しきるまでlatency*2の分だけ待つ
                 }
                 stopped = true;
@@ -281,10 +289,10 @@ public class MucomDotNET extends BaseDriver {
         CompilerInfo info = null;
         try {
             try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
-                ret = mucomCompiler.Compile(sourceMML, appendFileReaderCallback);// wrkMUCFullPath, disp);
+                ret = mucomCompiler.compile(sourceMML, this::appendFileReaderCallback);
             }
 
-            info = mucomCompiler.GetCompilerInfo();
+            info = mucomCompiler.getCompilerInfo();
 
         } catch (Exception e) {
             ret = null;
@@ -294,7 +302,7 @@ public class MucomDotNET extends BaseDriver {
         if (ret == null || info == null) return null;
         if (info.errorList.size() > 0) {
             if (model == EnmModel.VirtualModel) {
-                JJOptionPane.showConfirmDialog("Compile error");
+                JOptionPane.showMessageDialog(null, "Compile error");
             }
             return null;
         }
@@ -335,18 +343,17 @@ public class MucomDotNET extends BaseDriver {
         return enmMUCOMFileType.MUC;
     }
 
-
     private boolean initMUC() {
         mucomCompiler.Init();
 
         MmlDatum[] ret;
-        CompilerInfo info = null;
+        CompilerInfo info;
         try {
             try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
-                ret = mucomCompiler.Compile(sourceMML, appendFileReaderCallback);// wrkMUCFullPath, disp);
+                ret = mucomCompiler.compile(sourceMML, this::appendFileReaderCallback);
             }
 
-            info = mucomCompiler.GetCompilerInfo();
+            info = mucomCompiler.getCompilerInfo();
 
         } catch (Exception e) {
             ret = null;
@@ -356,7 +363,7 @@ public class MucomDotNET extends BaseDriver {
         if (ret == null || info == null) return false;
         if (info.errorList.size() > 0) {
             if (model == EnmModel.VirtualModel) {
-                JOptionPane.showConfirmDialog("Compile error");
+                JOptionPane.showMessageDialog(null, "Compile error");
             }
             return false;
         }
@@ -372,31 +379,22 @@ public class MucomDotNET extends BaseDriver {
         //        , isLoadADPCM
         //        , loadADPCMOnly
         //    });
-        List<ChipRunnable> lca = new ArrayList<>();
-        mucomChipRunnable ca;
-        ca = new mucomChipRunnable(this::OPNA1Write, null, this::OPNAWaitSend);
+        List<ChipAction> lca = new ArrayList<>();
+        mucomChipAction ca;
+        ca = new mucomChipAction(this::OPNA1Write, null, this::OPNAWaitSend);
         lca.add(ca);
-        ca = new mucomChipRunnable(this::OPNA2Write, null, null);
+        ca = new mucomChipAction(this::OPNA2Write, null, null);
         lca.add(ca);
-        ca = new mucomChipRunnable(this::OPNB1Write, this::WriteOPNB1PCMData, null);
+        ca = new mucomChipAction(this::OPNB1Write, this::WriteOPNB1PCMData, null);
         lca.add(ca);
-        ca = new mucomChipRunnable(this::OPNB2Write, this::WriteOPNB2PCMData, null);
+        ca = new mucomChipAction(this::OPNB2Write, this::WriteOPNB2PCMData, null);
         lca.add(ca);
-        ca = new mucomChipRunnable(this::OPM1Write, null, null);
+        ca = new mucomChipAction(this::OPM1Write, null, null);
         lca.add(ca);
-        mucomDriver.Init(
-                lca,
-                ret
-                , null
-                , new Object[] {
-                        notSoundBoard2
-                        , isLoadADPCM
-                        , loadADPCMOnly
-                        , PlayingFileName
-                });
+        mucomDriver.Init(lca, ret, null,
+                new Object[] {notSoundBoard2, isLoadADPCM, loadADPCMOnly, PlayingFileName});
 
-        mucomDriver.StartRendering(Common.VGMProcSampleRate
-                , new Tuple<String, Integer>[] {new Tuple<>("", OPNAbaseclock)});
+        mucomDriver.StartRendering(Common.VGMProcSampleRate, new Tuple[] {new Tuple<>("", OPNAbaseclock)});
         mucomDriver.MusicSTART(0);
 
         return true;
@@ -416,31 +414,22 @@ public class MucomDotNET extends BaseDriver {
         //        , loadADPCMOnly
         //    });
 
-        List<ChipRunnable> lca = new ArrayList<>();
-        mucomChipRunnable ca;
-        ca = new mucomChipRunnable(OPNA1Write, null, OPNAWaitSend);
+        List<ChipAction> lca = new ArrayList<>();
+        mucomChipAction ca;
+        ca = new mucomChipAction(this::OPNA1Write, null, this::OPNAWaitSend);
         lca.add(ca);
-        ca = new mucomChipRunnable(OPNA2Write, null, null);
+        ca = new mucomChipAction(this::OPNA2Write, null, null);
         lca.add(ca);
-        ca = new mucomChipRunnable(OPNB1Write, WriteOPNB1PCMData, null);
+        ca = new mucomChipAction(this::OPNB1Write, this::WriteOPNB1PCMData, null);
         lca.add(ca);
-        ca = new mucomChipRunnable(OPNB2Write, WriteOPNB2PCMData, null);
+        ca = new mucomChipAction(this::OPNB2Write, this::WriteOPNB2PCMData, null);
         lca.add(ca);
-        ca = new mucomChipRunnable(OPM1Write, null, null);
+        ca = new mucomChipAction(this::OPM1Write, null, null);
         lca.add(ca);
-        mucomDriver.Init(
-                lca,
-                buf.toArray()
-                , null
-                , new Object[] {
-                        notSoundBoard2
-                        , isLoadADPCM
-                        , loadADPCMOnly
-                        , PlayingFileName
-                });
+        mucomDriver.Init(lca, buf.toArray(MmlDatum[]::new),null,
+                new Object[] {notSoundBoard2, isLoadADPCM, loadADPCMOnly, PlayingFileName});
 
-        mucomDriver.StartRendering(Common.VGMProcSampleRate
-                , new Tuple<String, Integer>[] {new Tuple<>("", OPNAbaseclock)});
+        mucomDriver.StartRendering(Common.VGMProcSampleRate, new Tuple[] {new Tuple<>("", OPNAbaseclock)});
         mucomDriver.MusicSTART(0);
 
         return true;
@@ -507,7 +496,7 @@ public class MucomDotNET extends BaseDriver {
 
     private void OPNAWaitSend(long size, int elapsed) {
         if (model == EnmModel.VirtualModel) {
-            //JOptionPane.showConfirmDialog(String.format("elapsed:%d size:%d", elapsed, size));
+            //JOptionPane.showMessageDialog(String.format("elapsed:%d size:%d", elapsed, size));
             //int n = Math.max((int)(size / 20 - elapsed), 0);//20 閾値(magic number)
             //Thread.sleep(n);
             return;
@@ -515,46 +504,44 @@ public class MucomDotNET extends BaseDriver {
 
         //サイズと経過時間から、追加でウエイトする。
         int m = Math.max((int) (size / 20 - elapsed), 0);//20 閾値(magic number)
-        Thread.sleep(m);
+        try { Thread.sleep(m); } catch (InterruptedException e) {}
     }
 
-    public static class mucomChipRunnable extends ChipRunnable {
+    public static class mucomChipAction implements ChipAction {
         private Consumer<ChipDatum> _Write;
-        private mdsound.Common.TriConsumer<byte[], Integer, Integer> _WritePCMData;
+        private TriConsumer<byte[], Integer, Integer> _WritePCMData;
         private BiConsumer<Long, Integer> _WaitSend;
 
-        public mucomChipRunnable(Consumer<ChipDatum> Write, mdsound.Common.TriConsumer<byte[], Integer, Integer> WritePCMData, BiConsumer<Long, Integer> WaitSend) {
+        public mucomChipAction(Consumer<ChipDatum> Write, TriConsumer<byte[], Integer, Integer> WritePCMData, BiConsumer<Long, Integer> WaitSend) {
             _Write = Write;
             _WritePCMData = WritePCMData;
             _WaitSend = WaitSend;
         }
 
         @Override
-        public String GetChipName() {
+        public String getChipName() {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void WaitSend(long t1, int t2) {
-            _WaitSend.Invoke(t1, t2);
+        public void waitSend(long t1, int t2) {
+            _WaitSend.accept(t1, t2);
         }
 
         @Override
-        public void WritePCMData(byte[] data, int startAddress, int endAddress) {
-            _WritePCMData.Invoke(data, startAddress, endAddress);
+        public void writePCMData(byte[] data, int startAddress, int endAddress) {
+            _WritePCMData.accept(data, startAddress, endAddress);
         }
 
         @Override
-        public void WriteRegister(ChipDatum cd) {
-            _Write.Invoke(cd);
+        public void writeRegister(ChipDatum cd) {
+            _Write.accept(cd);
         }
     }
 
-    //private void chipWaitSend(long elapsed, int size)
-    //{
-    //    if (model == EnmModel.VirtualModel)
-    //    {
-    //        //JOptionPane.showConfirmDialog(String.format("elapsed:%d size:%d", elapsed, size));
+    //private void chipWaitSend(long elapsed, int size) {
+    //    if (model == EnmModel.VirtualModel) {
+    //        //JOptionPane.showMessageDialog(String.format("elapsed:%d size:%d", elapsed, size));
     //        //int n = Math.max((int)(size / 20 - elapsed), 0);//20 閾値(magic number)
     //        //Thread.sleep(n);
     //        return;
@@ -565,8 +552,7 @@ public class MucomDotNET extends BaseDriver {
     //    Thread.sleep(m);
     //}
 
-    //private void chipWriteRegister(ChipDatum dat)
-    //{
+    //private void chipWriteRegister(ChipDatum dat) {
     //    if (dat == null) return;
     //    if (dat.address == -1) return;
     //    if (dat.data == -1) return;
@@ -578,16 +564,13 @@ public class MucomDotNET extends BaseDriver {
 
     private Stream appendFileReaderCallback(String arg) {
 
-        String fn = Path.combine(
-                Path.getDirectoryName(PlayingFileName)
-                , arg
-        );
+        String fn = Path.combine(Path.getDirectoryName(PlayingFileName), arg);
 
         if (!File.exists(fn)) return null;
 
         FileStream strm;
         try {
-            strm = new FileStream(fn, FileMode.Open, FileAccess.Read, FileShare.read);
+            strm = new FileStream(fn, FileMode.Open, FileAccess.Read, FileShare.Read);
         } catch (IOException e) {
             strm = null;
         }

@@ -36,7 +36,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiMessage;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Receiver;
 import javax.sound.midi.Transmitter;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -55,7 +59,6 @@ import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
-import dotnet4j.Tuple;
 import dotnet4j.io.Directory;
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
@@ -68,13 +71,14 @@ import dotnet4j.io.Path;
 import dotnet4j.io.StreamWriter;
 import dotnet4j.io.compression.CompressionMode;
 import dotnet4j.io.compression.GZipStream;
+import dotnet4j.util.compat.Tuple;
+import dotnet4j.util.compat.Tuple4;
 import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.Common.EnmModel;
 import mdplayer.Common.FileFormat;
-import mdplayer.Common.Tuple4;
 import mdplayer.DoubleBuffer;
 import mdplayer.DrawBuff;
 import mdplayer.KeyboardHook;
@@ -132,11 +136,9 @@ import mdplayer.form.kb.psg.frmSN76489;
 import mdplayer.form.kb.wf.frmHuC6280;
 import mdplayer.form.kb.wf.frmK051649;
 import mdplayer.properties.Resources;
-import mdplayer.vst.frmVSTeffectList;
 import mdsound.K051649;
 import mdsound.OotakePsg;
 import mdsound.np.chip.NesN106;
-import org.apache.tools.ant.taskdefs.email.Message;
 import org.apache.tools.ant.types.Environment;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
@@ -157,7 +159,7 @@ public class frmMain extends JFrame {
 
     private frmInfo frmInfo = null;
     private frmPlayList frmPlayList = null;
-    private frmVSTeffectList frmVSTeffectList = null;
+//    private frmVSTeffectList frmVSTeffectList = null;
 
     private frmMegaCD[] frmMCD = new frmMegaCD[] {null, null};
     private frmRf5c68[] frmRf5c68 = new frmRf5c68[] {null, null};
@@ -290,18 +292,18 @@ public class frmMain extends JFrame {
         Log.forcedWrite("frmMain(コンストラクタ):STEP 01");
 
         // 引数が指定されている場合のみプロセスチェックを行い、自分と同じアプリケーションが実行中ならばそちらに引数を渡し終了する
-        if (Common.getCommandLineArgs().length > 1) {
-            Process prc = GetPreviousProcess();
-            if (prc != null) {
-                sendString(prc.MainWindowHandle, Environment.GetCommandLineArgs()[1]);
-                forcedExit = true;
-                try {
-                    this.setVisible(false);
-                } catch (Exception ignored) {
-                }
-                return;
-            }
-        }
+//        if (Common.getCommandLineArgs().length > 1) {
+//            Process prc = GetPreviousProcess();
+//            if (prc != null) {
+//                sendString(prc.MainWindowHandle, Environment.GetCommandLineArgs()[1]);
+//                forcedExit = true;
+//                try {
+//                    this.setVisible(false);
+//                } catch (Exception ignored) {
+//                }
+//                return;
+//            }
+//        }
 
         Log.forcedWrite("frmMain(コンストラクタ):STEP 02");
 
@@ -311,15 +313,15 @@ public class frmMain extends JFrame {
         if (setting == null) {
             Log.forcedWrite("frmMain(コンストラクタ):setting instanceof null");
         } else {
-            if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift) {
-                int res = JOptionPane.showConfirmDialog(this,
-                        "ウィンドウの位置情報を初期化しますか？",
-                        "MDPlayer",
-                        JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
-                if (res == JOptionPane.OK_OPTION) {
-                    ClearWindowPos();
-                }
-            }
+//            if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift) {
+//                int res = JOptionPane.showConfirmDialog(this,
+//                        "ウィンドウの位置情報を初期化しますか？",
+//                        "MDPlayer",
+//                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+//                if (res == JOptionPane.OK_OPTION) {
+//                    ClearWindowPos();
+//                }
+//            }
         }
 
         Log.forcedWrite("起動時のAudio初期化処理開始");
@@ -396,12 +398,12 @@ public class frmMain extends JFrame {
         //frmPlayList.setLocation(new Point(this.getLocation().x + 328, this.getLocation().y + 264));
         frmPlayList.Refresh();
 
-        frmVSTeffectList = new frmVSTeffectList(this, setting);
-        frmVSTeffectList.setVisible(true);
-        frmVSTeffectList.setVisible(false);
-        frmVSTeffectList.setOpacity(1.0f);
-        //frmVSTeffectList.setLocation(new Point(this.getLocation().x + 328, this.getLocation().y + 264));
-        frmVSTeffectList.repaint();
+//        frmVSTeffectList = new frmVSTeffectList(this, setting);
+//        frmVSTeffectList.setVisible(true);
+//        frmVSTeffectList.setVisible(false);
+//        frmVSTeffectList.setOpacity(1.0f);
+//        //frmVSTeffectList.setLocation(new Point(this.getLocation().x + 328, this.getLocation().y + 264));
+//        frmVSTeffectList.repaint();
 
         if (setting.getLocation().getOPlayList()) dispPlayList();
         if (setting.getLocation().getOInfo()) openInfo();
@@ -472,7 +474,7 @@ public class frmMain extends JFrame {
                         opeButtonInformation,
                         opeButtonMixer,
                         opeButtonKBD,
-                        opeButtonVST,
+//                        opeButtonVST,
                         opeButtonMIDIKBD,
                         opeButtonZoom,
                         opeButtonMode,
@@ -565,7 +567,7 @@ public class frmMain extends JFrame {
                     Log.forcedWrite(deleteEx);
                 }
 
-                remoteReq.add(lins.toArray(new String[0]));
+                remoteReq.add(lins.toArray(String[]::new));
             }
         } catch (Exception ex) {
             Log.forcedWrite(ex);
@@ -1030,7 +1032,7 @@ public class frmMain extends JFrame {
             frmPlayList.stop();
 
             PlayList pl = frmPlayList.getPlayList();
-            if (pl.getLstMusic().size() < 1 || !pl.getLstMusic().get(pl.getLstMusic().size() - 1).fileName.equals(args[1])) {
+            if (pl.getMusics().size() < 1 || !pl.getMusics().get(pl.getMusics().size() - 1).fileName.equals(args[1])) {
                 pl.AddFile(args[1]);
                 //frmPlayList.AddList(args[1]);
             }
@@ -1049,7 +1051,7 @@ public class frmMain extends JFrame {
 
         } catch (Exception ex) {
             Log.forcedWrite(ex);
-            JOptionPane.showConfirmDialog(this, "ファイルの読み込みに失敗しました。");
+            JOptionPane.showMessageDialog(this, "ファイルの読み込みに失敗しました。");
         }
 
         Log.forcedWrite("frmMain_Shown:STEP 11");
@@ -1060,7 +1062,7 @@ public class frmMain extends JFrame {
         @Override
         public void componentResized(ComponentEvent e) {
             // リサイズ時は再確保
-            if (screen != null) screen.setVisible(false);
+//            if (screen != null) screen.setVisible(false);
 
             screen = new DoubleBuffer(pbScreen, Resources.getPlaneControl(), setting.getOther().getZoom());
             screen.setting = setting;
@@ -1102,7 +1104,7 @@ public class frmMain extends JFrame {
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
-            Application.DoEvents();
+//            Application.DoEvents();
         }
 
         Log.forcedWrite("frmMain_FormClosing:STEP 03");
@@ -1179,10 +1181,10 @@ public class frmMain extends JFrame {
             frmYM2612MIDI.setVisible(false);
             setting.getLocation().setOpenYm2612MIDI(true);
         }
-        if (frmVSTeffectList != null && !frmVSTeffectList.isClosed) {
-            frmVSTeffectList.setVisible(false);
-            setting.getLocation().setOpenVSTeffectList(true);
-        }
+//        if (frmVSTeffectList != null && !frmVSTeffectList.isClosed) {
+//            frmVSTeffectList.setVisible(false);
+//            setting.getLocation().setOpenVSTeffectList(true);
+//        }
 
         for (int chipID = 0; chipID < 2; chipID++) {
             if (frmAY8910[chipID] != null && !frmAY8910[chipID].isClosed) {
@@ -3524,7 +3526,7 @@ public class frmMain extends JFrame {
         Log.forcedWrite("Audio初期化処理完了");
         Log.debug = this.setting.getDebug_DispFrameCounter();
 
-        frmVSTeffectList.dispPluginList();
+//        frmVSTeffectList.dispPluginList();
         StartMIDIInMonitoring();
 
         IsInitialOpenFolder = true;
@@ -3615,7 +3617,7 @@ public class frmMain extends JFrame {
             }
         } catch (Exception ex) {
             Log.forcedWrite(ex);
-            JOptionPane.showConfirmDialog(null, "ファイルの読み込みに失敗しました。");
+            JOptionPane.showMessageDialog(null, "ファイルの読み込みに失敗しました。");
         }
     }
 
@@ -3705,32 +3707,18 @@ public class frmMain extends JFrame {
                 continue;
             }
 
-            this.screenDrawParams.run();
-            this.Invoke((Runnable) (screenDrawParamsForms));
+//            this.screenDrawParams.run();
+//            this.Invoke((Runnable) (screenDrawParamsForms));
 
             nextFrame += period;
 
             if (frmPlayList.isPlaying()) {
-                if ((setting.getOther().getUseLoopTimes() && Audio.getVgmCurLoopCounter() > setting.getOther().LoopTimes - 1)
+                if ((setting.getOther().getUseLoopTimes() && Audio.getVgmCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
                         || Audio.getVGMStopped()) {
                     fadeout();
                 }
                 if (Audio.stopped && frmPlayList.isPlaying()) {
                     nextPlayMode();
-                }
-            }
-
-            // remote対応
-            String msg = mmf.getMessage();
-            if (msg != null && msg.isEmpty()) {
-                if (msg.trim().equalsIgnoreCase("CLOSE")) {
-                    this.BeginInvoke(this::close);
-                } else {
-                    this.Invoke(//Asyncしないこと
-                            (Runnable) remote
-                            //, new Object[] { lin }//配列が引数の場合はこの様に指定する必要あり
-                            , msg
-                    );
                 }
             }
 
@@ -3979,7 +3967,7 @@ public class frmMain extends JFrame {
             DrawBuff.drawFont8(screen.mainScreen, 0, 24, 0, String.format("PROC TIME  : %12d ", Audio.ProcTimePer1Frame));
         }
 
-        screen.Refresh();
+        screen.Refresh(null);
 
         Audio.updateVol();
 
@@ -4351,7 +4339,7 @@ public class frmMain extends JFrame {
 
         reqAllScreenInit = true;
 
-        if (loadAndPlay(playFn.Item1.Item1.Item1, playFn.Item1.Item1.Item2, playFn.Item1.Item2, playFn.Item2)) {
+        if (loadAndPlay(playFn.getItem1(), playFn.getItem2(), playFn.getItem3(), playFn.getItem4())) {
             frmPlayList.play();
         }
     }
@@ -4370,8 +4358,7 @@ public class frmMain extends JFrame {
             }
             //stop();
 
-            //for (int chipID = 0; chipID < 2; chipID++)
-            //{
+            //for (int chipID = 0; chipID < 2; chipID++) {
             //    for (int ch = 0; ch < 3; ch++) ForceChannelMask(EnmChip.AY8910, chipID, ch, newParam.ay8910[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 8; ch++) ForceChannelMask(EnmChip.YM2151, chipID, ch, newParam.ym2151[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 9; ch++) ForceChannelMask(EnmChip.YM2203, chipID, ch, newParam.ym2203[chipID].channels[ch].mask);
@@ -4401,8 +4388,8 @@ public class frmMain extends JFrame {
                     int res = JOptionPane.showConfirmDialog(this,
                             "wavファイル出力先に設定されたパスが存在しません。作成し演奏を続けますか。"
                             , "パス作成確認"
-                            , JOptionPane.YES_NO_OPTION
-                            , JOptionPane.INFORMATION_MESSAGE);
+                            , JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE);
                     if (res == JOptionPane.NO_OPTION) {
                         Audio.errMsg = "cancel";
                         return;
@@ -4410,10 +4397,9 @@ public class frmMain extends JFrame {
                     try {
                         Directory.createDirectory(setting.getOther().getWavPath());
                     } catch (Exception e) {
-                        JOptionPane.showConfirmDialog(this,
+                        JOptionPane.showMessageDialog(this,
                                 "パスの作成に失敗しました。演奏を停止します。"
                                 , "作成失敗"
-                                , JOptionPane.YES_NO_OPTION
                                 , JOptionPane.ERROR_MESSAGE);
                         Audio.errMsg = "cancel";
                         return;
@@ -4433,7 +4419,7 @@ public class frmMain extends JFrame {
                 }
                 if (Audio.errMsg.isEmpty()) throw new Exception();
                 else {
-                    JOptionPane.showConfirmDialog(this, Audio.errMsg, "エラー", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, Audio.errMsg, "エラー", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
             }
@@ -4774,8 +4760,8 @@ public class frmMain extends JFrame {
         //    frmPlayList.setLocation(setting.getlocation().PPlayList);
         //}
         //if (!setting.getlocation().PPlayListWH.equals(empty)) {
-        //    frmPlayList.getWidth() = setting.getlocation().PPlayListWH.X;
-        //    frmPlayList.getHeight() = setting.getlocation().PPlayListWH.Y;
+        //    frmPlayList.getWidth() = setting.getlocation().PPlayListWH.x;
+        //    frmPlayList.getHeight() = setting.getlocation().PPlayListWH.y;
         //}
         frmPlayList.setVisible(!frmPlayList.isVisible());
         if (frmPlayList.isVisible()) checkAndSetForm(frmPlayList);
@@ -4784,10 +4770,10 @@ public class frmMain extends JFrame {
     }
 
     private void dispVSTList() {
-        frmVSTeffectList.setVisible(!frmVSTeffectList.isVisible());
-        if (frmVSTeffectList.isVisible()) checkAndSetForm(frmVSTeffectList);
-        frmVSTeffectList.toFront();
-        frmVSTeffectList.toBack();
+//        frmVSTeffectList.setVisible(!frmVSTeffectList.isVisible());
+//        if (frmVSTeffectList.isVisible()) checkAndSetForm(frmVSTeffectList);
+//        frmVSTeffectList.toFront();
+//        frmVSTeffectList.toBack();
     }
 
     private void showContextMenu() {
@@ -5028,7 +5014,7 @@ public class frmMain extends JFrame {
                 }
             }
         } catch (Exception e) {
-            JOptionPane.showConfirmDialog(this, "音色出力エラー", "エラー", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "音色出力エラー", "エラー", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -5171,7 +5157,7 @@ public class frmMain extends JFrame {
         } catch (IndexOutOfBoundsException e) {
             System.err.println("メッセージが長すぎ");
         } catch (FileNotFoundException e) {
-            JOptionPane.showConfirmDialog(this, "mml2vgmの共有メモリが見つかりませんでした");
+            JOptionPane.showMessageDialog(this, "mml2vgmの共有メモリが見つかりませんでした");
         }
     }
 
@@ -6417,119 +6403,6 @@ public class frmMain extends JFrame {
         if (n.length() == 0) Common.setClipboard(n.toString());
     }
 
-    //SendMessageで送る構造体（Unicode文字列送信に最適化したパターン）
-    //[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    public static class COPYDATASTRUCT {
-        public byte[] dwData;
-        public int cbData;
-        //[MarshalAs(UnmanagedType.LPWStr)]
-        public String lpData;
-    }
-
-    //SendMessage（データ転送）
-    //[DllImport("user32.dll", CharSet = CharSet.Auto)]
-    public static native int sendMessage(byte[] hWnd, int Msg, byte[] wParam, COPYDATASTRUCT lParam);
-
-    public static final int WM_COPYDATA = 0x004A;
-    public static final int WM_PASTE = 0x0302;
-
-    //SendMessageを使ってプロセス間通信で文字列を渡す
-    void sendString(byte[] targetWindowHandle, String str) {
-        COPYDATASTRUCT cds = new COPYDATASTRUCT();
-        cds.dwData = null;
-        cds.lpData = str;
-        cds.cbData = str.length() * Character.BYTES;
-        //受信側ではlpDataの文字列を(cbData/2)の長さでString.substring()する
-
-        byte[] myWindowHandle = Process.GetCurrentProcess().MainWindowHandle;
-        sendMessage(targetWindowHandle, WM_COPYDATA, myWindowHandle, cds);
-    }
-
-    public void windowsMessage(Message m) {
-        if (m.Msg == WM_COPYDATA) {
-            String sParam = ReceiveString(m);
-            try {
-
-                frmPlayList.stop();
-
-                PlayList pl = frmPlayList.getPlayList();
-                if (pl.getLstMusic().size() < 1 || !pl.getLstMusic().get(pl.getLstMusic().size() - 1).fileName.equals(sParam)) {
-                    frmPlayList.getPlayList().AddFile(sParam);
-                    //frmPlayList.AddList(sParam);
-                }
-
-                if (!loadAndPlay(0, 0, sParam, null)) {
-                    frmPlayList.stop();
-                    Request req = new Request(enmRequest.Stop, null, null);
-                    OpeManager.requestToAudio(req);
-                    //Audio.Stop();
-                    return;
-                }
-
-                frmPlayList.setStart(-1);
-                oldParam = new MDChipParams();
-
-                frmPlayList.play();
-
-            } catch (Exception ex) {
-                Log.forcedWrite(ex);
-                //メッセージによる読み込み失敗の場合は何も表示しない
-                //                    JOptionPane.showConfirmDialog(this,"ファイルの読み込みに失敗しました。");
-            }
-        }
-    }
-
-    //メッセージ処理
-//    @Override
-//    protected void WndProc(Message m) {
-//        int WM_NCLBUTTONDBLCLK = 0xA3;
-//        if (m.Msg == WM_NCLBUTTONDBLCLK) {
-//            TopMost = !TopMost;
-//            if (TopMost)
-//                this.Icon = Resources.FeliTop;
-//            else
-//                this.Icon = Resources.Feli128;
-//        }
-//
-//        windowsMessage(m);
-//        super.WndProc(m);
-//    }
-
-    //SendString()で送信された文字列を取り出す
-    String ReceiveString(Message m) {
-        String str = null;
-        try {
-            COPYDATASTRUCT cds = (COPYDATASTRUCT) m.GetLParam(typeof(COPYDATASTRUCT));
-            str = cds.lpData;
-            str = str.substring(0, cds.cbData / 2);
-        } catch (Exception ex) {
-            Log.forcedWrite(ex);
-            str = null;
-        }
-        return str;
-    }
-
-    public static Process GetPreviousProcess() {
-        Process curProcess = Process.GetCurrentProcess();
-        Process[] allProcesses = Process.GetProcessesByName(curProcess.ProcessName);
-
-        for (Process checkProcess : allProcesses) {
-            // 自分自身のプロセスIDは無視する
-            if (checkProcess.Id != curProcess.Id) {
-                // プロセスのフルパス名を比較して同じアプリケーションか検証
-                if (String.Compare(
-                        checkProcess.MainModule.FileName,
-                        curProcess.MainModule.FileName, true) == 0) {
-                    // 同じフルパス名のプロセスを取得
-                    return checkProcess;
-                }
-            }
-        }
-
-        // 同じアプリケーションのプロセスが見つからない！
-        return null;
-    }
-
     public boolean loadAndPlay(int m, int songNo, String fn, String zfn/* = null*/) {
         try {
             if (Audio.flgReinit) flgReinit = true;
@@ -6577,9 +6450,9 @@ public class frmMain extends JFrame {
 
             if (Path.getExtension(playingFileName).equalsIgnoreCase(".MDX")) {
                 if (setting.getOutputDevice().getSampleRate() != 44100) {
-                    JOptionPane.showConfirmDialog(this,
+                    JOptionPane.showMessageDialog(this,
                             "MDXファイルを再生する場合はサンプリングレートを44.1kHzに設定してください。",
-                            "MDPlayer", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+                            "MDPlayer", JOptionPane.ERROR_MESSAGE);
                     return false;
                 }
             }
@@ -6599,9 +6472,9 @@ public class frmMain extends JFrame {
         } catch (Exception ex) {
             Log.forcedWrite(ex);
             srcBuf = null;
-            JOptionPane.showConfirmDialog(this,
+            JOptionPane.showMessageDialog(this,
                     String.format("ファイルの読み込みに失敗しました。\nメッセージ=%s", ex.getMessage()),
-                    "MDPlayer", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+                    "MDPlayer", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
@@ -6639,9 +6512,9 @@ public class frmMain extends JFrame {
         } catch (Exception ex) {
             Log.forcedWrite(ex);
             srcBuf = null;
-            JOptionPane.showConfirmDialog(this,
+            JOptionPane.showMessageDialog(this,
                     String.format("ファイルの読み込みに失敗しました。\nメッセージ=%s", ex.getMessage()),
-                    "MDPlayer", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+                    "MDPlayer", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         frmPlayList.play();
@@ -7664,9 +7537,7 @@ public class frmMain extends JFrame {
         if (midiin != null) {
             try {
                 midiin.close();
-                midiin.dispose();
-                midiin.setReceiver(midiIn_MessageReceived);
-//                midiin.ErrorReceived -= this::midiIn_ErrorReceived;
+                midiIn_MessageReceived.close();
                 midiin = null;
             } catch (Exception e) {
                 midiin = null;
@@ -7674,20 +7545,27 @@ public class frmMain extends JFrame {
         }
 
         if (midiin == null) {
-            for (int i = 0; i < MidiIn.NumberOfDevices; i++) {
-                if (setting.getMidiKbd().MidiInDeviceName == MidiIn.DeviceInfo(i).ProductName) {
+            MidiDevice.Info[] midiDeviceInfos = MidiSystem.getMidiDeviceInfo();
+            for (var info : midiDeviceInfos) {
+                MidiDevice device = null;
+                try {
+                    device = MidiSystem.getMidiDevice(info);
+                } catch (MidiUnavailableException e) {
+                    throw new RuntimeException(e);
+                }
+                if (device.getMaxTransmitters() == 0) {
+                    continue;
+                }
+                if (setting.getMidiKbd().getMidiInDeviceName().equals(info.getName())) {
                     try {
-                        midiin = new MidiIn(i);
-                        midiin.MessageReceived += midiIn_MessageReceived;
-                        midiin.ErrorReceived += midiIn_ErrorReceived;
-                        midiin.Start();
+                        midiin = device.getTransmitter();
+                        midiin.setReceiver(midiIn_MessageReceived);
                     } catch (Exception e) {
                         midiin = null;
                     }
                 }
             }
         }
-
     }
 
 //    void midiIn_ErrorReceived(Object source, MidiInMessageEventArgs e) {
@@ -7699,9 +7577,7 @@ public class frmMain extends JFrame {
         if (midiin != null) {
             try {
                 midiin.close();
-                midiin.dispose();
-                midiin.setReceiver(this::midiIn_MessageReceived);
-//                midiin.ErrorReceived -= midiIn_ErrorReceived;
+                this.midiIn_MessageReceived.close();
                 midiin = null;
             } catch (Exception e) {
                 midiin = null;
@@ -7709,11 +7585,17 @@ public class frmMain extends JFrame {
         }
     }
 
-    void midiIn_MessageReceived(MidiMessage e) {
-        if (!setting.getMidiKbd().getUseMIDIKeyboard()) return;
+    Receiver midiIn_MessageReceived = new Receiver() {
+        @Override
+        public void send(MidiMessage message, long timeStamp) {
+            if (!setting.getMidiKbd().getUseMIDIKeyboard()) return;
+            ym2612MIDI.midiIn_MessageReceived(message);
+        }
 
-        ym2612MIDI.midiIn_MessageReceived(e);
-    }
+        @Override
+        public void close() {
+        }
+    };
 
     public void ym2612Midi_ClearNoteLog() {
         ym2612MIDI.clearNoteLog();
@@ -7918,9 +7800,9 @@ public class frmMain extends JFrame {
             if (balance == null) return;
 
             //ミキサーバランス変更処理
-            Setting.Balance = balance;
+            setting.setBalance(balance);
             if (frmMixer2 != null) frmMixer2.update();
-            Application.DoEvents();
+//            Application.DoEvents();
 
         } catch (Exception ex) {
             Log.forcedWrite(ex);
@@ -8081,9 +7963,9 @@ public class frmMain extends JFrame {
     };
 
     private void checkAndSetForm(JFrame frm) {
-        Screen s = Screen.FromControl(frm);
-        Rectangle rc = new Rectangle(frm.getLocation(), frm.getSize());
-        if (s.WorkingArea.contains(rc)) {
+        Rectangle s = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+        Rectangle rc = new Rectangle(frmInfo.getLocation(), frmInfo.getSize());
+        if (s.contains(rc)) {
             frm.setLocation(rc.getLocation());
             frm.setPreferredSize(rc.getSize());
         } else {

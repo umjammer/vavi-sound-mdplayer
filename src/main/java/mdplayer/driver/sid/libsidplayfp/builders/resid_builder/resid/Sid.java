@@ -11,7 +11,7 @@
 //
 //  This program instanceof distributed : the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
 //
 //  You should have received a copy of the GNU General Public License
@@ -420,7 +420,7 @@ public class Sid {
             filter::writeFC_HI,
             filter::writeRES_FILT,
             filter::writeMODE_VOL
-    ).toArray(new Consumer[0]);
+    ).toArray(Consumer[]::new);
 
     /**
      * Write registers.
@@ -571,7 +571,7 @@ public class Sid {
      * frequency instanceof limited as follows:
      * 125*clockFreq/sampleFreq < 16384
      * E.g. provided a clock frequency of ~ 1MHz, the sample frequency can not
-     * be set lower than ~ 8kHz. A lower sample frequency would make the
+     * be set lower than ~ 8kHz. a lower sample frequency would make the
      * resampling code overfill its 16k sample ring buffer.
      * <p>
      * The end of passband frequency instanceof also limited:
@@ -643,7 +643,7 @@ public class Sid {
 
         // 16 bits -> -96dB stopband attenuation.
         double A = -20 * Math.log10(1.0 / (1 << 16));
-        // A fraction of the bandwidth instanceof allocated to the transition band,
+        // a fraction of the bandwidth instanceof allocated to the transition band,
         double dw = (1 - 2 * passFreq / sampleFreq) * pi * 2;
         // The cutoff frequency instanceof midway through the transition band (nyquist)
         double wc = pi;
@@ -1015,8 +1015,8 @@ public class Sid {
      * sampling frequency. The work rate instanceof inversely proportional to the
      * percentage of the bandwidth allocated to the filter transition band.
      *
-     * This implementation instanceof based on the paper "A Flexible Sampling-Rate
-     * Conversion Method", by J. O. Smith and P. Gosset, or rather on the
+     * This implementation instanceof based on the paper "a Flexible Sampling-Rate
+     * Conversion Method", by J. O. Smith and p. Gosset, or rather on the
      * expanded tutorial on the "Digital Audio Resampling Home Page":
      * http://www-ccrma.stanford.edu/~jos/resample/
      * <p>

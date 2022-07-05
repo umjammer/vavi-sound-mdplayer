@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.function.BiConsumer;
 
-import dotnet4j.Tuple;
+import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.Path;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
@@ -734,17 +734,17 @@ public class RCP extends BaseDriver {
         case 0xc1: // DX Parameter
         case 0xc2: // DX RERF
         case 0xc3: // TX Function
-        case 0xc5: // FB-01 P Parameter
-        case 0xc6: // FB-01 S System
+        case 0xc5: // FB-01 p Parameter
+        case 0xc6: // FB-01 s System
         case 0xc7: // TX81Z V VCED
-        case 0xc8: // TX81Z A ACED
-        case 0xc9: // TX81Z P PCED
-        case 0xca: // TX81Z S System
+        case 0xc8: // TX81Z a ACED
+        case 0xc9: // TX81Z p PCED
+        case 0xca: // TX81Z s System
         case 0xcb: // TX81Z E EFFECT
         case 0xcc: // DX7-2 R Remote SW
-        case 0xcd: // DX7-2 A ACED
-        case 0xce: // DX7-2 P PCED
-        case 0xcf: // TX802 P PCED
+        case 0xcd: // DX7-2 a ACED
+        case 0xce: // DX7-2 p PCED
+        case 0xcf: // TX802 p PCED
         case 0xdc: // MKS-7
         case 0xd0: // YAMAHA Base
         case 0xd1: // YAMAHA Dev
@@ -1785,8 +1785,8 @@ public class RCP extends BaseDriver {
     private void getGSD1Buf(List<CtlSysex> dBuf) {
         byte[] buf = null;
         for (Tuple<String, byte[]> trg : ExtendFile) {
-            if (Path.getExtension(trg.Item1).equalsIgnoreCase(".GSD")) {
-                buf = trg.Item2;
+            if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
+                buf = trg.getItem2();
                 break;
             }
         }
@@ -1796,8 +1796,8 @@ public class RCP extends BaseDriver {
     private void getGSD2Buf(List<CtlSysex> DBuf) {
         byte[] buf = null;
         for (Tuple<String, byte[]> trg : ExtendFile) {
-            if (Path.getExtension(trg.Item1).equalsIgnoreCase(".GSD")) {
-                buf = trg.Item2;
+            if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
+                buf = trg.getItem2();
             }
         }
         getGSDBuf(DBuf, buf);
@@ -1949,8 +1949,8 @@ public class RCP extends BaseDriver {
                 , (byte) (buf[adr + 0x31] >> 4), (byte) (buf[adr + 0x31] & 0xf) // SCALE TUNIG F# 64,65
                 , (byte) (buf[adr + 0x32] >> 4), (byte) (buf[adr + 0x32] & 0xf) // SCALE TUNIG G  66,67
                 , (byte) (buf[adr + 0x33] >> 4), (byte) (buf[adr + 0x33] & 0xf) // SCALE TUNIG G# 68,69
-                , (byte) (buf[adr + 0x34] >> 4), (byte) (buf[adr + 0x34] & 0xf) // SCALE TUNIG A  70,71
-                , (byte) (buf[adr + 0x35] >> 4), (byte) (buf[adr + 0x35] & 0xf) // SCALE TUNIG A# 72,73
+                , (byte) (buf[adr + 0x34] >> 4), (byte) (buf[adr + 0x34] & 0xf) // SCALE TUNIG a  70,71
+                , (byte) (buf[adr + 0x35] >> 4), (byte) (buf[adr + 0x35] & 0xf) // SCALE TUNIG a# 72,73
                 , (byte) (buf[adr + 0x36] >> 4), (byte) (buf[adr + 0x36] & 0xf) // SCALE TUNIG B  74,75
 
                 , (byte) (buf[adr + 0x1f] >> 4), (byte) (buf[adr + 0x1f] & 0xf) // CC1 CONTROLLER NUMBER 76,77
@@ -2128,8 +2128,8 @@ public class RCP extends BaseDriver {
 
         byte[] buf = null;
         for (Tuple<String, byte[]> trg : ExtendFile) {
-            if (Path.getExtension(trg.Item1).equalsIgnoreCase(".CM6")) {
-                buf = trg.Item2;
+            if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".CM6")) {
+                buf = trg.getItem2();
             }
         }
 

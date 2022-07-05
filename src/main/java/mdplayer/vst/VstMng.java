@@ -227,7 +227,7 @@ public class VstMng {
 
             if (!vstPlugin.isInstrument) vstlst.add(vi);
         }
-        setting.getVst().setVSTInfo(vstlst.toArray(new VstInfo[0]));
+        setting.getVst().setVSTInfo(vstlst.toArray(VstInfo::new));
 
 
         for (VstInfo2 vstInfo2 : vstPluginsInst) {
@@ -373,7 +373,6 @@ public class VstMng {
         }
     }
 
-
     public void sendMIDIout(EnmModel model, int num, byte cmd, byte prm1, byte prm2, int deltaFrames/* = 0*/) {
         if (model == EnmModel.RealModel) return;
         if (vstMidiOuts == null) return;
@@ -449,7 +448,6 @@ public class VstMng {
         }
     }
 
-
     public VstPlugin OpenPlugin(String pluginPath) {
         try {
             HostCommandStub hostCmdStub = new HostCommandStub(setting);
@@ -467,7 +465,7 @@ public class VstMng {
             return ctx;
         } catch (Exception e) {
             Log.forcedWrite(e);
-            //JOptionPane.showConfirmDialog(this, e.toString(), Text, JOptionPane.OK_OPTION, JOptionPane.ERROR_MESSAGE);
+            //JOptionPane.showMessageDialog(this, e.toString(), Text, JOptionPane.ERROR_MESSAGE);
         }
 
         return null;
@@ -573,7 +571,7 @@ public class VstMng {
                 }
             }
             vstPlugins.clear();
-            setting.getVst().setVSTInfo(new VstInfo[0]);
+            setting.getVst().setVSTInfo(VstInfo::new);
         } else {
             int ind = -1;
             for (int i = 0; i < vstPlugins.size(); i++) {
@@ -605,12 +603,11 @@ public class VstMng {
                 if (vi.key.equals(key)) continue;
                 nvst.add(vi);
             }
-            setting.getVst().setVSTInfo(nvst.toArray(new VstInfo[0]));
+            setting.getVst().setVSTInfo(nvst.toArray(VstInfo::new));
         }
 
         return true;
     }
-
 
     /**
      * The HostCommandStub class represents the part of the host that a plugin can call.
@@ -635,7 +632,7 @@ public class VstMng {
             }
         }
 
-        // // #region IVstHostCommandsStub Members
+//#region IVstHostCommandsStub Members
 
         /* TODO */
         public IVstPluginContext getPluginContext() {

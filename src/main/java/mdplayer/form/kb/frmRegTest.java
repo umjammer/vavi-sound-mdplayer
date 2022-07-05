@@ -349,8 +349,8 @@ public class frmRegTest extends frmChipBase {
 
             // Paddle reg
             /*
-            int paddleX = r[0x19]; // D419 RO, Paddle reg X
-            int paddleY = r[0x1A]; // D41A RO, Paddle reg Y
+            int paddleX = r[0x19]; // D419 RO, Paddle reg x
+            int paddleY = r[0x1A]; // D41A RO, Paddle reg y
             int oscv3 = r[0x1B]; // D41B RO, Oscillator3 Value
             int envv3 = r[0x1C]; // D41C RO, Oscillator3 Envelope
             */

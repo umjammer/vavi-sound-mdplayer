@@ -198,7 +198,7 @@ public class MGSDRV extends BaseDriver {
             //Log.Write("Call BDOS(0x0005) Reg.C=%02x", z80.getRegisters().getC());
             callBIOS(args, z80);
         } else if (z80.getRegisters().getPC() == 0x000c) {
-            //Log.Write("Call RDSLT(0x000c) Reg.A=%02x Reg.HL=%04x", z80.getRegisters().getA(), z80.getRegisters().getHL());
+            //Log.Write("Call RDSLT(0x000c) Reg.a=%02x Reg.HL=%04x", z80.getRegisters().getA(), z80.getRegisters().getHL());
 
             int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
             z80.getRegisters().setA(((MsxMemory) z80.getMemory()).readSlotMemoryAdr(
@@ -208,13 +208,13 @@ public class MGSDRV extends BaseDriver {
             ));
             z80.executeRet();
         } else if (z80.getRegisters().getPC() == 0x0014) {
-            Log.write(String.format("Call WRSLT(0x0014) Reg.A=%02x Reg.HL=%04x Reg.E=%02x", z80.getRegisters().getA(), z80.getRegisters().getHL(), z80.getRegisters().getE()));
+            Log.write(String.format("Call WRSLT(0x0014) Reg.a=%02x Reg.HL=%04x Reg.E=%02x", z80.getRegisters().getA(), z80.getRegisters().getHL(), z80.getRegisters().getE()));
             throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x001c) {
             Log.write(String.format("Call CALSLT(0x001c) Reg.IY=%04x Reg.IX=%04x", z80.getRegisters().getIY(), z80.getRegisters().getIX()));
             throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x0024) {
-            //Log.Write("\nCall ENASLT(0x0024) Reg.A=%02x Reg.HL=%04x", z80.getRegisters().getA(), z80.getRegisters().getHL());
+            //Log.Write("\nCall ENASLT(0x0024) Reg.a=%02x Reg.HL=%04x", z80.getRegisters().getA(), z80.getRegisters().getHL());
             int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
             ((MsxMemory) z80.getMemory()).changePage(
                     (slot & 0x03),
@@ -241,7 +241,7 @@ public class MGSDRV extends BaseDriver {
                 args.getExecutionStopper().stop(false);
             }
         } else if (z80.getRegisters().getPC() >= mapper.jumpAddress && z80.getRegisters().getPC() < mapper.jumpAddress + 16) {
-            //Log.Write("\nCall MAPPER PROC(0x%04x～) PC-%04x:%04x", mapper.JumpAddress, z80.getRegisters().getPC() - mapper.JumpAddress);
+            //Log.Write("\nCall MAPPER PROC(0x%04x～) pc-%04x:%04x", mapper.JumpAddress, z80.getRegisters().getPC() - mapper.JumpAddress);
             mapper.CallMapperProc(args, z80, z80.getRegisters().getPC() - mapper.jumpAddress);
         } else if ((z80.getRegisters().getPC() & 0xffff) == 0xffca) {
             //Log.Write("\nCall EXTBIO(0xffca) Reg.DE=%04x", z80.getRegisters().getDE());
@@ -252,7 +252,7 @@ public class MGSDRV extends BaseDriver {
     }
 
     private static void debugRegisters(Z80Processor z80) {
-        Log.write(String.format("Reg PC:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x"
+        Log.write(String.format("Reg pc:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x"
                 , z80.getRegisters().getPC()
                 , z80.getRegisters().getAF(), z80.getRegisters().getBC(), z80.getRegisters().getDE(), z80.getRegisters().getHL()
                 , z80.getRegisters().getIX(), z80.getRegisters().getIY()));

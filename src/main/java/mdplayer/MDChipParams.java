@@ -44,7 +44,7 @@ public class MDChipParams {
         public int tp = -1;
         public int kf = -1;//OPM only
         public int tn = 0;//Psg only
-        public boolean ex = false;//OPN/2/A/B
+        public boolean ex = false;//OPN/2/a/B
         public int tntp = -1;
         public boolean dda = false;//HuC6280
         public boolean noise = false;//HuC6280

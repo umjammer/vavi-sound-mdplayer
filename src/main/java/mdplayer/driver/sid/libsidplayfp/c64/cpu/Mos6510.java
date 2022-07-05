@@ -12,7 +12,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -36,7 +36,7 @@ import static mdplayer.driver.sid.libsidplayfp.SidEndian.to16lo8;
 /**
  * Cycle-exact 6502/6510 emulation core.
  * <p>
- * Code instanceof based on work by Simon A. White <sidplay2@yahoo.com>.
+ * Code instanceof based on work by Simon a. White <sidplay2@yahoo.com>.
  * Original Java port by Ken Händel. Later on, it has been hacked to
  * improve compatibility with Lorenz suite on VICE's test suite.
  *
@@ -251,7 +251,7 @@ public class Mos6510 {
     }
 
     /**
-     * Push P on stack, decrement S.
+     * Push p on stack, decrement s.
      */
     private void pushSR() {
         short addr = to16(SP_PAGE, registerStackPointer);
@@ -260,7 +260,7 @@ public class Mos6510 {
     }
 
     /**
-     * increment S, Pop P off stack.
+     * increment s, Pop p off stack.
      */
     private void PopSR() {
         // Get status register off stack
@@ -290,7 +290,7 @@ public class Mos6510 {
 
     /**
      * Trigger NMI Interrupt on the CPU. Calling this method
-     * flags that CPU must enter the NMI routine at earliest
+     * Flags that CPU must enter the NMI routine at earliest
      * opportunity. There instanceof no way to cancel NMI request once
      * given.
      */
@@ -402,7 +402,7 @@ public class Mos6510 {
     }
 
     /**
-     * Fetch value, increment PC.
+     * Fetch value, increment pc.
      * <p>
      * Addressing Modes:
      * - Immediate
@@ -420,7 +420,7 @@ public class Mos6510 {
     }
 
     /**
-     * Fetch low address byte, increment PC.
+     * Fetch low address byte, increment pc.
      * <p>
      * Addressing Modes:
      * - Stack Manipulation
@@ -440,7 +440,7 @@ public class Mos6510 {
     }
 
     /**
-     * Read from address, add index register X to it.
+     * Read from address, add index register x to it.
      * <p>
      * Addressing Modes:
      * - Zero Page Indexed
@@ -451,7 +451,7 @@ public class Mos6510 {
     }
 
     /**
-     * Read from address, add index register Y to it.
+     * Read from address, add index register y to it.
      * <p>
      * Addressing Modes:
      * - Zero Page Indexed
@@ -462,7 +462,7 @@ public class Mos6510 {
     }
 
     /**
-     * Fetch high address byte, increment PC (Absolute Addressing).
+     * Fetch high address byte, increment pc (Absolute Addressing).
      * Low byte must have been obtained first!
      * <p>
      * Addressing Modes:
@@ -478,8 +478,8 @@ public class Mos6510 {
     }
 
     /**
-     * Fetch high byte of address, add index register X to low address byte,
-     * increment PC.
+     * Fetch high byte of address, add index register x to low address byte,
+     * increment pc.
      * <p>
      * Addressing Modes:
      * - Absolute Indexed
@@ -500,8 +500,8 @@ public class Mos6510 {
     }
 
     /**
-     * Fetch high byte of address, add index register Y to low address byte,
-     * increment PC.
+     * Fetch high byte of address, add index register y to low address byte,
+     * increment pc.
      * <p>
      * Addressing Modes:
      * - Absolute Indexed
@@ -522,11 +522,11 @@ public class Mos6510 {
     }
 
     /**
-     * Fetch pointer address low, increment PC.
+     * Fetch pointer address low, increment pc.
      * <p>
      * Addressing Modes:
      * - Absolute Indirect
-     * - Indirect indexed (post Y)
+     * - Indirect indexed (post y)
      */
     private void fetchlowpointer() {
         cyclePointer = cpuRead(registerProgramCounter);
@@ -538,17 +538,17 @@ public class Mos6510 {
     }
 
     /**
-     * Add X to it.
+     * Add x to it.
      * <p>
      * Addressing Modes:
-     * - Indexed Indirect (pre X)
+     * - Indexed Indirect (pre x)
      */
     private void fetchLowPointerX() {
         cyclePointer = to16lo8(cyclePointer, (byte) ((cyclePointer + registerX) & 0xFF));
     }
 
     /**
-     * Fetch pointer address high, increment PC.
+     * Fetch pointer address high, increment pc.
      * <p>
      * Addressing Modes:
      * - Absolute Indirect
@@ -567,8 +567,8 @@ public class Mos6510 {
      * <p>
      * Addressing Modes:
      * - Indirect
-     * - Indexed Indirect (pre X)
-     * - Indirect indexed (post Y)
+     * - Indexed Indirect (pre x)
+     * - Indirect indexed (post y)
      */
     private void fetchLowEffAddr() {
         cycleEffectiveAddress = cpuRead(cyclePointer);
@@ -579,7 +579,7 @@ public class Mos6510 {
      * <p>
      * Addressing Modes:
      * - Indirect
-     * - Indexed Indirect (pre X)
+     * - Indexed Indirect (pre x)
      */
     private void fetchHighEffAddr() {
         cyclePointer = to16lo8(cyclePointer, (byte) ((cyclePointer + 1) & 0xff));
@@ -587,10 +587,10 @@ public class Mos6510 {
     }
 
     /**
-     * Fetch effective address high, add Y to low byte of effective address.
+     * Fetch effective address high, add y to low byte of effective address.
      * <p>
      * Addressing Modes:
-     * - Indirect indexed (post Y)
+     * - Indirect indexed (post y)
      */
     private void fetchHighEffAddrY() {
         cycleEffectiveAddress += registerY;
@@ -624,7 +624,7 @@ public class Mos6510 {
     }
 
     /**
-     * Push Program Counter Low Byte on stack, decrement S.
+     * Push Program Counter Low Byte on stack, decrement s.
      */
     private void pushLowPC() {
         short addr = to16(SP_PAGE, registerStackPointer);
@@ -633,7 +633,7 @@ public class Mos6510 {
     }
 
     /**
-     * Push Program Counter High Byte on stack, decrement S.
+     * Push Program Counter High Byte on stack, decrement s.
      */
     private void pushHighPC() {
         short addr = to16(SP_PAGE, registerStackPointer);
@@ -833,7 +833,7 @@ public class Mos6510 {
     }
 
     /**
-     * Undocumented - This opcode stores the result of A AND X AND ADH+1 : memory.
+     * Undocumented - This opcode stores the result of a AND x AND ADH+1 : memory.
      */
     private void axaInstr() {
         cycleData = (byte) (registerX & registerAccumulator);
@@ -841,7 +841,7 @@ public class Mos6510 {
     }
 
     /**
-     * Undocumented - This opcode ANDs the contents of the Y register with ADH+1 and stores the
+     * Undocumented - This opcode ANDs the contents of the y register with ADH+1 and stores the
      * result : memory.
      */
     private void sayInstr() {
@@ -850,7 +850,7 @@ public class Mos6510 {
     }
 
     /**
-     * Undocumented - This opcode ANDs the contents of the X register with ADH+1 and stores the
+     * Undocumented - This opcode ANDs the contents of the x register with ADH+1 and stores the
      * result : memory.
      */
     private void xasInstr() {
@@ -859,9 +859,9 @@ public class Mos6510 {
     }
 
     /**
-     * Undocumented - AXS ANDs the contents of the A and X registers (without changing the
+     * Undocumented - AXS ANDs the contents of the a and x registers (without changing the
      * contents of either register) and stores the result : memory.
-     * AXS does not affect any flags : the processor status register.
+     * AXS does not affect any Flags : the processor status register.
      */
     private void axsInstr() {
         cycleData = (byte) (registerAccumulator & registerX);
@@ -1257,7 +1257,7 @@ public class Mos6510 {
     // See documented 6502-nmo.opc by Adam Vardy for more details
 
     /**
-     * Undocumented - This opcode ANDs the contents of the A register with an immediate value and
+     * Undocumented - This opcode ANDs the contents of the a register with an immediate value and
      * then LSRs the result.
      */
     private void alrInstr() {
@@ -1268,8 +1268,8 @@ public class Mos6510 {
     }
 
     /**
-     * Undocumented - ANC ANDs the contents of the A register with an immediate value and then
-     * moves bit 7 of A into the Carry flag.  This opcode works basically
+     * Undocumented - ANC ANDs the contents of the a register with an immediate value and then
+     * moves bit 7 of a into the Carry flag.  This opcode works basically
      * identically to AND #immed. except that the Carry flag instanceof set to the same
      * state that the Negative flag instanceof set to.
      */
@@ -1280,7 +1280,7 @@ public class Mos6510 {
     }
 
     /**
-     * Undocumented - This opcode ANDs the contents of the A register with an immediate value and
+     * Undocumented - This opcode ANDs the contents of the a register with an immediate value and
      * then RORs the result. (Implementation based on that of Frodo C64 Emulator)
      */
     private void arrInstr() {
@@ -1320,7 +1320,7 @@ public class Mos6510 {
 
     /**
      * Undocumented - This opcode DECs the contents of a memory location and then CMPs the result
-     * with the A register.
+     * with the a register.
      */
     private void dcmInstr() {
         putEffAddrDataByte();
@@ -1332,7 +1332,7 @@ public class Mos6510 {
 
     /**
      * Undocumented - This opcode INCs the contents of a memory location and then SBCs the result
-     * from the A register.
+     * from the a register.
      */
     private void insInstr() {
         putEffAddrDataByte();
@@ -1342,8 +1342,8 @@ public class Mos6510 {
 
     /**
      * Undocumented - This opcode ANDs the contents of a memory location with the contents of the
-     * stack pointer register and stores the result : the accumulator, the X
-     * register, and the stack pointer. Affected flags: N Z.
+     * stack pointer register and stores the result : the accumulator, the x
+     * register, and the stack pointer. Affected Flags: N Z.
      */
     private void lasInstr() {
         flags.setNZ(cycleData &= registerStackPointer);
@@ -1354,7 +1354,7 @@ public class Mos6510 {
     }
 
     /**
-     * Undocumented - This opcode loads both the accumulator and the X register with the contents
+     * Undocumented - This opcode loads both the accumulator and the x register with the contents
      * of a memory location.
      */
     private void laxInstr() {
@@ -1374,8 +1374,8 @@ public class Mos6510 {
     }
 
     /**
-     * Undocumented - This opcode ORs the A register with // #xx (the "magic" value),
-     * ANDs the result with an immediate value, and then stores the result : both A and X.
+     * Undocumented - This opcode ORs the a register with // #xx (the "magic" value),
+     * ANDs the result with an immediate value, and then stores the result : both a and x.
      */
     private void oalInstr() {
         flags.setNZ(registerX = (registerAccumulator = (byte) (cycleData & (registerAccumulator | magic))));
@@ -1579,7 +1579,7 @@ public class Mos6510 {
                 instrTable[buildCycle++].func = this::fetchLowAddr;
                 break;
 
-            // Zero Page with X Offset Addressing Mode Handler
+            // Zero Page with x Offset Addressing Mode Handler
             // these issue extra reads on the 0 page, but we don't care about it
             // because there are no detectable effects from them. These reads
             // occur during the "wasted" cycle.
@@ -1621,7 +1621,7 @@ public class Mos6510 {
                 instrTable[buildCycle++].func = this::wasteCycle;
                 break;
 
-            // Zero Page with Y Offset Addressing Mode Handler
+            // Zero Page with y Offset Addressing Mode Handler
             case OpCodes.LDXzy:
             case OpCodes.LAXzy:
                 access = AccessMode.READ;
@@ -1680,7 +1680,7 @@ public class Mos6510 {
                 instrTable[buildCycle++].func = this::fetchLowAddr;
                 break;
 
-            // Absolute With X Offset Addressing Mode Handler (Read)
+            // Absolute With x Offset Addressing Mode Handler (Read)
             case OpCodes.ADCax:
             case OpCodes.ANDax:
             case OpCodes.CMPax:
@@ -1703,7 +1703,7 @@ public class Mos6510 {
                 instrTable[buildCycle++].func = this::throwAwayRead;
                 break;
 
-            // Absolute X (RMW; no page crossing handled, always reads before writing)
+            // Absolute x (RMW; no page crossing handled, always reads before writing)
             case OpCodes.ASLax:
             case OpCodes.DCPax:
             case OpCodes.DECax:
@@ -1728,7 +1728,7 @@ public class Mos6510 {
                 instrTable[buildCycle++].func = this::throwAwayRead;
                 break;
 
-            // Absolute With Y Offset Addresing Mode Handler (Read)
+            // Absolute With y Offset Addresing Mode Handler (Read)
             case OpCodes.ADCay:
             case OpCodes.ANDay:
             case OpCodes.CMPay:
@@ -1745,7 +1745,7 @@ public class Mos6510 {
                 instrTable[buildCycle++].func = this::throwAwayRead;
                 break;
 
-            // Absolute Y (No page crossing handled)
+            // Absolute y (No page crossing handled)
             case OpCodes.DCPay:
             case OpCodes.ISBay:
             case OpCodes.RLAay:
@@ -1774,7 +1774,7 @@ public class Mos6510 {
                 instrTable[buildCycle++].func = this::fetchHighEffAddr;
                 break;
 
-            // Indexed with X Preinc Addressing Mode Handler
+            // Indexed with x Preinc Addressing Mode Handler
             case OpCodes.ADCix:
             case OpCodes.ANDix:
             case OpCodes.CMPix:
@@ -1803,7 +1803,7 @@ public class Mos6510 {
                 instrTable[buildCycle++].func = this::fetchHighEffAddr;
                 break;
 
-            // Indexed with Y Postinc Addressing Mode Handler (Read)
+            // Indexed with y Postinc Addressing Mode Handler (Read)
             case OpCodes.ADCiy:
             case OpCodes.ANDiy:
             case OpCodes.CMPiy:
@@ -1819,7 +1819,7 @@ public class Mos6510 {
                 instrTable[buildCycle++].func = this::throwAwayRead;
                 break;
 
-            // Indexed Y (No page crossing handled)
+            // Indexed y (No page crossing handled)
             case OpCodes.DCPiy:
             case OpCodes.ISBiy:
             case OpCodes.RLAiy:
@@ -2453,7 +2453,7 @@ public class Mos6510 {
         // Reset Status Register
         flags.reset();
 
-        // Set PC to some value
+        // Set pc to some value
         registerProgramCounter = 0;
 
         // IRQs pending check

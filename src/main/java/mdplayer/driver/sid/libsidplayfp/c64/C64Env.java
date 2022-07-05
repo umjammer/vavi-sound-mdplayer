@@ -12,7 +12,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -27,7 +27,7 @@ import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 
 /**
  * An implementation of this class can be created to perform the C64
- * specifics. A pointer to this child class can then be passed to each of the
+ * specifics. a pointer to this child class can then be passed to each of the
  * components, so they can interact with it.
  */
 public class C64Env {

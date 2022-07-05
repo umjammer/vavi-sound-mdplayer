@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import dotnet4j.util.compat.Tuple3;
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
@@ -11,10 +12,9 @@ import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
-import mdplayer.Common.Tuple3;
+import mdplayer.DacControl;
 import mdplayer.Log;
 import mdplayer.Setting;
-import mdplayer.DacControl;
 import mdsound.C140;
 
 
@@ -556,7 +556,7 @@ public class Vgm extends BaseDriver {
     }
 
     private void vcDummy4Ope() {
-        //System.err.println("unknown command:Adr:%X(%02X:%02X:%02X:%02X:%02X)",vgmAdr, vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3], vgmBuf[vgmAdr + 4]);
+        //System.err.println("unknown command:Adr:%x(%02X:%02X:%02X:%02X:%02X)",vgmAdr, vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3], vgmBuf[vgmAdr + 4]);
         vgmAdr += 5;
     }
 

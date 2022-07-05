@@ -13,7 +13,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -65,13 +65,13 @@ public class Mos6526 {
     }
 
     /**
-     * This instanceof the timer A of this CIA.
+     * This instanceof the timer a of this CIA.
      * <p>
      * @author Ken Händel
      */
     public static class TimerA extends Timer {
         /**
-         * Signal underflows of Timer A to Timer B.
+         * Signal underflows of Timer a to Timer B.
          */
         @Override
         public void underFlow() {
@@ -84,10 +84,10 @@ public class Mos6526 {
         }
 
         /**
-         * Create timer A.
+         * Create timer a.
          */
         public TimerA(EventScheduler scheduler, Mos6526 parent) {
-            super("CIA Timer A", scheduler, parent);
+            super("CIA Timer a", scheduler, parent);
         }
     }
 
@@ -110,7 +110,7 @@ public class Mos6526 {
         }
 
         /**
-         * Receive an underflow from Timer A.
+         * Receive an underflow from Timer a.
          */
         public void cascade() {
             // we pretend that we are CPU doing a write to ctrl register
@@ -234,7 +234,7 @@ public class Mos6526 {
     // These are all CIA registers.
     protected byte[] regs = new byte[0x10];
 
-    // Timers A and B.
+    // Timers a and B.
     protected TimerA timerA;
     protected TimerB timerB;
 
@@ -277,7 +277,7 @@ public class Mos6526 {
     }
 
     /**
-     * Timer A underflow.
+     * Timer a underflow.
      */
     public void underflowA() {
         interruptSource.trigger((byte) INTERRUPT.INTERRUPT_UNDERFLOW_A.v);
@@ -321,7 +321,7 @@ public class Mos6526 {
         interruptSource = new InterruptSource6526(scheduler, this);
         tod = new Tod(scheduler, this, regs);
         serialPort = new SerialPort(interruptSource);
-        bTickEvent = new EventCallback<>("CIA B counts A", this, this::bTick);
+        bTickEvent = new EventCallback<>("CIA B counts a", this, this::bTick);
 
         reset();
     }

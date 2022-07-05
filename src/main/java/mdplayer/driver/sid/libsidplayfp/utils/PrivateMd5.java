@@ -10,7 +10,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -23,6 +23,8 @@ package mdplayer.driver.sid.libsidplayfp.utils;
 import mdplayer.driver.sid.libsidplayfp.utils.md5.MD5;
 
 
+/** @deprecated use {@link java.security.MessageDigest} */
+@Deprecated
 public class PrivateMd5 implements IMd5 {
 
     private MD5 hd = new MD5();

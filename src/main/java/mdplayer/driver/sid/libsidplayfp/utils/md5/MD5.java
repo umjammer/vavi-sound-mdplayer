@@ -1,12 +1,4 @@
 /*
- * This code has been derived by Michael Schwendt <mschwendt@yahoo.com>
- * from original work by L. Peter Deutsch <ghost@aladdin.com>.
- *
- * The original C code (md5.c, md5.h) instanceof available here:
- * ftp://ftp.cs.wisc.edu/ghost/packages/md5.tar.gz
- */
-
-/*
   Copyright (C) 1999 Aladdin Enterprises.  All rights reserved.
 
   This software instanceof provided 'as-is', without any express or implied
@@ -34,18 +26,20 @@ package mdplayer.driver.sid.libsidplayfp.utils.md5;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import mdplayer.Common.TriFunction;
-import mdplayer.driver.sid.mem;
+import dotnet4j.util.compat.TriFunction;
+import mdplayer.driver.sid.Mem;
 
 
 /**
- * Compile with -DMD5_TEST to create a self-contained executable test program.
- * The test program should print  the same values as given : section
- * A.5 of RFC 1321, reproduced below.
+ * Define the state of the MD5 Algorithm.
+ *
+ * @author Michael Schwendt <mschwendt@yahoo.com>
+ * @author L. Peter Deutsch <ghost@aladdin.com> ... original work
+ * @see "ftp://ftp.cs.wisc.edu/ghost/packages/md5.tar.gz"
+ * @deprecated use {@link java.security.MessageDigest}
  */
+@Deprecated
 public class MD5 {
-
-    // Define the state of the MD5 Algorithm.
 
     /**
      * message length : bits, lsw first
@@ -65,32 +59,35 @@ public class MD5 {
     private int[] tmpBuf = new int[16];
     private int[] x;
 
-    public interface Md5Func extends TriFunction<Integer, Integer, Integer, Integer> {
+    // TODO eliminate
+    private interface Md5Func extends TriFunction<Integer, Integer, Integer, Integer> {
     }
 
     private static int rotateLeft(int x, int n) {
-        return (x << n) | (x >> (32 - n));
+        n %= 32;
+        return (x << n) | (x >>> (32 - n));
     }
 
-    private int f(int x, int y, int z) {
+    private static int f(int x, int y, int z) {
         return (x & y) | (~x & z);
     }
 
-    private int g(int x, int y, int z) {
+    private static int g(int x, int y, int z) {
         return (x & z) | (y & ~z);
     }
 
-    private int h(int x, int y, int z) {
+    private static int h(int x, int y, int z) {
         return x ^ y ^ z;
     }
 
-    private int i(int x, int y, int z) {
+    private static int i(int x, int y, int z) {
         return y ^ (x | ~z);
     }
 
-    private void set(Md5Func func, int a, int b, int c, int d, int k, int s, int Ti) {
+    private int set(Md5Func func, int a, int b, int c, int d, int k, int s, int Ti) {
         int t = a + func.apply(b, c, d) + x[k] + Ti;
         a = rotateLeft(t, s) + b;
+        return a;
     }
 
     private static final int T1 = 0xd76aa478;
@@ -170,8 +167,8 @@ public class MD5 {
         abcd[1] = 0xefcdab89;
         abcd[2] = 0x98badcfe;
         abcd[3] = 0x10325476;
-        mem.memset(digest, (byte) 0, 16);
-        mem.memset(buf, (byte) 0, 64);
+        Mem.memset(digest, (byte) 0, 16);
+        Mem.memset(buf, (byte) 0, 64);
     }
 
     private void process(ByteBuffer data) {
@@ -181,7 +178,7 @@ public class MD5 {
 
             // On big-endian machines, we must arrange the bytes : the right
             // order.  (This also works on machines of unknown byte order.)
-            ByteBuffer xp = data.duplicate();
+            ByteBuffer xp = data;
             for (int i = 0; i < 16; ++i, xp.position(xp.position() + 4)) {
                 tmpBuf[i] = (xp.get(0) & 0xFF) + ((xp.get(1) & 0xFF) << 8) +
                         ((xp.get(2) & 0xFF) << 16) + ((xp.get(3) & 0xFF) << 24);
@@ -209,87 +206,87 @@ public class MD5 {
 
         // Round 1.
         //    Let [abcd k s i] denote the operation
-        //       a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s).
+        //       a = b + ((a + F(b,c,d) + x[k] + T[i]) <<< s).
         // Do the following 16 operations.
-        set(this::f, a, b, c, d, 0, 7, T1);
-        set(this::f, d, a, b, c, 1, 12, T2);
-        set(this::f, c, d, a, b, 2, 17, T3);
-        set(this::f, b, c, d, a, 3, 22, T4);
-        set(this::f, a, b, c, d, 4, 7, T5);
-        set(this::f, d, a, b, c, 5, 12, T6);
-        set(this::f, c, d, a, b, 6, 17, T7);
-        set(this::f, b, c, d, a, 7, 22, T8);
-        set(this::f, a, b, c, d, 8, 7, T9);
-        set(this::f, d, a, b, c, 9, 12, T10);
-        set(this::f, c, d, a, b, 10, 17, T11);
-        set(this::f, b, c, d, a, 11, 22, T12);
-        set(this::f, a, b, c, d, 12, 7, T13);
-        set(this::f, d, a, b, c, 13, 12, T14);
-        set(this::f, c, d, a, b, 14, 17, T15);
-        set(this::f, b, c, d, a, 15, 22, T16);
+        a = set(MD5::f, a, b, c, d, 0, 7, T1);
+        d = set(MD5::f, d, a, b, c, 1, 12, T2);
+        c = set(MD5::f, c, d, a, b, 2, 17, T3);
+        b = set(MD5::f, b, c, d, a, 3, 22, T4);
+        a = set(MD5::f, a, b, c, d, 4, 7, T5);
+        d = set(MD5::f, d, a, b, c, 5, 12, T6);
+        c = set(MD5::f, c, d, a, b, 6, 17, T7);
+        b = set(MD5::f, b, c, d, a, 7, 22, T8);
+        a = set(MD5::f, a, b, c, d, 8, 7, T9);
+        d = set(MD5::f, d, a, b, c, 9, 12, T10);
+        c = set(MD5::f, c, d, a, b, 10, 17, T11);
+        b = set(MD5::f, b, c, d, a, 11, 22, T12);
+        a = set(MD5::f, a, b, c, d, 12, 7, T13);
+        d = set(MD5::f, d, a, b, c, 13, 12, T14);
+        c = set(MD5::f, c, d, a, b, 14, 17, T15);
+        b = set(MD5::f, b, c, d, a, 15, 22, T16);
 
-        // Round 2. */
+        // Round 2.
         //   Let [abcd k s i] denote the operation
-        //      a = b + ((a + G(b,c,d) + X[k] + T[i]) <<< s).
+        //      a = b + ((a + G(b,c,d) + x[k] + T[i]) <<< s).
         // Do the following 16 operations.
-        set(this::g, a, b, c, d, 1, 5, T17);
-        set(this::g, d, a, b, c, 6, 9, T18);
-        set(this::g, c, d, a, b, 11, 14, T19);
-        set(this::g, b, c, d, a, 0, 20, T20);
-        set(this::g, a, b, c, d, 5, 5, T21);
-        set(this::g, d, a, b, c, 10, 9, T22);
-        set(this::g, c, d, a, b, 15, 14, T23);
-        set(this::g, b, c, d, a, 4, 20, T24);
-        set(this::g, a, b, c, d, 9, 5, T25);
-        set(this::g, d, a, b, c, 14, 9, T26);
-        set(this::g, c, d, a, b, 3, 14, T27);
-        set(this::g, b, c, d, a, 8, 20, T28);
-        set(this::g, a, b, c, d, 13, 5, T29);
-        set(this::g, d, a, b, c, 2, 9, T30);
-        set(this::g, c, d, a, b, 7, 14, T31);
-        set(this::g, b, c, d, a, 12, 20, T32);
+        a = set(MD5::g, a, b, c, d, 1, 5, T17);
+        d = set(MD5::g, d, a, b, c, 6, 9, T18);
+        c = set(MD5::g, c, d, a, b, 11, 14, T19);
+        b = set(MD5::g, b, c, d, a, 0, 20, T20);
+        a = set(MD5::g, a, b, c, d, 5, 5, T21);
+        d = set(MD5::g, d, a, b, c, 10, 9, T22);
+        c = set(MD5::g, c, d, a, b, 15, 14, T23);
+        b = set(MD5::g, b, c, d, a, 4, 20, T24);
+        a = set(MD5::g, a, b, c, d, 9, 5, T25);
+        d = set(MD5::g, d, a, b, c, 14, 9, T26);
+        c = set(MD5::g, c, d, a, b, 3, 14, T27);
+        b = set(MD5::g, b, c, d, a, 8, 20, T28);
+        a = set(MD5::g, a, b, c, d, 13, 5, T29);
+        d = set(MD5::g, d, a, b, c, 2, 9, T30);
+        c = set(MD5::g, c, d, a, b, 7, 14, T31);
+        b = set(MD5::g, b, c, d, a, 12, 20, T32);
 
         // Round 3.
         //    Let [abcd k s t] denote the operation
-        //       a = b + ((a + H(b,c,d) + X[k] + T[i]) <<< s).
+        //       a = b + ((a + H(b,c,d) + x[k] + T[i]) <<< s).
         // Do the following 16 operations.
-        set(this::h, a, b, c, d, 5, 4, T33);
-        set(this::h, d, a, b, c, 8, 11, T34);
-        set(this::h, c, d, a, b, 11, 16, T35);
-        set(this::h, b, c, d, a, 14, 23, T36);
-        set(this::h, a, b, c, d, 1, 4, T37);
-        set(this::h, d, a, b, c, 4, 11, T38);
-        set(this::h, c, d, a, b, 7, 16, T39);
-        set(this::h, b, c, d, a, 10, 23, T40);
-        set(this::h, a, b, c, d, 13, 4, T41);
-        set(this::h, d, a, b, c, 0, 11, T42);
-        set(this::h, c, d, a, b, 3, 16, T43);
-        set(this::h, b, c, d, a, 6, 23, T44);
-        set(this::h, a, b, c, d, 9, 4, T45);
-        set(this::h, d, a, b, c, 12, 11, T46);
-        set(this::h, c, d, a, b, 15, 16, T47);
-        set(this::h, b, c, d, a, 2, 23, T48);
+        a = set(MD5::h, a, b, c, d, 5, 4, T33);
+        d = set(MD5::h, d, a, b, c, 8, 11, T34);
+        c = set(MD5::h, c, d, a, b, 11, 16, T35);
+        b = set(MD5::h, b, c, d, a, 14, 23, T36);
+        a = set(MD5::h, a, b, c, d, 1, 4, T37);
+        d = set(MD5::h, d, a, b, c, 4, 11, T38);
+        c = set(MD5::h, c, d, a, b, 7, 16, T39);
+        b = set(MD5::h, b, c, d, a, 10, 23, T40);
+        a = set(MD5::h, a, b, c, d, 13, 4, T41);
+        d = set(MD5::h, d, a, b, c, 0, 11, T42);
+        c = set(MD5::h, c, d, a, b, 3, 16, T43);
+        b = set(MD5::h, b, c, d, a, 6, 23, T44);
+        a = set(MD5::h, a, b, c, d, 9, 4, T45);
+        d = set(MD5::h, d, a, b, c, 12, 11, T46);
+        c = set(MD5::h, c, d, a, b, 15, 16, T47);
+        b = set(MD5::h, b, c, d, a, 2, 23, T48);
 
         // Round 4.
         //    Let [abcd k s t] denote the operation
-        //       a = b + ((a + I(b,c,d) + X[k] + T[i]) <<< s).
+        //       a = b + ((a + I(b,c,d) + x[k] + T[i]) <<< s).
         // Do the following 16 operations.
-        set(this::i, a, b, c, d, 0, 6, T49);
-        set(this::i, d, a, b, c, 7, 10, T50);
-        set(this::i, c, d, a, b, 14, 15, T51);
-        set(this::i, b, c, d, a, 5, 21, T52);
-        set(this::i, a, b, c, d, 12, 6, T53);
-        set(this::i, d, a, b, c, 3, 10, T54);
-        set(this::i, c, d, a, b, 10, 15, T55);
-        set(this::i, b, c, d, a, 1, 21, T56);
-        set(this::i, a, b, c, d, 8, 6, T57);
-        set(this::i, d, a, b, c, 15, 10, T58);
-        set(this::i, c, d, a, b, 6, 15, T59);
-        set(this::i, b, c, d, a, 13, 21, T60);
-        set(this::i, a, b, c, d, 4, 6, T61);
-        set(this::i, d, a, b, c, 11, 10, T62);
-        set(this::i, c, d, a, b, 2, 15, T63);
-        set(this::i, b, c, d, a, 9, 21, T64);
+        a = set(MD5::i, a, b, c, d, 0, 6, T49);
+        d = set(MD5::i, d, a, b, c, 7, 10, T50);
+        c = set(MD5::i, c, d, a, b, 14, 15, T51);
+        b = set(MD5::i, b, c, d, a, 5, 21, T52);
+        a = set(MD5::i, a, b, c, d, 12, 6, T53);
+        d = set(MD5::i, d, a, b, c, 3, 10, T54);
+        c = set(MD5::i, c, d, a, b, 10, 15, T55);
+        b = set(MD5::i, b, c, d, a, 1, 21, T56);
+        a = set(MD5::i, a, b, c, d, 8, 6, T57);
+        d = set(MD5::i, d, a, b, c, 15, 10, T58);
+        c = set(MD5::i, c, d, a, b, 6, 15, T59);
+        b = set(MD5::i, b, c, d, a, 13, 21, T60);
+        a = set(MD5::i, a, b, c, d, 4, 6, T61);
+        d = set(MD5::i, d, a, b, c, 11, 10, T62);
+        c = set(MD5::i, c, d, a, b, 2, 15, T63);
+        b = set(MD5::i, b, c, d, a, 9, 21, T64);
 
         // Then perform the following additions. (That instanceof increment each
         // of the four registers by the value it had before this block
@@ -301,27 +298,27 @@ public class MD5 {
     }
 
     /** Append a String to the message. */
-    public void append(Object data, int nbytes) {
+    public void append(Object data, int nBytes) {
         ByteBuffer p = ByteBuffer.wrap((byte[]) data);
-        int left = nbytes;
+        int left = nBytes;
         int offset = (count[0] >> 3) & 63;
-        int nbits = nbytes << 3;
+        int nBits = nBytes << 3;
 
-        if (nbytes <= 0)
+        if (nBytes <= 0)
             return;
 
         /* Update the message length. */
-        count[1] += nbytes >> 29;
-        count[0] += nbits;
-        if (count[0] < nbits)
+        count[1] += nBytes >> 29;
+        count[0] += nBits;
+        if (count[0] < nBits)
             count[1]++;
 
         /* Process an initial block. */
         ByteBuffer pBuf = ByteBuffer.wrap(buf);
         if (offset != 0) {
-            int copy = (offset + nbytes > 64) ? (64 - offset) : nbytes;
+            int copy = (offset + nBytes > 64) ? (64 - offset) : nBytes;
             pBuf.position(pBuf.position() + offset);
-            mem.memcpy(pBuf, p, copy);
+            Mem.memcpy(pBuf, p, copy);
             pBuf.position(pBuf.position() - offset);
             if (offset + copy < 64)
                 return;
@@ -336,7 +333,7 @@ public class MD5 {
 
         /* Process a final block. */
         if (left != 0)
-            mem.memcpy(pBuf, p, left);
+            Mem.memcpy(pBuf, p, left);
     }
 
     /** Finish the message. */
@@ -348,16 +345,15 @@ public class MD5 {
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         };
         byte[] data = new byte[8];
-        int i;
         /* Save the length before padding. */
-        for (i = 0; i < 8; ++i)
-            data[i] = (byte) (count[i >> 2] >> ((i & 3) << 3));
+        for (int i = 0; i < 8; ++i)
+            data[i] = (byte) ((count[i >> 2] >> ((i & 3) << 3)) & 0xff);
         /* Pad to 56 bytes mod 64. */
         append(pad, ((55 - (count[0] >> 3)) & 63) + 1);
         /* Append the length. */
         append(data, 8);
-        for (i = 0; i < 16; ++i)
-            digest[i] = (byte) (abcd[i >> 2] >> ((i & 3) << 3));
+        for (int i = 0; i < 16; ++i)
+            digest[i] = (byte) ((abcd[i >> 2] >> ((i & 3) << 3)) & 0xff);
     }
 
     /** Return pointer to 16-byte fingerprint. */

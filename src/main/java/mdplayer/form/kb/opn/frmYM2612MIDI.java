@@ -414,7 +414,7 @@ public class frmYM2612MIDI extends frmBase {
             parent.ym2612Midi_SaveTonePallet(sfd.getSelectedFile().getPath(), Common.getFilterIndex(sfd) + 1);
         } catch (Exception ex) {
             Log.forcedWrite(ex);
-            JOptionPane.showConfirmDialog(null, "ファイルの保存に失敗しました。");
+            JOptionPane.showMessageDialog(null, "ファイルの保存に失敗しました。");
         }
     }
 
@@ -461,7 +461,7 @@ public class frmYM2612MIDI extends frmBase {
             parent.ym2612Midi_LoadTonePallet(ofd.getSelectedFile().getPath(), Common.getFilterIndex(ofd) + 1);
         } catch (Exception ex) {
             Log.forcedWrite(ex);
-            JOptionPane.showConfirmDialog(null, "ファイルの読込に失敗しました。");
+            JOptionPane.showMessageDialog(null, "ファイルの読込に失敗しました。");
         }
     }
 
@@ -593,7 +593,7 @@ public class frmYM2612MIDI extends frmBase {
         //
         this.ctsmiPaste.setName("ctsmiPaste");
         this.ctsmiPaste.setPreferredSize(new Dimension(130, 22));
-        this.ctsmiPaste.setText("貼り付け(&P)");
+        this.ctsmiPaste.setText("貼り付け(&p)");
         this.ctsmiPaste.addActionListener(this::ctsmiPaste_Click);
         //
         // frmYM2612MIDI

@@ -13,7 +13,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -29,7 +29,7 @@ import mdplayer.driver.sid.libsidplayfp.Event;
 import mdplayer.driver.sid.libsidplayfp.EventCallback;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler.EventPhase;
-import mdplayer.driver.sid.mem;
+import mdplayer.driver.sid.Mem;
 
 
 /**
@@ -123,10 +123,10 @@ public class Mos656X extends Event {
     /** Is CIA asserting lightpen? */
     private boolean lpAsserted;
 
-    /** private IRQ flags */
+    /** private IRQ Flags */
     private byte irqFlags;
 
-    /** masks for the IRQ flags */
+    /** masks for the IRQ Flags */
     private byte irqMask;
 
     /** Light pen */
@@ -194,7 +194,7 @@ public class Mos656X extends Event {
     }
 
     /**
-     * Get previous value of Y raster
+     * Get previous value of y raster
      */
     private int oldRasterY() {
         return (rasterY > 0 ? rasterY : maxRasters) - 1;
@@ -341,7 +341,7 @@ public class Mos656X extends Event {
         vblanking = false;
         lpAsserted = false;
 
-        mem.memset(regs, (byte) 0, regs.length);
+        Mem.memset(regs, (byte) 0, regs.length);
 
         lp.reset();
         sprites.reset();
@@ -468,7 +468,7 @@ public class Mos656X extends Event {
         break;
 
         case 0x12: // Raster counter
-            // check raster Y irq condition changes at the next PHI1
+            // check raster y irq condition changes at the next PHI1
             eventScheduler.schedule(rasterYIRQEdgeDetectorEvent, 0, EventPhase.CLOCK_PHI1);
             break;
 

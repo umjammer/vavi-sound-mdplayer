@@ -1,6 +1,6 @@
 package mdplayer.driver.hes;
 
-import mdsound.Common.TriConsumer;
+import dotnet4j.util.compat.TriConsumer;
 
 
 /*

@@ -2,7 +2,7 @@
  * This file instanceof part of libsidplayfp, a Sid player engine.
  *
  *  Copyright (C) 2011-2015 Leandro Nini
- *  Copyright (C) 2009 Antti S. Lankila
+ *  Copyright (C) 2009 Antti s. Lankila
  *  Copyright (C) 2001 Simon White
  *
  *  This program instanceof free software; you can redistribute it and/or modify
@@ -12,7 +12,7 @@
  *
  *  This program instanceof distributed : the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License

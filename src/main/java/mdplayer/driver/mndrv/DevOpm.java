@@ -54,7 +54,7 @@ public class DevOpm {
         reg.D0_L = reg.getD0_W() >> 8;
         if (reg.getD0_B() - mm.readByte(reg.a5 + W.ch3) != 0) {
             mm.write(reg.a5 + W.ch3, (byte) reg.getD0_B());
-            reg.setD0_B(_kc_table[reg.getD0_W()]);// mm.ReadByte(_kc_table + reg.getD0_W());
+            reg.setD0_B(_kc_table[reg.getD0_W()]);// mm.readByte(_kc_table + reg.getD0_W());
             reg.D1_L = 0x28;
             mndrv._OPM_WRITE4();
         }
@@ -1186,12 +1186,12 @@ public class DevOpm {
 
         ///HACK MNDRV:syncの保存できてない?
         //original code
-        //reg.getD1_B() = mm.ReadByte(Reg.a1++);
+        //reg.getD1_B() = mm.readByte(Reg.a1++);
         //Reg.D2_L = 3;
         //reg.getD2_B() &= reg.getD1_B();
         //int sp = Reg.SR_W;
         //Reg.SR_W |= 0x700;
-        //reg.getD0_B() = mm.ReadByte(0x9da);
+        //reg.getD0_B() = mm.readByte(0x9da);
         //reg.getD0_B() &= 0xc0;
         //reg.getD0_B() += (int)(byte)reg.getD2_B();
         //mm.Write(0x9da, (byte)reg.getD0_B());
@@ -1348,7 +1348,7 @@ public class DevOpm {
         //original code
         //int sp = Reg.SR_W;
         //Reg.SR_W |= 0x700;
-        //reg.getD0_B() = mm.ReadByte(0x9da);
+        //reg.getD0_B() = mm.readByte(0x9da);
         //reg.getD0_B() &= 0xc0;
         //reg.getD0_B() += (int)(byte)reg.getD1_B();
         //mm.Write(0x9da, (byte)reg.getD0_B());
@@ -1616,7 +1616,7 @@ public class DevOpm {
 
         reg.D0_L = 7;
         reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.pan_ampm));
-        reg.setD3_B(_opm_vol_con_pat[reg.getD0_W()]);// mm.ReadByte(_opm_vol_con_pat);
+        reg.setD3_B(_opm_vol_con_pat[reg.getD0_W()]);// mm.readByte(_opm_vol_con_pat);
 
         reg.D1_L = 0x60;
         reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
@@ -1647,7 +1647,7 @@ public class DevOpm {
         reg.D0_L = 7;
         reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.pan_ampm));
         reg.a4 = Ab.dummyAddress;// _opm_vol_con_pat;
-        reg.setD3_B(_opm_vol_con_pat[reg.getD0_W()]);// mm.ReadByte(Reg.a4 + reg.getD0_W());
+        reg.setD3_B(_opm_vol_con_pat[reg.getD0_W()]);// mm.readByte(Reg.a4 + reg.getD0_W());
 
         reg.D1_L = 0x60;
         reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
@@ -2224,7 +2224,7 @@ public class DevOpm {
         reg.D1_L = 7;
         reg.setD1_B(reg.getD1_B() & mm.readByte(reg.a5 + W.pan_ampm));
         reg.a2 = Ab.dummyAddress;// _opm_vol_con_pat;
-        reg.setD5_B(_opm_vol_con_pat[reg.getD1_W()]);// mm.ReadByte(Reg.a2 + reg.getD1_W());
+        reg.setD5_B(_opm_vol_con_pat[reg.getD1_W()]);// mm.readByte(Reg.a2 + reg.getD1_W());
         reg.a2 = reg.D0_L;
         reg.D1_L = 0x60;
         reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));

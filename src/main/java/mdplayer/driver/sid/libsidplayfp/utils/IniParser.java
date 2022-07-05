@@ -8,7 +8,7 @@
  *
  *  This program instanceof distributed : the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.Tuple;
+import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.StreamReader;
@@ -87,7 +87,7 @@ public class IniParser {
                         break;
                     default:
                         try {
-                            it.Item2.add(parseKey(buffer));
+                            it.getItem2().add(parseKey(buffer));
                         } catch (ParseError e) {
                         }
                         break;
@@ -109,7 +109,7 @@ public class IniParser {
     public boolean setSection(String section) {
         curSection = null;
         for (Tuple<String, List<Tuple<String, String>>> c : sections) {
-            if (c.Item1.equals(section)) {
+            if (c.getItem1().equals(section)) {
                 curSection = c;
                 break;
             }
@@ -119,12 +119,12 @@ public class IniParser {
 
     public String getValue(byte[] key) {
         Tuple<String, String> keyIt = null;
-        for (Tuple<String, String> c : curSection.Item2) {
-            if (c.Item1.equals(new String(key, StandardCharsets.US_ASCII))) {
+        for (Tuple<String, String> c : curSection.getItem2()) {
+            if (c.getItem1().equals(new String(key, StandardCharsets.US_ASCII))) {
                 keyIt = c;
                 break;
             }
         }
-        return (keyIt != curSection.Item2.get(curSection.Item2.size() - 1)) ? keyIt.Item2 : null;
+        return (keyIt != curSection.getItem2().get(curSection.getItem2().size() - 1)) ? keyIt.getItem2() : null;
     }
 }

@@ -949,7 +949,7 @@ public class DevMPcm {
             break;// F9	永久ループポイントマーク
         case 0x7a:
             devopm._OPM_FA();
-            break;// FA	Y COMMAND
+            break;// FA	y COMMAND
         case 0x7b:
             comcmds._COM_FB();
             break;// FB	リピート抜け出し

@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
 
 import mdplayer.Setting;
@@ -62,8 +63,8 @@ public class frmTPPut extends JFrame {
         }
     };
 
-    private void dgvTonePallet_CellEndEdit(Object sender, JListCellEventArgs e) {
-        dgvTonePallet.getModel().setValueAt(e.RowIndex + "*", e.RowIndex, 0);
+    private void dgvTonePallet_CellEndEdit(ListSelectionEvent e) {
+        dgvTonePallet.getModel().setValueAt(e.getFirstIndex() + "*", e.getFirstIndex(), 0);
         btApply.setEnabled(true);
     }
 
@@ -74,9 +75,9 @@ public class frmTPPut extends JFrame {
         int row = dgvTonePallet.getSelectedRows()[0];
 
         String m = String.format("from Ch.%s", ((Button) ev.getSource()).getActionCommand());
-        Object v = dgvTonePallet.getModel().getValueAt(row, 2);
+        Object v = dgvTonePallet.getModel().getValueAt(row, cols.clmName.ordinal());
         String n = v == null ? "" : v.toString();
-        dgvTonePallet.getModel().setValueAt(m.equals(n) ? "" : m, row, 2);
+        dgvTonePallet.getModel().setValueAt(m.equals(n) ? "" : m, row, cols.clmName.ordinal());
 
         btApply.setEnabled(true);
     }
@@ -102,7 +103,7 @@ public class frmTPPut extends JFrame {
 
     private void updateTone() {
         for (int i = 0; i < 256; i++) {
-            Object o = dgvTonePallet.getModel().getValueAt(i, 2);
+            Object o = dgvTonePallet.getModel().getValueAt(i, cols.clmName.ordinal());
             String n = o == null ? "" : o.toString();
             if (n.isEmpty()) continue;
 
@@ -110,7 +111,7 @@ public class frmTPPut extends JFrame {
 
             CopySettingToneToTonePallet(ch, i);
 
-            dgvTonePallet.getModel().setValueAt("", i, 2);
+            dgvTonePallet.getModel().setValueAt("", i, cols.clmName.ordinal());
         }
     }
 
@@ -134,6 +135,13 @@ public class frmTPPut extends JFrame {
         tonePallet.getLstTone().get(ind).ams = setting.getMidiKbd().getTones()[ch].ams;
         tonePallet.getLstTone().get(ind).pms = setting.getMidiKbd().getTones()[ch].pms;
 
+    }
+
+    enum cols {
+        __dummy__,
+        clmNo,
+        clmName,
+        clmSpacer
     }
 
     private void initializeComponent() {
@@ -247,10 +255,6 @@ public class frmTPPut extends JFrame {
 //                | JAnchorStyles.Left)
 //                | JAnchorStyles.Right)));
 //        this.dgvTonePallet.ColumnHeadersHeightSizeMode = JListColumnHeadersHeightSizeMode.AutoSize;
-//        this.dgvTonePallet.Columns.AddRange(new JListColumn[] {
-//                this.clmNo,
-//                this.clmName,
-//                this.clmSpacer});
         this.dgvTonePallet.setLocation(new Point(12, 121));
         this.dgvTonePallet.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.dgvTonePallet.setName("dgvTonePallet");
@@ -258,7 +262,7 @@ public class frmTPPut extends JFrame {
 //        this.dgvTonePallet.RowTemplate.getHeight() = 21;
         this.dgvTonePallet.setPreferredSize(new Dimension(264, 81));
         // this.dgvTonePallet.TabIndex = 3
-//        this.dgvTonePallet.CellEndEdit += new JListCellEventHandler(this.dgvTonePallet_CellEndEdit);
+        this.dgvTonePallet.getSelectionModel().addListSelectionListener(this::dgvTonePallet_CellEndEdit);
         //
         // clmNo
         //
@@ -280,7 +284,7 @@ public class frmTPPut extends JFrame {
         //
 //        this.clmSpacer.AutoSizeMode = JListAutoSizeColumnMode.Fill;
 //        this.clmSpacer.HeaderText = "";
-        this.clmSpacer.setName("clmSpacer");
+//        this.clmSpacer.setName("clmSpacer");
 //        this.clmSpacer.readOnly = true;
 //        this.clmSpacer.Resizable = JListTriState.False;
         //

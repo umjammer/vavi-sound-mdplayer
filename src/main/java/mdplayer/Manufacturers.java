@@ -133,8 +133,8 @@ public enum Manufacturers {
 	Oki(79 ,"OKI"),
 	/** AuraVision Corporation */
 	Auravision(80 ,"Auravision Corporation"),
-	/** Ing C. Olivetti &amp; C., S.p.A. */
-	Olivetti(81 ,"Ing. C. Olivetti & C., S.p.A."),
+	/** Ing C. Olivetti &amp; C., s.p.a. */
+	Olivetti(81 ,"Ing. C. Olivetti & C., s.p.a."),
 	/** I/O Magic Corporation */
 	Iomagic(82 ,"I/O Magic Corporation"),
 	/** Matsushita Electric Industrial Co., LTD. */
@@ -161,8 +161,8 @@ public enum Manufacturers {
 	Dialogic(93 ,"Dialogic Corporation"),
 	/** InSoft, Inc. */
 	Insoft(94, "Insoft"),
-	/** M.P. Technologies, Inc. */
-	Mptus(95, "M.P. Technologies, Inc."),
+	/** M.p. Technologies, Inc. */
+	Mptus(95, "M.p. Technologies, Inc."),
 	/** Weitek */
 	Weitek(96, "Weitek"),
 	/** Lernout &amp; Hauspie */
@@ -249,10 +249,10 @@ public enum Manufacturers {
 	Osprey(140, "Osprey Technologies, Inc."),
 	/** Mediatrix Peripherals */
 	Mediatrix(141, "Mediatrix Peripherals"),
-	/** SounDesignS M.C.S. Ltd. */
-	Soundesigns(142, "SounDesignS M.C.S. Ltd."),
-	/** A.L. Digital Ltd. */
-	Aldigital(143, "A.L. Digital Ltd."),
+	/** SounDesignS M.C.s. Ltd. */
+	Soundesigns(142, "SounDesignS M.C.s. Ltd."),
+	/** a.L. Digital Ltd. */
+	Aldigital(143, "a.L. Digital Ltd."),
 	/** Spectrum Signal Processing, Inc. */
 	SpectrumSignalProcessing(144, "Spectrum Signal Processing, Inc."),
 	/** Electronic Courseware Systems, Inc. */

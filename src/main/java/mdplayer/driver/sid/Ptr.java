@@ -4,7 +4,8 @@ package mdplayer.driver.sid;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-
+/** @deprecated use {@link java.nio.ByteBuffer} */
+@Deprecated
 public class Ptr {
 //    public ByteBuffer buf;
 //

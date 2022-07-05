@@ -12,7 +12,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -24,6 +24,7 @@ package mdplayer.driver.sid.libsidplayfp.c64;
 
 import java.nio.ByteBuffer;
 
+import mdplayer.driver.sid.Mem;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 import mdplayer.driver.sid.libsidplayfp.SidEndian;
 import mdplayer.driver.sid.libsidplayfp.c64.banks.IBank;
@@ -33,7 +34,6 @@ import mdplayer.driver.sid.libsidplayfp.c64.banks.RomBank;
 import mdplayer.driver.sid.libsidplayfp.c64.banks.SystemRAMBank;
 import mdplayer.driver.sid.libsidplayfp.c64.banks.ZeroRAMBank;
 import mdplayer.driver.sid.libsidplayfp.SidMemory;
-import mdplayer.driver.sid.mem;
 
 
 /**
@@ -109,7 +109,7 @@ public final class MMU implements SidMemory, IPLA {
     @Override
     public void fillRam(short start, byte value, int size) {
         ByteBuffer buf = ByteBuffer.wrap(ramBank.ram, start, size);
-        mem.memset(buf, value, size);
+        Mem.memset(buf, value, size);
     }
 
     @Override
@@ -120,7 +120,7 @@ public final class MMU implements SidMemory, IPLA {
     @Override
     public void fillRam(short start, byte[] source, int size) {
         ByteBuffer buf = ByteBuffer.wrap(ramBank.ram, start, ramBank.ram.length - start);
-        mem.memcpy(buf, source, size);
+        Mem.memcpy(buf, source, size);
     }
 
     // Sid specific hacks

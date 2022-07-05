@@ -12,6 +12,8 @@ import dotnet4j.io.StreamWriter;
 import mdplayer.properties.Resources;
 
 
+/** @deprecated use {@link java.util.logging.Logger} */
+@Deprecated
 public class Log {
     // #if DEBUG
     public static boolean debug = true;

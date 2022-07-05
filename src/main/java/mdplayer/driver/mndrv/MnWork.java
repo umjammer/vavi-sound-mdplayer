@@ -452,8 +452,8 @@ interface Dw {
     //	                * bit 0 mako lfo
 
     int DRV_FLAG3 = 47;            //.ds.b   1			* $2F
-    //	                * bit 7 TIMER-A LFO
-    //	                * bit 6 TIMER-A ENV
+    //	                * bit 7 TIMER-a LFO
+    //	                * bit 6 TIMER-a ENV
 
     int LFO_FLAG = 48;             //.ds.b   1			* $30
     //	                * bit 7 extended LFO

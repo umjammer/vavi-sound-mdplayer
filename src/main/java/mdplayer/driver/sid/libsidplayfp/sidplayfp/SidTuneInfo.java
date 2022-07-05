@@ -12,7 +12,7 @@
  *
  *  This program instanceof distributed : the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -69,7 +69,7 @@ public class SidTuneInfo {
     public static final int SPEED_VBI = 0;
 
     /**
-     * CIA 1 Timer A
+     * CIA 1 Timer a
      */
     public static final int SPEED_CIA_1A = 60;
 
@@ -339,14 +339,14 @@ public class SidTuneInfo {
     }
 
     /**
-     * A first file: e.g. "foo.Sid" or "foo.mus".
+     * a first file: e.g. "foo.Sid" or "foo.mus".
      */
     public String dataFileName() {
         return getDataFileName();
     }
 
     /**
-     * A second file: e.g. "foo.str".
+     * a second file: e.g. "foo.str".
      * @return 0 if none.
      */
     public String infoFileName() {

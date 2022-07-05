@@ -1,11 +1,19 @@
 package mdplayer.form.sys;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -22,11 +30,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -34,11 +44,14 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 
-import dotnet4j.Tuple;
+import dotnet4j.util.compat.Tuple;
+import dotnet4j.util.compat.Tuple4;
 import dotnet4j.io.Directory;
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
@@ -46,20 +59,21 @@ import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmArcType;
 import mdplayer.Common.FileFormat;
-import mdplayer.Common.Tuple4;
 import mdplayer.Log;
 import mdplayer.MDChipParams;
 import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.properties.Resources;
 import org.intellij.lang.annotations.JdkConstants.FontStyle;
+import vavi.awt.dnd.BasicDTListener;
+import vavi.swing.JHistoryComboBox;
 
 
 public class frmPlayList extends JFrame {
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
-    public Setting setting = null;
+    public Setting setting;
 
     public String playFilename = "";
     public String playArcFilename = "";
@@ -79,7 +93,7 @@ public class frmPlayList extends JFrame {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmPlayList.class);
 
-    private static final String[] sext = ".Vgm;.vgz;.zip;.lzh;.nrd;.Xgm;.Zgm;.s98;.Nsf;.Hes;.Sid;.mnd;.mgs;.mdr;.mdx;.mub;.muc;.m;.m2;.mz;.mml;.mid;.rcp;.wav;.mp3;.aiff;.m3u".split(new String[] {";"});
+    private static final String[] sext = ".Vgm;.vgz;.zip;.lzh;.nrd;.Xgm;.Zgm;.s98;.Nsf;.Hes;.Sid;.mnd;.mgs;.mdr;.mdx;.mub;.muc;.m;.m2;.mz;.mml;.mid;.rcp;.wav;.mp3;.aiff;.m3u".split(";");
 
     public frmPlayList(frmMain frm) {
         frmMain = frm;
@@ -98,7 +112,7 @@ public class frmPlayList extends JFrame {
     }
 
     public int getMusicCount() {
-        return playList.getLstMusic().size();
+        return playList.getMusics().size();
     }
 
     public PlayList getPlayList() {
@@ -108,13 +122,13 @@ public class frmPlayList extends JFrame {
     public Tuple4<Integer, Integer, String, String> setStart(int n) {
         updatePlayingIndex(n);
 
-        String fn = playList.getLstMusic().get(playIndex).fileName;
-        String zfn = playList.getLstMusic().get(playIndex).arcFileName;
+        String fn = playList.getMusics().get(playIndex).fileName;
+        String zfn = playList.getMusics().get(playIndex).arcFileName;
         int m = 0;
-        int songNo = playList.getLstMusic().get(playIndex).songNo;
+        int songNo = playList.getMusics().get(playIndex).songNo;
 
-        if (playList.getLstMusic().get(playIndex).type != null && !playList.getLstMusic().get(playIndex).type.equals("-")) {
-            m = playList.getLstMusic().get(playIndex).type.charAt(0) - 'A';
+        if (playList.getMusics().get(playIndex).type != null && !playList.getMusics().get(playIndex).type.equals("-")) {
+            m = playList.getMusics().get(playIndex).type.charAt(0) - 'A';
             if (m < 0 || m > 9) m = 0;
         }
 
@@ -134,7 +148,7 @@ public class frmPlayList extends JFrame {
 
     public void Save() {
         if (setting.getOther().getEmptyPlayList()) {
-            playList.setLstMusic(new ArrayList<>());
+            playList.setMusics(new ArrayList<>());
         }
         playList.save(null);
     }
@@ -167,7 +181,7 @@ public class frmPlayList extends JFrame {
                 setting.getLocation().setPPlayListWH(new Dimension(prefs.getInt("width", 320), prefs.getInt("height", 200)));
             }
             setVisible(false);
-            e.Cancel = true;
+//            e.Cancel = true;
         }
 
         @Override
@@ -186,7 +200,7 @@ public class frmPlayList extends JFrame {
     public void Refresh() {
         DefaultTableModel m = (DefaultTableModel) dgvList.getModel();
         m.setRowCount(0);
-        List<Object[]> rows = playList.makeRow(playList.getLstMusic());
+        List<Object[]> rows = playList.makeRow(playList.getMusics());
         for (Object[] row : rows) {
             m.addRow(row);
         }
@@ -211,28 +225,30 @@ public class frmPlayList extends JFrame {
     }
 
     private void SetColor(int rowIndex) {
-        dgvList.setValueAt(">", rowIndex, "clmPlayingNow");
+        dgvList.setValueAt(">", rowIndex, cols.clmPlayingNow.ordinal());
         for (int i = 0; i < dgvList.getColumnCount(); i++) {
-            dgvList.Rows[rowIndex].Cells[i].Style.ForeColor = Color.green.brighter();
-            dgvList.Rows[rowIndex].Cells[i].Style.SelectionForeColor = Color.green.brighter();
+            Component c = dgvList.getCellRenderer(rowIndex, i).getTableCellRendererComponent(dgvList, dgvList.getValueAt(rowIndex, i), true, false, rowIndex, i);
+            c.setForeground(Color.green.brighter());
+//            dgvList.Rows[rowIndex].Cells[i].Style.SelectionForeColor = Color.green.brighter();
         }
     }
 
     private static Color clrLightBlue = new Color(255, 192, 192, 255);
 
     private void ResetColor(int rowIndex) {
-        dgvList.setValueAt(" ", rowIndex, "clmPlayingNow");
+        dgvList.setValueAt(" ", rowIndex, cols.clmPlayingNow.ordinal());
         for (int i = 0; i < dgvList.getColumnCount(); i++) {
-            dgvList.Rows[rowIndex].Cells[i].Style.ForeColor = clrLightBlue;
-            dgvList.Rows[rowIndex].Cells[i].Style.SelectionForeColor = Color.white;
+            Component c = dgvList.getCellRenderer(rowIndex, i).getTableCellRendererComponent(dgvList, dgvList.getValueAt(rowIndex, i), true, false, rowIndex, i);
+            c.setForeground(clrLightBlue);
+//            dgvList.Rows[rowIndex].Cells[i].Style.SelectionForeColor = Color.white;
         }
     }
 
     private MouseListener dgvList_CellMouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (e.RowIndex < 0) return;
-            dgvList.setRowSelectionInterval(e.RowIndex, e.RowIndex);
+            if (dgvList.getSelectedRowCount() < 0) return;
+            dgvList.setRowSelectionInterval(dgvList.getSelectedRow(), dgvList.getSelectedRow()); // TODO
 
             if (e.getButton() == MouseEvent.BUTTON2) {
                 if (dgvList.getSelectedRowCount() > 1) {
@@ -262,7 +278,7 @@ public class frmPlayList extends JFrame {
             if (playIndex >= dgvList.getSelectedRows()[i]) {
                 playIndex--;
             }
-            playList.getLstMusic().remove(dgvList.getSelectedRows()[i]);
+            playList.getMusics().remove(dgvList.getSelectedRows()[i]);
             ((DefaultTableModel) dgvList.getModel()).removeRow(dgvList.getSelectedRows()[i]);
         }
     }
@@ -276,17 +292,17 @@ public class frmPlayList extends JFrame {
 
         pi++;
 
-        String fn = (String) dgvList.getValueAt(pi, "clmFileName");
-        String zfn = (String) dgvList.getValueAt(pi, "clmZipFileName");
+        String fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
+        String zfn = (String) dgvList.getValueAt(pi, cols.clmZipFileName.ordinal());
         int m = 0;
         int songNo = 0;
         try {
-            songNo = (int) dgvList.getValueAt(pi, "clmSongNo");
+            songNo = (int) dgvList.getValueAt(pi, cols.clmSongNo.ordinal());
         } catch (Exception e) {
             songNo = 0;
         }
-        if (dgvList.getValueAt(pi, "clmType") != null && !dgvList.getValueAt(pi, "clmType").toString().equals("-")) {
-            m = dgvList.getValueAt(pi, "clmType").toString()[0] - 'A';
+        if (dgvList.getValueAt(pi, cols.clmType.ordinal()) != null && !dgvList.getValueAt(pi, cols.clmType.ordinal()).toString().equals("-")) {
+            m = dgvList.getValueAt(pi, cols.clmType.ordinal()).toString().charAt(0) - 'A';
             if (m < 0 || m > 9) m = 0;
         }
 
@@ -301,8 +317,8 @@ public class frmPlayList extends JFrame {
         playFilename = fn;
         playArcFilename = zfn;
         playSongNum = songNo;
-        //playFormat = dgvList.Rows[pi].Cells["clmSongNo"].Value;
-        //playArcType = dgvList.Rows[pi].Cells["clmSongNo"].Value;
+        //playFormat = dgvList.Rows[pi].Cells[cols.clmSongNo.ordinal()].Value;
+        //playArcType = dgvList.Rows[pi].Cells[cols.clmSongNo.ordinal()].Value;
     }
 
     public void nextPlayMode(int mode) {
@@ -323,8 +339,8 @@ public class frmPlayList extends JFrame {
 
             if (pi != -1) {
                 //再生履歴の更新
-                fn = (String) dgvList.getValueAt(pi, "clmFileName");
-                zfn = (String) dgvList.getValueAt(pi, "clmZipFileName");
+                fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
+                zfn = (String) dgvList.getValueAt(pi, cols.clmZipFileName.ordinal());
 
                 randomStack.add(new Tuple<>(fn, zfn));
                 while (randomStack.size() > 1000)
@@ -348,16 +364,16 @@ public class frmPlayList extends JFrame {
             return;
         }
 
-        fn = (String) dgvList.getValueAt(pi, "clmFileName");
-        zfn = (String) dgvList.getValueAt(pi, "clmZipFileName");
+        fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
+        zfn = (String) dgvList.getValueAt(pi, cols.clmZipFileName.ordinal());
         int m = 0;
-        if (dgvList.getValueAt(pi, "clmType") != null && !dgvList.getValueAt(pi, "clmType").toString().equals("-")) {
-            m = dgvList.getValueAt(pi, "clmType").toString()[0] - 'A';
+        if (dgvList.getValueAt(pi, cols.clmType.ordinal()) != null && !dgvList.getValueAt(pi, cols.clmType.ordinal()).toString().equals("-")) {
+            m = dgvList.getValueAt(pi, cols.clmType.ordinal()).toString().charAt(0) - 'A';
             if (m < 0 || m > 9) m = 0;
         }
         int songNo = 0;
         try {
-            songNo = (int) dgvList.getValueAt(pi, "clmSongNo");
+            songNo = (int) dgvList.getValueAt(pi, cols.clmSongNo.ordinal());
         } catch (Exception e) {
             songNo = 0;
         }
@@ -381,20 +397,20 @@ public class frmPlayList extends JFrame {
 
         if (mode != 1) {
             pi--;
-            fn = (String) dgvList.getValueAt(pi, "clmFileName");
-            zfn = (String) dgvList.getValueAt(pi, "clmZipFileName");
+            fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
+            zfn = (String) dgvList.getValueAt(pi, cols.clmZipFileName.ordinal());
         } else {
             pi = 0;
 loopEx:
             if (randomStack.size() > 0) {
                 while (true) {
-                    String hfn = randomStack.get(randomStack.size() - 1).Item1;
-                    String hzfn = randomStack.get(randomStack.size() - 1).Item2;
+                    String hfn = randomStack.get(randomStack.size() - 1).getItem1();
+                    String hzfn = randomStack.get(randomStack.size() - 1).getItem2();
                     randomStack.remove(randomStack.size() - 1);
 
                     for (; pi < dgvList.getRowCount(); pi++) {
-                        fn = (String) dgvList.getValueAt(pi, "clmFileName");
-                        zfn = (String) dgvList.getValueAt(pi, "clmZipFileName");
+                        fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
+                        zfn = (String) dgvList.getValueAt(pi, cols.clmZipFileName.ordinal());
                         if (hfn.equals(fn) && hzfn.equals(zfn)) {
                             break loopEx;
                         }
@@ -405,25 +421,25 @@ loopEx:
 
                 if (playIndex < 1) return;
                 pi = playIndex - 1;
-                fn = (String) dgvList.getValueAt(pi, "clmFileName");
-                zfn = (String) dgvList.getValueAt(pi, "clmZipFileName");
+                fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
+                zfn = (String) dgvList.getValueAt(pi, cols.clmZipFileName.ordinal());
             } else {
                 pi = playIndex;
                 pi--;
                 if (pi < 0) pi = 0;
-                fn = (String) dgvList.getValueAt(pi, "clmFileName");
-                zfn = (String) dgvList.getValueAt(pi, "clmZipFileName");
+                fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
+                zfn = (String) dgvList.getValueAt(pi, cols.clmZipFileName.ordinal());
             }
         }
 
         int m = 0;
-        if (dgvList.getValueAt(pi, "clmType") != null && !dgvList.getValueAt(pi, "clmType").toString().equals("-")) {
-            m = dgvList.getValueAt(pi, "clmType").toString()[0] - 'A';
+        if (dgvList.getValueAt(pi, cols.clmType.ordinal()) != null && !dgvList.getValueAt(pi, cols.clmType.ordinal()).toString().equals("-")) {
+            m = dgvList.getValueAt(pi, cols.clmType.ordinal()).toString().charAt(0) - 'A';
             if (m < 0 || m > 9) m = 0;
         }
         int songNo = 0;
         try {
-            songNo = (int) dgvList.getValueAt(pi, "clmSongNo");
+            songNo = (int) dgvList.getValueAt(pi, cols.clmSongNo.ordinal());
         } catch (Exception e) {
             songNo = 0;
         }
@@ -434,36 +450,36 @@ loopEx:
     }
 
     private void dgvList_CellDoubleClick(ActionEvent e) {
-        if (e.RowIndex < 0) return;
+//        if (e.RowIndex < 0) return;
 
         dgvList.setEnabled(false);
 
         playing = false;
 
-        try {
-            String fn = (String) dgvList.getValueAt(e.RowIndex, "clmFileName");
-            String zfn = (String) dgvList.getValueAt(e.RowIndex, "clmZipFileName");
-            int m = 0;
-            int songNo = 0;
-            try {
-                songNo = (int) dgvList.getValueAt(e.RowIndex, "clmSongNo");
-            } catch (Exception ex) {
-                songNo = 0;
-            }
-            if (dgvList.getValueAt(e.RowIndex, "clmType") != null && !dgvList.getValueAt(e.RowIndex, "clmType").toString().equals("-")) {
-                m = dgvList.getValueAt(e.RowIndex, "clmType").toString()[0] - 'A';
-                if (m < 0 || m > 9) m = 0;
-            }
-
-            if (!frmMain.loadAndPlay(m, songNo, fn, zfn)) return;
-            updatePlayingIndex(e.RowIndex);
-
-            playing = true;
-        } finally {
-            //dgvList.MultiSelect = true;
-            dgvList.setEnabled(true);
-            dgvList.Rows[e.RowIndex].Selected = true;
-        }
+//        try {
+//            String fn = (String) dgvList.getValueAt(e.RowIndex, cols.clmFileName.ordinal());
+//            String zfn = (String) dgvList.getValueAt(e.RowIndex, cols.clmZipFileName.ordinal());
+//            int m = 0;
+//            int songNo = 0;
+//            try {
+//                songNo = (int) dgvList.getValueAt(e.RowIndex, cols.clmSongNo.ordinal());
+//            } catch (Exception ex) {
+//                songNo = 0;
+//            }
+//            if (dgvList.getValueAt(e.RowIndex, cols.clmType.ordinal()) != null && !dgvList.getValueAt(e.RowIndex, cols.clmType.ordinal()).toString().equals("-")) {
+//                m = dgvList.getValueAt(e.RowIndex, cols.clmType.ordinal()).toString()[0] - 'A';
+//                if (m < 0 || m > 9) m = 0;
+//            }
+//
+//            if (!frmMain.loadAndPlay(m, songNo, fn, zfn)) return;
+//            updatePlayingIndex(e.RowIndex);
+//
+//            playing = true;
+//        } finally {
+//            //dgvList.MultiSelect = true;
+//            dgvList.setEnabled(true);
+//            dgvList.Rows[e.RowIndex].Selected = true;
+//        }
     }
 
     private void tsmiPlayThis_Click(ActionEvent ev) {
@@ -471,16 +487,16 @@ loopEx:
 
         playing = false;
 
-        String fn = (String) dgvList.getValueAt(dgvList.getSelectedRows()[0], "clmFileName");
-        String zfn = (String) dgvList.getValueAt(dgvList.getSelectedRows()[0], "clmZipFileName");
+        String fn = (String) dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmFileName.ordinal());
+        String zfn = (String) dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmZipFileName.ordinal());
         int m = 0;
-        if (dgvList.getValueAt(dgvList.getSelectedRows()[0], "clmType") != null && !dgvList.getValueAt(dgvList.getSelectedRows()[0], "clmType").toString().equals("-")) {
-            m = dgvList.getValueAt(dgvList.getSelectedRows()[0], "clmType").toString()[0] - 'A';
+        if (dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmType.ordinal()) != null && !dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmType.ordinal()).toString().equals("-")) {
+            m = dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmType.ordinal()).toString().charAt(0) - 'A';
             if (m < 0 || m > 9) m = 0;
         }
         int songNo = 0;
         try {
-            songNo = (int) dgvList.getValueAt(dgvList.getSelectedRows()[0], "clmSongNo");
+            songNo = (int) dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmSongNo.ordinal());
         } catch (Exception e) {
             songNo = 0;
         }
@@ -493,12 +509,13 @@ loopEx:
 
     private void tsmiDelAllMusic_Click(ActionEvent ev) {
 
-        int res = JOptionPane.showConfirmDialog(null, "プレイリストの全ての曲が除去されます。よろしいですか。", "PlayList", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        int res = JOptionPane.showConfirmDialog(null, "プレイリストの全ての曲が除去されます。よろしいですか。", "PlayList",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
         if (res != JFileChooser.APPROVE_OPTION) return;
 
         playing = false;
         ((DefaultTableModel) dgvList.getModel()).setRowCount(0);
-        playList.getLstMusic().clear();
+        playList.getMusics().clear();
         playIndex = -1;
         oldPlayIndex = -1;
 
@@ -540,8 +557,8 @@ loopEx:
             } else {
                 pl = PlayList.LoadM3U(filename);
                 playing = false;
-                playList.getLstMusic().clear();
-                for (PlayList.Music ms : pl.getLstMusic()) {
+                playList.getMusics().clear();
+                for (PlayList.Music ms : pl.getMusics()) {
                     playList.AddFile(ms.fileName);
                     //AddList(ms.fileName);
                 }
@@ -554,7 +571,7 @@ loopEx:
 
         } catch (Exception ex) {
             Log.forcedWrite(ex);
-            JOptionPane.showConfirmDialog(null, "ファイルの読み込みに失敗しました。");
+            JOptionPane.showMessageDialog(null, "ファイルの読み込みに失敗しました。");
         }
     }
 
@@ -605,7 +622,7 @@ loopEx:
 
         } catch (Exception ex) {
             Log.forcedWrite(ex);
-            JOptionPane.showConfirmDialog(null, "ファイルの保存に失敗しました。");
+            JOptionPane.showMessageDialog(null, "ファイルの保存に失敗しました。");
         }
     }
 
@@ -693,7 +710,7 @@ loopEx:
         }
 
         int ind = dgvList.getSelectedRows()[0];
-        PlayList.Music mus = playList.getLstMusic().get(ind - 1);
+        PlayList.Music mus = playList.getMusics().get(ind - 1);
         DefaultTableModel m = (DefaultTableModel) dgvList.getModel();
         int row = ind - 1;
 
@@ -703,9 +720,9 @@ loopEx:
         if (ind == oldPlayIndex) oldPlayIndex--;
         else if (ind == oldPlayIndex + 1) oldPlayIndex++;
 
-        playList.getLstMusic().remove(ind - 1);
+        playList.getMusics().remove(ind - 1);
 
-        playList.getLstMusic().add(ind, mus);
+        playList.getMusics().add(ind, mus);
         m.moveRow(row, row, ind);
     }
 
@@ -715,7 +732,7 @@ loopEx:
         }
 
         int ind = dgvList.getSelectedRows()[0];
-        PlayList.Music mus = playList.getLstMusic().get(ind + 1);
+        PlayList.Music mus = playList.getMusics().get(ind + 1);
         DefaultTableModel m = (DefaultTableModel) dgvList.getModel();
         int row = ind + 1;
 
@@ -725,155 +742,183 @@ loopEx:
         if (ind == oldPlayIndex) oldPlayIndex++;
         else if (ind == oldPlayIndex - 1) oldPlayIndex--;
 
-        playList.getLstMusic().remove(ind + 1);
+        playList.getMusics().remove(ind + 1);
 
-        playList.getLstMusic().add(ind, mus);
+        playList.getMusics().add(ind, mus);
         m.moveRow(row, row, ind);
     }
 
     private void toolStripButton1_Click(ActionEvent ev) {
-        dgvList.getColumn("clmTitle").setVisible = !tsbJapanese.isSelected();
-        dgvList.Columns["clmTitleJ"].Visible = tsbJapanese.isSelected();
-        dgvList.Columns["clmGame"].Visible = !tsbJapanese.isSelected();
-        dgvList.Columns["clmGameJ"].Visible = tsbJapanese.isSelected();
-        dgvList.Columns["clmComposer"].Visible = !tsbJapanese.isSelected();
-        dgvList.Columns["clmComposerJ"].Visible = tsbJapanese.isSelected();
+//        dgvList.getColumn(cols.clmTitle.ordinal()).setVisible = !tsbJapanese.isSelected();
+//        dgvList.Columns[cols.clmTitleJ.ordinal()].Visible = tsbJapanese.isSelected();
+//        dgvList.Columns[cols.clmGame.ordinal()].Visible = !tsbJapanese.isSelected();
+//        dgvList.Columns[cols.clmGameJ.ordinal()].Visible = tsbJapanese.isSelected();
+//        dgvList.Columns[cols.clmComposer.ordinal()].Visible = !tsbJapanese.isSelected();
+//        dgvList.Columns[cols.clmComposerJ.ordinal()].Visible = tsbJapanese.isSelected();
     }
 
-    private void frmPlayList_KeyDown(KeyEvent e) {
-        //System.err.println("keycode%d %d %d", e.KeyCode, e.KeyData, e.KeyValue);
+    private KeyListener frmPlayList_KeyDown = new KeyAdapter() {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            //System.err.println("keycode%d %d %d", e.KeyCode, e.KeyData, e.KeyValue);
 
-        switch (e.getKeyCode()) {
-        case 32: //Space
-        case 13: //Enter
-            if (dgvList.getSelectedRowCount() == 0) {
-                return;
+            switch (e.getKeyCode()) {
+            case 32: //Space
+            case 13: //Enter
+                if (dgvList.getSelectedRowCount() == 0) {
+                    return;
+                }
+
+                int index = dgvList.getSelectedRows()[0];
+
+//                e.Handled = true;
+
+                playing = false;
+
+                String fn = (String) dgvList.getValueAt(index, cols.clmFileName.ordinal());
+                String zfn = (String) dgvList.getValueAt(index, cols.clmZipFileName.ordinal());
+                int m = 0;
+                if (dgvList.getValueAt(index, cols.clmType.ordinal()) != null && !dgvList.getValueAt(index, cols.clmType.ordinal()).toString().equals("-")) {
+                    m = dgvList.getValueAt(index, cols.clmType.ordinal()).toString().charAt(0) - 'A';
+                    if (m < 0 || m > 9) m = 0;
+                }
+                int songNo = 0;
+                try {
+                    songNo = (int) dgvList.getValueAt(index, cols.clmSongNo.ordinal());
+                } catch (Exception ex) {
+                    songNo = 0;
+                }
+
+                frmMain.loadAndPlay(m, songNo, fn, zfn);
+                updatePlayingIndex(index);
+
+                playing = true;
+                break;
+            case 46: //Delete
+//                e.Handled = true;
+                tsmiDelThis_Click(null);
+                break;
             }
-
-            int index = dgvList.getSelectedRows()[0];
-
-            e.Handled = true;
-
-            playing = false;
-
-            String fn = (String) dgvList.getValueAt(index, "clmFileName");
-            String zfn = (String) dgvList.getValueAt(index, "clmZipFileName");
-            int m = 0;
-            if (dgvList.getValueAt(dgvList.getValueAt(index, "clmType") != null && !dgvList.getValueAt(index, "clmType").toString().equals("-"))) {
-                m = dgvList.getValueAt(index, "clmType").toString()[0] - 'A';
-                if (m < 0 || m > 9) m = 0;
-            }
-            int songNo = 0;
-            try {
-                songNo = (int) dgvList.getValueAt(index, "clmSongNo");
-            } catch (Exception ex) {
-                songNo = 0;
-            }
-
-            frmMain.loadAndPlay(m, songNo, fn, zfn);
-            updatePlayingIndex(index);
-
-            playing = true;
-            break;
-        case 46: //Delete
-            e.Handled = true;
-            tsmiDelThis_Click(null);
-            break;
         }
-    }
+    };
 
-    private void dgvList_DragEnter(DragEvent e) {
-        e.Effect = DragDropEffects.All;
-        Point cp = dgvList.PointToClient(new Point(e.getX(), e.getY()));
-        JList.HitTestInfo hti = dgvList.HitTest(cp.x, cp.y);
-        if (hti.Type != JListHitTestType.Cell || hti.RowIndex < 0 || hti.RowIndex >= dgvList.Rows.size()) return;
-        dgvList.MultiSelect = false;
-        dgvList.MultiSelect = true;
-        dgvList.Rows[hti.RowIndex].Selected = true;
-    }
-
-    private void dgvList_DragOver(DragEvent e) {
-        e.Effect = DragDropEffects.All;
-        Point cp = dgvList.PointToClient(new Point(e.getX(), e.getY()));
-        JList.HitTestInfo hti = dgvList.HitTest(cp.x, cp.y);
-        if (hti.Type != JListHitTestType.Cell || hti.RowIndex < 0 || hti.RowIndex >= dgvList.Rows.size()) return;
-        dgvList.MultiSelect = false;
-        dgvList.MultiSelect = true;
-        dgvList.Rows[hti.RowIndex].Selected = true;
-    }
-
-    private final Object relock = new Object();
-    private boolean reent = false;
-
-    public void dgvList_DragDrop(DragEvent e) {
-        synchronized (relock) {
-            if (reent) return;
-            reent = true;
+    private BasicDTListener dgvList_DragDrop = new BasicDTListener() {
+        @Override
+        protected boolean isDragFlavorSupported(DropTargetDragEvent ev) {
+            return ev.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
         }
 
-        if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-
-        try {
-            this.setEnabled(false);
-            this.timer1.setEnabled(false);
-
-            String[] filename = ((String[]) e.Data.GetData(DataFormats.FileDrop));
-
-            //ドロップされたアイテムがフォルダーの場合は下位フォルダー内も含めた
-            //実際のファイルのリストを取得する
-            List<String> result = new ArrayList<>();
-            GetTrueFileNameList(result, filename);
-            //重複を取り除く
-            filename = result.Distinct().toArray();
-
-            int i = playList.getLstMusic().size();
-            Point cp = dgvList.PointToClient(new Point(e.getX(), e.getY()));
-            JList.HitTestInfo hti = dgvList.HitTest(cp.getX(), cp.getY());
-            if (hti.Type == JListHitTestType.Cell && hti.RowIndex >= 0 && hti.RowIndex < dgvList.getRowCount()) {
-                if (hti.RowIndex < playList.getLstMusic().size()) i = hti.RowIndex;
+        @Override
+        protected DataFlavor chooseDropFlavor(DropTargetDropEvent ev) {
+            if (ev.isLocalTransfer() && ev.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                return DataFlavor.javaFileListFlavor;
             }
-
-            //曲を停止
-            stop();
-            frmMain.stop();
-            while (!Audio.isStopped())
-                Application.DoEvents();
-
-            int buIndex = i;
-
-            playList.InsertFile(i, filename);
-
-            if (buIndex <= oldPlayIndex) {
-                oldPlayIndex += i - buIndex;
+            DataFlavor chosen = null;
+            if (ev.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                chosen = DataFlavor.javaFileListFlavor;
             }
-            i = buIndex;
+            return chosen;
+        }
 
-            //選択位置の曲を再生する
-            String fn = playList.getLstMusic().get(i).fileName;
-            if (
-                    fn.toLowerCase().lastIndexOf(".lzh") == -1
-                            && fn.toLowerCase().lastIndexOf(".zip") == -1
-                            && fn.toLowerCase().lastIndexOf(".m3u") == -1
-                //&& fn.toLowerCase().lastIndexOf(".Sid") == -1
-            ) {
-                frmMain.loadAndPlay(0, 0, fn, null);
-                setStart(i);// -1);
-                frmMain.oldParam = new MDChipParams();
-                play();
-            }
-        } catch (Exception ex) {
-            Log.forcedWrite(ex);
-            JOptionPane.showConfirmDialog(null, "ファイルの読み込みに失敗しました。");
-        } finally {
-            this.setEnabled(true);
-            this.timer1.start();
+        @Override
+        public void dragEnter(DropTargetDragEvent e) {
+//            e.Effect = DragDropEffects.All;
+//            Point cp = dgvList.PointToClient(new Point(e.getX(), e.getY()));
+//            JList.HitTestInfo hti = dgvList.HitTest(cp.x, cp.y);
+//            if (hti.Type != JListHitTestType.Cell || hti.RowIndex < 0 || hti.RowIndex >= dgvList.Rows.size()) return;
+//            dgvList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//            dgvList.MultiSelect = true;
+//            dgvList.Rows[hti.RowIndex].Selected = true;
+            super.dragEnter(e);
+        }
+
+        @Override
+        public void dragOver(DropTargetDragEvent e) {
+//            e.Effect = DragDropEffects.All;
+//            Point cp = dgvList.PointToClient(e.getLocation());
+//            JList.HitTestInfo hti = dgvList.HitTest(cp.x, cp.y);
+//            if (hti.Type != JListHitTestType.Cell || hti.RowIndex < 0 || hti.RowIndex >= dgvList.Rows.size()) return;
+//            dgvList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//            dgvList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+//            dgvList.Rows[hti.RowIndex].Selected = true;
+            super.dragOver(e);
+        }
+
+        private final Object relock = new Object();
+        private boolean reent = false;
+
+        @Override
+        protected boolean dropImpl(DropTargetDropEvent e, Object data) {
             synchronized (relock) {
-                reent = false;
+                if (reent) return false;
+                reent = true;
             }
-        }
-    }
 
-    private void GetTrueFileNameList(List<String> res, Iterable<String> files) {
+//            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return false;
+
+//            try {
+//                this.setEnabled(false);
+//                this.timer1.setEnabled(false);
+//
+//                String[] filename = ((String[]) e.Data.GetData(DataFormats.FileDrop));
+//
+//                //ドロップされたアイテムがフォルダーの場合は下位フォルダー内も含めた
+//                //実際のファイルのリストを取得する
+//                List<String> result = new ArrayList<>();
+//                GetTrueFileNameList(result, Arrays.asList(filename));
+//                //重複を取り除く
+//                filename = result.stream().distinct().toArray(String[]::new);
+//
+//                int i = playList.getMusics().size();
+//                Point cp = dgvList.PointToClient(new Point(e.getX(), e.getY()));
+//                JList.HitTestInfo hti = dgvList.HitTest(cp.getX(), cp.getY());
+//                if (hti.Type == JListHitTestType.Cell && hti.RowIndex >= 0 && hti.RowIndex < dgvList.getRowCount()) {
+//                    if (hti.RowIndex < playList.getMusics().size()) i = hti.RowIndex;
+//                }
+//
+//                //曲を停止
+//                stop();
+//                frmMain.stop();
+//                while (!Audio.isStopped())
+//                    Application.DoEvents();
+//
+//                int buIndex = i;
+//
+//                playList.InsertFile(i, filename);
+//
+//                if (buIndex <= oldPlayIndex) {
+//                    oldPlayIndex += i - buIndex;
+//                }
+//                i = buIndex;
+//
+//                //選択位置の曲を再生する
+//                String fn = playList.getMusics().get(i).fileName;
+//                if (
+//                        fn.toLowerCase().lastIndexOf(".lzh") == -1
+//                                && fn.toLowerCase().lastIndexOf(".zip") == -1
+//                                && fn.toLowerCase().lastIndexOf(".m3u") == -1
+//                    //&& fn.toLowerCase().lastIndexOf(".Sid") == -1
+//                ) {
+//                    frmMain.loadAndPlay(0, 0, fn, null);
+//                    setStart(i);// -1);
+//                    frmMain.oldParam = new MDChipParams();
+//                    play();
+//                }
+//            } catch (Exception ex) {
+//                Log.forcedWrite(ex);
+//                JOptionPane.showMessageDialog(null, "ファイルの読み込みに失敗しました。");
+//            } finally {
+//                this.setEnabled(true);
+//                this.timer1.start();
+//                synchronized (relock) {
+//                    reent = false;
+//                }
+//            }
+            return false;
+        }
+    };
+
+    private void GetTrueFileNameList(List<String> res, List<String> files) {
         for (String f : files) {
             if (File.exists(f)) {
                 if (!res.contains(f)) {
@@ -883,7 +928,7 @@ loopEx:
             } else {
                 if (Directory.exists(f)) {
                     try {
-                        Iterable<String> fs = (Iterable<String>) Files.list(Paths.get(f)).map(java.nio.file.Path::toAbsolutePath).spliterator();
+                        List<String> fs = Files.list(Paths.get(f)).map(java.nio.file.Path::toString).collect(Collectors.toList());
                         GetTrueFileNameList(res, fs);
                     } catch (IOException ev) {
                         throw new UncheckedIOException(ev);
@@ -898,8 +943,8 @@ loopEx:
 
         List<Integer> sel = new ArrayList<>();
         for (int r : dgvList.getSelectedRows()) {
-            playList.getLstMusic().get(r).type = ((JPopupMenu) ev.getSource()).Text;
-            r.Cells["clmType"].Value = ((JMenuItem) ev.getSource()).Text;
+//            playList.getMusics().get(r).type = ((JPopupMenu) ev.getSource()).Text;
+//            r.Cells[cols.clmType.ordinal()].Value = ((JMenuItem) ev.getSource()).Text;
         }
     }
 
@@ -1002,12 +1047,13 @@ loopEx:
 
     public PlayList.Music getPlayingSongInfo() {
         if (playIndex < 0 || dgvList.getRowCount() <= playIndex) return null;
-        return (PlayList.Music) dgvList.Rows[playIndex].Tag;
+//        return ((PlayList.Music) dgvList.getValueAt(dgvList.getSelectedRows()[0], playIndex)).Tag;
+        return null; // TODO
     }
 
     private void tsmiOpenFolder_Click(ActionEvent ev) {
         try {
-            String path = (String) dgvList.getValueAt(dgvList.getSelectedRows()[0], "clmFileName");
+            String path = (String) dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmFileName.ordinal());
             path = Path.getDirectoryName(path);
             new ProcessBuilder(path).start();
         } catch (IOException e) {
@@ -1015,13 +1061,36 @@ loopEx:
         }
     }
 
+    enum cols {
+        __dummy__,
+        clmKey,
+        clmSongNo,
+        clmZipFileName,
+        clmFileName,
+        clmPlayingNow,
+        clmEXT,
+        clmType,
+        clmTitle,
+        clmTitleJ,
+        clmDispFileName,
+        clmGame,
+        clmGameJ,
+        clmComposer,
+        clmComposerJ,
+        clmVGMby,
+        clmConverted,
+        clmNotes,
+        clmDuration,
+        clmSpacer
+    }
+
     private void initializeComponent() {
 //        this.components = new System.ComponentModel.Container();
 //        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmPlayList));
-        JTableCellStyle JListCellStyle1 = new JTableCellStyle();
-        JTableCellStyle JListCellStyle3 = new JTableCellStyle();
-        JTableCellStyle JListCellStyle4 = new JTableCellStyle();
-        JTableCellStyle JListCellStyle2 = new JTableCellStyle();
+//        JTableCellStyle JListCellStyle1 = new JTableCellStyle();
+//        JTableCellStyle JListCellStyle3 = new JTableCellStyle();
+//        JTableCellStyle JListCellStyle4 = new JTableCellStyle();
+//        JTableCellStyle JListCellStyle2 = new JTableCellStyle();
         this.toolStripContainer1 = new JPopupMenu();
         this.dgvList = new JTable();
         this.clmKey = new JTextArea();
@@ -1043,8 +1112,8 @@ loopEx:
         this.clmNotes = new JTextArea();
         this.clmDuration = new JTextArea();
         this.clmSpacer = new JTextArea();
-        this.cmsPlayList = new JMenuItem();
-        this.type設定ToolStripMenuItem = new JMenuItem();
+        this.cmsPlayList = new JMenu();
+        this.type設定ToolStripMenuItem = new JMenu();
         this.tsmiA = new JMenuItem();
         this.tsmiB = new JMenuItem();
         this.tsmiC = new JMenuItem();
@@ -1061,7 +1130,7 @@ loopEx:
         this.toolStripSeparator3 = new JSeparator();
         this.tsmiDelAllMusic = new JMenuItem();
         this.tsmiOpenFolder = new JMenuItem();
-        this.toolStrip1 = new JToolBar();
+        this.toolStrip1 = new JPopupMenu();
         this.tsbOpenPlayList = new JButton();
         this.tsbSavePlayList = new JButton();
         this.toolStripSeparator1 = new JSeparator();
@@ -1076,7 +1145,7 @@ loopEx:
         this.tsbTextExt = new JButton();
         this.tsbMMLExt = new JButton();
         this.tsbImgExt = new JButton();
-        this.timer1 = new Timer();
+        this.timer1 = new Timer(0, null);
 //        this.toolStripContainer1.ContentPanel.SuspendLayout();
 //        this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
 //        this.toolStripContainer1.SuspendLayout();
@@ -1091,230 +1160,206 @@ loopEx:
         // toolStripContainer1.ContentPanel
         //
 //        //resources.ApplyResources(this.toolStripContainer1.ContentPanel, "toolStripContainer1.ContentPanel");
-        this.toolStripContainer1.ContentPanel.add(this.dgvList);
+        this.toolStripContainer1.add(this.dgvList);
 //        //resources.ApplyResources(this.toolStripContainer1, "toolStripContainer1");
         this.toolStripContainer1.setName("toolStripContainer1");
         //
         // toolStripContainer1.TopToolStripPanel
         //
-        this.toolStripContainer1.TopToolStripPanel.add(this.toolStrip1);
+        this.toolStripContainer1.add(this.toolStrip1);
         //
         // dgvList
         //
-        this.dgvList.AllowDrop = true;
-        this.dgvList.AllowUserToAddRows = false;
-        this.dgvList.AllowUserToDeleteRows = false;
-        this.dgvList.AllowUserToResizeRows = false;
-        this.dgvList.BackgroundColor = Color.black;
-        this.dgvList.BorderStyle = JBorderStyle.None;
-        this.dgvList.CellBorderStyle = JTableCellBorderStyle.None;
-        JListCellStyle1.Alignment = JTableContentAlignment.MiddleLeft;
-        JListCellStyle1.setBackground(Color.black);
-        JListCellStyle1.Font = new Font("メイリオ", 8.25F, FontStyle.Regular, GraphicsUnit.Point, ((byte) (128)));
-        JListCellStyle1.ForeColor = Color.MenuHighlight;
-        JListCellStyle1.Selectio.setBackground(Color.Highlight);
-        JListCellStyle1.SelectionForeColor = Color.HighlightText;
-        JListCellStyle1.WrapMode = JTableTriState.False;
-        this.dgvList.ColumnHeadersDefaultCellStyle = JListCellStyle1;
+//        this.dgvList.AllowDrop = true;
+//        this.dgvList.AllowUserToAddRows = false;
+//        this.dgvList.AllowUserToDeleteRows = false;
+//        this.dgvList.AllowUserToResizeRows = false;
+//        this.dgvList.BackgroundColor = Color.black;
+//        this.dgvList.BorderStyle = JBorderStyle.None;
+//        this.dgvList.CellBorderStyle = JTableCellBorderStyle.None;
+//        JListCellStyle1.Alignment = JTableContentAlignment.MiddleLeft;
+//        JListCellStyle1.setBackground(Color.black);
+//        JListCellStyle1.setFont(new Font("メイリオ", 8.25F, FontStyle.Regular, GraphicsUnit.Point, ((byte) (128))));
+//        JListCellStyle1.setForeColor = Color.MenuHighlight;
+//        JListCellStyle1.Selectio.setBackground(Color.Highlight);
+//        JListCellStyle1.SelectionForeColor = Color.HighlightText;
+//        JListCellStyle1.WrapMode = JTableTriState.False;
+//        this.dgvList.ColumnHeadersDefaultCellStyle = JListCellStyle1;
 //        //resources.ApplyResources(this.dgvList, "dgvList");
-        this.dgvList.ColumnHeadersHeightSizeMode = JTableColumnHeadersHeightSizeMode.DisableResizing;
-        this.dgvList.Columns.AddRange(new JTableColumn[] {
-                this.clmKey,
-                this.clmSongNo,
-                this.clmZipFileName,
-                this.clmFileName,
-                this.clmPlayingNow,
-                this.clmEXT,
-                this.clmType,
-                this.clmTitle,
-                this.clmTitleJ,
-                this.clmDispFileName,
-                this.clmGame,
-                this.clmGameJ,
-                this.clmComposer,
-                this.clmComposerJ,
-                this.clmVGMby,
-                this.clmConverted,
-                this.clmNotes,
-                this.clmDuration,
-                this.clmSpacer});
-        this.dgvList.EditMode = JTableEditMode.EditProgrammatically;
-        this.dgvList.setName("dgvList");
-        this.dgvList.RowHeadersBorderStyle = JTableHeaderBorderStyle.None;
-        JListCellStyle3.setHoAlignment = JTableContentAlignment.MiddleLeft;
-        JListCellStyle3.setBackground(Color.black);
-        JListCellStyle3.setFont(new Font("メイリオ", 8.25F, Font.BOLD, GraphicsUnit.Point, ((byte) (128))));
-        JListCellStyle3.ForeColor = Color.Window;
-        JListCellStyle3.Selectio.setBackground(Color.Highlight);
-        JListCellStyle3.SelectionForeColor = Color.HighlightText;
-        JListCellStyle3.WrapMode = JTableTriState.True;
-        this.dgvList.RowHeadersDefaultCellStyle = JListCellStyle3;
-        this.dgvList.RowHeadersVisible = false;
-        JListCellStyle4.setBackground(Color.black);
-        JListCellStyle4.setFont(new Font("メイリオ", 8.25F, Font.BOLD, GraphicsUnit.Point, ((byte) (128))));
-        JListCellStyle4.setForeColor = new Color(((byte) (192)), ((byte) (192)), ((byte) (255)));
-        this.dgvList.RowsDefaultCellStyle = JListCellStyle4;
-        this.dgvList.RowTemplate.ContextMenuStrip = this.cmsPlayList;
-        this.dgvList.RowTemplate.DefaultCellStyle.Alignment = JTableContentAlignment.MiddleLeft;
-        this.dgvList.RowTemplate.getHeight() = 10;
-        this.dgvList.RowTemplate.setEditable(Xtrue);
-        this.dgvList.setSelectionMode(FullRowSelect);
-        this.dgvList.ShowCellErrors = false;
-        this.dgvList.ShowEditingIcon = false;
-        this.dgvList.ShowRowErrors = false;
-        this.dgvList.CellDoubleClick += new JTableCellEventHandler(this.dgvList_CellDoubleClick);
+//        this.dgvList.ColumnHeadersHeightSizeMode = JTableColumnHeadersHeightSizeMode.DisableResizing;
+//        this.dgvList.EditMode = JTableEditMode.EditProgrammatically;
+//        this.dgvList.setName("dgvList");
+//        this.dgvList.RowHeadersBorderStyle = JTableHeaderBorderStyle.None;
+//        JListCellStyle3.setHoAlignment = JTableContentAlignment.MiddleLeft;
+//        JListCellStyle3.setBackground(Color.black);
+//        JListCellStyle3.setFont(new Font("メイリオ", 8.25F, Font.BOLD, GraphicsUnit.Point, ((byte) (128))));
+//        JListCellStyle3.ForeColor = Color.Window;
+//        JListCellStyle3.Selectio.setBackground(Color.Highlight);
+//        JListCellStyle3.SelectionForeColor = Color.HighlightText;
+//        JListCellStyle3.WrapMode = JTableTriState.True;
+//        this.dgvList.RowHeadersDefaultCellStyle = JListCellStyle3;
+//        this.dgvList.RowHeadersVisible = false;
+//        JListCellStyle4.setBackground(Color.black);
+//        JListCellStyle4.setFont(new Font("メイリオ", 8.25F, Font.BOLD, GraphicsUnit.Point, ((byte) (128))));
+//        JListCellStyle4.setForeColor = new Color(((byte) (192)), ((byte) (192)), ((byte) (255)));
+//        this.dgvList.RowsDefaultCellStyle = JListCellStyle4;
+//        this.dgvList.RowTemplate.ContextMenuStrip = this.cmsPlayList;
+//        this.dgvList.RowTemplate.DefaultCellStyle.Alignment = JTableContentAlignment.MiddleLeft;
+//        this.dgvList.RowTemplate.getHeight() = 10;
+//        this.dgvList.RowTemplate.setEditable(Xtrue);
+//        this.dgvList.setSelectionMode(FullRowSelect);
+//        this.dgvList.ShowCellErrors = false;
+//        this.dgvList.ShowEditingIcon = false;
+//        this.dgvList.ShowRowErrors = false;
+//        this.dgvList.CellDoubleClick += new JTableCellEventHandler(this.dgvList_CellDoubleClick);
         this.dgvList.addMouseListener(this.dgvList_CellMouseClick);
-        this.dgvList.addDragDrop += new JDragEventHandler(this.dgvList_DragDrop);
-        this.dgvList.DragEnter += new JDragEventHandler(this.dgvList_DragEnter);
-        this.dgvList.DragOver += new JDragEventHandler(this.dgvList_DragOver);
+        new DropTarget(dgvList, DnDConstants.ACTION_COPY_OR_MOVE, dgvList_DragDrop, true);
         //
         // clmKey
         //
-        //resources.ApplyResources(this.clmKey, "clmKey");
-        this.clmKey.setName("clmKey");
-        this.clmKey.SortMode = JTableColumnSortMode.NotSortable;
+        //resources.ApplyResources(this.clmKey, cols.clmKey.ordinal());
+//        this.clmKey.setName(cols.clmKey.ordinal());
+//        this.clmKey.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmSongNo
         //
-        //resources.ApplyResources(this.clmSongNo, "clmSongNo");
-        this.clmSongNo.setName("clmSongNo");
+        //resources.ApplyResources(this.clmSongNo, cols.clmSongNo.ordinal());
+//        this.clmSongNo.setName(cols.clmSongNo.ordinal());
         //
         // clmZipFileName
         //
-        //resources.ApplyResources(this.clmZipFileName, "clmZipFileName");
-        this.clmZipFileName.setName("clmZipFileName");
+        //resources.ApplyResources(this.clmZipFileName, cols.clmZipFileName.ordinal());
+//        this.clmZipFileName.setName(cols.clmZipFileName.ordinal());
         //
         // clmFileName
         //
-        //resources.ApplyResources(this.clmFileName, "clmFileName");
-        this.clmFileName.setName("clmFileName");
-        this.clmFileName.SortMode = JTableColumnSortMode.NotSortable;
+        //resources.ApplyResources(this.clmFileName, cols.clmFileName.ordinal());
+//        this.clmFileName.setName(cols.clmFileName.ordinal());
+//        this.clmFileName.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmPlayingNow
         //
 //            this.clmPlayingNow.AutoSizeMode = JTableAutoSizeColumnMode.None;
-        //resources.ApplyResources(this.clmPlayingNow, "clmPlayingNow");
-        this.clmPlayingNow.setName("clmPlayingNow");
-        this.clmPlayingNow.Resizable = JTableTriState.False;
-        this.clmPlayingNow.SortMode = JTableColumnSortMode.NotSortable;
+        //resources.ApplyResources(this.clmPlayingNow, cols.clmPlayingNow.ordinal());
+//        this.clmPlayingNow.setName(cols.clmPlayingNow.ordinal());
+//        this.clmPlayingNow.Resizable = JTableTriState.False;
+//        this.clmPlayingNow.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmEXT
         //
-        //resources.ApplyResources(this.clmEXT, "clmEXT");
-        this.clmEXT.setName("clmEXT");
+        //resources.ApplyResources(this.clmEXT, cols.clmEXT.ordinal());
+//        this.clmEXT.setName(cols.clmEXT.ordinal());
         this.clmEXT.setEditable(false);
-        this.clmEXT.SortMode = JTableColumnSortMode.NotSortable;
+//        this.clmEXT.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmType
         //
-        //resources.ApplyResources(this.clmType, "clmType");
-        this.clmType.setName("clmType");
+        //resources.ApplyResources(this.clmType, cols.clmType.ordinal());
+//        this.clmType.setName(cols.clmType.ordinal());
         this.clmType.setEditable(false);
-        this.clmType.SortMode = JTableColumnSortMode.NotSortable;
+//        this.clmType.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmTitle
         //
-        //resources.ApplyResources(this.clmTitle, "clmTitle");
-        this.clmTitle.setName("clmTitle");
+        //resources.ApplyResources(this.clmTitle, cols.clmTitle.ordinal());
+//        this.clmTitle.setName(cols.clmTitle.ordinal());
         this.clmTitle.setEditable(false);
-        this.clmTitle.SortMode = JTableColumnSortMode.NotSortable;
+//        this.clmTitle.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmTitleJ
         //
-        //resources.ApplyResources(this.clmTitleJ, "clmTitleJ");
-        this.clmTitleJ.setName("clmTitleJ");
-        this.clmTitleJ.SortMode = JTableColumnSortMode.NotSortable;
+        //resources.ApplyResources(this.clmTitleJ, cols.clmTitleJ.ordinal());
+//        this.clmTitleJ.setName(cols.clmTitleJ.ordinal());
+//        this.clmTitleJ.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmDispFileName
         //
-        //resources.ApplyResources(this.clmDispFileName, "clmDispFileName");
-        this.clmDispFileName.setName("clmDispFileName");
+        //resources.ApplyResources(this.clmDispFileName, cols.clmDispFileName.ordinal());
+//        this.clmDispFileName.setName(cols.clmDispFileName.ordinal());
         //
         // clmGame
         //
-        //resources.ApplyResources(this.clmGame, "clmGame");
-        this.clmGame.setName("clmGame");
+        //resources.ApplyResources(this.clmGame, cols.clmGame.ordinal());
+//        this.clmGame.setName(cols.clmGame.ordinal());
         this.clmGame.setEditable(false);
-        this.clmGame.SortMode = JTableColumnSortMode.NotSortable;
+//        this.clmGame.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmGameJ
         //
-        //resources.ApplyResources(this.clmGameJ, "clmGameJ");
-        this.clmGameJ.setName("clmGameJ");
-        this.clmGameJ.SortMode = JTableColumnSortMode.NotSortable;
+        //resources.ApplyResources(this.clmGameJ, cols.clmGameJ.ordinal());
+//        this.clmGameJ.setName(cols.clmGameJ.ordinal());
+//        this.clmGameJ.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmComposer
         //
-        //resources.ApplyResources(this.clmComposer, "clmComposer");
-        this.clmComposer.setName("clmComposer");
-        this.clmComposer.SortMode = JTableColumnSortMode.NotSortable;
+        //resources.ApplyResources(this.clmComposer, cols.clmComposer.ordinal());
+//        this.clmComposer.setName(cols.clmComposer.ordinal());
+//        this.clmComposer.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmComposerJ
         //
-        //resources.ApplyResources(this.clmComposerJ, "clmComposerJ");
-        this.clmComposerJ.setName("clmComposerJ");
+        //resources.ApplyResources(this.clmComposerJ, cols.clmComposerJ.ordinal());
+//        this.clmComposerJ.setName(cols.clmComposerJ.ordinal());
 //            this.clmComposerJ.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmVGMby
         //
-        //resources.ApplyResources(this.clmVGMby, "clmVGMby");
-        this.clmVGMby.setName("clmVGMby");
+        //resources.ApplyResources(this.clmVGMby, cols.clmVGMby.ordinal());
+//        this.clmVGMby.setName(cols.clmVGMby.ordinal());
 //            this.clmVGMby.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmConverted
         //
-        //resources.ApplyResources(this.clmConverted, "clmConverted");
-        this.clmConverted.setName("clmConverted");
+        //resources.ApplyResources(this.clmConverted, cols.clmConverted.ordinal());
+//        this.clmConverted.setName(cols.clmConverted.ordinal());
 //            this.clmConverted.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmNotes
         //
-        //resources.ApplyResources(this.clmNotes, "clmNotes");
-        this.clmNotes.setName("clmNotes");
-        this.clmNotes.SortMode = JTableColumnSortMode.NotSortable;
+        //resources.ApplyResources(this.clmNotes, cols.clmNotes.ordinal());
+//        this.clmNotes.setName(cols.clmNotes.ordinal());
+//        this.clmNotes.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmDuration
         //
-        JListCellStyle2.Alignment = JTableContentAlignment.MiddleRight;
-        this.clmDuration.DefaultCellStyle = JListCellStyle2;
-        //resources.ApplyResources(this.clmDuration, "clmDuration");
-        this.clmDuration.setName("clmDuration");
-        this.clmDuration.SortMode = JTableColumnSortMode.NotSortable;
+//        JListCellStyle2.Alignment = JTableContentAlignment.MiddleRight;
+//        this.clmDuration.DefaultCellStyle = JListCellStyle2;
+        //resources.ApplyResources(this.clmDuration, cols.clmDuration.ordinal());
+//        this.clmDuration.setName(cols.clmDuration.ordinal());
+//        this.clmDuration.SortMode = JTableColumnSortMode.NotSortable;
         //
         // clmSpacer
         //
-        this.clmSpacer.AutoSizeMode = JTableAutoSizeColumnMode.Fill;
-        //resources.ApplyResources(this.clmSpacer, "clmSpacer");
-        this.clmSpacer.setName("clmSpacer");
-        this.clmSpacer.setEditable(false);
-        this.clmSpacer.SortMode = JTableColumnSortMode.NotSortable;
+//        this.clmSpacer.AutoSizeMode = JTableAutoSizeColumnMode.Fill;
+        //resources.ApplyResources(this.clmSpacer, cols.clmSpacer.ordinal());
+//        this.clmSpacer.setName(cols.clmSpacer.ordinal());
+//        this.clmSpacer.setEditable(false);
+//        this.clmSpacer.SortMode = JTableColumnSortMode.NotSortable;
         //
         // cmsPlayList
         //
-        this.cmsPlayList.Items.AddRange(new JToolStripItem[] {
-                this.type設定ToolStripMenuItem,
-                this.toolStripSeparator5,
-                this.tsmiPlayThis,
-                this.tsmiDelThis,
-                this.toolStripSeparator3,
-                this.tsmiDelAllMusic,
-                this.tsmiOpenFolder});
+        this.cmsPlayList.add(this.type設定ToolStripMenuItem);
+        this.cmsPlayList.add(this.toolStripSeparator5);
+        this.cmsPlayList.add(this.tsmiPlayThis);
+        this.cmsPlayList.add(this.tsmiDelThis);
+        this.cmsPlayList.add(this.toolStripSeparator3);
+        this.cmsPlayList.add(this.tsmiDelAllMusic);
+        this.cmsPlayList.add(this.tsmiOpenFolder);
         this.cmsPlayList.setName("cmsPlayList");
         //resources.ApplyResources(this.cmsPlayList, "cmsPlayList");
         //
         // type設定ToolStripMenuItem
         //
-        this.type設定ToolStripMenuItem.DropDownItems.AddRange(new JToolStripItem[] {
-                this.tsmiA,
-                this.tsmiB,
-                this.tsmiC,
-                this.tsmiD,
-                this.tsmiE,
-                this.tsmiF,
-                this.tsmiG,
-                this.tsmiH,
-                this.tsmiI,
-                this.tsmiJ});
+        this.type設定ToolStripMenuItem.add(this.tsmiA);
+        this.type設定ToolStripMenuItem.add(this.tsmiB);
+        this.type設定ToolStripMenuItem.add(this.tsmiC);
+        this.type設定ToolStripMenuItem.add(this.tsmiD);
+        this.type設定ToolStripMenuItem.add(this.tsmiE);
+        this.type設定ToolStripMenuItem.add(this.tsmiF);
+        this.type設定ToolStripMenuItem.add(this.tsmiG);
+        this.type設定ToolStripMenuItem.add(this.tsmiH);
+        this.type設定ToolStripMenuItem.add(this.tsmiI);
+        this.type設定ToolStripMenuItem.add(this.tsmiJ);
         this.type設定ToolStripMenuItem.setName("type設定ToolStripMenuItem");
         //resources.ApplyResources(this.type設定ToolStripMenuItem, "type設定ToolStripMenuItem");
         //
@@ -1415,24 +1460,23 @@ loopEx:
         // toolStrip1
         //
         //resources.ApplyResources(this.toolStrip1, "toolStrip1");
-        this.toolStrip1.GripStyle = JToolStripGripStyle.Hidden;
-        this.toolStrip1.Items.AddRange(new JToolStripItem[] {
-                this.tsbOpenPlayList,
-                this.tsbSavePlayList,
-                this.toolStripSeparator1,
-                this.tsbAddMusic,
-                this.tsbAddFolder,
-                this.toolStripSeparator2,
-                this.tsbUp,
-                this.tsbDown,
-                this.toolStripSeparator4,
-                this.tsbJapanese,
-                this.toolStripSeparator6,
-                this.tsbTextExt,
-                this.tsbMMLExt,
-                this.tsbImgExt});
+//        this.toolStrip1.GripStyle = JToolStripGripStyle.Hidden;
+        this.toolStrip1.add(this.tsbOpenPlayList);
+        this.toolStrip1.add(this.tsbSavePlayList);
+        this.toolStrip1.add(this.toolStripSeparator1);
+        this.toolStrip1.add(this.tsbAddMusic);
+        this.toolStrip1.add(this.tsbAddFolder);
+        this.toolStrip1.add(this.toolStripSeparator2);
+        this.toolStrip1.add(this.tsbUp);
+        this.toolStrip1.add(this.tsbDown);
+        this.toolStrip1.add(this.toolStripSeparator4);
+        this.toolStrip1.add(this.tsbJapanese);
+        this.toolStrip1.add(this.toolStripSeparator6);
+        this.toolStrip1.add(this.tsbTextExt);
+        this.toolStrip1.add(this.tsbMMLExt);
+        this.toolStrip1.add(this.tsbImgExt);
         this.toolStrip1.setName("toolStrip1");
-        this.toolStrip1.Stretch = true;
+//        this.toolStrip1.Stretch = true;
         //
         // tsbOpenPlayList
         //
@@ -1478,7 +1522,7 @@ loopEx:
         //
         // tsbUp
         //
-        this.tsbUp.DisplayStyle = JToolStripItemDisplayStyle.Image;
+//        this.tsbUp.DisplayStyle = JToolStripItemDisplayStyle.Image;
         this.tsbUp.setIcon(new ImageIcon(mdplayer.properties.Resources.getupPL()));
         //resources.ApplyResources(this.tsbUp, "tsbUp");
         this.tsbUp.setName("tsbUp");
@@ -1486,7 +1530,7 @@ loopEx:
         //
         // tsbDown
         //
-        this.tsbDown.DisplayStyle = JToolStripItemDisplayStyle.Image;
+//        this.tsbDown.DisplayStyle = JToolStripItemDisplayStyle.Image;
         this.tsbDown.setIcon(new ImageIcon(mdplayer.properties.Resources.getDownPL()));
         //resources.ApplyResources(this.tsbDown, "tsbDown");
         this.tsbDown.setName("tsbDown");
@@ -1499,8 +1543,8 @@ loopEx:
         //
         // tsbJapanese
         //
-        this.tsbJapanese.CheckOnClick = true;
-        this.tsbJapanese.DisplayStyle = JToolStripItemDisplayStyle.Image;
+//        this.tsbJapanese.CheckOnClick = true;
+//        this.tsbJapanese.DisplayStyle = JToolStripItemDisplayStyle.Image;
         this.tsbJapanese.setIcon(new ImageIcon(mdplayer.properties.Resources.getjapPL()));
         //resources.ApplyResources(this.tsbJapanese, "tsbJapanese");
         this.tsbJapanese.setName("tsbJapanese");
@@ -1513,7 +1557,7 @@ loopEx:
         //
         // tsbTextExt
         //
-        this.tsbTextExt.DisplayStyle = JToolStripItemDisplayStyle.Image;
+//        this.tsbTextExt.DisplayStyle = JToolStripItemDisplayStyle.Image;
         //resources.ApplyResources(this.tsbTextExt, "tsbTextExt");
         this.tsbTextExt.setIcon(new ImageIcon(mdplayer.properties.Resources.gettxtPL()));
         this.tsbTextExt.setName("tsbTextExt");
@@ -1521,7 +1565,7 @@ loopEx:
         //
         // tsbMMLExt
         //
-        this.tsbMMLExt.DisplayStyle = JToolStripItemDisplayStyle.Image;
+//        this.tsbMMLExt.DisplayStyle = JToolStripItemDisplayStyle.Image;
         //resources.ApplyResources(this.tsbMMLExt, "tsbMMLExt");
         this.tsbMMLExt.setIcon(new ImageIcon(mdplayer.properties.Resources.getmmlPL()));
         this.tsbMMLExt.setName("tsbMMLExt");
@@ -1529,7 +1573,7 @@ loopEx:
         //
         // tsbImgExt
         //
-        this.tsbImgExt.DisplayStyle = JToolStripItemDisplayStyle.Image;
+//        this.tsbImgExt.DisplayStyle = JToolStripItemDisplayStyle.Image;
         //resources.ApplyResources(this.tsbImgExt, "tsbImgExt");
         this.tsbImgExt.setIcon(new ImageIcon(mdplayer.properties.Resources.getimgPL()));
         this.tsbImgExt.setName("tsbImgExt");
@@ -1545,7 +1589,7 @@ loopEx:
         //resources.ApplyResources(this, "$this");
 //            this.AutoScaleMode = JAutoScaleMode.Font;
         this.getContentPane().add(this.toolStripContainer1);
-        this.KeyPreview = true;
+//        this.KeyPreview = true;
         this.setName("frmPlayList");
         this.setOpacity(0);
         this.addWindowListener(this.windowListener);
@@ -1563,11 +1607,11 @@ loopEx:
     }
 
     private JTable dgvList;
-    private JMenuItem cmsPlayList;
+    private JMenu cmsPlayList;
     private JMenuItem tsmiPlayThis;
     private JMenuItem tsmiDelThis;
     private JPopupMenu toolStripContainer1;
-    private JToolBar toolStrip1;
+    private JPopupMenu toolStrip1;
     private JButton tsbOpenPlayList;
     private JButton tsbSavePlayList;
     private JSeparator toolStripSeparator1;
@@ -1580,7 +1624,7 @@ loopEx:
     private JButton tsbAddFolder;
     private JSeparator toolStripSeparator4;
     private JButton tsbJapanese;
-    private JMenuItem type設定ToolStripMenuItem;
+    private JMenu type設定ToolStripMenuItem;
     private JMenuItem tsmiA;
     private JMenuItem tsmiB;
     private JMenuItem tsmiC;

@@ -4,7 +4,7 @@ package mdplayer;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.Tuple;
+import dotnet4j.util.compat.Tuple;
 import mdplayer.form.sys.frmMain;
 
 
@@ -48,11 +48,11 @@ public class Operation {
                 cmd = cmdBuf.get(0);
                 if (cmd == null)
                     continue;
-                if (cmd.Item1 == Ope.END)
+                if (cmd.getItem1() == Ope.END)
                     return;
                 cmdBuf.clear();
 
-                switch (cmd.Item1) {
+                switch (cmd.getItem1()) {
                 case PLAY:
                     parent.play();
                     break;
@@ -75,7 +75,7 @@ public class Operation {
                     cmd = cmdBuf.get(0);
                     if (cmd == null)
                         continue;
-                    if (cmd.Item1 == Ope.RELEASE) {
+                    if (cmd.getItem1() == Ope.RELEASE) {
                         cmdBuf.clear();
                         break;
                     }

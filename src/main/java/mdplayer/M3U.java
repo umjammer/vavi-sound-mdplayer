@@ -1,15 +1,21 @@
 package mdplayer;
 
+import java.io.File;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
+import java.util.Scanner;
 
-import dotnet4j.Tuple;
+import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.StreamReader;
+import vavi.util.archive.Archive;
+import vavi.util.archive.Archives;
+import vavi.util.archive.Entry;
+import vavi.util.archive.zip.ZipEntry;
 
 
 public class M3U {
@@ -28,7 +34,7 @@ public class M3U {
                     PlayList.Music ms = analyzeLine(line, rootPath);
                     if (ms != null) {
                         ms.format = Common.FileFormat.checkExt(ms.fileName);
-                        pl.getLstMusic().add(ms);
+                        pl.getMusics().add(ms);
                     }
 
                 }
@@ -42,19 +48,14 @@ public class M3U {
         }
     }
 
-    public static PlayList LoadM3U(Object entry, String zipFileName) {
-        if (entry == ZipEntry) return LoadM3U((ZipEntry) entry, zipFileName);
-        else return LoadM3U(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2, zipFileName);
-    }
-
-    private static PlayList LoadM3U(ZipEntry entry, String zipFileName) {
+    public static PlayList LoadM3U(Archive archive, Entry entry, String zipFileName) {
         try {
             PlayList pl = new PlayList();
 
-            try (StreamReader sr = new StreamReader(entry.open(), Charset.forName("MS932"))) {
+            try (Scanner sr = new Scanner(archive.getInputStream(entry))) {
                 String line;
-                while ((line = sr.readLine()) != null) {
-
+                while (sr.hasNextLine()) {
+                    line = sr.nextLine();
                     line = line.trim();
                     if (line.equals("")) continue;
                     if (line.charAt(0) == '#') continue;
@@ -62,7 +63,7 @@ public class M3U {
                     PlayList.Music ms = analyzeLine(line, "");
                     ms.format = Common.FileFormat.checkExt(ms.fileName);
                     ms.arcFileName = zipFileName;
-                    if (ms != null) pl.getLstMusic().add(ms);
+                    if (ms != null) pl.getMusics().add(ms);
 
                 }
             }
@@ -78,8 +79,8 @@ public class M3U {
     private static PlayList LoadM3U(String archiveFile, String fileName, String zipFileName) {
         try {
             PlayList pl = new PlayList();
-            UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-            byte[] buf = cmd.GetFileByte(archiveFile, fileName);
+            Archive cmd = Archives.getArchive(new File(archiveFile));
+            byte[] buf = cmd.getInputStream(cmd.getEntry(fileName)).readAllBytes();
             String[] text = new String(buf, Charset.forName("MS932")).split("\n");
 
             for (String txt : text) {
@@ -90,7 +91,7 @@ public class M3U {
                 PlayList.Music ms = analyzeLine(line, "");
                 ms.format = Common.FileFormat.checkExt(ms.fileName);
                 ms.arcFileName = zipFileName;
-                if (ms != null) pl.getLstMusic().add(ms);
+                if (ms != null) pl.getMusics().add(ms);
 
             }
 
@@ -140,7 +141,7 @@ public class M3U {
                 } while (flg);
                 lbuf.add(s.toString().replace("\\", ""));
             }
-            buf = lbuf.toArray(new String[0]);
+            buf = lbuf.toArray(String[]::new);
 
             String fType = buf[0].trim().toUpperCase();
             if (buf.length < 2) return ms;

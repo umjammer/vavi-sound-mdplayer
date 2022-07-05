@@ -10,7 +10,7 @@
  *
  *  This program instanceof distributed : the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -24,10 +24,10 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 import dotnet4j.io.IOException;
+import mdplayer.driver.sid.Mem;
 import mdplayer.driver.sid.libsidplayfp.SidMd5;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
-import mdplayer.driver.sid.mem;
 
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toBig16;
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toBig32;
@@ -80,7 +80,7 @@ public class PSid extends SidTuneBase {
         public short start;
         // 32-bit speed info
         public int speed;
-        // bit: 0=50 Hz, 1=CIA 1 Timer A (default: 60 Hz)
+        // bit: 0=50 Hz, 1=CIA 1 Timer a (default: 60 Hz)
         // ASCII Strings, 31 characters long and
         public byte[] name = new byte[PSID_MAXSTRLEN];
         // terminated by a trailing zero
@@ -144,7 +144,7 @@ public class PSid extends SidTuneBase {
     public static final int RSID_ID = 0x52534944;
 
     /**
-     * Decode Sid model flags.
+     * Decode Sid model Flags.
      */
     public SidTuneInfo.Model getSidModel(short modelFlag) {
         if ((modelFlag & (short) SidModel.SID_ANY.ordinal()) == (short) SidModel.SID_ANY.ordinal())
@@ -212,9 +212,9 @@ public class PSid extends SidTuneBase {
         header.songs = toBig16(ByteBuffer.wrap(dataBuf, 14, 2));
         header.start = toBig16(ByteBuffer.wrap(dataBuf, 16, 2));
         header.speed = toBig32(ByteBuffer.wrap(dataBuf, 18, 4));
-        mem.memcpy(header.name, ByteBuffer.wrap(dataBuf, 22, PSID_MAXSTRLEN), PSID_MAXSTRLEN);
-        mem.memcpy(header.author, ByteBuffer.wrap(dataBuf, 54, PSID_MAXSTRLEN), PSID_MAXSTRLEN);
-        mem.memcpy(header.released, ByteBuffer.wrap(dataBuf, 86, PSID_MAXSTRLEN), PSID_MAXSTRLEN);
+        Mem.memcpy(header.name, ByteBuffer.wrap(dataBuf, 22, PSID_MAXSTRLEN), PSID_MAXSTRLEN);
+        Mem.memcpy(header.author, ByteBuffer.wrap(dataBuf, 54, PSID_MAXSTRLEN), PSID_MAXSTRLEN);
+        Mem.memcpy(header.released, ByteBuffer.wrap(dataBuf, 86, PSID_MAXSTRLEN), PSID_MAXSTRLEN);
 
         if (header.version >= 2) {
             if (dataBuf.length < (psidv2_headerSize + 2)) {
@@ -292,7 +292,7 @@ public class PSid extends SidTuneBase {
                 }
             }
 
-            // These flags are only available for the appropriate
+            // These Flags are only available for the appropriate
             // file formats
             switch (compatibility) {
             case C64:
@@ -397,7 +397,7 @@ public class PSid extends SidTuneBase {
                 selectSong(currentSong);
             }
 
-            // Deal with PSid v2NG clock speed flags: Let only NTSC
+            // Deal with PSid v2NG clock speed Flags: Let only NTSC
             // clock speed change the MD5 fingerprint. That way the
             // fingerprint of a PAL-speed sidtune : PSid v1, v2, and
             // PSid v2NG format instanceof the same.

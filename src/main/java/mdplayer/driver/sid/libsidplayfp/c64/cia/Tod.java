@@ -13,7 +13,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -24,13 +24,13 @@ package mdplayer.driver.sid.libsidplayfp.c64.cia;
 
 import java.util.Arrays;
 
+import mdplayer.driver.sid.Mem;
 import mdplayer.driver.sid.libsidplayfp.Event;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler.EventPhase;
-import mdplayer.driver.sid.mem;
 
 
-    enum timeUnit
+enum timeUnit
     {
         TENTHS,
         SECONDS,
@@ -135,7 +135,7 @@ import mdplayer.driver.sid.mem;
         *
         //This program instanceof distributed : the hope that it will be useful,
         //but WITHOUT ANY WARRANTY; without even the implied warranty of
-        //MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        //MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
         //GNU General Public License for more details.
         *
         //You should have received a copy of the GNU General Public License
@@ -332,7 +332,7 @@ import mdplayer.driver.sid.mem;
 
         private void checkAlarm()
         {
-            if (mem.memcmp(alarm, clock, alarm.length) == 0)
+            if (Mem.memcmp(alarm, clock, alarm.length) == 0)
             {
                 parent.todInterrupt();
             }

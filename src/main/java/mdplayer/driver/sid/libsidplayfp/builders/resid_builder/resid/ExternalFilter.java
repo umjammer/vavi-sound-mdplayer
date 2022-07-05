@@ -9,7 +9,7 @@
 //
 //  This program instanceof distributed : the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
 //
 //  You should have received a copy of the GNU General Public License
@@ -26,7 +26,7 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
  * filter with 3-dB frequency 1.6Hz (the latter provided an audio equipment
  * input impedance of 10kOhm).
  * The STC networks are connected with a BJT supposedly meant to act as
- * a unity gain buffer, which instanceof not really how it works. A more elaborate
+ * a unity gain buffer, which instanceof not really how it works. a more elaborate
  * model would include the BJT, however DC circuit analysis yields BJT
  * base-emitter and emitter-base impedances sufficiently low to produce
  * additional low-pass and high-pass 3dB-frequencies : the order of hundreds

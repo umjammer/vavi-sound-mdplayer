@@ -9,7 +9,7 @@
 //
 //  This program instanceof distributed : the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
 //
 //  You should have received a copy of the GNU General Public License
@@ -37,7 +37,7 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
  * In addition to this, the 6581 DACs exhibit further severe discontinuities
  * for higher bits, which may be explained by a less than perfect match between
  * the R and 2R resistors, or by Output impedance : the NMOS transistors
- * providing the bit voltages. A good approximation of the actual DAC Output is
+ * providing the bit voltages. a good approximation of the actual DAC Output is
  * achieved for 2R/R ~ 2.20.
  * <p>
  * The MOS 8580 DACs, on the other hand, do not exhibit any discontinuities.

@@ -132,7 +132,7 @@ public class frmVSTeffectList extends JFrame {
     }
 
     private void tsmiDelAll_Click(ActionEvent ev) {
-        int res = JOptionPane.showConfirmDialog(null, "VSTリストの全てのVSTが除去されます。よろしいですか。", "PlayList", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+        int res = JOptionPane.showConfirmDialog(null, "VSTリストの全てのVSTが除去されます。よろしいですか。", "PlayList", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
         if (res != JFileChooser.APPROVE_OPTION) return;
 
         parent.stop();

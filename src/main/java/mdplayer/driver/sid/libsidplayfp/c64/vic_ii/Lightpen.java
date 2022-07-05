@@ -13,7 +13,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -35,10 +35,10 @@ public class Lightpen {
     /** VIC cycles per line */
     private int cyclesPerLine;
 
-    /** X coordinate */
+    /** x coordinate */
     private int lpx;
 
-    /** Y coordinate */
+    /** y coordinate */
     private int lpy;
 
     /** Has light pen IRQ been triggered : this frame already? */

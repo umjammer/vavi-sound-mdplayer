@@ -2,81 +2,92 @@ package mdplayer.driver.hes;
 
 import java.util.function.BiFunction;
 
-import mdsound.Common.TriConsumer;
+import dotnet4j.util.compat.TriConsumer;
 
 
 public class Km6280 {
 
     public static class K6280Context {
 
-        public interface dlgReadHandler extends BiFunction<M_Hes.HESHES, Integer, Integer> {
+        public interface ReadHandler extends BiFunction<M_Hes.HESHES, Integer, Integer> {
         }
 
-        public interface dlgWriterHandler extends TriConsumer<M_Hes.HESHES, Integer, Integer> {
+        public interface WriterHandler extends TriConsumer<M_Hes.HESHES, Integer, Integer> {
         }
 
-        public int A; /** Accumulator */
-        public int P; /** Status register */
-        public int X; /** X register */
-        public int Y; /** Y register */
-        public int S; /** Stack pointer */
-        public int PC; /** Program Counter */
+        /** Accumulator */
+        public int a;
+        /** Status register */
+        public int p;
+        /** x register */
+        public int x;
+        /** y register */
+        public int y;
+        /** Stack pointer */
+        public int s;
+        /** Program Counter */
+        public int pc;
 
-        public int iRequest; /** Interrupt request */
-        public int iMask; /** Interrupt mask */
-        public int clock; /** (incremental)cycle counter */
-        public int lastcode;
-        //public Km6280 user; /** pointer to user area */
-        public M_Hes.HESHES user; /** pointer to user area */
+        /** Interrupt request */
+        public int iRequest;
+        /** Interrupt mask */
+        public int iMask;
+        /** (incremental)cycle counter */
+        public int clock;
+        public int lastCode;
+        /** pointer to user area */
+        //public Km6280 user;
+        /** pointer to user area */
+        public M_Hes.HESHES user;
 
         public int lowClockMode;
 
-        public dlgReadHandler ReadByte;
-        public dlgWriterHandler WriteByte;
+        public ReadHandler readByte;
+        public WriterHandler writeByte;
 
-        public dlgReadHandler ReadMPR;
-        public dlgWriterHandler WriteMPR;
-        public dlgWriterHandler Write6270;
+        public ReadHandler readMPR;
+        public WriterHandler writeMPR;
+        public WriterHandler write6270;
 
-        public enum K6280_FLAGS {
-            K6280_C_FLAG(0x01),
-            K6280_Z_FLAG(0x02),
-            K6280_I_FLAG(0x04),
-            K6280_D_FLAG(0x08),
-            K6280_B_FLAG(0x10),
-            K6280_T_FLAG(0x20),
-            K6280_V_FLAG(0x40),
-            K6280_N_FLAG(0x80);
+        public enum Flags {
+            C(0x01),
+            Z(0x02),
+            I(0x04),
+            D(0x08),
+            B(0x10),
+            T(0x20),
+            V(0x40),
+            N(0x80);
             final int v;
 
-            K6280_FLAGS(int v) {
+            Flags(int v) {
                 this.v = v;
             }
         }
 
-        public enum K6280_IRQ {
-            K6280_INIT(1),
-            K6280_RESET(2),
-            K6280_NMI(4),
-            K6280_BRK(8),
-            K6280_TIMER(16),
-            K6280_INT1(32),
-            K6280_INT2(64);
+        public enum IRQ {
+            INIT(1),
+            RESET(2),
+            NMI(4),
+            BRK(8),
+            TIMER(16),
+            INT1(32),
+            INT2(64);
             final int v;
 
-            K6280_IRQ(int v) {
+            IRQ(int v) {
                 this.v = v;
             }
         }
 
-        public static final int C_FLAG = K6280_FLAGS.K6280_C_FLAG.v;
-        public static final int Z_FLAG = K6280_FLAGS.K6280_Z_FLAG.v;
-        public static final int I_FLAG = K6280_FLAGS.K6280_I_FLAG.v;
-        public static final int D_FLAG = K6280_FLAGS.K6280_D_FLAG.v;
-        public static final int B_FLAG = K6280_FLAGS.K6280_B_FLAG.v;
-        public static final int T_FLAG = K6280_FLAGS.K6280_T_FLAG.v;
-        public static final int V_FLAG = K6280_FLAGS.K6280_V_FLAG.v;
-        public static final int N_FLAG = K6280_FLAGS.K6280_N_FLAG.v;
+        public static final int C_FLAG = Flags.C.v;
+        public static final int Z_FLAG = Flags.Z.v;
+        public static final int I_FLAG = Flags.I.v;
+        public static final int D_FLAG = Flags.D.v;
+        public static final int B_FLAG = Flags.B.v;
+        public static final int T_FLAG = Flags.T.v;
+        public static final int V_FLAG = Flags.V.v;
+        public static final int N_FLAG = Flags.N.v;
         public static final int R_FLAG = 0;
 
         public static final int BASE_OF_ZERO = 0x2000;
@@ -89,32 +100,32 @@ public class Km6280 {
 
         public static final int VEC_BRK = VEC_INT;
 
-        public static final int IRQ_INIT = K6280_IRQ.K6280_INIT.v;
-        public static final int IRQ_RESET = K6280_IRQ.K6280_RESET.v;
-        public static final int IRQ_NMI = K6280_IRQ.K6280_NMI.v;
-        public static final int IRQ_BRK = K6280_IRQ.K6280_BRK.v;
-        public static final int IRQ_TIMER = K6280_IRQ.K6280_TIMER.v;
-        public static final int IRQ_INT1 = K6280_IRQ.K6280_INT1.v;
-        public static final int IRQ_INT = K6280_IRQ.K6280_INT2.v;
+        public static final int IRQ_INIT = IRQ.INIT.v;
+        public static final int IRQ_RESET = IRQ.RESET.v;
+        public static final int IRQ_NMI = IRQ.NMI.v;
+        public static final int IRQ_BRK = IRQ.BRK.v;
+        public static final int IRQ_TIMER = IRQ.TIMER.v;
+        public static final int IRQ_INT1 = IRQ.INT1.v;
+        public static final int IRQ_INT = IRQ.INT2.v;
 
-        int K_READ(int adr) {
-            return this.ReadByte.apply(this.user, adr);
+        int readK(int adr) {
+            return this.readByte.apply(this.user, adr);
         }
 
-        void K_WRITE(int adr, int value) {
-            this.WriteByte.accept(this.user, adr, value);
+        void writeK(int adr, int value) {
+            this.writeByte.accept(this.user, adr, value);
         }
 
-        int K_READMPR(int adr) {
-            return this.ReadMPR.apply(this.user, adr);
+        int readMPRK(int adr) {
+            return this.readMPR.apply(this.user, adr);
         }
 
-        void K_WRITEMPR(int adr, int value) {
-            this.WriteMPR.accept(this.user, adr, value);
+        void writeMPRK(int adr, int value) {
+            this.writeMPR.accept(this.user, adr, value);
         }
 
-        void K_WRITE6270(int adr, int value) {
-            this.Write6270.accept(this.user, adr, value);
+        void write6270K(int adr, int value) {
+            this.write6270.accept(this.user, adr, value);
         }
 
         public static final byte[] fl_table = new byte[] {
@@ -164,41 +175,33 @@ public class Km6280 {
         }
 
         public void KI_ADDCLOCK(int cycle) {
-            //#if BUILD_HUC6280
             if (this.lowClockMode != 0) {
-                //#if 0
-                //cycle += (cycle << 2);	/* x5 */
-                //#else
-                cycle += cycle + cycle; //    */
-                cycle += cycle; // x6 */
-                //#endif
+                cycle += cycle + cycle; //
+                cycle += cycle; // x6
             }
             this.clock += cycle;
-            //#else
-            //__THIS__.clock += cycle;
-            //#endif
         }
 
         public int KI_READWORD(int adr) {
-            int ret = K_READ(adr);
-            int i = ret + (K_READ((adr + 1) & 0xffff) << 8);
+            int ret = readK(adr);
+            int i = ret + (readK((adr + 1) & 0xffff) << 8);
             return i;
         }
 
         public int KI_READWORDZP(int adr) {
-            int ret = K_READ(BASE_OF_ZERO + adr);
-            return ret + (K_READ(BASE_OF_ZERO + ((adr + 1) & 0xff)) << 8);
+            int ret = readK(BASE_OF_ZERO + adr);
+            return ret + (readK(BASE_OF_ZERO + ((adr + 1) & 0xff)) << 8);
         }
 
         public int KAI_IMM() {
-            int ret = this.PC;
-            this.PC = (this.PC + 1) & 0xffff;
+            int ret = this.pc;
+            this.pc = (this.pc + 1) & 0xffff;
             return ret;
         }
 
         public int KAI_IMM16() {
-            int ret = this.PC;
-            this.PC = (this.PC + 2) & 0xffff;
+            int ret = this.pc;
+            this.pc = (this.pc + 2) & 0xffff;
             return ret;
         }
 
@@ -207,34 +210,34 @@ public class Km6280 {
         }
 
         public int KAI_ABSX() {
-            return (KAI_ABS() + this.X) & 0xffff;
+            return (KAI_ABS() + this.x) & 0xffff;
         }
 
         public int KAI_ABSY() {
-            return (KAI_ABS() + this.Y) & 0xffff;
+            return (KAI_ABS() + this.y) & 0xffff;
         }
 
         public int KAI_ZP() {
-            return K_READ(KAI_IMM());
+            return readK(KAI_IMM());
         }
 
         public int KAI_ZPX() {
-            return (KAI_ZP() + this.X) & 0xff;
+            return (KAI_ZP() + this.x) & 0xff;
         }
 
         public int KAI_INDY() {
-            return (KI_READWORDZP(KAI_ZP()) + this.Y) & 0xffff;
+            return (KI_READWORDZP(KAI_ZP()) + this.y) & 0xffff;
         }
 
         public int KA_IMM() {
-            int ret = this.PC;
-            this.PC = (this.PC + 1) & 0xffff;
+            int ret = this.pc;
+            this.pc = (this.pc + 1) & 0xffff;
             return ret;
         }
 
         public int KA_IMM16() {
-            int ret = this.PC;
-            this.PC = (this.PC + 2) & 0xffff;
+            int ret = this.pc;
+            this.pc = (this.pc + 2) & 0xffff;
             return ret;
         }
 
@@ -243,23 +246,23 @@ public class Km6280 {
         }
 
         public int KA_ABSX() {
-            return (KAI_ABS() + this.X) & 0xffff;
+            return (KAI_ABS() + this.x) & 0xffff;
         }
 
         public int KA_ABSY() {
-            return (KAI_ABS() + this.Y) & 0xffff;
+            return (KAI_ABS() + this.y) & 0xffff;
         }
 
         public int KA_ZP() {
-            return BASE_OF_ZERO + K_READ(KAI_IMM());
+            return BASE_OF_ZERO + readK(KAI_IMM());
         }
 
         public int KA_ZPX() {
-            return BASE_OF_ZERO + ((KAI_ZP() + this.X) & 0xff);
+            return BASE_OF_ZERO + ((KAI_ZP() + this.x) & 0xff);
         }
 
         public int KA_ZPY() {
-            return BASE_OF_ZERO + ((KAI_ZP() + this.Y) & 0xff);
+            return BASE_OF_ZERO + ((KAI_ZP() + this.y) & 0xff);
         }
 
         public int KA_INDX() {
@@ -267,7 +270,7 @@ public class Km6280 {
         }
 
         public int KA_INDY() {
-            return (KI_READWORDZP(KAI_ZP()) + this.Y) & 0xffff;
+            return (KI_READWORDZP(KAI_ZP()) + this.y) & 0xffff;
         }
 
         public int KA_IND() {
@@ -275,30 +278,24 @@ public class Km6280 {
         }
 
         public void KM_ALUADDER(int src) {
-            int w = this.A + src + (this.P & C_FLAG);
-            this.P &= ~(int) (N_FLAG | V_FLAG | Z_FLAG | C_FLAG | T_FLAG);
-            this.P += FLAG_NZC(w)
-                    + ((((~this.A ^ src) & (this.A ^ w)) >> 1) & V_FLAG);
-            this.A = w & 0xff;
+            int w = this.a + src + (this.p & C_FLAG);
+            this.p &= ~(int) (N_FLAG | V_FLAG | Z_FLAG | C_FLAG | T_FLAG);
+            this.p += FLAG_NZC(w)
+                    + ((((~this.a ^ src) & (this.a ^ w)) >> 1) & V_FLAG);
+            this.a = w & 0xff;
         }
 
         public void KM_ALUADDER_D(int src) {
-            int wl = (this.A & 0x0F) + (src & 0x0F) + (this.P & C_FLAG);
-            int w = this.A + src + (this.P & C_FLAG);
-            //#if BUILD_HUC6280 || BUILD_M65C02
-            this.P &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
-            //#else
-            //this.P &= (int)(~(int)C_FLAG);
-            //#endif
+            int wl = (this.a & 0x0F) + (src & 0x0F) + (this.p & C_FLAG);
+            int w = this.a + src + (this.p & C_FLAG);
+            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
             if (wl > 0x9) w += 0x6;
             if (w > 0x9F) {
-                this.P += C_FLAG;
+                this.p += C_FLAG;
                 w += 0x60;
             }
-            //#if BUILD_HUC6280 || BUILD_M65C02
-            this.P += FLAG_NZ(w);
-            //#endif
-            this.A = w & 0xff;
+            this.p += FLAG_NZ(w);
+            this.a = w & 0xff;
             KI_ADDCLOCK(1);
         }
 
@@ -319,422 +316,413 @@ public class Km6280 {
         }
 
         public void KM_CMP(int src) {
-            int w = this.A + (src ^ 0xFF) + 1;
-            this.P &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
-            this.P += FLAG_NZC(w);
+            int w = this.a + (src ^ 0xFF) + 1;
+            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p += FLAG_NZC(w);
         }
 
         public void KM_CPX(int src) {
-            int w = this.X + (src ^ 0xFF) + 1;
-            this.P &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
-            this.P += FLAG_NZC(w);
+            int w = this.x + (src ^ 0xFF) + 1;
+            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p += FLAG_NZC(w);
         }
 
         public void KM_CPY(int src) {
-            int w = this.Y + (src ^ 0xFF) + 1;
-            this.P &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
-            this.P += FLAG_NZC(w);
+            int w = this.y + (src ^ 0xFF) + 1;
+            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p += FLAG_NZC(w);
         }
 
         public void KM_BIT(int src) {
-            int w = this.A & src;
-            this.P &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
-            this.P += (src & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
+            int w = this.a & src;
+            this.p &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
+            this.p += (src & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
         }
 
         public void KM_AND(int src) {
-            this.A &= src;
-            this.P &= ~(int) (N_FLAG | Z_FLAG | T_FLAG);
-            this.P += FLAG_NZ(this.A);
+            this.a &= src;
+            this.p &= ~(int) (N_FLAG | Z_FLAG | T_FLAG);
+            this.p += FLAG_NZ(this.a);
         }
 
         public void KM_ORA(int src) {
-            this.A |= src;
-            this.P &= ~(int) (N_FLAG | Z_FLAG | T_FLAG);
-            this.P += FLAG_NZ(this.A);
+            this.a |= src;
+            this.p &= ~(int) (N_FLAG | Z_FLAG | T_FLAG);
+            this.p += FLAG_NZ(this.a);
         }
 
         public void KM_EOR(int src) {
-            this.A ^= src;
-            this.P &= ~(int) (N_FLAG | Z_FLAG | T_FLAG);
-            this.P += FLAG_NZ(this.A);
+            this.a ^= src;
+            this.p &= ~(int) (N_FLAG | Z_FLAG | T_FLAG);
+            this.p += FLAG_NZ(this.a);
         }
 
         public int KM_DEC(int des) {
             int w = des - 1;
-            this.P &= ~(int) (N_FLAG | Z_FLAG);
-            this.P += FLAG_NZ(w);
+            this.p &= ~(int) (N_FLAG | Z_FLAG);
+            this.p += FLAG_NZ(w);
             return w & 0xff;
         }
 
         public int KM_INC(int des) {
             int w = des + 1;
-            this.P &= ~(int) (N_FLAG | Z_FLAG);
-            this.P += FLAG_NZ(w);
+            this.p &= ~(int) (N_FLAG | Z_FLAG);
+            this.p += FLAG_NZ(w);
             return w & 0xff;
         }
 
         public int KM_ASL(int des) {
             int w = des << 1;
-            this.P &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
-            this.P += FLAG_NZ(w) + ((des >> 7)/* & C_FLAG*/);
+            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p += FLAG_NZ(w) + ((des >> 7)/* & C_FLAG*/);
             return w & 0xff;
         }
 
         public int KM_LSR(int des) {
             int w = des >> 1;
-            this.P &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
-            this.P += FLAG_NZ(w) + (des & C_FLAG);
+            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p += FLAG_NZ(w) + (des & C_FLAG);
             return w;
         }
 
         public int KM_LD(int src) {
-            this.P &= ~(int) (N_FLAG | Z_FLAG);
-            this.P += FLAG_NZ(src);
+            this.p &= ~(int) (N_FLAG | Z_FLAG);
+            this.p += FLAG_NZ(src);
             return src;
         }
 
         public int KM_ROL(int des) {
-            int w = (des << 1) + (this.P & C_FLAG);
-            this.P &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
-            this.P += FLAG_NZ(w) + ((des >> 7)/* & C_FLAG*/);
+            int w = (des << 1) + (this.p & C_FLAG);
+            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p += FLAG_NZ(w) + ((des >> 7)/* & C_FLAG*/);
             return (w) & 0xff;
         }
 
         public int KM_ROR(int des) {
-            int w = (des >> 1) + ((this.P & C_FLAG) << 7);
-            this.P &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
-            this.P += FLAG_NZ(w) + (des & C_FLAG);
+            int w = (des >> 1) + ((this.p & C_FLAG) << 7);
+            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p += FLAG_NZ(w) + (des & C_FLAG);
             return (w) & 0xff;
         }
 
         public void KM_BRA(int rel) {
-            //#if BUILD_HUC6280
-            this.PC = (this.PC + (rel ^ 0x80) - 0x80) & 0xffff;
+            this.pc = (this.pc + (rel ^ 0x80) - 0x80) & 0xffff;
             KI_ADDCLOCK(2);
-            //#else
-            //int oldPage = this.PC & 0xFF00;
-            //this.PC = (int)((this.PC + (rel ^ 0x80) - 0x80) & 0xffff);
-            //KI_ADDCLOCK((int)(1 + ((oldPage != (this.PC & 0xFF00)) ? 1 : 0)));
-            //#endif
         }
 
         public void KM_PUSH(int src) {
-            K_WRITE(BASE_OF_ZERO + 0x100 + this.S, src);
-            this.S = (this.S - 1) & 0xff;
+            writeK(BASE_OF_ZERO + 0x100 + this.s, src);
+            this.s = (this.s - 1) & 0xff;
         }
 
         public int KM_POP() {
-            this.S = (this.S + 1) & 0xff;
-            return K_READ(BASE_OF_ZERO + 0x100 + this.S);
+            this.s = (this.s + 1) & 0xff;
+            return readK(BASE_OF_ZERO + 0x100 + this.s);
         }
 
-        //#if BUILD_HUC6280 || BUILD_M65C02
         public int KM_TSB(int mem) {
-            int w = this.A | mem;
-            this.P &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
-            this.P += (mem & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
+            int w = this.a | mem;
+            this.p &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
+            this.p += (mem & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
             return w;
         }
 
         public int KM_TRB(int mem) {
-            int w = (this.A ^ 0xFF) & mem;
-            this.P &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
-            this.P += (mem & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
+            int w = (this.a ^ 0xFF) & mem;
+            this.p &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
+            this.p += (mem & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
             return w;
         }
 
-        //#endif
-        //#if BUILD_HUC6280
         public int KMI_PRET() {
-            int saveA = this.A;
-            this.A = K_READ(BASE_OF_ZERO + this.X);
+            int saveA = this.a;
+            this.a = readK(BASE_OF_ZERO + this.x);
             return saveA;
         }
 
         public void KMI_POSTT(int saveA) {
-            K_WRITE(BASE_OF_ZERO + this.X, this.A);
-            this.A = saveA;
+            writeK(BASE_OF_ZERO + this.x, this.a);
+            this.a = saveA;
             KI_ADDCLOCK(3);
         }
 
         public void KM_TST(int imm, int mem) {
             int w = imm & mem;
-            this.P &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
-            this.P += (mem & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
+            this.p &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
+            this.p += (mem & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
         }
 
-        /* --- ADC ---  */
+        // ADC
 
         public void Opcode61() {
-            KMI_ADC(K_READ(KA_INDX()));
+            KMI_ADC(readK(KA_INDX()));
         }
 
         public void Opcode65() {
-            KMI_ADC(K_READ(KA_ZP()));
+            KMI_ADC(readK(KA_ZP()));
         }
 
         public void Opcode69() {
-            KMI_ADC(K_READ(KA_IMM()));
+            KMI_ADC(readK(KA_IMM()));
         }
 
         public void Opcode6D() {
-            KMI_ADC(K_READ(KA_ABS()));
+            KMI_ADC(readK(KA_ABS()));
         }
 
         public void Opcode71() {
-            KMI_ADC(K_READ(KA_INDY()));
+            KMI_ADC(readK(KA_INDY()));
         }
 
         public void Opcode75() {
-            KMI_ADC(K_READ(KA_ZPX()));
+            KMI_ADC(readK(KA_ZPX()));
         }
 
         public void Opcode79() {
-            KMI_ADC(K_READ(KA_ABSY()));
+            KMI_ADC(readK(KA_ABSY()));
         }
 
         public void Opcode7D() {
-            KMI_ADC(K_READ(KA_ABSX()));
+            KMI_ADC(readK(KA_ABSX()));
         }
 
         public void Opcode72() {
-            KMI_ADC(K_READ(KA_IND()));
+            KMI_ADC(readK(KA_IND()));
         }
 
         public void D_Opco61() {
-            KMI_ADC_D(K_READ(KA_INDX()));
+            KMI_ADC_D(readK(KA_INDX()));
         }
 
         public void D_Opco65() {
-            KMI_ADC_D(K_READ(KA_ZP()));
+            KMI_ADC_D(readK(KA_ZP()));
         }
 
         public void D_Opco69() {
-            KMI_ADC_D(K_READ(KA_IMM()));
+            KMI_ADC_D(readK(KA_IMM()));
         }
 
         public void D_Opco6D() {
-            KMI_ADC_D(K_READ(KA_ABS()));
+            KMI_ADC_D(readK(KA_ABS()));
         }
 
         public void D_Opco71() {
-            KMI_ADC_D(K_READ(KA_INDY()));
+            KMI_ADC_D(readK(KA_INDY()));
         }
 
         public void D_Opco75() {
-            KMI_ADC_D(K_READ(KA_ZPX()));
+            KMI_ADC_D(readK(KA_ZPX()));
         }
 
         public void D_Opco79() {
-            KMI_ADC_D(K_READ(KA_ABSY()));
+            KMI_ADC_D(readK(KA_ABSY()));
         }
 
         public void D_Opco7D() {
-            KMI_ADC_D(K_READ(KA_ABSX()));
+            KMI_ADC_D(readK(KA_ABSX()));
         }
 
         public void D_Opco72() {
-            KMI_ADC_D(K_READ(KA_IND()));
+            KMI_ADC_D(readK(KA_IND()));
         }
 
         public void T_Opco61() {
             int saveA = KMI_PRET();
-            KMI_ADC(K_READ(KA_INDX()));
+            KMI_ADC(readK(KA_INDX()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco65() {
             int saveA = KMI_PRET();
-            KMI_ADC(K_READ(KA_ZP()));
+            KMI_ADC(readK(KA_ZP()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco69() {
             int saveA = KMI_PRET();
-            KMI_ADC(K_READ(KA_IMM()));
+            KMI_ADC(readK(KA_IMM()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco6D() {
             int saveA = KMI_PRET();
-            KMI_ADC(K_READ(KA_ABS()));
+            KMI_ADC(readK(KA_ABS()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco71() {
             int saveA = KMI_PRET();
-            KMI_ADC(K_READ(KA_INDY()));
+            KMI_ADC(readK(KA_INDY()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco75() {
             int saveA = KMI_PRET();
-            KMI_ADC(K_READ(KA_ZPX()));
+            KMI_ADC(readK(KA_ZPX()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco79() {
             int saveA = KMI_PRET();
-            KMI_ADC(K_READ(KA_ABSY()));
+            KMI_ADC(readK(KA_ABSY()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco7D() {
             int saveA = KMI_PRET();
-            KMI_ADC(K_READ(KA_ABSX()));
+            KMI_ADC(readK(KA_ABSX()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco72() {
             int saveA = KMI_PRET();
-            KMI_ADC(K_READ(KA_IND()));
+            KMI_ADC(readK(KA_IND()));
             KMI_POSTT(saveA);
         }
 
         public void TD_Opc61() {
             int saveA = KMI_PRET();
-            KMI_ADC_D(K_READ(KA_INDX()));
+            KMI_ADC_D(readK(KA_INDX()));
             KMI_POSTT(saveA);
         }
 
         public void TD_Opc65() {
             int saveA = KMI_PRET();
-            KMI_ADC_D(K_READ(KA_ZP()));
+            KMI_ADC_D(readK(KA_ZP()));
             KMI_POSTT(saveA);
         }
 
         public void TD_Opc69() {
             int saveA = KMI_PRET();
-            KMI_ADC_D(K_READ(KA_IMM()));
+            KMI_ADC_D(readK(KA_IMM()));
             KMI_POSTT(saveA);
         }
 
         public void TD_Opc6D() {
             int saveA = KMI_PRET();
-            KMI_ADC_D(K_READ(KA_ABS()));
+            KMI_ADC_D(readK(KA_ABS()));
             KMI_POSTT(saveA);
         }
 
         public void TD_Opc71() {
             int saveA = KMI_PRET();
-            KMI_ADC_D(K_READ(KA_INDY()));
+            KMI_ADC_D(readK(KA_INDY()));
             KMI_POSTT(saveA);
         }
 
         public void TD_Opc75() {
             int saveA = KMI_PRET();
-            KMI_ADC_D(K_READ(KA_ZPX()));
+            KMI_ADC_D(readK(KA_ZPX()));
             KMI_POSTT(saveA);
         }
 
         public void TD_Opc79() {
             int saveA = KMI_PRET();
-            KMI_ADC_D(K_READ(KA_ABSY()));
+            KMI_ADC_D(readK(KA_ABSY()));
             KMI_POSTT(saveA);
         }
 
         public void TD_Opc7D() {
             int saveA = KMI_PRET();
-            KMI_ADC_D(K_READ(KA_ABSX()));
+            KMI_ADC_D(readK(KA_ABSX()));
             KMI_POSTT(saveA);
         }
 
         public void TD_Opc72() {
             int saveA = KMI_PRET();
-            KMI_ADC_D(K_READ(KA_IND()));
+            KMI_ADC_D(readK(KA_IND()));
             KMI_POSTT(saveA);
         }
 
-        /* --- AND ---  */
+        // AND
 
         public void Opcode21() {
-            KM_AND(K_READ(KA_INDX()));
+            KM_AND(readK(KA_INDX()));
         }
 
         public void Opcode25() {
-            KM_AND(K_READ(KA_ZP()));
+            KM_AND(readK(KA_ZP()));
         }
 
         public void Opcode29() {
-            KM_AND(K_READ(KA_IMM()));
+            KM_AND(readK(KA_IMM()));
         }
 
         public void Opcode2D() {
-            KM_AND(K_READ(KA_ABS()));
+            KM_AND(readK(KA_ABS()));
         }
 
         public void Opcode31() {
-            KM_AND(K_READ(KA_INDY()));
+            KM_AND(readK(KA_INDY()));
         }
 
         public void Opcode35() {
-            KM_AND(K_READ(KA_ZPX()));
+            KM_AND(readK(KA_ZPX()));
         }
 
         public void Opcode39() {
-            KM_AND(K_READ(KA_ABSY()));
+            KM_AND(readK(KA_ABSY()));
         }
 
         public void Opcode3D() {
-            KM_AND(K_READ(KA_ABSX()));
+            KM_AND(readK(KA_ABSX()));
         }
 
         public void Opcode32() {
-            KM_AND(K_READ(KA_IND()));
+            KM_AND(readK(KA_IND()));
         }
 
         public void T_Opco21() {
             int saveA = KMI_PRET();
-            KM_AND(K_READ(KA_INDX()));
+            KM_AND(readK(KA_INDX()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco25() {
             int saveA = KMI_PRET();
-            KM_AND(K_READ(KA_ZP()));
+            KM_AND(readK(KA_ZP()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco29() {
             int saveA = KMI_PRET();
-            KM_AND(K_READ(KA_IMM()));
+            KM_AND(readK(KA_IMM()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco2D() {
             int saveA = KMI_PRET();
-            KM_AND(K_READ(KA_ABS()));
+            KM_AND(readK(KA_ABS()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco31() {
             int saveA = KMI_PRET();
-            KM_AND(K_READ(KA_INDY()));
+            KM_AND(readK(KA_INDY()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco35() {
             int saveA = KMI_PRET();
-            KM_AND(K_READ(KA_ZPX()));
+            KM_AND(readK(KA_ZPX()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco39() {
             int saveA = KMI_PRET();
-            KM_AND(K_READ(KA_ABSY()));
+            KM_AND(readK(KA_ABSY()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco3D() {
             int saveA = KMI_PRET();
-            KM_AND(K_READ(KA_ABSX()));
+            KM_AND(readK(KA_ABSX()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco32() {
             int saveA = KMI_PRET();
-            KM_AND(K_READ(KA_IND()));
+            KM_AND(readK(KA_IND()));
             KMI_POSTT(saveA);
         }
 
@@ -742,436 +730,436 @@ public class Km6280 {
 
         public void Opcode06() {
             int adr = KA_ZP();
-            K_WRITE(adr, KM_ASL(K_READ(adr)));
+            writeK(adr, KM_ASL(readK(adr)));
         }
 
         public void Opcode0E() {
             int adr = KA_ABS();
-            K_WRITE(adr, KM_ASL(K_READ(adr)));
+            writeK(adr, KM_ASL(readK(adr)));
         }
 
         public void Opcode16() {
             int adr = KA_ZPX();
-            K_WRITE(adr, KM_ASL(K_READ(adr)));
+            writeK(adr, KM_ASL(readK(adr)));
         }
 
         public void Opcode1E() {
             int adr = KA_ABSX();
-            K_WRITE(adr, KM_ASL(K_READ(adr)));
+            writeK(adr, KM_ASL(readK(adr)));
         }
 
         public void Opcode0A() {
-            this.A = KM_ASL(this.A);
+            this.a = KM_ASL(this.a);
         }
 
         /* --- BBRi --- */
 
         public void Opcode0F() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 0)) == 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 0)) == 0) KM_BRA(rel);
         }
 
         public void Opcode1F() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 1)) == 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 1)) == 0) KM_BRA(rel);
         }
 
         public void Opcode2F() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 2)) == 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 2)) == 0) KM_BRA(rel);
         }
 
         public void Opcode3F() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 3)) == 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 3)) == 0) KM_BRA(rel);
         }
 
         public void Opcode4F() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 4)) == 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 4)) == 0) KM_BRA(rel);
         }
 
         public void Opcode5F() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 5)) == 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 5)) == 0) KM_BRA(rel);
         }
 
         public void Opcode6F() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 6)) == 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 6)) == 0) KM_BRA(rel);
         }
 
         public void Opcode7F() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 7)) == 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 7)) == 0) KM_BRA(rel);
         }
 
         /* --- BBSi --- */
 
         public void Opcode8F() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 0)) != 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 0)) != 0) KM_BRA(rel);
         }
 
         public void Opcode9F() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 1)) != 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 1)) != 0) KM_BRA(rel);
         }
 
         public void OpcodeAF() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 2)) != 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 2)) != 0) KM_BRA(rel);
         }
 
         public void OpcodeBF() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 3)) != 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 3)) != 0) KM_BRA(rel);
         }
 
         public void OpcodeCF() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 4)) != 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 4)) != 0) KM_BRA(rel);
         }
 
         public void OpcodeDF() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 5)) != 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 5)) != 0) KM_BRA(rel);
         }
 
         public void OpcodeEF() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 6)) != 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 6)) != 0) KM_BRA(rel);
         }
 
         public void OpcodeFF() {
             int adr = KA_ZP();
-            int rel = K_READ(KA_IMM());
-            if ((K_READ(adr) & (1 << 7)) != 0) KM_BRA(rel);
+            int rel = readK(KA_IMM());
+            if ((readK(adr) & (1 << 7)) != 0) KM_BRA(rel);
         }
 
         /* --- BIT ---  */
 
         public void Opcode24() {
-            KM_BIT(K_READ(KA_ZP()));
+            KM_BIT(readK(KA_ZP()));
         }
 
         public void Opcode2C() {
-            KM_BIT(K_READ(KA_ABS()));
+            KM_BIT(readK(KA_ABS()));
         }
 
         public void Opcode34() {
-            KM_BIT(K_READ(KA_ZPX()));
+            KM_BIT(readK(KA_ZPX()));
         }
 
         public void Opcode3C() {
-            KM_BIT(K_READ(KA_ABSX()));
+            KM_BIT(readK(KA_ABSX()));
         }
 
         public void Opcode89() {
-            KM_BIT(K_READ(KA_IMM()));
+            KM_BIT(readK(KA_IMM()));
         }
 
         /* --- Bcc ---  */
 
-        public void Opcode10() {
-            int rel = K_READ(KA_IMM());
-            if ((this.P & N_FLAG) == 0) KM_BRA(rel);
+        public void opcode10() {
+            int rel = readK(KA_IMM());
+            if ((this.p & N_FLAG) == 0) KM_BRA(rel);
         }
 
-        public void Opcode30() {
-            int rel = K_READ(KA_IMM());
-            if ((this.P & N_FLAG) != 0) KM_BRA(rel);
+        public void opcode30() {
+            int rel = readK(KA_IMM());
+            if ((this.p & N_FLAG) != 0) KM_BRA(rel);
         }
 
-        public void Opcode50() {
-            int rel = K_READ(KA_IMM());
-            if ((this.P & V_FLAG) == 0) KM_BRA(rel);
+        public void opcode50() {
+            int rel = readK(KA_IMM());
+            if ((this.p & V_FLAG) == 0) KM_BRA(rel);
         }
 
-        public void Opcode70() {
-            int rel = K_READ(KA_IMM());
-            if ((this.P & V_FLAG) != 0) KM_BRA(rel);
+        public void opcode70() {
+            int rel = readK(KA_IMM());
+            if ((this.p & V_FLAG) != 0) KM_BRA(rel);
         }
 
-        public void Opcode90() {
-            int rel = K_READ(KA_IMM());
-            if ((this.P & C_FLAG) == 0) KM_BRA(rel);
+        public void opcode90() {
+            int rel = readK(KA_IMM());
+            if ((this.p & C_FLAG) == 0) KM_BRA(rel);
         }
 
-        public void OpcodeB0() {
-            int rel = K_READ(KA_IMM());
-            if ((this.P & C_FLAG) != 0) KM_BRA(rel);
+        public void opcodeB0() {
+            int rel = readK(KA_IMM());
+            if ((this.p & C_FLAG) != 0) KM_BRA(rel);
         }
 
-        public void OpcodeD0() {
-            int rel = K_READ(KA_IMM());
-            if ((this.P & Z_FLAG) == 0) KM_BRA(rel);
+        public void opcodeD0() {
+            int rel = readK(KA_IMM());
+            if ((this.p & Z_FLAG) == 0) KM_BRA(rel);
         }
 
-        public void OpcodeF0() {
-            int rel = K_READ(KA_IMM());
-            if ((this.P & Z_FLAG) != 0) KM_BRA(rel);
+        public void opcodeF0() {
+            int rel = readK(KA_IMM());
+            if ((this.p & Z_FLAG) != 0) KM_BRA(rel);
         }
 
-        public void Opcode80() {
-            int rel = K_READ(KA_IMM());
+        public void opcode80() {
+            int rel = readK(KA_IMM());
             if (true) KM_BRA(rel);
         }
 
         /* --- BRK --- */
 
-        public void Opcode00() {
-            this.PC = (this.PC + 1) & 0xffff;
-            this.iRequest |= IRQ_BRK;
-        } /* 00 - BRK */
-
-        /* --- BSR --- */
-
-        public void Opcode44() { // 44 - BSR */
-            KM_PUSH((this.PC >> 8) & 0xff); // !!! PC = NEXT - 1; !!! */
-            KM_PUSH((this.PC) & 0xff);
-            KM_BRA(K_READ(KA_IMM()));
+        public void opcode00() {
+            this.pc = (this.pc + 1) & 0xffff;
+            this.iRequest |= IRQ_BRK; // 00 - BRK
         }
 
-        /* --- CLA --- */
-        public void Opcode62() { // 62 - CLA
-            this.A = 0;
+        // BSR
+
+        public void opcode44() { // 44 - BSR */
+            KM_PUSH((this.pc >> 8) & 0xff); // !!! pc = NEXT - 1; !!! */
+            KM_PUSH((this.pc) & 0xff);
+            KM_BRA(readK(KA_IMM()));
         }
 
-        /* --- CLX --- */
-        public void Opcode82() { // 82 - CLX
-            this.X = 0;
+        /** CLA */
+        public void opcode62() { // 62 - CLA
+            this.a = 0;
+        }
+
+        /** CLX */
+        public void opcode82() { // 82 - CLX
+            this.x = 0;
         }
 
         /* --- CLY --- */
-        public void OpcodeC2() { // C2 - CLY
-            this.Y = 0;
+        public void opcodeC2() { // C2 - CLY
+            this.y = 0;
         }
 
         /* --- CLC --- */
         public void Opcode18() { // 18 - CLC
-            this.P &= ~(int) C_FLAG;
+            this.p &= ~(int) C_FLAG;
         }
 
         /* --- CLD --- */
         public void OpcodeD8() { // D8 - CLD
-            this.P &= ~(int) D_FLAG;
+            this.p &= ~(int) D_FLAG;
         }
 
         /* --- CLI --- */
         public void Opcode58() { // 58 - CLI
-            this.P &= ~(int) I_FLAG;
+            this.p &= ~(int) I_FLAG;
         }
 
         /* --- CLV --- */
         public void OpcodeB8() { // B8 - CLV
-            this.P &= ~(int) V_FLAG;
+            this.p &= ~(int) V_FLAG;
         }
 
         /* --- CMP --- */
 
         public void OpcodeC1() {
-            KM_CMP(K_READ(KA_INDX()));
+            KM_CMP(readK(KA_INDX()));
         }
 
         public void OpcodeC5() {
-            KM_CMP(K_READ(KA_ZP()));
+            KM_CMP(readK(KA_ZP()));
         }
 
         public void OpcodeC9() {
-            KM_CMP(K_READ(KA_IMM()));
+            KM_CMP(readK(KA_IMM()));
         }
 
         public void OpcodeCD() {
-            KM_CMP(K_READ(KA_ABS()));
+            KM_CMP(readK(KA_ABS()));
         }
 
         public void OpcodeD1() {
-            KM_CMP(K_READ(KA_INDY()));
+            KM_CMP(readK(KA_INDY()));
         }
 
         public void OpcodeD5() {
-            KM_CMP(K_READ(KA_ZPX()));
+            KM_CMP(readK(KA_ZPX()));
         }
 
         public void OpcodeD9() {
-            KM_CMP(K_READ(KA_ABSY()));
+            KM_CMP(readK(KA_ABSY()));
         }
 
         public void OpcodeDD() {
-            KM_CMP(K_READ(KA_ABSX()));
+            KM_CMP(readK(KA_ABSX()));
         }
 
         public void OpcodeD2() {
-            KM_CMP(K_READ(KA_IND()));
+            KM_CMP(readK(KA_IND()));
         }
 
         /* --- CPX --- */
 
         public void OpcodeE0() {
-            KM_CPX(K_READ(KA_IMM()));
+            KM_CPX(readK(KA_IMM()));
         }
 
         public void OpcodeE4() {
-            KM_CPX(K_READ(KA_ZP()));
+            KM_CPX(readK(KA_ZP()));
         }
 
         public void OpcodeEC() {
-            KM_CPX(K_READ(KA_ABS()));
+            KM_CPX(readK(KA_ABS()));
         }
 
         /* --- CPY --- */
 
         public void OpcodeC0() {
-            KM_CPY(K_READ(KA_IMM()));
+            KM_CPY(readK(KA_IMM()));
         }
 
         public void OpcodeC4() {
-            KM_CPY(K_READ(KA_ZP()));
+            KM_CPY(readK(KA_ZP()));
         }
 
         public void OpcodeCC() {
-            KM_CPY(K_READ(KA_ABS()));
+            KM_CPY(readK(KA_ABS()));
         }
 
         /* --- DEC ---  */
 
         public void OpcodeC6() {
             int adr = KA_ZP();
-            K_WRITE(adr, KM_DEC(K_READ(adr)));
+            writeK(adr, KM_DEC(readK(adr)));
         }
 
         public void OpcodeCE() {
             int adr = KA_ABS();
-            K_WRITE(adr, KM_DEC(K_READ(adr)));
+            writeK(adr, KM_DEC(readK(adr)));
         }
 
         public void OpcodeD6() {
             int adr = KA_ZPX();
-            K_WRITE(adr, KM_DEC(K_READ(adr)));
+            writeK(adr, KM_DEC(readK(adr)));
         }
 
         public void OpcodeDE() {
             int adr = KA_ABSX();
-            K_WRITE(adr, KM_DEC(K_READ(adr)));
+            writeK(adr, KM_DEC(readK(adr)));
         }
 
         public void Opcode3A() { // 3A - DEA
-            this.A = KM_DEC(this.A);
+            this.a = KM_DEC(this.a);
         }
 
         public void OpcodeCA() { // CA - DEX
-            this.X = KM_DEC(this.X);
+            this.x = KM_DEC(this.x);
         }
 
         public void Opcode88() { // 88 - DEY
-            this.Y = KM_DEC(this.Y);
+            this.y = KM_DEC(this.y);
         }
 
         /* --- EOR ---  */
 
         public void Opcode41() {
-            KM_EOR(K_READ(KA_INDX()));
+            KM_EOR(readK(KA_INDX()));
         }
 
         public void Opcode45() {
-            KM_EOR(K_READ(KA_ZP()));
+            KM_EOR(readK(KA_ZP()));
         }
 
         public void Opcode49() {
-            KM_EOR(K_READ(KA_IMM()));
+            KM_EOR(readK(KA_IMM()));
         }
 
         public void Opcode4D() {
-            KM_EOR(K_READ(KA_ABS()));
+            KM_EOR(readK(KA_ABS()));
         }
 
         public void Opcode51() {
-            KM_EOR(K_READ(KA_INDY()));
+            KM_EOR(readK(KA_INDY()));
         }
 
         public void Opcode55() {
-            KM_EOR(K_READ(KA_ZPX()));
+            KM_EOR(readK(KA_ZPX()));
         }
 
         public void Opcode59() {
-            KM_EOR(K_READ(KA_ABSY()));
+            KM_EOR(readK(KA_ABSY()));
         }
 
         public void Opcode5D() {
-            KM_EOR(K_READ(KA_ABSX()));
+            KM_EOR(readK(KA_ABSX()));
         }
 
         public void Opcode52() {
-            KM_EOR(K_READ(KA_IND()));
+            KM_EOR(readK(KA_IND()));
         }
 
         public void T_Opco41() {
             int saveA = KMI_PRET();
-            KM_EOR(K_READ(KA_INDX()));
+            KM_EOR(readK(KA_INDX()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco45() {
             int saveA = KMI_PRET();
-            KM_EOR(K_READ(KA_ZP()));
+            KM_EOR(readK(KA_ZP()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco49() {
             int saveA = KMI_PRET();
-            KM_EOR(K_READ(KA_IMM()));
+            KM_EOR(readK(KA_IMM()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco4D() {
             int saveA = KMI_PRET();
-            KM_EOR(K_READ(KA_ABS()));
+            KM_EOR(readK(KA_ABS()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco51() {
             int saveA = KMI_PRET();
-            KM_EOR(K_READ(KA_INDY()));
+            KM_EOR(readK(KA_INDY()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco55() {
             int saveA = KMI_PRET();
-            KM_EOR(K_READ(KA_ZPX()));
+            KM_EOR(readK(KA_ZPX()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco59() {
             int saveA = KMI_PRET();
-            KM_EOR(K_READ(KA_ABSY()));
+            KM_EOR(readK(KA_ABSY()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco5D() {
             int saveA = KMI_PRET();
-            KM_EOR(K_READ(KA_ABSX()));
+            KM_EOR(readK(KA_ABSX()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco52() {
             int saveA = KMI_PRET();
-            KM_EOR(K_READ(KA_IND()));
+            KM_EOR(readK(KA_IND()));
             KMI_POSTT(saveA);
         }
 
@@ -1179,164 +1167,164 @@ public class Km6280 {
 
         public void OpcodeE6() {
             int adr = KA_ZP();
-            K_WRITE(adr, KM_INC(K_READ(adr)));
+            writeK(adr, KM_INC(readK(adr)));
         }
 
         public void OpcodeEE() {
             int adr = KA_ABS();
-            K_WRITE(adr, KM_INC(K_READ(adr)));
+            writeK(adr, KM_INC(readK(adr)));
         }
 
         public void OpcodeF6() {
             int adr = KA_ZPX();
-            K_WRITE(adr, KM_INC(K_READ(adr)));
+            writeK(adr, KM_INC(readK(adr)));
         }
 
         public void OpcodeFE() {
             int adr = KA_ABSX();
-            K_WRITE(adr, KM_INC(K_READ(adr)));
+            writeK(adr, KM_INC(readK(adr)));
         }
 
         public void Opcode1A() { // 1A - INA
-            this.A = KM_INC(this.A);
+            this.a = KM_INC(this.a);
         }
 
         public void OpcodeE8() { // E8 - INX
-            this.X = KM_INC(this.X);
+            this.x = KM_INC(this.x);
         }
 
         public void OpcodeC8() { // C8 - INY
-            this.Y = KM_INC(this.Y);
+            this.y = KM_INC(this.y);
         }
 
         /* --- JMP ---  */
 
         public void Opcode4C() {
-            this.PC = KI_READWORD(KA_IMM16());
+            this.pc = KI_READWORD(KA_IMM16());
         }
 
         public void Opcode6C() {
-            this.PC = KI_READWORD(KA_ABS());
+            this.pc = KI_READWORD(KA_ABS());
         }
 
         public void Opcode7C() {
-            this.PC = KI_READWORD(KA_ABSX());
+            this.pc = KI_READWORD(KA_ABSX());
         }
 
         /* --- JSR --- */
         public void Opcode20() { // 20 - JSR
             int adr = KA_IMM();
-            KM_PUSH((this.PC >> 8) & 0xff);   /* !!! PC = NEXT - 1; !!! */
-            KM_PUSH((this.PC) & 0xff);
-            this.PC = KI_READWORD(adr);
+            KM_PUSH((this.pc >> 8) & 0xff);   /* !!! pc = NEXT - 1; !!! */
+            KM_PUSH((this.pc) & 0xff);
+            this.pc = KI_READWORD(adr);
         }
 
         /* --- LDA --- */
 
         public void OpcodeA1() {
-            this.A = KM_LD(K_READ(KA_INDX()));
+            this.a = KM_LD(readK(KA_INDX()));
         }
 
         public void OpcodeA5() {
-            this.A = KM_LD(K_READ(KA_ZP()));
+            this.a = KM_LD(readK(KA_ZP()));
         }
 
         public void OpcodeA9() {
-            this.A = KM_LD(K_READ(KA_IMM()));
+            this.a = KM_LD(readK(KA_IMM()));
         }
 
         public void OpcodeAD() {
-            this.A = KM_LD(K_READ(KA_ABS()));
+            this.a = KM_LD(readK(KA_ABS()));
         }
 
         public void OpcodeB1() {
-            this.A = KM_LD(K_READ(KA_INDY()));
+            this.a = KM_LD(readK(KA_INDY()));
         }
 
         public void OpcodeB5() {
-            this.A = KM_LD(K_READ(KA_ZPX()));
+            this.a = KM_LD(readK(KA_ZPX()));
         }
 
         public void OpcodeB9() {
-            this.A = KM_LD(K_READ(KA_ABSY()));
+            this.a = KM_LD(readK(KA_ABSY()));
         }
 
         public void OpcodeBD() {
-            this.A = KM_LD(K_READ(KA_ABSX()));
+            this.a = KM_LD(readK(KA_ABSX()));
         }
 
         public void OpcodeB2() {
-            this.A = KM_LD(K_READ(KA_IND()));
+            this.a = KM_LD(readK(KA_IND()));
         }
 
         /* --- LDX ---  */
 
         public void OpcodeA2() {
-            this.X = KM_LD(K_READ(KA_IMM()));
+            this.x = KM_LD(readK(KA_IMM()));
         }
 
         public void OpcodeA6() {
-            this.X = KM_LD(K_READ(KA_ZP()));
+            this.x = KM_LD(readK(KA_ZP()));
         }
 
         public void OpcodeAE() {
-            this.X = KM_LD(K_READ(KA_ABS()));
+            this.x = KM_LD(readK(KA_ABS()));
         }
 
         public void OpcodeB6() {
-            this.X = KM_LD(K_READ(KA_ZPY()));
+            this.x = KM_LD(readK(KA_ZPY()));
         }
 
         public void OpcodeBE() {
-            this.X = KM_LD(K_READ(KA_ABSY()));
+            this.x = KM_LD(readK(KA_ABSY()));
         }
 
         /* --- LDY ---  */
 
         public void OpcodeA0() {
-            this.Y = KM_LD(K_READ(KA_IMM()));
+            this.y = KM_LD(readK(KA_IMM()));
         }
 
         public void OpcodeA4() {
-            this.Y = KM_LD(K_READ(KA_ZP()));
+            this.y = KM_LD(readK(KA_ZP()));
         }
 
         public void OpcodeAC() {
-            this.Y = KM_LD(K_READ(KA_ABS()));
+            this.y = KM_LD(readK(KA_ABS()));
         }
 
         public void OpcodeB4() {
-            this.Y = KM_LD(K_READ(KA_ZPX()));
+            this.y = KM_LD(readK(KA_ZPX()));
         }
 
         public void OpcodeBC() {
-            this.Y = KM_LD(K_READ(KA_ABSX()));
+            this.y = KM_LD(readK(KA_ABSX()));
         }
 
         /* --- LSR ---  */
 
         public void Opcode46() {
             int adr = KA_ZP();
-            K_WRITE(adr, KM_LSR(K_READ(adr)));
+            writeK(adr, KM_LSR(readK(adr)));
         }
 
         public void Opcode4E() {
             int adr = KA_ABS();
-            K_WRITE(adr, KM_LSR(K_READ(adr)));
+            writeK(adr, KM_LSR(readK(adr)));
         }
 
         public void Opcode56() {
             int adr = KA_ZPX();
-            K_WRITE(adr, KM_LSR(K_READ(adr)));
+            writeK(adr, KM_LSR(readK(adr)));
         }
 
         public void Opcode5E() {
             int adr = KA_ABSX();
-            K_WRITE(adr, KM_LSR(K_READ(adr)));
+            writeK(adr, KM_LSR(readK(adr)));
         }
 
         public void Opcode4A() { // 4A - LSR - Accumulator
-            this.A = KM_LSR(this.A);
+            this.a = KM_LSR(this.a);
         }
 
         /* --- NOP ---  */
@@ -1346,568 +1334,568 @@ public class Km6280 {
         /* --- ORA ---  */
 
         public void Opcode01() {
-            KM_ORA(K_READ(KA_INDX()));
+            KM_ORA(readK(KA_INDX()));
         }
 
         public void Opcode05() {
-            KM_ORA(K_READ(KA_ZP()));
+            KM_ORA(readK(KA_ZP()));
         }
 
         public void Opcode09() {
-            KM_ORA(K_READ(KA_IMM()));
+            KM_ORA(readK(KA_IMM()));
         }
 
         public void Opcode0D() {
-            KM_ORA(K_READ(KA_ABS()));
+            KM_ORA(readK(KA_ABS()));
         }
 
         public void Opcode11() {
-            KM_ORA(K_READ(KA_INDY()));
+            KM_ORA(readK(KA_INDY()));
         }
 
         public void Opcode15() {
-            KM_ORA(K_READ(KA_ZPX()));
+            KM_ORA(readK(KA_ZPX()));
         }
 
         public void Opcode19() {
-            KM_ORA(K_READ(KA_ABSY()));
+            KM_ORA(readK(KA_ABSY()));
         }
 
         public void Opcode1D() {
-            KM_ORA(K_READ(KA_ABSX()));
+            KM_ORA(readK(KA_ABSX()));
         }
 
         public void Opcode12() {
-            KM_ORA(K_READ(KA_IND()));
+            KM_ORA(readK(KA_IND()));
         }
 
         public void T_Opco01() {
             int saveA = KMI_PRET();
-            KM_ORA(K_READ(KA_INDX()));
+            KM_ORA(readK(KA_INDX()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco05() {
             int saveA = KMI_PRET();
-            KM_ORA(K_READ(KA_ZP()));
+            KM_ORA(readK(KA_ZP()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco09() {
             int saveA = KMI_PRET();
-            KM_ORA(K_READ(KA_IMM()));
+            KM_ORA(readK(KA_IMM()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco0D() {
             int saveA = KMI_PRET();
-            KM_ORA(K_READ(KA_ABS()));
+            KM_ORA(readK(KA_ABS()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco11() {
             int saveA = KMI_PRET();
-            KM_ORA(K_READ(KA_INDY()));
+            KM_ORA(readK(KA_INDY()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco15() {
             int saveA = KMI_PRET();
-            KM_ORA(K_READ(KA_ZPX()));
+            KM_ORA(readK(KA_ZPX()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco19() {
             int saveA = KMI_PRET();
-            KM_ORA(K_READ(KA_ABSY()));
+            KM_ORA(readK(KA_ABSY()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco1D() {
             int saveA = KMI_PRET();
-            KM_ORA(K_READ(KA_ABSX()));
+            KM_ORA(readK(KA_ABSX()));
             KMI_POSTT(saveA);
         }
 
         public void T_Opco12() {
             int saveA = KMI_PRET();
-            KM_ORA(K_READ(KA_IND()));
+            KM_ORA(readK(KA_IND()));
             KMI_POSTT(saveA);
         }
 
         /* --- PHr PLr  --- */
         public void Opcode48() { // 48 - PHA
-            KM_PUSH(this.A);
+            KM_PUSH(this.a);
         }
 
         public void Opcode08() { // 08 - PHP
-            KM_PUSH((this.P | B_FLAG | R_FLAG) & ~T_FLAG);
+            KM_PUSH((this.p | B_FLAG | R_FLAG) & ~T_FLAG);
         }
 
         public void Opcode68() { // 68 - PLA
-            this.A = KM_LD(KM_POP());
+            this.a = KM_LD(KM_POP());
         }
 
         public void Opcode28() { // 28 - PLP
-            this.P = KM_POP() & ~T_FLAG;
+            this.p = KM_POP() & ~T_FLAG;
         }
 
         public void OpcodeDA() { // DA - PHX
-            KM_PUSH(this.X);
+            KM_PUSH(this.x);
         }
 
         public void Opcode5A() { // 5A - PHY
-            KM_PUSH(this.Y);
+            KM_PUSH(this.y);
         }
 
         public void OpcodeFA() { // FA - PLX
-            this.X = KM_LD(KM_POP());
+            this.x = KM_LD(KM_POP());
         }
 
         public void Opcode7A() { // 7A - PLY
-            this.Y = KM_LD(KM_POP());
+            this.y = KM_LD(KM_POP());
         }
 
         /* --- RMBi --- */
 
         public void Opcode07() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) & (~(1 << 0)));
+            writeK(adr, readK(adr) & (~(1 << 0)));
         }
 
         public void Opcode17() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) & (~(1 << 1)));
+            writeK(adr, readK(adr) & (~(1 << 1)));
         }
 
         public void Opcode27() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) & (~(1 << 2)));
+            writeK(adr, readK(adr) & (~(1 << 2)));
         }
 
         public void Opcode37() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) & (~(1 << 3)));
+            writeK(adr, readK(adr) & (~(1 << 3)));
         }
 
         public void Opcode47() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) & (~(1 << 4)));
+            writeK(adr, readK(adr) & (~(1 << 4)));
         }
 
         public void Opcode57() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) & (~(1 << 5)));
+            writeK(adr, readK(adr) & (~(1 << 5)));
         }
 
         public void Opcode67() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) & (~(1 << 6)));
+            writeK(adr, readK(adr) & (~(1 << 6)));
         }
 
         public void Opcode77() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) & (~(1 << 7)));
+            writeK(adr, readK(adr) & (~(1 << 7)));
         }
 
         /* --- SMBi --- */
 
         public void Opcode87() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) | (1 << 0));
+            writeK(adr, readK(adr) | (1 << 0));
         }
 
         public void Opcode97() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) | (1 << 1));
+            writeK(adr, readK(adr) | (1 << 1));
         }
 
         public void OpcodeA7() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) | (1 << 2));
+            writeK(adr, readK(adr) | (1 << 2));
         }
 
         public void OpcodeB7() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) | (1 << 3));
+            writeK(adr, readK(adr) | (1 << 3));
         }
 
         public void OpcodeC7() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) | (1 << 4));
+            writeK(adr, readK(adr) | (1 << 4));
         }
 
         public void OpcodeD7() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) | (1 << 5));
+            writeK(adr, readK(adr) | (1 << 5));
         }
 
         public void OpcodeE7() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) | (1 << 6));
+            writeK(adr, readK(adr) | (1 << 6));
         }
 
         public void OpcodeF7() {
             int adr = KA_ZP();
-            K_WRITE(adr, K_READ(adr) | (1 << 7));
+            writeK(adr, readK(adr) | (1 << 7));
         }
 
         /* --- ROL ---  */
 
         public void Opcode26() {
             int adr = KA_ZP();
-            K_WRITE(adr, KM_ROL(K_READ(adr)));
+            writeK(adr, KM_ROL(readK(adr)));
         }
 
         public void Opcode2E() {
             int adr = KA_ABS();
-            K_WRITE(adr, KM_ROL(K_READ(adr)));
+            writeK(adr, KM_ROL(readK(adr)));
         }
 
         public void Opcode36() {
             int adr = KA_ZPX();
-            K_WRITE(adr, KM_ROL(K_READ(adr)));
+            writeK(adr, KM_ROL(readK(adr)));
         }
 
         public void Opcode3E() {
             int adr = KA_ABSX();
-            K_WRITE(adr, KM_ROL(K_READ(adr)));
+            writeK(adr, KM_ROL(readK(adr)));
         }
 
         public void Opcode2A() { // 2A - ROL - Accumulator
-            this.A = KM_ROL(this.A);
+            this.a = KM_ROL(this.a);
         }
 
         /* --- ROR ---  */
 
         public void Opcode66() {
             int adr = KA_ZP();
-            K_WRITE(adr, KM_ROR(K_READ(adr)));
+            writeK(adr, KM_ROR(readK(adr)));
         }
 
         public void Opcode6E() {
             int adr = KA_ABS();
-            K_WRITE(adr, KM_ROR(K_READ(adr)));
+            writeK(adr, KM_ROR(readK(adr)));
         }
 
         public void Opcode76() {
             int adr = KA_ZPX();
-            K_WRITE(adr, KM_ROR(K_READ(adr)));
+            writeK(adr, KM_ROR(readK(adr)));
         }
 
         public void Opcode7E() {
             int adr = KA_ABSX();
-            K_WRITE(adr, KM_ROR(K_READ(adr)));
+            writeK(adr, KM_ROR(readK(adr)));
         }
 
         public void Opcode6A() { // 6A - ROR - Accumulator
-            this.A = KM_ROR(this.A);
+            this.a = KM_ROR(this.a);
         }
 
         public void Opcode40() { // 40 - RTI
 
-            this.P = KM_POP();
-            this.PC = KM_POP();
-            this.PC += KM_POP() << 8;
+            this.p = KM_POP();
+            this.pc = KM_POP();
+            this.pc += KM_POP() << 8;
         }
 
         public void Opcode60() { // 60 - RTS
-            this.PC = KM_POP();
-            this.PC += KM_POP() << 8;
-            this.PC = (this.PC + 1) & 0xffff;
+            this.pc = KM_POP();
+            this.pc += KM_POP() << 8;
+            this.pc = (this.pc + 1) & 0xffff;
         }
 
         public void Opcode22() { // 22 - SAX
-            int temp = this.A;
-            this.A = this.X;
-            this.X = temp;
+            int temp = this.a;
+            this.a = this.x;
+            this.x = temp;
         }
 
         public void Opcode42() { // 42 - SAY
-            int temp = this.A;
-            this.A = this.Y;
-            this.Y = temp;
+            int temp = this.a;
+            this.a = this.y;
+            this.y = temp;
         }
 
         public void Opcode02() { // 02 - SXY
-            int temp = this.Y;
-            this.Y = this.X;
-            this.X = temp;
+            int temp = this.y;
+            this.y = this.x;
+            this.x = temp;
         }
 
         /* --- SBC ---  */
 
         public void OpcodeE1() {
-            KMI_SBC(K_READ(KA_INDX()));
+            KMI_SBC(readK(KA_INDX()));
         }
 
         public void OpcodeE5() {
-            KMI_SBC(K_READ(KA_ZP()));
+            KMI_SBC(readK(KA_ZP()));
         }
 
         public void OpcodeE9() {
-            KMI_SBC(K_READ(KA_IMM()));
+            KMI_SBC(readK(KA_IMM()));
         }
 
         public void OpcodeED() {
-            KMI_SBC(K_READ(KA_ABS()));
+            KMI_SBC(readK(KA_ABS()));
         }
 
         public void OpcodeF1() {
-            KMI_SBC(K_READ(KA_INDY()));
+            KMI_SBC(readK(KA_INDY()));
         }
 
         public void OpcodeF5() {
-            KMI_SBC(K_READ(KA_ZPX()));
+            KMI_SBC(readK(KA_ZPX()));
         }
 
         public void OpcodeF9() {
-            KMI_SBC(K_READ(KA_ABSY()));
+            KMI_SBC(readK(KA_ABSY()));
         }
 
         public void OpcodeFD() {
-            KMI_SBC(K_READ(KA_ABSX()));
+            KMI_SBC(readK(KA_ABSX()));
         }
 
         public void OpcodeF2() {
-            KMI_SBC(K_READ(KA_IND()));
+            KMI_SBC(readK(KA_IND()));
         }
 
         public void D_OpcoE1() {
-            KMI_SBC_D(K_READ(KA_INDX()));
+            KMI_SBC_D(readK(KA_INDX()));
         }
 
         public void D_OpcoE5() {
-            KMI_SBC_D(K_READ(KA_ZP()));
+            KMI_SBC_D(readK(KA_ZP()));
         }
 
         public void D_OpcoE9() {
-            KMI_SBC_D(K_READ(KA_IMM()));
+            KMI_SBC_D(readK(KA_IMM()));
         }
 
         public void D_OpcoED() {
-            KMI_SBC_D(K_READ(KA_ABS()));
+            KMI_SBC_D(readK(KA_ABS()));
         }
 
         public void D_OpcoF1() {
-            KMI_SBC_D(K_READ(KA_INDY()));
+            KMI_SBC_D(readK(KA_INDY()));
         }
 
         public void D_OpcoF5() {
-            KMI_SBC_D(K_READ(KA_ZPX()));
+            KMI_SBC_D(readK(KA_ZPX()));
         }
 
         public void D_OpcoF9() {
-            KMI_SBC_D(K_READ(KA_ABSY()));
+            KMI_SBC_D(readK(KA_ABSY()));
         }
 
         public void D_OpcoFD() {
-            KMI_SBC_D(K_READ(KA_ABSX()));
+            KMI_SBC_D(readK(KA_ABSX()));
         }
 
         public void D_OpcoF2() {
-            KMI_SBC_D(K_READ(KA_IND()));
+            KMI_SBC_D(readK(KA_IND()));
         }
 
         /* --- SEC --- */
         public void Opcode38() { // 38 - SEC
-            this.P |= C_FLAG;
+            this.p |= C_FLAG;
         }
 
         /* --- SED --- */
         public void OpcodeF8() { // F8 - SED
-            this.P |= D_FLAG;
+            this.p |= D_FLAG;
         }
 
         /* --- SEI --- */
         public void Opcode78() { // 78 - SEI
-            this.P |= I_FLAG;
+            this.p |= I_FLAG;
         }
 
         /* --- SET --- */
         public void OpcodeF4() { // F4 - SET
-            this.P |= T_FLAG;
+            this.p |= T_FLAG;
         }
 
         public void Opcode03() { // 03 - ST0
-            K_WRITE6270(0, K_READ(KA_IMM()));
+            write6270K(0, readK(KA_IMM()));
         }
 
         public void Opcode13() { // 13 - ST1
-            K_WRITE6270(2, K_READ(KA_IMM()));
+            write6270K(2, readK(KA_IMM()));
         }
 
         public void Opcode23() { // 23 - ST2
-            K_WRITE6270(3, K_READ(KA_IMM()));
+            write6270K(3, readK(KA_IMM()));
         }
 
         /* --- STA --- */
 
         public void Opcode81() {
-            K_WRITE(KA_INDX(), this.A);
+            writeK(KA_INDX(), this.a);
         }
 
         public void Opcode85() {
-            K_WRITE(KA_ZP(), this.A);
+            writeK(KA_ZP(), this.a);
         }
 
         public void Opcode8D() {
-            K_WRITE(KA_ABS(), this.A);
+            writeK(KA_ABS(), this.a);
         }
 
         public void Opcode91() {
-            K_WRITE(KA_INDY(), this.A);
+            writeK(KA_INDY(), this.a);
         }
 
         public void Opcode95() {
-            K_WRITE(KA_ZPX(), this.A);
+            writeK(KA_ZPX(), this.a);
         }
 
         public void Opcode99() {
-            K_WRITE(KA_ABSY(), this.A);
+            writeK(KA_ABSY(), this.a);
         }
 
         public void Opcode9D() {
-            K_WRITE(KA_ABSX(), this.A);
+            writeK(KA_ABSX(), this.a);
         }
 
         public void Opcode92() {
-            K_WRITE(KA_IND(), this.A);
+            writeK(KA_IND(), this.a);
         }
 
         /* --- STX ---  */
 
         public void Opcode86() {
-            K_WRITE(KA_ZP(), this.X);
+            writeK(KA_ZP(), this.x);
         }
 
         public void Opcode8E() {
-            K_WRITE(KA_ABS(), this.X);
+            writeK(KA_ABS(), this.x);
         }
 
         public void Opcode96() {
-            K_WRITE(KA_ZPY(), this.X);
+            writeK(KA_ZPY(), this.x);
         }
 
         /* --- STY ---  */
 
         public void Opcode84() {
-            K_WRITE(KA_ZP(), this.Y);
+            writeK(KA_ZP(), this.y);
         }
 
         public void Opcode8C() {
-            K_WRITE(KA_ABS(), this.Y);
+            writeK(KA_ABS(), this.y);
         }
 
         public void Opcode94() {
-            K_WRITE(KA_ZPX(), this.Y);
+            writeK(KA_ZPX(), this.y);
         }
 
         /* --- STZ ---  */
 
         public void Opcode64() {
-            K_WRITE(KA_ZP(), 0);
+            writeK(KA_ZP(), 0);
         }
 
         public void Opcode9C() {
-            K_WRITE(KA_ABS(), 0);
+            writeK(KA_ABS(), 0);
         }
 
         public void Opcode74() {
-            K_WRITE(KA_ZPX(), 0);
+            writeK(KA_ZPX(), 0);
         }
 
         public void Opcode9E() {
-            K_WRITE(KA_ABSX(), 0);
+            writeK(KA_ABSX(), 0);
         }
 
         /* --- TAMi ---  */
 
         public void Opcode53() { // 53 - TAMi
-            K_WRITEMPR(K_READ(KA_IMM()), this.A);
+            writeMPRK(readK(KA_IMM()), this.a);
         }
 
         /* --- TMAi ---  */
 
         public void Opcode43() { // 43 - TMAi
-            this.A = K_READMPR(K_READ(KA_IMM()));
+            this.a = readMPRK(readK(KA_IMM()));
         }
 
         /* --- TRB --- */
 
         public void Opcode14() {
             int adr = KA_ZP();
-            K_WRITE(adr, KM_TRB(K_READ(adr)));
+            writeK(adr, KM_TRB(readK(adr)));
         }
 
         public void Opcode1C() {
             int adr = KA_ABS();
-            K_WRITE(adr, KM_TRB(K_READ(adr)));
+            writeK(adr, KM_TRB(readK(adr)));
         }
 
         /* --- TSB --- */
 
         public void Opcode04() {
             int adr = KA_ZP();
-            K_WRITE(adr, KM_TSB(K_READ(adr)));
+            writeK(adr, KM_TSB(readK(adr)));
         }
 
         public void Opcode0C() {
             int adr = KA_ABS();
-            K_WRITE(adr, KM_TSB(K_READ(adr)));
+            writeK(adr, KM_TSB(readK(adr)));
         }
 
         /* --- TST --- */
 
         public void Opcode83() {
-            int imm = K_READ(KA_IMM());
-            KM_TST(imm, K_READ(KA_ZP()));
+            int imm = readK(KA_IMM());
+            KM_TST(imm, readK(KA_ZP()));
         }
 
         public void Opcode93() {
-            int imm = K_READ(KA_IMM());
-            KM_TST(imm, K_READ(KA_ABS()));
+            int imm = readK(KA_IMM());
+            KM_TST(imm, readK(KA_ABS()));
         }
 
         public void OpcodeA3() {
-            int imm = K_READ(KA_IMM());
-            KM_TST(imm, K_READ(KA_ZPX()));
+            int imm = readK(KA_IMM());
+            KM_TST(imm, readK(KA_ZPX()));
         }
 
         public void OpcodeB3() {
-            int imm = K_READ(KA_IMM());
-            KM_TST(imm, K_READ(KA_ABSX()));
+            int imm = readK(KA_IMM());
+            KM_TST(imm, readK(KA_ABSX()));
         }
         //#endif
 
         /* --- TAX ---  */
         public void OpcodeAA() { // AA - TAX
-            this.X = KM_LD(this.A);
+            this.x = KM_LD(this.a);
         }
 
         /* --- TAY ---  */
         public void OpcodeA8() { // A8 - TAY
-            this.Y = KM_LD(this.A);
+            this.y = KM_LD(this.a);
         }
 
         /* --- TSX ---  */
         public void OpcodeBA() { // BA - TSX
-            this.X = KM_LD(this.S);
+            this.x = KM_LD(this.s);
         }
 
         /* --- TXA ---  */
         public void Opcode8A() { // 8A - TXA
-            this.A = KM_LD(this.X);
+            this.a = KM_LD(this.x);
         }
 
         /* --- TXS ---  */
         public void Opcode9A() { // 9A - TXS
-            this.S = this.X;
+            this.s = this.x;
         }
 
         /* --- TYA ---  */
         public void Opcode98() { // 98 - TYA
-            this.A = KM_LD(this.Y);
+            this.a = KM_LD(this.y);
         }
 
         //#if BUILD_HUC6280
@@ -1918,7 +1906,7 @@ public class Km6280 {
             len = KI_READWORD(KA_IMM16());
             KI_ADDCLOCK(len != 0 ? len * 6 : 0x60000);
             do {
-                K_WRITE(des, K_READ(src));
+                writeK(des, readK(src));
                 src = (src + 1) & 0xffff;
                 des = (des + 1) & 0xffff;
                 len = (len - 1) & 0xffff;
@@ -1932,7 +1920,7 @@ public class Km6280 {
             len = KI_READWORD(KA_IMM16());
             KI_ADDCLOCK(len != 0 ? len * 6 : 0x60000);
             do {
-                K_WRITE(des, K_READ(src));
+                writeK(des, readK(src));
                 src = (src - 1) & 0xffff;
                 des = (des - 1) & 0xffff;
                 len = (len - 1) & 0xffff;
@@ -1946,7 +1934,7 @@ public class Km6280 {
             len = KI_READWORD(KA_IMM16());
             KI_ADDCLOCK(len != 0 ? len * 6 : 0x60000);
             do {
-                K_WRITE(des, K_READ(src));
+                writeK(des, readK(src));
                 src = (src + 1) & 0xffff;
                 len = (len - 1) & 0xffff;
             } while (len != 0);
@@ -1960,7 +1948,7 @@ public class Km6280 {
             len = KI_READWORD(KA_IMM16());
             KI_ADDCLOCK(len != 0 ? len * 6 : 0x60000);
             do {
-                K_WRITE(des, K_READ(src));
+                writeK(des, readK(src));
                 src = (src + 1) & 0xffff;
                 des = (des + add) & 0xffff;
                 add = -add;
@@ -1976,7 +1964,7 @@ public class Km6280 {
             len = KI_READWORD(KA_IMM16());
             KI_ADDCLOCK(len != 0 ? len * 6 : 0x60000);
             do {
-                K_WRITE(des, K_READ(src));
+                writeK(des, readK(src));
                 src = (src + add) & 0xffff;
                 des = (des + 1) & 0xffff;
                 add = -add;
@@ -2000,7 +1988,7 @@ public class Km6280 {
 
             */
         public byte[] cl_table = new byte[] {
-                /* L 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F     H */
+                /* L 0  1  2  3  4  5  6  7  8  9  a  B  C  D  E  F     H */
                 1, 7, 3, 4, 6, 4, 6, 7, 3, 2, 2, -0, 7, 5, 7, 6, /* 0 */
                 2, 7, 7, 4, 6, 4, 6, 7, 2, 5, 2, -0, 7, 5, 7, 6, /* 1 */
                 7, 7, 3, 4, 4, 4, 6, 7, 3, 2, 2, -0, 5, 5, 7, 6, /* 2 */
@@ -2011,7 +1999,7 @@ public class Km6280 {
                 2, 7, 7, 17, 4, 4, 6, 7, 2, 5, 3, -0, 7, 5, 7, 6, /* 7 */
                 2, 7, 2, 7, 4, 4, 4, 7, 2, 2, 2, -0, 5, 5, 5, 6, /* 8 */
                 2, 7, 7, 8, 4, 4, 4, 7, 2, 5, 2, -0, 5, 5, 5, 6, /* 9 */
-                2, 7, 2, 7, 4, 4, 4, 7, 2, 2, 2, -0, 5, 5, 5, 6, /* A */
+                2, 7, 2, 7, 4, 4, 4, 7, 2, 2, 2, -0, 5, 5, 5, 6, /* a */
                 2, 7, 7, 8, 4, 4, 4, 7, 2, 5, 2, -0, 5, 5, 5, 6, /* B */
                 2, 7, 2, 17, 4, 4, 6, 7, 2, 2, 2, -0, 5, 5, 7, 6, /* C */
                 2, 7, 7, 17, 2, 4, 6, 7, 2, 5, 3, -0, -0, 5, 7, 6, /* D */
@@ -2020,20 +2008,20 @@ public class Km6280 {
         };
 
         public void K_OPEXEC() {
-            int opcode = this.lastcode = K_READ(KAI_IMM());
+            int opcode = this.lastCode = readK(KAI_IMM());
             KI_ADDCLOCK(cl_table[opcode]);
             switch (opcode) {
 
             // OP__(00)    OPt_(01)    OPxx(02)    OPxx(04)    OPt_(05)    OP__(06)
             case 0x00:
-                Opcode00();
+                opcode00();
                 break;
             case 0x01:
-                if ((this.P & T_FLAG) != 0) T_Opco01();
+                if ((this.p & T_FLAG) != 0) T_Opco01();
                 else Opcode01();
                 break;
             case 0x05:
-                if ((this.P & T_FLAG) != 0) T_Opco05();
+                if ((this.p & T_FLAG) != 0) T_Opco05();
                 else Opcode05();
                 break;
             case 0x06:
@@ -2045,14 +2033,14 @@ public class Km6280 {
                 Opcode08();
                 break;
             case 0x09:
-                if ((this.P & T_FLAG) != 0) T_Opco09();
+                if ((this.p & T_FLAG) != 0) T_Opco09();
                 else Opcode09();
                 break;
             case 0x0A:
                 Opcode0A();
                 break;
             case 0x0D:
-                if ((this.P & T_FLAG) != 0) T_Opco0D();
+                if ((this.p & T_FLAG) != 0) T_Opco0D();
                 else Opcode0D();
                 break;
             case 0x0E:
@@ -2061,14 +2049,14 @@ public class Km6280 {
 
             // OP__(10)    OPt_(11)    OPxx(12)    OPxx(14)    OPt_(15)    OP__(16)
             case 0x10:
-                Opcode10();
+                opcode10();
                 break;
             case 0x11:
-                if ((this.P & T_FLAG) != 0) T_Opco11();
+                if ((this.p & T_FLAG) != 0) T_Opco11();
                 else Opcode11();
                 break;
             case 0x15:
-                if ((this.P & T_FLAG) != 0) T_Opco15();
+                if ((this.p & T_FLAG) != 0) T_Opco15();
                 else Opcode15();
                 break;
             case 0x16:
@@ -2080,11 +2068,11 @@ public class Km6280 {
                 Opcode18();
                 break;
             case 0x19:
-                if ((this.P & T_FLAG) != 0) T_Opco19();
+                if ((this.p & T_FLAG) != 0) T_Opco19();
                 else Opcode19();
                 break;
             case 0x1D:
-                if ((this.P & T_FLAG) != 0) T_Opco1D();
+                if ((this.p & T_FLAG) != 0) T_Opco1D();
                 else Opcode1D();
                 break;
             case 0x1E:
@@ -2130,14 +2118,14 @@ public class Km6280 {
 
             // OP__(30)    OPt_(31)    OPxx(32)    OPxx(34)    OPt_(35)    OP__(36)
             case 0x30:
-                Opcode30();
+                opcode30();
                 break;
             case 0x31:
-                if ((this.P & T_FLAG) != 0) T_Opco31();
+                if ((this.p & T_FLAG) != 0) T_Opco31();
                 else Opcode31();
                 break;
             case 0x35:
-                if ((this.P & T_FLAG) != 0) T_Opco35();
+                if ((this.p & T_FLAG) != 0) T_Opco35();
                 else Opcode35();
                 break;
             case 0x36:
@@ -2149,11 +2137,11 @@ public class Km6280 {
                 Opcode38();
                 break;
             case 0x39:
-                if ((this.P & T_FLAG) != 0) T_Opco39();
+                if ((this.p & T_FLAG) != 0) T_Opco39();
                 else Opcode39();
                 break;
             case 0x3D:
-                if ((this.P & T_FLAG) != 0) T_Opco3D();
+                if ((this.p & T_FLAG) != 0) T_Opco3D();
                 else Opcode3D();
                 break;
             case 0x3E:
@@ -2165,11 +2153,11 @@ public class Km6280 {
                 Opcode40();
                 break;
             case 0x41:
-                if ((this.P & T_FLAG) != 0) T_Opco41();
+                if ((this.p & T_FLAG) != 0) T_Opco41();
                 else Opcode41();
                 break;
             case 0x45:
-                if ((this.P & T_FLAG) != 0) T_Opco45();
+                if ((this.p & T_FLAG) != 0) T_Opco45();
                 else Opcode45();
                 break;
             case 0x46:
@@ -2181,7 +2169,7 @@ public class Km6280 {
                 Opcode48();
                 break;
             case 0x49:
-                if ((this.P & T_FLAG) != 0) T_Opco49();
+                if ((this.p & T_FLAG) != 0) T_Opco49();
                 else Opcode49();
                 break;
             case 0x4A:
@@ -2191,7 +2179,7 @@ public class Km6280 {
                 Opcode4C();
                 break;
             case 0x4D:
-                if ((this.P & T_FLAG) != 0) T_Opco4D();
+                if ((this.p & T_FLAG) != 0) T_Opco4D();
                 else Opcode4D();
                 break;
             case 0x4E:
@@ -2200,14 +2188,14 @@ public class Km6280 {
 
             //OP__(50)    OPt_(51)    OPxx(52)    OPxx(54)    OPt_(55)    OP__(56)
             case 0x50:
-                Opcode50();
+                opcode50();
                 break;
             case 0x51:
-                if ((this.P & T_FLAG) != 0) T_Opco51();
+                if ((this.p & T_FLAG) != 0) T_Opco51();
                 else Opcode51();
                 break;
             case 0x55:
-                if ((this.P & T_FLAG) != 0) T_Opco55();
+                if ((this.p & T_FLAG) != 0) T_Opco55();
                 else Opcode55();
                 break;
             case 0x56:
@@ -2219,11 +2207,11 @@ public class Km6280 {
                 Opcode58();
                 break;
             case 0x59:
-                if ((this.P & T_FLAG) != 0) T_Opco59();
+                if ((this.p & T_FLAG) != 0) T_Opco59();
                 else Opcode59();
                 break;
             case 0x5D:
-                if ((this.P & T_FLAG) != 0) T_Opco5D();
+                if ((this.p & T_FLAG) != 0) T_Opco5D();
                 else Opcode5D();
                 break;
             case 0x5E:
@@ -2235,15 +2223,15 @@ public class Km6280 {
                 Opcode60();
                 break;
             case 0x61:
-                if ((this.P & T_FLAG) != 0) if ((this.P & D_FLAG) != 0) TD_Opc61();
+                if ((this.p & T_FLAG) != 0) if ((this.p & D_FLAG) != 0) TD_Opc61();
                 else T_Opco61();
-                else if ((this.P & D_FLAG) != 0) D_Opco61();
+                else if ((this.p & D_FLAG) != 0) D_Opco61();
                 else Opcode61();
                 break;
             case 0x65:
-                if ((this.P & T_FLAG) != 0) if ((this.P & D_FLAG) != 0) TD_Opc65();
+                if ((this.p & T_FLAG) != 0) if ((this.p & D_FLAG) != 0) TD_Opc65();
                 else T_Opco65();
-                else if ((this.P & D_FLAG) != 0) D_Opco65();
+                else if ((this.p & D_FLAG) != 0) D_Opco65();
                 else Opcode65();
                 break;
             case 0x66:
@@ -2255,9 +2243,9 @@ public class Km6280 {
                 Opcode68();
                 break;
             case 0x69:
-                if ((this.P & T_FLAG) != 0) if ((this.P & D_FLAG) != 0) TD_Opc69();
+                if ((this.p & T_FLAG) != 0) if ((this.p & D_FLAG) != 0) TD_Opc69();
                 else T_Opco69();
-                else if ((this.P & D_FLAG) != 0) D_Opco69();
+                else if ((this.p & D_FLAG) != 0) D_Opco69();
                 else Opcode69();
                 break;
             case 0x6A:
@@ -2267,9 +2255,9 @@ public class Km6280 {
                 Opcode6C();
                 break;
             case 0x6D:
-                if ((this.P & T_FLAG) != 0) if ((this.P & D_FLAG) != 0) TD_Opc6D();
+                if ((this.p & T_FLAG) != 0) if ((this.p & D_FLAG) != 0) TD_Opc6D();
                 else T_Opco6D();
-                else if ((this.P & D_FLAG) != 0) D_Opco6D();
+                else if ((this.p & D_FLAG) != 0) D_Opco6D();
                 else Opcode6D();
                 break;
             case 0x6E:
@@ -2278,18 +2266,18 @@ public class Km6280 {
 
             //OP__(70)    OPtd(71)    OPxx(72)    OPxx(74)    OPtd(75)    OP__(76)
             case 0x70:
-                Opcode70();
+                opcode70();
                 break;
             case 0x71:
-                if ((this.P & T_FLAG) != 0) if ((this.P & D_FLAG) != 0) TD_Opc71();
+                if ((this.p & T_FLAG) != 0) if ((this.p & D_FLAG) != 0) TD_Opc71();
                 else T_Opco71();
-                else if ((this.P & D_FLAG) != 0) D_Opco71();
+                else if ((this.p & D_FLAG) != 0) D_Opco71();
                 else Opcode71();
                 break;
             case 0x75:
-                if ((this.P & T_FLAG) != 0) if ((this.P & D_FLAG) != 0) TD_Opc75();
+                if ((this.p & T_FLAG) != 0) if ((this.p & D_FLAG) != 0) TD_Opc75();
                 else T_Opco75();
-                else if ((this.P & D_FLAG) != 0) D_Opco75();
+                else if ((this.p & D_FLAG) != 0) D_Opco75();
                 else Opcode75();
                 break;
             case 0x76:
@@ -2301,15 +2289,15 @@ public class Km6280 {
                 Opcode78();
                 break;
             case 0x79:
-                if ((this.P & T_FLAG) != 0) if ((this.P & D_FLAG) != 0) TD_Opc79();
+                if ((this.p & T_FLAG) != 0) if ((this.p & D_FLAG) != 0) TD_Opc79();
                 else T_Opco79();
-                else if ((this.P & D_FLAG) != 0) D_Opco79();
+                else if ((this.p & D_FLAG) != 0) D_Opco79();
                 else Opcode79();
                 break;
             case 0x7D:
-                if ((this.P & T_FLAG) != 0) if ((this.P & D_FLAG) != 0) TD_Opc7D();
+                if ((this.p & T_FLAG) != 0) if ((this.p & D_FLAG) != 0) TD_Opc7D();
                 else T_Opco7D();
-                else if ((this.P & D_FLAG) != 0) D_Opco7D();
+                else if ((this.p & D_FLAG) != 0) D_Opco7D();
                 else Opcode7D();
                 break;
             case 0x7E:
@@ -2349,7 +2337,7 @@ public class Km6280 {
 
             //OP__(90)    OP__(91)    OPxx(92)    OP__(94)    OP__(95)    OP__(96)
             case 0x90:
-                Opcode90();
+                opcode90();
                 break;
             case 0x91:
                 Opcode91();
@@ -2420,7 +2408,7 @@ public class Km6280 {
 
             //OP__(B0)    OP__(B1)    OPxx(B2)    OP__(B4)    OP__(B5)    OP__(B6)
             case 0xB0:
-                OpcodeB0();
+                opcodeB0();
                 break;
             case 0xB1:
                 OpcodeB1();
@@ -2494,7 +2482,7 @@ public class Km6280 {
 
             //OP__(D0)    OP__(D1)    OPxx(D2)    OPxx(D4)    OP__(D5)    OP__(D6)
             case 0xD0:
-                OpcodeD0();
+                opcodeD0();
                 break;
             case 0xD1:
                 OpcodeD1();
@@ -2525,14 +2513,14 @@ public class Km6280 {
                 OpcodeE0();
                 break;
             case 0xE1:
-                if ((this.P & D_FLAG) != 0) D_OpcoE1();
+                if ((this.p & D_FLAG) != 0) D_OpcoE1();
                 else OpcodeE1();
                 break;
             case 0xE4:
                 OpcodeE4();
                 break;
             case 0xE5:
-                if ((this.P & D_FLAG) != 0) D_OpcoE5();
+                if ((this.p & D_FLAG) != 0) D_OpcoE5();
                 else OpcodeE5();
                 break;
             case 0xE6:
@@ -2544,7 +2532,7 @@ public class Km6280 {
                 OpcodeE8();
                 break;
             case 0xE9:
-                if ((this.P & D_FLAG) != 0) D_OpcoE9();
+                if ((this.p & D_FLAG) != 0) D_OpcoE9();
                 else OpcodeE9();
                 break;
             case 0xEA:
@@ -2554,7 +2542,7 @@ public class Km6280 {
                 OpcodeEC();
                 break;
             case 0xED:
-                if ((this.P & D_FLAG) != 0) D_OpcoED();
+                if ((this.p & D_FLAG) != 0) D_OpcoED();
                 else OpcodeED();
                 break;
             case 0xEE:
@@ -2563,14 +2551,14 @@ public class Km6280 {
 
             //OP__(F0)    OP_d(F1)    OPxx(F2)    OPxx(F4)    OP_d(F5)    OP__(F6)
             case 0xF0:
-                OpcodeF0();
+                opcodeF0();
                 break;
             case 0xF1:
-                if ((this.P & D_FLAG) != 0) D_OpcoF1();
+                if ((this.p & D_FLAG) != 0) D_OpcoF1();
                 else OpcodeF1();
                 break;
             case 0xF5:
-                if ((this.P & D_FLAG) != 0) D_OpcoF5();
+                if ((this.p & D_FLAG) != 0) D_OpcoF5();
                 else OpcodeF5();
                 break;
             case 0xF6:
@@ -2582,19 +2570,19 @@ public class Km6280 {
                 OpcodeF8();
                 break;
             case 0xF9:
-                if ((this.P & D_FLAG) != 0) D_OpcoF9();
+                if ((this.p & D_FLAG) != 0) D_OpcoF9();
                 else OpcodeF9();
                 break;
             case 0xFD:
-                if ((this.P & D_FLAG) != 0) D_OpcoFD();
+                if ((this.p & D_FLAG) != 0) D_OpcoFD();
                 else OpcodeFD();
                 break;
             case 0xFE:
                 OpcodeFE();
                 break;
 
-            /* 34 - BIT - Zero Page,X */
-            /* 3C - BIT - Absolute,X */
+            /* 34 - BIT - Zero Page,x */
+            /* 3C - BIT - Absolute,x */
             /* 80 - BRA */
             /* 3A - DEA */
             /* 1A - INA */
@@ -2605,7 +2593,7 @@ public class Km6280 {
                 Opcode3C();
                 break;
             case 0x80:
-                Opcode80();
+                opcode80();
                 break;
             case 0x3A:
                 Opcode3A();
@@ -2644,21 +2632,21 @@ public class Km6280 {
             /* D2 - CMP - (Indirect) */
             /* F2 - SBC - (Indirect) */
             case 0x12:
-                if ((this.P & T_FLAG) != 0) T_Opco12();
+                if ((this.p & T_FLAG) != 0) T_Opco12();
                 else Opcode12();
                 break;
             case 0x32:
-                if ((this.P & T_FLAG) != 0) T_Opco32();
+                if ((this.p & T_FLAG) != 0) T_Opco32();
                 else Opcode32();
                 break;
             case 0x52:
-                if ((this.P & T_FLAG) != 0) T_Opco52();
+                if ((this.p & T_FLAG) != 0) T_Opco52();
                 else Opcode52();
                 break;
             case 0x72:
-                if ((this.P & T_FLAG) != 0) if ((this.P & D_FLAG) != 0) TD_Opc72();
+                if ((this.p & T_FLAG) != 0) if ((this.p & D_FLAG) != 0) TD_Opc72();
                 else T_Opco72();
-                else if ((this.P & D_FLAG) != 0) D_Opco72();
+                else if ((this.p & D_FLAG) != 0) D_Opco72();
                 else Opcode72();
                 break;
             case 0x92:
@@ -2671,7 +2659,7 @@ public class Km6280 {
                 OpcodeD2();
                 break;
             case 0xF2:
-                if ((this.P & D_FLAG) != 0) D_OpcoF2();
+                if ((this.p & D_FLAG) != 0) D_OpcoF2();
                 else OpcodeF2();
                 break;
 
@@ -2703,7 +2691,7 @@ public class Km6280 {
                 Opcode9E();
                 break;
 
-            /* 7C - JMP - Absolute,X */
+            /* 7C - JMP - Absolute,x */
             case 0x7C:
                 Opcode7C();
                 break;
@@ -2766,18 +2754,18 @@ public class Km6280 {
 
             /* 44 - BSR */
             case 0x44:
-                Opcode44();
+                opcode44();
                 break;
 
             /* CLA CLX CLY */
             case 0x62:
-                Opcode62();
+                opcode62();
                 break;
             case 0x82:
-                Opcode82();
+                opcode82();
                 break;
             case 0xC2:
-                OpcodeC2();
+                opcodeC2();
                 break;
 
             /* RMBi */
@@ -2919,11 +2907,11 @@ public class Km6280 {
                     //#if BUILD_HUC6280
                     this.lowClockMode = 1;
                     //#endif
-                    this.A = 0;
-                    this.X = 0;
-                    this.Y = 0;
-                    this.S = 0xFF;
-                    this.P = Z_FLAG | R_FLAG | I_FLAG;
+                    this.a = 0;
+                    this.x = 0;
+                    this.y = 0;
+                    this.s = 0xFF;
+                    this.p = Z_FLAG | R_FLAG | I_FLAG;
                     this.iRequest = 0;
                     this.iMask = 0xffffffff;// ~0;
                     KI_ADDCLOCK(7);
@@ -2931,65 +2919,65 @@ public class Km6280 {
                 } else if ((this.iRequest & IRQ_RESET) != 0) {
                     //#if BUILD_HUC6280
                     this.lowClockMode = 1;
-                    K_WRITEMPR(0x80, 0x00); /* IPL(TOP OF ROM) */
+                    writeMPRK(0x80, 0x00); /* IPL(TOP OF ROM) */
                     //#endif
-                    this.A = 0;
-                    this.X = 0;
-                    this.Y = 0;
-                    this.S = 0xFF;
-                    this.P = Z_FLAG | R_FLAG | I_FLAG;
-                    this.PC = KI_READWORD(VEC_RESET);
+                    this.a = 0;
+                    this.x = 0;
+                    this.y = 0;
+                    this.s = 0xFF;
+                    this.p = Z_FLAG | R_FLAG | I_FLAG;
+                    this.pc = KI_READWORD(VEC_RESET);
                     this.iRequest = 0;
                     this.iMask = 0xffffffff;// ~0;
                 } else if ((this.iRequest & IRQ_NMI) != 0) {
-                    KM_PUSH((this.PC >> 8) & 0xff);
-                    KM_PUSH((this.PC) & 0xff);
-                    KM_PUSH(this.P | R_FLAG | B_FLAG);
+                    KM_PUSH((this.pc >> 8) & 0xff);
+                    KM_PUSH((this.pc) & 0xff);
+                    KM_PUSH(this.p | R_FLAG | B_FLAG);
                     //#if BUILD_M65C02 || BUILD_HUC6280
-                    this.P = (this.P & ~(D_FLAG | T_FLAG)) | I_FLAG;
+                    this.p = (this.p & ~(D_FLAG | T_FLAG)) | I_FLAG;
                     this.iRequest &= ~(int) IRQ_NMI;
                     //#else
-                    //__THIS__.P = (__THIS__.P & ~T_FLAG) | I_FLAG;   /* 6502 bug */
+                    //__THIS__.p = (__THIS__.p & ~T_FLAG) | I_FLAG;   /* 6502 bug */
                     //__THIS__.iRequest &= ~(IRQ_NMI | IRQ_BRK);
                     //#endif
-                    this.PC = KI_READWORD(VEC_NMI);
+                    this.pc = KI_READWORD(VEC_NMI);
                     KI_ADDCLOCK(7);
                 } else if ((this.iRequest & IRQ_BRK) != 0) {
-                    KM_PUSH((this.PC >> 8) & 0xff);
-                    KM_PUSH((this.PC) & 0xff);
-                    KM_PUSH(this.P | R_FLAG | B_FLAG);
+                    KM_PUSH((this.pc >> 8) & 0xff);
+                    KM_PUSH((this.pc) & 0xff);
+                    KM_PUSH(this.p | R_FLAG | B_FLAG);
                     //#if BUILD_M65C02 || BUILD_HUC6280
-                    this.P = (this.P & ~(D_FLAG | T_FLAG)) | I_FLAG;
+                    this.p = (this.p & ~(D_FLAG | T_FLAG)) | I_FLAG;
                     //#else
-                    //__THIS__.P = (__THIS__.P & ~T_FLAG) | I_FLAG;   /* 6502 bug */
+                    //__THIS__.p = (__THIS__.p & ~T_FLAG) | I_FLAG;   /* 6502 bug */
                     //#endif
                     this.iRequest &= ~(int) IRQ_BRK;
-                    this.PC = KI_READWORD(VEC_BRK);
+                    this.pc = KI_READWORD(VEC_BRK);
                     KI_ADDCLOCK(7);
-                } else if ((this.P & I_FLAG) != 0) {
+                } else if ((this.p & I_FLAG) != 0) {
                     /* Interrupt disabled */
                 }
                 //#if BUILD_HUC6280
                 else if ((this.iMask & this.iRequest & IRQ_INT1) != 0) {
-                    KM_PUSH((this.PC >> 8) & 0xff);
-                    KM_PUSH((this.PC) & 0xff);
-                    KM_PUSH(this.P | R_FLAG | B_FLAG);
-                    this.P = (this.P & ~(D_FLAG | T_FLAG)) | I_FLAG;
-                    this.PC = KI_READWORD(VEC_INT1);
+                    KM_PUSH((this.pc >> 8) & 0xff);
+                    KM_PUSH((this.pc) & 0xff);
+                    KM_PUSH(this.p | R_FLAG | B_FLAG);
+                    this.p = (this.p & ~(D_FLAG | T_FLAG)) | I_FLAG;
+                    this.pc = KI_READWORD(VEC_INT1);
                     KI_ADDCLOCK(7);
                 } else if ((this.iMask & this.iRequest & IRQ_TIMER) != 0) {
-                    KM_PUSH((this.PC >> 8) & 0xff);
-                    KM_PUSH((this.PC) & 0xff);
-                    KM_PUSH(this.P | R_FLAG | B_FLAG);
-                    this.P = (this.P & ~(D_FLAG | T_FLAG)) | I_FLAG;
-                    this.PC = KI_READWORD(VEC_TIMER);
+                    KM_PUSH((this.pc >> 8) & 0xff);
+                    KM_PUSH((this.pc) & 0xff);
+                    KM_PUSH(this.p | R_FLAG | B_FLAG);
+                    this.p = (this.p & ~(D_FLAG | T_FLAG)) | I_FLAG;
+                    this.pc = KI_READWORD(VEC_TIMER);
                     KI_ADDCLOCK(7);
                 } else if ((this.iMask & this.iRequest & IRQ_INT) != 0) {
-                    KM_PUSH((this.PC >> 8) & 0xff);
-                    KM_PUSH((this.PC) & 0xff);
-                    KM_PUSH((this.P | R_FLAG) & ~B_FLAG);
-                    this.P = (this.P & ~(D_FLAG | T_FLAG)) | I_FLAG;
-                    this.PC = KI_READWORD(VEC_INT);
+                    KM_PUSH((this.pc >> 8) & 0xff);
+                    KM_PUSH((this.pc) & 0xff);
+                    KM_PUSH((this.p | R_FLAG) & ~B_FLAG);
+                    this.p = (this.p & ~(D_FLAG | T_FLAG)) | I_FLAG;
+                    this.pc = KI_READWORD(VEC_INT);
                     KI_ADDCLOCK(7);
                 }
             }

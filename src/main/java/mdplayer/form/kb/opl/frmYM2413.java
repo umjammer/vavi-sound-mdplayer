@@ -231,11 +231,11 @@ public class frmYM2413 extends frmBase {
             int d = 99;
             DrawBuff.volume(screen, 256, 8 + y * 8, 0, d, 0, tp);
 
-            boolean db = null;
+            Boolean db = null;
             DrawBuff.chYM2413(screen, y, db, newParam.channels[y].mask, tp);
         }
 
-        boolean dm;
+        Boolean dm;
         dm = null;
         DrawBuff.chYM2413(frameBuffer, 9, dm, newParam.channels[9].mask, tp);
         dm = null;

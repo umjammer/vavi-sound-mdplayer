@@ -239,3 +239,5 @@ output
 lib
 plugin
 tmp/
+*.resx
+src/main/resources/mdplayer/resources/

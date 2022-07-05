@@ -92,7 +92,7 @@ public abstract class Tables {
                      , "Hexa Chorus    " , "Tremolo Chorus " , "Stereo Chorus  " , "Space D        "
                      , "3D Chorus      " , "Stereo Delay   " , "Mod Delay      " , "3 Tap Delay    "
                      , "4 Tap Delay    " , "Tm Ctrl Delay  " , "Reverb         " , "Gate Reverb    "
-                     , "3D Delay       " , "2 Pitch Shifter" , "Fb P.Shifter   " , "3D Auto        "
+                     , "3D Delay       " , "2 Pitch Shifter" , "Fb p.Shifter   " , "3D Auto        "
                      , "3D Manual      " , "Lo-Fi 1        " , "Lo-Fi 2        " , "OD>Chorus      "
                      , "OD>Flanger     " , "OD>Delay       " , "DS>Chorus      " , "DS>Flanger     "
                      , "DS>Delay       " , "EH>Chorus      " , "EH>Flanger     " , "EH>Delay       "
@@ -109,7 +109,7 @@ public abstract class Tables {
         new String[] {
                        "NO EFFECT                 " , "HALL 1                    " , "HALL 2                    " , "HALL M                    "
                      , "HALL L                    " , "ROOM 1                    " , "ROOM 2                    " , "ROOM 3                    "
-                     , "ROOM S                    " , "ROOM M                    " , "ROOM L                    " , "STAGE1                    "
+                     , "ROOM s                    " , "ROOM M                    " , "ROOM L                    " , "STAGE1                    "
                      , "STAGE2                    " , "PLATE                     " , "GMPLATE                   " , "WHITEROOM                 "
                      , "TUNNEL                    " , "CANYON                    " , "BASEMENT                  "
         } ,
@@ -124,7 +124,7 @@ public abstract class Tables {
         new String[] {
                        "NO EFFECT                 " , "HALL1                     " , "HALL2                     " , "HALL M                    "
                      , "HALL L                    " , "ROOM1                     " , "ROOM2                     " , "ROOM3                     "
-                     , "ROOM S                    " , "ROOM M                    " , "ROOM L                    " , "STAGE1                    "
+                     , "ROOM s                    " , "ROOM M                    " , "ROOM L                    " , "STAGE1                    "
                      , "STAGE2                    " , "PLATE                     " , "GM PLATE                  " , "DELAY L,C,R               "
                      , "DELAY L,R                 " , "ECHO                      " , "CROSSDELAY                " , "ER1                       "
                      , "ER2                       " , "GATE REVERB               " , "REVERSE GATE              " , "WHITE ROOM                "
@@ -155,11 +155,11 @@ public abstract class Tables {
                     ,"E.Piano1 ","E.Piano2 ","Harpschrd","Clavi    "
                     ,"Celesta  ","Glocken  ","Music Box","Vibraphon"
                     ,"Marimba  ","Xylophone","Tblarbell","Dulcimer "
-                    ,"D.Organ  ","P.Organ  ","R.Organ  ","ChrchOrgn"
+                    ,"D.Organ  ","p.Organ  ","R.Organ  ","ChrchOrgn"
                     ,"Reed Orgn","Accordion","Harmonica","T.Accrdon"
                     ,"NylonGt. ","SteelGt. ","JazzGt.  ","CleanGt. "
                     ,"MutedGt. ","Overd.Gt.","Dist.Gt. ","Harmo.Gt."
-                    ,"A.Bass   ","FingrBass","PickBass ","FrtlBass "
+                    ,"a.Bass   ","FingrBass","PickBass ","FrtlBass "
                     ,"SlapBass1","SlapBass2","Syn.Bass1","Syn.Bass2"
                     ,"Violin   ","Viola    ","Cello    ","Cntrabass"
                     ,"TremlStr.","PizzStr. ","Harp     ","Timpani  "
@@ -193,12 +193,12 @@ public abstract class Tables {
     };
 
     public static final int[] kbl = new int[] { 0, 0, 2, 1, 4, 2, 6, 1, 8, 3, 12, 0, 14, 1, 16, 2, 18, 1, 20, 2, 22, 1, 24, 3 };
-    public static final String[] kbn = new String[] { "C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B " };
-    public static final String[] kbns = new String[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
-    public static final String[] kbnp = new String[] { "C ", "C+", "D ", "D+", "E ", "F ", "F+", "G ", "G+", "A ", "A+", "B " };
-    public static final String[] kbo = new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F" };
+    public static final String[] kbn = new String[] { "C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "a ", "a#", "B " };
+    public static final String[] kbns = new String[] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "a", "a#", "B" };
+    public static final String[] kbnp = new String[] { "C ", "C+", "D ", "D+", "E ", "F ", "F+", "G ", "G+", "a ", "a+", "B " };
+    public static final String[] kbo = new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "B", "C", "D", "E", "F" };
     public static final int[] kbl2 = new int[] { 0, 12, 4, 12, 8, 0, 12, 4, 12, 4, 12, 8 };
     public static final int[] kbdl = new int[] { 0, 2, 4, 6, 8, 12, 14, 16, 18, 20, 22, 24 };
 
-    public static final String[] hexCh = new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F" };
+    public static final String[] hexCh = new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "B", "C", "D", "E", "F" };
 }

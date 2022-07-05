@@ -26,6 +26,10 @@ import java.util.Set;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.Mixer;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -44,11 +48,12 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import dotnet4j.io.Directory;
-import dotnet4j.io.Path;
 import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmInstFormat;
@@ -59,7 +64,6 @@ import mdplayer.MidiOutInfo;
 import mdplayer.Setting;
 import mdplayer.Setting.ChipType2;
 import mdplayer.properties.Resources;
-import mdplayer.vst.VstInfo;
 
 
 public class frmSetting extends JDialog {
@@ -103,50 +107,21 @@ public class frmSetting extends JDialog {
         this.cmbWaitTime.setSelectedIndex(0);
         cbUnuseRealChip.setSelected(setting.getUnuseRealChip());
 
-        // ASIOサポートチェック
-//        if (!AsioOut.isSupported()) {
-//            rbAsioOut.setEnabled(false);
-//            gbAsioOut.setEnabled(false);
-//            asioSupported = false;
-//        }
-
-        // wasapiサポートチェック
-//        String os = System.getProperty("os.name");
-//        if (os.contains("win") && os.Version.Major < 6) {
-//            rbWasapiOut.setEnabled(false);
-//            gbWasapiOut.setEnabled(false);
-//            wasapiSupported = false;
-//        }
-
-
         // Comboboxへデバイスを列挙
-
-        for (int i = 0; i < WaveOut.DeviceCount; i++) {
-            cmbWaveOutDevice.addItem(WaveOut.GetCapabilities(i).ProductName);
-        }
-
-        for (DirectSoundDeviceInfo d : DirectSoundOut.Devices) {
-            cmbDirectSoundDevice.add(d.Description);
-        }
-
-        if (wasapiSupported) {
-            MMDeviceEnumerator enumerator = new MMDeviceEnumerator();
-            EnumerateAudioEndPoints endPoints = enumerator.EnumerateAudioEndPoints(DataFlow.Render, DeviceState.Active);
-            for (var endPoint : endPoints) {
-                cmbWasapiDevice.add(String.format("%s (%s)", endPoint.FriendlyName, endPoint.DeviceFriendlyName));
+        Mixer.Info [] mixersInfo = AudioSystem.getMixerInfo();
+        for (Mixer.Info mixerInfo : mixersInfo) {
+            Mixer mixer = AudioSystem.getMixer(mixerInfo);
+            Line.Info [] sourceLineInfo = mixer.getSourceLineInfo();
+            for (Line.Info info : sourceLineInfo) {
+                if (info instanceof DataLine.Info dataLineInfo)
+                cmbDirectSoundDevice.addItem(dataLineInfo.toString());
             }
         }
-
-//        if (asioSupported) {
-//            for (String s : AsioOut.GetDriverNames()) {
-//                cmbAsioDevice.add(s);
-//            }
-//        }
 
         for (MidiDevice.Info info : MidiSystem.getMidiDeviceInfo()) {
             try {
                 MidiDevice device = MidiSystem.getMidiDevice(info);
-                ((DefaultComboBoxModel) cmbMIDIIN.getModel()).addElement(device.getDeviceInfo().getName());
+                ((DefaultComboBoxModel<String>) cmbMIDIIN.getModel()).addElement(device.getDeviceInfo().getName());
             } catch (MidiUnavailableException e) {
                 e.printStackTrace();
             }
@@ -1016,10 +991,10 @@ public class frmSetting extends JDialog {
 
     private void copyFromMIDIoutListA(JTable dgv) {
 
-        ((DefaultTableModel) dgv.getModel()).setRowCount(0);
+        dgv.setColumnModel(new DefaultTableColumnModel());
 
-        for (JListColumn col : Columns) {
-            dgv.Columns.add((JListColumn) col.Clone());
+        for (TableColumn col : (Iterable<TableColumn>) dgvMIDIoutListA.getColumnModel().getColumns().asIterator()) {
+            dgv.getColumnModel().addColumn(col);
         }
     }
 
@@ -1030,7 +1005,7 @@ public class frmSetting extends JDialog {
 //            }
         } catch (Exception ex) {
             Log.forcedWrite(ex);
-            JOptionPane.showConfirmDialog(null, ex.getMessage());
+            JOptionPane.showMessageDialog(null, ex.getMessage());
         }
     }
 
@@ -1039,7 +1014,7 @@ public class frmSetting extends JDialog {
 
         int i = 0;
 
-        // #region 出力
+//#region 出力
 
         setting.getOutputDevice().setDeviceType(Common.DEV_WaveOut);
         if (rbWaveOut.isSelected()) setting.getOutputDevice().setDeviceType(Common.DEV_WaveOut);
@@ -1059,9 +1034,9 @@ public class frmSetting extends JDialog {
         setting.getOutputDevice().setWaitTime(Integer.parseInt(cmbWaitTime.getSelectedItem().toString()));
         setting.getOutputDevice().setSampleRate(Integer.parseInt(cmbSampleRate.getSelectedItem().toString()));
 
-// #endregion
+//#endregion
 
-// #region Sound
+//#region Sound
 
         setting.setUnuseRealChip(cbUnuseRealChip.isSelected());
         setting.setYM2612Type(new ChipType2[2]);
@@ -1586,7 +1561,7 @@ public class frmSetting extends JDialog {
 
                     lstMoi.add(moi);
                 }
-                setting.getMidiOut().getMidiOutInfos().add(lstMoi.toArray(new MidiOutInfo[0]));
+                setting.getMidiOut().getMidiOutInfos().add(lstMoi.toArray(MidiOutInfo[]::new));
             } else {
                 setting.getMidiOut().getMidiOutInfos().add(null);
             }
@@ -2001,7 +1976,7 @@ public class frmSetting extends JDialog {
                     "SCCI/GIMICのデバイスが重複して設定されています。強行しますか"
                     , "警告"
                     , JOptionPane.YES_NO_OPTION
-                    , JOptionPane.ERROR_MESSAGE
+                    , JOptionPane.WARNING_MESSAGE
             ) == JOptionPane.YES_OPTION;
         }
 
@@ -2308,33 +2283,33 @@ public class frmSetting extends JDialog {
         ofd.setDialogTitle("ファイルを選択してください");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
-        if (!setting.getVst().getDefaultPath().isEmpty() && Directory.exists(setting.getVst().getDefaultPath()) && IsInitialOpenFolder) {
-            ofd.setCurrentDirectory(new File(setting.getVst().getDefaultPath()));
-//        } else {
-//            ofd.RestoreDirectory = true;
-        }
-//        ofd.CheckPathExists = true;
-        ofd.setMultiSelectionEnabled(false);
-
-        if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
-
-        VstInfo s = Audio.getVSTInfo(ofd.getSelectedFile().getName());
-        if (s == null) return;
-
-        setting.getVst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
-
-        int p = tbcMIDIoutList.getSelectedIndex();
-        ((DefaultTableModel) dgv[p].getModel()).addRow(new Object[] {
-                -999
-                , true
-                , s.fileName
-                , s.effectName
-                , "GM"
-                , "None"
-                , s.vendorName
-        });
+//        if (!setting.getVst().getDefaultPath().isEmpty() && Directory.exists(setting.getVst().getDefaultPath()) && IsInitialOpenFolder) {
+//            ofd.setCurrentDirectory(new File(setting.getVst().getDefaultPath()));
+////        } else {
+////            ofd.RestoreDirectory = true;
+//        }
+////        ofd.CheckPathExists = true;
+//        ofd.setMultiSelectionEnabled(false);
+//
+//        if (ofd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+//            return;
+//        }
+//
+//        VstInfo s = Audio.getVSTInfo(ofd.getSelectedFile().getName());
+//        if (s == null) return;
+//
+//        setting.getVst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
+//
+//        int p = tbcMIDIoutList.getSelectedIndex();
+//        ((DefaultTableModel) dgv[p].getModel()).addRow(new Object[] {
+//                -999
+//                , true
+//                , s.fileName
+//                , s.effectName
+//                , "GM"
+//                , "None"
+//                , s.vendorName
+//        });
     }
 
     private void btnSIDKernal_Click(ActionEvent ev) {
@@ -6798,7 +6773,7 @@ public class frmSetting extends JDialog {
     private JButton btnASIOControlPanel;
     private JComboBox cmbAsioDevice;
     private JComboBox cmbWasapiDevice;
-    private JComboBox cmbDirectSoundDevice;
+    private JComboBox<String> cmbDirectSoundDevice;
     private JTabbedPane tcSetting;
     private JTabbedPane tpOutput;
     private JTabbedPane tpAbout;
@@ -6819,7 +6794,7 @@ public class frmSetting extends JDialog {
     private JCheckBox cbFM4;
     private JCheckBox cbFM5;
     private JCheckBox cbFM6;
-    private JComboBox cmbMIDIIN;
+    private JComboBox<String> cmbMIDIIN;
     private JLabel label5;
     private JCheckBox rbExclusive;
     private JCheckBox rbShare;

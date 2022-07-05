@@ -22,7 +22,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.Timer;
 
-import dotnet4j.Tuple;
+import dotnet4j.util.compat.Tuple;
 import mdplayer.Audio;
 import mdplayer.form.frmBase;
 import mdplayer.properties.Resources;
@@ -174,14 +174,14 @@ public class frmVisWave extends frmBase {
         FFT fft = new FFT();
 
         for (int i = 0; i < sdata.length; i++) {
-            fftsample[i].Item1 = (float) (sdata[i] * fft.win(i, sdata.length));
-            fftsample[i].Item2 = 0f;
+            fftsample[i].setItem1((float) (sdata[i] * fft.win(i, sdata.length)));
+            fftsample[i].setItem2(0f);
         }
 
         fft.fft(true, (int) (Math.log(sdata.length) / Math.log(2)), fftsample);
 
         for (int i = 0; i < sdata.length; i++) {
-            sdata[i] = (float) Math.sqrt(fftsample[i].Item1 * fftsample[i].Item1 + fftsample[i].Item2 * fftsample[i].Item2); // パワースペクトル
+            sdata[i] = (float) Math.sqrt(fftsample[i].getItem1() * fftsample[i].getItem1() + fftsample[i].getItem2() * fftsample[i].getItem2()); // パワースペクトル
         }
     }
 

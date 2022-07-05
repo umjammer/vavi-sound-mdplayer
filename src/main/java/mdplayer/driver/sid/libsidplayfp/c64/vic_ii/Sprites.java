@@ -13,7 +13,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -23,7 +23,7 @@
 
 package mdplayer.driver.sid.libsidplayfp.c64.vic_ii;
 
-import mdplayer.driver.sid.mem;
+import mdplayer.driver.sid.Mem;
 
 
 /**
@@ -47,8 +47,8 @@ public class Sprites {
         expFlop = (byte) 0xff;
         dma = 0;
 
-        mem.memset(mcBase, (byte) 0, mcBase.length);
-        mem.memset(mc, (byte) 0, mc.length);
+        Mem.memset(mcBase, (byte) 0, mcBase.length);
+        Mem.memset(mc, (byte) 0, mc.length);
     }
 
     /**

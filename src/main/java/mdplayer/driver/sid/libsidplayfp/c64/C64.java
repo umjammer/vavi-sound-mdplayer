@@ -12,7 +12,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -26,7 +26,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import dotnet4j.Tuple;
+import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.FileStream;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler;
 import mdplayer.driver.sid.libsidplayfp.EventScheduler.EventPhase;
@@ -378,7 +378,7 @@ public class C64 extends C64Env {
         mmu.reset();
 
         for (Tuple<Integer, ExtraSidBank> b : extraSidBanks) {
-            resetSID(b.Item2);
+            resetSID(b.getItem2());
         }
 
         irqCount = 0;
@@ -429,16 +429,16 @@ public class C64 extends C64Env {
 
         boolean found = false;
         for (Tuple<Integer, ExtraSidBank> ite : extraSidBanks) {
-            if (ite.Item1 == index) {
+            if (ite.getItem1() == index) {
                 found = true;
-                ExtraSidBank extraSidBank = ite.Item2;
+                ExtraSidBank extraSidBank = ite.getItem2();
                 extraSidBank.addSID(s, address);
                 break;
             }
         }
         if (!found) {
             extraSidBanks.add(new Tuple<>(index, new ExtraSidBank()));
-            ExtraSidBank extraSidBank = extraSidBanks.get(extraSidBanks.size() - 1).Item2;
+            ExtraSidBank extraSidBank = extraSidBanks.get(extraSidBanks.size() - 1).getItem2();
             extraSidBank.resetSIDMapper(ioBank.getBank(index));
             ioBank.setBank(index, extraSidBank);
             extraSidBank.addSID(s, address);
@@ -456,7 +456,7 @@ public class C64 extends C64Env {
         resetIoBank();
 
         for (int i = 0; i < extraSidBanks.size(); i++) {
-            extraSidBanks.set(i, new Tuple<>(extraSidBanks.get(i).Item1, null));
+            extraSidBanks.set(i, new Tuple<>(extraSidBanks.get(i).getItem1(), null));
 
             extraSidBanks.clear();
         }

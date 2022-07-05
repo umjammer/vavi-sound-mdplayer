@@ -3,6 +3,7 @@ package mdplayer;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -16,8 +17,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-import com.sun.tools.javac.file.ZipArchive;
-import dotnet4j.Tuple;
+import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.File;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
@@ -26,6 +26,7 @@ import dotnet4j.io.StreamReader;
 import mdplayer.Common.EnmArcType;
 import mdplayer.Common.FileFormat;
 import vavi.util.archive.Archive;
+import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
 import vavi.util.archive.zip.ZipEntry;
 import vavi.util.serdes.Serdes;
@@ -65,14 +66,14 @@ public class PlayList implements Serializable {
         public int songNo = -1;
     }
 
-    private List<Music> _lstMusic = new ArrayList<>();
+    private List<Music> musics = new ArrayList<>();
 
-    public List<Music> getLstMusic() {
-        return _lstMusic;
+    public List<Music> getMusics() {
+        return musics;
     }
 
-    public void setLstMusic(List<Music> value) {
-        _lstMusic = value;
+    public void setMusics(List<Music> value) {
+        musics = value;
     }
 
     public PlayList copy() {
@@ -102,7 +103,7 @@ public class PlayList implements Serializable {
         String basePath = Path.getDirectoryName(fileName);
 
         try (PrintWriter sw = new PrintWriter(new FileWriter(fileName))) {
-            for (Music ms : this._lstMusic) {
+            for (Music ms : this.musics) {
                 String path = Path.getDirectoryName(ms.fileName);
                 if (path.equals(basePath)) {
                     sw.println(Path.getFileName(ms.fileName));
@@ -152,7 +153,7 @@ public class PlayList implements Serializable {
                     }
                     Music ms = new Music();
                     ms.fileName = line;
-                    pl._lstMusic.add(ms);
+                    pl.musics.add(ms);
                 }
             }
 
@@ -209,11 +210,10 @@ public class PlayList implements Serializable {
             mc.fileName = filename;
             rootPath = Path.getDirectoryName(filename);
 
-            addFileLoop(mc, null);
+            addFileLoop(mc, null, null);
         } catch (Exception ex) {
-            JOptionPane.showConfirmDialog(null, String.format("ファイル追加に失敗しました。\n詳細\nMessage=%s", ex.getMessage())
+            JOptionPane.showMessageDialog(null, String.format("ファイル追加に失敗しました。\n詳細\nMessage=%s", ex.getMessage())
                     , "エラー"
-                    , JOptionPane.YES_NO_OPTION
                     , JOptionPane.ERROR_MESSAGE);
             Log.forcedWrite(ex);
         }
@@ -227,171 +227,170 @@ public class PlayList implements Serializable {
                 mc.fileName = filename;
                 rootPath = Path.getDirectoryName(filename);
 
-                addFileLoop(index, mc, null);
+                addFileLoop(index, mc, null, null);
             }
         } catch (Exception ex) {
-            JOptionPane.showConfirmDialog(null, String.format("ファイル追加に失敗しました。\n詳細\nMessage=%s", ex.getMessage())
+            JOptionPane.showMessageDialog(null, String.format("ファイル追加に失敗しました。\n詳細\nMessage=%s", ex.getMessage())
                     , "エラー"
-                    , JOptionPane.YES_NO_OPTION
                     , JOptionPane.ERROR_MESSAGE);
             Log.forcedWrite(ex);
         }
     }
 
-    private void addFileLoop(Music mc, Object entry/* = null*/) {
+    private void addFileLoop(Music mc, Archive archive, Entry entry/* = null*/) {
         switch (mc.format) {
         case unknown:
             break;
         case M3U:
-            addFileM3U(mc, entry);
+            addFileM3U(mc, archive, entry);
             break;
         case MID:
-            addFileMID(mc, entry);
+            addFileMID(mc, archive, entry);
             break;
         case NRT:
-            addFileNRT(mc, entry);
+            addFileNRT(mc, archive, entry);
             break;
         case NSF:
-            addFileNSF(mc, entry);
+            addFileNSF(mc, archive, entry);
             break;
         case HES:
-            addFileHES(mc, entry);
+            addFileHES(mc, archive, entry);
             break;
         case SID:
-            addFileSID(mc, entry);
+            addFileSID(mc, archive, entry);
             break;
         case MDR:
-            addFileMDR(mc, entry);
+            addFileMDR(mc, archive, entry);
             break;
         case MND:
-            addFileMND(mc, entry);
+            addFileMND(mc, archive, entry);
             break;
         case MDX:
-            addFileMDX(mc, entry);
+            addFileMDX(mc, archive, entry);
             break;
         case MUB:
-            addFileMUB(mc, entry);
+            addFileMUB(mc, archive, entry);
             break;
         case MUC:
-            addFileMUC(mc, entry);
+            addFileMUC(mc, archive, entry);
             break;
         case MML:
-            addFileMML(mc, entry);
+            addFileMML(mc, archive, entry);
             break;
         case MGS:
-            addFileMML(mc, entry);
+            addFileMML(mc, archive, entry);
             break;
         case M:
-            addFileM(mc, entry);
+            addFileM(mc, archive, entry);
             break;
         case RCP:
-            addFileRCP(mc, entry);
+            addFileRCP(mc, archive, entry);
             break;
         case S98:
-            addFileS98(mc, entry);
+            addFileS98(mc, archive, entry);
             break;
         case VGM:
-            addFileVGM(mc, entry);
+            addFileVGM(mc, archive, entry);
             break;
         case XGM:
-            addFileXGM(mc, entry);
+            addFileXGM(mc, archive, entry);
             break;
         case ZGM:
-            addFileZGM(mc, entry);
+            addFileZGM(mc, archive, entry);
             break;
         case ZIP:
-            addFileZIP(mc, entry);
+            addFileZIP(mc, archive, entry);
             break;
         case LZH:
-            addFileLZH(mc, entry);
+            addFileLZH(mc, archive, entry);
             break;
         case WAV:
-            addFileWAV(mc, entry);
+            addFileWAV(mc, archive, entry);
             break;
         case MP3:
-            addFileMP3(mc, entry);
+            addFileMP3(mc, archive, entry);
             break;
         case AIFF:
-            addFileAIFF(mc, entry);
+            addFileAIFF(mc, archive, entry);
             break;
         }
     }
 
-    private void addFileLoop(int index, Music mc, Object entry/* = null*/) {
+    private void addFileLoop(int index, Music mc, Archive archive, Entry entry/* = null*/) {
         switch (mc.format) {
         case unknown:
             break;
         case MID:
-            addFileMID(index, mc, entry);
+            addFileMID(index, mc, archive, entry);
             break;
         case NRT:
-            addFileNRT(index, mc, entry);
+            addFileNRT(index, mc, archive, entry);
             break;
         case MDR:
-            addFileMDR(index, mc, entry);
+            addFileMDR(index, mc, archive, entry);
             break;
         case MND:
-            addFileMND(index, mc, entry);
+            addFileMND(index, mc, archive, entry);
             break;
         case MDX:
-            addFileMDX(index, mc, entry);
+            addFileMDX(index, mc, archive, entry);
             break;
         case MUB:
-            addFileMUB(index, mc, entry);
+            addFileMUB(index, mc, archive, entry);
             break;
         case MUC:
-            addFileMUC(index, mc, entry);
+            addFileMUC(index, mc, archive, entry);
             break;
         case MML:
-            addFileMML(index, mc, entry);
+            addFileMML(index, mc, archive, entry);
             break;
         case MGS:
-            addFileMGS(index, mc, entry);
+            addFileMGS(index, mc, archive, entry);
             break;
         case M:
-            addFileM(index, mc, entry);
+            addFileM(index, mc, archive, entry);
             break;
         case RCP:
-            addFileRCP(index, mc, entry);
+            addFileRCP(index, mc, archive, entry);
             break;
         case S98:
-            addFileS98(index, mc, entry);
+            addFileS98(index, mc, archive, entry);
             break;
         case VGM:
-            addFileVGM(index, mc, entry);
+            addFileVGM(index, mc, archive, entry);
             break;
         case XGM:
-            addFileXGM(index, mc, entry);
+            addFileXGM(index, mc, archive, entry);
             break;
         case ZGM:
-            addFileZGM(index, mc, entry);
+            addFileZGM(index, mc, archive, entry);
             break;
         case WAV:
-            addFileWAV(index, mc, entry);
+            addFileWAV(index, mc, archive, entry);
             break;
         case MP3:
-            addFileMP3(index, mc, entry);
+            addFileMP3(index, mc, archive, entry);
             break;
         case AIFF:
-            addFileAIFF(index, mc, entry);
+            addFileAIFF(index, mc, archive, entry);
             break;
         case ZIP:
-            addFileZIP(index, mc, entry);
+            addFileZIP(index, mc, archive, entry);
             break;
         case LZH:
-            addFileLZH(index, mc, entry);
+            addFileLZH(index, mc, archive, entry);
             break;
         case M3U:
-            addFileM3U(index, mc, entry);
+            addFileM3U(index, mc, archive, entry);
             break;
         case NSF:
-            addFileNSF(index, mc, entry);
+            addFileNSF(index, mc, archive, entry);
             break;
         case HES:
-            addFileHES(index, mc, entry);
+            addFileHES(index, mc, archive, entry);
             break;
         case SID:
-            addFileSID(index, mc, entry, null);
+            addFileSID(index, mc, archive, entry);
             break;
         }
     }
@@ -399,58 +398,7 @@ public class PlayList implements Serializable {
     /**
      * 汎用
      */
-    private void addFileXxx(Music mc, Object entry/*=null*/) {
-        try {
-            byte[] buf = null;
-            if (entry == null) {
-                try {
-                    buf = File.readAllBytes(mc.fileName);
-                } catch (Exception ex) {
-                    Log.forcedWrite(ex);
-                    buf = null;
-                }
-                if (buf == null && mc.format == FileFormat.VGM) {
-                    if (Path.getExtension(mc.fileName).equalsIgnoreCase(".vgm")) {
-                        mc.fileName = Path.changeExtension(mc.fileName, ".vgz");
-                    } else {
-                        mc.fileName = Path.changeExtension(mc.fileName, ".Vgm");
-                    }
-                    try {
-                        buf = File.readAllBytes(mc.fileName);
-                    } catch (Exception ex) {
-                        Log.forcedWrite(ex);
-                        buf = null;
-                    }
-                }
-            } else {
-                if (entry instanceof ZipEntry) {
-                    try (BinaryReader reader = new BinaryReader(((ZipEntry) entry).Open())) {
-                        try {
-                            buf = reader.readBytes((int) ((ZipEntry) entry).length);
-                        } catch (Exception ex) {
-                            Log.forcedWrite(ex);
-                            buf = null;
-                        }
-                    }
-                } else {
-                    UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-                    buf = cmd.GetFileByte(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2);
-                }
-            }
-
-            List<Music> musics;
-            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null);
-            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
-            List<Object[]> rows = makeRow(musics);
-            for (Object[] row : rows)
-                ((DefaultTableModel) dgvList.getModel()).addRow(row);
-            _lstMusic.addAll(musics);
-        } catch (Exception ex) {
-            Log.forcedWrite(ex);
-        }
-    }
-
-    private void addFileXxx(int index, Music mc, Object entry/* = null*/) {
+    private void addFileXxx(Music mc, Archive archive, Entry entry/*=null*/) {
         try {
             byte[] buf;
             if (entry == null) {
@@ -474,335 +422,233 @@ public class PlayList implements Serializable {
                     }
                 }
             } else {
-                if (entry instanceof ZipEntry) {
-                    try (BinaryReader reader = new BinaryReader(((ZipEntry) entry).Open())) {
-                        try {
-                            buf = reader.readBytes((int) ((ZipEntry) entry).length);
-                        } catch (Exception ex) {
-                            Log.forcedWrite(ex);
-                            buf = null;
-                        }
+                try (InputStream reader = archive.getInputStream(entry)) {
+                    try {
+                        buf = reader.readAllBytes();
+                    } catch (Exception ex) {
+                        Log.forcedWrite(ex);
+                        buf = null;
                     }
-                } else {
-                    UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-                    buf = cmd.GetFileByte(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2);
                 }
             }
 
             List<Music> musics;
-            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null);
-            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
+            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null, null);
+            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, archive, entry);
+            List<Object[]> rows = makeRow(musics);
+            for (Object[] row : rows)
+                ((DefaultTableModel) dgvList.getModel()).addRow(row);
+            this.musics.addAll(musics);
+        } catch (Exception ex) {
+            Log.forcedWrite(ex);
+        }
+    }
+
+    private void addFileXxx(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        try {
+            byte[] buf;
+            if (entry == null) {
+                try {
+                    buf = File.readAllBytes(mc.fileName);
+                } catch (Exception ex) {
+                    Log.forcedWrite(ex);
+                    buf = null;
+                }
+                if (buf == null && mc.format == FileFormat.VGM) {
+                    if (Path.getExtension(mc.fileName).equalsIgnoreCase(".vgm")) {
+                        mc.fileName = Path.changeExtension(mc.fileName, ".vgz");
+                    } else {
+                        mc.fileName = Path.changeExtension(mc.fileName, ".Vgm");
+                    }
+                    try {
+                        buf = File.readAllBytes(mc.fileName);
+                    } catch (Exception ex) {
+                        Log.forcedWrite(ex);
+                        buf = null;
+                    }
+                }
+            } else {
+                try (InputStream reader = archive.getInputStream(entry)) {
+                    try {
+                        buf = reader.readAllBytes();
+                    } catch (Exception ex) {
+                        Log.forcedWrite(ex);
+                        buf = null;
+                    }
+                }
+            }
+
+            List<Music> musics;
+            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null, null);
+            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, archive, entry);
             List<Object[]> rows = makeRow(musics);
 
             for (Object[] row : rows)
                 ((DefaultTableModel) dgvList.getModel()).insertRow(index, row);
-            _lstMusic.addAll(index, musics);
+            this.musics.addAll(index, musics);
             index += rows.size();
         } catch (Exception ex) {
             Log.forcedWrite(ex);
         }
     }
 
-    private void addFileMID(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileMID(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileMID(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileMID(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileNRT(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileNRT(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileNRT(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileNRT(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileRCP(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileRCP(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileRCP(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileRCP(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileS98(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileS98(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileS98(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileS98(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileVGM(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileVGM(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileVGM(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileVGM(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileXGM(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileXGM(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileXGM(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileXGM(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileZGM(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileZGM(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileZGM(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileZGM(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileMDR(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileMDR(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileMDR(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileMDR(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileMND(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileMND(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileMND(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileMND(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileMDX(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileMDX(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileMDX(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileMDX(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileMUB(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileMUB(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileMUB(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileMUB(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileMUC(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileMUC(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileMUC(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileMUC(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileMML(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileMML(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileMML(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileMML(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileM(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileM(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileM(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileM(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileMGS(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileMGS(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileMGS(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileMGS(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileWAV(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileWAV(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileWAV(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileWAV(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileMP3(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileMP3(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileMP3(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileMP3(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileAIFF(Music mc, Object entry/* = null*/) {
-        addFileXxx(mc, entry);
+    private void addFileAIFF(Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(mc, archive, entry);
     }
 
-    private void addFileAIFF(int index, Music mc, Object entry/* = null*/) {
-        addFileXxx(index, mc, entry);
+    private void addFileAIFF(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        addFileXxx(index, mc, archive, entry);
     }
 
-    private void addFileZIP(Music mc, Object entry/* = null*/) {
+    private void addFileZIP(Music mc, Archive archive, Entry entry/* = null*/) {
         if (entry != null) return;
 
-        try (ZipArchive archive = ZipFile.OpenRead(mc.fileName)) {
-            mc.arcFileName = mc.fileName;
-            mc.arcType = EnmArcType.ZIP;
-            List<String> zipMember = new ArrayList<>();
-            List<Music> mMember = new ArrayList<>();
-            for (ZipEntry ent : archive.Entries) {
-                if (Common.FileFormat.checkExt(ent.FullName) != FileFormat.M3U) {
-                    zipMember.add(ent.FullName);
-                } else {
-                    PlayList pl = M3U.LoadM3U(ent, mc.arcFileName);
-                    mMember.addAll(pl._lstMusic);
-                }
-            }
-
-            for (String zm : zipMember) {
-                boolean found = false;
-                for (Music m : mMember) {
-                    if (m.fileName.equals(zm)) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found && Common.FileFormat.checkExt(zm) == FileFormat.VGM) {
-                    String vzm;
-                    if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
-                    else vzm = Path.changeExtension(zm, ".vgm");
-                    for (Music m : mMember) {
-                        if (m.fileName.equals(vzm)) {
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if (!found) {
-                    Music zmc = new Music();
-                    zmc.fileName = zm;
-                    zmc.arcFileName = mc.arcFileName;
-                    zmc.arcType = mc.arcType;
-                    mMember.add(zmc);
-                }
-            }
-
-            List<Music> tMember = new ArrayList<>();
-
-            for (ZipEntry ent : archive.Entries) {
-                for (Music m : mMember) {
-                    String vzm = "";
-                    if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
-                        vzm = Path.changeExtension(m.fileName, ".vgz");
-                    else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
-                        vzm = Path.changeExtension(m.fileName, ".Vgm");
-
-                    if (ent.FullName == m.fileName || ent.FullName == vzm) {
-                        m.format = Common.FileFormat.checkExt(m.fileName);
-                        m.arcFileName = mc.arcFileName;
-                        m.arcType = mc.arcType;
-                        addFileLoop(m, ent);
-
-                        //m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
-                        //それを防ぐためここでbreakする
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    private void addFileZIP(int index, Music mc, Object entry/* = null*/) {
-        if (entry != null) return;
-
-        try (ZipArchive archive = ZipFile.OpenRead(mc.fileName)) {
-            mc.arcFileName = mc.fileName;
-            mc.arcType = EnmArcType.ZIP;
-            List<String> zipMember = new ArrayList<>();
-            List<Music> mMember = new ArrayList<>();
-            for (ZipEntry ent : archive.Entries) {
-                if (Common.FileFormat.checkExt(ent.FullName) != FileFormat.M3U) {
-                    zipMember.add(ent.FullName);
-                } else {
-                    PlayList pl = M3U.LoadM3U(ent, mc.arcFileName);
-                    mMember.addAll(pl._lstMusic);
-                }
-            }
-
-            for (String zm : zipMember) {
-                boolean found = false;
-                for (Music m : mMember) {
-                    if (m.fileName.equals(zm)) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found && Common.FileFormat.checkExt(zm) == FileFormat.VGM) {
-                    String vzm;
-                    if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
-                    else vzm = Path.changeExtension(zm, ".vgm");
-                    for (Music m : mMember) {
-                        if (m.fileName.equals(vzm)) {
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if (!found) {
-                    Music zmc = new Music();
-                    zmc.fileName = zm;
-                    zmc.arcFileName = mc.arcFileName;
-                    zmc.arcType = mc.arcType;
-                    mMember.add(zmc);
-                }
-            }
-
-            List<Music> tMember = new ArrayList<>();
-
-            for (ZipEntry ent : archive.Entries) {
-                for (Music m : mMember) {
-                    String vzm = "";
-                    if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
-                        vzm = Path.changeExtension(m.fileName, ".vgz");
-                    else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
-                        vzm = Path.changeExtension(m.fileName, ".Vgm");
-
-                    if (ent.FullName == m.fileName || ent.FullName == vzm) {
-                        m.format = Common.FileFormat.checkExt(m.fileName);
-                        m.arcFileName = mc.arcFileName;
-                        m.arcType = mc.arcType;
-                        addFileLoop(index, m, ent);
-
-                        //m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
-                        //それを防ぐためここでbreakする
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    private void addFileLZH(Music mc, Object entry/* = null*/) {
-        if (entry != null) return;
-
-        UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-        List<Tuple<String, Long>> res = cmd.GetFileList(mc.fileName, "*.*");
         mc.arcFileName = mc.fileName;
-        mc.arcType = EnmArcType.LZH;
+        mc.arcType = EnmArcType.ZIP;
         List<String> zipMember = new ArrayList<>();
         List<Music> mMember = new ArrayList<>();
-
-        for (Tuple<String, Long> ent : res) {
-            if (Common.FileFormat.checkExt(ent.Item1) != FileFormat.M3U) {
-                zipMember.add(ent.Item1);
+        for (Entry ent : archive.entries()) {
+            if (Common.FileFormat.checkExt(ent.getName()) != FileFormat.M3U) {
+                zipMember.add(ent.getName());
             } else {
-                PlayList pl = M3U.LoadM3U(ent, mc.arcFileName);
-                mMember.addAll(pl._lstMusic);
+                PlayList pl = M3U.LoadM3U(archive, ent, mc.arcFileName);
+                mMember.addAll(pl.musics);
             }
         }
 
@@ -834,7 +680,9 @@ public class PlayList implements Serializable {
             }
         }
 
-        for (Tuple<String, Long> ent : res) {
+        List<Music> tMember = new ArrayList<>();
+
+        for (Entry ent : archive.entries()) {
             for (Music m : mMember) {
                 String vzm = "";
                 if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
@@ -842,80 +690,11 @@ public class PlayList implements Serializable {
                 else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
                     vzm = Path.changeExtension(m.fileName, ".Vgm");
 
-                if (ent.Item1.equals(m.fileName) || ent.Item1.equals(vzm)) {
+                if (ent.getName().equals(m.fileName) || ent.getName().equals(vzm)) {
                     m.format = Common.FileFormat.checkExt(m.fileName);
                     m.arcFileName = mc.arcFileName;
                     m.arcType = mc.arcType;
-                    addFileLoop(m, new Tuple<>(m.arcFileName, ent.Item1));
-
-                    // m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
-                    // それを防ぐためここでbreakする
-                    break;
-                }
-            }
-        }
-    }
-
-    private void addFileLZH(int index, Music mc, Object entry/* = null*/) {
-        if (entry != null) return;
-
-        UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-        List<Tuple<String, Long>> res = cmd.GetFileList(mc.fileName, "*.*");
-        mc.arcFileName = mc.fileName;
-        mc.arcType = EnmArcType.LZH;
-        List<String> zipMember = new ArrayList<>();
-        List<Music> mMember = new ArrayList<>();
-
-        for (Tuple<String, Long> ent : res) {
-            if (Common.FileFormat.checkExt(ent.Item1) != FileFormat.M3U) {
-                zipMember.add(ent.Item1);
-            } else {
-                PlayList pl = M3U.LoadM3U(ent, mc.arcFileName);
-                mMember.addAll(pl._lstMusic);
-            }
-        }
-
-        for (String zm : zipMember) {
-            boolean found = false;
-            for (Music m : mMember) {
-                if (m.fileName.equals(zm)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found && Common.FileFormat.checkExt(zm) == FileFormat.VGM) {
-                String vzm;
-                if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
-                else vzm = Path.changeExtension(zm, ".vgm");
-                for (Music m : mMember) {
-                    if (m.fileName.equals(vzm)) {
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            if (!found) {
-                Music zmc = new Music();
-                zmc.fileName = zm;
-                zmc.arcFileName = mc.arcFileName;
-                zmc.arcType = mc.arcType;
-                mMember.add(zmc);
-            }
-        }
-
-        for (Tuple<String, Long> ent : res) {
-            for (Music m : mMember) {
-                String vzm = "";
-                if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
-                    vzm = Path.changeExtension(m.fileName, ".vgz");
-                else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
-                    vzm = Path.changeExtension(m.fileName, ".Vgm");
-
-                if (ent.Item1.equals(m.fileName) || ent.Item1.equals(vzm)) {
-                    m.format = Common.FileFormat.checkExt(m.fileName);
-                    m.arcFileName = mc.arcFileName;
-                    m.arcType = mc.arcType;
-                    addFileLoop(index, m, new Tuple<>(m.arcFileName, ent.Item1));
+                    addFileLoop(m, archive, ent);
 
                     //m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
                     //それを防ぐためここでbreakする
@@ -925,48 +704,244 @@ public class PlayList implements Serializable {
         }
     }
 
-    private void addFileM3U(Music mc, Object entry/* = null*/) {
+    private void addFileZIP(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        if (entry != null) return;
+
+        mc.arcFileName = mc.fileName;
+        mc.arcType = EnmArcType.ZIP;
+        List<String> zipMember = new ArrayList<>();
+        List<Music> mMember = new ArrayList<>();
+        for (Entry ent : archive.entries()) {
+            if (Common.FileFormat.checkExt(ent.getName()) != FileFormat.M3U) {
+                zipMember.add(ent.getName());
+            } else {
+                PlayList pl = M3U.LoadM3U(archive, ent, mc.arcFileName);
+                mMember.addAll(pl.musics);
+            }
+        }
+
+        for (String zm : zipMember) {
+            boolean found = false;
+            for (Music m : mMember) {
+                if (m.fileName.equals(zm)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && Common.FileFormat.checkExt(zm) == FileFormat.VGM) {
+                String vzm;
+                if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
+                else vzm = Path.changeExtension(zm, ".vgm");
+                for (Music m : mMember) {
+                    if (m.fileName.equals(vzm)) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                Music zmc = new Music();
+                zmc.fileName = zm;
+                zmc.arcFileName = mc.arcFileName;
+                zmc.arcType = mc.arcType;
+                mMember.add(zmc);
+            }
+        }
+
+        List<Music> tMember = new ArrayList<>();
+
+        for (Entry ent : archive.entries()) {
+            for (Music m : mMember) {
+                String vzm = "";
+                if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
+                    vzm = Path.changeExtension(m.fileName, ".vgz");
+                else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
+                    vzm = Path.changeExtension(m.fileName, ".Vgm");
+
+                if (ent.getName().equals(m.fileName) || ent.getName().equals(vzm)) {
+                    m.format = Common.FileFormat.checkExt(m.fileName);
+                    m.arcFileName = mc.arcFileName;
+                    m.arcType = mc.arcType;
+                    addFileLoop(index, m, archive, ent);
+
+                    //m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
+                    //それを防ぐためここでbreakする
+                    break;
+                }
+            }
+        }
+    }
+
+    private void addFileLZH(Music mc, Archive archive, Entry entry/* = null*/) {
+        if (entry != null) return;
+
+        mc.arcFileName = mc.fileName;
+        mc.arcType = EnmArcType.LZH;
+        List<String> zipMember = new ArrayList<>();
+        List<Music> mMember = new ArrayList<>();
+
+        for (Entry e : archive.entries()) {
+            if (Common.FileFormat.checkExt(e.getName()) != FileFormat.M3U) {
+                zipMember.add(entry.getName());
+            } else {
+                PlayList pl = M3U.LoadM3U(archive, e, mc.arcFileName);
+                mMember.addAll(pl.musics);
+            }
+        }
+
+        for (String zm : zipMember) {
+            boolean found = false;
+            for (Music m : mMember) {
+                if (m.fileName.equals(zm)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && Common.FileFormat.checkExt(zm) == FileFormat.VGM) {
+                String vzm;
+                if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
+                else vzm = Path.changeExtension(zm, ".vgm");
+                for (Music m : mMember) {
+                    if (m.fileName.equals(vzm)) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                Music zmc = new Music();
+                zmc.fileName = zm;
+                zmc.arcFileName = mc.arcFileName;
+                zmc.arcType = mc.arcType;
+                mMember.add(zmc);
+            }
+        }
+
+        for (Entry e : archive.entries()) {
+            for (Music m : mMember) {
+                String vzm = "";
+                if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
+                    vzm = Path.changeExtension(m.fileName, ".vgz");
+                else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
+                    vzm = Path.changeExtension(m.fileName, ".Vgm");
+
+                if (e.getName().equals(m.fileName) || e.getName().equals(vzm)) {
+                    m.format = Common.FileFormat.checkExt(m.fileName);
+                    m.arcFileName = mc.arcFileName;
+                    m.arcType = mc.arcType;
+                    addFileLoop(m, archive, e);
+
+                    // m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
+                    // それを防ぐためここでbreakする
+                    break;
+                }
+            }
+        }
+    }
+
+    private void addFileLZH(int index, Music mc, Archive archive, Entry entry/* = null*/) {
+        if (entry != null) return;
+
+        mc.arcFileName = mc.fileName;
+        mc.arcType = EnmArcType.LZH;
+        List<String> zipMember = new ArrayList<>();
+        List<Music> mMember = new ArrayList<>();
+
+        for (Entry ent : archive.entries()) {
+            if (Common.FileFormat.checkExt(ent.getName()) != FileFormat.M3U) {
+                zipMember.add(ent.getName());
+            } else {
+                PlayList pl = M3U.LoadM3U(archive, ent, mc.arcFileName);
+                mMember.addAll(pl.musics);
+            }
+        }
+
+        for (String zm : zipMember) {
+            boolean found = false;
+            for (Music m : mMember) {
+                if (m.fileName.equals(zm)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found && Common.FileFormat.checkExt(zm) == FileFormat.VGM) {
+                String vzm;
+                if (Path.getExtension(zm).equalsIgnoreCase(".vgm")) vzm = Path.changeExtension(zm, ".vgz");
+                else vzm = Path.changeExtension(zm, ".vgm");
+                for (Music m : mMember) {
+                    if (m.fileName.equals(vzm)) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                Music zmc = new Music();
+                zmc.fileName = zm;
+                zmc.arcFileName = mc.arcFileName;
+                zmc.arcType = mc.arcType;
+                mMember.add(zmc);
+            }
+        }
+
+        for (Entry ent : archive.entries()) {
+            for (Music m : mMember) {
+                String vzm = "";
+                if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgm"))
+                    vzm = Path.changeExtension(m.fileName, ".vgz");
+                else if (Path.getExtension(m.fileName).equalsIgnoreCase(".vgz"))
+                    vzm = Path.changeExtension(m.fileName, ".Vgm");
+
+                if (ent.getName().equals(m.fileName) || ent.getName().equals(vzm)) {
+                    m.format = Common.FileFormat.checkExt(m.fileName);
+                    m.arcFileName = mc.arcFileName;
+                    m.arcType = mc.arcType;
+                    addFileLoop(index, m, archive, ent);
+
+                    // m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
+                    // それを防ぐためここでbreakする
+                    break;
+                }
+            }
+        }
+    }
+
+    private void addFileM3U(Music mc, Archive archive, Entry entry/* = null*/) {
 
         PlayList pl;
         if (entry == null) pl = M3U.LoadM3U(mc.fileName, rootPath);
-        else pl = M3U.LoadM3U(entry, mc.arcFileName);
+        else pl = M3U.LoadM3U(archive, entry, mc.arcFileName);
         if (pl == null) return;
-        if (pl._lstMusic == null || pl._lstMusic.size() < 1) return;
+        if (pl.musics == null || pl.musics.size() < 1) return;
 
-        for (Music m : pl._lstMusic) addFileLoop(m, entry);
+        for (Music m : pl.musics) addFileLoop(m, archive, entry);
     }
 
-    private void addFileM3U(int index, Music mc, Object entry/* = null*/) {
+    private void addFileM3U(int index, Music mc, Archive archive, Entry entry/* = null*/) {
 
         PlayList pl;
         if (entry == null) pl = M3U.LoadM3U(mc.fileName, rootPath);
-        else pl = M3U.LoadM3U(entry, mc.arcFileName);
+        else pl = M3U.LoadM3U(archive, entry, mc.arcFileName);
         if (pl == null) return;
-        if (pl._lstMusic == null || pl._lstMusic.size() < 1) return;
+        if (pl.musics == null || pl.musics.size() < 1) return;
 
-        for (Music m : pl._lstMusic) addFileLoop(index, m, entry);
+        for (Music m : pl.musics) addFileLoop(index, m, archive, entry);
     }
 
-    private void addFileNSF(Music mc, Object entry/* = null*/) {
+    private void addFileNSF(Music mc, Archive archive, Entry entry/* = null*/) {
         try {
             byte[] buf;
             if (entry == null) {
                 buf = File.readAllBytes(mc.fileName);
             } else {
-                if (entry instanceof ZipEntry) {
-
-                    try (BinaryReader reader = new BinaryReader(((ZipEntry) entry).Open())) {
-                        buf = reader.readBytes((int) ((ZipEntry) entry).length);
+                    try (InputStream reader = archive.getInputStream(entry)) {
+                        buf = reader.readAllBytes();
                     }
-                } else {
-                    UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-                    buf = cmd.GetFileByte(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2);
-                }
             }
 
             List<Music> musics;
-            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null);
-            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
+            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null, null);
+            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, archive, entry);
 
             if (mc.songNo != -1) {
                 Music music;
@@ -985,33 +960,26 @@ public class PlayList implements Serializable {
 
             List<Object[]> rows = makeRow(musics);
             for (Object[] row : rows) ((DefaultTableModel) dgvList.getModel()).addRow(row);
-            _lstMusic.addAll(musics);
+            this.musics.addAll(musics);
         } catch (Exception ex) {
             Log.forcedWrite(ex);
         }
     }
 
-    private void addFileNSF(int index, Music mc, Object entry/* = null*/) {
+    private void addFileNSF(int index, Music mc, Archive archive, Entry entry/* = null*/) {
         try {
-            byte[] buf = null;
+            byte[] buf;
             if (entry == null) {
                 buf = File.readAllBytes(mc.fileName);
             } else {
-                if (entry instanceof ZipEntry) {
-
-                    try (BinaryReader reader = new BinaryReader(((ZipEntry) entry).Open())) {
-                        buf = reader.readBytes((int) ((ZipEntry) entry).length);
-                    }
-                } else {
-                    UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-                    buf = cmd.GetFileByte(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2);
+                try (InputStream reader = archive.getInputStream(entry)) {
+                    buf = reader.readAllBytes();
                 }
-
             }
 
             List<Music> musics;
-            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null);
-            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
+            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null, null);
+            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, archive, entry);
 
             if (mc.songNo != -1) {
                 Music music;
@@ -1031,33 +999,27 @@ public class PlayList implements Serializable {
             List<Object[]> rows = makeRow(musics);
             for (Object[] row : rows)
                 ((DefaultTableModel) dgvList.getModel()).insertRow(index, row);
-            _lstMusic.addAll(index, musics);
+            this.musics.addAll(index, musics);
             index += rows.size();
         } catch (Exception ex) {
             Log.forcedWrite(ex);
         }
     }
 
-    private void addFileHES(Music mc, Object entry/* = null*/) {
+    private void addFileHES(Music mc, Archive archive, Entry entry/* = null*/) {
         try {
             byte[] buf;
             if (entry == null) {
                 buf = File.readAllBytes(mc.fileName);
             } else {
-                if (entry instanceof ZipEntry) {
-
-                    try (BinaryReader reader = new BinaryReader(((ZipEntry) entry).Open())) {
-                        buf = reader.readBytes((int) ((ZipEntry) entry).length);
-                    }
-                } else {
-                    UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-                    buf = cmd.GetFileByte(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2);
+                try (InputStream reader = archive.getInputStream(entry)) {
+                    buf = reader.readAllBytes();
                 }
             }
 
             List<Music> musics;
-            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null);
-            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
+            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null, null);
+            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, archive, entry);
 
             if (mc.songNo != -1) {
                 Music music;
@@ -1076,32 +1038,26 @@ public class PlayList implements Serializable {
 
             List<Object[]> rows = makeRow(musics);
             for (Object[] row : rows) ((DefaultTableModel) dgvList.getModel()).addRow(row);
-            _lstMusic.addAll(musics);
+            this.musics.addAll(musics);
         } catch (Exception ex) {
             Log.forcedWrite(ex);
         }
     }
 
-    private void addFileHES(int index, Music mc, Object entry/* = null*/) {
+    private void addFileHES(int index, Music mc, Archive archive, Entry entry/* = null*/) {
         try {
             byte[] buf;
             if (entry == null) {
                 buf = File.readAllBytes(mc.fileName);
             } else {
-                if (entry instanceof ZipEntry) {
-
-                    try (BinaryReader reader = new BinaryReader(((ZipEntry) entry).Open())) {
-                        buf = reader.readBytes((int) ((ZipEntry) entry).length);
-                    }
-                } else {
-                    UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-                    buf = cmd.GetFileByte(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2);
+                try (InputStream reader = archive.getInputStream(entry)) {
+                    buf = reader.readAllBytes();
                 }
             }
 
             List<Music> musics;
-            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null);
-            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
+            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null, null);
+            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, archive, entry);
 
             if (mc.songNo != -1) {
                 Music music;
@@ -1121,33 +1077,27 @@ public class PlayList implements Serializable {
             List<Object[]> rows = makeRow(musics);
             for (Object[] row : rows)
                 ((DefaultTableModel) dgvList.getModel()).insertRow(index, row);
-            _lstMusic.addAll(index, musics);
+            this.musics.addAll(index, musics);
             index += rows.size();
         } catch (Exception ex) {
             Log.forcedWrite(ex);
         }
     }
 
-    private void addFileSID(Music mc, Object entry/* = null*/) {
+    private void addFileSID(Music mc, Archive archive, Entry entry/* = null*/) {
         try {
             byte[] buf;
             if (entry == null) {
                 buf = File.readAllBytes(mc.fileName);
             } else {
-                if (entry instanceof ZipEntry) {
-
-                    try (BinaryReader reader = new BinaryReader(((ZipEntry) entry).Open())) {
-                        buf = reader.readBytes((int) ((ZipEntry) entry).length);
-                    }
-                } else {
-                    UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-                    buf = cmd.GetFileByte(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2);
+                try (InputStream reader = archive.getInputStream(entry)) {
+                    buf = reader.readAllBytes();
                 }
             }
 
             List<Music> musics;
-            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null);
-            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
+            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null, null);
+            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, archive, entry);
 
             if (mc.songNo != -1) {
                 Music music;
@@ -1166,7 +1116,7 @@ public class PlayList implements Serializable {
 
             List<Object[]> rows = makeRow(musics);
             for (Object[] row : rows) ((DefaultTableModel) dgvList.getModel()).addRow(row);
-            _lstMusic.addAll(musics);
+            this.musics.addAll(musics);
         } catch (Exception ex) {
             Log.forcedWrite(ex);
         }
@@ -1178,20 +1128,14 @@ public class PlayList implements Serializable {
             if (entry == null) {
                 buf = File.readAllBytes(mc.fileName);
             } else {
-                if (entry instanceof ZipEntry) {
-
-                    try (InputStream reader = archive.getInputStream(entry)) {
-                        buf =   reader.readBytes((int) ((ZipEntry) entry).length);
-                    }
-                } else {
-                    UnlhaWrap.UnlhaCmd cmd = new UnlhaWrap.UnlhaCmd();
-                    buf = cmd.GetFileByte(((Tuple<String, String>) entry).Item1, ((Tuple<String, String>) entry).Item2);
+                try (InputStream reader = archive.getInputStream(entry)) {
+                    buf =   reader.readAllBytes();
                 }
             }
 
             List<Music> musics;
-            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null);
-            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, entry);
+            if (entry == null) musics = Audio.getMusic(mc.fileName, buf, null, null, null);
+            else musics = Audio.getMusic(mc.fileName, buf, mc.arcFileName, archive, entry);
 
             if (mc.songNo != -1) {
                 Music music;
@@ -1211,7 +1155,7 @@ public class PlayList implements Serializable {
             List<Object[]> rows = makeRow(musics);
             for (Object[] row : rows)
                 ((DefaultTableModel) dgvList.getModel()).insertRow(index, row);
-            _lstMusic.addAll(index, musics);
+            this.musics.addAll(index, musics);
             index += rows.size();
         } catch (Exception ex) {
             Log.forcedWrite(ex);

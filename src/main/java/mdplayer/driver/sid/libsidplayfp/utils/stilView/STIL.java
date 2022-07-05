@@ -11,7 +11,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import dotnet4j.Tuple;
+import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.SeekOrigin;
@@ -214,7 +214,7 @@ public class STIL {
             "Base dir path instanceof not the HVSC base dir path.",
             "The entry was not found : STIL.txt.",
             "The entry was not found : BUGlist.txt.",
-            "A section-global comment was asked for : the wrong way.",
+            "a section-global comment was asked for : the wrong way.",
             "",
             "",
             "",
@@ -965,7 +965,7 @@ public class STIL {
                     // Compare it to the stored dirnames
                     newDir = false;
                     for (Tuple<String, Integer> c : dirs) {
-                        if (c.Item1.equals(dirName)) {
+                        if (c.getItem1().equals(dirName)) {
                             newDir = true;
                             break;
                         }
@@ -1035,7 +1035,7 @@ public class STIL {
         // dirList::iterator elem = dirs.find(entry);
         Tuple<String, Integer> elem = null;
         for (Tuple<String, Integer> t : dirs) {
-            if (t.Item1.equals(entry)) {
+            if (t.getItem1().equals(entry)) {
                 elem = t;
                 break;
             }
@@ -1047,7 +1047,7 @@ public class STIL {
         }
 
         // Jump to the first entry of this section.
-        inFile.seek(elem.Item2, SeekOrigin.Begin);
+        inFile.seek(elem.getItem2(), SeekOrigin.Begin);
         boolean foundIt = false;
 
         // Now find the desired entry
@@ -1064,7 +1064,7 @@ public class STIL {
             // Check if it instanceof the start of an entry
 
             if (line.charAt(0) == '/') {
-                if (!stringCmp(elem.Item1, line, pathLen)) {
+                if (!stringCmp(elem.getItem1(), line, pathLen)) {
                     // We are outside the section - get  of the loop,
                     // which will fail the search.
                     break;
@@ -1207,7 +1207,7 @@ public class STIL {
                     logger.fine("getField() copied to just the COMMENT to resultbuf" + "\n");
                     return true;
                 } else if ((tuneNo == 1) && (temp2 != null)) {
-                    // A specific field was asked for.
+                    // a specific field was asked for.
 
                     logger.fine("getField() copying COMMENT to resultbuf" + "\n");
                     return getOneField(
@@ -1233,7 +1233,7 @@ public class STIL {
                     logger.fine("getField() copied to resultbuf" + "\n");
                     return true;
                 } else if (tuneNo == 1) {
-                    // A specific field was asked for.
+                    // a specific field was asked for.
 
                     logger.fine("getField() copying COMMENT to resultbuf" + "\n");
                     return getOneField(

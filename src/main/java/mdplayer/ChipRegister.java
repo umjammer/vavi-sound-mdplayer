@@ -13,7 +13,6 @@ import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RC86ctlSoundChip;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.driver.sid.Sid;
-import mdplayer.vst.VstMng;
 import mdsound.C140;
 import mdsound.K051649;
 import mdsound.MultiPcm;
@@ -35,7 +34,7 @@ import mdsound.np.memory.NesMem;
 
 public class ChipRegister {
 
-    private final VstMng vstMng;
+//    private final VstMng vstMng;
 
     private final Setting setting;
 
@@ -541,7 +540,7 @@ public class ChipRegister {
     public ChipRegister(Setting setting,
                         mdsound.MDSound mds,
                         RealChip nScci,
-                        VstMng vstMng,
+//                        VstMng vstMng,
                         RSoundChip[] scYM2612,
                         RSoundChip[] scSN76489,
                         RSoundChip[] scYM2608,
@@ -560,8 +559,8 @@ public class ChipRegister {
                         RSoundChip[] scK051649) {
         this.setting = setting;
         this.mds = mds;
-        this.vstMng = vstMng;
-        this.vstMng.midiParams = midiParams;
+//        this.vstMng = vstMng;
+//        this.vstMng.midiParams = midiParams;
         this.realChip = nScci;
         this.scYM2612 = scYM2612;
         this.scYM2608 = scYM2608;
@@ -1074,20 +1073,20 @@ public class ChipRegister {
         //this.vstMidiOutsType = vstMidiOutsType;
 
         if (midiParams == null && midiParams.length < 1) return;
-        if (midiOutsType == null && vstMng.vstMidiOutsType == null) return;
-        if (midiOuts == null && vstMng.vstMidiOuts == null) return;
+//        if (midiOutsType == null && vstMng.vstMidiOutsType == null) return;
+//        if (midiOuts == null && vstMng.vstMidiOuts == null) return;
 
         if (midiOutsType.size() > 0) midiParams[0].MIDIModule = Math.min(midiOutsType.get(0), 2);
         if (midiOutsType.size() > 1) midiParams[1].MIDIModule = Math.min(midiOutsType.get(1), 2);
 
-        if (vstMng.vstMidiOutsType.size() > 0) {
-            if (midiOutsType.size() < 1 || (midiOutsType.size() > 0 && midiOuts.get(0) == null))
-                midiParams[0].MIDIModule = Math.min(vstMng.vstMidiOutsType.get(0), 2);
-        }
-        if (vstMng.vstMidiOutsType.size() > 1) {
-            if (midiOutsType.size() < 2 || (midiOutsType.size() > 1 && midiOuts.get(1) == null))
-                midiParams[1].MIDIModule = Math.min(vstMng.vstMidiOutsType.get(1), 2);
-        }
+//        if (vstMng.vstMidiOutsType.size() > 0) {
+//            if (midiOutsType.size() < 1 || (midiOutsType.size() > 0 && midiOuts.get(0) == null))
+//                midiParams[0].MIDIModule = Math.min(vstMng.vstMidiOutsType.get(0), 2);
+//        }
+//        if (vstMng.vstMidiOutsType.size() > 1) {
+//            if (midiOutsType.size() < 2 || (midiOutsType.size() > 1 && midiOuts.get(1) == null))
+//                midiParams[1].MIDIModule = Math.min(vstMng.vstMidiOutsType.get(1), 2);
+//        }
     }
 
     public void SetFileName(String fn) {
@@ -1112,7 +1111,7 @@ public class ChipRegister {
             return;
         }
 
-        vstMng.sendMIDIout(model, num, cmd, prm1, prm2, deltaFrames);
+//        vstMng.sendMIDIout(model, num, cmd, prm1, prm2, deltaFrames);
     }
 
     public void sendMIDIout(EnmModel model, int num, byte cmd, byte prm1, int deltaFrames/* = 0*/) {
@@ -1127,7 +1126,7 @@ public class ChipRegister {
             return;
         }
 
-        vstMng.sendMIDIout(model, num, cmd, prm1, deltaFrames);
+//        vstMng.sendMIDIout(model, num, cmd, prm1, deltaFrames);
     }
 
     public void sendMIDIout(EnmModel model, int num, byte[] data, int deltaFrames/* = 0*/) {
@@ -1142,8 +1141,7 @@ public class ChipRegister {
             return;
         }
 
-        vstMng.sendMIDIout(model, num, data, deltaFrames);
-
+//        vstMng.sendMIDIout(model, num, data, deltaFrames);
     }
 
     public void resetAllMIDIout() {
@@ -1155,7 +1153,7 @@ public class ChipRegister {
             }
         }
 
-        vstMng.resetAllMIDIout(EnmModel.VirtualModel);
+//        vstMng.resetAllMIDIout(EnmModel.VirtualModel);
     }
 
     public void softResetMIDI(int chipID, EnmModel model) {
@@ -1185,8 +1183,7 @@ public class ChipRegister {
 
         if ((model == EnmModel.RealModel && ctYM2151[chipID].getUseReal()[0]) ||
                 (model == EnmModel.VirtualModel && !ctYM2151[chipID].getUseReal()[0])) {
-            if (dAddr == 0x08) // Key-On/Off
-            {
+            if (dAddr == 0x08) { // Key-On/Off
                 int ch = dData & 0x7;
                 if (ch >= 0 && ch < 8) {
                     if ((dData & 0x78) != 0) {
@@ -1318,8 +1315,8 @@ public class ChipRegister {
         writeYM2151(chipID, 0, 0x01, 0x02, model);
         writeYM2151(chipID, 0, 0x01, 0x00, model);
 
-        writeYM2151(chipID, 0, 0x10, 0x00, model); // FM Timer-A(H)
-        writeYM2151(chipID, 0, 0x11, 0x00, model); // FM Timer-A(L)
+        writeYM2151(chipID, 0, 0x10, 0x00, model); // FM Timer-a(H)
+        writeYM2151(chipID, 0, 0x11, 0x00, model); // FM Timer-a(L)
         writeYM2151(chipID, 0, 0x12, 0x00, model); // FM Timer-B
         writeYM2151(chipID, 0, 0x14, 0x00, model); // FM Timer Control
 
@@ -1923,8 +1920,8 @@ public class ChipRegister {
             writeYM2203(chipID, 0, i, 0xc0, model);
         }
         writeYM2203(chipID, 0, 0x22, 0x00, model); // HW LFO
-        writeYM2203(chipID, 0, 0x24, 0x00, model); // Timer-A(1)
-        writeYM2203(chipID, 0, 0x25, 0x00, model); // Timer-A(2)
+        writeYM2203(chipID, 0, 0x24, 0x00, model); // Timer-a(1)
+        writeYM2203(chipID, 0, 0x25, 0x00, model); // Timer-a(2)
         writeYM2203(chipID, 0, 0x26, 0x00, model); // Timer-B
         writeYM2203(chipID, 0, 0x27, 0x30, model); // Timer Control
 
@@ -2633,8 +2630,8 @@ public class ChipRegister {
             writeYM2608(chipID, 1, i, 0xc0, model);
         }
         writeYM2608(chipID, 0, 0x22, 0x00, model); // HW LFO
-        writeYM2608(chipID, 0, 0x24, 0x00, model); // Timer-A(1)
-        writeYM2608(chipID, 0, 0x25, 0x00, model); // Timer-A(2)
+        writeYM2608(chipID, 0, 0x24, 0x00, model); // Timer-a(1)
+        writeYM2608(chipID, 0, 0x25, 0x00, model); // Timer-a(2)
         writeYM2608(chipID, 0, 0x26, 0x00, model); // Timer-B
         writeYM2608(chipID, 0, 0x27, 0x30, model); // Timer Control
         writeYM2608(chipID, 0, 0x29, 0x80, model); // FM4-6 Enable
@@ -2690,7 +2687,7 @@ public class ChipRegister {
         }
 
 // #if DEBUG
-        //System.err.println("OPNB P:%02X A:%02X D:%02X", dPort, dAddr, dData);
+        //System.err.println("OPNB p:%02X a:%02X D:%02X", dPort, dAddr, dData);
 // #endif
 
         if ((model == EnmModel.RealModel && ctYM2610[chipID].getUseReal()[0]) || (model == EnmModel.VirtualModel && !ctYM2610[chipID].getUseReal()[0])) {
@@ -2733,7 +2730,7 @@ public class ChipRegister {
                 }
             }
 
-            // ADPCM A KEYON
+            // ADPCM a KEYON
             if (dPort == 1 && dAddr == 0x00) {
                 if ((dData & 0x80) == 0) {
                     int tl = fmRegisterYM2610[chipID][1][0x01] & 0x3f;
@@ -2850,7 +2847,7 @@ public class ChipRegister {
                 boolean bSend = true;
                 // レジスタをマスクして送信する
                 if (dReg >= 0x100 && dReg <= 0x12d) {
-                    // ADPCM-A
+                    // ADPCM-a
                     bSend = false;
                 } else if (dReg >= 0x010 && dReg <= 0x01c) {
                     // ADPCM-B
@@ -4485,7 +4482,7 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             mds.WriteOKIM6295(ChipID, Port, Data);
-            // System.System.err.println("ChipID=%d Port=%X Data=%X
+            // System.System.err.println("ChipID=%d Port=%x Data=%x
             // ",ChipID,Port,Data);
         }
     }
@@ -4667,7 +4664,7 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
             if (!ctSEGAPCM[chipID].getUseReal()[0])
                 mds.WriteSEGAPCM(chipID, offset, data);
-            // System.System.err.println("ChipID=%d Offset=%X Data=%X ",
+            // System.System.err.println("ChipID=%d Offset=%x Data=%x ",
             // ChipID, Offset, Data);
         } else {
             if (scSEGAPCM != null && scSEGAPCM[chipID] != null)

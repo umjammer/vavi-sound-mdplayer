@@ -1,7 +1,6 @@
 package mdplayer.form.sys;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
@@ -18,13 +17,12 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
+import dotnet4j.util.compat.Tuple3;
 import mdplayer.Audio;
-import mdplayer.Common.Tuple3;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
 import mdplayer.properties.Resources;
@@ -34,7 +32,7 @@ public class frmInfo extends JFrame {
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
-    public frmMain parent = null;
+    public frmMain parent;
     public Setting setting = null;
     public List<Tuple3<Integer, Integer, String>> lyrics = null;
     public int lyricsIndex = 0;
@@ -141,38 +139,38 @@ public class frmInfo extends JFrame {
         long cnt = Audio.getDriverCounter();
 
         try {
-            if (cnt >= lyrics.get(lyricsIndex).Item1.Item1) {
+            if (cnt >= lyrics.get(lyricsIndex).getItem1()) {
 
-                //lblLyrics.setText(lyrics[lyricsIndex].Item3);
+                //lblLyrics.setText(lyrics[lyricsIndex].getItem3());
                 rtbLyrics.setText(null);
 
                 int ind = 0;
                 rtbLyrics.setSelectionColor(culColor);
-                while (ind < lyrics.get(lyricsIndex).Item2.length()) {
-                    char c = lyrics.get(lyricsIndex).Item2.charAt(ind);
+                while (ind < lyrics.get(lyricsIndex).getItem3().length()) {
+                    char c = lyrics.get(lyricsIndex).getItem3().charAt(ind);
                     if (c == '\\') {
                         ind++;
-                        c = lyrics.get(lyricsIndex).Item2.charAt(ind);
+                        c = lyrics.get(lyricsIndex).getItem3().charAt(ind);
                         switch (c) {
                         case '"':
                         case '\\':
                             break;
                         case 'c':
                             ind++;
-                            String n = String.valueOf(lyrics.get(lyricsIndex).Item2.charAt(ind++));
+                            String n = String.valueOf(lyrics.get(lyricsIndex).getItem3().charAt(ind++));
                             int r, g, b;
                             if (n.equals("s")) {
                                 r = 192;
                                 g = 192;
                                 b = 255; //192,192,255 system color
                             } else {
-                                n += lyrics.get(lyricsIndex).Item2.charAt(ind++);
+                                n += lyrics.get(lyricsIndex).getItem3().charAt(ind++);
                                 r = Integer.parseInt(n, 16);
-                                n = String.valueOf(lyrics.get(lyricsIndex).Item2.charAt(ind++));
-                                n += lyrics.get(lyricsIndex).Item2.charAt(ind++);
+                                n = String.valueOf(lyrics.get(lyricsIndex).getItem3().charAt(ind++));
+                                n += lyrics.get(lyricsIndex).getItem3().charAt(ind++);
                                 g = Integer.parseInt(n, 16);
-                                n = String.valueOf(lyrics.get(lyricsIndex).Item2.charAt(ind++));
-                                n += lyrics.get(lyricsIndex).Item2.charAt(ind++);
+                                n = String.valueOf(lyrics.get(lyricsIndex).getItem3().charAt(ind++));
+                                n += lyrics.get(lyricsIndex).getItem3().charAt(ind++);
                                 b = Integer.parseInt(n, 16);
                             }
                             culColor = new Color(r, g, b);

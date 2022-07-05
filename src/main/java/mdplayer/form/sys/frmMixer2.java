@@ -946,7 +946,7 @@ public class frmMixer2 extends JFrame {
             , Audio::setN160Volume, Audio::setVRC6Volume, Audio::setVRC7Volume, Audio::setFME7Volume
             , Audio::setDMGVolume, null, null, null
             , null, Audio::setPPZ8Volume, Audio::setGimicOPNVolume, Audio::setGimicOPNAVolume
-    ).toArray(new BiConsumer[0]);
+    ).toArray(BiConsumer[]::new);
 
     private void tsmiLoadDriverBalance_Click(ActionEvent ev) {
 
@@ -960,12 +960,12 @@ public class frmMixer2 extends JFrame {
         try {
             String retMsg = parent.SaveDriverBalance(parent.setting.getBalance().copy());
             if (!retMsg.equals("")) {
-                JOptionPane.showConfirmDialog(null, String.format("ドライバーのミキサーバランス[%s]を設定フォルダーに保存しました。", retMsg), "保存", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null, String.format("ドライバーのミキサーバランス[%s]を設定フォルダーに保存しました。", retMsg), "保存", JOptionPane.INFORMATION_MESSAGE);
             }
 
         } catch (Exception ex) {
             Log.forcedWrite(ex);
-            JOptionPane.showConfirmDialog(null, String.format("%s", ex.getMessage()), "保存失敗", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, String.format("%s", ex.getMessage()), "保存失敗", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -974,7 +974,8 @@ public class frmMixer2 extends JFrame {
             Setting.Balance bln = parent.setting.getBalance().copy();
             PlayList.Music ms = parent.GetPlayingMusicInfo();
             if (ms == null) {
-                JOptionPane.showConfirmDialog(null, "演奏情報が取得できませんでした。\n演奏中又は演奏完了直後に再度お試しください。", "情報取得失敗", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "演奏情報が取得できませんでした。\n演奏中又は演奏完了直後に再度お試しください。",
+                        "情報取得失敗", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -999,7 +1000,7 @@ public class frmMixer2 extends JFrame {
             bln.save(sfd.getSelectedFile().getPath());
         } catch (Exception ex) {
             Log.forcedWrite(ex);
-            JOptionPane.showConfirmDialog(null, String.format("%s", ex.getMessage()), "保存失敗", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, String.format("%s", ex.getMessage()), "保存失敗", JOptionPane.ERROR_MESSAGE);
         }
     }
 

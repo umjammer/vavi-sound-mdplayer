@@ -1,6 +1,6 @@
 package mdplayer.driver.moonDriver;
 
-import dotnet4j.Tuple;
+import dotnet4j.util.compat.Tuple;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
@@ -92,7 +92,7 @@ public class MoonDriver extends BaseDriver {
                 e = 0x00;
                 moon_wave_out();
 
-                for (byte dat : ExtendFile.Item2) {
+                for (byte dat : ExtendFile.getItem2()) {
                     d = 0x06;
                     e = dat;
                     moon_wave_out();
@@ -338,7 +338,7 @@ public class MoonDriver extends BaseDriver {
         //public int IDX_DSEL = 0;//equ(seq_ch1_dsel    - seq_work); Device Select
         //public int IDX_OPSEL = 1;//equ(seq_ch1_opsel   - seq_work); Operator Select
         //public int IDX_SYNTH = 2;//equ(seq_ch1_synth   - seq_work); FeedBack,Synth and OpMode
-        //public int IDX_EFX1 = 3;//equ(seq_ch1_efx1    - seq_work); Effect flags
+        //public int IDX_EFX1 = 3;//equ(seq_ch1_efx1    - seq_work); Effect Flags
         //public int IDX_CNT = 4;//equ(seq_ch1_cnt     - seq_work); Counter
         //public int IDX_LOOP = 5;//equ(seq_ch1_loop    - seq_work); Loop
         //public int IDX_BANK = 6;//equ(seq_ch1_bank    - seq_work); Which bank
@@ -377,7 +377,7 @@ public class MoonDriver extends BaseDriver {
         //;
         //; O : 4OP mode
         //; F : FeedBack
-        //; S : SynthType(bit0 for 1st&2nd bit1 for 3rd&4th)
+        //; s : SynthType(bit0 for 1st&2nd bit1 for 3rd&4th)
         //;
 
         //SEQ_WORKSIZE: equ(seq_work_end - seq_work)
@@ -397,8 +397,8 @@ public class MoonDriver extends BaseDriver {
             , 488 // F+ 740.000000
             , 517 // G 784.000000
             , 547 // G+ 830.600000
-            , 580 // A 880.000000
-            , 614 // A+ 932.300000
+            , 580 // a 880.000000
+            , 614 // a+ 932.300000
             , 651 // B 987.800000
             , 690 // C 1046.500000
     };
@@ -479,7 +479,7 @@ public class MoonDriver extends BaseDriver {
     // BSMCH
     private static final short[] fm_drum_fnum = new short[] {
             0x0120 // B
-            , 0x0150 // S
+            , 0x0150 // s
             , 0x01c0 // M
             , 0x01c0 // C
             , 0x0150 // H
@@ -487,7 +487,7 @@ public class MoonDriver extends BaseDriver {
 
     private static final byte[] fm_drum_fnum_map = new byte[] {
             0x06 // B
-            , 0x07 // S
+            , 0x07 // s
             , 0x08 // M
             , 0x08 // C
             , 0x07 // H
@@ -495,7 +495,7 @@ public class MoonDriver extends BaseDriver {
 
     private static final byte[] fm_drum_oct = new byte[] {
             0x02 // B
-            , 0x02 // S
+            , 0x02 // s
             , 0x00 // M
             , 0x00 // C
             , 0x02 // H
@@ -815,7 +815,7 @@ public class MoonDriver extends BaseDriver {
 
     /**
     // changes page3
-    // :   : A = page
+    // :   : a = page
     // dest : AF
      */
     private void changePage3() {
@@ -827,8 +827,8 @@ public class MoonDriver extends BaseDriver {
 
     /**
     // get_table
-    // :   : A = index , HL = address
-    //   : HL = (HL + (A* 2) )
+    // :   : a = index , HL = address
+    //   : HL = (HL + (a* 2) )
     // dest : AF,DE
      */
     private void get_table() {
@@ -869,7 +869,7 @@ public class MoonDriver extends BaseDriver {
     /**
     // get_a_table
     // :   : HL = address
-    //   : A = (HL + (cur_ch* 2) )
+    //   : a = (HL + (cur_ch* 2) )
     // dest : HL,DE
      */
     private void get_a_table() {
@@ -1881,7 +1881,7 @@ public class MoonDriver extends BaseDriver {
         a = (byte) ((a << 1) + ((a & 0x80) != 0 ? 1 : 0));
         a = (byte) ((a << 1) + ((a & 0x80) != 0 ? 1 : 0));
 
-        // A = drum bits, BC = count
+        // a = drum bits, BC = count
         //drumbit_fnum_lp:
         do {
             boolean cry = (a & 0x80) != 0;
@@ -1983,7 +1983,7 @@ public class MoonDriver extends BaseDriver {
         a = (byte) ((a << 1) + ((a & 0x80) != 0 ? 1 : 0));//    rlca
         a = (byte) ((a << 1) + ((a & 0x80) != 0 ? 1 : 0));//    rlca
 
-        // A = drum bits, BC = count
+        // a = drum bits, BC = count
         //drumnote_lp:
         do {
             boolean cry = (a & 0x80) != 0;
@@ -2249,7 +2249,7 @@ public class MoonDriver extends BaseDriver {
 
     /**
     // read_effect_table
-    // :   : A  = index
+    // :   : a  = index
     //      : HL = table address
     //      : DE = pointer to value : work
     //   : (ix + de) = (HL + 2A)
@@ -2367,7 +2367,7 @@ public class MoonDriver extends BaseDriver {
     // read_effect_value
     // read_effect_value
     // :  : HL = address
-    //  : A = data
+    //  : a = data
      */
     private void read_effect_value() {
 
@@ -2384,8 +2384,8 @@ public class MoonDriver extends BaseDriver {
     /**
     // conv_data_to_midi
     // Converts data to midi note
-    // :   : A = data($40 = o4c)
-    //   : A = midi note
+    // :   : a = data($40 = o4c)
+    //   : a = midi note
     // dest : AF,DE
      */
     private void conv_data_to_midi() {
@@ -2636,7 +2636,7 @@ public class MoonDriver extends BaseDriver {
     // moon_tonesel
     // Select tone number from table(OPL4 )
     // :   : work
-    // dest : flags, HL
+    // dest : Flags, HL
      */
     private void moon_tonesel() {
         hl = work.ch[ix].tadr;
@@ -2739,7 +2739,7 @@ public class MoonDriver extends BaseDriver {
     /**
     // moon_calc_midinote
     // calclulates freq from note
-    // :   : A = note( 04c = 0x3c)
+    // :   : a = note( 04c = 0x3c)
     //   : work
     // dest : AF,DE
      */
@@ -2787,7 +2787,7 @@ public class MoonDriver extends BaseDriver {
     /**
     // add_freq_offset
     // HL = HL + VALUE
-    // : : A(detune data)
+    // : : a(detune data)
     // dest : DE
      */
     private void add_freq_offset() {
@@ -2817,7 +2817,7 @@ public class MoonDriver extends BaseDriver {
 
     /**
     // moon_set_midinote
-    // : : A = note
+    // : : a = note
      */
     private void moon_set_midinote() {
         if ((work.ch[ix].efx1 & 1) == 0) {
@@ -2831,7 +2831,7 @@ public class MoonDriver extends BaseDriver {
 
     /**
     // moon_set_fmnote
-    // :   : A = note
+    // :   : a = note
     // dest : AF, HL, BC
      */
     private void moon_set_fmnote() {
@@ -2848,7 +2848,7 @@ public class MoonDriver extends BaseDriver {
 
     /**
     // moon_calc_opl3note
-    // : : A = note , (ix + IDX_DETUNE)
+    // : : a = note , (ix + IDX_DETUNE)
     //  : (seq_tmp_fnum), (seq_tmp_oct)
     // dest AF, BC, HL
      */
@@ -2911,7 +2911,7 @@ public class MoonDriver extends BaseDriver {
         }
 
         //skip_sub_a:
-        short hl2 = 0;//fm_op2reg_tbl; HL = HL + A
+        short hl2 = 0;//fm_op2reg_tbl; HL = HL + a
         hl2 += a;
         //add_hl_fin:
 
@@ -2942,7 +2942,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void moon_write_fmreg_nch() {
-        //; A = ch
+        //; a = ch
         //moon_write_fmreg_nch:
 
         byte e1, d1;
@@ -2953,7 +2953,7 @@ public class MoonDriver extends BaseDriver {
         a -= d1; // a = ch, d = start_fm
 
         //jr moon_write_fm_ch
-        //; Write fm(A = ch)
+        //; Write fm(a = ch)
         //moon_write_fm_ch:
 
         // first or second FM register
@@ -3174,7 +3174,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void moon_calc_current_fmvol(int i) {
-        // A = (OL + (63 - VOL))
+        // a = (OL + (63 - VOL))
 
         a = b;
         a &= 0x3f;
@@ -3443,7 +3443,7 @@ public class MoonDriver extends BaseDriver {
     /**
     // moon_key_write_fmfreq
     // calculates and writes related FM frequency
-    //  : A = Reg.$B0(FnumH + BLK )
+    //  : a = Reg.$B0(FnumH + BLK )
     // dest : almost all
      */
     private void moon_key_write_fmfreq() {
@@ -3572,7 +3572,7 @@ public class MoonDriver extends BaseDriver {
         a = 0x12;
         MDB_BASE[MDB_ADRMI] = a;
 
-        // A<- (001200h)
+        // a<- (001200h)
         moon_set_sram_adrs();
 
         b = 0x08;
@@ -3589,7 +3589,7 @@ public class MoonDriver extends BaseDriver {
         //    a = (byte)str_romchk[hl];
         //    e = a;
 
-        //    // A<- (SRAM)
+        //    // a<- (SRAM)
         //    d = 0x06;
         //    moon_wave_in();
 
@@ -3799,7 +3799,7 @@ public class MoonDriver extends BaseDriver {
                 e = a;
                 d = 0x06;
 
-                // A -> (PCM SRAM)
+                // a -> (PCM SRAM)
                 moon_wave_out();
 
                 hl++;

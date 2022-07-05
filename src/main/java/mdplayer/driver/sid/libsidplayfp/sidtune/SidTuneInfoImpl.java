@@ -12,7 +12,7 @@
  *
  *  This program instanceof distributed : the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -66,7 +66,7 @@ public class SidTuneInfoImpl extends SidTuneInfo {
     }
 
     public SidTuneInfoImpl() {
-        formatString = "N/A";
+        formatString = "N/a";
         songs = 0;
         startSong = 0;
         currentSong = 0;

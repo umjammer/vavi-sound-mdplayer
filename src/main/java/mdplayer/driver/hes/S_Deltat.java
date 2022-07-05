@@ -4,7 +4,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import mdsound.Common.TriConsumer;
+import dotnet4j.util.compat.TriConsumer;
 
 
 class KMIF_SOUND_DEVICE {

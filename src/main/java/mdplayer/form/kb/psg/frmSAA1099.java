@@ -19,10 +19,10 @@ import mdplayer.form.frmBase;
 //            this.AutoScaleDimensions = new DimensionF(6F, 12F);
 //            this.AutoScaleMode = JAutoScaleMode.Font;
             this.setPreferredSize(new Dimension(800, 450));
-            this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
+//            this.FormBorderStyle = JFormBorderStyle.FixedSingle;
+//            this.MaximizeBox = false;
             this.setName("frmSAA1099");
-            this.setText("frmSAA1099");
+            this.setTitle("frmSAA1099");
 //            this.ResumeLayout(false);
         }
     }

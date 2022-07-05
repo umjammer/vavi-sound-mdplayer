@@ -15,7 +15,6 @@ import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.properties.Resources;
-import mdplayer.vst.VstInfo;
 import vavi.util.serdes.Serdes;
 
 
@@ -738,36 +737,36 @@ public class Setting implements Serializable {
 
     public static class Vst implements Serializable {
 
-        private String defaultPath = "";
-        private String[] vstPluginPath = null;
-        public String[] getVstPluginPath() {
-            return vstPluginPath;
-        }
-        void setVstPluginPath(String[] value) {
-            vstPluginPath = value;
-        }
-        private VstInfo[] vstInfos = null;
-        public VstInfo[] getVSTInfo() {
-            return vstInfos;
-        }
-        public void setVSTInfo(VstInfo[] value) {
-            vstInfos = value;
-        }
-        public String getDefaultPath() {
-            return defaultPath;
-        }
-        public void setDefaultPath(String value) {
-            defaultPath = value;
-        }
-
-        public Vst copy() {
-            Vst vst = new Vst();
-
-            vst.vstInfos = this.vstInfos;
-            vst.defaultPath = this.defaultPath;
-
-            return vst;
-        }
+//        private String defaultPath = "";
+//        private String[] vstPluginPath = null;
+//        public String[] getVstPluginPath() {
+//            return vstPluginPath;
+//        }
+//        void setVstPluginPath(String[] value) {
+//            vstPluginPath = value;
+//        }
+//        private VstInfo[] vstInfos = null;
+//        public VstInfo[] getVSTInfo() {
+//            return vstInfos;
+//        }
+//        public void setVSTInfo(VstInfo[] value) {
+//            vstInfos = value;
+//        }
+//        public String getDefaultPath() {
+//            return defaultPath;
+//        }
+//        public void setDefaultPath(String value) {
+//            defaultPath = value;
+//        }
+//
+//        public Vst copy() {
+//            Vst vst = new Vst();
+//
+//            vst.vstInfos = this.vstInfos;
+//            vst.defaultPath = this.defaultPath;
+//
+//            return vst;
+//        }
     }
 
     public static class MidiOut implements Serializable {
@@ -1259,7 +1258,7 @@ public class Setting implements Serializable {
     public Balance getBalance() {
         return balance;
     }
-    void setbalance(Balance value) {
+    public void setBalance(Balance value) {
         balance = value;
     }
     private Location location = new Location();
@@ -4413,7 +4412,7 @@ public class Setting implements Serializable {
         setting.location = this.location.Copy();
         setting.midiExport = this.midiExport.copy();
         setting.midiKbd = this.midiKbd.copy();
-        setting.vst = this.vst.copy();
+//        setting.vst = this.vst.copy();
         setting.midiOut = this.midiOut.copy();
         setting.nsf = this.nsf.copy();
         setting.sid = this.sid.copy();

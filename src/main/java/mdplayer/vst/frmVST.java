@@ -6,6 +6,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowEvent;
 import javax.swing.JDialog;
 import javax.swing.Timer;
 
@@ -41,7 +42,7 @@ public class frmVST extends JDialog {
      */
     public int ShowDialog() {
 
-        this.setTitle(PluginCommandStub.GetEffectName());
+        this.setTitle(PluginCommandStub.getName());
 
         if (PluginCommandStub.EditorGetRect(wndRect)) {
             this.setPreferredSize(this.SizeFromClientSize(new Dimension(wndRect.width, wndRect.height)));
@@ -54,7 +55,7 @@ public class frmVST extends JDialog {
 
     public void Show(VstMng.VstInfo2 vi) {
 
-        this.setText(PluginCommandStub.GetEffectName());
+        this.setTitle(PluginCommandStub.getName());
 
         if (PluginCommandStub.EditorGetRect(wndRect)) {
             this.setPreferredSize(this.SizeFromClientSize(new Dimension(wndRect.width, wndRect.height)));
@@ -65,11 +66,11 @@ public class frmVST extends JDialog {
     }
 
 //    @Override
-    protected void OnClosing(System.ComponentModel.CancelEventArgs ev) {
+    protected void OnClosing(WindowEvent ev) {
         super.OnClosing(e);
 
         if (e.Cancel == false) {
-            PluginCommandStub.EditorClose();
+            PluginCommandStub.editClose();
         }
     }
 

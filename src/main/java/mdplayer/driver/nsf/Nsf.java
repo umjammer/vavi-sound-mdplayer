@@ -449,11 +449,11 @@ public class Nsf extends BaseDriver {
         if ((flags & 2) != 0) { // dual mode
             if (pref == 1) return Region.NTSC;
             if (pref == 2) return Region.PAL;
-            // else pref == 0 or invalid, use auto setting based on flags bit
+            // else pref == 0 or invalid, use auto setting based on Flags bit
             return ((flags & 1) != 0) ? Region.PAL : Region.NTSC;
         }
 
-        return Region.NTSC; // fallback for invalid flags
+        return Region.NTSC; // fallback for invalid Flags
     }
 
     public int Render(short[] b, int length) {

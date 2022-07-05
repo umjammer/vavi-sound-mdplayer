@@ -12,7 +12,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -28,7 +28,7 @@ public class Mos6510Debug {
 
     public void DumpState(long time, Mos6510 cpu) {
 // #if false
-        System.err.printf(" PC  I  A  X  Y  SP  DR PR NV-BDIZC  Instruction (%d)\n", time);
+        System.err.printf(" pc  I  a  x  y  SP  DR PR NV-BDIZC  Instruction (%d)\n", time);
 //        System.err.printf("%04x ", cpu.instrStartPC);
 //        System.err.printf(cpu.irqAssertedOnPin ? "t " : "f ");
 //        System.err.printf("%02x ", cpu.Register_Accumulator);
@@ -38,14 +38,14 @@ public class Mos6510Debug {
         System.err.printf("%02x ", cpu.cpuRead((short) 0));
         System.err.printf("%02x ", cpu.cpuRead((short) 1));
 
-//        System.err.printf(cpu.flags.getN() ? "1" : "0");
-//        System.err.printf(cpu.flags.getV() ? "1" : "0");
+//        System.err.printf(cpu.Flags.getN() ? "1" : "0");
+//        System.err.printf(cpu.Flags.getV() ? "1" : "0");
         System.err.print("1");
-//        System.err.printf(cpu.flags.getB() ? "1" : "0");
-//        System.err.printf(cpu.flags.getD() ? "1" : "0");
-//        System.err.printf(cpu.flags.getI() ? "1" : "0");
-//        System.err.printf(cpu.flags.getZ() ? "1" : "0");
-//        System.err.printf(cpu.flags.getC() ? "1" : "0");
+//        System.err.printf(cpu.Flags.getB() ? "1" : "0");
+//        System.err.printf(cpu.Flags.getD() ? "1" : "0");
+//        System.err.printf(cpu.Flags.getI() ? "1" : "0");
+//        System.err.printf(cpu.Flags.getZ() ? "1" : "0");
+//        System.err.printf(cpu.Flags.getC() ? "1" : "0");
 
         int opcode = cpu.cpuRead((short) 0/*cpu.instrStartPC*/);
 
@@ -95,7 +95,7 @@ public class Mos6510Debug {
             // ASOz AXSz DCMz INSz LSEz - Optional Opcode Names
 //            System.err.printf("%02x    ", SidEndian.to16lo8(cpu.instrOperand));
             break;
-        // Zero Page with X Offset Addressing Mode Handler
+        // Zero Page with x Offset Addressing Mode Handler
         case OpCodes.ADCzx:
         case OpCodes.ANDzx:
         case OpCodes.ASLzx:
@@ -127,7 +127,7 @@ public class Mos6510Debug {
             // ASOzx DCMzx INSzx LSEzx - Optional Opcode Names
 //            System.err.printf("%02x    ", SidEndian.to16lo8(cpu.instrOperand));
             break;
-        // Zero Page with Y Offset Addressing Mode Handler
+        // Zero Page with y Offset Addressing Mode Handler
         case OpCodes.LDXzy:
         case OpCodes.STXzy:
         case OpCodes.SAXzy:
@@ -171,7 +171,7 @@ public class Mos6510Debug {
             // ASOa AXSa DCMa INSa LSEa - Optional Opcode Names
 //            System.err.printf("%02x %02x ", SidEndian.to16lo8(cpu.instrOperand), SidEndian.to16hi8(cpu.instrOperand));
             break;
-        // Absolute With X Offset Addresing Mode Handler
+        // Absolute With x Offset Addresing Mode Handler
         case OpCodes.ADCax:
         case OpCodes.ANDax:
         case OpCodes.ASLax:
@@ -203,7 +203,7 @@ public class Mos6510Debug {
             // ASOax DCMax INSax LSEax SAYax - Optional Opcode Names
 //            System.err.printf("%02x %02x ", SidEndian.to16lo8(cpu.instrOperand), SidEndian.to16hi8(cpu.instrOperand));
             break;
-        // Absolute With Y Offset Addresing Mode Handler
+        // Absolute With y Offset Addresing Mode Handler
         case OpCodes.ADCay:
         case OpCodes.ANDay:
         case OpCodes.CMPay:
@@ -267,7 +267,7 @@ public class Mos6510Debug {
         case OpCodes.JMPi:
 //            System.err.printf("%02x %02x ", SidEndian.to16lo8(cpu.instrOperand), SidEndian.to16hi8(cpu.instrOperand));
             break;
-        // Indexed with X Preinc Addressing Mode Handler
+        // Indexed with x Preinc Addressing Mode Handler
         case OpCodes.ADCix:
         case OpCodes.ANDix:
         case OpCodes.CMPix:
@@ -287,7 +287,7 @@ public class Mos6510Debug {
             // ASOix AXSix DCMix INSix LSEix - Optional Opcode Names
 //            System.err.printf("%02x    ", SidEndian.to16lo8(cpu.instrOperand));
             break;
-        // Indexed with Y Postinc Addressing Mode Handler
+        // Indexed with y Postinc Addressing Mode Handler
         case OpCodes.ADCiy:
         case OpCodes.ANDiy:
         case OpCodes.CMPiy:
@@ -726,7 +726,7 @@ public class Mos6510Debug {
         case OpCodes.LSRn:
         case OpCodes.ROLn:
         case OpCodes.RORn:
-            System.err.print("n  A");
+            System.err.print("n  a");
             break;
 
         // Zero Page Addressing Mode Handler
@@ -769,7 +769,7 @@ public class Mos6510Debug {
 //            System.err.printf("z  %02x", SidEndian.to16lo8(cpu.instrOperand));
             break;
 
-        // Zero Page with X Offset Addressing Mode Handler
+        // Zero Page with x Offset Addressing Mode Handler
         case OpCodes.ADCzx:
         case OpCodes.ANDzx:
         case OpCodes.ASLzx:
@@ -791,7 +791,7 @@ public class Mos6510Debug {
         case OpCodes.SLOzx:
         case OpCodes.SREzx:
             // ASOzx DCMzx INSzx LSEzx - Optional Opcode Names
-//            System.err.printf("zx %02x,X", SidEndian.to16lo8(cpu.instrOperand));
+//            System.err.printf("zx %02x,x", SidEndian.to16lo8(cpu.instrOperand));
 //            System.err.printf(" [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{", "}");
             break;
         case OpCodes.STAzx:
@@ -802,20 +802,20 @@ public class Mos6510Debug {
         case 0x74:
         case 0xD4:
         case 0xF4:
-//            System.err.printf("zx %02x,X", SidEndian.to16lo8(cpu.instrOperand));
+//            System.err.printf("zx %02x,x", SidEndian.to16lo8(cpu.instrOperand));
 //            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
             break;
 
-        // Zero Page with Y Offset Addressing Mode Handler
+        // Zero Page with y Offset Addressing Mode Handler
         case OpCodes.LAXzy:
         case OpCodes.LDXzy:
             // AXSzx - Optional Opcode Names
-//            System.err.printf("zy %02x,Y", SidEndian.to16lo8(cpu.instrOperand));
+//            System.err.printf("zy %02x,y", SidEndian.to16lo8(cpu.instrOperand));
 //            System.err.printf(" [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{", "}");
             break;
         case OpCodes.STXzy:
         case OpCodes.SAXzy:
-//            System.err.printf("zy %02x,Y", SidEndian.to16lo8(cpu.instrOperand));
+//            System.err.printf("zy %02x,y", SidEndian.to16lo8(cpu.instrOperand));
 //            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
             break;
 
@@ -860,7 +860,7 @@ public class Mos6510Debug {
 //            System.err.printf("w  %04x", cpu.instrOperand);
             break;
 
-        // Absolute With X Offset Addresing Mode Handler
+        // Absolute With x Offset Addresing Mode Handler
         case OpCodes.ADCax:
         case OpCodes.ANDax:
         case OpCodes.ASLax:
@@ -882,7 +882,7 @@ public class Mos6510Debug {
         case OpCodes.SLOax:
         case OpCodes.SREax:
             // ASOax DCMax INSax LSEax SAYax - Optional Opcode Names
-//            System.err.printf("ax %04x,X", cpu.instrOperand);
+//            System.err.printf("ax %04x,x", cpu.instrOperand);
 //            System.err.printf(" [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{", "}");
             break;
         case OpCodes.SHYax:
@@ -893,11 +893,11 @@ public class Mos6510Debug {
         case 0x7C:
         case 0xDC:
         case 0xFC:
-//            System.err.printf("ax %04x,X", cpu.instrOperand);
+//            System.err.printf("ax %04x,x", cpu.instrOperand);
 //            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
             break;
 
-        // Absolute With Y Offset Addresing Mode Handler
+        // Absolute With y Offset Addresing Mode Handler
         case OpCodes.ADCay:
         case OpCodes.ANDay:
         case OpCodes.CMPay:
@@ -916,13 +916,13 @@ public class Mos6510Debug {
         case OpCodes.SLOay:
         case OpCodes.SREay:
             // ASOay AXAay DCMay INSax LSEay TASay XASay - Optional Opcode Names
-//            System.err.printf("ay %04x,Y", cpu.instrOperand);
+//            System.err.printf("ay %04x,y", cpu.instrOperand);
 //            System.err.printf(" [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{", "}");
             break;
         case OpCodes.SHAay:
         case OpCodes.SHXay:
         case OpCodes.STAay:
-//            System.err.printf("ay %04x,Y", cpu.instrOperand);
+//            System.err.printf("ay %04x,y", cpu.instrOperand);
 //            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
             break;
 
@@ -974,7 +974,7 @@ public class Mos6510Debug {
 //            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
             break;
 
-        // Indexed with X Preinc Addressing Mode Handler
+        // Indexed with x Preinc Addressing Mode Handler
         case OpCodes.ADCix:
         case OpCodes.ANDix:
         case OpCodes.CMPix:
@@ -990,16 +990,16 @@ public class Mos6510Debug {
         case OpCodes.RLAix:
         case OpCodes.RRAix:
             // ASOix AXSix DCMix INSix LSEix - Optional Opcode Names
-//            System.err.printf("ix (%02x,X)", SidEndian.to16lo8(cpu.instrOperand));
+//            System.err.printf("ix (%02x,x)", SidEndian.to16lo8(cpu.instrOperand));
 //            System.err.printf(" [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{", "}");
             break;
         case OpCodes.SAXix:
         case OpCodes.STAix:
-//            System.err.printf("ix (%02x,X)", SidEndian.to16lo8(cpu.instrOperand));
+//            System.err.printf("ix (%02x,x)", SidEndian.to16lo8(cpu.instrOperand));
 //            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
             break;
 
-        // Indexed with Y Postinc Addressing Mode Handler
+        // Indexed with y Postinc Addressing Mode Handler
         case OpCodes.ADCiy:
         case OpCodes.ANDiy:
         case OpCodes.CMPiy:
@@ -1015,12 +1015,12 @@ public class Mos6510Debug {
         case OpCodes.SLOiy:
         case OpCodes.SREiy:
             // AXAiy ASOiy LSEiy DCMiy INSiy - Optional Opcode Names
-//            System.err.printf("iy (%02x),Y", SidEndian.to16lo8(cpu.instrOperand));
+//            System.err.printf("iy (%02x),y", SidEndian.to16lo8(cpu.instrOperand));
 //            System.err.printf(" [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{", "}");
             break;
         case OpCodes.SHAiy:
         case OpCodes.STAiy:
-//            System.err.printf("iy (%02x),Y", SidEndian.to16lo8(cpu.instrOperand));
+//            System.err.printf("iy (%02x),y", SidEndian.to16lo8(cpu.instrOperand));
 //            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
             break;
 

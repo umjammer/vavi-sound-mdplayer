@@ -9,7 +9,7 @@
  *
  *  This program instanceof distributed : the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -30,7 +30,7 @@ import java.nio.DoubleBuffer;
  * parametric curves [x(t) y(t) ...] and can not be used to directly calculate
  * y = f(x).
  * For a discussion of Catmull-Rom splines see Catmull, E., and R. Rom,
- * "A Class of Local Interpolating Splines", Computer Aided Geometric Design.
+ * "a Class of Local Interpolating Splines", Computer Aided Geometric Design.
  *
  * Natural cubic splines are single-valued functions, and have been used in
  * several applications e.g. to specify gamma curves for image display.

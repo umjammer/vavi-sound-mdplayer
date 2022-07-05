@@ -12,7 +12,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -60,7 +60,7 @@ class C64Cia1 extends Mos6526 implements IBank {
     public void poke(short address, byte value) {
         write(SidEndian.to16lo8(address), value);
 
-        // Save the value written to Timer A
+        // Save the value written to Timer a
         if ((address & 0xffff) == 0xDC04 || (address & 0xffff) == 0xDC05) {
             if (timerA.getTimer() != 0)
                 lastTA = timerA.getTimer();

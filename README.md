@@ -1,584 +1,666 @@
 ﻿# MDPlayer
-VGMファイルなどのPlayer(メガドライブ音源チップなどのエミュレーションによる演奏ツール)  
-  
-[概要]  
-  このツールは、鍵盤表示を行いながらVGMファイルの再生を行います。  
-  (NRD,XGM,S98,MID,RCP,NSF,HES,SID,MGS,MDR,MDX,MND,MUC,MUB,M,M2,MZ,WAV,MP3,AIFFファイルにも対応。)  
-  
-[注意]  
-  ・再生時の音量に注意してください。バグによる雑音が大音量で再生される場合もあります。  
-  (特に再生したことのないファイルを試す場合や、プログラムを更新した場合。)  
-  
-  ・使用中に不具合を見つけた場合はお手数ですが以下までご連絡ください。  
-    Twitter(@kumakumakumaT_T)  
-    Github Issues(https://github.com/kuma4649/MDPlayer/issues)  
-  !!重要!!  
-  VGMPlayやNRTDRV、その他素晴らしいソフトウェアの作者様方に、  
-  直接MDPlayerについての連絡がいくことの無い様にお願いします。  
-  できるかぎり対応させていただくつもりですが、ご希望に添えないことも多々あります。ご了承ください。  
-  
-[対応フォーマット]  
-  .VGM (所謂vgmファイル)  
-  .VGZ (vgmファイルをgzipしたもの)  
-  .NRD (NRTDRV X1でOPM2個とAY8910を鳴らすドライバの演奏ファイル)  
-  .XGM (MegaDrive向けファイル)  
-  .S98 (主に日本製レトロPC向けファイル)  
-  .MID (StandardMIDIファイル。フォーマット0/1対応)  
-  .RCP (レコポンファイル CM6,GSDの送信可)  
-  .NSF (NES Sound Format)  
-  .HES (HESファイル)  
-  .SID (コモドール向けファイル)  
-  .MGS (MGSDRVファイル 演奏するにはMGSDRV.COMが必要です)  
-  .MDR (MoonDriver MSXで,MoonSound(OPL4)を鳴らすドライバの演奏ファイル)  
-  .MDX (MXDRV向けファイル)  
-  .MND (MNDRV X68000(OPM,OKIM6258) & まーきゅりーゆにっと(OPNAx2)を使用するドライバの演奏ファイル)  
-  .MUC (MUCOM88Windows 向けファイル)  
-  .MUB (MUCOM88Windows 向けファイル)  
-  .M   (PMD 向けファイル)  
-  .M2  (PMD 向けファイル)  
-  .MZ  (PMD 向けファイル)  
-  .WAV (TBD 音声ファイル)  
-  .MP3 (TBD 音声ファイル)  
-  .AIF (TBD 音声ファイル)  
-  .M3U (プレイリスト)  
-  
-[機能、特徴]  
-  ・現在、以下の主にメガドライブ系音源チップのエミュレーションによる再生が可能です。  
-     
-      AY8910    , YM2612   , SN76489 , RF5C164 , PWM     , C140(C219) , OKIM6295 , OKIM6258(PCM8,MPCM含)  
-      , SEGAPCM , YM2151   , YM2203  , YM2413  , YM2608  , YM2610/B   , HuC6280  , C352  
-      , K054539 , NES_APU  , NES_DMC , NES_FDS , MMC5    , FME7       , N160     , VRC6  
-      , VRC7    , MultiPCM , YMF262  , YMF271  , YMF278B , YMZ280B    , DMG      , QSound  
-      , S5B     , GA20     , X1-010  , SAA1099
-      , RF5C68  , SID      , Y8950   , YM3526  , YM3812  , K053260    , K051649(K052539)  
-  
-  ・現在、以下の鍵盤表示が可能です。  
-     
-      YM2612        , SN76489    , RF5C164  
-      , AY8910      , C140(C219) , C352    , SEGAPCM  
-      , Y8950       , YM2151     , YM2203  , YM2413     , YM2608 , YM2610/B , YM3526 , YM3812  
-      , YMF262      , YMF278B    , YMZ280B , MultiPCM   
-      , HuC6280     , MIDI       
-      , NES_APU&DMC , NES_FDS    , MMC5    , N106(N163) , VRC6     , VRC7 , PPZ8    
-  
-      チャンネル(鍵盤)を左クリックすることでマスクさせることができます。  
-      右クリックすると全チャンネルのマスクを解除します。  
-      (いろいろなレベルで対応していないのもあり)  
-    　各鍵盤表示ウィンドウで'ch'をクリックすると一括でマスクを切り替えます。  
 
+Player such as VGM file (performance tool by emulation such as mega drive sound source chip)
 
-      再生するファイルの情報から使用する鍵盤を自動で開くことができます。  
-      (同じ鍵盤を2枚まで表示できますが、MIDIの鍵盤はひとつだけ開きます。)  
-  
-  ・C#で作成されています。  
-  
-  ・VGMPlay,MAME,DOSBOXのソースを参考、移植しています。  
-  
-  ・FMGenのソースを参考、移植しています。  
-  
-  ・NSFPlayのソースを参考、移植しています。  
-  
-  ・NEZ Plug++のソースを参考、移植しています。  
-  
-  ・libsidplayfpのソースを参考、移植しています。  
-  
-  ・sidplayfpのソースを参考、移植しています。  
-  
-  ・NRTDRVのソースを参考、移植しています。  
-  
-  ・MoonDriverのソースを参考、移植しています。  
-  
-  ・MXPのソースを参考、移植しています。  
-  
-  ・MXDRVのソースを参考、移植しています。  
-  
-  ・MNDRVのソースを参考、移植しています。  
-  
-  ・X68Soundのソースを参考、移植しています。  
-  (m_puusanさん/rururutanさん版両方)  
-  
-  ・CVS.EXEの出力を参考に同じデータが出力されるよう調整しています。  
-  
-  ・SCCIを利用して本物のYM2612,SN76489,YM2608,YM2151,YMF262から再生が可能です。  
-  またSPPCMにも対応しています。  
-  
-  ・GIMIC(C86ctl)を利用して本物のYM2608,YM2151,YMF262から再生が可能です。  
-  
-  ・Z80dotNetを利用しています。  
-  
-  ・ボタンは以下の順に並んでいます。  
-     
-     設定、停止、一時停止、フェードアウト、前の曲、1/4速再生、再生、4倍速再生、次の曲、  
-     プレイモード、ファイルを開く、プレイリスト、  
-     情報パネル表示、ミキサーパネル表示、パネルリスト表示、VSTeffectの設定、MIDI鍵盤表示、表示倍率変更  
-  
-  ・OPN,OPM,OPL系の音色パラメーターを左クリックするとクリップボードに音色パラメーターをテキストとしてコピーします。  
-  パラメーターの形式はオプション設定から変更可能です。  
-     
-      FMP7 , MDX , MUCOM88(MUSIC LALF) , NRTDRV , HuSIC , MML2VGM , .TFI , MGSC , .DMP , .OPNI  
-  
-  に対応しており、.TFI / .DMP / .OPNIを選んだ場合はクリップボードの代わりにファイルに出力します。  
-  
-  ・出来は今一歩ですが、YM2612 , YM2151 の演奏データをMIDIファイルとして出力が可能です。  
-  VOPMexを使用すれば、FM音源の音色情報も反映させることが可能です。  
-  (VOPMではなく、VOPMexです。;-P )  
-  
-  ・PCMデータをダンプすることができます。SEGAPCMの場合のみWAVで出力します。  
-  
-  ・演奏をwavで書き出すことが可能です。  
-  
-  ・MIDI音源にVSTiを指定可能です。  
-  
-  ・キーボード、MIDIキーボードから、再生、停止などの操作が可能です。  
-  
-  ・プレイリストから、再生中の拡張子違いの同名ファイル(Text,MML,Image)を開くことができます。  
-  
-  ・VGM/VGZファイルに独自機能を追加しています。  
-      RF5C164のDual演奏  
-      歌詞表示  
+## Overview  
 
-  ・コマンドラインからmdp.batを使用してMDPlayerを操作できるようにした♪  
-        mdp.batのコマンドは以下の通り。  
-            PLAY [file]  
-            STOP  
-            NEXT  
-            PREV  
-            FADEOUT  
-            FAST  
-            SLOW  
-            PAUSE  
-            CLOSE  
-            LOOP  
-            MIXER  
-            INFO  
-  
-[ちょっと分かりずらい操作]  
-  ・各ウィンドウのタイトルバーをダブルクリック(トグル)すると常に前面に表示するようになります。  
-　・Shiftキーを押しながらアプリを起動すると、ウィンドウの位置を初期化できるように機能追加。  
+This tool plays VGM files while displaying the keyboard.
+(Supports NRD, XGM, S98, MID, RCP, NSF, HES, SID, MGS, MDR, MDX, MND, MUC, MUB, M, M2, MZ, WAV, MP3, AIFF files.)
 
-  
-  
-[ちょっと分かりずらい設定項目]  
-  ・[Options]ウィンドウ > [other]タブ > [Search paths on additional file]  
-    このテキストボックスにパスを入力しておくと、  
-    曲データを再生するときに追加で参照されるファイルをその場所を検索するようになります。  
-    パスは;区切りで複数列挙可能です。  
-    ドライバ毎に追加で探すファイルは以下の通りです。  
-      ・レコンポーザ(.RCP)  
-        .CM6 / .GSD  
-      ・MoonDriver(.MDR)  
-        .PCM  
-      ・MXDRV(.MDX)  
-        .PDX  
-      ・MNDRV(.MND)  
-        .PND  
-    尚、PMDDotNETの場合は環境変数PMDで指定されたパスを参照します。  
+## Note
 
-  
-  
-[G.I.M.I.C.関連情報]  
-  ・SSG volumeについて  
-    SSG volumeは、ミキサー画面右下の「G.OPN」「G.OPNA」フェーダーで調節してください。  
-    それぞれ  
-      G.OPN    ->  YM2203(Pri/Sec)に設定したG.I.M.I.C.のモジュール  
-      G.OPNA   ->  YM2608(Pri/Sec)に設定したG.I.M.I.C.のモジュール  
-    に設定情報が送信されます。  
-    なお、設定は再生開始時にのみ送信されます。  
-    よって演奏中にフェーダーを動かしてもその値が即時反映されることはありません。  
-    初期値としては、  
-      .muc(mucom88)  ->  63 (PC-8801-11相当)  
-      .mub(mucom88)  ->  63 (PC-8801-11相当)  
-      .mnd(MNDRV)    ->  31 (PC-9801-86相当)  
-      .s98           ->  31 (PC-9801-86相当)  
-      .vgm           ->  31 (PC-9801-86相当)  
-    を設定しています。  
-    必要に応じて、ドライバ毎又はファイル毎にバランスを調節し、  
-    保存(ミキサー画面で右クリックすると保存メニューを表示)してください。  
-    
-    また、以下の演奏ファイルは、ファイル内に記述されているタグを判別して自動で設定することも可能です(TBD)。
-    
-    .S98ファイル  
-    「system」タグ内に「8801」という文字を見つけるとMDPlayerは「63」を設定します。  
-    「9801」という文字を見つけるとMDPlayerは「31」を設定します。  
-    両方見つけた場合は「8801」を優先します。  
-    見つからない場合は、ミキサー画面で設定した値になります。  
-    
-    .vgmファイル  
-    「systemname」「systemnamej」タグ内に「8801」という文字を見つけるとMDPlayerは「63」を設定します。  
-    「9801」という文字を見つけるとMDPlayerは「31」を設定します。  
-    両方見つけた場合は「8801」を優先します。  
-    見つからない場合は、ミキサー画面で設定した値になります。  
-    
-    
-  ・周波数について  
-    ファイル形式ごとにモジュールの周波数(チップのマスタークロック)の設定を行います。  
-    設定値は以下の通りです。  
-      .vgm           ->  ファイル中に設定されている値を使用  
-      .s98           ->  ファイル中に設定されている値を使用  
-      .mub(mucom88)  ->  OPNA:7987200Hz  
-      .muc(mucom88)  ->  OPNA:7987200Hz  
-      .nrd(NRTDRV)   ->  OPM:4000000Hz  
-      .mdx(MXDRV)    ->  OPM:4000000Hz  
-      .mnd(MNDRV)    ->  OPM:4000000Hz  OPNA:8000000Hz  
-      .mml(PMD)      ->  OPNA:7987200Hz  
-      .m(PMD)        ->  OPNA:7987200Hz  
-      .m2(PMD)       ->  OPNA:7987200Hz  
-      .mz(PMD)       ->  OPNA:7987200Hz  
-  
-  
-[必要な動作環境]  
-  ・恐らく、WindowsVista(32bit)以降のOS。私はWindows10Home(x64)を使用しています。  
-  XPでは動作しません。  
-  
-  ・.NET Framework4をインストールしている必要あり。  
-  
-  ・.NET Standard2をインストールしている必要あり。  
-  
-  ・Visual Studio 2012 更新プログラム 4 の Visual C++ 再頒布可能パッケージ をインストールしている必要あり。  
-  
-  ・Microsoft Visual C++ 2015 Redistributable(x86) - 14.0.23026をインストールしている必要あり。  
-  
-  ・LZHファイルを使用する場合はUNLHA32.DLL(Ver3.0以降)をインストールしている必要あり。  
-  
-  ・音声を再生できるオーディオデバイスが必須。  
-  そこそこ性能があるものが必要です。UMX250のおまけでついてたUCA222でも十分いけます。私はこれを使ってました。  
-  
-  ・もしあれば、SPFM Light＋YM2612＋YM2608＋YM2151＋SPPCM  
-  
-  ・もしあれば、GIMIC＋YM2608＋YM2151  
-  
-  ・YM2608のエミュレーション時、リズム音を鳴らすために以下の音声ファイルが必要です。  
-  作成方法は申し訳ありませんがお任せします。  
-      
-      バスドラム      2608_BD.WAV  
-      ハイハット      2608_HH.WAV  
-      リムショット    2608_RIM.WAV  
-      スネアドラム    2608_SD.WAV  
-      タムタム        2608_TOM.WAV  
-      トップシンバル  2608_TOP.WAV  
-      (44.1KHz 16bitPCM モノラル 無圧縮Microsoft WAVE形式ファイル)  
-  
-  ・YMF278Bのエミュレーション時、MoonSoundの音色を鳴らすために以下のROMファイルが必要です。  
-  作成方法は申し訳ありませんがお任せします。  
-  	yrw801.rom  
-  
-  ・C64のエミュレーション時、以下のROMファイルが必要です。  
-  作成方法は申し訳ありませんがお任せします。  
-  	Kernal , Basic , Character  
-  
-  ・そこそこ速いCPU。  
-  使用するChipなどによって必要な処理量が変わります。  
-  私はi7-9700K 3.6GHzを使用しています。  
-  
-  ・MGSDRVのファイルを演奏するには、以下のファイルが必要です。  
-  (予め同梱させていただいていますが必要であれば、公式サイトから入手してください。)
-    MGSDRV.COM  
+Pay attention to the volume during playback. The noise caused by the bug may be played at a loud volume.
+(If you try a file that you have never played, or if you update the program.)
 
+If you find any problems during use, please contact the following.
+
+ - Twitter (@kumakumakumaT_T)
+ - Github Issues (https://github.com/kuma4649/MDPlayer/issues)
+
+**!! Important !!**
+
+For authors of VGMPlay, NRTDRV, and other great software
+Please do not contact them directly about MDPlayer.
+We will do our best to accommodate you, but there are many cases where we cannot meet your request. note that.
+
+## Supported formats
+
+ - VGM (so-called vgm file)
+ - VGZ (gzipped vgm file)
+ - NRD (NRTDRV X1 driver performance file that sounds 2 OPMs and AY8910)
+ - XGM (File for MegaDrive)
+ - S98 (mainly files for Japanese retro PC)
+ - MID (Standard MIDI file. Format 0/1 compatible)
+ - RCP (Recopon files CM6, GSD can be sent)
+ - NSF (NES Sound Format)
+ - HES (HES file)
+ - SID (File for Commodore)
+ - MGS (MGSDRV.COM is required to play MGSDRV files)
+ - MDR (MoonDriver MSX, driver performance file that sounds MoonSound (OPL4))
+ - MDX (file for MXDRV)
+ - MND (Performance file of driver using MNDRV X68000 (OPM, OKIM6258) & Makyury Yunit (OPNAx2))
+ - MUC (MUCOM88 file for Windows)
+ - MUB (MUCOM88 file for Windows)
+ - M (File for PMD)
+ - M2 (file for PMD)
+ - MZ (file for PMD)
+ - WAV (TBD audio file)
+ - MP3 (TBD audio file)
+ - AIF (TBD audio file)
+ - M3U (playlist)
+
+## Functions and features
+
+ - Currently, it is possible to play back mainly by emulating the following mega drive type sound source chips.
+
+       AY8910, YM2612, SN76489, RF5C164, PWM, C140 (C219), OKIM6295, OKIM6258 (including PCM8, MPCM)
+       , SEGAPCM, YM2151, YM2203, YM2413, YM2608, YM2610 / B, HuC6280, C352
+       , K054539, NES_APU, NES_DMC, NES_FDS, MMC5, FME7, N160, VRC6
+       , VRC7, MultiPCM, YMF262, YMF271, YMF278B, YMZ280B, DMG, QSound
+       , S5B, GA20, X1-010, SAA1099
+       , RF5C68, SID, Y8950, YM3526, YM3812, K053260, K051649 (K052539)
+
+ - Currently, the following keyboard displays are possible.
+
+       YM2612, SN76489, RF5C164
+       , AY8910, C140 (C219), C352, SEGAPCM
+       , Y8950, YM2151, YM2203, YM2413, YM2608, YM2610 / B, YM3526, YM3812
+       , YMF262, YMF278B, YMZ280B, MultiPCM
+       , HuC6280, MIDI
+       , NES_APU & DMC, NES_FDS, MMC5, N106 (N163), VRC6, VRC7, PPZ8
   
-[同期のすゝめ]  
-    
-  ・SCCI/GIMIC(C86ctl)とエミュレーション(以下EMUと略す)による音を同期させるのにはコツがいります。  
-  環境にもよるので何が正解かはわからないのですが、私の環境での調整手順を紹介します。  
-      
-    １．まず、[Output]タブから音声の出力に使用するデバイスを選びます。  
-    おすすめはWasapiOutで共有を選ぶ、又はASIOを選ぶパターンです。  
-      
-    ２．遅延時間は50msか100msを選びます。ここで一度[OK]を押してEMUのみを使用する曲を再生し  
-    音がざらざらしたりプチプチといったノイズが混ざらないことを確認します。  
-    (もし綺麗に再生されない場合は遅延時間をひとつ大きく設定します。)  
-      
-    ３．[Sound]タブからYM2612のSCCIを選択し使用するモジュールを選択します。  
-    SCCIのみ  
-    チェックボックスは「Send Wait Signal」と「Emulate PCM only」にチェックを入れてください。  
-    「Emulate PCM only」にチェックを入れるとPCMのみエミュレーションするようになります。  
-    チェックを入れない場合はSCCIにPCMデータを送るようになりますが音質、テンポが安定しません。  
-    「Send Wait Signal」を行うとSCCIのテンポが安定するようです。  
-    しかし「Double wait」にチェックするとPCMの音質は上がりますがテンポが乱れる傾向があります。  
-      
-    ４．遅延演奏のグループはとりあえずSCCI/GIMICもEMUも0msを設定し「日和見モード」にはチェックをいれてください。  
-    「日和見モード」は、例えば演奏中に大きな負荷がかかり、SCCI/GIMICの再生とEMUの再生が大きくずれた場合に  
-    SCCI/GIMICの再生スピードを調整してズレを軽減させる機能です。但し、遅延演奏で設定した(意図した)ズレは保ち続けます。  
-      
-    ５．SCCI/GIMICとEMUの両方が使用されている曲を再生し、どちらが先に鳴っているか注意深く確認します。  
-    SCCI/GIMICとEMUのうち先に演奏されている方の遅延演奏時間を増やし曲再生を行い確認します。  
-      
-    ６．５の手順をズレがなくなるまで繰り返せば同期作業は完了です。楽しんで！  
-      
-    ７．SCCIとGIMICの演奏ずれについて。  
-    SCCIが早い場合はSCCIのディレイ設定項目を調整します。  
-    GIMICが早い場合はGIMICのディレイ設定項目を調整します。  
-  
-  
-[MIDI鍵盤のすゝめ]  
-  ・MIDIキーボードを用意すると、それを使用してYM2612(EMU)から発音させることができます。  
-  これは主にMML打ち込み支援のために用意された機能です。  
-  (今のところ実装途中の状態で使用できない機能があります。)  
-  
-  ・とりあえずの使い方  
-      
-    １. 設定画面で、使用するMIDIキーボードを選択します。  
+     You can mask it by left-clicking on the channel (keyboard).
+     Right-click to unmask all channels.
+     (Some of them are not supported at various levels)
+     Click'ch'in each keyboard display window to switch masks at once.
+
+     You can automatically open the keyboard to be used from the information of the file to be played.
+     (You can display up to two of the same keyboard, but only one MIDI keyboard will open.)
+
+ - It is created in C #.
+ - Refer to the source of VGMPlay, MAME, DOSBOX and port it.
+ - Refer to the source of FMGen and port it.
+ - Refer to the source of NSFPlay and port it.
+ - Refer to the source of NEZ Plug ++ and port it.
+ - Refer to the source of libsidplayfp and port it.
+ - Refer to the source of sidplayfp and port it.
+ - Refer to the source of NRTDRV and port it.
+ - Refer to the source of MoonDriver and port it.
+ - Refer to the MXP source and port it.
+ - Refer to the source of MXDRV and port it.
+ - Refer to the source of MNDRV and port it.
+ - Refer to the source of X68Sound and port it.
+
+   (Both m_puusan-san / rururutan-san version)
+
+ - Adjusted so that the same data is output by referring to the output of CVS.EXE.
+ - Playback is possible from the real YM2612, SN76489, YM2608, YM2151, YMF262 using SCCI.
+
+   It also supports SPPCM.
+
+ - Playback is possible from the real YM2608, YM2151, YMF262 using GIMIC (C86ctl).
+ - I am using Z80dotNet.
+
+ - The buttons are arranged in the following order.
+
+       Set, Stop, Pause, Fade Out, Previous Song, 1/4 Speed ​​Playback, Playback, 4x Speed ​​Playback, Next Song,
+       Play mode, open file, playlist,
+       Information panel display, mixer panel display, panel list display, VSTeffect setting, MIDI keyboard display, display magnification change
+
+ - Left-click the OPN, OPM, OPL tone parameter to copy the tone parameter to the clipboard as text.
+
+   The parameter format can be changed from the option settings.
+
+        FMP7, MDX, MUCOM88 (MUSIC LALF), NRTDRV, HuSIC, MML2VGM, .TFI, MGSC, .DMP, .OPNI
+
+If you select .TFI / .DMP / .OPNI, it will be output to a file instead of the clipboard.
+
+ - Although the result is a step away, it is possible to output the performance data of YM2612 and YM2151 as a MIDI file.
+
+   If you use VOPMex, it is possible to reflect the tone color information of the FM sound source.
+
+   (VOPMex, not VOPM.;-P)
+
+ - PCM data can be dumped. It is output as WAV only in the case of SEGA PCM.
+ - It is possible to export the performance with wav.
+ - VSTi can be specified for the MIDI sound source.
+ - You can play, stop, etc. from the keyboard or MIDI keyboard.
+ - From the playlist, you can open the file with the same name (Text, MML, Image) with a different extension during playback.
+ - A unique function has been added to the VGM / VGZ file.
+
+   Dual performance of RF5C164
+
+   Lyrics display
+
+ - Enabled to operate MDPlayer using mdp.bat from the command line ♪
+
+   The command of mdp.bat is as follows.
+
+         PLAY [file]
+         STOP
+         NEXT
+         PREV
+         FADEOUT
+         FAST
+         SLOW
+         PAUSE
+         CLOSE
+         LOOP
+         MIXER
+         INFO
+
+## Operation that is a little difficult to understand
+
+ - Double-click (toggle) the title bar of each window to always bring it to the front.
+ - Added a function so that the position of the window can be initialized by starting the application while holding down the Shift key.
+
+## Setting items that are a little difficult to understand
+
+ - Options window> other tab> Search paths on additional file
+
+   If you enter the path in this text box,
+   When playing the song data, the file that is additionally referenced will be searched for the location.
+   Multiple paths can be listed separated by;
+   The files to be additionally searched for for each driver are as follows.
+
+ - Recomposer (.RCP)
+
+   .CM6 / .GSD
+
+ - MoonDriver (.MDR)
+
+   .PCM
+
+ - MXDRV (.MDX)
+
+   .PDX
+
+ - MNDRV (.MND)
+
+   .PND
+
+In the case of PMDDotNET, the path specified by the environment variable PMD is referenced.
+
+## G.I.M.I.C. Related Information
+
+ - About SSG volume
+   Adjust the SSG volume with the "G.OPN" and "G.OPNA" faders at the bottom right of the mixer screen.
+ 
+   Respectively
+ 
+       G.I.M.I.C.module set to G.OPN-> YM2203 (Pri / Sec)
+       G.I.M.I.C.module set to G.OPNA-> YM2608 (Pri / Sec)
+ 
+   The setting information is sent to.
+
+   The settings are sent only at the start of playback.
+   Therefore, even if you move the fader during a performance, the value will not be reflected immediately.
+   As an initial value,
+ 
+       .muc (mucom88)-> 63 (equivalent to PC-8801-11)
+       .mub (mucom88)-> 63 (equivalent to PC-8801-11)
+       .mnd (MNDRV)-> 31 (equivalent to PC-9801-86)
+       .s98-> 31 (equivalent to PC-9801-86)
+       .vgm-> 31 (equivalent to PC-9801-86)
+
+   Is set.
+
+   If necessary, adjust the balance for each driver or file,
+   Save (right-click on the mixer screen to display the save menu).
+
+   In addition, the following performance files can be set automatically by identifying the tags described in the files (TBD).
+
+   - .S98 file
+
+         If the word "8801" is found in the "system" tag, MDPlayer will set it to "63".
+         If the word "9801" is found, MDPlayer will set it to "31".
+         If both are found, "8801" is given priority.
+         If not found, the value set on the mixer screen will be used.
+
+   - .vgm file
+
+         If the word "8801" is found in the "systemname" and "systemnamej" tags, MDPlayer will set it to "63".
+         If the word "9801" is found, MDPlayer will set it to "31".
+         If both are found, "8801" is given priority.
+         If not found, the value set on the mixer screen will be used.
+
+ - Frequency
+
+Set the module frequency (chip master clock) for each file format.
+
+The setting values ​​are as follows.
+
+     .vgm-> use the value set in the file
+     .s98-> use the value set in the file
+     .mub (mucom88)-> OPNA: 7987 200Hz
+     .muc (mucom88)-> OPNA: 7987 200Hz
+     .nrd (NRTDRV)-> OPM: 4000000Hz
+     .mdx (MXDRV)-> OPM: 4000000Hz
+     .mnd (MNDRV)-> OPM: 4000000Hz OPNA: 8000000Hz
+     .mml (PMD)-> OPNA: 7987 200Hz
+     .m (PMD)-> OPNA: 7987200Hz
+     .m2-> OPNA: 7987 200Hz
+     .mz (PMD)-> OPNA: 7987 200Hz
+
+## Required operating environment
+
+ - Probably Windows Vista (32bit) or later OS. I'm using Windows 10 Home (x64).
+
+   It does not work on XP.
+
+ - It is necessary to have .NET Framework 4 installed.
+
+ - You need to have .NET Standard 2 installed.
+
+ - You must have the Visual C ++ Redistributable Package for Visual Studio 2012 Update 4 installed.
+
+ - Microsoft Visual C ++ 2015 Redistributable (x86) --14.0.23026 must be installed.
+
+ - UNLHA32.DLL (Ver3.0 or later) must be installed to use LZH files.
+
+ - A audio device that can play audio is required.
+
+   You need something that has reasonable performance. UCA222, which is a bonus of UMX250, is enough. I used this.
+
+ - If there is, SPFM Light ＋ YM2612 ＋ YM2608 ＋ YM2151 ＋ SPPCM
+
+ - If there is, GIMIC ＋ YM2608 ＋ YM2151
+
+ - When emulating YM2608, the following audio files are required to play the rhythm sound.
+
+   I'm sorry for the creation method, but I'll leave it to you.
+
+       Bass drum 2608_BD.WAV
+       Hi-hat 2608_HH.WAV
+       Rimshot 2608_RIM.WAV
+       Snare drum 2608_SD.WAV
+       Tam Tam 2608_TOM.WAV
+       Top cymbal 2608_TOP.WAV
+
+   (44.1KHz 16bit PCM monaural uncompressed Microsoft WAVE format file)
+
+ - When emulating YMF278B, the following ROM files are required to play the MoonSound tone.
+
+   I'm sorry for the creation method, but I'll leave it to you.
+
+   yrw801.rom
+
+ - The following ROM files are required for C64 emulation.
+
+   I'm sorry for the creation method, but I'll leave it to you.
+
+   Kernal, Basic, Character
+
+ - A reasonably fast CPU.
+
+   The required amount of processing varies depending on the Chip used.
+
+   I'm using an i7-9700K 3.6GHz.
+
+ - The following files are required to play MGSDRV files.
+
+   (Although it is included in advance, please obtain it from the official website if necessary.) MGSDRV.COM
+
+## Synchronization recommendation
+
+- It is tricky to synchronize the sound by SCCI / GIMIC (C86ctl) and emulation (hereinafter abbreviated as EMU).
+
+  I don't know what the correct answer is because it depends on the environment, but I will introduce the adjustment procedure in my environment.
+
+1. First, select the device you want to use for audio output from the Output tab.
+
+   The recommended pattern is to select sharing or ASIO with WasapiOut.
+
+2. Select a delay time of 50ms or 100ms. Now press OK once to play a song that uses only EMU
+
+   Make sure that the sound is not gritty or bubble wrap.
+   (If it does not play well, set the delay time one larger.)
+
+3. From the Sound tab, select the YM2612 SCCI and select the module you want to use.
+
+   SCCI only
+
+       Check "Send Wait Signal" and "Emulate PCM only" for the check boxes.
+       If you check "Emulate PCM only", only PCM will be emulated.
+       If you do not check it, PCM data will be sent to SCCI, but the sound quality and tempo will not be stable.
+       Performing "Send Wait Signal" seems to stabilize the tempo of SCCI.
+       However, if you check "Double wait", the sound quality of PCM will improve, but the tempo will tend to be disturbed.
+
+4. For the delayed performance group, set 0ms for both SCCI / GIMIC and EMU for the time being, and check "Opportunistic mode".
+
+   "Opportunistic mode" is, for example, when a large load is applied during a performance and the playback of SCCI / GIMIC and the playback of EMU are significantly different.
+
+   It is a function to reduce the deviation by adjusting the playback speed of SCCI / GIMIC. However, the deviation set (intended) in the delayed performance will continue to be maintained.
+
+5. Play a song that uses both SCCI / GIMIC and EMU, and carefully check which one sounds first.
+
+   Increase the delayed playing time of SCCI / GIMIC and EMU, whichever is played first, and play the song to check.
+
+   If you repeat the procedure of .5 until there is no deviation, the synchronization work is completed. enjoy!
+
+6. About the performance gap between SCCI and GIMIC.
+
+   If SCCI is fast, adjust the SCCI delay setting item.
+
+   If GIMIC is fast, adjust the GIMIC delay setting item.
+
+## MIDI keyboard recommendation
+
+If you prepare a MIDI keyboard, you can use it to pronounce from the YM2612 (EMU).
+This is a function mainly provided for MML driving support.
+
+(Currently, there are some functions that cannot be used while they are being implemented.)
+
+### How to use for the time being
+
+   1. On the settings screen, select the MIDI keyboard you want to use.
+
+   2. Send (CC: 97) while playing the YM2612 data.
+
+      The 1Ch tone of the YM2612 is set for all channels.
+
+   3. All you have to do is play.
+
+### Main functions
+
+   1. Importing tone data
+
+      Click each OPN sound source or OPM sound source, or the tone data section of the keyboard display.
+
+      The tone data is copied to the selected channel.
+
+   2. Performance mode switching
+
+      With MONO mode (playing using a single channel)
+
+      POLY mode (playing using multiple channels (up to 6Ch))
+
+      It is possible to switch.
+
+          MONO mode It is assumed that a short phrase will be played when typing and output as MML.
+          POLY mode Assumed to be used to check chords when typing.
+
+   3. Channel note log
+
+      You can record up to 100 pronunciations for each channel.
+
+   4. Channel note log MML conversion function
+
+      Click the log field to copy the pronunciation record as MML to the clipboard.
+
+      The note length is not output. The corresponding command is c d e f g a b o <>.
+
+      Octave information is absolutely specified by the o command only for the first note,
+
+      After that, it is expanded by relative specification by <command> command.
+
+   5. Save and load tones
+
+      It is possible to save or load 256 types of tones in the memory.
+
+      The data can be output or read to a file in the specified format.
+
+      It can be saved and loaded in the following software formats.
+
+          FMP7
+          MUCOM88 (MUSIC LALF / mucomMD2vgm)
+          NRTDRV
+          MXDRV
+          mml2vgm
+
+   7. Simple tone editing (TBD)
+
+      After selecting the parameter you want to enter, you can edit it by entering a numerical value.
+
+### screen
+
+   1. Keyboard (TBD)
+
+      The note being played is displayed.
+
+   2. MONO
+
+       Click to switch to MONO mode. When it switches, it becomes a ♪ icon.
+
+   3. POLY
+
+       Click to switch to POLY mode. When it switches, it becomes a ♪ icon.
+
+   4. PANIC
+
+       Sends keyoff to all channels. (Used when the sound keeps ringing.)
+
+   5. L.CLS
+
+      Clear the note log for all channels.
+
+   6. TP.PUT
+
+      Saves the tone of the selected channel to the TonePallet (tone storage area in memory).
+
+   7. TP.GET
+
+      Loads the tone from the TonePallet into the selected channel.
+
+   8. T.SAVE
+
+       Save the TonePallet to a file.
+
+   9. T.LOAD
+
+      Load the TonePallet from the file.
+
+   10. Tone data
+
+   11. Tone data (6Ch minutes)
+       - You can select or deselect a channel by clicking "-" or "♪".
+       - You can change a parameter by right-clicking it. (TBD)
+       - Left-click the parameter to display the context menu.
+         - Copy: Copies the clicked tone to the clipboard.
+         - Paste: Pastes the clipboard tone to the clicked tone.
        
-    ２. YM2612のデータを再生中に(CC:97)を送信します。  
-        YM2612の1Chの音色が全てのチャンネルへセットされます。  
-       
-    ３. 後は弾くだけ。  
-    
-  ・主な機能  
-      
-    １. 音色データ取り込み  
-      各OPN系音源又はOPM音源、鍵盤表示の音色データ部をクリックすると  
-      音色データが選択チャンネルへコピーされます。  
-      
-    ２. 演奏モード切替  
-      MONOモード(単一チャンネルを使用して演奏)と  
-      POLYモード(複数チャンネル(最大6Ch)を使用して演奏)を  
-      切り替えることが可能です。  
-      MONOモード  打ち込み時に短いフレーズを演奏し、MMLとして出力することを想定。  
-      POLYモード  打ち込み時に和音を確認するために使用することを想定。  
-      
-    ３. チャンネルノートログ  
-      チャンネルごとに最大100音の発音記録を残すことができます。  
-      
-    ４. チャンネルノートログMML変換機能  
-      ログ欄をクリックすると発音記録がMMLとしてクリップボードにコピーされます。  
-      音長は出力されません。対応コマンドは、c d e f g a b o < > です。  
-      オクターブ情報は初めの一音のみoコマンドで絶対指定され、  
-      その後は<コマンド>コマンドによる相対指定で展開されます。  
-      
-    ５. 音色保存、読み込み  
-      メモリ上に256種類の音色を保存する、又は読み込むことが可能です。  
-      そのデータを、指定された形式でファイルへ出力する、又は読み込むことが可能です。  
-      以下のソフトウェア向けの形式で保存、読み込みが可能です。  
-        FMP7  
-        MUCOM88(MUSIC LALF/mucomMD2vgm)  
-        NRTDRV  
-        MXDRV  
-        mml2vgm  
-      
-    ６. 簡易音色編集(TBD)  
-      入力したいパラメータを選択後、数値を入力することで編集が可能です。  
-      
-  ・画面  
-      
-    ０. 鍵盤(TBD)  
-      演奏中のノートが表示されます。  
-      
-    １．MONO  
-      クリックするとMONOモードに切り替えます。切り替わると♪アイコンになります。  
-      
-    ２．POLY  
-      クリックするとPOLYモードに切り替えます。切り替わると♪アイコンになります。  
-      
-    ３．PANIC  
-      全チャンネルにキーオフを送信します。(音が鳴り続けてしまう場合に使用します。)  
-      
-    ４．L.CLS  
-      全チャンネルのノートログをクリアします。  
-      
-    ５．TP.PUT  
-      TonePallet(メモリ上の音色保管領域)へ選択チャンネルの音色を保存します。  
-      
-    ６．TP.GET  
-      TonePalletから音色を選択チャンネルへ読み込みます。  
-      
-    ７．T.SAVE  
-      TonePalletをファイルへ保存します。  
-      
-    ８．T.LOAD  
-      ファイルからTonePalletを読み込みます。  
-      
-    ９．音色データ(6Ch分)  
-      ・「-」又は「♪」をクリックすることで チャンネルの選択、選択解除ができます。  
-      ・パラメータを右クリックすることで、そのパラメータの変更ができます。(TBD)  
-      ・パラメータを左クリックすることで、コンテキストメニューが表示されます。  
-        コピー   : クリックした音色をクリップボードにコピーします。  
-        貼り付け : クリップボードの音色をクリックした音色にペーストします。  
-        上記の機能で使用されるテキスト形式をFORMATの欄のソフトウェア名をクリックすることで変更できます。  
-        キー操作でもコピーと貼り付けが可能です。この場合は選択されているチャンネルが対象になります。  
-        尚、貼り付け時に形式の自動判別は行われません。  
-      ・「LOG」の隣の「♪」をクリックすることで、そのチャンネルのノートログがクリアされます。  
-      ・LOGをクリックすることで、MMLデータをクリップボードに設定します。  
-      
-  ・MIDI鍵盤からの操作  
-    以下、デフォルト設定の場合です。(設定でカスタマイズ可能。設定値をブランクにすることで使用しないことも可能。)  
-      
-    CC:97(DATA DEC)  
-      YM2612の1Chの音色を全てのチャンネルにコピーします。(選択状況無視)  
-      
-    CC:96(DATA INC)  
-      直近のログをひとつだけ削除します。(弾き間違い等を取り消す機能)  
-      
-    CC:66(SOSTENUTO)  
-      MONOモード時のみ、選択行のログをMMLにしクリップボードに設定します。  
-      画面クリック時の処理との違い  
-        Ctrl+V（ペースト）のキーストロークを送信します。  
-        選択チャンネルのノートログをクリアします。  
-        初めのオクターブコマンドは出力しません。  
-      
-      
-[SpecialThanks]  
-  本ツールは以下の方々にお世話になっております。また以下のソフトウェア、ウェブページを参考、使用しています。  
-  本当にありがとうございます。  
-     
-    ・ラエル さん  
-    ・とぼけがお さん  
-    ・HI-RO さん  
-    ・餓死3 さん  
-    ・おやぢぴぴ さん  
-    ・osoumen さん  
-    ・なると さん  
-    ・hex125 さん  
-    ・Kitao Nakamura さん  
-    ・くろま さん  
-    ・かきうち さん  
-    ・ぼう☆きち さん  
-    ・dj.tuBIG/MaliceX さん  
-    ・じごふりん さん  
-    ・WING さん  
-    ・そんそん さん  
-    ・欧場豪 さん  
-    ・sgq1205 さん  
-    ・千霧＠ぶっちぎりP(but80) さん  
-    ・ひぽぽ さん  
-    ・Ichiro Ota さん  
+         You can change the text format used by the above functions by clicking the software name in the FORMAT column.
+         You can also copy and paste by key operation. In this case, the selected channel will be the target.
+         The format is not automatically determined when pasting.
+       - Click "♪" next to "LOG" to clear the note log of that channel.
+       - Click LOG to set MML data to the clipboard.
 
-    ・Visual Studio Community 2015/2017  
-    ・MinGW/msys  
-    ・gcc  
-    ・SGDK  
-    ・VGM Player  
-    ・Git  
-    ・SourceTree  
-    ・さくらエディター  
-    ・VOPMex  
-    ・NRTDRV  
-    ・MoonDriver  
-    ・MXP  
-    ・MXDRV  
-    ・MNDRV  
-    ・MPCM  
-    ・X68Sound  
-    ・hoot  
-    ・XM6 TypeG  
-    ・ASLPLAY  
-    ・NAUDIO  
-    ・VST.NET  
-    ・NSFPlay  
-    ・CVS.EXE  
-    ・KeyboardHook3.cs  
-    ・MUCOM88  
-    ・MUCOM88windows  
-    ・C86ctlのソース  
-    ・MGSDRV  
-    ・Z80dotNET  
-    ・blueMSX  
-     
-    ・SMS Power!  
-    ・DOBON.NET  
-    ・Wikipedia  
-    ・GitHub  
-    ・ぬるり。  
-    ・Gigamix Online  
-    ・MSX Datapack wiki化計画  
-    ・MSX Resource Center  
-    ・msxnet  
-    ・Xyzさんのツイートのリンク先(https://twitter.com/XyzGonGivItToYa/status/1216942514902634496?s=20)  
-    ・がんず Work's Diary
+### Operation from the MIDI keyboard
 
-[FAQ]  
-  
-  ・起動しない  
-  
-    Case1  
-      ゾーン識別子がファイルに付加されてしまっている為起動中にエラーがでてしまう為です。  
-    ゾーン識別子はOSの保護機能のひとつで、ネットからダウンロードしたファイルに自動的に付加され意図しないファイルの実行を防ぎます。  
-    が、意図してダウンロードしたものに対しては今回の様に邪魔してしまうことになります。  
-    →解凍するとできるremoveZoneIdent.batをダブルクリックして実行してください。  
-    このバッチファイルはゾーン識別子を一括削除します。  
-    因みに以下のようなメッセージが表示されます。  
-        不明なエラーが発生しました。  
-        Exception Message:  
-        Could not load file or assembly  
-        'file://.....dll' or one of its dependencies,Operation is not supported.  
-        (Exception from HRESULT:xxxx)  
+The following is the case of the default setting. (Customizable in the settings. It is also possible not to use it by leaving the setting value blank.)
 
-    Case2  
-      主に実チップ使用時に発生します。SCCIがc86ctlを使用する状態になっている為です。  
-    MDPlayerもc86ctlを使用するため取り合いになってしまい、起動に失敗します。  
-    →scciconfig.exeを使用してc86ctlの設定項目である「enable」のチェックを外してください。  
-  
-    Case3  
-      .NETframeworkのバージョンが違う為です。  
-    →最新の.NETframeworkをインストールすることで改善することがあります。  
-    因みに以下のようなメッセージが表示されます。  
-        不明なエラーが発生しました。  
-        Exception Message:  
-        Could not load file or assembly  
-        'netstandard, Version=..., Culture=..., PublicKeyToken=...' or one of its dependencies.指定されたファイルが見つかりません。    
+ - CC: 97 (DATA DEC)
 
-    CaseX  
-      TBD  
-  
-  
-  ・テンポが安定しない、演奏開始時に曲の初めが演奏されない、早送りになる  
-  
-    Case1  
-      主に実チップ使用時に発生します。実チップは演奏開始時の処理に少し時間がかかります。  
-    一方エミュレーションの演奏開始時の処理はすぐに完了します。  
-    その時間差を詰めるために実チップがエミュレーションに追い付こうとする為です。  
-    →「オプション」画面：「Sound」タブ：左下の「日和見～」のチェックボックスからチェックを外してください。  
-  
-    CaseX  
-      TBD  
-  
-  ・音がぷつぷつ途切れる。表示がとても重い  
-  
-    Case1  
-    限られた時間内に必要な処理が、全て出来ていない場合に発生します。  
-    「オプション」画面から「Output」タブを開き、デバイスを切り替えてください。  
-    どのデバイスが良いかは環境によるので色々試していただくことをお勧めします。  
-    WasapiとASIOが良いレスポンスを得られることが多いです。  
-    デバイスによっては「遅延時間（レンダリングバッファ）」の数値を調整すると改善することもあります。  
-  
-    CaseX  
-      TBD  
-  
-  
-[著作権・免責]  
-  MDPlayerはMITライセンスに準ずる物とします。LICENSE.txtを参照。  
-  著作権は作者が保有しています。  
-  このソフトは無保証であり、このソフトを使用した事による  
-  いかなる損害も作者は一切の責任を負いません。  
-  また、MITライセンスは著作権表示および本許諾表示を求めますが本ソフトでは不要です。  
-  そして以下のソフトウェアのソースコードをC#向けに移植改変、またはそのまま使用しています。  
-  これらのソース、ソフトウェアは各著作者が著作権を持ちます。 ライセンスに関しては、各ドキュメントを参照してください。  
-  
-  ・VGMPlay  
-  ・MAME  
-  ・DOSBOX  
-  ・FMGen  
-  ・NSFPlay  
-  ・NEZ Plug++  
-  ・libsidplayfp  
-  ・sidplayfp  
-  ・NRTDRV  
-  ・MoonDriver  
-  ・MXP  
-  ・MXDRV  
-  ・MNDRV  
-  ・X68Sound  
-  (m_puusanさん/rururutanさん版両方)  
-  ・MUCOM88  
-  ・MUCOM88windows(mucomDotNET)  
-  ・M86(M86DotNET)  
-  ・VST.NET  
-  ・NAudio  
-  ・SCCI  
-  ・c86ctl  
-  ・PMD(PMDDotNET)  
-  ・MGSDRV  
-  ・Z80dotNet  
-  ・mucom88torym2612  
-  
-  
-  
+Copy the 1Ch tone of the YM2612 to all channels. (Ignore selection status)
+
+ - CC: 96 (DATA INC)
+
+Delete only one of the latest logs. (Function to cancel playing mistakes, etc.)
+
+ - CC: 66 (SOSTENUTO)
+
+Only in MONO mode, set the log of the selected line to MML and set it to the clipboard.
+Difference from the process when clicking the screen
+
+    Send Ctrl + V (paste) keystrokes.
+    Clears the note log for the selected channel.
+    The first octave command is not output.
+
+## Special Thanks
+
+This tool is indebted to the following people. We also refer to and use the following software and web pages.
+
+thank you very much.
+
+ - Rael-san
+ - Tobokegao-san
+ - HI-RO-san
+ - Gashi3-san
+ - Oyajipipi-san
+ - Osoumen-san
+ - Naruto-san
+ - hHex125-san
+ - Kitao Nakamura-san
+ - Kuroma-san
+ - Kakiuchi-san
+ - Bo☆Kichi-san
+ - DJ.tuBIG/MaliceX-san
+ - Jigofurin-san
+ - WING-san
+ - Sonson-san
+ - OobaGo-san
+ - sgq1205-san
+ - Chigiri@ButchigiriP(but80)-san
+ - Hippopo-san
+ - Ichiro Ota-san
+
+ - Visual Studio Community 2015/2017
+ - MinGW/msys
+ - gcc
+ - SGDK
+ - VGM Player
+ - Git
+ - SourceTree
+ - Sakura Editor
+ - VOP Mex
+ - NRTDRV
+ - MoonDriver
+ - MXP
+ - MXDRV
+ - MNDRV
+ - MPCM
+ - X68 Sound
+ - Hoot
+ - XM6 TypeG
+ - ASLPLAY
+ - NAUDIO
+ - VST.NET
+ - NSFPlay
+ - CVS.EXE
+ - KeyboardHook3.cs
+ - MUCOM88
+ - MUCOM88windows
+ - C86ctl source
+ - MGSDRV
+ - Z80dotNET
+ - BlueMSX
+
+ - SMS Power!
+ - DOBON.NET
+ - Wikipedia
+ - GitHub
+ - Nururi.
+ - Gigamix Online
+ - MSX Datapack wiki conversion plan
+ - MSX Resource Center
+ - Msxnet
+ - Link destination of Xyz's tweet (https://twitter.com/XyzGonGivItToYa/status/1216942514902634496?s=20)
+ - Ganzu Work's Diary
+
+## FAQ
+
+### It does not start
+
+  - Case1
+
+This is because the zone identifier has been added to the file and an error will occur during startup.
+The zone identifier is one of the protection functions of the OS and is automatically added to the file downloaded from the net to prevent the execution of unintended files.
+However, it will interfere with what you intentionally downloaded like this time.
+
+→ Double-click removeZoneIdent.bat that can be created by unzipping it to execute it.
+This batch file deletes zone identifiers in bulk.
+By the way, the following message is displayed.
+
+    An unknown error has occurred.
+    Exception Message:
+    Could not load file or assembly
+    'file: //.....dll' or one of its dependencies, Operation is not supported.
+    (Exception from HRESULT: xxxx)
+
+  - Case2
+
+It mainly occurs when using a real chip. This is because SCCI is ready to use c86ctl.
+Since MDPlayer also uses c86ctl, it will be in conflict and will fail to start.
+
+→ Use scciconfig.exe to uncheck "enable" which is a setting item of c86ctl.
+
+  - Case3
+
+This is because the version of .NET framework is different.
+
+→ It may be improved by installing the latest .NET framework.
+By the way, the following message is displayed.
+
+    An unknown error has occurred.
+    Exception Message:
+    Could not load file or assembly
+    'netstandard, Version = ..., Culture = ..., PublicKeyToken = ...' or one of its dependencies. The specified file cannot be found.
+
+  - CaseX
+
+TBD
+
+### The tempo is not stable, the beginning of the song is not played at the start of the performance, and the song is fast forwarded.
+
+   - Case1
+
+It mainly occurs when using a real chip. The actual chip takes a little time to process at the start of playing.
+On the other hand, the process at the start of playing the emulation is completed immediately.
+This is because the actual chip tries to catch up with the emulation in order to close the time difference.
+
+→ "Option" screen: "Sound" tab: Uncheck the "Opportunism" check box at the bottom left.
+
+   - CaseX
+
+TBD
+
+### The sound is interrupted. The display is very heavy
+
+ - Case1
+
+It occurs when all the necessary processing is not done within the limited time.
+Open the "Output" tab from the "Options" screen and switch devices.
+Which device is better depends on the environment, so we recommend that you try various things.
+Wasapi and ASIO often get good response.
+Depending on the device, adjusting the "delay time (rendering buffer)" value may improve the situation.
+
+ - CaseX
+
+TBD
+
+## Copyright / Disclaimer
+
+MDPlayer is subject to the MIT license. See LICENSE.txt.
+The copyright is owned by the author.
+This software is not guaranteed and is due to the use of this software
+The author does not take any responsibility for any damage.
+In addition, the MIT license requires a copyright notice and this license notice, but this software does not require it.
+And the source code of the following software is ported and modified for C #, or used as it is.
+The copyright of these sources and software is owned by each author. Please refer to each document for the license.
+
+ - VGMPlay
+ - MAME
+ - DOSBOX
+ - FMGen
+ - NSFPlay
+ - NEZ Plug++
+ - Libsidplayfp
+ - Sidplayfp
+ - NRTDRV
+ - MoonDriver
+ - MXP
+ - MXDRV
+ - MNDRV
+ - X68 Sound
+(Both m_puusan / rururutan version)
+ - MUCOM88
+ - MUCOM88windows (mucomDotNET)
+ - M86 (M86DotNET)
+ - VST.NET
+ - NAudio
+ - SCCI
+ - C86ctl
+ - PMD (PMDDotNET)
+ - MGSDRV
+ - Z80dotNet
+ - Mucom88torym2612

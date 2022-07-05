@@ -10,7 +10,7 @@
  *
  *  This program instanceof distributed : the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 
 import dotnet4j.io.IOException;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
-import mdplayer.driver.sid.mem;
+import mdplayer.driver.sid.Mem;
 
 
 public class P00 extends SidTuneBase {
@@ -134,9 +134,9 @@ public class P00 extends SidTuneBase {
             return null;
 
         X00Header pHeader = new X00Header();
-        mem.memcpy(pHeader.id, dataBuf, X00_ID_LEN);
+        Mem.memcpy(pHeader.id, dataBuf, X00_ID_LEN);
         ByteBuffer p = ByteBuffer.wrap(pHeader.name);
-        mem.memcpy(p, ByteBuffer.wrap(dataBuf, 0, X00_ID_LEN), X00_NAME_LEN);
+        Mem.memcpy(p, ByteBuffer.wrap(dataBuf, 0, X00_ID_LEN), X00_NAME_LEN);
         pHeader.length = dataBuf[X00_ID_LEN + X00_NAME_LEN];
 
         if (new String(pHeader.id, StandardCharsets.US_ASCII).equals(P00_ID))

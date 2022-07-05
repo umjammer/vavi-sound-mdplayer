@@ -16,12 +16,8 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitOption;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,11 +25,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
-
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
-import dotnet4j.Tuple;
 import dotnet4j.io.Directory;
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
@@ -42,6 +36,7 @@ import dotnet4j.io.FileShare;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
+import dotnet4j.util.compat.Tuple3;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.Xgm;
@@ -94,22 +89,6 @@ public class Common {
         return -1;
     }
 
-    public static class Tuple3<A, B, C> extends Tuple<Tuple<A, B>, C> {
-        public Tuple3(A a, B b, C c) {
-            super(new Tuple<>(a, b), c);
-        }
-    }
-
-    public static class Tuple4<A, B, C, D> extends Tuple<Tuple3<A, B, C>, D> {
-        public Tuple4(A a, B b, C c, D d) {
-            super(new Tuple3<>(a, b, c), d);
-        }
-    }
-
-    public interface TriFunction<A, B, C, R> {
-        R apply(A a, B b, C c);
-    }
-
     public static List<Byte> toArray(byte[] o) {
         List<Byte> a = new ArrayList<>(o.length);
         IntStream.range(0, o.length).forEach(i -> a.add(o[i]));
@@ -134,6 +113,7 @@ public class Common {
     public static String settingFilePath = "";
     public static String playingFilePath = "";
 
+    @Deprecated
     public static int getBE16(byte[] buf, int adr) {
         if (buf == null || buf.length - 1 < adr + 1) {
             throw new IndexOutOfBoundsException();
@@ -145,6 +125,7 @@ public class Common {
         return dat;
     }
 
+    @Deprecated
     public static int getLE16(byte[] buf, int adr) {
         if (buf == null || buf.length - 1 < adr + 1) {
             throw new IndexOutOfBoundsException();
@@ -167,6 +148,7 @@ public class Common {
         return dat;
     }
 
+    @Deprecated
     public static int getLE32(byte[] buf, int adr) {
         if (buf == null || buf.length - 1 < adr + 3) {
             throw new IndexOutOfBoundsException();
@@ -211,51 +193,47 @@ public class Common {
         gd3.usedChips = "";
 
         try {
-            //trackName
+            // trackName
             gd3.trackName = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            //trackNameJ
+            // trackNameJ
             gd3.trackNameJ = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            //gameName
+            // gameName
             gd3.gameName = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            //gameNameJ
+            // gameNameJ
             gd3.gameNameJ = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            //systemName
+            // systemName
             gd3.systemName = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            //systemNameJ
+            // systemNameJ
             gd3.systemNameJ = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            //Composer
+            // Composer
             gd3.composer = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            //ComposerJ
+            // ComposerJ
             gd3.composerJ = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            //Converted
+            // Converted
             gd3.converted = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            //VGMBy
+            // VGMBy
             gd3.vgmBy = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            //Notes
+            // Notes
             gd3.notes = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            //Lyric(独自拡張)
+            // Lyric(独自拡張)
             byte[] bLyric = Common.getByteArray(buf, adr);
-            if (bLyric != null) {
-                gd3.lyrics = new ArrayList<>();
-                int i = 0;
-                int st = 0;
-                while (i < bLyric.length) {
-                    byte h = bLyric[i];
-                    byte l = bLyric[i + 1];
-                    if ((h == 0x5b && l == 0x00 && i != 0) || i >= bLyric.length - 2) {
-                        if ((i >= bLyric.length - 2) || (bLyric[i + 2] != 0x5b || bLyric[i + 3] != 0x00)) {
-                            String m = new String(bLyric, st, i - st + ((i >= bLyric.length - 2) ? 2 : 0), StandardCharsets.UTF_8);
-                            st = i;
+            gd3.lyrics = new ArrayList<>();
+            int i = 0;
+            int st = 0;
+            while (i < bLyric.length) {
+                byte h = bLyric[i];
+                byte l = bLyric[i + 1];
+                if ((h == 0x5b && l == 0x00 && i != 0) || i >= bLyric.length - 2) {
+                    if ((i >= bLyric.length - 2) || (bLyric[i + 2] != 0x5b || bLyric[i + 3] != 0x00)) {
+                        String m = new String(bLyric, st, i - st + ((i >= bLyric.length - 2) ? 2 : 0), StandardCharsets.UTF_8);
+                        st = i;
 
-                            int cnt = Integer.parseInt(m.substring(1, m.indexOf("]") - 1));
-                            m = m.substring(m.indexOf("]") + 1);
-                            gd3.lyrics.add(new Tuple3<>(cnt, cnt, m));
-                        }
+                        int cnt = Integer.parseInt(m.substring(1, m.indexOf("]") - 1));
+                        m = m.substring(m.indexOf("]") + 1);
+                        gd3.lyrics.add(new Tuple3<>(cnt, cnt, m));
                     }
-                    i += 2;
                 }
-            } else {
-                gd3.lyrics = null;
+                i += 2;
             }
 
         } catch (Exception ex) {
@@ -286,14 +264,11 @@ public class Common {
         return "";
     }
 
-//        public static String getAssemblyTitle()
-//        {
+//        public static String getAssemblyTitle() {
 //                Object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
-//                if (attributes.length > 0)
-//                {
+//                if (attributes.length > 0) {
 //                    AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributes[0];
-//                    if (titleAttribute.Title != "")
-//                    {
+//                    if (titleAttribute.Title != "") {
 //                        return titleAttribute.Title;
 //                    }
 //                }
@@ -304,19 +279,13 @@ public class Common {
         return (n > max) ? max : Math.max(n, min);
     }
 
-//        public static int Range(int n, int min, int max)
-//        {
-//            return (n > max) ? max : (n < min ? min : n);
-//        }
-
     public static int getvv(byte[] buf, int musicPtr) {
         int s = 0, n = 0;
 
         do {
             n |= (buf[musicPtr] & 0x7f) << s;
             s += 7;
-        }
-        while ((buf[musicPtr++] & 0x80) > 0);
+        } while ((buf[musicPtr++] & 0x80) > 0);
 
         return n + 2;
     }
@@ -327,8 +296,7 @@ public class Common {
         do {
             n |= (buf[musicPtr] & 0x7f) << s;
             s += 7;
-        }
-        while ((buf[musicPtr++] & 0x80) > 0);
+        } while ((buf[musicPtr++] & 0x80) > 0);
 
         return n;
     }
@@ -351,8 +319,8 @@ public class Common {
         int m = Integer.MAX_VALUE;
         int n = 0;
         for (int i = 0; i < 12 * 5; i++) {
-            //if (freq < Tables.FmFNum[i]) break;
-            //n = i;
+            // if (freq < Tables.FmFNum[i]) break;
+            // n = i;
             int a = Math.abs(freq - Tables.FmFNum[i]);
             if (m > a) {
                 m = a;
@@ -366,8 +334,8 @@ public class Common {
         float m = Float.MAX_VALUE;
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
-            //if (freq < Tables.freqTbl[i]) break;
-            //n = i;
+            // if (freq < Tables.freqTbl[i]) break;
+            // n = i;
             float a = Math.abs(freq - Tables.freqTbl[i]);
             if (m > a) {
                 m = a;
@@ -601,8 +569,8 @@ public class Common {
                     return musics;
                 }
                 if (Common.getLE32(buf, 0x00) != Vgm.FCC_VGM) {
-                    //musics.add(Music);
-                    //return musics;
+                    // musics.add(Music);
+                    // return musics;
                     // VGZかもしれないので確認する
                     try {
                         int num;
@@ -626,7 +594,7 @@ public class Common {
                             buf = archive.getInputStream(entry).readAllBytes();
                         }
                     } catch (Exception e) {
-                        //vgzではなかった
+                        // vgzではなかった
                     }
                 }
 
@@ -983,7 +951,7 @@ public class Common {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.MUB;
                 int index = 0;
-                //Gd3 gd3 = (new MUCOM88.MUCOM88()).getGD3InfoMUB(buf, index);
+                // Gd3 gd3 = (new MUCOM88.MUCOM88()).getGD3InfoMUB(buf, index);
                 Gd3 gd3 = new MucomDotNET().getGD3Info(buf, index);
                 music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
                 music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
@@ -1003,7 +971,7 @@ public class Common {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.MUC;
                 int index = 0;
-                //Gd3 gd3 = (new MUCOM88.MUCOM88()).getGD3Info(buf, index);
+                // Gd3 gd3 = (new MUCOM88.MUCOM88()).getGD3Info(buf, index);
                 Vgm.Gd3 gd3 = new MucomDotNET().getGD3Info(buf, index);
                 music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
                 music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
@@ -1229,7 +1197,7 @@ public class Common {
          * @return the chosen DataFlavor or null if none match
          */
         protected DataFlavor chooseDropFlavor(DropTargetDropEvent ev) {
-//Debug.println(ev.getCurrentDataFlavorsAsList());
+// Debug.println(ev.getCurrentDataFlavorsAsList());
             if (ev.isLocalTransfer() && ev.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                 return DataFlavor.javaFileListFlavor;
             }

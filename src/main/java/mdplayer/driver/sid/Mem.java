@@ -4,7 +4,9 @@ package mdplayer.driver.sid;
 import java.nio.ByteBuffer;
 
 
-public class mem {
+/** @deprecated use {@link java.util.Arrays}#* */
+@Deprecated
+public class Mem {
     public static void memset(byte[] des, byte val, int length) {
         for (int i = 0; i < length; i++)
             des[i] = val;

@@ -11,21 +11,17 @@
 package mdplayer.properties;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import javax.imageio.ImageIO;
 import javax.swing.Icon;
 
 
 /**
  * ローカライズされた文字列などを検索するための、厳密に型指定されたリソース クラスです。
  */
-// このクラスは StronglyTypedResourceBuilder クラスが ResGen
-// または Visual Studio のようなツールを使用して自動生成されました。
-// メンバーを追加または削除するには、.ResX ファイルを編集して、/str オプションと共に
-// ResGen を実行し直すか、または VS プロジェクトをビルドし直します。
-//@System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
-//@System.Diagnostics.DebuggerNonUserCodeAttribute()]
-//@System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
 public class Resources {
 
     private static ResourceBundle resourceMan;
@@ -42,8 +38,8 @@ public class Resources {
     //@System.ComponentModel.EditorBrowsableAttribute(ComponentModel.EditorBrowsableState.Advanced)]
     public static ResourceBundle getResourceManager() {
 
-        if (resourceMan ==  null) {
-            ResourceBundle temp = ResourceBundle.getBundle("mdplayer.Properties.Resources");
+        if (resourceMan == null) {
+            ResourceBundle temp = ResourceBundle.getBundle("mdplayer/properties/resources");
             resourceMan = temp;
         }
         return resourceMan;
@@ -66,10 +62,20 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
+    public static BufferedImage getImage(String name) {
+        try {
+            return ImageIO.read(Resources.class.getResourceAsStream("/mdplayer/resources/" + name + ".png"));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
+     * 型 BufferedImage のローカライズされたリソースを検索します。
+     */
     public static BufferedImage getaddFolderPL() {
 
-        Object obj = resourceMan.getObject("addFolderPL");
-        return ((BufferedImage) (obj));
+        return getImage("addFolderPL");
     }
 
     /**
@@ -77,8 +83,7 @@ public class Resources {
      */
     public static BufferedImage getaddPL() {
 
-        Object obj = resourceMan.getObject("addPL");
-        return ((BufferedImage) (obj));
+        return getImage("addPL");
     }
 
     /**
@@ -86,8 +91,7 @@ public class Resources {
      */
     public static BufferedImage getccFadeout() {
 
-        Object obj = resourceMan.getObject("ccFadeout");
-        return ((BufferedImage) (obj));
+        return getImage("ccFadeout");
     }
 
     /**
@@ -95,8 +99,7 @@ public class Resources {
      */
     public static BufferedImage getccFast() {
 
-        Object obj = resourceMan.getObject("ccFast");
-        return ((BufferedImage) (obj));
+        return getImage("ccFast");
     }
 
     /**
@@ -104,8 +107,7 @@ public class Resources {
      */
     public static BufferedImage getccInformation() {
 
-        Object obj = resourceMan.getObject("ccInformation");
-        return ((BufferedImage) (obj));
+        return getImage("ccInformation");
     }
 
     /**
@@ -113,8 +115,7 @@ public class Resources {
      */
     public static BufferedImage getccKBD() {
 
-        Object obj = resourceMan.getObject("ccKBD");
-        return ((BufferedImage) (obj));
+        return getImage("ccKBD");
     }
 
     /**
@@ -122,8 +123,7 @@ public class Resources {
      */
     public static BufferedImage getccLoop() {
 
-        Object obj = resourceMan.getObject("ccLoop");
-        return ((BufferedImage) (obj));
+        return getImage("ccLoop");
     }
 
     /**
@@ -131,8 +131,7 @@ public class Resources {
      */
     public static BufferedImage getccLoopOne() {
 
-        Object obj = resourceMan.getObject("ccLoopOne");
-        return ((BufferedImage) (obj));
+        return getImage("ccLoopOne");
     }
 
     /**
@@ -140,8 +139,7 @@ public class Resources {
      */
     public static BufferedImage getccMIDIKBD() {
 
-        Object obj = resourceMan.getObject("ccMIDIKBD");
-        return ((BufferedImage) (obj));
+        return getImage("ccMIDIKBD");
     }
 
     /**
@@ -149,8 +147,7 @@ public class Resources {
      */
     public static BufferedImage getccMixer() {
 
-        Object obj = resourceMan.getObject("ccMixer");
-        return ((BufferedImage) (obj));
+        return getImage("ccMixer");
     }
 
     /**
@@ -158,8 +155,7 @@ public class Resources {
      */
     public static BufferedImage getccNext() {
 
-        Object obj = resourceMan.getObject("ccNext");
-        return ((BufferedImage) (obj));
+        return getImage("ccNext");
     }
 
     /**
@@ -167,8 +163,7 @@ public class Resources {
      */
     public static BufferedImage getccOpenFolder() {
 
-        Object obj = resourceMan.getObject("ccOpenFolder");
-        return ((BufferedImage) (obj));
+        return getImage("ccOpenFolder");
     }
 
     /**
@@ -176,8 +171,7 @@ public class Resources {
      */
     public static BufferedImage getccPause() {
 
-        Object obj = resourceMan.getObject("ccPause");
-        return ((BufferedImage) (obj));
+        return getImage("ccPause");
     }
 
     /**
@@ -185,8 +179,7 @@ public class Resources {
      */
     public static BufferedImage getccPlay() {
 
-        Object obj = resourceMan.getObject("ccPlay");
-        return ((BufferedImage) (obj));
+        return getImage("ccPlay");
     }
 
     /**
@@ -194,8 +187,7 @@ public class Resources {
      */
     public static BufferedImage getccPlayList() {
 
-        Object obj = resourceMan.getObject("ccPlayList");
-        return ((BufferedImage) (obj));
+        return getImage("ccPlayList");
     }
 
     /**
@@ -203,8 +195,7 @@ public class Resources {
      */
     public static BufferedImage getccPrevious() {
 
-        Object obj = resourceMan.getObject("ccPrevious");
-        return ((BufferedImage) (obj));
+        return getImage("ccPrevious");
     }
 
     /**
@@ -212,8 +203,7 @@ public class Resources {
      */
     public static BufferedImage getccRandom() {
 
-        Object obj = resourceMan.getObject("ccRandom");
-        return ((BufferedImage) (obj));
+        return getImage("ccRandom");
     }
 
     /**
@@ -221,8 +211,7 @@ public class Resources {
      */
     public static BufferedImage getccSetting() {
 
-        Object obj = resourceMan.getObject("ccSetting");
-        return ((BufferedImage) (obj));
+        return getImage("ccSetting");
     }
 
     /**
@@ -230,8 +219,7 @@ public class Resources {
      */
     public static BufferedImage getccSlow() {
 
-        Object obj = resourceMan.getObject("ccSlow");
-        return ((BufferedImage) (obj));
+        return getImage("ccSlow");
     }
 
     /**
@@ -239,8 +227,7 @@ public class Resources {
      */
     public static BufferedImage getccStep() {
 
-        Object obj = resourceMan.getObject("ccStep");
-        return ((BufferedImage) (obj));
+        return getImage("ccStep");
     }
 
     /**
@@ -248,8 +235,7 @@ public class Resources {
      */
     public static BufferedImage getccStop() {
 
-        Object obj = resourceMan.getObject("ccStop");
-        return ((BufferedImage) (obj));
+        return getImage("ccStop");
     }
 
     /**
@@ -257,8 +243,7 @@ public class Resources {
      */
     public static BufferedImage getccVST() {
 
-        Object obj = resourceMan.getObject("ccVST");
-        return ((BufferedImage) (obj));
+        return getImage("ccVST");
     }
 
     /**
@@ -266,8 +251,7 @@ public class Resources {
      */
     public static BufferedImage getccZoom() {
 
-        Object obj = resourceMan.getObject("ccZoom");
-        return ((BufferedImage) (obj));
+        return getImage("ccZoom");
     }
 
     /**
@@ -275,8 +259,7 @@ public class Resources {
      */
     public static BufferedImage getchFadeout() {
 
-        Object obj = resourceMan.getObject("chFadeout");
-        return ((BufferedImage) (obj));
+        return getImage("chFadeout");
     }
 
     /**
@@ -284,8 +267,7 @@ public class Resources {
      */
     public static BufferedImage getchFast() {
 
-        Object obj = resourceMan.getObject("chFast");
-        return ((BufferedImage) (obj));
+        return getImage("chFast");
     }
 
     /**
@@ -293,8 +275,7 @@ public class Resources {
      */
     public static BufferedImage getchInformation() {
 
-        Object obj = resourceMan.getObject("chInformation");
-        return ((BufferedImage) (obj));
+        return getImage("chInformation");
     }
 
     /**
@@ -302,8 +283,7 @@ public class Resources {
      */
     public static BufferedImage getchKBD() {
 
-        Object obj = resourceMan.getObject("chKBD");
-        return ((BufferedImage) (obj));
+        return getImage("chKBD");
     }
 
     /**
@@ -311,8 +291,7 @@ public class Resources {
      */
     public static BufferedImage getchLoop() {
 
-        Object obj = resourceMan.getObject("chLoop");
-        return ((BufferedImage) (obj));
+        return getImage("chLoop");
     }
 
     /**
@@ -320,98 +299,77 @@ public class Resources {
      */
     public static BufferedImage getchLoopOne() {
 
-        Object obj = resourceMan.getObject("chLoopOne");
-        return ((BufferedImage) (obj));
+        return getImage("chLoopOne");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
     public static BufferedImage getchMIDIKBD() {
-
-        Object obj = resourceMan.getObject("chMIDIKBD");
-        return ((BufferedImage) (obj));
+        return getImage("chMIDIKBD");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
     public static BufferedImage getchMixer() {
-
-        Object obj = resourceMan.getObject("chMixer");
-        return ((BufferedImage) (obj));
+        return getImage("chMixer");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
     public static BufferedImage getchNext() {
-
-        Object obj = resourceMan.getObject("chNext");
-        return ((BufferedImage) (obj));
+        return getImage("chNext");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
     public static BufferedImage getchOpenFolder() {
-
-        Object obj = resourceMan.getObject("chOpenFolder");
-        return ((BufferedImage) (obj));
+        return getImage("chOpenFolder");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
     public static BufferedImage getchPause() {
-
-        Object obj = resourceMan.getObject("chPause");
-        return ((BufferedImage) (obj));
+        return getImage("chPause");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
     public static BufferedImage getchPlay() {
-
-        Object obj = resourceMan.getObject("chPlay");
-        return ((BufferedImage) (obj));
+        return getImage("chPlay");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
     public static BufferedImage getchPlayList() {
-
-        Object obj = resourceMan.getObject("chPlayList");
-        return ((BufferedImage) (obj));
+        return getImage("chPlayList");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
     public static BufferedImage getchPrevious() {
-
-        Object obj = resourceMan.getObject("chPrevious");
-        return ((BufferedImage) (obj));
+        return getImage("chPrevious");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
     public static BufferedImage getchRandom() {
-
-        Object obj = resourceMan.getObject("chRandom");
-        return ((BufferedImage) (obj));
+        return getImage("chRandom");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
     public static BufferedImage getchSetting() {
-
-        Object obj = resourceMan.getObject("chSetting");
-        return ((BufferedImage) (obj));
+        return getImage("chSetting");
     }
 
     /**
@@ -419,8 +377,7 @@ public class Resources {
      */
     public static BufferedImage getchSlow() {
 
-        Object obj = resourceMan.getObject("chSlow");
-        return ((BufferedImage) (obj));
+        return getImage("chSlow");
     }
 
     /**
@@ -428,8 +385,7 @@ public class Resources {
      */
     public static BufferedImage getchStep() {
 
-        Object obj = resourceMan.getObject("chStep");
-        return ((BufferedImage) (obj));
+        return getImage("chStep");
     }
 
     /**
@@ -437,8 +393,7 @@ public class Resources {
      */
     public static BufferedImage getchStop() {
 
-        Object obj = resourceMan.getObject("chStop");
-        return ((BufferedImage) (obj));
+        return getImage("chStop");
     }
 
     /**
@@ -446,8 +401,7 @@ public class Resources {
      */
     public static BufferedImage getchVST() {
 
-        Object obj = resourceMan.getObject("chVST");
-        return ((BufferedImage) (obj));
+        return getImage("chVST");
     }
 
     /**
@@ -455,8 +409,7 @@ public class Resources {
      */
     public static BufferedImage getchZoom() {
 
-        Object obj = resourceMan.getObject("chZoom");
-        return ((BufferedImage) (obj));
+        return getImage("chZoom");
     }
 
     /**
@@ -464,8 +417,7 @@ public class Resources {
      */
     public static BufferedImage getciFadeout() {
 
-        Object obj = resourceMan.getObject("ciFadeout");
-        return ((BufferedImage) (obj));
+        return getImage("ciFadeout");
     }
 
     /**
@@ -473,8 +425,7 @@ public class Resources {
      */
     public static BufferedImage getciFast() {
 
-        Object obj = resourceMan.getObject("ciFast");
-        return ((BufferedImage) (obj));
+        return getImage("ciFast");
     }
 
     /**
@@ -482,8 +433,7 @@ public class Resources {
      */
     public static BufferedImage getciInformation() {
 
-        Object obj = resourceMan.getObject("ciInformation");
-        return ((BufferedImage) (obj));
+        return getImage("ciInformation");
     }
 
     /**
@@ -491,8 +441,7 @@ public class Resources {
      */
     public static BufferedImage getciKBD() {
 
-        Object obj = resourceMan.getObject("ciKBD");
-        return ((BufferedImage) (obj));
+        return getImage("ciKBD");
     }
 
     /**
@@ -500,8 +449,7 @@ public class Resources {
      */
     public static BufferedImage getciLoop() {
 
-        Object obj = resourceMan.getObject("ciLoop");
-        return ((BufferedImage) (obj));
+        return getImage("ciLoop");
     }
 
     /**
@@ -509,8 +457,7 @@ public class Resources {
      */
     public static BufferedImage getciLoopOne() {
 
-        Object obj = resourceMan.getObject("ciLoopOne");
-        return ((BufferedImage) (obj));
+        return getImage("ciLoopOne");
     }
 
     /**
@@ -518,8 +465,7 @@ public class Resources {
      */
     public static BufferedImage getciMIDIKBD() {
 
-        Object obj = resourceMan.getObject("ciMIDIKBD");
-        return ((BufferedImage) (obj));
+        return getImage("ciMIDIKBD");
     }
 
     /**
@@ -527,8 +473,7 @@ public class Resources {
      */
     public static BufferedImage getciMixer() {
 
-        Object obj = resourceMan.getObject("ciMixer");
-        return ((BufferedImage) (obj));
+        return getImage("ciMixer");
     }
 
     /**
@@ -536,8 +481,7 @@ public class Resources {
      */
     public static BufferedImage getciNext() {
 
-        Object obj = resourceMan.getObject("ciNext");
-        return ((BufferedImage) (obj));
+        return getImage("ciNext");
     }
 
     /**
@@ -545,8 +489,7 @@ public class Resources {
      */
     public static BufferedImage getciOpenFolder() {
 
-        Object obj = resourceMan.getObject("ciOpenFolder");
-        return ((BufferedImage) (obj));
+        return getImage("ciOpenFolder");
     }
 
     /**
@@ -554,8 +497,7 @@ public class Resources {
      */
     public static BufferedImage getciPause() {
 
-        Object obj = resourceMan.getObject("ciPause");
-        return ((BufferedImage) (obj));
+        return getImage("ciPause");
     }
 
     /**
@@ -563,8 +505,7 @@ public class Resources {
      */
     public static BufferedImage getciPlay() {
 
-        Object obj = resourceMan.getObject("ciPlay");
-        return ((BufferedImage) (obj));
+        return getImage("ciPlay");
     }
 
     /**
@@ -572,8 +513,7 @@ public class Resources {
      */
     public static BufferedImage getciPlayList() {
 
-        Object obj = resourceMan.getObject("ciPlayList");
-        return ((BufferedImage) (obj));
+        return getImage("ciPlayList");
     }
 
     /**
@@ -581,8 +521,7 @@ public class Resources {
      */
     public static BufferedImage getciPrevious() {
 
-        Object obj = resourceMan.getObject("ciPrevious");
-        return ((BufferedImage) (obj));
+        return getImage("ciPrevious");
     }
 
     /**
@@ -590,8 +529,7 @@ public class Resources {
      */
     public static BufferedImage getciRandom() {
 
-        Object obj = resourceMan.getObject("ciRandom");
-        return ((BufferedImage) (obj));
+        return getImage("ciRandom");
     }
 
     /**
@@ -599,8 +537,7 @@ public class Resources {
      */
     public static BufferedImage getciSetting() {
 
-        Object obj = resourceMan.getObject("ciSetting");
-        return ((BufferedImage) (obj));
+        return getImage("ciSetting");
     }
 
     /**
@@ -608,8 +545,7 @@ public class Resources {
      */
     public static BufferedImage getciSlow() {
 
-        Object obj = resourceMan.getObject("ciSlow");
-        return ((BufferedImage) (obj));
+        return getImage("ciSlow");
     }
 
     /**
@@ -617,8 +553,7 @@ public class Resources {
      */
     public static BufferedImage getciStep() {
 
-        Object obj = resourceMan.getObject("ciStep");
-        return ((BufferedImage) (obj));
+        return getImage("ciStep");
     }
 
     /**
@@ -626,8 +561,7 @@ public class Resources {
      */
     public static BufferedImage getciStop() {
 
-        Object obj = resourceMan.getObject("ciStop");
-        return ((BufferedImage) (obj));
+        return getImage("ciStop");
     }
 
     /**
@@ -635,8 +569,7 @@ public class Resources {
      */
     public static BufferedImage getciVST() {
 
-        Object obj = resourceMan.getObject("ciVST");
-        return ((BufferedImage) (obj));
+        return getImage("ciVST");
     }
 
     /**
@@ -644,27 +577,26 @@ public class Resources {
      */
     public static BufferedImage getciZoom() {
 
-        Object obj = resourceMan.getObject("ciZoom");
-        return ((BufferedImage) (obj));
+        return getImage("ciZoom");
     }
 
     /**
      * MDPlayer
      * VGMファイルなどのPlayer(メガドライブ音源チップなどのエミュレーションによる演奏ツール)
-     *
+     * <p>
      * [概要]
      * このツールは、鍵盤表示を行いながらVGMファイルの再生を行います。
      * (NRD,XGM,S98,MID,RCP,NSF,HES,Sid,MDR,MDX,MND,MUC(TBD),MUB(TBD)ファイルにも対応。)
-     *
+     * <p>
      * [注意]
-     *  ・再生時の音量に注意してください。バグによる雑音が大音量で再生される場合もあります。
-     *  (特に再生したことのないファイルを試す場合や、プログラムを更新した場合。)
-     *
-     *  ・使用中に不具合を見つけた場合はお手数ですがTwitter(@kumakumakumaT_T)までご連絡ください。
-     *  (VGMPlayやNRTDRV、その他素晴らしいソフトウェアの作者様方に、
-     *  直接MDPlayerについての連絡がいくことの無い様にお願いします。)
-     *  できるかぎり対応させていただくつもりですが、ご希望に添えないことも多々あります。ご了承ください。
-     *
+     * ・再生時の音量に注意してください。バグによる雑音が大音量で再生される場合もあります。
+     * (特に再生したことのないファイルを試す場合や、プログラムを更新した場合。)
+     * <p>
+     * ・使用中に不具合を見つけた場合はお手数ですがTwitter(@kumakumakumaT_T)までご連絡ください。
+     * (VGMPlayやNRTDRV、その他素晴らしいソフトウェアの作者様方に、
+     * 直接MDPlayerについての連絡がいくことの無い様にお願いします。)
+     * できるかぎり対応させていただくつもりですが、ご希望に添えないことも多々あります。ご了承ください。
+     * <p>
      * [対応フォーマ [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
      */
     public static String getCntDescription() {
@@ -992,8 +924,7 @@ public class Resources {
      */
     public static BufferedImage getDownPL() {
 
-        Object obj = resourceMan.getObject("downPL");
-        return ((BufferedImage) (obj));
+        return getImage("downPL");
     }
 
     /**
@@ -1010,8 +941,7 @@ public class Resources {
      */
     public static BufferedImage getFeliAndMD2() {
 
-        Object obj = resourceMan.getObject("FeliAndMD2");
-        return ((BufferedImage) (obj));
+        return getImage("FeliAndMD2");
     }
 
     /**
@@ -1028,8 +958,7 @@ public class Resources {
      */
     public static BufferedImage getimgPL() {
 
-        Object obj = resourceMan.getObject("imgPL");
-        return ((BufferedImage) (obj));
+        return getImage("imgPL");
     }
 
     /**
@@ -1037,8 +966,7 @@ public class Resources {
      */
     public static BufferedImage getjapPL() {
 
-        Object obj = resourceMan.getObject("japPL");
-        return ((BufferedImage) (obj));
+        return getImage("japPL");
     }
 
     /**
@@ -1046,8 +974,7 @@ public class Resources {
      */
     public static BufferedImage getmmlPL() {
 
-        Object obj = resourceMan.getObject("mmlPL");
-        return ((BufferedImage) (obj));
+        return getImage("mmlPL");
     }
 
     /**
@@ -1055,8 +982,7 @@ public class Resources {
      */
     public static BufferedImage getopenPL() {
 
-        Object obj = resourceMan.getObject("openPL");
-        return ((BufferedImage) (obj));
+        return getImage("openPL");
     }
 
     /**
@@ -1064,8 +990,7 @@ public class Resources {
      */
     public static BufferedImage getplane() {
 
-        Object obj = resourceMan.getObject("plane");
-        return ((BufferedImage) (obj));
+        return getImage("plane");
     }
 
     /**
@@ -1073,8 +998,7 @@ public class Resources {
      */
     public static BufferedImage getplaneAY8910() {
 
-        Object obj = resourceMan.getObject("planeAY8910");
-        return ((BufferedImage) (obj));
+        return getImage("planeAY8910");
     }
 
     /**
@@ -1082,8 +1006,7 @@ public class Resources {
      */
     public static BufferedImage getplaneB() {
 
-        Object obj = resourceMan.getObject("planeB");
-        return ((BufferedImage) (obj));
+        return getImage("planeB");
     }
 
     /**
@@ -1091,8 +1014,7 @@ public class Resources {
      */
     public static BufferedImage getPlaneC() {
 
-        Object obj = resourceMan.getObject("planeC");
-        return ((BufferedImage) (obj));
+        return getImage("planeC");
     }
 
     /**
@@ -1100,8 +1022,7 @@ public class Resources {
      */
     public static BufferedImage getplaneC352() {
 
-        Object obj = resourceMan.getObject("planeC352");
-        return ((BufferedImage) (obj));
+        return getImage("planeC352");
     }
 
     /**
@@ -1109,8 +1030,7 @@ public class Resources {
      */
     public static BufferedImage getPlaneControl() {
 
-        Object obj = resourceMan.getObject("planeControl");
-        return ((BufferedImage) (obj));
+        return getImage("planeControl");
     }
 
     /**
@@ -1118,8 +1038,7 @@ public class Resources {
      */
     public static BufferedImage getPlaneD() {
 
-        Object obj = resourceMan.getObject("planeD");
-        return ((BufferedImage) (obj));
+        return getImage("planeD");
     }
 
     /**
@@ -1127,8 +1046,7 @@ public class Resources {
      */
     public static BufferedImage getplaneDMG() {
 
-        Object obj = resourceMan.getObject("planeDMG");
-        return ((BufferedImage) (obj));
+        return getImage("planeDMG");
     }
 
     /**
@@ -1136,8 +1054,7 @@ public class Resources {
      */
     public static BufferedImage getplaneE() {
 
-        Object obj = resourceMan.getObject("planeE");
-        return ((BufferedImage) (obj));
+        return getImage("planeE");
     }
 
     /**
@@ -1145,8 +1062,7 @@ public class Resources {
      */
     public static BufferedImage getPlaneF() {
 
-        Object obj = resourceMan.getObject("planeF");
-        return ((BufferedImage) (obj));
+        return getImage("planeF");
     }
 
     /**
@@ -1154,8 +1070,7 @@ public class Resources {
      */
     public static BufferedImage getplaneFDS() {
 
-        Object obj = resourceMan.getObject("planeFDS");
-        return ((BufferedImage) (obj));
+        return getImage("planeFDS");
     }
 
     /**
@@ -1163,8 +1078,7 @@ public class Resources {
      */
     public static BufferedImage getplaneHuC6280() {
 
-        Object obj = resourceMan.getObject("planeHuC6280");
-        return ((BufferedImage) (obj));
+        return getImage("planeHuC6280");
     }
 
     /**
@@ -1172,8 +1086,7 @@ public class Resources {
      */
     public static BufferedImage getplaneK051649() {
 
-        Object obj = resourceMan.getObject("planeK051649");
-        return ((BufferedImage) (obj));
+        return getImage("planeK051649");
     }
 
     /**
@@ -1181,8 +1094,7 @@ public class Resources {
      */
     public static BufferedImage getplaneMIDI_GM() {
 
-        Object obj = resourceMan.getObject("planeMIDI_GM");
-        return ((BufferedImage) (obj));
+        return getImage("planeMIDI_GM");
     }
 
     /**
@@ -1190,24 +1102,21 @@ public class Resources {
      */
     public static BufferedImage getplaneMIDI_GS() {
 
-        Object obj = resourceMan.getObject("planeMIDI_GS");
-        return ((BufferedImage) (obj));
+        return getImage("planeMIDI_GS");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
     public static BufferedImage getplaneMIDI_XG() {
-        Object obj = resourceMan.getObject("planeMIDI_XG");
-        return ((BufferedImage) (obj));
+        return getImage("planeMIDI_XG");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
     public static BufferedImage getplaneMixer() {
-        Object obj = resourceMan.getObject("planeMixer");
-        return ((BufferedImage) (obj));
+        return getImage("planeMixer");
     }
 
     /**
@@ -1215,8 +1124,7 @@ public class Resources {
      */
     public static BufferedImage getplaneMMC5() {
 
-        Object obj = resourceMan.getObject("planeMMC5");
-        return ((BufferedImage) (obj));
+        return getImage("planeMMC5");
     }
 
     /**
@@ -1224,8 +1132,7 @@ public class Resources {
      */
     public static BufferedImage getplaneMSM6258() {
 
-        Object obj = resourceMan.getObject("planeMSM6258");
-        return ((BufferedImage) (obj));
+        return getImage("planeMSM6258");
     }
 
     /**
@@ -1233,8 +1140,7 @@ public class Resources {
      */
     public static BufferedImage getplaneMSM6295() {
 
-        Object obj = resourceMan.getObject("planeMSM6295");
-        return ((BufferedImage) (obj));
+        return getImage("planeMSM6295");
     }
 
     /**
@@ -1242,8 +1148,7 @@ public class Resources {
      */
     public static BufferedImage getplaneMultiPCM() {
 
-        Object obj = resourceMan.getObject("planeMultiPCM");
-        return ((BufferedImage) (obj));
+        return getImage("planeMultiPCM");
     }
 
     /**
@@ -1251,8 +1156,7 @@ public class Resources {
      */
     public static BufferedImage getplaneN106() {
 
-        Object obj = resourceMan.getObject("planeN106");
-        return ((BufferedImage) (obj));
+        return getImage("planeN106");
     }
 
     /**
@@ -1260,8 +1164,7 @@ public class Resources {
      */
     public static BufferedImage getplaneNESDMC() {
 
-        Object obj = resourceMan.getObject("planeNESDMC");
-        return ((BufferedImage) (obj));
+        return getImage("planeNESDMC");
     }
 
     /**
@@ -1269,8 +1172,7 @@ public class Resources {
      */
     public static BufferedImage getplanePPZ8() {
 
-        Object obj = resourceMan.getObject("planePPZ8");
-        return ((BufferedImage) (obj));
+        return getImage("planePPZ8");
     }
 
     /**
@@ -1278,8 +1180,7 @@ public class Resources {
      */
     public static BufferedImage getPlaneQSound() {
 
-        Object obj = resourceMan.getObject("planeQSound");
-        return ((BufferedImage) (obj));
+        return getImage("planeQSound");
     }
 
     /**
@@ -1287,8 +1188,7 @@ public class Resources {
      */
     public static BufferedImage getplaneS5B() {
 
-        Object obj = resourceMan.getObject("planeS5B");
-        return ((BufferedImage) (obj));
+        return getImage("planeS5B");
     }
 
     /**
@@ -1296,8 +1196,7 @@ public class Resources {
      */
     public static BufferedImage getplaneSEGAPCM() {
 
-        Object obj = resourceMan.getObject("planeSEGAPCM");
-        return ((BufferedImage) (obj));
+        return getImage("planeSEGAPCM");
     }
 
     /**
@@ -1305,8 +1204,7 @@ public class Resources {
      */
     public static BufferedImage getplaneSN76489() {
 
-        Object obj = resourceMan.getObject("planeSN76489");
-        return ((BufferedImage) (obj));
+        return getImage("planeSN76489");
     }
 
     /**
@@ -1314,8 +1212,7 @@ public class Resources {
      */
     public static BufferedImage getplaneVRC6() {
 
-        Object obj = resourceMan.getObject("planeVRC6");
-        return ((BufferedImage) (obj));
+        return getImage("planeVRC6");
     }
 
     /**
@@ -1323,8 +1220,7 @@ public class Resources {
      */
     public static BufferedImage getplaneVRC7() {
 
-        Object obj = resourceMan.getObject("planeVRC7");
-        return ((BufferedImage) (obj));
+        return getImage("planeVRC7");
     }
 
     /**
@@ -1332,8 +1228,7 @@ public class Resources {
      */
     public static BufferedImage getplaneY8950() {
 
-        Object obj = resourceMan.getObject("planeY8950");
-        return ((BufferedImage) (obj));
+        return getImage("planeY8950");
     }
 
     /**
@@ -1341,8 +1236,7 @@ public class Resources {
      */
     public static BufferedImage getplaneYM2203() {
 
-        Object obj = resourceMan.getObject("planeYM2203");
-        return ((BufferedImage) (obj));
+        return getImage("planeYM2203");
     }
 
     /**
@@ -1350,8 +1244,7 @@ public class Resources {
      */
     public static BufferedImage getplaneYM2413() {
 
-        Object obj = resourceMan.getObject("planeYM2413");
-        return ((BufferedImage) (obj));
+        return getImage("planeYM2413");
     }
 
     /**
@@ -1359,8 +1252,7 @@ public class Resources {
      */
     public static BufferedImage getplaneYM2610() {
 
-        Object obj = resourceMan.getObject("planeYM2610");
-        return ((BufferedImage) (obj));
+        return getImage("planeYM2610");
     }
 
     /**
@@ -1368,8 +1260,7 @@ public class Resources {
      */
     public static BufferedImage getplaneYM2612() {
 
-        Object obj = resourceMan.getObject("planeYM2612");
-        return ((BufferedImage) (obj));
+        return getImage("planeYM2612");
     }
 
     /**
@@ -1377,8 +1268,7 @@ public class Resources {
      */
     public static BufferedImage getplaneYM2612MIDI() {
 
-        Object obj = resourceMan.getObject("planeYM2612MIDI");
-        return ((BufferedImage) (obj));
+        return getImage("planeYM2612MIDI");
     }
 
     /**
@@ -1386,8 +1276,7 @@ public class Resources {
      */
     public static BufferedImage getplaneYM3526() {
 
-        Object obj = resourceMan.getObject("planeYM3526");
-        return ((BufferedImage) (obj));
+        return getImage("planeYM3526");
     }
 
     /**
@@ -1395,8 +1284,7 @@ public class Resources {
      */
     public static BufferedImage getplaneYM3812() {
 
-        Object obj = resourceMan.getObject("planeYM3812");
-        return ((BufferedImage) (obj));
+        return getImage("planeYM3812");
     }
 
     /**
@@ -1404,8 +1292,7 @@ public class Resources {
      */
     public static BufferedImage getplaneYMF262() {
 
-        Object obj = resourceMan.getObject("planeYMF262");
-        return ((BufferedImage) (obj));
+        return getImage("planeYMF262");
     }
 
     /**
@@ -1413,8 +1300,7 @@ public class Resources {
      */
     public static BufferedImage getplaneYMF271() {
 
-        Object obj = resourceMan.getObject("planeYMF271");
-        return ((BufferedImage) (obj));
+        return getImage("planeYMF271");
     }
 
     /**
@@ -1422,8 +1308,7 @@ public class Resources {
      */
     public static BufferedImage getplaneYMF278B() {
 
-        Object obj = resourceMan.getObject("planeYMF278B");
-        return ((BufferedImage) (obj));
+        return getImage("planeYMF278B");
     }
 
     /**
@@ -1431,8 +1316,7 @@ public class Resources {
      */
     public static BufferedImage getplaneYMZ280B() {
 
-        Object obj = resourceMan.getObject("planeYMZ280B");
-        return ((BufferedImage) (obj));
+        return getImage("planeYMZ280B");
     }
 
     /**
@@ -1440,8 +1324,7 @@ public class Resources {
      */
     public static BufferedImage getrChipName_01() {
 
-        Object obj = resourceMan.getObject("rChipName_01");
-        return ((BufferedImage) (obj));
+        return getImage("rChipName_01");
     }
 
     /**
@@ -1449,8 +1332,7 @@ public class Resources {
      */
     public static BufferedImage getrChipName_02() {
 
-        Object obj = resourceMan.getObject("rChipName_02");
-        return ((BufferedImage) (obj));
+        return getImage("rChipName_02");
     }
 
     /**
@@ -1458,8 +1340,7 @@ public class Resources {
      */
     public static BufferedImage getrChipName_03() {
 
-        Object obj = resourceMan.getObject("rChipName_03");
-        return ((BufferedImage) (obj));
+        return getImage("rChipName_03");
     }
 
     /**
@@ -1476,8 +1357,7 @@ public class Resources {
      */
     public static BufferedImage getrFader() {
 
-        Object obj = resourceMan.getObject("rFader");
-        return ((BufferedImage) (obj));
+        return getImage("rFader");
     }
 
     /**
@@ -1485,8 +1365,7 @@ public class Resources {
      */
     public static BufferedImage getrFont_01() {
 
-        Object obj = resourceMan.getObject("rFont_01");
-        return ((BufferedImage) (obj));
+        return getImage("rFont_01");
     }
 
     /**
@@ -1494,8 +1373,7 @@ public class Resources {
      */
     public static BufferedImage getrFont_02() {
 
-        Object obj = resourceMan.getObject("rFont_02");
-        return ((BufferedImage) (obj));
+        return getImage("rFont_02");
     }
 
     /**
@@ -1503,8 +1381,7 @@ public class Resources {
      */
     public static BufferedImage getrFont_03() {
 
-        Object obj = resourceMan.getObject("rFont_03");
-        return ((BufferedImage) (obj));
+        return getImage("rFont_03");
     }
 
     /**
@@ -1512,8 +1389,7 @@ public class Resources {
      */
     public static BufferedImage getrFont_04() {
 
-        Object obj = resourceMan.getObject("rFont_04");
-        return ((BufferedImage) (obj));
+        return getImage("rFont_04");
     }
 
     /**
@@ -1521,8 +1397,7 @@ public class Resources {
      */
     public static BufferedImage getrFont_05() {
 
-        Object obj = resourceMan.getObject("rFont_05");
-        return ((BufferedImage) (obj));
+        return getImage("rFont_05");
     }
 
     /**
@@ -1530,8 +1405,7 @@ public class Resources {
      */
     public static BufferedImage getrFont_06() {
 
-        Object obj = resourceMan.getObject("rFont_06");
-        return ((BufferedImage) (obj));
+        return getImage("rFont_06");
     }
 
     /**
@@ -1539,8 +1413,7 @@ public class Resources {
      */
     public static BufferedImage getrKakko_00() {
 
-        Object obj = resourceMan.getObject("rKakko_00");
-        return ((BufferedImage) (obj));
+        return getImage("rKakko_00");
     }
 
     /**
@@ -1548,8 +1421,7 @@ public class Resources {
      */
     public static BufferedImage getrKBD_01() {
 
-        Object obj = resourceMan.getObject("rKBD_01");
-        return ((BufferedImage) (obj));
+        return getImage("rKBD_01");
     }
 
     /**
@@ -1557,8 +1429,7 @@ public class Resources {
      */
     public static BufferedImage getrKBD_02() {
 
-        Object obj = resourceMan.getObject("rKBD_02");
-        return ((BufferedImage) (obj));
+        return getImage("rKBD_02");
     }
 
     /**
@@ -1566,8 +1437,7 @@ public class Resources {
      */
     public static BufferedImage getrKBD_03() {
 
-        Object obj = resourceMan.getObject("rKBD_03");
-        return ((BufferedImage) (obj));
+        return getImage("rKBD_03");
     }
 
     /**
@@ -1575,8 +1445,7 @@ public class Resources {
      */
     public static BufferedImage getrMenuButtons_01() {
 
-        Object obj = resourceMan.getObject("rMenuButtons_01");
-        return ((BufferedImage) (obj));
+        return getImage("rMenuButtons_01");
     }
 
     /**
@@ -1584,8 +1453,7 @@ public class Resources {
      */
     public static BufferedImage getrMenuButtons_02() {
 
-        Object obj = resourceMan.getObject("rMenuButtons_02");
-        return ((BufferedImage) (obj));
+        return getImage("rMenuButtons_02");
     }
 
     /**
@@ -1593,8 +1461,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_01() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_01");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_01");
     }
 
     /**
@@ -1602,8 +1469,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_02() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_02");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_02");
     }
 
     /**
@@ -1611,8 +1477,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_03() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_03");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_03");
     }
 
     /**
@@ -1620,8 +1485,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_Fader_01() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_Fader_01");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_Fader_01");
     }
 
     /**
@@ -1629,8 +1493,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_Fader_02() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_Fader_02");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_Fader_02");
     }
 
     /**
@@ -1638,8 +1501,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_Fader_03() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_Fader_03");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_Fader_03");
     }
 
     /**
@@ -1647,8 +1509,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_Font_01() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_Font_01");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_Font_01");
     }
 
     /**
@@ -1656,8 +1517,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_Font_02() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_Font_02");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_Font_02");
     }
 
     /**
@@ -1665,8 +1525,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_Font_03() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_Font_03");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_Font_03");
     }
 
     /**
@@ -1674,8 +1533,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_Font_04() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_Font_04");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_Font_04");
     }
 
     /**
@@ -1683,8 +1541,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_Font_05() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_Font_05");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_Font_05");
     }
 
     /**
@@ -1692,8 +1549,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_Font_06() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_Font_06");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_Font_06");
     }
 
     /**
@@ -1701,8 +1557,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_KBD_01() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_KBD_01");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_KBD_01");
     }
 
     /**
@@ -1710,8 +1565,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_Vol_01() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_Vol_01");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_Vol_01");
     }
 
     /**
@@ -1719,8 +1573,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_Vol_02() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_Vol_02");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_Vol_02");
     }
 
     /**
@@ -1728,8 +1581,7 @@ public class Resources {
      */
     public static BufferedImage getrMIDILCD_Vol_03() {
 
-        Object obj = resourceMan.getObject("rMIDILCD_Vol_03");
-        return ((BufferedImage) (obj));
+        return getImage("rMIDILCD_Vol_03");
     }
 
     /**
@@ -1737,8 +1589,7 @@ public class Resources {
      */
     public static BufferedImage getrNESDMC() {
 
-        Object obj = resourceMan.getObject("rNESDMC");
-        return ((BufferedImage) (obj));
+        return getImage("rNESDMC");
     }
 
     /**
@@ -1746,8 +1597,7 @@ public class Resources {
      */
     public static BufferedImage getrPan_01() {
 
-        Object obj = resourceMan.getObject("rPan_01");
-        return ((BufferedImage) (obj));
+        return getImage("rPan_01");
     }
 
     /**
@@ -1755,8 +1605,7 @@ public class Resources {
      */
     public static BufferedImage getrPan_02() {
 
-        Object obj = resourceMan.getObject("rPan_02");
-        return ((BufferedImage) (obj));
+        return getImage("rPan_02");
     }
 
     /**
@@ -1764,8 +1613,7 @@ public class Resources {
      */
     public static BufferedImage getrPan_03() {
 
-        Object obj = resourceMan.getObject("rPan_03");
-        return ((BufferedImage) (obj));
+        return getImage("rPan_03");
     }
 
     /**
@@ -1773,8 +1621,7 @@ public class Resources {
      */
     public static BufferedImage getrPan2_01() {
 
-        Object obj = resourceMan.getObject("rPan2_01");
-        return ((BufferedImage) (obj));
+        return getImage("rPan2_01");
     }
 
     /**
@@ -1782,8 +1629,7 @@ public class Resources {
      */
     public static BufferedImage getrPan2_02() {
 
-        Object obj = resourceMan.getObject("rPan2_02");
-        return ((BufferedImage) (obj));
+        return getImage("rPan2_02");
     }
 
     /**
@@ -1791,8 +1637,7 @@ public class Resources {
      */
     public static BufferedImage getrPSGEnv() {
 
-        Object obj = resourceMan.getObject("rPSGEnv");
-        return ((BufferedImage) (obj));
+        return getImage("rPSGEnv");
     }
 
     /**
@@ -1800,8 +1645,7 @@ public class Resources {
      */
     public static BufferedImage getrPSGMode_01() {
 
-        Object obj = resourceMan.getObject("rPSGMode_01");
-        return ((BufferedImage) (obj));
+        return getImage("rPSGMode_01");
     }
 
     /**
@@ -1809,8 +1653,7 @@ public class Resources {
      */
     public static BufferedImage getrPSGMode_02() {
 
-        Object obj = resourceMan.getObject("rPSGMode_02");
-        return ((BufferedImage) (obj));
+        return getImage("rPSGMode_02");
     }
 
     /**
@@ -1818,8 +1661,7 @@ public class Resources {
      */
     public static BufferedImage getrPSGMode_03() {
 
-        Object obj = resourceMan.getObject("rPSGMode_03");
-        return ((BufferedImage) (obj));
+        return getImage("rPSGMode_03");
     }
 
     /**
@@ -1827,8 +1669,7 @@ public class Resources {
      */
     public static BufferedImage getrPSGMode_04() {
 
-        Object obj = resourceMan.getObject("rPSGMode_04");
-        return ((BufferedImage) (obj));
+        return getImage("rPSGMode_04");
     }
 
     /**
@@ -1836,8 +1677,7 @@ public class Resources {
      */
     public static BufferedImage getrPSGMode_05() {
 
-        Object obj = resourceMan.getObject("rPSGMode_05");
-        return ((BufferedImage) (obj));
+        return getImage("rPSGMode_05");
     }
 
     /**
@@ -1845,8 +1685,7 @@ public class Resources {
      */
     public static BufferedImage getrPSGMode_06() {
 
-        Object obj = resourceMan.getObject("rPSGMode_06");
-        return ((BufferedImage) (obj));
+        return getImage("rPSGMode_06");
     }
 
     /**
@@ -1854,8 +1693,7 @@ public class Resources {
      */
     public static BufferedImage getrType_01() {
 
-        Object obj = resourceMan.getObject("rType_01");
-        return ((BufferedImage) (obj));
+        return getImage("rType_01");
     }
 
     /**
@@ -1863,8 +1701,7 @@ public class Resources {
      */
     public static BufferedImage getrType_02() {
 
-        Object obj = resourceMan.getObject("rType_02");
-        return ((BufferedImage) (obj));
+        return getImage("rType_02");
     }
 
     /**
@@ -1872,8 +1709,7 @@ public class Resources {
      */
     public static BufferedImage getrType_03() {
 
-        Object obj = resourceMan.getObject("rType_03");
-        return ((BufferedImage) (obj));
+        return getImage("rType_03");
     }
 
     /**
@@ -1881,8 +1717,7 @@ public class Resources {
      */
     public static BufferedImage getrType_04() {
 
-        Object obj = resourceMan.getObject("rType_04");
-        return ((BufferedImage) (obj));
+        return getImage("rType_04");
     }
 
     /**
@@ -1890,8 +1725,7 @@ public class Resources {
      */
     public static BufferedImage getrType_05() {
 
-        Object obj = resourceMan.getObject("rType_05");
-        return ((BufferedImage) (obj));
+        return getImage("rType_05");
     }
 
     /**
@@ -1899,8 +1733,7 @@ public class Resources {
      */
     public static BufferedImage getrType_06() {
 
-        Object obj = resourceMan.getObject("rType_06");
-        return ((BufferedImage) (obj));
+        return getImage("rType_06");
     }
 
     /**
@@ -1908,8 +1741,7 @@ public class Resources {
      */
     public static BufferedImage getrType_YMF271() {
 
-        Object obj = resourceMan.getObject("rType_YMF271");
-        return ((BufferedImage) (obj));
+        return getImage("rType_YMF271");
     }
 
     /**
@@ -1917,8 +1749,7 @@ public class Resources {
      */
     public static BufferedImage getrVol_01() {
 
-        Object obj = resourceMan.getObject("rVol_01");
-        return ((BufferedImage) (obj));
+        return getImage("rVol_01");
     }
 
     /**
@@ -1926,8 +1757,7 @@ public class Resources {
      */
     public static BufferedImage getrVol_02() {
 
-        Object obj = resourceMan.getObject("rVol_02");
-        return ((BufferedImage) (obj));
+        return getImage("rVol_02");
     }
 
     /**
@@ -1935,8 +1765,7 @@ public class Resources {
      */
     public static BufferedImage getrVol_03() {
 
-        Object obj = resourceMan.getObject("rVol_03");
-        return ((BufferedImage) (obj));
+        return getImage("rVol_03");
     }
 
     /**
@@ -1944,8 +1773,7 @@ public class Resources {
      */
     public static BufferedImage getrWavGraph() {
 
-        Object obj = resourceMan.getObject("rWavGraph");
-        return ((BufferedImage) (obj));
+        return getImage("rWavGraph");
     }
 
     /**
@@ -1953,8 +1781,7 @@ public class Resources {
      */
     public static BufferedImage getrWavGraph2() {
 
-        Object obj = resourceMan.getObject("rWavGraph2");
-        return ((BufferedImage) (obj));
+        return getImage("rWavGraph2");
     }
 
     /**
@@ -1962,8 +1789,7 @@ public class Resources {
      */
     public static BufferedImage getsavePL() {
 
-        Object obj = resourceMan.getObject("savePL");
-        return ((BufferedImage) (obj));
+        return getImage("savePL");
     }
 
     /**
@@ -1971,8 +1797,7 @@ public class Resources {
      */
     public static BufferedImage gettxtPL() {
 
-        Object obj = resourceMan.getObject("txtPL");
-        return ((BufferedImage) (obj));
+        return getImage("txtPL");
     }
 
     /**
@@ -1980,8 +1805,7 @@ public class Resources {
      */
     public static BufferedImage getupPL() {
 
-        Object obj = resourceMan.getObject("upPL");
-        return ((BufferedImage) (obj));
+        return getImage("upPL");
     }
 
     /**
@@ -1989,8 +1813,7 @@ public class Resources {
      */
     public static BufferedImage getVHeight1() {
 
-        Object obj = resourceMan.getObject("vHeight1");
-        return ((BufferedImage) (obj));
+        return getImage("vHeight1");
     }
 
     /**
@@ -1998,8 +1821,7 @@ public class Resources {
      */
     public static BufferedImage getVHeight2() {
 
-        Object obj = resourceMan.getObject("vHeight2");
-        return ((BufferedImage) (obj));
+        return getImage("vHeight2");
     }
 
     /**
@@ -2007,8 +1829,7 @@ public class Resources {
      */
     public static BufferedImage getVHeight3() {
 
-        Object obj = resourceMan.getObject("vHeight3");
-        return ((BufferedImage) (obj));
+        return getImage("vHeight3");
     }
 
     /**
@@ -2016,8 +1837,7 @@ public class Resources {
      */
     public static BufferedImage getVType1() {
 
-        Object obj = resourceMan.getObject("vType1");
-        return ((BufferedImage) (obj));
+        return getImage("vType1");
     }
 
     /**
@@ -2025,8 +1845,7 @@ public class Resources {
      */
     public static BufferedImage getVType2() {
 
-        Object obj = resourceMan.getObject("vType2");
-        return ((BufferedImage) (obj));
+        return getImage("vType2");
     }
 
     /**
@@ -2034,7 +1853,6 @@ public class Resources {
      */
     public static BufferedImage getVType3() {
 
-        Object obj = resourceMan.getObject("vType3");
-        return ((BufferedImage) (obj));
+        return getImage("vType3");
     }
 }

@@ -10,7 +10,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -21,6 +21,8 @@
 package mdplayer.driver.sid.libsidplayfp.utils;
 
 
+/** @deprecated use {@link java.security.MessageDigest} */
+@Deprecated
 public class GCryptMd5 implements IMd5 {
 
     // private gcry_md_hd_t hd;

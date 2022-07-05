@@ -19,7 +19,7 @@ public class frmPCM8 extends frmBase {
 //        this.AutoScaleMode = JAutoScaleMode.Font;
         this.setPreferredSize(new Dimension(800, 450));
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
-        this.MaximizeBox = false;
+//        this.MaximizeBox = false;
         this.setName("frmPCM8");
         this.setTitle("frmPCM8");
 //        this.ResumeLayout(false);

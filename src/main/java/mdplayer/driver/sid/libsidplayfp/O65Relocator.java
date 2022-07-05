@@ -12,7 +12,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -32,11 +32,11 @@ package mdplayer.driver.sid.libsidplayfp;
 
 import java.nio.ByteBuffer;
 
-import mdplayer.driver.sid.mem;
+import mdplayer.driver.sid.Mem;
 
 
 /**
- * O65Relocator -- A part of xa65 - 65xx/65816 cross-assembler and utility suite
+ * O65Relocator -- a part of xa65 - 65xx/65816 cross-assembler and utility suite
  * o65 file relocator.
  */
 public class O65Relocator {
@@ -191,7 +191,7 @@ public class O65Relocator {
 
         ByteBuffer tmpBuf = buf;
 
-        if (mem.memcmp(tmpBuf.array(), tmpBuf.arrayOffset(), magic, 0, 5) != 0) {
+        if (Mem.memcmp(tmpBuf.array(), tmpBuf.arrayOffset(), magic, 0, 5) != 0) {
             return false;
         }
 

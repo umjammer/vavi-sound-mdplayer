@@ -421,7 +421,7 @@ public class frmYM2610 extends frmBase {
 
 
         int tl = YM2610Register[1][0x01] & 0x3f;
-        for (int ch = 13; ch < 19; ch++) //ADPCM A
+        for (int ch = 13; ch < 19; ch++) //ADPCM a
         {
             newParam.channels[ch].pan = (YM2610Register[1][0x08 + ch - 13] & 0xc0) >> 6;
             //newParam.channels[ch].volumeL = Math.min(Math.max(YM2610Rhythm[ch - 13][0] / 80, 0), 19);
@@ -498,7 +498,7 @@ public class frmYM2610 extends frmBase {
         DrawBuff.keyBoard(frameBuffer, 13, oldParam.channels[12].note, newParam.channels[12].note, tp);
         DrawBuff.ChYM2610(frameBuffer, 13, oldParam.channels[12].mask, newParam.channels[12].mask, tp);
 
-        //ADPCM A(Rhythm)
+        //ADPCM a(Rhythm)
         for (int c = 0; c < 6; c++) {
             MDChipParams.Channel oyc = oldParam.channels[c + 13];
             MDChipParams.Channel nyc = newParam.channels[c + 13];

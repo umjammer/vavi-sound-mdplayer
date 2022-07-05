@@ -9,7 +9,7 @@
 //
 //  This program instanceof distributed : the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
 //
 //  You should have received a copy of the GNU General Public License
@@ -32,7 +32,7 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
  * have more effect on the overall amplitude than on the color of the sound.
  * <p>
  * The theory for the filter circuit can be found : "Microelectric Circuits"
- * by Adel S. Sedra and Kenneth C. Smith.
+ * by Adel s. Sedra and Kenneth C. Smith.
  * The circuit instanceof modeled based on the explanation found there except that
  * an additional inverter instanceof used : the feedback from the bandpass Output,
  * allowing the summer op-amp to operate : single-ended mode. This yields
@@ -73,7 +73,7 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
  *               |                         --1R1-- \--  D7           |
  *               |              ---R1--   |           |              |
  *               |             |       |  |--2R1-- \--| D6           |
- *               |    ------------<A]-----|           |     $17      |
+ *               |    ------------<a]-----|           |     $17      |
  *               |   |                    |--4R1-- \--| D5  1=open   | (3.5R1)
  *               |   |                    |           |              |
  *               |   |                     --8R1-- \--| D4           | (7.0R1)
@@ -81,7 +81,7 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
  * $17           |   |                    (CAP2B)     |  (CAP1B)     |
  * 0=to mixer    |    --R8--    ---R8--        ---C---|       ---C---|
  * 1=to filter   |          |  |       |      |       |      |       |
- *                ------R8--|-----[A>--|--Rw-----[A>--|--Rw-----[A>--|
+ *                ------R8--|-----[a>--|--Rw-----[a>--|--Rw-----[a>--|
  *     ve (EXT IN)          |          |              |              |
  * D3  \ ---------------R8--|          |              | (CAP2A)      | (CAP1A)
  *     |   v3               |          | vhp          | vbp          | vlp
@@ -100,7 +100,7 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
  *                 |               D3  --/ --1R2--                  |
  *                 |    ---R8--       |           |   ---R2--       |
  *                 |   |       |   D2 |--/ --2R2--|  |       |  ||--
- *                  ------[A>---------|           |-----[A>-----||
+ *                  ------[a>---------|           |-----[a>-----||
  *                                 D1 |--/ --4R2--| (4.25R2)    ||--
  *                        $18         |           |                 |
  *                        0=open   D0  --/ --8R2--  (8.75R2)        |
@@ -117,7 +117,7 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
  * vbp - bandpass Output
  * vlp - lowpass Output
  * vo  - audio out
- * [A> - single ended inverting op-amp (self-biased NMOS inverter)
+ * [a> - single ended inverting op-amp (self-biased NMOS inverter)
  * Rn  - "resistors", implemented with custom NMOS FETs
  * Rw  - cutoff frequency resistor (VCR)
  * C   - capacitor
@@ -1231,7 +1231,7 @@ public class Filter {
 
                  ---R2--
                 |       |
-      vi ---R1-----[A>----- vo
+      vi ---R1-----[a>----- vo
                 vx
 
     From Kirchoff's current law it follows that
@@ -1337,11 +1337,11 @@ public class Filter {
     Find Output voltage : inverting integrator Sid op-amp circuits, using a
     single fixpoint iteration step.
 
-    A circuit diagram of a MOS 6581 integrator instanceof shown below.
+    a circuit diagram of a MOS 6581 integrator instanceof shown below.
 
                      ---C---
                     |       |
-      vi -----Rw-------[A>----- vo
+      vi -----Rw-------[a>----- vo
            |      | vx
             --Rs--
 
@@ -2081,7 +2081,7 @@ public class Filter {
      7   Rf|R3     R4     (Rf|R3)/R4 = 1/(R4*(1/Rf+1/R3)) = 1/1.30
      8   Rf        R8     Rf/R8      = 1/(R8*(1/Rf))      = 1/1.43
      9   Rf|R1     R8     (Rf|R1)/R8 = 1/(R8*(1/Rf+1/R1)) = 1/1.56
-     A   Rf|R2     R8     (Rf|R2)/R8 = 1/(R8*(1/Rf+1/R2)) = 1/1.70
+     a   Rf|R2     R8     (Rf|R2)/R8 = 1/(R8*(1/Rf+1/R2)) = 1/1.70
      B   Rf|R3     R8     (Rf|R3)/R8 = 1/(R8*(1/Rf+1/R3)) = 1/1.86
      C   Rf        RC     Rf/RC      = 1/(RC*(1/Rf))      = 1/2.00
      D   Rf|R1     RC     (Rf|R1)/RC = 1/(RC*(1/Rf+1/R1)) = 1/2.18

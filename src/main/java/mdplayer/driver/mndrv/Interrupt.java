@@ -249,7 +249,7 @@ _opm_recall:
             reg.a0 = 0xe90003;
             reg.D0_L = 3;
             do {
-                //reg.getD3_B() = mm.ReadByte(Reg.a0);
+                //reg.getD3_B() = mm.readByte(Reg.a0);
                 reg.setD3_B((byte) timerOPM.readStatus());
             } while ((byte) reg.getD3_B() < 0);
             reg.setD3_W(reg.getD3_W() & reg.getD0_W());
@@ -298,7 +298,7 @@ _opm_recall:
     //
 
     /**
-     * TIMER-A/B
+     * TIMER-a/B
      */
     private void _timer_ab_job() {
         _timer_b_job();
@@ -306,7 +306,7 @@ _opm_recall:
     }
 
     /**
-     * TIMER-A JOB
+     * TIMER-a JOB
      */
     private void _timer_a_job() {
         _fade_entry();
@@ -863,7 +863,7 @@ _opm_recall:
     }
 
     /**
-     * TIMER-A lfo
+     * TIMER-a lfo
      */
     private void _ch_ana_tma_lfo() {
         reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK));
@@ -879,7 +879,7 @@ _opm_recall:
     }
 
     /**
-     * TIMER-A software envelope
+     * TIMER-a software envelope
      */
     private void _ch_ana_tma_env() {
         reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK));

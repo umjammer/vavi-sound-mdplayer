@@ -2,26 +2,26 @@ package mdplayer;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Receiver;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.spi.AudioFileReader;
-import javax.swing.JOptionPane;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
-import dotnet4j.Tuple;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
+import dotnet4j.util.compat.Tuple;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Common.EnmRealChipType;
 import mdplayer.Common.FileFormat;
-import mdplayer.RealChip.RSoundChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
@@ -42,19 +42,20 @@ import mdplayer.driver.s98.S98;
 import mdplayer.driver.sid.Sid;
 import mdplayer.driver.zgm.Zgm;
 import mdplayer.form.sys.frmMain;
-import mdplayer.vst.VstInfo;
-import mdplayer.vst.VstMng;
 import mdsound.*;
 import mdsound.Ym3438Const.Type;
 import mdsound.np.chip.DeviceInfo;
 import mdsound.x68sound.SoundIocs;
 import mdsound.x68sound.X68Sound;
 import vavi.util.ByteUtil;
+import vavi.util.Debug;
+import vavi.util.archive.Archive;
+import vavi.util.archive.Entry;
 
 
 public class Audio {
     public static frmMain frmMain = null;
-    public static final VstMng vstMng = new VstMng();
+//    public static final VstMng vstMng = new VstMng();
     public static Setting setting = null;
 
     public static int clockAY8910 = 1789750;
@@ -101,23 +102,6 @@ public class Audio {
     private static NAudioWrap naudioWrap;
     private static WaveWriter waveWriter = null;
 
-    private static final RSoundChip[] scYM2612 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scSN76489 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scYM2151 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scYM2608 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scYM2203 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scAY8910 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scK051649 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scYM2413 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scYM3526 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scYM3812 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scYMF262 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scYM2610 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scYM2610EA = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scYM2610EB = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scC140 = new RSoundChip[] {null, null};
-    private static final RSoundChip[] scSEGAPCM = new RSoundChip[] {null, null};
-    private static RealChip realChip;
     private static ChipRegister chipRegister = null;
     public static final Set<EnmChip> useChip = new HashSet<>();
 
@@ -196,21 +180,21 @@ public class Audio {
         return false;
     }
 
-    public static List<VstMng.VstInfo2> getVSTInfos() {
-        return vstMng.getVSTInfos();
-    }
-
-    public static VstInfo getVSTInfo(String filename) {
-        return vstMng.getVSTInfo(filename);
-    }
-
-    public static boolean addVSTeffect(String fileName) {
-        return vstMng.addVSTeffect(fileName);
-    }
-
-    public static boolean delVSTeffect(String key) {
-        return vstMng.delVSTeffect(key);
-    }
+//    public static List<VstMng.VstInfo2> getVSTInfos() {
+//        return vstMng.getVSTInfos();
+//    }
+//
+//    public static VstInfo getVSTInfo(String filename) {
+//        return vstMng.getVSTInfo(filename);
+//    }
+//
+//    public static boolean addVSTeffect(String fileName) {
+//        return vstMng.addVSTeffect(fileName);
+//    }
+//
+//    public static boolean delVSTeffect(String key) {
+//        return vstMng.delVSTeffect(key);
+//    }
 
     public static void copyWaveBuffer(short[][] dest) {
         if (driverVirtual instanceof Nsf) {
@@ -225,14 +209,15 @@ public class Audio {
         mds.visWaveBuffer.copy(dest);
     }
 
-    public static List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Object entry/* = null*/) {
-        return null;
+    public static List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile, Archive archive/* = null*/, Entry entry/* = null*/) {
+        FileFormat ff = FileFormat.checkExt(file);
+        return ff.getMusic(setting, file, buf, zipFile, archive, entry);
     }
 
     public static void realChipClose() {
-        if (realChip != null) {
-            realChip.close();
-        }
+//        if (SoundChip.realChip != null) {
+//            SoundChip.realChip.close();
+//        }
     }
 
     public static List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
@@ -462,8 +447,9 @@ public class Audio {
     }
 
     public static List<Setting.ChipType2> getRealChipList(EnmRealChipType scciType) {
-        if (realChip == null) return null;
-        return realChip.GetRealChipList(scciType);
+//        if (SoundChip.realChip == null) return null;
+//        return SoundChip.realChip.GetRealChipList(scciType);
+        return null;
     }
 
     private static String getNRDString(byte[] buf, int index) {
@@ -495,12 +481,12 @@ public class Audio {
         Log.forcedWrite("Audio:Init:STEP 01");
 
         naudioWrap = new NAudioWrap(setting.getOutputDevice().getSampleRate(), Audio::trdVgmVirtualFunction);
-        naudioWrap.playbackStopped.accept(Audio::naudioWrapPlaybackStopped);
+        naudioWrap.playbackStopped = Audio::naudioWrapPlaybackStopped;
 
         Log.forcedWrite("Audio:Init:STEP 02");
 
         Audio.setting = setting;
-        vstMng.setting = setting;
+//        vstMng.setting = setting;
 
         waveWriter = new WaveWriter(setting);
 
@@ -731,71 +717,70 @@ public class Audio {
         else
             mdsMIDI.init(setting.getOutputDevice().getSampleRate(), samplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
 
-        if (realChip == null && !getemuOnly()) {
-            Log.forcedWrite("Audio:Init:STEP 04");
-            realChip = new RealChip(!setting.getUnuseRealChip());
-        }
+//        if (SoundChip.realChip == null && !getemuOnly()) {
+//            Log.forcedWrite("Audio:Init:STEP 04");
+//            SoundChip.realChip = new RealChip(!setting.getUnuseRealChip());
+//        }
+//
+//        if (SoundChip.realChip != null) {
+//            for (int i = 0; i < 2; i++) {
+//                SoundChip.scYM2612[i] = SoundChip.realChip.GetRealChip(Audio.setting.getYM2612Type()[i], 0);
+//                if (SoundChip.scYM2612[i] != null) SoundChip.scYM2612[i].init();
+//                SoundChip.scSN76489[i] = SoundChip.realChip.GetRealChip(Audio.setting.getSN76489Type()[i], 0);
+//                if (SoundChip.scSN76489[i] != null) SoundChip.scSN76489[i].init();
+//                SoundChip.scYM2608[i] = SoundChip.realChip.GetRealChip(Audio.setting.getYM2608Type()[i], 0);
+//                if (SoundChip.scYM2608[i] != null) SoundChip.scYM2608[i].init();
+//                SoundChip.scYM2151[i] = SoundChip.realChip.GetRealChip(Audio.setting.getYM2151Type()[i], 0);
+//                if (SoundChip.scYM2151[i] != null) SoundChip.scYM2151[i].init();
+//                SoundChip.scYM2203[i] = SoundChip.realChip.GetRealChip(Audio.setting.getYM2203Type()[i], 0);
+//                if (SoundChip.scYM2203[i] != null) SoundChip.scYM2203[i].init();
+//                SoundChip.scAY8910[i] = SoundChip.realChip.GetRealChip(Audio.setting.getAY8910Type()[i], 0);
+//                if (SoundChip.scAY8910[i] != null) SoundChip.scAY8910[i].init();
+//                SoundChip.scK051649[i] = SoundChip.realChip.GetRealChip(Audio.setting.getK051649Type()[i], 0);
+//                if (SoundChip.scK051649[i] != null) SoundChip.scK051649[i].init();
+//                SoundChip.scYM2413[i] = SoundChip.realChip.GetRealChip(Audio.setting.getYM2413Type()[i], 0);
+//                if (SoundChip.scYM2413[i] != null) SoundChip.scYM2413[i].init();
+//                SoundChip.scYM3526[i] = SoundChip.realChip.GetRealChip(Audio.setting.getYM3526Type()[i], 0);
+//                if (SoundChip.scYM3526[i] != null) SoundChip.scYM3526[i].init();
+//                SoundChip.scYM3812[i] = SoundChip.realChip.GetRealChip(Audio.setting.getYM3812Type()[i], 0);
+//                if (SoundChip.scYM3812[i] != null) SoundChip.scYM3812[i].init();
+//                SoundChip.scYMF262[i] = SoundChip.realChip.GetRealChip(Audio.setting.getYMF262Type()[i], 0);
+//                if (SoundChip.scYMF262[i] != null) SoundChip.scYMF262[i].init();
+//                SoundChip.scYM2610[i] = SoundChip.realChip.GetRealChip(Audio.setting.getYM2610Type()[i], 0);
+//                if (SoundChip.scYM2610[i] != null) SoundChip.scYM2610[i].init();
+//                SoundChip.scYM2610EA[i] = SoundChip.realChip.GetRealChip(Audio.setting.getYM2610Type()[i], 1);
+//                if (SoundChip.scYM2610EA[i] != null) SoundChip.scYM2610EA[i].init();
+//                SoundChip.scYM2610EB[i] = SoundChip.realChip.GetRealChip(Audio.setting.getYM2610Type()[i], 2);
+//                if (SoundChip.scYM2610EB[i] != null) SoundChip.scYM2610EB[i].init();
+//                SoundChip.scSEGAPCM[i] = SoundChip.realChip.GetRealChip(Audio.setting.getSEGAPCMType()[i], 0);
+//                if (SoundChip.scSEGAPCM[i] != null) SoundChip.scSEGAPCM[i].init();
+//                SoundChip.scC140[i] = SoundChip.realChip.GetRealChip(Audio.setting.getC140Type()[i], 0);
+//                if (SoundChip.scC140[i] != null) SoundChip.scC140[i].init();
+//            }
+//        }
 
-        if (realChip != null) {
-            for (int i = 0; i < 2; i++) {
-                scYM2612[i] = realChip.GetRealChip(Audio.setting.getYM2612Type()[i], 0);
-                if (scYM2612[i] != null) scYM2612[i].init();
-                scSN76489[i] = realChip.GetRealChip(Audio.setting.getSN76489Type()[i], 0);
-                if (scSN76489[i] != null) scSN76489[i].init();
-                scYM2608[i] = realChip.GetRealChip(Audio.setting.getYM2608Type()[i], 0);
-                if (scYM2608[i] != null) scYM2608[i].init();
-                scYM2151[i] = realChip.GetRealChip(Audio.setting.getYM2151Type()[i], 0);
-                if (scYM2151[i] != null) scYM2151[i].init();
-                scYM2203[i] = realChip.GetRealChip(Audio.setting.getYM2203Type()[i], 0);
-                if (scYM2203[i] != null) scYM2203[i].init();
-                scAY8910[i] = realChip.GetRealChip(Audio.setting.getAY8910Type()[i], 0);
-                if (scAY8910[i] != null) scAY8910[i].init();
-                scK051649[i] = realChip.GetRealChip(Audio.setting.getK051649Type()[i], 0);
-                if (scK051649[i] != null) scK051649[i].init();
-                scYM2413[i] = realChip.GetRealChip(Audio.setting.getYM2413Type()[i], 0);
-                if (scYM2413[i] != null) scYM2413[i].init();
-                scYM3526[i] = realChip.GetRealChip(Audio.setting.getYM3526Type()[i], 0);
-                if (scYM3526[i] != null) scYM3526[i].init();
-                scYM3812[i] = realChip.GetRealChip(Audio.setting.getYM3812Type()[i], 0);
-                if (scYM3812[i] != null) scYM3812[i].init();
-                scYMF262[i] = realChip.GetRealChip(Audio.setting.getYMF262Type()[i], 0);
-                if (scYMF262[i] != null) scYMF262[i].init();
-                scYM2610[i] = realChip.GetRealChip(Audio.setting.getYM2610Type()[i], 0);
-                if (scYM2610[i] != null) scYM2610[i].init();
-                scYM2610EA[i] = realChip.GetRealChip(Audio.setting.getYM2610Type()[i], 1);
-                if (scYM2610EA[i] != null) scYM2610EA[i].init();
-                scYM2610EB[i] = realChip.GetRealChip(Audio.setting.getYM2610Type()[i], 2);
-                if (scYM2610EB[i] != null) scYM2610EB[i].init();
-                scSEGAPCM[i] = realChip.GetRealChip(Audio.setting.getSEGAPCMType()[i], 0);
-                if (scSEGAPCM[i] != null) scSEGAPCM[i].init();
-                scC140[i] = realChip.GetRealChip(Audio.setting.getC140Type()[i], 0);
-                if (scC140[i] != null) scC140[i].init();
-            }
-
-        }
-
-        chipRegister = new ChipRegister(
-                setting
-                , mds
-                , realChip
-                , vstMng
-                , scYM2612
-                , scSN76489
-                , scYM2608
-                , scYM2151
-                , scYM2203
-                , scYM2413
-                , scYM2610
-                , scYM2610EA
-                , scYM2610EB
-                , scYM3526
-                , scYM3812
-                , scYMF262
-                , scC140
-                , scSEGAPCM
-                , scAY8910
-                , scK051649
-        );
+//        chipRegister = new ChipRegister(
+//                setting
+//                , mds
+//                , SoundChip.realChip
+////                , vstMng
+//                , SoundChip.scYM2612
+//                , SoundChip.scSN76489
+//                , SoundChip.scYM2608
+//                , SoundChip.scYM2151
+//                , SoundChip.scYM2203
+//                , SoundChip.scYM2413
+//                , SoundChip.scYM2610
+//                , SoundChip.scYM2610EA
+//                , SoundChip.scYM2610EB
+//                , SoundChip.scYM3526
+//                , SoundChip.scYM3812
+//                , SoundChip.scYMF262
+//                , SoundChip.scC140
+//                , SoundChip.scSEGAPCM
+//                , SoundChip.scAY8910
+//                , SoundChip.scK051649
+//        );
         chipRegister.initChipRegister(null);
 
         Log.forcedWrite("Audio:Init:STEP 05");
@@ -807,49 +792,49 @@ public class Audio {
 
         Log.forcedWrite("Audio:Init:STEP 06");
 
-        Log.forcedWrite("Audio:Init:VST:STEP 01");
-
-        vstMng.vstparse();
-
-        Log.forcedWrite("Audio:Init:VST:STEP 02"); //Load VST instrument
-
-        //複数のmidioutの設定から必要なVSTを絞り込む
-        Map<String, Integer> dicVst = new HashMap<>();
-        if (setting.getMidiOut().getMidiOutInfos() != null) {
-            for (MidiOutInfo[] aryMoi : setting.getMidiOut().getMidiOutInfos()) {
-                if (aryMoi == null) continue;
-                Map<String, Integer> dicVst2 = new HashMap<>();
-                for (MidiOutInfo moi : aryMoi) {
-                    if (!moi.isVST) continue;
-                    if (dicVst2.containsKey(moi.fileName)) {
-                        dicVst2.put(moi.fileName, dicVst2.get(moi.fileName + 1));
-                        continue;
-                    }
-                    dicVst2.put(moi.fileName, 1);
-                }
-
-                for (Map.Entry<String, Integer> kv : dicVst2.entrySet()) {
-                    if (dicVst.containsKey(kv.getKey())) {
-                        if (dicVst.get(kv.getKey()) < kv.getValue()) {
-                            dicVst.put(kv.getKey(), kv.getValue());
-                        }
-                        continue;
-                    }
-                    dicVst.put(kv.getKey(), kv.getValue());
-                }
-            }
-        }
-
-        for (Map.Entry<String, Integer> kv : dicVst.entrySet()) {
-            for (int i = 0; i < kv.getValue(); i++)
-                vstMng.SetUpVstInstrument(kv);
-        }
-
-
-        if (setting.getVst() != null && setting.getVst().getVSTInfo() != null) {
-            Log.forcedWrite("Audio:Init:VST:STEP 03"); //Load VST Effect
-            vstMng.SetUpVstEffect();
-        }
+//        Log.forcedWrite("Audio:Init:VST:STEP 01");
+//
+//        vstMng.vstparse();
+//
+//        Log.forcedWrite("Audio:Init:VST:STEP 02"); // Load VST instrument
+//
+//        // 複数のmidioutの設定から必要なVSTを絞り込む
+//        Map<String, Integer> dicVst = new HashMap<>();
+//        if (setting.getMidiOut().getMidiOutInfos() != null) {
+//            for (MidiOutInfo[] aryMoi : setting.getMidiOut().getMidiOutInfos()) {
+//                if (aryMoi == null) continue;
+//                Map<String, Integer> dicVst2 = new HashMap<>();
+//                for (MidiOutInfo moi : aryMoi) {
+//                    if (!moi.isVST) continue;
+//                    if (dicVst2.containsKey(moi.fileName)) {
+//                        dicVst2.put(moi.fileName, dicVst2.get(moi.fileName + 1));
+//                        continue;
+//                    }
+//                    dicVst2.put(moi.fileName, 1);
+//                }
+//
+//                for (Map.Entry<String, Integer> kv : dicVst2.entrySet()) {
+//                    if (dicVst.containsKey(kv.getKey())) {
+//                        if (dicVst.get(kv.getKey()) < kv.getValue()) {
+//                            dicVst.put(kv.getKey(), kv.getValue());
+//                        }
+//                        continue;
+//                    }
+//                    dicVst.put(kv.getKey(), kv.getValue());
+//                }
+//            }
+//        }
+//
+//        for (Map.Entry<String, Integer> kv : dicVst.entrySet()) {
+//            for (int i = 0; i < kv.getValue(); i++)
+//                vstMng.SetUpVstInstrument(kv);
+//        }
+//
+//
+//        if (setting.getVst() != null && setting.getVst().getVSTInfo() != null) {
+//            Log.forcedWrite("Audio:Init:VST:STEP 03"); //Load VST Effect
+//            vstMng.SetUpVstEffect();
+//        }
 
         Log.forcedWrite("Audio:Init:STEP 07");
 
@@ -912,11 +897,22 @@ public class Audio {
             int t = 0;
             Receiver mo = null;
 
-            for (int j = 0; j < MidiSystem.NAudio.Midi.MidiOut.NumberOfDevices; j++) {
-                if (setting.getMidiOut().getMidiOutInfos().get(m)[i].name != NAudio.Midi.MidiOut.DeviceInfo(j).ProductName)
+            MidiDevice.Info[] midiDeviceInfos = MidiSystem.getMidiDeviceInfo();
+            int j = 0;
+            for (var info : midiDeviceInfos) {
+                MidiDevice device = null;
+                try {
+                    device = MidiSystem.getMidiDevice(info);
+                } catch (MidiUnavailableException e) {
+                    throw new RuntimeException(e);
+                }
+                if (device.getMaxReceivers() == 0) {
+                    continue;
+                }
+                if (!setting.getMidiOut().getMidiOutInfos().get(m)[i].name.equals(info.getName()))
                     continue;
 
-                n = j;
+                n = j++;
                 t = setting.getMidiOut().getMidiOutInfos().get(m)[i].type;
                 break;
             }
@@ -929,9 +925,9 @@ public class Audio {
                 }
             }
 
-            if (n == -1) {
-                vstMng.SetupVstMidiOut(setting.getMidiOut().getMidiOutInfos().get(m)[i]);
-            }
+//            if (n == -1) {
+//                vstMng.SetupVstMidiOut(setting.getMidiOut().getMidiOutInfos().get(m)[i]);
+//            }
 
             if (mo != null) {
                 midiOuts.add(mo);
@@ -952,7 +948,7 @@ public class Audio {
             midiOutsType.clear();
         }
 
-        vstMng.ReleaseAllMIDIout();
+//        vstMng.ReleaseAllMIDIout();
     }
 
     public static MDSound.Chip getMDSChipInfo(MDSound.InstrumentType typ) {
@@ -963,7 +959,7 @@ public class Audio {
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_AsioOut) {
             return setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getLatency() / 1000;
         }
-        return naudioWrap.getAsioLatency();
+        return 0; //naudioWrap.getAsioLatency(); TODO
     }
 
     public static void setVGMBuffer(FileFormat format, byte[] srcBuf, String playingFileName, String playingArcFileName, int midiMode, int songNo, List<Tuple<String, byte[]>> extFile) {
@@ -1247,14 +1243,16 @@ public class Audio {
             return vgmPlay(setting);
         }
 
-        if (playingFileFormat == FileFormat.WAV
-                || playingFileFormat == FileFormat.MP3
-                || playingFileFormat == FileFormat.AIFF) {
-            naudioFileReader = new AudioFileReader(naudioFileName);
-            naudioWs = new NAudio.Wave.SampleProviders.SampleToWaveProvider16(naudioFileReader);
-            return true;
+        try {
+            if (playingFileFormat == FileFormat.WAV
+                    || playingFileFormat == FileFormat.MP3
+                    || playingFileFormat == FileFormat.AIFF) {
+                naudioFileReader = AudioSystem.getAudioInputStream(new java.io.File(naudioFileName));
+                return true;
+            }
+        } catch (UnsupportedAudioFileException | java.io.IOException e) {
+            Debug.println(e);
         }
-
         return false;
     }
 
@@ -1571,7 +1569,7 @@ public class Audio {
             paused = false;
 
             if (driverReal != null && setting.getYM2608Type()[0].getUseReal()[0]) {
-                realChip.WaitOPNADPCMData(setting.getYM2608Type()[0].getRealChipInfo()[0].getSoundLocation() == -1);
+//                SoundChip.realChip.WaitOPNADPCMData(setting.getYM2608Type()[0].getRealChipInfo()[0].getSoundLocation() == -1);
             }
 
             oneTimeReset = false;
@@ -1729,7 +1727,7 @@ public class Audio {
             paused = false;
 
             if (driverReal != null && setting.getYM2608Type()[0].getUseReal()[0]) {
-                realChip.WaitOPNADPCMData(setting.getYM2608Type()[0].getRealChipInfo()[0].getSoundLocation() == -1);
+//                SoundChip.realChip.WaitOPNADPCMData(setting.getYM2608Type()[0].getRealChipInfo()[0].getSoundLocation() == -1);
             }
 
             oneTimeReset = false;
@@ -5053,15 +5051,15 @@ public class Audio {
             if (driverReal != null) {
                 if (driverReal.gd3.systemNameJ.indexOf("9801") > 0) SSGVolumeFromTAG = 31;
                 if (driverReal.gd3.systemNameJ.indexOf("8801") > 0) SSGVolumeFromTAG = 63;
-                if (driverReal.gd3.systemNameJ.indexOf("PC-88") > 0) SSGVolumeFromTAG = 63;
+                if (driverReal.gd3.systemNameJ.indexOf("pc-88") > 0) SSGVolumeFromTAG = 63;
                 if (driverReal.gd3.systemNameJ.indexOf("PC88") > 0) SSGVolumeFromTAG = 63;
-                if (driverReal.gd3.systemNameJ.indexOf("PC-98") > 0) SSGVolumeFromTAG = 31;
+                if (driverReal.gd3.systemNameJ.indexOf("pc-98") > 0) SSGVolumeFromTAG = 31;
                 if (driverReal.gd3.systemNameJ.indexOf("PC98") > 0) SSGVolumeFromTAG = 31;
                 if (driverReal.gd3.systemName.indexOf("9801") > 0) SSGVolumeFromTAG = 31;
                 if (driverReal.gd3.systemName.indexOf("8801") > 0) SSGVolumeFromTAG = 63;
-                if (driverReal.gd3.systemName.indexOf("PC-88") > 0) SSGVolumeFromTAG = 63;
+                if (driverReal.gd3.systemName.indexOf("pc-88") > 0) SSGVolumeFromTAG = 63;
                 if (driverReal.gd3.systemName.indexOf("PC88") > 0) SSGVolumeFromTAG = 63;
-                if (driverReal.gd3.systemName.indexOf("PC-98") > 0) SSGVolumeFromTAG = 31;
+                if (driverReal.gd3.systemName.indexOf("pc-98") > 0) SSGVolumeFromTAG = 31;
                 if (driverReal.gd3.systemName.indexOf("PC98") > 0) SSGVolumeFromTAG = 31;
             }
 
@@ -5235,7 +5233,7 @@ public class Audio {
                     int cnt = 0;
                     while (!stopped && cnt < 100) {
                         Thread.yield();
-                        JApplication.DoEvents();
+//                        JApplication.DoEvents();
                         cnt++;
                     }
                 }
@@ -5281,10 +5279,8 @@ public class Audio {
 
     private static void nAudioStop() {
         try {
-            AudioFileReader dmy = naudioFileReader;
-            NAudio.Wave.SampleProviders.SampleToWaveProvider16 dmy2 = naudioWs;
+            AudioInputStream dmy = naudioFileReader;
             naudioFileReader = null;
-            naudioWs = null;
             dmy.close();
         } catch (Exception ignored) {
         }
@@ -5300,7 +5296,6 @@ public class Audio {
             if (midiOuts.size() > 0) {
                 for (int i = 0; i < midiOuts.size(); i++) {
                     if (midiOuts.get(i) != null) {
-                        midiOuts.get(i).reset();
                         midiOuts.get(i).close();
                         midiOuts.set(i, null);
                     }
@@ -5309,10 +5304,10 @@ public class Audio {
                 midiOutsType.clear();
             }
 
-            vstMng.ReleaseAllMIDIout();
-            vstMng.Close();
+//            vstMng.ReleaseAllMIDIout();
+//            vstMng.Close();
 
-            realChip = null;
+//            SoundChip.realChip = null;
         } catch (Exception ex) {
             Log.forcedWrite(ex);
         }
@@ -5514,28 +5509,27 @@ public class Audio {
     }
 
     private static void naudioWrapPlaybackStopped(LineEvent e) {
-        if (e.getException != null) {
-            JOptionPane.showConfirmDialog(null,
-                    String.format("デバイスが何らかの原因で停止しました。\nメッセージ:\n%s\nスタックトレース:\n%s"
-                            , e.Exception.Message
-                            , e.Exception.StackTrace)
-                    , "エラー"
-                    , JOptionPane.DEFAULT_OPTION
-                    , JOptionPane.ERROR_MESSAGE);
-            flgReinit = true;
-
-            try {
-                naudioWrap.Stop();
-            } catch (Exception ex) {
-                Log.forcedWrite(ex);
-            }
-
-        } else {
+//        if (e.getException != null) {
+//            JOptionPane.showMessageDialog(null,
+//                    String.format("デバイスが何らかの原因で停止しました。\nメッセージ:\n%s\nスタックトレース:\n%s"
+//                            , e.Exception.Message
+//                            , e.Exception.StackTrace)
+//                    , "エラー"
+//                    , JOptionPane.ERROR_MESSAGE);
+//            flgReinit = true;
+//
+//            try {
+//                naudioWrap.Stop();
+//            } catch (Exception ex) {
+//                Log.forcedWrite(ex);
+//            }
+//
+//        } else {
             try {
                 stop();
             } catch (Exception ignored) {
             }
-        }
+//        }
     }
 
     private static void startTrdVgmReal() {
@@ -5577,11 +5571,11 @@ public class Audio {
                 }
 
                 if (stopped || paused) {
-                    if (realChip != null && !oneTimeReset) {
-                        softReset(EnmModel.RealModel);
-                        oneTimeReset = true;
-                        chipRegister.resetAllMIDIout();
-                    }
+//                    if (SoundChip.realChip != null && !oneTimeReset) {
+//                        softReset(EnmModel.RealModel);
+//                        oneTimeReset = true;
+//                        chipRegister.resetAllMIDIout();
+//                    }
                     continue;
                 }
                 if (hiyorimiNecessary && driverVirtual.isDataBlock) {
@@ -5621,9 +5615,9 @@ public class Audio {
 
                         vgmRealFadeoutVol = Math.min(127, vgmRealFadeoutVol);
                         if (vgmRealFadeoutVol == 127) {
-                            if (realChip != null) {
-                                softReset(EnmModel.RealModel);
-                            }
+//                            if (SoundChip.realChip != null) {
+//                                softReset(EnmModel.RealModel);
+//                            }
                             vgmRealFadeoutVolWait = 1000;
                             chipRegister.resetAllMIDIout();
                         } else {
@@ -5702,9 +5696,9 @@ public class Audio {
         chipRegister.softResetMIDI(0, model);
         chipRegister.softResetMIDI(1, model);
 
-        if (model == EnmModel.RealModel && realChip != null) {
-            realChip.SendData();
-        }
+//        if (model == EnmModel.RealModel && SoundChip.realChip != null) {
+//            SoundChip.realChip.SendData();
+//        }
     }
 
     private static short[] bufVirtualFunction_MIDIKeyboard = null;
@@ -5759,14 +5753,14 @@ public class Audio {
             }
 
             if (driverVirtual instanceof Nsf) {
-                driverVirtual.vstDelta = 0;
+//                driverVirtual.vstDelta = 0;
                 cnt = ((Nsf) driverVirtual).Render(buffer, sampleCount / 2, offset) * 2;
             } else if (driverVirtual instanceof Sid) {
-                driverVirtual.vstDelta = 0;
+//                driverVirtual.vstDelta = 0;
                 cnt = ((Sid) driverVirtual).Render(buffer, sampleCount);
             } else if (driverVirtual instanceof MXDRV) {
                 mds.setIncFlag();
-                driverVirtual.vstDelta = 0;
+//                driverVirtual.vstDelta = 0;
                 for (i = 0; i < sampleCount; i += 2) {
                     cnt = ((MXDRV) driverVirtual).Render(buffer, offset + i, 2);
                     mds.update(buffer, offset + i, 2, null);
@@ -5787,15 +5781,15 @@ public class Audio {
                     }
                 }
 
-                driverVirtual.vstDelta = 0;
+//                driverVirtual.vstDelta = 0;
 //                stwh.reset();
 //                stwh.start();
                 cnt = mds.update(buffer, offset, sampleCount, driverVirtual::oneFrameProc);
                 ProcTimePer1Frame = (int) ((double) System.currentTimeMillis() / (sampleCount + 1) * 1000000.0);
             }
 
-            //VST
-            vstMng.VST_Update(buffer, offset, sampleCount);
+            // VST
+//            vstMng.VST_Update(buffer, offset, sampleCount);
 
             for (i = 0; i < sampleCount; i++) {
                 int mul = (int) (16384.0 * Math.pow(10.0, masterVolume / 40.0));
@@ -5863,14 +5857,14 @@ public class Audio {
     }
 
     private static String naudioFileName = null;
-    private static AudioFileReader naudioFileReader = null;
-    private static NAudio.Wave.SampleProviders.SampleToWaveProvider16 naudioWs = null;
+    private static AudioInputStream naudioFileReader = null;
+//    private static NAudio.Wave.SampleProviders.SampleToWaveProvider16 naudioWs = null;
     private static byte[] naudioSrcbuffer = null;
 
     public static int nAudioRead(short[] buffer, int offset, int count) {
         try {
             naudioSrcbuffer = ensure(naudioSrcbuffer, count * 2);
-            naudioWs.read(naudioSrcbuffer, 0, count * 2);
+//            naudioWs.read(naudioSrcbuffer, 0, count * 2);
             convert2ByteToShort(buffer, offset, naudioSrcbuffer, count);
         } catch (Exception e) {
 

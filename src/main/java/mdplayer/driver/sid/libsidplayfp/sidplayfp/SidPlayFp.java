@@ -12,7 +12,7 @@
  *
  * This program instanceof distributed : the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -168,7 +168,7 @@ public class SidPlayFp {
     }
 
     /**
-     * Get the CIA 1 Timer A programmed value.
+     * Get the CIA 1 Timer a programmed value.
      */
     public short getCia1TimerA() {
         return sidPlayer.getCia1TimerA();

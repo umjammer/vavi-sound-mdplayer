@@ -554,10 +554,9 @@ public class YM2612MIDI {
                 }
             }
         } catch (Exception ex) {
-            JOptionPane.showConfirmDialog(null,
+            JOptionPane.showMessageDialog(null,
                     String.format("Exception:\n%s\nStackTrace:\n%s\n", ex.getMessage(), Arrays.toString(ex.getStackTrace()))
                     , "ERROR"
-                    , JOptionPane.DEFAULT_OPTION
                     , JOptionPane.ERROR_MESSAGE
             );
         }
@@ -641,7 +640,7 @@ public class YM2612MIDI {
         tt.add(String.format("'@ %03d %03d", t.al, t.fb));
         tt.add("");
 
-        return tt.toArray(new String[0]);
+        return tt.toArray(String[]::new);
     }
 
     private String[] makeToneTextForFMP7(Tone t, int n) {
@@ -659,7 +658,7 @@ public class YM2612MIDI {
         tt.add(String.format("'@ %03d %03d", t.al, t.fb));
         tt.add("");
 
-        return tt.toArray(new String[0]);
+        return tt.toArray(String[]::new);
     }
 
     private String[] makeToneTextForNRTDRV(Tone t, int n) {
@@ -676,7 +675,7 @@ public class YM2612MIDI {
         tt.add("}");
         tt.add("");
 
-        return tt.toArray(new String[0]);
+        return tt.toArray(String[]::new);
     }
 
     private String[] makeToneTextForMXDRV(Tone t, int n) {
@@ -695,7 +694,7 @@ public class YM2612MIDI {
         tt.add("}");
         tt.add("");
 
-        return tt.toArray(new String[0]);
+        return tt.toArray(String[]::new);
     }
 
     private String[] makeToneTextForMUSICLALF(Tone t, int n) {
@@ -720,7 +719,7 @@ public class YM2612MIDI {
 
         tt.add("[ROW] '");
 
-        return tt.toArray(new String[0]);
+        return tt.toArray(String[]::new);
     }
 
     /**
@@ -746,19 +745,19 @@ public class YM2612MIDI {
 
         switch (tp) {
         case 2:
-            loadTonePalletFromMml2Vgm(tnt.toArray(new String[0]), tonePallet);
+            loadTonePalletFromMml2Vgm(tnt.toArray(String[]::new), tonePallet);
             break;
         case 3:
-            loadTonePalletFromFMP7(tnt.toArray(new String[0]), tonePallet);
+            loadTonePalletFromFMP7(tnt.toArray(String[]::new), tonePallet);
             break;
         case 4:
-            loadTonePalletFromNRTDRV(tnt.toArray(new String[0]), tonePallet);
+            loadTonePalletFromNRTDRV(tnt.toArray(String[]::new), tonePallet);
             break;
         case 5:
-            loadTonePalletFromMXDRV(tnt.toArray(new String[0]), tonePallet);
+            loadTonePalletFromMXDRV(tnt.toArray(String[]::new), tonePallet);
             break;
         case 6:
-            loadTonePalletFromMUSICLALF(tnt.toArray(new String[0]), tonePallet);
+            loadTonePalletFromMUSICLALF(tnt.toArray(String[]::new), tonePallet);
             break;
         }
     }
@@ -845,7 +844,7 @@ public class YM2612MIDI {
                 c = String.valueOf(line.charAt(0)).toUpperCase();
                 m = 0;//互換モード
 
-                if (c.equals("A")) {
+                if (c.equals("a")) {
                     m = 1;//OPNAモード
                     line = line.substring(1).trim();
                 } else if (c.equals("C")) {

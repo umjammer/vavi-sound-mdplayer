@@ -2087,9 +2087,9 @@ public class DrawBuff {
     public static void drawMIDI_Lyric(FrameBuffer screen, int chipID, int x, int y, String oldValue1, String value1) {
         // if (oldValue1 == value1) return;
 
-        gMIDILyric[chipID].clear(Color.black);
-        JTextRenderer
-                .DrawText(gMIDILyric[chipID], value1, fntMIDILyric[chipID], new Point(0, 0), Color.white);
+//        gMIDILyric[chipID].clear(Color.black);
+//        JTextRenderer
+//                .DrawText(gMIDILyric[chipID], value1, fntMIDILyric[chipID], new Point(0, 0), Color.white);
         byte[] bit = getByteArray(bitmapMIDILyric[chipID]);
         screen.drawByteArray(x, y, bit, 200, 0, 0, 200, 24);
 
@@ -2739,15 +2739,15 @@ public class DrawBuff {
     }
 
     private static byte[] getByteArray(Image img) {
-        BufferedImage bitmap = new BufferedImage(img);
-        BufferedImageData bitmapData = bitmap
-                .LockBits(new Rectangle(0, 0, bitmap.getWidth(), bitmap.getHeight()), ImageLockMode.readOnly, bitmap.PixelFormat);
-        byte[] byteArray = new byte[bitmapData.Stride * bitmap.getHeight()];
-        System.arraycopy(bitmapData.Scan0, byteArray, 0, byteArray.length);
-        bitmap.UnlockBits(bitmapData);
-        bitmap.dispose();
+//        BufferedImage bitmap = new BufferedImage(img);
+//        BufferedImageData bitmapData = bitmap
+//                .LockBits(new Rectangle(0, 0, bitmap.getWidth(), bitmap.getHeight()), ImageLockMode.readOnly, bitmap.PixelFormat);
+//        byte[] byteArray = new byte[bitmapData.Stride * bitmap.getHeight()];
+//        System.arraycopy(bitmapData.Scan0, byteArray, 0, byteArray.length);
+//        bitmap.UnlockBits(bitmapData);
+//        bitmap.dispose();
 
-        return byteArray;
+        return null;//byteArray;
     }
 
     private static void VolumeP(FrameBuffer screen, int x, int y, int t, int tp) {
@@ -3724,7 +3724,7 @@ public class DrawBuff {
             return;
 
         drawFont4(screen, x + 0 * 4, y, mask ? 1 : 0, "B");
-        drawFont4(screen, x + 15 * 4, y, mask ? 1 : 0, "S");
+        drawFont4(screen, x + 15 * 4, y, mask ? 1 : 0, "s");
         drawFont4(screen, x + 30 * 4, y, mask ? 1 : 0, "C");
         drawFont4(screen, x + 45 * 4, y, mask ? 1 : 0, "H");
         drawFont4(screen, x + 60 * 4, y, mask ? 1 : 0, "T");

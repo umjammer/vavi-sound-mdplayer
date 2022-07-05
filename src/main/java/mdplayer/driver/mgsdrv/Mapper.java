@@ -4,6 +4,7 @@ import konamiman.z80.Z80Processor;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
 import konamiman.z80.utils.Bit;
 import mdplayer.Log;
+import vavi.util.Debug;
 
 
 public class Mapper {
@@ -30,35 +31,35 @@ public class Mapper {
     public void CallMapperProc(BeforeInstructionFetchEvent args, Z80Processor z80, int typ) {
         switch (typ) {
         case 0: // adr
-            //Log.Write(" MAPPER PROC ALL_SEG Reg.A=%02x Reg.B=%02x", z80.getRegisters().getA(), z80.getRegisters().getB());
+            //Debug.printf(" MAPPER PROC ALL_SEG Reg.a=%02x Reg.B=%02x", z80.getRegisters().getA(), z80.getRegisters().getB());
             if (z80.getRegisters().getB() != 0) throw new UnsupportedOperationException();
             if (freeSegment == 0) {
                 z80.getRegisters().setCF(Bit.ON);
                 return;
             }
             z80.getRegisters().setA(freeSegment++); // Segment Number 1c 1b
-            //Log.Write("   Allocate Reg.A=%02x ", z80.getRegisters().getA() );
+            //Debug.printf("   Allocate Reg.a=%02x ", z80.getRegisters().getA() );
             z80.getRegisters().setB((byte) 0x00); // Slot number
             z80.getRegisters().setCF(Bit.OFF); // 割り当て失敗時に1
             break;
         case 10: // adr:0x1e
-            //Log.Write(" MAPPER PROC PUT_P1 Reg.A=%02x", z80.getRegisters().getA());
+            //Debug.printf(" MAPPER PROC PUT_P1 Reg.a=%02x", z80.getRegisters().getA());
             crt.setSegmentToPage(z80.getRegisters().getA(), 1);
             break;
         case 11: // adr:0x21
-            //Log.Write(" MAPPER PROC GET_P1 P1:%02x", crt.GetSegmentNumberFromPageNumber(1));
+            //Debug.printf(" MAPPER PROC GET_P1 P1:%02x", crt.GetSegmentNumberFromPageNumber(1));
             z80.getRegisters().setA((byte) crt.getSegmentNumberFromPageNumber(1));
             break;
         case 12: // adr:0x24
-            Log.write(String.format(" MAPPER PROC PUT_P2 Reg.A=%02x", z80.getRegisters().getA()));
+            Debug.printf(String.format(" MAPPER PROC PUT_P2 Reg.a=%02x", z80.getRegisters().getA()));
             crt.setSegmentToPage(z80.getRegisters().getA(), 2);
             break;
         case 13: // adr:0x27
-            Log.write(String.format(" MAPPER PROC GET_P1 P2:%02x", crt.getSegmentNumberFromPageNumber(2)));
+            Debug.printf(String.format(" MAPPER PROC GET_P1 P2:%02x", crt.getSegmentNumberFromPageNumber(2)));
             z80.getRegisters().setA((byte) crt.getSegmentNumberFromPageNumber(2));
             break;
         default:
-            Log.write(" MAPPER PROC Unknown type");
+            Debug.printf(" MAPPER PROC Unknown type");
             throw new UnsupportedOperationException();
         }
 

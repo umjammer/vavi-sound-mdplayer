@@ -3,11 +3,11 @@ package mdplayer.driver.nrtdrv;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import dotnet4j.util.compat.Tuple3;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
-import mdplayer.Common.Tuple3;
 import mdplayer.Log;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
@@ -26,7 +26,7 @@ public class NRTDRV extends BaseDriver {
     public Work work = new Work();
 
     private static final byte[] KTABLE = new byte[] {
-         // C     C+    D     D +   E     F     F+    G     G+    A     A+    B
+         // C     C+    D     D +   E     F     F+    G     G+    a     a+    B
             0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x04, 0x05, 0x06, 0x08, 0x09, 0x0A, // o0
             0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x14, 0x15, 0x16, 0x18, 0x19, 0x1A, // o1
             0x1C, 0x1D, 0x1E, 0x20, 0x21, 0x22, 0x24, 0x25, 0x26, 0x28, 0x29, 0x2A, // o2
@@ -40,7 +40,7 @@ public class NRTDRV extends BaseDriver {
     };
 
     private static final int[] PTABLE = new int[] {
-            // C    C+   D    D+   E    F    F+   G    G+   A    A+   B
+            // C    C+   D    D+   E    F    F+   G    G+   a    a+   B
             4095, 4036, 3980, 3978, 3924, 3894, 3868, 3812, 3756, 3700, 3644, 3588 // o0
             , 3532, 3476, 3420, 3228, 3047, 2876, 2715, 2562, 2419, 2283, 2155, 2034 // o1
             , 1920, 1812, 1711, 1614, 1524, 1438, 1358, 1281, 1210, 1142, 1078, 1017 // o2
