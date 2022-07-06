@@ -66,20 +66,20 @@ public class WaveWriter {
         // チャンネル数(ステレオ)
         des.add((byte) 0x02);
         des.add((byte) 0x00);
-        //サンプリング周波数(44100Hz)
+        // サンプリング周波数(44100Hz)
         des.add((byte) (setting.getOutputDevice().getSampleRate() >> 0));
         des.add((byte) (setting.getOutputDevice().getSampleRate() >> 8));
         des.add((byte) (setting.getOutputDevice().getSampleRate() >> 16));
         des.add((byte) (setting.getOutputDevice().getSampleRate() >> 24));
-        //平均データ割合
+        // 平均データ割合
         des.add((byte) 0x10);
         des.add((byte) 0xb1);
         des.add((byte) 0x02);
-        des.add((byte) 0); //10 B1 02 00
-        //ブロックサイズ(4)
+        des.add((byte) 0); // 10 B1 02 00
+        // ブロックサイズ(4)
         des.add((byte) 0x04);
         des.add((byte) 0x00);
-        //ビット数(16bit)
+        // ビット数(16bit)
         des.add((byte) 0x10);
         des.add((byte) 0x00);
 
@@ -94,7 +94,7 @@ public class WaveWriter {
         des.add((byte) ((len & 0xff0000) >> 16));
         des.add((byte) ((len & 0xff000000) >> 24));
 
-        //出力
+        // 出力
         dest.write(mdsound.Common.toByteArray(des), 0, des.size());
     }
 

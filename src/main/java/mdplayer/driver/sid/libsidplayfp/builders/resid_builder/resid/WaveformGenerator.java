@@ -21,6 +21,9 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
 
 
 import java.util.Scanner;
+import java.util.logging.Level;
+
+import vavi.util.Debug;
 
 
 /**

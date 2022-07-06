@@ -26,7 +26,7 @@ public abstract class ZgmChip extends Chip {
 
     }
 
-    public void setup(int chipIndex, int dataPos, Map<Integer, Zgm.RefRunnable<Byte, Integer>> cmdTable) {
+    public void setUp(int chipIndex, int dataPos, Map<Integer, Zgm.RefRunnable<Byte, Integer>> cmdTable) {
         this.index = chipIndex;
         defineInfo = new Zgm.DefineInfo();
         defineInfo.length = vgmBuf[dataPos + 0x03];

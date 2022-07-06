@@ -23,21 +23,20 @@ import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
-import mdplayer.Log;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
 import musicDriverInterface.GD3Tag;
 import musicDriverInterface.InstanceMarker;
 import musicDriverInterface.MmlDatum;
-import musicDriverInterface.enmTag;
-import musicDriverInterface.iCompiler;
-import musicDriverInterface.iDriver;
+import musicDriverInterface.Tag;
+import musicDriverInterface.ICompiler;
+import musicDriverInterface.IDriver;
 
 
 public class MoonDriverDotNET extends BaseDriver {
-    private iCompiler moonDriverCompiler = null;
-    private iDriver moonDriverDriver = null;
+    private ICompiler moonDriverCompiler = null;
+    private IDriver moonDriverDriver = null;
     private enmMoonDriverFileType mtype;
 
     private String PlayingFileName;
@@ -58,32 +57,32 @@ public class MoonDriverDotNET extends BaseDriver {
     InstanceMarker im;
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         mtype = CheckFileType(buf);
         GD3Tag gt;
 
         if (mtype == enmMoonDriverFileType.MDL) {
-            moonDriverCompiler = im.GetCompiler("MoonDriverDotNET.Compiler.Compiler");
+            moonDriverCompiler = im.getCompiler("MoonDriverDotNET.Compiler.Compiler");
             gt = moonDriverCompiler.getGD3TagInfo(buf);
         } else {
-            moonDriverDriver = im.GetDriver("MoonDriverDotNET.Driver.Driver");
+            moonDriverDriver = im.getDriver("MoonDriverDotNET.Driver.Driver");
             gt = moonDriverDriver.getGD3TagInfo(buf);
         }
 
         Vgm.Gd3 g = new Vgm.Gd3();
-        g.trackName = gt.dicItem.containsKey(enmTag.Title) ? gt.dicItem.get(enmTag.Title)[0] : "";
-        g.trackNameJ = gt.dicItem.containsKey(enmTag.TitleJ) ? gt.dicItem.get(enmTag.TitleJ)[0] : "";
-        g.composer = gt.dicItem.containsKey(enmTag.Composer) ? gt.dicItem.get(enmTag.Composer)[0] : "";
-        g.composerJ = gt.dicItem.containsKey(enmTag.ComposerJ) ? gt.dicItem.get(enmTag.ComposerJ)[0] : "";
-        g.vgmBy = gt.dicItem.containsKey(enmTag.Artist) ? gt.dicItem.get(enmTag.Artist)[0] : "";
-        g.converted = gt.dicItem.containsKey(enmTag.ReleaseDate) ? gt.dicItem.get(enmTag.ReleaseDate)[0] : "";
+        g.trackName = gt.items.containsKey(Tag.Title) ? gt.items.get(Tag.Title)[0] : "";
+        g.trackNameJ = gt.items.containsKey(Tag.TitleJ) ? gt.items.get(Tag.TitleJ)[0] : "";
+        g.composer = gt.items.containsKey(Tag.Composer) ? gt.items.get(Tag.Composer)[0] : "";
+        g.composerJ = gt.items.containsKey(Tag.ComposerJ) ? gt.items.get(Tag.ComposerJ)[0] : "";
+        g.vgmBy = gt.items.containsKey(Tag.Artist) ? gt.items.get(Tag.Artist)[0] : "";
+        g.converted = gt.items.containsKey(Tag.ReleaseDate) ? gt.items.get(Tag.ReleaseDate)[0] : "";
 
         return g;
     }
 
     @Override
     public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        gd3 = getGD3Info(vgmBuf, 0);
+        gd3 = getGD3Info(vgmBuf);
 
         this.vgmBuf = vgmBuf;
         this.chipRegister = chipRegister;
@@ -115,7 +114,7 @@ public class MoonDriverDotNET extends BaseDriver {
     }
 
     @Override
-    public void oneFrameProc() {
+    public void processOneFrame() {
 // #if DEBUG
         //実チップスレッドは処理をスキップ(デバッグ向け)
         if (model == EnmModel.RealModel) {
@@ -129,30 +128,30 @@ public class MoonDriverDotNET extends BaseDriver {
             while (vgmSpeedCounter >= 1.0) {
                 vgmSpeedCounter -= 1.0;
 
-                moonDriverDriver.Rendering();
+                moonDriverDriver.render();
 
                 counter++;
                 vgmFrameCounter++;
             }
 
-            int lp = moonDriverDriver.GetNowLoopCounter();
+            int lp = moonDriverDriver.getNowLoopCounter();
             lp = Math.max(lp, 0);
             vgmCurLoop = lp;
 
-            if (moonDriverDriver.GetStatus() < 1) {
-                if (moonDriverDriver.GetStatus() == 0) {
+            if (moonDriverDriver.getStatus() < 1) {
+                if (moonDriverDriver.getStatus() == 0) {
                     Thread.sleep((int) (latency * 2.0)); // 実際の音声が発音しきるまでlatency*2の分だけ待つ
                 }
                 stopped = true;
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
     public byte[] Compile(byte[] vgmBuf) {
-        if (moonDriverCompiler == null) moonDriverCompiler = im.GetCompiler("MoonDriverDotNET.Compiler.Compiler");
-        moonDriverCompiler.Init();
+        if (moonDriverCompiler == null) moonDriverCompiler = im.getCompiler("MoonDriverDotNET.Compiler.Compiler");
+        moonDriverCompiler.init();
         moonDriverCompiler.setCompileSwitch("SRC");
         moonDriverCompiler.setCompileSwitch("MoonDriverOption=-i");
         moonDriverCompiler.setCompileSwitch(String.format("MoonDriverOption=%s", PlayingFileName));
@@ -167,6 +166,7 @@ public class MoonDriverDotNET extends BaseDriver {
             info = moonDriverCompiler.getCompilerInfo();
 
         } catch (Exception e) {
+            e.printStackTrace();
             ret = null;
             info = null;
         }
@@ -181,7 +181,7 @@ public class MoonDriverDotNET extends BaseDriver {
 
         List<Byte> dest = new ArrayList<>();
         for (MmlDatum md : ret) {
-            dest.add(md != null ? (byte) md.dat : (byte) 0);
+            dest.add(md != null ? (byte) (md.dat & 0xff) : (byte) 0);
         }
 
         return mdsound.Common.toByteArray(dest);
@@ -210,10 +210,10 @@ public class MoonDriverDotNET extends BaseDriver {
     }
 
     private boolean initMDL() {
-        moonDriverCompiler.Init();
+        moonDriverCompiler.init();
 
         MmlDatum[] ret;
-        CompilerInfo info = null;
+        CompilerInfo info;
         try {
             try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
                 ret = moonDriverCompiler.compile(sourceMML, this::appendFileReaderCallback);
@@ -222,6 +222,7 @@ public class MoonDriverDotNET extends BaseDriver {
             info = moonDriverCompiler.getCompilerInfo();
 
         } catch (Exception e) {
+            e.printStackTrace();
             ret = null;
             info = null;
         }
@@ -234,17 +235,17 @@ public class MoonDriverDotNET extends BaseDriver {
             return false;
         }
 
-        if (moonDriverDriver == null) moonDriverDriver = im.GetDriver("MoonDriverDotNET.Driver.Driver");
+        if (moonDriverDriver == null) moonDriverDriver = im.getDriver("MoonDriverDotNET.Driver.Driver");
 
         //boolean notSoundBoard2 = false;
         //boolean isLoadADPCM = true;
         //boolean loadADPCMOnly = false;
 
-        ////mucomDriver.Init(PlayingFileName,chipWriteRegister,chipWaitSend, ret, new Object[] {
+        ////mucomDriver.Init(playingFileName,chipWriteRegister,chipWaitSend,
         //         notSoundBoard2
         //       , isLoadADPCM
         //       , loadADPCMOnly
-        //   });
+        //   );
         //List<ChipRunnable> lca = new ArrayList<ChipRunnable>();
         //mucomChipAction ca;
         //ca = new mucomChipAction(OPNA1Write, null, OPNAWaitSend); lca.add(ca);
@@ -260,18 +261,18 @@ public class MoonDriverDotNET extends BaseDriver {
         //          notSoundBoard2
         //        , isLoadADPCM
         //        , loadADPCMOnly
-        //        , PlayingFileName
+        //        , playingFileName
         //    });
 
-        //moonDriverDriver.StartRendering(Common.VGMProcSampleRate
-        //    , new Tuple<String, int>[] { new Tuple<String, int>("", OPNAbaseclock) });
+        //moonDriverDriver.startRendering(Common.VGMProcSampleRate
+        //    , new Tuple<String, int>[] { new Tuple<String, int>("", opnaBaseClock) });
         //moonDriverDriver.MusicSTART(0);
 
         return true;
     }
 
     private boolean initMDR() {
-        if (moonDriverDriver == null) moonDriverDriver = im.GetDriver("MoonDriverDotNET.Driver.Driver");
+        if (moonDriverDriver == null) moonDriverDriver = im.getDriver("MoonDriverDotNET.Driver.Driver");
 
         List<MmlDatum> buf = new ArrayList<MmlDatum>();
         for (byte b : vgmBuf) buf.add(new MmlDatum(b));
@@ -279,21 +280,11 @@ public class MoonDriverDotNET extends BaseDriver {
         List<ChipAction> lca = new ArrayList<>();
         ChipAction ca = new MoonDriverChipAction(this::opl4Write, this::opl4WaitSend);
         lca.add(ca);
-        Object additionalOption = new Object[] {
-                PlayingFileName,
-                (double) 44100,
-                0
-        };
-        moonDriverDriver.Init(
-                lca,
-                buf.toArray(MmlDatum[]::new)
-                , this::appendFileReaderCallback
-                , additionalOption
-        );
+        moonDriverDriver.init(lca, buf.toArray(MmlDatum[]::new), this::appendFileReaderCallback
+                , PlayingFileName, (double) 44100, 0);
 
-        moonDriverDriver.StartRendering(Common.VGMProcSampleRate
-                , new Tuple[] {new Tuple<>("YMF278B", 33868800)});
-        moonDriverDriver.MusicSTART(0);
+        moonDriverDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YMF278B", 33868800));
+        moonDriverDriver.startMusic(0);
 
         return true;
     }
@@ -308,15 +299,16 @@ public class MoonDriverDotNET extends BaseDriver {
         try {
             strm = new FileStream(fn, FileMode.Open, FileAccess.Read, FileShare.Read);
         } catch (IOException e) {
+            e.printStackTrace();
             strm = null;
         }
 
         return strm;
     }
 
-    //public void WriteRegister(ChipDatum dat) {
-    //    //Log.WriteLine(LogLevel.TRACE, String.format("FM p%d Out:Adr[%02x] val[%02x]", (int)dat.address, (int)dat.data, dat.port));
-    //    //System.err.println("FM p%d Out:Adr[%02x] val[%02x]", (int)dat.address, (int)dat.data, dat.port);
+    //public void writeRegister(ChipDatum dat) {
+    //    //Debug.printf(LogLevel.FINEST, FM p%d Out:Adr[%02x] val[%02x]", (int)dat.address, (int)dat.data, dat.port));
+    //    //Debug.printf("FM p%d Out:Adr[%02x] val[%02x]", (int)dat.address, (int)dat.data, dat.port);
     //    outDatum od = null;
 
     //    if (pcmdata.size() > 0) {
@@ -333,7 +325,7 @@ public class MoonDriverDotNET extends BaseDriver {
     //    }
 
     //    //if (od != null && od.linePos != null) {
-    //    //System.err.println("%d", od.linePos.col);
+    //    //Debug.println("%d", od.linePos.col);
     //    //}
 
     //    //chipRegister.YM2608SetRegister(od, (long)dat.time, 0, dat.port, dat.address, dat.data);

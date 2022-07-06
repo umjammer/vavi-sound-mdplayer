@@ -3,6 +3,7 @@ package mdplayer.driver.nsf;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import mdplayer.ChipRegister;
 import mdplayer.Common;
@@ -31,6 +32,7 @@ import mdsound.np.chip.NesVrc7;
 import mdsound.np.cpu.Km6502;
 import mdsound.np.memory.NesBank;
 import mdsound.np.memory.NesMem;
+import vavi.util.Debug;
 
 
 public class Nsf extends BaseDriver {
@@ -41,9 +43,9 @@ public class Nsf extends BaseDriver {
     }
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         if (Common.getLE32(buf, 0) != FCC_NSF) {
-            //NSFeはとりあえず未サポート
+             // NSFeはとりあえず未サポート
             return null;
         }
 
@@ -157,7 +159,7 @@ public class Nsf extends BaseDriver {
         vgmSpeed = 1;
         vgmSpeedCounter = 0;
 
-        gd3 = getGD3Info(vgmBuf, 0);
+        gd3 = getGD3Info(vgmBuf);
 
         nsfInit();
 
@@ -165,7 +167,7 @@ public class Nsf extends BaseDriver {
     }
 
     @Override
-    public void oneFrameProc() {
+    public void processOneFrame() {
         if (model == EnmModel.RealModel) return;
 
         try {
@@ -180,7 +182,7 @@ public class Nsf extends BaseDriver {
             }
             //Stopped = !IsPlaying();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -315,8 +317,8 @@ public class Nsf extends BaseDriver {
         lpf.reset();
         dcf.setRate(setting.getOutputDevice().getSampleRate());
         dcf.reset();
-        dcf.setParam(270, 256 - setting.getNsf().getHPF());//HPF:256-(Range0-256(Def:92))
-        lpf.SetParam(4700.0, setting.getNsf().getLPF()); //LPF:(Range 0-400(Def:112))
+        dcf.setParam(270, 256 - setting.getNsf().getHPF()); // HPF:256-(Range0-256(Def:92))
+        lpf.SetParam(4700.0, setting.getNsf().getLPF());  // LPF:(Range 0-400(Def:112))
         //System.err.println("dcf:%d", dcf.GetFactor());
         //System.err.println("lpf:%d", lpf.GetFactor());
 

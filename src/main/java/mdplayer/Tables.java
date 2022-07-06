@@ -62,7 +62,7 @@ public abstract class Tables {
     };
 
     public static final int[] pcmpitchTbl = new int[] {
-        //0-1023
+         // 0-1023
         0
         ,61
         ,125

@@ -527,7 +527,7 @@ public class DevPsg {
      */
     public void _psg_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
-        //_psgc:
+         // _psgc:
         switch (reg.getD0_W() / 2) {
 
         case 0x00:

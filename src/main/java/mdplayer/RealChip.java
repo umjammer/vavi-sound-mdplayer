@@ -4,8 +4,10 @@ package mdplayer;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import mdplayer.Common.EnmRealChipType;
+import vavi.util.Debug;
 
 
 public class RealChip implements Closeable {
@@ -34,9 +36,9 @@ public class RealChip implements Closeable {
     // // #endregion
 
     public RealChip(boolean sw) {
-        Log.forcedWrite("RealChip:Ctr:STEP 00(Start)");
+        Debug.println(Level.SEVERE, "RealChip:Ctr:STEP 00(Start)");
         if (!sw) {
-            Log.forcedWrite("RealChip:Not Initialize(user)");
+            Debug.println(Level.SEVERE, "RealChip:Not Initialize(user)");
             return;
         }
 
@@ -60,7 +62,7 @@ public class RealChip implements Closeable {
 //        }
 
         // GIMICの存在確認
-        Log.forcedWrite("RealChip:Ctr:STEP 01");
+        Debug.println(Level.SEVERE, "RealChip:Ctr:STEP 01");
 //        try {
 //            nc86ctl = new Nc86ctl.Nc86ctl();
 //            nc86ctl.initialize();
@@ -77,7 +79,7 @@ public class RealChip implements Closeable {
 //        } catch (Exception e) {
 //            nc86ctl = null;
 //        }
-        Log.forcedWrite("RealChip:Ctr:STEP 02(Success)");
+        Debug.println(Level.SEVERE, "RealChip:Ctr:STEP 02(Success)");
     }
 
     public void close_() {

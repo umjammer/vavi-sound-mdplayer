@@ -76,18 +76,26 @@ public abstract class BaseDriver {
                                  int latency,
                                  int waitTime);
 
-    public abstract void oneFrameProc();
+    public abstract void processOneFrame();
 
-    public abstract Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3);
+    public Vgm.Gd3 getGD3Info(byte[] buf) {
+        return getGD3Info(buf, new int[1]);
+    }
+
+    public Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+        return getGD3Info(buf, new int[] {vgmGd3});
+    }
+
+    public abstract Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3);
 
     public void setYm2151Hosei(float ym2151ClockValue) {
         for (int chipID = 0; chipID < 2; chipID++) {
-            ym2151Hosei[chipID] = Common.GetYM2151Hosei(ym2151ClockValue, 3579545);
+            ym2151Hosei[chipID] = Common.getYM2151Hosei(ym2151ClockValue, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipID] = 0;
                 int clock = chipRegister.getYM2151Clock((byte) chipID);
                 if (clock != -1) {
-                    ym2151Hosei[chipID] = Common.GetYM2151Hosei(ym2151ClockValue, clock);
+                    ym2151Hosei[chipID] = Common.getYM2151Hosei(ym2151ClockValue, clock);
                 }
             }
         }

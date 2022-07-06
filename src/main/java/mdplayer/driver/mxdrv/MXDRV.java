@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 
 import dotnet4j.util.compat.Tuple;
 import mdplayer.ChipRegister;
@@ -25,6 +26,7 @@ import mdplayer.driver.Vgm.Gd3;
 import mdplayer.Log;
 import mdsound.Ym2151X68Sound;
 import mdsound.x68sound.X68Sound;
+import vavi.util.Debug;
 
 
 //
@@ -227,7 +229,7 @@ public class MXDRV extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         Gd3 gd3 = new Gd3();
 
         List<Byte> lst = new ArrayList<>();
@@ -256,7 +258,7 @@ public class MXDRV extends BaseDriver {
         this.latency = latency;
         this.waitTime = waitTime;
 
-        gd3 = getGD3Info(vgmBuf, 0);
+        gd3 = getGD3Info(vgmBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -266,12 +268,12 @@ public class MXDRV extends BaseDriver {
         vgmSpeed = 1;
 
         for (int chipID = 0; chipID < 2; chipID++) {
-            ym2151Hosei[chipID] = Common.GetYM2151Hosei(4000000, 3579545);
+            ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipID] = 0;
                 int clock = chipRegister.getYM2151Clock((byte) chipID);
                 if (clock != -1) {
-                    ym2151Hosei[chipID] = Common.GetYM2151Hosei(4000000, clock);
+                    ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, clock);
                 }
             }
         }
@@ -288,7 +290,7 @@ public class MXDRV extends BaseDriver {
         this.waitTime = waitTime;
         this.mdxPCM = mdxPCM;
 
-        gd3 = getGD3Info(vgmBuf, 0);
+        gd3 = getGD3Info(vgmBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -298,12 +300,12 @@ public class MXDRV extends BaseDriver {
         vgmSpeed = 1;
 
         for (int chipID = 0; chipID < 2; chipID++) {
-            ym2151Hosei[chipID] = Common.GetYM2151Hosei(4000000, 3579545);
+            ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipID] = 0;
                 int clock = chipRegister.getYM2151Clock((byte) chipID);
                 if (clock != -1) {
-                    ym2151Hosei[chipID] = Common.GetYM2151Hosei(4000000, clock);
+                    ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, clock);
                 }
             }
         }
@@ -358,7 +360,7 @@ public class MXDRV extends BaseDriver {
     short[] dummyBuf = new short[2];
 
     @Override
-    public void oneFrameProc() {
+    public void processOneFrame() {
         Render(dummyBuf, 0, 2);
     }
 
@@ -386,7 +388,7 @@ public class MXDRV extends BaseDriver {
                 stopped = true;
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -1344,17 +1346,17 @@ exit:
 
 exit:   {
             while (true) {
-                D4 = Depend.getblong(mm, a1_l);
+                D4 = Depend.getBlong(mm, a1_l);
                 a1_l++;
-                D2 = Depend.getblong(mm, a1_l);
+                D2 = Depend.getBlong(mm, a1_l);
                 a1_l++;
                 D4 &= 0x00ffffff;
                 if (D4 != 0) {
-                    t0 = Depend.getblong(mm, a1_l - 2);
+                    t0 = Depend.getBlong(mm, a1_l - 2);
                     if (t0 != D4) { break; }
                     D2 &= 0x00ffffff;
                     if (D2 != 0) {
-                        t0 = Depend.getblong(mm, a1_l - 1);
+                        t0 = Depend.getBlong(mm, a1_l - 1);
                         if (t0 != D2) { break; }
                         D2 += D4;
                         if (D1 <= D2) {
@@ -1461,7 +1463,7 @@ exit:   {
                 int a0_l = A0;
 
                 do {
-                    D0 = Depend.getblong(mm, a0_l);
+                    D0 = Depend.getBlong(mm, a0_l);
                     a0_l++;
                     if (D0 != 0) {
                         Depend.putblong(mm, a0_l - 1, D0 + D3);
@@ -1689,7 +1691,7 @@ exit:   {
             D2--;
 
             do {
-                D0 = Depend.getblong(mm, A0);
+                D0 = Depend.getBlong(mm, A0);
                 if (D0 != 0) {
                     Depend.putblong(mm, A0, D0 + D1);
                 }
@@ -1699,7 +1701,7 @@ exit:   {
                     D5 >>= 3;
                     D5--;
 
-                    D0 = Depend.getblong(mm, A0);
+                    D0 = Depend.getBlong(mm, A0);
                     if (D0 != 0) {
                         Depend.putblong(mm, A0, D0 + D7);
                     }
@@ -1817,7 +1819,7 @@ exit:   {
         mm.write(G + MXWORK_GLOBAL.L001e24, A1);
         mm.write(G + MXWORK_GLOBAL.L001e28, A1);
 
-        while (Depend.getbword(mm, A1) != 0) {
+        while (Depend.getBword(mm, A1) != 0) {
             A1 = (byte) (((short) A1) + 3);
         }
         A1 = (byte) (((short) A1) - 3);
@@ -1834,8 +1836,8 @@ exit:   {
         mm.write(G + MXWORK_GLOBAL.L002230, (byte) Depend.CLR);
         mm.write(G + MXWORK_GLOBAL.L002231, (byte) Depend.CLR);
         A0 = mm.readInt(G + MXWORK_GLOBAL.L001e34);
-        mm.write(G + MXWORK_GLOBAL.L002218, Depend.getblong(mm, A0));
-        mm.write(G + MXWORK_GLOBAL.L00221c, Depend.getblong(mm, A0 + 4));
+        mm.write(G + MXWORK_GLOBAL.L002218, Depend.getBlong(mm, A0));
+        mm.write(G + MXWORK_GLOBAL.L00221c, Depend.getBlong(mm, A0 + 4));
         L00063e();
     }
 
@@ -2084,7 +2086,7 @@ exit:   {
     private void L00077a() {
         A0 = mm.readInt(G + MXWORK_GLOBAL.L001e28);
         A0 += 0x06;
-        if (Depend.getbword(mm, A0) != 0) {
+        if (Depend.getBword(mm, A0) != 0) {
             L000788();
             return;
         }
@@ -2096,13 +2098,13 @@ exit:   {
     //
     private void L000788() {
         mm.write(G + MXWORK_GLOBAL.L001e28, A0);
-        mm.write(G + MXWORK_GLOBAL.L001e22, Depend.getbword(mm, A0));
-        A1 = Depend.getblong(mm, A0 + 2);
-        mm.write(G + MXWORK_GLOBAL.L00221c, Depend.getblong(mm, A1));
+        mm.write(G + MXWORK_GLOBAL.L001e22, Depend.getBword(mm, A0));
+        A1 = Depend.getBlong(mm, A0 + 2);
+        mm.write(G + MXWORK_GLOBAL.L00221c, Depend.getBlong(mm, A1));
         A1 += 4;
-        D0 = Depend.getbword(mm, A1);
+        D0 = Depend.getBword(mm, A1);
         D0 = ~D0;
-        D1 = Depend.getbword(mm, A1 + 2);
+        D1 = Depend.getBword(mm, A1 + 2);
         D1 = ~D1;
         mm.write(G + MXWORK_GLOBAL.L002230, (byte) D0);
         mm.write(G + MXWORK_GLOBAL.L002231, (byte) D1);
@@ -2151,7 +2153,7 @@ exit:   {
         }
         L00063e();
         A2 = mm.readInt(G + MXWORK_GLOBAL.L002218);
-        D1 = Depend.getbword(mm, A2 + 2);
+        D1 = Depend.getBword(mm, A2 + 2);
         if ((short) D1 >= 0) { // break L000848;
             if (mm.readByte(G + MXWORK_GLOBAL.L002231) == 0) {
                 L_ERROR();
@@ -2159,20 +2161,20 @@ exit:   {
             }
             A0 = mm.readInt(G + MXWORK_GLOBAL.L00221c);
             while (D1-- != 0) {
-                if (Depend.getblong(mm, A0) == 0) {
+                if (Depend.getBlong(mm, A0) == 0) {
                     L_ERROR();
                     return;
                 }
-                A0 += Depend.getblong(mm, A0);
+                A0 += Depend.getBlong(mm, A0);
             }
-            A0 += Depend.getbword(mm, A0 + 4);
+            A0 += Depend.getBword(mm, A0 + 4);
             mm.write(G + MXWORK_GLOBAL.L00222c, A0);
         }
-        A2 += Depend.getbword(mm, A2 + 4);
+        A2 += Depend.getBword(mm, A2 + 4);
         A1 = A2;
         A0 = A2;
         D0 = 0x00000000;
-        D0 = Depend.getbword(mm, A1);
+        D0 = Depend.getBword(mm, A1);
         A1 += 2;
         A2 += D0;
         mm.write(G + MXWORK_GLOBAL.L002228, A2);
@@ -2183,7 +2185,7 @@ exit:   {
 
         while (true) { //トラックのパラメータを初期化(exPCM含む)
             A2 = A0;
-            D0 = Depend.getbword(mm, A1);
+            D0 = Depend.getBword(mm, A1);
             A1 += 2;
             A2 += D0;
             mm.write(A6 + MXWORK_CH.S0000, A2);
@@ -2285,13 +2287,13 @@ exit:   {
         }
         A0 = mm.readInt(G + MXWORK_GLOBAL.L002218);
         while (D1-- != 0) {
-            if (Depend.getbword(mm, A0) == 0) {
+            if (Depend.getBword(mm, A0) == 0) {
                 L000998();
                 return;
             }
-            A0 += Depend.getbword(mm, A0);
+            A0 += Depend.getBword(mm, A0);
         }
-        A0 += Depend.getbword(mm, A0 + 6);
+        A0 += Depend.getBword(mm, A0 + 6);
         D0 = A0;
     }
 
@@ -2303,13 +2305,13 @@ exit:   {
         }
         A0 = mm.readInt(G + MXWORK_GLOBAL.L00221c);
         while (D1-- != 0) {
-            if (Depend.getblong(mm, A0) == 0) {
+            if (Depend.getBlong(mm, A0) == 0) {
                 L000998();
                 return;
             }
-            A0 += Depend.getblong(mm, A0);
+            A0 += Depend.getBlong(mm, A0);
         }
-        A0 += Depend.getbword(mm, A0 + 6);
+        A0 += Depend.getBword(mm, A0 + 6);
         D0 = A0;
     }
 
@@ -2811,10 +2813,10 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             D0 <<= 3;
             A1 = mm.readInt(G + MXWORK_GLOBAL.L00222c);
             A0 = A1 + D0;
-            A1 += Depend.getblong(mm, A0);
+            A1 += Depend.getBlong(mm, A0);
             A0 += 4;
             A0 += 2;
-            D3 = Depend.getbword(mm, A0);
+            D3 = Depend.getBword(mm, A0);
             A0 += 2;
             if (D3 != 0x0000) {
                 ADPCMMOD_END();
@@ -2837,9 +2839,9 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             D0 <<= 3;
             A1 = mm.readInt(G + MXWORK_GLOBAL.L00222c);
             A0 = A1 + D0;
-            D3 = Depend.getblong(mm, A0 + 4);
+            D3 = Depend.getBlong(mm, A0 + 4);
             if (D3 != 0) {
-                A1 += Depend.getblong(mm, A0);
+                A1 += Depend.getBlong(mm, A0);
                 D0 = (D0 & 0xffffff00) + mm.readByte(A6 + MXWORK_CH.S0018);
                 D0 &= 0xffff0007;
                 D1 = 0x00;
@@ -3287,7 +3289,7 @@ exit:   {
 
     //
     private void L001376() {
-        D0 = Depend.getbword(mm, A4);
+        D0 = Depend.getBword(mm, A4);
         A4 += 2;
         D0 = (D0 ^ 0xffff) + 1;
         mm.write(A4 - D0 - 1, (byte) (mm.readByte(A4 - D0 - 1) - 1));
@@ -3311,11 +3313,11 @@ exit:   {
 
     //
     private void L00139a() {
-        D0 = Depend.getbword(mm, A4);
+        D0 = Depend.getBword(mm, A4);
         A4 += 2;
         A0 = A4 + D0;
         D0 = 0xffffffff;
-        D0 = Depend.getbword(mm, A0);
+        D0 = Depend.getBword(mm, A0);
         A0 += 2;
         D0 = (D0 ^ 0xffff) + 1;
         if (mm.readByte(A0 - D0 - 1) == 0x01) {
@@ -3325,7 +3327,7 @@ exit:   {
 
     //
     private void L0013ba() { // @@ D
-        D0 = Depend.getbword(mm, A4);
+        D0 = Depend.getBword(mm, A4);
         A4 += 2;
         mm.write(A6 + MXWORK_CH.S0010, (short) D0);
     }
@@ -3333,7 +3335,7 @@ exit:   {
     //
     private void L0013c6() {
         D0 = 0;
-        D0 = Depend.getbword(mm, A4);
+        D0 = Depend.getBword(mm, A4);
         A4 += 2;
         D0 = (short) D0;
         D0 <<= 8;
@@ -3348,7 +3350,7 @@ exit:   {
             return;
         }
         A4--;
-        D0 = Depend.getbword(mm, A4);
+        D0 = Depend.getBword(mm, A4);
         A4 += 2;
         D0 = (D0 ^ 0xffff) + 1;
         L0013e6();
@@ -3478,7 +3480,7 @@ exit:   {
             D1 += D1;
             A0 = ((D1 / 2) + 1);
             mm.write(A6 + MXWORK_CH.S0026, A0);
-            D2 = Depend.getbword(mm, A4);
+            D2 = Depend.getBword(mm, A4);
             A4 += 2;
             mm.write(A6 + MXWORK_CH.S003c, (short) D2);
             if (D1 != 0x02) {
@@ -3488,7 +3490,7 @@ exit:   {
                 }
             }
             mm.write(A6 + MXWORK_CH.S003a, (short) D2);
-            D0 = Depend.getbword(mm, A4);
+            D0 = Depend.getBword(mm, A4);
             A4 += 2;
             D0 = (short) D0;
             D0 = D0 << 8;
@@ -3526,10 +3528,10 @@ exit:   {
         D2 += D2;
         A0 = ((D2 / 2) + 1);
         mm.write(A6 + MXWORK_CH.S0040, A0);
-        D1 = Depend.getbword(mm, A4);
+        D1 = Depend.getBword(mm, A4);
         A4 += 2;
         mm.write(A6 + MXWORK_CH.S004c, (short) D1);
-        D0 = Depend.getbword(mm, A4);
+        D0 = Depend.getBword(mm, A4);
         A4 += 2;
         mm.write(A6 + MXWORK_CH.S0044, (short) D0);
         if ((D2 & (1 << 1)) == 0) {
@@ -3640,9 +3642,9 @@ exit:   {
             A4 += 6;
             return;
         }
-        D0 = Depend.getbword(mm, A4);
+        D0 = Depend.getBword(mm, A4);
         A4 += 2;
-        D1 = Depend.getblong(mm, A4);
+        D1 = Depend.getBlong(mm, A4);
         A4 += 4;
         PCM8_SUB();
     }

@@ -32,7 +32,7 @@ import mdplayer.driver.sid.libsidplayfp.Player;
  * [ms: which instanceof J. Carolan's name for a degenerate 'bridge']
  * This interface can be directly replaced with a libsidplay1 or C interface wrapper.
  */
-public class SidPlayFp {
+public class playSidFp {
 
     // Private Sidplayer
     private Player sidPlayer;
@@ -42,7 +42,7 @@ public class SidPlayFp {
     }
 
 
-    public SidPlayFp(Setting setting) {
+    public playSidFp(Setting setting) {
         sidPlayer = new Player(setting);
     }
 

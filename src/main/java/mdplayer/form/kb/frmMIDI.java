@@ -50,7 +50,7 @@ public class frmMIDI extends frmBase {
         initializeComponent();
 
         this.newParam = newParam;
-        frameBuffer.Add(pbScreen, Resources.getplaneMIDI_GM(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneMIDI_GM(), null, zoom);
         DrawBuff.screenInitMIDI(frameBuffer);
         update();
     }
@@ -87,9 +87,9 @@ public class frmMIDI extends frmBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneMIDI_GM().getWidth() * zoom, frameSizeH + Resources.getplaneMIDI_GM().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneMIDI_GM().getWidth() * zoom, frameSizeH + Resources.getplaneMIDI_GM().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneMIDI_GM().getWidth() * zoom, frameSizeH + Resources.getplaneMIDI_GM().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneMIDI_GM().getWidth() * zoom, frameSizeH + Resources.getPlaneMIDI_GM().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneMIDI_GM().getWidth() * zoom, frameSizeH + Resources.getPlaneMIDI_GM().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneMIDI_GM().getWidth() * zoom, frameSizeH + Resources.getPlaneMIDI_GM().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -161,7 +161,7 @@ public class frmMIDI extends frmBase {
 
         newParam.MIDIModule = prm.MIDIModule;
 
-        //Display Data
+         // Display Data
         System.arraycopy(prm.LCDDisplay, 0, newParam.LCDDisplay, 0, 64);
         newParam.LCDDisplayTime = prm.LCDDisplayTime;
         prm.LCDDisplayTime -= 3;
@@ -176,7 +176,7 @@ public class frmMIDI extends frmBase {
         prm.LCDDisplayTimeXG -= 3;
         if (prm.LCDDisplayTimeXG < 0) prm.LCDDisplayTimeXG = 0;
 
-        //Display Letter Data
+         // Display Letter Data
         System.arraycopy(prm.LCDDisplayLetter, 0, newParam.LCDDisplayLetter, 0, 32);
         newParam.LCDDisplayLetterLen = prm.LCDDisplayLetterLen;
         newParam.LCDDisplayLetterTime = prm.LCDDisplayLetterTime;
@@ -251,17 +251,17 @@ public class frmMIDI extends frmBase {
         for (int ch = 0; ch < 16; ch++) {
             byte b = (byte) (128 - newParam.cc[ch][10]);
             b = (byte) (b > 127 ? 127 : b);
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 0, 64, ch * 16 + 16, oldParam.cc[ch][10], b);//Panpot
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 68, ch * 16 + 16, oldParam.cc[ch][7], newParam.cc[ch][7]);//Volume
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 72, ch * 16 + 16, oldParam.cc[ch][11], newParam.cc[ch][11]);//Expression
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 0, 76, ch * 16 + 16, oldParam.bend[ch], newParam.bend[ch]);//PitchBend
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 80, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][1]);//Modulation
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 84, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][91]);//Reverb
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 88, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][93]);//Chorus
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 92, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][94]);//Variation(Delay)
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 96, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][64]);//Hold(DumperPedal)
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 100, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][67]);//Soft
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 104, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][66]);//Sostenuto
+            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 0, 64, ch * 16 + 16, oldParam.cc[ch][10], b); // Panpot
+            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 68, ch * 16 + 16, oldParam.cc[ch][7], newParam.cc[ch][7]); // Volume
+            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 72, ch * 16 + 16, oldParam.cc[ch][11], newParam.cc[ch][11]); // Expression
+            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 0, 76, ch * 16 + 16, oldParam.bend[ch], newParam.bend[ch]); // PitchBend
+            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 80, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][1]); // Modulation
+            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 84, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][91]); // Reverb
+            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 88, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][93]); // Chorus
+            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 92, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][94]); // Variation(Delay)
+            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 96, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][64]); // Hold(DumperPedal)
+            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 100, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][67]); // Soft
+            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 104, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][66]); // Sostenuto
 
             notes = "";
             for (int n = 0; n < 120; n++) {
@@ -279,7 +279,7 @@ public class frmMIDI extends frmBase {
             DrawBuff.VolumeToMIDILCD(frameBuffer, module, 388, ch * 16 + 16, oldParam.level[ch][0], newParam.level[ch][0]);
             DrawBuff.VolumeToMIDILCD(frameBuffer, module, 388, ch * 16 + 24, oldParam.level[ch][2], newParam.level[ch][2]);
 
-            //L1:
+             // L1:
             if (newParam.LCDDisplayTime == 0 && newParam.LCD8850DisplayTime == 0 && newParam.LCDDisplayTimeXG == 0) {
                 DrawBuff.VolumeLCDToMIDILCD(frameBuffer
                         , module
@@ -297,7 +297,7 @@ public class frmMIDI extends frmBase {
                     oldParam.level[ch][4] = 256;
                 }
                 if (newParam.LCDDisplayTime > 0) {
-                    //GS
+                     // GS
                     for (int n = 0; n < 64; n++) {
                         s = newParam.LCDDisplay[n];
                         int x = n / 16;
@@ -342,7 +342,7 @@ public class frmMIDI extends frmBase {
                         frameBuffer.drawByteArray(0, 272, DrawBuff.rPlane_MIDI[module], 440, 0, 272, 168, 80);
                     }
                 } else if (newParam.LCDDisplayTimeXG > 0) {
-                    //XG
+                     // XG
                     for (int n = 0; n < 48; n++) {
                         s = newParam.LCDDisplay[n];
                         int x = n / 16;
@@ -387,22 +387,22 @@ public class frmMIDI extends frmBase {
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 10, ch * 16 + 16, 2 + module, oldParam.cc[ch][0], newParam.cc[ch][0]);
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 13, ch * 16 + 16, 2 + module, oldParam.cc[ch][32], newParam.cc[ch][32]);
 
-            //Vib Rate Depth Delay
+             // Vib Rate Depth Delay
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 28, ch * 16 + 24, 2 + module, oldParam.nrpnVibRate[ch], newParam.nrpnVibRate[ch]);
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 31, ch * 16 + 24, 2 + module, oldParam.nrpnVibDepth[ch], newParam.nrpnVibDepth[ch]);
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 34, ch * 16 + 24, 2 + module, oldParam.nrpnVibDelay[ch], newParam.nrpnVibDelay[ch]);
 
-            //Filter LPF LPFRsn HPF
+             // Filter LPF LPFRsn HPF
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 38, ch * 16 + 24, 2 + module, oldParam.nrpnLPF[ch], newParam.nrpnLPF[ch]);
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 41, ch * 16 + 24, 2 + module, oldParam.nrpnLPFRsn[ch], newParam.nrpnLPFRsn[ch]);
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 44, ch * 16 + 24, 2 + module, oldParam.nrpnHPF[ch], newParam.nrpnHPF[ch]);
 
-            //EG Atk Dcy Rsn
+             // EG Atk Dcy Rsn
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 48, ch * 16 + 24, 2 + module, oldParam.nrpnEGAttack[ch], newParam.nrpnEGAttack[ch]);
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 51, ch * 16 + 24, 2 + module, oldParam.nrpnEGDecay[ch], newParam.nrpnEGDecay[ch]);
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 54, ch * 16 + 24, 2 + module, oldParam.nrpnEGRls[ch], newParam.nrpnEGRls[ch]);
 
-            //EQ Base Gain Frq Treble Gain Frq
+             // EQ Base Gain Frq Treble Gain Frq
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 58, ch * 16 + 24, 2 + module, oldParam.nrpnEQBaseGain[ch], newParam.nrpnEQBaseGain[ch]);
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 61, ch * 16 + 24, 2 + module, oldParam.nrpnEQBaseFrq[ch], newParam.nrpnEQBaseFrq[ch]);
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 64, ch * 16 + 24, 2 + module, oldParam.nrpnEQTrebleGain[ch], newParam.nrpnEQTrebleGain[ch]);
@@ -431,7 +431,7 @@ public class frmMIDI extends frmBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneMIDI_GM();
+        this.image = mdplayer.properties.Resources.getPlaneMIDI_GM();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(440, 352));

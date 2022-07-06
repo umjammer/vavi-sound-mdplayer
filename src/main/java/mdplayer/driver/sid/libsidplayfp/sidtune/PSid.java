@@ -22,12 +22,14 @@ package mdplayer.driver.sid.libsidplayfp.sidtune;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
 
 import dotnet4j.io.IOException;
 import mdplayer.driver.sid.Mem;
 import mdplayer.driver.sid.libsidplayfp.SidMd5;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
+import vavi.util.Debug;
 
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toBig16;
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toBig32;
@@ -422,6 +424,7 @@ public class PSid extends SidTuneBase {
             md5 = myMD5.getDigest().getBytes(StandardCharsets.US_ASCII);
             md5[SidTune.MD5_LENGTH] = (byte) '\0';
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
 

@@ -42,14 +42,14 @@ public class MDChipParams {
         public Boolean mask = false;
         public byte slot = 0;
         public int tp = -1;
-        public int kf = -1;//OPM only
-        public int tn = 0;//Psg only
-        public boolean ex = false;//OPN/2/a/B
+        public int kf = -1; // OPM only
+        public int tn = 0; // Psg only
+        public boolean ex = false; // OPN/2/a/B
         public int tntp = -1;
-        public boolean dda = false;//HuC6280
-        public boolean noise = false;//HuC6280
-        public int nfrq = -1;//HuC6280
-        public boolean loopFlg = false;//YMZ280B
+        public boolean dda = false; // HuC6280
+        public boolean noise = false; // HuC6280
+        public int nfrq = -1; // HuC6280
+        public boolean loopFlg = false; // YMZ280B
         public int echo = -1;
 
         public int[] inst = new int[48];
@@ -254,10 +254,10 @@ public class MDChipParams {
         public int adpcmLevel = -1;
 
         public Channel[] channels = new Channel[] {
-                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() //FM 0
-                , new Channel(), new Channel(), new Channel() //SSG 9
-                , new Channel() //ADPCM 12
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() //RHYTHM 13
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // FM 0
+                , new Channel(), new Channel(), new Channel() // SSG 9
+                , new Channel() // ADPCM 12
+                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // RHYTHM 13
         };
 
     }
@@ -272,10 +272,10 @@ public class MDChipParams {
         public int etype = -1;
 
         public Channel[] channels = new Channel[] {
-                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() //FM 0
-                , new Channel(), new Channel(), new Channel() //SSG 9
-                , new Channel() //ADPCM 12
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() //RHYTHM 13
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // FM 0
+                , new Channel(), new Channel(), new Channel() // SSG 9
+                , new Channel() // ADPCM 12
+                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // RHYTHM 13
         };
 
     }
@@ -303,8 +303,8 @@ public class MDChipParams {
     public static class YM2413 {
 
         public Channel[] channels = new Channel[] {
-                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() //FM 9
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() //Ryhthm 5
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // FM 9
+                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Ryhthm 5
         };
 
     }
@@ -330,8 +330,8 @@ public class MDChipParams {
     public static class YM3526 {
         public Channel[] channels = new Channel[] {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel() //FM 9
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() //Ryhthm 5
+                , new Channel(), new Channel(), new Channel(), new Channel() // FM 9
+                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Ryhthm 5
         };
 
     }
@@ -341,9 +341,9 @@ public class MDChipParams {
     public static class Y8950 {
         public Channel[] channels = new Channel[] {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel() //FM 9
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() //Ryhthm 5
-                , new Channel()//ADPCM
+                , new Channel(), new Channel(), new Channel(), new Channel() // FM 9
+                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Ryhthm 5
+                , new Channel() // ADPCM
         };
 
     }
@@ -353,8 +353,8 @@ public class MDChipParams {
     public static class YM3812 {
         public Channel[] channels = new Channel[] {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel() //FM 9
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() //Ryhthm 5
+                , new Channel(), new Channel(), new Channel(), new Channel() // FM 9
+                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Ryhthm 5
         };
 
     }
@@ -367,8 +367,8 @@ public class MDChipParams {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
                 , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
                 , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel() //FM 18
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() //Ryhthm 5
+                , new Channel(), new Channel(), new Channel() // FM 18
+                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Ryhthm 5
         };
 
     }
@@ -394,13 +394,13 @@ public class MDChipParams {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
                 , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
                 , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel() //FM 18
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() //Ryhthm 5
+                , new Channel(), new Channel(), new Channel() // FM 18
+                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Ryhthm 5
                 , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
                 , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
                 , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
                 , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel() //PCM 24
+                , new Channel(), new Channel(), new Channel(), new Channel() // PCM 24
         };
 
     }
@@ -467,7 +467,7 @@ public class MDChipParams {
     public static class VRC7 {
 
         public Channel[] channels = new Channel[] {
-                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() //FM 6
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // FM 6
         };
 
     }
@@ -521,9 +521,9 @@ public class MDChipParams {
         public VolumeInfo YM3526 = new VolumeInfo();
         public VolumeInfo Y8950 = new VolumeInfo();
         public VolumeInfo YM3812 = new VolumeInfo();
-        public VolumeInfo YMF262 = new VolumeInfo();//OPL3
-        public VolumeInfo YMF278B = new VolumeInfo();//OPL4
-        public VolumeInfo YMF271 = new VolumeInfo();//OPX
+        public VolumeInfo YMF262 = new VolumeInfo(); // OPL3
+        public VolumeInfo YMF278B = new VolumeInfo(); // OPL4
+        public VolumeInfo YMF271 = new VolumeInfo(); // OPX
         public VolumeInfo AY8910 = new VolumeInfo();
         public VolumeInfo SN76489 = new VolumeInfo();
         public VolumeInfo HuC6280 = new VolumeInfo();
@@ -537,12 +537,12 @@ public class MDChipParams {
         public VolumeInfo C140 = new VolumeInfo();
         public VolumeInfo C352 = new VolumeInfo();
         public VolumeInfo SEGAPCM = new VolumeInfo();
-        public VolumeInfo MultiPCM = new VolumeInfo();//MPCM
-        public VolumeInfo YMZ280B = new VolumeInfo();//YMZ
-        public VolumeInfo K051649 = new VolumeInfo();//K051
-        public VolumeInfo K053260 = new VolumeInfo();//K051
+        public VolumeInfo MultiPCM = new VolumeInfo(); // MPCM
+        public VolumeInfo YMZ280B = new VolumeInfo(); // YMZ
+        public VolumeInfo K051649 = new VolumeInfo(); // K051
+        public VolumeInfo K053260 = new VolumeInfo(); // K051
         public VolumeInfo K054539 = new VolumeInfo();
-        public VolumeInfo QSound = new VolumeInfo();//QSND
+        public VolumeInfo QSound = new VolumeInfo(); // QSND
         public VolumeInfo GA20 = new VolumeInfo();
 
         public VolumeInfo APU = new VolumeInfo();

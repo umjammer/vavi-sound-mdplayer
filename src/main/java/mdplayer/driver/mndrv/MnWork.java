@@ -6,93 +6,93 @@ public interface MnWork {
 
 //wavememory effect work structure
 interface W_We {
-    int start = 0;             //.ds.l	1		* 開始点絶対アドレス
-    int loop_start = 4;        //.ds.l	1		* ループ開始点絶対アドレス
-    int loop_end = 8;            //.ds.l	1		* ループ終了点絶対アドレス
-    int loop_count = 12;        //.ds.l	1		* ループ回数( == 0 無限ループ)
-    int ko_start = 16;            //.ds.l	1		* キーオフ開始点
-    int ko_loop_start = 20;    //.ds.l	1		* キーオフループ開始点
-    int ko_loop_end = 24;        //.ds.l	1		* キーオフループ終了点
-    int ko_loop_count = 28;    //.ds.l	1		* キーオフループ回数
-    int adrs_work = 32;        //.ds.l	1		* アドレスワーク
-    int start_adrs_work = 36;  //.ds.l	1		* ループ開始点アドレスワーク
-    int end_adrs_work = 40;    //.ds.l	1		* ループ終了点アドレスワーク
-    int lp_cnt_work = 44;        //.ds.l	1		* ループワーク
-    int exec_adrs = 48;        //.ds.l	1		* 実作業アドレス
-    int reset = 52;            //.ds.W	1		* 再定義する値
+    int start = 0;              // .ds.l	1		* 開始点絶対アドレス
+    int loop_start = 4;         // .ds.l	1		* ループ開始点絶対アドレス
+    int loop_end = 8;             // .ds.l	1		* ループ終了点絶対アドレス
+    int loop_count = 12;         // .ds.l	1		* ループ回数( == 0 無限ループ)
+    int ko_start = 16;             // .ds.l	1		* キーオフ開始点
+    int ko_loop_start = 20;     // .ds.l	1		* キーオフループ開始点
+    int ko_loop_end = 24;         // .ds.l	1		* キーオフループ終了点
+    int ko_loop_count = 28;     // .ds.l	1		* キーオフループ回数
+    int adrs_work = 32;         // .ds.l	1		* アドレスワーク
+    int start_adrs_work = 36;   // .ds.l	1		* ループ開始点アドレスワーク
+    int end_adrs_work = 40;     // .ds.l	1		* ループ終了点アドレスワーク
+    int lp_cnt_work = 44;         // .ds.l	1		* ループワーク
+    int exec_adrs = 48;         // .ds.l	1		* 実作業アドレス
+    int reset = 52;             // .ds.W	1		* 再定義する値
 
-    int exec_flag = 54;        //.ds.b	1		* ループ終了したか
-    int loop_flag = 55;        //.ds.b 1		*
-    int ko_flag = 56;          //.ds.b 1		* キーオフ波形を使用するか
-    int exec = 57;             //.ds.b 1		* bit7  1:enable
+    int exec_flag = 54;         // .ds.b	1		* ループ終了したか
+    int loop_flag = 55;         // .ds.b 1		*
+    int ko_flag = 56;           // .ds.b 1		* キーオフ波形を使用するか
+    int exec = 57;              // .ds.b 1		* bit7  1:enable
     //              * bit1	1:keyoff only
     //              * bit0  1:keyon only
-    int pattern = 58;          //.ds.b 1
-    int speed = 59;            //.ds.b 1
-    int delay = 60;            //.ds.b 1
-    int delay_work = 61;       //.ds.b 1
+    int pattern = 58;           // .ds.b 1
+    int speed = 59;             // .ds.b 1
+    int delay = 60;             // .ds.b 1
+    int delay_work = 61;        // .ds.b 1
 
-    int count = 62;            //.ds.b 1
-    int mode = 63;             //.ds.b 1		* $80 非同期
+    int count = 62;             // .ds.b 1
+    int mode = 63;              // .ds.b 1		* $80 非同期
     //              * $00 同期1
     //              * $01 同期2
-    //.ds.b 1
-    //.ds.b 1
-    int _work_size = 66;       //_wave_effect_work_size
+     // .ds.b 1
+     // .ds.b 1
+    int _work_size = 66;        // _wave_effect_work_size
 }
 
 //wavememory work structure
 interface W_W {
-    int start = 0;                                             //.ds.l	1		* 開始点絶対アドレス
-    int loop_start = start + 4;                                //.ds.l	1		* ループ開始点絶対アドレス
-    int loop_end = loop_start + 4;                             //.ds.l	1		* ループ終了点絶対アドレス
-    int loop_count = loop_end + 4;                             //.ds.l	1		* ループ回数( == 0 無限ループ)
-    int ko_start = loop_count + 4;                             //.ds.l	1		* キーオフ開始点
-    int ko_loop_start = ko_start + 4;                          //.ds.l	1		* キーオフループ開始点
-    int ko_loop_end = ko_loop_start + 4;                       //.ds.l	1		* キーオフループ終了点
-    int ko_loop_count = ko_loop_end + 4;                       //.ds.l	1		* キーオフループ回数
-    int adrs_work = ko_loop_count + 4;                         //.ds.l	1		* アドレスワーク
-    int start_adrs_work = adrs_work + 4;                       //.ds.l	1		* ループ開始点アドレスワーク
-    int end_adrs_work = start_adrs_work + 4;                   //.ds.l	1		* ループ終了点アドレスワーク
-    int lp_cnt_work = end_adrs_work + 4;                       //.ds.l	1		* ループワーク
-    int exec_flag = lp_cnt_work + 4;                           //.ds.b	1		* ループ終了したか
-    int loop_flag = exec_flag + 1;                             //.ds.b 1		*
-    int ko_flag = loop_flag + 1;                               //.ds.b 1		* キーオフ波形を使用するか
-    int use_flag = ko_flag + 1;                                //.ds.b 1		*
-    int depth = use_flag + 1;                                  //.ds.b 1		* 波形倍率
-    int type = depth + 1;                                      //.ds.b 1		* 波形タイプ
-    int slot = type + 1;                                       //.ds.b 1		* 使用スロット
-    //.ds.b 1
-    //.ds.l 4
-    int _work_size = slot + 1 + 1 + 4 * 4;                     //_wave_work_size
+    int start = 0;                                              // .ds.l	1		* 開始点絶対アドレス
+    int loop_start = start + 4;                                 // .ds.l	1		* ループ開始点絶対アドレス
+    int loop_end = loop_start + 4;                              // .ds.l	1		* ループ終了点絶対アドレス
+    int loop_count = loop_end + 4;                              // .ds.l	1		* ループ回数( == 0 無限ループ)
+    int ko_start = loop_count + 4;                              // .ds.l	1		* キーオフ開始点
+    int ko_loop_start = ko_start + 4;                           // .ds.l	1		* キーオフループ開始点
+    int ko_loop_end = ko_loop_start + 4;                        // .ds.l	1		* キーオフループ終了点
+    int ko_loop_count = ko_loop_end + 4;                        // .ds.l	1		* キーオフループ回数
+    int adrs_work = ko_loop_count + 4;                          // .ds.l	1		* アドレスワーク
+    int start_adrs_work = adrs_work + 4;                        // .ds.l	1		* ループ開始点アドレスワーク
+    int end_adrs_work = start_adrs_work + 4;                    // .ds.l	1		* ループ終了点アドレスワーク
+    int lp_cnt_work = end_adrs_work + 4;                        // .ds.l	1		* ループワーク
+    int exec_flag = lp_cnt_work + 4;                            // .ds.b	1		* ループ終了したか
+    int loop_flag = exec_flag + 1;                              // .ds.b 1		*
+    int ko_flag = loop_flag + 1;                                // .ds.b 1		* キーオフ波形を使用するか
+    int use_flag = ko_flag + 1;                                 // .ds.b 1		*
+    int depth = use_flag + 1;                                   // .ds.b 1		* 波形倍率
+    int type = depth + 1;                                       // .ds.b 1		* 波形タイプ
+    int slot = type + 1;                                        // .ds.b 1		* 使用スロット
+     // .ds.b 1
+     // .ds.l 4
+    int _work_size = slot + 1 + 1 + 4 * 4;                      // _wave_work_size
 }
 
 interface W_Ww {
-    int speed = 0;                                             //.ds.b	1		* speed
-    int rate = speed + 1;                                      //.ds.b	1		* rate
-    int depth = rate + 1;                                      //.ds.b	1		* depth
-    int delay = depth + 1;                                     //.ds.b	1		* delay
-    int sync = delay + 1;                                      //.ds.b	1		* sync
-    int slot = sync + 1;                                       //.ds.b	1		* slot
-    int rate_work = slot + 1;                                  //.ds.b	1
-    int depth_work = rate_work + 1;                            //.ds.b	1
-    int delay_work = depth_work + 1;                           //.ds.b	1
-    int work = delay_work + 1;                                 //.ds.b	1
-    int _work_size = work + 1;                                 //_ww_work_size
+    int speed = 0;                                              // .ds.b	1		* speed
+    int rate = speed + 1;                                       // .ds.b	1		* rate
+    int depth = rate + 1;                                       // .ds.b	1		* depth
+    int delay = depth + 1;                                      // .ds.b	1		* delay
+    int sync = delay + 1;                                       // .ds.b	1		* sync
+    int slot = sync + 1;                                        // .ds.b	1		* slot
+    int rate_work = slot + 1;                                   // .ds.b	1
+    int depth_work = rate_work + 1;                             // .ds.b	1
+    int delay_work = depth_work + 1;                            // .ds.b	1
+    int work = delay_work + 1;                                  // .ds.b	1
+    int _work_size = work + 1;                                  // _ww_work_size
 }
 
 //LFO work structure
 interface W_L {
-    int pattern = 0;                                           //.ds.b	1		* LFO pattern
-    int count = pattern + 1;                                   //.ds.b	1		* LFO counter
-    int lfo_sp = count + 1;                                    //.ds.b	1		* LFO speed
-    int keydelay = lfo_sp + 1;                                 //.ds.b	1		* LFO delay
-    int henka = keydelay + 1;                                  //.ds.W	1		* LFO 変化分
-    int henka_work = henka + 2;                                //.ds.W	1		* LFO 変化分用ワーク(pan_am_pm)
-    int delay_work = henka_work + 2;                           //.ds.b	1		* LFO delay用ワーク
-    int count_work = delay_work + 1;                           //.ds.b	1		* LFO counter用ワーク
+    int pattern = 0;                                            // .ds.b	1		* LFO pattern
+    int count = pattern + 1;                                    // .ds.b	1		* LFO counter
+    int lfo_sp = count + 1;                                     // .ds.b	1		* LFO speed
+    int keydelay = lfo_sp + 1;                                  // .ds.b	1		* LFO delay
+    int henka = keydelay + 1;                                   // .ds.W	1		* LFO 変化分
+    int henka_work = henka + 2;                                 // .ds.W	1		* LFO 変化分用ワーク(pan_am_pm)
+    int delay_work = henka_work + 2;                            // .ds.b	1		* LFO delay用ワーク
+    int count_work = delay_work + 1;                            // .ds.b	1		* LFO counter用ワーク
     int flag = count_work + 1;                                 //
-    int mokuhyou = flag + 0;                                   //.ds.W	1		* (portament 目標音程)
+    int mokuhyou = flag + 0;                                    // .ds.W	1		* (portament 目標音程)
     //              * 以下通常LFO
     //	            * bit15		0:norm   1:use slot lfo
     //              * bit14		0:sync   1:async
@@ -100,53 +100,53 @@ interface W_L {
     //	            *
     //	            * bit1 keyoff	0:enable 1:disable
     //              * bit0 keyon	0:enable 1:disable
-    int bendwork = mokuhyou + 2;                               //.ds.W 1		* 音程/音量LFO work
-    int _work_size = bendwork + 2;                             //_lfo_work_size:
+    int bendwork = mokuhyou + 2;                                // .ds.W 1		* 音程/音量LFO work
+    int _work_size = bendwork + 2;                              // _lfo_work_size:
 }
 
 //PCM work structure
 interface P {
-    int NUM = 0;                                               //.ds.W	1
-    int SEL = NUM + 2;                                         //.ds.b	1		* PCM種類
-    int NOTE = SEL + 1;                                        //.ds.b	1		* PCMオリジナルノート
-    int MODE = NOTE + 1;                                       //.ds.b	1
-    int RESERVE = MODE + 1;                                    //.ds.b	1
-    int ADDRESS = RESERVE + 1;                                 //.ds.l	1		* 絶対アドレス
-    int LENGTH = ADDRESS + 4;                                  //.ds.l	1		* 長さ
-    int LOOP_START = LENGTH + 4;                               //.ds.l	1		* ループ開始点
-    int LOOP_END = LOOP_START + 4;                             //.ds.l	1		* ループ終了点
-    int LOOP_COUNT = LOOP_END + 4;                             //.ds.l	1		* ループ回数
-    int _pcm_work_size = LOOP_COUNT + 4;                       //_pcm_work_size:
+    int NUM = 0;                                                // .ds.W	1
+    int SEL = NUM + 2;                                          // .ds.b	1		* PCM種類
+    int NOTE = SEL + 1;                                         // .ds.b	1		* PCMオリジナルノート
+    int MODE = NOTE + 1;                                        // .ds.b	1
+    int RESERVE = MODE + 1;                                     // .ds.b	1
+    int ADDRESS = RESERVE + 1;                                  // .ds.l	1		* 絶対アドレス
+    int LENGTH = ADDRESS + 4;                                   // .ds.l	1		* 長さ
+    int LOOP_START = LENGTH + 4;                                // .ds.l	1		* ループ開始点
+    int LOOP_END = LOOP_START + 4;                              // .ds.l	1		* ループ終了点
+    int LOOP_COUNT = LOOP_END + 4;                              // .ds.l	1		* ループ回数
+    int _pcm_work_size = LOOP_COUNT + 4;                        // _pcm_work_size:
 
 }
 
 //track work structure
 interface W {
-    int dataptr = 0;                                           //.ds.l	1			    * $00 ! data pointer
-    int voiceptr = dataptr + 4;                                //.ds.l	1			    * $04 ! 現在の音色のポインタ
-    int detune = voiceptr + 4;                                 //.ds.W	1			    * $08 ! detune
-    int keycode2 = detune + 2;                                 //.ds.W	1			    * $0A ! 元
-    int keycode = keycode2 + 2;                                //.ds.W	1			    * $0C ! 最終
+    int dataptr = 0;                                            // .ds.l	1			    * $00 ! data pointer
+    int voiceptr = dataptr + 4;                                 // .ds.l	1			    * $04 ! 現在の音色のポインタ
+    int detune = voiceptr + 4;                                  // .ds.W	1			    * $08 ! detune
+    int keycode2 = detune + 2;                                  // .ds.W	1			    * $0A ! 元
+    int keycode = keycode2 + 2;                                 // .ds.W	1			    * $0C ! 最終
 
-    int len = keycode + 2;                                     //.ds.b	1			    * $0E step
-    int program = len + 1;                                     //.ds.b	1			    * $0F ! voice number
+    int len = keycode + 2;                                      // .ds.b	1			    * $0E step
+    int program = len + 1;                                      // .ds.b	1			    * $0F ! voice number
 
-    int smask = program + 1;                                   //.ds.b	1			    * $10 slot mask
-    int at_q = smask + 1;                                      //.ds.b	1			    * $11 ! @q
+    int smask = program + 1;                                    // .ds.b	1			    * $10 slot mask
+    int at_q = smask + 1;                                       // .ds.b	1			    * $11 ! @q
 
-    int vol = at_q + 1;                                        //.ds.b	1			    * $12 ! volume
-    int vol2 = vol + 1;                                        //.ds.b	1			    * $13 ! 最終 volume
+    int vol = at_q + 1;                                         // .ds.b	1			    * $12 ! volume
+    int vol2 = vol + 1;                                         // .ds.b	1			    * $13 ! 最終 volume
 
-    int pan_ampm = vol2 + 1;                                   //.ds.b	1			    * $14 ! panpot(OPM pan/fl/con)
-    int ch = pan_ampm + 1;                                     //.ds.b	1			    * $15 ! channel
+    int pan_ampm = vol2 + 1;                                    // .ds.b	1			    * $14 ! panpot(OPM pan/fl/con)
+    int ch = pan_ampm + 1;                                      // .ds.b	1			    * $15 ! channel
 
-    int fbcon = ch + 1;                                        //.ds.b	1			    * $16 FB/CON(OPM ams/pms)
-    int volume = fbcon + 1;                                    //.ds.b	1			    * $17 v保存用
+    int fbcon = ch + 1;                                         // .ds.b	1			    * $16 FB/CON(OPM ams/pms)
+    int volume = fbcon + 1;                                     // .ds.b	1			    * $17 v保存用
 
-    int key = volume + 1;                                      //.ds.b	1			    * $18 ! 前回 key
-    int rct = key + 1;                                         //.ds.b	1			    * $19 release cut time
+    int key = volume + 1;                                       // .ds.b	1			    * $18 ! 前回 key
+    int rct = key + 1;                                          // .ds.b	1			    * $19 release cut time
 
-    int flag = rct + 1;                                        //.ds.b	1			    * $1A トラック各種フラグ
+    int flag = rct + 1;                                         // .ds.b	1			    * $1A トラック各種フラグ
     //		                * bit7 トラック使用
     //		                * bit6 tie
     //		                * bit5 key on
@@ -156,7 +156,7 @@ interface W {
     //                      * bit1  LFO SET
     //		                * bit0 tie だが前回とキーが違う
 
-    int lfo = flag + 1;                                        //.ds.b	1			    * $1B LFO 制御フラグ
+    int lfo = flag + 1;                                         // .ds.b	1			    * $1B LFO 制御フラグ
     //                      * bit7  pitch bend / portament
     //                      * bit6  velocity 3
     //		                * bit5 velocity 2
@@ -166,35 +166,35 @@ interface W {
     //		                * bit1 pitch 1
     //		                * bit0 HARD LFO
 
-    int p_pattern1 = lfo + 1;                                  //.ds.b _lfo_work_size	* $1C LFO 1
-    int p_pattern2 = p_pattern1 + W_L._work_size;              //.ds.b _lfo_work_size	* $2A LFO 2
-    int p_pattern3 = p_pattern2 + W_L._work_size;              //.ds.b _lfo_work_size	* $38 LFO 3
-    int p_pattern4 = p_pattern3 + W_L._work_size;              //.ds.b _lfo_work_size	* $46 LFO 4 (for bend)
+    int p_pattern1 = lfo + 1;                                   // .ds.b _lfo_work_size	* $1C LFO 1
+    int p_pattern2 = p_pattern1 + W_L._work_size;               // .ds.b _lfo_work_size	* $2A LFO 2
+    int p_pattern3 = p_pattern2 + W_L._work_size;               // .ds.b _lfo_work_size	* $38 LFO 3
+    int p_pattern4 = p_pattern3 + W_L._work_size;               // .ds.b _lfo_work_size	* $46 LFO 4 (for bend)
 
-    int v_pattern1 = p_pattern4 + W_L._work_size;              //.ds.b _lfo_work_size	* $54 LFO 1
-    int v_pattern2 = v_pattern1 + W_L._work_size;              //.ds.b _lfo_work_size	* $62 LFO 2
-    int v_pattern3 = v_pattern2 + W_L._work_size;              //.ds.b _lfo_work_size	* $70 LFO 3
-    int v_pattern4 = v_pattern3 + W_L._work_size;              //.ds.b _lfo_work_size	* $7E LFO 4 (for hardware LFO)
+    int v_pattern1 = p_pattern4 + W_L._work_size;               // .ds.b _lfo_work_size	* $54 LFO 1
+    int v_pattern2 = v_pattern1 + W_L._work_size;               // .ds.b _lfo_work_size	* $62 LFO 2
+    int v_pattern3 = v_pattern2 + W_L._work_size;               // .ds.b _lfo_work_size	* $70 LFO 3
+    int v_pattern4 = v_pattern3 + W_L._work_size;               // .ds.b _lfo_work_size	* $7E LFO 4 (for hardware LFO)
 
-    int revexec = v_pattern4 + W_L._work_size;                 //.ds.b	1			    * $8C リバーブ実行したか
-    int pcmmode = revexec + 1;                                 //.ds.b	1			    * $8D PCMの種類
-    int volmode = pcmmode + 1;                                 //.ds.b	1			    * $8E 相対音量モード
-    int kom = volmode + 1;                                     //.ds.b	1			    * $8F
-    int envbank = kom + 1;                                     //.ds.b	1			    * $90
-    int envnum = envbank + 1;                                  //.ds.b	1			    * $91
+    int revexec = v_pattern4 + W_L._work_size;                  // .ds.b	1			    * $8C リバーブ実行したか
+    int pcmmode = revexec + 1;                                  // .ds.b	1			    * $8D PCMの種類
+    int volmode = pcmmode + 1;                                  // .ds.b	1			    * $8E 相対音量モード
+    int kom = volmode + 1;                                      // .ds.b	1			    * $8F
+    int envbank = kom + 1;                                      // .ds.b	1			    * $90
+    int envnum = envbank + 1;                                   // .ds.b	1			    * $91
 
     //	                      * $92
     int octave = envnum + 1;                                   //			            * Psg octave
     int ch3mode = octave + 0;                                  //				        * bit7 効果音モード
-    int pcm_tone = ch3mode + 0;                                //.ds.b	1			    * MPCM TONE MODE
+    int pcm_tone = ch3mode + 0;                                 // .ds.b	1			    * MPCM TONE MODE
     //                      * 0 : tone mode
     //		                * 1 : timbre mode
-    int bank = pcm_tone + 1;                                   //.ds.b	1			    * $93 program bank
+    int bank = pcm_tone + 1;                                    // .ds.b	1			    * $93 program bank
 
-    int tone_rr = bank + 1;                                    //.ds.b	4			    * $94 NOW TONE RR
+    int tone_rr = bank + 1;                                     // .ds.b	4			    * $94 NOW TONE RR
 
-    int key_trans = tone_rr + 4;                               //.ds.b	1			    * $98 key transpose
-    int flag2 = key_trans + 1;                                 //.ds.b	1			    * $99 トラックフラグ2
+    int key_trans = tone_rr + 4;                                // .ds.b	1			    * $98 key transpose
+    int flag2 = key_trans + 1;                                  // .ds.b	1			    * $99 トラックフラグ2
     //                      * bit7 mask
     //                      * bit6 set @q
     //		                * bit5 set slot mask
@@ -204,30 +204,30 @@ interface W {
     //		                * bit1 set portament
     //                      * bit0 track end
 
-    int q = flag2 + 1;                                         //.ds.b	1			    * $9A q
-    int ch3 = q + 1;                                           //.ds.b	1			    * $9B ch3
+    int q = flag2 + 1;                                          // .ds.b	1			    * $9A q
+    int ch3 = q + 1;                                            // .ds.b	1			    * $9B ch3
 
-    int loop = ch3 + 1;                                        //.ds.l	1			    * $9C 永久ループポイント
+    int loop = ch3 + 1;                                         // .ds.l	1			    * $9C 永久ループポイント
 
-    int sdetune1 = loop + 4;                                   //.ds.W	1			    * $A0 slot detune
-    int sdetune2 = sdetune1 + 2;                               //.ds.W	1			    * $A2 slot detune
-    int sdetune3 = sdetune2 + 2;                               //.ds.W	1			    * $A4 slot detune
-    int sdetune4 = sdetune3 + 2;                               //.ds.W	1			    * $A6 slot detune
+    int sdetune1 = loop + 4;                                    // .ds.W	1			    * $A0 slot detune
+    int sdetune2 = sdetune1 + 2;                                // .ds.W	1			    * $A2 slot detune
+    int sdetune3 = sdetune2 + 2;                                // .ds.W	1			    * $A4 slot detune
+    int sdetune4 = sdetune3 + 2;                                // .ds.W	1			    * $A6 slot detune
 
     int freqwork = sdetune4 + 2;                               //				        * $A8 psg work(相対値)
-    int keycode_s2 = freqwork + 0;                             //.ds.W	1			    *     slot keycode
+    int keycode_s2 = freqwork + 0;                              // .ds.W	1			    *     slot keycode
     int freqbase = keycode_s2 + 2;                             //				        * $AA psg work(元値)
-    int keycode_s3 = freqbase + 0;                             //.ds.W	1			    *     slot keycode
+    int keycode_s3 = freqbase + 0;                              // .ds.W	1			    *     slot keycode
     int makotune = keycode_s3 + 2;                             //				        * $AC psg work
-    int keycode_s4 = makotune + 0;                             //.ds.W	1			    *     slot keycode
+    int keycode_s4 = makotune + 0;                              // .ds.W	1			    *     slot keycode
 
-    int banktone = keycode_s4 + 2;                             //.ds.W	1			    * $AE bank / tone work
-    int tune = banktone + 2;                                   //.ds.W	1			    * $B0
+    int banktone = keycode_s4 + 2;                              // .ds.W	1			    * $AE bank / tone work
+    int tune = banktone + 2;                                    // .ds.W	1			    * $B0
 
-    int program2 = tune + 2;                                   //.ds.b	1			    * $B2 内部音色番号
-    int dev = program2 + 1;                                    //.ds.b	1			    * $B3 デバイス番号
+    int program2 = tune + 2;                                    // .ds.b	1			    * $B2 内部音色番号
+    int dev = program2 + 1;                                     // .ds.b	1			    * $B3 デバイス番号
 
-    int effect = dev + 1;                                      //.ds.b	1			    * $B4
+    int effect = dev + 1;                                       // .ds.b	1			    * $B4
     //                      *
     //                      * bit5 わうわう
     //                      * bit3 擬似エコー
@@ -239,7 +239,7 @@ interface W {
     //		                *	 10 = step time
     //		                *	 11 = with keyon
 
-    int flag3 = effect + 1;                                    //.ds.b	1			    * $B5
+    int flag3 = effect + 1;                                     // .ds.b	1			    * $B5
     //                      * flag3
     //		                * bit6 スラー
     //		                * bit5 ネガティブ @q mode
@@ -249,14 +249,14 @@ interface W {
     //                      * bit1 0:opn    1:psg
     //                      * bit0 0:normal 1:emulation
 
-    int weffect = flag3 + 1;                                   //.ds.b	1			    * 波形エフェクト
+    int weffect = flag3 + 1;                                    // .ds.b	1			    * 波形エフェクト
     //                      * bit7  effect on
     //		                * bit3 effect 4
     //		                * bit2 effect 3
     //		                * bit1 effect 2
     //		                * bit0 effect 1
 
-    int reverb = weffect + 1;                                  //.ds.b	1			    * bit7		1=擬似動作ON
+    int reverb = weffect + 1;                                   // .ds.b	1			    * bit7		1=擬似動作ON
     //                      * bit4      常に @v
     //		                * bit3 直接音量
     //		                * bit2 微調整
@@ -264,19 +264,19 @@ interface W {
     //		                * bit0 panpot
 
     //		                * default	volume
-    int reverb_vol = reverb + 1;                               //.ds.b	1			    * 擬似動作用 volume
-    int reverb_tone = 185;                                     //.ds.b	1			    * 擬似動作用 tone
-    int reverb_pan = 186;                                      //.ds.b	1			    * 擬似動作用 panpot
+    int reverb_vol = reverb + 1;                                // .ds.b	1			    * 擬似動作用 volume
+    int reverb_tone = 185;                                      // .ds.b	1			    * 擬似動作用 tone
+    int reverb_pan = 186;                                       // .ds.b	1			    * 擬似動作用 panpot
 
-    int reverb_pan_work = 187;                                 //.ds.b	1			    * 擬似動作用 panpot
-    int reverb_time = 188;                                     //.ds.b	1			    * 擬似動作用 step time
-    int reverb_time_work = 189;                                //.ds.b	1			    * 擬似動作用 step time
+    int reverb_pan_work = 187;                                  // .ds.b	1			    * 擬似動作用 panpot
+    int reverb_time = 188;                                      // .ds.b	1			    * 擬似動作用 step time
+    int reverb_time_work = 189;                                 // .ds.b	1			    * 擬似動作用 step time
 
-    int flag4 = 190;                                           //.ds.b	1			    * ふらぐ
+    int flag4 = 190;                                            // .ds.b	1			    * ふらぐ
     //                        * bit7 同期待ち
     //                        * bit6 同期送出したか?
 
-    int vol_work = 191;                                        //.ds.b	1			    * 音量ワーク(未使用)
+    int vol_work = 191;                                         // .ds.b	1			    * 音量ワーク(未使用)
     int at_q_work = 192;                                       //.ds.b	1			    * neg @q work
     int kov = 193;                                             //.ds.b	1			    * KOV work
     int key2 = 194;                                            //.ds.b	1			    * for bend
@@ -394,7 +394,7 @@ interface Dw {
 
     int MND_VER = DRV_FLAG + 1;                //.ds.b	1			* $01 MND VERSION
     //.ds.b 1			* $02
-    int FADESPEED = MND_VER + 2;               //.ds.b 1			* $03 FADE OUT COUNT
+    int FADESPEED = MND_VER + 2;               //.ds.b 1			* $03 FADE OUT count
 
     int FADEFLAG = FADESPEED + 1;              //.ds.b 1			* $04
     int FADESPEED_WORK = FADEFLAG + 1;         //.ds.b 1			* $05

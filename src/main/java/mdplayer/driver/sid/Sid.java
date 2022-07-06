@@ -1,6 +1,7 @@
 package mdplayer.driver.sid;
 
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
 
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
@@ -10,16 +11,16 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
-import mdplayer.Log;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.sid.libsidplayfp.SidEmu;
 import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.ReSidBuilder;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidPlayFp;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
+import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
 import mdsound.VisWaveBuffer;
+import vavi.util.Debug;
 
 
 public class Sid extends BaseDriver {
@@ -29,14 +30,14 @@ public class Sid extends BaseDriver {
     public int songs;
     public int song;
 
-    private SidPlayFp engine;
+    private playSidFp engine;
     private boolean initial = false;
 
     public SidConfig cfg;
     public SidTuneInfo tuneInfo;
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         if (buf == null) return null;
 
         if (Common.getLE32(buf, 0) != FCC_PSID && Common.getLE32(buf, 0) != FCC_RSID)
@@ -48,26 +49,32 @@ public class Sid extends BaseDriver {
         try {
             gd3.trackName = new String(buf, 0x16, 32, StandardCharsets.US_ASCII).trim();
         } catch (Exception e) {
+            e.printStackTrace();
         }
         try {
             gd3.trackName = gd3.trackName.substring(0, gd3.trackName.indexOf((char) 0));
         } catch (Exception e) {
+            e.printStackTrace();
         }
         try {
             gd3.composer = new String(buf, 0x36, 32, StandardCharsets.US_ASCII).trim();
         } catch (Exception e) {
+            e.printStackTrace();
         }
         try {
             gd3.composer = gd3.composer.substring(0, gd3.composer.indexOf((char) 0));
         } catch (Exception e) {
+            e.printStackTrace();
         }
         try {
             gd3.notes = new String(buf, 0x56, 32, StandardCharsets.US_ASCII).trim();
         } catch (Exception e) {
+            e.printStackTrace();
         }
         try {
             gd3.notes = gd3.notes.substring(0, gd3.notes.indexOf((char) 0));
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return gd3;
@@ -97,9 +104,9 @@ public class Sid extends BaseDriver {
         vgmSpeed = 1;
         vgmSpeedCounter = 0;
 
-        gd3 = getGD3Info(vgmBuf, 0);
+        gd3 = getGD3Info(vgmBuf);
 
-        SidInit(vgmBuf);
+        initSid(vgmBuf);
         initial = true;
 
         return true;
@@ -111,7 +118,7 @@ public class Sid extends BaseDriver {
     }
 
     @Override
-    public void oneFrameProc() {
+    public void processOneFrame() {
         if (model == EnmModel.RealModel) return;
         try {
             vgmSpeedCounter += vgmSpeed;
@@ -123,14 +130,13 @@ public class Sid extends BaseDriver {
                     vgmFrameCounter++;
                 }
             }
-            //Stopped = !IsPlaying();
+            //Stopped = !isPlaying();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
-
+            ex.printStackTrace();
         }
     }
 
-    public int Render(short[] b, int length) {
+    public int render(short[] b, int length) {
         if (!initial) {
             return length;
         }
@@ -143,14 +149,14 @@ public class Sid extends BaseDriver {
         engine.fastForward(100);
         engine.play(b, length);
         for (int i = 0; i < length / 2; i++) {
-            oneFrameProc();
+            processOneFrame();
             visWB.enq(b[i * 2 + 0], b[i * 2 + 1]);
         }
 
         return length;
     }
 
-    private void SidInit(byte[] vgmBuf) {
+    private void initSid(byte[] vgmBuf) {
         SidEmu.Output.outputBufferSize = setting.getSid().outputBufferSize;
 
         byte[] aryKernal = null;
@@ -172,14 +178,14 @@ public class Sid extends BaseDriver {
                 fs.read(aryCharacter, 0, aryCharacter.length);
             }
 
-        engine = new SidPlayFp(setting);
+        engine = new playSidFp(setting);
         engine.debug(false, null);
         engine.setRoms(aryKernal, aryBasic, aryCharacter);
 
         ReSidBuilder rs = new ReSidBuilder("ReSid", setting);
 
-        int maxsids = (engine.info()).maxsids();
-        rs.create(maxsids);
+        int maxSids = (engine.info()).maxsids();
+        rs.create(maxSids);
 
         SidTune tune = new SidTune(vgmBuf, vgmBuf.length);
         tune.selectSong(song);
@@ -230,7 +236,7 @@ public class Sid extends BaseDriver {
         return engine.getSidRegister();
     }
 
-    public SidPlayFp GetCurrentEngineContext() {
+    public playSidFp GetCurrentEngineContext() {
         if (engine == null) return null;
         return engine;
     }

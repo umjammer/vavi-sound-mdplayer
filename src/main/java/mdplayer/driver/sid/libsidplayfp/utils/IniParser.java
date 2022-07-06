@@ -21,11 +21,13 @@ package mdplayer.driver.sid.libsidplayfp.utils;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.StreamReader;
+import vavi.util.Debug;
 
 
 public class IniParser {
@@ -83,12 +85,14 @@ public class IniParser {
                             sections.add(new Tuple<>(section, keys));
                             it = sections.get(0);
                         } catch (ParseError e) {
+                            Debug.println(Level.WARNING, e);
                         }
                         break;
                     default:
                         try {
                             it.getItem2().add(parseKey(buffer));
                         } catch (ParseError e) {
+                            Debug.println(Level.WARNING, e);
                         }
                         break;
                     }
@@ -98,6 +102,7 @@ public class IniParser {
 
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }

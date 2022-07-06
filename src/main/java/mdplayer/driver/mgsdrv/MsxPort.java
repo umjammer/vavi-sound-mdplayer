@@ -4,6 +4,7 @@ import konamiman.z80.interfaces.Memory;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Log;
+import vavi.util.Debug;
 
 
 public class MsxPort implements Memory {
@@ -50,21 +51,21 @@ public class MsxPort implements Memory {
             chipRegister.setAY8910Register(0, ay8910Adr, value, model);
             break;
         case 0xa2:
-            //Log.Write("Psg Port Adr:%04x Dat:%02x", address, value);
+            //Debug.printf("Psg Port Adr:%04x Dat:%02x", address, value);
             break;
         case 0x7c:
             opllAdr = value;
             break;
         case 0x7d:
             chipRegister.setYM2413Register(0, opllAdr, value, model);
-            //Log.write("OPLL Port Adr:%04x Dat:%02x", address, value);
+            //Debug.printf("OPLL Port Adr:%04x Dat:%02x", address, value);
             break;
         case 0xa8:
-            //Log.write("ChangeSlot Port Adr:%04x Dat:%02x", address, value);
+            //Debug.printf("ChangeSlot Port Adr:%04x Dat:%02x", address, value);
             changeSlot(value);
             break;
         default:
-            Log.write(String.format("Port  Adr:%04x Dat:%02x", address, value));
+            Debug.printf("Port  Adr:%04x Dat:%02x", address, value);
             break;
         }
     }
@@ -72,11 +73,11 @@ public class MsxPort implements Memory {
     private byte inPort(int address) {
 
         if (address == 0xa8) {
-            //Log.write("ChangeSlot Port :  Adr:%04x", address);
+            //Debug.printf("ChangeSlot Port :  Adr:%04x", address);
             return readSlot();
         }
 
-        Log.write(String.format("Port :  Adr:%04x", address));
+        Debug.printf("Port :  Adr:%04x", address);
         return 0;
     }
 
@@ -91,10 +92,10 @@ public class MsxPort implements Memory {
 
     private byte readSlot() {
         return (byte) (
-                ((slot.pagesSlotPos[0].basic & 3) << 0)
-                        | ((slot.pagesSlotPos[1].basic & 3) << 2)
-                        | ((slot.pagesSlotPos[2].basic & 3) << 4)
-                        | ((slot.pagesSlotPos[3].basic & 3) << 6)
+                ((slot.pagesSlotPos[0].basic & 3) << 0) |
+                ((slot.pagesSlotPos[1].basic & 3) << 2) |
+                ((slot.pagesSlotPos[2].basic & 3) << 4) |
+                ((slot.pagesSlotPos[3].basic & 3) << 6)
         );
     }
 }

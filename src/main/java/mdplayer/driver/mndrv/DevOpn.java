@@ -537,7 +537,7 @@ public class DevOpn {
         reg.setD5_W(reg.getD5_W() + 1);
         reg.setD5_W(reg.getD5_W() + (int) (short) reg.getD5_W());
 
-        //_fm_echo_table:
+         // _fm_echo_table:
         switch (reg.getD5_W() / 2) {
         case 1:
             _fm_echo_volume();

@@ -14,6 +14,7 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.zgm.zgmChip.ChipFactory;
 import mdplayer.driver.zgm.zgmChip.ZgmChip;
 import mdplayer.driver.Vgm.Gd3;
+import vavi.util.Debug;
 
 
 public class Zgm extends BaseDriver {
@@ -34,7 +35,7 @@ public class Zgm extends BaseDriver {
     private Map<Integer, RefRunnable<Byte, Integer>> vgmCmdTbl = new HashMap<>();
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         getZGMGD3Info(buf);
         return gd3;
     }
@@ -66,7 +67,7 @@ public class Zgm extends BaseDriver {
     }
 
     @Override
-    public void oneFrameProc() {
+    public void processOneFrame() {
         throw new UnsupportedOperationException();
     }
 
@@ -81,7 +82,7 @@ public class Zgm extends BaseDriver {
         vgmEof = Common.getLE32(vgmBuf, (byte) 0x04);
 
         int version = Common.getLE32(vgmBuf, 0x08);
-        //バージョンチェック
+         // バージョンチェック
         if (version < 10) return false;
         this.version = String.format("%d.%d%d", (version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
@@ -92,7 +93,7 @@ public class Zgm extends BaseDriver {
 
         int defineAddress = Common.getLE32(vgmBuf, 0x1c);
         int defineCount = Common.getLE16(vgmBuf, 0x24);
-        //音源定義数チェック
+         // 音源定義数チェック
         if (defineCount < 1) return false;
 
         chipCommandSize = (defineCount > 128) ? 2 : 1;
@@ -100,7 +101,7 @@ public class Zgm extends BaseDriver {
         int trackAddress = Common.getLE32(vgmBuf, 0x20);
         int trackCounter = Common.getLE16(vgmBuf, 0x26);
         vgmDataOffset = trackAddress + 11;
-        //トラック数チェック
+         // トラック数チェック
         if (trackCounter != 1) return false;
         int fcc = Common.getLE24(vgmBuf, trackAddress);
         if (fcc != FCC_TRK) return false;
@@ -121,7 +122,7 @@ public class Zgm extends BaseDriver {
             if (!chipCount.containsKey(chip.name)) chipCount.put(chip.name, -1);
             chipCount.put(chip.name, chipCount.get(chip.name) + 1);
 
-            chip.setup(chipCount.get(chip.name), pos, vgmCmdTbl);
+            chip.setUp(chipCount.get(chip.name), pos, vgmCmdTbl);
             //chips.add(chip);
         }
 
@@ -142,7 +143,7 @@ public class Zgm extends BaseDriver {
 
             if (!getZGMGD3Info(vgmBuf)) return false;
         } catch (Exception e) {
-            Log.write(String.format("XGMの情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), Arrays.toString(e.getStackTrace())));
+            Debug.printf("XGMの情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), Arrays.toString(e.getStackTrace()));
             return false;
         }
 

@@ -6,6 +6,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.logging.Level;
+
+import vavi.util.Debug;
 
 
 public class MmfControl {
@@ -32,7 +35,7 @@ public class MmfControl {
                 _map = ((FileChannel) Files.newByteChannel(Paths.get(mmfName))).map(FileChannel.MapMode.READ_ONLY, 0, mmfSize);
             }
         } catch (Exception ex) {
-            Log.write(ex.getMessage() + Arrays.toString(ex.getStackTrace()));
+            ex.printStackTrace();
         }
     }
 
@@ -55,7 +58,7 @@ public class MmfControl {
                 _map.put(mmfBuf, 0, mmfBuf.length);
             }
         } catch (Exception ex) {
-            Log.write(ex.getMessage() + Arrays.toString(ex.getStackTrace()));
+            ex.printStackTrace();
         }
 
         return msg;
@@ -69,7 +72,7 @@ public class MmfControl {
                     map.get(mmfBuf, 0, mmfBuf.length);
             }
         } catch (Exception ex) {
-            Log.write(ex.getMessage() + Arrays.toString(ex.getStackTrace()));
+            ex.printStackTrace();
         }
 
         return mmfBuf;
@@ -83,7 +86,7 @@ public class MmfControl {
             MappedByteBuffer map = ((FileChannel) Files.newByteChannel(Paths.get(mmfName))).map(FileChannel.MapMode.READ_ONLY, 0, mmfSize);
             map.put(ary, 0, ary.length);
         } catch (Exception ex) {
-            Log.write(ex.getMessage() + Arrays.toString(ex.getStackTrace()));
+            ex.printStackTrace();
         }
     }
 }

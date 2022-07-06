@@ -3,6 +3,7 @@ package mdplayer.driver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 
 import dotnet4j.util.compat.Tuple3;
 import dotnet4j.io.File;
@@ -13,9 +14,9 @@ import dotnet4j.io.Path;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.DacControl;
-import mdplayer.Log;
 import mdplayer.Setting;
 import mdsound.C140;
+import vavi.util.Debug;
 
 
 public class Vgm extends BaseDriver {
@@ -201,7 +202,7 @@ public class Vgm extends BaseDriver {
     }
 
     @Override
-    public void oneFrameProc() {
+    public void processOneFrame() {
         try {
             vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
             while (vgmSpeedCounter >= 1.0) {
@@ -213,7 +214,7 @@ public class Vgm extends BaseDriver {
                 }
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -255,7 +256,7 @@ public class Vgm extends BaseDriver {
                 //if (model == EnmModel.VirtualModel) System.err.println("%05x : %02x ", vgmAdr, vgmBuf[vgmAdr]);
                 vgmCmdTbl[cmd].run();
             } else {
-                //わからんコマンド
+                 // わからんコマンド
                 System.err.printf("[%s]:unknown command: Adr:{%x} Dat:{%x}", model, vgmAdr, vgmBuf[vgmAdr]);
                 vgmAdr++;
             }
@@ -815,7 +816,7 @@ public class Vgm extends BaseDriver {
             int startAddress = getLE32(vgmAdr + 0x0B);
             switch (bType & 0xff) {
             case 0x80:
-                //SEGA PCM
+                 // SEGA PCM
                 chipRegister.writeSEGAPCMPCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpDataForSegaPCM(model, "SEGAPCM_PCMData", vgmAdr + 15, bLen - 8);
                 break;
@@ -881,11 +882,7 @@ public class Vgm extends BaseDriver {
                 if (model == mdplayer.Common.EnmModel.RealModel) {
                     if ((chipID == 0 && setting.getYM2608Type()[0].getUseReal()[0])
                             || (chipID == 1 && setting.getYM2608Type()[1].getUseReal()[0])) {
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                        try { Thread.sleep(500); } catch (InterruptedException e) {}
                     }
                 }
 
@@ -1034,7 +1031,7 @@ public class Vgm extends BaseDriver {
                     break;
                 }
             } catch (Exception e) {
-                Log.forcedWrite(e);
+                e.printStackTrace();
             }
 
             vgmAdr += bLen + 7;
@@ -1062,7 +1059,8 @@ public class Vgm extends BaseDriver {
                 fs.write(vgmBuf, adr, len);
             }
         } catch (Exception e) {
-            //エラーは無視
+            e.printStackTrace();
+             // エラーは無視
         }
     }
 
@@ -1108,20 +1106,20 @@ public class Vgm extends BaseDriver {
             // チャンネル数(mono)
             des.add((byte) 0x01);
             des.add((byte) 0x00);
-            //サンプリング周波数(16KHz)
+             // サンプリング周波数(16KHz)
             des.add((byte) 0x80);
             des.add((byte) 0x3e);
             des.add((byte) 0);
             des.add((byte) 0);
-            //平均データ割合(16K)
+             // 平均データ割合(16K)
             des.add((byte) 0x80);
             des.add((byte) 0x3e);
             des.add((byte) 0);
             des.add((byte) 0);
-            //ブロックサイズ(1)
+             // ブロックサイズ(1)
             des.add((byte) 0x01);
             des.add((byte) 0x00);
-            //ビット数(8bit)
+             // ビット数(8bit)
             des.add((byte) 0x08);
             des.add((byte) 0x00);
 
@@ -1140,10 +1138,11 @@ public class Vgm extends BaseDriver {
                 des.add(vgmBuf[adr + i]);
             }
 
-            //出力
+             // 出力
             File.writeAllBytes(dFn, mdsound.Common.toByteArray(des));
 
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -1210,7 +1209,7 @@ public class Vgm extends BaseDriver {
         byte port = vgmBuf[vgmAdr + 3];
         byte cmd = vgmBuf[vgmAdr + 4];
 
-        dacControl.setup_chip(si, (byte) (chipId & 0x7F), (byte) ((chipId & 0x80) >> 7), port * 0x100 + cmd);
+        dacControl.setupChip(si, (byte) (chipId & 0x7F), (byte) ((chipId & 0x80) >> 7), port * 0x100 + cmd);
         vgmAdr += 5;
     }
 
@@ -1231,7 +1230,7 @@ public class Vgm extends BaseDriver {
 
         VgmPcmBank tempPCM = pcmBank[dacCtrl[si].bank];
         //last95Max = tempPCM->BankCount;
-        dacControl.set_data(si, tempPCM.data, tempPCM.dataSize,
+        dacControl.setData(si, tempPCM.data, tempPCM.dataSize,
                 vgmBuf[vgmAdr + 3], vgmBuf[vgmAdr + 4]);
 
         vgmAdr += 5;
@@ -1314,7 +1313,7 @@ public class Vgm extends BaseDriver {
             TempSht = 0x00;
         VgmPcmData tempBnk = tempPCM.bank.get(TempSht);
 
-        byte tempByt = (byte) (DacControl.DCTRL_LMODE_BYTES |
+        byte tempByt = (byte) (DacControl.DacControl_.DCTRL_LMODE_BYTES |
                 (vgmBuf[vgmAdr + 4] & 0x10) |         // Reverse Mode
                 ((vgmBuf[vgmAdr + 4] & 0x01) << 7));   // Looping
         dacControl.start(curChip, tempBnk.dataStart, tempByt, tempBnk.dataSize);
@@ -1801,7 +1800,7 @@ public class Vgm extends BaseDriver {
         pwmClockValue = 0;// defaultPWMClockValue;
         okiM6258ClockValue = 0;// defaultOKIM6258ClockValue;
         c140ClockValue = 0;// defaultC140ClockValue;
-        okiM6295ClockValue = 0;//defaultOKIM6295ClockValue;
+        okiM6295ClockValue = 0; // defaultOKIM6295ClockValue;
         ay8910ClockValue = 0;
         ym2413ClockValue = 0;
         huC6280ClockValue = 0;
@@ -1813,10 +1812,10 @@ public class Vgm extends BaseDriver {
         wSwanClockValue = 0;
 
 
-        //ヘッダーを読み込めるサイズをもっているかチェック
+         // ヘッダーを読み込めるサイズをもっているかチェック
         if (vgmBuf.length < 0x40) return false;
 
-        //ヘッダーから情報取得
+         // ヘッダーから情報取得
 
         int vgm = getLE32(0x00);
         if (vgm != FCC_VGM) return false;
@@ -1825,7 +1824,7 @@ public class Vgm extends BaseDriver {
 
         int version = getLE32(0x08);
         this.version = String.format("%d.%d%d", (version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
-        //バージョンチェック
+         // バージョンチェック
         if (version < 0x0101) {
             System.err.printf("Warning:This file instanceof older version(%s).", this.version);
             //return false;
@@ -2075,9 +2074,9 @@ public class Vgm extends BaseDriver {
                 }
             }
 
-            // okiM6258ClockValue = 0;
-            // huC6280ClockValue = 0;
-            // okiM6295ClockValue = 0;
+            //okiM6258ClockValue = 0;
+            //huC6280ClockValue = 0;
+            //okiM6295ClockValue = 0;
 
             //if (version >= 0x0161)
             {
@@ -2346,15 +2345,16 @@ public class Vgm extends BaseDriver {
                 else adr += 5;
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return false;
     }
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
 
-        int adr = vgmGd3 + 12 + 0x14;
+        int adr = vgmGd3[0] + 12 + 0x14;
         gd3 = Common.getGD3Info(buf, adr);
         gd3.usedChips = usedChips;
 

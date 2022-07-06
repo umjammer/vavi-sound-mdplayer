@@ -2164,7 +2164,7 @@ public class Km6280 {
                 Opcode46();
                 break;
 
-            //OP__(48)    OPt_(49)    OP__(4A)    OP__(4C)    OPt_(4D)    OP__(4E)
+             // OP__(48)    OPt_(49)    OP__(4A)    OP__(4C)    OPt_(4D)    OP__(4E)
             case 0x48:
                 Opcode48();
                 break;
@@ -2186,7 +2186,7 @@ public class Km6280 {
                 Opcode4E();
                 break;
 
-            //OP__(50)    OPt_(51)    OPxx(52)    OPxx(54)    OPt_(55)    OP__(56)
+             // OP__(50)    OPt_(51)    OPxx(52)    OPxx(54)    OPt_(55)    OP__(56)
             case 0x50:
                 opcode50();
                 break;
@@ -2202,7 +2202,7 @@ public class Km6280 {
                 Opcode56();
                 break;
 
-            //OP__(58)    OPt_(59)    OPxx(5A)    OPxx(5C)    OPt_(5D)    OP__(5E)
+             // OP__(58)    OPt_(59)    OPxx(5A)    OPxx(5C)    OPt_(5D)    OP__(5E)
             case 0x58:
                 Opcode58();
                 break;
@@ -2218,7 +2218,7 @@ public class Km6280 {
                 Opcode5E();
                 break;
 
-            //OP__(60)    OPtd(61)    OPxx(62)    OPxx(64)    OPtd(65)    OP__(66)
+             // OP__(60)    OPtd(61)    OPxx(62)    OPxx(64)    OPtd(65)    OP__(66)
             case 0x60:
                 Opcode60();
                 break;
@@ -2238,7 +2238,7 @@ public class Km6280 {
                 Opcode66();
                 break;
 
-            //OP__(68)    OPtd(69)    OP__(6A)    OP__(6C)    OPtd(6D)    OP__(6E)
+             // OP__(68)    OPtd(69)    OP__(6A)    OP__(6C)    OPtd(6D)    OP__(6E)
             case 0x68:
                 Opcode68();
                 break;
@@ -2264,7 +2264,7 @@ public class Km6280 {
                 Opcode6E();
                 break;
 
-            //OP__(70)    OPtd(71)    OPxx(72)    OPxx(74)    OPtd(75)    OP__(76)
+             // OP__(70)    OPtd(71)    OPxx(72)    OPxx(74)    OPtd(75)    OP__(76)
             case 0x70:
                 opcode70();
                 break;
@@ -2284,7 +2284,7 @@ public class Km6280 {
                 Opcode76();
                 break;
 
-            //OP__(78)    OPtd(79)    OPxx(7A)    OPxx(7C)    OPtd(7D)    OP__(7E)
+             // OP__(78)    OPtd(79)    OPxx(7A)    OPxx(7C)    OPtd(7D)    OP__(7E)
             case 0x78:
                 Opcode78();
                 break;
@@ -2304,7 +2304,7 @@ public class Km6280 {
                 Opcode7E();
                 break;
 
-            //OPxx(80)    OP__(81)    OPxx(82)    OP__(84)    OP__(85)    OP__(86)
+             // OPxx(80)    OP__(81)    OPxx(82)    OP__(84)    OP__(85)    OP__(86)
             case 0x81:
                 Opcode81();
                 break;
@@ -2318,7 +2318,7 @@ public class Km6280 {
                 Opcode86();
                 break;
 
-            //OP__(88)    OPxx(89)    OP__(8A)    OP__(8C)    OP__(8D)    OP__(8E)
+             // OP__(88)    OPxx(89)    OP__(8A)    OP__(8C)    OP__(8D)    OP__(8E)
             case 0x88:
                 Opcode88();
                 break;
@@ -2335,7 +2335,7 @@ public class Km6280 {
                 Opcode8E();
                 break;
 
-            //OP__(90)    OP__(91)    OPxx(92)    OP__(94)    OP__(95)    OP__(96)
+             // OP__(90)    OP__(91)    OPxx(92)    OP__(94)    OP__(95)    OP__(96)
             case 0x90:
                 opcode90();
                 break;
@@ -2352,7 +2352,7 @@ public class Km6280 {
                 Opcode96();
                 break;
 
-            //OP__(98)    OP__(99)    OP__(9A)    OPxx(9C)    OP__(9D)    OPxx(9E)
+             // OP__(98)    OP__(99)    OP__(9A)    OPxx(9C)    OP__(9D)    OPxx(9E)
             case 0x98:
                 Opcode98();
                 break;
@@ -2366,7 +2366,7 @@ public class Km6280 {
                 Opcode9D();
                 break;
 
-            //OP__(A0)    OP__(A1)    OP__(A2)    OP__(A4)    OP__(A5)    OP__(A6)
+             // OP__(A0)    OP__(A1)    OP__(A2)    OP__(A4)    OP__(A5)    OP__(A6)
             case 0xA0:
                 OpcodeA0();
                 break;
@@ -2386,7 +2386,7 @@ public class Km6280 {
                 OpcodeA6();
                 break;
 
-            //OP__(A8)    OP__(A9)    OP__(AA)    OP__(AC)    OP__(AD)    OP__(AE)
+             // OP__(A8)    OP__(A9)    OP__(AA)    OP__(AC)    OP__(AD)    OP__(AE)
             case 0xA8:
                 OpcodeA8();
                 break;
@@ -2406,7 +2406,7 @@ public class Km6280 {
                 OpcodeAE();
                 break;
 
-            //OP__(B0)    OP__(B1)    OPxx(B2)    OP__(B4)    OP__(B5)    OP__(B6)
+             // OP__(B0)    OP__(B1)    OPxx(B2)    OP__(B4)    OP__(B5)    OP__(B6)
             case 0xB0:
                 opcodeB0();
                 break;
@@ -2423,7 +2423,7 @@ public class Km6280 {
                 OpcodeB6();
                 break;
 
-            //OP__(B8)    OP__(B9)    OP__(BA)    OP__(BC)    OP__(BD)    OP__(BE)
+             // OP__(B8)    OP__(B9)    OP__(BA)    OP__(BC)    OP__(BD)    OP__(BE)
             case 0xB8:
                 OpcodeB8();
                 break;
@@ -2443,7 +2443,7 @@ public class Km6280 {
                 OpcodeBE();
                 break;
 
-            //OP__(C0)    OP__(C1)    OPxx(C2)    OP__(C4)    OP__(C5)    OP__(C6)
+             // OP__(C0)    OP__(C1)    OPxx(C2)    OP__(C4)    OP__(C5)    OP__(C6)
             case 0xC0:
                 OpcodeC0();
                 break;
@@ -2460,7 +2460,7 @@ public class Km6280 {
                 OpcodeC6();
                 break;
 
-            //OP__(C8)    OP__(C9)    OP__(CA)    OP__(CC)    OP__(CD)    OP__(CE)
+             // OP__(C8)    OP__(C9)    OP__(CA)    OP__(CC)    OP__(CD)    OP__(CE)
             case 0xC8:
                 OpcodeC8();
                 break;
@@ -2480,7 +2480,7 @@ public class Km6280 {
                 OpcodeCE();
                 break;
 
-            //OP__(D0)    OP__(D1)    OPxx(D2)    OPxx(D4)    OP__(D5)    OP__(D6)
+             // OP__(D0)    OP__(D1)    OPxx(D2)    OPxx(D4)    OP__(D5)    OP__(D6)
             case 0xD0:
                 opcodeD0();
                 break;
@@ -2494,7 +2494,7 @@ public class Km6280 {
                 OpcodeD6();
                 break;
 
-            //OP__(D8)    OP__(D9)    OPxx(DA)    OPxx(DC)    OP__(DD)    OP__(DE)
+             // OP__(D8)    OP__(D9)    OPxx(DA)    OPxx(DC)    OP__(DD)    OP__(DE)
             case 0xD8:
                 OpcodeD8();
                 break;
@@ -2508,7 +2508,7 @@ public class Km6280 {
                 OpcodeDE();
                 break;
 
-            //OP__(E0)    OP_d(E1)    OPxx(E2)    OP__(E4)    OP_d(E5)    OP__(E6)
+             // OP__(E0)    OP_d(E1)    OPxx(E2)    OP__(E4)    OP_d(E5)    OP__(E6)
             case 0xE0:
                 OpcodeE0();
                 break;
@@ -2527,7 +2527,7 @@ public class Km6280 {
                 OpcodeE6();
                 break;
 
-            //OP__(E8)    OP_d(E9)    OP__(EA)    OP__(EC)    OP_d(ED)    OP__(EE)
+             // OP__(E8)    OP_d(E9)    OP__(EA)    OP__(EC)    OP_d(ED)    OP__(EE)
             case 0xE8:
                 OpcodeE8();
                 break;
@@ -2549,7 +2549,7 @@ public class Km6280 {
                 OpcodeEE();
                 break;
 
-            //OP__(F0)    OP_d(F1)    OPxx(F2)    OPxx(F4)    OP_d(F5)    OP__(F6)
+             // OP__(F0)    OP_d(F1)    OPxx(F2)    OPxx(F4)    OP_d(F5)    OP__(F6)
             case 0xF0:
                 opcodeF0();
                 break;
@@ -2565,7 +2565,7 @@ public class Km6280 {
                 OpcodeF6();
                 break;
 
-            //OP__(F8)    OP_d(F9)    OPxx(FA)    OPxx(FC)    OP_d(FD)    OP__(FE)
+             // OP__(F8)    OP_d(F9)    OPxx(FA)    OPxx(FC)    OP_d(FD)    OP__(FE)
             case 0xF8:
                 OpcodeF8();
                 break;
@@ -2710,7 +2710,7 @@ public class Km6280 {
                 Opcode3F();
                 break;
 
-            //OP__(4F)	OP__(5F)	OP__(6F)	OP__(7F)
+             // OP__(4F)	OP__(5F)	OP__(6F)	OP__(7F)
             case 0x4F:
                 Opcode4F();
                 break;
@@ -2738,7 +2738,7 @@ public class Km6280 {
                 OpcodeBF();
                 break;
 
-            //OP__(CF)	OP__(DF)	OP__(EF)	OP__(FF)
+             // OP__(CF)	OP__(DF)	OP__(EF)	OP__(FF)
             case 0xCF:
                 OpcodeCF();
                 break;
@@ -2782,7 +2782,7 @@ public class Km6280 {
                 Opcode37();
                 break;
 
-            //OP__(47)	OP__(57)	OP__(67)	OP__(77)
+             // OP__(47)	OP__(57)	OP__(67)	OP__(77)
             case 0x47:
                 Opcode47();
                 break;
@@ -2810,7 +2810,7 @@ public class Km6280 {
                 OpcodeB7();
                 break;
 
-            //OP__(C7)	OP__(D7)	OP__(E7)	OP__(F7)
+             // OP__(C7)	OP__(D7)	OP__(E7)	OP__(F7)
             case 0xC7:
                 OpcodeC7();
                 break;

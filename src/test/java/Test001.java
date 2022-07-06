@@ -16,5 +16,6 @@ public class Test001 {
     public static void main(String[] args) throws Exception {
         Setting setting = new Setting();
         Vgm vgm = new Vgm(setting);
+        vgm.
     }
 }

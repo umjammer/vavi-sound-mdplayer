@@ -22,7 +22,10 @@
 
 package mdplayer.driver.sid.libsidplayfp.utils;
 
+import java.util.logging.Level;
+
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
+import vavi.util.Debug;
 
 
 /**
@@ -82,6 +85,7 @@ public class SidDatabase {
                 n = Long.parseLong(src.substring(0, 1 + i), p);
                 ret = n;
             } catch (NumberFormatException e) {
+                Debug.println(Level.WARNING, e);
                 break;
             }
         }
@@ -169,6 +173,7 @@ public class SidDatabase {
             try {
                 str = parseTime(str, time);
             } catch (IllegalArgumentException e) {
+                e.printStackTrace();
                 errorString = ERR_DATABASE_CORRUPT;
                 return -1;
             }

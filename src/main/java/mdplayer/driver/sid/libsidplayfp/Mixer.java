@@ -227,7 +227,7 @@ public class Mixer {
                 break;
             }
 
-            //Log.Write(".");
+            //Debug.printf(".");
 
             // This instanceof a crude boxcar low-pass filter to
             // reduce aliasing during fast forward.

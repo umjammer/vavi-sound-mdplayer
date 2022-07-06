@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import dotnet4j.util.compat.EventHandler;
 import mdplayer.Common;
@@ -75,7 +76,8 @@ public class VstMng {
         vi.key = String.valueOf(System.currentTimeMillis());
         try {
             Thread.sleep(1);
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         vi.vstPlugins = ctx;
         vi.fileName = kv.getKey();
@@ -159,6 +161,7 @@ public class VstMng {
             try {
                 vmo = vstPluginsInst.get(vn);
             } catch (Exception e) {
+                e.printStackTrace();
                 vmo = null;
             }
         }
@@ -197,6 +200,7 @@ public class VstMng {
                 vstPlugin.location = vstPlugin.vstPluginsForm.Location;
                 vstPlugin.vstPluginsForm.Close();
             } catch (Exception e) {
+                e.printStackTrace();
             }
 
             try {
@@ -214,6 +218,7 @@ public class VstMng {
                     vstPlugin.vstPlugins.close();
                 }
             } catch (Exception e) {
+                e.printStackTrace();
             }
 
             VstInfo vi = new VstInfo();
@@ -236,6 +241,7 @@ public class VstMng {
                 vstInfo2.location = vstInfo2.vstPluginsForm.Location;
                 vstInfo2.vstPluginsForm.Close();
             } catch (Exception e) {
+                e.printStackTrace();
             }
 
             try {
@@ -253,6 +259,7 @@ public class VstMng {
                     vstInfo2.vstPlugins.close();
                 }
             } catch (Exception e) {
+                e.printStackTrace();
             }
 
             VstInfo vi = new VstInfo();
@@ -271,7 +278,7 @@ public class VstMng {
         if (buffer == null || buffer.length < 1 || sampleCount == 0) return;
 
         try {
-            //if (trdStopped) return;
+             // if (trdStopped) return;
 
             int blockSize = sampleCount / 2;
 
@@ -319,7 +326,6 @@ public class VstMng {
                                 buffer[j * 2 + offset + 1] = (short) (outputBuffers[1][j] * Short.MAX_VALUE);
                             }
                         }
-
                     }
                 }
             }
@@ -364,12 +370,11 @@ public class VstMng {
                                 buffer[j * 2 + offset + 1] = (short) (outputBuffers[1][j] * Short.MAX_VALUE);
                             }
                         }
-
                     }
                 }
             }
-
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -381,11 +386,11 @@ public class VstMng {
 
         VstMidiEvent evt = new VstMidiEvent(
                 deltaFrames
-                , 0//noteLength
-                , 0//noteOffset
+                , 0 // noteLength
+                , 0 // noteOffset
                 , new byte[] {cmd, prm1, prm2}
-                , 0//detune
-                , 0//noteOffVelocity
+                , 0 // detune
+                , 0 // noteOffVelocity
         );
         vstMidiOuts.get(num).AddMidiEvent(evt);
         if (num < midiParams.length) midiParams[num].SendBuffer(new byte[] {cmd, prm1, prm2});
@@ -399,11 +404,11 @@ public class VstMng {
 
         Jacobi.Vst.Core.VstMidiEvent evt = new Jacobi.Vst.Core.VstMidiEvent(
                 deltaFrames
-                , 0//noteLength
-                , 0//noteOffset
+                , 0 // noteLength
+                , 0 // noteOffset
                 , new byte[] {cmd, prm1}
-                , 0//detune
-                , 0//noteOffVelocity
+                , 0 // detune
+                , 0 // noteOffVelocity
         );
         vstMidiOuts.get(num).AddMidiEvent(evt);
         if (num < midiParams.length) midiParams[num].SendBuffer(new byte[] {cmd, prm1});
@@ -417,11 +422,11 @@ public class VstMng {
 
         VstMidiEvent evt = new VstMidiEvent(
                 deltaFrames
-                , 0//noteLength
-                , 0//noteOffset
+                , 0 // noteLength
+                , 0 // noteOffset
                 , data
-                , 0//detune
-                , 0//noteOffVelocity
+                , 0 // detune
+                , 0 // noteOffVelocity
         );
         vstMidiOuts.get(num).AddMidiEvent(evt);
         if (num < midiParams.length) midiParams[num].SendBuffer(data);
@@ -444,6 +449,7 @@ public class VstMng {
                 }
 
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -464,7 +470,7 @@ public class VstMng {
 
             return ctx;
         } catch (Exception e) {
-            Log.forcedWrite(e);
+            e.printStackTrace();
             //JOptionPane.showMessageDialog(this, e.toString(), Text, JOptionPane.ERROR_MESSAGE);
         }
 
@@ -507,13 +513,13 @@ public class VstMng {
         VstPlugin ctx = OpenPlugin(fileName);
         if (ctx == null) return false;
 
-        //Stop();
+         // Stop();
 
         VstInfo2 vi = new VstInfo2();
         vi.vstPlugins = ctx;
         vi.fileName = fileName;
         vi.key = String.valueOf(System.currentTimeMillis());
-        try { Thread.sleep(1); } catch (InterruptedException ignored) {}
+        Thread.yield();
 
         ctx.setBlockSize(512);
         ctx.setSampleRate(setting.getOutputDevice().getSampleRate());
@@ -575,7 +581,7 @@ public class VstMng {
         } else {
             int ind = -1;
             for (int i = 0; i < vstPlugins.size(); i++) {
-                //if (vstPlugins.get(i).fileName == fileName)
+                 // if (vstPlugins.get(i).fileName == fileName)
                 if (vstPlugins.get(i).key.equals(key)) {
                     ind = i;
                     break;
@@ -594,6 +600,7 @@ public class VstMng {
                         vstPlugins.get(ind).vstPlugins.close();
                     }
                 } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 vstPlugins.remove(ind);
             }

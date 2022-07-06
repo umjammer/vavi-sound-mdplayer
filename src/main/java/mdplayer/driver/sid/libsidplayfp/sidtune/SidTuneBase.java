@@ -22,10 +22,12 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidtune;
 
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
@@ -36,6 +38,7 @@ import mdplayer.driver.sid.libsidplayfp.SidEndian;
 import mdplayer.driver.sid.libsidplayfp.SidMemory;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import mdsound.Common;
+import vavi.util.Debug;
 
 
 /**
@@ -286,7 +289,7 @@ public class SidTuneBase {
 
             return getFromBuffer(mdsound.Common.toByteArray(fileBuf), fileBuf.size());
         } catch (java.io.IOException e) {
-            throw new IOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -450,6 +453,7 @@ public class SidTuneBase {
                             // The first tune loaded ok, so ignore errors on the
                             // second tune, may find an ok one later
                         } catch (dotnet4j.io.IOException e) {
+                            e.printStackTrace();
                         }
                     }
                     n++;

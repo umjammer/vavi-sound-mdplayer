@@ -60,7 +60,7 @@ public class VRC7 extends mdsound.Ym2413 {
 
             nv.tick(apu_clocks);
             nv.render(b);
-            // if(b[0]!=0)System.System.err.println("%d",b[0]);
+            // if(b[0]!=0)Debug.printf(("%d",b[0]);
             outputs[0][i] += b[0] << 2;
             outputs[1][i] += b[1] << 2;
         }

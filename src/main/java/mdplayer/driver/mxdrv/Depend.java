@@ -10,11 +10,11 @@ public class Depend {
     public static final int SET = 255;
     public static final int CLR = 0;
 
-    public static short getbword(XMemory mm, int a) {
+    public static short getBword(XMemory mm, int a) {
         return (short) ((mm.readByte(a + 0) * 256) + mm.readByte(a + 1));
     }
 
-    public static int getblong(XMemory mm, int a) {
+    public static int getBlong(XMemory mm, int a) {
         return (mm.readByte(a + 0) * 16777216) + (mm.readByte(a + 1) * 65536) +
                       (mm.readByte(a + 2) * 256) + mm.readByte(a + 3);
     }

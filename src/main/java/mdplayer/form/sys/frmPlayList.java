@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
@@ -67,6 +68,7 @@ import mdplayer.properties.Resources;
 import org.intellij.lang.annotations.JdkConstants.FontStyle;
 import vavi.awt.dnd.BasicDTListener;
 import vavi.swing.JHistoryComboBox;
+import vavi.util.Debug;
 
 
 public class frmPlayList extends JFrame {
@@ -299,6 +301,7 @@ public class frmPlayList extends JFrame {
         try {
             songNo = (int) dgvList.getValueAt(pi, cols.clmSongNo.ordinal());
         } catch (Exception e) {
+            e.printStackTrace();
             songNo = 0;
         }
         if (dgvList.getValueAt(pi, cols.clmType.ordinal()) != null && !dgvList.getValueAt(pi, cols.clmType.ordinal()).toString().equals("-")) {
@@ -338,7 +341,7 @@ public class frmPlayList extends JFrame {
         case 1:// ランダム
 
             if (pi != -1) {
-                //再生履歴の更新
+                 // 再生履歴の更新
                 fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
                 zfn = (String) dgvList.getValueAt(pi, cols.clmZipFileName.ordinal());
 
@@ -375,6 +378,7 @@ public class frmPlayList extends JFrame {
         try {
             songNo = (int) dgvList.getValueAt(pi, cols.clmSongNo.ordinal());
         } catch (Exception e) {
+            e.printStackTrace();
             songNo = 0;
         }
 
@@ -441,6 +445,7 @@ loopEx:
         try {
             songNo = (int) dgvList.getValueAt(pi, cols.clmSongNo.ordinal());
         } catch (Exception e) {
+            e.printStackTrace();
             songNo = 0;
         }
 
@@ -498,6 +503,7 @@ loopEx:
         try {
             songNo = (int) dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmSongNo.ordinal());
         } catch (Exception e) {
+            e.printStackTrace();
             songNo = 0;
         }
 
@@ -570,7 +576,7 @@ loopEx:
             Refresh();
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "ファイルの読み込みに失敗しました。");
         }
     }
@@ -621,7 +627,7 @@ loopEx:
                 playList.saveM3U(filename);
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "ファイルの保存に失敗しました。");
         }
     }
@@ -661,7 +667,7 @@ loopEx:
                 playList.AddFile(fn.getPath());
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
 
         //Play();
@@ -696,7 +702,7 @@ loopEx:
                 }
             });
         } catch (IOException ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
 
         frmMain.oldParam = new MDChipParams();
@@ -763,8 +769,8 @@ loopEx:
             //System.err.println("keycode%d %d %d", e.KeyCode, e.KeyData, e.KeyValue);
 
             switch (e.getKeyCode()) {
-            case 32: //Space
-            case 13: //Enter
+            case 32:  // Space
+            case 13:  // Enter
                 if (dgvList.getSelectedRowCount() == 0) {
                     return;
                 }
@@ -786,6 +792,7 @@ loopEx:
                 try {
                     songNo = (int) dgvList.getValueAt(index, cols.clmSongNo.ordinal());
                 } catch (Exception ex) {
+                    ex.printStackTrace();
                     songNo = 0;
                 }
 
@@ -794,7 +801,7 @@ loopEx:
 
                 playing = true;
                 break;
-            case 46: //Delete
+            case 46:  // Delete
 //                e.Handled = true;
                 tsmiDelThis_Click(null);
                 break;
@@ -862,11 +869,11 @@ loopEx:
 //
 //                String[] filename = ((String[]) e.Data.GetData(DataFormats.FileDrop));
 //
-//                //ドロップされたアイテムがフォルダーの場合は下位フォルダー内も含めた
-//                //実際のファイルのリストを取得する
+//                 // ドロップされたアイテムがフォルダーの場合は下位フォルダー内も含めた
+//                 // 実際のファイルのリストを取得する
 //                List<String> result = new ArrayList<>();
 //                GetTrueFileNameList(result, Arrays.asList(filename));
-//                //重複を取り除く
+//                 // 重複を取り除く
 //                filename = result.stream().distinct().toArray(String[]::new);
 //
 //                int i = playList.getMusics().size();
@@ -876,7 +883,7 @@ loopEx:
 //                    if (hti.RowIndex < playList.getMusics().size()) i = hti.RowIndex;
 //                }
 //
-//                //曲を停止
+//                 // 曲を停止
 //                stop();
 //                frmMain.stop();
 //                while (!Audio.isStopped())
@@ -891,7 +898,7 @@ loopEx:
 //                }
 //                i = buIndex;
 //
-//                //選択位置の曲を再生する
+//                 // 選択位置の曲を再生する
 //                String fn = playList.getMusics().get(i).fileName;
 //                if (
 //                        fn.toLowerCase().lastIndexOf(".lzh") == -1
@@ -1481,7 +1488,7 @@ loopEx:
         // tsbOpenPlayList
         //
 //        this.tsbOpenPlayList.DisplayStyle = JToolStripItemDisplayStyle.Image;
-        this.tsbOpenPlayList.setIcon(new ImageIcon(mdplayer.properties.Resources.getopenPL()));
+        this.tsbOpenPlayList.setIcon(new ImageIcon(mdplayer.properties.Resources.getOpenPL()));
         //resources.ApplyResources(this.tsbOpenPlayList, "tsbOpenPlayList");
         this.tsbOpenPlayList.setName("tsbOpenPlayList");
         this.tsbOpenPlayList.addActionListener(this::tsbOpenPlayList_Click);
@@ -1489,7 +1496,7 @@ loopEx:
         // tsbSavePlayList
         //
 //        this.tsbSavePlayList.DisplayStyle = JToolStripItemDisplayStyle.Image;
-        this.tsbSavePlayList.setIcon(new ImageIcon(mdplayer.properties.Resources.getsavePL()));
+        this.tsbSavePlayList.setIcon(new ImageIcon(mdplayer.properties.Resources.getSavePL()));
         //resources.ApplyResources(this.tsbSavePlayList, "tsbSavePlayList");
         this.tsbSavePlayList.setName("tsbSavePlayList");
         this.tsbSavePlayList.addActionListener(this::tsbSavePlayList_Click);
@@ -1502,7 +1509,7 @@ loopEx:
         // tsbAddMusic
         //
 //        this.tsbAddMusic.DisplayStyle = JToolStripItemDisplayStyle.Image;
-        this.tsbAddMusic.setIcon(new ImageIcon(mdplayer.properties.Resources.getaddPL()));
+        this.tsbAddMusic.setIcon(new ImageIcon(mdplayer.properties.Resources.getAddPL()));
         //resources.ApplyResources(this.tsbAddMusic, "tsbAddMusic");
         this.tsbAddMusic.setName("tsbAddMusic");
         this.tsbAddMusic.addActionListener(this::tsbAddMusic_Click);
@@ -1510,7 +1517,7 @@ loopEx:
         // tsbAddFolder
         //
 //        this.tsbAddFolder.DisplayStyle = JToolStripItemDisplayStyle.Image;
-        this.tsbAddFolder.setIcon(new ImageIcon(mdplayer.properties.Resources.getaddFolderPL()));
+        this.tsbAddFolder.setIcon(new ImageIcon(mdplayer.properties.Resources.getAddFolderPL()));
         //resources.ApplyResources(this.tsbAddFolder, "tsbAddFolder");
         this.tsbAddFolder.setName("tsbAddFolder");
         this.tsbAddFolder.addActionListener(this::tsbAddFolder_Click);
@@ -1523,7 +1530,7 @@ loopEx:
         // tsbUp
         //
 //        this.tsbUp.DisplayStyle = JToolStripItemDisplayStyle.Image;
-        this.tsbUp.setIcon(new ImageIcon(mdplayer.properties.Resources.getupPL()));
+        this.tsbUp.setIcon(new ImageIcon(mdplayer.properties.Resources.getUpPL()));
         //resources.ApplyResources(this.tsbUp, "tsbUp");
         this.tsbUp.setName("tsbUp");
         this.tsbUp.addActionListener(this::tsbUp_Click);
@@ -1545,7 +1552,7 @@ loopEx:
         //
 //        this.tsbJapanese.CheckOnClick = true;
 //        this.tsbJapanese.DisplayStyle = JToolStripItemDisplayStyle.Image;
-        this.tsbJapanese.setIcon(new ImageIcon(mdplayer.properties.Resources.getjapPL()));
+        this.tsbJapanese.setIcon(new ImageIcon(mdplayer.properties.Resources.getJapPL()));
         //resources.ApplyResources(this.tsbJapanese, "tsbJapanese");
         this.tsbJapanese.setName("tsbJapanese");
         this.tsbJapanese.addActionListener(this::toolStripButton1_Click);
@@ -1559,7 +1566,7 @@ loopEx:
         //
 //        this.tsbTextExt.DisplayStyle = JToolStripItemDisplayStyle.Image;
         //resources.ApplyResources(this.tsbTextExt, "tsbTextExt");
-        this.tsbTextExt.setIcon(new ImageIcon(mdplayer.properties.Resources.gettxtPL()));
+        this.tsbTextExt.setIcon(new ImageIcon(mdplayer.properties.Resources.getTxtPL()));
         this.tsbTextExt.setName("tsbTextExt");
         this.tsbTextExt.addActionListener(this::tsbTextExt_Click);
         //
@@ -1567,7 +1574,7 @@ loopEx:
         //
 //        this.tsbMMLExt.DisplayStyle = JToolStripItemDisplayStyle.Image;
         //resources.ApplyResources(this.tsbMMLExt, "tsbMMLExt");
-        this.tsbMMLExt.setIcon(new ImageIcon(mdplayer.properties.Resources.getmmlPL()));
+        this.tsbMMLExt.setIcon(new ImageIcon(mdplayer.properties.Resources.getMmlPL()));
         this.tsbMMLExt.setName("tsbMMLExt");
         this.tsbMMLExt.addActionListener(this::tsbMMLExt_Click);
         //
@@ -1575,7 +1582,7 @@ loopEx:
         //
 //        this.tsbImgExt.DisplayStyle = JToolStripItemDisplayStyle.Image;
         //resources.ApplyResources(this.tsbImgExt, "tsbImgExt");
-        this.tsbImgExt.setIcon(new ImageIcon(mdplayer.properties.Resources.getimgPL()));
+        this.tsbImgExt.setIcon(new ImageIcon(mdplayer.properties.Resources.getImgPL()));
         this.tsbImgExt.setName("tsbImgExt");
         this.tsbImgExt.addActionListener(this::tsbImgExt_Click);
         //

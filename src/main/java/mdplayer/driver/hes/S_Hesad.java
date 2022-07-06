@@ -3,7 +3,7 @@ package mdplayer.driver.hes;
 public class S_Hesad extends KMIF_SOUND_DEVICE {
 
     private static final int CPS_SHIFT = 16;
-    private static final int PCE_VOLUME = 1; //1
+    private static final int PCE_VOLUME = 1;  // 1
     private static final int ADPCM_VOLUME = 50;
 
     public static class HESADPCM {
@@ -53,7 +53,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         pbf[0] = 0;
         pbf[1] = 0;
 
-        //この時既に、内蔵音源のレンダリングが終了している。
+         // この時既に、内蔵音源のレンダリングが終了している。
         p[0] = p[0] * PCE_VOLUME;
         p[1] = p[1] * PCE_VOLUME;
 
@@ -61,7 +61,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
 
         sndp.common.pt += sndp.common.cps;
 
-        //1ms
+         // 1ms
         while (sndp.common.pt > 100000) {
             sndp.common.pt -= 100000;
 
@@ -248,14 +248,14 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
 
     //private void setinst(Object ctx, int n, byte[] p, int l) { }
 
-    //ここからレジスタビュアー設定
+     // ここからレジスタビュアー設定
     //static Uint8* regdata;
     //extern Uint32 (* ioview_ioread_DEV_ADPCM) (Uint32 a);
     //static Uint32 ioview_ioread_bf(Uint32 a)
     //{
     //    if (a >= 0x8 && a <= 0x15) return regdata[a]; else return 0x100;
     //}
-    //ここまでレジスタビュアー設定
+     // ここまでレジスタビュアー設定
 
     public KMIF_SOUND_DEVICE HESAdPcmAlloc() {
         HESADPCM sndp;
@@ -273,12 +273,12 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         sndp.kmif.read = this::sndread;
         sndp.kmif.setinst = setinst;
 
-        //ここからレジスタビュアー設定
+         // ここからレジスタビュアー設定
         //regdata = sndp.regs;
         //ioview_ioread_DEV_ADPCM = ioview_ioread_bf;
-        //ここまでレジスタビュアー設定
+         // ここまでレジスタビュアー設定
 
-        //発声部分
+         // 発声部分
         sndp.deltadev = YMDELTATPCMSoundAlloc(3, sndp.pcmbuf);
         return sndp.kmif;
     }
@@ -307,17 +307,17 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         sndp.ymdeltatpcm_type = (byte) ymdeltatpcm_type;
         switch (ymdeltatpcm_type) {
         case 0://                    YMDELTATPCM_TYPE_Y8950:
-            sndp.memshift = 2;
+            sndp.memShift = 2;
             break;
         case 1://                    YMDELTATPCM_TYPE_YM2608:
             /* OPNA */
-            sndp.memshift = 6;
+            sndp.memShift = 6;
             break;
         case 2://                    YMDELTATPCM_TYPE_YM2610:
-            sndp.memshift = 9;
+            sndp.memShift = 9;
             break;
         case 3://                    MSM5205:
-            sndp.memshift = 0;
+            sndp.memShift = 0;
             break;
         }
         S_Deltat delta = new S_Deltat();
@@ -339,14 +339,14 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         sndp.rommask = 0;
         sndp.logtbl = S_Deltat.KMIF_LOGTABLE.LogTableAddRef();
         if (sndp.logtbl == null) {
-            sndp.sndrelease();
+            sndp.releaseSound();
             return null;
         }
-        //ここからレジスタビュアー設定
+         // ここからレジスタビュアー設定
         //sndpr = sndp;
         //if (ioview_ioread_DEV_ADPCM == NULL) ioview_ioread_DEV_ADPCM = ioview_ioread_bf;
         //if (ioview_ioread_DEV_ADPCM2 == NULL) ioview_ioread_DEV_ADPCM2 = ioview_ioread_bf2;
-        //ここまでレジスタビュアー設定
+         // ここまでレジスタビュアー設定
         return sndp.kmif;
     }
 }

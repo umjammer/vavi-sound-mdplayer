@@ -28,8 +28,8 @@ public class Conductor extends ZgmChip {
     }
 
     @Override
-    public void setup(int chipIndex, int dataPos, Map<Integer, Zgm.RefRunnable<Byte, Integer>> cmdTable) {
-        super.setup(chipIndex, dataPos, cmdTable);
+    public void setUp(int chipIndex, int dataPos, Map<Integer, Zgm.RefRunnable<Byte, Integer>> cmdTable) {
+        super.setUp(chipIndex, dataPos, cmdTable);
 
         cmdTable.remove(defineInfo.commandNo);
         cmdTable.put(defineInfo.commandNo, this::sendPort0);

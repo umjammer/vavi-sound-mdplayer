@@ -10,8 +10,12 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+
+import vavi.util.Debug;
+
 
 public class FrameBuffer {
     public JComponent pbScreen;
@@ -60,7 +64,7 @@ public class FrameBuffer {
 //            if (pbScreen != null)
 //                pbScreen.Graphics2D -= new JPaintEventHandler(p);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         pbScreen = null;
 
@@ -124,7 +128,7 @@ public class FrameBuffer {
 //                if (bgPlane != null) bgPlane.Render();
 //            });
 //        } catch (Exception e) {
-//            //握りつぶす
+//             // 握りつぶす
 //        }
     }
 
@@ -161,7 +165,7 @@ public class FrameBuffer {
 
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -205,7 +209,7 @@ public class FrameBuffer {
 
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 }

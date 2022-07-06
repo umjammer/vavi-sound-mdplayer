@@ -50,7 +50,7 @@ public class frmYMZ280B extends frmBase {
         this.newParam = newParam;
         this.oldParam = oldParam;
 
-        frameBuffer.Add(pbScreen, Resources.getplaneYMZ280B(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneYMZ280B(), null, zoom);
         screenInit();
         update();
     }
@@ -87,9 +87,9 @@ public class frmYMZ280B extends frmBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneYMZ280B().getWidth() * zoom, frameSizeH + Resources.getplaneYMZ280B().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneYMZ280B().getWidth() * zoom, frameSizeH + Resources.getplaneYMZ280B().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneYMZ280B().getWidth() * zoom, frameSizeH + Resources.getplaneYMZ280B().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneYMZ280B().getWidth() * zoom, frameSizeH + Resources.getPlaneYMZ280B().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneYMZ280B().getWidth() * zoom, frameSizeH + Resources.getPlaneYMZ280B().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneYMZ280B().getWidth() * zoom, frameSizeH + Resources.getPlaneYMZ280B().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -111,9 +111,9 @@ public class frmYMZ280B extends frmBase {
             int py = ev.getY() / zoom;
             int ch;
 
-            //上部のラベル行の場合は何もしない
+             // 上部のラベル行の場合は何もしない
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                 // 但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
@@ -185,8 +185,8 @@ public class frmYMZ280B extends frmBase {
             DrawBuff.font4Hex24Bit(frameBuffer, 4 * 20, ch * 8 + 8, 0, orc.ladr, nrc.ladr);
             DrawBuff.font4Hex24Bit(frameBuffer, 4 * 27, ch * 8 + 8, 0, orc.leadr, nrc.leadr);
             DrawBuff.font4Hex24Bit(frameBuffer, 4 * 34, ch * 8 + 8, 0, orc.eadr, nrc.eadr);
-            DrawBuff.font4Hex12Bit(frameBuffer, 4 * 41, ch * 8 + 8, 0, orc.freq, nrc.freq);//PITCH
-            DrawBuff.font4HexByte(frameBuffer, 4 * 45, ch * 8 + 8, 0, orc.nfrq, nrc.nfrq);//TL
+            DrawBuff.font4Hex12Bit(frameBuffer, 4 * 41, ch * 8 + 8, 0, orc.freq, nrc.freq); // PITCH
+            DrawBuff.font4HexByte(frameBuffer, 4 * 45, ch * 8 + 8, 0, orc.nfrq, nrc.nfrq); // TL
         }
     }
 
@@ -198,7 +198,7 @@ public class frmYMZ280B extends frmBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneYMZ280B();
+        this.image = mdplayer.properties.Resources.getPlaneYMZ280B();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(240, 72));

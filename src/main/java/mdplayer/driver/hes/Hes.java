@@ -1,6 +1,7 @@
 package mdplayer.driver.hes;
 
 import java.util.Arrays;
+import java.util.logging.Level;
 
 import mdplayer.Audio;
 import mdplayer.ChipRegister;
@@ -10,11 +11,12 @@ import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.Log;
+import vavi.util.Debug;
 
 
 public class Hes extends BaseDriver {
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         if (Common.getLE32(buf, 0) != FCC_HES) {
             return null;
         }
@@ -63,7 +65,7 @@ public class Hes extends BaseDriver {
         ld = new HESDetector();
         ld.reset();
 
-        gd3 = getGD3Info(vgmBuf, 0);
+        gd3 = getGD3Info(vgmBuf);
 
         hes = new Hes();
         nez_play = new M_Hes.NEZ_PLAY();
@@ -76,7 +78,7 @@ public class Hes extends BaseDriver {
     }
 
     @Override
-    public void oneFrameProc() {
+    public void processOneFrame() {
         if (hes == null) return;
         try {
             vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
@@ -91,7 +93,7 @@ public class Hes extends BaseDriver {
             }
             //Stopped = !IsPlaying();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -158,7 +160,7 @@ public class Hes extends BaseDriver {
                 else stopped = true;
             }
         } catch (Exception ex) {
-            Log.write(String.format("Exception message:%s StackTrace:%s", ex.getMessage(), Arrays.toString(ex.getStackTrace())));
+            Debug.printf("Exception message:%s StackTrace:%s", ex.getMessage(), Arrays.toString(ex.getStackTrace()));
         }
     }
 

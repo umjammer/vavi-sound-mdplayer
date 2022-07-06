@@ -74,7 +74,7 @@ public class frmVSTeffectList extends JFrame {
         setting.getVst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
         parent.stop();
         while (!Audio.getTrdStopped()) {
-            try { Thread.sleep(1); } catch (InterruptedException e) {}
+            Thread.yield();
         }
         Audio.addVSTeffect(ofd.getSelectedFile().getName());
         dispPluginList();
@@ -125,7 +125,7 @@ public class frmVSTeffectList extends JFrame {
 
         parent.stop();
         while (!Audio.getTrdStopped()) {
-            try { Thread.sleep(1); } catch (InterruptedException e) {}
+            Thread.yield();
         }
         Audio.delVSTeffect((String) dgvList.Rows[dgvList.SelectedRows[0].Index].Cells["clmKey"].Value);
         dispPluginList();
@@ -138,7 +138,7 @@ public class frmVSTeffectList extends JFrame {
         parent.stop();
         //while (!Audio.trdStopped) { Thread.sleep(1); }
         while (!Audio.trdClosed) {
-            try { Thread.sleep(1); } catch (InterruptedException e) {}
+            Thread.yield();
         }
         Audio.delVSTeffect("");
         dispPluginList();
@@ -357,7 +357,7 @@ public class frmVSTeffectList extends JFrame {
         // tsbAddVST
         //
 //        this.tsbAddVST.DisplayStyle = JToolStripItemDisplayStyle.Image;
-        this.tsbAddVST.setIcon(new ImageIcon(mdplayer.properties.Resources.getaddPL()));
+        this.tsbAddVST.setIcon(new ImageIcon(mdplayer.properties.Resources.getAddPL()));
         this.tsbAddVST.ImageTransparentColor = Color.black;
         this.tsbAddVST.setName("tsbAddVST");
         this.tsbAddVST.setPreferredSize(new Dimension(23, 22));
@@ -373,7 +373,7 @@ public class frmVSTeffectList extends JFrame {
         //
 //        this.tsbUp.DisplayStyle = JToolStripItemDisplayStyle.Image;
         this.tsbUp.setEnabled(false);
-        this.tsbUp.setIcon(new ImageIcon(mdplayer.properties.Resources.getupPL()));
+        this.tsbUp.setIcon(new ImageIcon(mdplayer.properties.Resources.getUpPL()));
         this.tsbUp.ImageTransparentColor = Color.black;
         this.tsbUp.setName("tsbUp");
         this.tsbUp.setPreferredSize(new Dimension(23, 22));

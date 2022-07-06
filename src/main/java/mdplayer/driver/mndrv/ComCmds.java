@@ -73,7 +73,7 @@ public class ComCmds {
 
         if (mm.readByte(reg.a6 + Dw.MND_VER) < 8) {
             reg.a0 = Ab.dummyAddress;// _atq_old;
-            mm.write(reg.a5 + W.qtjob, reg.a0);//_atq_old = 0 とする
+            mm.write(reg.a5 + W.qtjob, reg.a0); // _atq_old = 0 とする
             ab.hlw_qtjob.remove(reg.a5);
             ab.hlw_qtjob.put(reg.a5, this::_atq_old);
             return;
@@ -482,7 +482,7 @@ public class ComCmds {
             if (reg.getD4_W() == 0) {
                 return;
             }
-            reg.setD0_W(mm.readShort(reg.a2)); //Reg.a2 += 1;
+            reg.setD0_W(mm.readShort(reg.a2));  // Reg.a2 += 1;
             reg.a2 = (reg.a2 + (int) (short) reg.getD0_W()) & 0x00ffffff;
         }
     }
@@ -923,12 +923,12 @@ public class ComCmds {
 
         reg.setD1_W(mm.readShort(reg.a1));
         reg.a1 += 2;
-        mm.write(reg.a3 + W_W.start, (short) reg.getD1_W());//周期1
+        mm.write(reg.a3 + W_W.start, (short) reg.getD1_W()); // 周期1
 
         if (reg.getD2_B() != 0) {
             reg.setD1_W(reg.getD1_W() >> 1);
         }
-        mm.write(reg.a3 + W_W.loop_start, (short) reg.getD1_W());//周期2
+        mm.write(reg.a3 + W_W.loop_start, (short) reg.getD1_W()); // 周期2
 
         reg.setD1_W(mm.readShort(reg.a1));
         reg.a1 += 2;
@@ -937,11 +937,11 @@ public class ComCmds {
         if (reg.getD0_B() >= 4) {
             reg.D1_L = (short) reg.D1_L << 8;
         }
-        mm.write(reg.a3 + W_W.loop_end, reg.D1_L);//増減1
+        mm.write(reg.a3 + W_W.loop_end, reg.D1_L); // 増減1
         if (reg.getD2_B() != 2) {
             reg.D1_L = 0;
         }
-        mm.write(reg.a3 + W_W.loop_count, reg.D1_L);//増減2
+        mm.write(reg.a3 + W_W.loop_count, reg.D1_L); // 増減2
         reg.D2_L = 0;
     }
 
@@ -968,7 +968,7 @@ public class ComCmds {
     public void _get_wave_memory_e2() {
         reg.D1_L = mm.readInt(reg.a6 + Dw.WAVE_PTR);
         if (reg.D1_L == 0) {
-            reg.D2_L = 0xffffffff;//-1;
+            reg.D2_L = 0xffffffff; // -1;
             return;
         }
         reg.a2 = reg.D1_L;
@@ -980,14 +980,14 @@ public class ComCmds {
         reg.setD1_W(mm.readShort(reg.a2));
         reg.a2 += 2;
         if (reg.D1_L == 0) {
-            reg.D2_L = 0xffffffff;//-1;
+            reg.D2_L = 0xffffffff; // -1;
             return;
         }
 
         reg.setD1_W(mm.readShort(reg.a2));
         reg.a2 += 2;
         if (reg.getD1_W() == 0) {
-            reg.D2_L = 0xffffffff;//-1;
+            reg.D2_L = 0xffffffff; // -1;
             return;
         }
 
@@ -999,7 +999,7 @@ public class ComCmds {
             if (mm.readShort(reg.a2 + 4) != 0) {
                 reg.a2 = (reg.a2 + reg.D2_L) & 0xffffff;
                 if (reg.decAfterD1_W() != 0) continue; // break _com_e2_wm10;
-                reg.D2_L = 0xffffffff;//-1;
+                reg.D2_L = 0xffffffff; // -1;
                 return;
             } else {
                 break;
@@ -1443,10 +1443,10 @@ public class ComCmds {
         mm.write(reg.a4 + W_L.lfo_sp, mm.readByte(reg.a1++));
         reg.setD1_W(mm.readShort(reg.a1));
         reg.a1 += 2;
-        mm.write(reg.a3 + W_W.start, (short) reg.getD1_W());//周期
+        mm.write(reg.a3 + W_W.start, (short) reg.getD1_W()); // 周期
         reg.setD0_W(mm.readShort(reg.a1));
         reg.a1 += 2;
-        mm.write(reg.a3 + W_W.loop_start, (short) reg.getD0_W());//増減
+        mm.write(reg.a3 + W_W.loop_start, (short) reg.getD0_W()); // 増減
 
         int f = reg.getD2_B() & 1;
         reg.setD2_B(reg.getD2_B() >> 1);
@@ -1457,7 +1457,7 @@ public class ComCmds {
         if ((short) reg.getD0_W() < 0) {
             reg.D0_L = 0;
         }
-        mm.write(reg.a3 + W_W.loop_end, (short) reg.getD0_W());//最大振幅
+        mm.write(reg.a3 + W_W.loop_end, (short) reg.getD0_W()); // 最大振幅
 
         mm.write(reg.a3 + W_W.ko_start, mm.readShort(reg.a3 + W_W.start));
         mm.write(reg.a3 + W_W.ko_loop_start, mm.readShort(reg.a3 + W_W.loop_start));

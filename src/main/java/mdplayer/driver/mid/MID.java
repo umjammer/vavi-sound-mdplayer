@@ -3,6 +3,7 @@ package mdplayer.driver.mid;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import mdplayer.ChipRegister;
 import mdplayer.Common;
@@ -14,6 +15,7 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.Log;
 import mdplayer.MidiOutInfo;
+import vavi.util.Debug;
 
 
 public class MID extends BaseDriver {
@@ -57,7 +59,7 @@ public class MID extends BaseDriver {
 
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         if (buf == null) return null;
 
         Vgm.Gd3 gd3 = new Gd3();
@@ -129,7 +131,7 @@ public class MID extends BaseDriver {
                                 adr++;
                             }
                         } else {
-                            //ランニングステータス発動
+                             // ランニングステータス発動
                             midiEvent = midiEventBackup;
                             midiEventCh = midiEventChBackup;
 
@@ -142,12 +144,13 @@ public class MID extends BaseDriver {
                 }
             }
 
-            //タイトルが見つからなかった場合
+             // タイトルが見つからなかった場合
             if (gd3.trackName.isEmpty() && gd3.trackNameJ.isEmpty() && !T01TrackName.isEmpty()) {
                 gd3.trackName = T01TrackName;
                 gd3.trackNameJ = T01TrackName;
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return gd3;
@@ -167,18 +170,18 @@ public class MID extends BaseDriver {
         loopCounter = 0;
         vgmCurLoop = 0;
         stopped = false;
-        //コントロールを送信してからウェイトするためここでは0をセットする
+         // コントロールを送信してからウェイトするためここでは0をセットする
         //vgmFrameCounter = -latency - waitTime;
         vgmFrameCounter = 0;
         vgmSpeed = 1;
         vgmSpeedCounter = 0;
 
-        gd3 = getGD3Info(vgmBuf, 0);
+        gd3 = getGD3Info(vgmBuf);
         //if (Gd3 == null) return false;
 
         if (!getInformationHeader()) return false;
 
-        //ポートごとに事前に送信するコマンドを作成する
+         // ポートごとに事前に送信するコマンドを作成する
         if (!makeBeforeSendCommand()) return false;
 
         if (model == EnmModel.RealModel) {
@@ -225,7 +228,7 @@ public class MID extends BaseDriver {
     }
 
     @Override
-    public void oneFrameProc() {
+    public void processOneFrame() {
         try {
             vstDelta++;
             vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
@@ -239,7 +242,7 @@ public class MID extends BaseDriver {
             }
             //Stopped = !IsPlaying();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -262,7 +265,7 @@ public class MID extends BaseDriver {
             musicDownCounter -= 1.0;
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -336,7 +339,7 @@ public class MID extends BaseDriver {
                         }
                         ptr = ptr + eventLen;
                         if (eventData.size() > 0) {
-                            //文字列系のイベントの場合は終端文字までを文字列のデータとする。
+                             // 文字列系のイベントの場合は終端文字までを文字列のデータとする。
                             if (eventType >= 0x01 && eventType <= 0x07) {
                                 eventStr.clear();
                                 for (byte b : eventData) {
@@ -460,7 +463,7 @@ public class MID extends BaseDriver {
                                 ptr++;
                             }
                         } else {
-                            //ランニングステータス発動
+                             // ランニングステータス発動
                             midiEvent = midiEventBackup.get(trk);
                             midiEventCh = midiEventChBackup;
 
@@ -544,20 +547,20 @@ public class MID extends BaseDriver {
             for (int i = 0; i < beforeSend.length; i++) {
                 beforeSend[i] = new ArrayList<>();
 
-                //リセットを生成
+                 // リセットを生成
                 switch (infos[i].beforeSendType) {
-                case 0://None
+                case 0: // None
                     break;
-                case 1://GM Reset
+                case 1: // GM Reset
                     getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getGMReset());
                     break;
-                case 2://XG Reset
+                case 2: // XG Reset
                     getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getXGReset());
                     break;
-                case 3://GS Reset
+                case 3: // GS Reset
                     getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getGSReset());
                     break;
-                case 4://Custom
+                case 4: // Custom
                     getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getCustom());
                     break;
                 }
@@ -566,6 +569,7 @@ public class MID extends BaseDriver {
 
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }

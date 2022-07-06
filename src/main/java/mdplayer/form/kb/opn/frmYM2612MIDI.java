@@ -19,6 +19,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -39,6 +40,7 @@ import mdplayer.form.sys.frmMain;
 import mdplayer.form.sys.frmTPGet;
 import mdplayer.form.sys.frmTPPut;
 import mdplayer.properties.Resources;
+import vavi.util.Debug;
 
 
 public class frmYM2612MIDI extends frmBase {
@@ -63,7 +65,7 @@ public class frmYM2612MIDI extends frmBase {
         this.addMouseWheelListener(this::frmYM2612MIDI_MouseWheel);
 
         this.newParam = newParam;
-        frameBuffer.Add(pbScreen, Resources.getplaneYM2612MIDI(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneYM2612MIDI(), null, zoom);
         DrawBuff.screenInitYM2612MIDI(frameBuffer);
         update();
     }
@@ -100,9 +102,9 @@ public class frmYM2612MIDI extends frmBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneYM2612MIDI().getWidth() * zoom, frameSizeH + Resources.getplaneYM2612MIDI().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneYM2612MIDI().getWidth() * zoom, frameSizeH + Resources.getplaneYM2612MIDI().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneYM2612MIDI().getWidth() * zoom, frameSizeH + Resources.getplaneYM2612MIDI().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneYM2612MIDI().getWidth() * zoom, frameSizeH + Resources.getPlaneYM2612MIDI().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneYM2612MIDI().getWidth() * zoom, frameSizeH + Resources.getPlaneYM2612MIDI().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneYM2612MIDI().getWidth() * zoom, frameSizeH + Resources.getPlaneYM2612MIDI().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -413,7 +415,7 @@ public class frmYM2612MIDI extends frmBase {
         try {
             parent.ym2612Midi_SaveTonePallet(sfd.getSelectedFile().getPath(), Common.getFilterIndex(sfd) + 1);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "ファイルの保存に失敗しました。");
         }
     }
@@ -460,7 +462,7 @@ public class frmYM2612MIDI extends frmBase {
         try {
             parent.ym2612Midi_LoadTonePallet(ofd.getSelectedFile().getPath(), Common.getFilterIndex(ofd) + 1);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "ファイルの読込に失敗しました。");
         }
     }
@@ -567,7 +569,7 @@ public class frmYM2612MIDI extends frmBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneYM2612MIDI();
+        this.image = mdplayer.properties.Resources.getPlaneYM2612MIDI();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(320, 184));

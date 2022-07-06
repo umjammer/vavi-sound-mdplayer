@@ -34,7 +34,7 @@ public class frmAY8910 extends frmChipBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneAY8910();
+        this.image = mdplayer.properties.Resources.getPlaneAY8910();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(320, 40));
@@ -70,7 +70,7 @@ public class frmAY8910 extends frmChipBase {
         this.newParam = newParam;
         this.oldParam = oldParam;
 
-        frameBuffer.Add(this.pbScreen, Resources.getplaneAY8910(), null, zoom);
+        frameBuffer.Add(this.pbScreen, Resources.getPlaneAY8910(), null, zoom);
 
         boolean AY8910Type = (chipID == 0) ? parent.setting.getAY8910Type()[0].getUseReal()[0] : parent.setting.getAY8910Type()[1].getUseReal()[0];
         int AY8910SoundLocation = (chipID == 0) ? parent.setting.getAY8910Type()[0].getRealChipInfo()[0].getSoundLocation()
@@ -102,12 +102,12 @@ public class frmAY8910 extends frmChipBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneAY8910().getWidth() * zoom,
-                                          frameSizeH + Resources.getplaneAY8910().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneAY8910().getWidth() * zoom,
-                                          frameSizeH + Resources.getplaneAY8910().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneAY8910().getWidth() * zoom,
-                                            frameSizeH + Resources.getplaneAY8910().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneAY8910().getWidth() * zoom,
+                                          frameSizeH + Resources.getPlaneAY8910().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneAY8910().getWidth() * zoom,
+                                          frameSizeH + Resources.getPlaneAY8910().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneAY8910().getWidth() * zoom,
+                                            frameSizeH + Resources.getPlaneAY8910().getHeight() * zoom));
     }
 
     @Override

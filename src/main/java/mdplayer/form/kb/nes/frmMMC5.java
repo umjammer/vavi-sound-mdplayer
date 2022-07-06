@@ -51,7 +51,7 @@ public class frmMMC5 extends frmBase {
         initializeComponent();
 
         this.newParam = newParam;
-        frameBuffer.Add(pbScreen, Resources.getplaneMMC5(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneMMC5(), null, zoom);
         DrawBuff.screenInitNESDMC(frameBuffer);
         update();
     }
@@ -88,9 +88,9 @@ public class frmMMC5 extends frmBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneMMC5().getWidth() * zoom, frameSizeH + Resources.getplaneMMC5().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneMMC5().getWidth() * zoom, frameSizeH + Resources.getplaneMMC5().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneMMC5().getWidth() * zoom, frameSizeH + Resources.getplaneMMC5().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneMMC5().getWidth() * zoom, frameSizeH + Resources.getPlaneMMC5().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneMMC5().getWidth() * zoom, frameSizeH + Resources.getPlaneMMC5().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneMMC5().getWidth() * zoom, frameSizeH + Resources.getPlaneMMC5().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -238,7 +238,7 @@ public class frmMMC5 extends frmBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneMMC5();
+        this.image = mdplayer.properties.Resources.getPlaneMMC5();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(286, 40));

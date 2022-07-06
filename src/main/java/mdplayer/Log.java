@@ -3,6 +3,7 @@ package mdplayer;
 import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.logging.Level;
 
 import dotnet4j.io.File;
 import dotnet4j.io.FileMode;
@@ -10,16 +11,19 @@ import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.StreamWriter;
 import mdplayer.properties.Resources;
+import vavi.util.Debug;
 
 
 /** @deprecated use {@link java.util.logging.Logger} */
 @Deprecated
 public class Log {
-    // #if DEBUG
+
+// #if DEBUG
     public static boolean debug = true;
-    // #else
+// #else
 //        public static boolean debug = false;
 // #endif
+
     public static boolean consoleEchoBack = false;
     private static Charset sjisEnc = Charset.forName("Shift_JIS");
     public static String path = "";
@@ -37,7 +41,8 @@ public class Log {
                 writer.writeLine(timefmt + msg);
                 if (consoleEchoBack) System.err.println(timefmt + msg);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -48,20 +53,21 @@ public class Log {
                 path = Path.combine(fullPath, Resources.getCntLogFilename());
                 if (File.exists(path)) File.delete(path);
             }
-            String timefmt = String.format(Resources.getCntTimeFormat(), Instant.now());
+            String timeFmt = String.format(Resources.getCntTimeFormat(), Instant.now());
 
             try (StreamWriter writer = new StreamWriter(new FileStream(path, FileMode.Open), sjisEnc)) {
                 StringBuilder msg = new StringBuilder(String.format(Resources.getCntExceptionFormat(), e.getClass().getName(), e.getMessage(), e.getStackTrace()[0], Arrays.toString(e.getStackTrace())));
                 Throwable ie = e;
                 while (ie.getCause() != null) {
                     ie = ie.getCause();
-                    msg.append(String.format(Resources.getcntInnerExceptionFormat(), ie.getClass().getName(), ie.getMessage(), ie.getStackTrace()[0], Arrays.toString(ie.getStackTrace())));
+                    msg.append(String.format(Resources.getCntInnerExceptionFormat(), ie.getClass().getName(), ie.getMessage(), ie.getStackTrace()[0], Arrays.toString(ie.getStackTrace())));
                 }
 
-                writer.writeLine(timefmt + msg);
-                if (consoleEchoBack) System.err.println(timefmt + msg);
+                writer.writeLine(timeFmt + msg);
+                if (consoleEchoBack) System.err.println(timeFmt + msg);
             }
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -82,8 +88,8 @@ public class Log {
                     writer.writeLine(timefmt + msg);
                 }
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
-
 }

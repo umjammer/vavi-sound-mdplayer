@@ -49,7 +49,7 @@ public class frmY8950 extends frmBase {
         initializeComponent();
 
         this.newParam = newParam;
-        frameBuffer.Add(pbScreen, Resources.getplaneY8950(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneY8950(), null, zoom);
         boolean Y8950Type = false;// (chipID == 0) ? parent.setting.Y8950Type.UseScci : parent.setting.Y8950Type.UseScci;
         int tp = Y8950Type ? 1 : 0;
         DrawBuff.screenInitY8950(frameBuffer, tp);
@@ -144,9 +144,9 @@ public class frmY8950 extends frmBase {
     }
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneY8950().getWidth() * zoom, frameSizeH + Resources.getplaneY8950().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneY8950().getWidth() * zoom, frameSizeH + Resources.getplaneY8950().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneY8950().getWidth() * zoom, frameSizeH + Resources.getplaneY8950().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneY8950().getWidth() * zoom, frameSizeH + Resources.getPlaneY8950().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneY8950().getWidth() * zoom, frameSizeH + Resources.getPlaneY8950().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneY8950().getWidth() * zoom, frameSizeH + Resources.getPlaneY8950().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -349,7 +349,7 @@ public class frmY8950 extends frmBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneY8950();
+        this.image = mdplayer.properties.Resources.getPlaneY8950();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(328, 176));

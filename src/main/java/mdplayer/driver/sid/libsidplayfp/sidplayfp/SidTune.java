@@ -22,8 +22,11 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidplayfp;
 
+import java.util.logging.Level;
+
 import mdplayer.driver.sid.libsidplayfp.SidMemory;
 import mdplayer.driver.sid.libsidplayfp.sidtune.SidTuneBase;
+import vavi.util.Debug;
 
 
 /**
@@ -122,6 +125,7 @@ public class SidTune {
             status = true;
             statusString = MSG_NO_ERRORS;
         } catch (dotnet4j.io.IOException e) {
+            e.printStackTrace();
             status = false;
             statusString = e.getMessage();
         }
@@ -139,6 +143,7 @@ public class SidTune {
             status = true;
             statusString = MSG_NO_ERRORS;
         } catch (dotnet4j.io.IOException e) {
+            e.printStackTrace();
             status = false;
             statusString = e.getMessage();
         }

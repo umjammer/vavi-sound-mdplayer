@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -25,6 +26,7 @@ import dotnet4j.io.Path;
 import dotnet4j.io.StreamReader;
 import mdplayer.Common.EnmArcType;
 import mdplayer.Common.FileFormat;
+import vavi.util.Debug;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
@@ -112,7 +114,7 @@ public class PlayList implements Serializable {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -132,7 +134,7 @@ public class PlayList implements Serializable {
                 return pl;
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return new PlayList();
         }
     }
@@ -160,7 +162,7 @@ public class PlayList implements Serializable {
 
             return pl;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return new PlayList();
         }
     }
@@ -215,7 +217,7 @@ public class PlayList implements Serializable {
             JOptionPane.showMessageDialog(null, String.format("ファイル追加に失敗しました。\n詳細\nMessage=%s", ex.getMessage())
                     , "エラー"
                     , JOptionPane.ERROR_MESSAGE);
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -233,7 +235,7 @@ public class PlayList implements Serializable {
             JOptionPane.showMessageDialog(null, String.format("ファイル追加に失敗しました。\n詳細\nMessage=%s", ex.getMessage())
                     , "エラー"
                     , JOptionPane.ERROR_MESSAGE);
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -405,7 +407,7 @@ public class PlayList implements Serializable {
                 try {
                     buf = File.readAllBytes(mc.fileName);
                 } catch (Exception ex) {
-                    Log.forcedWrite(ex);
+                    ex.printStackTrace();
                     buf = null;
                 }
                 if (buf == null && mc.format == FileFormat.VGM) {
@@ -417,7 +419,7 @@ public class PlayList implements Serializable {
                     try {
                         buf = File.readAllBytes(mc.fileName);
                     } catch (Exception ex) {
-                        Log.forcedWrite(ex);
+                        ex.printStackTrace();
                         buf = null;
                     }
                 }
@@ -426,7 +428,7 @@ public class PlayList implements Serializable {
                     try {
                         buf = reader.readAllBytes();
                     } catch (Exception ex) {
-                        Log.forcedWrite(ex);
+                        ex.printStackTrace();
                         buf = null;
                     }
                 }
@@ -440,7 +442,7 @@ public class PlayList implements Serializable {
                 ((DefaultTableModel) dgvList.getModel()).addRow(row);
             this.musics.addAll(musics);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -451,7 +453,7 @@ public class PlayList implements Serializable {
                 try {
                     buf = File.readAllBytes(mc.fileName);
                 } catch (Exception ex) {
-                    Log.forcedWrite(ex);
+                    ex.printStackTrace();
                     buf = null;
                 }
                 if (buf == null && mc.format == FileFormat.VGM) {
@@ -463,7 +465,7 @@ public class PlayList implements Serializable {
                     try {
                         buf = File.readAllBytes(mc.fileName);
                     } catch (Exception ex) {
-                        Log.forcedWrite(ex);
+                        ex.printStackTrace();
                         buf = null;
                     }
                 }
@@ -472,7 +474,7 @@ public class PlayList implements Serializable {
                     try {
                         buf = reader.readAllBytes();
                     } catch (Exception ex) {
-                        Log.forcedWrite(ex);
+                        ex.printStackTrace();
                         buf = null;
                     }
                 }
@@ -488,7 +490,7 @@ public class PlayList implements Serializable {
             this.musics.addAll(index, musics);
             index += rows.size();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -696,8 +698,8 @@ public class PlayList implements Serializable {
                     m.arcType = mc.arcType;
                     addFileLoop(m, archive, ent);
 
-                    //m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
-                    //それを防ぐためここでbreakする
+                     // m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
+                     // それを防ぐためここでbreakする
                     break;
                 }
             }
@@ -764,8 +766,8 @@ public class PlayList implements Serializable {
                     m.arcType = mc.arcType;
                     addFileLoop(index, m, archive, ent);
 
-                    //m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
-                    //それを防ぐためここでbreakする
+                     // m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
+                     // それを防ぐためここでbreakする
                     break;
                 }
             }
@@ -962,7 +964,7 @@ public class PlayList implements Serializable {
             for (Object[] row : rows) ((DefaultTableModel) dgvList.getModel()).addRow(row);
             this.musics.addAll(musics);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -1002,7 +1004,7 @@ public class PlayList implements Serializable {
             this.musics.addAll(index, musics);
             index += rows.size();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -1040,7 +1042,7 @@ public class PlayList implements Serializable {
             for (Object[] row : rows) ((DefaultTableModel) dgvList.getModel()).addRow(row);
             this.musics.addAll(musics);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -1080,7 +1082,7 @@ public class PlayList implements Serializable {
             this.musics.addAll(index, musics);
             index += rows.size();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -1118,7 +1120,7 @@ public class PlayList implements Serializable {
             for (Object[] row : rows) ((DefaultTableModel) dgvList.getModel()).addRow(row);
             this.musics.addAll(musics);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -1158,7 +1160,7 @@ public class PlayList implements Serializable {
             this.musics.addAll(index, musics);
             index += rows.size();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 }

@@ -9,8 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import dotnet4j.io.Path;
+import vavi.util.Debug;
 import vavi.util.serdes.JacksonXMLBeanBinder;
 import vavi.util.serdes.Serdes;
 
@@ -66,7 +68,7 @@ public class TonePallet implements Serializable {
                 return pl;
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return new TonePallet();
         }
     }

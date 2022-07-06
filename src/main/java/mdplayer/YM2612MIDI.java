@@ -2,11 +2,13 @@ package mdplayer;
 
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import javax.swing.JOptionPane;
@@ -18,6 +20,7 @@ import dotnet4j.io.StreamWriter;
 import mdplayer.Common.EnmChip;
 import mdplayer.form.sys.frmMain;
 import mdsound.MDSound;
+import vavi.util.Debug;
 
 
 public class YM2612MIDI {
@@ -181,15 +184,15 @@ public class YM2612MIDI {
             int opn = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
             int opm = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
 
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x50 + opn + (des % 3)), (byte) (reg[0x80 + opm + src] & 0xdf));//AR + KS
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x60 + opn + (des % 3)), (byte) (reg[0xa0 + opm + src] & 0x9f));//DR + AM
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x70 + opn + (des % 3)), (byte) (reg[0xc0 + opm + src] & 0x1f));//SR
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x80 + opn + (des % 3)), (byte) (reg[0xe0 + opm + src] & 0xff));//RR + SL
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x40 + opn + (des % 3)), (byte) (reg[0x60 + opm + src] & 0x7f));//TL
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x30 + opn + (des % 3)), (byte) (reg[0x40 + opm + src] & 0x7f));//ML + DT
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x50 + opn + (des % 3)), (byte) (reg[0x80 + opm + src] & 0xdf)); // AR + KS
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x60 + opn + (des % 3)), (byte) (reg[0xa0 + opm + src] & 0x9f)); // DR + AM
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x70 + opn + (des % 3)), (byte) (reg[0xc0 + opm + src] & 0x1f)); // SR
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x80 + opn + (des % 3)), (byte) (reg[0xe0 + opm + src] & 0xff)); // RR + SL
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x40 + opn + (des % 3)), (byte) (reg[0x60 + opm + src] & 0x7f)); // TL
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x30 + opn + (des % 3)), (byte) (reg[0x40 + opm + src] & 0x7f)); // ML + DT
         }
 
-        mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0xb0 + (des % 3)), (byte) (reg[0x20 + src] & 0x3f));//AL + FB
+        mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0xb0 + (des % 3)), (byte) (reg[0x20 + src] & 0x3f)); // AL + FB
 
         int alg = (byte) reg[0x20 + src] & 0x7;
         byte[] algTl = new byte[] {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
@@ -215,17 +218,17 @@ public class YM2612MIDI {
         for (int i = 0; i < 4; i++) {
             int opn = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
 
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x50 + opn + (des % 3)), (byte) ((tone.ops[i].ar & 0x1f) + ((tone.ops[i].ks & 0x3) << 6)));//AR + KS
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x60 + opn + (des % 3)), (byte) ((tone.ops[i].dr & 0x1f) + ((tone.ops[i].am & 0x1) << 7)));//DR + AM
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x70 + opn + (des % 3)), (byte) ((tone.ops[i].sr & 0x1f)));//SR
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x80 + opn + (des % 3)), (byte) ((tone.ops[i].rr & 0xf) + ((tone.ops[i].sl & 0xf) << 4)));//RR + SL
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x40 + opn + (des % 3)), (byte) ((tone.ops[i].tl & 0x7f)));//TL
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x30 + opn + (des % 3)), (byte) ((tone.ops[i].ml & 0xf) + ((tone.ops[i].dt & 0x7) << 4)));//ML + DT
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x90 + opn + (des % 3)), (byte) ((tone.ops[i].sg & 0xf)));//SG
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x50 + opn + (des % 3)), (byte) ((tone.ops[i].ar & 0x1f) + ((tone.ops[i].ks & 0x3) << 6))); // AR + KS
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x60 + opn + (des % 3)), (byte) ((tone.ops[i].dr & 0x1f) + ((tone.ops[i].am & 0x1) << 7))); // DR + AM
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x70 + opn + (des % 3)), (byte) ((tone.ops[i].sr & 0x1f))); // SR
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x80 + opn + (des % 3)), (byte) ((tone.ops[i].rr & 0xf) + ((tone.ops[i].sl & 0xf) << 4))); // RR + SL
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x40 + opn + (des % 3)), (byte) ((tone.ops[i].tl & 0x7f))); // TL
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x30 + opn + (des % 3)), (byte) ((tone.ops[i].ml & 0xf) + ((tone.ops[i].dt & 0x7) << 4))); // ML + DT
+            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x90 + opn + (des % 3)), (byte) ((tone.ops[i].sg & 0xf))); // SG
         }
 
-        mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0xb0 + (des % 3)), (byte) ((tone.al & 0x7) + ((tone.fb & 0x7) << 3)));//AL + FB
-        mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0xb4 + (des % 3)), (byte) (0xc0 + (tone.pms & 0x7) + ((tone.ams & 0x3) << 4)));//PMS + AMS
+        mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0xb0 + (des % 3)), (byte) ((tone.al & 0x7) + ((tone.fb & 0x7) << 3))); // AL + FB
+        mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0xb4 + (des % 3)), (byte) (0xc0 + (tone.pms & 0x7) + ((tone.ams & 0x3) << 4))); // PMS + AMS
     }
 
     private Tone voiceCopyChToTone(int des, String name) {
@@ -235,21 +238,21 @@ public class YM2612MIDI {
         for (int i = 0; i < 4; i++) {
             int opn = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
 
-            tone.ops[i].ar = reg[des / 3][0x50 + opn + (des % 3)] & 0x1f;//AR
-            tone.ops[i].ks = (reg[des / 3][0x50 + opn + (des % 3)] & 0xc0) >> 6;//KS
-            tone.ops[i].dr = reg[des / 3][0x60 + opn + (des % 3)] & 0x1f;//DR
-            tone.ops[i].am = (reg[des / 3][0x60 + opn + (des % 3)] & 0x80) >> 7;//AM
-            tone.ops[i].sr = reg[des / 3][0x70 + opn + (des % 3)] & 0x1f;//SR
-            tone.ops[i].rr = reg[des / 3][0x80 + opn + (des % 3)] & 0xf;//RR
-            tone.ops[i].sl = (reg[des / 3][0x80 + opn + (des % 3)] & 0xf0) >> 4;//SL
-            tone.ops[i].tl = reg[des / 3][0x40 + opn + (des % 3)] & 0x7f;//TL
-            tone.ops[i].ml = reg[des / 3][0x30 + opn + (des % 3)] & 0xf;//ML
-            tone.ops[i].dt = (reg[des / 3][0x30 + opn + (des % 3)] & 0x70) >> 4;//DT
+            tone.ops[i].ar = reg[des / 3][0x50 + opn + (des % 3)] & 0x1f; // AR
+            tone.ops[i].ks = (reg[des / 3][0x50 + opn + (des % 3)] & 0xc0) >> 6; // KS
+            tone.ops[i].dr = reg[des / 3][0x60 + opn + (des % 3)] & 0x1f; // DR
+            tone.ops[i].am = (reg[des / 3][0x60 + opn + (des % 3)] & 0x80) >> 7; // AM
+            tone.ops[i].sr = reg[des / 3][0x70 + opn + (des % 3)] & 0x1f; // SR
+            tone.ops[i].rr = reg[des / 3][0x80 + opn + (des % 3)] & 0xf; // RR
+            tone.ops[i].sl = (reg[des / 3][0x80 + opn + (des % 3)] & 0xf0) >> 4; // SL
+            tone.ops[i].tl = reg[des / 3][0x40 + opn + (des % 3)] & 0x7f; // TL
+            tone.ops[i].ml = reg[des / 3][0x30 + opn + (des % 3)] & 0xf; // ML
+            tone.ops[i].dt = (reg[des / 3][0x30 + opn + (des % 3)] & 0x70) >> 4; // DT
             tone.ops[i].dt2 = 0;
         }
 
-        tone.al = reg[des / 3][0xb0 + (des % 3)] & 0x7;//AL
-        tone.fb = (reg[des / 3][0xb0 + (des % 3)] & 0x38) >> 3;//FB
+        tone.al = reg[des / 3][0xb0 + (des % 3)] & 0x7; // AL
+        tone.fb = (reg[des / 3][0xb0 + (des % 3)] & 0x38) >> 3; // FB
         tone.ams = 0;
         tone.pms = 0;
         tone.name = name;
@@ -261,21 +264,21 @@ public class YM2612MIDI {
         Tone des = new Tone();
 
         for (int i = 0; i < 4; i++) {
-            des.ops[i].ar = src.ops[i].ar;//AR
-            des.ops[i].ks = src.ops[i].ks;//KS
-            des.ops[i].dr = src.ops[i].dr;//DR
-            des.ops[i].am = src.ops[i].am;//AM
-            des.ops[i].sr = src.ops[i].sr;//SR
-            des.ops[i].rr = src.ops[i].rr;//RR
-            des.ops[i].sl = src.ops[i].sl;//SL
-            des.ops[i].tl = src.ops[i].tl;//TL
-            des.ops[i].ml = src.ops[i].ml;//ML
-            des.ops[i].dt = src.ops[i].dt;//DT
+            des.ops[i].ar = src.ops[i].ar; // AR
+            des.ops[i].ks = src.ops[i].ks; // KS
+            des.ops[i].dr = src.ops[i].dr; // DR
+            des.ops[i].am = src.ops[i].am; // AM
+            des.ops[i].sr = src.ops[i].sr; // SR
+            des.ops[i].rr = src.ops[i].rr; // RR
+            des.ops[i].sl = src.ops[i].sl; // SL
+            des.ops[i].tl = src.ops[i].tl; // TL
+            des.ops[i].ml = src.ops[i].ml; // ML
+            des.ops[i].dt = src.ops[i].dt; // DT
             des.ops[i].dt2 = 0;
         }
 
-        des.al = src.al;//AL
-        des.fb = src.fb;//FB
+        des.al = src.al; // AL
+        des.fb = src.fb; // FB
         des.ams = 0;
         des.pms = 0;
         des.name = name;
@@ -293,7 +296,7 @@ public class YM2612MIDI {
             } else if (chip == EnmChip.YM2610) {
                 srcRegs = Audio.getYM2610Register(chipID);
             } else if (chip == EnmChip.YM2203) {
-                int[] sReg = Audio.getym2203Register(chipID);
+                int[] sReg = Audio.getYm2203Register(chipID);
                 srcRegs = new int[][] {sReg, null};
             }
             for (int i = 0; i < 6; i++) {
@@ -320,14 +323,14 @@ public class YM2612MIDI {
     public void setMode(int m) {
         switch (m) {
         case 0:
-            //MONO
+             // MONO
             for (int ch = 0; ch < 6; ch++) {
                 parent.setting.getMidiKbd().getUseChannel()[ch] = ch == parent.setting.getMidiKbd().getUseMonoChannel();
             }
             parent.setting.getMidiKbd().setMono(true);
             break;
         default:
-            //POLY
+             // POLY
             parent.setting.getMidiKbd().setMono(false);
             break;
         }
@@ -346,7 +349,7 @@ public class YM2612MIDI {
         final String[] tblNote = {"c", "c+", "d", "d+", "e", "f", "f+", "g", "g+", "a", "a+", "b"};
         int ptr = _noteLogPtr[ch];
 
-        //解析開始位置を調べる
+         // 解析開始位置を調べる
         do {
             ptr--;
             if (ptr < 0) ptr = _noteLog[ch].length - 1;
@@ -360,13 +363,13 @@ public class YM2612MIDI {
         ptr++;
         if (ptr == _noteLog[ch].length) ptr = 0;
 
-        //ログが無い場合は処理終了
+         // ログが無い場合は処理終了
         if (_noteLog[ch][ptr] == -1) return;
 
-        //解析開始
+         // 解析開始
         StringBuilder mml = new StringBuilder("o");
 
-        //オクターブコマンド
+         // オクターブコマンド
         int oct = _noteLog[ch][ptr] / 12;
         mml.append(oct + 1);
 
@@ -374,7 +377,7 @@ public class YM2612MIDI {
             int o = _noteLog[ch][ptr] / 12;
             int n = _noteLog[ch][ptr] % 12;
 
-            //相対オクターブコマンドの解析
+             // 相対オクターブコマンドの解析
             int s = oct - o;
             if (s < 0) {
                 do {
@@ -388,13 +391,13 @@ public class YM2612MIDI {
                 } while (oct != o);
             }
 
-            //ノートコマンド
+             // ノートコマンド
             mml.append(tblNote[n]);
 
             ptr++;
         } while (ptr != _noteLogPtr[ch]);
 
-        //クリップボードにMMLをセット
+         // クリップボードにMMLをセット
         Common.setClipboard(mml.toString());
     }
 
@@ -402,7 +405,7 @@ public class YM2612MIDI {
         final String[] tblNote = {"c", "c+", "d", "d+", "e", "f", "f+", "g", "g+", "a", "a+", "b"};
         int ptr = _noteLogPtr[ch];
 
-        //解析開始位置を調べる
+         // 解析開始位置を調べる
         do {
             ptr--;
             if (ptr < 0) ptr = _noteLog[ch].length - 1;
@@ -418,17 +421,17 @@ public class YM2612MIDI {
 
         if (ptr == _noteLogPtr[ch]) return;
 
-        //解析開始
+         // 解析開始
         StringBuilder mml = new StringBuilder();
 
-        //オクターブのみ取得
+         // オクターブのみ取得
         int oct = _noteLog[ch][ptr] / 12;
 
         do {
             int o = _noteLog[ch][ptr] / 12;
             int n = _noteLog[ch][ptr] % 12;
 
-            //相対オクターブコマンドの解析
+             // 相対オクターブコマンドの解析
             int s = oct - o;
             if (s < 0) {
                 do {
@@ -442,14 +445,14 @@ public class YM2612MIDI {
                 } while (oct != o);
             }
 
-            //ノートコマンド
+             // ノートコマンド
             mml.append(tblNote[n]);
 
             ptr++;
             if (ptr == _noteLog[ch].length) ptr = 0;
         } while (ptr != _noteLogPtr[ch]);
 
-        //クリップボードにMMLをセット
+         // クリップボードにMMLをセット
         Common.setClipboard(mml.toString());
         Common.sendKey(KeyEvent.VK_CONTROL, KeyEvent.VK_V);
 
@@ -622,7 +625,7 @@ public class YM2612MIDI {
                 }
             }
         } catch (IOException e) {
-            throw new dotnet4j.io.IOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -740,7 +743,7 @@ public class YM2612MIDI {
                 tnt.add(line);
             }
         } catch (IOException e) {
-            throw new dotnet4j.io.IOException(e);
+            throw new UncheckedIOException(e);
         }
 
         switch (tp) {
@@ -842,13 +845,13 @@ public class YM2612MIDI {
 
                 line = line.substring(1).trim();
                 c = String.valueOf(line.charAt(0)).toUpperCase();
-                m = 0;//互換モード
+                m = 0; // 互換モード
 
                 if (c.equals("a")) {
-                    m = 1;//OPNAモード
+                    m = 1; // OPNAモード
                     line = line.substring(1).trim();
                 } else if (c.equals("C")) {
-                    m = 2;//OPMモード
+                    m = 2; // OPMモード
                     line = line.substring(1).trim();
                 }
             }
@@ -862,7 +865,7 @@ public class YM2612MIDI {
 
                 if (m == 0 && stage >= 40) {
                     if (stage == 40) {
-                        //互換
+                         // 互換
                         Tone t = new Tone();
                         t.name = String.format("No.%d(From FMP7 compatible)", toneBuf.get(0));
                         t.ops = new Tone.Op[4];
@@ -893,7 +896,7 @@ public class YM2612MIDI {
 
                 if (m == 1 && stage >= 44) {
                     if (stage == 44) {
-                        //OPNA
+                         // OPNA
                         Tone t = new Tone();
                         t.name = String.format("No.%d(From FMP7 OPNA)", toneBuf.get(0));
                         t.ops = new Tone.Op[4];
@@ -924,7 +927,7 @@ public class YM2612MIDI {
 
                 if (m == 2 && stage >= 48) {
                     if (stage == 48) {
-                        //OPM
+                         // OPM
                         Tone t = new Tone();
                         t.name = String.format("No.%d(From FMP7 OPM)", toneBuf.get(0));
                         t.ops = new Tone.Op[4];
@@ -1006,6 +1009,7 @@ public class YM2612MIDI {
                 try {
                     voiceMode = Integer.parseInt(cmd.replace("#VOICE_MODE", "").trim());
                 } catch (Exception e) {
+                    e.printStackTrace();
                     voiceMode = 0;
                 }
             }
@@ -1026,7 +1030,7 @@ public class YM2612MIDI {
 
         do {
             if (cm) {
-                //コメント中
+                 // コメント中
                 ind = line.indexOf("*/");
                 if (ind >= 0) {
                     cm = false;
@@ -1470,7 +1474,8 @@ public class YM2612MIDI {
                     try {
                         String n = line.substring(line.indexOf('"') + 1);
                         nm = n.substring(0, n.indexOf('"'));
-                    } catch (Exception ignored) {
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
 

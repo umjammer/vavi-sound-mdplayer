@@ -28,7 +28,7 @@ import mdplayer.DrawBuff;
 import mdplayer.driver.sid.Sid;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidInfo;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidPlayFp;
+import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -98,7 +98,7 @@ public class frmRegTest extends frmChipBase {
 
             addChip("C352", 1, 0x400, select -> Audio.getC352Register(0));
 
-            addChip("YM2203", 1, 0x200, select -> Audio.getym2203Register(0));
+            addChip("YM2203", 1, 0x200, select -> Audio.getYm2203Register(0));
 
             addChip("YM2413", 1, 0x100, select -> Audio.getYM2413Register(0));
 
@@ -423,13 +423,13 @@ public class frmRegTest extends frmChipBase {
                     ((filtermode & 0b00000100) == 0x04 ? "HIGHPASS" : "--------") +
                     ((filtermode & 0b00000010) == 0x02 ? "BANDPASS" : "--------") +
                     ((filtermode & 0b00000001) == 0x01 ? "LOWPASS" : "-------"));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 48, 0, String.format("MAIN VOLUME %2x", mainvolume));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 48, 0, String.format("MAIN volume %2x", mainvolume));
 
             y += 56;
 
             SidTuneInfo sti = curSID.tuneInfo;
             SidConfig cfg = curSID.cfg;
-            SidPlayFp curEngine = curSID.GetCurrentEngineContext();
+            playSidFp curEngine = curSID.GetCurrentEngineContext();
             SidInfo si = curEngine.info();
 
             DrawBuff.drawFont4(frameBuffer, 2, y, 0, String.format("LOAD ADDR %04xh", sti.getLoadAddr()));
@@ -494,7 +494,7 @@ public class frmRegTest extends frmChipBase {
                     byte v = (byte) r[j][i];
                     int c = 0;
                     if (m < 0) {
-                        //不明値
+                         // 不明値
                         v = 0;
                         c = 1;
                     }

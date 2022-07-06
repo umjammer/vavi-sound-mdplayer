@@ -44,97 +44,97 @@ public class DrawBuff {
 
     public static void Init() {
         rChipName = new byte[3][];
-        rChipName[0] = getByteArray(Resources.getrChipName_01());
-        rChipName[1] = getByteArray(Resources.getrChipName_02());
-        rChipName[2] = getByteArray(Resources.getrChipName_03());
+        rChipName[0] = getByteArray(Resources.getRChipName_01());
+        rChipName[1] = getByteArray(Resources.getRChipName_02());
+        rChipName[2] = getByteArray(Resources.getRChipName_03());
 
         rFont1 = new byte[2][];
-        rFont1[0] = getByteArray(Resources.getrFont_01());
-        rFont1[1] = getByteArray(Resources.getrFont_02());
+        rFont1[0] = getByteArray(Resources.getRFont_01());
+        rFont1[1] = getByteArray(Resources.getRFont_02());
         rFont2 = new byte[5][];
-        rFont2[0] = getByteArray(Resources.getrFont_03());
-        rFont2[1] = getByteArray(Resources.getrFont_04());
-        rFont2[2] = getByteArray(Resources.getrMIDILCD_Font_04());
-        rFont2[3] = getByteArray(Resources.getrMIDILCD_Font_05());
-        rFont2[4] = getByteArray(Resources.getrMIDILCD_Font_06());
+        rFont2[0] = getByteArray(Resources.getRFont_03());
+        rFont2[1] = getByteArray(Resources.getRFont_04());
+        rFont2[2] = getByteArray(Resources.getRMIDILCD_Font_04());
+        rFont2[3] = getByteArray(Resources.getRMIDILCD_Font_05());
+        rFont2[4] = getByteArray(Resources.getRMIDILCD_Font_06());
         rFont3 = new byte[2][];
-        rFont3[0] = getByteArray(Resources.getrFont_05());
-        rFont3[1] = getByteArray(Resources.getrFont_06());
+        rFont3[0] = getByteArray(Resources.getRFont_05());
+        rFont3[1] = getByteArray(Resources.getRFont_06());
 
         rKBD = new byte[3][];
-        rKBD[0] = getByteArray(Resources.getrKBD_01());
-        rKBD[1] = getByteArray(Resources.getrKBD_02());
-        rKBD[2] = getByteArray(Resources.getrKBD_03());
+        rKBD[0] = getByteArray(Resources.getRKBD_01());
+        rKBD[1] = getByteArray(Resources.getRKBD_02());
+        rKBD[2] = getByteArray(Resources.getRKBD_03());
 
         rMenuButtons = new byte[2][];
-        rMenuButtons[0] = getByteArray(Resources.getrMenuButtons_01());
-        rMenuButtons[1] = getByteArray(Resources.getrMenuButtons_02());
+        rMenuButtons[0] = getByteArray(Resources.getRMenuButtons_01());
+        rMenuButtons[1] = getByteArray(Resources.getRMenuButtons_02());
 
         rPan = new byte[3][];
-        rPan[0] = getByteArray(Resources.getrPan_01());
-        rPan[1] = getByteArray(Resources.getrPan_02());
-        rPan[2] = getByteArray(Resources.getrPan_03());
+        rPan[0] = getByteArray(Resources.getRPan_01());
+        rPan[1] = getByteArray(Resources.getRPan_02());
+        rPan[2] = getByteArray(Resources.getRPan_03());
 
         rPan2 = new byte[2][];
-        rPan2[0] = getByteArray(Resources.getrPan2_01());
-        rPan2[1] = getByteArray(Resources.getrPan2_02());
+        rPan2[0] = getByteArray(Resources.getRPan2_01());
+        rPan2[1] = getByteArray(Resources.getRPan2_02());
 
-        rPSGEnv = getByteArray(Resources.getrPSGEnv());
+        rPSGEnv = getByteArray(Resources.getRPSGEnv());
 
         rPSGMode = new byte[6][];
-        rPSGMode[0] = getByteArray(Resources.getrPSGMode_01());
-        rPSGMode[1] = getByteArray(Resources.getrPSGMode_02());
-        rPSGMode[2] = getByteArray(Resources.getrPSGMode_03());
-        rPSGMode[3] = getByteArray(Resources.getrPSGMode_04());
-        rPSGMode[4] = getByteArray(Resources.getrPSGMode_05());
-        rPSGMode[5] = getByteArray(Resources.getrPSGMode_06());
+        rPSGMode[0] = getByteArray(Resources.getRPSGMode_01());
+        rPSGMode[1] = getByteArray(Resources.getRPSGMode_02());
+        rPSGMode[2] = getByteArray(Resources.getRPSGMode_03());
+        rPSGMode[3] = getByteArray(Resources.getRPSGMode_04());
+        rPSGMode[4] = getByteArray(Resources.getRPSGMode_05());
+        rPSGMode[5] = getByteArray(Resources.getRPSGMode_06());
 
         rType = new byte[6][];
-        rType[0] = getByteArray(Resources.getrType_01());
-        rType[1] = getByteArray(Resources.getrType_02());
-        rType[2] = getByteArray(Resources.getrType_03());
-        rType[3] = getByteArray(Resources.getrType_04());
-        rType[4] = getByteArray(Resources.getrType_05());
-        rType[5] = getByteArray(Resources.getrType_06());
+        rType[0] = getByteArray(Resources.getRType_01());
+        rType[1] = getByteArray(Resources.getRType_02());
+        rType[2] = getByteArray(Resources.getRType_03());
+        rType[3] = getByteArray(Resources.getRType_04());
+        rType[4] = getByteArray(Resources.getRType_05());
+        rType[5] = getByteArray(Resources.getRType_06());
 
         rVol = new byte[3][];
-        rVol[0] = getByteArray(Resources.getrVol_01());
-        rVol[1] = getByteArray(Resources.getrVol_02());
-        rVol[2] = getByteArray(Resources.getrVol_03());
+        rVol[0] = getByteArray(Resources.getRVol_01());
+        rVol[1] = getByteArray(Resources.getRVol_02());
+        rVol[2] = getByteArray(Resources.getRVol_03());
 
-        rWavGraph = getByteArray(Resources.getrWavGraph());
-        rWavGraph2 = getByteArray(Resources.getrWavGraph2());
-        rFader = getByteArray(Resources.getrFader());
-        rNESDMC = getByteArray(Resources.getrNESDMC());
+        rWavGraph = getByteArray(Resources.getRWavGraph());
+        rWavGraph2 = getByteArray(Resources.getRWavGraph2());
+        rFader = getByteArray(Resources.getRFader());
+        rNESDMC = getByteArray(Resources.getRNESDMC());
 
-        rKakko = getByteArray(Resources.getrKakko_00());
+        rKakko = getByteArray(Resources.getRKakko_00());
 
         rMIDILCD_Fader = new byte[3][];
-        rMIDILCD_Fader[0] = getByteArray(Resources.getrMIDILCD_Fader_01());
-        rMIDILCD_Fader[1] = getByteArray(Resources.getrMIDILCD_Fader_02());
-        rMIDILCD_Fader[2] = getByteArray(Resources.getrMIDILCD_Fader_03());
+        rMIDILCD_Fader[0] = getByteArray(Resources.getRMIDILCD_Fader_01());
+        rMIDILCD_Fader[1] = getByteArray(Resources.getRMIDILCD_Fader_02());
+        rMIDILCD_Fader[2] = getByteArray(Resources.getRMIDILCD_Fader_03());
 
-        rMIDILCD_KBD = getByteArray(Resources.getrMIDILCD_KBD_01());
+        rMIDILCD_KBD = getByteArray(Resources.getRMIDILCD_KBD_01());
 
         rMIDILCD_Vol = new byte[3][];
-        rMIDILCD_Vol[0] = getByteArray(Resources.getrMIDILCD_Vol_01());
-        rMIDILCD_Vol[1] = getByteArray(Resources.getrMIDILCD_Vol_02());
-        rMIDILCD_Vol[2] = getByteArray(Resources.getrMIDILCD_Vol_03());
+        rMIDILCD_Vol[0] = getByteArray(Resources.getRMIDILCD_Vol_01());
+        rMIDILCD_Vol[1] = getByteArray(Resources.getRMIDILCD_Vol_02());
+        rMIDILCD_Vol[2] = getByteArray(Resources.getRMIDILCD_Vol_03());
 
         rMIDILCD = new byte[3][];
-        rMIDILCD[0] = getByteArray(Resources.getrMIDILCD_01());
-        rMIDILCD[1] = getByteArray(Resources.getrMIDILCD_02());
-        rMIDILCD[2] = getByteArray(Resources.getrMIDILCD_03());
+        rMIDILCD[0] = getByteArray(Resources.getRMIDILCD_01());
+        rMIDILCD[1] = getByteArray(Resources.getRMIDILCD_02());
+        rMIDILCD[2] = getByteArray(Resources.getRMIDILCD_03());
 
         rMIDILCD_Font = new byte[3][];
-        rMIDILCD_Font[0] = getByteArray(Resources.getrMIDILCD_Font_01());
-        rMIDILCD_Font[1] = getByteArray(Resources.getrMIDILCD_Font_02());
-        rMIDILCD_Font[2] = getByteArray(Resources.getrMIDILCD_Font_03());
+        rMIDILCD_Font[0] = getByteArray(Resources.getRMIDILCD_Font_01());
+        rMIDILCD_Font[1] = getByteArray(Resources.getRMIDILCD_Font_02());
+        rMIDILCD_Font[2] = getByteArray(Resources.getRMIDILCD_Font_03());
 
         rPlane_MIDI = new byte[3][];
-        rPlane_MIDI[0] = getByteArray(Resources.getplaneMIDI_GM());
-        rPlane_MIDI[1] = getByteArray(Resources.getplaneMIDI_XG());
-        rPlane_MIDI[2] = getByteArray(Resources.getplaneMIDI_GS());
+        rPlane_MIDI[0] = getByteArray(Resources.getPlaneMIDI_GM());
+        rPlane_MIDI[1] = getByteArray(Resources.getPlaneMIDI_XG());
+        rPlane_MIDI[2] = getByteArray(Resources.getPlaneMIDI_GS());
 
         bitmapMIDILyric = new BufferedImage[2];
         bitmapMIDILyric[0] = new BufferedImage(200, 24, BufferedImage.TYPE_INT_ARGB);
@@ -146,7 +146,7 @@ public class DrawBuff {
         fntMIDILyric[0] = new Font("MS UI Gothic", Font.PLAIN, 8);// , Font.BOLD);
         fntMIDILyric[1] = new Font("MS UI Gothic", Font.PLAIN, 8);// , Font.BOLD);
 
-        rType_YMF271 = getByteArray(Resources.getrType_YMF271());
+        rType_YMF271 = getByteArray(Resources.getRType_YMF271());
     }
 
     public static void screenInitHuC6280(FrameBuffer screen) {
@@ -2747,7 +2747,7 @@ public class DrawBuff {
 //        bitmap.UnlockBits(bitmapData);
 //        bitmap.dispose();
 
-        return null;//byteArray;
+        return null; // byteArray;
     }
 
     private static void VolumeP(FrameBuffer screen, int x, int y, int t, int tp) {

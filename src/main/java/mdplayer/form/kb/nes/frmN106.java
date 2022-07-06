@@ -51,7 +51,7 @@ public class frmN106 extends frmBase {
         this.newParam = newParam;
         this.oldParam = oldParam;
 
-        frameBuffer.Add(pbScreen, Resources.getplaneN106(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneN106(), null, zoom);
         screenInit();
         update();
     }
@@ -88,9 +88,9 @@ public class frmN106 extends frmBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneN106().getWidth() * zoom, frameSizeH + Resources.getplaneN106().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneN106().getWidth() * zoom, frameSizeH + Resources.getplaneN106().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneN106().getWidth() * zoom, frameSizeH + Resources.getplaneN106().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneN106().getWidth() * zoom, frameSizeH + Resources.getPlaneN106().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneN106().getWidth() * zoom, frameSizeH + Resources.getPlaneN106().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneN106().getWidth() * zoom, frameSizeH + Resources.getPlaneN106().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -238,7 +238,7 @@ public class frmN106 extends frmBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneN106();
+        this.image = mdplayer.properties.Resources.getPlaneN106();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(320, 198));

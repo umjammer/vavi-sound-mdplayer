@@ -297,7 +297,7 @@ class FMTimer {
     public void timer() {
         int flag_set = 0;
 
-        if ((timerReg & 0x01) != 0) { // TimerA 動作中
+        if ((timerReg & 0x01) != 0) { // timerA 動作中
             timerACounter += step;
             if (timerACounter >= timerA) {
                 flag_set |= ((timerReg >> 2) & 0x01);
@@ -306,7 +306,7 @@ class FMTimer {
             }
         }
 
-        if ((timerReg & 0x02) != 0) { // TimerB 動作中
+        if ((timerReg & 0x02) != 0) { // timerB 動作中
             timerBCounter += step;
             if (timerBCounter >= timerB) {
                 flag_set |= ((timerReg >> 2) & 0x02);
@@ -326,14 +326,14 @@ class FMTimer {
         switch (adr) {
         case 0x10:
         case 0x11:
-            // TimerA
+            // timerA
             if (adr == 0x10) timerAregH = data;
             else timerAregL = data & 3;
             timerA = 1024 - ((timerAregH << 2) + timerAregL);
             break;
 
         case 0x12:
-            // TimerB
+            // timerB
             timerB = (256 - (int) data) << (10 - 6);
             break;
 
@@ -349,14 +349,14 @@ class FMTimer {
         switch (adr) {
         case 0x24:
         case 0x25:
-            // TimerA
+            // timerA
             if (adr == 0x24) timerAregH = data;
             else timerAregL = data & 3;
             timerA = 1024 - ((timerAregH << 2) + timerAregL);
             break;
 
         case 0x26:
-            // TimerB
+            // timerB
             timerB = (256 - (int) data) << (10 - 6);
             break;
 

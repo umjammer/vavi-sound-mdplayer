@@ -36,13 +36,13 @@ public class MIDIParam {
 
     public byte MasterVolume = 0;
 
-    public int ReverbXG = 1; //HALL1
-    public int ChorusXG = 1; //CHORUS1
-    public int VariationXG = 15; //DELAY LCR
+    public int ReverbXG = 1;  // HALL1
+    public int ChorusXG = 1;  // CHORUS1
+    public int VariationXG = 15;  // DELAY LCR
     public int Insertion1XG = 56;// DISTORTION
-    public int Insertion2XG = 56;//DISTORTION
+    public int Insertion2XG = 56; // DISTORTION
     public int Insertion3XG = 56;// DISTORTION
-    public int Insertion4XG = 56;//DISTORTION
+    public int Insertion4XG = 56; // DISTORTION
 
     public int ReverbGS = 4; // Room1(default)
     public int ChorusGS = 2; // Chorus3(default)
@@ -248,7 +248,7 @@ public class MIDIParam {
             byte cmd = (byte) (msg[0] & 0xf0);
             byte ch = (byte) (msg[0] & 0xf);
             switch (cmd) {
-            case (byte) 0xc0://Program Change
+            case (byte) 0xc0: // Program Change
                 pc[ch] = msg[1];
                 break;
             }
@@ -256,16 +256,16 @@ public class MIDIParam {
             byte cmd = (byte) (msg[0] & 0xf0);
             byte ch = (byte) (msg[0] & 0xf);
             switch (cmd) {
-            case (byte) 0x80://Note OFF
+            case (byte) 0x80: // Note OFF
                 note[ch][msg[1]] = 0;
                 break;
-            case (byte) 0x90://Note ON
+            case (byte) 0x90: // Note ON
                 note[ch][msg[1]] = msg[2];
 
-                if (msg[2] != 0)//NOTE OFF の代用の場合は液晶パラメータの更新を行わない
+                if (msg[2] != 0) // NOTE OFF の代用の場合は液晶パラメータの更新を行わない
                 {
                     int lv = cc[ch][7] * cc[ch][11] * msg[2] >> (7 + 7);
-                    int lvl = (lv * (cc[ch][10] > 64 ? ((127 - cc[ch][10]) * 2) : 127)) >> (7); //65->124 127->0
+                    int lvl = (lv * (cc[ch][10] > 64 ? ((127 - cc[ch][10]) * 2) : 127)) >> (7);  // 65->124 127->0
                     int lvr = (lv * (cc[ch][10] < 64 ? (cc[ch][10] * 2) : 127)) >> (7); // 63->126 0->0
                     level[ch][0] = (byte) lvl;
                     level[ch][1] = (byte) lv;
@@ -276,17 +276,17 @@ public class MIDIParam {
                     }
                 }
                 break;
-            case (byte) 0xa0://Key Press
+            case (byte) 0xa0: // Key Press
                 keyPress[ch][msg[1]] = msg[2];
                 break;
-            case (byte) 0xb0://Control Change
+            case (byte) 0xb0: // Control Change
                 cc[ch][msg[1]] = msg[2];
                 analyzeControlChange(ch);
                 break;
-            case (byte) 0xd0://Ch Press
+            case (byte) 0xd0: // Ch Press
                 cPress[ch] = msg[1];
                 break;
-            case (byte) 0xe0://Pitch Bend
+            case (byte) 0xe0: // Pitch Bend
                 bend[ch] = (short) (msg[2] * 0x80 + msg[1]);
                 break;
             }
@@ -295,10 +295,10 @@ public class MIDIParam {
 
     private void analyzeControlChange(byte ch) {
         switch (msg[1]) {
-        case 0x06://Data Entry MSB
+        case 0x06: // Data Entry MSB
             analyzeDataEntryMSB(ch);
             break;
-        case 0x26://Data Entry LSB
+        case 0x26: // Data Entry LSB
             break;
         }
     }
@@ -365,7 +365,7 @@ public class MIDIParam {
             if (msg[3] != 0x4c) return;
             adr = msg[4] * 0x10000 + msg[5] * 0x100 + msg[6];
             ptr = 7;
-        } else if (manufactureID == 0x41) { //Roland ID
+        } else if (manufactureID == 0x41) {  // Roland ID
             //if (msg[3] != 0x42) return;
             //if (msg[4] != 0x12) return;
             adr = msg[5] * 0x10000 + msg[6] * 0x100 + msg[7];

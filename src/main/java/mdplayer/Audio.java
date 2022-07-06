@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Level;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
@@ -176,7 +177,7 @@ public class Audio {
     public static String errMsg = "";
     public static boolean flgReinit = false;
 
-    public static boolean getemuOnly() {
+    public static boolean getEmuOnly() {
         return false;
     }
 
@@ -265,7 +266,7 @@ public class Audio {
 
         } else if (ms.fileName.toLowerCase().lastIndexOf(".xgm") != -1) {
             music.format = FileFormat.XGM;
-            Gd3 gd3 = new Xgm(setting).getGD3Info(buf, 0);
+            Gd3 gd3 = new Xgm(setting).getGD3Info(buf);
             music.title = gd3.trackName;
             music.titleJ = gd3.trackNameJ;
             music.game = gd3.gameName;
@@ -282,7 +283,7 @@ public class Audio {
             }
         } else if (ms.fileName.toLowerCase().lastIndexOf(".s98") != -1) {
             music.format = FileFormat.S98;
-            Vgm.Gd3 gd3 = new S98(setting).getGD3Info(buf, 0);
+            Vgm.Gd3 gd3 = new S98(setting).getGD3Info(buf);
             if (gd3 != null) {
                 music.title = gd3.trackName;
                 music.titleJ = gd3.trackNameJ;
@@ -300,7 +301,7 @@ public class Audio {
 
         } else if (ms.fileName.toLowerCase().lastIndexOf(".nsf") != -1) {
             Nsf nsf = new Nsf(setting);
-            Gd3 gd3 = nsf.getGD3Info(buf, 0);
+            Gd3 gd3 = nsf.getGD3Info(buf);
 
             if (gd3 != null) {
                 if (ms.songNo == -1) {
@@ -351,7 +352,7 @@ public class Audio {
 
         } else if (ms.fileName.toLowerCase().lastIndexOf(".mid") != -1) {
             music.format = FileFormat.MID;
-            Gd3 gd3 = new MID().getGD3Info(buf, 0);
+            Gd3 gd3 = new MID().getGD3Info(buf);
             if (gd3 != null) {
                 music.title = gd3.trackName;
                 music.titleJ = gd3.trackNameJ;
@@ -373,7 +374,7 @@ public class Audio {
 
         } else if (ms.fileName.toLowerCase().lastIndexOf(".rcp") != -1) {
             music.format = FileFormat.RCP;
-            Vgm.Gd3 gd3 = new RCP().getGD3Info(buf, 0);
+            Vgm.Gd3 gd3 = new RCP().getGD3Info(buf);
             if (gd3 != null) {
                 music.title = gd3.trackName;
                 music.titleJ = gd3.trackNameJ;
@@ -466,36 +467,36 @@ public class Audio {
 
             return n;
         } catch (Exception e) {
-            Log.forcedWrite(e);
+            e.printStackTrace();
         }
         return "";
     }
 
     public static void init(Setting setting) {
-        Log.forcedWrite("Audio:Init:Begin");
+        Debug.println(Level.SEVERE, "Audio:Init:Begin");
 
         Thread trd = new Thread(Audio::trdIF);
         trd.setPriority(Thread.NORM_PRIORITY);
         trd.start();
 
-        Log.forcedWrite("Audio:Init:STEP 01");
+        Debug.println(Level.SEVERE, "Audio:Init:STEP 01");
 
         naudioWrap = new NAudioWrap(setting.getOutputDevice().getSampleRate(), Audio::trdVgmVirtualFunction);
         naudioWrap.playbackStopped = Audio::naudioWrapPlaybackStopped;
 
-        Log.forcedWrite("Audio:Init:STEP 02");
+        Debug.println(Level.SEVERE, "Audio:Init:STEP 02");
 
         Audio.setting = setting;
 //        vstMng.setting = setting;
 
         waveWriter = new WaveWriter(setting);
 
-        Log.forcedWrite("Audio:Init:STEP 03");
+        Debug.println(Level.SEVERE, "Audio:Init:STEP 03");
 
         if (Audio.setting.getAY8910Type() == null || Audio.setting.getAY8910Type().length < 2) {
             Audio.setting.setAY8910Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getAY8910Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getAY8910Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getAY8910Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getAY8910Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getAY8910Type()[i].setUseReal(new boolean[1]);
@@ -504,7 +505,7 @@ public class Audio {
         if (Audio.setting.getK051649Type() == null || Audio.setting.getK051649Type().length < 2) {
             Audio.setting.setK051649Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getK051649Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getK051649Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getK051649Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getK051649Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getK051649Type()[i].setUseReal(new boolean[1]);
@@ -513,7 +514,7 @@ public class Audio {
         if (Audio.setting.getC140Type() == null || Audio.setting.getC140Type().length < 2) {
             Audio.setting.setC140Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getC140Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getC140Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getC140Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getC140Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getC140Type()[i].setUseReal(new boolean[1]);
@@ -522,7 +523,7 @@ public class Audio {
         if (Audio.setting.getHuC6280Type() == null || Audio.setting.getHuC6280Type().length < 2) {
             Audio.setting.setHuC6280Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getHuC6280Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getHuC6280Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getHuC6280Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getHuC6280Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getHuC6280Type()[i].setUseReal(new boolean[1]);
@@ -531,7 +532,7 @@ public class Audio {
         if (Audio.setting.getSEGAPCMType() == null || Audio.setting.getSEGAPCMType().length < 2) {
             Audio.setting.setSEGAPCMType(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getSEGAPCMType()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getSEGAPCMType()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getSEGAPCMType()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getSEGAPCMType()[i].getUseEmu()[0] = true;
                 Audio.setting.getSEGAPCMType()[i].setUseReal(new boolean[1]);
@@ -540,7 +541,7 @@ public class Audio {
         if (Audio.setting.getSN76489Type() == null || Audio.setting.getSN76489Type().length < 2) {
             Audio.setting.setSN76489Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getSN76489Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getSN76489Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getSN76489Type()[i].setUseEmu(new boolean[2]);
                 Audio.setting.getSN76489Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getSN76489Type()[i].setUseReal(new boolean[1]);
@@ -549,7 +550,7 @@ public class Audio {
         if (Audio.setting.getY8950Type() == null || Audio.setting.getY8950Type().length < 2) {
             Audio.setting.setY8950Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getY8950Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getY8950Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getY8950Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getY8950Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getY8950Type()[i].setUseReal(new boolean[1]);
@@ -558,7 +559,7 @@ public class Audio {
         if (Audio.setting.getYM2151Type() == null || Audio.setting.getYM2151Type().length < 2) {
             Audio.setting.setYM2151Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getYM2151Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getYM2151Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getYM2151Type()[i].setUseEmu(new boolean[3]);
                 Audio.setting.getYM2151Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getYM2151Type()[i].setUseReal(new boolean[1]);
@@ -567,7 +568,7 @@ public class Audio {
         if (Audio.setting.getYM2203Type() == null || Audio.setting.getYM2203Type().length < 2) {
             Audio.setting.setYM2203Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getYM2203Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getYM2203Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getYM2203Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYM2203Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getYM2203Type()[i].setUseReal(new boolean[1]);
@@ -576,7 +577,7 @@ public class Audio {
         if (Audio.setting.getYM2413Type() == null || Audio.setting.getYM2413Type().length < 2) {
             Audio.setting.setYM2413Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getYM2413Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getYM2413Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getYM2413Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYM2413Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getYM2413Type()[i].setUseReal(new boolean[1]);
@@ -585,7 +586,7 @@ public class Audio {
         if (Audio.setting.getYM2608Type() == null || Audio.setting.getYM2608Type().length < 2) {
             Audio.setting.setYM2608Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getYM2608Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getYM2608Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getYM2608Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYM2608Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getYM2608Type()[i].setUseReal(new boolean[1]);
@@ -601,7 +602,7 @@ public class Audio {
         ) {
             Audio.setting.setYM2610Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getYM2610Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getYM2610Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getYM2610Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYM2610Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getYM2610Type()[i].setUseReal(new boolean[3]);
@@ -611,7 +612,7 @@ public class Audio {
         if (Audio.setting.getYM2612Type() == null || Audio.setting.getYM2612Type().length < 2) {
             Audio.setting.setYM2612Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getYM2612Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getYM2612Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getYM2612Type()[i].setUseEmu(new boolean[3]);
                 Audio.setting.getYM2612Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getYM2612Type()[i].setUseReal(new boolean[1]);
@@ -620,7 +621,7 @@ public class Audio {
         if (Audio.setting.getYM3526Type() == null || Audio.setting.getYM3526Type().length < 2) {
             Audio.setting.setYM3526Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getYM3526Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getYM3526Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getYM3526Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYM3526Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getYM3526Type()[i].setUseReal(new boolean[1]);
@@ -629,7 +630,7 @@ public class Audio {
         if (Audio.setting.getYM3812Type() == null || Audio.setting.getYM3812Type().length < 2) {
             Audio.setting.setYM3812Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getYM3812Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getYM3812Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getYM3812Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYM3812Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getYM3812Type()[i].setUseReal(new boolean[1]);
@@ -638,7 +639,7 @@ public class Audio {
         if (Audio.setting.getYMF262Type() == null || Audio.setting.getYMF262Type().length < 2) {
             Audio.setting.setYMF262Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getYMF262Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getYMF262Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getYMF262Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYMF262Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getYMF262Type()[i].setUseReal(new boolean[1]);
@@ -647,7 +648,7 @@ public class Audio {
         if (Audio.setting.getYMF271Type() == null || Audio.setting.getYMF271Type().length < 2) {
             Audio.setting.setYMF271Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getYMF271Type()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getYMF271Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getYMF271Type()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYMF271Type()[i].getUseEmu()[0] = true;
                 Audio.setting.getYMF271Type()[i].setUseReal(new boolean[1]);
@@ -656,7 +657,7 @@ public class Audio {
         if (Audio.setting.getYMF278BType() == null || Audio.setting.getYMF278BType().length < 2) {
             Audio.setting.setYMF278BType(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getYMF278BType()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getYMF278BType()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getYMF278BType()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYMF278BType()[i].getUseEmu()[0] = true;
                 Audio.setting.getYMF278BType()[i].setUseReal(new boolean[1]);
@@ -665,7 +666,7 @@ public class Audio {
         if (Audio.setting.getYMZ280BType() == null || Audio.setting.getYMZ280BType().length < 2) {
             Audio.setting.setYMZ280BType(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                Audio.setting.getYMZ280BType()[i].setrealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                Audio.setting.getYMZ280BType()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 Audio.setting.getYMZ280BType()[i].setUseEmu(new boolean[1]);
                 Audio.setting.getYMZ280BType()[i].getUseEmu()[0] = true;
                 Audio.setting.getYMZ280BType()[i].setUseReal(new boolean[1]);
@@ -783,14 +784,14 @@ public class Audio {
 //        );
         chipRegister.initChipRegister(null);
 
-        Log.forcedWrite("Audio:Init:STEP 05");
+        Debug.println(Level.SEVERE, "Audio:Init:STEP 05");
 
         paused = false;
         stopped = true;
         _fatalError = false;
         oneTimeReset = false;
 
-        Log.forcedWrite("Audio:Init:STEP 06");
+        Debug.println(Level.SEVERE, "Audio:Init:STEP 06");
 
 //        Log.forcedWrite("Audio:Init:VST:STEP 01");
 //
@@ -832,31 +833,30 @@ public class Audio {
 //
 //
 //        if (setting.getVst() != null && setting.getVst().getVSTInfo() != null) {
-//            Log.forcedWrite("Audio:Init:VST:STEP 03"); //Load VST Effect
+//            Log.forcedWrite("Audio:Init:VST:STEP 03"); // Load VST Effect
 //            vstMng.SetUpVstEffect();
 //        }
 
-        Log.forcedWrite("Audio:Init:STEP 07");
+        Debug.println(Level.SEVERE, "Audio:Init:STEP 07");
 
         // midi outをリリース
         releaseAllMIDIout();
 
-        Log.forcedWrite("Audio:Init:STEP 08");
+        Debug.println(Level.SEVERE, "Audio:Init:STEP 08");
 
         // midi  のインスタンスを作成
         makeMIDIout(setting, 1);
         chipRegister.resetAllMIDIout();
 
-        Log.forcedWrite("Audio:Init:STEP 09");
+        Debug.println(Level.SEVERE, "Audio:Init:STEP 09");
 
         // 各外部dllの動的読み込み
 
-        Log.forcedWrite("Audio:Init:STEP 10");
+        Debug.println(Level.SEVERE, "Audio:Init:STEP 10");
 
         naudioWrap.Start(Audio.setting);
 
-        Log.forcedWrite("Audio:Init:Complete");
-
+        Debug.println(Level.SEVERE, "Audio:Init:Complete");
     }
 
     private static void trdIF() {
@@ -868,7 +868,7 @@ public class Audio {
             }
 
             switch (req.request) {
-            case Die://自殺してください
+            case Die: // 自殺してください
                 seqDie();
                 req.setEnd(true);
                 return;
@@ -921,6 +921,7 @@ public class Audio {
                 try {
                     mo = MidiSystem.getReceiver();
                 } catch (Exception e) {
+                    e.printStackTrace();
                     mo = null;
                 }
             }
@@ -959,11 +960,11 @@ public class Audio {
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_AsioOut) {
             return setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getLatency() / 1000;
         }
-        return 0; //naudioWrap.getAsioLatency(); TODO
+        return 0; // naudioWrap.getAsioLatency(); TODO
     }
 
     public static void setVGMBuffer(FileFormat format, byte[] srcBuf, String playingFileName, String playingArcFileName, int midiMode, int songNo, List<Tuple<String, byte[]>> extFile) {
-        //Stop();
+         // Stop();
         playingFileFormat = format;
         vgmBuf = srcBuf;
         Audio.playingFileName = playingFileName; // WaveWriter向け
@@ -998,6 +999,7 @@ public class Audio {
         try {
             waveWriter.open(playingFileName);
         } catch (Exception e) {
+            e.printStackTrace();
             errMsg = "wave file open error.";
             return false;
         }
@@ -1035,7 +1037,7 @@ public class Audio {
                 driverReal.setting = setting;
                 ((MucomDotNET) driverReal).setPlayingFileName(playingFileName);
             }
-            return mucPlay_mucomDotNET(setting, MucomDotNET.enmMUCOMFileType.MUB);
+            return mucPlay_mucomDotNET(setting, MucomDotNET.MUCOMFileType.MUB);
         }
 
         if (playingFileFormat == FileFormat.MUC) {
@@ -1049,7 +1051,7 @@ public class Audio {
                 ((MucomDotNET) driverReal).setPlayingFileName(playingFileName);
             }
 
-            return mucPlay_mucomDotNET(setting, MucomDotNET.enmMUCOMFileType.MUC);
+            return mucPlay_mucomDotNET(setting, MucomDotNET.MUCOMFileType.MUC);
         }
 
         if (playingFileFormat == FileFormat.MML || playingFileFormat == FileFormat.M) {
@@ -1194,8 +1196,7 @@ public class Audio {
             driverVirtual = new Nsf(setting);
             driverVirtual.setting = setting;
             driverReal = null;
-            //if (setting.getoutputDevice().DeviceType != Common.DEV_Null)
-            //{
+            //if (setting.getoutputDevice().DeviceType != Common.DEV_Null) {
             //    driverReal = new Nsf();
             //    driverReal.setting = setting;
             //}
@@ -1251,7 +1252,7 @@ public class Audio {
                 return true;
             }
         } catch (UnsupportedAudioFileException | java.io.IOException e) {
-            Debug.println(e);
+            e.printStackTrace();
         }
         return false;
     }
@@ -1385,20 +1386,20 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
 
     }
 
-    public static boolean mucPlay_mucomDotNET(Setting setting, MucomDotNET.enmMUCOMFileType fileType) {
+    public static boolean mucPlay_mucomDotNET(Setting setting, MucomDotNET.MUCOMFileType fileType) {
 
         try {
 
             if (vgmBuf == null || setting == null) return false;
 
-            if (fileType == MucomDotNET.enmMUCOMFileType.MUC) {
-                vgmBuf = ((MucomDotNET) driverVirtual).Compile(vgmBuf);
+            if (fileType == MucomDotNET.MUCOMFileType.MUC) {
+                vgmBuf = ((MucomDotNET) driverVirtual).compile(vgmBuf);
             }
             EnmChip[] useChipFromMub = ((MucomDotNET) driverVirtual).useChipsFromMub(vgmBuf);
 
@@ -1437,11 +1438,11 @@ public class Audio {
                 chip.reset = ym2608::reset;
                 chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getYM2608Volume();
-                chip.clock = MucomDotNET.OPNAbaseclock;
+                chip.clock = MucomDotNET.opnaBaseClock;
                 chip.option = new Object[] {fn};
                 lstChips.add(chip);
                 useChip.add(EnmChip.YM2608);
-                clockYM2608 = MucomDotNET.OPNAbaseclock;
+                clockYM2608 = MucomDotNET.opnaBaseClock;
             }
 
             if (useChipFromMub[1] != EnmChip.Unuse) {
@@ -1456,7 +1457,7 @@ public class Audio {
                 chip.reset = ym2608::reset;
                 chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getYM2608Volume();
-                chip.clock = MucomDotNET.OPNAbaseclock;
+                chip.clock = MucomDotNET.opnaBaseClock;
                 chip.option = new Object[] {fn};
                 lstChips.add(chip);
                 useChip.add(EnmChip.S_YM2608);
@@ -1474,11 +1475,11 @@ public class Audio {
                 chip.reset = ym2610::reset;
                 chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getYM2610Volume();
-                chip.clock = MucomDotNET.OPNBbaseclock;
+                chip.clock = MucomDotNET.opnbBaseClock;
                 chip.option = null;
                 lstChips.add(chip);
                 useChip.add(EnmChip.YM2610);
-                clockYM2610 = MucomDotNET.OPNBbaseclock;
+                clockYM2610 = MucomDotNET.opnbBaseClock;
             }
 
             if (useChipFromMub[3] != EnmChip.Unuse) {
@@ -1493,7 +1494,7 @@ public class Audio {
                 chip.reset = ym2610::reset;
                 chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getYM2610Volume();
-                chip.clock = MucomDotNET.OPNBbaseclock;
+                chip.clock = MucomDotNET.opnbBaseClock;
                 chip.option = null;
                 lstChips.add(chip);
                 useChip.add(EnmChip.S_YM2610);
@@ -1511,7 +1512,7 @@ public class Audio {
                 chip.reset = ym2151::reset;
                 chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getYM2151Volume();
-                chip.clock = MucomDotNET.OPMbaseclock;
+                chip.clock = MucomDotNET.opmBaseClock;
                 chip.option = null;
                 lstChips.add(chip);
                 useChip.add(EnmChip.YM2151);
@@ -1538,7 +1539,7 @@ public class Audio {
             chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
             chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
             chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-            chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //Psg TONE でリセット
+            chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); // Psg TONE でリセット
             chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
             chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.VirtualModel);
             chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.RealModel);
@@ -1547,8 +1548,8 @@ public class Audio {
             chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.VirtualModel);
             chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.RealModel);
 
-            chipRegister.writeYM2608Clock((byte) 0, MucomDotNET.OPNAbaseclock, EnmModel.RealModel);
-            chipRegister.writeYM2608Clock((byte) 1, MucomDotNET.OPNAbaseclock, EnmModel.RealModel);
+            chipRegister.writeYM2608Clock((byte) 0, MucomDotNET.opnaBaseClock, EnmModel.RealModel);
+            chipRegister.writeYM2608Clock((byte) 1, MucomDotNET.opnaBaseClock, EnmModel.RealModel);
             chipRegister.setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
             chipRegister.setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
@@ -1576,7 +1577,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
 
@@ -1702,7 +1703,7 @@ public class Audio {
             chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
             chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
             chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-            chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //Psg TONE でリセット
+            chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); // Psg TONE でリセット
             chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
 
             chipRegister.writeYM2608Clock((byte) 0, PMDDotNET.baseclock, EnmModel.RealModel);
@@ -1734,7 +1735,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
     }
@@ -1784,7 +1785,7 @@ public class Audio {
                 chip.option = null;// new Object[] { fn };
                 lstChips.add(chip);
                 useChip.add(EnmChip.YMF278B);
-                //clockYM2608 = MucomDotNET.OPNAbaseclock;
+                //clockYM2608 = MucomDotNET.opnaBaseClock;
             }
 
             hiyorimiNecessary = hiyorimiNecessary;
@@ -1808,7 +1809,7 @@ public class Audio {
             //chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
             //chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
             //chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-            //chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //Psg TONE でリセット
+            //chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); // Psg TONE でリセット
             //chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
             //chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.VirtualModel);
             //chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.RealModel);
@@ -1817,8 +1818,8 @@ public class Audio {
             //chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.VirtualModel);
             //chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.RealModel);
 
-            //chipRegister.writeYM2608Clock(0, MucomDotNET.OPNAbaseclock, EnmModel.RealModel);
-            //chipRegister.writeYM2608Clock(1, MucomDotNET.OPNAbaseclock, EnmModel.RealModel);
+            //chipRegister.writeYM2608Clock(0, MucomDotNET.opnaBaseClock, EnmModel.RealModel);
+            //chipRegister.writeYM2608Clock(1, MucomDotNET.opnaBaseClock, EnmModel.RealModel);
             //chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, EnmModel.RealModel);
             //chipRegister.setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, EnmModel.RealModel);
 
@@ -1847,7 +1848,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
     }
@@ -2013,16 +2014,16 @@ public class Audio {
 
             Thread.sleep(500);
 
-            ((NRTDRV) driverVirtual).call(1);//MPLAY
+            ((NRTDRV) driverVirtual).call(1); // MPLAY
 
             if (driverReal != null) {
-                ((NRTDRV) driverReal).call(1);//MPLAY
+                ((NRTDRV) driverReal).call(1); // MPLAY
             }
 
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
 
@@ -2176,7 +2177,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
     }
@@ -2322,7 +2323,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
 
@@ -2497,7 +2498,7 @@ public class Audio {
                 chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel);
                 chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel);
                 chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
-                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); //Psg TONE でリセット
+                chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); // Psg TONE でリセット
                 chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
                 chipRegister.writeYM2608Clock((byte) 0, 8000000, EnmModel.RealModel);
                 chipRegister.setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
@@ -2508,7 +2509,7 @@ public class Audio {
                 chipRegister.setYM2608Register(1, 0, 0x2d, 0x00, EnmModel.RealModel);
                 chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
                 chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-                chipRegister.setYM2608Register(1, 0, 0x07, 0x38, EnmModel.VirtualModel); //Psg TONE でリセット
+                chipRegister.setYM2608Register(1, 0, 0x07, 0x38, EnmModel.VirtualModel); // Psg TONE でリセット
                 chipRegister.setYM2608Register(1, 0, 0x07, 0x38, EnmModel.RealModel);
                 chipRegister.writeYM2608Clock((byte) 1, 8000000, EnmModel.RealModel);
                 chipRegister.setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
@@ -2551,7 +2552,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
     }
@@ -2696,7 +2697,7 @@ public class Audio {
                         , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                     return false;
             }
-            //Play
+            // Play
 
             paused = false;
             oneTimeReset = false;
@@ -2705,7 +2706,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
 
@@ -2730,8 +2731,8 @@ public class Audio {
 
             useChip.clear();
 
-            //MIDIに対応するまで封印
-            //startTrdVgmReal();
+            // MIDIに対応するまで封印
+            // startTrdVgmReal();
 
             List<MDSound.Chip> lstChips = new ArrayList<>();
 
@@ -2749,7 +2750,7 @@ public class Audio {
                     , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
 
-            //MIDIに対応するまで封印
+            // MIDIに対応するまで封印
             //if (driverReal != null && !driverReal.init(vgmBuf
             //    , chipRegister
             //    , EnmModel.RealModel
@@ -2786,7 +2787,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
     }
@@ -3239,11 +3240,11 @@ public class Audio {
                 chipRegister.writeYM2608Clock((byte) 1, YM2608ClockValue, EnmModel.RealModel);
 
             if (useChip.contains(EnmChip.YMF262)) {
-                chipRegister.setYMF262Register(0, 1, 5, 1, EnmModel.RealModel);//opl3mode
+                chipRegister.setYMF262Register(0, 1, 5, 1, EnmModel.RealModel); // opl3mode
                 chipRegister.writeYMF262Clock((byte) 0, YMF262ClockValue, EnmModel.RealModel);
             }
             if (useChip.contains(EnmChip.S_YMF262)) {
-                chipRegister.setYMF262Register(1, 1, 5, 1, EnmModel.RealModel);//opl3mode
+                chipRegister.setYMF262Register(1, 1, 5, 1, EnmModel.RealModel); // opl3mode
                 chipRegister.writeYMF262Clock((byte) 1, YMF262ClockValue, EnmModel.RealModel);
             }
 
@@ -3278,7 +3279,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
     }
@@ -3348,7 +3349,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
     }
@@ -3415,7 +3416,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
 
@@ -3627,7 +3628,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
 
@@ -3726,7 +3727,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
     }
@@ -3787,7 +3788,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
     }
@@ -4957,7 +4958,7 @@ public class Audio {
 
 
             if (useChip.contains(EnmChip.YM2203) || useChip.contains(EnmChip.S_YM2203)) {
-                chipRegister.setYM2203Register(0, 0x7, 0x3f, EnmModel.RealModel);//出力オフ
+                chipRegister.setYM2203Register(0, 0x7, 0x3f, EnmModel.RealModel); // 出力オフ
                 chipRegister.setYM2203Register(1, 0x7, 0x3f, EnmModel.RealModel);
                 chipRegister.setYM2203Register(0, 0x8, 0x0, EnmModel.RealModel);
                 chipRegister.setYM2203Register(1, 0x8, 0x0, EnmModel.RealModel);
@@ -5001,29 +5002,29 @@ public class Audio {
             if (useChip.contains(EnmChip.S_YM2608))
                 chipRegister.writeYM2608Clock((byte) 1, ((Vgm) driverVirtual).yn2608ClockValue, EnmModel.RealModel);
             if (useChip.contains(EnmChip.YM3526)) {
-                chipRegister.setYM3526Register(0, 0xbd, 0, EnmModel.RealModel);//リズムモードオフ
+                chipRegister.setYM3526Register(0, 0xbd, 0, EnmModel.RealModel); // リズムモードオフ
                 chipRegister.writeYM3526Clock((byte) 0, ((Vgm) driverVirtual).ym3526ClockValue, EnmModel.RealModel);
             }
             if (useChip.contains(EnmChip.S_YM3526)) {
-                chipRegister.setYM3526Register(1, 0xbd, 0, EnmModel.RealModel);//リズムモードオフ
+                chipRegister.setYM3526Register(1, 0xbd, 0, EnmModel.RealModel); // リズムモードオフ
                 chipRegister.writeYM3526Clock((byte) 1, ((Vgm) driverVirtual).ym3526ClockValue, EnmModel.RealModel);
             }
             if (useChip.contains(EnmChip.YM3812)) {
-                chipRegister.setYM3812Register(0, 0xbd, 0, EnmModel.RealModel);//リズムモードオフ
+                chipRegister.setYM3812Register(0, 0xbd, 0, EnmModel.RealModel); // リズムモードオフ
                 chipRegister.writeYM3812Clock((byte) 0, ((Vgm) driverVirtual).ym3812ClockValue, EnmModel.RealModel);
             }
             if (useChip.contains(EnmChip.S_YM3812)) {
-                chipRegister.setYM3812Register(1, 0xbd, 0, EnmModel.RealModel);//リズムモードオフ
+                chipRegister.setYM3812Register(1, 0xbd, 0, EnmModel.RealModel); // リズムモードオフ
                 chipRegister.writeYM3812Clock((byte) 1, ((Vgm) driverVirtual).ym3812ClockValue, EnmModel.RealModel);
             }
             if (useChip.contains(EnmChip.YMF262)) {
-                chipRegister.setYMF262Register(0, 0, 0xbd, 0, EnmModel.RealModel);//リズムモードオフ
-                chipRegister.setYMF262Register(0, 1, 5, 1, EnmModel.RealModel);//opl3mode
+                chipRegister.setYMF262Register(0, 0, 0xbd, 0, EnmModel.RealModel); // リズムモードオフ
+                chipRegister.setYMF262Register(0, 1, 5, 1, EnmModel.RealModel); // opl3mode
                 chipRegister.writeYMF262Clock((byte) 0, ((Vgm) driverVirtual).ymF262ClockValue, EnmModel.RealModel);
             }
             if (useChip.contains(EnmChip.S_YMF262)) {
-                chipRegister.setYMF262Register(1, 0, 0xbd, 0, EnmModel.RealModel);//リズムモードオフ
-                chipRegister.setYMF262Register(1, 1, 5, 1, EnmModel.RealModel);//opl3mode
+                chipRegister.setYMF262Register(1, 0, 0xbd, 0, EnmModel.RealModel); // リズムモードオフ
+                chipRegister.setYMF262Register(1, 1, 5, 1, EnmModel.RealModel); // opl3mode
                 chipRegister.writeYMF262Clock((byte) 1, ((Vgm) driverVirtual).ymF262ClockValue, EnmModel.RealModel);
             }
             if (sn76489NGPFlag) {
@@ -5033,12 +5034,12 @@ public class Audio {
                 chipRegister.setSN76489Register(1, 0xe5, EnmModel.VirtualModel); // white noise mode
             }
             if (useChip.contains(EnmChip.YM2610)) {
-                //control2 レジスタのパンをセンターに予め設定
+                 // control2 レジスタのパンをセンターに予め設定
                 chipRegister.setYM2610Register(0, 0, 0x11, 0xc0, EnmModel.RealModel);
                 chipRegister.setYM2610Register(0, 0, 0x11, 0xc0, EnmModel.VirtualModel);
             }
             if (useChip.contains(EnmChip.S_YM2610)) {
-                //control2 レジスタのパンをセンターに予め設定
+                 // control2 レジスタのパンをセンターに予め設定
                 chipRegister.setYM2610Register(1, 0, 0x11, 0xc0, EnmModel.RealModel);
                 chipRegister.setYM2610Register(1, 0, 0x11, 0xc0, EnmModel.VirtualModel);
             }
@@ -5098,7 +5099,7 @@ public class Audio {
 
             return true;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return false;
         }
 
@@ -5126,11 +5127,11 @@ public class Audio {
 
         // quick and dirty hack to make sample rate changes work
         caa.samplingRate = NewSmplRate;
-        if (caa.samplingRate < setting.getOutputDevice().getSampleRate())//SampleRate)
+        if (caa.samplingRate < setting.getOutputDevice().getSampleRate()) // SampleRate)
             caa.resampler = 0x01;
-        else if (caa.samplingRate == setting.getOutputDevice().getSampleRate())//SampleRate)
+        else if (caa.samplingRate == setting.getOutputDevice().getSampleRate()) // SampleRate)
             caa.resampler = 0x02;
-        else if (caa.samplingRate > setting.getOutputDevice().getSampleRate())//SampleRate)
+        else if (caa.samplingRate > setting.getOutputDevice().getSampleRate()) // SampleRate)
             caa.resampler = 0x03;
         caa.smpP = 1;
         caa.smpNext -= caa.smpLast;
@@ -5162,11 +5163,11 @@ public class Audio {
         try {
             paused = !paused;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
-    public static boolean getisPaused() {
+    public static boolean getIsPaused() {
         return paused;
     }
 
@@ -5174,15 +5175,15 @@ public class Audio {
         return stopped;
     }
 
-    public static boolean getisFadeOut() {
+    public static boolean getIsFadeOut() {
         return vgmFadeout;
     }
 
-    public static boolean getisSlow() {
+    public static boolean getIsSlow() {
         return !isStopped() && (vgmSpeed < 1.0);
     }
 
-    public static boolean getisFF() {
+    public static boolean getIsFF() {
         return !isStopped() && (vgmSpeed > 1.0);
     }
 
@@ -5273,7 +5274,7 @@ public class Audio {
             // DEBUG
             //vstparse();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -5282,7 +5283,8 @@ public class Audio {
             AudioInputStream dmy = naudioFileReader;
             naudioFileReader = null;
             dmy.close();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -5292,7 +5294,7 @@ public class Audio {
             stop();
             naudioWrap.Stop();
 
-            //midi outをリリース
+             // midi outをリリース
             if (midiOuts.size() > 0) {
                 for (int i = 0; i < midiOuts.size(); i++) {
                     if (midiOuts.get(i) != null) {
@@ -5309,7 +5311,7 @@ public class Audio {
 
 //            SoundChip.realChip = null;
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -5527,7 +5529,8 @@ public class Audio {
 //        } else {
             try {
                 stop();
-            } catch (Exception ignored) {
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
 //        }
     }
@@ -5651,25 +5654,26 @@ public class Audio {
 
                     switch (m) {
                     case 0: // x1
-                        driverReal.oneFrameProc();
+                        driverReal.processOneFrame();
                         break;
                     case 1: // x1/2
                         hiyorimiEven++;
                         if (hiyorimiEven > 1) {
-                            driverReal.oneFrameProc();
+                            driverReal.processOneFrame();
                             hiyorimiEven = 0;
                         }
                         break;
                     case 2: // x2
-                        driverReal.oneFrameProc();
-                        driverReal.oneFrameProc();
+                        driverReal.processOneFrame();
+                        driverReal.processOneFrame();
                         break;
                     }
                 } else {
-                    driverReal.oneFrameProc();
+                    driverReal.processOneFrame();
                 }
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         _trdStopped = true;
     }
@@ -5757,7 +5761,7 @@ public class Audio {
                 cnt = ((Nsf) driverVirtual).Render(buffer, sampleCount / 2, offset) * 2;
             } else if (driverVirtual instanceof Sid) {
 //                driverVirtual.vstDelta = 0;
-                cnt = ((Sid) driverVirtual).Render(buffer, sampleCount);
+                cnt = ((Sid) driverVirtual).render(buffer, sampleCount);
             } else if (driverVirtual instanceof MXDRV) {
                 mds.setIncFlag();
 //                driverVirtual.vstDelta = 0;
@@ -5784,7 +5788,7 @@ public class Audio {
 //                driverVirtual.vstDelta = 0;
 //                stwh.reset();
 //                stwh.start();
-                cnt = mds.update(buffer, offset, sampleCount, driverVirtual::oneFrameProc);
+                cnt = mds.update(buffer, offset, sampleCount, driverVirtual::processOneFrame);
                 ProcTimePer1Frame = (int) ((double) System.currentTimeMillis() / (sampleCount + 1) * 1000000.0);
             }
 
@@ -5797,7 +5801,7 @@ public class Audio {
 
                 if (!vgmFadeout) continue;
 
-                //フェードアウト処理
+                 // フェードアウト処理
                 buffer[offset + i] = (short) (buffer[offset + i] * vgmFadeoutCounter);
 
                 vgmFadeoutCounter -= vgmFadeoutCounterV;
@@ -5809,7 +5813,7 @@ public class Audio {
                     vgmFadeoutCounter = 0.0;
                 }
 
-                //フェードアウト完了後、演奏を完全停止する
+                 // フェードアウト完了後、演奏を完全停止する
                 if (vgmFadeoutCounter == 0.0) {
                     softReset(EnmModel.VirtualModel);
                     softReset(EnmModel.RealModel);
@@ -5826,11 +5830,11 @@ public class Audio {
 
                     chipRegister.Close();
 
-                    //Thread.sleep(500);//noise対策
+                    //Thread.sleep(500); // noise対策
 
                     stopped = true;
 
-                    //1frame当たりの処理時間
+                     // 1frame当たりの処理時間
                     //ProcTimePer1Frame = (int)((double)stwh.ElapsedMilliseconds / (i + 1) * 1000000.0);
                     return i + 1;
                 }
@@ -5843,12 +5847,12 @@ public class Audio {
 
             waveWriter.write(buffer, offset, sampleCount);
 
-            ////1frame当たりの処理時間
+             // //1frame当たりの処理時間
             //ProcTimePer1Frame = (int)((double)stwh.ElapsedMilliseconds / sampleCount * 1000000.0);
             return cnt;
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             _fatalError = true;
             stopped = true;
         }
@@ -5867,7 +5871,7 @@ public class Audio {
 //            naudioWs.read(naudioSrcbuffer, 0, count * 2);
             convert2ByteToShort(buffer, offset, naudioSrcbuffer, count);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
         return count;
@@ -6112,7 +6116,7 @@ public class Audio {
         return chipRegister.fmRegisterYM2151[chipID];
     }
 
-    public static int[] getym2203Register(int chipID) {
+    public static int[] getYm2203Register(int chipID) {
         return chipRegister.fmRegisterYM2203[chipID];
     }
 
@@ -6255,14 +6259,14 @@ public class Audio {
     public static byte[] getAPURegister(int chipID) {
         byte[] reg;
 
-        //nsf向け
+         // nsf向け
         if (chipRegister == null) reg = null;
         else if (chipRegister.nes_apu == null) reg = null;
         else if (chipRegister.nes_apu.apu == null) reg = null;
         else if (chipID == 1) reg = null;
         else reg = chipRegister.nes_apu.apu.reg;
 
-        //vgm向け
+         // vgm向け
         if (reg == null) reg = chipRegister.getNESRegisterAPU(chipID, EnmModel.VirtualModel);
 
         return reg;
@@ -6271,18 +6275,19 @@ public class Audio {
     public static byte[] getDMCRegister(int chipID) {
         byte[] reg;
         try {
-            //nsf向け
+             // nsf向け
             if (chipRegister == null) reg = null;
             else if (chipRegister.nes_apu == null) reg = null;
             else if (chipRegister.nes_apu.apu == null) reg = null;
             else if (chipID == 1) reg = null;
             else reg = chipRegister.nes_dmc.dmc.reg;
 
-            //vgm向け
+             // vgm向け
             if (reg == null) reg = chipRegister.getNESRegisterDMC(chipID, EnmModel.VirtualModel);
 
             return reg;
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -6290,14 +6295,14 @@ public class Audio {
     public static mdsound.np.NpNesFds getFDSRegister(int chipID) {
         mdsound.np.NpNesFds reg;
 
-        //nsf向け
+         // nsf向け
         if (chipRegister == null) reg = null;
         else if (chipRegister.nes_apu == null) reg = null;
         else if (chipRegister.nes_apu.apu == null) reg = null;
         else if (chipID == 1) reg = null;
         else reg = chipRegister.nes_fds.fds;
 
-        //vgm向け
+         // vgm向け
         if (reg == null) reg = chipRegister.getFDSRegister(chipID, EnmModel.VirtualModel);
 
         return reg;
@@ -6448,7 +6453,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getAY8910Volume()) + volume, -192, 20);
             mds.setVolumeAY8910(v);
             setting.getBalance().setAY8910Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6460,7 +6466,8 @@ public class Audio {
             mds.setVolumeYM2151(vol);
             mds.setVolumeYM2151Mame(vol);
             mds.SetVolumeYM2151x68sound(vol);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6469,7 +6476,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2203Volume()) + volume, -192, 20);
             mds.SetVolumeYM2203(v);
             setting.getBalance().setYM2203Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6478,7 +6486,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2203FMVolume()) + volume, -192, 20);
             mds.SetVolumeYM2203FM(v);
             setting.getBalance().setYM2203FMVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6487,7 +6496,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2203PSGVolume()) + volume, -192, 20);
             mds.SetVolumeYM2203PSG(v);
             setting.getBalance().setYM2203PSGVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6496,7 +6506,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2413Volume()) + volume, -192, 20);
             mds.SetVolumeYM2413(v);
             setting.getBalance().setYM2413Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6505,7 +6516,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getK053260Volume()) + volume, -192, 20);
             mds.SetVolumeK053260(v);
             setting.getBalance().setK053260Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6514,7 +6526,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getRF5C68Volume()) + volume, -192, 20);
             mds.SetVolumeRF5C68(v);
             setting.getBalance().setRF5C68Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6523,7 +6536,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM3812Volume()) + volume, -192, 20);
             mds.SetVolumeYM3812(v);
             setting.getBalance().setYM3812Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6532,7 +6546,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getY8950Volume()) + volume, -192, 20);
             mds.SetVolumeY8950(v);
             setting.getBalance().setY8950Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6541,7 +6556,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM3526Volume()) + volume, -192, 20);
             mds.SetVolumeYM3526(v);
             setting.getBalance().setYM3526Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6550,7 +6566,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2608Volume()) + volume, -192, 20);
             mds.SetVolumeYM2608(v);
             setting.getBalance().setYM2608Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6559,7 +6576,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2608FMVolume()) + volume, -192, 20);
             mds.SetVolumeYM2608FM(v);
             setting.getBalance().setYM2608FMVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6568,7 +6586,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2608PSGVolume()) + volume, -192, 20);
             mds.SetVolumeYM2608PSG(v);
             setting.getBalance().setYM2608PSGVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6577,7 +6596,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2608RhythmVolume()) + volume, -192, 20);
             mds.SetVolumeYM2608Rhythm(v);
             setting.getBalance().setYM2608RhythmVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6586,7 +6606,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2608AdpcmVolume()) + volume, -192, 20);
             mds.SetVolumeYM2608Adpcm(v);
             setting.getBalance().setYM2608AdpcmVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6595,7 +6616,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2610Volume()) + volume, -192, 20);
             mds.SetVolumeYM2610(v);
             setting.getBalance().setYM2610Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6604,7 +6626,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2610FMVolume()) + volume, -192, 20);
             mds.SetVolumeYM2610FM(v);
             setting.getBalance().setYM2610FMVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6613,7 +6636,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2610PSGVolume()) + volume, -192, 20);
             mds.SetVolumeYM2610PSG(v);
             setting.getBalance().setYM2610PSGVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6622,7 +6646,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2610AdpcmAVolume()) + volume, -192, 20);
             mds.SetVolumeYM2610AdpcmA(v);
             setting.getBalance().setYM2610AdpcmAVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6631,7 +6656,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2610AdpcmBVolume()) + volume, -192, 20);
             mds.SetVolumeYM2610AdpcmB(v);
             setting.getBalance().setYM2610AdpcmBVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6640,7 +6666,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYM2612Volume()) + volume, -192, 20);
             mds.SetVolumeYM2612(v);
             setting.getBalance().setYM2612Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6649,7 +6676,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getSN76489Volume()) + volume, -192, 20);
             mds.SetVolumeSN76489(v);
             setting.getBalance().setSN76489Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6658,7 +6686,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getHuC6280Volume()) + volume, -192, 20);
             mds.setVolumeHuC6280(v);
             setting.getBalance().setHuC6280Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6667,7 +6696,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getRF5C164Volume()) + volume, -192, 20);
             mds.SetVolumeRF5C164(v);
             setting.getBalance().setRF5C164Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6676,7 +6706,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getPWMVolume()) + volume, -192, 20);
             mds.SetVolumePWM(v);
             setting.getBalance().setPWMVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6687,7 +6718,8 @@ public class Audio {
 
             mds.SetVolumeOKIM6258(vol);
             mds.SetVolumeMpcmX68k(vol);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6696,7 +6728,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getOKIM6295Volume()) + volume, -192, 20);
             mds.SetVolumeOKIM6295(v);
             setting.getBalance().setOKIM6295Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6705,7 +6738,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getC140Volume()) + volume, -192, 20);
             mds.SetVolumeC140(v);
             setting.getBalance().setC140Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6714,7 +6748,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getSEGAPCMVolume()) + volume, -192, 20);
             mds.setVolumeSegaPCM(v);
             setting.getBalance().setSEGAPCMVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6723,7 +6758,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getC352Volume()) + volume, -192, 20);
             mds.SetVolumeC352(v);
             setting.getBalance().setC352Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6732,7 +6768,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getSAA1099Volume()) + volume, -192, 20);
             mds.SetVolumeSAA1099(v);
             setting.getBalance().setSAA1099Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6741,7 +6778,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getPPZ8Volume()) + volume, -192, 20);
             mds.SetVolumePPZ8(v);
             setting.getBalance().setPPZ8Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6750,7 +6788,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getK051649Volume()) + volume, -192, 20);
             mds.SetVolumeK051649(v);
             setting.getBalance().setK051649Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6759,7 +6798,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getK054539Volume()) + volume, -192, 20);
             mds.SetVolumeK054539(v);
             setting.getBalance().setK054539Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6768,7 +6808,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getQSoundVolume()) + volume, -192, 20);
             mds.SetVolumeQSoundCtr(v);
             setting.getBalance().setQSoundVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6777,7 +6818,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getDMGVolume()) + volume, -192, 20);
             mds.setVolumeDMG(v);
             setting.getBalance().setDMGVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6786,7 +6828,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getGA20Volume()) + volume, -192, 20);
             mds.setVolumeGA20(v);
             setting.getBalance().setGA20Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6795,7 +6838,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYMZ280BVolume()) + volume, -192, 20);
             mds.setVolumeYMZ280B(v);
             setting.getBalance().setYMZ280BVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6804,7 +6848,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYMF271Volume()) + volume, -192, 20);
             mds.setVolumeYMF271(v);
             setting.getBalance().setYMF271Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6813,7 +6858,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYMF262Volume()) + volume, -192, 20);
             mds.SetVolumeYMF262(v);
             setting.getBalance().setYMF262Volume(v);
-        } catch (Exception ignoredd) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6822,7 +6868,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getYMF278BVolume()) + volume, -192, 20);
             mds.SetVolumeYMF278B(v);
             setting.getBalance().setYMF278BVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6831,7 +6878,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getMultiPCMVolume()) + volume, -192, 20);
             mds.setVolumeMultiPCM(v);
             setting.getBalance().setMultiPCMVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6841,7 +6889,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getAPUVolume()) + volume, -192, 20);
             mds.SetVolumeNES(v);
             setting.getBalance().setAPUVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6850,7 +6899,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getDMCVolume()) + volume, -192, 20);
             mds.SetVolumeDMC(v);
             setting.getBalance().setDMCVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6859,7 +6909,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getFDSVolume()) + volume, -192, 20);
             mds.SetVolumeFDS(v);
             setting.getBalance().setFDSVolume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6868,7 +6919,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getMMC5Volume()) + volume, -192, 20);
             mds.SetVolumeMMC5(v);
             setting.getBalance().setMMC5Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6877,7 +6929,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getN160Volume()) + volume, -192, 20);
             mds.SetVolumeN160(v);
             setting.getBalance().setN160Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6886,7 +6939,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getVRC6Volume()) + volume, -192, 20);
             mds.SetVolumeVRC6(v);
             setting.getBalance().setVRC6Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6895,7 +6949,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getVRC7Volume()) + volume, -192, 20);
             mds.SetVolumeVRC7(v);
             setting.getBalance().setVRC7Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6904,7 +6959,8 @@ public class Audio {
             int v = Common.Range((isAbs ? 0 : setting.getBalance().getFME7Volume()) + volume, -192, 20);
             mds.SetVolumeFME7(v);
             setting.getBalance().setFME7Volume(v);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -6994,7 +7050,8 @@ public class Audio {
             //mds.resetSN76489Mask(chipID, 1 << ch);
             chipRegister.setMaskSN76489(chipID, ch, false);
             sn76489ForcedSendVolume(chipID, ch);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -7144,21 +7201,24 @@ public class Audio {
         try {
             //mds.resetYM2612Mask(chipID, 1 << ch);
             chipRegister.setMaskYM2612(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public static void resetYM2203Mask(int chipID, int ch) {
         try {
             chipRegister.setMaskYM2203(chipID, ch, false, stopped);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public static void resetYM2413Mask(int chipID, int ch) {
         try {
             chipRegister.setMaskYM2413(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -7166,7 +7226,8 @@ public class Audio {
         try {
             //mds.resetRf5c164Mask(chipID, ch);
             chipRegister.setMaskRF5C164(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -7174,7 +7235,8 @@ public class Audio {
         try {
             //mds.resetRf5c68Mask(chipID, ch);
             chipRegister.setMaskRF5C68(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -7182,7 +7244,8 @@ public class Audio {
         try {
             //mds.resetYM2151Mask(ch);
             chipRegister.setMaskYM2151(chipID, ch, false, stopped);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -7190,49 +7253,56 @@ public class Audio {
         try {
             //mds.resetYM2608Mask(ch);
             chipRegister.setMaskYM2608(chipID, ch, false, stopped);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public static void resetYM2610Mask(int chipID, int ch) {
         try {
             chipRegister.setMaskYM2610(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public static void resetYM3526Mask(int chipID, int ch) {
         try {
             chipRegister.setMaskYM3526(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public static void resetY8950Mask(int chipID, int ch) {
         try {
             chipRegister.setMaskY8950(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public static void resetYM3812Mask(int chipID, int ch) {
         try {
             chipRegister.setMaskYM3812(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public static void resetYMF262Mask(int chipID, int ch) {
         try {
             chipRegister.setMaskYMF262(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public static void resetYMF278BMask(int chipID, int ch) {
         try {
             chipRegister.setMaskYMF278B(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -7240,7 +7310,8 @@ public class Audio {
         //mds.resetC140Mask(chipID, 1 << ch);
         try {
             chipRegister.setMaskC140(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -7248,14 +7319,16 @@ public class Audio {
         //mds.resetPPZ8Mask(chipID, 1 << ch);
         try {
             chipRegister.setMaskPPZ8(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     public static void resetC352Mask(int chipID, int ch) {
         try {
             chipRegister.setMaskC352(chipID, ch, false);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

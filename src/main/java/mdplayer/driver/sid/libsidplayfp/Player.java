@@ -24,6 +24,7 @@ package mdplayer.driver.sid.libsidplayfp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import dotnet4j.io.FileStream;
 import mdplayer.Setting;
@@ -33,6 +34,7 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidInfo;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidBuilder;
+import vavi.util.Debug;
 
 
 public class Player {
@@ -130,7 +132,7 @@ public class Player {
 
 //        public Player(MDPlayer.Setting setting) {
 //            this.setting = setting;
-//            m_cfg = new SidPlayFp.SidConfig(setting);
+//            m_cfg = new playSidFp.SidConfig(setting);
 //        }
 
     public Player(Setting setting) {
@@ -277,7 +279,7 @@ public class Player {
 
         if (isPlaying == State.PLAYING) {
             mixer.begin(buffer, count);
-            //Log.Write(String.format("%d", count));
+            //Debug.printf(String.format("%d", count));
             try {
                 if (mixer.getSid(0) != null) {
                     if (count != 0 && buffer != null) {
@@ -307,6 +309,7 @@ public class Player {
                     }
                 }
             } catch (Exception e) { // Mos6510.haltInstruction
+                e.printStackTrace();
                 errorString = "Illegal instruction executed";
                 isPlaying = State.STOPPING;
             }
@@ -316,6 +319,7 @@ public class Player {
             try {
                 initialise();
             } catch (Exception e) { // ConfigError
+                e.printStackTrace();
                 isPlaying = State.STOPPED;
             }
         }
@@ -375,6 +379,7 @@ public class Player {
                 // Configure, setup and install C64 environment/events
                 initialise();
             } catch (ConfigError e) {
+                e.printStackTrace();
                 errorString = e.message();
                 config.sidEmulation = null;
                 if (config != cfg) {

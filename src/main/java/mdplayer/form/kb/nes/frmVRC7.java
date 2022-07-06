@@ -49,7 +49,7 @@ public class frmVRC7 extends frmBase {
         initializeComponent();
 
         this.newParam = newParam;
-        frameBuffer.Add(pbScreen, Resources.getplaneVRC7(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneVRC7(), null, zoom);
         boolean VRC7Type = false;
         int tp = VRC7Type ? 1 : 0;
         DrawBuff.screenInitVRC7(frameBuffer, tp);
@@ -88,9 +88,9 @@ public class frmVRC7 extends frmBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneVRC7().getWidth() * zoom, frameSizeH + Resources.getplaneVRC7().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneVRC7().getWidth() * zoom, frameSizeH + Resources.getplaneVRC7().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneVRC7().getWidth() * zoom, frameSizeH + Resources.getplaneVRC7().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneVRC7().getWidth() * zoom, frameSizeH + Resources.getPlaneVRC7().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneVRC7().getWidth() * zoom, frameSizeH + Resources.getPlaneVRC7().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneVRC7().getWidth() * zoom, frameSizeH + Resources.getPlaneVRC7().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -307,7 +307,7 @@ public class frmVRC7 extends frmBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneVRC7();
+        this.image = mdplayer.properties.Resources.getPlaneVRC7();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(320, 88));

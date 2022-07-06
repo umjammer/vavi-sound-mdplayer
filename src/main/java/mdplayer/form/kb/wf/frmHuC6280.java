@@ -39,7 +39,7 @@ public class frmHuC6280 extends frmBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneHuC6280();
+        this.image = mdplayer.properties.Resources.getPlaneHuC6280();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(320, 151));
@@ -92,7 +92,7 @@ public class frmHuC6280 extends frmBase {
 
         this.newParam = newParam;
         this.oldParam = oldParam;
-        frameBuffer.Add(pbScreen, Resources.getplaneHuC6280(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneHuC6280(), null, zoom);
         DrawBuff.screenInitHuC6280(frameBuffer);
         update();
     }
@@ -129,9 +129,9 @@ public class frmHuC6280 extends frmBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneHuC6280().getWidth() * zoom, frameSizeH + Resources.getplaneHuC6280().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneHuC6280().getWidth() * zoom, frameSizeH + Resources.getplaneHuC6280().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneHuC6280().getWidth() * zoom, frameSizeH + Resources.getplaneHuC6280().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneHuC6280().getWidth() * zoom, frameSizeH + Resources.getPlaneHuC6280().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneHuC6280().getWidth() * zoom, frameSizeH + Resources.getPlaneHuC6280().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneHuC6280().getWidth() * zoom, frameSizeH + Resources.getPlaneHuC6280().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 

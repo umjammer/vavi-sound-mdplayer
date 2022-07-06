@@ -509,10 +509,10 @@ public class DevOpm {
         if ((mm.readByte(reg.a5 + W.lfo) & 1) != 0) {
 
 
-            ///HACK MNDRV:LFO syncの適用
+             // /HACK MNDRV:LFO syncの適用
             reg.setD0_B(mm.readByte(reg.a5 + W.sdetune2));
-            ////////
-            //original Code
+             // //////
+             // original Code
             //if (reg.getD0_B() != 0)
             //{
             //    Reg.D1_L = 0x01;
@@ -550,7 +550,7 @@ public class DevOpm {
     //
     public void _opm_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
-        //_opmc:
+         // _opmc:
         switch (reg.getD0_W() / 2) {
         //case 0x00:0
         case 0x01:
@@ -1018,7 +1018,7 @@ public class DevOpm {
 
         reg.setD0_B(mm.readByte(reg.a1++));
 
-        //_OPM_89_normal:
+         // _OPM_89_normal:
         reg.D0_L = 0;
         reg.D1_L = 0;
         reg.D2_L = 0;
@@ -1045,7 +1045,7 @@ public class DevOpm {
         mm.write(reg.a4 + W_L.henka_work, (short) reg.getD0_W());
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	ポルタメント係数変更
     //		[$8A] + [num]b
     //
@@ -1060,7 +1060,7 @@ public class DevOpm {
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xef));
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	ポルタメント
     //		[$89] + [変化値]W + [元note]b + [step]b
     //
@@ -1091,7 +1091,7 @@ public class DevOpm {
         mm.write(reg.a5 + W.flag3, (byte) (mm.readByte(reg.a5 + W.flag3) | 0x04));
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	RR cut設定
     //			[$92] + [switch]b
     //
@@ -1112,18 +1112,18 @@ public class DevOpm {
         _OPM_RR_ret();
     }
 
-    //;─────────────────────────────────────
-    //;	擬似リバーブ
-    //;		switch = $80 = ON
-    //;			 $81 = OFF
-    //;			 $00 = + [volume]b
-    //;			 $01 = + [volume]b + [pan]b
-    //;			 $02 = + [volume]b + [tone]b
-    //;			 $03 = + [volume]b + [panpot]b + [tone]b
-    //;	work
-    //;		bit1 1:tone change
-    //;		bit0 1:panpot change
-    //;
+     // ;─────────────────────────────────────
+     // ;	擬似リバーブ
+     // ;		switch = $80 = ON
+     // ;			 $81 = OFF
+     // ;			 $00 = + [volume]b
+     // ;			 $01 = + [volume]b + [pan]b
+     // ;			 $02 = + [volume]b + [tone]b
+     // ;			 $03 = + [volume]b + [panpot]b + [tone]b
+     // ;	work
+     // ;		bit1 1:tone change
+     // ;		bit0 1:panpot change
+     // ;
     public void _OPM_98() {
         comcmds._COM_98();
 
@@ -1132,14 +1132,14 @@ public class DevOpm {
         }
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	擬似エコー
     //
     public void _OPM_99() {
         comcmds._COM_99();
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	バンク&音色切り替え
     //
     public void _OPM_A1() {
@@ -1147,7 +1147,7 @@ public class DevOpm {
         _OPM_F0();
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	音量テーブル
     //
     public void _OPM_A3() {
@@ -1161,7 +1161,7 @@ public class DevOpm {
         _OPM_F2_v();
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	OPM noise
     //		[$C8] + [freq]b
     public void _OPM_C8() {
@@ -1176,7 +1176,7 @@ public class DevOpm {
         mndrv._OPM_WRITE();
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	hardware LFO
     //
     //		[$E0] + [wf/sync] + [freq] + [pmd] + [amd] + [pms/ams]
@@ -1184,7 +1184,7 @@ public class DevOpm {
     public void _OPM_E0() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x01));
 
-        ///HACK MNDRV:syncの保存できてない?
+         // /HACK MNDRV:syncの保存できてない?
         //original code
         //reg.getD1_B() = mm.readByte(Reg.a1++);
         //Reg.D2_L = 3;
@@ -1216,7 +1216,7 @@ public class DevOpm {
         mndrv._OPM_WRITE();
 
         reg.setD2_B(sync);
-        ////////
+         // //////
 
         reg.setD2_B(reg.getD2_B() >> 4);
         reg.setD2_B(reg.getD2_B() & 2);
@@ -1239,7 +1239,7 @@ public class DevOpm {
         mndrv._OPM_WRITE4();
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	hardware LFO ON / OFF
     //
     //	$E1,[on / off]
@@ -1273,7 +1273,7 @@ public class DevOpm {
             _OPM_E1_normal();
             return;
         }
-        //2:
+         // 2:
         mm.write(reg.a4 + W_L.mokuhyou, (short) 0);
         _OPM_E1_normal();
     }
@@ -1321,7 +1321,7 @@ public class DevOpm {
         mndrv._OPM_WRITE4();
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	音量 LFO on /off
     //
     //	$E8,num,switch
@@ -1332,7 +1332,7 @@ public class DevOpm {
         comcmds._COM_E8();
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	LW type LFO
     //		[$EE] + [wf/sync] + [freq] + [pmd] + [amd] + [speed]b
     //
@@ -1344,7 +1344,7 @@ public class DevOpm {
         reg.D1_L = 0x03;
         reg.setD1_B(reg.getD1_B() & mm.readByte(reg.a1++));
 
-        ///HACK MNDRV:syncの保存できてない?
+         // /HACK MNDRV:syncの保存できてない?
         //original code
         //int sp = Reg.SR_W;
         //Reg.SR_W |= 0x700;
@@ -1356,7 +1356,7 @@ public class DevOpm {
         //Reg.D1_L = 0x1b;
         //MnDrv._OPM_WRITE();
 
-        //kuma code
+         // kuma code
         byte sync = (byte) (reg.getD1_B() >> 4);
         sync <<= 5;
         int sp = reg.getSR_W();
@@ -1369,7 +1369,7 @@ public class DevOpm {
         reg.D1_L = 0x1b;
         mndrv._OPM_WRITE();
         reg.setD0_B(sync);
-        ////////
+         // //////
 
         reg.setD0_B(reg.getD0_B() >> 4);
         reg.setD0_B(reg.getD0_B() & 2);
@@ -1394,7 +1394,7 @@ public class DevOpm {
         mm.write(reg.a4 + W_L.delay_work, (byte) reg.getD0_B());
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	音色設定
     //
     public void _OPM_F0() {
@@ -1553,7 +1553,7 @@ public class DevOpm {
             0x08, 0x08, 0x08, 0x08, 0x0C, 0x0E, 0x0E, 0x0F
     };
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	volume 設定
     //
     //	FM COMMAND
@@ -1668,7 +1668,7 @@ public class DevOpm {
         } while (reg.decAfterD2_W() != 0);
     }
 
-    //─────────────────────────────────────
+     // ─────────────────────────────────────
     //	pan 設定
     //			[$F4] + [DATA]b
     //

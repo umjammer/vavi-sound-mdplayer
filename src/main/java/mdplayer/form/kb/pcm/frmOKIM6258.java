@@ -51,7 +51,7 @@ public class frmOKIM6258 extends frmBase {
         initializeComponent();
 
         this.newParam = newParam;
-        frameBuffer.Add(pbScreen, Resources.getplaneMSM6258(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneMSM6258(), null, zoom);
         DrawBuff.screenInitOKIM6258(frameBuffer);
         update();
     }
@@ -88,9 +88,9 @@ public class frmOKIM6258 extends frmBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneMSM6258().getWidth() * zoom, frameSizeH + Resources.getplaneMSM6258().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneMSM6258().getWidth() * zoom, frameSizeH + Resources.getplaneMSM6258().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneMSM6258().getWidth() * zoom, frameSizeH + Resources.getplaneMSM6258().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneMSM6258().getWidth() * zoom, frameSizeH + Resources.getPlaneMSM6258().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneMSM6258().getWidth() * zoom, frameSizeH + Resources.getPlaneMSM6258().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneMSM6258().getWidth() * zoom, frameSizeH + Resources.getPlaneMSM6258().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -222,7 +222,7 @@ public class frmOKIM6258 extends frmBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneMSM6258();
+        this.image = mdplayer.properties.Resources.getPlaneMSM6258();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(320, 16));

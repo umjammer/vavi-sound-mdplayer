@@ -6,12 +6,14 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Level;
 
 import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.StreamReader;
+import vavi.util.Debug;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
@@ -43,7 +45,7 @@ public class M3U {
             return pl;
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return new PlayList();
         }
     }
@@ -71,7 +73,7 @@ public class M3U {
             return pl;
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return new PlayList();
         }
     }
@@ -98,7 +100,7 @@ public class M3U {
             return pl;
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return new PlayList();
         }
     }
@@ -164,7 +166,7 @@ public class M3U {
 
             try { ms.loopCount = Integer.parseInt(buf[6].trim()); } catch (NumberFormatException e) { ms.loopCount = -1; }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return null;
         }
 
@@ -181,12 +183,14 @@ public class M3U {
             try {
                 n = Integer.parseInt(s.substring(1), 16);
             } catch (NumberFormatException e) {
+                Debug.println(Level.WARNING, e);
                 return -1;
             }
         } else {
             try {
                 n = Integer.parseInt(s);
             } catch (NumberFormatException e) {
+                Debug.println(Level.WARNING, e);
                 return -1;
             }
         }

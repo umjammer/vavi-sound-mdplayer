@@ -52,7 +52,7 @@ public class frmSN76489 extends frmBase {
 
         this.newParam = newParam;
         this.oldParam = oldParam;
-        frameBuffer.Add(pbScreen, Resources.getplaneSN76489(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneSN76489(), null, zoom);
         boolean SN76489Type = (chipID == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
         int tp = SN76489Type ? 1 : 0;
         DrawBuff.screenInitSN76489(frameBuffer, tp);
@@ -91,9 +91,9 @@ public class frmSN76489 extends frmBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneSN76489().getWidth() * zoom, frameSizeH + Resources.getplaneSN76489().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneSN76489().getWidth() * zoom, frameSizeH + Resources.getplaneSN76489().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneSN76489().getWidth() * zoom, frameSizeH + Resources.getplaneSN76489().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneSN76489().getWidth() * zoom, frameSizeH + Resources.getPlaneSN76489().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneSN76489().getWidth() * zoom, frameSizeH + Resources.getPlaneSN76489().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneSN76489().getWidth() * zoom, frameSizeH + Resources.getPlaneSN76489().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -318,7 +318,7 @@ public class frmSN76489 extends frmBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneSN76489();
+        this.image = mdplayer.properties.Resources.getPlaneSN76489();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(320, 40));

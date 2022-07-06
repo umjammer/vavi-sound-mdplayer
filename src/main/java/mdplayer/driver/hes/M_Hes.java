@@ -188,7 +188,7 @@ public class M_Hes {
         }
 
         public void vsyncEvent(Event _event, int curid, HESHES _this) {
-            _this.setupVsync();
+            _this.setUpVsync();
             if ((_this.hesvdcCr & 8) != 0) {
                 _this.ctx.iRequest |= Km6280.K6280Context.IRQ.INT1.v;
                 //System.err.println("vsyncEvent");
@@ -204,7 +204,7 @@ public class M_Hes {
                 //System.err.println("timerEvent");
                 _this.breaked = 0;
             }
-            _this.setupTimer();
+            _this.setUpTimer();
         }
 
         private int execute() {
@@ -233,11 +233,11 @@ public class M_Hes {
             //this.hespcm.volume(this.hespcm.ctx, v);
         }
 
-        private void setupVsync() {
+        private void setUpVsync() {
             kmEvent.kmevent_settimer(this.kme, this.vsync, 4 * 342 * 262);
         }
 
-        private void setupTimer() {
+        private void setUpTimer() {
             kmEvent.kmevent_settimer(this.kme, this.timer, HES_TIMERCYCLES);
         }
 
@@ -267,7 +267,7 @@ public class M_Hes {
                 }
                 this.ctx.iRequest &= 0xFFFFFFDF;// ~Km6280.IRQ.INT1;
                 //#if 0
-                //v = 0x20;	/* 常にVSYNC期間 */
+                 // v = 0x20;	/* 常にVSYNC期間 */
                 //#endif
             }
             return v;
@@ -299,9 +299,9 @@ public class M_Hes {
                     if ((this.ctx.iRequest & Km6280.K6280Context.IRQ.TIMER.v) != 0) v |= 4;
                     if ((this.ctx.iRequest & Km6280.K6280Context.IRQ.INT1.v) != 0) v |= 2;
                     if ((this.ctx.iRequest & Km6280.K6280Context.IRQ.INT2.v) != 0) v |= 1;
-                    //#if 0
-                    //THIS_->ctx.iRequest &= ~(TIMER | INT1 | INT2);
-                    //#endif
+//#if 0
+//                    THIS_->ctx.iRequest &= ~(TIMER | INT1 | INT2);
+//#endif
                     return v;
                 }
                 }
@@ -569,9 +569,9 @@ public class M_Hes {
             this.hesvdcStatus = 0;
             this.hesvdcCr = 0;
             this.hesvdcAdr = 0;
-            this.setupVsync();
+            this.setUpVsync();
             this.hestimReload = this.hestimCounter = this.hestimStart = 0;
-            this.setupTimer();
+            this.setUpTimer();
 
             /* request execute(5sec) */
             initbreak = 5 << 8;
@@ -600,21 +600,21 @@ public class M_Hes {
 
             this.cpsRem = this.cpsGap = this.totalCycles = 0;
 
-            //ここからメモリービュアー設定
+             // ここからメモリービュアー設定
             //memview_context = this.heshes;
             //MEM_MAX = 0xffff;
             //MEM_IO = 0x0000;
             //MEM_RAM = 0x2000;
             //MEM_ROM = 0x4000;
             //memview_memread = memview_memread_hes;
-            //ここまでメモリービュアー設定
+             // ここまでメモリービュアー設定
 
-            //ここからダンプ設定
+             // ここからダンプ設定
             //pNezPlayDump = pNezPlay;
             //dump_MEM_PCE = dump_MEM_PCE_bf;
             //dump_DEV_HUC6230 = dump_DEV_HUC6230_bf;
             //dump_DEV_ADPCM = dump_DEV_ADPCM_bf;
-            //ここまでダンプ設定
+             // ここまでダンプ設定
         }
 
         private int load(NEZ_PLAY nezPlay, byte[] pData, int uSize) {
@@ -690,7 +690,7 @@ public class M_Hes {
         }
     }
 
-    //ここからメモリービュアー設定
+     // ここからメモリービュアー設定
     public interface memview_memread extends Function<Integer, Integer> {
     }
 
@@ -701,9 +701,9 @@ public class M_Hes {
         if (a >= 0x1800 && a < 0x1c00 && (a & 0xf) == 0xa) return 0xff;
         return memview_context.readEvent(a);
     }
-    //ここまでメモリービュアー設定
+     // ここまでメモリービュアー設定
 
-    //ここからダンプ設定
+     // ここからダンプ設定
     //private NEZ_PLAY pNezPlayDump;
     public interface dump_MEM_PCE extends BiFunction<Integer, byte[], Integer> {
     }
@@ -711,7 +711,7 @@ public class M_Hes {
     private int dump_MEM_PCE_bf(int menu, byte[] mem) {
         int i;
         switch (menu) {
-        case 1://Memory
+        case 1: // Memory
             for (i = 0; i < 0x10000; i++)
                 mem[i] = (byte) memview_memread_hes(i);
             return i;

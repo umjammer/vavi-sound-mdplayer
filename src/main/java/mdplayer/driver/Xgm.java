@@ -1,12 +1,14 @@
 package mdplayer.driver;
 
 import java.util.Arrays;
+import java.util.logging.Level;
 
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.Log;
 import mdplayer.Setting;
+import vavi.util.Debug;
 
 
 public class Xgm extends BaseDriver {
@@ -64,7 +66,7 @@ public class Xgm extends BaseDriver {
             chipRegister.setYM2612SyncWait((byte) 1, 1);
         }
 
-        //Driverの初期化
+         // Driverの初期化
         musicPtr = musicDataBlockAddr;
         xgmpcm = new XgmPcm[] {new XgmPcm(), new XgmPcm(), new XgmPcm(), new XgmPcm()};
         DACEnable = 0;
@@ -78,7 +80,7 @@ public class Xgm extends BaseDriver {
     }
 
     @Override
-    public void oneFrameProc() {
+    public void processOneFrame() {
         try {
             vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
             while (vgmSpeedCounter >= 1.0 && !stopped) {
@@ -90,7 +92,7 @@ public class Xgm extends BaseDriver {
                 }
             }
 
-            pcmSpeedCounter++;//= (double)Common.VGMProcSampleRate / setting.getoutputDevice().SampleRate * vgmSpeed;
+            pcmSpeedCounter++; // = (double)Common.VGMProcSampleRate / setting.getoutputDevice().SampleRate * vgmSpeed;
             while (pcmSpeedCounter >= 1.0 && !stopped) {
                 pcmSpeedCounter -= 1.0;
                 onePCMFrameMain();
@@ -98,17 +100,17 @@ public class Xgm extends BaseDriver {
 
             //Stopped = !IsPlaying();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         getXGMInfo(buf);
         return gd3;
     }
 
-    private Vgm.Gd3 getGD3Info(byte[] vgmBuf) {
+    public Vgm.Gd3 getGD3Info(byte[] vgmBuf) {
 
         if (!existGD3) return new Vgm.Gd3();
 
@@ -157,7 +159,7 @@ public class Xgm extends BaseDriver {
                 return false;
             }
         } catch (Exception e) {
-            Log.write(String.format("XGMの情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), Arrays.toString(e.getStackTrace())));
+            Debug.printf("XGMの情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), Arrays.toString(e.getStackTrace()));
             return false;
         }
 
@@ -186,7 +188,7 @@ public class Xgm extends BaseDriver {
             musicStep = Common.VGMProcSampleRate / (isNTSC ? 60.0 : 50.0);
 
             if (musicDownCounter <= 0.0) {
-                //xgm処理
+                 // xgm処理
                 oneFrameXGM();
                 musicDownCounter += musicStep;
             }
@@ -194,14 +196,14 @@ public class Xgm extends BaseDriver {
 
             //if (pcmDownCounter <= 0.0)
             //{
-            //    //pcm処理
+            //     // pcm処理
             //    oneFramePCM();
             //    pcmDownCounter += pcmStep;
             //}
             //pcmDownCounter -= 1.0;
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
 
         }
     }
@@ -209,14 +211,14 @@ public class Xgm extends BaseDriver {
     private void onePCMFrameMain() {
         try {
             if (pcmDownCounter <= 0.0) {
-                //pcm処理
+                 // pcm処理
                 oneFramePCM();
                 pcmDownCounter += pcmStep;
             }
             pcmDownCounter -= 1.0;
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -225,17 +227,17 @@ public class Xgm extends BaseDriver {
 
             byte cmd = vgmBuf[musicPtr++];
 
-            //wait
+             // wait
             if (cmd == 0) break;
 
-            //loop command
+             // loop command
             if (cmd == 0x7e) {
                 musicPtr = musicDataBlockAddr + Common.getLE24(vgmBuf, musicPtr);
                 vgmCurLoop++;
                 continue;
             }
 
-            //end command
+             // end command
             if (cmd == 0x7f) {
                 stopped = true;
                 break;
@@ -245,19 +247,19 @@ public class Xgm extends BaseDriver {
             cmd &= 0xf0;
 
             if (cmd == 0x10) {
-                //Psg register write:
+                 // Psg register write:
                 writePSG(X);
             } else if (cmd == 0x20) {
-                //Ym2612 port 0 register write:
+                 // Ym2612 port 0 register write:
                 writeYM2612P0(X);
             } else if (cmd == 0x30) {
-                //Ym2612 port 1 register write:
+                 // Ym2612 port 1 register write:
                 writeYM2612P1(X);
             } else if (cmd == 0x40) {
-                //Ym2612 key off/on ($28) command write:
+                 // Ym2612 key off/on ($28) command write:
                 writeYM2612Key(X);
             } else if (cmd == 0x50) {
-                //PCM play command:
+                 // PCM play command:
                 playPCM(X);
             }
         }
@@ -312,10 +314,10 @@ public class Xgm extends BaseDriver {
         byte channel = (byte) (X & 0x3);
         byte id = vgmBuf[musicPtr++];
 
-        //優先度が高い場合または消音中の場合のみ発音できる
+         // 優先度が高い場合または消音中の場合のみ発音できる
         if (xgmpcm[channel].priority <= priority || !xgmpcm[channel].isPlaying) {
             if (id == 0 || sampleID[id - 1].size == 0) {
-                //IDが0の場合や、定義されていないIDが指定された場合は発音を停止する
+                 // IDが0の場合や、定義されていないIDが指定された場合は発音を停止する
                 xgmpcm[channel].priority = 0;
                 //xgmpcm[channel].startAddr = 0;
                 //xgmpcm[channel].endAddr = 0;

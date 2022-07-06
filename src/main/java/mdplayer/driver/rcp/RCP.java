@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.function.BiConsumer;
+import java.util.logging.Level;
 
 import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.Path;
@@ -21,6 +22,7 @@ import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.MidiOutInfo;
+import vavi.util.Debug;
 
 
 public class RCP extends BaseDriver {
@@ -143,7 +145,7 @@ public class RCP extends BaseDriver {
     }
 
     @Override
-    public Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         if (buf == null) return null;
         Boolean ret = checkHeadString(buf);
         if (ret == null) return null;
@@ -197,7 +199,7 @@ public class RCP extends BaseDriver {
         vgmSpeed = 1;
         vgmSpeedCounter = 0;
 
-        gd3 = getGD3Info(vgmBuf, 0);
+        gd3 = getGD3Info(vgmBuf);
         //if (Gd3 == null) return false;
 
         if (!getInformationHeader()) return false;
@@ -219,7 +221,7 @@ public class RCP extends BaseDriver {
     }
 
     @Override
-    public void oneFrameProc() {
+    public void processOneFrame() {
 
         try {
             vstDelta++;
@@ -234,7 +236,7 @@ public class RCP extends BaseDriver {
             }
             // Stopped = !IsPlaying();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -1058,7 +1060,7 @@ public class RCP extends BaseDriver {
             musicDownCounter -= 1.0;
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -1914,7 +1916,7 @@ public class RCP extends BaseDriver {
                 , (byte) (buf[adr + 0x01] >> 4), (byte) (buf[adr + 0x01] & 0xf) // PROGRAM CHANGE 2 3
                 , (byte) (((buf[adr + 0x03] & 1) << 3) | ((buf[adr + 0x04] & 1) << 2) | ((buf[adr + 0x05] & 1) << 1) | ((buf[adr + 0x06] & 1) << 0)) // PITCH BEND + CH PRESSURE + PROGRAM CHANGE + CONTROL CHANGE 4
                 , (byte) (((buf[adr + 0x07] & 1) << 3) | ((buf[adr + 0x08] & 1) << 2) | ((buf[adr + 0x09] & 1) << 1) | ((buf[adr + 0x0a] & 1) << 0)) // POLY PRESSURE + NOTE MESSAGE + RPN + NRPN 5
-                , (byte) (((buf[adr + 0x0b] & 1) << 3) | ((buf[adr + 0x0c] & 1) << 2) | ((buf[adr + 0x0d] & 1) << 1) | ((buf[adr + 0x0e] & 1) << 0)) // MODURATION + VOLUME + PANPOT + EXPRESSION 6
+                , (byte) (((buf[adr + 0x0b] & 1) << 3) | ((buf[adr + 0x0c] & 1) << 2) | ((buf[adr + 0x0d] & 1) << 1) | ((buf[adr + 0x0e] & 1) << 0)) // MODURATION + volume + PANPOT + EXPRESSION 6
                 , (byte) (((buf[adr + 0x0f] & 1) << 3) | ((buf[adr + 0x10] & 1) << 2) | ((buf[adr + 0x11] & 1) << 1) | ((buf[adr + 0x12] & 1) << 0)) // HOLD1 + PORTMENT + SOSTENUTE + SOFT 7
                 , (byte) (buf[adr + 0x02] >> 4), (byte) (buf[adr + 0x02] & 0xf) // MIDI CH 8 9
                 , (byte) (((buf[adr + 0x13] & 1) << 3) | ((buf[adr + 0x15] & 3) << 1) | ((buf[adr + 0x15] & 3) != 0 ? 1 : 0)) // MONO/PORY MODE + ASSIGN MODE  10
@@ -2256,6 +2258,7 @@ public class RCP extends BaseDriver {
 
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }

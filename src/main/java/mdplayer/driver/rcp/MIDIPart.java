@@ -121,7 +121,7 @@ public class MIDIPart implements Serializable {
         return eNowIndex;
     }
 
-    //初めのイベントを得る
+     // 初めのイベントを得る
     public MIDIEvent getStartEvent() {
         if (eStartIndex == null) return null;
 
@@ -270,11 +270,11 @@ public class MIDIPart implements Serializable {
     }
 
     private void insertEve(MIDIEvent targetEvent, int step, MIDIEvent event) {
-        //イベントリストを生成
+         // イベントリストを生成
         if (this.getEvents() == null) {
             this.setEvents(new ArrayList<>());
         }
-        if (targetEvent == null || this.getEvents().size() == 0 || this.getEStartIndex() == null) { //初めのイベント
+        if (targetEvent == null || this.getEvents().size() == 0 || this.getEStartIndex() == null) {  // 初めのイベント
             event.setAfterIndex(null);
             event.setBeforeIndex(null);
             event.setNumber(this.getENumber());

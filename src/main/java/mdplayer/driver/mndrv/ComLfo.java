@@ -272,7 +272,7 @@ public class ComLfo {
      * LFO triangle
      */
     public void comLfoTriangle() {
-        //if(Reg.a4 == 0x14cf0) Log.Write(String.format("adr:%x bendwork:%d",Reg.a4, mm.Readshort(Reg.a4 + W_L.bendwork)));
+        //if(Reg.a4 == 0x14cf0) Debug.printf(String.format("adr:%x bendwork:%d",Reg.a4, mm.Readshort(Reg.a4 + W_L.bendwork)));
 
         mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
         if (mm.readByte(reg.a4 + W_L.delay_work) == 0) { // break _com_lfo_triangle_end;

@@ -1,5 +1,7 @@
 package mdplayer.driver.moonDriver;
 
+import java.util.logging.Level;
+
 import dotnet4j.util.compat.Tuple;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
@@ -8,18 +10,19 @@ import mdplayer.Common.EnmModel;
 import mdplayer.Log;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
+import vavi.util.Debug;
 
 
 public class MoonDriver extends BaseDriver {
     @Override
-    public Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
 
         Gd3 gd3 = new Gd3();
 
-        int adrTag;
-        adrTag = (short) (buf[0x2e] + buf[0x2f] * 0x100);
-        if (adrTag != 0) {
-            adrTag -= 0x8000;
+        int[] adrTag = new int[1];
+        adrTag[0] = (short) (buf[0x2e] + buf[0x2f] * 0x100);
+        if (adrTag[0] != 0) {
+            adrTag[0] -= 0x8000;
             gd3.trackName = Common.getNRDString(buf, adrTag);
             gd3.trackNameJ = Common.getNRDString(buf, adrTag);
             gd3.gameName = Common.getNRDString(buf, adrTag);
@@ -46,7 +49,7 @@ public class MoonDriver extends BaseDriver {
         this.latency = latency;
         this.waitTime = waitTime;
 
-        gd3 = getGD3Info(vgmBuf, 0);
+        gd3 = getGD3Info(vgmBuf);
         counter = 0;
         totalCounter = 0;
         loopCounter = 0;
@@ -128,7 +131,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     @Override
-    public void oneFrameProc() {
+    public void processOneFrame() {
         //if (model == EnmModel.RealModel)
         //{
         //    Stopped = true;
@@ -147,7 +150,7 @@ public class MoonDriver extends BaseDriver {
                 }
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -222,8 +225,7 @@ public class MoonDriver extends BaseDriver {
                 ntscCounter += ntscStep;
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
-
+            ex.printStackTrace();
         }
     }
 
@@ -820,7 +822,7 @@ public class MoonDriver extends BaseDriver {
      */
     private void changePage3() {
         //System.err.println("ChangePage3:%d", a);
-        a >>= 1;//srl
+        a >>= 1; // srl
         a += 0x04;// The system uses 4pages for initial work area
         outport(RAM_PAGE3, a);
     }
@@ -898,13 +900,13 @@ public class MoonDriver extends BaseDriver {
 
 
         a = readMemory(S_DEVICE_FLAGS);
-        if (a == 0) a = 1;//OPL4 by default
+        if (a == 0) a = 1; // OPL4 by default
         b = a;
         iy = 0;// fm_opbtbl;
         ix = 0;// seq_work;
 
         d = 0x00;
-        e = 0x18;//24channels; OPL4
+        e = 0x18; // 24channels; OPL4
         boolean cry = (b & 1) != 0;
         b >>= 1;
         b |= (byte) (cry ? 0x80 : 0);
@@ -913,7 +915,7 @@ public class MoonDriver extends BaseDriver {
         }
 
         d = 0x01;
-        e = 0x12;//18channels
+        e = 0x12; // 18channels
         cry = (b & 1) != 0;
         b >>= 1;
         b |= (byte) (cry ? 0x80 : 0);
@@ -950,7 +952,7 @@ public class MoonDriver extends BaseDriver {
                 //init_fmtone:
                 work.ch[ix].tadr = 0;// fm_testtone;
                 work.ch[ix].pan = 0x30;
-                work.ch[ix].reverb = 0x02;//IDX_VOLOP
+                work.ch[ix].reverb = 0x02; // IDX_VOLOP
                 work.ch[ix].vol = 0x3f;
                 work.ch[ix].opsel = fm_opbtbl[iy];
                 iy++;
@@ -1024,7 +1026,7 @@ public class MoonDriver extends BaseDriver {
             moon_key_off();
 
             //de = SEQ_WORKSIZE;
-            ix++;//+= de;
+            ix++; // += de;
             work.seq_cur_ch++;
 
         } while (work.seq_cur_ch < work.seq_use_ch);
@@ -1091,7 +1093,7 @@ public class MoonDriver extends BaseDriver {
             a = 0;
             changePage3();
 
-            ix = 0;//seq_work
+            ix = 0; // seq_work
             a = 0;
 
             work.seq_cur_ch = a;
@@ -1123,7 +1125,7 @@ public class MoonDriver extends BaseDriver {
                 }
 
                 //ld de, SEQ_WORKSIZE
-                ix++;//add ix, de
+                ix++; // add ix, de
 
                 a = work.seq_use_ch;
                 e = a;
@@ -1441,7 +1443,7 @@ public class MoonDriver extends BaseDriver {
         }
 
         d = 1;
-        e = 0x5a;//de= 346;
+        e = 0x5a; // de= 346;
 
         int ans = comp_hl_de();
         if (ans <= 0) {

@@ -11,6 +11,10 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
+
+import vavi.util.Debug;
+
 
 public class JarRsrcLoader {
    public static void main(String[] args) throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException, IOException {
@@ -57,7 +61,8 @@ public class JarRsrcLoader {
                   return result;
                }
             }
-         } catch (Exception var7) {
+         } catch (Exception e) {
+            e.printStackTrace();
          }
       }
 
@@ -83,7 +88,7 @@ public class JarRsrcLoader {
             }
          }
 
-         return result.toArray(new String[result.size()]);
+         return result.toArray(String[]::new);
       }
    }
 

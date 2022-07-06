@@ -34,7 +34,7 @@ public class NullOut implements Closeable {
     }
 
     public void Init() {
-        //初期化
+         // 初期化
         try {
             os = Files.newOutputStream(Path.of(System.getProperty("dev.null")));
         } catch (IOException e) {
@@ -46,12 +46,12 @@ public class NullOut implements Closeable {
     }
 
     public void play() {
-        //レンダリング開始
+         // レンダリング開始
         RequestPlay();
     }
 
     public void stop() {
-        //レンダリング停止
+         // レンダリング停止
         reqStop = true;
     }
 

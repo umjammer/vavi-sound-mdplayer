@@ -50,7 +50,7 @@ public class frmYM2203 extends frmBase {
 
         this.newParam = newParam;
         this.oldParam = oldParam;
-        frameBuffer.Add(pbScreen, Resources.getplaneYM2203(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneYM2203(), null, zoom);
         boolean YM2203Type = (chipID == 0)
                 ? parent.setting.getYM2203Type()[0].getUseReal()[0]
                 : parent.setting.getYM2203Type()[1].getUseReal()[0];
@@ -94,9 +94,9 @@ public class frmYM2203 extends frmBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneYM2203().getWidth() * zoom, frameSizeH + Resources.getplaneYM2203().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneYM2203().getWidth() * zoom, frameSizeH + Resources.getplaneYM2203().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneYM2203().getWidth() * zoom, frameSizeH + Resources.getplaneYM2203().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneYM2203().getWidth() * zoom, frameSizeH + Resources.getPlaneYM2203().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneYM2203().getWidth() * zoom, frameSizeH + Resources.getPlaneYM2203().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneYM2203().getWidth() * zoom, frameSizeH + Resources.getPlaneYM2203().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -127,7 +127,7 @@ public class frmYM2203 extends frmBase {
 
     public void screenChangeParams() {
         boolean isFmEx;
-        int[] ym2203Register = Audio.getym2203Register(chipID);
+        int[] ym2203Register = Audio.getYm2203Register(chipID);
         int[] fmKeyYM2203 = Audio.getYM2203KeyOn(chipID);
         int[] ym2203Vol = Audio.getYM2203Volume(chipID);
         int[] ym2203Ch3SlotVol = Audio.getYM2203Ch3SlotVolume(chipID);
@@ -435,7 +435,7 @@ public class frmYM2203 extends frmBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneYM2203();
+        this.image = mdplayer.properties.Resources.getPlaneYM2203();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(320, 136));

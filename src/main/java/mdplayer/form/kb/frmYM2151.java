@@ -50,7 +50,7 @@ public class frmYM2151 extends frmBase {
 
         this.newParam = newParam;
         this.oldParam = oldParam;
-        frameBuffer.Add(pbScreen, Resources.getplaneE(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneE(), null, zoom);
         screenInit();
         update();
     }
@@ -86,9 +86,9 @@ public class frmYM2151 extends frmBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneE().getWidth() * zoom, frameSizeH + Resources.getplaneE().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneE().getWidth() * zoom, frameSizeH + Resources.getplaneE().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneE().getWidth() * zoom, frameSizeH + Resources.getplaneE().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneE().getWidth() * zoom, frameSizeH + Resources.getPlaneE().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneE().getWidth() * zoom, frameSizeH + Resources.getPlaneE().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneE().getWidth() * zoom, frameSizeH + Resources.getPlaneE().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -112,9 +112,9 @@ public class frmYM2151 extends frmBase {
 
             int ch;
 
-            //上部のラベル行の場合は何もしない
+             // 上部のラベル行の場合は何もしない
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                 // 但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
@@ -147,7 +147,7 @@ public class frmYM2151 extends frmBase {
             int instCh = h * 3 + w;
 
             if (instCh < 8) {
-                //クリップボードに音色をコピーする
+                 // クリップボードに音色をコピーする
                 parent.getInstCh(EnmChip.YM2151, instCh, chipID);
             }
         }
@@ -206,22 +206,22 @@ public class frmYM2151 extends frmBase {
         for (int ch = 0; ch < 8; ch++) {
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
-                newParam.channels[ch].inst[i * 11 + 0] = ym2151Register[0x80 + ops + ch] & 0x1f; //AR
-                newParam.channels[ch].inst[i * 11 + 1] = ym2151Register[0xa0 + ops + ch] & 0x1f; //DR
-                newParam.channels[ch].inst[i * 11 + 2] = ym2151Register[0xc0 + ops + ch] & 0x1f; //SR
-                newParam.channels[ch].inst[i * 11 + 3] = ym2151Register[0xe0 + ops + ch] & 0x0f; //RR
-                newParam.channels[ch].inst[i * 11 + 4] = (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4;//SL
-                newParam.channels[ch].inst[i * 11 + 5] = ym2151Register[0x60 + ops + ch] & 0x7f;//TL
-                newParam.channels[ch].inst[i * 11 + 6] = (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6;//KS
-                newParam.channels[ch].inst[i * 11 + 7] = ym2151Register[0x40 + ops + ch] & 0x0f;//ML
-                newParam.channels[ch].inst[i * 11 + 8] = (ym2151Register[0x40 + ops + ch] & 0x70) >> 4;//DT
-                newParam.channels[ch].inst[i * 11 + 9] = (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6;//DT2
-                newParam.channels[ch].inst[i * 11 + 10] = (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7;//AM
+                newParam.channels[ch].inst[i * 11 + 0] = ym2151Register[0x80 + ops + ch] & 0x1f;  // AR
+                newParam.channels[ch].inst[i * 11 + 1] = ym2151Register[0xa0 + ops + ch] & 0x1f;  // DR
+                newParam.channels[ch].inst[i * 11 + 2] = ym2151Register[0xc0 + ops + ch] & 0x1f;  // SR
+                newParam.channels[ch].inst[i * 11 + 3] = ym2151Register[0xe0 + ops + ch] & 0x0f;  // RR
+                newParam.channels[ch].inst[i * 11 + 4] = (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4; // SL
+                newParam.channels[ch].inst[i * 11 + 5] = ym2151Register[0x60 + ops + ch] & 0x7f; // TL
+                newParam.channels[ch].inst[i * 11 + 6] = (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6; // KS
+                newParam.channels[ch].inst[i * 11 + 7] = ym2151Register[0x40 + ops + ch] & 0x0f; // ML
+                newParam.channels[ch].inst[i * 11 + 8] = (ym2151Register[0x40 + ops + ch] & 0x70) >> 4; // DT
+                newParam.channels[ch].inst[i * 11 + 9] = (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6; // DT2
+                newParam.channels[ch].inst[i * 11 + 10] = (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7; // AM
             }
-            newParam.channels[ch].inst[44] = ym2151Register[0x20 + ch] & 0x07;//AL
-            newParam.channels[ch].inst[45] = (ym2151Register[0x20 + ch] & 0x38) >> 3;//FB
-            newParam.channels[ch].inst[46] = (ym2151Register[0x38 + ch] & 0x3);//AMS
-            newParam.channels[ch].inst[47] = (ym2151Register[0x38 + ch] & 0x70) >> 4;//PMS
+            newParam.channels[ch].inst[44] = ym2151Register[0x20 + ch] & 0x07;// AL
+            newParam.channels[ch].inst[45] = (ym2151Register[0x20 + ch] & 0x38) >> 3;// FB
+            newParam.channels[ch].inst[46] = (ym2151Register[0x38 + ch] & 0x3);// AMS
+            newParam.channels[ch].inst[47] = (ym2151Register[0x38 + ch] & 0x70) >> 4;// PMS
 
             int p = (ym2151Register[0x20 + ch] & 0xc0) >> 6;
             newParam.channels[ch].pan = p == 1 ? 2 : (p == 2 ? 1 : p);
@@ -230,7 +230,7 @@ public class frmYM2151 extends frmBase {
             int oct = ((ym2151Register[0x28 + ch] & 0x70) >> 4);
             //newParam.ym2151[chipID].channels[ch].note = (fmKeyYM2151[ch] > 0) ? (oct * 12 + note + Audio.vgmReal.YM2151Hosei + 1 + 9) : -1;
             int hosei = 0;
-            if (Audio.driverVirtual != null)//is Vgm)
+            if (Audio.driverVirtual != null) // is Vgm)
             {
                 hosei = (Audio.driverVirtual).ym2151Hosei[chipID];
             }
@@ -242,13 +242,13 @@ public class frmYM2151 extends frmBase {
 
             byte carrierOp = (byte) (con & m);
 
-            //OP1 M1
+             // OP1 M1
             v = (((carrierOp & 0x08) != 0) && v > (ym2151Register[0x60 + ch] & 0x7f)) ? (ym2151Register[0x60 + ch] & 0x7f) : v;
-            //OP3 C1
+             // OP3 C1
             v = (((carrierOp & 0x10) != 0) && v > (ym2151Register[0x68 + ch] & 0x7f)) ? (ym2151Register[0x68 + ch] & 0x7f) : v;
-            //OP2 M2
+             // OP2 M2
             v = (((carrierOp & 0x20) != 0) && v > (ym2151Register[0x70 + ch] & 0x7f)) ? (ym2151Register[0x70 + ch] & 0x7f) : v;
-            //OP4 C2
+             // OP4 C2
             v = (((carrierOp & 0x40) != 0) && v > (ym2151Register[0x78 + ch] & 0x7f)) ? (ym2151Register[0x78 + ch] & 0x7f) : v;
 
             newParam.channels[ch].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * ((ym2151Register[0x20 + ch] & 0x80) != 0 ? 1 : 0) * fmYM2151Vol[ch] / 80.0), 0), 19);
@@ -311,7 +311,7 @@ public class frmYM2151 extends frmBase {
         //
         // pbScreen
         //
-        this.image = mdplayer.properties.Resources.getplaneE();
+        this.image = mdplayer.properties.Resources.getPlaneE();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(320, 216));

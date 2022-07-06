@@ -50,7 +50,7 @@ public class frmDMG extends frmBase {
         this.newParam = newParam;
         this.oldParam = oldParam;
 
-        frameBuffer.Add(this.pbScreen, Resources.getplaneDMG(), null, zoom);
+        frameBuffer.Add(this.pbScreen, Resources.getPlaneDMG(), null, zoom);
         screenInit();
         update();
     }
@@ -87,9 +87,9 @@ public class frmDMG extends frmBase {
     };
 
     public void changeZoom() {
-        setMaximumSize(new Dimension(frameSizeW + Resources.getplaneDMG().getWidth() * zoom, frameSizeH + Resources.getplaneDMG().getHeight() * zoom));
-        setMinimumSize(new Dimension(frameSizeW + Resources.getplaneDMG().getWidth() * zoom, frameSizeH + Resources.getplaneDMG().getHeight() * zoom));
-        setPreferredSize(new Dimension(frameSizeW + Resources.getplaneDMG().getWidth() * zoom, frameSizeH + Resources.getplaneDMG().getHeight() * zoom));
+        setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneDMG().getWidth() * zoom, frameSizeH + Resources.getPlaneDMG().getHeight() * zoom));
+        setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneDMG().getWidth() * zoom, frameSizeH + Resources.getPlaneDMG().getHeight() * zoom));
+        setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneDMG().getWidth() * zoom, frameSizeH + Resources.getPlaneDMG().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -345,7 +345,7 @@ public class frmDMG extends frmBase {
         // pbScreen
         // 
 //        this.pbScreen.setBackground(Color.ControlDarkDark);
-        this.image = mdplayer.properties.Resources.getplaneDMG();
+        this.image = mdplayer.properties.Resources.getPlaneDMG();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(336, 72));

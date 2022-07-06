@@ -760,7 +760,7 @@ public class ChipRegister {
 
             fmRegisterYM2203[chipID] = new int[0x100];
             for (int i = 0; i < 0x100; i++) {
-                fmRegisterYM2203[chipID][i] = 0;//-1;
+                fmRegisterYM2203[chipID][i] = 0; // -1;
             }
             fmKeyOnYM2203[chipID] = new int[] {0, 0, 0, 0, 0, 0};
 
@@ -980,7 +980,7 @@ public class ChipRegister {
     }
 
     public void Close() {
-        midiExport.Close();
+        midiExport.close();
     }
 
     public void resetChips() {
@@ -1090,7 +1090,7 @@ public class ChipRegister {
     }
 
     public void SetFileName(String fn) {
-        midiExport.PlayingFileName = fn;
+        midiExport.playingFileName = fn;
     }
 
     public int getMIDIoutCount() {
@@ -1741,7 +1741,7 @@ public class ChipRegister {
                 if (dAddr == 4) {
                     dData = maskChHuC6280[chipID][HuC6280CurrentCh[chipID]] ? 0 : dData;
                 }
-                // System.System.err.println("chipID:%d Adr:%d Dat:%d",
+                // Debug.printf(("chipID:%d Adr:%d Dat:%d",
                 // chipID, dAddr, dData);
                 mds.writeHuC6280((byte) chipID, (byte) dAddr, (byte) dData);
             }
@@ -2391,7 +2391,7 @@ public class ChipRegister {
     public void setYM2608Register(int chipID, int dPort, int dAddr, int dData, EnmModel model) {
         // if (chipID == 0 && dPort == 1 && dAddr == 0x01)
         // {
-        // Log.Write(String.format("FM P1 Out:Adr[%02x] val[%02x]",
+        // Debug.printf(String.format("FM P1 Out:Adr[%02x] val[%02x]",
         // (int)dAddr, (int)dData));
         // }
 
@@ -2753,11 +2753,11 @@ public class ChipRegister {
         }
 
 
-        if ((dAddr & 0xf0) == 0x40)//TL
+        if ((dAddr & 0xf0) == 0x40) // TL
         {
             int ch = (dAddr & 0x3);
             int slot = (dAddr & 0xc) >> 2;
-            int al = fmRegisterYM2610[chipID][dPort][0xb0 + ch] & 0x07;//AL
+            int al = fmRegisterYM2610[chipID][dPort][0xb0 + ch] & 0x07; // AL
             dData &= 0x7f;
 
             if (ch != 3) {
@@ -2768,10 +2768,10 @@ public class ChipRegister {
             }
         }
 
-        if ((dAddr & 0xf0) == 0xb0)//AL
+        if ((dAddr & 0xf0) == 0xb0) // AL
         {
             int ch = (dAddr & 0x3);
-            int al = dData & 0x07;//AL
+            int al = dData & 0x07; // AL
 
             if (ch != 3 && maskFMChYM2610[chipID][ch]) {
                 for (int slot = 0; slot < 4; slot++) {
@@ -2788,7 +2788,7 @@ public class ChipRegister {
             }
         }
 
-        //ssg mixer
+         // ssg mixer
         if (dPort == 0 && dAddr == 0x07) {
             byte maskData = 0;
             if (maskFMChYM2610[chipID][6]) maskData |= 0x9 << 0;
@@ -2797,35 +2797,35 @@ public class ChipRegister {
             dData |= maskData;
         }
 
-        //ssg level
+         // ssg level
         if (dPort == 0 && (dAddr == 0x08 || dAddr == 0x09 || dAddr == 0x0a)) {
             int d = nowYM2610FadeoutVol[chipID] >> 3;
             dData = Math.max(dData - d, 0);
             dData = maskFMChYM2610[chipID][dAddr - 0x08 + 6] ? 0 : dData;
         }
 
-        //rhythm level
+         // rhythm level
         if (dPort == 1 && dAddr == 0x01) {
             int d = nowYM2610FadeoutVol[chipID] >> 1;
             dData = Math.max(dData - d, 0);
             //dData = maskFMChYM2610[chipID][12] ? 0 : dData;
         }
 
-        //Rhythm
+         // Rhythm
         if (dPort == 1 && dAddr == 0x00) {
             if (maskFMChYM2610[chipID][12]) {
                 dData = 0xbf;
             }
         }
 
-        //adpcm level
+         // adpcm level
         if (dPort == 0 && dAddr == 0x1b) {
             int d = nowYM2610FadeoutVol[chipID] * 2;
             dData = Math.max(dData - d, 0);
             dData = maskFMChYM2610[chipID][13] ? 0 : dData;
         }
 
-        //adpcm start
+         // adpcm start
         if (dPort == 0 && dAddr == 0x10) {
             if ((dData & 0x80) != 0 && maskFMChYM2610[chipID][13]) {
                 dData &= 0x7f;
@@ -2866,7 +2866,7 @@ public class ChipRegister {
 
     public void writeYM2610_SetAdpcmA(int chipID, byte[] ym2610AdpcmA, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
-            mds.WriteYM2610_SetAdpcmA((byte) chipID, ym2610AdpcmA);
+            mds.writeYM2610SetAdpcmA((byte) chipID, ym2610AdpcmA);
         } else {
             if (scYM2610[chipID] != null) {
                 byte dPort = 2;
@@ -2945,7 +2945,7 @@ public class ChipRegister {
 
     public void WriteYM2610_SetAdpcmB(int chipID, byte[] ym2610AdpcmB, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
-            mds.WriteYM2610_SetAdpcmB((byte) chipID, ym2610AdpcmB);
+            mds.writeYM2610SetAdpcmB((byte) chipID, ym2610AdpcmB);
         } else {
             if (scYM2610[chipID] != null) {
                 byte dPort = 2;
@@ -3262,7 +3262,7 @@ public class ChipRegister {
                 }
             }
 
-            //PCM
+             // PCM
             if ((fmRegisterYM2612[chipID][0][0x2b] & 0x80) > 0) {
                 if (fmRegisterYM2612[chipID][0][0x2a] > 0) {
                     fmVolYM2612[chipID][5] = Math.abs(fmRegisterYM2612[chipID][0][0x2a] - 0x7f) * 20;
@@ -3270,7 +3270,7 @@ public class ChipRegister {
             }
         }
 
-        if ((dAddr & 0xf0) == 0x40)//TL
+        if ((dAddr & 0xf0) == 0x40) // TL
         {
             int ch = (dAddr & 0x3);
             int slot = (dAddr & 0xc) >> 2;
@@ -3285,13 +3285,13 @@ public class ChipRegister {
             }
         }
 
-        if ((dAddr & 0xf0) == 0xb0)//AL
+        if ((dAddr & 0xf0) == 0xb0) // AL
         {
             int ch = (dAddr & 0x3);
-            int al = dData & 0x07;//AL
+            int al = dData & 0x07; // AL
 
             if (ch != 3 && maskFMChYM2612[chipID][dPort * 3 + ch]) {
-                //CarrierのTLを再設定する
+                 // CarrierのTLを再設定する
                 for (int slot = 0; slot < 4; slot++) {
                     if ((algM[al] & (1 << slot)) != 0) {
                         int tslot = (slot == 1 ? 2 : (slot == 2 ? 1 : slot)) * 4;
@@ -3308,18 +3308,18 @@ public class ChipRegister {
         }
 
         if (dAddr == 0x2a) {
-            //PCMデータをマスクする
+             // PCMデータをマスクする
             if (maskFMChYM2612[chipID][5]) dData = 0x00;
             //System.err.println("%02x",dData);
         }
 
         if (model == EnmModel.VirtualModel) {
 
-            //仮想音源の処理
+             // 仮想音源の処理
 
             if (ctYM2612[chipID].getUseReal()[0]) {
-                //Scciを使用する場合でも
-                //PCM(6Ch)だけエミュで発音するとき
+                 // Scciを使用する場合でも
+                 // PCM(6Ch)だけエミュで発音するとき
                 if (ctYM2612[chipID].getRealChipInfo()[0].getOnlyPCMEmulation()) {
                     if (dPort == 0 && dAddr == 0x2b) {
                         //if (ctYM2612[chipID].getUseEmu()[0])
@@ -3341,30 +3341,30 @@ public class ChipRegister {
             } else {
 
 // #if DEBUG
-                //if (dAddr == 0x2a || dAddr==0x2b) return;//DAC
-                //if (dPort == 1) return;//port1
-                //if (dAddr == 0x28 && (dData & 7) == 0) return;//Ch1Keyon/off
-                //if (dAddr == 0x28 && (dData & 7) == 1) return;//Ch2Keyon/off
-                //if (dAddr == 0x28 && (dData & 7) == 2) return;//Ch3Keyon/off
-                //if (dAddr == 0x28 && (dData & 7) == 4) return;//Ch4Keyon/off
-                //if (dAddr == 0x28 && (dData & 7) == 5) return;//Ch5Keyon/off
-                //if (dAddr == 0x28 && (dData & 7) == 6) return;//Ch6Keyon/off
-                //if ((dAddr & 0xf0) == 0x30) return;//DTMUL cancel
-                //if ((dAddr & 0xf0) == 0x40) return;//TL cancel
-                //if ((dAddr & 0xf0) == 0x50) return;//TL cancel
-                //if ((dAddr & 0xf0) == 0x60) return;//TL cancel
-                //if ((dAddr & 0xf0) == 0x70) return;//TL cancel
-                //if ((dAddr & 0xf0) == 0x80) return;//TL cancel
-                //if ((dAddr & 0xf0) == 0x90) return;//TL cancel
-                //if (dAddr >= 0x00 && dAddr < 0x22) return;//いろいろ cancel
-                //if (dAddr >= 0xb4) return;//TL cancel
+                //if (dAddr == 0x2a || dAddr==0x2b) return; // DAC
+                //if (dPort == 1) return; // port1
+                //if (dAddr == 0x28 && (dData & 7) == 0) return; // Ch1Keyon/off
+                //if (dAddr == 0x28 && (dData & 7) == 1) return; // Ch2Keyon/off
+                //if (dAddr == 0x28 && (dData & 7) == 2) return; // Ch3Keyon/off
+                //if (dAddr == 0x28 && (dData & 7) == 4) return; // Ch4Keyon/off
+                //if (dAddr == 0x28 && (dData & 7) == 5) return; // Ch5Keyon/off
+                //if (dAddr == 0x28 && (dData & 7) == 6) return; // Ch6Keyon/off
+                //if ((dAddr & 0xf0) == 0x30) return; // DTMUL cancel
+                //if ((dAddr & 0xf0) == 0x40) return; // TL cancel
+                //if ((dAddr & 0xf0) == 0x50) return; // TL cancel
+                //if ((dAddr & 0xf0) == 0x60) return; // TL cancel
+                //if ((dAddr & 0xf0) == 0x70) return; // TL cancel
+                //if ((dAddr & 0xf0) == 0x80) return; // TL cancel
+                //if ((dAddr & 0xf0) == 0x90) return; // TL cancel
+                //if (dAddr >= 0x00 && dAddr < 0x22) return; // いろいろ cancel
+                //if (dAddr >= 0xb4) return; // TL cancel
                 //return;
 // #endif
 
                 if (ctYM2612[chipID].getUseEmu()[1] && dAddr == 0x21)
-                    return;//TESTレジスタへのデータ送信をキャンセルする
+                    return; // TESTレジスタへのデータ送信をキャンセルする
 
-                //エミュを使用する場合のみMDSoundへデータを送る
+                 // エミュを使用する場合のみMDSoundへデータを送る
                 //System.err.println("%d:%02X:%02X:%02X", chipID, dPort, dAddr, dData);
                 if (ctYM2612[chipID].getUseEmu()[0])
                     mds.writeYM2612((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
@@ -3375,13 +3375,13 @@ public class ChipRegister {
             }
         } else {
 
-            //実音源(Scci)
+             // 実音源(Scci)
 
             if (scYM2612[chipID] == null) return;
 
-            //PCM(6Ch)だけエミュで発音するとき
+             // PCM(6Ch)だけエミュで発音するとき
             if (ctYM2612[chipID].getRealChipInfo()[0].getOnlyPCMEmulation()) {
-                //アドレスを調べてPCMにはデータを送らない
+                 // アドレスを調べてPCMにはデータを送らない
                 if (dPort == 0 && dAddr == 0x2b) {
                     scYM2612[chipID].setRegister(dPort * 0x100 + dAddr, dData);
                 } else if (dPort == 0 && dAddr == 0x2a) {
@@ -3389,7 +3389,7 @@ public class ChipRegister {
                     scYM2612[chipID].setRegister(dPort * 0x100 + dAddr, dData);
                 }
             } else {
-                //Scciへデータを送る
+                 // Scciへデータを送る
                 scYM2612[chipID].setRegister(dPort * 0x100 + dAddr, dData);
             }
         }
@@ -3423,7 +3423,7 @@ public class ChipRegister {
 
     }
 
-    public void PPZ8LoadPcm(int ChipID, byte bank, byte mode, byte[][] pcmData, EnmModel model) {
+    public void loadPcmPPZ8(int ChipID, byte bank, byte mode, byte[][] pcmData, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -3435,7 +3435,7 @@ public class ChipRegister {
         mds.WritePPZ8PCMData((byte) ChipID, bank, mode, pcmData);
     }
 
-    public void PPZ8Write(int ChipID, int dPort, int dAddr, int dData, EnmModel model) {
+    public void writePPZ8(int ChipID, int dPort, int dAddr, int dData, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -4482,7 +4482,7 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             mds.WriteOKIM6295(ChipID, Port, Data);
-            // System.System.err.println("ChipID=%d Port=%x Data=%x
+            // Debug.printf(("ChipID=%d Port=%x Data=%x
             // ",ChipID,Port,Data);
         }
     }
@@ -4664,7 +4664,7 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
             if (!ctSEGAPCM[chipID].getUseReal()[0])
                 mds.WriteSEGAPCM(chipID, offset, data);
-            // System.System.err.println("ChipID=%d Offset=%x Data=%x ",
+            // Debug.printf(("ChipID=%d Offset=%x Data=%x ",
             // ChipID, Offset, Data);
         } else {
             if (scSEGAPCM != null && scSEGAPCM[chipID] != null)

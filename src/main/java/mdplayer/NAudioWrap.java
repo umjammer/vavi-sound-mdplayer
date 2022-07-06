@@ -2,6 +2,7 @@ package mdplayer;
 
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -13,6 +14,7 @@ import javax.sound.sampled.SourceDataLine;
 
 import dotnet4j.threading.SynchronizationContext;
 import dotnet4j.util.compat.TriFunction;
+import vavi.util.Debug;
 
 
 public class NAudioWrap {
@@ -91,7 +93,7 @@ public class NAudioWrap {
                 break;
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -116,6 +118,7 @@ public class NAudioWrap {
                 dsOut.stop();
                 dsOut.close();
             } catch (Exception e) {
+                e.printStackTrace();
             }
             dsOut = null;
         }
@@ -128,11 +131,12 @@ public class NAudioWrap {
                 }
                 nullOut.close();
             } catch (Exception e) {
+                e.printStackTrace();
             }
             nullOut = null;
         }
 
-        //一休み
+         // 一休み
         //for (int i = 0; i < 10; i++) {
         //    Thread.sleep(1);
         //    JApplication.DoEvents();

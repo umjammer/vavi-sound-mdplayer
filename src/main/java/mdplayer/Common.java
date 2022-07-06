@@ -160,6 +160,7 @@ public class Common {
         return dat;
     }
 
+    /** find a asciiz string from a byte array */
     public static byte[] getByteArray(byte[] buf, int adr) {
         if (adr >= buf.length) throw new IndexOutOfBoundsException(adr + " > " + buf.length);
 
@@ -193,27 +194,16 @@ public class Common {
         gd3.usedChips = "";
 
         try {
-            // trackName
             gd3.trackName = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            // trackNameJ
             gd3.trackNameJ = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            // gameName
             gd3.gameName = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            // gameNameJ
             gd3.gameNameJ = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            // systemName
             gd3.systemName = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            // systemNameJ
             gd3.systemNameJ = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            // Composer
             gd3.composer = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            // ComposerJ
             gd3.composerJ = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            // Converted
             gd3.converted = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            // VGMBy
             gd3.vgmBy = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            // Notes
             gd3.notes = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
             // Lyric(独自拡張)
             byte[] bLyric = Common.getByteArray(buf, adr);
@@ -237,29 +227,29 @@ public class Common {
             }
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
 
         return gd3;
     }
 
-    public static String getNRDString(byte[] buf, int index) {
-        if (buf == null || buf.length < 1 || index < 0 || index >= buf.length) return "";
+    public static String getNRDString(byte[] buf,/*ref*/ int[] index) {
+        if (buf == null || buf.length < 1 || index[0] < 0 || index[0] >= buf.length) return "";
 
         try {
             List<Byte> lst = new ArrayList<>();
-            for (; buf[index] != 0; index++) {
-                if (buf.length > index + 1 && buf[index] == 0x1a && buf[index + 1] == 0x00)
+            for (; buf[index[0]] != 0; index[0]++) {
+                if (buf.length > index[0] + 1 && buf[index[0]] == 0x1a && buf[index[0] + 1] == 0x00)
                     break;
-                lst.add(buf[index]);
+                lst.add(buf[index[0]]);
             }
 
             String n = new String(mdsound.Common.toByteArray(lst), Charset.forName("MS932"));
-            index++;
+            index[0]++;
 
             return n;
         } catch (Exception e) {
-            Log.forcedWrite(e);
+            e.printStackTrace();
         }
         return "";
     }
@@ -279,7 +269,7 @@ public class Common {
         return (n > max) ? max : Math.max(n, min);
     }
 
-    public static int getvv(byte[] buf, int musicPtr) {
+    public static int getVv(byte[] buf, int musicPtr) {
         int s = 0, n = 0;
 
         do {
@@ -290,7 +280,7 @@ public class Common {
         return n + 2;
     }
 
-    public static int getv(byte[] buf, int musicPtr) {
+    public static int getV(byte[] buf, int musicPtr) {
         int s = 0, n = 0;
 
         do {
@@ -389,7 +379,7 @@ public class Common {
         return n + 1;
     }
 
-    public static int GetYM2151Hosei(float ym2151ClockValue, float baseClock) {
+    public static int getYM2151Hosei(float ym2151ClockValue, float baseClock) {
         int ret = 0;
 
         float delta = ym2151ClockValue / baseClock;
@@ -423,6 +413,7 @@ public class Common {
 
             return fullPath;
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -438,6 +429,7 @@ public class Common {
                 deleteDataUnderDirectory(fullPath);
             return fullPath;
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -488,6 +480,7 @@ public class Common {
             FileStream fs = new FileStream(ffn, FileMode.Open, FileAccess.Read, FileShare.Read);
             return fs;
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -594,6 +587,7 @@ public class Common {
                             buf = archive.getInputStream(entry).readAllBytes();
                         }
                     } catch (Exception e) {
+                        e.printStackTrace();
                         // vgzではなかった
                     }
                 }
@@ -676,7 +670,7 @@ public class Common {
             List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.XGM;
-                Vgm.Gd3 gd3 = new Xgm(setting).getGD3Info(buf, 0);
+                Vgm.Gd3 gd3 = new Xgm(setting).getGD3Info(buf);
                 music.title = gd3.trackName;
                 music.titleJ = gd3.trackNameJ;
                 music.game = gd3.gameName;
@@ -698,7 +692,7 @@ public class Common {
             List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.S98;
-                Gd3 gd3 = new S98(setting).getGD3Info(buf, 0);
+                Gd3 gd3 = new S98(setting).getGD3Info(buf);
                 if (gd3 != null) {
                     music.title = gd3.trackName;
                     music.titleJ = gd3.trackNameJ;
@@ -720,7 +714,7 @@ public class Common {
             List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.MID;
-                Gd3 gd3 = new MID().getGD3Info(buf, 0);
+                Gd3 gd3 = new MID().getGD3Info(buf);
                 if (gd3 != null) {
                     music.title = gd3.trackName;
                     music.titleJ = gd3.trackNameJ;
@@ -746,7 +740,7 @@ public class Common {
             List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.RCP;
-                Gd3 gd3 = new RCP().getGD3Info(buf, 0);
+                Gd3 gd3 = new RCP().getGD3Info(buf);
                 if (gd3 != null) {
                     music.title = gd3.trackName;
                     music.titleJ = gd3.trackNameJ;
@@ -773,7 +767,7 @@ public class Common {
                 List<PlayList.Music> musics = new ArrayList<>();
                 PlayList.Music music = new PlayList.Music();
                 Nsf nsf = new Nsf(setting);
-                Gd3 gd3 = nsf.getGD3Info(buf, 0);
+                Gd3 gd3 = nsf.getGD3Info(buf);
 
                 if (gd3 != null) {
                     for (int s = 0; s < nsf.songs; s++) {
@@ -814,7 +808,7 @@ public class Common {
             List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
                 List<PlayList.Music> musics = new ArrayList<>();
                 Hes hes = new Hes();
-                Vgm.Gd3 gd3 = hes.getGD3Info(buf, 0);
+                Vgm.Gd3 gd3 = hes.getGD3Info(buf);
 
                 for (int s = 0; s < 256; s++) {
                     PlayList.Music music = new PlayList.Music();
@@ -856,7 +850,7 @@ public class Common {
             List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
                 List<PlayList.Music> musics = new ArrayList<>();
                 Sid sid = new Sid();
-                Gd3 gd3 = sid.getGD3Info(buf, 0);
+                Gd3 gd3 = sid.getGD3Info(buf);
 
                 for (int s = 0; s < sid.songs; s++) {
                     PlayList.Music music = new PlayList.Music();
@@ -887,8 +881,7 @@ public class Common {
             List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.MDR;
-                int index = 0;
-                Vgm.Gd3 gd3 = (new MoonDriver()).getGD3Info(buf, index);
+                Vgm.Gd3 gd3 = (new MoonDriver()).getGD3Info(buf);
                 music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
                 music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
                 music.game = gd3.gameName;
@@ -912,8 +905,7 @@ public class Common {
             List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.MDX;
-                int index = 0;
-                Gd3 gd3 = (new MXDRV()).getGD3Info(buf, index);
+                Gd3 gd3 = (new MXDRV()).getGD3Info(buf);
                 music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
                 music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
                 music.game = gd3.gameName;
@@ -931,8 +923,7 @@ public class Common {
             List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.MND;
-                int index = 0;
-                Vgm.Gd3 gd3 = (new MnDrv()).getGD3Info(buf, index);
+                Vgm.Gd3 gd3 = (new MnDrv()).getGD3Info(buf);
                 music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
                 music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
                 music.game = gd3.gameName;
@@ -950,9 +941,7 @@ public class Common {
             List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.MUB;
-                int index = 0;
-                // Gd3 gd3 = (new MUCOM88.MUCOM88()).getGD3InfoMUB(buf, index);
-                Gd3 gd3 = new MucomDotNET().getGD3Info(buf, index);
+                Gd3 gd3 = new MucomDotNET().getGD3Info(buf);
                 music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
                 music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
                 music.game = gd3.gameName;
@@ -970,9 +959,7 @@ public class Common {
             List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.MUC;
-                int index = 0;
-                // Gd3 gd3 = (new MUCOM88.MUCOM88()).getGD3Info(buf, index);
-                Vgm.Gd3 gd3 = new MucomDotNET().getGD3Info(buf, index);
+                Vgm.Gd3 gd3 = new MucomDotNET().getGD3Info(buf);
                 music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
                 music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
                 music.game = gd3.gameName;
@@ -990,7 +977,7 @@ public class Common {
             List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.ZGM;
-                Gd3 gd3 = new Zgm().getGD3Info(buf, 0);
+                Gd3 gd3 = new Zgm().getGD3Info(buf);
                 music.title = gd3.trackName;
                 music.titleJ = gd3.trackNameJ;
                 music.game = gd3.gameName;
@@ -1015,7 +1002,7 @@ public class Common {
                 int index = 0;
                 PMDDotNET pmd = new PMDDotNET();
                 pmd.setPlayingFileName(file);
-                Vgm.Gd3 gd3 = pmd.getGD3Info(buf, index, PMDDotNET.enmPMDFileType.MML);
+                Vgm.Gd3 gd3 = pmd.getGD3Info(buf, index, PMDDotNET.PMDFileType.MML);
                 music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
                 music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
                 music.game = gd3.gameName;
@@ -1034,7 +1021,7 @@ public class Common {
                 PlayList.Music music = new PlayList.Music();
                 music.format = FileFormat.M;
                 int index = 0;
-                Gd3 gd3 = new PMDDotNET().getGD3Info(buf, index, PMDDotNET.enmPMDFileType.M);
+                Gd3 gd3 = new PMDDotNET().getGD3Info(buf, index, PMDDotNET.PMDFileType.M);
                 music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
                 music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
                 music.game = gd3.gameName;

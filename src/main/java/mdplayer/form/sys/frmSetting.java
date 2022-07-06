@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
@@ -64,6 +65,7 @@ import mdplayer.MidiOutInfo;
 import mdplayer.Setting;
 import mdplayer.Setting.ChipType2;
 import mdplayer.properties.Resources;
+import vavi.util.Debug;
 
 
 public class frmSetting extends JDialog {
@@ -1004,7 +1006,7 @@ public class frmSetting extends JDialog {
 //                asio.ShowControlPanel();
 //            }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(null, ex.getMessage());
         }
     }
@@ -1066,7 +1068,7 @@ public class frmSetting extends JDialog {
                 , null
         );
         if (setting.getYM2612Type()[0].getRealChipInfo() == null) {
-            setting.getYM2612Type()[0].setrealChipInfo(new ChipType2.RealChipInfo[] {new ChipType2.RealChipInfo()});
+            setting.getYM2612Type()[0].setRealChipInfo(new ChipType2.RealChipInfo[] {new ChipType2.RealChipInfo()});
         }
         setting.getYM2612Type()[0].getRealChipInfo()[0].setUseWait(ucSI.cbSendWait.isSelected());
         setting.getYM2612Type()[0].getRealChipInfo()[0].setUseWaitBoost(ucSI.cbTwice.isSelected());
@@ -1405,83 +1407,97 @@ public class frmSetting extends JDialog {
             i = Integer.parseInt(tbCCCopyLog.getText());
             setting.getMidiKbd().setMidiCtrl_CopySelecttingLogToClipbrd(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
+            e.printStackTrace();
             setting.getMidiKbd().setMidiCtrl_CopyToneFromYM2612Ch1(-1);
         }
         try {
             i = Integer.parseInt(tbCCChCopy.getText());
             setting.getMidiKbd().setMidiCtrl_CopyToneFromYM2612Ch1(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
+            e.printStackTrace();
             setting.getMidiKbd().setMidiCtrl_DelOneLog(-1);
         }
         try {
             i = Integer.parseInt(tbCCDelLog.getText());
             setting.getMidiKbd().setMidiCtrl_DelOneLog(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
+            e.printStackTrace();
             setting.getMidiKbd().setMidiCtrl_Fadeout(-1);
         }
         try {
             i = Integer.parseInt(tbCCFadeout.getText());
             setting.getMidiKbd().setMidiCtrl_Fadeout(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
+            e.printStackTrace();
             setting.getMidiKbd().setMidiCtrl_Fast(-1);
         }
         try {
             i = Integer.parseInt(tbCCFast.getText());
             setting.getMidiKbd().setMidiCtrl_Fast(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
+            e.printStackTrace();
             setting.getMidiKbd().setMidiCtrl_Next(-1);
         }
         try {
             i = Integer.parseInt(tbCCNext.getText());
             setting.getMidiKbd().setMidiCtrl_Next(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
+            e.printStackTrace();
             setting.getMidiKbd().setMidiCtrl_Pause(-1);
         }
         try {
             i = Integer.parseInt(tbCCPause.getText());
             setting.getMidiKbd().setMidiCtrl_Pause(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
+            e.printStackTrace();
             setting.getMidiKbd().setMidiCtrl_Play(-1);
         }
         try {
             i = Integer.parseInt(tbCCPlay.getText());
             setting.getMidiKbd().setMidiCtrl_Play(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
+            e.printStackTrace();
             setting.getMidiKbd().setMidiCtrl_Previous(-1);
         }
         try {
             i = Integer.parseInt(tbCCPrevious.getText());
             setting.getMidiKbd().setMidiCtrl_Previous(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
+            e.printStackTrace();
             setting.getMidiKbd().setMidiCtrlSlow(-1);
         }
         try {
             i = Integer.parseInt(tbCCSlow.getText());
             setting.getMidiKbd().setMidiCtrlSlow(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
+            e.printStackTrace();
             setting.getMidiKbd().setMidiCtrl_Stop(-1);
         }
         try {
             i = Integer.parseInt(tbCCStop.getText());
             setting.getMidiKbd().setMidiCtrl_Stop(Math.min(Math.max(i, 0), 127));
-        } catch (NumberFormatException ignored) {
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
         try {
             i = Integer.parseInt(tbLatencyEmu.getText());
             setting.setLatencyEmulation(Math.max(Math.min(i, 999), 0));
-        } catch (NumberFormatException ignored) {
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
         try {
             i = Integer.parseInt(tbLatencySCCI.getText());
             setting.setLatencySCCI(Math.max(Math.min(i, 999), 0));
-        } catch (NumberFormatException ignored) {
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
 
         setting.getOther().setUseLoopTimes(cbUseLoopTimes.isSelected());
         try {
             i = Integer.parseInt(tbLoopTimes.getText());
             setting.getOther().setLoopTimes(Math.max(Math.min(i, 999), 1));
-        } catch (NumberFormatException ignored) {
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
 
         setting.getOther().setUseGetInst(cbUseGetInst.isSelected());
@@ -1491,7 +1507,8 @@ public class frmSetting extends JDialog {
         try {
             i = Integer.parseInt(tbScreenFrameRate.getText());
             setting.getOther().setScreenFrameRate(Math.max(Math.min(i, 120), 10));
-        } catch (NumberFormatException ignored) {
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
         setting.getOther().setAutoOpen(cbAutoOpen.isSelected());
         setting.getOther().setDumpSwitch(cbDumpSwitch.isSelected());
@@ -1512,6 +1529,7 @@ public class frmSetting extends JDialog {
         try {
             setting.setDebug_SCCbaseAddress(Integer.parseInt(tbSCCbaseAddress.getText(), 16));
         } catch (NumberFormatException e) {
+            e.printStackTrace();
             setting.setDebug_SCCbaseAddress(0x9800);
         }
 
@@ -1536,7 +1554,7 @@ public class frmSetting extends JDialog {
                     moi.fileName = (String) d.getModel().getValueAt(i, 2);
                     moi.name = (String) d.getModel().getValueAt(i, 3);
                     String stype = (String) d.getModel().getValueAt(i, 4);
-                    //GM / XG / GS / LA / GS(SC - 55_1) / GS(SC - 55_2)
+                     // GM / XG / GS / LA / GS(SC - 55_1) / GS(SC - 55_2)
                     moi.type = 0;
                     if (stype.equals("XG")) moi.type = 1;
                     if (stype.equals("GS")) moi.type = 2;
@@ -1580,7 +1598,9 @@ public class frmSetting extends JDialog {
         try {
             i = Integer.parseInt(tbNSFFds_LPF.getText());
             setting.getNsf().setFDSLpf(Math.min(Math.max(i, 0), 99999));
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException e) {
+            Debug.println(Level.WARNING, e);
+        }
         setting.getNsf().setFDS4085Reset(cbNFSFds_4085Reset.isSelected());
         setting.getNsf().setFDSWriteDisable8000(cbNSFFDSWriteDisable8000.isSelected());
 
@@ -1612,6 +1632,7 @@ public class frmSetting extends JDialog {
         try {
             setting.getSid().outputBufferSize = Math.min(Math.max(Integer.parseInt(tbSIDOutputBufferSize.getText()), 100), 999999);
         } catch (Exception e) {
+            e.printStackTrace();
             setting.getSid().outputBufferSize = 5000;
         }
 
@@ -1655,12 +1676,14 @@ public class frmSetting extends JDialog {
         try {
             nn = Integer.parseInt(tbPMDPPSDRVFreq.getText());
         } catch (NumberFormatException e) {
+            Debug.println(Level.WARNING, e);
             nn = 2000;
         }
         setting.getPmdDotNET().ppsDrvManualFreq = nn;
         try {
             nn = Integer.parseInt(tbPMDPPSDRVManualWait.getText());
         } catch (NumberFormatException e) {
+            Debug.println(Level.WARNING, e);
             nn = 1;
         }
         nn = Math.min(Math.max(nn, 0), 100);
@@ -1668,6 +1691,7 @@ public class frmSetting extends JDialog {
         try {
             nn = Integer.parseInt(tbPMDVolumeFM.getText());
         } catch (NumberFormatException e) {
+            Debug.println(Level.WARNING, e);
             nn = 0;
         }
         nn = Math.min(Math.max(nn, -191), 20);
@@ -1675,6 +1699,7 @@ public class frmSetting extends JDialog {
         try {
             nn = Integer.parseInt(tbPMDVolumeSSG.getText());
         } catch (NumberFormatException e) {
+            Debug.println(Level.WARNING, e);
             nn = 0;
         }
         nn = Math.min(Math.max(nn, -191), 20);
@@ -1682,6 +1707,7 @@ public class frmSetting extends JDialog {
         try {
             nn = Integer.parseInt(tbPMDVolumeRhythm.getText());
         } catch (NumberFormatException e) {
+            Debug.println(Level.WARNING, e);
             nn = 0;
         }
         nn = Math.min(Math.max(nn, -191), 20);
@@ -1689,6 +1715,7 @@ public class frmSetting extends JDialog {
         try {
             nn = Integer.parseInt(tbPMDVolumeAdpcm.getText());
         } catch (NumberFormatException e) {
+            Debug.println(Level.WARNING, e);
             nn = 0;
         }
         nn = Math.min(Math.max(nn, -191), 20);
@@ -1696,6 +1723,7 @@ public class frmSetting extends JDialog {
         try {
             nn = Integer.parseInt(tbPMDVolumeGIMICSSG.getText());
         } catch (NumberFormatException e) {
+            Debug.println(Level.WARNING, e);
             nn = 31;
         }
         nn = Math.min(Math.max(nn, 0), 127);
@@ -1770,7 +1798,7 @@ public class frmSetting extends JDialog {
     ) {
         ct.setUseReal(new boolean[rb_SCCI_E == null ? 1 : 3]);
         ct.getUseReal()[0] = rb_SCCI.isSelected();
-        ct.setrealChipInfo(new ChipType2.RealChipInfo[rb_SCCI_E == null ? 1 : 3]);
+        ct.setRealChipInfo(new ChipType2.RealChipInfo[rb_SCCI_E == null ? 1 : 3]);
         for (int i = 0; i < ct.getRealChipInfo().length; i++) ct.getRealChipInfo()[i] = new ChipType2.RealChipInfo();
         int v;
         ChipType2.RealChipInfo rci;
@@ -1781,11 +1809,17 @@ public class frmSetting extends JDialog {
                 String[] ns = n.split(":");
                 rci = ct.getRealChipInfo()[0];
                 rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
-                try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) { v = 0; }
+                try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) {
+                    Debug.println(Level.WARNING, e);
+                    v = 0; }
                 rci.setSoundLocation(v);
-                try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) { v = 0; }
+                try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) {
+                    Debug.println(Level.WARNING, e);
+                    v = 0; }
                 rci.setBusID(v);
-                try { v = Integer.parseInt(ns[ns.length - 1]); } catch (NumberFormatException e) { v = 0; }
+                try { v = Integer.parseInt(ns[ns.length - 1]); } catch (NumberFormatException e) {
+                    Debug.println(Level.WARNING, e);
+                    v = 0; }
                 rci.setSoundChip(v);
             }
         }
@@ -1805,11 +1839,17 @@ public class frmSetting extends JDialog {
                 String[] ns = n.split(":");
                 rci = ct.getRealChipInfo()[1];
                 rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
-                try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) { v = 0; }
+                try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) {
+                    Debug.println(Level.WARNING, e);
+                    v = 0; }
                 rci.setSoundLocation(v);
-                try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) { v = 0; }
+                try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) {
+                    Debug.println(Level.WARNING, e);
+                    v = 0; }
                 rci.setBusID(v);
-                try { v = Integer.parseInt(ns[ns.length - 1]); } catch (NumberFormatException e) { v = 0; }
+                try { v = Integer.parseInt(ns[ns.length - 1]); } catch (NumberFormatException e) {
+                    Debug.println(Level.WARNING, e);
+                    v = 0; }
                 rci.setSoundChip(v);
             }
             if (cmb_SCCI_E2.getSelectedItem() != null) {
@@ -1818,11 +1858,17 @@ public class frmSetting extends JDialog {
                 String[] ns = n.split(":");
                 rci = ct.getRealChipInfo()[2];
                 rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
-                try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) { v = 0; }
+                try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) {
+                    Debug.println(Level.WARNING, e);
+                    v = 0; }
                 rci.setSoundLocation(v);
-                try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) { v = 0; }
+                try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) {
+                    Debug.println(Level.WARNING, e);
+                    v = 0; }
                 rci.setBusID(v);
-                try { v = Integer.parseInt(ns[ns.length - 1]); } catch (NumberFormatException e) { v = 0; }
+                try { v = Integer.parseInt(ns[ns.length - 1]); } catch (NumberFormatException e) {
+                    Debug.println(Level.WARNING, e);
+                    v = 0; }
                 rci.setSoundChip(v);
             }
         }
@@ -2129,7 +2175,7 @@ public class frmSetting extends JDialog {
                 "確認", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (res == JOptionPane.NO_OPTION) return;
 
-        setting.setlocation(new Setting.Location());
+        setting.setLocation(new Setting.Location());
     }
 
     private void cbUseMIDIExport_CheckedChanged(ChangeEvent ev) {
@@ -5163,56 +5209,56 @@ public class frmSetting extends JDialog {
         //
         // pictureBox8
         //
-        this.pictureBox8.setIcon(new ImageIcon(mdplayer.properties.Resources.getccNext()));
+        this.pictureBox8.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcNext()));
         //resources.ApplyResources(this.pictureBox8, "pictureBox8");
         this.pictureBox8.setName("pictureBox8");
         // this.pictureBox8.TabStop = false;
         //
         // pictureBox7
         //
-        this.pictureBox7.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFast()));
+        this.pictureBox7.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFast()));
         //resources.ApplyResources(this.pictureBox7, "pictureBox7");
         this.pictureBox7.setName("pictureBox7");
         // this.pictureBox7.TabStop = false;
         //
         // pictureBox6
         //
-        this.pictureBox6.setIcon(new ImageIcon(mdplayer.properties.Resources.getccPlay()));
+        this.pictureBox6.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcPlay()));
         //resources.ApplyResources(this.pictureBox6, "pictureBox6");
         this.pictureBox6.setName("pictureBox6");
         // this.pictureBox6.TabStop = false;
         //
         // pictureBox5
         //
-        this.pictureBox5.setIcon(new ImageIcon(mdplayer.properties.Resources.getccSlow()));
+        this.pictureBox5.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcSlow()));
         //resources.ApplyResources(this.pictureBox5, "pictureBox5");
         this.pictureBox5.setName("pictureBox5");
         // this.pictureBox5.TabStop = false;
         //
         // pictureBox4
         //
-        this.pictureBox4.setIcon(new ImageIcon(mdplayer.properties.Resources.getccStop()));
+        this.pictureBox4.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcStop()));
         //resources.ApplyResources(this.pictureBox4, "pictureBox4");
         this.pictureBox4.setName("pictureBox4");
         // this.pictureBox4.TabStop = false;
         //
         // pictureBox3
         //
-        this.pictureBox3.setIcon(new ImageIcon(mdplayer.properties.Resources.getccPause()));
+        this.pictureBox3.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcPause()));
         //resources.ApplyResources(this.pictureBox3, "pictureBox3");
         this.pictureBox3.setName("pictureBox3");
         // this.pictureBox3.TabStop = false;
         //
         // pictureBox2
         //
-        this.pictureBox2.setIcon(new ImageIcon(mdplayer.properties.Resources.getccPrevious()));
+        this.pictureBox2.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcPrevious()));
         //resources.ApplyResources(this.pictureBox2, "pictureBox2");
         this.pictureBox2.setName("pictureBox2");
         // this.pictureBox2.TabStop = false;
         //
         // pictureBox1
         //
-        this.pictureBox1.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.pictureBox1.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.pictureBox1, "pictureBox1");
         this.pictureBox1.setName("pictureBox1");
         // this.pictureBox1.TabStop = false;
@@ -5702,14 +5748,14 @@ public class frmSetting extends JDialog {
         //
         // pictureBox14
         //
-        this.pictureBox14.setIcon(new ImageIcon(mdplayer.properties.Resources.getccStop()));
+        this.pictureBox14.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcStop()));
         //resources.ApplyResources(this.pictureBox14, "pictureBox14");
         this.pictureBox14.setName("pictureBox14");
         // this.pictureBox14.TabStop = false;
         //
         // pictureBox17
         //
-        this.pictureBox17.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.pictureBox17.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.pictureBox17, "pictureBox17");
         this.pictureBox17.setName("pictureBox17");
         // this.pictureBox17.TabStop = false;
@@ -5722,7 +5768,7 @@ public class frmSetting extends JDialog {
         //
         // pictureBox16
         //
-        this.pictureBox16.setIcon(new ImageIcon(mdplayer.properties.Resources.getccPrevious()));
+        this.pictureBox16.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcPrevious()));
         //resources.ApplyResources(this.pictureBox16, "pictureBox16");
         this.pictureBox16.setName("pictureBox16");
         // this.pictureBox16.TabStop = false;
@@ -5735,7 +5781,7 @@ public class frmSetting extends JDialog {
         //
         // pictureBox15
         //
-        this.pictureBox15.setIcon(new ImageIcon(mdplayer.properties.Resources.getccPause()));
+        this.pictureBox15.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcPause()));
         //resources.ApplyResources(this.pictureBox15, "pictureBox15");
         this.pictureBox15.setName("pictureBox15");
         // this.pictureBox15.TabStop = false;
@@ -5748,7 +5794,7 @@ public class frmSetting extends JDialog {
         //
         // pictureBox13
         //
-        this.pictureBox13.setIcon(new ImageIcon(mdplayer.properties.Resources.getccSlow()));
+        this.pictureBox13.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcSlow()));
         //resources.ApplyResources(this.pictureBox13, "pictureBox13");
         this.pictureBox13.setName("pictureBox13");
         // this.pictureBox13.TabStop = false;
@@ -5761,7 +5807,7 @@ public class frmSetting extends JDialog {
         //
         // pictureBox12
         //
-        this.pictureBox12.setIcon(new ImageIcon(mdplayer.properties.Resources.getccPlay()));
+        this.pictureBox12.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcPlay()));
         //resources.ApplyResources(this.pictureBox12, "pictureBox12");
         this.pictureBox12.setName("pictureBox12");
         // this.pictureBox12.TabStop = false;
@@ -5774,7 +5820,7 @@ public class frmSetting extends JDialog {
         //
         // pictureBox11
         //
-        this.pictureBox11.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFast()));
+        this.pictureBox11.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFast()));
         //resources.ApplyResources(this.pictureBox11, "pictureBox11");
         this.pictureBox11.setName("pictureBox11");
         // this.pictureBox11.TabStop = false;
@@ -5787,7 +5833,7 @@ public class frmSetting extends JDialog {
         //
         // pictureBox10
         //
-        this.pictureBox10.setIcon(new ImageIcon(mdplayer.properties.Resources.getccNext()));
+        this.pictureBox10.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcNext()));
         //resources.ApplyResources(this.pictureBox10, "pictureBox10");
         this.pictureBox10.setName("pictureBox10");
         // this.pictureBox10.TabStop = false;

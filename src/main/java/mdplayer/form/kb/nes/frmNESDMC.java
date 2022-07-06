@@ -51,7 +51,7 @@ public class frmNESDMC extends frmBase {
         initializeComponent();
 
         this.newParam = newParam;
-        frameBuffer.Add(pbScreen, Resources.getplaneNESDMC(), null, zoom);
+        frameBuffer.Add(pbScreen, Resources.getPlaneNESDMC(), null, zoom);
         DrawBuff.screenInitNESDMC(frameBuffer);
         update();
     }
@@ -88,9 +88,9 @@ public class frmNESDMC extends frmBase {
     };
 
     public void changeZoom() {
-        this.setMaximumSize(new Dimension(frameSizeW + Resources.getplaneNESDMC().getWidth() * zoom, frameSizeH + Resources.getplaneNESDMC().getHeight() * zoom));
-        this.setMinimumSize(new Dimension(frameSizeW + Resources.getplaneNESDMC().getWidth() * zoom, frameSizeH + Resources.getplaneNESDMC().getHeight() * zoom));
-        this.setPreferredSize(new Dimension(frameSizeW + Resources.getplaneNESDMC().getWidth() * zoom, frameSizeH + Resources.getplaneNESDMC().getHeight() * zoom));
+        this.setMaximumSize(new Dimension(frameSizeW + Resources.getPlaneNESDMC().getWidth() * zoom, frameSizeH + Resources.getPlaneNESDMC().getHeight() * zoom));
+        this.setMinimumSize(new Dimension(frameSizeW + Resources.getPlaneNESDMC().getWidth() * zoom, frameSizeH + Resources.getPlaneNESDMC().getHeight() * zoom));
+        this.setPreferredSize(new Dimension(frameSizeW + Resources.getPlaneNESDMC().getWidth() * zoom, frameSizeH + Resources.getPlaneNESDMC().getHeight() * zoom));
         componentListener.componentResized(null);
     }
 
@@ -339,7 +339,7 @@ public class frmNESDMC extends frmBase {
         // pbScreen
         //
 //        this.pbScreen.setBackground(Color.ControlDarkDark);
-        this.image = mdplayer.properties.Resources.getplaneNESDMC();
+        this.image = mdplayer.properties.Resources.getPlaneNESDMC();
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(320, 56));

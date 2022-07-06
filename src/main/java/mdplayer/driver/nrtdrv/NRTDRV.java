@@ -2,6 +2,7 @@ package mdplayer.driver.nrtdrv;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
 
 import dotnet4j.util.compat.Tuple3;
 import mdplayer.ChipRegister;
@@ -12,6 +13,7 @@ import mdplayer.Log;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
+import vavi.util.Debug;
 
 
 public class NRTDRV extends BaseDriver {
@@ -137,12 +139,12 @@ public class NRTDRV extends BaseDriver {
         }
 
         for (int chipID = 0; chipID < 2; chipID++) {
-            ym2151Hosei[chipID] = Common.GetYM2151Hosei(4000000, 3579545);
+            ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipID] = 0;
                 int clock = chipRegister.getYM2151Clock((byte) chipID);
                 if (clock != -1) {
-                    ym2151Hosei[chipID] = Common.GetYM2151Hosei(4000000, clock);
+                    ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, clock);
                 }
             }
         }
@@ -166,7 +168,7 @@ public class NRTDRV extends BaseDriver {
     }
 
     @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3) {
+    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         Vgm.Gd3 gd3 = new Vgm.Gd3();
         gd3.trackName = Common.getNRDString(buf, vgmGd3);
         gd3.trackNameJ = Common.getNRDString(buf, vgmGd3);
@@ -177,12 +179,12 @@ public class NRTDRV extends BaseDriver {
 
         if ((buf[2] & 0x08) != 0) {
             gd3.lyrics = new ArrayList<>();
-            int adr = vgmGd3;
+            int adr = vgmGd3[0];
             while (buf[adr] != (byte) 0xff || buf[adr + 1] != (byte) 0xff) {
                 int cnt = buf[adr] + buf[adr + 1] * 0x100;
-                int sAdr = buf[adr + 2] + buf[adr + 3] * 0x100;
+                int[] sAdr = new int[] {buf[adr + 2] + buf[adr + 3] * 0x100};
                 String msg = Common.getNRDString(buf, sAdr);
-                gd3.lyrics.add(new Tuple3<>(cnt, sAdr, msg));
+                gd3.lyrics.add(new Tuple3<>(cnt, sAdr[0], msg));
                 adr += 4;
             }
         }
@@ -441,7 +443,7 @@ public class NRTDRV extends BaseDriver {
     private float ctc1Step = 4000000.0f / 1; // sampleRate;
 
     @Override
-    public void oneFrameProc() {
+    public void processOneFrame() {
         try {
             vgmSpeedCounter += vgmSpeed;
             while (vgmSpeedCounter >= 1.0) {
@@ -454,8 +456,7 @@ public class NRTDRV extends BaseDriver {
             }
             stopped = !IsPlaying();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
-
+            ex.printStackTrace();
         }
     }
 
@@ -532,8 +533,7 @@ public class NRTDRV extends BaseDriver {
             }
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
-
+            ex.printStackTrace();
         }
     }
 
@@ -545,7 +545,6 @@ public class NRTDRV extends BaseDriver {
         work.ctcFlg |= 4; // turbo仕様の場合は4　しない場合は0
 
         work.ctc3io = 0x1fa3; // turboのctc3のIOポート番号保存　しない場合は0x0707
-
     }
 
     private void mplay() {

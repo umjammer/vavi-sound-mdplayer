@@ -73,7 +73,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getaddFolderPL() {
+    public static BufferedImage getAddFolderPL() {
 
         return getImage("addFolderPL");
     }
@@ -81,7 +81,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getaddPL() {
+    public static BufferedImage getAddPL() {
 
         return getImage("addPL");
     }
@@ -89,7 +89,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccFadeout() {
+    public static BufferedImage getCcFadeout() {
 
         return getImage("ccFadeout");
     }
@@ -97,7 +97,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccFast() {
+    public static BufferedImage getCcFast() {
 
         return getImage("ccFast");
     }
@@ -105,7 +105,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccInformation() {
+    public static BufferedImage getCcInformation() {
 
         return getImage("ccInformation");
     }
@@ -113,7 +113,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccKBD() {
+    public static BufferedImage getCcKBD() {
 
         return getImage("ccKBD");
     }
@@ -121,7 +121,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccLoop() {
+    public static BufferedImage getCcLoop() {
 
         return getImage("ccLoop");
     }
@@ -129,7 +129,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccLoopOne() {
+    public static BufferedImage getCcLoopOne() {
 
         return getImage("ccLoopOne");
     }
@@ -137,7 +137,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccMIDIKBD() {
+    public static BufferedImage getCcMIDIKBD() {
 
         return getImage("ccMIDIKBD");
     }
@@ -145,7 +145,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccMixer() {
+    public static BufferedImage getCcMixer() {
 
         return getImage("ccMixer");
     }
@@ -153,7 +153,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccNext() {
+    public static BufferedImage getCcNext() {
 
         return getImage("ccNext");
     }
@@ -161,7 +161,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccOpenFolder() {
+    public static BufferedImage getCcOpenFolder() {
 
         return getImage("ccOpenFolder");
     }
@@ -169,7 +169,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccPause() {
+    public static BufferedImage getCcPause() {
 
         return getImage("ccPause");
     }
@@ -177,7 +177,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccPlay() {
+    public static BufferedImage getCcPlay() {
 
         return getImage("ccPlay");
     }
@@ -185,7 +185,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccPlayList() {
+    public static BufferedImage getCcPlayList() {
 
         return getImage("ccPlayList");
     }
@@ -193,7 +193,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccPrevious() {
+    public static BufferedImage getCcPrevious() {
 
         return getImage("ccPrevious");
     }
@@ -201,7 +201,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccRandom() {
+    public static BufferedImage getCcRandom() {
 
         return getImage("ccRandom");
     }
@@ -209,7 +209,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccSetting() {
+    public static BufferedImage getCcSetting() {
 
         return getImage("ccSetting");
     }
@@ -217,7 +217,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccSlow() {
+    public static BufferedImage getCcSlow() {
 
         return getImage("ccSlow");
     }
@@ -225,7 +225,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccStep() {
+    public static BufferedImage getCcStep() {
 
         return getImage("ccStep");
     }
@@ -233,7 +233,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccStop() {
+    public static BufferedImage getCcStop() {
 
         return getImage("ccStop");
     }
@@ -241,7 +241,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccVST() {
+    public static BufferedImage getCcVST() {
 
         return getImage("ccVST");
     }
@@ -249,7 +249,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getccZoom() {
+    public static BufferedImage getCcZoom() {
 
         return getImage("ccZoom");
     }
@@ -257,7 +257,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchFadeout() {
+    public static BufferedImage getChFadeout() {
 
         return getImage("chFadeout");
     }
@@ -265,7 +265,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchFast() {
+    public static BufferedImage getChFast() {
 
         return getImage("chFast");
     }
@@ -273,7 +273,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchInformation() {
+    public static BufferedImage getChInformation() {
 
         return getImage("chInformation");
     }
@@ -281,7 +281,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchKBD() {
+    public static BufferedImage getChKBD() {
 
         return getImage("chKBD");
     }
@@ -289,7 +289,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchLoop() {
+    public static BufferedImage getChLoop() {
 
         return getImage("chLoop");
     }
@@ -297,7 +297,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchLoopOne() {
+    public static BufferedImage getChLoopOne() {
 
         return getImage("chLoopOne");
     }
@@ -305,77 +305,77 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchMIDIKBD() {
+    public static BufferedImage getChMIDIKBD() {
         return getImage("chMIDIKBD");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchMixer() {
+    public static BufferedImage getChMixer() {
         return getImage("chMixer");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchNext() {
+    public static BufferedImage getChNext() {
         return getImage("chNext");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchOpenFolder() {
+    public static BufferedImage getChOpenFolder() {
         return getImage("chOpenFolder");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchPause() {
+    public static BufferedImage getChPause() {
         return getImage("chPause");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchPlay() {
+    public static BufferedImage getChPlay() {
         return getImage("chPlay");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchPlayList() {
+    public static BufferedImage getChPlayList() {
         return getImage("chPlayList");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchPrevious() {
+    public static BufferedImage getChPrevious() {
         return getImage("chPrevious");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchRandom() {
+    public static BufferedImage getChRandom() {
         return getImage("chRandom");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchSetting() {
+    public static BufferedImage getChSetting() {
         return getImage("chSetting");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchSlow() {
+    public static BufferedImage getChSlow() {
 
         return getImage("chSlow");
     }
@@ -383,7 +383,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchStep() {
+    public static BufferedImage getChStep() {
 
         return getImage("chStep");
     }
@@ -391,7 +391,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchStop() {
+    public static BufferedImage getChStop() {
 
         return getImage("chStop");
     }
@@ -399,7 +399,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchVST() {
+    public static BufferedImage getChVST() {
 
         return getImage("chVST");
     }
@@ -407,7 +407,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getchZoom() {
+    public static BufferedImage getChZoom() {
 
         return getImage("chZoom");
     }
@@ -415,7 +415,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciFadeout() {
+    public static BufferedImage getCiFadeout() {
 
         return getImage("ciFadeout");
     }
@@ -423,7 +423,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciFast() {
+    public static BufferedImage getCiFast() {
 
         return getImage("ciFast");
     }
@@ -431,7 +431,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciInformation() {
+    public static BufferedImage getCiInformation() {
 
         return getImage("ciInformation");
     }
@@ -439,7 +439,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciKBD() {
+    public static BufferedImage getCiKBD() {
 
         return getImage("ciKBD");
     }
@@ -447,7 +447,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciLoop() {
+    public static BufferedImage getCiLoop() {
 
         return getImage("ciLoop");
     }
@@ -455,7 +455,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciLoopOne() {
+    public static BufferedImage getCiLoopOne() {
 
         return getImage("ciLoopOne");
     }
@@ -463,7 +463,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciMIDIKBD() {
+    public static BufferedImage getCiMIDIKBD() {
 
         return getImage("ciMIDIKBD");
     }
@@ -471,7 +471,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciMixer() {
+    public static BufferedImage getCiMixer() {
 
         return getImage("ciMixer");
     }
@@ -479,7 +479,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciNext() {
+    public static BufferedImage getCiNext() {
 
         return getImage("ciNext");
     }
@@ -487,7 +487,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciOpenFolder() {
+    public static BufferedImage getCiOpenFolder() {
 
         return getImage("ciOpenFolder");
     }
@@ -495,7 +495,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciPause() {
+    public static BufferedImage getCiPause() {
 
         return getImage("ciPause");
     }
@@ -503,7 +503,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciPlay() {
+    public static BufferedImage getCiPlay() {
 
         return getImage("ciPlay");
     }
@@ -511,7 +511,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciPlayList() {
+    public static BufferedImage getCiPlayList() {
 
         return getImage("ciPlayList");
     }
@@ -519,7 +519,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciPrevious() {
+    public static BufferedImage getCiPrevious() {
 
         return getImage("ciPrevious");
     }
@@ -527,7 +527,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciRandom() {
+    public static BufferedImage getCiRandom() {
 
         return getImage("ciRandom");
     }
@@ -535,7 +535,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciSetting() {
+    public static BufferedImage getCiSetting() {
 
         return getImage("ciSetting");
     }
@@ -543,7 +543,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciSlow() {
+    public static BufferedImage getCiSlow() {
 
         return getImage("ciSlow");
     }
@@ -551,7 +551,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciStep() {
+    public static BufferedImage getCiStep() {
 
         return getImage("ciStep");
     }
@@ -559,7 +559,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciStop() {
+    public static BufferedImage getCiStop() {
 
         return getImage("ciStop");
     }
@@ -567,7 +567,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciVST() {
+    public static BufferedImage getCiVST() {
 
         return getImage("ciVST");
     }
@@ -575,7 +575,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getciZoom() {
+    public static BufferedImage getCiZoom() {
 
         return getImage("ciZoom");
     }
@@ -615,7 +615,7 @@ public class Resources {
     /**
      * 内部例外:\n- Type ------\n%d\n- Message ------\n%d\n- Source ------\n%d\n- StackTrace ------\n%d\n に類似しているローカライズされた文字列を検索します。
      */
-    public static String getcntInnerExceptionFormat() {
+    public static String getCntInnerExceptionFormat() {
 
         return resourceMan.getString("cntInnerExceptionFormat");
     }
@@ -631,7 +631,7 @@ public class Resources {
     /**
      * Setting.xml に類似しているローカライズされた文字列を検索します。
      */
-    public static String getcntSettingFileName() {
+    public static String getCntSettingFileName() {
 
         return resourceMan.getString("cntSettingFileName");
     }
@@ -956,7 +956,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getimgPL() {
+    public static BufferedImage getImgPL() {
 
         return getImage("imgPL");
     }
@@ -964,7 +964,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getjapPL() {
+    public static BufferedImage getJapPL() {
 
         return getImage("japPL");
     }
@@ -972,7 +972,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getmmlPL() {
+    public static BufferedImage getMmlPL() {
 
         return getImage("mmlPL");
     }
@@ -980,7 +980,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getopenPL() {
+    public static BufferedImage getOpenPL() {
 
         return getImage("openPL");
     }
@@ -988,7 +988,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplane() {
+    public static BufferedImage getPlane() {
 
         return getImage("plane");
     }
@@ -996,7 +996,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneAY8910() {
+    public static BufferedImage getPlaneAY8910() {
 
         return getImage("planeAY8910");
     }
@@ -1004,7 +1004,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneB() {
+    public static BufferedImage getPlaneB() {
 
         return getImage("planeB");
     }
@@ -1020,7 +1020,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneC352() {
+    public static BufferedImage getPlaneC352() {
 
         return getImage("planeC352");
     }
@@ -1044,7 +1044,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneDMG() {
+    public static BufferedImage getPlaneDMG() {
 
         return getImage("planeDMG");
     }
@@ -1052,7 +1052,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneE() {
+    public static BufferedImage getPlaneE() {
 
         return getImage("planeE");
     }
@@ -1068,7 +1068,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneFDS() {
+    public static BufferedImage getPlaneFDS() {
 
         return getImage("planeFDS");
     }
@@ -1076,7 +1076,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneHuC6280() {
+    public static BufferedImage getPlaneHuC6280() {
 
         return getImage("planeHuC6280");
     }
@@ -1084,7 +1084,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneK051649() {
+    public static BufferedImage getPlaneK051649() {
 
         return getImage("planeK051649");
     }
@@ -1092,7 +1092,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneMIDI_GM() {
+    public static BufferedImage getPlaneMIDI_GM() {
 
         return getImage("planeMIDI_GM");
     }
@@ -1100,7 +1100,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneMIDI_GS() {
+    public static BufferedImage getPlaneMIDI_GS() {
 
         return getImage("planeMIDI_GS");
     }
@@ -1108,21 +1108,21 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneMIDI_XG() {
+    public static BufferedImage getPlaneMIDI_XG() {
         return getImage("planeMIDI_XG");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneMixer() {
+    public static BufferedImage getPlaneMixer() {
         return getImage("planeMixer");
     }
 
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneMMC5() {
+    public static BufferedImage getPlaneMMC5() {
 
         return getImage("planeMMC5");
     }
@@ -1130,7 +1130,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneMSM6258() {
+    public static BufferedImage getPlaneMSM6258() {
 
         return getImage("planeMSM6258");
     }
@@ -1138,7 +1138,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneMSM6295() {
+    public static BufferedImage getPlaneMSM6295() {
 
         return getImage("planeMSM6295");
     }
@@ -1146,7 +1146,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneMultiPCM() {
+    public static BufferedImage getPlaneMultiPCM() {
 
         return getImage("planeMultiPCM");
     }
@@ -1154,7 +1154,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneN106() {
+    public static BufferedImage getPlaneN106() {
 
         return getImage("planeN106");
     }
@@ -1162,7 +1162,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneNESDMC() {
+    public static BufferedImage getPlaneNESDMC() {
 
         return getImage("planeNESDMC");
     }
@@ -1170,7 +1170,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplanePPZ8() {
+    public static BufferedImage getPlanePPZ8() {
 
         return getImage("planePPZ8");
     }
@@ -1186,7 +1186,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneS5B() {
+    public static BufferedImage getPlaneS5B() {
 
         return getImage("planeS5B");
     }
@@ -1194,7 +1194,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneSEGAPCM() {
+    public static BufferedImage getPlaneSEGAPCM() {
 
         return getImage("planeSEGAPCM");
     }
@@ -1202,7 +1202,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneSN76489() {
+    public static BufferedImage getPlaneSN76489() {
 
         return getImage("planeSN76489");
     }
@@ -1210,7 +1210,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneVRC6() {
+    public static BufferedImage getPlaneVRC6() {
 
         return getImage("planeVRC6");
     }
@@ -1218,7 +1218,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneVRC7() {
+    public static BufferedImage getPlaneVRC7() {
 
         return getImage("planeVRC7");
     }
@@ -1226,7 +1226,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneY8950() {
+    public static BufferedImage getPlaneY8950() {
 
         return getImage("planeY8950");
     }
@@ -1234,7 +1234,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneYM2203() {
+    public static BufferedImage getPlaneYM2203() {
 
         return getImage("planeYM2203");
     }
@@ -1242,7 +1242,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneYM2413() {
+    public static BufferedImage getPlaneYM2413() {
 
         return getImage("planeYM2413");
     }
@@ -1250,7 +1250,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneYM2610() {
+    public static BufferedImage getPlaneYM2610() {
 
         return getImage("planeYM2610");
     }
@@ -1258,7 +1258,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneYM2612() {
+    public static BufferedImage getPlaneYM2612() {
 
         return getImage("planeYM2612");
     }
@@ -1266,7 +1266,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneYM2612MIDI() {
+    public static BufferedImage getPlaneYM2612MIDI() {
 
         return getImage("planeYM2612MIDI");
     }
@@ -1274,7 +1274,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneYM3526() {
+    public static BufferedImage getPlaneYM3526() {
 
         return getImage("planeYM3526");
     }
@@ -1282,7 +1282,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneYM3812() {
+    public static BufferedImage getPlaneYM3812() {
 
         return getImage("planeYM3812");
     }
@@ -1290,7 +1290,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneYMF262() {
+    public static BufferedImage getPlaneYMF262() {
 
         return getImage("planeYMF262");
     }
@@ -1298,7 +1298,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneYMF271() {
+    public static BufferedImage getPlaneYMF271() {
 
         return getImage("planeYMF271");
     }
@@ -1306,7 +1306,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneYMF278B() {
+    public static BufferedImage getPlaneYMF278B() {
 
         return getImage("planeYMF278B");
     }
@@ -1314,7 +1314,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getplaneYMZ280B() {
+    public static BufferedImage getPlaneYMZ280B() {
 
         return getImage("planeYMZ280B");
     }
@@ -1322,7 +1322,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrChipName_01() {
+    public static BufferedImage getRChipName_01() {
 
         return getImage("rChipName_01");
     }
@@ -1330,7 +1330,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrChipName_02() {
+    public static BufferedImage getRChipName_02() {
 
         return getImage("rChipName_02");
     }
@@ -1338,7 +1338,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrChipName_03() {
+    public static BufferedImage getRChipName_03() {
 
         return getImage("rChipName_03");
     }
@@ -1355,7 +1355,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrFader() {
+    public static BufferedImage getRFader() {
 
         return getImage("rFader");
     }
@@ -1363,7 +1363,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrFont_01() {
+    public static BufferedImage getRFont_01() {
 
         return getImage("rFont_01");
     }
@@ -1371,7 +1371,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrFont_02() {
+    public static BufferedImage getRFont_02() {
 
         return getImage("rFont_02");
     }
@@ -1379,7 +1379,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrFont_03() {
+    public static BufferedImage getRFont_03() {
 
         return getImage("rFont_03");
     }
@@ -1387,7 +1387,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrFont_04() {
+    public static BufferedImage getRFont_04() {
 
         return getImage("rFont_04");
     }
@@ -1395,7 +1395,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrFont_05() {
+    public static BufferedImage getRFont_05() {
 
         return getImage("rFont_05");
     }
@@ -1403,7 +1403,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrFont_06() {
+    public static BufferedImage getRFont_06() {
 
         return getImage("rFont_06");
     }
@@ -1411,7 +1411,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrKakko_00() {
+    public static BufferedImage getRKakko_00() {
 
         return getImage("rKakko_00");
     }
@@ -1419,7 +1419,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrKBD_01() {
+    public static BufferedImage getRKBD_01() {
 
         return getImage("rKBD_01");
     }
@@ -1427,7 +1427,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrKBD_02() {
+    public static BufferedImage getRKBD_02() {
 
         return getImage("rKBD_02");
     }
@@ -1435,7 +1435,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrKBD_03() {
+    public static BufferedImage getRKBD_03() {
 
         return getImage("rKBD_03");
     }
@@ -1443,7 +1443,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMenuButtons_01() {
+    public static BufferedImage getRMenuButtons_01() {
 
         return getImage("rMenuButtons_01");
     }
@@ -1451,7 +1451,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMenuButtons_02() {
+    public static BufferedImage getRMenuButtons_02() {
 
         return getImage("rMenuButtons_02");
     }
@@ -1459,7 +1459,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_01() {
+    public static BufferedImage getRMIDILCD_01() {
 
         return getImage("rMIDILCD_01");
     }
@@ -1467,7 +1467,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_02() {
+    public static BufferedImage getRMIDILCD_02() {
 
         return getImage("rMIDILCD_02");
     }
@@ -1475,7 +1475,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_03() {
+    public static BufferedImage getRMIDILCD_03() {
 
         return getImage("rMIDILCD_03");
     }
@@ -1483,7 +1483,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_Fader_01() {
+    public static BufferedImage getRMIDILCD_Fader_01() {
 
         return getImage("rMIDILCD_Fader_01");
     }
@@ -1491,7 +1491,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_Fader_02() {
+    public static BufferedImage getRMIDILCD_Fader_02() {
 
         return getImage("rMIDILCD_Fader_02");
     }
@@ -1499,7 +1499,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_Fader_03() {
+    public static BufferedImage getRMIDILCD_Fader_03() {
 
         return getImage("rMIDILCD_Fader_03");
     }
@@ -1507,7 +1507,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_Font_01() {
+    public static BufferedImage getRMIDILCD_Font_01() {
 
         return getImage("rMIDILCD_Font_01");
     }
@@ -1515,7 +1515,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_Font_02() {
+    public static BufferedImage getRMIDILCD_Font_02() {
 
         return getImage("rMIDILCD_Font_02");
     }
@@ -1523,7 +1523,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_Font_03() {
+    public static BufferedImage getRMIDILCD_Font_03() {
 
         return getImage("rMIDILCD_Font_03");
     }
@@ -1531,7 +1531,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_Font_04() {
+    public static BufferedImage getRMIDILCD_Font_04() {
 
         return getImage("rMIDILCD_Font_04");
     }
@@ -1539,7 +1539,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_Font_05() {
+    public static BufferedImage getRMIDILCD_Font_05() {
 
         return getImage("rMIDILCD_Font_05");
     }
@@ -1547,7 +1547,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_Font_06() {
+    public static BufferedImage getRMIDILCD_Font_06() {
 
         return getImage("rMIDILCD_Font_06");
     }
@@ -1555,7 +1555,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_KBD_01() {
+    public static BufferedImage getRMIDILCD_KBD_01() {
 
         return getImage("rMIDILCD_KBD_01");
     }
@@ -1563,7 +1563,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_Vol_01() {
+    public static BufferedImage getRMIDILCD_Vol_01() {
 
         return getImage("rMIDILCD_Vol_01");
     }
@@ -1571,7 +1571,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_Vol_02() {
+    public static BufferedImage getRMIDILCD_Vol_02() {
 
         return getImage("rMIDILCD_Vol_02");
     }
@@ -1579,7 +1579,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrMIDILCD_Vol_03() {
+    public static BufferedImage getRMIDILCD_Vol_03() {
 
         return getImage("rMIDILCD_Vol_03");
     }
@@ -1587,7 +1587,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrNESDMC() {
+    public static BufferedImage getRNESDMC() {
 
         return getImage("rNESDMC");
     }
@@ -1595,7 +1595,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrPan_01() {
+    public static BufferedImage getRPan_01() {
 
         return getImage("rPan_01");
     }
@@ -1603,7 +1603,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrPan_02() {
+    public static BufferedImage getRPan_02() {
 
         return getImage("rPan_02");
     }
@@ -1611,7 +1611,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrPan_03() {
+    public static BufferedImage getRPan_03() {
 
         return getImage("rPan_03");
     }
@@ -1619,7 +1619,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrPan2_01() {
+    public static BufferedImage getRPan2_01() {
 
         return getImage("rPan2_01");
     }
@@ -1627,7 +1627,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrPan2_02() {
+    public static BufferedImage getRPan2_02() {
 
         return getImage("rPan2_02");
     }
@@ -1635,7 +1635,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrPSGEnv() {
+    public static BufferedImage getRPSGEnv() {
 
         return getImage("rPSGEnv");
     }
@@ -1643,7 +1643,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrPSGMode_01() {
+    public static BufferedImage getRPSGMode_01() {
 
         return getImage("rPSGMode_01");
     }
@@ -1651,7 +1651,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrPSGMode_02() {
+    public static BufferedImage getRPSGMode_02() {
 
         return getImage("rPSGMode_02");
     }
@@ -1659,7 +1659,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrPSGMode_03() {
+    public static BufferedImage getRPSGMode_03() {
 
         return getImage("rPSGMode_03");
     }
@@ -1667,7 +1667,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrPSGMode_04() {
+    public static BufferedImage getRPSGMode_04() {
 
         return getImage("rPSGMode_04");
     }
@@ -1675,7 +1675,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrPSGMode_05() {
+    public static BufferedImage getRPSGMode_05() {
 
         return getImage("rPSGMode_05");
     }
@@ -1683,7 +1683,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrPSGMode_06() {
+    public static BufferedImage getRPSGMode_06() {
 
         return getImage("rPSGMode_06");
     }
@@ -1691,7 +1691,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrType_01() {
+    public static BufferedImage getRType_01() {
 
         return getImage("rType_01");
     }
@@ -1699,7 +1699,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrType_02() {
+    public static BufferedImage getRType_02() {
 
         return getImage("rType_02");
     }
@@ -1707,7 +1707,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrType_03() {
+    public static BufferedImage getRType_03() {
 
         return getImage("rType_03");
     }
@@ -1715,7 +1715,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrType_04() {
+    public static BufferedImage getRType_04() {
 
         return getImage("rType_04");
     }
@@ -1723,7 +1723,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrType_05() {
+    public static BufferedImage getRType_05() {
 
         return getImage("rType_05");
     }
@@ -1731,7 +1731,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrType_06() {
+    public static BufferedImage getRType_06() {
 
         return getImage("rType_06");
     }
@@ -1739,7 +1739,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrType_YMF271() {
+    public static BufferedImage getRType_YMF271() {
 
         return getImage("rType_YMF271");
     }
@@ -1747,7 +1747,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrVol_01() {
+    public static BufferedImage getRVol_01() {
 
         return getImage("rVol_01");
     }
@@ -1755,7 +1755,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrVol_02() {
+    public static BufferedImage getRVol_02() {
 
         return getImage("rVol_02");
     }
@@ -1763,7 +1763,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrVol_03() {
+    public static BufferedImage getRVol_03() {
 
         return getImage("rVol_03");
     }
@@ -1771,7 +1771,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrWavGraph() {
+    public static BufferedImage getRWavGraph() {
 
         return getImage("rWavGraph");
     }
@@ -1779,7 +1779,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getrWavGraph2() {
+    public static BufferedImage getRWavGraph2() {
 
         return getImage("rWavGraph2");
     }
@@ -1787,7 +1787,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getsavePL() {
+    public static BufferedImage getSavePL() {
 
         return getImage("savePL");
     }
@@ -1795,7 +1795,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage gettxtPL() {
+    public static BufferedImage getTxtPL() {
 
         return getImage("txtPL");
     }
@@ -1803,7 +1803,7 @@ public class Resources {
     /**
      * 型 BufferedImage のローカライズされたリソースを検索します。
      */
-    public static BufferedImage getupPL() {
+    public static BufferedImage getUpPL() {
 
         return getImage("upPL");
     }

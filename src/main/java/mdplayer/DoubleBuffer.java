@@ -6,7 +6,10 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.Closeable;
+import java.util.logging.Level;
 import javax.swing.JComponent;
+
+import vavi.util.Debug;
 
 
 public class DoubleBuffer implements Closeable {
@@ -37,15 +40,14 @@ public class DoubleBuffer implements Closeable {
                 try {
                     mainScreen.Refresh(g);
                 } catch (Exception ex) {
-                    Log.forcedWrite(ex);
+                    ex.printStackTrace();
                     mainScreen.Remove(g2 -> {});
                     mainScreen = null;
                 }
             }
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
-
 }

@@ -166,7 +166,7 @@ public class EventScheduler {
         IEvent event_ = firstEvent;
         firstEvent = firstEvent.getNext(); //次のイベントが最初になる
         currentTime = event_.getTriggerTime();
-        //Log.Write(String.format("%d %d", currentTime, event.getName()));
+        //Debug.printf(String.format("%d %d", currentTime, event.getName()));
 
         event_.event();
     }

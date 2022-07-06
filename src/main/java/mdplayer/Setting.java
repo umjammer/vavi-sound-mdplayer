@@ -10,11 +10,13 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.logging.Level;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.properties.Resources;
+import vavi.util.Debug;
 import vavi.util.serdes.Serdes;
 
 
@@ -47,7 +49,7 @@ public class Setting implements Serializable {
             return realChipInfos;
         }
 
-        public void setrealChipInfo(RealChipInfo[] value) {
+        public void setRealChipInfo(RealChipInfo[] value) {
             realChipInfos = value;
         }
 
@@ -1265,21 +1267,21 @@ public class Setting implements Serializable {
     public Location getLocation() {
         return location;
     }
-    public void setlocation(Location value) {
+    public void setLocation(Location value) {
         location = value;
     }
     private MidiExport midiExport = new MidiExport();
     public MidiExport getMidiExport() {
         return midiExport;
     }
-    void setmidiExport(MidiExport value) {
+    void setMidiExport(MidiExport value) {
         midiExport = value;
     }
     private MidiKbd midiKbd = new MidiKbd();
     public MidiKbd getMidiKbd() {
         return midiKbd;
     }
-    void setmidiKbd(MidiKbd value) {
+    void setMidiKbd(MidiKbd value) {
         midiKbd = value;
     }
     private Vst vst = new Vst();
@@ -2902,7 +2904,7 @@ public class Setting implements Serializable {
             try (OutputStream out = Files.newOutputStream(Paths.get(fullPath))) {
                 Serdes.Util.serialize(this, out);
             } catch (IOException ex) {
-                Log.forcedWrite(ex);
+                ex.printStackTrace();
             }
         }
 
@@ -2913,7 +2915,7 @@ public class Setting implements Serializable {
             try (InputStream in = Files.newInputStream(p)) {
                 return Serdes.Util.deserialize(in, new Balance());
             } catch (IOException ex) {
-                Log.forcedWrite(ex);
+                ex.printStackTrace();
                 return null;
             }
         }
@@ -4389,19 +4391,19 @@ public class Setting implements Serializable {
         setting.unuseRealChip = this.unuseRealChip;
         setting.fileSearchPathList = this.fileSearchPathList;
 
-        // setting._YM2151SType = this._YM2151SType.Copy();
-        // setting._YM2203SType = this._YM2203SType.Copy();
-        // setting._YM2413SType = this._YM2413SType.Copy();
-        // setting._AY8910SType = this._AY8910SType.Copy();
-        // setting._YM2608SType = this._YM2608SType.Copy();
-        // setting._YM2610SType = this._YM2610SType.Copy();
-        // setting._YM2612SType = this._YM2612SType.Copy();
-        // setting._YM3526SType = this._YM3526SType.Copy();
-        // setting._YM3812SType = this._YM3812SType.Copy();
-        // setting._YMF262SType = this._YMF262SType.Copy();
-        // setting._SN76489SType = this._SN76489SType.Copy();
-        // setting._C140SType = this._C140SType.Copy();
-        // setting._SEGAPCMSType = this._SEGAPCMSType.Copy();
+        //setting._YM2151SType = this._YM2151SType.Copy();
+        //setting._YM2203SType = this._YM2203SType.Copy();
+        //setting._YM2413SType = this._YM2413SType.Copy();
+        //setting._AY8910SType = this._AY8910SType.Copy();
+        //setting._YM2608SType = this._YM2608SType.Copy();
+        //setting._YM2610SType = this._YM2610SType.Copy();
+        //setting._YM2612SType = this._YM2612SType.Copy();
+        //setting._YM3526SType = this._YM3526SType.Copy();
+        //setting._YM3812SType = this._YM3812SType.Copy();
+        //setting._YMF262SType = this._YMF262SType.Copy();
+        //setting._SN76489SType = this._SN76489SType.Copy();
+        //setting._C140SType = this._C140SType.Copy();
+        //setting._SEGAPCMSType = this._SEGAPCMSType.Copy();
 
         setting.other = this.other.copy();
         setting.balance = this.balance.copy();
@@ -4427,18 +4429,18 @@ public class Setting implements Serializable {
 
     public void save() {
         String fullPath = Common.settingFilePath;
-        fullPath = Path.combine(fullPath, Resources.getcntSettingFileName());
+        fullPath = Path.combine(fullPath, Resources.getCntSettingFileName());
 
         try (OutputStream sw = Files.newOutputStream(Paths.get(fullPath))) {
             Serdes.Util.serialize(sw, this);
         } catch (IOException e) {
-            Log.forcedWrite(e);
+            e.printStackTrace();
         }
     }
 
     public static Setting load() {
         try {
-            String fn = Resources.getcntSettingFileName();
+            String fn = Resources.getCntSettingFileName();
             if (File.exists(Path.getDirectoryName(System.getProperty("user.dir")) + fn)) {
                 // アプリケーションと同じフォルダに設定ファイルがあるならそちらを使用する
                 Common.settingFilePath = Path.getDirectoryName(System.getProperty("user.dir"));
@@ -4448,7 +4450,7 @@ public class Setting implements Serializable {
             }
 
             String fullPath = Common.settingFilePath;
-            fullPath = Path.combine(fullPath, Resources.getcntSettingFileName());
+            fullPath = Path.combine(fullPath, Resources.getCntSettingFileName());
 
             if (!File.exists(fullPath)) {
                 return new Setting();
@@ -4457,7 +4459,7 @@ public class Setting implements Serializable {
                 return Serdes.Util.deserialize(sr, new Setting());
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             return new Setting();
         }
     }

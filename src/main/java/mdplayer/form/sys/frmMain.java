@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiSystem;
@@ -140,6 +141,7 @@ import mdsound.K051649;
 import mdsound.OotakePsg;
 import mdsound.np.chip.NesN106;
 import org.apache.tools.ant.types.Environment;
+import vavi.util.Debug;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
@@ -254,8 +256,8 @@ public class frmMain extends JFrame {
     private List<String[]> remoteReq = new ArrayList<>();
 
     public frmMain() {
-        Log.forcedWrite("起動処理開始");
-        Log.forcedWrite("frmMain(コンストラクタ):STEP 00");
+        Debug.println(Level.SEVERE, "起動処理開始");
+        Debug.println(Level.SEVERE, "frmMain(コンストラクタ):STEP 00");
 
         initializeComponent();
         DrawBuff.Init();
@@ -289,7 +291,7 @@ public class frmMain extends JFrame {
         lstForm.add(frmVRC6);
         lstForm.add(frmVRC7);
 
-        Log.forcedWrite("frmMain(コンストラクタ):STEP 01");
+        Debug.println(Level.SEVERE, "frmMain(コンストラクタ):STEP 01");
 
         // 引数が指定されている場合のみプロセスチェックを行い、自分と同じアプリケーションが実行中ならばそちらに引数を渡し終了する
 //        if (Common.getCommandLineArgs().length > 1) {
@@ -305,13 +307,13 @@ public class frmMain extends JFrame {
 //            }
 //        }
 
-        Log.forcedWrite("frmMain(コンストラクタ):STEP 02");
+        Debug.println(Level.SEVERE, "frmMain(コンストラクタ):STEP 02");
 
 //        pbScreen.AllowDrop = true;
 
-        Log.forcedWrite("frmMain(コンストラクタ):STEP 03");
+        Debug.println(Level.SEVERE, "frmMain(コンストラクタ):STEP 03");
         if (setting == null) {
-            Log.forcedWrite("frmMain(コンストラクタ):setting instanceof null");
+            Debug.println(Level.SEVERE, "frmMain(コンストラクタ):setting instanceof null");
         } else {
 //            if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift) {
 //                int res = JOptionPane.showConfirmDialog(this,
@@ -324,24 +326,24 @@ public class frmMain extends JFrame {
 //            }
         }
 
-        Log.forcedWrite("起動時のAudio初期化処理開始");
+        Debug.println(Level.SEVERE, "起動時のAudio初期化処理開始");
 
         Audio.frmMain = this;
         Audio.init(setting);
 
         ym2612MIDI = new mdplayer.YM2612MIDI(this, Audio.mdsMIDI, newParam);
 
-        Log.forcedWrite("起動時のAudio初期化処理完了");
+        Debug.println(Level.SEVERE, "起動時のAudio初期化処理完了");
 
         StartMIDIInMonitoring();
 
-        Log.forcedWrite("frmMain(コンストラクタ):STEP 04");
+        Debug.println(Level.SEVERE, "frmMain(コンストラクタ):STEP 04");
 
         Log.debug = setting.getDebug_DispFrameCounter();
     }
 
     private void ClearWindowPos() {
-        setting.setlocation(new Setting.Location());
+        setting.setLocation(new Setting.Location());
     }
 
     private WindowListener windowListener = new WindowAdapter() {
@@ -369,7 +371,7 @@ public class frmMain extends JFrame {
     private void frmMain_Load(WindowEvent ev) {
         Runtime.getRuntime().addShutdownHook(new Thread(this::SystemEvents_SessionEnding));
 
-        Log.forcedWrite("frmMain_Load:STEP 05");
+        Debug.println(Level.SEVERE, "frmMain_Load:STEP 05");
 
         if (!setting.getLocation().getPMain().equals(empty))
             this.setLocation(setting.getLocation().getPMain());
@@ -378,7 +380,7 @@ public class frmMain extends JFrame {
 
         pbRf5c164Screen = new BufferedImage(320, 72, BufferedImage.TYPE_INT_ARGB);
 
-        Log.forcedWrite("frmMain_Load:STEP 06");
+        Debug.println(Level.SEVERE, "frmMain_Load:STEP 06");
 
         screen = new DoubleBuffer(pbScreen, Resources.getPlaneControl(), 1);
         screen.setting = setting;
@@ -386,7 +388,7 @@ public class frmMain extends JFrame {
         //newParam = new MDChipParams();
         reqAllScreenInit = true;
 
-        Log.forcedWrite("frmMain_Load:STEP 07");
+        Debug.println(Level.SEVERE, "frmMain_Load:STEP 07");
 
         pWidth = pbScreen.getWidth();
         pHeight = pbScreen.getHeight();
@@ -451,7 +453,7 @@ public class frmMain extends JFrame {
             if (setting.getLocation().getOpenN106()[chipID]) openFormN106(chipID, false);
         }
 
-        Log.forcedWrite("frmMain_Load:STEP 08");
+        Debug.println(Level.SEVERE, "frmMain_Load:STEP 08");
 
         frameSizeW = this.getWidth() - this.getSize().width;
         frameSizeH = this.getHeight() - this.getSize().height;
@@ -482,9 +484,9 @@ public class frmMain extends JFrame {
                         opeButtonMode
                 };
 
-        Log.forcedWrite("frmMain_Load:STEP 09");
+        Debug.println(Level.SEVERE, "frmMain_Load:STEP 09");
 
-        ////operationフォルダクリア
+         // //operationフォルダクリア
         //opeFolder = mdplayer.Common.GetOperationFolder(true);
         //startWatch(opeFolder);
         mmf = new MmfControl(false, "MDPlayer", 1024 * 4);
@@ -526,7 +528,7 @@ public class frmMain extends JFrame {
                 try {
                     File.delete(trgFile);
                 } catch (Exception deleteEx) {
-                    Log.forcedWrite(deleteEx);
+                    deleteEx.printStackTrace();
                 }
                 return;
             }
@@ -542,7 +544,7 @@ public class frmMain extends JFrame {
                     try {
                         File.delete(trgFile);
                     } catch (Exception deleteEx) {
-                        Log.forcedWrite(deleteEx);
+                        deleteEx.printStackTrace();
                     }
                     return;
                 }
@@ -556,6 +558,7 @@ public class frmMain extends JFrame {
                         lins = Files.readAllLines(Paths.get(trgFile));
                         retry = 0;
                     } catch (IOException e1) {
+                        Debug.println(Level.WARNING, e);
                         Thread.sleep(100);
                         retry--;
                     }
@@ -564,13 +567,13 @@ public class frmMain extends JFrame {
                 try {
                     File.delete(trgFile);
                 } catch (Exception deleteEx) {
-                    Log.forcedWrite(deleteEx);
+                    deleteEx.printStackTrace();
                 }
 
                 remoteReq.add(lins.toArray(String[]::new));
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         } finally {
             synchronized (remoteLockObj) {
                 remoteBusy = false;
@@ -650,7 +653,7 @@ public class frmMain extends JFrame {
                 break;
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -1011,7 +1014,7 @@ public class frmMain extends JFrame {
     }
 
     private void frmMain_Shown(WindowEvent ev) {
-        Log.forcedWrite("frmMain_Shown:STEP 09");
+        Debug.println(Level.SEVERE, "frmMain_Shown:STEP 09");
 
         Thread trd = new Thread(this::screenMainLoop);
         trd.setPriority(Thread.MIN_PRIORITY);
@@ -1025,7 +1028,7 @@ public class frmMain extends JFrame {
             return;
         }
 
-        Log.forcedWrite("frmMain_Shown:STEP 10");
+        Debug.println(Level.SEVERE, "frmMain_Shown:STEP 10");
 
         try {
 
@@ -1050,12 +1053,12 @@ public class frmMain extends JFrame {
             frmPlayList.play();
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "ファイルの読み込みに失敗しました。");
         }
 
-        Log.forcedWrite("frmMain_Shown:STEP 11");
-        Log.forcedWrite("起動処理完了");
+        Debug.println(Level.SEVERE, "frmMain_Shown:STEP 11");
+        Debug.println(Level.SEVERE, "起動処理完了");
     }
 
     private ComponentListener componentListener = new ComponentAdapter() {
@@ -1074,40 +1077,32 @@ public class frmMain extends JFrame {
     private void frmMain_FormClosing(WindowEvent e) {
         if (forcedExit) return;
 
-        Log.forcedWrite("終了処理開始");
-        Log.forcedWrite("frmMain_FormClosing:STEP 00");
+        Debug.println(Level.SEVERE, "終了処理開始");
+        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 00");
 
         frmPlayList.stop();
         frmPlayList.Save();
 
         tonePallet.save(null);
 
-        Log.forcedWrite("frmMain_FormClosing:STEP 01");
+        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 01");
 
         StopMIDIInMonitoring();
         Request req = new Request(enmRequest.Die, null, null);
         OpeManager.requestToAudio(req);
-        while (!req.getEnd()) { //自殺リクエストはコールバック無し
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
+        while (!req.getEnd()) {  // 自殺リクエストはコールバック無し
+            Thread.yield();
         }
 
-        Log.forcedWrite("frmMain_FormClosing:STEP 02");
+        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 02");
 
         isRunning = false;
         while (!stopped) {
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
+                Thread.yield();
 //            Application.DoEvents();
         }
 
-        Log.forcedWrite("frmMain_FormClosing:STEP 03");
+        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 03");
 
         ym2612MIDI.close();
 
@@ -1158,7 +1153,7 @@ public class frmMain extends JFrame {
             setting.getLocation().getOpenRegTest()[chipID] = false;
         }
 
-        Log.forcedWrite("frmMain_FormClosing:STEP 04");
+        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 04");
 
         if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
             setting.getLocation().setPMain(getLocation());
@@ -1343,15 +1338,15 @@ public class frmMain extends JFrame {
             }
         }
 
-        Log.forcedWrite("frmMain_FormClosing:STEP 05");
+        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 05");
 
         setting.save();
 
-        Log.forcedWrite("frmMain_FormClosing:STEP 06");
+        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 06");
 
         mmf.close();
 
-        Log.forcedWrite("終了処理完了");
+        Debug.println(Level.SEVERE, "終了処理完了");
     }
 
     private MouseMotionListener pbScreen_MouseMove = new MouseMotionAdapter() {
@@ -1802,13 +1797,13 @@ public class frmMain extends JFrame {
         try {
             frmMCD[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
 
         }
         try {
             frmMCD[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmMCD[chipID] = null;
     }
@@ -1845,13 +1840,13 @@ public class frmMain extends JFrame {
         try {
             frmRf5c68[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
 
         }
         try {
             frmRf5c68[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmRf5c68[chipID] = null;
     }
@@ -1890,13 +1885,13 @@ public class frmMain extends JFrame {
         try {
             frmYMF271[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
 
         }
         try {
             frmYMF271[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmYMF271[chipID] = null;
     }
@@ -1935,12 +1930,12 @@ public class frmMain extends JFrame {
         try {
             frmYM2608[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmYM2608[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmYM2608[chipID] = null;
     }
@@ -1978,12 +1973,12 @@ public class frmMain extends JFrame {
         try {
             frmYM2151[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmYM2151[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmYM2151[chipID] = null;
     }
@@ -2020,12 +2015,12 @@ public class frmMain extends JFrame {
         try {
             frmC140[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmC140[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmC140[chipID] = null;
     }
@@ -2062,12 +2057,12 @@ public class frmMain extends JFrame {
         try {
             frmPPZ8[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmPPZ8[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmPPZ8[chipID] = null;
     }
@@ -2104,12 +2099,12 @@ public class frmMain extends JFrame {
         try {
             frmS5B[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmS5B[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmS5B[chipID] = null;
     }
@@ -2146,12 +2141,12 @@ public class frmMain extends JFrame {
         try {
             frmDMG[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmDMG[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmDMG[chipID] = null;
     }
@@ -2188,12 +2183,12 @@ public class frmMain extends JFrame {
         try {
             frmYMZ280B[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmYMZ280B[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmYMZ280B[chipID] = null;
     }
@@ -2230,12 +2225,12 @@ public class frmMain extends JFrame {
         try {
             frmC352[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmC352[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmC352[chipID] = null;
     }
@@ -2273,12 +2268,12 @@ public class frmMain extends JFrame {
         try {
             frmMultiPCM[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmMultiPCM[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmMultiPCM[chipID] = null;
     }
@@ -2315,12 +2310,12 @@ public class frmMain extends JFrame {
         try {
             frmQSound[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmQSound[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmQSound[chipID] = null;
     }
@@ -2357,12 +2352,12 @@ public class frmMain extends JFrame {
         try {
             frmYM2203[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmYM2203[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmYM2203[chipID] = null;
     }
@@ -2399,12 +2394,12 @@ public class frmMain extends JFrame {
         try {
             frmYM2610[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmYM2610[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmYM2610[chipID] = null;
     }
@@ -2444,12 +2439,12 @@ public class frmMain extends JFrame {
         try {
             frmYM2612[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmYM2612[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmYM2612[chipID] = null;
     }
@@ -2485,12 +2480,12 @@ public class frmMain extends JFrame {
         try {
             frmOKIM6258[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmOKIM6258[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmOKIM6258[chipID] = null;
     }
@@ -2526,12 +2521,12 @@ public class frmMain extends JFrame {
         try {
             frmOKIM6295[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmOKIM6295[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmOKIM6295[chipID] = null;
     }
@@ -2568,12 +2563,12 @@ public class frmMain extends JFrame {
         try {
             frmSN76489[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmSN76489[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmSN76489[chipID] = null;
     }
@@ -2610,12 +2605,12 @@ public class frmMain extends JFrame {
         try {
             frmSegaPCM[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmSegaPCM[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmSegaPCM[chipID] = null;
     }
@@ -2653,12 +2648,12 @@ public class frmMain extends JFrame {
         try {
             frmAY8910[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmAY8910[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmAY8910[chipID] = null;
     }
@@ -2695,12 +2690,12 @@ public class frmMain extends JFrame {
         try {
             frmHuC6280[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmHuC6280[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmHuC6280[chipID] = null;
     }
@@ -2738,12 +2733,12 @@ public class frmMain extends JFrame {
         try {
             frmK051649[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmK051649[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmK051649[chipID] = null;
     }
@@ -2780,12 +2775,12 @@ public class frmMain extends JFrame {
         try {
             frmYM2413[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmYM2413[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmYM2413[chipID] = null;
     }
@@ -2822,12 +2817,12 @@ public class frmMain extends JFrame {
         try {
             frmYM3526[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmYM3526[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmYM3526[chipID] = null;
     }
@@ -2864,12 +2859,12 @@ public class frmMain extends JFrame {
         try {
             frmY8950[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmY8950[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmY8950[chipID] = null;
     }
@@ -2906,12 +2901,12 @@ public class frmMain extends JFrame {
         try {
             frmYM3812[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmYM3812[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmYM3812[chipID] = null;
     }
@@ -2948,12 +2943,12 @@ public class frmMain extends JFrame {
         try {
             frmYMF262[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmYMF262[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmYMF262[chipID] = null;
     }
@@ -2990,12 +2985,12 @@ public class frmMain extends JFrame {
         try {
             frmYMF278B[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmYMF278B[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmYMF278B[chipID] = null;
     }
@@ -3032,12 +3027,12 @@ public class frmMain extends JFrame {
         try {
             frmMIDI[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmMIDI[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmMIDI[chipID] = null;
     }
@@ -3074,12 +3069,12 @@ public class frmMain extends JFrame {
         try {
             frmNESDMC[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmNESDMC[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmNESDMC[chipID] = null;
     }
@@ -3116,12 +3111,12 @@ public class frmMain extends JFrame {
         try {
             frmFDS[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmFDS[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmFDS[chipID] = null;
     }
@@ -3162,12 +3157,12 @@ public class frmMain extends JFrame {
         try {
             frmVRC6[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmVRC6[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmVRC6[chipID] = null;
     }
@@ -3205,12 +3200,12 @@ public class frmMain extends JFrame {
         try {
             frmVRC7[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmVRC7[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmVRC7[chipID] = null;
     }
@@ -3247,12 +3242,12 @@ public class frmMain extends JFrame {
         try {
             frmMMC5[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmMMC5[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmMMC5[chipID] = null;
     }
@@ -3338,12 +3333,12 @@ public class frmMain extends JFrame {
         try {
             frmN106[chipID].setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmN106[chipID].dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmN106[chipID] = null;
     }
@@ -3354,12 +3349,12 @@ public class frmMain extends JFrame {
         try {
             frmRegTest.setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmRegTest.dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmRegTest = null;
     }
@@ -3370,12 +3365,12 @@ public class frmMain extends JFrame {
         try {
             frmVisWave.setVisible(false);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         try {
             frmVisWave.dispose();
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
         frmVisWave = null;
     }
@@ -3385,7 +3380,8 @@ public class frmMain extends JFrame {
             try {
                 frmInfo.setVisible(false);
                 frmInfo.dispose();
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 frmInfo = null;
             }
@@ -3396,7 +3392,8 @@ public class frmMain extends JFrame {
             try {
                 frmInfo.setVisible(false);
                 frmInfo.dispose();
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 frmInfo = null;
             }
@@ -3430,7 +3427,8 @@ public class frmMain extends JFrame {
             try {
                 frmYM2612MIDI.setVisible(false);
                 frmYM2612MIDI.dispose();
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 frmYM2612MIDI = null;
             }
@@ -3441,7 +3439,8 @@ public class frmMain extends JFrame {
             try {
                 frmYM2612MIDI.setVisible(false);
                 frmYM2612MIDI.dispose();
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 frmYM2612MIDI = null;
             }
@@ -3489,21 +3488,13 @@ public class frmMain extends JFrame {
         Request req = new Request(enmRequest.Stop, null, null);
         OpeManager.requestToAudio(req);
         while (!req.getEnd()) {
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+                Thread.yield();
         }
 
         req = new Request(enmRequest.Die, null, null);
         OpeManager.requestToAudio(req);
         while (!req.getEnd()) {
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+                Thread.yield();
         }
 
         //Audio.Stop();
@@ -3519,11 +3510,11 @@ public class frmMain extends JFrame {
         reqAllScreenInit = true;
         //screen.screenInitAll();
 
-        Log.forcedWrite("設定が変更されたため、再度Audio初期化処理開始");
+        Debug.println(Level.SEVERE, "設定が変更されたため、再度Audio初期化処理開始");
 
         Audio.init(this.setting);
 
-        Log.forcedWrite("Audio初期化処理完了");
+        Debug.println(Level.SEVERE, "Audio初期化処理完了");
         Log.debug = this.setting.getDebug_DispFrameCounter();
 
 //        frmVSTeffectList.dispPluginList();
@@ -3548,6 +3539,7 @@ public class frmMain extends JFrame {
                 frmMixer2.setVisible(false);
                 frmMixer2.dispose();
             } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 frmMixer2 = null;
             }
@@ -3559,6 +3551,7 @@ public class frmMain extends JFrame {
                 frmMixer2.setVisible(false);
                 frmMixer2.dispose();
             } catch (Exception e) {
+                e.printStackTrace();
             } finally {
                 frmMixer2 = null;
             }
@@ -3599,7 +3592,7 @@ public class frmMain extends JFrame {
         String filename = files.get(0).getPath();
 
         try {
-            //曲を停止
+             // 曲を停止
             frmPlayList.stop();
             this.stop();
 //            while (!Audio.isStopped())
@@ -3616,7 +3609,7 @@ public class frmMain extends JFrame {
                 frmPlayList.play();
             }
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "ファイルの読み込みに失敗しました。");
         }
     }
@@ -3692,8 +3685,7 @@ public class frmMain extends JFrame {
                 if (nextFrame - tickCount > 1) {
                     try {
                         Thread.sleep((int) (nextFrame - tickCount));
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                    } catch (InterruptedException ignored) {
                     }
                 }
                 continue;
@@ -3723,7 +3715,7 @@ public class frmMain extends JFrame {
             }
 
             if (Audio.getFatalError()) {
-                Log.forcedWrite("AudioでFatalErrorが発生。再度Audio初期化処理開始");
+                Debug.println(Level.SEVERE, "AudioでFatalErrorが発生。再度Audio初期化処理開始");
 
                 frmPlayList.stop();
                 try {
@@ -3732,19 +3724,19 @@ public class frmMain extends JFrame {
                     while (!req.getEnd()) Thread.sleep(1);
                     //Audio.Stop();
                 } catch (Exception ex) {
-                    Log.forcedWrite(ex);
+                    ex.printStackTrace();
                 }
 
                 try {
                     Audio.close();
                 } catch (Exception ex) {
-                    Log.forcedWrite(ex);
+                    ex.printStackTrace();
                 }
 
                 Audio.setFatalError(false);
                 Audio.init(setting);
 
-                Log.forcedWrite("Audio初期化処理完了");
+                Debug.println(Level.SEVERE, "Audio初期化処理完了");
             }
         }
 
@@ -3983,7 +3975,8 @@ public class frmMain extends JFrame {
 
         try {
             setTitle(newInfo);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -4280,7 +4273,7 @@ public class frmMain extends JFrame {
     }
 
     public void stop() {
-        if (Audio.getisPaused()) {
+        if (Audio.getIsPaused()) {
             Audio.pause();
         }
 
@@ -4299,7 +4292,7 @@ public class frmMain extends JFrame {
     }
 
     public void fadeout() {
-        if (Audio.getisPaused()) {
+        if (Audio.getIsPaused()) {
             Audio.pause();
         }
 
@@ -4307,7 +4300,7 @@ public class frmMain extends JFrame {
     }
 
     public void prev() {
-        if (Audio.getisPaused()) {
+        if (Audio.getIsPaused()) {
             Audio.pause();
         }
 
@@ -4316,7 +4309,7 @@ public class frmMain extends JFrame {
 
     public void play() {
 
-        if (Audio.getisPaused()) {
+        if (Audio.getIsPaused()) {
             Audio.pause();
         }
 
@@ -4353,7 +4346,7 @@ public class frmMain extends JFrame {
                 return;
             }
 
-            if (Audio.getisPaused()) {
+            if (Audio.getIsPaused()) {
                 Audio.pause();
             }
             //stop();
@@ -4415,7 +4408,7 @@ public class frmMain extends JFrame {
                     //while (!req.end) Thread.sleep(1);
                     //Audio.Stop();
                 } catch (Exception ex) {
-                    Log.forcedWrite(ex);
+                    ex.printStackTrace();
                 }
                 if (Audio.errMsg.isEmpty()) throw new Exception();
                 else {
@@ -4660,12 +4653,13 @@ public class frmMain extends JFrame {
                 else CloseFormYMF271(1);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             Audio.errMsg = e.getMessage();
         }
     }
 
     public void ff() {
-        if (Audio.getisPaused()) {
+        if (Audio.getIsPaused()) {
             Audio.pause();
         }
 
@@ -4673,17 +4667,14 @@ public class frmMain extends JFrame {
     }
 
     public void next() {
-        if (Audio.getisPaused()) {
+        if (Audio.getIsPaused()) {
             Audio.pause();
         }
 
         Request req = new Request(enmRequest.Stop, null, null);
         OpeManager.requestToAudio(req);
         while (!req.getEnd()) {
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException ignored) {
-            }
+                Thread.yield();
         }
         //Audio.Stop();
 
@@ -4698,7 +4689,7 @@ public class frmMain extends JFrame {
     }
 
     public void slow() {
-        if (Audio.getisPaused()) {
+        if (Audio.getIsPaused()) {
             Audio.stepPlay(4000);
             Audio.pause();
             return;
@@ -4901,7 +4892,7 @@ public class frmMain extends JFrame {
         }
 
 
-        //.VGMの場合はヘッダの確認とGzipで解凍後のファイルのヘッダの確認
+         // .VGMの場合はヘッダの確認とGzipで解凍後のファイルのヘッダの確認
         int vgm = (int) buf[0] + (int) buf[1] * 0x100 + (int) buf[2] * 0x10000 + (int) buf[3] * 0x1000000;
         if (vgm == FCC_VGM) {
             format = FileFormat.VGM;
@@ -5014,6 +5005,7 @@ public class frmMain extends JFrame {
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(this, "音色出力エラー", "エラー", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -5025,29 +5017,29 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getym2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
 
             n.append("'@ FA xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT  AM\n");
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
                 n.append(String.format("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n"
-                        , fmRegister[p][0x50 + ops + c] & 0x1f //AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f //DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f //SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f //RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f//ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
-                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7//AM
+                        , fmRegister[p][0x50 + ops + c] & 0x1f  // AR
+                        , fmRegister[p][0x60 + ops + c] & 0x1f  // DR
+                        , fmRegister[p][0x70 + ops + c] & 0x1f  // SR
+                        , fmRegister[p][0x80 + ops + c] & 0x0f  // RR
+                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
+                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
+                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
+                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
+                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
+                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7 // AM
                 ));
             }
             n.append("   ALG FB\n");
             n.append(String.format("'@ %3d,%3d\n"
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
-                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
+                    , fmRegister[p][0xb0 + c] & 0x07 // AL
+                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
             ));
         } else if (chip == EnmChip.YM2151) {
             int[] ym2151Register = Audio.getYM2151Register(chipID);
@@ -5056,23 +5048,23 @@ public class frmMain extends JFrame {
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
                 n.append(String.format("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n"
-                        , ym2151Register[0x80 + ops + ch] & 0x1f //AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f //DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f //ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
-                        , (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 //DT2
-                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7 //AM
+                        , ym2151Register[0x80 + ops + ch] & 0x1f  // AR
+                        , ym2151Register[0xa0 + ops + ch] & 0x1f  // DR
+                        , ym2151Register[0xc0 + ops + ch] & 0x1f  // SR
+                        , ym2151Register[0xe0 + ops + ch] & 0x0f  // RR
+                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4  // SL
+                        , ym2151Register[0x60 + ops + ch] & 0x7f  // TL
+                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6  // KS
+                        , ym2151Register[0x40 + ops + ch] & 0x0f  // ML
+                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4  // DT
+                        , (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6  // DT2
+                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7  // AM
                 ));
             }
             n.append("   ALG FB\n");
             n.append(String.format("'@ %3d,%3d\n"
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
-                    , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
+                    , ym2151Register[0x20 + ch] & 0x07  // AL
+                    , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
             ));
         }
 
@@ -5086,20 +5078,20 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getym2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
 
             n.append("'@xx = {\n/* AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\n");
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
                 n.append(String.format("   %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n"
-                        , fmRegister[p][0x50 + ops + c] & 0x1f //AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f //DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f //SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f //RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
+                        , fmRegister[p][0x50 + ops + c] & 0x1f  // AR
+                        , fmRegister[p][0x60 + ops + c] & 0x1f  // DR
+                        , fmRegister[p][0x70 + ops + c] & 0x1f  // SR
+                        , fmRegister[p][0x80 + ops + c] & 0x0f  // RR
+                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
+                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
+                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
                         , fmRegister[p][0x30 + ops + c] & 0x0f//ML
                         , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
                         , 0
@@ -5155,8 +5147,10 @@ public class frmMain extends JFrame {
         try {
             mmf.sendMessage(String.join(":", "SendVoice", n));
         } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
             System.err.println("メッセージが長すぎ");
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(this, "mml2vgmの共有メモリが見つかりませんでした");
         }
     }
@@ -5171,7 +5165,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getym2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
 
             n.append("'@ N xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT  AM  SSG-EG\n");
 
@@ -5294,7 +5288,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getym2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
 
             n.append(String.format("  @xx:{{\n  %3d %3d\n"
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
@@ -5351,7 +5345,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getym2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
 
             n.append(String.format("  @xx:{{\n  %3d, %3d\n"
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
@@ -5408,7 +5402,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getym2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
 
             n.append("@%xxx\n");
 
@@ -5480,7 +5474,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getym2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
 
             n.append("@ xxxx {\n");
             n.append(String.format("000,%3d,%3d,015\n"
@@ -5691,7 +5685,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getym2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
 
             n[0] = (byte) (fmRegister[p][0xb0 + c] & 0x07); // AL
             n[1] = (byte) ((fmRegister[p][0xb0 + c] & 0x38) >> 3); // FB
@@ -5782,7 +5776,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getym2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
 
             n[1] = 0x02; // SYSTEM_GENESIS
 
@@ -5919,7 +5913,7 @@ public class frmMain extends JFrame {
                     : (chip == EnmChip.YM2608
                     ? Audio.getYM2608Register(chipID)
                     : (chip == EnmChip.YM2203
-                    ? new int[][] {Audio.getym2203Register(chipID), null}
+                    ? new int[][] {Audio.getYm2203Register(chipID), null}
                     : Audio.getYM2610Register(chipID)
             ));
 
@@ -5994,7 +5988,7 @@ public class frmMain extends JFrame {
         buf.append("  <PARAM id=\"Ladder_Effect\" value=\"0.0\"/>\n");
         buf.append("  <PARAM id=\"Output_Filtering\" value=\"1.0\"/>\n"); // Crystal clear
         buf.append("  <PARAM id=\"Polyphony\" value=\"6.0\"/>\n");
-        buf.append("  <PARAM id=\"TimerA\" value=\"0.0\"/>\n"); // RETRIG RATE 1200
+        buf.append("  <PARAM id=\"timerA\" value=\"0.0\"/>\n"); // RETRIG RATE 1200
         buf.append("  <PARAM id=\"Spec_Mode\" value=\"2.0\"/>\n"); // 1.0:float mode  2.0:int mode
         buf.append("  <PARAM id=\"Pitchbend_Range\" value=\"2.0\"/>\n");
         buf.append("  <PARAM id=\"Legato_Retrig\" value=\"0.0\"/>\n");
@@ -6061,7 +6055,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getym2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
 
             n[12 + 32 + 3] = (byte) (fmRegister[p][0xb0 + c] & 0x3f); // FB & ALG
             n[12 + 32 + 4] = 0x10; // 0x00:OPN2  0x10:OPNA
@@ -6279,7 +6273,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getym2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
 
             n.append("@: n MDPlayer\n");
             n.append("LFO:  0   0   0   0   0\n");
@@ -6347,7 +6341,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getym2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
 
             n.append("; nm alg fbl\n");
             n.append(String.format("@xxx %3d %3d                            =      MDPlayer\n"
@@ -6409,7 +6403,7 @@ public class frmMain extends JFrame {
             if (setting.getOther().getInitAlways()) flgReinit = true;
             reinit(setting);
 
-            if (Audio.getisPaused()) {
+            if (Audio.getIsPaused()) {
                 Audio.pause();
             }
 
@@ -6470,7 +6464,7 @@ public class frmMain extends JFrame {
             }
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             srcBuf = null;
             JOptionPane.showMessageDialog(this,
                     String.format("ファイルの読み込みに失敗しました。\nメッセージ=%s", ex.getMessage()),
@@ -6487,7 +6481,7 @@ public class frmMain extends JFrame {
             if (setting.getOther().getInitAlways()) flgReinit = true;
             reinit(setting);
 
-            if (Audio.getisPaused()) {
+            if (Audio.getIsPaused()) {
                 Audio.pause();
             }
 
@@ -6510,7 +6504,7 @@ public class frmMain extends JFrame {
             }
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
             srcBuf = null;
             JOptionPane.showMessageDialog(this,
                     String.format("ファイルの読み込みに失敗しました。\nメッセージ=%s", ex.getMessage()),
@@ -6566,11 +6560,11 @@ public class frmMain extends JFrame {
             break;
         case MND:
             int hs = (srcBuf[0x06] << 8) + srcBuf[0x07];
-            int pcmptr = (srcBuf[0x14] << 24) + (srcBuf[0x15] << 16) + (srcBuf[0x16] << 8) + srcBuf[0x17];
-            if (hs < 0x18) pcmptr = 0;
-            if (pcmptr != 0) {
-                int pcmnum = (srcBuf[pcmptr] << 8) + srcBuf[pcmptr + 1];
-                pcmptr += 2;
+            int pcmptr[] = new int[] {(srcBuf[0x14] << 24) + (srcBuf[0x15] << 16) + (srcBuf[0x16] << 8) + srcBuf[0x17]};
+            if (hs < 0x18) pcmptr[0] = 0;
+            if (pcmptr[0] != 0) {
+                int pcmnum = (srcBuf[pcmptr[0]] << 8) + srcBuf[pcmptr[0] + 1];
+                pcmptr[0] += 2;
                 for (int i = 0; i < pcmnum; i++) {
                     String mndPcmFn = mdplayer.Common.getNRDString(srcBuf, pcmptr);
                     buf = getExtendFileAllBytes(fn, mndPcmFn, archive, entry);
@@ -6614,6 +6608,7 @@ public class frmMain extends JFrame {
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -6646,7 +6641,7 @@ public class frmMain extends JFrame {
                     }
                 }
             } catch (Exception ex) {
-                Log.forcedWrite(ex);
+                ex.printStackTrace();
                 buf = null;
             }
         }
@@ -7540,6 +7535,7 @@ public class frmMain extends JFrame {
                 midiIn_MessageReceived.close();
                 midiin = null;
             } catch (Exception e) {
+                e.printStackTrace();
                 midiin = null;
             }
         }
@@ -7561,6 +7557,7 @@ public class frmMain extends JFrame {
                         midiin = device.getTransmitter();
                         midiin.setReceiver(midiIn_MessageReceived);
                     } catch (Exception e) {
+                        e.printStackTrace();
                         midiin = null;
                     }
                 }
@@ -7580,6 +7577,7 @@ public class frmMain extends JFrame {
                 this.midiIn_MessageReceived.close();
                 midiin = null;
             } catch (Exception e) {
+                e.printStackTrace();
                 midiin = null;
             }
         }
@@ -7805,7 +7803,7 @@ public class frmMain extends JFrame {
 //            Application.DoEvents();
 
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -7866,7 +7864,7 @@ public class frmMain extends JFrame {
 
             balance.save(fullPath);
         } catch (Exception ex) {
-            Log.forcedWrite(ex);
+            ex.printStackTrace();
         }
     }
 
@@ -7985,7 +7983,7 @@ public class frmMain extends JFrame {
     }
 
     private void AddFileAndPlay(String[] fn) {
-        if (Audio.getisPaused()) {
+        if (Audio.getIsPaused()) {
             Audio.pause();
         }
 
@@ -8009,7 +8007,7 @@ public class frmMain extends JFrame {
                     frmPlayList.getPlayList().AddFile(f);
                 }
             } catch (Exception ex) {
-                Log.forcedWrite(ex);
+                ex.printStackTrace();
             }
         }
     }
@@ -8121,73 +8119,73 @@ public class frmMain extends JFrame {
     }
 
     private BufferedImage[] lstOpeButtonEnterImage = new BufferedImage[] {
-            Resources.getchSetting(),
-            Resources.getchStop(),
-            Resources.getchPause(),
-            Resources.getchFadeout(),
-            Resources.getchPrevious(),
-            Resources.getchSlow(),
-            Resources.getchPlay(),
-            Resources.getchFast(),
-            Resources.getchNext(),
-            Resources.getchStep(),
-            Resources.getchOpenFolder(),
-            Resources.getchPlayList(),
-            Resources.getchInformation(),
-            Resources.getchMixer(),
-            Resources.getchKBD(),
-            Resources.getchVST(),
-            Resources.getchMIDIKBD(),
-            Resources.getchZoom(),
-            Resources.getchRandom(),
-            Resources.getchLoop(),
-            Resources.getchLoopOne()
+            Resources.getChSetting(),
+            Resources.getChStop(),
+            Resources.getChPause(),
+            Resources.getChFadeout(),
+            Resources.getChPrevious(),
+            Resources.getChSlow(),
+            Resources.getChPlay(),
+            Resources.getChFast(),
+            Resources.getChNext(),
+            Resources.getChStep(),
+            Resources.getChOpenFolder(),
+            Resources.getChPlayList(),
+            Resources.getChInformation(),
+            Resources.getChMixer(),
+            Resources.getChKBD(),
+            Resources.getChVST(),
+            Resources.getChMIDIKBD(),
+            Resources.getChZoom(),
+            Resources.getChRandom(),
+            Resources.getChLoop(),
+            Resources.getChLoopOne()
     };
     private BufferedImage[] lstOpeButtonLeaveImage = new BufferedImage[] {
-            Resources.getccSetting(),
-            Resources.getccStop(),
-            Resources.getccPause(),
-            Resources.getccFadeout(),
-            Resources.getccPrevious(),
-            Resources.getccSlow(),
-            Resources.getccPlay(),
-            Resources.getccFast(),
-            Resources.getccNext(),
-            Resources.getccStep(),
-            Resources.getccOpenFolder(),
-            Resources.getccPlayList(),
-            Resources.getccInformation(),
-            Resources.getccMixer(),
-            Resources.getccKBD(),
-            Resources.getccVST(),
-            Resources.getccMIDIKBD(),
-            Resources.getccZoom(),
-            Resources.getccRandom(),
-            Resources.getccLoop(),
-            Resources.getccLoopOne()
+            Resources.getCcSetting(),
+            Resources.getCcStop(),
+            Resources.getCcPause(),
+            Resources.getCcFadeout(),
+            Resources.getCcPrevious(),
+            Resources.getCcSlow(),
+            Resources.getCcPlay(),
+            Resources.getCcFast(),
+            Resources.getCcNext(),
+            Resources.getCcStep(),
+            Resources.getCcOpenFolder(),
+            Resources.getCcPlayList(),
+            Resources.getCcInformation(),
+            Resources.getCcMixer(),
+            Resources.getCcKBD(),
+            Resources.getCcVST(),
+            Resources.getCcMIDIKBD(),
+            Resources.getCcZoom(),
+            Resources.getCcRandom(),
+            Resources.getCcLoop(),
+            Resources.getCcLoopOne()
     };
     private BufferedImage[] lstOpeButtonActiveImage = new BufferedImage[] {
-            Resources.getciSetting(),
-            Resources.getciStop(),
-            Resources.getciPause(),
-            Resources.getciFadeout(),
-            Resources.getciPrevious(),
-            Resources.getciSlow(),
-            Resources.getciPlay(),
-            Resources.getciFast(),
-            Resources.getciNext(),
-            Resources.getciStep(),
-            Resources.getciOpenFolder(),
-            Resources.getciPlayList(),
-            Resources.getciInformation(),
-            Resources.getciMixer(),
-            Resources.getciKBD(),
-            Resources.getciVST(),
-            Resources.getciMIDIKBD(),
-            Resources.getciZoom(),
-            Resources.getciRandom(),
-            Resources.getciLoop(),
-            Resources.getciLoopOne()
+            Resources.getCiSetting(),
+            Resources.getCiStop(),
+            Resources.getCiPause(),
+            Resources.getCiFadeout(),
+            Resources.getCiPrevious(),
+            Resources.getCiSlow(),
+            Resources.getCiPlay(),
+            Resources.getCiFast(),
+            Resources.getCiNext(),
+            Resources.getCiStep(),
+            Resources.getCiOpenFolder(),
+            Resources.getCiPlayList(),
+            Resources.getCiInformation(),
+            Resources.getCiMixer(),
+            Resources.getCiKBD(),
+            Resources.getCiVST(),
+            Resources.getCiMIDIKBD(),
+            Resources.getCiZoom(),
+            Resources.getCiRandom(),
+            Resources.getCiLoop(),
+            Resources.getCiLoopOne()
     };
     private boolean[] lstOpeButtonActive = new boolean[] {
             false, false, false, false, false, false, false, false,
@@ -8284,7 +8282,8 @@ public class frmMain extends JFrame {
             g.drawImage(image, 0, 0, canvas.getWidth(null), canvas.getHeight(null), 0, 0, size * zoom, size * zoom, null);
 
             button.setIcon(new ImageIcon(canvas));
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -8364,11 +8363,11 @@ public class frmMain extends JFrame {
 
     private void updateOpeButtonActiveState() {
         lstOpeButtonActive[1] = (Audio.isStopped()); // STOP button
-        lstOpeButtonActive[2] = Audio.isStopped() ? false : Audio.getisPaused(); // PAUSE button
-        lstOpeButtonActive[3] = Audio.isStopped() ? false : Audio.getisFadeOut(); // Fade button
-        lstOpeButtonActive[5] = Audio.getisSlow(); // Slowbutton
-        lstOpeButtonActive[6] = Audio.getisPaused() ? false : (Audio.getisSlow() || Audio.getisFF() || Audio.getisFadeOut() ? false : !Audio.isStopped()); // PLAY button
-        lstOpeButtonActive[7] = Audio.getisFF(); // FFbutton
+        lstOpeButtonActive[2] = Audio.isStopped() ? false : Audio.getIsPaused(); // PAUSE button
+        lstOpeButtonActive[3] = Audio.isStopped() ? false : Audio.getIsFadeOut(); // Fade button
+        lstOpeButtonActive[5] = Audio.getIsSlow(); // Slowbutton
+        lstOpeButtonActive[6] = Audio.getIsPaused() ? false : (Audio.getIsSlow() || Audio.getIsFF() || Audio.getIsFadeOut() ? false : !Audio.isStopped()); // PLAY button
+        lstOpeButtonActive[7] = Audio.getIsFF(); // FFbutton
     }
 
     private void initializeComponent() {
@@ -9175,7 +9174,7 @@ public class frmMain extends JFrame {
         //
         this.ファイルToolStripMenuItem.add(this.tsmiOpenFile);
         this.ファイルToolStripMenuItem.add(this.tsmiExit);
-        this.ファイルToolStripMenuItem.setIcon(new ImageIcon(mdplayer.properties.Resources.getccOpenFolder()));
+        this.ファイルToolStripMenuItem.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcOpenFolder()));
         this.ファイルToolStripMenuItem.setName("ファイルToolStripMenuItem");
         //resources.ApplyResources(this.ファイルToolStripMenuItem, "ファイルToolStripMenuItem");
         //
@@ -9206,84 +9205,84 @@ public class frmMain extends JFrame {
         //
         // tsmiPlay
         //
-        this.tsmiPlay.setIcon(new ImageIcon(mdplayer.properties.Resources.getccPlay()));
+        this.tsmiPlay.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcPlay()));
         this.tsmiPlay.setName("tsmiPlay");
         //resources.ApplyResources(this.tsmiPlay, "tsmiPlay");
         this.tsmiPlay.addActionListener(this::tsmiPlay_Click);
         //
         // tsmiStop
         //
-        this.tsmiStop.setIcon(new ImageIcon(mdplayer.properties.Resources.getccStop()));
+        this.tsmiStop.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcStop()));
         this.tsmiStop.setName("tsmiStop");
         //resources.ApplyResources(this.tsmiStop, "tsmiStop");
         this.tsmiStop.addActionListener(this::tsmiStop_Click);
         //
         // tsmiPause
         //
-        this.tsmiPause.setIcon(new ImageIcon(mdplayer.properties.Resources.getccPause()));
+        this.tsmiPause.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcPause()));
         this.tsmiPause.setName("tsmiPause");
         //resources.ApplyResources(this.tsmiPause, "tsmiPause");
         this.tsmiPause.addActionListener(this::tsmiPause_Click);
         //
         // tsmiFadeOut
         //
-        this.tsmiFadeOut.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.tsmiFadeOut.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         this.tsmiFadeOut.setName("tsmiFadeOut");
         //resources.ApplyResources(this.tsmiFadeOut, "tsmiFadeOut");
         this.tsmiFadeOut.addActionListener(this::tsmiFadeOut_Click);
         //
         // tsmiSlow
         //
-        this.tsmiSlow.setIcon(new ImageIcon(mdplayer.properties.Resources.getccSlow()));
+        this.tsmiSlow.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcSlow()));
         this.tsmiSlow.setName("tsmiSlow");
         //resources.ApplyResources(this.tsmiSlow, "tsmiSlow");
         this.tsmiSlow.addActionListener(this::tsmiSlow_Click);
         //
         // tsmiFf
         //
-        this.tsmiFf.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFast()));
+        this.tsmiFf.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFast()));
         this.tsmiFf.setName("tsmiFf");
         //resources.ApplyResources(this.tsmiFf, "tsmiFf");
         this.tsmiFf.addActionListener(this::tsmiFf_Click);
         //
         // tsmiNext
         //
-        this.tsmiNext.setIcon(new ImageIcon(mdplayer.properties.Resources.getccNext()));
+        this.tsmiNext.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcNext()));
         this.tsmiNext.setName("tsmiNext");
         //resources.ApplyResources(this.tsmiNext, "tsmiNext");
         this.tsmiNext.addActionListener(this::tsmiNext_Click);
         //
         // tsmiPlayMode
         //
-        this.tsmiPlayMode.setIcon(new ImageIcon(mdplayer.properties.Resources.getccStep()));
+        this.tsmiPlayMode.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcStep()));
         this.tsmiPlayMode.setName("tsmiPlayMode");
         //resources.ApplyResources(this.tsmiPlayMode, "tsmiPlayMode");
         this.tsmiPlayMode.addActionListener(this::tsmiPlayMode_Click);
         //
         // tsmiOption
         //
-        this.tsmiOption.setIcon(new ImageIcon(mdplayer.properties.Resources.getccSetting()));
+        this.tsmiOption.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcSetting()));
         this.tsmiOption.setName("tsmiOption");
         //resources.ApplyResources(this.tsmiOption, "tsmiOption");
         this.tsmiOption.addActionListener(this::tsmiOption_Click);
         //
         // tsmiPlayList
         //
-        this.tsmiPlayList.setIcon(new ImageIcon(mdplayer.properties.Resources.getccPlayList()));
+        this.tsmiPlayList.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcPlayList()));
         this.tsmiPlayList.setName("tsmiPlayList");
         //resources.ApplyResources(this.tsmiPlayList, "tsmiPlayList");
         this.tsmiPlayList.addActionListener(this::tsmiPlayList_Click);
         //
         // tsmiOpenInfo
         //
-        this.tsmiOpenInfo.setIcon(new ImageIcon(mdplayer.properties.Resources.getccInformation()));
+        this.tsmiOpenInfo.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcInformation()));
         this.tsmiOpenInfo.setName("tsmiOpenInfo");
         //resources.ApplyResources(this.tsmiOpenInfo, "tsmiOpenInfo");
         this.tsmiOpenInfo.addActionListener(this::tsmiOpenInfo_Click);
         //
         // tsmiOpenMixer
         //
-        this.tsmiOpenMixer.setIcon(new ImageIcon(mdplayer.properties.Resources.getccMixer()));
+        this.tsmiOpenMixer.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcMixer()));
         this.tsmiOpenMixer.setName("tsmiOpenMixer");
         //resources.ApplyResources(this.tsmiOpenMixer, "tsmiOpenMixer");
         this.tsmiOpenMixer.addActionListener(this::tsmiOpenMixer_Click);
@@ -9298,21 +9297,21 @@ public class frmMain extends JFrame {
         //
         // tsmiKBrd
         //
-        this.tsmiKBrd.setIcon(new ImageIcon(mdplayer.properties.Resources.getccKBD()));
+        this.tsmiKBrd.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcKBD()));
         this.tsmiKBrd.setName("tsmiKBrd");
         //resources.ApplyResources(this.tsmiKBrd, "tsmiKBrd");
         this.tsmiKBrd.addActionListener(this::tsmiKBrd_Click);
         //
         // tsmiVST
         //
-        this.tsmiVST.setIcon(new ImageIcon(mdplayer.properties.Resources.getccVST()));
+        this.tsmiVST.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcVST()));
         this.tsmiVST.setName("tsmiVST");
         //resources.ApplyResources(this.tsmiVST, "tsmiVST");
         this.tsmiVST.addActionListener(this::tsmiVST_Click);
         //
         // tsmiMIDIkbd
         //
-        this.tsmiMIDIkbd.setIcon(new ImageIcon(mdplayer.properties.Resources.getccMIDIKBD()));
+        this.tsmiMIDIkbd.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcMIDIKBD()));
         this.tsmiMIDIkbd.setName("tsmiMIDIkbd");
         //resources.ApplyResources(this.tsmiMIDIkbd, "tsmiMIDIkbd");
         this.tsmiMIDIkbd.addActionListener(this::tsmiMIDIkbd_Click);
@@ -9323,7 +9322,7 @@ public class frmMain extends JFrame {
         this.tsmiChangeZoom.add(this.tsmiChangeZoomX2);
         this.tsmiChangeZoom.add(this.tsmiChangeZoomX3);
         this.tsmiChangeZoom.add(this.tsmiChangeZoomX4);
-        this.tsmiChangeZoom.setIcon(new ImageIcon(mdplayer.properties.Resources.getccZoom()));
+        this.tsmiChangeZoom.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcZoom()));
         this.tsmiChangeZoom.setName("tsmiChangeZoom");
         //resources.ApplyResources(this.tsmiChangeZoom, "tsmiChangeZoom");
         this.tsmiChangeZoom.addActionListener(this::tsmiChangeZoom_Click);
@@ -9487,7 +9486,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonSetting.AllowDrop = true;
         new DropTarget(this.opeButtonSetting, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonSetting.setBackground(Color.black);
-        this.opeButtonSetting.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonSetting.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonSetting, "opeButtonSetting");
 //            //this.opeButtonSetting.FlatAppearance.BorderColor = Color.black;
 //            //this.opeButtonSetting.FlatAppearance.Borde.setPreferredSize(0);
@@ -9507,7 +9506,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonStop.AllowDrop = true;
         new DropTarget(this.opeButtonStop, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonStop.setBackground(Color.black);
-        this.opeButtonStop.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonStop.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonStop, "opeButtonStop");
 //            //this.opeButtonStop.FlatAppearance.BorderColor = Color.black;
 //            //this.opeButtonStop.FlatAppearance.Borde.setPreferredSize(0);
@@ -9527,7 +9526,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonPause.AllowDrop = true;
         new DropTarget(this.opeButtonPause, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonPause.setBackground(Color.black);
-        this.opeButtonPause.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonPause.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonPause, "opeButtonPause");
 //            //this.opeButtonPause.FlatAppearance.BorderColor = Color.black;
 //            //this.opeButtonPause.FlatAppearance.Borde.setPreferredSize(0);
@@ -9547,7 +9546,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonFadeout.AllowDrop = true;
         new DropTarget(this.opeButtonFadeout, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonFadeout.setBackground(Color.black);
-        this.opeButtonFadeout.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonFadeout.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonFadeout, "opeButtonFadeout");
         //this.opeButtonFadeout.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonFadeout.FlatAppearance.Borde.setPreferredSize(0);
@@ -9567,7 +9566,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonPrevious.AllowDrop = true;
         new DropTarget(this.opeButtonPrevious, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonPrevious.setBackground(Color.black);
-        this.opeButtonPrevious.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonPrevious.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonPrevious, "opeButtonPrevious");
         //this.opeButtonPrevious.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonPrevious.FlatAppearance.Borde.setPreferredSize(0);
@@ -9587,7 +9586,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonSlow.AllowDrop = true;
         new DropTarget(this.opeButtonSlow, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonSlow.setBackground(Color.black);
-        this.opeButtonSlow.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonSlow.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonSlow, "opeButtonSlow");
         //this.opeButtonSlow.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonSlow.FlatAppearance.Borde.setPreferredSize(0);
@@ -9607,7 +9606,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonPlay.AllowDrop = true;
         new DropTarget(this.opeButtonPlay, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonPlay.setBackground(Color.black);
-        this.opeButtonPlay.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonPlay.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonPlay, "opeButtonPlay");
         //this.opeButtonPlay.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonPlay.FlatAppearance.Borde.setPreferredSize(0);
@@ -9627,7 +9626,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonFast.AllowDrop = true;
         new DropTarget(this.opeButtonFast, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonFast.setBackground(Color.black);
-        this.opeButtonFast.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonFast.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonFast, "opeButtonFast");
         //this.opeButtonFast.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonFast.FlatAppearance.Borde.setPreferredSize(0);
@@ -9647,7 +9646,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonNext.AllowDrop = true;
         new DropTarget(this.opeButtonNext, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonNext.setBackground(Color.black);
-        this.opeButtonNext.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonNext.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonNext, "opeButtonNext");
         //this.opeButtonNext.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonNext.FlatAppearance.Borde.setPreferredSize(0);
@@ -9667,7 +9666,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonZoom.AllowDrop = true;
         new DropTarget(this.opeButtonZoom, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonZoom.setBackground(Color.black);
-        this.opeButtonZoom.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonZoom.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonZoom, "opeButtonZoom");
         //this.opeButtonZoom.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonZoom.FlatAppearance.Borde.setPreferredSize(0);
@@ -9687,7 +9686,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonMIDIKBD.AllowDrop = true;
         new DropTarget(this.opeButtonMIDIKBD, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonMIDIKBD.setBackground(Color.black);
-        this.opeButtonMIDIKBD.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonMIDIKBD.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonMIDIKBD, "opeButtonMIDIKBD");
         //this.opeButtonMIDIKBD.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonMIDIKBD.FlatAppearance.Borde.setPreferredSize(0);
@@ -9707,7 +9706,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonVST.AllowDrop = true;
         new DropTarget(this.opeButtonVST, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonVST.setBackground(Color.black);
-        this.opeButtonVST.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonVST.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonVST, "opeButtonVST");
         //this.opeButtonVST.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonVST.FlatAppearance.Borde.setPreferredSize(0);
@@ -9727,7 +9726,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonKBD.AllowDrop = true;
         new DropTarget(this.opeButtonKBD, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonKBD.setBackground(Color.black);
-        this.opeButtonKBD.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonKBD.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonKBD, "opeButtonKBD");
         //this.opeButtonKBD.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonKBD.FlatAppearance.Borde.setPreferredSize(0);
@@ -9747,7 +9746,7 @@ public class frmMain extends JFrame {
 //            this.opeButtonMixer.AllowDrop = true;
         new DropTarget(this.opeButtonMixer, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonMixer.setBackground(Color.black);
-        this.opeButtonMixer.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonMixer.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonMixer, "opeButtonMixer");
         //this.opeButtonMixer.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonMixer.FlatAppearance.Borde.setPreferredSize(0);
@@ -9767,7 +9766,7 @@ public class frmMain extends JFrame {
 //            this.opeButtonInformation.AllowDrop = true;
         new DropTarget(this.opeButtonInformation, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonInformation.setBackground(Color.black);
-        this.opeButtonInformation.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonInformation.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonInformation, "opeButtonInformation");
         //this.opeButtonInformation.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonInformation.FlatAppearance.Borde.setPreferredSize(0);
@@ -9787,7 +9786,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonPlayList.AllowDrop = true;
         new DropTarget(this.opeButtonPlayList, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonPlayList.setBackground(Color.black);
-        this.opeButtonPlayList.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonPlayList.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonPlayList, "opeButtonPlayList");
         //this.opeButtonPlayList.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonPlayList.FlatAppearance.Borde.setPreferredSize(0);
@@ -9807,7 +9806,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonOpen.AllowDrop = true;
         new DropTarget(this.opeButtonOpen, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonOpen.setBackground(Color.black);
-        this.opeButtonOpen.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonOpen.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonOpen, "opeButtonOpen");
         //this.opeButtonOpen.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonOpen.FlatAppearance.Borde.setPreferredSize(0);
@@ -9827,7 +9826,7 @@ public class frmMain extends JFrame {
 //        this.opeButtonMode.AllowDrop = true;
         new DropTarget(this.opeButtonMode, DnDConstants.ACTION_COPY_OR_MOVE, new Common.DTListener(this::pbScreen_DragDrop), true);
         this.opeButtonMode.setBackground(Color.black);
-        this.opeButtonMode.setIcon(new ImageIcon(mdplayer.properties.Resources.getccFadeout()));
+        this.opeButtonMode.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcFadeout()));
         //resources.ApplyResources(this.opeButtonMode, "opeButtonMode");
         //this.opeButtonMode.FlatAppearance.BorderColor = Color.black;
         //this.opeButtonMode.FlatAppearance.Borde.setPreferredSize(0);

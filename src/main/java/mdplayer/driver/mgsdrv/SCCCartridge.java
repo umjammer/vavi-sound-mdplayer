@@ -25,7 +25,7 @@ public class SCCCartridge implements Cartridge {
     }
 
     private void write(int address, byte data) {
-        //Log.Write(String.format("SCC Write : Adr:%04x Dat:%02x", address, data));
+        //Debug.printf(String.format("SCC Write : Adr:%04x Dat:%02x", address, data));
         if (address == 0x9000) {
             if (data == 0) readOnly = true;
             else if (data == 0x3f) readOnly = false;

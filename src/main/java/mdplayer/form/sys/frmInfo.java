@@ -14,6 +14,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -26,6 +27,7 @@ import mdplayer.Audio;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
 import mdplayer.properties.Resources;
+import vavi.util.Debug;
 
 
 public class frmInfo extends JFrame {
@@ -141,7 +143,7 @@ public class frmInfo extends JFrame {
         try {
             if (cnt >= lyrics.get(lyricsIndex).getItem1()) {
 
-                //lblLyrics.setText(lyrics[lyricsIndex].getItem3());
+                 // lblLyrics.setText(lyrics[lyricsIndex].getItem3());
                 rtbLyrics.setText(null);
 
                 int ind = 0;
@@ -162,7 +164,7 @@ public class frmInfo extends JFrame {
                             if (n.equals("s")) {
                                 r = 192;
                                 g = 192;
-                                b = 255; //192,192,255 system color
+                                b = 255;  // 192,192,255 system color
                             } else {
                                 n += lyrics.get(lyricsIndex).getItem3().charAt(ind++);
                                 r = Integer.parseInt(n, 16);
@@ -189,10 +191,12 @@ public class frmInfo extends JFrame {
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
             try {
                 rtbLyrics.setText(null);
                 rtbLyrics.setText("LYLIC PARSE ERROR");
             } catch (Exception ex) {
+                e.printStackTrace();
             }
         }
     }
@@ -415,7 +419,7 @@ public class frmInfo extends JFrame {
 //            this.AutoScaleDimensions = new DimensionF(6F, 12F);
 //            this.AutoScaleMode = JAutoScaleMode.Font;
         this.setBackground(Color.black);
-        this.image = mdplayer.properties.Resources.getplaneB();
+        this.image = mdplayer.properties.Resources.getPlaneB();
 //        this.BackgroundImageLayout = JImageLayout.None;
         this.setPreferredSize(new Dimension(324, 229));
         this.getContentPane().add(this.rtbLyrics);
