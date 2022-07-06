@@ -1,4 +1,4 @@
-﻿LICENSE INFO
+LICENSE INFO
 
 Name        : MUCOM88 Windows
 Platform    : Windows XP or later
