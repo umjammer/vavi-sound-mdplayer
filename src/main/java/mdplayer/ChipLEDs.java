@@ -1,7 +1,21 @@
 
 package mdplayer;
 
+import java.util.Map;
+
+
 public class ChipLEDs {
+
+    private Map<String, Integer> leds;
+
+    public int get(String key) {
+        return leds.get(key);
+    }
+
+    public void put(String key, int value) {
+        leds.put(key, value);
+    }
+/*
     public byte PriOPN = 0;
     public byte PriOPN2 = 0;
     public byte PriOPNA = 0;
@@ -100,4 +114,5 @@ public class ChipLEDs {
     public byte SecPPSDRV = 0;
     public byte SecP86 = 0;
     public final byte SecQsnd = 0;
+ */
 }

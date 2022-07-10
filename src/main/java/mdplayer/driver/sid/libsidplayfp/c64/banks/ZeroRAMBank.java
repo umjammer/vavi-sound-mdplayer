@@ -79,7 +79,7 @@ public class ZeroRAMBank implements IBank {
          * $01 bits 6 and 7 fall-off cycles (1->0), average instanceof about 350 msec for a 6510
          * and about 1500 msec for a 8500.
          * <p>
-         *  NOTE: fall-off cycles are heavily chip- and temperature dependent. as a
+         *  NOTE: fall-off cycles are heavily chips- and temperature dependent. as a
          *        consequence it instanceof very hard to find suitable realistic values that
          *        always work and we can only tweak them based on testcases. (unless we
          *        want to make it configurable or emulate temperature over time =))

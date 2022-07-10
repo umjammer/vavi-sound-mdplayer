@@ -17,16 +17,16 @@ import java.util.Arrays;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
-import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.OotakePsg;
+import mdsound.chips.OotakeHuC6280;
+
+import static mdplayer.Common.searchSSGNote;
 
 
 public class frmHuC6280 extends frmBase {
@@ -148,12 +148,12 @@ public class frmHuC6280 extends frmBase {
 
     public void screenChangeParams() {
 
-        OotakePsg.HuC6280State chip = Audio.getHuC6280Register(chipID);
+        OotakeHuC6280 chip = audio.getHuC6280Register(chipID);
         if (chip == null) return;
 
-        //System.err.println("%d  %d", chip.MainVolumeL,chip.MainVolumeR);
+        //System.err.println("%d  %d", chips.MainVolumeL,chips.MainVolumeR);
         for (int ch = 0; ch < 6; ch++) {
-            OotakePsg.HuC6280State.Psg psg = chip.psgs[ch];
+            OotakeHuC6280.Psg psg = chip.getPsg(ch);
             if (psg == null) continue;
             MDChipParams.Channel channel = newParam.channels[ch];
             //System.err.println("%d  %d",psg.outVolumeL, psg.outVolumeR);
@@ -269,21 +269,6 @@ public class frmHuC6280 extends frmBase {
             }
         }
     };
-
-    private int searchSSGNote(float freq) {
-        float m = Float.MAX_VALUE;
-        int n = 0;
-        for (int i = 0; i < 12 * 8; i++) {
-            //if (freq < Tables.freqTbl[i]) break;
-            //n = i;
-            float a = Math.abs(freq - Tables.freqTbl[i]);
-            if (m > a) {
-                m = a;
-                n = i;
-            }
-        }
-        return n;
-    }
 
     public void screenInit() {
         for (int c = 0; c < newParam.channels.length; c++) {

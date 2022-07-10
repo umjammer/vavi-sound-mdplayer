@@ -24,11 +24,12 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import dotnet4j.io.IOException;
-import mdplayer.Common;
 import mdplayer.driver.sid.libsidplayfp.SidEndian;
 import mdplayer.driver.sid.libsidplayfp.SidMemory;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+import static dotnet4j.util.compat.CollectionUtilities.toList;
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toBig16;
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toLittle16;
 
@@ -870,7 +871,7 @@ public class MUS extends SidTuneBase {
             (byte) 0xfc, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     };
 
-    // Format Strings
+    // FileFormat Strings
     private static final String TXT_FORMAT_MUS = "C64 Sidplayer format (MUS)";
     private static final String TXT_FORMAT_STR = "C64 Stereo Sidplayer format (MUS+STR)";
 
@@ -960,10 +961,10 @@ public class MUS extends SidTuneBase {
         if (strBuf.length != 0 && info.getSidChips() > 1) {
             // Install MUS data // #2 _NOT_ including load address.
             //musBuf.AddRange(strBuf);
-            List<Byte> b = Common.toArray(musBuf);
-            List<Byte> c = Common.toArray(strBuf);
+            List<Byte> b = toList(musBuf);
+            List<Byte> c = toList(strBuf);
             b.addAll(c);
-            musBuf = mdsound.Common.toByteArray(b);
+            musBuf = toByteArray(b);
         }
 
         strBuf = null;

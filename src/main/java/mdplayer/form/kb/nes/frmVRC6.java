@@ -157,7 +157,7 @@ public class frmVRC6 extends frmBase {
     }
 
     public void screenChangeParams() {
-        BasicTrackInfo[] info = (BasicTrackInfo[]) Audio.getVRC6Register(0);
+        BasicTrackInfo[] info = (BasicTrackInfo[]) audio.getVRC6Register(0);
         if (info == null) return;
 
         MDChipParams.Channel nyc;
@@ -238,7 +238,7 @@ public class frmVRC6 extends frmBase {
         this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
 //        this.MaximizeBox = false;
         this.setName("frmVRC6");
-        this.setTitle("VRC6");
+        this.setTitle("Vrc6Inst");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();

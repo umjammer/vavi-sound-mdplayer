@@ -161,7 +161,7 @@ public class frmN106 extends frmBase {
     }
 
     public void screenChangeParams() {
-        NesN106.TrackInfo[] info = (NesN106.TrackInfo[]) Audio.getN106Register(0);
+        NesN106.TrackInfo[] info = (NesN106.TrackInfo[]) audio.getN106Register(0);
         if (info == null) return;
 
         MDChipParams.Channel nyc;

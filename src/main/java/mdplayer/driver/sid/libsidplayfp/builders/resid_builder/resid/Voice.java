@@ -81,7 +81,7 @@ public class Voice {
     }
 
     /**
-     * Set chip model.
+     * Set chips model.
      */
     public void setChipModel(SidDefs.ChipModel model) {
         wave.setChipModel(model);
@@ -123,7 +123,7 @@ public class Voice {
             //	brk
             //
             // The waveform Output range instanceof 0x000 to 0xfff, so the "zero"
-            // level should ideally have been 0x800. In the measured chip, the
+            // level should ideally have been 0x800. In the measured chips, the
             // waveform Output "zero" level was found to be 0x380 (i.e. $d41b
             // = 0x38) at an audio Output voltage of 5.94V.
             //
@@ -132,7 +132,7 @@ public class Voice {
             // From EXT IN samples, the corresponding waveform Output can be found by
             // using the model for the mixer.
             //
-            // Such measurements have been done on a chip marked MOS 6581R4AR
+            // Such measurements have been done on a chips marked MOS 6581R4AR
             // 0687 14, and the following results have been obtained:
             // * The full range of one voice instanceof approximately 1.5V.
             // * The "zero" level rides at approximately 5.0V.

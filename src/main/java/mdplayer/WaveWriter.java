@@ -9,6 +9,8 @@ import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.SeekOrigin;
 
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+
 
 public class WaveWriter {
     private Setting setting = null;
@@ -95,7 +97,7 @@ public class WaveWriter {
         des.add((byte) ((len & 0xff000000) >> 24));
 
         // 出力
-        dest.write(mdsound.Common.toByteArray(des), 0, des.size());
+        dest.write(toByteArray(des), 0, des.size());
     }
 
     public void close() {

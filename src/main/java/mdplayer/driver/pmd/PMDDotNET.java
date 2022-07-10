@@ -66,8 +66,8 @@ public class PMDDotNET extends BaseDriver {
     private PMDFileType mtype;
 
     public PMDDotNET() {
-        // "plugin\\driver\\PMDDotNETCompiler.dll"
-        // "plugin\\driver\\PMDDotNETdll"
+        // "chips\\driver\\PMDDotNETCompiler.dll"
+        // "chips\\driver\\PMDDotNETdll"
     }
 
     InstanceMarker im;

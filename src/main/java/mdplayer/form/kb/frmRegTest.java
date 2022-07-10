@@ -56,57 +56,57 @@ public class frmRegTest extends frmChipBase {
         }
     }
 
-    static class RegisterManager {
+    class RegisterManager {
         int select;
         public boolean needRefresh = false;
         List<ChipData> chipData = new ArrayList<>();
 
         public RegisterManager() {
             addChip("YMF278B", 3, 0x100, select -> { // 0
-                return Audio.getYMF278BRegister(0)[select];
+                return audio.getYMF278BRegister(0)[select];
             });
 
             addChip("YMF262", 2, 0x100, select -> { // 3
-                return Audio.getYMF262Register(0)[select];
+                return audio.getYMF262Register(0)[select];
             });
 
             addChip("YM2151", 1, 0x100, select -> { // 5
-                return Audio.getYM2151Register(0);
+                return audio.getYM2151Register(0);
             });
 
             addChip("YM2610", 1, 0x200, select -> { // 6
-                return Audio.getYM2610Register(0);
+                return audio.getYM2610Register(0);
             });
 
             addChip("YM2608", 1, 0x200, select -> { // 7
-                return Audio.getYM2608Register(0);
+                return audio.getYM2608Register(0);
             });
 
-            addChip("Ym2612", 1, 0x200, select -> Audio.getFMRegister(0));
+            addChip("Ym2612Inst", 1, 0x200, select -> audio.getFMRegister(0));
 
-            addChip("C140", 1, 0x200, select -> Audio.getC140Register(0));
+            addChip("C140Inst", 1, 0x200, select -> audio.getC140Register(0));
 
-            addChip("QSOUND", 1, 0x200, select -> Audio.getQSoundRegister(0));
+            addChip("QSOUND", 1, 0x200, select -> audio.getQSoundRegister(0));
 
-            addChip("SEGAPCM", 1, 0x200, select -> Audio.getSEGAPCMRegister(0));
+            addChip("SEGAPCM", 1, 0x200, select -> audio.getSEGAPCMRegister(0));
 
-            addChip("YMZ280B", 1, 0x100, select -> Audio.getYMZ280BRegister(0));
+            addChip("YMZ280B", 1, 0x100, select -> audio.getYMZ280BRegister(0));
 
-            addChip("SN76489", 1, 8, select -> Audio.getPSGRegister(0));
+            addChip("SN76489", 1, 8, select -> audio.getPSGRegister(0));
 
-            addChip("AY", 1, 16, select -> Audio.getAY8910Register(0));
+            addChip("AY", 1, 16, select -> audio.getAY8910Register(0));
 
-            addChip("C352", 1, 0x400, select -> Audio.getC352Register(0));
+            addChip("C352Inst", 1, 0x400, select -> audio.getC352Register(0));
 
-            addChip("YM2203", 1, 0x200, select -> Audio.getYm2203Register(0));
+            addChip("YM2203", 1, 0x200, select -> audio.getYm2203Register(0));
 
-            addChip("YM2413", 1, 0x100, select -> Audio.getYM2413Register(0));
+            addChip("YM2413", 1, 0x100, select -> audio.getYM2413Register(0));
 
-            addChip("YM3812", 1, 0x100, select -> Audio.getYM3812Register(0));
+            addChip("YM3812", 1, 0x100, select -> audio.getYM3812Register(0));
 
-            addChip("NES", 1, 0x30, select -> Audio.getAPURegister(0));
+            addChip("NES", 1, 0x30, select -> audio.getAPURegister(0));
 
-            addChip("Sid", 3, 0x19, Audio::getSIDRegister);
+            addChip("Sid", 3, 0x19, audio::getSIDRegister);
         }
 
         private void addChip(String ChipName, int Max, int regSize, ChipData.GetRegisterDelegate p) {
@@ -306,7 +306,7 @@ public class frmRegTest extends frmChipBase {
 
         if (regMan.getName().contains("Sid")) {
             //y += 8;
-            Sid curSID = Audio.getCurrentSIDContext();
+            Sid curSID = audio.getCurrentSIDContext();
             //Sid curSID = ChipRegister.Sid;
             Object a = regMan.getData();
             if (a == null) return;

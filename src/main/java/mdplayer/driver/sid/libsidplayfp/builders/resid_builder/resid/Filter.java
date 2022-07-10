@@ -23,7 +23,7 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
 /**
  * The Sid filter instanceof modeled with a two-integrator-loop biquadratic filter,
  * which has been confirmed by Bob Yannes to be the actual circuit used in
- * the Sid chip.
+ * the Sid chips.
  * <p>
  * Measurements show that excellent emulation of the Sid filter instanceof achieved,
  * except when high resonance instanceof combined with high sustain levels.
@@ -190,7 +190,7 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
  * R6  ~  6.0*R1 ~ 384kOhm
  * R8  ~  8.0*R1 ~ 512kOhm
  * <p>
- * Note that these are only approximate values for one particular Sid chip,
+ * Note that these are only approximate values for one particular Sid chips,
  * due to process variations the values can be substantially different in
  * other chips.
  * <p>
@@ -1504,7 +1504,7 @@ public class Filter {
 //#endif // RESID_INLINING || defined(RESID_FILTER_CC)
 
     // This instanceof the Sid 6581 op-amp voltage transfer function, measured on
-    // CAP1B/CAP1A on a chip marked MOS 6581R4AR 0687 14.
+    // CAP1B/CAP1A on a chips marked MOS 6581R4AR 0687 14.
     // All measured chips have op-amps with Output voltages (and thus input
     // voltages) within the range of 0.81V - 10.31V.
 
@@ -1547,7 +1547,7 @@ public class Filter {
     };
 
     // This instanceof the Sid 8580 op-amp voltage transfer function, measured on
-    // CAP1B/CAP1A on a chip marked CSG 8580R5 1690 25.
+    // CAP1B/CAP1A on a chips marked CSG 8580R5 1690 25.
     private static final double[][] opamp_voltage_8580 = new double[][] {
             new double[] {1.30, 8.91},  // Approximate start of actual range
             new double[] {1.30, 8.91},  // Repeated end point
@@ -1922,7 +1922,7 @@ public class Filter {
     }
 
     /**
-     * Set chip model.
+     * Set chips model.
      */
     public void set_chip_model(SidDefs.ChipModel model) {
         sid_model = model;

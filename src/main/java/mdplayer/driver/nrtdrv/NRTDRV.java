@@ -2,24 +2,21 @@ package mdplayer.driver.nrtdrv;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.logging.Level;
 
 import dotnet4j.util.compat.Tuple3;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
-import mdplayer.Log;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
-import vavi.util.Debug;
 
 
 public class NRTDRV extends BaseDriver {
 
-    public NRTDRV(Setting setting) {
-        this.setting = setting;
+    public NRTDRV() {
+        this.setting = Setting.getInstance();
         ctcStep = 4000000.0f / setting.getOutputDevice().getSampleRate();
         ctc1Step = 4000000.0f / setting.getOutputDevice().getSampleRate();
     }

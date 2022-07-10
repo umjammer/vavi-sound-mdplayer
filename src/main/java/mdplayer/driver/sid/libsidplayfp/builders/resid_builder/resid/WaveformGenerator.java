@@ -611,7 +611,7 @@ public class WaveformGenerator {
     }
 
     /**
-     * Set chip model.
+     * Set chips model.
      */
     public void setChipModel(SidDefs.ChipModel model) {
         sidModel = model;

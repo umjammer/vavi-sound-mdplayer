@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -26,6 +25,7 @@ import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
+import mdsound.chips.PPZ8Status;
 
 
 public class frmPPZ8 extends frmBase {
@@ -128,7 +128,7 @@ public class frmPPZ8 extends frmBase {
     private int searchPPZ8Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = Audio.clockPPZ8;
+        int clock = audio.clockPPZ8;
         if (clock >= 1000000)
             clock = clock / 384;
 
@@ -172,7 +172,7 @@ public class frmPPZ8 extends frmBase {
     }
 
     public void screenChangeParams() {
-        mdsound.PPZ8.PPZ8Status.Channel[] ppz8State = Audio.getPPZ8Register(chipID);
+        PPZ8Status.Channel[] ppz8State = audio.getPPZ8Register(chipID);
         if (ppz8State == null) return;
 
         for (int ch = 0; ch < 8; ch++) {
@@ -281,7 +281,7 @@ public class frmPPZ8 extends frmBase {
         this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
 //        this.MaximizeBox = false;
         this.setName("frmPPZ8");
-        this.setTitle("PPZ8");
+        this.setTitle("Ppz8Inst");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();

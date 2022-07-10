@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -25,6 +24,7 @@ import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
+import mdsound.chips.GbSound;
 
 
 public class frmDMG extends frmBase {
@@ -105,7 +105,7 @@ public class frmDMG extends frmBase {
     };
 
     public void screenChangeParams() {
-        mdsound.Gb.GbSound dat = Audio.getDMGRegister(chipID);
+        GbSound dat = audio.getDMGRegister(chipID);
         if (dat == null) return;
 
         // pan

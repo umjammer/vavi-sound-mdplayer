@@ -2,7 +2,6 @@ package mdplayer;
 
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -14,7 +13,6 @@ import javax.sound.sampled.SourceDataLine;
 
 import dotnet4j.threading.SynchronizationContext;
 import dotnet4j.util.compat.TriFunction;
-import vavi.util.Debug;
 
 
 public class NAudioWrap {
@@ -143,7 +141,7 @@ public class NAudioWrap {
         //}
     }
 
-    public LineEvent.Type GetPlaybackState() {
+    public LineEvent.Type getPlaybackState() {
         if (dsOut != null) {
             if (!dsOut.isRunning()) return LineEvent.Type.STOP;
         }

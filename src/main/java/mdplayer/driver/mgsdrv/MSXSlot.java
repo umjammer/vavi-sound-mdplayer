@@ -24,7 +24,7 @@ public class MSXSlot extends Slot {
                 new SCCCartridge(chipRegister, model), new MapperRAMCartridge(4), new MapperRAMCartridge(4),
                 new MapperRAMCartridge(4)
             },
-            // extSlot3-0 MSX Music(OPLL)
+            // extSlot3-0 MSX Music(Ym2413)
             // extSlot3-1 MapperROM 512k
             // extSlot3-2 MapperROM 64k
             // extSlot3-3 MapperROM 64k

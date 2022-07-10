@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -25,7 +24,7 @@ import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.MultiPcm;
+import mdsound.chips.MultiPCM;
 
 
 public class frmMultiPCM extends frmBase {
@@ -161,7 +160,7 @@ public class frmMultiPCM extends frmBase {
     private int searchMultiPCMNote(int freq) {
         //double m = Double.MAX_VALUE;
 
-        //int clock = Audio.clockMultiPCM;
+        //int clock = audio.clockMultiPCM;
 
         int n = 0;
         //for (int i = 0; i < 12 * 8; i++)
@@ -184,53 +183,51 @@ public class frmMultiPCM extends frmBase {
     }
 
     public void screenChangeParams() {
-        MultiPcm.MultiPCM multiPCMRegister = Audio.getMultiPCMRegister(chipID);
+        MultiPCM multiPCMRegister = audio.getMultiPCMRegister(chipID);
         if (multiPCMRegister == null) return;
 
         for (int ch = 0; ch < 28; ch++) {
-            int oct = ((multiPCMRegister.slots[ch].regs[3] >> 4) - 1) & 0xf;
+            int oct = ((multiPCMRegister.getSlot(ch).regs[3] >> 4) - 1) & 0xf;
             oct = ((oct & 0x8) != 0) ? (oct - 16) : oct;
             oct = oct + 4; // 基音を o5 にしてます
-            int pitch = ((multiPCMRegister.slots[ch].regs[3] & 0xf) << 6) | (multiPCMRegister.slots[ch].regs[2] >> 2);
+            int pitch = ((multiPCMRegister.getSlot(ch).regs[3] & 0xf) << 6) | (multiPCMRegister.getSlot(ch).regs[2] >> 2);
 
             int nt = Math.max(Math.min(oct * 12 + pitch / 85, 7 * 12), 0);
             newParam.channels[ch].note = nt;
 
-            int d = multiPCMRegister.slots[ch].pan;
+            int d = multiPCMRegister.getSlot(ch).pan;
             d = (d == 0) ? 0xf : d;
             newParam.channels[ch].pan = ((((d & 0xc) >> 2) * 4) << 4) | (((d & 0x3) * 4) << 0);
 
-            newParam.channels[ch].bit[0] = (multiPCMRegister.slots[ch].regs[4] & 0x80) != 0;
-            newParam.channels[ch].freq = ((multiPCMRegister.slots[ch].regs[3] & 0xf) << 6) | (multiPCMRegister.slots[ch].regs[2] >> 2);
-            newParam.channels[ch].bit[1] = (multiPCMRegister.slots[ch].regs[5] & 1) != 0; // TL Interpolation
-            newParam.channels[ch].inst[1] = (multiPCMRegister.slots[ch].regs[5] >> 1) & 0x7f; // TL
-            newParam.channels[ch].inst[2] = (multiPCMRegister.slots[ch].regs[6] >> 3) & 7; // LFO freq
-            newParam.channels[ch].inst[3] = (multiPCMRegister.slots[ch].regs[6]) & 7; // PLFO
-            newParam.channels[ch].inst[4] = (multiPCMRegister.slots[ch].regs[7]) & 7; // ALFO
+            newParam.channels[ch].bit[0] = (multiPCMRegister.getSlot(ch).regs[4] & 0x80) != 0;
+            newParam.channels[ch].freq = ((multiPCMRegister.getSlot(ch).regs[3] & 0xf) << 6) | (multiPCMRegister.getSlot(ch).regs[2] >> 2);
+            newParam.channels[ch].bit[1] = (multiPCMRegister.getSlot(ch).regs[5] & 1) != 0; // TL Interpolation
+            newParam.channels[ch].inst[1] = (multiPCMRegister.getSlot(ch).regs[5] >> 1) & 0x7f; // TL
+            newParam.channels[ch].inst[2] = (multiPCMRegister.getSlot(ch).regs[6] >> 3) & 7; // LFO freq
+            newParam.channels[ch].inst[3] = (multiPCMRegister.getSlot(ch).regs[6]) & 7; // PLFO
+            newParam.channels[ch].inst[4] = (multiPCMRegister.getSlot(ch).regs[7]) & 7; // ALFO
 
-            if (multiPCMRegister.slots[ch].sample != null) {
-                newParam.channels[ch].inst[0] = multiPCMRegister.slots[ch].regs[1];
-                newParam.channels[ch].sadr = multiPCMRegister.slots[ch].sample.start;
-                newParam.channels[ch].eadr = multiPCMRegister.slots[ch].sample.end;
-                newParam.channels[ch].ladr = multiPCMRegister.slots[ch].sample.loop;
-                newParam.channels[ch].inst[5] = multiPCMRegister.slots[ch].sample.lfoVib;
-                newParam.channels[ch].inst[6] = multiPCMRegister.slots[ch].sample.ar;
-                newParam.channels[ch].inst[7] = multiPCMRegister.slots[ch].sample.dr1;
-                newParam.channels[ch].inst[8] = multiPCMRegister.slots[ch].sample.dr2;
-                newParam.channels[ch].inst[9] = multiPCMRegister.slots[ch].sample.dl;
-                newParam.channels[ch].inst[10] = multiPCMRegister.slots[ch].sample.rr;
-                newParam.channels[ch].inst[11] = multiPCMRegister.slots[ch].sample.krs;
-                newParam.channels[ch].inst[12] = multiPCMRegister.slots[ch].sample.am;
+            if (multiPCMRegister.getSlot(ch).sample != null) {
+                newParam.channels[ch].inst[0] = multiPCMRegister.getSlot(ch).regs[1];
+                newParam.channels[ch].sadr = multiPCMRegister.getSlot(ch).sample.start;
+                newParam.channels[ch].eadr = multiPCMRegister.getSlot(ch).sample.end;
+                newParam.channels[ch].ladr = multiPCMRegister.getSlot(ch).sample.loop;
+                newParam.channels[ch].inst[5] = multiPCMRegister.getSlot(ch).sample.lfoVib;
+                newParam.channels[ch].inst[6] = multiPCMRegister.getSlot(ch).sample.ar;
+                newParam.channels[ch].inst[7] = multiPCMRegister.getSlot(ch).sample.dr1;
+                newParam.channels[ch].inst[8] = multiPCMRegister.getSlot(ch).sample.dr2;
+                newParam.channels[ch].inst[9] = multiPCMRegister.getSlot(ch).sample.dl;
+                newParam.channels[ch].inst[10] = multiPCMRegister.getSlot(ch).sample.rr;
+                newParam.channels[ch].inst[11] = multiPCMRegister.getSlot(ch).sample.krs;
+                newParam.channels[ch].inst[12] = multiPCMRegister.getSlot(ch).sample.am;
             }
 
             if (newParam.channels[ch].bit[0]) {
                 newParam.channels[ch].volumeL =
-                        Math.min(
-                                (int) (((0x7f - newParam.channels[ch].inst[1]) * ((newParam.channels[ch].pan >> 4) & 0xf) / 0xf) / 4.5)
+                        Math.min((int) (((0x7f - newParam.channels[ch].inst[1]) * ((newParam.channels[ch].pan >> 4) & 0xf) / 0xf) / 4.5)
                                 , 19);
                 newParam.channels[ch].volumeR =
-                        Math.min(
-                                (int) (((0x7f - newParam.channels[ch].inst[1]) * ((newParam.channels[ch].pan) & 0xf) / 0xf) / 4.5)
+                        Math.min((int) (((0x7f - newParam.channels[ch].inst[1]) * ((newParam.channels[ch].pan) & 0xf) / 0xf) / 4.5)
                                 , 19);
             } else {
                 newParam.channels[ch].note = -1;
@@ -253,25 +250,25 @@ public class frmMultiPCM extends frmBase {
             DrawBuff.drawNESSw(frameBuffer, 64 * 4, ch * 8 + 8, oldParam.channels[ch].bit[0], newParam.channels[ch].bit[0]);
             DrawBuff.font4HexByte(frameBuffer, 4 * 66, ch * 8 + 8, 0, oyc.inst[0], nyc.inst[0]);
             DrawBuff.font4Hex12Bit(frameBuffer, 4 * 69, ch * 8 + 8, 0, oyc.freq, nyc.freq);
-            DrawBuff.drawNESSw(frameBuffer, 72 * 4, ch * 8 + 8, oldParam.channels[ch].bit[1], newParam.channels[ch].bit[1]);//TL Interpolation
-            DrawBuff.font4HexByte(frameBuffer, 4 * 74, ch * 8 + 8, 0, oyc.inst[1], nyc.inst[1]);//TL
-            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 77, ch * 8 + 8, 0, oyc.inst[2], nyc.inst[2]);//LFO freq
-            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 79, ch * 8 + 8, 0, oyc.inst[3], nyc.inst[3]);//PLFO
-            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 81, ch * 8 + 8, 0, oyc.inst[4], nyc.inst[4]);//ALFO
+            DrawBuff.drawNESSw(frameBuffer, 72 * 4, ch * 8 + 8, oldParam.channels[ch].bit[1], newParam.channels[ch].bit[1]); // TL Interpolation
+            DrawBuff.font4HexByte(frameBuffer, 4 * 74, ch * 8 + 8, 0, oyc.inst[1], nyc.inst[1]); // TL
+            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 77, ch * 8 + 8, 0, oyc.inst[2], nyc.inst[2]); // LFO freq
+            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 79, ch * 8 + 8, 0, oyc.inst[3], nyc.inst[3]); // PLFO
+            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 81, ch * 8 + 8, 0, oyc.inst[4], nyc.inst[4]); // ALFO
             DrawBuff.font4Hex24Bit(frameBuffer, 4 * 83, ch * 8 + 8, 0, oyc.sadr, nyc.sadr);
             DrawBuff.font4Hex16Bit(frameBuffer, 4 * 90, ch * 8 + 8, 0, oyc.eadr, nyc.eadr);
             DrawBuff.font4Hex16Bit(frameBuffer, 4 * 95, ch * 8 + 8, 0, oyc.ladr, nyc.ladr);
-            DrawBuff.font4HexByte(frameBuffer, 4 * 100, ch * 8 + 8, 0, oyc.inst[5], nyc.inst[5]);//LFOVIB
-            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 103, ch * 8 + 8, 0, oyc.inst[6], nyc.inst[6]);//AR
-            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 105, ch * 8 + 8, 0, oyc.inst[7], nyc.inst[7]);//DR1
-            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 107, ch * 8 + 8, 0, oyc.inst[8], nyc.inst[8]);//DR2
-            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 109, ch * 8 + 8, 0, oyc.inst[9], nyc.inst[9]);//DL
-            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 111, ch * 8 + 8, 0, oyc.inst[10], nyc.inst[10]);//RR
-            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 113, ch * 8 + 8, 0, oyc.inst[11], nyc.inst[11]);//KRS
-            DrawBuff.font4HexByte(frameBuffer, 4 * 115, ch * 8 + 8, 0, oyc.inst[12], nyc.inst[12]);//AM
+            DrawBuff.font4HexByte(frameBuffer, 4 * 100, ch * 8 + 8, 0, oyc.inst[5], nyc.inst[5]); // LFOVIB
+            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 103, ch * 8 + 8, 0, oyc.inst[6], nyc.inst[6]); // AR
+            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 105, ch * 8 + 8, 0, oyc.inst[7], nyc.inst[7]); // DR1
+            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 107, ch * 8 + 8, 0, oyc.inst[8], nyc.inst[8]); // DR2
+            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 109, ch * 8 + 8, 0, oyc.inst[9], nyc.inst[9]); // DL
+            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 111, ch * 8 + 8, 0, oyc.inst[10], nyc.inst[10]); // RR
+            DrawBuff.font4Hex4Bit(frameBuffer, 4 * 113, ch * 8 + 8, 0, oyc.inst[11], nyc.inst[11]); // KRS
+            DrawBuff.font4HexByte(frameBuffer, 4 * 115, ch * 8 + 8, 0, oyc.inst[12], nyc.inst[12]); // AM
 
-            DrawBuff.VolumeXY(frameBuffer, 117, ch * 2 + 2, 1, oyc.volumeL, nyc.volumeL, 0);//Front
-            DrawBuff.VolumeXY(frameBuffer, 117, ch * 2 + 3, 1, oyc.volumeR, nyc.volumeR, 0);//Front
+            DrawBuff.VolumeXY(frameBuffer, 117, ch * 2 + 2, 1, oyc.volumeL, nyc.volumeL, 0); // Front
+            DrawBuff.VolumeXY(frameBuffer, 117, ch * 2 + 3, 1, oyc.volumeR, nyc.volumeR, 0); // Front
 
             DrawBuff.KeyBoardToMultiPCM(frameBuffer, ch, oyc.note, nyc.note, 0);
             //DrawBuff.ChMultiPCM(frameBuffer, ch,oyc.mask, nyc.mask, 0);
@@ -288,8 +285,8 @@ public class frmMultiPCM extends frmBase {
         this.pbScreen.setLocation(new Point(0, 0));
         this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(527, 225));
-        // this.pbScreen.TabIndex = 0
-        // this.pbScreen.TabStop = false;
+        //this.pbScreen.TabIndex = 0
+        //this.pbScreen.TabStop = false;
         this.pbScreen.addMouseListener(this.pbScreen_MouseClick);
         //
         // frmMultiPCM

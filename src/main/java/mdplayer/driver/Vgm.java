@@ -3,26 +3,26 @@ package mdplayer.driver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
-import dotnet4j.util.compat.Tuple3;
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
+import dotnet4j.util.compat.Tuple3;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.DacControl;
 import mdplayer.Setting;
-import mdsound.C140;
-import vavi.util.Debug;
+import mdsound.chips.C140;
+
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 
 
 public class Vgm extends BaseDriver {
 
-    public Vgm(Setting setting) {
-        this.setting = setting;
+    public Vgm() {
+        this.setting = Setting.getInstance();
         dacControl = new DacControl(setting);
     }
 
@@ -34,7 +34,7 @@ public class Vgm extends BaseDriver {
     public static final int DefaultRF5C164ClockValue = 12500000;
     public static final int DefaultPWMClockValue = 23011361;
     public static final int DefaultC140ClockValue = 21390;
-    public final mdsound.C140.C140State.Type DefaultC140Type = mdsound.C140.C140State.Type.ASIC219;
+    public final C140.Type DefaultC140Type = C140.Type.ASIC219;
     public static final int DefaultOKIM6258ClockValue = 4000000;
     public static final int DefaultOKIM6295ClockValue = 4000000;
     public static final int DefaultSEGAPCMClockValue = 4000000;
@@ -47,7 +47,7 @@ public class Vgm extends BaseDriver {
     public int rf5C164ClockValue = DefaultRF5C164ClockValue;
     public int pwmClockValue = DefaultPWMClockValue;
     public int c140ClockValue = DefaultC140ClockValue;
-    public mdsound.C140.C140State.Type C140Type = DefaultC140Type;
+    public C140.Type C140Type = DefaultC140Type;
     public int okiM6258ClockValue = DefaultOKIM6258ClockValue;
     public byte okiM6258Type = 0;
     public int okiM6295ClockValue = DefaultOKIM6295ClockValue;
@@ -898,9 +898,9 @@ public class Vgm extends BaseDriver {
                         ym2610AdpcmA[chipID][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
                     }
                     if (model == mdplayer.Common.EnmModel.VirtualModel)
-                        chipRegister.writeYM2610_SetAdpcmA(chipID, ym2610AdpcmA[chipID], model);
+                        chipRegister.writeYm2610_SetAdpcmA(chipID, ym2610AdpcmA[chipID], model);
                     else
-                        chipRegister.writeYM2610_SetAdpcmA(chipID, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
+                        chipRegister.writeYm2610_SetAdpcmA(chipID, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                     dumpData(model, "YM2610_ADPCMA", vgmAdr + 15, bLen - 8);
                 }
                 break;
@@ -921,30 +921,30 @@ public class Vgm extends BaseDriver {
 
             case 0x84:
                 // YMF278B
-                chipRegister.writeYMF278BPCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeYmF278BPCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "YMF278B_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x85:
                 // YMF271
-                chipRegister.writeYMF271PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeYmF271PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "YMF271_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x86:
                 // YMZ280B
-                chipRegister.writeYMZ280BPCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeYmZ280BPCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "YMZ280B_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x87:
                 // YMF278B
-                chipRegister.writeYMF278BPCMRAMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeYmF278BPCMRAMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "YMF278B_PCMRAMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x88:
-                // Y8950
+                // Y8950Inst
                 chipRegister.writeY8950PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "Y8950_PCMData", vgmAdr + 15, bLen - 8);
                 break;
@@ -962,25 +962,25 @@ public class Vgm extends BaseDriver {
                 break;
 
             case 0x8c:
-                // K054539
+                // K054539Inst
                 chipRegister.writeK054539PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "K054539_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8d:
-                // C140
+                // C140Inst
                 chipRegister.writeC140PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "C140_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8e:
-                // K053260
+                // K053260Inst
                 chipRegister.writeK053260PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "K053260_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8f:
-                // QSound
+                // QSoundInst
                 chipRegister.writeQSoundPCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "QSound_PCMData", vgmAdr + 15, bLen - 8);
                 break;
@@ -992,7 +992,7 @@ public class Vgm extends BaseDriver {
                 break;
 
             case 0x92:
-                // C352
+                // C352Inst
                 chipRegister.writeC352PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "C352_PCMData", vgmAdr + 15, bLen - 8);
                 break;
@@ -1084,7 +1084,7 @@ public class Vgm extends BaseDriver {
             des.add((byte) ((fsize & 0xff) >> 0));
             des.add((byte) ((fsize & 0xff00) >> 8));
             des.add((byte) ((fsize & 0xff0000) >> 16));
-            des.add((byte) ((fsize & 0xff000000) >> 24));
+            des.add((byte) ((fsize & 0xff000000) >>> 24));
             // 'WAVE'
             des.add((byte) 'W');
             des.add((byte) 'A');
@@ -1132,20 +1132,19 @@ public class Vgm extends BaseDriver {
             des.add((byte) ((len & 0xff) >> 0));
             des.add((byte) ((len & 0xff00) >> 8));
             des.add((byte) ((len & 0xff0000) >> 16));
-            des.add((byte) ((len & 0xff000000) >> 24));
+            des.add((byte) ((len & 0xff000000) >>> 24));
 
             for (int i = 0; i < len; i++) {
                 des.add(vgmBuf[adr + i]);
             }
 
              // 出力
-            File.writeAllBytes(dFn, mdsound.Common.toByteArray(des));
+            File.writeAllBytes(dFn, toByteArray(des));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 
     private void vcPCMRamWrite() {
 
@@ -1745,7 +1744,7 @@ public class Vgm extends BaseDriver {
     }
 
     private byte getDACFromPCMBank() {
-        // for Ym2612 DAC data only
+        // for Ym2612Inst DAC data only
             /*VgmPcmBank* TempPCM;
             UINT32 CurBnk;*/
         int DataPos;
@@ -1786,8 +1785,8 @@ public class Vgm extends BaseDriver {
         chips = new ArrayList<>();
         usedChips = "";
 
-        sn76489ClockValue = 0;// defaultSN76489ClockValue;
-        ym2612ClockValue = 0;// defaultYM2612ClockValue;
+        sn76489ClockValue = 0; // defaultSN76489ClockValue;
+        ym2612ClockValue = 0; // defaultYM2612ClockValue;
         yn2151ClockValue = 0;
         segaPCMClockValue = 0;
         ym2203ClockValue = 0;
@@ -1796,10 +1795,10 @@ public class Vgm extends BaseDriver {
         ym3812ClockValue = 0;
         ymF262ClockValue = 0;
         rf5C68ClockValue = 0;
-        rf5C164ClockValue = 0;// defaultRF5C164ClockValue;
-        pwmClockValue = 0;// defaultPWMClockValue;
-        okiM6258ClockValue = 0;// defaultOKIM6258ClockValue;
-        c140ClockValue = 0;// defaultC140ClockValue;
+        rf5C164ClockValue = 0; // defaultRF5C164ClockValue;
+        pwmClockValue = 0; // defaultPWMClockValue;
+        okiM6258ClockValue = 0; // defaultOKIM6258ClockValue;
+        c140ClockValue = 0; // defaultC140ClockValue;
         okiM6295ClockValue = 0; // defaultOKIM6295ClockValue;
         ay8910ClockValue = 0;
         ym2413ClockValue = 0;
@@ -1874,7 +1873,7 @@ public class Vgm extends BaseDriver {
                 ym2612ClockValue = YM2612clock & 0x3fffffff;
                 ym2612DualChipFlag = (YM2612clock & 0x40000000) != 0;
                 if (ym2612DualChipFlag) chips.add("YM2612x2");
-                else chips.add("Ym2612");
+                else chips.add("Ym2612Inst");
             }
 
             int YM2151clock = getLE32(0x10);
@@ -1900,7 +1899,7 @@ public class Vgm extends BaseDriver {
                 ym2612ClockValue = YM2612clock & 0x3fffffff;
                 ym2612DualChipFlag = (YM2612clock & 0x40000000) != 0;
                 if (ym2612DualChipFlag) chips.add("YM2612x2");
-                else chips.add("Ym2612");
+                else chips.add("Ym2612Inst");
             }
 
             int YM2151clock = getLE32(0x30);
@@ -1911,7 +1910,7 @@ public class Vgm extends BaseDriver {
                 else chips.add("YM2151");
             }
 
-            //SetYM2151Hosei();
+            //setYM2151Hosei();
 
             vgmDataOffset = getLE32(0x34);
             if (vgmDataOffset == 0) {
@@ -2000,7 +1999,7 @@ public class Vgm extends BaseDriver {
                         y8950ClockValue = Y8950clock & 0x3fffffff;
                         y8950DualChipFlag = (Y8950clock & 0x40000000) != 0;
                         if (y8950DualChipFlag) chips.add("Y8950x2");
-                        else chips.add("Y8950");
+                        else chips.add("Y8950Inst");
                     }
                 }
 
@@ -2125,7 +2124,7 @@ public class Vgm extends BaseDriver {
                         k051649ClockValue = K051649clock & 0x3fffffff;
                         k051649DualChipFlag = (K051649clock & 0x40000000) != 0;
                         if (k051649DualChipFlag) chips.add("K051649x2");
-                        else chips.add("K051649");
+                        else chips.add("K051649Inst");
                     }
                 }
 
@@ -2135,7 +2134,7 @@ public class Vgm extends BaseDriver {
                         k054539ClockValue = K054539clock & 0x3fff_ffff;
                         k054539DualChipFlag = (K054539clock & 0x40000000) != 0;
                         if (k054539DualChipFlag) chips.add("K054539x2");
-                        else chips.add("K054539");
+                        else chips.add("K054539Inst");
                         k054539Flags = vgmBuf[0x95];
                     }
                 }
@@ -2144,7 +2143,7 @@ public class Vgm extends BaseDriver {
 
                     int HuC6280clock = getLE32(0xa4);
                     if (HuC6280clock != 0) {
-                        chips.add("HuC6280");
+                        chips.add("OotakeHuC6280");
                         huC6280ClockValue = HuC6280clock;
                     }
                 }
@@ -2156,18 +2155,18 @@ public class Vgm extends BaseDriver {
                         c140ClockValue = C140clock & 0x3fff_ffff;
                         c140DualChipFlag = (C140clock & 0x4000_0000) != 0;
                         if (c140DualChipFlag) chips.add("C140x2");
-                        else chips.add("C140");
+                        else chips.add("C140Inst");
 
                         switch (vgmBuf[0x96]) {
                         case 0x00:
-                            C140Type = C140.C140State.Type.SYSTEM2;
+                            C140Type = C140.Type.SYSTEM2;
                             break;
                         case 0x01:
-                            C140Type = C140.C140State.Type.SYSTEM21;
+                            C140Type = C140.Type.SYSTEM21;
                             break;
                         case 0x02:
                         default:
-                            C140Type = C140.C140State.Type.ASIC219;
+                            C140Type = C140.Type.ASIC219;
                             break;
                         }
                     }
@@ -2180,7 +2179,7 @@ public class Vgm extends BaseDriver {
                         k053260ClockValue = k053260clock & 0x3fffffff;
                         k053260DualChipFlag = (k053260clock & 0x40000000) != 0;
                         if (k053260DualChipFlag) chips.add("K053260x2");
-                        else chips.add("K053260");
+                        else chips.add("K053260Inst");
                     }
                 }
 
@@ -2199,7 +2198,7 @@ public class Vgm extends BaseDriver {
 
                     int qSoundClock = getLE32(0xb4);
                     if (qSoundClock != 0) {
-                        chips.add("QSound");
+                        chips.add("QSoundInst");
                         qSoundClockValue = qSoundClock;
                     }
                 }
@@ -2248,7 +2247,7 @@ public class Vgm extends BaseDriver {
                         x1_010ClockValue = x1_010Clock & 0x3fff_ffff;
                         x1_010DualChipFlag = (x1_010Clock & 0x4000_0000) != 0;
                         if (x1_010DualChipFlag) chips.add("X1_010x2");
-                        else chips.add("X1_010");
+                        else chips.add("X1_010Inst");
                     }
                 }
 
@@ -2259,7 +2258,7 @@ public class Vgm extends BaseDriver {
                         c352ClockValue = c352clock & 0x3fff_ffff;
                         c352DualChipFlag = (c352clock & 0x4000_0000) != 0;
                         if (c352DualChipFlag) chips.add("C352x2");
-                        else chips.add("C352");
+                        else chips.add("C352Inst");
 
                         c352ClockDivider = vgmBuf[0xd6];
                     }
@@ -2390,6 +2389,7 @@ public class Vgm extends BaseDriver {
         public byte[] entries;
     }
 
+    // TODO musicDriverInterface.GD3Tag -> Tag???
     public static class Gd3 {
         public String trackName = "";
         public String trackNameJ = "";

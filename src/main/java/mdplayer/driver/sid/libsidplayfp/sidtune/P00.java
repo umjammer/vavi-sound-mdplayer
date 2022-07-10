@@ -76,7 +76,7 @@ public class P00 extends SidTuneBase {
         X00_REL
     }
 
-    // Format Strings
+    // FileFormat Strings
     private static final String TXT_FORMAT_DEL = "Unsupported tape image file (DEL)";
     private static final String TXT_FORMAT_SEQ = "Unsupported tape image file (SEQ)";
     private static final String TXT_FORMAT_PRG = "Tape image file (PRG)";

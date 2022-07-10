@@ -108,7 +108,7 @@ public class frmFDS extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        mdsound.np.NpNesFds reg = Audio.getFDSRegister(chipID);
+        mdsound.np.NpNesFds reg = audio.getFDSRegister(chipID);
         int freq;
         int vol;
         int note;

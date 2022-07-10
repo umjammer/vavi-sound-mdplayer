@@ -45,7 +45,7 @@ public class SidConfig {
         }
     }
 
-    // Sid chip model
+    // Sid chips model
     public enum SidModel {
         MOS6581,
         MOS8580

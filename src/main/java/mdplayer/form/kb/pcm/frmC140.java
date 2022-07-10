@@ -24,6 +24,7 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
+import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
 
 
@@ -142,7 +143,7 @@ public class frmC140 extends frmBase {
     private int searchC140Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = Audio.clockC140;
+        int clock = audio.clockC140;
         if (clock >= 1000000)
             clock = clock / 384;
 
@@ -186,8 +187,8 @@ public class frmC140 extends frmBase {
     }
 
     public void screenChangeParams() {
-        byte[] c140State = Audio.getC140Register(chipID);
-        boolean[] c140KeyOn = Audio.getC140KeyOn(chipID);
+        byte[] c140State = audio.getC140Register(chipID);
+        boolean[] c140KeyOn = audio.getC140KeyOn(chipID);
         if (c140State != null) {
             for (int ch = 0; ch < 24; ch++) {
                 int frequency = c140State[ch * 16 + 2] * 256 + c140State[ch * 16 + 3];
@@ -280,7 +281,7 @@ public class frmC140 extends frmBase {
         this.setMaximumSize(new Dimension(336, 240));
         this.setMinimumSize(new Dimension(336, 240));
         this.setName("frmC140");
-        this.setTitle("C140");
+        this.setTitle("C140Inst");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();

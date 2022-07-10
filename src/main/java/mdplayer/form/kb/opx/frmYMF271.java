@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -25,7 +24,7 @@ import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.Ymf271;
+import mdsound.chips.YmF271;
 
 
 public class frmYMF271 extends frmBase {
@@ -145,13 +144,13 @@ public class frmYMF271 extends frmBase {
     }
 
     public void screenChangeParams() {
-        Ymf271.YMF271Chip reg = Audio.getYMF271Register(chipID);
+        YmF271 reg = audio.getYMF271Register(chipID);
         if (reg != null) {
             for (int i = 0; i < 48; i++) {
                 int slot = slotTbl[i];
 
                 MDChipParams.Channel nrc = newParam.channels[slot];
-                Ymf271.YMF271Chip.Slot slt = reg.slots[slot];
+                YmF271.Slot slt = reg.getSlot(slot);
                 nrc.volumeL = Math.min(Math.max((slt.volume * slt.ch0Level) >> 23, 0), 19);
                 nrc.volumeR = Math.min(Math.max((slt.volume * slt.ch1Level) >> 23, 0), 19);
                 nrc.pan = (slt.ch1Level << 4) | (slt.ch0Level & 0xf);
@@ -199,7 +198,7 @@ public class frmYMF271 extends frmBase {
                 }
 
                 if (i % 4 == 0) {
-                    nrc.tn = reg.groups[i / 4].sync;
+                    nrc.tn = reg.getSync(i / 4);
                 }
             }
         }

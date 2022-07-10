@@ -177,7 +177,7 @@ public class frmTPPut extends JFrame {
         this.groupBox1.setPreferredSize(new Dimension(264, 81));
         // this.groupBox1.TabIndex = 1
         // this.groupBox1.TabStop = false;
-        this.groupBox1.setToolTipText("Ym2612(From)");
+        this.groupBox1.setToolTipText("Ym2612Inst(From)");
         //
         // btCh6
         //

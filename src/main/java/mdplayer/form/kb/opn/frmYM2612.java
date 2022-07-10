@@ -19,13 +19,14 @@ import javax.swing.JPanel;
 import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
-import mdplayer.Common.FileFormat;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.driver.Xgm;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
+import mdplayer.format.FileFormat;
+import mdplayer.format.XGMFileFormat;
 import mdplayer.properties.Resources;
 
 
@@ -63,7 +64,7 @@ public class frmYM2612 extends frmBase {
         DrawBuff.screenInitYM2612(frameBuffer, tp, (chipID == 0)
                         ? parent.setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation()
                         : parent.setting.getYM2612Type()[1].getRealChipInfo()[0].getOnlyPCMEmulation()
-                , newParam.fileFormat == FileFormat.XGM);
+                , newParam.fileFormat instanceof XGMFileFormat);
         newParam.channels[5].pcmBuff = 100;
     }
 
@@ -128,10 +129,10 @@ public class frmYM2612 extends frmBase {
             };
 
     public void screenChangeParams() {
-        int[][] fmRegister = Audio.getFMRegister(chipID);
-        int[] fmVol = Audio.getFMVolume(chipID);
-        int[] fmCh3SlotVol = Audio.getFMCh3SlotVolume(chipID);
-        int[] fmKey = Audio.getFMKeyOn(chipID);
+        int[][] fmRegister = audio.getFMRegister(chipID);
+        int[] fmVol = audio.getFMVolume(chipID);
+        int[] fmCh3SlotVol = audio.getFMCh3SlotVolume(chipID);
+        int[] fmKey = audio.getFMKeyOn(chipID);
 
         boolean isFmEx = (fmRegister[0][0x27] & 0x40) != 0;
         newParam.channels[2].ex = isFmEx;
@@ -141,7 +142,7 @@ public class frmYM2612 extends frmBase {
         newParam.timerA = fmRegister[0][0x24] | ((fmRegister[0][0x25] & 0x3) << 8);
         newParam.timerB = fmRegister[0][0x26];
 
-        //int masterClock = Audio.clockYM2612;
+        //int masterClock = audio.clockYM2612;
         //int defaultMasterClock = 8000000;
         //float mul = 1.0f;
         //if (masterClock != 0)
@@ -150,9 +151,9 @@ public class frmYM2612 extends frmBase {
         int defaultMasterClock = 8000000;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        if (Audio.clockYM2612 != 0) {
-            ssgMul = Audio.clockYM2612 / (float) defaultMasterClock;
-            masterClock = Audio.clockYM2612;
+        if (audio.clockYM2612 != 0) {
+            ssgMul = audio.clockYM2612 / (float) defaultMasterClock;
+            masterClock = audio.clockYM2612;
         }
 
         float fmDiv = 6;
@@ -281,13 +282,13 @@ public class frmYM2612 extends frmBase {
             newParam.channels[5].volumeR = Math.min(Math.max(fmVol[5] / 80, 0), 19);
         }
 
-        if (newParam.fileFormat == FileFormat.XGM && Audio.driverVirtual instanceof Xgm) {
+        if (newParam.fileFormat instanceof XGMFileFormat && audio.driverVirtual instanceof Xgm) {
 
-            if (Audio.driverVirtual != null && ((Xgm) Audio.driverVirtual).xgmpcm != null) {
+            if (audio.driverVirtual != null && ((Xgm) audio.driverVirtual).xgmpcm != null) {
                 for (int i = 0; i < 4; i++) {
-                    if (((Xgm) Audio.driverVirtual).xgmpcm[i].isPlaying) {
-                        newParam.xpcmInst[i] = ((Xgm) Audio.driverVirtual).xgmpcm[i].inst;
-                        int d = (((Xgm) Audio.driverVirtual).xgmpcm[i].data / 6);
+                    if (((Xgm) audio.driverVirtual).xgmpcm[i].isPlaying) {
+                        newParam.xpcmInst[i] = ((Xgm) audio.driverVirtual).xgmpcm[i].inst;
+                        int d = (((Xgm) audio.driverVirtual).xgmpcm[i].data / 6);
                         d = Math.min(d, 19);
                         newParam.xpcmVolL[i] = d;
                         newParam.xpcmVolR[i] = d;
@@ -341,7 +342,7 @@ public class frmYM2612 extends frmBase {
                 DrawBuff.Pan(frameBuffer, 25, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp6v);
                 DrawBuff.InstOPN2(frameBuffer, 13, 96, c, oyc.inst, nyc.inst);
 
-                if (newParam.fileFormat != FileFormat.XGM) {
+                if (!(newParam.fileFormat instanceof XGMFileFormat)) {
                     if (oldParam.fileFormat != newParam.fileFormat) {
                         //
                         oyc.pcmMode = 1;
@@ -480,7 +481,7 @@ public class frmYM2612 extends frmBase {
         this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
 //        this.MaximizeBox = false;
         this.setName("frmYM2612");
-        this.setTitle("Ym2612");
+        this.setTitle("Ym2612Inst");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();

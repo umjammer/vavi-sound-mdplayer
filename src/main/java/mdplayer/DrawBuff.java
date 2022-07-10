@@ -1,12 +1,9 @@
 
 package mdplayer;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 import mdplayer.properties.Resources;
@@ -3098,7 +3095,7 @@ public class DrawBuff {
             return;
 
         int n;
-        num = Common.Range((byte) num, 0, 15);
+        num = Common.range((byte) num, 0, 15);
 
         n = num;
         drawFont4(screen, x, y, t, Tables.hexCh[n]);
@@ -3110,7 +3107,7 @@ public class DrawBuff {
             return;
 
         int n;
-        num = Common.Range((byte) num, 0, 255);
+        num = Common.range((byte) num, 0, 255);
 
         n = num / 0x10;
         num -= n * 0x10;
@@ -3128,7 +3125,7 @@ public class DrawBuff {
             return;
 
         int n;
-        num = Common.Range(num, 0, 0xfff);
+        num = Common.range(num, 0, 0xfff);
 
         n = num / 0x100;
         num -= n * 0x100;
@@ -3152,7 +3149,7 @@ public class DrawBuff {
             return;
 
         int n;
-        num = Common.Range(num, 0, 0xffff);
+        num = Common.range(num, 0, 0xffff);
 
         n = num / 0x1000;
         num -= n * 0x1000;
@@ -3182,7 +3179,7 @@ public class DrawBuff {
             return;
 
         int n;
-        num = Common.Range(num, 0, 0xf_ffff);
+        num = Common.range(num, 0, 0xf_ffff);
 
         n = num / 0x1_0000;
         num -= n * 0x1_0000;
@@ -3218,7 +3215,7 @@ public class DrawBuff {
             return;
 
         int n;
-        num = Common.Range(num, 0, 0xff_ffff);
+        num = Common.range(num, 0, 0xff_ffff);
 
         n = num / 0x10_0000;
         num -= n * 0x10_0000;
@@ -3260,7 +3257,7 @@ public class DrawBuff {
             return;
 
         int n;
-        num = Common.Range(num, 0, 0xffff_ffff);
+        num = Common.range(num, 0, 0xffff_ffff);
 
         n = num / 0x1000_0000;
         num -= n * 0x1000_0000;

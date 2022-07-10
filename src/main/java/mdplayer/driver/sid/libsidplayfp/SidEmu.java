@@ -67,7 +67,7 @@ public class SidEmu extends C64Sid {
     }
 
     /**
-     * /.Clock the Sid chip.
+     * /.Clock the Sid chips.
      */
     public void clock() {
     }
@@ -132,7 +132,7 @@ public class SidEmu extends C64Sid {
 
     protected static final String ERR_UNSUPPORTED_FREQ = "Unable to set desired Output frequency.";
     protected static final String ERR_INVALID_SAMPLING = "Invalid sampling method.";
-    protected static final String ERR_INVALID_CHIP = "Invalid chip model.";
+    protected static final String ERR_INVALID_CHIP = "Invalid chips model.";
 
     /**
      * Set execution environment and synchronized Sid to it.

@@ -11,7 +11,7 @@ import mdplayer.driver.hes.KmEvent.Event;
 
 
 /*
- * km6502 HuC6280 I/F
+ * km6502 OotakeHuC6280 I/F
  *
  * HES
  * system clock 21477270Hz

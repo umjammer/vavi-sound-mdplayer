@@ -135,7 +135,7 @@ public class Mos656X extends Event {
     /** the 8 sprites data */
     private Sprites sprites;
 
-    /** memory for chip registers */
+    /** memory for chips registers */
     private byte[] regs = new byte[0x40];
 
     private EventCallback<Mos656X> badLineStateChangeEvent;
@@ -351,7 +351,7 @@ public class Mos656X extends Event {
     }
 
     /**
-     * Set chip model.
+     * Set chips model.
      */
     public void chip(Model model) {
         maxRasters = modelData[model.ordinal()].rasterLines;

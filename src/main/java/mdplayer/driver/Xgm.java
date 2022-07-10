@@ -1,20 +1,18 @@
 package mdplayer.driver;
 
 import java.util.Arrays;
-import java.util.logging.Level;
 
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.Log;
 import mdplayer.Setting;
 import vavi.util.Debug;
 
 
 public class Xgm extends BaseDriver {
 
-    public Xgm(Setting setting) {
-        this.setting = setting;
+    public Xgm() {
+        this.setting = Setting.getInstance();
         musicStep = Common.VGMProcSampleRate / 60.0; // setting.getoutputDevice().SampleRate / 60.0;
         pcmStep = setting.getOutputDevice().getSampleRate() / 14000.0;
     }
@@ -250,13 +248,13 @@ public class Xgm extends BaseDriver {
                  // Psg register write:
                 writePSG(X);
             } else if (cmd == 0x20) {
-                 // Ym2612 port 0 register write:
+                 // Ym2612Inst port 0 register write:
                 writeYM2612P0(X);
             } else if (cmd == 0x30) {
-                 // Ym2612 port 1 register write:
+                 // Ym2612Inst port 1 register write:
                 writeYM2612P1(X);
             } else if (cmd == 0x40) {
-                 // Ym2612 key off/on ($28) command write:
+                 // Ym2612Inst key off/on ($28) command write:
                 writeYM2612Key(X);
             } else if (cmd == 0x50) {
                  // PCM play command:
@@ -319,10 +317,10 @@ public class Xgm extends BaseDriver {
             if (id == 0 || sampleID[id - 1].size == 0) {
                  // IDが0の場合や、定義されていないIDが指定された場合は発音を停止する
                 xgmpcm[channel].priority = 0;
-                //xgmpcm[channel].startAddr = 0;
-                //xgmpcm[channel].endAddr = 0;
-                //xgmpcm[channel].addr = 0;
-                //xgmpcm[channel].inst = id;
+                //xgmPcm[channel].startAddr = 0;
+                //xgmPcm[channel].endAddr = 0;
+                //xgmPcm[channel].addr = 0;
+                //xgmPcm[channel].inst = id;
                 xgmpcm[channel].isPlaying = false;
             } else {
                 xgmpcm[channel].priority = priority;

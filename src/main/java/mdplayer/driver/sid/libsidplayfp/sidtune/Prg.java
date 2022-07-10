@@ -37,7 +37,7 @@ public class Prg extends SidTuneBase {
         return null;
     }
 
-    // Format Strings
+    // FileFormat Strings
     public static final String TXT_FORMAT_PRG = "Tape image file (PRG)";
 
     /**

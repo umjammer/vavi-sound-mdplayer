@@ -110,7 +110,7 @@ public class frmNESDMC extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        byte[] reg = Audio.getAPURegister(chipID);
+        byte[] reg = audio.getAPURegister(chipID);
         int freq;
         int vol;
         int note;
@@ -133,7 +133,7 @@ public class frmNESDMC extends frmBase {
             }
         }
 
-        byte[] reg2 = Audio.getDMCRegister(chipID);
+        byte[] reg2 = audio.getDMCRegister(chipID);
         if (reg2 == null) return;
 
         int tri = reg2[0x10];

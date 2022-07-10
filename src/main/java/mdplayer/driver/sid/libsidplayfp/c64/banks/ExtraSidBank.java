@@ -32,13 +32,13 @@ import mdplayer.driver.sid.libsidplayfp.c64.C64Sid;
 public class ExtraSidBank implements IBank {
 
     /**
-     * size of mapping table. Each 32 bytes another Sid chip base address can be
+     * size of mapping table. Each 32 bytes another Sid chips base address can be
      * assigned to.
      */
     private static final int MAPPER_SIZE = 8;
 
     /**
-     * Sid mapping table. Maps a Sid chip base address to a Sid or to the
+     * Sid mapping table. Maps a Sid chips base address to a Sid or to the
      * underlying bank.
      */
     private IBank[] mapper = new IBank[MAPPER_SIZE];
@@ -76,7 +76,7 @@ public class ExtraSidBank implements IBank {
      * Set Sid emulation.
      * <p>
      * @param s the emulation
-     * @param address the address where to put the chip
+     * @param address the address where to put the chips
      */
     public void addSID(C64Sid s, int address) {
         sids.add(s);

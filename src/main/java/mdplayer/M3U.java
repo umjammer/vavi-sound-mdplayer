@@ -1,27 +1,26 @@
 package mdplayer;
 
 import java.io.File;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 
-import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.StreamReader;
+import mdplayer.format.FileFormat;
 import vavi.util.Debug;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
-import vavi.util.archive.zip.ZipEntry;
 
 
 public class M3U {
-    public static PlayList LoadM3U(String filename, String rootPath) {
+
+    public static PlayList loadM3U(String filename, String rootPath) {
         try {
             PlayList pl = new PlayList();
 
@@ -35,10 +34,9 @@ public class M3U {
 
                     PlayList.Music ms = analyzeLine(line, rootPath);
                     if (ms != null) {
-                        ms.format = Common.FileFormat.checkExt(ms.fileName);
+                        ms.format = FileFormat.getFileFormat(ms.fileName);
                         pl.getMusics().add(ms);
                     }
-
                 }
             }
 
@@ -50,7 +48,7 @@ public class M3U {
         }
     }
 
-    public static PlayList LoadM3U(Archive archive, Entry entry, String zipFileName) {
+    public static PlayList loadM3U(Archive archive, Entry entry, String zipFileName) {
         try {
             PlayList pl = new PlayList();
 
@@ -63,10 +61,9 @@ public class M3U {
                     if (line.charAt(0) == '#') continue;
 
                     PlayList.Music ms = analyzeLine(line, "");
-                    ms.format = Common.FileFormat.checkExt(ms.fileName);
+                    ms.format = FileFormat.getFileFormat(ms.fileName);
                     ms.arcFileName = zipFileName;
-                    if (ms != null) pl.getMusics().add(ms);
-
+                    pl.getMusics().add(ms);
                 }
             }
 
@@ -78,7 +75,7 @@ public class M3U {
         }
     }
 
-    private static PlayList LoadM3U(String archiveFile, String fileName, String zipFileName) {
+    private static PlayList loadM3U(String archiveFile, String fileName, String zipFileName) {
         try {
             PlayList pl = new PlayList();
             Archive cmd = Archives.getArchive(new File(archiveFile));
@@ -91,10 +88,9 @@ public class M3U {
                 if (line.charAt(0) == '#') continue;
 
                 PlayList.Music ms = analyzeLine(line, "");
-                ms.format = Common.FileFormat.checkExt(ms.fileName);
+                ms.format = FileFormat.getFileFormat(ms.fileName);
                 ms.arcFileName = zipFileName;
-                if (ms != null) pl.getMusics().add(ms);
-
+                pl.getMusics().add(ms);
             }
 
             return pl;

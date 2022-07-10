@@ -3,7 +3,6 @@ package mdplayer.driver.mgsdrv;
 import konamiman.z80.interfaces.Memory;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
-import mdplayer.Log;
 import vavi.util.Debug;
 
 
@@ -58,7 +57,7 @@ public class MsxPort implements Memory {
             break;
         case 0x7d:
             chipRegister.setYM2413Register(0, opllAdr, value, model);
-            //Debug.printf("OPLL Port Adr:%04x Dat:%02x", address, value);
+            //Debug.printf("Ym2413 Port Adr:%04x Dat:%02x", address, value);
             break;
         case 0xa8:
             //Debug.printf("ChangeSlot Port Adr:%04x Dat:%02x", address, value);

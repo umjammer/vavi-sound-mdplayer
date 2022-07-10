@@ -127,10 +127,10 @@ public class frmYM2203 extends frmBase {
 
     public void screenChangeParams() {
         boolean isFmEx;
-        int[] ym2203Register = Audio.getYm2203Register(chipID);
-        int[] fmKeyYM2203 = Audio.getYM2203KeyOn(chipID);
-        int[] ym2203Vol = Audio.getYM2203Volume(chipID);
-        int[] ym2203Ch3SlotVol = Audio.getYM2203Ch3SlotVolume(chipID);
+        int[] ym2203Register = audio.getYm2203Register(chipID);
+        int[] fmKeyYM2203 = audio.getYM2203KeyOn(chipID);
+        int[] ym2203Vol = audio.getYM2203Volume(chipID);
+        int[] ym2203Ch3SlotVol = audio.getYM2203Ch3SlotVolume(chipID);
 
         isFmEx = (ym2203Register[0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
@@ -138,9 +138,9 @@ public class frmYM2203 extends frmBase {
         int defaultMasterClock = 7987200 / 2;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        if (Audio.clockYM2203 != 0) {
-            ssgMul = Audio.clockYM2203 / (float) defaultMasterClock;
-            masterClock = Audio.clockYM2203;
+        if (audio.clockYM2203 != 0) {
+            ssgMul = audio.clockYM2203 / (float) defaultMasterClock;
+            masterClock = audio.clockYM2203;
         }
 
         int divInd = ym2203Register[0x2d];

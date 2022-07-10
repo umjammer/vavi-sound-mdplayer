@@ -233,12 +233,12 @@ public class frmYM2610 extends frmBase {
         int delta;
         float frq;
 
-        int[][] YM2610Register = Audio.getYM2610Register(chipID);
-        int[] fmKeyYM2610 = Audio.getYM2610KeyOn(chipID);
-        int[] YM2610Vol = Audio.getYM2610Volume(chipID);
-        int[] YM2610Ch3SlotVol = Audio.getYM2610Ch3SlotVolume(chipID);
-        int[][] YM2610Rhythm = Audio.getYM2610RhythmVolume(chipID);
-        int[] YM2610AdpcmVol = Audio.getYM2610AdpcmVolume(chipID);
+        int[][] YM2610Register = audio.getYM2610Register(chipID);
+        int[] fmKeyYM2610 = audio.getYM2610KeyOn(chipID);
+        int[] YM2610Vol = audio.getYM2610Volume(chipID);
+        int[] YM2610Ch3SlotVol = audio.getYM2610Ch3SlotVolume(chipID);
+        int[][] YM2610Rhythm = audio.getYM2610RhythmVolume(chipID);
+        int[] YM2610AdpcmVol = audio.getYM2610AdpcmVolume(chipID);
 
         boolean isFmEx = (YM2610Register[chipID][0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
@@ -246,9 +246,9 @@ public class frmYM2610 extends frmBase {
         int defaultMasterClock = 8000000;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        if (Audio.clockYM2610 != 0) {
-            ssgMul = Audio.clockYM2610 / (float) defaultMasterClock;
-            masterClock = Audio.clockYM2610;
+        if (audio.clockYM2610 != 0) {
+            ssgMul = audio.clockYM2610 / (float) defaultMasterClock;
+            masterClock = audio.clockYM2610;
         }
 
         int divInd = YM2610Register[0][0x2d];
@@ -257,7 +257,7 @@ public class frmYM2610 extends frmBase {
         float ssgDiv = ssgDivTbl[divInd];
         ssgMul = ssgMul * ssgDiv / 4;
 
-        //int masterClock = Audio.clockYM2610;
+        //int masterClock = audio.clockYM2610;
         //int defaultMasterClock = 8000000;
         //float mul = 1.0f;
         //if (masterClock != 0)

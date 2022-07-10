@@ -19,7 +19,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -33,14 +32,12 @@ import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
-import mdplayer.Log;
 import mdplayer.MDChipParams;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.form.sys.frmTPGet;
 import mdplayer.form.sys.frmTPPut;
 import mdplayer.properties.Resources;
-import vavi.util.Debug;
 
 
 public class frmYM2612MIDI extends frmBase {
@@ -120,8 +117,8 @@ public class frmYM2612MIDI extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[][] fmRegister = Audio.getYM2612MIDIRegister();
-        //int[] fmKey = Audio.GetFMKeyOn();
+        int[][] fmRegister = audio.getYM2612MIDIRegister();
+        //int[] fmKey = audio.GetFMKeyOn();
 
         newParam.IsMONO = parent.setting.getMidiKbd().isMono();
         if (parent.setting.getMidiKbd().isMono()) {
@@ -608,7 +605,7 @@ public class frmYM2612MIDI extends frmBase {
         this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
 //        this.MaximizeBox = false;
         this.setName("frmYM2612MIDI");
-        this.setTitle("MIDI(Ym2612)");
+        this.setTitle("MIDI(Ym2612Inst)");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         this.addKeyListener(this.frmYM2612MIDI_KeyDown);

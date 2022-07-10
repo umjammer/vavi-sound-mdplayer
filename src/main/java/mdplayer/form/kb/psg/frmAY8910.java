@@ -23,6 +23,8 @@ import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
+import static mdplayer.Common.searchSSGNote;
+
 
 public class frmAY8910 extends frmChipBase {
     JPanel pbScreen;
@@ -112,7 +114,7 @@ public class frmAY8910 extends frmChipBase {
 
     @Override
     public void screenChangeParams() {
-        int[] AY8910Register = Audio.getAY8910Register(chipID);
+        int[] AY8910Register = audio.getAY8910Register(chipID);
 
         for (int ch = 0; ch < 3; ch++) // SSG
         {
@@ -142,10 +144,9 @@ public class frmAY8910 extends frmChipBase {
                 int tp = (ct << 8) | ft;
                 if (tp == 0)
                     tp = 1;
-                float ftone = Audio.clockAY8910 / (8.0f * (float) tp);
+                float ftone = audio.clockAY8910 / (8.0f * (float) tp);
                 channel.note = searchSSGNote(ftone);
             }
-
         }
     }
 
@@ -249,19 +250,4 @@ public class frmAY8910 extends frmChipBase {
             }
         }
     };
-
-    private int searchSSGNote(float freq) {
-        float m = Float.MAX_VALUE;
-        int n = 0;
-        for (int i = 0; i < 12 * 8; i++) {
-            // if (freq < Tables.freqTbl[i]) break;
-            // n = i;
-            float a = Math.abs(freq - Tables.freqTbl[i]);
-            if (m > a) {
-                m = a;
-                n = i;
-            }
-        }
-        return n;
-    }
 }

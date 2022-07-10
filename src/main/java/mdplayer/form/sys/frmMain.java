@@ -25,7 +25,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -67,23 +66,17 @@ import dotnet4j.io.FileMode;
 import dotnet4j.io.FileNotFoundException;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.IOException;
-import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.StreamWriter;
-import dotnet4j.io.compression.CompressionMode;
-import dotnet4j.io.compression.GZipStream;
 import dotnet4j.util.compat.Tuple;
 import dotnet4j.util.compat.Tuple4;
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.Common.EnmModel;
-import mdplayer.Common.FileFormat;
 import mdplayer.DoubleBuffer;
 import mdplayer.DrawBuff;
 import mdplayer.KeyboardHook;
-import mdplayer.Log;
 import mdplayer.MDChipParams;
 import mdplayer.MIDIParam;
 import mdplayer.MmfControl;
@@ -96,8 +89,6 @@ import mdplayer.TonePallet;
 import mdplayer.YM2612MIDI;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
-import mdplayer.driver.mxdrv.MXDRV;
-import mdplayer.driver.rcp.RCP;
 import mdplayer.form.kb.driver.frmPPZ8;
 import mdplayer.form.kb.frmMIDI;
 import mdplayer.form.kb.frmRegTest;
@@ -136,16 +127,15 @@ import mdplayer.form.kb.psg.frmAY8910;
 import mdplayer.form.kb.psg.frmSN76489;
 import mdplayer.form.kb.wf.frmHuC6280;
 import mdplayer.form.kb.wf.frmK051649;
+import mdplayer.format.FileFormat;
+import mdplayer.format.M3UFileFormat;
+import mdplayer.format.ZIPFileFormat;
+import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
-import mdsound.K051649;
-import mdsound.OotakePsg;
+import mdsound.chips.OotakeHuC6280;
+import mdsound.chips.K051649;
 import mdsound.np.chip.NesN106;
-import org.apache.tools.ant.types.Environment;
 import vavi.util.Debug;
-import vavi.util.archive.Archive;
-import vavi.util.archive.Archives;
-import vavi.util.archive.Entry;
-import vavi.util.archive.zip.ZipEntry;
 
 import static dotnet4j.io.Path.getDirectoryName;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -217,7 +207,7 @@ public class frmMain extends JFrame {
     private boolean isRunning = false;
     private boolean stopped = false;
 
-    private boolean IsInitialOpenFolder = true;
+    private boolean isInitialOpenFolder = true;
 
     private byte[] srcBuf;
 
@@ -328,18 +318,15 @@ public class frmMain extends JFrame {
 
         Debug.println(Level.SEVERE, "起動時のAudio初期化処理開始");
 
-        Audio.frmMain = this;
-        Audio.init(setting);
+        audio.init();
 
-        ym2612MIDI = new mdplayer.YM2612MIDI(this, Audio.mdsMIDI, newParam);
+        ym2612MIDI = new mdplayer.YM2612MIDI(this, audio.audio.mdsMIDI, newParam);
 
         Debug.println(Level.SEVERE, "起動時のAudio初期化処理完了");
 
         StartMIDIInMonitoring();
 
         Debug.println(Level.SEVERE, "frmMain(コンストラクタ):STEP 04");
-
-        Log.debug = setting.getDebug_DispFrameCounter();
     }
 
     private void ClearWindowPos() {
@@ -398,7 +385,7 @@ public class frmMain extends JFrame {
         frmPlayList.setVisible(false);
         frmPlayList.setOpacity(1.0f);
         //frmPlayList.setLocation(new Point(this.getLocation().x + 328, this.getLocation().y + 264));
-        frmPlayList.Refresh();
+        frmPlayList.refresh();
 
 //        frmVSTeffectList = new frmVSTeffectList(this, setting);
 //        frmVSTeffectList.setVisible(true);
@@ -600,7 +587,7 @@ public class frmMain extends JFrame {
                     if (optionLine.charAt(0) == '\"' && optionLine.charAt(optionLine.length() - 1) == '\"') {
                         optionLine = optionLine.substring(1, optionLine.length() - 2);
                     }
-                    AddFileAndPlay(new String[] {optionLine});
+                    addFileAndPlay(new String[] {optionLine});
                 } else
                     tsmiPlay_Click(null);
                 break;
@@ -1036,14 +1023,14 @@ public class frmMain extends JFrame {
 
             PlayList pl = frmPlayList.getPlayList();
             if (pl.getMusics().size() < 1 || !pl.getMusics().get(pl.getMusics().size() - 1).fileName.equals(args[1])) {
-                pl.AddFile(args[1]);
+                pl.addFile(args[1]);
                 //frmPlayList.AddList(args[1]);
             }
 
             if (!loadAndPlay(0, 0, args[1], "")) {
                 frmPlayList.stop();
                 OpeManager.requestToAudio(new Request(enmRequest.Stop, null, null));
-                //Audio.Stop();
+                //audio.audio.Stop();
                 return;
             }
 
@@ -1081,7 +1068,7 @@ public class frmMain extends JFrame {
         Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 00");
 
         frmPlayList.stop();
-        frmPlayList.Save();
+        frmPlayList.save();
 
         tonePallet.save(null);
 
@@ -2003,7 +1990,7 @@ public class frmMain extends JFrame {
 
         frmC140[chipID].setVisible(true);
         frmC140[chipID].update();
-        frmC140[chipID].setTitle(String.format("C140 (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmC140[chipID].setTitle(String.format("C140Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
         oldParam.c140[chipID] = new MDChipParams.C140();
 
         checkAndSetForm(frmC140[chipID]);
@@ -2045,7 +2032,7 @@ public class frmMain extends JFrame {
 
         frmPPZ8[chipID].setVisible(true);
         frmPPZ8[chipID].update();
-        frmPPZ8[chipID].setTitle(String.format("PPZ8 (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmPPZ8[chipID].setTitle(String.format("Ppz8Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
         oldParam.ppz8[chipID] = new MDChipParams.PPZ8();
 
         checkAndSetForm(frmPPZ8[chipID]);
@@ -2213,7 +2200,7 @@ public class frmMain extends JFrame {
 
         frmC352[chipID].setVisible(true);
         frmC352[chipID].update();
-        frmC352[chipID].setTitle(String.format("C352 (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmC352[chipID].setTitle(String.format("C352Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
         oldParam.c352[chipID] = new MDChipParams.C352();
 
         checkAndSetForm(frmC352[chipID]);
@@ -2298,7 +2285,7 @@ public class frmMain extends JFrame {
 
         frmQSound[chipID].setVisible(true);
         frmQSound[chipID].update();
-        frmQSound[chipID].setTitle(String.format("QSound (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmQSound[chipID].setTitle(String.format("QSoundInst (%s)", chipID == 0 ? "Primary" : "Secondary"));
         oldParam.qSound[chipID] = new MDChipParams.QSound();
 
         checkAndSetForm(frmQSound[chipID]);
@@ -2429,7 +2416,7 @@ public class frmMain extends JFrame {
 
         frmYM2612[chipID].setVisible(true);
         frmYM2612[chipID].update();
-        frmYM2612[chipID].setTitle(String.format("Ym2612 (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmYM2612[chipID].setTitle(String.format("Ym2612Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
 
         checkAndSetForm(frmYM2612[chipID]);
     }
@@ -2678,7 +2665,7 @@ public class frmMain extends JFrame {
 
         frmHuC6280[chipID].setVisible(true);
         frmHuC6280[chipID].update();
-        frmHuC6280[chipID].setTitle(String.format("HuC6280 (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmHuC6280[chipID].setTitle(String.format("OotakeHuC6280 (%s)", chipID == 0 ? "Primary" : "Secondary"));
         oldParam.huc6280[chipID] = new MDChipParams.HuC6280();
 
         checkAndSetForm(frmHuC6280[chipID]);
@@ -2721,7 +2708,7 @@ public class frmMain extends JFrame {
 
         frmK051649[chipID].setVisible(true);
         frmK051649[chipID].update();
-        frmK051649[chipID].setTitle(String.format("K051649 (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmK051649[chipID].setTitle(String.format("K051649Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
         oldParam.k051649[chipID] = new MDChipParams.K051649();
 
         checkAndSetForm(frmK051649[chipID]);
@@ -2847,7 +2834,7 @@ public class frmMain extends JFrame {
 
         frmY8950[chipID].setVisible(true);
         frmY8950[chipID].update();
-        frmY8950[chipID].setTitle(String.format("Y8950 (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmY8950[chipID].setTitle(String.format("Y8950Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
         oldParam.y8950[chipID] = new MDChipParams.Y8950();
 
         checkAndSetForm(frmY8950[chipID]);
@@ -3145,7 +3132,7 @@ public class frmMain extends JFrame {
 
         frmVRC6[chipID].setVisible(true);
         frmVRC6[chipID].update();
-        frmVRC6[chipID].setTitle(String.format("VRC6 (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmVRC6[chipID].setTitle(String.format("Vrc6Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
         oldParam.vrc6[chipID] = new MDChipParams.VRC6();
 
         checkAndSetForm(frmVRC6[chipID]);
@@ -3479,6 +3466,8 @@ public class frmMain extends JFrame {
         }
     }
 
+    BasePlugin audio;
+
     private void reinit(Setting setting) {
         if (!flgReinit) return;
 
@@ -3497,8 +3486,8 @@ public class frmMain extends JFrame {
                 Thread.yield();
         }
 
-        //Audio.Stop();
-        Audio.close();
+        //audio.audio.Stop();
+        audio.audio.close();
 
         this.setting = setting;
         this.setting.save();
@@ -3512,15 +3501,14 @@ public class frmMain extends JFrame {
 
         Debug.println(Level.SEVERE, "設定が変更されたため、再度Audio初期化処理開始");
 
-        Audio.init(this.setting);
+        audio.init();
 
         Debug.println(Level.SEVERE, "Audio初期化処理完了");
-        Log.debug = this.setting.getDebug_DispFrameCounter();
 
 //        frmVSTeffectList.dispPluginList();
         StartMIDIInMonitoring();
 
-        IsInitialOpenFolder = true;
+        isInitialOpenFolder = true;
         flgReinit = false;
 
 //        for (int i = 0; i < 5; i++) {
@@ -3595,10 +3583,10 @@ public class frmMain extends JFrame {
              // 曲を停止
             frmPlayList.stop();
             this.stop();
-//            while (!Audio.isStopped())
+//            while (!audio.audio.isStopped())
 //                Application.DoEvents();
 
-            frmPlayList.getPlayList().AddFile(filename);
+            frmPlayList.getPlayList().addFile(filename);
             //frmPlayList.AddList(filename);
 
             if (filename.toLowerCase().lastIndexOf(".zip") == -1) {
@@ -3614,9 +3602,9 @@ public class frmMain extends JFrame {
         }
     }
 
-//        @Override protected boolean getShowWithoutActivation() {
-//                return true;
-//            }
+//    @Override protected boolean getShowWithoutActivation() {
+//        return true;
+//    }
 
     private void allScreenInit() {
         //oldParam = new MDChipParams();
@@ -3705,16 +3693,16 @@ public class frmMain extends JFrame {
             nextFrame += period;
 
             if (frmPlayList.isPlaying()) {
-                if ((setting.getOther().getUseLoopTimes() && Audio.getVgmCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
-                        || Audio.getVGMStopped()) {
+                if ((setting.getOther().getUseLoopTimes() && audio.getVgmCurLoopCounter() > setting.getOther().getLoopTimes() - 1)
+                        || audio.getVGMStopped()) {
                     fadeout();
                 }
-                if (Audio.stopped && frmPlayList.isPlaying()) {
+                if (audio.isStopped() && frmPlayList.isPlaying()) {
                     nextPlayMode();
                 }
             }
 
-            if (Audio.getFatalError()) {
+            if (audio.audio.getFatalError()) {
                 Debug.println(Level.SEVERE, "AudioでFatalErrorが発生。再度Audio初期化処理開始");
 
                 frmPlayList.stop();
@@ -3722,19 +3710,19 @@ public class frmMain extends JFrame {
                     Request req = new Request(enmRequest.Stop, null, null);
                     OpeManager.requestToAudio(req);
                     while (!req.getEnd()) Thread.sleep(1);
-                    //Audio.Stop();
+                    //audio.audio.Stop();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
 
                 try {
-                    Audio.close();
+                    audio.audio.close();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
 
-                Audio.setFatalError(false);
-                Audio.init(setting);
+                audio.audio.setFatalError(false);
+                audio.init();
 
                 Debug.println(Level.SEVERE, "Audio初期化処理完了");
             }
@@ -3745,7 +3733,7 @@ public class frmMain extends JFrame {
 
     private void screenChangeParams() {
 
-        long w = Audio.getCounter();
+        long w = audio.getCounter();
         double sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate;
         newParam.Cminutes = (int) (sec / 60);
         sec -= newParam.Cminutes * 60;
@@ -3753,7 +3741,7 @@ public class frmMain extends JFrame {
         sec -= newParam.Csecond;
         newParam.Cmillisecond = (int) (sec * 100.0);
 
-        w = Audio.getTotalCounter();
+        w = audio.getTotalCounter();
         sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate;
         newParam.TCminutes = (int) (sec / 60);
         sec -= newParam.TCminutes * 60;
@@ -3761,7 +3749,7 @@ public class frmMain extends JFrame {
         sec -= newParam.TCsecond;
         newParam.TCmillisecond = (int) (sec * 100.0);
 
-        w = Audio.getLoopCounter();
+        w = audio.getLoopCounter();
         sec = (double) w / (double) mdplayer.Common.VGMProcSampleRate;
         newParam.LCminutes = (int) (sec / 60);
         sec -= newParam.LCminutes * 60;
@@ -3910,7 +3898,7 @@ public class frmMain extends JFrame {
         DrawBuff.drawTimer(screen.mainScreen, 1, oldParam.TCminutes, oldParam.TCsecond, oldParam.TCmillisecond, newParam.TCminutes, newParam.TCsecond, newParam.TCmillisecond);
         DrawBuff.drawTimer(screen.mainScreen, 2, oldParam.LCminutes, oldParam.LCsecond, oldParam.LCmillisecond, newParam.LCminutes, newParam.LCsecond, newParam.LCmillisecond);
 
-        //byte[] chips = Audio.GetChipStatus();
+        //byte[] chips = audio.audio.getChipStatus();
         //DrawBuff.drawChipName(screen.mainScreen, 14 * 4, 0 * 8, 0,oldParam.chipLED.PriOPN, chips[0]);
         //DrawBuff.drawChipName(screen.mainScreen, 18 * 4, 0 * 8, 1,oldParam.chipLED.PriOPN2, chips[1]);
         //DrawBuff.drawChipName(screen.mainScreen, 23 * 4, 0 * 8, 2,oldParam.chipLED.PriOPNA, chips[2]);
@@ -3943,28 +3931,28 @@ public class frmMain extends JFrame {
         //DrawBuff.drawChipName(screen.mainScreen, 9 * 4, 1 * 8, 13,oldParam.chipLED.SecOPLL, chips[128 + 13]);
         //DrawBuff.drawChipName(screen.mainScreen, 71 * 4, 0 * 8, 14,oldParam.chipLED.SecHuC8, chips[128 + 14]);
 
-        DrawBuff.drawFont4(screen.mainScreen, 1, 9, 1, Audio.getIsDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
-        DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 9, 1, Audio.getIsPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
-        DrawBuff.drawFont4(screen.mainScreen, 1, 17, 1, Audio.getIsDataBlock(EnmModel.RealModel) ? "RD" : "  ");
-        DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 17, 1, Audio.getIsPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
+        DrawBuff.drawFont4(screen.mainScreen, 1, 9, 1, audio.getIsDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
+        DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 9, 1, audio.getIsPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
+        DrawBuff.drawFont4(screen.mainScreen, 1, 17, 1, audio.getIsDataBlock(EnmModel.RealModel) ? "RD" : "  ");
+        DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 17, 1, audio.getIsPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
 
         if (setting.getDebug_DispFrameCounter()) {
-            long v = Audio.getVirtualFrameCounter();
+            long v = audio.getVirtualFrameCounter();
             if (v != -1) DrawBuff.drawFont8(screen.mainScreen, 0, 0, 0, String.format("EMU        : %12d ", v));
-            long r = Audio.getRealFrameCounter();
+            long r = audio.getRealFrameCounter();
             if (r != -1) DrawBuff.drawFont8(screen.mainScreen, 0, 8, 0, String.format("REAL CHIP  : %12d ", r));
             long d = r - v;
             if (r != -1 && v != -1)
                 DrawBuff.drawFont8(screen.mainScreen, 0, 16, 0, String.format("R.CHIP-EMU : %12d ", d));
-            DrawBuff.drawFont8(screen.mainScreen, 0, 24, 0, String.format("PROC TIME  : %12d ", Audio.ProcTimePer1Frame));
+            DrawBuff.drawFont8(screen.mainScreen, 0, 24, 0, String.format("PROC TIME  : %12d ", audio.ProcTimePer1Frame));
         }
 
         screen.Refresh(null);
 
-        Audio.updateVol();
+        audio.updateVol();
 
         String newInfo;
-        Gd3 gd3 = Audio.getGd3();
+        Gd3 gd3 = audio.audio.getGd3();
         if (gd3 != null) {
             String title = gd3.trackName;
             String usedChips = gd3.usedChips;
@@ -4190,40 +4178,40 @@ public class frmMain extends JFrame {
 
     private void screenInit(Object dmy) {
 
-        oldParam.chipLED.PriOPN = (byte) 255;
-        oldParam.chipLED.PriOPN2 = (byte) 255;
-        oldParam.chipLED.PriOPNA = (byte) 255;
-        oldParam.chipLED.PriOPNB = (byte) 255;
-        oldParam.chipLED.PriOPM = (byte) 255;
-        oldParam.chipLED.PriDCSG = (byte) 255;
-        oldParam.chipLED.PriRF5C = (byte) 255;
-        oldParam.chipLED.PriRF5C68 = (byte) 255;
-        oldParam.chipLED.PriPWM = (byte) 255;
-        oldParam.chipLED.PriOKI5 = (byte) 255;
-        oldParam.chipLED.PriOKI9 = (byte) 255;
-        oldParam.chipLED.PriC140 = (byte) 255;
-        oldParam.chipLED.PriSPCM = (byte) 255;
-        oldParam.chipLED.PriAY10 = (byte) 255;
-        oldParam.chipLED.PriOPLL = (byte) 255;
-        oldParam.chipLED.PriHuC8 = (byte) 255;
-        oldParam.chipLED.SecOPN = (byte) 255;
-        oldParam.chipLED.SecOPN2 = (byte) 255;
-        oldParam.chipLED.SecOPNA = (byte) 255;
-        oldParam.chipLED.SecOPNB = (byte) 255;
-        oldParam.chipLED.SecOPM = (byte) 255;
-        oldParam.chipLED.SecDCSG = (byte) 255;
-        oldParam.chipLED.SecRF5C = (byte) 255;
-        oldParam.chipLED.SecRF5C68 = (byte) 255;
-        oldParam.chipLED.SecPWM = (byte) 255;
-        oldParam.chipLED.SecOKI5 = (byte) 255;
-        oldParam.chipLED.SecOKI9 = (byte) 255;
-        oldParam.chipLED.SecC140 = (byte) 255;
-        oldParam.chipLED.SecSPCM = (byte) 255;
-        oldParam.chipLED.SecAY10 = (byte) 255;
-        oldParam.chipLED.SecOPLL = (byte) 255;
-        oldParam.chipLED.SecHuC8 = (byte) 255;
+        oldParam.chipLED.put("PriOPN", 255);
+        oldParam.chipLED.put("PriOPN2", 255);
+        oldParam.chipLED.put("PriOPNA", 255);
+        oldParam.chipLED.put("PriOPNB", 255);
+        oldParam.chipLED.put("PriOPM", 255);
+        oldParam.chipLED.put("PriDCSG", 255);
+        oldParam.chipLED.put("PriRF5C", 255);
+        oldParam.chipLED.put("PriRF5C68", 255);
+        oldParam.chipLED.put("PriPWM", 255);
+        oldParam.chipLED.put("PriOKI5", 255);
+        oldParam.chipLED.put("PriOKI9", 255);
+        oldParam.chipLED.put("PriC140", 255);
+        oldParam.chipLED.put("PriSPCM", 255);
+        oldParam.chipLED.put("PriAY10", 255);
+        oldParam.chipLED.put("PriOPLL", 255);
+        oldParam.chipLED.put("PriHuC8", 255);
+        oldParam.chipLED.put("SecOPN", 255);
+        oldParam.chipLED.put("SecOPN2", 255);
+        oldParam.chipLED.put("SecOPNA", 255);
+        oldParam.chipLED.put("SecOPNB", 255);
+        oldParam.chipLED.put("SecOPM", 255);
+        oldParam.chipLED.put("SecDCSG", 255);
+        oldParam.chipLED.put("SecRF5C", 255);
+        oldParam.chipLED.put("SecRF5C68", 255);
+        oldParam.chipLED.put("SecPWM", 255);
+        oldParam.chipLED.put("SecOKI5", 255);
+        oldParam.chipLED.put("SecOKI9", 255);
+        oldParam.chipLED.put("SecC140", 255);
+        oldParam.chipLED.put("SecSPCM", 255);
+        oldParam.chipLED.put("SecAY10", 255);
+        oldParam.chipLED.put("SecOPLL", 255);
+        oldParam.chipLED.put("SecHuC8", 255);
 
-        //byte[] chips = Audio.GetChipStatus();
+        //byte[] chips = audio.audio.GetChipStatus();
         //DrawBuff.drawChipName(screen.mainScreen, 14 * 4, 0 * 8, 0,oldParam.chipLED.PriOPN, chips[0]);
         //DrawBuff.drawChipName(screen.mainScreen, 18 * 4, 0 * 8, 1,oldParam.chipLED.PriOPN2, chips[1]);
         //DrawBuff.drawChipName(screen.mainScreen, 23 * 4, 0 * 8, 2,oldParam.chipLED.PriOPNA, chips[2]);
@@ -4256,10 +4244,10 @@ public class frmMain extends JFrame {
         //DrawBuff.drawChipName(screen.mainScreen, 9 * 4, 1 * 8, 13,oldParam.chipLED.SecOPLL, chips[128 + 13]);
         //DrawBuff.drawChipName(screen.mainScreen, 71 * 4, 0 * 8, 14,oldParam.chipLED.SecHuC8, chips[128 + 14]);
 
-        DrawBuff.drawFont4(screen.mainScreen, 1, 9, 1, Audio.getIsDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
-        DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 9, 1, Audio.getIsPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
-        DrawBuff.drawFont4(screen.mainScreen, 1, 17, 1, Audio.getIsDataBlock(EnmModel.RealModel) ? "RD" : "  ");
-        DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 17, 1, Audio.getIsPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
+        DrawBuff.drawFont4(screen.mainScreen, 1, 9, 1, audio.getIsDataBlock(EnmModel.VirtualModel) ? "VD" : "  ");
+        DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 9, 1, audio.getIsPcmRAMWrite(EnmModel.VirtualModel) ? "VP" : "  ");
+        DrawBuff.drawFont4(screen.mainScreen, 1, 17, 1, audio.getIsDataBlock(EnmModel.RealModel) ? "RD" : "  ");
+        DrawBuff.drawFont4(screen.mainScreen, 321 - 16, 17, 1, audio.getIsPcmRAMWrite(EnmModel.RealModel) ? "RP" : "  ");
 
         oldParam.Cminutes = -1;
         oldParam.Csecond = -1;
@@ -4273,35 +4261,35 @@ public class frmMain extends JFrame {
     }
 
     public void stop() {
-        if (Audio.getIsPaused()) {
-            Audio.pause();
+        if (audio.getIsPaused()) {
+            audio.pause();
         }
 
-        if (Audio.getTrdStopped() && Audio.isStopped()) {
-            Audio.resetTimeCounter();
+        if (audio.audio.getTrdStopped() && audio.isStopped()) {
+            audio.resetTimeCounter();
         }
 
         frmPlayList.stop();
         OpeManager.requestToAudio(new Request(enmRequest.Stop, null, this::screenInit));
-        //Audio.Stop();
+        //audio.audio.Stop();
         //screenInit();
     }
 
     public void pause() {
-        Audio.pause();
+        audio.pause();
     }
 
     public void fadeout() {
-        if (Audio.getIsPaused()) {
-            Audio.pause();
+        if (audio.getIsPaused()) {
+            audio.pause();
         }
 
-        Audio.fadeout();
+        audio.fadeout();
     }
 
     public void prev() {
-        if (Audio.getIsPaused()) {
-            Audio.pause();
+        if (audio.getIsPaused()) {
+            audio.pause();
         }
 
         frmPlayList.prevPlay(newButtonMode[9]);
@@ -4309,8 +4297,8 @@ public class frmMain extends JFrame {
 
     public void play() {
 
-        if (Audio.getIsPaused()) {
-            Audio.pause();
+        if (audio.getIsPaused()) {
+            audio.pause();
         }
 
         String[] fn;
@@ -4322,7 +4310,7 @@ public class frmMain extends JFrame {
         if (frmPlayList.getMusicCount() < 1) {
             fn = fileOpen(false);
             if (fn == null) return;
-            frmPlayList.getPlayList().AddFile(fn[0]);
+            frmPlayList.getPlayList().addFile(fn[0]);
             //frmPlayList.AddList(fn[0]);
             playFn = frmPlayList.setStart(-1); // last
         } else {
@@ -4342,12 +4330,12 @@ public class frmMain extends JFrame {
 
             if (srcBuf == null) {
 
-                Audio.errMsg = "cancel";
+                audio.audio.errMsg = "cancel";
                 return;
             }
 
-            if (Audio.getIsPaused()) {
-                Audio.pause();
+            if (audio.getIsPaused()) {
+                audio.pause();
             }
             //stop();
 
@@ -4358,13 +4346,13 @@ public class frmMain extends JFrame {
             //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2413, chipID, ch, newParam.ym2413[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2608, chipID, ch, newParam.ym2608[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2610, chipID, ch, newParam.ym2610[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.Ym2612, chipID, ch, newParam.ym2612[chipID].channels[ch].mask);
+            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.Ym2612Inst, chipID, ch, newParam.ym2612[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 4; ch++) ForceChannelMask(EnmChip.SN76489, chipID, ch, newParam.sn76489[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 8; ch++) ForceChannelMask(EnmChip.RF5C164, chipID, ch, newParam.rf5c164[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 24; ch++) ForceChannelMask(EnmChip.C140, chipID, ch, newParam.c140[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 32; ch++) ForceChannelMask(EnmChip.C352, chipID, ch, newParam.c352[chipID].channels[ch].mask);
+            //    for (int ch = 0; ch < 24; ch++) ForceChannelMask(EnmChip.C140Inst, chipID, ch, newParam.c140[chipID].channels[ch].mask);
+            //    for (int ch = 0; ch < 32; ch++) ForceChannelMask(EnmChip.C352Inst, chipID, ch, newParam.c352[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 16; ch++) ForceChannelMask(EnmChip.SEGAPCM, chipID, ch, newParam.segaPcm[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.HuC6280, chipID, ch, newParam.huc6280[chipID].channels[ch].mask);
+            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.OotakeHuC6280, chipID, ch, newParam.huc6280[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 4; ch++) ForceChannelMask(EnmChip.OKIM6295, chipID, ch, newParam.okim6295[chipID].channels[ch].mask);
             //    for (int ch = 0; ch < 2; ch++) ResetChannelMask(EnmChip.NES, chipID, ch);
             //    for (int ch = 0; ch < 3; ch++) ResetChannelMask(EnmChip.DMC, chipID, ch);
@@ -4384,7 +4372,7 @@ public class frmMain extends JFrame {
                             , JOptionPane.YES_NO_OPTION,
                             JOptionPane.QUESTION_MESSAGE);
                     if (res == JOptionPane.NO_OPTION) {
-                        Audio.errMsg = "cancel";
+                        audio.audio.errMsg = "cancel";
                         return;
                     }
                     try {
@@ -4394,25 +4382,25 @@ public class frmMain extends JFrame {
                                 "パスの作成に失敗しました。演奏を停止します。"
                                 , "作成失敗"
                                 , JOptionPane.ERROR_MESSAGE);
-                        Audio.errMsg = "cancel";
+                        audio.audio.errMsg = "cancel";
                         return;
                     }
                 }
             }
 
-            if (!Audio.play(setting)) {
+            if (!audio.play(setting)) {
                 try {
                     frmPlayList.stop();
                     Request req = new Request(enmRequest.Stop, null, null);
                     OpeManager.requestToAudio(req);
                     //while (!req.end) Thread.sleep(1);
-                    //Audio.Stop();
+                    //audio.audio.Stop();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-                if (Audio.errMsg.isEmpty()) throw new Exception();
+                if (audio.audio.errMsg.isEmpty()) throw new Exception();
                 else {
-                    JOptionPane.showMessageDialog(this, Audio.errMsg, "エラー", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, audio.audio.errMsg, "エラー", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
             }
@@ -4464,7 +4452,7 @@ public class frmMain extends JFrame {
                 resetChannelMask(EnmChip.FDS, chipID, 0);
             }
 
-            Audio.go();
+            audio.go();
 
             if (frmInfo != null) {
                 frmInfo.update();
@@ -4472,203 +4460,203 @@ public class frmMain extends JFrame {
 
             if (setting.getOther().getAutoOpen()) {
 
-                if (Audio.chipLED.PriOPM != 0) OpenFormYM2151(0, true);
+                if (audio.audio.chipLED.get("PriOPM") != 0) OpenFormYM2151(0, true);
                 else CloseFormYM2151(0);
-                if (Audio.chipLED.SecOPM != 0) OpenFormYM2151(1, true);
+                if (audio.audio.chipLED.get("SecOPM") != 0) OpenFormYM2151(1, true);
                 else CloseFormYM2151(1);
 
-                if (Audio.chipLED.PriOPN != 0) OpenFormYM2203(0, true);
+                if (audio.audio.chipLED.get("PriOPN") != 0) OpenFormYM2203(0, true);
                 else CloseFormYM2203(0);
-                if (Audio.chipLED.SecOPN != 0) OpenFormYM2203(1, true);
+                if (audio.audio.chipLED.get("SecOPN") != 0) OpenFormYM2203(1, true);
                 else CloseFormYM2203(1);
 
-                if (Audio.chipLED.PriOPLL != 0) OpenFormYM2413(0, true);
+                if (audio.audio.chipLED.get("PriOPLL") != 0) OpenFormYM2413(0, true);
                 else CloseFormYM2413(0);
-                if (Audio.chipLED.SecOPLL != 0) OpenFormYM2413(1, true);
+                if (audio.audio.chipLED.get("SecOPLL") != 0) OpenFormYM2413(1, true);
                 else CloseFormYM2413(1);
 
-                if (Audio.chipLED.PriOPNA != 0) OpenFormYM2608(0, true);
+                if (audio.audio.chipLED.get("PriOPNA") != 0) OpenFormYM2608(0, true);
                 else CloseFormYM2608(0);
-                if (Audio.chipLED.SecOPNA != 0) OpenFormYM2608(1, true);
+                if (audio.audio.chipLED.get("SecOPNA") != 0) OpenFormYM2608(1, true);
                 else CloseFormYM2608(1);
 
-                if (Audio.chipLED.PriOPNB != 0) OpenFormYM2610(0, true);
+                if (audio.audio.chipLED.get("PriOPNB") != 0) OpenFormYM2610(0, true);
                 else CloseFormYM2610(0);
-                if (Audio.chipLED.SecOPNB != 0) OpenFormYM2610(1, true);
+                if (audio.audio.chipLED.get("SecOPNB") != 0) OpenFormYM2610(1, true);
                 else CloseFormYM2610(1);
 
-                if (Audio.chipLED.PriOPN2 != 0) openFormYM2612(0, true);
+                if (audio.audio.chipLED.get("PriOPN2") != 0) openFormYM2612(0, true);
                 else closeFormYM2612(0);
-                if (Audio.chipLED.SecOPN2 != 0) openFormYM2612(1, true);
+                if (audio.audio.chipLED.get("SecOPN2") != 0) openFormYM2612(1, true);
                 else closeFormYM2612(1);
 
-                if (Audio.chipLED.PriDCSG != 0) OpenFormSN76489(0, true);
+                if (audio.audio.chipLED.get("PriDCSG") != 0) OpenFormSN76489(0, true);
                 else CloseFormSN76489(0);
-                if (Audio.chipLED.SecDCSG != 0) {
-                    if (!Audio.getSn76489NGPFlag()) OpenFormSN76489(1, true);
+                if (audio.audio.chipLED.get("SecDCSG") != 0) {
+                    if (!audio.audio.getSn76489NGPFlag()) OpenFormSN76489(1, true);
                 } else CloseFormSN76489(1);
 
-                if (Audio.chipLED.PriPPZ8 != 0) OpenFormPPZ8(0, true);
+                if (audio.audio.chipLED.get("PriPPZ8") != 0) OpenFormPPZ8(0, true);
                 else CloseFormPPZ8(0);
-                if (Audio.chipLED.SecPPZ8 != 0) OpenFormPPZ8(1, true);
+                if (audio.audio.chipLED.get("SecPPZ8") != 0) OpenFormPPZ8(1, true);
                 else CloseFormPPZ8(1);
 
-                if (Audio.chipLED.PriFME7 != 0) OpenFormS5B(0, true);
+                if (audio.audio.chipLED.get("PriFME7") != 0) OpenFormS5B(0, true);
                 else CloseFormS5B(0);
-                if (Audio.chipLED.SecFME7 != 0) OpenFormS5B(1, true);
+                if (audio.audio.chipLED.get("SecFME7") != 0) OpenFormS5B(1, true);
                 else CloseFormS5B(1);
 
-                if (Audio.chipLED.PriDMG != 0) OpenFormDMG(0, true);
+                if (audio.audio.chipLED.get("PriDMG") != 0) OpenFormDMG(0, true);
                 else CloseFormDMG(0);
-                if (Audio.chipLED.SecDMG != 0) OpenFormDMG(1, true);
+                if (audio.audio.chipLED.get("SecDMG") != 0) OpenFormDMG(1, true);
                 else CloseFormDMG(1);
 
-                if (Audio.chipLED.PriRF5C != 0) OpenFormMegaCD(0, true);
+                if (audio.audio.chipLED.get("PriRF5C") != 0) OpenFormMegaCD(0, true);
                 else CloseFormMegaCD(0);
-                if (Audio.chipLED.SecRF5C != 0) OpenFormMegaCD(1, true);
+                if (audio.audio.chipLED.get("SecRF5C") != 0) OpenFormMegaCD(1, true);
                 else CloseFormMegaCD(1);
 
-                if (Audio.chipLED.PriRF5C68 != 0) OpenFormRf5c68(0, true);
+                if (audio.audio.chipLED.get("PriRF5C68") != 0) OpenFormRf5c68(0, true);
                 else CloseFormRf5c68(0);
-                if (Audio.chipLED.SecRF5C68 != 0) OpenFormRf5c68(1, true);
+                if (audio.audio.chipLED.get("SecRF5C68") != 0) OpenFormRf5c68(1, true);
                 else CloseFormRf5c68(1);
 
-                if (Audio.chipLED.PriOKI5 != 0) OpenFormOKIM6258(0, true);
+                if (audio.audio.chipLED.get("PriOKI5") != 0) OpenFormOKIM6258(0, true);
                 else CloseFormOKIM6258(0);
-                if (Audio.chipLED.SecOKI5 != 0) OpenFormOKIM6258(1, true);
+                if (audio.audio.chipLED.get("SecOKI5") != 0) OpenFormOKIM6258(1, true);
                 else CloseFormOKIM6258(1);
 
-                if (Audio.chipLED.PriOKI9 != 0) OpenFormOKIM6295(0, true);
+                if (audio.audio.chipLED.get("PriOKI9") != 0) OpenFormOKIM6295(0, true);
                 else CloseFormOKIM6295(0);
-                if (Audio.chipLED.SecOKI9 != 0) OpenFormOKIM6295(1, true);
+                if (audio.audio.chipLED.get("SecOKI9") != 0) OpenFormOKIM6295(1, true);
                 else CloseFormOKIM6295(1);
 
-                if (Audio.chipLED.PriC140 != 0) OpenFormC140(0, true);
+                if (audio.audio.chipLED.get("PriC140") != 0) OpenFormC140(0, true);
                 else CloseFormC140(0);
-                if (Audio.chipLED.SecC140 != 0) OpenFormC140(1, true);
+                if (audio.audio.chipLED.get("SecC140") != 0) OpenFormC140(1, true);
                 else CloseFormC140(1);
 
-                if (Audio.chipLED.PriYMZ != 0) OpenFormYMZ280B(0, true);
+                if (audio.audio.chipLED.get("PriYMZ") != 0) OpenFormYMZ280B(0, true);
                 else CloseFormYMZ280B(0);
-                if (Audio.chipLED.SecYMZ != 0) OpenFormYMZ280B(1, true);
+                if (audio.audio.chipLED.get("SecYMZ") != 0) OpenFormYMZ280B(1, true);
                 else CloseFormYMZ280B(1);
 
-                if (Audio.chipLED.PriC352 != 0) OpenFormC352(0, true);
+                if (audio.audio.chipLED.get("PriC352") != 0) OpenFormC352(0, true);
                 else CloseFormC352(0);
-                if (Audio.chipLED.SecC352 != 0) OpenFormC352(1, true);
+                if (audio.audio.chipLED.get("SecC352") != 0) OpenFormC352(1, true);
                 else CloseFormC352(1);
 
-                if (Audio.chipLED.PriMPCM != 0) OpenFormMultiPCM(0, true);
+                if (audio.audio.chipLED.get("PriMPCM") != 0) OpenFormMultiPCM(0, true);
                 else CloseFormMultiPCM(0);
-                if (Audio.chipLED.SecMPCM != 0) OpenFormMultiPCM(1, true);
+                if (audio.audio.chipLED.get("SecMPCM") != 0) OpenFormMultiPCM(1, true);
                 else CloseFormMultiPCM(1);
 
-                if (Audio.chipLED.PriQsnd != 0) OpenFormQSound(0, true);
+                if (audio.audio.chipLED.get("PriQsnd") != 0) OpenFormQSound(0, true);
                 else CloseFormQSound(0);
-                if (Audio.chipLED.SecQsnd != 0) OpenFormQSound(1, true);
+                if (audio.audio.chipLED.get("SecQsnd") != 0) OpenFormQSound(1, true);
                 else CloseFormQSound(1);
 
-                if (Audio.chipLED.PriSPCM != 0) OpenFormSegaPCM(0, true);
+                if (audio.audio.chipLED.get("PriSPCM") != 0) OpenFormSegaPCM(0, true);
                 else CloseFormSegaPCM(0);
-                if (Audio.chipLED.SecSPCM != 0) OpenFormSegaPCM(1, true);
+                if (audio.audio.chipLED.get("SecSPCM") != 0) OpenFormSegaPCM(1, true);
                 else CloseFormSegaPCM(1);
 
-                if (Audio.chipLED.PriAY10 != 0) OpenFormAY8910(0, true);
+                if (audio.audio.chipLED.get("PriAY10") != 0) OpenFormAY8910(0, true);
                 else CloseFormAY8910(0);
-                if (Audio.chipLED.SecAY10 != 0) OpenFormAY8910(1, true);
+                if (audio.audio.chipLED.get("SecAY10") != 0) OpenFormAY8910(1, true);
                 else CloseFormAY8910(1);
 
-                if (Audio.chipLED.PriHuC != 0) OpenFormHuC6280(0, true);
+                if (audio.audio.chipLED.get("PriHuC") != 0) OpenFormHuC6280(0, true);
                 else CloseFormHuC6280(0);
-                if (Audio.chipLED.SecHuC != 0) OpenFormHuC6280(1, true);
+                if (audio.audio.chipLED.get("SecHuC") != 0) OpenFormHuC6280(1, true);
                 else CloseFormHuC6280(1);
 
-                if (Audio.chipLED.PriK051649 != 0) OpenFormK051649(0, true);
+                if (audio.audio.chipLED.get("PriK051649") != 0) OpenFormK051649(0, true);
                 else CloseFormK051649(0);
-                if (Audio.chipLED.SecK051649 != 0) OpenFormK051649(1, true);
+                if (audio.audio.chipLED.get("SecK051649") != 0) OpenFormK051649(1, true);
                 else CloseFormK051649(1);
 
-                if (Audio.chipLED.PriMID != 0) OpenFormMIDI(0, true);
+                if (audio.audio.chipLED.get("PriMID") != 0) OpenFormMIDI(0, true);
                 else closeFormMIDI(0);
-                //if (Audio.chipLED.SecMID != 0) OpenFormMIDI(1, true); else CloseFormMIDI(1);
+                //if (audio.audio.chipLED.get("SecMID") != 0) OpenFormMIDI(1, true); else CloseFormMIDI(1);
 
-                if (Audio.chipLED.PriNES != 0 || Audio.chipLED.PriDMC != 0) openFormNESDMC(0, true);
+                if (audio.audio.chipLED.get("PriNES") != 0 || audio.audio.chipLED.get("PriDMC") != 0) openFormNESDMC(0, true);
                 else closeFormNESDMC(0);
-                if (Audio.chipLED.SecNES != 0 || Audio.chipLED.SecDMC != 0) openFormNESDMC(1, true);
+                if (audio.audio.chipLED.get("SecNES") != 0 || audio.audio.chipLED.get("SecDMC") != 0) openFormNESDMC(1, true);
                 else closeFormNESDMC(1);
 
-                if (Audio.chipLED.PriFDS != 0) openFormFDS(0, true);
+                if (audio.audio.chipLED.get("PriFDS") != 0) openFormFDS(0, true);
                 else closeFormFDS(0);
-                if (Audio.chipLED.SecFDS != 0) openFormFDS(1, true);
+                if (audio.audio.chipLED.get("SecFDS") != 0) openFormFDS(1, true);
                 else closeFormFDS(1);
 
-                if (Audio.chipLED.PriVRC6 != 0) openFormVRC6(0, true);
+                if (audio.audio.chipLED.get("PriVRC6") != 0) openFormVRC6(0, true);
                 else closeFormVRC6(0);
-                if (Audio.chipLED.SecVRC6 != 0) openFormVRC6(1, true);
+                if (audio.audio.chipLED.get("SecVRC6") != 0) openFormVRC6(1, true);
                 else closeFormVRC6(1);
 
-                if (Audio.chipLED.PriVRC7 != 0) openFormVRC7(0, true);
+                if (audio.audio.chipLED.get("PriVRC7") != 0) openFormVRC7(0, true);
                 else closeFormVRC7(0);
-                if (Audio.chipLED.SecVRC7 != 0) openFormVRC7(1, true);
+                if (audio.audio.chipLED.get("SecVRC7") != 0) openFormVRC7(1, true);
                 else closeFormVRC7(1);
 
-                if (Audio.chipLED.PriMMC5 != 0) openFormMMC5(0, true);
+                if (audio.audio.chipLED.get("PriMMC5") != 0) openFormMMC5(0, true);
                 else closeFormMMC5(0);
-                if (Audio.chipLED.SecMMC5 != 0) openFormMMC5(1, true);
+                if (audio.audio.chipLED.get("SecMMC5") != 0) openFormMMC5(1, true);
                 else closeFormMMC5(1);
 
-                if (Audio.chipLED.PriN106 != 0) openFormN106(0, true);
+                if (audio.audio.chipLED.get("PriN106") != 0) openFormN106(0, true);
                 else closeFormN106(0);
-                if (Audio.chipLED.SecN106 != 0) openFormN106(1, true);
+                if (audio.audio.chipLED.get("SecN106") != 0) openFormN106(1, true);
                 else closeFormN106(1);
 
-                if (Audio.chipLED.PriOPL != 0) OpenFormYM3526(0, true);
+                if (audio.audio.chipLED.get("PriOPL") != 0) OpenFormYM3526(0, true);
                 else CloseFormYM3526(0);
-                if (Audio.chipLED.SecOPL != 0) OpenFormYM3526(1, true);
+                if (audio.audio.chipLED.get("SecOPL") != 0) OpenFormYM3526(1, true);
                 else CloseFormYM3526(1);
 
-                if (Audio.chipLED.PriY8950 != 0) OpenFormY8950(0, true);
+                if (audio.audio.chipLED.get("PriY8950") != 0) OpenFormY8950(0, true);
                 else CloseFormY8950(0);
-                if (Audio.chipLED.SecY8950 != 0) OpenFormY8950(1, true);
+                if (audio.audio.chipLED.get("SecY8950") != 0) OpenFormY8950(1, true);
                 else CloseFormY8950(1);
 
-                if (Audio.chipLED.PriOPL2 != 0) OpenFormYM3812(0, true);
+                if (audio.audio.chipLED.get("PriOPL2") != 0) OpenFormYM3812(0, true);
                 else CloseFormYM3812(0);
-                if (Audio.chipLED.SecOPL2 != 0) OpenFormYM3812(1, true);
+                if (audio.audio.chipLED.get("SecOPL2") != 0) OpenFormYM3812(1, true);
                 else CloseFormYM3812(1);
 
-                if (Audio.chipLED.PriOPL3 != 0) OpenFormYMF262(0, true);
+                if (audio.audio.chipLED.get("PriOPL3") != 0) OpenFormYMF262(0, true);
                 else CloseFormYMF262(0);
-                if (Audio.chipLED.SecOPL3 != 0) OpenFormYMF262(1, true);
+                if (audio.audio.chipLED.get("SecOPL3") != 0) OpenFormYMF262(1, true);
                 else CloseFormYMF262(1);
 
-                if (Audio.chipLED.PriOPL4 != 0) OpenFormYMF278B(0, true);
+                if (audio.audio.chipLED.get("PriOPL4") != 0) OpenFormYMF278B(0, true);
                 else CloseFormYMF278B(0);
-                if (Audio.chipLED.SecOPL4 != 0) OpenFormYMF278B(1, true);
+                if (audio.audio.chipLED.get("SecOPL4") != 0) OpenFormYMF278B(1, true);
                 else CloseFormYMF278B(1);
 
-                if (Audio.chipLED.PriOPX != 0) OpenFormYMF271(0, true);
+                if (audio.audio.chipLED.get("PriOPX") != 0) OpenFormYMF271(0, true);
                 else CloseFormYMF271(0);
-                if (Audio.chipLED.SecOPX != 0) OpenFormYMF271(1, true);
+                if (audio.audio.chipLED.get("SecOPX") != 0) OpenFormYMF271(1, true);
                 else CloseFormYMF271(1);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Audio.errMsg = e.getMessage();
+            audio.audio.errMsg = e.getMessage();
         }
     }
 
     public void ff() {
-        if (Audio.getIsPaused()) {
-            Audio.pause();
+        if (audio.getIsPaused()) {
+            audio.pause();
         }
 
-        Audio.ff();
+        audio.ff();
     }
 
     public void next() {
-        if (Audio.getIsPaused()) {
-            Audio.pause();
+        if (audio.getIsPaused()) {
+            audio.pause();
         }
 
         Request req = new Request(enmRequest.Stop, null, null);
@@ -4676,7 +4664,7 @@ public class frmMain extends JFrame {
         while (!req.getEnd()) {
                 Thread.yield();
         }
-        //Audio.Stop();
+        //audio.audio.Stop();
 
         screenInit(null);
 
@@ -4689,17 +4677,17 @@ public class frmMain extends JFrame {
     }
 
     public void slow() {
-        if (Audio.getIsPaused()) {
-            Audio.stepPlay(4000);
-            Audio.pause();
+        if (audio.getIsPaused()) {
+            audio.stepPlay(4000);
+            audio.pause();
             return;
         }
 
-        if (Audio.isStopped()) {
+        if (audio.isStopped()) {
             play();
         }
 
-        Audio.slow();
+        audio.slow();
     }
 
     private void playMode() {
@@ -4711,7 +4699,7 @@ public class frmMain extends JFrame {
     private String[] fileOpen(boolean flg) {
         JFileChooser ofd = new JFileChooser();
         Arrays.stream(Resources.getCntSupportFile().split("\\s")).forEach(l -> {
-            String[] p = l.split("|");
+            String[] p = l.split("\\|");
             ofd.setFileFilter(new FileFilter() {
                 @Override
                 public boolean accept(java.io.File f) {
@@ -4727,7 +4715,7 @@ public class frmMain extends JFrame {
         ofd.setDialogTitle("ファイルを選択してください");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
-        if (!setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(setting.getOther().getDefaultDataPath()) && IsInitialOpenFolder) {
+        if (!setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(setting.getOther().getDefaultDataPath()) && isInitialOpenFolder) {
             ofd.setCurrentDirectory(new java.io.File(setting.getOther().getDefaultDataPath()));
 //        } else {
 //            ofd.RestoreDirectory = true;
@@ -4739,7 +4727,7 @@ public class frmMain extends JFrame {
             return null;
         }
 
-        IsInitialOpenFolder = false;
+        isInitialOpenFolder = false;
         setting.getOther().setFilterIndex(Common.getFilterIndex(ofd));
 
         return ofd.getSelectedFile().list();
@@ -4772,157 +4760,6 @@ public class frmMain extends JFrame {
         PointerInfo pi = MouseInfo.getPointerInfo();
         Point p = pi.getLocation();
         cmsOpenOtherPanel.setLocation(p.x, p.y);
-    }
-
-    public static final int FCC_VGM = 0x206D6756; // "Vgm "
-
-    public byte[] getAllBytes(String filename, FileFormat format) {
-        format = FileFormat.unknown;
-
-        String ext = Path.getExtension(filename).toLowerCase();
-
-        // wav/mp3/aiffはnaudioに任せるのでここの処理はスキップ
-        if (ext.equals(".wav")) {
-            format = FileFormat.WAV;
-            return new byte[] {(byte) 'W', (byte) 'A', (byte) 'V'};
-        }
-
-        if (ext.equals(".mp3")) {
-            format = FileFormat.MP3;
-            return new byte[] {(byte) 'M', (byte) 'P', (byte) '3'};
-        }
-
-        if (ext.equals(".aiff")) {
-            format = FileFormat.AIFF;
-            return new byte[] {(byte) 'A', (byte) 'I', (byte) 'F', (byte) 'F'};
-        }
-
-        // 先ずは丸ごと読み込む
-        byte[] buf = File.readAllBytes(filename);
-
-        // .NRDファイルの場合は拡張子判定
-        if (ext.equals(".nrd")) {
-            format = FileFormat.NRT;
-            return buf;
-        }
-
-        if (ext.equals(".mgs")) {
-            format = FileFormat.MGS;
-            return buf;
-        }
-
-        if (ext.equals(".mdr")) {
-            format = FileFormat.MDR;
-            return buf;
-        }
-
-        if (ext.equals(".mdl")) {
-            format = FileFormat.MDL;
-            return buf;
-        }
-
-        if (ext.equals(".mdx")) {
-            format = FileFormat.MDX;
-            return buf;
-        }
-
-        if (ext.equals(".mnd")) {
-            format = FileFormat.MND;
-            return buf;
-        }
-
-        if (ext.equals(".mub")) {
-            format = FileFormat.MUB;
-            return buf;
-        }
-
-        if (ext.equals(".muc")) {
-            format = FileFormat.MUC;
-            return buf;
-        }
-
-        if (ext.equals(".m") || ext.equals(".m2") || ext.equals(".mz")) {
-            format = FileFormat.M;
-            return buf;
-        }
-
-        if (ext.equals(".mml")) {
-            format = FileFormat.MML;
-            return buf;
-        }
-
-        if (ext.equals(".xgm")) {
-            format = FileFormat.XGM;
-            return buf;
-        }
-
-        if (ext.equals(".zgm")) {
-            format = FileFormat.ZGM;
-            return buf;
-        }
-
-        if (ext.equals(".s98")) {
-            format = FileFormat.S98;
-            return buf;
-        }
-
-        if (ext.equals(".nsf")) {
-            format = FileFormat.NSF;
-            return buf;
-        }
-
-        if (ext.equals(".hes")) {
-            format = FileFormat.HES;
-            return buf;
-        }
-
-        if (ext.equals(".sid")) {
-            format = FileFormat.SID;
-            return buf;
-        }
-
-        if (ext.equals(".mid")) {
-            format = FileFormat.MID;
-            return buf;
-        }
-
-        if (ext.equals(".rcp")) {
-            format = FileFormat.RCP;
-            return buf;
-        }
-
-
-         // .VGMの場合はヘッダの確認とGzipで解凍後のファイルのヘッダの確認
-        int vgm = (int) buf[0] + (int) buf[1] * 0x100 + (int) buf[2] * 0x10000 + (int) buf[3] * 0x1000000;
-        if (vgm == FCC_VGM) {
-            format = FileFormat.VGM;
-            return buf;
-        }
-
-        int num;
-        buf = new byte[1024]; // 1Kbytesずつ処理する
-
-        try (FileStream inStream // 入力ストリーム
-                     = new FileStream(filename, FileMode.Open, FileAccess.Read);
-
-             GZipStream decompStream // 解凍ストリーム
-                     = new GZipStream(
-                     inStream, // 入力元となるストリームを指定
-                     CompressionMode.Decompress); // 解凍（圧縮解除）を指定
-
-             MemoryStream outStream // 出力ストリーム
-                     = new MemoryStream()
-
-        ) {
-            while ((num = decompStream.read(buf, 0, buf.length)) > 0) {
-                outStream.write(buf, 0, num);
-            }
-
-            format = FileFormat.VGM;
-            return outStream.getBuffer();
-        } catch (java.io.IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 
     public void getInstCh(EnmChip chip, int ch, int chipID) {
@@ -5017,7 +4854,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
 
             n.append("'@ FA xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT  AM\n");
 
@@ -5042,7 +4879,7 @@ public class frmMain extends JFrame {
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
             ));
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
             n.append("'@ FC xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AM\n");
 
             for (int i = 0; i < 4; i++) {
@@ -5078,7 +4915,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
 
             n.append("'@xx = {\n/* AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\n");
 
@@ -5104,7 +4941,7 @@ public class frmMain extends JFrame {
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
             ));
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
 
             n.append("'@xx = {\n/* AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\n");
 
@@ -5165,7 +5002,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
 
             n.append("'@ N xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT  AM  SSG-EG\n");
 
@@ -5191,7 +5028,7 @@ public class frmMain extends JFrame {
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
             ));
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
             n.append("'@ M xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\n");
 
             for (int i = 0; i < 4; i++) {
@@ -5216,9 +5053,9 @@ public class frmMain extends JFrame {
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
             ));
         } else if (chip == EnmChip.HuC6280) {
-            OotakePsg.HuC6280State huc6280Register = Audio.getHuC6280Register(chipID);
+            OotakeHuC6280 huc6280Register = audio.audio.getHuC6280Register(chipID);
             if (huc6280Register == null) return null;
-            OotakePsg.HuC6280State.Psg psg = huc6280Register.psgs[ch];
+            OotakeHuC6280.Psg psg = huc6280Register.getPsg(ch);
             if (psg == null) return null;
             if (psg.wave == null) return null;
             if (psg.wave.length != 32) return null;
@@ -5238,8 +5075,8 @@ public class frmMain extends JFrame {
                 ));
             }
         } else if (chip == EnmChip.YM2413) {
-            //OPLL
-            int[] regs = Audio.getYM2413Register(chipID);
+            //Ym2413
+            int[] regs = audio.audio.getYM2413Register(chipID);
         } else if (chip == EnmChip.YM3812) {
             //OPL2
             //'@ L No "Name"
@@ -5247,7 +5084,7 @@ public class frmMain extends JFrame {
             //'@ AR DR SL RR KSL TL MT AM VIB EGT KSR WS
             //'@ CNT FB
 
-            int[] regs = Audio.getYM3812Register(chipID);
+            int[] regs = audio.audio.getYM3812Register(chipID);
             int slot;
             if (ch < 0 || ch > 8) return null;
 
@@ -5288,7 +5125,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
 
             n.append(String.format("  @xx:{{\n  %3d %3d\n"
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
@@ -5311,7 +5148,7 @@ public class frmMain extends JFrame {
             }
             n.append("  }\n");
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
 
             n.append(String.format("  @xx:{{\n  %3d %3d\n"
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
@@ -5345,7 +5182,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
 
             n.append(String.format("  @xx:{{\n  %3d, %3d\n"
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
@@ -5368,7 +5205,7 @@ public class frmMain extends JFrame {
             }
             n.append(",\"MDP\"  }\n");
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
 
             n.append(String.format("  @xx:{{\n  %3d, %3d\n"
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
@@ -5402,7 +5239,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
 
             n.append("@%xxx\n");
 
@@ -5418,7 +5255,7 @@ public class frmMain extends JFrame {
                     , fmRegister[p][0xb0 + c] //FB/AL
             ));
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
 
             n.append("@%xxx\n");
 
@@ -5474,7 +5311,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
 
             n.append("@ xxxx {\n");
             n.append(String.format("000,%3d,%3d,015\n"
@@ -5500,7 +5337,7 @@ public class frmMain extends JFrame {
             }
             n.append("}\n");
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
 
             n.append("@ xxxx {\n");
             n.append(String.format("000,%3d,%3d,015\n"
@@ -5535,9 +5372,9 @@ public class frmMain extends JFrame {
         StringBuilder n = new StringBuilder();
 
         if (chip == EnmChip.HuC6280) {
-            OotakePsg.HuC6280State huc6280Register = Audio.getHuC6280Register(chipID);
+            OotakeHuC6280 huc6280Register = audio.audio.getHuC6280Register(chipID);
             if (huc6280Register == null) return;
-            OotakePsg.HuC6280State.Psg psg = huc6280Register.psgs[ch];
+            OotakeHuC6280.Psg psg = huc6280Register.getPsg(ch);
             if (psg == null) return;
             if (psg.wave == null) return;
             if (psg.wave.length != 32) return;
@@ -5569,9 +5406,9 @@ public class frmMain extends JFrame {
         int[] register = null;
 
         if (chip == EnmChip.YM2413) {
-            register = Audio.getYM2413Register(chipID);
+            register = audio.audio.getYM2413Register(chipID);
         } else if (chip == EnmChip.VRC7) {
-            byte[] r = Audio.getVRC7Register(chipID);
+            byte[] r = audio.audio.getVRC7Register(chipID);
             if (r == null) return;
             register = new int[r.length];
             for (int i = 0; i < r.length; i++) {
@@ -5623,12 +5460,10 @@ public class frmMain extends JFrame {
     }
 
     private void getInstChForMGSCSCC(int ch, int chipID) {
-        K051649.K051649State chip = Audio.getK051649Register(chipID);
+        K051649 chip = audio.audio.getK051649Register(chipID);
         if (chip == null) return;
-        mdsound.K051649.K051649State.Channel psg = chip.channelList[ch];
-        if (psg == null) return;
         int[] register = new int[32];
-        for (int i = 0; i < 32; i++) register[i] = psg.waveRam[i];
+        for (int i = 0; i < 32; i++) register[i] = chip.getWaveRam(ch, i);
 
         StringBuilder n = new StringBuilder("@sXX = {");
         for (int i = 0; i < 8; i++) {
@@ -5643,12 +5478,10 @@ public class frmMain extends JFrame {
     }
 
     private void getInstChForMGSCSCCPLAIN(int ch, int chipID) {
-        mdsound.K051649.K051649State chip = Audio.getK051649Register(chipID);
+        K051649 chip = audio.audio.getK051649Register(chipID);
         if (chip == null) return;
-        mdsound.K051649.K051649State.Channel psg = chip.channelList[ch];
-        if (psg == null) return;
         int[] register = new int[32];
-        for (int i = 0; i < 32; i++) register[i] = psg.waveRam[i];
+        for (int i = 0; i < 32; i++) register[i] = chip.getWaveRam(ch, i);
 
         StringBuilder n = new StringBuilder();
         for (int i = 0; i < 8; i++) {
@@ -5664,7 +5497,7 @@ public class frmMain extends JFrame {
 
     private void getInstChForMCK(EnmChip chip, int ch, int chipID) {
         if (chip == EnmChip.N163) {
-            NesN106.TrackInfo[] info = (NesN106.TrackInfo[]) Audio.getN106Register(0);
+            NesN106.TrackInfo[] info = (NesN106.TrackInfo[]) audio.audio.getN106Register(0);
             if (info == null) return;
 
             StringBuilder n = new StringBuilder("@Nxx = { ");
@@ -5685,7 +5518,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
 
             n[0] = (byte) (fmRegister[p][0xb0 + c] & 0x07); // AL
             n[1] = (byte) ((fmRegister[p][0xb0 + c] & 0x38) >> 3); // FB
@@ -5711,7 +5544,7 @@ public class frmMain extends JFrame {
             }
 
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
 
             n[0] = (byte) (ym2151Register[0x20 + ch] & 0x07); // AL
             n[1] = (byte) ((ym2151Register[0x20 + ch] & 0x38) >> 3); // FB
@@ -5776,14 +5609,14 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
 
             n[1] = 0x02; // SYSTEM_GENESIS
 
-            n[3] = (byte) (fmRegister[p][0xb4 + c] & 0x03); // LFO (FMS on Ym2612, PMS on YM2151)
+            n[3] = (byte) (fmRegister[p][0xb4 + c] & 0x03); // LFO (FMS on Ym2612Inst, PMS on YM2151)
             n[4] = (byte) ((fmRegister[p][0xb0 + c] & 0x38) >> 3); // FB
             n[5] = (byte) (fmRegister[p][0xb0 + c] & 0x07); // ALG
-            n[6] = (byte) ((fmRegister[p][0xb4 + c] & 0x30) >> 4); // LFO2(AMS on Ym2612, AMS on YM2151)
+            n[6] = (byte) ((fmRegister[p][0xb4 + c] & 0x30) >> 4); // LFO2(AMS on Ym2612Inst, AMS on YM2151)
 
             for (int i = 0; i < 4; i++) {
                 //int ops = (i == 0) ? 0 : ((i == 1) ? 4 : ((i == 2) ? 8 : 12));
@@ -5807,14 +5640,14 @@ public class frmMain extends JFrame {
             }
 
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
 
             n[1] = 0x08; // SYSTEM_YM2151
 
-            n[3] = (byte) ((ym2151Register[0x38 + ch] & 0x70) >> 4); // LFO (FMS on Ym2612, PMS on YM2151)
+            n[3] = (byte) ((ym2151Register[0x38 + ch] & 0x70) >> 4); // LFO (FMS on Ym2612Inst, PMS on YM2151)
             n[4] = (byte) ((ym2151Register[0x20 + ch] & 0x38) >> 3); // FB
             n[5] = (byte) (ym2151Register[0x20 + ch] & 0x07); // AL
-            n[6] = (byte) (ym2151Register[0x38 + ch] & 0x03); // LFO2(AMS on Ym2612, AMS on YM2151)
+            n[6] = (byte) (ym2151Register[0x38 + ch] & 0x03); // LFO2(AMS on Ym2612Inst, AMS on YM2151)
 
             for (int i = 0; i < 4; i++) {
                 //int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 16 : 24));
@@ -5893,7 +5726,7 @@ public class frmMain extends JFrame {
         buf.append("\n");
         int alg = 0, fb = 0, ams = 0, pms = 0;
 
-        Vgm.Gd3 gd3 = Audio.getGd3();
+        Vgm.Gd3 gd3 = audio.audio.getGd3();
         String patch_Name = "MDPlayer_%d";
         if (gd3 != null) {
             String pn = gd3.trackName;
@@ -5909,12 +5742,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == EnmChip.YM2612)
-                    ? Audio.getFMRegister(chipID)
+                    ? audio.audio.getFMRegister(chipID)
                     : (chip == EnmChip.YM2608
-                    ? Audio.getYM2608Register(chipID)
+                    ? audio.audio.getYM2608Register(chipID)
                     : (chip == EnmChip.YM2203
-                    ? new int[][] {Audio.getYm2203Register(chipID), null}
-                    : Audio.getYM2610Register(chipID)
+                    ? new int[][] {audio.audio.getYm2203Register(chipID), null}
+                    : audio.audio.getYM2610Register(chipID)
             ));
 
             alg = (fmRegister[p][0xb0 + c] & 0x07) >> 0;
@@ -5947,7 +5780,7 @@ public class frmMain extends JFrame {
             }
 
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
 
             alg = (ym2151Register[0x20 + ch] & 0x07) >> 0;
             fb = (ym2151Register[0x20 + ch] & 0x38) >> 3;
@@ -6055,7 +5888,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
 
             n[12 + 32 + 3] = (byte) (fmRegister[p][0xb0 + c] & 0x3f); // FB & ALG
             n[12 + 32 + 4] = 0x10; // 0x00:OPN2  0x10:OPNA
@@ -6073,7 +5906,7 @@ public class frmMain extends JFrame {
             }
 
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
 
             n[12 + 32 + 3] = (byte) ym2151Register[0x20 + ch]; // FB & ALG
             n[12 + 32 + 4] = 0x10; // 0x00:OPN2  0x10:OPNA
@@ -6128,10 +5961,10 @@ public class frmMain extends JFrame {
         if (chip != EnmChip.YM3812 && chip != EnmChip.YMF262 && chip != EnmChip.YMF278B) return;
 
         int[][] reg;
-        if (chip == EnmChip.YMF262) reg = Audio.getYMF262Register(chipID);
-        else if (chip == EnmChip.YMF278B) reg = Audio.getYMF278BRegister(chipID);
+        if (chip == EnmChip.YMF262) reg = audio.audio.getYMF262Register(chipID);
+        else if (chip == EnmChip.YMF278B) reg = audio.audio.getYMF278BRegister(chipID);
         else {
-            int[] r = Audio.getYM3812Register(chipID);
+            int[] r = audio.audio.getYM3812Register(chipID);
             reg = new int[1][];
             reg[0] = r;
         }
@@ -6273,7 +6106,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
 
             n.append("@: n MDPlayer\n");
             n.append("LFO:  0   0   0   0   0\n");
@@ -6301,7 +6134,7 @@ public class frmMain extends JFrame {
                 ));
             }
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
 
             n.append("@: n MDPlayer\n");
             n.append("LFO:  0   0   0   0   0\n");
@@ -6341,7 +6174,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? Audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? Audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {Audio.getYm2203Register(chipID), null} : Audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
 
             n.append("; nm alg fbl\n");
             n.append(String.format("@xxx %3d %3d                            =      MDPlayer\n"
@@ -6367,7 +6200,7 @@ public class frmMain extends JFrame {
                 ));
             }
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = Audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
             n.append("; nm alg fbl\n");
             n.append(String.format("@xxx %3d %3d                            =      MDPlayer\n"
                     , ym2151Register[0x20 + ch] & 0x07 // AL
@@ -6399,68 +6232,39 @@ public class frmMain extends JFrame {
 
     public boolean loadAndPlay(int m, int songNo, String fn, String zfn/* = null*/) {
         try {
-            if (Audio.flgReinit) flgReinit = true;
+            if (audio.flgReinit) flgReinit = true;
             if (setting.getOther().getInitAlways()) flgReinit = true;
             reinit(setting);
 
-            if (Audio.getIsPaused()) {
-                Audio.pause();
+            if (audio.getIsPaused()) {
+                audio.pause();
             }
 
             String playingFileName = fn;
             String playingArcFileName = "";
-            FileFormat format = FileFormat.unknown;
-            List<Tuple<String, byte[]>> extFile = null;
+            FileFormat format = FileFormat.getFileFormat(fn);
+            List<Tuple<String, byte[]>> extFile;
 
-            if (zfn == null || zfn.isEmpty()) {
-                srcBuf = getAllBytes(fn, format);
-                extFile = getExtendFile(fn, srcBuf, format, null, null);
-            } else {
-
+            if (zfn != null && !zfn.isEmpty()) {
                 playingArcFileName = zfn;
-
-                if (Path.getExtension(zfn).equalsIgnoreCase(".ZIP")) {
-                    Archive archive = Archives.getArchive(new java.io.File(zfn));
-                    Entry entry = archive.getEntry(fn);
-
-                    format = mdplayer.Common.FileFormat.checkExt(fn);
-                    if (format != FileFormat.unknown) {
-                        String[] arcFn = new String[1];
-                        srcBuf = getBytesFromZipFile(archive, entry, arcFn);
-                        if (!arcFn[0].isEmpty()) playingFileName = arcFn[0];
-                        extFile = getExtendFile(fn, srcBuf, format, archive, entry);
-                    }
-                } else {
-                    format = mdplayer.Common.FileFormat.checkExt(fn);
-                    if (format != FileFormat.unknown) {
-                        Archive archive = Archives.getArchive(new java.io.File(zfn));
-                        Entry entry = archive.getEntry(fn);
-                        srcBuf = archive.getInputStream(entry).readAllBytes();
-                        playingFileName = fn;
-                        extFile = getExtendFile(fn, srcBuf, format, archive, entry);
-                    }
-                }
+                playingFileName = fn;
+                format = FileFormat.getFileFormat(zfn);
             }
+            var r = format.load(zfn, fn);
+            srcBuf = r.getItem1();
+            extFile = r.getItem2();
 
-            if (Path.getExtension(playingFileName).equalsIgnoreCase(".MDX")) {
-                if (setting.getOutputDevice().getSampleRate() != 44100) {
-                    JOptionPane.showMessageDialog(this,
-                            "MDXファイルを再生する場合はサンプリングレートを44.1kHzに設定してください。",
-                            "MDPlayer", JOptionPane.ERROR_MESSAGE);
-                    return false;
-                }
-            }
+            // 再生前に音量のバランスを設定する
+            loadPresetMixerBalance(playingFileName, playingArcFileName, format);
 
-            //再生前に音量のバランスを設定する
-            LoadPresetMixerBalance(playingFileName, playingArcFileName, format);
-
-            Audio.setVGMBuffer(format, srcBuf, playingFileName, playingArcFileName, m, songNo, extFile);
+            audio = (BasePlugin) format.getPlugin();
+            audio.setVGMBuffer(format, srcBuf, playingFileName, playingArcFileName, m, songNo, extFile);
             newParam.ym2612[0].fileFormat = format;
             newParam.ym2612[1].fileFormat = format;
 
             if (srcBuf != null) {
                 SwingUtilities.invokeLater(this::playData);
-                if (!Audio.errMsg.isEmpty()) return false;
+                if (!audio.audio.errMsg.isEmpty()) return false;
             }
 
         } catch (Exception ex) {
@@ -6477,30 +6281,30 @@ public class frmMain extends JFrame {
 
     public boolean bufferPlay(byte[] buf, String fullPath) {
         try {
-            if (Audio.flgReinit) flgReinit = true;
+            if (audio.flgReinit) flgReinit = true;
             if (setting.getOther().getInitAlways()) flgReinit = true;
             reinit(setting);
 
-            if (Audio.getIsPaused()) {
-                Audio.pause();
+            if (audio.getIsPaused()) {
+                audio.pause();
             }
 
             String playingFileName = fullPath;
             String playingArcFileName = "";
             List<Tuple<String, byte[]>> extFile = null;
-            FileFormat format = mdplayer.Common.FileFormat.checkExt(fullPath);
+            FileFormat format = FileFormat.getFileFormat(fullPath);
             srcBuf = buf;
 
             //再生前に音量のバランスを設定する
-            LoadPresetMixerBalance(playingFileName, playingArcFileName, format);
+            loadPresetMixerBalance(playingFileName, playingArcFileName, format);
 
-            Audio.setVGMBuffer(format, srcBuf, playingFileName, playingArcFileName, 0, 0, extFile);
+            audio.setVGMBuffer(format, srcBuf, playingFileName, playingArcFileName, 0, 0, extFile);
             newParam.ym2612[0].fileFormat = format;
             newParam.ym2612[1].fileFormat = format;
 
             if (srcBuf != null) {
                 SwingUtilities.invokeLater(this::playData);
-                if (!Audio.errMsg.isEmpty()) return false;
+                if (!audio.audio.errMsg.isEmpty()) return false;
             }
 
         } catch (Exception ex) {
@@ -6515,145 +6319,11 @@ public class frmMain extends JFrame {
         return true;
     }
 
-    /**
-     *
-     * @param fn
-     * @param srcBuf extracted
-     * @param format
-     * @param entry
-     * @return
-     */
-    private List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, FileFormat format, Archive archive/* = null*/, Entry entry/* = null*/) {
-        List<Tuple<String, byte[]>> ret = new ArrayList<>();
-        byte[] buf;
-        switch (format) {
-        case RCP:
-            String[] cm6 = new String[1], gsd = new String[1], gsd2 = new String[1];
-            RCP.getControlFileName(srcBuf, cm6, gsd, gsd2);
-            if (cm6[0] != null && !cm6[0].isEmpty()) {
-                buf = getExtendFileAllBytes(fn, cm6[0], archive, entry);
-                if (buf != null) ret.add(new Tuple<>(".cm6", buf));
-            }
-            if (gsd[0] != null && !gsd[0].isEmpty()) {
-                buf = getExtendFileAllBytes(fn, gsd[0], archive, entry);
-                if (buf != null) ret.add(new Tuple<>(".gsd", buf));
-            }
-            if (gsd2[0] != null && !gsd2[0].isEmpty()) {
-                buf = getExtendFileAllBytes(fn, gsd2[0], archive, entry);
-                if (buf != null) ret.add(new Tuple<>(".gsd", buf));
-            }
-            break;
-        case MDR:
-            buf = getExtendFileAllBytes(fn, Path.getFileNameWithoutExtension(fn) + ".PCM", archive, entry);
-            if (buf != null) ret.add(new Tuple<>(".PCM", buf));
-            break;
-        case MDX:
-            String[] PDX = new String[1];
-            MXDRV.getPDXFileName(srcBuf, PDX);
-            if (PDX[0] != null && PDX[0].isEmpty()) {
-                buf = getExtendFileAllBytes(fn, PDX[0], archive, entry);
-                if (buf == null) {
-                    buf = getExtendFileAllBytes(fn, PDX[0] + ".PDX", archive, entry);
-                }
-                if (buf != null) ret.add(new Tuple<>(".PDX", buf));
-            }
-            break;
-        case MND:
-            int hs = (srcBuf[0x06] << 8) + srcBuf[0x07];
-            int pcmptr[] = new int[] {(srcBuf[0x14] << 24) + (srcBuf[0x15] << 16) + (srcBuf[0x16] << 8) + srcBuf[0x17]};
-            if (hs < 0x18) pcmptr[0] = 0;
-            if (pcmptr[0] != 0) {
-                int pcmnum = (srcBuf[pcmptr[0]] << 8) + srcBuf[pcmptr[0] + 1];
-                pcmptr[0] += 2;
-                for (int i = 0; i < pcmnum; i++) {
-                    String mndPcmFn = mdplayer.Common.getNRDString(srcBuf, pcmptr);
-                    buf = getExtendFileAllBytes(fn, mndPcmFn, archive, entry);
-                    if (buf != null) ret.add(new Tuple<>(".PND", buf));
-                }
-            }
-            break;
-        default:
-            return null;
-        }
-
-        return ret;
-    }
-
-    private List<String> getFileSearchPathList(String srcFn) {
-        List<String> result = new ArrayList<>();
-        result.add(getDirectoryName(srcFn));
-        String fileSearchPathList = this.setting.getFileSearchPathList() != null ? this.setting.getFileSearchPathList() : "";
-        Arrays.stream(fileSearchPathList.split(";"))
-                .filter(path -> path != null && path.isEmpty())
-                .forEach(result::add);
-        return result;
-    }
-
-    private byte[] getExtendFileAllBytes(String srcFn, String extFn, Archive archive, Entry entry) {
-        try {
-            if (entry == null) {
-                return this.getFileSearchPathList(srcFn).stream()
-                                .map(dirPath -> Path.combine(dirPath, extFn).trim())
-                                .filter(File::exists).findFirst()
-                                .map(File::readAllBytes).orElse(null);
-            } else {
-                String trgFn = Path.combine(getDirectoryName(srcFn), extFn);
-                trgFn = trgFn.replace("\\", "/").trim();
-
-                if (entry instanceof ZipEntry) {
-                    String[] arcFn = new String[1];
-                    return getBytesFromZipFile(archive, entry, arcFn);
-                } else {
-                    return archive.getInputStream(entry).readAllBytes();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * @param archive
-     * @param entry
-     * @param arcFn   OUT entry file name resolved by the entry
-     * @return extracted
-     */
-    public byte[] getBytesFromZipFile(Archive archive, Entry entry, String[] arcFn) {
-        byte[] buf;
-        if (entry == null) return null;
-        arcFn[0] = entry.getName();
-        try (InputStream reader = archive.getInputStream(entry)) {
-            buf = reader.readAllBytes();
-        } catch (java.io.IOException e) {
-            throw new UncheckedIOException(e);
-        }
-
-        if (mdplayer.Common.FileFormat.checkExt(entry.getName()) == FileFormat.VGM) {
-            try {
-                int vgm = (int) buf[0] + (int) buf[1] * 0x100 + (int) buf[2] * 0x10000 + (int) buf[3] * 0x1000000;
-                if (vgm != FCC_VGM) {
-
-                    try (InputStream inStream = archive.getInputStream(entry);
-                         InputStream decompStream = Archives.getInputStream(inStream)
-                    ) {
-                        buf = decompStream.readAllBytes();
-                    }
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                buf = null;
-            }
-        }
-
-        return buf;
-    }
-
     public void setChannelMask(EnmChip chip, int chipID, int ch) {
         switch (chip) {
         case YM2203:
             if (ch >= 0 && ch < 9) {
-                Audio.setYM2203Mask(chipID, ch);
+                audio.audio.setYM2203Mask(chipID, ch);
                 newParam.ym2203[chipID].channels[ch].mask = true;
 
                 // FM(2ch) FMex
@@ -6668,9 +6338,9 @@ public class frmMain extends JFrame {
         case YM2413:
             if (ch >= 0 && ch < 14) {
                 if (!newParam.ym2413[chipID].channels[ch].mask || newParam.ym2413[chipID].channels[ch].mask == null)
-                    Audio.setYM2413Mask(chipID, ch);
+                    audio.audio.setYM2413Mask(chipID, ch);
                 else
-                    Audio.resetYM2413Mask(chipID, ch);
+                    audio.audio.resetYM2413Mask(chipID, ch);
 
                 newParam.ym2413[chipID].channels[ch].mask = !newParam.ym2413[chipID].channels[ch].mask;
             }
@@ -6678,9 +6348,9 @@ public class frmMain extends JFrame {
         case YM3526:
             if (ch >= 0 && ch < 14) {
                 if (!newParam.ym3526[chipID].channels[ch].mask || newParam.ym3526[chipID].channels[ch].mask == null)
-                    Audio.setYM3526Mask(chipID, ch);
+                    audio.audio.setYM3526Mask(chipID, ch);
                 else
-                    Audio.resetYM3526Mask(chipID, ch);
+                    audio.audio.resetYM3526Mask(chipID, ch);
 
                 newParam.ym3526[chipID].channels[ch].mask = !newParam.ym3526[chipID].channels[ch].mask;
 
@@ -6689,9 +6359,9 @@ public class frmMain extends JFrame {
         case Y8950:
             if (ch >= 0 && ch < 15) {
                 if (!newParam.y8950[chipID].channels[ch].mask || newParam.y8950[chipID].channels[ch].mask == null)
-                    Audio.setY8950Mask(chipID, ch);
+                    audio.audio.setY8950Mask(chipID, ch);
                 else
-                    Audio.resetY8950Mask(chipID, ch);
+                    audio.audio.resetY8950Mask(chipID, ch);
 
                 newParam.y8950[chipID].channels[ch].mask = !newParam.y8950[chipID].channels[ch].mask;
 
@@ -6700,9 +6370,9 @@ public class frmMain extends JFrame {
         case YM3812:
             if (ch >= 0 && ch < 14) {
                 if (!newParam.ym3812[chipID].channels[ch].mask || newParam.ym3812[chipID].channels[ch].mask == null)
-                    Audio.setYM3812Mask(chipID, ch);
+                    audio.audio.setYM3812Mask(chipID, ch);
                 else
-                    Audio.resetYM3812Mask(chipID, ch);
+                    audio.audio.resetYM3812Mask(chipID, ch);
 
                 newParam.ym3812[chipID].channels[ch].mask = !newParam.ym3812[chipID].channels[ch].mask;
 
@@ -6711,9 +6381,9 @@ public class frmMain extends JFrame {
         case YMF262:
             if (ch >= 0 && ch < 23) {
                 if (!newParam.ymf262[chipID].channels[ch].mask || newParam.ymf262[chipID].channels[ch].mask == null)
-                    Audio.setYMF262Mask(chipID, ch);
+                    audio.audio.setYMF262Mask(chipID, ch);
                 else
-                    Audio.resetYMF262Mask(chipID, ch);
+                    audio.audio.resetYMF262Mask(chipID, ch);
 
                 newParam.ymf262[chipID].channels[ch].mask = !newParam.ymf262[chipID].channels[ch].mask;
 
@@ -6722,9 +6392,9 @@ public class frmMain extends JFrame {
         case YMF278B:
             if (ch >= 0 && ch < 47) {
                 if (!newParam.ymf278b[chipID].channels[ch].mask || newParam.ymf278b[chipID].channels[ch].mask == null)
-                    Audio.setYMF278BMask(chipID, ch);
+                    audio.audio.setYMF278BMask(chipID, ch);
                 else
-                    Audio.resetYMF278BMask(chipID, ch);
+                    audio.audio.resetYMF278BMask(chipID, ch);
 
                 newParam.ymf278b[chipID].channels[ch].mask = !newParam.ymf278b[chipID].channels[ch].mask;
 
@@ -6732,7 +6402,7 @@ public class frmMain extends JFrame {
             break;
         case YM2608:
             if (ch >= 0 && ch < 14) {
-                Audio.setYM2608Mask(chipID, ch);
+                audio.audio.setYM2608Mask(chipID, ch);
                 newParam.ym2608[chipID].channels[ch].mask = true;
 
                 //FM(2ch) FMex
@@ -6750,7 +6420,7 @@ public class frmMain extends JFrame {
                 if (ch == 12) c = 13;
                 if (ch == 13) c = 12;
 
-                Audio.setYM2610Mask(chipID, ch);
+                audio.audio.setYM2610Mask(chipID, ch);
                 newParam.ym2610[chipID].channels[c].mask = true;
 
                 //FM(2ch) FMex
@@ -6764,7 +6434,7 @@ public class frmMain extends JFrame {
             break;
         case YM2612:
             if (ch >= 0 && ch < 9) {
-                Audio.setYM2612Mask(chipID, ch);
+                audio.audio.setYM2612Mask(chipID, ch);
                 newParam.ym2612[chipID].channels[ch].mask = true;
 
                 //FM(2ch) FMex
@@ -6778,113 +6448,113 @@ public class frmMain extends JFrame {
             break;
         case SN76489:
             if (!newParam.sn76489[chipID].channels[ch].mask || newParam.sn76489[chipID].channels[ch].mask == null) {
-                Audio.setSN76489Mask(chipID, ch);
+                audio.audio.setSN76489Mask(chipID, ch);
             } else {
-                Audio.resetSN76489Mask(chipID, ch);
+                audio.audio.resetSN76489Mask(chipID, ch);
             }
             newParam.sn76489[chipID].channels[ch].mask = !newParam.sn76489[chipID].channels[ch].mask;
             break;
         case RF5C164:
             if (!newParam.rf5c164[chipID].channels[ch].mask || newParam.rf5c164[chipID].channels[ch].mask == null) {
-                Audio.setRF5C164Mask(chipID, ch);
+                audio.audio.setRF5C164Mask(chipID, ch);
             } else {
-                Audio.resetRF5C164Mask(chipID, ch);
+                audio.audio.resetRF5C164Mask(chipID, ch);
             }
             newParam.rf5c164[chipID].channels[ch].mask = !newParam.rf5c164[chipID].channels[ch].mask;
             break;
         case RF5C68:
             if (!newParam.rf5c68[chipID].channels[ch].mask || newParam.rf5c68[chipID].channels[ch].mask == null) {
-                Audio.setRF5C68Mask(chipID, ch);
+                audio.audio.setRF5C68Mask(chipID, ch);
             } else {
-                Audio.resetRF5C68Mask(chipID, ch);
+                audio.audio.resetRF5C68Mask(chipID, ch);
             }
             newParam.rf5c68[chipID].channels[ch].mask = !newParam.rf5c68[chipID].channels[ch].mask;
             break;
         case YM2151:
             if (!newParam.ym2151[chipID].channels[ch].mask || newParam.ym2151[chipID].channels[ch].mask == null) {
-                Audio.setYM2151Mask(chipID, ch);
+                audio.audio.setYM2151Mask(chipID, ch);
             } else {
-                Audio.resetYM2151Mask(chipID, ch);
+                audio.audio.resetYM2151Mask(chipID, ch);
             }
             newParam.ym2151[chipID].channels[ch].mask = !newParam.ym2151[chipID].channels[ch].mask;
             break;
         case C140:
             if (!newParam.c140[chipID].channels[ch].mask || newParam.c140[chipID].channels[ch].mask == null) {
-                Audio.setC140Mask(chipID, ch);
+                audio.audio.setC140Mask(chipID, ch);
             } else {
-                Audio.resetC140Mask(chipID, ch);
+                audio.audio.resetC140Mask(chipID, ch);
             }
             newParam.c140[chipID].channels[ch].mask = !newParam.c140[chipID].channels[ch].mask;
             break;
         case PPZ8:
             if (!newParam.ppz8[chipID].channels[ch].mask || newParam.ppz8[chipID].channels[ch].mask == null) {
-                Audio.setPPZ8Mask(chipID, ch);
+                audio.audio.setPPZ8Mask(chipID, ch);
             } else {
-                Audio.resetPPZ8Mask(chipID, ch);
+                audio.audio.resetPPZ8Mask(chipID, ch);
             }
             newParam.ppz8[chipID].channels[ch].mask = !newParam.ppz8[chipID].channels[ch].mask;
             break;
         case C352:
             if (!newParam.c352[chipID].channels[ch].mask || newParam.c352[chipID].channels[ch].mask == null) {
-                Audio.setC352Mask(chipID, ch);
+                audio.audio.setC352Mask(chipID, ch);
             } else {
-                Audio.resetC352Mask(chipID, ch);
+                audio.audio.resetC352Mask(chipID, ch);
             }
             newParam.c352[chipID].channels[ch].mask = !newParam.c352[chipID].channels[ch].mask;
             break;
         case SEGAPCM:
             if (!newParam.segaPcm[chipID].channels[ch].mask || newParam.segaPcm[chipID].channels[ch].mask == null) {
-                Audio.setSegaPCMMask(chipID, ch);
+                audio.audio.setSegaPCMMask(chipID, ch);
             } else {
-                Audio.resetSegaPCMMask(chipID, ch);
+                audio.audio.resetSegaPCMMask(chipID, ch);
             }
             newParam.segaPcm[chipID].channels[ch].mask = !newParam.segaPcm[chipID].channels[ch].mask;
             break;
         case QSound:
             if (!newParam.qSound[chipID].channels[ch].mask || newParam.qSound[chipID].channels[ch].mask == null) {
-                Audio.setQSoundMask(chipID, ch);
+                audio.audio.setQSoundMask(chipID, ch);
             } else {
-                Audio.resetQSoundMask(chipID, ch);
+                audio.audio.resetQSoundMask(chipID, ch);
             }
             newParam.qSound[chipID].channels[ch].mask = !newParam.qSound[chipID].channels[ch].mask;
             break;
         case AY8910:
             if (!newParam.ay8910[chipID].channels[ch].mask || newParam.ay8910[chipID].channels[ch].mask == null) {
-                Audio.setAY8910Mask(chipID, ch);
+                audio.audio.setAY8910Mask(chipID, ch);
             } else {
-                Audio.resetAY8910Mask(chipID, ch);
+                audio.audio.resetAY8910Mask(chipID, ch);
             }
             newParam.ay8910[chipID].channels[ch].mask = !newParam.ay8910[chipID].channels[ch].mask;
             break;
         case HuC6280:
             if (!newParam.huc6280[chipID].channels[ch].mask || newParam.huc6280[chipID].channels[ch].mask == null) {
-                Audio.setHuC6280Mask(chipID, ch);
+                audio.audio.setHuC6280Mask(chipID, ch);
             } else {
-                Audio.resetHuC6280Mask(chipID, ch);
+                audio.audio.resetHuC6280Mask(chipID, ch);
             }
             newParam.huc6280[chipID].channels[ch].mask = !newParam.huc6280[chipID].channels[ch].mask;
             break;
         case OKIM6258:
             if (!newParam.okim6258[chipID].mask || newParam.okim6258[chipID].mask == null) {
-                Audio.setOKIM6258Mask(chipID);
+                audio.audio.setOKIM6258Mask(chipID);
             } else {
-                Audio.resetOKIM6258Mask(chipID);
+                audio.audio.resetOKIM6258Mask(chipID);
             }
             newParam.okim6258[chipID].mask = !newParam.okim6258[chipID].mask;
             break;
         case OKIM6295:
             if (!newParam.okim6295[chipID].channels[ch].mask || newParam.okim6295[chipID].channels[ch].mask == null) {
-                Audio.setOKIM6295Mask(chipID, ch);
+                audio.audio.setOKIM6295Mask(chipID, ch);
             } else {
-                Audio.resetOKIM6295Mask(chipID, ch);
+                audio.audio.resetOKIM6295Mask(chipID, ch);
             }
             newParam.okim6295[chipID].channels[ch].mask = !newParam.okim6295[chipID].channels[ch].mask;
             break;
         case NES:
             if (!newParam.nesdmc[chipID].sqrChannels[ch].mask || newParam.nesdmc[chipID].sqrChannels[ch].mask == null) {
-                Audio.setNESMask(chipID, ch);
+                audio.audio.setNESMask(chipID, ch);
             } else {
-                Audio.resetNESMask(chipID, ch);
+                audio.audio.resetNESMask(chipID, ch);
             }
             newParam.nesdmc[chipID].sqrChannels[ch].mask = !newParam.nesdmc[chipID].sqrChannels[ch].mask;
             break;
@@ -6892,48 +6562,48 @@ public class frmMain extends JFrame {
             switch (ch) {
             case 0:
                 if (!newParam.nesdmc[chipID].triChannel.mask || newParam.nesdmc[chipID].triChannel.mask == null)
-                    Audio.setDMCMask(chipID, ch);
-                else Audio.resetDMCMask(chipID, ch);
+                    audio.audio.setDMCMask(chipID, ch);
+                else audio.audio.resetDMCMask(chipID, ch);
                 newParam.nesdmc[chipID].triChannel.mask = !newParam.nesdmc[chipID].triChannel.mask;
                 break;
             case 1:
                 if (!newParam.nesdmc[chipID].noiseChannel.mask || newParam.nesdmc[chipID].noiseChannel.mask == null)
-                    Audio.setDMCMask(chipID, ch);
-                else Audio.resetDMCMask(chipID, ch);
+                    audio.audio.setDMCMask(chipID, ch);
+                else audio.audio.resetDMCMask(chipID, ch);
                 newParam.nesdmc[chipID].noiseChannel.mask = !newParam.nesdmc[chipID].noiseChannel.mask;
                 break;
             case 2:
                 if (!newParam.nesdmc[chipID].dmcChannel.mask || newParam.nesdmc[chipID].dmcChannel.mask == null)
-                    Audio.setDMCMask(chipID, ch);
-                else Audio.resetDMCMask(chipID, ch);
+                    audio.audio.setDMCMask(chipID, ch);
+                else audio.audio.resetDMCMask(chipID, ch);
                 newParam.nesdmc[chipID].dmcChannel.mask = !newParam.nesdmc[chipID].dmcChannel.mask;
                 break;
             }
             break;
         case FDS:
             if (!newParam.fds[chipID].channel.mask || newParam.fds[chipID].channel.mask == null)
-                Audio.setFDSMask(chipID);
-            else Audio.resetFDSMask(chipID);
+                audio.audio.setFDSMask(chipID);
+            else audio.audio.resetFDSMask(chipID);
             newParam.fds[chipID].channel.mask = !newParam.fds[chipID].channel.mask;
             break;
         case MMC5:
             switch (ch) {
             case 0:
                 if (!newParam.mmc5[chipID].sqrChannels[0].mask || newParam.mmc5[chipID].sqrChannels[ch].mask == null)
-                    Audio.setMMC5Mask(chipID, ch);
-                else Audio.resetMMC5Mask(chipID, ch);
+                    audio.audio.setMMC5Mask(chipID, ch);
+                else audio.audio.resetMMC5Mask(chipID, ch);
                 newParam.mmc5[chipID].sqrChannels[0].mask = !newParam.mmc5[chipID].sqrChannels[0].mask;
                 break;
             case 1:
                 if (!newParam.mmc5[chipID].sqrChannels[1].mask || newParam.mmc5[chipID].sqrChannels[ch].mask == null)
-                    Audio.setMMC5Mask(chipID, ch);
-                else Audio.resetMMC5Mask(chipID, ch);
+                    audio.audio.setMMC5Mask(chipID, ch);
+                else audio.audio.resetMMC5Mask(chipID, ch);
                 newParam.mmc5[chipID].sqrChannels[1].mask = !newParam.mmc5[chipID].sqrChannels[1].mask;
                 break;
             case 2:
                 if (!newParam.mmc5[chipID].pcmChannel.mask || newParam.mmc5[chipID].pcmChannel.mask == null)
-                    Audio.setMMC5Mask(chipID, ch);
-                else Audio.resetMMC5Mask(chipID, ch);
+                    audio.audio.setMMC5Mask(chipID, ch);
+                else audio.audio.resetMMC5Mask(chipID, ch);
                 newParam.mmc5[chipID].pcmChannel.mask = !newParam.mmc5[chipID].pcmChannel.mask;
                 break;
             }
@@ -6941,9 +6611,9 @@ public class frmMain extends JFrame {
         case VRC7:
             if (ch >= 0 && ch < 6) {
                 if (!newParam.vrc7[chipID].channels[ch].mask || newParam.vrc7[chipID].channels[ch].mask == null)
-                    Audio.setVRC7Mask(chipID, ch);
+                    audio.audio.setVRC7Mask(chipID, ch);
                 else
-                    Audio.resetVRC7Mask(chipID, ch);
+                    audio.audio.resetVRC7Mask(chipID, ch);
 
                 newParam.vrc7[chipID].channels[ch].mask = !newParam.vrc7[chipID].channels[ch].mask;
             }
@@ -6951,9 +6621,9 @@ public class frmMain extends JFrame {
         case K051649:
             if (ch >= 0 && ch < 5) {
                 if (!newParam.k051649[chipID].channels[ch].mask || newParam.k051649[chipID].channels[ch].mask == null)
-                    Audio.setK051649Mask(chipID, ch);
+                    audio.audio.setK051649Mask(chipID, ch);
                 else
-                    Audio.resetK051649Mask(chipID, ch);
+                    audio.audio.resetK051649Mask(chipID, ch);
 
                 newParam.k051649[chipID].channels[ch].mask = !newParam.k051649[chipID].channels[ch].mask;
             }
@@ -6961,9 +6631,9 @@ public class frmMain extends JFrame {
         case DMG:
             if (ch >= 0 && ch < 4) {
                 if (!newParam.dmg[chipID].channels[ch].mask || newParam.dmg[chipID].channels[ch].mask == null)
-                    Audio.setDMGMask(chipID, ch);
+                    audio.audio.setDMGMask(chipID, ch);
                 else
-                    Audio.resetDMGMask(chipID, ch);
+                    audio.audio.resetDMGMask(chipID, ch);
 
                 newParam.dmg[chipID].channels[ch].mask = !newParam.dmg[chipID].channels[ch].mask;
             }
@@ -6971,9 +6641,9 @@ public class frmMain extends JFrame {
         case VRC6:
             if (ch >= 0 && ch < 3) {
                 if (!newParam.vrc6[chipID].channels[ch].mask || newParam.vrc6[chipID].channels[ch].mask == null)
-                    Audio.setVRC6Mask(chipID, ch);
+                    audio.audio.setVRC6Mask(chipID, ch);
                 else
-                    Audio.resetVRC6Mask(chipID, ch);
+                    audio.audio.resetVRC6Mask(chipID, ch);
 
                 newParam.vrc6[chipID].channels[ch].mask = !newParam.vrc6[chipID].channels[ch].mask;
             }
@@ -6981,9 +6651,9 @@ public class frmMain extends JFrame {
         case N163:
             if (ch >= 0 && ch < 8) {
                 if (!newParam.n106[chipID].channels[ch].mask || newParam.n106[chipID].channels[ch].mask == null)
-                    Audio.setN163Mask(chipID, ch);
+                    audio.audio.setN163Mask(chipID, ch);
                 else
-                    Audio.resetN163Mask(chipID, ch);
+                    audio.audio.resetN163Mask(chipID, ch);
 
                 newParam.n106[chipID].channels[ch].mask = !newParam.n106[chipID].channels[ch].mask;
             }
@@ -6995,23 +6665,23 @@ public class frmMain extends JFrame {
         switch (chip) {
         case SN76489:
             newParam.sn76489[chipID].channels[ch].mask = false;
-            Audio.resetSN76489Mask(chipID, ch);
+            audio.audio.resetSN76489Mask(chipID, ch);
             break;
         case RF5C164:
             newParam.rf5c164[chipID].channels[ch].mask = false;
-            Audio.resetRF5C164Mask(chipID, ch);
+            audio.audio.resetRF5C164Mask(chipID, ch);
             break;
         case RF5C68:
             newParam.rf5c68[chipID].channels[ch].mask = false;
-            Audio.resetRF5C68Mask(chipID, ch);
+            audio.audio.resetRF5C68Mask(chipID, ch);
             break;
         case YM2151:
             newParam.ym2151[chipID].channels[ch].mask = false;
-            Audio.resetYM2151Mask(chipID, ch);
+            audio.audio.resetYM2151Mask(chipID, ch);
             break;
         case YM2203:
             if (ch >= 0 && ch < 9) {
-                Audio.resetYM2203Mask(chipID, ch);
+                audio.audio.resetYM2203Mask(chipID, ch);
                 newParam.ym2203[chipID].channels[ch].mask = false;
 
                 // FM(2ch) FMex
@@ -7025,15 +6695,15 @@ public class frmMain extends JFrame {
             break;
         case YM2413:
             newParam.ym2413[chipID].channels[ch].mask = false;
-            Audio.resetYM2413Mask(chipID, ch);
+            audio.audio.resetYM2413Mask(chipID, ch);
             break;
         case VRC7:
             newParam.vrc7[chipID].channels[ch].mask = false;
-            Audio.resetVRC7Mask(chipID, ch);
+            audio.audio.resetVRC7Mask(chipID, ch);
             break;
         case YM2608:
             if (ch >= 0 && ch < 14) {
-                Audio.resetYM2608Mask(chipID, ch);
+                audio.audio.resetYM2608Mask(chipID, ch);
                 newParam.ym2608[chipID].channels[ch].mask = false;
 
                 // FM(2ch) FMex
@@ -7051,7 +6721,7 @@ public class frmMain extends JFrame {
                 if (ch == 12) c = 13;
                 if (ch == 13) c = 12;
 
-                Audio.resetYM2610Mask(chipID, ch);
+                audio.audio.resetYM2610Mask(chipID, ch);
                 newParam.ym2610[chipID].channels[c].mask = false;
 
                 //FM(2ch) FMex
@@ -7065,7 +6735,7 @@ public class frmMain extends JFrame {
             break;
         case YM2612:
             if (ch >= 0 && ch < 9) {
-                Audio.resetYM2612Mask(chipID, ch);
+                audio.audio.resetYM2612Mask(chipID, ch);
                 newParam.ym2612[chipID].channels[ch].mask = false;
 
                 //FM(2ch) FMex
@@ -7079,82 +6749,82 @@ public class frmMain extends JFrame {
             break;
         case YM3526:
             newParam.ym3526[chipID].channels[ch].mask = false;
-            Audio.resetYM3526Mask(chipID, ch);
+            audio.audio.resetYM3526Mask(chipID, ch);
             break;
         case Y8950:
             newParam.y8950[chipID].channels[ch].mask = false;
-            Audio.resetY8950Mask(chipID, ch);
+            audio.audio.resetY8950Mask(chipID, ch);
             break;
         case YM3812:
             newParam.ym3812[chipID].channels[ch].mask = false;
-            Audio.resetYM3812Mask(chipID, ch);
+            audio.audio.resetYM3812Mask(chipID, ch);
             break;
         case YMF262:
             newParam.ymf262[chipID].channels[ch].mask = false;
-            Audio.resetYMF262Mask(chipID, ch);
+            audio.audio.resetYMF262Mask(chipID, ch);
             break;
         case YMF278B:
             newParam.ymf278b[chipID].channels[ch].mask = false;
-            Audio.resetYMF278BMask(chipID, ch);
+            audio.audio.resetYMF278BMask(chipID, ch);
             break;
         case C140:
             newParam.c140[chipID].channels[ch].mask = false;
-            if (ch < 24) Audio.resetC140Mask(chipID, ch);
+            if (ch < 24) audio.audio.resetC140Mask(chipID, ch);
             break;
         case PPZ8:
             newParam.ppz8[chipID].channels[ch].mask = false;
-            if (ch < 8) Audio.resetPPZ8Mask(chipID, ch);
+            if (ch < 8) audio.audio.resetPPZ8Mask(chipID, ch);
             break;
         case C352:
             newParam.c352[chipID].channels[ch].mask = false;
-            if (ch < 32) Audio.resetC352Mask(chipID, ch);
+            if (ch < 32) audio.audio.resetC352Mask(chipID, ch);
             break;
         case SEGAPCM:
             newParam.segaPcm[chipID].channels[ch].mask = false;
-            if (ch < 16) Audio.resetSegaPCMMask(chipID, ch);
+            if (ch < 16) audio.audio.resetSegaPCMMask(chipID, ch);
             break;
         case QSound:
             newParam.qSound[chipID].channels[ch].mask = false;
-            if (ch < 19) Audio.resetQSoundMask(chipID, ch);
+            if (ch < 19) audio.audio.resetQSoundMask(chipID, ch);
             break;
         case AY8910:
             newParam.ay8910[chipID].channels[ch].mask = false;
-            Audio.resetAY8910Mask(chipID, ch);
+            audio.audio.resetAY8910Mask(chipID, ch);
             break;
         case HuC6280:
             newParam.huc6280[chipID].channels[ch].mask = false;
-            Audio.resetHuC6280Mask(chipID, ch);
+            audio.audio.resetHuC6280Mask(chipID, ch);
             break;
         case K051649:
             newParam.k051649[chipID].channels[ch].mask = false;
-            Audio.resetK051649Mask(chipID, ch);
+            audio.audio.resetK051649Mask(chipID, ch);
             break;
         case OKIM6258:
             newParam.okim6258[chipID].mask = false;
-            Audio.resetOKIM6258Mask(chipID);
+            audio.audio.resetOKIM6258Mask(chipID);
             break;
         case OKIM6295:
             newParam.okim6295[chipID].channels[ch].mask = false;
-            Audio.resetOKIM6295Mask(chipID, ch);
+            audio.audio.resetOKIM6295Mask(chipID, ch);
             break;
         case NES:
             switch (ch) {
             case 0:
             case 1:
                 newParam.nesdmc[chipID].sqrChannels[ch].mask = false;
-                Audio.resetNESMask(chipID, ch);
+                audio.audio.resetNESMask(chipID, ch);
                 break;
             case 2:
                 newParam.nesdmc[chipID].triChannel.mask = false;
-                Audio.resetDMCMask(chipID, 0);
+                audio.audio.resetDMCMask(chipID, 0);
                 break;
             case 3:
                 newParam.nesdmc[chipID].noiseChannel.mask = false;
-                Audio.resetDMCMask(chipID, 1);
+                audio.audio.resetDMCMask(chipID, 1);
                 break;
             case 4:
                 newParam.nesdmc[chipID].dmcChannel.mask = false;
-                Audio.resetDMCMask(chipID, 2);
+                audio.audio.resetDMCMask(chipID, 2);
                 break;
             }
             break;
@@ -7162,21 +6832,21 @@ public class frmMain extends JFrame {
             switch (ch) {
             case 0:
                 newParam.nesdmc[chipID].triChannel.mask = false;
-                Audio.resetDMCMask(chipID, 0);
+                audio.audio.resetDMCMask(chipID, 0);
                 break;
             case 1:
                 newParam.nesdmc[chipID].noiseChannel.mask = false;
-                Audio.resetDMCMask(chipID, 1);
+                audio.audio.resetDMCMask(chipID, 1);
                 break;
             case 2:
                 newParam.nesdmc[chipID].dmcChannel.mask = false;
-                Audio.resetDMCMask(chipID, 2);
+                audio.audio.resetDMCMask(chipID, 2);
                 break;
             }
             break;
         case FDS:
             newParam.fds[chipID].channel.mask = false;
-            Audio.resetFDSMask(chipID);
+            audio.audio.resetFDSMask(chipID);
             break;
         case MMC5:
             switch (ch) {
@@ -7190,19 +6860,19 @@ public class frmMain extends JFrame {
                 newParam.mmc5[chipID].pcmChannel.mask = false;
                 break;
             }
-            Audio.resetMMC5Mask(chipID, ch);
+            audio.audio.resetMMC5Mask(chipID, ch);
             break;
         case DMG:
             newParam.dmg[chipID].channels[ch].mask = false;
-            Audio.resetDMGMask(chipID, ch);
+            audio.audio.resetDMGMask(chipID, ch);
             break;
         case VRC6:
             newParam.vrc6[chipID].channels[ch].mask = false;
-            Audio.resetVRC6Mask(chipID, ch);
+            audio.audio.resetVRC6Mask(chipID, ch);
             break;
         case N163:
             newParam.n106[chipID].channels[ch].mask = false;
-            Audio.resetN163Mask(chipID, ch);
+            audio.audio.resetN163Mask(chipID, ch);
             break;
         }
     }
@@ -7211,82 +6881,82 @@ public class frmMain extends JFrame {
         switch (chip) {
         case AY8910:
             if (mask)
-                Audio.setAY8910Mask(chipID, ch);
+                audio.audio.setAY8910Mask(chipID, ch);
             else
-                Audio.resetAY8910Mask(chipID, ch);
+                audio.audio.resetAY8910Mask(chipID, ch);
             newParam.ay8910[chipID].channels[ch].mask = mask;
             oldParam.ay8910[chipID].channels[ch].mask = !mask;
             break;
         case C140:
             if (mask)
-                Audio.setC140Mask(chipID, ch);
+                audio.audio.setC140Mask(chipID, ch);
             else
-                Audio.resetC140Mask(chipID, ch);
+                audio.audio.resetC140Mask(chipID, ch);
             newParam.c140[chipID].channels[ch].mask = mask;
             oldParam.c140[chipID].channels[ch].mask = !mask;
             break;
         case C352:
             if (mask)
-                Audio.setC352Mask(chipID, ch);
+                audio.audio.setC352Mask(chipID, ch);
             else
-                Audio.resetC352Mask(chipID, ch);
+                audio.audio.resetC352Mask(chipID, ch);
             newParam.c352[chipID].channels[ch].mask = mask;
             oldParam.c352[chipID].channels[ch].mask = !mask;
             break;
         case HuC6280:
             if (mask)
-                Audio.setHuC6280Mask(chipID, ch);
+                audio.audio.setHuC6280Mask(chipID, ch);
             else
-                Audio.resetHuC6280Mask(chipID, ch);
+                audio.audio.resetHuC6280Mask(chipID, ch);
             newParam.huc6280[chipID].channels[ch].mask = mask;
             oldParam.huc6280[chipID].channels[ch].mask = !mask;
             break;
         case RF5C164:
             if (mask)
-                Audio.setRF5C164Mask(chipID, ch);
+                audio.audio.setRF5C164Mask(chipID, ch);
             else
-                Audio.resetRF5C164Mask(chipID, ch);
+                audio.audio.resetRF5C164Mask(chipID, ch);
             newParam.rf5c164[chipID].channels[ch].mask = mask;
             oldParam.rf5c164[chipID].channels[ch].mask = !mask;
             break;
         case RF5C68:
             if (mask)
-                Audio.setRF5C68Mask(chipID, ch);
+                audio.audio.setRF5C68Mask(chipID, ch);
             else
-                Audio.resetRF5C68Mask(chipID, ch);
+                audio.audio.resetRF5C68Mask(chipID, ch);
             newParam.rf5c68[chipID].channels[ch].mask = mask;
             oldParam.rf5c68[chipID].channels[ch].mask = !mask;
             break;
         case SEGAPCM:
             if (mask)
-                Audio.setSegaPCMMask(chipID, ch);
+                audio.audio.setSegaPCMMask(chipID, ch);
             else
-                Audio.resetSegaPCMMask(chipID, ch);
+                audio.audio.resetSegaPCMMask(chipID, ch);
             newParam.segaPcm[chipID].channels[ch].mask = mask;
             oldParam.segaPcm[chipID].channels[ch].mask = !mask;
             break;
         case QSound:
             if (mask)
-                Audio.setQSoundMask(chipID, ch);
+                audio.audio.setQSoundMask(chipID, ch);
             else
-                Audio.resetQSoundMask(chipID, ch);
+                audio.audio.resetQSoundMask(chipID, ch);
             newParam.qSound[chipID].channels[ch].mask = mask;
             oldParam.qSound[chipID].channels[ch].mask = !mask;
             break;
         case YM2151:
             if (mask)
-                Audio.setYM2151Mask(chipID, ch);
+                audio.audio.setYM2151Mask(chipID, ch);
             else
-                Audio.resetYM2151Mask(chipID, ch);
+                audio.audio.resetYM2151Mask(chipID, ch);
             newParam.ym2151[chipID].channels[ch].mask = mask;
             oldParam.ym2151[chipID].channels[ch].mask = !mask;
             break;
         case YM2203:
             if (ch >= 0 && ch < 9) {
                 if (mask)
-                    Audio.setYM2203Mask(chipID, ch);
+                    audio.audio.setYM2203Mask(chipID, ch);
                 else
-                    Audio.resetYM2203Mask(chipID, ch);
+                    audio.audio.resetYM2203Mask(chipID, ch);
 
                 newParam.ym2203[chipID].channels[ch].mask = mask;
                 oldParam.ym2203[chipID].channels[ch].mask = !mask;
@@ -7307,9 +6977,9 @@ public class frmMain extends JFrame {
         case YM2413:
             if (ch >= 0 && ch < 14) {
                 if (mask)
-                    Audio.setYM2413Mask(chipID, ch);
+                    audio.audio.setYM2413Mask(chipID, ch);
                 else
-                    Audio.resetYM2413Mask(chipID, ch);
+                    audio.audio.resetYM2413Mask(chipID, ch);
 
                 newParam.ym2413[chipID].channels[ch].mask = mask;
                 oldParam.ym2413[chipID].channels[ch].mask = !mask;
@@ -7318,9 +6988,9 @@ public class frmMain extends JFrame {
         case YM2608:
             if (ch >= 0 && ch < 14) {
                 //if (mask)
-                //    Audio.setYM2608Mask(chipID, ch);
+                //    audio.audio.setYM2608Mask(chipID, ch);
                 //else
-                //    Audio.resetYM2608Mask(chipID, ch);
+                //    audio.audio.resetYM2608Mask(chipID, ch);
 
                 newParam.ym2608[chipID].channels[ch].mask = mask;
                 oldParam.ym2608[chipID].channels[ch].mask = !mask;
@@ -7345,9 +7015,9 @@ public class frmMain extends JFrame {
                 if (ch == 13) c = 12;
 
                 if (mask)
-                    Audio.setYM2610Mask(chipID, ch);
+                    audio.audio.setYM2610Mask(chipID, ch);
                 else
-                    Audio.resetYM2610Mask(chipID, ch);
+                    audio.audio.resetYM2610Mask(chipID, ch);
                 newParam.ym2610[chipID].channels[c].mask = mask;
                 oldParam.ym2610[chipID].channels[c].mask = !mask;
 
@@ -7367,9 +7037,9 @@ public class frmMain extends JFrame {
         case YM2612:
             if (ch >= 0 && ch < 9) {
                 if (mask)
-                    Audio.setYM2612Mask(chipID, ch);
+                    audio.audio.setYM2612Mask(chipID, ch);
                 else
-                    Audio.resetYM2612Mask(chipID, ch);
+                    audio.audio.resetYM2612Mask(chipID, ch);
 
                 newParam.ym2612[chipID].channels[ch].mask = mask;
                 oldParam.ym2612[chipID].channels[ch].mask = null;
@@ -7390,9 +7060,9 @@ public class frmMain extends JFrame {
         case YM3526:
             if (ch >= 0 && ch < 14) {
                 if (mask)
-                    Audio.setYM3526Mask(chipID, ch);
+                    audio.audio.setYM3526Mask(chipID, ch);
                 else
-                    Audio.resetYM3526Mask(chipID, ch);
+                    audio.audio.resetYM3526Mask(chipID, ch);
 
                 newParam.ym3526[chipID].channels[ch].mask = mask;
                 oldParam.ym3526[chipID].channels[ch].mask = !mask;
@@ -7401,9 +7071,9 @@ public class frmMain extends JFrame {
         case Y8950:
             if (ch >= 0 && ch < 15) {
                 if (mask)
-                    Audio.setY8950Mask(chipID, ch);
+                    audio.audio.setY8950Mask(chipID, ch);
                 else
-                    Audio.resetY8950Mask(chipID, ch);
+                    audio.audio.resetY8950Mask(chipID, ch);
 
                 newParam.y8950[chipID].channels[ch].mask = mask;
                 oldParam.y8950[chipID].channels[ch].mask = !mask;
@@ -7412,9 +7082,9 @@ public class frmMain extends JFrame {
         case YM3812:
             if (ch >= 0 && ch < 14) {
                 if (mask)
-                    Audio.setYM3812Mask(chipID, ch);
+                    audio.audio.setYM3812Mask(chipID, ch);
                 else
-                    Audio.resetYM3812Mask(chipID, ch);
+                    audio.audio.resetYM3812Mask(chipID, ch);
 
                 newParam.ym3812[chipID].channels[ch].mask = mask;
                 oldParam.ym3812[chipID].channels[ch].mask = !mask;
@@ -7423,9 +7093,9 @@ public class frmMain extends JFrame {
         case YMF262:
             if (ch >= 0 && ch < 24) {
                 if (mask)
-                    Audio.setYMF262Mask(chipID, ch);
+                    audio.audio.setYMF262Mask(chipID, ch);
                 else
-                    Audio.resetYMF262Mask(chipID, ch);
+                    audio.audio.resetYMF262Mask(chipID, ch);
 
                 newParam.ymf262[chipID].channels[ch].mask = mask;
                 oldParam.ymf262[chipID].channels[ch].mask = !mask;
@@ -7434,9 +7104,9 @@ public class frmMain extends JFrame {
         case YMF278B:
             if (ch >= 0 && ch < 47) {
                 if (mask)
-                    Audio.setYMF278BMask(chipID, ch);
+                    audio.audio.setYMF278BMask(chipID, ch);
                 else
-                    Audio.resetYMF278BMask(chipID, ch);
+                    audio.audio.resetYMF278BMask(chipID, ch);
 
                 newParam.ymf278b[chipID].channels[ch].mask = mask;
                 oldParam.ymf278b[chipID].channels[ch].mask = !mask;
@@ -7444,41 +7114,41 @@ public class frmMain extends JFrame {
             break;
         case SN76489:
             if (mask)
-                Audio.setSN76489Mask(chipID, ch);
+                audio.audio.setSN76489Mask(chipID, ch);
             else
-                Audio.resetSN76489Mask(chipID, ch);
+                audio.audio.resetSN76489Mask(chipID, ch);
             newParam.sn76489[chipID].channels[ch].mask = mask;
             oldParam.sn76489[chipID].channels[ch].mask = !mask;
             break;
         case OKIM6295:
             if (mask)
-                Audio.setOKIM6295Mask(chipID, ch);
+                audio.audio.setOKIM6295Mask(chipID, ch);
             else
-                Audio.resetOKIM6295Mask(chipID, ch);
+                audio.audio.resetOKIM6295Mask(chipID, ch);
             newParam.okim6295[chipID].channels[ch].mask = mask;
             oldParam.okim6295[chipID].channels[ch].mask = !mask;
             break;
         case DMG:
             if (mask)
-                Audio.setDMGMask(chipID, ch);
+                audio.audio.setDMGMask(chipID, ch);
             else
-                Audio.resetDMGMask(chipID, ch);
+                audio.audio.resetDMGMask(chipID, ch);
             newParam.dmg[chipID].channels[ch].mask = mask;
             oldParam.dmg[chipID].channels[ch].mask = !mask;
             break;
         case VRC6:
             if (mask)
-                Audio.setVRC6Mask(chipID, ch);
+                audio.audio.setVRC6Mask(chipID, ch);
             else
-                Audio.resetVRC6Mask(chipID, ch);
+                audio.audio.resetVRC6Mask(chipID, ch);
             newParam.vrc6[chipID].channels[ch].mask = mask;
             oldParam.vrc6[chipID].channels[ch].mask = !mask;
             break;
         case N163:
             if (mask)
-                Audio.setN163Mask(chipID, ch);
+                audio.audio.setN163Mask(chipID, ch);
             else
-                Audio.resetN163Mask(chipID, ch);
+                audio.audio.resetN163Mask(chipID, ch);
             newParam.n106[chipID].channels[ch].mask = mask;
             oldParam.n106[chipID].channels[ch].mask = !mask;
             break;
@@ -7489,36 +7159,36 @@ public class frmMain extends JFrame {
         if (ch == 0 || ch == 1) {
             if (param[chipID].sqrChannels[ch].mask) {
                 newParam.nesdmc[chipID].sqrChannels[ch].mask = true;
-                Audio.setNESMask(chipID, ch);
+                audio.audio.setNESMask(chipID, ch);
             } else {
                 newParam.nesdmc[chipID].sqrChannels[ch].mask = false;
-                Audio.resetNESMask(chipID, ch);
+                audio.audio.resetNESMask(chipID, ch);
             }
         } else if (ch == 2) {
             if (param[chipID].triChannel.mask) {
                 newParam.nesdmc[chipID].triChannel.mask = true;
-                Audio.setDMCMask(chipID, 0);
+                audio.audio.setDMCMask(chipID, 0);
             } else {
                 newParam.nesdmc[chipID].triChannel.mask = false;
-                Audio.resetDMCMask(chipID, 0);
+                audio.audio.resetDMCMask(chipID, 0);
             }
 
         } else if (ch == 3) {
             if (param[chipID].noiseChannel.mask) {
                 newParam.nesdmc[chipID].noiseChannel.mask = true;
-                Audio.setDMCMask(chipID, 1);
+                audio.audio.setDMCMask(chipID, 1);
             } else {
                 newParam.nesdmc[chipID].noiseChannel.mask = false;
-                Audio.resetDMCMask(chipID, 1);
+                audio.audio.resetDMCMask(chipID, 1);
             }
 
         } else if (ch == 4) {
             if (param[chipID].dmcChannel.mask) {
                 newParam.nesdmc[chipID].dmcChannel.mask = true;
-                Audio.setDMCMask(chipID, 2);
+                audio.audio.setDMCMask(chipID, 2);
             } else {
                 newParam.nesdmc[chipID].dmcChannel.mask = false;
-                Audio.resetDMCMask(chipID, 2);
+                audio.audio.resetDMCMask(chipID, 2);
             }
         }
     }
@@ -7693,7 +7363,7 @@ public class frmMain extends JFrame {
         ym2612MIDI.changeSelectedParamValue(n);
     }
 
-    private void LoadPresetMixerBalance(String playingFileName, String playingArcFileName, FileFormat format) {
+    private void loadPresetMixerBalance(String playingFileName, String playingArcFileName, FileFormat format) {
         if (!setting.getAutoBalance().getUseThis()) return;
 
         try {
@@ -7704,7 +7374,7 @@ public class frmMain extends JFrame {
             String fn = "";
             String defMbc = "";
 
-            //曲ごとのプリセットを読み込むモード
+            // 曲ごとのプリセットを読み込むモード
             if (setting.getAutoBalance().getLoadSongBalance()) {
                 if (setting.getAutoBalance().getSamePositionAsSongData()) {
                     fullPath = getDirectoryName(playingFileName);
@@ -7726,78 +7396,27 @@ public class frmMain extends JFrame {
                 }
             }
 
-            //ドライバごとのプリセットを読み込むモード
+            // ドライバごとのプリセットを読み込むモード
             if (setting.getAutoBalance().getLoadDriverBalance() && fn.isEmpty()) {
-                switch (format) {
-                case VGM:
-                    fn = "DriverBalance_VGM.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_VGM();
-                    break;
-                case XGM:
-                    fn = "DriverBalance_XGM.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_XGM();
-                    break;
-                case ZGM:
-                    fn = "DriverBalance_ZGM.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_ZGM();
-                    break;
-                case HES:
-                    fn = "DriverBalance_HES.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_HES();
-                    break;
-                case NSF:
-                    fn = "DriverBalance_NSF.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_NSF();
-                    break;
-                case NRT:
-                    fn = "DriverBalance_NRT.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_NRT();
-                    break;
-                case MDR:
-                    fn = "DriverBalance_MDR.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_MDR();
-                    break;
-                case MDX:
-                    fn = "DriverBalance_MDX.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_MDX();
-                    break;
-                case MND:
-                    fn = "DriverBalance_MND.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_MND();
-                    break;
-                case S98:
-                    fn = "DriverBalance_S98.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_S98();
-                    break;
-                case SID:
-                    fn = "DriverBalance_SID.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_SID();
-                    break;
-                case MUC:
-                    fn = "DriverBalance_MUC.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_MUC();
-                    break;
-                case MUB:
-                    fn = "DriverBalance_MUB.mbc";
-                    defMbc = Resources.getDefaultVolumeBalance_MUB();
-                    break;
+                String[] fns = format.getPresetMixerBalance();
+                if (fns != null) {
+                    fn = fns[0];
+                    defMbc = fns[1];
+
+                    fullPath = Path.combine(fullPath, fn);
                 }
-
-                fullPath = Path.combine(fullPath, fn);
-
             }
 
-            if (fn.equals("")) return;
+            if (fn == null || fn.isEmpty()) return;
 
-
-            //存在確認。無い場合は作成。
+            // 存在確認。無い場合は作成。
             if (!File.exists(fullPath) && !defMbc.equals("")) File.writeAllText(fullPath, defMbc);
-            //データフォルダに存在するファイルを読み込む
+            // データフォルダに存在するファイルを読み込む
             balance = Setting.Balance.load(fullPath);
 
             if (balance == null) return;
 
-            //ミキサーバランス変更処理
+            // ミキサーバランス変更処理
             setting.setBalance(balance);
             if (frmMixer2 != null) frmMixer2.update();
 //            Application.DoEvents();
@@ -7817,43 +7436,9 @@ public class frmMain extends JFrame {
             String fn = "";
 
             if (isDriverBalance) {
-                switch (format) {
-                case VGM:
-                    fn = "DriverBalance_VGM.mbc";
-                    break;
-                case XGM:
-                    fn = "DriverBalance_XGM.mbc";
-                    break;
-                case HES:
-                    fn = "DriverBalance_HES.mbc";
-                    break;
-                case NSF:
-                    fn = "DriverBalance_NSF.mbc";
-                    break;
-                case NRT:
-                    fn = "DriverBalance_NRT.mbc";
-                    break;
-                case MDR:
-                    fn = "DriverBalance_MDR.mbc";
-                    break;
-                case MDX:
-                    fn = "DriverBalance_MDX.mbc";
-                    break;
-                case MND:
-                    fn = "DriverBalance_MND.mbc";
-                    break;
-                case S98:
-                    fn = "DriverBalance_S98.mbc";
-                    break;
-                case SID:
-                    fn = "DriverBalance_SID.mbc";
-                    break;
-                case MUC:
-                    fn = "DriverBalance_MUC.mbc";
-                    break;
-                case MUB:
-                    fn = "DriverBalance_MUB.mbc";
-                    break;
+                String[] fns = format.getPresetMixerBalance();
+                if (fns != null) {
+                    fn = fns[0];
                 }
 
                 fullPath = Path.combine(fullPath, fn);
@@ -7898,7 +7483,6 @@ public class frmMain extends JFrame {
                     nativeHookException.printStackTrace();
                 }
             }
-
 
             if (keyHookMeth != null) {
                 keyHookMeth.accept(e);
@@ -7979,20 +7563,20 @@ public class frmMain extends JFrame {
         String[] fn = fileOpen(true);
 
         if (fn != null)
-            AddFileAndPlay(fn);
+            addFileAndPlay(fn);
     }
 
-    private void AddFileAndPlay(String[] fn) {
-        if (Audio.getIsPaused()) {
-            Audio.pause();
+    private void addFileAndPlay(String[] fn) {
+        if (audio.getIsPaused()) {
+            audio.pause();
         }
 
         if (fn.length == 1) {
             frmPlayList.stop();
 
-            frmPlayList.getPlayList().AddFile(fn[0]);
+            frmPlayList.getPlayList().addFile(fn[0]);
 
-            if (mdplayer.Common.FileFormat.checkExt(fn[0]) != FileFormat.M3U && mdplayer.Common.FileFormat.checkExt(fn[0]) != FileFormat.ZIP) {
+            if (!(FileFormat.getFileFormat(fn[0]) instanceof M3UFileFormat) && !(FileFormat.getFileFormat(fn[0]) instanceof ZIPFileFormat)) {
                 if (!loadAndPlay(0, 0, fn[0], "")) return;
                 frmPlayList.setStart(-1);
             }
@@ -8004,7 +7588,7 @@ public class frmMain extends JFrame {
 
             try {
                 for (String f : fn) {
-                    frmPlayList.getPlayList().AddFile(f);
+                    frmPlayList.getPlayList().addFile(f);
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -8362,12 +7946,12 @@ public class frmMain extends JFrame {
     }
 
     private void updateOpeButtonActiveState() {
-        lstOpeButtonActive[1] = (Audio.isStopped()); // STOP button
-        lstOpeButtonActive[2] = Audio.isStopped() ? false : Audio.getIsPaused(); // PAUSE button
-        lstOpeButtonActive[3] = Audio.isStopped() ? false : Audio.getIsFadeOut(); // Fade button
-        lstOpeButtonActive[5] = Audio.getIsSlow(); // Slowbutton
-        lstOpeButtonActive[6] = Audio.getIsPaused() ? false : (Audio.getIsSlow() || Audio.getIsFF() || Audio.getIsFadeOut() ? false : !Audio.isStopped()); // PLAY button
-        lstOpeButtonActive[7] = Audio.getIsFF(); // FFbutton
+        lstOpeButtonActive[1] = (audio.isStopped()); // STOP button
+        lstOpeButtonActive[2] = audio.isStopped() ? false : audio.getIsPaused(); // PAUSE button
+        lstOpeButtonActive[3] = audio.isStopped() ? false : audio.getIsFadeOut(); // Fade button
+        lstOpeButtonActive[5] = audio.getIsSlow(); // Slowbutton
+        lstOpeButtonActive[6] = audio.getIsPaused() ? false : (audio.getIsSlow() || audio.getIsFF() || audio.getIsFadeOut() ? false : !audio.isStopped()); // PLAY button
+        lstOpeButtonActive[7] = audio.getIsFF(); // FFbutton
     }
 
     private void initializeComponent() {

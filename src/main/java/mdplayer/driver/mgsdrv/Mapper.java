@@ -3,7 +3,6 @@ package mdplayer.driver.mgsdrv;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
 import konamiman.z80.utils.Bit;
-import mdplayer.Log;
 import vavi.util.Debug;
 
 

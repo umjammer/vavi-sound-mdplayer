@@ -5,12 +5,10 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import dotnet4j.util.compat.EventHandler;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.Log;
 import mdplayer.MIDIParam;
 import mdplayer.Setting;
 import mdplayer.MidiOutInfo;
@@ -465,7 +463,7 @@ public class VstMng {
             ctx.Set("PluginPath", pluginPath);
             ctx.Set("HostCmdStub", hostCmdStub);
 
-            // actually open the plugin itself
+            // actually open the chips itself
             ctx.open();
 
             return ctx;
@@ -480,7 +478,7 @@ public class VstMng {
     private static void HostCmdStub_PluginCalled(Object sender, PluginCalledEventArgs e) {
         HostCommandStub hostCmdStub = (HostCommandStub) sender;
 
-        // can be null when called from inside the plugin main entry point.
+        // can be null when called from inside the chips main entry point.
         if (hostCmdStub.PluginContext.PluginInfo != null) {
             Debug.println("Plugin " + hostCmdStub.PluginContext.PluginInfo.PluginID + " called:" + e.getMessage());
         } else {
@@ -617,7 +615,7 @@ public class VstMng {
     }
 
     /**
-     * The HostCommandStub class represents the part of the host that a plugin can call.
+     * The HostCommandStub class represents the part of the host that a chips can call.
      */
     public static class HostCommandStub implements IVstHostCommandStub {
         private Setting setting;

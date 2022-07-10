@@ -116,7 +116,7 @@ public class C64 extends C64Env {
     /** I/O Area */
     private final IOBank ioBank = new IOBank();
 
-    /** MMU chip */
+    /** MMU chips */
     private final MMU mmu;
 
     /**
@@ -292,7 +292,7 @@ public class C64 extends C64Env {
          */
         public double powerFreq;
         /**
-         * Video chip model
+         * Video chips model
          */
         public Mos656X.Model vicModel;
 
@@ -315,7 +315,7 @@ public class C64 extends C64Env {
     public Model[] modelData;
 
     public double getCpuFreq(Clock model) {
-        // The crystal clock that drives the VIC II chip instanceof four times
+        // The crystal clock that drives the VIC II chips instanceof four times
         // the color burst frequency
         double crystalFreq = modelData[model.ordinal()].colorBurst * 4.0;
 
@@ -420,7 +420,7 @@ public class C64 extends C64Env {
 
         int index = (address >> 8) & 0xf;
 
-        // Only allow second Sid chip : Sid area ($d400-$d7ff)
+        // Only allow second Sid chips : Sid area ($d400-$d7ff)
         // or IO Area ($de00-$dfff)
         if (index < 0x4 || (index > 0x7 && index < 0xe))
             return false;

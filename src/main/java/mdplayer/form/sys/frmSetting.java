@@ -59,11 +59,12 @@ import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.Common.EnmRealChipType;
-import mdplayer.Log;
 import mdplayer.Manufacturers;
 import mdplayer.MidiOutInfo;
 import mdplayer.Setting;
 import mdplayer.Setting.ChipType2;
+import mdplayer.chips.RealChipPlugin;
+import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
 import vavi.util.Debug;
 
@@ -861,7 +862,7 @@ public class frmSetting extends JDialog {
         if (rbS != null) rbS.setEnabled(false);
         cmbS.setEnabled(false);
 
-        List<ChipType2> lstChip = Audio.getRealChipList(realType);
+        List<ChipType2> lstChip = RealChipPlugin.getRealChipList(realType);
         if (lstChip == null || lstChip.size() < 1) return;
 
         for (ChipType2 ct : lstChip) {
@@ -2341,7 +2342,7 @@ public class frmSetting extends JDialog {
 //            return;
 //        }
 //
-//        VstInfo s = Audio.getVSTInfo(ofd.getSelectedFile().getName());
+//        VstInfo s = audio.getVSTInfo(ofd.getSelectedFile().getName());
 //        if (s == null) return;
 //
 //        setting.getVst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));

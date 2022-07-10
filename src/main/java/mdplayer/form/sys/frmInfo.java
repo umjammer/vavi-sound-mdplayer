@@ -26,6 +26,7 @@ import dotnet4j.util.compat.Tuple3;
 import mdplayer.Audio;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
+import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
 import vavi.util.Debug;
 
@@ -73,7 +74,7 @@ public class frmInfo extends JFrame {
         lblUsedChips.setText("");
         rtbLyrics.setText(null);
 
-        Vgm.Gd3 gd3 = Audio.getGd3();
+        Vgm.Gd3 gd3 = Audio.getInstance().getGd3();
         if (gd3 == null) return;
 
         lblTitle.setText(gd3.trackName);
@@ -138,7 +139,7 @@ public class frmInfo extends JFrame {
     private void timer_Tick(ActionEvent ev) {
         if (lyrics == null || lyrics.size() < 1) return;
 
-        long cnt = Audio.getDriverCounter();
+        long cnt = Audio.getInstance().getDriverCounter();
 
         try {
             if (cnt >= lyrics.get(lyricsIndex).getItem1()) {

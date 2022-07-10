@@ -87,7 +87,7 @@ public class DacControl {
         case 0x01: // YM2413+
             chipRegister.setYM2413Register(chipId, offset, data, model);
             break;
-        case 0x02: // Ym2612
+        case 0x02: // Ym2612Inst
             chipRegister.setYM2612Register(chipId, port, offset, data, model, -1);
             break;
         case 0x03: // YM2151+
@@ -108,7 +108,7 @@ public class DacControl {
         case 0x0A: // YM3526+
             chipRegister.setYM3526Register(chipId, offset, data, model);
             break;
-        case 0x0B: // Y8950+
+        case 0x0B: // Y8950Inst+
             chipRegister.setY8950Register(chipId, offset, data, model);
             break;
         case 0x0C: // YMF262+
@@ -142,7 +142,7 @@ public class DacControl {
             if (model == EnmModel.VirtualModel)  // Debug.printf("[DAC]");
                 chipRegister.writeOKIM6258(chipId, offset, data, model);
             break;
-        case 0x1b: // HuC6280
+        case 0x1b: // OotakeHuC6280
             chipRegister.setHuC6280Register(chipId, offset, data, model);
             break;
         }
@@ -162,7 +162,7 @@ public class DacControl {
             return (int) (((long) multiplicand * multiplier + divisor / 2) / divisor);
         }
 
-        // Commands sent to dest-chip
+        // Commands sent to dest-chips
         public byte dstChipType2;
         public byte dstChipID;
         public int dstCommand;
@@ -207,18 +207,18 @@ public class DacControl {
             if (dataStart + realPos >= dataLen)
                 return;
 
-            //if (! chip->Reverse)
-            //ChipData00 = chip.data[(chip.DataStart + chip.RealPos)];
-            //ChipData01 = chip.data[(chip.DataStart + chip.RealPos+1)];
+            //if (! chips->Reverse)
+            //ChipData00 = chips.data[(chips.DataStart + chips.RealPos)];
+            //ChipData01 = chips.data[(chips.DataStart + chips.RealPos+1)];
             //else
-            //	ChipData = chip->data + (chip->DataStart + chip->CmdsToSend - 1 - chip->Pos);
+            //	ChipData = chips->data + (chips->DataStart + chips->CmdsToSend - 1 - chips->Pos);
             switch (dstChipType2) {
             // Support for the important chips
-            case 0x02: // Ym2612 (16-bit Register (actually 9 Bit), 8-bit data)
+            case 0x02: // Ym2612Inst (16-bit Register (actually 9 Bit), 8-bit data)
                 port = (byte) ((dstCommand & 0xFF00) >> 8);
                 command = (byte) ((dstCommand & 0x00FF) >> 0);
                 data = this.Data[(dataStart + realPos)];
-                //if (model == enmModel.RealModel) Debug.printf(String.format("%x %x", data, chip.RealPos));
+                //if (model == enmModel.RealModel) Debug.printf(String.format("%x %x", data, chips.RealPos));
 
                 writeChipReg(dstChipType2, dstChipID, port, command, data);
                 break;
@@ -268,7 +268,7 @@ public class DacControl {
             case 0x06: // YM2203
             case 0x09: // YM3812
             case 0x0A: // YM3526
-            case 0x0B: // Y8950
+            case 0x0B: // Y8950Inst
             case 0x0F: // YMZ280B
             case 0x12: // AY8910
             case 0x13: // GameBoy DMG
@@ -276,8 +276,8 @@ public class DacControl {
     //    	case 0x15: // MultiPCM
             case 0x16: // UPD7759
             case 0x17: // OKIM6258
-            case 0x1D: // K053260 - TODO: Verify
-            case 0x1E: // Pokey - TODO: Verify
+            case 0x1D: // K053260Inst - TODO: Verify
+            case 0x1E: // PokeyInst - TODO: Verify
                 command = (byte) ((dstCommand & 0x00FF) >> 0);
                 data = this.Data[dataStart + realPos];
                 writeChipReg(dstChipType2, dstChipID, (byte) 0x00, command, data);
@@ -288,9 +288,9 @@ public class DacControl {
             case 0x0C: // YMF262
             case 0x0D: // YMF278B
             case 0x0E: // YMF271
-            case 0x19: // K051649 - TODO: Verify
-            case 0x1A: // K054539 - TODO: Verify
-            case 0x1C: // C140 - TODO: Verify
+            case 0x19: // K051649Inst - TODO: Verify
+            case 0x1A: // K054539Inst - TODO: Verify
+            case 0x1C: // C140Inst - TODO: Verify
                 port = (byte) ((dstCommand & 0xFF00) >> 8);
                 command = (byte) ((dstCommand & 0x00FF) >> 0);
                 data = this.Data[dataStart + realPos];
@@ -299,7 +299,7 @@ public class DacControl {
             // Generic support: 8-bit Register with Channel Select, 8-bit data
             case 0x05: // RF5C68
             case 0x10: // RF5C164
-            case 0x1B: // HuC6280
+            case 0x1B: // OotakeHuC6280
                 port = (byte) ((dstCommand & 0xFF00) >> 8);
                 command = (byte) ((dstCommand & 0x00FF) >> 0);
                 data = this.Data[dataStart + realPos];
@@ -331,7 +331,7 @@ public class DacControl {
                 }
                 break;
             // Generic support: 8-bit Register, 16-bit data
-            case 0x1F: // QSound
+            case 0x1F: // QSoundInst
                 command = (byte) ((dstCommand & 0x00FF) >> 0);
                 writeChipReg(dstChipType2, dstChipID, this.Data[dataStart + realPos], this.Data[dataStart + realPos + 1], command);
                 break;
@@ -430,9 +430,9 @@ public class DacControl {
         }
 
         public void setup(byte chType, byte chNum, int command) {
-            this.dstChipType2 = chType; // TypeID (e.g. 0x02 for Ym2612)
-            this.dstChipID = chNum; // chip number (to send commands to 1st or 2nd chip)
-            this.dstCommand = command; // Port and command (would be 0x02A for Ym2612)
+            this.dstChipType2 = chType; // TypeID (e.g. 0x02 for Ym2612Inst)
+            this.dstChipID = chNum; // chips number (to send commands to 1st or 2nd chips)
+            this.dstCommand = command; // Port and command (would be 0x02A for Ym2612Inst)
 
             switch (this.dstChipType2) {
             case 0x00: // SN76496
@@ -441,11 +441,11 @@ public class DacControl {
                 else
                     this.cmdSize = 0x02; // Frequency Write
                 break;
-            case 0x02: // Ym2612
+            case 0x02: // Ym2612Inst
                 this.cmdSize = 0x01;
                 break;
             case 0x11: // PWM
-            case 0x1F: // QSound
+            case 0x1F: // QSoundInst
                 this.cmdSize = 0x02;
                 break;
             default:

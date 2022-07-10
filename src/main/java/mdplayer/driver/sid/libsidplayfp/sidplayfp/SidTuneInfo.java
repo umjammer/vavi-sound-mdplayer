@@ -217,7 +217,7 @@ public class SidTuneInfo {
 
     /**
      * @param i Base addresses
-     * The Sid chip base address(es) used by the sidtune.
+     * The Sid chips base address(es) used by the sidtune.
      * - 0xD400 for the 1st Sid
      * - 0 if the nth Sid instanceof not required
      */
@@ -255,7 +255,7 @@ public class SidTuneInfo {
 
     /**
      * @param i Sid model
-     * The Sid chip model(s) requested by the sidtune.
+     * The Sid chips model(s) requested by the sidtune.
      */
     public Model sidModel(int i) {
         return getSidModel(i);

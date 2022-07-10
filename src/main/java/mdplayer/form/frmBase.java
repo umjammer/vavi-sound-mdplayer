@@ -4,12 +4,15 @@ package mdplayer.form;
 import java.awt.Dimension;
 import javax.swing.JFrame;
 
+import mdplayer.Audio;
 import mdplayer.form.sys.frmMain;
+import mdplayer.plugin.BasePlugin;
 
 
 public class frmBase extends JFrame {
 
     public frmMain parent = null;
+    protected Audio audio;
 
     /**
      //Required method for Designer support - do not modify

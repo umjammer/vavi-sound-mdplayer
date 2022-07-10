@@ -5,20 +5,21 @@ import java.nio.ShortBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import dotnet4j.util.compat.Tuple;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
-import mdplayer.Log;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mxdrv.XMemory;
-import mdsound.MPcmX68k;
+import mdsound.instrument.X68kMPcmInst;
+import mdsound.chips.MPcm;
 import vavi.util.Debug;
+
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 
 
 public class MnDrv extends BaseDriver {
@@ -155,7 +156,7 @@ public class MnDrv extends BaseDriver {
             lst.add(buf[i]);
             i++;
         }
-        String n = new String(mdsound.Common.toByteArray(lst), Charset.forName("MS932"));
+        String n = new String(toByteArray(lst), Charset.forName("MS932"));
         gd3.trackName = n;
         gd3.trackNameJ = n;
 
@@ -280,9 +281,9 @@ public class MnDrv extends BaseDriver {
     public FMTimer timerOPM;
     public FMTimer timerOPN;
 
-    MPcmX68k.MPcm.PCM tbl = new MPcmX68k.MPcm.PCM();
+    MPcm.PCM tbl = new MPcm.PCM();
     byte[] vtbl = new byte[128 * 2];
-    public MPcmX68k mpcm;
+    public X68kMPcmInst mpcm;
 
     // トラップ処理(実質MPCM制御)
     public void trap(int n) {

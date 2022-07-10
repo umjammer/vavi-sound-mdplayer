@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -25,6 +24,7 @@ import mdplayer.MDChipParams;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
+import mdsound.instrument.Ym3812Inst;
 
 
 public class frmYM3812 extends frmBase {
@@ -124,12 +124,12 @@ public class frmYM3812 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] ym3812Register = Audio.getYM3812Register(chipID);
+        int[] ym3812Register = audio.getYM3812Register(chipID);
         MDChipParams.Channel nyc;
         int slot = 0;
-        mdplayer.ChipRegister.ChipKeyInfo ki = Audio.getYM3812KeyInfo(chipID);
+        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getYM3812KeyInfo(chipID);
 
-        mdsound.MDSound.Chip chipInfo = Audio.getMDSChipInfo(mdsound.MDSound.InstrumentType.YM3812);
+        mdsound.MDSound.Chip chipInfo = audio.getMDSChipInfo(Ym3812Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock; //3579545 -> Default master clock
 
         //FM

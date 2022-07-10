@@ -40,7 +40,7 @@ public class frmVST extends JDialog {
     }
 
     /**
-     * Shows the custom plugin editor UI.
+     * Shows the custom chips editor UI.
      */
     public int ShowDialog() {
 

@@ -16,16 +16,16 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
-import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.K051649;
+import mdsound.chips.K051649;
+
+import static mdplayer.Common.searchSSGNote;
 
 
 public class frmK051649 extends frmBase {
@@ -57,7 +57,7 @@ public class frmK051649 extends frmBase {
         this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
 //        this.MaximizeBox = false;
         this.setName("frmK051649");
-        this.setTitle("K051649");
+        this.setTitle("K051649Inst");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
@@ -141,22 +141,21 @@ public class frmK051649 extends frmBase {
     };
 
     public void screenChangeParams() {
-        K051649.K051649State chip = Audio.getK051649Register(chipID);
+        K051649 chip = audio.getK051649Register(chipID);
         if (chip == null) return;
 
         for (int ch = 0; ch < 5; ch++) {
-            K051649.K051649State.Channel psg = chip.channelList[ch];
+            K051649.Channel psg = chip.getChannel(ch);
             if (psg == null) continue;
 
             MDChipParams.Channel channel = newParam.channels[ch];
-            for (int i = 0; i < 32; i++) channel.inst[i] = psg.waveRam[i];
-            float ftone = Audio.clockK051649 / (8.0f * (float) psg.frequency);
+            for (int i = 0; i < 32; i++) channel.inst[i] = chip.getWaveRam(ch, i);
+            float fTone = audio.clockK051649 / (8.0f * (float) psg.frequency);
             channel.freq = psg.frequency;
             channel.volume = psg.key != 0 ? (int) (psg.volume * 1.33) : 0;
             channel.volumeL = psg.volume;
-            channel.note = (psg.key != 0 && channel.volume != 0) ? searchSSGNote(ftone) : -1;
+            channel.note = (psg.key != 0 && channel.volume != 0) ? searchSSGNote(fTone) : -1;
             channel.dda = psg.key != 0;
-
         }
     }
 
@@ -242,20 +241,5 @@ public class frmK051649 extends frmBase {
             newParam.channels[c].volume = -1;
             newParam.channels[c].volumeL = -1;
         }
-    }
-
-    private int searchSSGNote(float freq) {
-        float m = Float.MAX_VALUE;
-        int n = 0;
-        for (int i = 0; i < 12 * 8; i++) {
-            //if (freq < Tables.freqTbl[i]) break;
-            //n = i;
-            float a = Math.abs(freq - Tables.freqTbl[i]);
-            if (m > a) {
-                m = a;
-                n = i;
-            }
-        }
-        return n;
     }
 }

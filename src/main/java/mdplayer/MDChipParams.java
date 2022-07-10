@@ -1,6 +1,7 @@
 package mdplayer;
 
-import mdplayer.Common.FileFormat;
+
+import mdplayer.format.FileFormat;
 
 
 public class MDChipParams {
@@ -46,9 +47,9 @@ public class MDChipParams {
         public int tn = 0; // Psg only
         public boolean ex = false; // OPN/2/a/B
         public int tntp = -1;
-        public boolean dda = false; // HuC6280
-        public boolean noise = false; // HuC6280
-        public int nfrq = -1; // HuC6280
+        public boolean dda = false; // OotakeHuC6280
+        public boolean noise = false; // OotakeHuC6280
+        public int nfrq = -1; // OotakeHuC6280
         public boolean loopFlg = false; // YMZ280B
         public int echo = -1;
 

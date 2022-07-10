@@ -24,7 +24,10 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
+import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
+
+import static mdplayer.Common.searchSSGNote;
 
 
 public class frmS5B extends frmBase {
@@ -105,7 +108,7 @@ public class frmS5B extends frmBase {
     };
 
     public void screenChangeParams() {
-        byte[] S5BRegister = Audio.getS5BRegister(chipID);
+        byte[] S5BRegister = audio.getS5BRegister(chipID);
         if (S5BRegister == null) return;
 
         for (int ch = 0; ch < 3; ch++) { //SSG
@@ -133,7 +136,7 @@ public class frmS5B extends frmBase {
                 int ct = S5BRegister[0x01 + ch * 2];
                 int tp = (ct << 8) | ft;
                 if (tp == 0) tp = 1;
-                float ftone = Audio.clockS5B / (8.0f * (float) tp);
+                float ftone = audio.clockS5B / (8.0f * (float) tp);
                 channel.note = searchSSGNote(ftone);
             }
         }
@@ -213,21 +216,6 @@ public class frmS5B extends frmBase {
             }
         }
     };
-
-    private int searchSSGNote(float freq) {
-        float m = Float.MAX_VALUE;
-        int n = 0;
-        for (int i = 0; i < 12 * 8; i++) {
-            //if (freq < Tables.freqTbl[i]) break;
-            //n = i;
-            float a = Math.abs(freq - Tables.freqTbl[i]);
-            if (m > a) {
-                m = a;
-                n = i;
-            }
-        }
-        return n;
-    }
 
     private void initializeComponent() {
         this.pbScreen = new JPanel();

@@ -825,7 +825,192 @@ public class Setting implements Serializable {
     public static final Point EmptyPoint = new Point(0, 0);
     public static final Dimension EmptyDimension = new Dimension(0, 0);
 
-    public Setting() {
+    private static Setting instance = new Setting();
+
+    public void init() {
+        if (this.getAY8910Type() == null || this.getAY8910Type().length < 2) {
+            this.setAY8910Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getAY8910Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getAY8910Type()[i].setUseEmu(new boolean[1]);
+                this.getAY8910Type()[i].getUseEmu()[0] = true;
+                this.getAY8910Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getK051649Type() == null || this.getK051649Type().length < 2) {
+            this.setK051649Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getK051649Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getK051649Type()[i].setUseEmu(new boolean[1]);
+                this.getK051649Type()[i].getUseEmu()[0] = true;
+                this.getK051649Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getC140Type() == null || this.getC140Type().length < 2) {
+            this.setC140Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getC140Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getC140Type()[i].setUseEmu(new boolean[1]);
+                this.getC140Type()[i].getUseEmu()[0] = true;
+                this.getC140Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getHuC6280Type() == null || this.getHuC6280Type().length < 2) {
+            this.setHuC6280Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getHuC6280Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getHuC6280Type()[i].setUseEmu(new boolean[1]);
+                this.getHuC6280Type()[i].getUseEmu()[0] = true;
+                this.getHuC6280Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getSEGAPCMType() == null || this.getSEGAPCMType().length < 2) {
+            this.setSEGAPCMType(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getSEGAPCMType()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getSEGAPCMType()[i].setUseEmu(new boolean[1]);
+                this.getSEGAPCMType()[i].getUseEmu()[0] = true;
+                this.getSEGAPCMType()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getSN76489Type() == null || this.getSN76489Type().length < 2) {
+            this.setSN76489Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getSN76489Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getSN76489Type()[i].setUseEmu(new boolean[2]);
+                this.getSN76489Type()[i].getUseEmu()[0] = true;
+                this.getSN76489Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getY8950Type() == null || this.getY8950Type().length < 2) {
+            this.setY8950Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getY8950Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getY8950Type()[i].setUseEmu(new boolean[1]);
+                this.getY8950Type()[i].getUseEmu()[0] = true;
+                this.getY8950Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getYM2151Type() == null || this.getYM2151Type().length < 2) {
+            this.setYM2151Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getYM2151Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getYM2151Type()[i].setUseEmu(new boolean[3]);
+                this.getYM2151Type()[i].getUseEmu()[0] = true;
+                this.getYM2151Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getYM2203Type() == null || this.getYM2203Type().length < 2) {
+            this.setYM2203Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getYM2203Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getYM2203Type()[i].setUseEmu(new boolean[1]);
+                this.getYM2203Type()[i].getUseEmu()[0] = true;
+                this.getYM2203Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getYM2413Type() == null || this.getYM2413Type().length < 2) {
+            this.setYM2413Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getYM2413Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getYM2413Type()[i].setUseEmu(new boolean[1]);
+                this.getYM2413Type()[i].getUseEmu()[0] = true;
+                this.getYM2413Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getYM2608Type() == null || this.getYM2608Type().length < 2) {
+            this.setYM2608Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getYM2608Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getYM2608Type()[i].setUseEmu(new boolean[1]);
+                this.getYM2608Type()[i].getUseEmu()[0] = true;
+                this.getYM2608Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+
+        if (this.getYM2610Type() == null
+                || this.getYM2610Type().length < 2
+                || this.getYM2610Type()[0].getUseReal() == null
+                || this.getYM2610Type()[0].getUseReal().length < 3
+                || this.getYM2610Type()[1].getUseReal() == null
+                || this.getYM2610Type()[1].getUseReal().length < 3
+        ) {
+            this.setYM2610Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getYM2610Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo()});
+                this.getYM2610Type()[i].setUseEmu(new boolean[1]);
+                this.getYM2610Type()[i].getUseEmu()[0] = true;
+                this.getYM2610Type()[i].setUseReal(new boolean[3]);
+            }
+        }
+
+        if (this.getYM2612Type() == null || this.getYM2612Type().length < 2) {
+            this.setYM2612Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getYM2612Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getYM2612Type()[i].setUseEmu(new boolean[3]);
+                this.getYM2612Type()[i].getUseEmu()[0] = true;
+                this.getYM2612Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getYM3526Type() == null || this.getYM3526Type().length < 2) {
+            this.setYM3526Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getYM3526Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getYM3526Type()[i].setUseEmu(new boolean[1]);
+                this.getYM3526Type()[i].getUseEmu()[0] = true;
+                this.getYM3526Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getYM3812Type() == null || this.getYM3812Type().length < 2) {
+            this.setYM3812Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getYM3812Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getYM3812Type()[i].setUseEmu(new boolean[1]);
+                this.getYM3812Type()[i].getUseEmu()[0] = true;
+                this.getYM3812Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getYMF262Type() == null || this.getYMF262Type().length < 2) {
+            this.setYMF262Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getYMF262Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getYMF262Type()[i].setUseEmu(new boolean[1]);
+                this.getYMF262Type()[i].getUseEmu()[0] = true;
+                this.getYMF262Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getYMF271Type() == null || this.getYMF271Type().length < 2) {
+            this.setYMF271Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getYMF271Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getYMF271Type()[i].setUseEmu(new boolean[1]);
+                this.getYMF271Type()[i].getUseEmu()[0] = true;
+                this.getYMF271Type()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getYMF278BType() == null || this.getYMF278BType().length < 2) {
+            this.setYMF278BType(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getYMF278BType()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getYMF278BType()[i].setUseEmu(new boolean[1]);
+                this.getYMF278BType()[i].getUseEmu()[0] = true;
+                this.getYMF278BType()[i].setUseReal(new boolean[1]);
+            }
+        }
+        if (this.getYMZ280BType() == null || this.getYMZ280BType().length < 2) {
+            this.setYMZ280BType(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            for (int i = 0; i < 2; i++) {
+                this.getYMZ280BType()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
+                this.getYMZ280BType()[i].setUseEmu(new boolean[1]);
+                this.getYMZ280BType()[i].getUseEmu()[0] = true;
+                this.getYMZ280BType()[i].setUseReal(new boolean[1]);
+            }
+        }
+    }
+
+    public static Setting getInstance() {
+        return instance;
     }
 
     // 多音源対応
@@ -885,7 +1070,7 @@ public class Setting implements Serializable {
     public ChipType2[] getHuC6280Type() {
         return huC6280Type;
     }
-    void setHuC6280Type(ChipType2[] value) {
+    public void setHuC6280Type(ChipType2[] value) {
         huC6280Type = value;
     }
     private ChipType2[] k051649Type = null;
@@ -930,21 +1115,21 @@ public class Setting implements Serializable {
     public ChipType2[] getYMF271Type() {
         return ymf271Type;
     }
-    void setYMF271Type(ChipType2[] value) {
+    public void setYMF271Type(ChipType2[] value) {
         ymf271Type = value;
     }
     private ChipType2[] _YMF278BType = null;
     public ChipType2[] getYMF278BType() {
         return _YMF278BType;
     }
-    void setYMF278BType(ChipType2[] value) {
+    public void setYMF278BType(ChipType2[] value) {
         _YMF278BType = value;
     }
     private ChipType2[] _YMZ280BType = null;
     public ChipType2[] getYMZ280BType() {
         return _YMZ280BType;
     }
-    void setYMZ280BType(ChipType2[] value) {
+    public void setYMZ280BType(ChipType2[] value) {
         _YMZ280BType = value;
     }
     private ChipType2[] _YM2612Type = null;
@@ -1152,7 +1337,7 @@ public class Setting implements Serializable {
     public ChipType2[] getY8950Type() {
         return _Y8950Type;
     }
-    void setY8950Type(ChipType2[] value) {
+    public void setY8950Type(ChipType2[] value) {
         _Y8950Type = value;
     }
 
@@ -2046,7 +2231,7 @@ public class Setting implements Serializable {
             return masterVolume;
         }
 
-        void setMasterVolume(int value) {
+        public void setMasterVolume(int value) {
             masterVolume = value;
             if (masterVolume > 20 || masterVolume < -192)
                 masterVolume = 0;
@@ -2060,7 +2245,7 @@ public class Setting implements Serializable {
             return ym2612Volume;
         }
 
-        void setYM2612Volume(int value) {
+        public void setYM2612Volume(int value) {
             ym2612Volume = value;
             if (ym2612Volume > 20 || ym2612Volume < -192)
                 ym2612Volume = 0;
@@ -2074,7 +2259,7 @@ public class Setting implements Serializable {
             return sn76489Volume;
         }
 
-        void setSN76489Volume(int value) {
+        public void setSN76489Volume(int value) {
             sn76489Volume = value;
             if (sn76489Volume > 20 || sn76489Volume < -192)
                 sn76489Volume = 0;
@@ -2088,7 +2273,7 @@ public class Setting implements Serializable {
             return rf5C68Volume;
         }
 
-        void setRF5C68Volume(int value) {
+        public void setRF5C68Volume(int value) {
             rf5C68Volume = value;
             if (rf5C68Volume > 20 || rf5C68Volume < -192)
                 rf5C68Volume = 0;
@@ -2102,7 +2287,7 @@ public class Setting implements Serializable {
             return rf5C164Volume;
         }
 
-        void setRF5C164Volume(int value) {
+        public void setRF5C164Volume(int value) {
             rf5C164Volume = value;
             if (rf5C164Volume > 20 || rf5C164Volume < -192)
                 rf5C164Volume = 0;
@@ -2116,7 +2301,7 @@ public class Setting implements Serializable {
             return pwmVolume;
         }
 
-        void setPWMVolume(int value) {
+        public void setPWMVolume(int value) {
             pwmVolume = value;
             if (pwmVolume > 20 || pwmVolume < -192)
                 pwmVolume = 0;
@@ -2130,7 +2315,7 @@ public class Setting implements Serializable {
             return c140Volume;
         }
 
-        void setC140Volume(int value) {
+        public void setC140Volume(int value) {
             c140Volume = value;
             if (c140Volume > 20 || c140Volume < -192)
                 c140Volume = 0;
@@ -2144,7 +2329,7 @@ public class Setting implements Serializable {
             return OkiM6258Volume;
         }
 
-        void setOKIM6258Volume(int value) {
+        public void setOKIM6258Volume(int value) {
             OkiM6258Volume = value;
             if (OkiM6258Volume > 20 || OkiM6258Volume < -192)
                 OkiM6258Volume = 0;
@@ -2158,7 +2343,7 @@ public class Setting implements Serializable {
             return _OKIM6295Volume;
         }
 
-        void setOKIM6295Volume(int value) {
+        public void setOKIM6295Volume(int value) {
             _OKIM6295Volume = value;
             if (_OKIM6295Volume > 20 || _OKIM6295Volume < -192)
                 _OKIM6295Volume = 0;
@@ -2172,7 +2357,7 @@ public class Setting implements Serializable {
             return _SEGAPCMVolume;
         }
 
-        void setSEGAPCMVolume(int value) {
+        public void setSEGAPCMVolume(int value) {
             _SEGAPCMVolume = value;
             if (_SEGAPCMVolume > 20 || _SEGAPCMVolume < -192)
                 _SEGAPCMVolume = 0;
@@ -2186,7 +2371,7 @@ public class Setting implements Serializable {
             return _AY8910Volume;
         }
 
-        void setAY8910Volume(int value) {
+        public void setAY8910Volume(int value) {
             _AY8910Volume = value;
             if (_AY8910Volume > 20 || _AY8910Volume < -192)
                 _AY8910Volume = 0;
@@ -2200,7 +2385,7 @@ public class Setting implements Serializable {
             return ym2413Volume;
         }
 
-        void setYM2413Volume(int value) {
+        public void setYM2413Volume(int value) {
             ym2413Volume = value;
             if (ym2413Volume > 20 || ym2413Volume < -192)
                 ym2413Volume = 0;
@@ -2214,7 +2399,7 @@ public class Setting implements Serializable {
             return _YM3526Volume;
         }
 
-        void setYM3526Volume(int value) {
+        public void setYM3526Volume(int value) {
             _YM3526Volume = value;
             if (_YM3526Volume > 20 || _YM3526Volume < -192)
                 _YM3526Volume = 0;
@@ -2228,7 +2413,7 @@ public class Setting implements Serializable {
             return _Y8950Volume;
         }
 
-        void setY8950Volume(int value) {
+        public void setY8950Volume(int value) {
             _Y8950Volume = value;
             if (_Y8950Volume > 20 || _Y8950Volume < -192)
                 _Y8950Volume = 0;
@@ -2242,7 +2427,7 @@ public class Setting implements Serializable {
             return _HuC6280Volume;
         }
 
-        void setHuC6280Volume(int value) {
+        public void setHuC6280Volume(int value) {
             _HuC6280Volume = value;
             if (_HuC6280Volume > 20 || _HuC6280Volume < -192)
                 _HuC6280Volume = 0;
@@ -2256,7 +2441,7 @@ public class Setting implements Serializable {
             return ym2151Volume;
         }
 
-        void setYM2151Volume(int value) {
+        public void setYM2151Volume(int value) {
             ym2151Volume = value;
             if (ym2151Volume > 20 || ym2151Volume < -192)
                 ym2151Volume = 0;
@@ -2270,7 +2455,7 @@ public class Setting implements Serializable {
             return ym2608Volume;
         }
 
-        void setYM2608Volume(int value) {
+        public void setYM2608Volume(int value) {
             ym2608Volume = value;
             if (ym2608Volume > 20 || ym2608Volume < -192)
                 ym2608Volume = 0;
@@ -2284,7 +2469,7 @@ public class Setting implements Serializable {
             return _YM2608FMVolume;
         }
 
-        void setYM2608FMVolume(int value) {
+        public void setYM2608FMVolume(int value) {
             _YM2608FMVolume = value;
             if (_YM2608FMVolume > 20 || _YM2608FMVolume < -192)
                 _YM2608FMVolume = 0;
@@ -2298,7 +2483,7 @@ public class Setting implements Serializable {
             return _YM2608PSGVolume;
         }
 
-        void setYM2608PSGVolume(int value) {
+        public void setYM2608PSGVolume(int value) {
             _YM2608PSGVolume = value;
             if (_YM2608PSGVolume > 20 || _YM2608PSGVolume < -192)
                 _YM2608PSGVolume = 0;
@@ -2312,7 +2497,7 @@ public class Setting implements Serializable {
             return _YM2608RhythmVolume;
         }
 
-        void setYM2608RhythmVolume(int value) {
+        public void setYM2608RhythmVolume(int value) {
             _YM2608RhythmVolume = value;
             if (_YM2608RhythmVolume > 20 || _YM2608RhythmVolume < -192)
                 _YM2608RhythmVolume = 0;
@@ -2326,7 +2511,7 @@ public class Setting implements Serializable {
             return _YM2608AdpcmVolume;
         }
 
-        void setYM2608AdpcmVolume(int value) {
+        public void setYM2608AdpcmVolume(int value) {
             _YM2608AdpcmVolume = value;
             if (_YM2608AdpcmVolume > 20 || _YM2608AdpcmVolume < -192)
                 _YM2608AdpcmVolume = 0;
@@ -2340,7 +2525,7 @@ public class Setting implements Serializable {
             return ym2203Volume;
         }
 
-        void setYM2203Volume(int value) {
+        public void setYM2203Volume(int value) {
             ym2203Volume = value;
             if (ym2203Volume > 20 || ym2203Volume < -192)
                 ym2203Volume = 0;
@@ -2354,7 +2539,7 @@ public class Setting implements Serializable {
             return ym2203Fmvolume;
         }
 
-        void setYM2203FMVolume(int value) {
+        public void setYM2203FMVolume(int value) {
             ym2203Fmvolume = value;
             if (ym2203Fmvolume > 20 || ym2203Fmvolume < -192)
                 ym2203Fmvolume = 0;
@@ -2368,7 +2553,7 @@ public class Setting implements Serializable {
             return ym2203Psgvolume;
         }
 
-        void setYM2203PSGVolume(int value) {
+        public void setYM2203PSGVolume(int value) {
             ym2203Psgvolume = value;
             if (ym2203Psgvolume > 20 || ym2203Psgvolume < -192)
                 ym2203Psgvolume = 0;
@@ -2382,7 +2567,7 @@ public class Setting implements Serializable {
             return _YM2610Volume;
         }
 
-        void setYM2610Volume(int value) {
+        public void setYM2610Volume(int value) {
             _YM2610Volume = value;
             if (_YM2610Volume > 20 || _YM2610Volume < -192)
                 _YM2610Volume = 0;
@@ -2396,7 +2581,7 @@ public class Setting implements Serializable {
             return _YM2610FMVolume;
         }
 
-        void setYM2610FMVolume(int value) {
+        public void setYM2610FMVolume(int value) {
             _YM2610FMVolume = value;
             if (_YM2610FMVolume > 20 || _YM2610FMVolume < -192)
                 _YM2610FMVolume = 0;
@@ -2410,7 +2595,7 @@ public class Setting implements Serializable {
             return _YM2610PSGVolume;
         }
 
-        void setYM2610PSGVolume(int value) {
+        public void setYM2610PSGVolume(int value) {
             _YM2610PSGVolume = value;
             if (_YM2610PSGVolume > 20 || _YM2610PSGVolume < -192)
                 _YM2610PSGVolume = 0;
@@ -2424,7 +2609,7 @@ public class Setting implements Serializable {
             return _YM2610AdpcmAVolume;
         }
 
-        void setYM2610AdpcmAVolume(int value) {
+        public void setYM2610AdpcmAVolume(int value) {
             _YM2610AdpcmAVolume = value;
             if (_YM2610AdpcmAVolume > 20 || _YM2610AdpcmAVolume < -192)
                 _YM2610AdpcmAVolume = 0;
@@ -2438,7 +2623,7 @@ public class Setting implements Serializable {
             return _YM2610AdpcmBVolume;
         }
 
-        void setYM2610AdpcmBVolume(int value) {
+        public void setYM2610AdpcmBVolume(int value) {
             _YM2610AdpcmBVolume = value;
             if (_YM2610AdpcmBVolume > 20 || _YM2610AdpcmBVolume < -192)
                 _YM2610AdpcmBVolume = 0;
@@ -2452,7 +2637,7 @@ public class Setting implements Serializable {
             return _YM3812Volume;
         }
 
-        void setYM3812Volume(int value) {
+        public void setYM3812Volume(int value) {
             _YM3812Volume = value;
             if (_YM3812Volume > 20 || _YM3812Volume < -192)
                 _YM3812Volume = 0;
@@ -2466,7 +2651,7 @@ public class Setting implements Serializable {
             return _C352Volume;
         }
 
-        void setC352Volume(int value) {
+        public void setC352Volume(int value) {
             _C352Volume = value;
             if (_C352Volume > 20 || _C352Volume < -192)
                 _C352Volume = 0;
@@ -2480,7 +2665,7 @@ public class Setting implements Serializable {
             return _SAA1099Volume;
         }
 
-        void setSAA1099Volume(int value) {
+        public void setSAA1099Volume(int value) {
             _SAA1099Volume = value;
             if (_SAA1099Volume > 20 || _SAA1099Volume < -192)
                 _SAA1099Volume = 0;
@@ -2522,7 +2707,7 @@ public class Setting implements Serializable {
             return _PPZ8Volume;
         }
 
-        void setPPZ8Volume(int value) {
+        public void setPPZ8Volume(int value) {
             _PPZ8Volume = value;
             if (_PPZ8Volume > 20 || _PPZ8Volume < -192)
                 _PPZ8Volume = 0;
@@ -2550,7 +2735,7 @@ public class Setting implements Serializable {
             return _K054539Volume;
         }
 
-        void setK054539Volume(int value) {
+        public void setK054539Volume(int value) {
             _K054539Volume = value;
             if (_K054539Volume > 20 || _K054539Volume < -192)
                 _K054539Volume = 0;
@@ -2564,7 +2749,7 @@ public class Setting implements Serializable {
             return _APUVolume;
         }
 
-        void setAPUVolume(int value) {
+        public void setAPUVolume(int value) {
             _APUVolume = value;
             if (_APUVolume > 20 || _APUVolume < -192)
                 _APUVolume = 0;
@@ -2578,7 +2763,7 @@ public class Setting implements Serializable {
             return _DMCVolume;
         }
 
-        void setDMCVolume(int value) {
+        public void setDMCVolume(int value) {
             _DMCVolume = value;
             if (_DMCVolume > 20 || _DMCVolume < -192)
                 _DMCVolume = 0;
@@ -2592,7 +2777,7 @@ public class Setting implements Serializable {
             return _FDSVolume;
         }
 
-        void setFDSVolume(int value) {
+        public void setFDSVolume(int value) {
             _FDSVolume = value;
             if (_FDSVolume > 20 || _FDSVolume < -192)
                 _FDSVolume = 0;
@@ -2606,7 +2791,7 @@ public class Setting implements Serializable {
             return _MMC5Volume;
         }
 
-        void setMMC5Volume(int value) {
+        public void setMMC5Volume(int value) {
             _MMC5Volume = value;
             if (_MMC5Volume > 20 || _MMC5Volume < -192)
                 _MMC5Volume = 0;
@@ -2620,7 +2805,7 @@ public class Setting implements Serializable {
             return _N160Volume;
         }
 
-        void setN160Volume(int value) {
+        public void setN160Volume(int value) {
             _N160Volume = value;
             if (_N160Volume > 20 || _N160Volume < -192)
                 _N160Volume = 0;
@@ -2634,7 +2819,7 @@ public class Setting implements Serializable {
             return _VRC6Volume;
         }
 
-        void setVRC6Volume(int value) {
+        public void setVRC6Volume(int value) {
             _VRC6Volume = value;
             if (_VRC6Volume > 20 || _VRC6Volume < -192)
                 _VRC6Volume = 0;
@@ -2648,7 +2833,7 @@ public class Setting implements Serializable {
             return _VRC7Volume;
         }
 
-        void setVRC7Volume(int value) {
+        public void setVRC7Volume(int value) {
             _VRC7Volume = value;
             if (_VRC7Volume > 20 || _VRC7Volume < -192)
                 _VRC7Volume = 0;
@@ -2662,7 +2847,7 @@ public class Setting implements Serializable {
             return _FME7Volume;
         }
 
-        void setFME7Volume(int value) {
+        public void setFME7Volume(int value) {
             _FME7Volume = value;
             if (_FME7Volume > 20 || _FME7Volume < -192)
                 _FME7Volume = 0;
@@ -2676,7 +2861,7 @@ public class Setting implements Serializable {
             return _DMGVolume;
         }
 
-        void setDMGVolume(int value) {
+        public void setDMGVolume(int value) {
             _DMGVolume = value;
             if (_DMGVolume > 20 || _DMGVolume < -192)
                 _DMGVolume = 0;
@@ -2690,7 +2875,7 @@ public class Setting implements Serializable {
             return _GA20Volume;
         }
 
-        void setGA20Volume(int value) {
+        public void setGA20Volume(int value) {
             _GA20Volume = value;
             if (_GA20Volume > 20 || _GA20Volume < -192)
                 _GA20Volume = 0;
@@ -2704,7 +2889,7 @@ public class Setting implements Serializable {
             return _YMZ280BVolume;
         }
 
-        void setYMZ280BVolume(int value) {
+        public void setYMZ280BVolume(int value) {
             _YMZ280BVolume = value;
             if (_YMZ280BVolume > 20 || _YMZ280BVolume < -192)
                 _YMZ280BVolume = 0;
@@ -2718,7 +2903,7 @@ public class Setting implements Serializable {
             return _YMF271Volume;
         }
 
-        void setYMF271Volume(int value) {
+        public void setYMF271Volume(int value) {
             _YMF271Volume = value;
             if (_YMF271Volume > 20 || _YMF271Volume < -192)
                 _YMF271Volume = 0;
@@ -2732,7 +2917,7 @@ public class Setting implements Serializable {
             return _YMF262Volume;
         }
 
-        void setYMF262Volume(int value) {
+        public void setYMF262Volume(int value) {
             _YMF262Volume = value;
             if (_YMF262Volume > 20 || _YMF262Volume < -192)
                 _YMF262Volume = 0;
@@ -2746,7 +2931,7 @@ public class Setting implements Serializable {
             return _YMF278BVolume;
         }
 
-        void setYMF278BVolume(int value) {
+        public void setYMF278BVolume(int value) {
             _YMF278BVolume = value;
             if (_YMF278BVolume > 20 || _YMF278BVolume < -192)
                 _YMF278BVolume = 0;
@@ -2760,7 +2945,7 @@ public class Setting implements Serializable {
             return _MultiPCMVolume;
         }
 
-        void setMultiPCMVolume(int value) {
+        public void setMultiPCMVolume(int value) {
             _MultiPCMVolume = value;
             if (_MultiPCMVolume > 20 || _MultiPCMVolume < -192)
                 _MultiPCMVolume = 0;
@@ -2774,7 +2959,7 @@ public class Setting implements Serializable {
             return _QSoundVolume;
         }
 
-        void setQSoundVolume(int value) {
+        public void setQSoundVolume(int value) {
             _QSoundVolume = value;
             if (_QSoundVolume > 20 || _QSoundVolume < -192)
                 _QSoundVolume = 0;
@@ -2788,7 +2973,7 @@ public class Setting implements Serializable {
             return _K051649Volume;
         }
 
-        void setK051649Volume(int value) {
+        public void setK051649Volume(int value) {
             _K051649Volume = value;
             if (_K051649Volume > 20 || _K051649Volume < -192)
                 _K051649Volume = 0;
@@ -2802,7 +2987,7 @@ public class Setting implements Serializable {
             return _K053260Volume;
         }
 
-        void setK053260Volume(int value) {
+        public void setK053260Volume(int value) {
             _K053260Volume = value;
             if (_K053260Volume > 20 || _K053260Volume < -192)
                 _K053260Volume = 0;
@@ -2816,7 +3001,7 @@ public class Setting implements Serializable {
             return _GimicOPNVolume;
         }
 
-        void setGimicOPNVolume(int value) {
+        public void setGimicOPNVolume(int value) {
             _GimicOPNVolume = value;
             if (_GimicOPNVolume > 127 || _GimicOPNVolume < 0)
                 _GimicOPNVolume = 30;
@@ -2830,7 +3015,7 @@ public class Setting implements Serializable {
             return _GimicOPNAVolume;
         }
 
-        void setGimicOPNAVolume(int value) {
+        public void setGimicOPNAVolume(int value) {
             _GimicOPNAVolume = value;
             if (_GimicOPNAVolume > 127 || _GimicOPNAVolume < 0)
                 _GimicOPNAVolume = 30;

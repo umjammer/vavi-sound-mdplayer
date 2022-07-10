@@ -259,7 +259,7 @@ public class RealChip implements Closeable {
 //                        ct.getRealChipInfo()[0].ChipName = sc.getSoundChipInfo().cSoundChipName;
 //                        ct.getRealChipInfo()[0].InterfaceName = iInfo.cInterfaceName;
 //                        ret.add(ct);
-//                    } else if (realChipType2 == EnmRealChipType.K051649 && (t == 12 || t == 13)) {
+//                    } else if (realChipType2 == EnmRealChipType.K051649Inst && (t == 12 || t == 13)) {
 //                        Setting.ChipType2 ct = new Setting.ChipType2();
 //                        ct.realChipInfo = new Setting.ChipType2.RealChipInfo[] {
 //                            new Setting.ChipType2.RealChipInfo()

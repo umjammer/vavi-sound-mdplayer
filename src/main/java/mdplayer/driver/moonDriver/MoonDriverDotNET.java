@@ -33,11 +33,13 @@ import musicDriverInterface.Tag;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
 
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+
 
 public class MoonDriverDotNET extends BaseDriver {
     private ICompiler moonDriverCompiler = null;
     private IDriver moonDriverDriver = null;
-    private enmMoonDriverFileType mtype;
+    private MoonDriverFileType mtype;
 
     private String PlayingFileName;
 
@@ -50,8 +52,8 @@ public class MoonDriverDotNET extends BaseDriver {
     }
 
     public MoonDriverDotNET() {
-        // "plugin\\driver\\moonDriverDotNETCompiler.dll"
-        // "plugin\\driver\\moonDriverDotNETdll"
+        // "chips\\driver\\moonDriverDotNETCompiler.dll"
+        // "chips\\driver\\moonDriverDotNETdll"
     }
 
     InstanceMarker im;
@@ -61,7 +63,7 @@ public class MoonDriverDotNET extends BaseDriver {
         mtype = CheckFileType(buf);
         GD3Tag gt;
 
-        if (mtype == enmMoonDriverFileType.MDL) {
+        if (mtype == MoonDriverFileType.MDL) {
             moonDriverCompiler = im.getCompiler("MoonDriverDotNET.Compiler.Compiler");
             gt = moonDriverCompiler.getGD3TagInfo(buf);
         } else {
@@ -104,7 +106,7 @@ public class MoonDriverDotNET extends BaseDriver {
         if (model == EnmModel.RealModel) return true;
 // #endif
 
-        if (mtype == enmMoonDriverFileType.MDL) return initMDL();
+        if (mtype == MoonDriverFileType.MDL) return initMDL();
         else return initMDR();
     }
 
@@ -184,29 +186,28 @@ public class MoonDriverDotNET extends BaseDriver {
             dest.add(md != null ? (byte) (md.dat & 0xff) : (byte) 0);
         }
 
-        return mdsound.Common.toByteArray(dest);
+        return toByteArray(dest);
     }
 
-
-    public enum enmMoonDriverFileType {
+    public enum MoonDriverFileType {
         unknown,
         MDR,
         MDL
     }
 
-    private enmMoonDriverFileType CheckFileType(byte[] buf) {
+    private MoonDriverFileType CheckFileType(byte[] buf) {
         if (buf == null || buf.length < 4) {
-            return enmMoonDriverFileType.unknown;
+            return MoonDriverFileType.unknown;
         }
 
         if (buf[0] == 'M'
                 && buf[1] == 'D'
                 && buf[2] == 'R'
                 && buf[3] == 'V') {
-            return enmMoonDriverFileType.MDR;
+            return MoonDriverFileType.MDR;
         }
 
-        return enmMoonDriverFileType.MDL;
+        return MoonDriverFileType.MDL;
     }
 
     private boolean initMDL() {

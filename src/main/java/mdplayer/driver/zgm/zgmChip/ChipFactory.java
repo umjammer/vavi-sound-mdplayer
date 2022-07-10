@@ -10,7 +10,7 @@ public class ChipFactory {
     switch (chipIdentNo) {
         case 0x0000_000C: return null; // new SN76489(chipRegister, setting, vgmBuf);
         case 0x0000_0010: return null; // new YM2413(chipRegister, setting, vgmBuf);
-        case 0x0000_002c: return null; // new Ym2612(chipRegister, setting, vgmBuf);
+        case 0x0000_002c: return null; // new Ym2612Inst(chipRegister, setting, vgmBuf);
         case 0x0000_0030: return null; // new YM2151(chipRegister, setting, vgmBuf);
         case 0x0000_0038: return null; // new SEGAPCM(chipRegister, setting, vgmBuf);
         case 0x0000_0040: return null; // RF5C68
@@ -19,7 +19,7 @@ public class ChipFactory {
         case 0x0000_004C: return null; // new YM2610(chipRegister, setting, vgmBuf);
         case 0x0000_0050: return null; // YM3812
         case 0x0000_0054: return null; // YM3526
-        case 0x0000_0058: return null; // Y8950
+        case 0x0000_0058: return null; // Y8950Inst
         case 0x0000_005C: return null; // YMF262
         case 0x0000_0060: return null; // YMF278B
         case 0x0000_0064: return null; // YMF271
@@ -33,13 +33,13 @@ public class ChipFactory {
         case 0x0000_008C: return null; // uPD7759
         case 0x0000_0090: return null; // OKIM6258
         case 0x0000_0098: return null; // OKIM6295
-        case 0x0000_009C: return null; // new K051649(chipRegister, setting, vgmBuf);
-        case 0x0000_00A0: return null; // K054539
-        case 0x0000_00A4: return null; // new HuC6280(chipRegister, setting, vgmBuf);
-        case 0x0000_00A8: return null; // new C140(chipRegister, setting, vgmBuf);
-        case 0x0000_00AC: return null; // new K053260(chipRegister, setting, vgmBuf);
-        case 0x0000_00B0: return null; // Pokey
-        case 0x0000_00B4: return null; // new QSound(chipRegister, setting, vgmBuf);
+        case 0x0000_009C: return null; // new K051649Inst(chipRegister, setting, vgmBuf);
+        case 0x0000_00A0: return null; // K054539Inst
+        case 0x0000_00A4: return null; // new OotakeHuC6280(chipRegister, setting, vgmBuf);
+        case 0x0000_00A8: return null; // new C140Inst(chipRegister, setting, vgmBuf);
+        case 0x0000_00AC: return null; // new K053260Inst(chipRegister, setting, vgmBuf);
+        case 0x0000_00B0: return null; // PokeyInst
+        case 0x0000_00B4: return null; // new QSoundInst(chipRegister, setting, vgmBuf);
         case 0x0000_00B8: return null; // SCSP
         case 0x0000_00C0: return null; // WonderSwan
         case 0x0000_00C4: return null; // Virtual Boy VSU
@@ -47,7 +47,7 @@ public class ChipFactory {
         case 0x0000_00CC: return null; // ES5503
         case 0x0000_00D0: return null; // ES5505/ES5506
         case 0x0000_00D8: return null; // X1-010
-        case 0x0000_00DC: return null; // C352
+        case 0x0000_00DC: return null; // C352Inst
         case 0x0000_00E0: return null; // GA20
         case 0x0001_0000: return new Conductor(chipRegister, setting, vgmBuf);
         case 0x0002_0001: return new YM2609(chipRegister, setting, vgmBuf);

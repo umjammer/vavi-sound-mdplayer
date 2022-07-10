@@ -35,7 +35,7 @@ public class SidBank implements IBank {
     // # include "C64/C64Sid.h"
     // # include "sidcxx11.h"
     // # include "NullSid.h"
-    // Sid chip
+    // Sid chips
     private C64Sid sid;
 
     public SidBank() {

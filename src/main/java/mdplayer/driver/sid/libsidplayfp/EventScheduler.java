@@ -40,7 +40,7 @@ public class EventScheduler {
 
     /**
      * C64 system runs actions at system clock high and low
-     * states. The PHI1 corresponds to the auxiliary chip activity
+     * states. The PHI1 corresponds to the auxiliary chips activity
      * and PHI2 to CPU activity. For any clock, PHI1s are before
      * PHI2s.
      */

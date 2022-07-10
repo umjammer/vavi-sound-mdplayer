@@ -148,7 +148,7 @@ public class Sid {
     protected int busValue;
     protected int busValueTtl;
 
-    // The data bus TTL for the selected chip model
+    // The data bus TTL for the selected chips model
     protected int databusTtl;
 
     // Pipeline for writes on the MOS8580.
@@ -289,7 +289,7 @@ public class Sid {
     }
 
     /**
-     * Set chip model.
+     * Set chips model.
      */
     public void set_chip_model(SidDefs.ChipModel model) {
         sidModel = model;
@@ -924,7 +924,7 @@ public class Sid {
      * Sid clocking with audio sampling - cycle based with linear sample
      * interpolation.
      * <p>
-     * Here the chip instanceof clocked every cycle. This yields higher quality
+     * Here the chips instanceof clocked every cycle. This yields higher quality
      * sound since the samples are linearly interpolated, and since the
      * external filter attenuates frequencies above 16kHz, thus reducing
      * sampling noise.

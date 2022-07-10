@@ -63,7 +63,7 @@ public class frmTPGet extends JDialog {
         this.groupBox1.setPreferredSize(new Dimension(264, 81));
         // this.groupBox1.TabIndex = 3
         // this.groupBox1.TabStop = false;
-        this.groupBox1.setToolTipText("Ym2612(To)");
+        this.groupBox1.setToolTipText("Ym2612Inst(To)");
         //
         // btCh6
         //

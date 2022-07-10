@@ -3,7 +3,6 @@ package mdplayer.driver.mid;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import mdplayer.ChipRegister;
 import mdplayer.Common;
@@ -13,9 +12,9 @@ import mdplayer.driver.Vgm;
 import mdplayer.driver.rcp.RCP;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
-import mdplayer.Log;
 import mdplayer.MidiOutInfo;
-import vavi.util.Debug;
+
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 
 
 public class MID extends BaseDriver {
@@ -102,14 +101,14 @@ public class MID extends BaseDriver {
                             case 0x01:
                                 //case 0x02:
                                 if (T01TrackName.isEmpty()) {
-                                    T01TrackName = new String(mdsound.Common.toByteArray(eventData), Charset.forName("MS932")).trim();
+                                    T01TrackName = new String(toByteArray(eventData), Charset.forName("MS932")).trim();
                                 }
                                 break;
                             case 0x03:
                                 if (gd3.trackName.isEmpty()) {
                                     if (format == 0 || (format == 1 && i == 0)) {
-                                        gd3.trackName = new String(mdsound.Common.toByteArray(eventData), Charset.forName("MS932")).trim();
-                                        gd3.trackNameJ = new String(mdsound.Common.toByteArray(eventData), Charset.forName("MS932")).trim();
+                                        gd3.trackName = new String(toByteArray(eventData), Charset.forName("MS932")).trim();
+                                        gd3.trackNameJ = new String(toByteArray(eventData), Charset.forName("MS932")).trim();
                                     }
                                 }
                                 break;
@@ -318,7 +317,7 @@ public class MID extends BaseDriver {
 // #endif
                         }
 
-                        chipRegister.sendMIDIout(model, trkPort.get(trk), mdsound.Common.toByteArray(eventData), vstDelta);
+                        chipRegister.sendMIDIout(model, trkPort.get(trk), toByteArray(eventData), vstDelta);
 
                         ptr = ptr + eventLen;
 
@@ -350,44 +349,44 @@ public class MID extends BaseDriver {
 
                             switch (eventType) {
                             case 0x01:
-                                eventText = new String(mdsound.Common.toByteArray(eventData), Charset.forName("MS932"));
+                                eventText = new String(toByteArray(eventData), Charset.forName("MS932"));
 // #if DEBUG
                                 System.err.printf("eventText:%s", eventText);
 // #endif
                                 break;
                             case 0x02:
-                                eventCopyrightNotice = new String(mdsound.Common.toByteArray(eventData), Charset.forName("MS932"));
+                                eventCopyrightNotice = new String(toByteArray(eventData), Charset.forName("MS932"));
 // #if DEBUG
                                 System.err.printf("eventCopyrightNotice:%s", eventCopyrightNotice);
 // #endif
                                 break;
                             case 0x03:
-                                eventSequenceTrackName = new String(mdsound.Common.toByteArray(eventData), Charset.forName("MS932"));
+                                eventSequenceTrackName = new String(toByteArray(eventData), Charset.forName("MS932"));
 // #if DEBUG
                                 System.err.printf("eventSequenceTrackName:%s", eventSequenceTrackName);
 // #endif
                                 break;
                             case 0x04:
-                                eventInstrumentName = new String(mdsound.Common.toByteArray(eventData), Charset.forName("MS932"));
+                                eventInstrumentName = new String(toByteArray(eventData), Charset.forName("MS932"));
 // #if DEBUG
                                 System.err.printf("eventInstrumentName:%s", eventInstrumentName);
 // #endif
                                 break;
                             case 0x05:
-                                eventLyric = new String(mdsound.Common.toByteArray(eventData), Charset.forName("MS932"));
+                                eventLyric = new String(toByteArray(eventData), Charset.forName("MS932"));
 // #if DEBUG
                                 System.err.printf("eventLyric:%s", eventLyric);
 // #endif
                                 chipRegister.midiParams[trkPort.get(trk)].Lyric = eventLyric;
                                 break;
                             case 0x06:
-                                eventMarker = new String(mdsound.Common.toByteArray(eventData), Charset.forName("MS932"));
+                                eventMarker = new String(toByteArray(eventData), Charset.forName("MS932"));
 // #if DEBUG
                                 System.err.printf("eventMarker:%s", eventMarker);
 // #endif
                                 break;
                             case 0x07:
-                                eventText = new String(mdsound.Common.toByteArray(eventData), Charset.forName("MS932"));
+                                eventText = new String(toByteArray(eventData), Charset.forName("MS932"));
 // #if DEBUG
                                 System.err.printf("eventText:%s", eventText);
 // #endif

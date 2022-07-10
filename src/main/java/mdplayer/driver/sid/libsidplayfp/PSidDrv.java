@@ -153,7 +153,7 @@ public class PSidDrv {
     /**
      * Copy : power on settings. These were created by running
      * the kernel reset routine and storing the useful values
-     * from $0000-$03ff. Format is:
+     * from $0000-$03ff. FileFormat is:
      * - offset byte (bit 7 indicates presence rle byte)
      * - rle count byte (bit 7 indicates compression used)
      * - data (single byte) or quantity represented by uncompressed count

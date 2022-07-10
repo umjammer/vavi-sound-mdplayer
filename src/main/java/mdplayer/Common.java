@@ -10,21 +10,16 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.IntStream;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
@@ -39,27 +34,9 @@ import dotnet4j.io.Stream;
 import dotnet4j.util.compat.Tuple3;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
-import mdplayer.driver.Xgm;
-import mdplayer.driver.hes.Hes;
-import mdplayer.driver.mgsdrv.MGSDRV;
-import mdplayer.driver.mid.MID;
-import mdplayer.driver.mndrv.MnDrv;
-import mdplayer.driver.moonDriver.MoonDriver;
-import mdplayer.driver.mucom.MucomDotNET;
-import mdplayer.driver.mxdrv.MXDRV;
-import mdplayer.driver.nrtdrv.NRTDRV;
-import mdplayer.driver.nsf.Nsf;
-import mdplayer.driver.pmd.PMDDotNET;
-import mdplayer.driver.rcp.RCP;
-import mdplayer.driver.s98.S98;
-import mdplayer.driver.sid.Sid;
-import mdplayer.driver.zgm.Zgm;
 import vavi.awt.dnd.BasicDTListener;
-import vavi.util.archive.Archive;
-import vavi.util.archive.Archives;
-import vavi.util.archive.Entry;
-import vavi.util.archive.zip.ZipEntry;
 
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.util.function.Predicate.not;
 
 
@@ -87,18 +64,6 @@ public class Common {
             }
         }
         return -1;
-    }
-
-    public static List<Byte> toArray(byte[] o) {
-        List<Byte> a = new ArrayList<>(o.length);
-        IntStream.range(0, o.length).forEach(i -> a.add(o[i]));
-        return a;
-    }
-
-    public static float[] toArray(List<Float> o) {
-        float[] a = new float[o.size()];
-        IntStream.range(0, o.size()).forEach(i -> a[i] = o.get(i));
-        return a;
     }
 
     public static final int DEV_WaveOut = 0;
@@ -173,7 +138,7 @@ public class Common {
         }
         adr += 2;
 
-        return mdsound.Common.toByteArray(ary);
+        return toByteArray(ary);
     }
 
     public static Vgm.Gd3 getGD3Info(byte[] buf, int adr) {
@@ -244,7 +209,7 @@ public class Common {
                 lst.add(buf[index[0]]);
             }
 
-            String n = new String(mdsound.Common.toByteArray(lst), Charset.forName("MS932"));
+            String n = new String(toByteArray(lst), Charset.forName("MS932"));
             index[0]++;
 
             return n;
@@ -254,41 +219,8 @@ public class Common {
         return "";
     }
 
-//        public static String getAssemblyTitle() {
-//                Object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
-//                if (attributes.length > 0) {
-//                    AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributes[0];
-//                    if (titleAttribute.Title != "") {
-//                        return titleAttribute.Title;
-//                    }
-//                }
-//                return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
-//        }
-
-    public static int Range(int n, int min, int max) {
+    public static int range(int n, int min, int max) {
         return (n > max) ? max : Math.max(n, min);
-    }
-
-    public static int getVv(byte[] buf, int musicPtr) {
-        int s = 0, n = 0;
-
-        do {
-            n |= (buf[musicPtr] & 0x7f) << s;
-            s += 7;
-        } while ((buf[musicPtr++] & 0x80) > 0);
-
-        return n + 2;
-    }
-
-    public static int getV(byte[] buf, int musicPtr) {
-        int s = 0, n = 0;
-
-        do {
-            n |= (buf[musicPtr] & 0x7f) << s;
-            s += 7;
-        } while ((buf[musicPtr++] & 0x80) > 0);
-
-        return n;
     }
 
     public static int getDelta(int trkPtr, byte[] bs) {
@@ -309,8 +241,8 @@ public class Common {
         int m = Integer.MAX_VALUE;
         int n = 0;
         for (int i = 0; i < 12 * 5; i++) {
-            // if (freq < Tables.FmFNum[i]) break;
-            // n = i;
+            //if (freq < Tables.FmFNum[i]) break;
+            //n = i;
             int a = Math.abs(freq - Tables.FmFNum[i]);
             if (m > a) {
                 m = a;
@@ -326,6 +258,21 @@ public class Common {
         for (int i = 0; i < 12 * 8; i++) {
             // if (freq < Tables.freqTbl[i]) break;
             // n = i;
+            float a = Math.abs(freq - Tables.freqTbl[i]);
+            if (m > a) {
+                m = a;
+                n = i;
+            }
+        }
+        return n;
+    }
+
+   public static int getOPENAIRRhythmStream(float freq) {
+        float m = Float.MAX_VALUE;
+        int n = 0;
+        for (int i = 0; i < 12 * 8; i++) {
+            //if (freq < Tables.freqTbl[i]) break;
+            //n = i;
             float a = Math.abs(freq - Tables.freqTbl[i]);
             if (m > a) {
                 m = a;
@@ -542,568 +489,6 @@ public class Common {
         }
     }
 
-    public enum FileFormat {
-        unknown() {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                List<PlayList.Music> musics = new ArrayList<>();
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.unknown;
-                music.fileName = file;
-                music.arcFileName = zipFile;
-                music.arcType = EnmArcType.unknown;
-                if (zipFile != null && !zipFile.isEmpty())
-                    music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-                music.title = "unknown";
-                music.game = "unknown";
-                music.type = "-";
-
-                if (buf.length < 0x40) {
-                    musics.add(music);
-                    return musics;
-                }
-                if (Common.getLE32(buf, 0x00) != Vgm.FCC_VGM) {
-                    // musics.add(Music);
-                    // return musics;
-                    // VGZかもしれないので確認する
-                    try {
-                        int num;
-                        buf = new byte[1024]; // 1Kbytesずつ処理する
-
-                        if (entry == null || entry instanceof ZipEntry) {
-                            if (archive == null && entry == null) {
-                                archive = Archives.getArchive(new java.io.File(zipFile));
-                                entry = archive.getEntry(file);
-                            }
-                            try (InputStream inStream = archive.getInputStream(entry);
-                                 InputStream decompStream = Archives.getInputStream(inStream);
-                                 ByteArrayOutputStream outStream = new ByteArrayOutputStream()
-                            ) {
-                                while ((num = decompStream.read(buf, 0, buf.length)) > 0) {
-                                    outStream.write(buf, 0, num);
-                                }
-                                buf = outStream.toByteArray();
-                            }
-                        } else {
-                            buf = archive.getInputStream(entry).readAllBytes();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        // vgzではなかった
-                    }
-                }
-
-                if (Common.getLE32(buf, 0x00) != Vgm.FCC_VGM) {
-                    musics.add(music);
-                    return musics;
-                }
-
-                music.format = FileFormat.VGM;
-                int version = Common.getLE32(buf, 0x08);
-                String _version = String.format("%d.%d%d", (version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
-
-                int vgmGd3 = Common.getLE32(buf, 0x14);
-                Gd3 gd3 = new Vgm.Gd3();
-                if (vgmGd3 != 0) {
-                    int vgmGd3Id = Common.getLE32(buf, vgmGd3 + 0x14);
-                    if (vgmGd3Id != Vgm.FCC_GD3) {
-                        musics.add(music);
-                        return musics;
-                    }
-                    gd3 = (new Vgm(setting)).getGD3Info(buf, vgmGd3);
-                }
-
-                int TotalCounter = Common.getLE32(buf, 0x18);
-                int vgmLoopOffset = Common.getLE32(buf, 0x1c);
-                int loopCounter = Common.getLE32(buf, 0x20);
-
-                music.title = gd3.trackName;
-                music.titleJ = gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-
-                double sec = (double) TotalCounter / (double) setting.getOutputDevice().getSampleRate();
-                int TCminutes = (int) (sec / 60);
-                sec -= TCminutes * 60;
-                int TCsecond = (int) sec;
-                sec -= TCsecond;
-                int TCmillisecond = (int) (sec * 100.0);
-                music.duration = String.format("%2d:%2d:%2d", TCminutes, TCsecond, TCmillisecond);
-
-                return musics;
-            }
-        },
-        VGM(".vgm", ".vgz") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                return Collections.singletonList(music);
-            }
-            static boolean isX() {
-                return false;
-            }
-        },
-        NRT(".nrd") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.NRT;
-                int index = 42;
-                Vgm.Gd3 gd3 = (new NRTDRV(setting)).getGD3Info(buf, index);
-                music.title = gd3.trackName;
-                music.titleJ = gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-                return Collections.singletonList(music);
-            }
-        },
-        XGM(".xgm") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.XGM;
-                Vgm.Gd3 gd3 = new Xgm(setting).getGD3Info(buf);
-                music.title = gd3.trackName;
-                music.titleJ = gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-
-                if (music.title.isEmpty() && music.titleJ.isEmpty() && music.game.isEmpty() && music.gameJ.isEmpty() && music.composer.isEmpty() && music.composerJ.isEmpty()) {
-                    music.title = String.format("(%s)", Path.getFileName(file));
-                }
-                return Collections.singletonList(music);
-            }
-        },
-        S98(".s98") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.S98;
-                Gd3 gd3 = new S98(setting).getGD3Info(buf);
-                if (gd3 != null) {
-                    music.title = gd3.trackName;
-                    music.titleJ = gd3.trackNameJ;
-                    music.game = gd3.gameName;
-                    music.gameJ = gd3.gameNameJ;
-                    music.composer = gd3.composer;
-                    music.composerJ = gd3.composerJ;
-                    music.vgmby = gd3.vgmBy;
-
-                    music.converted = gd3.converted;
-                    music.notes = gd3.notes;
-                } else {
-                    music.title = String.format("(%s)", Path.getFileName(file));
-                }
-                return Collections.singletonList(music);
-            }
-        },
-        MID(".mid") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.MID;
-                Gd3 gd3 = new MID().getGD3Info(buf);
-                if (gd3 != null) {
-                    music.title = gd3.trackName;
-                    music.titleJ = gd3.trackNameJ;
-                    music.game = gd3.gameName;
-                    music.gameJ = gd3.gameNameJ;
-                    music.composer = gd3.composer;
-                    music.composerJ = gd3.composerJ;
-                    music.vgmby = gd3.vgmBy;
-
-                    music.converted = gd3.converted;
-                    music.notes = gd3.notes;
-                } else {
-                    music.title = String.format("(%s)", Path.getFileName(file));
-                }
-
-                if (music.title.isEmpty() && music.titleJ.isEmpty()) {
-                    music.title = String.format("(%s)", Path.getFileName(file));
-                }
-                return Collections.singletonList(music);
-            }
-        },
-        RCP(".rcp") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.RCP;
-                Gd3 gd3 = new RCP().getGD3Info(buf);
-                if (gd3 != null) {
-                    music.title = gd3.trackName;
-                    music.titleJ = gd3.trackNameJ;
-                    music.game = gd3.gameName;
-                    music.gameJ = gd3.gameNameJ;
-                    music.composer = gd3.composer;
-                    music.composerJ = gd3.composerJ;
-                    music.vgmby = gd3.vgmBy;
-
-                    music.converted = gd3.converted;
-                    music.notes = gd3.notes;
-                } else {
-                    music.title = String.format("(%s)", Path.getFileName(file));
-                }
-
-                if (music.title.isEmpty() && music.titleJ.isEmpty()) {
-                    music.title = String.format("(%s)", Path.getFileName(file));
-                }
-                return Collections.singletonList(music);
-            }
-        },
-        NSF(".nsf") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                List<PlayList.Music> musics = new ArrayList<>();
-                PlayList.Music music = new PlayList.Music();
-                Nsf nsf = new Nsf(setting);
-                Gd3 gd3 = nsf.getGD3Info(buf);
-
-                if (gd3 != null) {
-                    for (int s = 0; s < nsf.songs; s++) {
-                        music = new PlayList.Music();
-                        music.format = FileFormat.NSF;
-                        music.fileName = file;
-                        music.arcFileName = zipFile;
-                        music.arcType = EnmArcType.unknown;
-                        if (zipFile != null && zipFile.isEmpty())
-                            music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-                        music.title = String.format("%s - Trk %d", gd3.gameName, s + 1);
-                        music.titleJ = String.format("%s - Trk %d", gd3.gameNameJ, s + 1);
-                        music.game = gd3.gameName;
-                        music.gameJ = gd3.gameNameJ;
-                        music.composer = gd3.composer;
-                        music.composerJ = gd3.composerJ;
-                        music.vgmby = gd3.vgmBy;
-                        music.converted = gd3.converted;
-                        music.notes = gd3.notes;
-                        music.songNo = s;
-
-                        musics.add(music);
-                    }
-                } else {
-                    music.format = FileFormat.NSF;
-                    music.fileName = file;
-                    music.arcFileName = zipFile;
-                    music.game = "unknown";
-                    music.type = "-";
-                    music.title = String.format("(%s)", Path.getFileName(file));
-                    musics.add(music);
-                }
-
-                return musics;
-            }
-        },
-        HES(".hes") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                List<PlayList.Music> musics = new ArrayList<>();
-                Hes hes = new Hes();
-                Vgm.Gd3 gd3 = hes.getGD3Info(buf);
-
-                for (int s = 0; s < 256; s++) {
-                    PlayList.Music music = new PlayList.Music();
-                    music.format = FileFormat.HES;
-                    music.fileName = file;
-                    music.arcFileName = zipFile;
-                    music.arcType = EnmArcType.unknown;
-                    if (zipFile != null && zipFile.isEmpty())
-                        music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-                    music.title = String.format("%s - Trk %d", Path.getFileName(file), s + 1);
-                    music.titleJ = String.format("%s - Trk %d", Path.getFileName(file), s + 1);
-                    music.game = "";
-                    music.gameJ = "";
-                    music.composer = "";
-                    music.composerJ = "";
-                    music.vgmby = "";
-                    music.converted = "";
-                    music.notes = "";
-                    music.songNo = s;
-
-                    musics.add(music);
-                }
-                return musics;
-            }
-        },
-        ZIP(".zip") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                return Collections.singletonList(music);
-            }
-        },
-        M3U(".m3u") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                return Collections.singletonList(music);
-            }
-        },
-        SID(".sid") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                List<PlayList.Music> musics = new ArrayList<>();
-                Sid sid = new Sid();
-                Gd3 gd3 = sid.getGD3Info(buf);
-
-                for (int s = 0; s < sid.songs; s++) {
-                    PlayList.Music music = new PlayList.Music();
-                    music.format = FileFormat.SID;
-                    music.fileName = file;
-                    music.arcFileName = zipFile;
-                    music.arcType = EnmArcType.unknown;
-                    if (zipFile != null && zipFile.isEmpty())
-                        music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-                    music.title = String.format("%s - Trk %d", gd3.trackName, s + 1);
-                    music.titleJ = String.format("%s - Trk %d", gd3.trackName, s + 1);
-                    music.game = "";
-                    music.gameJ = "";
-                    music.composer = gd3.composer;
-                    music.composerJ = gd3.composer;
-                    music.vgmby = "";
-                    music.converted = "";
-                    music.notes = gd3.notes;
-                    music.songNo = s;
-
-                    musics.add(music);
-                }
-
-                return musics;
-            }
-        },
-        MDR(".mdr") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.MDR;
-                Vgm.Gd3 gd3 = (new MoonDriver()).getGD3Info(buf);
-                music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-                music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-                return Collections.singletonList(music);
-            }
-        },
-        LZH(".lzh") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                return Collections.singletonList(music);
-            }
-        },
-        MDX(".mdx") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.MDX;
-                Gd3 gd3 = (new MXDRV()).getGD3Info(buf);
-                music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-                music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-                return Collections.singletonList(music);
-            }
-        },
-        MND(".mnd") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.MND;
-                Vgm.Gd3 gd3 = (new MnDrv()).getGD3Info(buf);
-                music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-                music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-                return Collections.singletonList(music);
-            }
-        },
-        MUB(".mub") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.MUB;
-                Gd3 gd3 = new MucomDotNET().getGD3Info(buf);
-                music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-                music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-                return Collections.singletonList(music);
-            }
-        },
-        MUC(".muc") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.MUC;
-                Vgm.Gd3 gd3 = new MucomDotNET().getGD3Info(buf);
-                music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-                music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-                return Collections.singletonList(music);
-            }
-        },
-        ZGM(".zgm") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.ZGM;
-                Gd3 gd3 = new Zgm().getGD3Info(buf);
-                music.title = gd3.trackName;
-                music.titleJ = gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-
-                if (music.title.isEmpty() && music.titleJ.isEmpty() && music.game.isEmpty() && music.gameJ.isEmpty() && music.composer.isEmpty() && music.composerJ.isEmpty()) {
-                    music.title = String.format("(%s)", Path.getFileName(file));
-                }
-                return Collections.singletonList(music);
-            }
-        },
-        MML(".mml") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.MML;
-                int index = 0;
-                PMDDotNET pmd = new PMDDotNET();
-                pmd.setPlayingFileName(file);
-                Vgm.Gd3 gd3 = pmd.getGD3Info(buf, index, PMDDotNET.PMDFileType.MML);
-                music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-                music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-                return Collections.singletonList(music);
-            }
-        },
-        M(".m", ".m2", ".mz") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.M;
-                int index = 0;
-                Gd3 gd3 = new PMDDotNET().getGD3Info(buf, index, PMDDotNET.PMDFileType.M);
-                music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
-                music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
-                music.game = gd3.gameName;
-                music.gameJ = gd3.gameNameJ;
-                music.composer = gd3.composer;
-                music.composerJ = gd3.composerJ;
-                music.vgmby = gd3.vgmBy;
-
-                music.converted = gd3.converted;
-                music.notes = gd3.notes;
-                return Collections.singletonList(music);
-            }
-        },
-        WAV(".wav") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                List<PlayList.Music> musics = new ArrayList<>();
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.WAV;
-                music.title = String.format("(%s)", Path.getFileName(file));
-                return Collections.singletonList(music);
-            }
-        },
-        MP3(".mp3") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.MP3;
-                music.title = String.format("(%s)", Path.getFileName(file));
-                return Collections.singletonList(music);
-            }
-        },
-        AIFF(".aiff") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                List<PlayList.Music> musics = new ArrayList<>();
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.AIFF;
-                music.title = String.format("(%s)", Path.getFileName(file));
-                return Collections.singletonList(music);
-            }
-        },
-        MGS(".mgs") {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                List<PlayList.Music> musics = new ArrayList<>();
-                PlayList.Music music = new PlayList.Music();
-                music.format = FileFormat.MGS;
-                int index = 8;
-                Gd3 gd3 = (new MGSDRV()).getGD3Info(buf, index);
-                music.title = gd3.trackName;
-                music.titleJ = gd3.trackNameJ;
-                music.game = "";
-                music.gameJ = "";
-                music.composer = "";
-                music.composerJ = "";
-                music.vgmby = "";
-
-                music.converted = "";
-                music.notes = "";
-                return Collections.singletonList(music);
-            }
-        },
-        MDL() {
-            List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
-                PlayList.Music music = new PlayList.Music();
-                return Collections.singletonList(music);
-            }
-        };
-        final String[] exts;
-        FileFormat(String... exts) {
-            this.exts = exts;
-        }
-        public static FileFormat checkExt(String filename) {
-            for (FileFormat e : values()) {
-                if (e.exts != null) {
-                    if (Arrays.stream(e.exts).anyMatch(ex -> filename.toLowerCase().lastIndexOf(ex) != -1)) {
-                        return e;
-                    }
-                }
-            }
-            return unknown;
-        }
-        abstract List<PlayList.Music> getMusic(Setting setting, String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/);
-    }
-
     public enum EnmArcType {
         unknown,
         ZIP,
@@ -1196,13 +581,6 @@ public class Common {
         }
 
         /**
-         * called on dragging
-         */
-//      public void dragOver(DropTargetDragEvent ev) {
-//          super.dragOver(ev);
-//      }
-
-        /**
          * You need to implement here dropping procedure.
          * data is deserialized clone
          * @param data dropped
@@ -1213,5 +591,4 @@ public class Common {
             return true;
         }
     }
-
 }

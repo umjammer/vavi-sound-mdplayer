@@ -127,7 +127,7 @@ public class playSidFp {
     /**
      * Mute/unmute a Sid channel.
      *
-     * @param sidNum the Sid chip, 0 for the first one, 1 for the second.
+     * @param sidNum the Sid chips, 0 for the first one, 1 for the second.
      * @param voice  the channel to mute/unmute.
      * @param enable true unmutes the channel, false mutes it.
      */

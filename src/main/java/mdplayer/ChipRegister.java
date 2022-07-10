@@ -13,11 +13,14 @@ import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RC86ctlSoundChip;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.driver.sid.Sid;
-import mdsound.C140;
-import mdsound.K051649;
-import mdsound.MultiPcm;
-import mdsound.OkiM6295;
-import mdsound.PPZ8;
+import mdsound.Instrument;
+import mdsound.chips.C140;
+import mdsound.instrument.K051649Inst;
+import mdsound.chips.MultiPCM;
+import mdsound.chips.OkiM6295;
+import mdsound.chips.PPZ8Status;
+import mdsound.instrument.CtrQSoundInst;
+import mdsound.instrument.QSoundInst;
 import mdsound.np.chip.DeviceInfo;
 import mdsound.np.chip.NesApu;
 import mdsound.np.chip.NesDmc;
@@ -36,7 +39,7 @@ public class ChipRegister {
 
 //    private final VstMng vstMng;
 
-    private final Setting setting;
+    private final Setting setting = Setting.getInstance();;
 
     private final mdsound.MDSound mds;
 
@@ -48,7 +51,7 @@ public class ChipRegister {
     // private NX68Sound.X68Sound x68Sound = null;
     // private NX68Sound.sound_iocs sound_iocs = null;
 
-    private Map<mdsound.MDSound.InstrumentType, mdsound.MDSound.Chip> dicChipsInfo = new HashMap<>();
+    private Map<Class<? extends Instrument>, mdsound.MDSound.Chip> dicChipsInfo = new HashMap<>();
 
     private Setting.ChipType2[] ctSN76489;
     private Setting.ChipType2[] ctYM2612;
@@ -70,25 +73,25 @@ public class ChipRegister {
     private Setting.ChipType2[] ctSEGAPCM;
     private Setting.ChipType2[] ctC140;
     private RealChip realChip;
-    private RSoundChip[] scSN76489;
-    private RSoundChip[] scYM2612;
-    private RSoundChip[] scYM2608;
-    private RSoundChip[] scYM2151;
-    private RSoundChip[] scYM2203;
-    private RSoundChip[] scAY8910;
-    private RSoundChip[] scK051649;
-    private RSoundChip[] scYM2413;
-    private RSoundChip[] scYM2610;
-    private RSoundChip[] scYM2610EA;
-    private RSoundChip[] scYM2610EB;
-    private RSoundChip[] scYM3526;
-    private RSoundChip[] scYM3812;
-    private RSoundChip[] scYMF262;
+    private RSoundChip[] scSN76489 = new RSoundChip[] {null, null};
+    private RSoundChip[] scYM2612 = new RSoundChip[] {null, null};
+    private RSoundChip[] scYM2608 = new RSoundChip[] {null, null};
+    private RSoundChip[] scYM2151 = new RSoundChip[] {null, null};
+    private RSoundChip[] scYM2203 = new RSoundChip[] {null, null};
+    private RSoundChip[] scAY8910 = new RSoundChip[] {null, null};
+    private RSoundChip[] scK051649 = new RSoundChip[] {null, null};
+    private RSoundChip[] scYM2413 = new RSoundChip[] {null, null};
+    private RSoundChip[] scYM2610 = new RSoundChip[] {null, null};
+    private RSoundChip[] scYM2610EA = new RSoundChip[] {null, null};
+    private RSoundChip[] scYM2610EB = new RSoundChip[] {null, null};
+    private RSoundChip[] scYM3526 = new RSoundChip[] {null, null};
+    private RSoundChip[] scYM3812 = new RSoundChip[] {null, null};
+    private RSoundChip[] scYMF262 = new RSoundChip[] {null, null};
     private RSoundChip[] scYMF271 = new RSoundChip[] {null, null};
     private RSoundChip[] scYMF278B = new RSoundChip[] {null, null};
     private RSoundChip[] scYMZ280B = new RSoundChip[] {null, null};
-    private RSoundChip[] scSEGAPCM;
-    private RSoundChip[] scC140;
+    private RSoundChip[] scSEGAPCM = new RSoundChip[] {null, null};
+    private RSoundChip[] scC140 = new RSoundChip[] {null, null};
 
     private static final byte[] algM = new byte[] {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
 
@@ -105,68 +108,47 @@ public class ChipRegister {
     private static final int[] noteTbl2 = new int[] {13, 14, 0, -1, 1, 2, 4, -1, 5, 6, 8, -1, 9, 10, 12, -1};
 
     private int nsfAPUmask = 0;
-
     private int nsfDMCmask = 0;
-
     private int nsfFDSmask = 0;
-
     private int nsfMMC5mask = 0;
-
     private int nsfVRC6mask = 0;
-
     private int nsfVRC7mask = 0;
-
     private int nsfN163mask = 0;
 
     public ChipLEDs chipLED = new ChipLEDs();
 
     public int[][] fmRegisterYM2151 = new int[][] {null, null};
-
     public int[][] fmKeyOnYM2151 = new int[][] {null, null};
-
     public int[][] fmVolYM2151 = new int[][] {
             new int[] {0, 0, 0, 0, 0, 0, 0, 0},
             new int[] {0, 0, 0, 0, 0, 0, 0, 0}
     };
 
     private int[] nowYM2151FadeoutVol = new int[] {0, 0};
-
     private boolean[][] maskFMChYM2151 = new boolean[][] {
             new boolean[] {false, false, false, false, false, false, false, false},
             new boolean[] {false, false, false, false, false, false, false, false}
     };
-
     public int[] fmAMDYM2151 = new int[] {-1, -1};
-
     public int[] fmPMDYM2151 = new int[] {-1, -1};
 
     public int[][] fmRegisterYM2203 = new int[][] {null, null};
-
     public int[][] fmKeyOnYM2203 = new int[][] {null, null};
-
     public int[][] fmCh3SlotVolYM2203 = new int[][] {new int[4], new int[4]};
-
     private int[] nowYM2203FadeoutVol = new int[] {0, 0};
-
     public int[][] fmVolYM2203 = new int[][] {new int[9], new int[9]};
-
     private boolean[][] maskFMChYM2203 = new boolean[][] {
             new boolean[] {false, false, false, false, false, false, false, false, false},
             new boolean[] {false, false, false, false, false, false, false, false, false}
     };
 
     public int[][] fmRegisterYM2413 = new int[][] {null, null};
-
     // private int[] fmRegisterYM2413RyhthmB = new int[] { 0, 0 };
     // private int[] fmRegisterYM2413Ryhthm = new int[] { 0, 0 };
     private ChipKeyInfo[] kiYM2413 = new ChipKeyInfo[] {new ChipKeyInfo(14), new ChipKeyInfo(14)};
-
     private ChipKeyInfo[] kiYM2413ret = new ChipKeyInfo[] {new ChipKeyInfo(14), new ChipKeyInfo(14)};
-
     private int[] nowYM2413FadeoutVol = new int[] {0, 0};
-
     private boolean[] rmYM2413 = new boolean[] {false, false};
-
     private boolean[][] maskFMChYM2413 = new boolean[][] {
             new boolean[] {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             new boolean[] {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
@@ -176,20 +158,13 @@ public class ChipRegister {
             new int[][] {null, null},
             new int[][] {null, null}
     };
-
-    public int[][] fmKeyOnYM2612 = new int[][] {
-            null, null
-    };
-
+    public int[][] fmKeyOnYM2612 = new int[][] {null, null};
     public int[][] fmVolYM2612 = new int[][] {
             new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0},
             new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
-
     public int[][] fmCh3SlotVolYM2612 = new int[][] {new int[4], new int[4]};
-
     private int[] nowYM2612FadeoutVol = new int[] {0, 0};
-
     private boolean[][] maskFMChYM2612 = new boolean[][] {
             new boolean[] {false, false, false, false, false, false},
             new boolean[] {false, false, false, false, false, false}
@@ -478,7 +453,7 @@ public class ChipRegister {
             }
     };
 
-    public mdsound.K051649 scc_k051649 = new K051649();
+    public K051649Inst scc_k051649 = new K051649Inst();
 
     private int sccR_port;
 
@@ -537,47 +512,47 @@ public class ChipRegister {
 
     private MIDIExport midiExport = null;
 
-    public ChipRegister(Setting setting,
-                        mdsound.MDSound mds,
-                        RealChip nScci,
+    public ChipRegister(mdsound.MDSound mds
+//            ,
+//                        RealChip nScci,
 //                        VstMng vstMng,
-                        RSoundChip[] scYM2612,
-                        RSoundChip[] scSN76489,
-                        RSoundChip[] scYM2608,
-                        RSoundChip[] scYM2151,
-                        RSoundChip[] scYM2203,
-                        RSoundChip[] scYM2413,
-                        RSoundChip[] scYM2610,
-                        RSoundChip[] scYM2610EA,
-                        RSoundChip[] scYM2610EB,
-                        RSoundChip[] scYM3526,
-                        RSoundChip[] scYM3812,
-                        RSoundChip[] scYMF262,
-                        RSoundChip[] scC140,
-                        RSoundChip[] scSEGAPCM,
-                        RSoundChip[] scAY8910,
-                        RSoundChip[] scK051649) {
-        this.setting = setting;
+//                        RSoundChip[] scYM2612,
+//                        RSoundChip[] scSN76489,
+//                        RSoundChip[] scYM2608,
+//                        RSoundChip[] scYM2151,
+//                        RSoundChip[] scYM2203,
+//                        RSoundChip[] scYM2413,
+//                        RSoundChip[] scYM2610,
+//                        RSoundChip[] scYM2610EA,
+//                        RSoundChip[] scYM2610EB,
+//                        RSoundChip[] scYM3526,
+//                        RSoundChip[] scYM3812,
+//                        RSoundChip[] scYMF262,
+//                        RSoundChip[] scC140,
+//                        RSoundChip[] scSEGAPCM,
+//                        RSoundChip[] scAY8910,
+//                        RSoundChip[] scK051649
+    ) {
         this.mds = mds;
 //        this.vstMng = vstMng;
 //        this.vstMng.midiParams = midiParams;
-        this.realChip = nScci;
-        this.scYM2612 = scYM2612;
-        this.scYM2608 = scYM2608;
-        this.scYM2151 = scYM2151;
-        this.scSN76489 = scSN76489;
-        this.scYM2203 = scYM2203;
-        this.scYM2413 = scYM2413;
-        this.scYM3526 = scYM3526;
-        this.scYM3812 = scYM3812;
-        this.scYMF262 = scYMF262;
-        this.scYM2610 = scYM2610;
-        this.scYM2610EA = scYM2610EA;
-        this.scYM2610EB = scYM2610EB;
-        this.scC140 = scC140;
-        this.scSEGAPCM = scSEGAPCM;
-        this.scAY8910 = scAY8910;
-        this.scK051649 = scK051649;
+//        this.realChip = nScci;
+//        this.scYM2612 = scYM2612;
+//        this.scYM2608 = scYM2608;
+//        this.scYM2151 = scYM2151;
+//        this.scSN76489 = scSN76489;
+//        this.scYM2203 = scYM2203;
+//        this.scYM2413 = scYM2413;
+//        this.scYM3526 = scYM3526;
+//        this.scYM3812 = scYM3812;
+//        this.scYMF262 = scYMF262;
+//        this.scYM2610 = scYM2610;
+//        this.scYM2610EA = scYM2610EA;
+//        this.scYM2610EB = scYM2610EB;
+//        this.scC140 = scC140;
+//        this.scSEGAPCM = scSEGAPCM;
+//        this.scAY8910 = scAY8910;
+//        this.scK051649 = scK051649;
 
         this.ctYM2612 = new Setting.ChipType2[] {
                 setting.getYM2612Type()[0], setting.getYM2612Type()[1]
@@ -642,7 +617,7 @@ public class ChipRegister {
         // x68Sound = new NX68Sound.X68Sound();
         // sound_iocs = new NX68Sound.sound_iocs(x68Sound);
 
-        midiExport = new MIDIExport(setting);
+        midiExport = new MIDIExport();
         midiExport.fmRegisterYM2612 = fmRegisterYM2612;
         midiExport.fmRegisterYM2151 = fmRegisterYM2151;
 
@@ -655,8 +630,8 @@ public class ChipRegister {
         dicChipsInfo.clear();
         if (chipInfos != null) {
             for (mdsound.MDSound.Chip c : chipInfos) {
-                if (!dicChipsInfo.containsKey(c.type)) {
-                    dicChipsInfo.put(c.type, c);
+                if (!dicChipsInfo.containsKey(c.instrument.getClass())) {
+                    dicChipsInfo.put(c.instrument.getClass(), c);
                 }
             }
         }
@@ -824,7 +799,7 @@ public class ChipRegister {
         dicChipsInfo.clear();
         if (chipInfos != null) {
             for (mdsound.MDSound.Chip c : chipInfos) {
-                dicChipsInfo.put(c.type, c);
+                dicChipsInfo.put(c.instrument.getClass(), c);
             }
         }
 
@@ -973,7 +948,7 @@ public class ChipRegister {
         }
     }
 
-    public mdsound.MDSound.Chip GetChipInfo(mdsound.MDSound.InstrumentType typ) {
+    public mdsound.MDSound.Chip GetChipInfo(Class<? extends Instrument> typ) {
         if (dicChipsInfo.containsKey(typ))
             return dicChipsInfo.get(typ);
         return null;
@@ -1089,7 +1064,7 @@ public class ChipRegister {
 //        }
     }
 
-    public void SetFileName(String fn) {
+    public void setFileName(String fn) {
         midiExport.playingFileName = fn;
     }
 
@@ -1171,9 +1146,9 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriOPM = 2;
+            chipLED.put("PriOPM", 2);
         else
-            chipLED.SecOPM = 2;
+            chipLED.put("SecOPM", 2);
 
         if ((model == EnmModel.VirtualModel && (ctYM2151[chipID] == null || !ctYM2151[chipID].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (scYM2151 != null && scYM2151[chipID] != null))) {
@@ -1207,7 +1182,7 @@ public class ChipRegister {
         }
 
         if ((dAddr & 0xf8) == 0x20) {
-            int al = dData & 0x07;// AL
+            int al = dData & 0x07; // AL
             int ch = (dAddr & 0x7);
 
             for (int i = 0; i < 4; i++) {
@@ -1217,11 +1192,11 @@ public class ChipRegister {
                         if (model == EnmModel.VirtualModel) {
                             if (!ctYM2151[chipID].getUseReal()[0]) {
                                 if (ctYM2151[chipID].getUseEmu()[0])
-                                    mds.writeYM2151((byte) chipID, (byte) (0x60 + i * 8 + ch), (byte) 127);
+                                    mds.writeYm2151((byte) chipID, (byte) (0x60 + i * 8 + ch), (byte) 127);
                                 if (ctYM2151[chipID].getUseEmu()[1])
-                                    mds.WriteYM2151mame((byte) chipID, (byte) (0x60 + i * 8 + ch), (byte) 127);
+                                    mds.WriteYm2151Mame((byte) chipID, (byte) (0x60 + i * 8 + ch), (byte) 127);
                                 if (ctYM2151[chipID].getUseEmu()[2])
-                                    mds.WriteYM2151x68sound((byte) chipID, (byte) (0x60 + i * 8 + ch), (byte) 127);
+                                    mds.WriteYm2151X68Sound((byte) chipID, (byte) (0x60 + i * 8 + ch), (byte) 127);
                             }
                         } else {
                             if (scYM2151 != null && scYM2151[chipID] != null)
@@ -1244,11 +1219,11 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
             if (!ctYM2151[chipID].getUseReal()[0]) {
                 if (ctYM2151[chipID].getUseEmu()[0])
-                    mds.writeYM2151((byte) chipID, (byte) dAddr, (byte) dData);
+                    mds.writeYm2151((byte) chipID, (byte) dAddr, (byte) dData);
                 if (ctYM2151[chipID].getUseEmu()[1])
-                    mds.WriteYM2151mame((byte) chipID, (byte) dAddr, (byte) dData);
+                    mds.WriteYm2151Mame((byte) chipID, (byte) dAddr, (byte) dData);
                 if (ctYM2151[chipID].getUseEmu()[2])
-                    mds.WriteYM2151x68sound((byte) chipID, (byte) dAddr, (byte) dData);
+                    mds.WriteYm2151X68Sound((byte) chipID, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYM2151[chipID] == null)
@@ -1281,15 +1256,15 @@ public class ChipRegister {
 
     }
 
-    private void writeYM2151(int chipID, int dPort, int dAddr, int dData, EnmModel model) {
+    private void writeYm2151(int chipID, int dPort, int dAddr, int dData, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!ctYM2151[chipID].getUseReal()[0]) {
                 if (ctYM2151[chipID].getUseEmu()[0])
-                    mds.writeYM2151((byte) chipID, (byte) dAddr, (byte) dData);
+                    mds.writeYm2151((byte) chipID, (byte) dAddr, (byte) dData);
                 if (ctYM2151[chipID].getUseEmu()[1])
-                    mds.WriteYM2151mame((byte) chipID, (byte) dAddr, (byte) dData);
+                    mds.WriteYm2151Mame((byte) chipID, (byte) dAddr, (byte) dData);
                 if (ctYM2151[chipID].getUseEmu()[2])
-                    mds.WriteYM2151x68sound((byte) chipID, (byte) dAddr, (byte) dData);
+                    mds.WriteYm2151X68Sound((byte) chipID, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYM2151[chipID] != null)
@@ -1302,47 +1277,47 @@ public class ChipRegister {
         // FM全チャネルキーオフ
         for (int i = 0; i < 8; i++) {
             // note off
-            writeYM2151(chipID, 0, 0x08, 0x00 + i, model);
+            writeYm2151(chipID, 0, 0x08, 0x00 + i, model);
         }
 
-        writeYM2151(chipID, 0, 0x0f, 0x00, model); // FM NOISE ENABLE/NOISE FREQ
-        writeYM2151(chipID, 0, 0x18, 0x00, model); // FM HW LFO FREQ
-        writeYM2151(chipID, 0, 0x19, 0x80, model); // FM PMD/VALUE
-        writeYM2151(chipID, 0, 0x19, 0x00, model); // FM AMD/VALUE
-        writeYM2151(chipID, 0, 0x1b, 0x00, model); // FM HW LFO WAVEFORM
+        writeYm2151(chipID, 0, 0x0f, 0x00, model); // FM NOISE ENABLE/NOISE FREQ
+        writeYm2151(chipID, 0, 0x18, 0x00, model); // FM HW LFO FREQ
+        writeYm2151(chipID, 0, 0x19, 0x80, model); // FM PMD/VALUE
+        writeYm2151(chipID, 0, 0x19, 0x00, model); // FM AMD/VALUE
+        writeYm2151(chipID, 0, 0x1b, 0x00, model); // FM HW LFO WAVEFORM
 
         // FM HW LFO RESET
-        writeYM2151(chipID, 0, 0x01, 0x02, model);
-        writeYM2151(chipID, 0, 0x01, 0x00, model);
+        writeYm2151(chipID, 0, 0x01, 0x02, model);
+        writeYm2151(chipID, 0, 0x01, 0x00, model);
 
-        writeYM2151(chipID, 0, 0x10, 0x00, model); // FM Timer-a(H)
-        writeYM2151(chipID, 0, 0x11, 0x00, model); // FM Timer-a(L)
-        writeYM2151(chipID, 0, 0x12, 0x00, model); // FM Timer-B
-        writeYM2151(chipID, 0, 0x14, 0x00, model); // FM Timer Control
+        writeYm2151(chipID, 0, 0x10, 0x00, model); // FM Timer-a(H)
+        writeYm2151(chipID, 0, 0x11, 0x00, model); // FM Timer-a(L)
+        writeYm2151(chipID, 0, 0x12, 0x00, model); // FM Timer-B
+        writeYm2151(chipID, 0, 0x14, 0x00, model); // FM Timer Control
 
         for (int i = 0; i < 8; i++) {
             // FB/ALG/PAN
-            writeYM2151(chipID, 0, 0x20 + i, 0x00, model);
+            writeYm2151(chipID, 0, 0x20 + i, 0x00, model);
             // KC
-            writeYM2151(chipID, 0, 0x28 + i, 0x00, model);
+            writeYm2151(chipID, 0, 0x28 + i, 0x00, model);
             // KF
-            writeYM2151(chipID, 0, 0x30 + i, 0x00, model);
+            writeYm2151(chipID, 0, 0x30 + i, 0x00, model);
             // PMS/AMS
-            writeYM2151(chipID, 0, 0x38 + i, 0x00, model);
+            writeYm2151(chipID, 0, 0x38 + i, 0x00, model);
         }
         for (int i = 0; i < 0x20; i++) {
             // DT1/ML
-            writeYM2151(chipID, 0, 0x40 + i, 0x00, model);
+            writeYm2151(chipID, 0, 0x40 + i, 0x00, model);
             // TL=127
-            writeYM2151(chipID, 0, 0x60 + i, 0x7f, model);
+            writeYm2151(chipID, 0, 0x60 + i, 0x7f, model);
             // KS/AR
-            writeYM2151(chipID, 0, 0x80 + i, 0x1F, model);
+            writeYm2151(chipID, 0, 0x80 + i, 0x1F, model);
             // AMD/D1R
-            writeYM2151(chipID, 0, 0xa0 + i, 0x00, model);
+            writeYm2151(chipID, 0, 0xa0 + i, 0x00, model);
             // DT2/D2R
-            writeYM2151(chipID, 0, 0xc0 + i, 0x00, model);
+            writeYm2151(chipID, 0, 0xc0 + i, 0x00, model);
             // D1L/RR
-            writeYM2151(chipID, 0, 0xe0 + i, 0x0F, model);
+            writeYm2151(chipID, 0, 0xe0 + i, 0x0F, model);
         }
     }
 
@@ -1351,9 +1326,9 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriAY10 = 2;
+            chipLED.put("PriAY10", 2);
         else
-            chipLED.SecAY10 = 2;
+            chipLED.put("SecAY10", 2);
 
         if (model == EnmModel.VirtualModel)
             psgRegisterAY8910[chipID][dAddr] = dData;
@@ -1393,14 +1368,13 @@ public class ChipRegister {
 
     public void setDMGRegister(int chipID, int dAddr, int dData, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriDMG = 2;
+            chipLED.put("PriDMG", 2);
         else
-            chipLED.SecDMG = 2;
+            chipLED.put("SecDMG", 2);
 
         if (model == EnmModel.VirtualModel) {
-            // if (!ctNES[chipID].UseScci)
-            // {
-            mds.writeDMG((byte) chipID, (byte) dAddr, (byte) dData);
+            // if (!ctNES[chipID].UseScci) {
+            mds.writeGb((byte) chipID, (byte) dAddr, (byte) dData);
             // }
         } else {
             // if (scNES[chipID] == null) return;
@@ -1411,13 +1385,12 @@ public class ChipRegister {
 
     public void setNESRegister(int chipID, int dAddr, int dData, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriNES = 2;
+            chipLED.put("PriNES", 2);
         else
-            chipLED.SecNES = 2;
+            chipLED.put("SecNES", 2);
 
         if (model == EnmModel.VirtualModel) {
-            // if (!ctNES[chipID].UseScci)
-            // {
+            // if (!ctNES[chipID].UseScci) {
             mds.writeNES((byte) chipID, (byte) dAddr, (byte) dData);
             // }
         } else {
@@ -1429,13 +1402,12 @@ public class ChipRegister {
 
     public byte[] getNESRegisterAPU(int chipID, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriNES = 2;
+            chipLED.put("PriNES", 2);
         else
-            chipLED.SecNES = 2;
+            chipLED.put("SecNES", 2);
 
         if (model == EnmModel.VirtualModel) {
-            // if (!ctNES[chipID].UseScci)
-            // {
+            // if (!ctNES[chipID].UseScci) {
             return mds.ReadNESapu((byte) chipID);
             // }
         } else {
@@ -1448,13 +1420,12 @@ public class ChipRegister {
 
     public byte[] getNESRegisterDMC(int chipID, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriNES = 2;
+            chipLED.put("PriNES", 2);
         else
-            chipLED.SecNES = 2;
+            chipLED.put("SecNES", 2);
 
         if (model == EnmModel.VirtualModel) {
-            // if (!ctNES[chipID].UseScci)
-            // {
+            // if (!ctNES[chipID].UseScci) {
             return mds.ReadNESdmc((byte) chipID);
             // }
         } else {
@@ -1467,13 +1438,12 @@ public class ChipRegister {
 
     public mdsound.np.NpNesFds getFDSRegister(int chipID, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriFDS = 2;
+            chipLED.put("PriFDS", 2);
         else
-            chipLED.SecFDS = 2;
+            chipLED.put("SecFDS", 2);
 
         if (model == EnmModel.VirtualModel) {
-            // if (!ctNES[chipID].UseScci)
-            // {
+            // if (!ctNES[chipID].UseScci) {
             return mds.readFDS((byte) chipID);
             // }
         } else {
@@ -1487,9 +1457,9 @@ public class ChipRegister {
 
     public mdsound.np.chip.NesMmc5 getMMC5Register(int chipID, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriMMC5 = 2;
+            chipLED.put("PriMMC5", 2);
         else
-            chipLED.SecMMC5 = 2;
+            chipLED.put("SecMMC5", 2);
 
         if (model == EnmModel.VirtualModel) {
             return null;// mds.readMMC5((byte)chipID);
@@ -1501,9 +1471,9 @@ public class ChipRegister {
 
     public void setMultiPCMRegister(int chipID, int dAddr, int dData, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriMPCM = 2;
+            chipLED.put("PriMPCM", 2);
         else
-            chipLED.SecMPCM = 2;
+            chipLED.put("SecMPCM", 2);
 
         if (model == EnmModel.VirtualModel) {
             mds.WriteMultiPCM((byte) chipID, (byte) dAddr, (byte) dData);
@@ -1511,24 +1481,24 @@ public class ChipRegister {
         }
     }
 
-    public MultiPcm.MultiPCM getMultiPCMRegister(int chipID) {
+    public MultiPCM getMultiPCMRegister(int chipID) {
         if (chipID == 0)
-            chipLED.PriMPCM = 2;
+            chipLED.put("PriMPCM", 2);
         else
-            chipLED.SecMPCM = 2;
+            chipLED.put("SecMPCM", 2);
 
         return mds.ReadMultiPCMRegister(chipID);
     }
 
-    public PPZ8.PPZ8Status.Channel[] GetPPZ8Register(int chipID) {
+    public PPZ8Status.Channel[] GetPPZ8Register(int chipID) {
         return mds.readPPZ8Status(chipID);
     }
 
     public void setMultiPCMSetBank(int chipID, int dCh, int dAddr, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriMPCM = 2;
+            chipLED.put("PriMPCM", 2);
         else
-            chipLED.SecMPCM = 2;
+            chipLED.put("SecMPCM", 2);
 
         if (model == EnmModel.VirtualModel) {
             mds.WriteMultiPCMSetBank((byte) chipID, (byte) dCh, dAddr);
@@ -1538,7 +1508,7 @@ public class ChipRegister {
 
     public void setQSoundRegister(int chipID, byte mm, byte ll, byte rr, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriQsnd = 2;
+            chipLED.put("PriQsnd", 2);
 
         if (model == EnmModel.VirtualModel) {
             mds.WriteQSoundCtr((byte) chipID, 0, mm);
@@ -1560,9 +1530,9 @@ public class ChipRegister {
 
     public void setX1_010Register(int chipID, byte mm, byte ll, byte rr, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriX1010 = 2;
+            chipLED.put("PriX1010", 2);
         else
-            chipLED.SecX1010 = 2;
+            chipLED.put("SecX1010", 2);
 
         if (model == EnmModel.VirtualModel) {
             mds.writeX1_010(chipID, (byte) 0, mm * 0x100 + ll, rr);
@@ -1573,12 +1543,12 @@ public class ChipRegister {
 
     public void setGA20Register(int chipID, int Adr, byte Dat, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriGA20 = 2;
+            chipLED.put("PriGA20", 2);
         else
-            chipLED.SecGA20 = 2;
+            chipLED.put("SecGA20", 2);
 
         if (model == EnmModel.VirtualModel) {
-            mds.WriteGA20((byte) chipID, (byte) Adr, Dat);
+            mds.WriteIremga20((byte) chipID, (byte) Adr, Dat);
         } else {
         }
     }
@@ -1588,9 +1558,9 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriOPLL = 2;
+            chipLED.put("PriOPLL", 2);
         else
-            chipLED.SecOPLL = 2;
+            chipLED.put("SecOPLL", 2);
 
         if (model == EnmModel.VirtualModel)
             fmRegisterYM2413[chipID][dAddr] = dData;
@@ -1649,7 +1619,7 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             if (!ctYM2413[chipID].getUseReal()[0]) {
-                mds.writeYM2413((byte) chipID, (byte) dAddr, (byte) dData);
+                mds.writeYm2413((byte) chipID, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYM2413[chipID] == null)
@@ -1692,8 +1662,7 @@ public class ChipRegister {
         return kiVRC7ret[chipID];
     }
 
-    // public int getYM2413RyhthmKeyON(int chipID)
-    // {
+    // public int getYM2413RyhthmKeyON(int chipID) {
     // int r = fmRegisterYM2413Ryhthm[chipID];
     // fmRegisterYM2413Ryhthm[chipID] = 0;
     // return r;
@@ -1729,9 +1698,9 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriHuC = 2;
+            chipLED.put("PriHuC", 2);
         else
-            chipLED.SecHuC = 2;
+            chipLED.put("SecHuC", 2);
 
         if (model == EnmModel.VirtualModel) {
             if (!ctHuC6280[chipID].getUseReal()[0]) {
@@ -1743,7 +1712,7 @@ public class ChipRegister {
                 }
                 // Debug.printf(("chipID:%d Adr:%d Dat:%d",
                 // chipID, dAddr, dData);
-                mds.writeHuC6280((byte) chipID, (byte) dAddr, (byte) dData);
+                mds.writeOotakePsg((byte) chipID, (byte) dAddr, (byte) dData);
             }
         } else {
             // if (scHuC6280[chipID] == null) return;
@@ -1755,12 +1724,12 @@ public class ChipRegister {
             return 0;
 
         if (chipID == 0)
-            chipLED.PriHuC = 2;
+            chipLED.put("PriHuC", 2);
         else
-            chipLED.SecHuC = 2;
+            chipLED.put("SecHuC", 2);
 
         if (model == EnmModel.VirtualModel) {
-            return mds.ReadHuC6280(chipID, adr);
+            return mds.ReadOotakePsg(chipID, adr);
         }
 
         return 0;
@@ -1773,9 +1742,9 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriOPN = 2;
+            chipLED.put("PriOPN", 2);
         else
-            chipLED.SecOPN = 2;
+            chipLED.put("SecOPN", 2);
 
         if (model == EnmModel.VirtualModel) {
             if (dAddr != 0x2d && dAddr != 0x2e && dAddr != 0x2f) {
@@ -1864,7 +1833,7 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             if (!ctYM2203[chipID].getUseReal()[0]) {
-                mds.writeYM2203((byte) chipID, (byte) dAddr, (byte) dData);
+                mds.writeYm2203((byte) chipID, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYM2203[chipID] == null)
@@ -1874,10 +1843,10 @@ public class ChipRegister {
         }
     }
 
-    private void writeYM2203(int chipID, int dPort, int dAddr, int dData, EnmModel model) {
+    private void writeYm2203(int chipID, int dPort, int dAddr, int dData, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!ctYM2203[chipID].getUseReal()[0]) {
-                mds.writeYM2203((byte) chipID, (byte) dAddr, (byte) dData);
+                mds.writeYm2203((byte) chipID, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYM2203[chipID] == null)
@@ -1891,53 +1860,53 @@ public class ChipRegister {
         int i;
 
         // FM全チャネルキーオフ
-        writeYM2203(chipID, 0, 0x28, 0x00, model);
-        writeYM2203(chipID, 0, 0x28, 0x01, model);
-        writeYM2203(chipID, 0, 0x28, 0x02, model);
+        writeYm2203(chipID, 0, 0x28, 0x00, model);
+        writeYm2203(chipID, 0, 0x28, 0x01, model);
+        writeYm2203(chipID, 0, 0x28, 0x02, model);
 
         // FM TL=127
         for (i = 0x40; i < 0x4F + 1; i++) {
-            writeYM2203(chipID, 0, i, 0x7f, model);
+            writeYm2203(chipID, 0, i, 0x7f, model);
         }
         // FM ML/DT
         for (i = 0x30; i < 0x3F + 1; i++) {
-            writeYM2203(chipID, 0, i, 0x0, model);
+            writeYm2203(chipID, 0, i, 0x0, model);
         }
         // FM AR,DR,SR,KS,AMON
         for (i = 0x50; i < 0x7F + 1; i++) {
-            writeYM2203(chipID, 0, i, 0x0, model);
+            writeYm2203(chipID, 0, i, 0x0, model);
         }
         // FM SL,RR
         for (i = 0x80; i < 0x8F + 1; i++) {
-            writeYM2203(chipID, 0, i, 0xff, model);
+            writeYm2203(chipID, 0, i, 0xff, model);
         }
         // FM F-Num, FB/CONNECT
         for (i = 0x90; i < 0xBF + 1; i++) {
-            writeYM2203(chipID, 0, i, 0x0, model);
+            writeYm2203(chipID, 0, i, 0x0, model);
         }
         // FM PAN/AMS/PMS
         for (i = 0xB4; i < 0xB6 + 1; i++) {
-            writeYM2203(chipID, 0, i, 0xc0, model);
+            writeYm2203(chipID, 0, i, 0xc0, model);
         }
-        writeYM2203(chipID, 0, 0x22, 0x00, model); // HW LFO
-        writeYM2203(chipID, 0, 0x24, 0x00, model); // Timer-a(1)
-        writeYM2203(chipID, 0, 0x25, 0x00, model); // Timer-a(2)
-        writeYM2203(chipID, 0, 0x26, 0x00, model); // Timer-B
-        writeYM2203(chipID, 0, 0x27, 0x30, model); // Timer Control
+        writeYm2203(chipID, 0, 0x22, 0x00, model); // HW LFO
+        writeYm2203(chipID, 0, 0x24, 0x00, model); // Timer-a(1)
+        writeYm2203(chipID, 0, 0x25, 0x00, model); // Timer-a(2)
+        writeYm2203(chipID, 0, 0x26, 0x00, model); // Timer-B
+        writeYm2203(chipID, 0, 0x27, 0x30, model); // Timer Control
 
         // SSG 音程(2byte*3ch)
         for (i = 0x00; i < 0x05 + 1; i++) {
-            writeYM2203(chipID, 0, i, 0x00, model);
+            writeYm2203(chipID, 0, i, 0x00, model);
         }
-        writeYM2203(chipID, 0, 0x06, 0x00, model); // SSG ノイズ周波数
-        writeYM2203(chipID, 0, 0x07, 0x38, model); // SSG ミキサ
+        writeYm2203(chipID, 0, 0x06, 0x00, model); // SSG ノイズ周波数
+        writeYm2203(chipID, 0, 0x07, 0x38, model); // SSG ミキサ
         // SSG ボリューム(3ch)
         for (i = 0x08; i < 0x0A + 1; i++) {
-            writeYM2203(chipID, 0, i, 0x00, model);
+            writeYm2203(chipID, 0, i, 0x00, model);
         }
         // SSG Envelope
         for (i = 0x0B; i < 0x0D + 1; i++) {
-            writeYM2203(chipID, 0, i, 0x00, model);
+            writeYm2203(chipID, 0, i, 0x00, model);
         }
 
     }
@@ -1982,9 +1951,9 @@ public class ChipRegister {
         // if (ctYM3526 == null) return;
 
         if (chipID == 0)
-            chipLED.PriOPL = 2;
+            chipLED.put("PriOPL", 2);
         else
-            chipLED.SecOPL = 2;
+            chipLED.put("SecOPL", 2);
 
         fmRegisterYM3526[chipID][dAddr] = dData;
 
@@ -2057,7 +2026,7 @@ public class ChipRegister {
 
         }
 
-        writeYM3526(chipID, dAddr, dData, model);
+        writeYm3526(chipID, dAddr, dData, model);
 
     }
 
@@ -2070,10 +2039,10 @@ public class ChipRegister {
         return kiYM3526ret[chipID];
     }
 
-    private void writeYM3526(int chipID, int dAddr, int dData, EnmModel model) {
+    private void writeYm3526(int chipID, int dAddr, int dData, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!ctYM3526[chipID].getUseReal()[0]) {
-                mds.writeYM3526((byte) chipID, (byte) dAddr, (byte) dData);
+                mds.writeYm3526((byte) chipID, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYM3526[chipID] == null)
@@ -2088,17 +2057,17 @@ public class ChipRegister {
 
         // FM全チャネルキーオフ
         for (i = 0; i < 9; i++) {
-            writeYM3526(chipID, 0xb0 + i, 0x00, model);
+            writeYm3526(chipID, 0xb0 + i, 0x00, model);
         }
 
         // FM TL=127
         for (i = 0; i < 22; i++) {
-            writeYM3526(chipID, 0x40 + i, 0x3f, model);
+            writeYm3526(chipID, 0x40 + i, 0x3f, model);
         }
 
         // SL=15 RR=15
         for (i = 0; i < 22; i++) {
-            writeYM3526(chipID, 0x80 + i, 0xff, model);
+            writeYm3526(chipID, 0x80 + i, 0xff, model);
         }
     }
 
@@ -2106,9 +2075,9 @@ public class ChipRegister {
         // if (ctYM3812 == null) return;
 
         if (chipID == 0)
-            chipLED.PriOPL2 = 2;
+            chipLED.put("PriOPL2", 2);
         else
-            chipLED.SecOPL2 = 2;
+            chipLED.put("SecOPL2", 2);
 
         fmRegisterYM3812[chipID][dAddr] = dData;
 
@@ -2182,7 +2151,7 @@ public class ChipRegister {
 
         }
 
-        writeYM3812(chipID, dAddr, dData, model);
+        writeYm3812(chipID, dAddr, dData, model);
 
     }
 
@@ -2195,10 +2164,10 @@ public class ChipRegister {
         return kiYM3812ret[chipID];
     }
 
-    private void writeYM3812(int chipID, int dAddr, int dData, EnmModel model) {
+    private void writeYm3812(int chipID, int dAddr, int dData, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!ctYM3812[chipID].getUseReal()[0]) {
-                mds.writeYM3812((byte) chipID, (byte) dAddr, (byte) dData);
+                mds.writeYm3812((byte) chipID, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYM3812[chipID] == null)
@@ -2213,17 +2182,17 @@ public class ChipRegister {
 
         // FM全チャネルキーオフ
         for (i = 0; i < 9; i++) {
-            writeYM3812(chipID, 0xb0 + i, 0x00, model);
+            writeYm3812(chipID, 0xb0 + i, 0x00, model);
         }
 
         // FM TL=127
         for (i = 0; i < 22; i++) {
-            writeYM3812(chipID, 0x40 + i, 0x3f, model);
+            writeYm3812(chipID, 0x40 + i, 0x3f, model);
         }
 
         // SL=15 RR=15
         for (i = 0; i < 22; i++) {
-            writeYM3812(chipID, 0x80 + i, 0xff, model);
+            writeYm3812(chipID, 0x80 + i, 0xff, model);
         }
     }
 
@@ -2242,9 +2211,9 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriOPL3 = 2;
+            chipLED.put("PriOPL3", 2);
         else
-            chipLED.SecOPL3 = 2;
+            chipLED.put("SecOPL3", 2);
 
         fmRegisterYMF262[chipID][dPort][dAddr] = dData;
 
@@ -2343,7 +2312,7 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             if (!ctYMF262[chipID].getUseReal()[0]) {
-                mds.writeYMF262((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                mds.writeYmF262((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYMF262[chipID] == null)
@@ -2353,10 +2322,10 @@ public class ChipRegister {
 
     }
 
-    private void writeYMF262(int chipID, int dPort, int dAddr, int dData, EnmModel model) {
+    private void writeYmF262(int chipID, int dPort, int dAddr, int dData, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!ctYMF262[chipID].getUseReal()[0]) {
-                mds.writeYMF262((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                mds.writeYmF262((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYMF262[chipID] == null)
@@ -2371,20 +2340,20 @@ public class ChipRegister {
 
         // FM全チャネルキーオフ
         for (i = 0; i < 9; i++) {
-            writeYMF262(chipID, 0, 0xb0 + i, 0x00, model);
-            writeYMF262(chipID, 1, 0xb0 + i, 0x00, model);
+            writeYmF262(chipID, 0, 0xb0 + i, 0x00, model);
+            writeYmF262(chipID, 1, 0xb0 + i, 0x00, model);
         }
 
         // FM TL=127
         for (i = 0; i < 22; i++) {
-            writeYMF262(chipID, 0, 0x40 + i, 0x3f, model);
-            writeYMF262(chipID, 1, 0x40 + i, 0x3f, model);
+            writeYmF262(chipID, 0, 0x40 + i, 0x3f, model);
+            writeYmF262(chipID, 1, 0x40 + i, 0x3f, model);
         }
 
         // SL=15 RR=15
         for (i = 0; i < 22; i++) {
-            writeYMF262(chipID, 0, 0x80 + i, 0xff, model);
-            writeYMF262(chipID, 1, 0x80 + i, 0xff, model);
+            writeYmF262(chipID, 0, 0x80 + i, 0xff, model);
+            writeYmF262(chipID, 1, 0x80 + i, 0xff, model);
         }
     }
 
@@ -2401,9 +2370,9 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriOPNA = 2;
+            chipLED.put("PriOPNA", 2);
         else
-            chipLED.SecOPNA = 2;
+            chipLED.put("SecOPNA", 2);
 
         if ((model == EnmModel.VirtualModel && (ctYM2608[chipID] == null || !ctYM2608[chipID].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (scYM2608 != null && scYM2608[chipID] != null))) {
@@ -2549,7 +2518,7 @@ public class ChipRegister {
             if (!ctYM2608[chipID].getUseReal()[0] && ctYM2608[chipID].getUseEmu()[0]) {
                 // if(dAddr==0x29) System.err.printf("%2x:%2x:%2x ", dPort,
                 // dAddr, dData);
-                mds.writeYM2608((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                mds.writeYm2608((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYM2608[chipID] == null)
@@ -2575,10 +2544,10 @@ public class ChipRegister {
 
     }
 
-    private void writeYM2608(int chipID, int dPort, int dAddr, int dData, EnmModel model) {
+    private void writeYm2608(int chipID, int dPort, int dAddr, int dData, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!ctYM2608[chipID].getUseReal()[0] && ctYM2608[chipID].getUseEmu()[0]) {
-                mds.writeYM2608((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                mds.writeYm2608((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYM2608[chipID] == null)
@@ -2592,87 +2561,87 @@ public class ChipRegister {
         int i;
 
         // FM全チャネルキーオフ
-        writeYM2608(chipID, 0, 0x28, 0x00, model);
-        writeYM2608(chipID, 0, 0x28, 0x01, model);
-        writeYM2608(chipID, 0, 0x28, 0x02, model);
-        writeYM2608(chipID, 0, 0x28, 0x04, model);
-        writeYM2608(chipID, 0, 0x28, 0x05, model);
-        writeYM2608(chipID, 0, 0x28, 0x06, model);
+        writeYm2608(chipID, 0, 0x28, 0x00, model);
+        writeYm2608(chipID, 0, 0x28, 0x01, model);
+        writeYm2608(chipID, 0, 0x28, 0x02, model);
+        writeYm2608(chipID, 0, 0x28, 0x04, model);
+        writeYm2608(chipID, 0, 0x28, 0x05, model);
+        writeYm2608(chipID, 0, 0x28, 0x06, model);
 
         // FM TL=127
         for (i = 0x40; i < 0x4F + 1; i++) {
-            writeYM2608(chipID, 0, i, 0x7f, model);
-            writeYM2608(chipID, 1, i, 0x7f, model);
+            writeYm2608(chipID, 0, i, 0x7f, model);
+            writeYm2608(chipID, 1, i, 0x7f, model);
         }
         // FM ML/DT
         for (i = 0x30; i < 0x3F + 1; i++) {
-            writeYM2608(chipID, 0, i, 0x0, model);
-            writeYM2608(chipID, 1, i, 0x0, model);
+            writeYm2608(chipID, 0, i, 0x0, model);
+            writeYm2608(chipID, 1, i, 0x0, model);
         }
         // FM AR,DR,SR,KS,AMON
         for (i = 0x50; i < 0x7F + 1; i++) {
-            writeYM2608(chipID, 0, i, 0x0, model);
-            writeYM2608(chipID, 1, i, 0x0, model);
+            writeYm2608(chipID, 0, i, 0x0, model);
+            writeYm2608(chipID, 1, i, 0x0, model);
         }
         // FM SL,RR
         for (i = 0x80; i < 0x8F + 1; i++) {
-            writeYM2608(chipID, 0, i, 0xff, model);
-            writeYM2608(chipID, 1, i, 0xff, model);
+            writeYm2608(chipID, 0, i, 0xff, model);
+            writeYm2608(chipID, 1, i, 0xff, model);
         }
         // FM F-Num, FB/CONNECT
         for (i = 0x90; i < 0xBF + 1; i++) {
-            writeYM2608(chipID, 0, i, 0x0, model);
-            writeYM2608(chipID, 1, i, 0x0, model);
+            writeYm2608(chipID, 0, i, 0x0, model);
+            writeYm2608(chipID, 1, i, 0x0, model);
         }
         // FM PAN/AMS/PMS
         for (i = 0xB4; i < 0xB6 + 1; i++) {
-            writeYM2608(chipID, 0, i, 0xc0, model);
-            writeYM2608(chipID, 1, i, 0xc0, model);
+            writeYm2608(chipID, 0, i, 0xc0, model);
+            writeYm2608(chipID, 1, i, 0xc0, model);
         }
-        writeYM2608(chipID, 0, 0x22, 0x00, model); // HW LFO
-        writeYM2608(chipID, 0, 0x24, 0x00, model); // Timer-a(1)
-        writeYM2608(chipID, 0, 0x25, 0x00, model); // Timer-a(2)
-        writeYM2608(chipID, 0, 0x26, 0x00, model); // Timer-B
-        writeYM2608(chipID, 0, 0x27, 0x30, model); // Timer Control
-        writeYM2608(chipID, 0, 0x29, 0x80, model); // FM4-6 Enable
+        writeYm2608(chipID, 0, 0x22, 0x00, model); // HW LFO
+        writeYm2608(chipID, 0, 0x24, 0x00, model); // Timer-a(1)
+        writeYm2608(chipID, 0, 0x25, 0x00, model); // Timer-a(2)
+        writeYm2608(chipID, 0, 0x26, 0x00, model); // Timer-B
+        writeYm2608(chipID, 0, 0x27, 0x30, model); // Timer Control
+        writeYm2608(chipID, 0, 0x29, 0x80, model); // FM4-6 Enable
 
         // SSG 音程(2byte*3ch)
         for (i = 0x00; i < 0x05 + 1; i++) {
-            writeYM2608(chipID, 0, i, 0x00, model);
+            writeYm2608(chipID, 0, i, 0x00, model);
         }
-        writeYM2608(chipID, 0, 0x06, 0x00, model); // SSG ノイズ周波数
-        writeYM2608(chipID, 0, 0x07, 0x38, model); // SSG ミキサ
+        writeYm2608(chipID, 0, 0x06, 0x00, model); // SSG ノイズ周波数
+        writeYm2608(chipID, 0, 0x07, 0x38, model); // SSG ミキサ
         // SSG ボリューム(3ch)
         for (i = 0x08; i < 0x0A + 1; i++) {
-            writeYM2608(chipID, 0, i, 0x00, model);
+            writeYm2608(chipID, 0, i, 0x00, model);
         }
         // SSG Envelope
         for (i = 0x0B; i < 0x0D + 1; i++) {
-            writeYM2608(chipID, 0, i, 0x00, model);
+            writeYm2608(chipID, 0, i, 0x00, model);
         }
 
         // RHYTHM
-        writeYM2608(chipID, 0, 0x10, 0xBF, model); // 強制発音停止
-        writeYM2608(chipID, 0, 0x11, 0x00, model); // Total Level
-        writeYM2608(chipID, 0, 0x18, 0x00, model); // BD音量
-        writeYM2608(chipID, 0, 0x19, 0x00, model); // SD音量
-        writeYM2608(chipID, 0, 0x1A, 0x00, model); // CYM音量
-        writeYM2608(chipID, 0, 0x1B, 0x00, model); // HH音量
-        writeYM2608(chipID, 0, 0x1C, 0x00, model); // TOM音量
-        writeYM2608(chipID, 0, 0x1D, 0x00, model); // RIM音量
+        writeYm2608(chipID, 0, 0x10, 0xBF, model); // 強制発音停止
+        writeYm2608(chipID, 0, 0x11, 0x00, model); // Total Level
+        writeYm2608(chipID, 0, 0x18, 0x00, model); // BD音量
+        writeYm2608(chipID, 0, 0x19, 0x00, model); // SD音量
+        writeYm2608(chipID, 0, 0x1A, 0x00, model); // CYM音量
+        writeYm2608(chipID, 0, 0x1B, 0x00, model); // HH音量
+        writeYm2608(chipID, 0, 0x1C, 0x00, model); // TOM音量
+        writeYm2608(chipID, 0, 0x1D, 0x00, model); // RIM音量
 
         // ADPCM
-        writeYM2608(chipID, 1, 0x00, 0x21, model); // ADPCMリセット
-        writeYM2608(chipID, 1, 0x01, 0x06, model); // ADPCM消音
-        writeYM2608(chipID, 1, 0x10, 0x9C, model); // FLAGリセット }
+        writeYm2608(chipID, 1, 0x00, 0x21, model); // ADPCMリセット
+        writeYm2608(chipID, 1, 0x01, 0x06, model); // ADPCM消音
+        writeYm2608(chipID, 1, 0x10, 0x9C, model); // FLAGリセット }
     }
 
     public void setYM2610Register(int chipID, int dPort, int dAddr, int dData, EnmModel model) {
         if (ctYM2610 == null) return;
         if (dAddr < 0 || dData < 0) return;
 
-        if (chipID == 0) chipLED.PriOPNB = 2;
-        else chipLED.SecOPNB = 2;
+        if (chipID == 0) chipLED.put("PriOPNB", 2);
+        else chipLED.put("SecOPNB", 2);
 
 
         if (
@@ -2838,7 +2807,7 @@ public class ChipRegister {
                     (ctYM2610[chipID].getUseReal().length > 0 && !ctYM2610[chipID].getUseReal()[0])
                             && (ctYM2610[chipID].getUseReal().length < 2 || (ctYM2610[chipID].getUseReal().length > 1 && !ctYM2610[chipID].getUseReal()[1]))
             ) {
-                mds.writeYM2610((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                mds.writeYm2610((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYM2610[chipID] != null) scYM2610[chipID].setRegister(dPort * 0x100 + dAddr, dData);
@@ -2864,9 +2833,9 @@ public class ChipRegister {
 
     }
 
-    public void writeYM2610_SetAdpcmA(int chipID, byte[] ym2610AdpcmA, EnmModel model) {
+    public void writeYm2610_SetAdpcmA(int chipID, byte[] ym2610AdpcmA, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
-            mds.writeYM2610SetAdpcmA((byte) chipID, ym2610AdpcmA);
+            mds.writeYm2610SetAdpcmA((byte) chipID, ym2610AdpcmA);
         } else {
             if (scYM2610[chipID] != null) {
                 byte dPort = 2;
@@ -2905,7 +2874,7 @@ public class ChipRegister {
         }
     }
 
-    public void writeYM2610_SetAdpcmA(int chipID, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr) {
+    public void writeYm2610_SetAdpcmA(int chipID, EnmModel model, int startAddr, int length, byte[] buf, int srcStartAddr) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYM2610[chipID] != null) {
@@ -2945,7 +2914,7 @@ public class ChipRegister {
 
     public void WriteYM2610_SetAdpcmB(int chipID, byte[] ym2610AdpcmB, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
-            mds.writeYM2610SetAdpcmB((byte) chipID, ym2610AdpcmB);
+            mds.writeYm2610SetAdpcmB((byte) chipID, ym2610AdpcmB);
         } else {
             if (scYM2610[chipID] != null) {
                 byte dPort = 2;
@@ -3027,16 +2996,16 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriOPX = 2;
+            chipLED.put("PriOPX", 2);
         else
-            chipLED.SecOPX = 2;
+            chipLED.put("SecOPX", 2);
 
         if (model == EnmModel.VirtualModel)
             fmRegisterYMF271[chipID][dPort][dAddr] = dData;
 
         if (model == EnmModel.VirtualModel) {
             if (!ctYMF271[chipID].getUseReal()[0]) {
-                mds.writeYMF271((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                mds.writeYmf271((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYMF271[chipID] == null)
@@ -3051,15 +3020,14 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriOPL4 = 2;
+            chipLED.put("PriOPL4", 2);
         else
-            chipLED.SecOPL4 = 2;
+            chipLED.put("SecOPL4", 2);
 
         if (model == EnmModel.VirtualModel) {
             fmRegisterYMF278B[chipID][dPort][dAddr] = dData;
 
-            // if (dPort == 2)
-            // {
+            // if (dPort == 2) {
             // System.err.println("p=2:adr%02x dat%02x", dAddr, dData);
             // }
 
@@ -3116,7 +3084,7 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             if (!ctYMF278B[chipID].getUseReal()[0]) {
-                mds.writeYMF278B((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                mds.writeYmF278b((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYMF278B[chipID] == null)
@@ -3131,9 +3099,9 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriY8950 = 2;
+            chipLED.put("PriY8950", 2);
         else
-            chipLED.SecY8950 = 2;
+            chipLED.put("SecY8950", 2);
 
         if (model == EnmModel.VirtualModel) {
             fmRegisterY8950[chipID][dAddr] = dData;
@@ -3206,16 +3174,16 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriYMZ = 2;
+            chipLED.put("PriYMZ", 2);
         else
-            chipLED.SecYMZ = 2;
+            chipLED.put("SecYMZ", 2);
 
         if (model == EnmModel.VirtualModel)
             YMZ280BRegister[chipID][dAddr] = dData;
 
         if (model == EnmModel.VirtualModel) {
             if (!ctYMZ280B[chipID].getUseReal()[0]) {
-                mds.writeYMZ280B((byte) chipID, (byte) dAddr, (byte) dData);
+                mds.writeYmZ280b((byte) chipID, (byte) dAddr, (byte) dData);
             }
         } else {
             if (scYMZ280B[chipID] == null)
@@ -3229,8 +3197,8 @@ public class ChipRegister {
         if (ctYM2612 == null) return;
         if (dAddr < 0 || dData < 0) return;
 
-        if (chipID == 0) chipLED.PriOPN2 = 2;
-        else chipLED.SecOPN2 = 2;
+        if (chipID == 0) chipLED.put("PriOPN2", 2);
+        else chipLED.put("SecOPN2", 2);
 
         if (model == EnmModel.VirtualModel) {
             fmRegisterYM2612[chipID][dPort][dAddr] = dData;
@@ -3323,17 +3291,17 @@ public class ChipRegister {
                 if (ctYM2612[chipID].getRealChipInfo()[0].getOnlyPCMEmulation()) {
                     if (dPort == 0 && dAddr == 0x2b) {
                         //if (ctYM2612[chipID].getUseEmu()[0])
-                        mds.writeYM2612((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                        mds.writeYm2612((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
                         //if (ctYM2612[chipID].getUseEmu()[1]) mds.WriteYM3438((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                         //if (ctYM2612[chipID].getUseEmu()[2]) mds.WriteYM2612mame((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                     } else if (dPort == 0 && dAddr == 0x2a) {
                         //if (ctYM2612[chipID].getUseEmu()[0])
-                        mds.writeYM2612((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                        mds.writeYm2612((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
                         //if (ctYM2612[chipID].getUseEmu()[1]) mds.WriteYM3438((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                         //if (ctYM2612[chipID].getUseEmu()[2]) mds.WriteYM2612mame((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                     } else if (dPort == 1 && dAddr == 0xb6) {
                         //if (ctYM2612[chipID].getUseEmu()[0])
-                        mds.writeYM2612((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                        mds.writeYm2612((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
                         //if (ctYM2612[chipID].getUseEmu()[1]) mds.WriteYM3438((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                         //if (ctYM2612[chipID].getUseEmu()[2]) mds.WriteYM2612mame((byte)chipID, (byte)dPort, (byte)dAddr, (byte)dData);
                     }
@@ -3367,11 +3335,11 @@ public class ChipRegister {
                  // エミュを使用する場合のみMDSoundへデータを送る
                 //System.err.println("%d:%02X:%02X:%02X", chipID, dPort, dAddr, dData);
                 if (ctYM2612[chipID].getUseEmu()[0])
-                    mds.writeYM2612((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                    mds.writeYm2612((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
                 if (ctYM2612[chipID].getUseEmu()[1])
-                    mds.writeYM3438((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                    mds.writeYm3438((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
                 if (ctYM2612[chipID].getUseEmu()[2])
-                    mds.writeYM2612Mame((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
+                    mds.writeYm2612Mame((byte) chipID, (byte) dPort, (byte) dAddr, (byte) dData);
             }
         } else {
 
@@ -3401,9 +3369,9 @@ public class ChipRegister {
             return;
 
         if (ChipID == 0)
-            chipLED.PriPPSDRV = 2;
+            chipLED.put("PriPPSDRV", 2);
         else
-            chipLED.SecPPSDRV = 2;
+            chipLED.put("SecPPSDRV", 2);
 
         mds.WritePPSDRVPCMData((byte) ChipID, addtionalData);
     }
@@ -3413,9 +3381,9 @@ public class ChipRegister {
             return;
 
         if (ChipID == 0)
-            chipLED.PriPPSDRV = 2;
+            chipLED.put("PriPPSDRV", 2);
         else
-            chipLED.SecPPSDRV = 2;
+            chipLED.put("SecPPSDRV", 2);
 
         if (dPort == -1 && dAddr == -1 && dData == -1)
             return;
@@ -3428,9 +3396,9 @@ public class ChipRegister {
             return;
 
         if (ChipID == 0)
-            chipLED.PriPPZ8 = 2;
+            chipLED.put("PriPPZ8", 2);
         else
-            chipLED.SecPPZ8 = 2;
+            chipLED.put("SecPPZ8", 2);
 
         mds.WritePPZ8PCMData((byte) ChipID, bank, mode, pcmData);
     }
@@ -3440,9 +3408,9 @@ public class ChipRegister {
             return;
 
         if (ChipID == 0)
-            chipLED.PriPPZ8 = 2;
+            chipLED.put("PriPPZ8", 2);
         else
-            chipLED.SecPPZ8 = 2;
+            chipLED.put("SecPPZ8", 2);
 
         if (dPort == -1 && dAddr == -1 && dData == -1)
             return;
@@ -3455,9 +3423,9 @@ public class ChipRegister {
             return;
 
         if (ChipID == 0)
-            chipLED.PriP86 = 2;
+            chipLED.put("PriP86", 2);
         else
-            chipLED.SecP86 = 2;
+            chipLED.put("SecP86", 2);
 
         mds.writeP86PCMData((byte) ChipID, bank, mode, pcmData);
     }
@@ -3467,9 +3435,9 @@ public class ChipRegister {
             return;
 
         if (ChipID == 0)
-            chipLED.PriP86 = 2;
+            chipLED.put("PriP86", 2);
         else
-            chipLED.SecP86 = 2;
+            chipLED.put("SecP86", 2);
 
         if (dPort == -1 && dAddr == -1 && dData == -1)
             return;
@@ -3596,13 +3564,13 @@ public class ChipRegister {
 
     public void setMaskQSound(int chipID, int ch, boolean mask) {
         maskChQSound[chipID][ch] = mask;
-        if (dicChipsInfo.containsKey(mdsound.MDSound.InstrumentType.QSound)) {
+        if (dicChipsInfo.containsKey(QSoundInst.class)) {
             if (mask)
                 mds.setQSoundMask(chipID, ch);
             else
                 mds.resetQSoundMask(chipID, ch);
         }
-        if (dicChipsInfo.containsKey(mdsound.MDSound.InstrumentType.QSoundCtr)) {
+        if (dicChipsInfo.containsKey(CtrQSoundInst.class)) {
             if (mask)
                 mds.setQSoundCtrMask(chipID, ch);
             else
@@ -3714,9 +3682,9 @@ public class ChipRegister {
         setYM2612Register((byte) chipID, p, 0x4c + c, fmRegisterYM2612[chipID][p][0x4c + c], EnmModel.RealModel, -1);
 
         if (mask)
-            mds.setYM2612Mask(chipID, ch);
+            mds.setYm2612Mask(chipID, ch);
         else
-            mds.resetYM2612Mask(chipID, ch);
+            mds.resetYm2612Mask(chipID, ch);
     }
 
     public void setMaskOKIM6258(int chipID, boolean mask) {
@@ -3729,13 +3697,13 @@ public class ChipRegister {
     public void setMaskOKIM6295(int chipID, int ch, boolean mask) {
         maskOKIM6295[chipID][ch] = mask;
         if (mask)
-            mds.setOKIM6295Mask(0, chipID, 1 << ch);
+            mds.setOkiM6295Mask(0, chipID, 1 << ch);
         else
-            mds.resetOKIM6295Mask(0, chipID, 1 << ch);
+            mds.resetOkiM6295Mask(0, chipID, 1 << ch);
     }
 
-    OkiM6295.OkiM6295State.ChannelInfo getOKIM6295Info(int chipID) {
-        return mds.getOKIM6295Info(0, chipID);
+    public OkiM6295.ChannelInfo getOKIM6295Info(int chipID) {
+        return mds.getOkiM6295Info(0, chipID);
     }
 
     public void setNESMask(int chipID, int ch) {
@@ -3830,12 +3798,12 @@ public class ChipRegister {
 
     public void setDMGMask(int chipID, int ch) {
         maskChDMG[chipID][ch] = true;
-        mds.setDMGMask((byte) chipID, ch);
+        mds.setGbMask((byte) chipID, ch);
     }
 
     public void resetDMGMask(int chipID, int ch) {
         maskChDMG[chipID][ch] = false;
-        mds.resetDMGMask((byte) chipID, ch);
+        mds.resetGbMask((byte) chipID, ch);
     }
 
     public void setVRC6Mask(int chipID, int ch) {
@@ -4053,9 +4021,9 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriDCSG = 2;
+            chipLED.put("PriDCSG", 2);
         else
-            chipLED.SecDCSG = 2;
+            chipLED.put("SecDCSG", 2);
 
         if (model == EnmModel.RealModel) {
             if (ctSN76489[chipID].getUseReal()[0]) {
@@ -4065,9 +4033,9 @@ public class ChipRegister {
         } else {
             if (!ctSN76489[chipID].getUseReal()[0]) {
                 if (ctSN76489[chipID].getUseEmu()[0])
-                    mds.writeSN76489GGPanning((byte) chipID, (byte) dData);
+                    mds.writeSn76489GGPanning((byte) chipID, (byte) dData);
                 else if (ctSN76489[chipID].getUseEmu()[1])
-                    mds.writeSN76496GGPanning((byte) chipID, (byte) dData);
+                    mds.writeSn76496GGPanning((byte) chipID, (byte) dData);
                 sn76489RegisterGGPan[chipID] = dData;
             }
         }
@@ -4078,9 +4046,9 @@ public class ChipRegister {
             return;
 
         if (chipID == 0)
-            chipLED.PriDCSG = 2;
+            chipLED.put("PriDCSG", 2);
         else
-            chipLED.SecDCSG = 2;
+            chipLED.put("SecDCSG", 2);
 
         SN76489_Write(chipID, dData);
 
@@ -4110,9 +4078,9 @@ public class ChipRegister {
         } else {
             if (!ctSN76489[chipID].getUseReal()[0]) {
                 if (ctSN76489[chipID].getUseEmu()[0])
-                    mds.writeSN76489((byte) chipID, (byte) dData);
+                    mds.writeSn76489((byte) chipID, (byte) dData);
                 else if (ctSN76489[chipID].getUseEmu()[1])
-                    mds.writeSN76496((byte) chipID, (byte) dData);
+                    mds.writeSn76496((byte) chipID, (byte) dData);
             }
         }
     }
@@ -4164,50 +4132,50 @@ public class ChipRegister {
 
     public void writeRF5C68PCMData(byte chipid, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
         if (chipid == 0)
-            chipLED.PriRF5C68 = 2;
+            chipLED.put("PriRF5C68", 2);
         else
-            chipLED.SecRF5C68 = 2;
+            chipLED.put("SecRF5C68", 2);
 
         if (model == EnmModel.VirtualModel)
-            mds.WriteRF5C68PCMData(chipid, stAdr, dataSize, vgmBuf, vgmAdr);
+            mds.WriteRf5c68PCMData(chipid, stAdr, dataSize, vgmBuf, vgmAdr);
     }
 
     public void writeRF5C68(byte chipid, byte adr, byte data, EnmModel model) {
         if (chipid == 0)
-            chipLED.PriRF5C68 = 2;
+            chipLED.put("PriRF5C68", 2);
         else
-            chipLED.SecRF5C68 = 2;
+            chipLED.put("SecRF5C68", 2);
 
         if (model == EnmModel.VirtualModel) {
-            mds.WriteRF5C68(chipid, adr, data);
+            mds.WriteRf5c68(chipid, adr, data);
         }
     }
 
     public void writeRF5C68MemW(byte chipid, int offset, byte data, EnmModel model) {
         if (chipid == 0)
-            chipLED.PriRF5C68 = 2;
+            chipLED.put("PriRF5C68", 2);
         else
-            chipLED.SecRF5C68 = 2;
+            chipLED.put("SecRF5C68", 2);
 
         if (model == EnmModel.VirtualModel)
-            mds.WriteRF5C68MemW(chipid, offset, data);
+            mds.WriteRf5c68MemW(chipid, offset, data);
     }
 
     public void writeRF5C164PCMData(byte chipid, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
         if (chipid == 0)
-            chipLED.PriRF5C = 2;
+            chipLED.put("PriRF5C", 2);
         else
-            chipLED.SecRF5C = 2;
+            chipLED.put("SecRF5C", 2);
 
         if (model == EnmModel.VirtualModel)
-            mds.WriteRF5C164PCMData(chipid, stAdr, dataSize, vgmBuf, vgmAdr);
+            mds.WriteScdPcmPCMData(chipid, stAdr, dataSize, vgmBuf, vgmAdr);
     }
 
     public void writeNESPCMData(byte chipid, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
         if (chipid == 0)
-            chipLED.PriNES = 2;
+            chipLED.put("PriNES", 2);
         else
-            chipLED.SecNES = 2;
+            chipLED.put("SecNES", 2);
 
         if (model == EnmModel.VirtualModel)
             mds.WriteNESRam(chipid, stAdr, dataSize, vgmBuf, vgmAdr);
@@ -4215,40 +4183,40 @@ public class ChipRegister {
 
     public void writeRF5C164(byte chipid, byte adr, byte data, EnmModel model) {
         if (chipid == 0)
-            chipLED.PriRF5C = 2;
+            chipLED.put("PriRF5C", 2);
         else
-            chipLED.SecRF5C = 2;
+            chipLED.put("SecRF5C", 2);
 
         if (model == EnmModel.VirtualModel) {
-            mds.writeRF5C164(chipid, adr, data);
+            mds.writeScdPcm(chipid, adr, data);
         }
     }
 
     public void writeRF5C164MemW(byte chipid, int offset, byte data, EnmModel model) {
         if (chipid == 0)
-            chipLED.PriRF5C = 2;
+            chipLED.put("PriRF5C", 2);
         else
-            chipLED.SecRF5C = 2;
+            chipLED.put("SecRF5C", 2);
 
         if (model == EnmModel.VirtualModel)
-            mds.WriteRF5C164MemW(chipid, offset, data);
+            mds.WriteScdPcmMemW(chipid, offset, data);
     }
 
     public void writePWM(byte chipid, byte adr, int data, EnmModel model) {
         if (chipid == 0)
-            chipLED.PriPWM = 2;
+            chipLED.put("PriPWM", 2);
         else
-            chipLED.SecPWM = 2;
+            chipLED.put("SecPWM", 2);
 
         if (model == EnmModel.VirtualModel)
-            mds.writePWM(chipid, adr, data);
+            mds.writePwm(chipid, adr, data);
     }
 
     public void writeK051649(byte chipid, int adr, byte data, EnmModel model) {
         if (chipid == 0)
-            chipLED.PriK051649 = 2;
+            chipLED.put("PriK051649", 2);
         else
-            chipLED.SecK051649 = 2;
+            chipLED.put("SecK051649", 2);
 
         if ((adr & 1) != 0) {
             if ((adr >> 1) == 3)// keyonoff
@@ -4317,9 +4285,9 @@ public class ChipRegister {
 
     public void writeK053260(byte chipid, int adr, byte data, EnmModel model) {
         if (chipid == 0)
-            chipLED.PriK053260 = 2;
+            chipLED.put("PriK053260", 2);
         else
-            chipLED.SecK053260 = 2;
+            chipLED.put("SecK053260", 2);
 
         if (model == EnmModel.VirtualModel)
             mds.WriteK053260(chipid, (byte) adr, data);
@@ -4327,9 +4295,9 @@ public class ChipRegister {
 
     public void writeK054539(byte chipid, int adr, byte data, EnmModel model) {
         if (chipid == 0)
-            chipLED.PriK054539 = 2;
+            chipLED.put("PriK054539", 2);
         else
-            chipLED.SecK054539 = 2;
+            chipLED.put("SecK054539", 2);
 
         if (model == EnmModel.VirtualModel)
             mds.WriteK054539(chipid, adr, data);
@@ -4343,9 +4311,9 @@ public class ChipRegister {
                                     int SrcStartAdr,
                                     EnmModel model) {
         if (chipid == 0)
-            chipLED.PriK053260 = 2;
+            chipLED.put("PriK053260", 2);
         else
-            chipLED.SecK053260 = 2;
+            chipLED.put("SecK053260", 2);
 
         if (model == EnmModel.VirtualModel)
             mds.WriteK053260PCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
@@ -4359,9 +4327,9 @@ public class ChipRegister {
                                     int SrcStartAdr,
                                     EnmModel model) {
         if (chipid == 0)
-            chipLED.PriK054539 = 2;
+            chipLED.put("PriK054539", 2);
         else
-            chipLED.SecK054539 = 2;
+            chipLED.put("SecK054539", 2);
 
         if (model == EnmModel.VirtualModel)
             mds.writeK054539PCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
@@ -4375,7 +4343,7 @@ public class ChipRegister {
                                    int SrcStartAdr,
                                    EnmModel model) {
         if (chipid == 0)
-            chipLED.PriQsnd = 2;
+            chipLED.put("PriQsnd", 2);
 
         if (model == EnmModel.VirtualModel)
             mds.WriteQSoundCtrPCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
@@ -4389,9 +4357,9 @@ public class ChipRegister {
                                    int SrcStartAdr,
                                    EnmModel model) {
         if (chipid == 0)
-            chipLED.PriX1010 = 2;
+            chipLED.put("PriX1010", 2);
         else
-            chipLED.SecX1010 = 2;
+            chipLED.put("SecX1010", 2);
 
         if (model == EnmModel.VirtualModel)
             mds.writeX1_010PCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
@@ -4399,9 +4367,9 @@ public class ChipRegister {
 
     public void writeC352(byte chipid, int adr, int data, EnmModel model) {
         if (chipid == 0)
-            chipLED.PriC352 = 2;
+            chipLED.put("PriC352", 2);
         else
-            chipLED.SecC352 = 2;
+            chipLED.put("SecC352", 2);
 
         if (adr < pcmRegisterC352[chipid].length)
             pcmRegisterC352[chipid][adr] = data;
@@ -4425,9 +4393,9 @@ public class ChipRegister {
                                  int SrcStartAdr,
                                  EnmModel model) {
         if (chipid == 0)
-            chipLED.PriC352 = 2;
+            chipLED.put("PriC352", 2);
         else
-            chipLED.SecC352 = 2;
+            chipLED.put("SecC352", 2);
 
         if (model == EnmModel.VirtualModel)
             mds.WriteC352PCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
@@ -4441,19 +4409,19 @@ public class ChipRegister {
                                  int SrcStartAdr,
                                  EnmModel model) {
         if (chipid == 0)
-            chipLED.PriGA20 = 2;
+            chipLED.put("PriGA20", 2);
         else
-            chipLED.SecGA20 = 2;
+            chipLED.put("SecGA20", 2);
 
         if (model == EnmModel.VirtualModel)
-            mds.WriteGA20PCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
+            mds.WriteIremga20PCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
     }
 
     public void writeOKIM6258(byte ChipID, byte Port, byte Data, EnmModel model) {
         if (ChipID == 0)
-            chipLED.PriOKI5 = 2;
+            chipLED.put("PriOKI5", 2);
         else
-            chipLED.SecOKI5 = 2;
+            chipLED.put("SecOKI5", 2);
 
         if (Port == 0x00) {
             if ((Data & 0x2) != 0)
@@ -4470,18 +4438,18 @@ public class ChipRegister {
         }
 
         if (model == EnmModel.VirtualModel) {
-            mds.writeOKIM6258(ChipID, Port, Data);
+            mds.writeOkiM6258(ChipID, Port, Data);
         }
     }
 
     public void writeOKIM6295(byte ChipID, byte Port, byte Data, EnmModel model) {
         if (ChipID == 0)
-            chipLED.PriOKI9 = 2;
+            chipLED.put("PriOKI9", 2);
         else
-            chipLED.SecOKI9 = 2;
+            chipLED.put("SecOKI9", 2);
 
         if (model == EnmModel.VirtualModel) {
-            mds.WriteOKIM6295(ChipID, Port, Data);
+            mds.WriteOkiM6295(ChipID, Port, Data);
             // Debug.printf(("ChipID=%d Port=%x Data=%x
             // ",ChipID,Port,Data);
         }
@@ -4489,45 +4457,45 @@ public class ChipRegister {
 
     public void writeSAA1099(byte ChipID, byte Port, byte Data, EnmModel model) {
         if (ChipID == 0)
-            chipLED.PriSAA = 2;
+            chipLED.put("PriSAA", 2);
         else
-            chipLED.SecSAA = 2;
+            chipLED.put("SecSAA", 2);
 
         if (model == EnmModel.VirtualModel) {
-            mds.writeSAA1099(ChipID, Port, Data);
+            mds.writeSaa1099(ChipID, Port, Data);
         }
     }
 
     public void writeWSwan(byte ChipID, byte Port, byte Data, EnmModel model) {
         if (ChipID == 0)
-            chipLED.PriWSW = 2;
+            chipLED.put("PriWSW", 2);
         else
-            chipLED.SecWSW = 2;
+            chipLED.put("SecWSW", 2);
 
         if (model == EnmModel.VirtualModel) {
-            mds.writeWSwan(ChipID, Port, Data);
+            mds.writeWsAudio(ChipID, Port, Data);
         }
     }
 
     public void writeWSwanMem(byte ChipID, int Port, byte Data, EnmModel model) {
         if (ChipID == 0)
-            chipLED.PriWSW = 2;
+            chipLED.put("PriWSW", 2);
         else
-            chipLED.SecWSW = 2;
+            chipLED.put("SecWSW", 2);
 
         if (model == EnmModel.VirtualModel) {
-            mds.writeWSwanMem(ChipID, Port, Data);
+            mds.writeWsAudioMem(ChipID, Port, Data);
         }
     }
 
     public void writePOKEY(byte ChipID, byte Port, byte Data, EnmModel model) {
         if (ChipID == 0)
-            chipLED.PriPOK = 2;
+            chipLED.put("PriPOK", 2);
         else
-            chipLED.SecPOK = 2;
+            chipLED.put("SecPOK", 2);
 
         if (model == EnmModel.VirtualModel) {
-            mds.writePOKEY(ChipID, Port, Data);
+            mds.writePokey(ChipID, Port, Data);
         }
     }
 
@@ -4539,12 +4507,12 @@ public class ChipRegister {
                                      int SrcStartAdr,
                                      EnmModel model) {
         if (chipid == 0)
-            chipLED.PriOKI9 = 2;
+            chipLED.put("PriOKI9", 2);
         else
-            chipLED.SecOKI9 = 2;
+            chipLED.put("SecOKI9", 2);
 
         if (model == EnmModel.VirtualModel)
-            mds.WriteOKIM6295PCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
+            mds.WriteOkiM6295PCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
     }
 
     public void writeMultiPCMPCMData(byte chipid,
@@ -4555,15 +4523,15 @@ public class ChipRegister {
                                      int SrcStartAdr,
                                      EnmModel model) {
         if (chipid == 0)
-            chipLED.PriMPCM = 2;
+            chipLED.put("PriMPCM", 2);
         else
-            chipLED.SecMPCM = 2;
+            chipLED.put("SecMPCM", 2);
 
         if (model == EnmModel.VirtualModel)
             mds.WriteMultiPCMPCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
     }
 
-    public void writeYMF271PCMData(byte chipid,
+    public void writeYmF271PCMData(byte chipid,
                                    int ROMSize,
                                    int DataStart,
                                    int DataLength,
@@ -4571,15 +4539,15 @@ public class ChipRegister {
                                    int SrcStartAdr,
                                    EnmModel model) {
         if (chipid == 0)
-            chipLED.PriOPX = 2;
+            chipLED.put("PriOPX", 2);
         else
-            chipLED.SecOPX = 2;
+            chipLED.put("SecOPX", 2);
 
         if (model == EnmModel.VirtualModel)
-            mds.WriteYMF271PCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
+            mds.WriteYmf271PCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
     }
 
-    public void writeYMF278BPCMData(byte chipid,
+    public void writeYmF278BPCMData(byte chipid,
                                     int ROMSize,
                                     int DataStart,
                                     int DataLength,
@@ -4587,15 +4555,15 @@ public class ChipRegister {
                                     int SrcStartAdr,
                                     EnmModel model) {
         if (chipid == 0)
-            chipLED.PriOPL4 = 2;
+            chipLED.put("PriOPL4", 2);
         else
-            chipLED.SecOPL4 = 2;
+            chipLED.put("SecOPL4", 2);
 
         if (model == EnmModel.VirtualModel)
-            mds.WriteYMF278BPCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
+            mds.WriteYmF278bPCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
     }
 
-    public void writeYMF278BPCMRAMData(byte chipid,
+    public void writeYmF278BPCMRAMData(byte chipid,
                                        int ROMSize,
                                        int DataStart,
                                        int DataLength,
@@ -4603,15 +4571,15 @@ public class ChipRegister {
                                        int SrcStartAdr,
                                        EnmModel model) {
         if (chipid == 0)
-            chipLED.PriOPL4 = 2;
+            chipLED.put("PriOPL4", 2);
         else
-            chipLED.SecOPL4 = 2;
+            chipLED.put("SecOPL4", 2);
 
         if (model == EnmModel.VirtualModel)
-            mds.WriteYMF278BPCMramData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
+            mds.WriteYmF278bPCMramData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
     }
 
-    public void writeYMZ280BPCMData(byte chipid,
+    public void writeYmZ280BPCMData(byte chipid,
                                     int ROMSize,
                                     int DataStart,
                                     int DataLength,
@@ -4619,12 +4587,12 @@ public class ChipRegister {
                                     int SrcStartAdr,
                                     EnmModel model) {
         if (chipid == 0)
-            chipLED.PriYMZ = 2;
+            chipLED.put("PriYMZ", 2);
         else
-            chipLED.SecYMZ = 2;
+            chipLED.put("SecYMZ", 2);
 
         if (model == EnmModel.VirtualModel)
-            mds.WriteYMZ280BPCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
+            mds.WriteYmZ280bPCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
     }
 
     public void writeY8950PCMData(byte chipid,
@@ -4635,9 +4603,9 @@ public class ChipRegister {
                                   int SrcStartAdr,
                                   EnmModel model) {
         if (chipid == 0)
-            chipLED.PriY8950 = 2;
+            chipLED.put("PriY8950", 2);
         else
-            chipLED.SecY8950 = 2;
+            chipLED.put("SecY8950", 2);
 
         if (model == EnmModel.VirtualModel)
             mds.WriteY8950PCMData(chipid, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
@@ -4645,9 +4613,9 @@ public class ChipRegister {
 
     public void writeSEGAPCM(byte chipID, int offset, byte data, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriSPCM = 2;
+            chipLED.put("PriSPCM", 2);
         else
-            chipLED.SecSPCM = 2;
+            chipLED.put("SecSPCM", 2);
 
         if ((model == EnmModel.VirtualModel && (ctSEGAPCM[chipID] == null || !ctSEGAPCM[chipID].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (scSEGAPCM != null && scSEGAPCM[chipID] != null))) {
@@ -4663,7 +4631,7 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             if (!ctSEGAPCM[chipID].getUseReal()[0])
-                mds.WriteSEGAPCM(chipID, offset, data);
+                mds.WriteSegaPcm(chipID, offset, data);
             // Debug.printf(("ChipID=%d Offset=%x Data=%x ",
             // ChipID, Offset, Data);
         } else {
@@ -4680,12 +4648,12 @@ public class ChipRegister {
                                     int SrcStartAdr,
                                     EnmModel model) {
         if (chipID == 0)
-            chipLED.PriSPCM = 2;
+            chipLED.put("PriSPCM", 2);
         else
-            chipLED.SecSPCM = 2;
+            chipLED.put("SecSPCM", 2);
 
         if (model == EnmModel.VirtualModel) {
-            mds.WriteSEGAPCMPCMData(chipID, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
+            mds.WriteSegaPcmPCMData(chipID, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
         } else {
             if (scSEGAPCM != null && scSEGAPCM[chipID] != null) {
                 // スタートアドレス設定
@@ -4703,7 +4671,7 @@ public class ChipRegister {
         }
     }
 
-    public void writeYM2151Clock(byte chipID, int clock, EnmModel model) {
+    public void writeYm2151Clock(byte chipID, int clock, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYM2151 != null && scYM2151[chipID] != null) {
@@ -4712,7 +4680,7 @@ public class ChipRegister {
         }
     }
 
-    public void writeYM2203Clock(byte chipID, int clock, EnmModel model) {
+    public void writeYm2203Clock(byte chipID, int clock, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYM2203 != null && scYM2203[chipID] != null) {
@@ -4744,7 +4712,7 @@ public class ChipRegister {
         }
     }
 
-    public void writeYM2608Clock(byte chipID, int clock, EnmModel model) {
+    public void writeYm2608Clock(byte chipID, int clock, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYM2608 != null && scYM2608[chipID] != null) {
@@ -4753,7 +4721,7 @@ public class ChipRegister {
         }
     }
 
-    public void writeYM3526Clock(byte chipID, int clock, EnmModel model) {
+    public void writeYm3526Clock(byte chipID, int clock, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYM3526 != null && scYM3526[chipID] != null) {
@@ -4764,7 +4732,7 @@ public class ChipRegister {
         }
     }
 
-    public void writeYM3812Clock(byte chipID, int clock, EnmModel model) {
+    public void writeYm3812Clock(byte chipID, int clock, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYM3812 != null && scYM3812[chipID] != null) {
@@ -4773,7 +4741,7 @@ public class ChipRegister {
         }
     }
 
-    public void writeYMF262Clock(byte chipID, int clock, EnmModel model) {
+    public void writeYmF262Clock(byte chipID, int clock, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYMF262 != null && scYMF262[chipID] != null) {
@@ -4811,9 +4779,9 @@ public class ChipRegister {
 
     public void writeC140(byte chipID, int adr, byte data, EnmModel model) {
         if (chipID == 0)
-            chipLED.PriC140 = 2;
+            chipLED.put("PriC140", 2);
         else
-            chipLED.SecC140 = 2;
+            chipLED.put("SecC140", 2);
 
         if ((model == EnmModel.VirtualModel && (ctC140[chipID] == null || !ctC140[chipID].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (scC140 != null && scC140[chipID] != null))) {
@@ -4846,9 +4814,9 @@ public class ChipRegister {
                                  int SrcStartAdr,
                                  EnmModel model) {
         if (chipID == 0)
-            chipLED.PriC140 = 2;
+            chipLED.put("PriC140", 2);
         else
-            chipLED.SecC140 = 2;
+            chipLED.put("SecC140", 2);
 
         if (model == EnmModel.VirtualModel)
             mds.WriteC140PCMData(chipID, ROMSize, DataStart, DataLength, romdata, SrcStartAdr);
@@ -4869,7 +4837,7 @@ public class ChipRegister {
         }
     }
 
-    public void writeC140Type(byte chipID, C140.C140State.Type type, EnmModel model) {
+    public void writeC140Type(byte chipID, C140.Type type, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scC140 != null && scC140[chipID] != null) {
@@ -5097,7 +5065,7 @@ public class ChipRegister {
         return nes_vrc6.getTracksInfo();
     }
 
-    byte[] getVRC7Register(int chipID) {
+    public byte[] getVRC7Register(int chipID) {
         if (nes_vrc7 == null) return null;
         if (chipID != 0) return null;
 
@@ -5139,18 +5107,18 @@ public class ChipRegister {
     // x68Sound.X68Sound_OpmInt(p);
     // }
 
-    // public int x68Sound_StartPcm(int samprate, int v1, int v2, int pcmbuf,
+    // public int x68Sound_StartPcm(int sampleRate, int v1, int v2, int pcmbuf,
     // enmModel model)
     // {
     // if (model == enmModel.RealModel) return 0;
-    // return x68Sound.X68Sound_StartPcm(samprate, v1, v2, pcmbuf);
+    // return x68Sound.X68Sound_StartPcm(sampleRate, v1, v2, pcmbuf);
     // }
 
-    // public int x68Sound_Start(int samprate, int v1, int v2, int betw, int
+    // public int x68Sound_Start(int sampleRate, int v1, int v2, int betw, int
     // pcmbuf, int late, double v3, enmModel model)
     // {
     // if (model == enmModel.RealModel) return 0;
-    // return x68Sound.X68Sound_Start(samprate, v1, v2, betw, pcmbuf, late, v3);
+    // return x68Sound.X68Sound_Start(sampleRate, v1, v2, betw, pcmbuf, late, v3);
     // }
 
     // public int x68Sound_OpmWait(int v, enmModel model)

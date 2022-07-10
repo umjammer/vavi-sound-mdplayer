@@ -5,23 +5,24 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
 
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
-import mdplayer.Log;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import vavi.util.Debug;
 
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+
 
 public class S98 extends BaseDriver {
-    public S98(Setting setting) {
-        this.setting = setting;
+
+    public S98() {
+        this.setting = Setting.getInstance();
         musicStep = setting.getOutputDevice().getSampleRate() / 60.0;
     }
 
@@ -55,7 +56,7 @@ public class S98 extends BaseDriver {
                 while (buf[TAGAdr] != 0x0a && buf[TAGAdr] != 0x00) {
                     strLst.add(buf[TAGAdr++]);
                 }
-                str = new String(mdsound.Common.toByteArray(strLst), Charset.forName("MS932"));
+                str = new String(toByteArray(strLst), Charset.forName("MS932"));
                 gd3.trackName = str;
                 gd3.trackNameJ = str;
             } else if (Format == 3) {
@@ -77,9 +78,9 @@ public class S98 extends BaseDriver {
                         strLst.add(buf[TAGAdr++]);
                     }
                     if (IsUTF8) {
-                        str = new String(mdsound.Common.toByteArray(strLst), StandardCharsets.UTF_8);
+                        str = new String(toByteArray(strLst), StandardCharsets.UTF_8);
                     } else {
-                        str = new String(mdsound.Common.toByteArray(strLst), Charset.forName("MS932"));
+                        str = new String(toByteArray(strLst), Charset.forName("MS932"));
                     }
                     TAGAdr++;
 
@@ -271,7 +272,7 @@ public class S98 extends BaseDriver {
                         chips.add("YM2203");
                         break;
                     case 3:
-                        chips.add("Ym2612");
+                        chips.add("Ym2612Inst");
                         break;
                     case 4:
                         chips.add("YM2608");
@@ -301,7 +302,7 @@ public class S98 extends BaseDriver {
                         chips.add("YM2203");
                         break;
                     case 3:
-                        chips.add("Ym2612");
+                        chips.add("Ym2612Inst");
                         break;
                     case 4:
                         chips.add("YM2608");
@@ -392,21 +393,21 @@ public class S98 extends BaseDriver {
 
                 byte cmd = vgmBuf[musicPtr++];
 
-                //wait 1Sync
+                // wait 1Sync
                 if (cmd == 0xff) {
                     s98WaitCounter = 1;
                     ym2608WaitCounter = 0;
                     break;
                 }
 
-                //wait nSync
+                // wait nSync
                 if (cmd == 0xfe) {
-                    s98WaitCounter = Common.getVv(vgmBuf, musicPtr);
+                    s98WaitCounter = getVv(vgmBuf, musicPtr);
                     ym2608WaitCounter = 0;
                     break;
                 }
 
-                //end/loop command
+                // end/loop command
                 if (cmd == 0xfd) {
                     if (s98Info.LoopAddress != 0) {
                         musicPtr = s98Info.LoopAddress;
@@ -419,7 +420,7 @@ public class S98 extends BaseDriver {
                 }
 
                 int devNo = cmd / 2;
-                if (devNo >= s98Info.DeviceInfos.size())// s98Info.DeviceCount)
+                if (devNo >= s98Info.DeviceInfos.size())
                 {
                     musicPtr += 2;
                     continue;
@@ -445,20 +446,16 @@ public class S98 extends BaseDriver {
                             ym2608WaitCounter = 0;
 
                             try { Thread.sleep(10); } catch (InterruptedException e) {}
-                            //while ((chipRegister.getYM2608Register(s98Info.DeviceInfos.get(devNo).ChipID, 0x1, 0x00, model) & 0xbf) != 0)
-                            //{
+                            //while ((chipRegister.getYM2608Register(s98Info.DeviceInfos.get(devNo).ChipID, 0x1, 0x00, model) & 0xbf) != 0) {
                             //    Thread.sleep(0);
                             //}
 
                             isDataBlock = false;
                         }
 
-                        //if (ym2608WaitCounter > 1000)
-                        //{
+                        //if (ym2608WaitCounter > 1000) {
                         //    ym2608WaitSw = true;
-                        //}
-                        //else if (ym2608WaitSw && ym2608WaitCounter == 1)
-                        //{
+                        //} else if (ym2608WaitSw && ym2608WaitCounter == 1) {
                         //    chipRegister.sendDataYM2608(s98Info.DeviceInfos.get(devNo).ChipID, model);
                         //    ym2608WaitSw = false;
                         //}
@@ -536,5 +533,27 @@ public class S98 extends BaseDriver {
 
     private void WriteYMF262(int chipID, byte port, byte adr, byte data) {
         chipRegister.setYMF262Register(chipID, port, adr, data, model);
+    }
+
+    static int getVv(byte[] buf, int musicPtr) {
+        int s = 0, n = 0;
+
+        do {
+            n |= (buf[musicPtr] & 0x7f) << s;
+            s += 7;
+        } while ((buf[musicPtr++] & 0x80) > 0);
+
+        return n + 2;
+    }
+
+    static int getV(byte[] buf, int musicPtr) {
+        int s = 0, n = 0;
+
+        do {
+            n |= (buf[musicPtr] & 0x7f) << s;
+            s += 7;
+        } while ((buf[musicPtr++] & 0x80) > 0);
+
+        return n;
     }
 }

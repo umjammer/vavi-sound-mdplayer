@@ -26,6 +26,8 @@ import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
+import static mdplayer.Common.searchSSGNote;
+
 
 public class frmSN76489 extends frmBase {
     public boolean isClosed = false;
@@ -110,12 +112,12 @@ public class frmSN76489 extends frmBase {
 
 
     public void screenChangeParams() {
-        int[] psgRegister = Audio.getPSGRegister(chipID);
+        int[] psgRegister = audio.getPSGRegister(chipID);
         int[] psgRegister1 = null;
-        int psgRegisterPan = Audio.getPSGRegisterGGPanning(chipID);
-        int[][] psgVol = Audio.getPSGVolume(chipID);
+        int psgRegisterPan = audio.getPSGRegisterGGPanning(chipID);
+        int[][] psgVol = audio.getPSGVolume(chipID);
         int[][] psgVol1 = null;
-        boolean NGPFlag = Audio.getSn76489NGPFlag();
+        boolean NGPFlag = audio.getSn76489NGPFlag();
 
         if (NGPFlag && chipID == 1) {
             for (int ch = 0; ch < 4; ch++) {
@@ -130,15 +132,15 @@ public class frmSN76489 extends frmBase {
         } else {
             if (psgRegister != null) {
                 if (NGPFlag) {
-                    psgVol1 = Audio.getPSGVolume(1);
-                    psgRegister1 = Audio.getPSGRegister(1);
+                    psgVol1 = audio.getPSGVolume(1);
+                    psgRegister1 = audio.getPSGRegister(1);
 
                     //Tone Ch
                     for (int ch = 0; ch < 3; ch++) {
                         if (psgRegister[ch * 2 + 1] != 15) {
-                            float ftone = Audio.clockSN76489 / (2.0f * psgRegister[ch * 2] * 16.0f);
+                            float ftone = audio.clockSN76489 / (2.0f * psgRegister[ch * 2] * 16.0f);
 
-                            newParam.channels[ch].note = searchSSGNote(ftone);// searchPSGNote(psgRegister[ch * 2]);
+                            newParam.channels[ch].note = searchSSGNote(ftone);
                         } else {
                             newParam.channels[ch].note = -1;
                         }
@@ -189,7 +191,7 @@ public class frmSN76489 extends frmBase {
         int tp = SN76489Type ? 1 : 0;
         MDChipParams.Channel osc;
         MDChipParams.Channel nsc;
-        boolean NGPFlag = Audio.getSn76489NGPFlag();
+        boolean NGPFlag = audio.getSn76489NGPFlag();
 
         for (int c = 0; c < 3; c++) {
             osc = oldParam.channels[c];
@@ -264,7 +266,7 @@ public class frmSN76489 extends frmBase {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
 
-                boolean NGPFlag = Audio.getSn76489NGPFlag();
+                boolean NGPFlag = audio.getSn76489NGPFlag();
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
@@ -295,19 +297,6 @@ public class frmSN76489 extends frmBase {
             }
         }
 
-        return n;
-    }
-
-    private int searchSSGNote(float freq) {
-        float m = Float.MAX_VALUE;
-        int n = 0;
-        for (int i = 0; i < 12 * 8; i++) {
-            float a = Math.abs(freq - Tables.freqTbl[i]);
-            if (m > a) {
-                m = a;
-                n = i;
-            }
-        }
         return n;
     }
 

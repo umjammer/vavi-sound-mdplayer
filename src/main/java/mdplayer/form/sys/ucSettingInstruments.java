@@ -827,7 +827,7 @@ public class ucSettingInstruments extends JPanel {
         this.groupBox9.setPreferredSize(new Dimension(411, 60));
         // this.groupBox9.TabIndex = 4
         // this.groupBox9.TabStop = false;
-        this.groupBox9.setToolTipText("Ym2612(Primary)");
+        this.groupBox9.setToolTipText("Ym2612Inst(Primary)");
         //
         // rbYM2612P_Silent
         //
@@ -873,7 +873,7 @@ public class ucSettingInstruments extends JPanel {
         this.groupBox10.setPreferredSize(new Dimension(411, 60));
         // this.groupBox10.TabIndex = 4
         // this.groupBox10.TabStop = false;
-        this.groupBox10.setToolTipText("Ym2612(Secondary)");
+        this.groupBox10.setToolTipText("Ym2612Inst(Secondary)");
         //
         // rbYM2612S_Silent
         //
@@ -1079,7 +1079,7 @@ public class ucSettingInstruments extends JPanel {
         this.groupBox13.setPreferredSize(new Dimension(411, 59));
         // this.groupBox13.TabIndex = 6
         // this.groupBox13.TabStop = false;
-        this.groupBox13.setToolTipText("Ym2612(Use SCCI module Only!)");
+        this.groupBox13.setToolTipText("Ym2612Inst(Use SCCI module Only!)");
         //
         // groupBox14
         //
@@ -1093,7 +1093,7 @@ public class ucSettingInstruments extends JPanel {
         this.groupBox14.setPreferredSize(new Dimension(411, 40));
         // this.groupBox14.TabIndex = 6
         // this.groupBox14.TabStop = false;
-        this.groupBox14.setToolTipText("C140(Secondary)");
+        this.groupBox14.setToolTipText("C140Inst(Secondary)");
         //
         // cmbC140S_SCCI
         //
@@ -1148,7 +1148,7 @@ public class ucSettingInstruments extends JPanel {
         this.groupBox15.setPreferredSize(new Dimension(411, 40));
         // this.groupBox15.TabIndex = 7
         // this.groupBox15.TabStop = false;
-        this.groupBox15.setToolTipText("C140(Primary)");
+        this.groupBox15.setToolTipText("C140Inst(Primary)");
         //
         // cmbC140P_SCCI
         //
@@ -1863,7 +1863,7 @@ public class ucSettingInstruments extends JPanel {
         this.groupBox28.setPreferredSize(new Dimension(411, 40));
         // this.groupBox28.TabIndex = 9
         // this.groupBox28.TabStop = false;
-        this.groupBox28.setToolTipText("K051649(Secondary)");
+        this.groupBox28.setToolTipText("K051649Inst(Secondary)");
         //
         // cmbK051649S_Real
         //
@@ -1918,7 +1918,7 @@ public class ucSettingInstruments extends JPanel {
         this.groupBox29.setPreferredSize(new Dimension(411, 40));
         // this.groupBox29.TabIndex = 8
         // this.groupBox29.TabStop = false;
-        this.groupBox29.setToolTipText("K051649(Primary)");
+        this.groupBox29.setToolTipText("K051649Inst(Primary)");
         //
         // cmbK051649P_Real
         //

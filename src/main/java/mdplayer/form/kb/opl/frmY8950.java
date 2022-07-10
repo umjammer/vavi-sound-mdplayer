@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -25,6 +24,7 @@ import mdplayer.MDChipParams;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
+import mdsound.instrument.Y8950Inst;
 
 
 public class frmY8950 extends frmBase {
@@ -161,11 +161,11 @@ public class frmY8950 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] Y8950Register = Audio.getY8950Register(chipID);
+        int[] Y8950Register = audio.getY8950Register(chipID);
         MDChipParams.Channel nyc;
         int slot = 0;
-        mdplayer.ChipRegister.ChipKeyInfo ki = Audio.getY8950KeyInfo(chipID);
-        mdsound.MDSound.Chip chipInfo = Audio.getMDSChipInfo(mdsound.MDSound.InstrumentType.Y8950);
+        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getY8950KeyInfo(chipID);
+        mdsound.MDSound.Chip chipInfo = audio.getMDSChipInfo(Y8950Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock;
 
         //FM
@@ -272,7 +272,7 @@ public class frmY8950 extends frmBase {
             if (newParam.channels[14].note != pnt) {
                 newParam.channels[14].note = pnt;
                 int tl = Y8950Register[0x12];
-                newParam.channels[14].volume = pnt == -1 ? 0 : Common.Range(tl >> 3, 0, 19);
+                newParam.channels[14].volume = pnt == -1 ? 0 : Common.range(tl >> 3, 0, 19);
             } else {
                 newParam.channels[14].volume--;
                 if (newParam.channels[14].volume < 0) newParam.channels[14].volume = 0;
@@ -368,7 +368,7 @@ public class frmY8950 extends frmBase {
         this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
 //        this.MaximizeBox = false;
         this.setName("frmY8950");
-        this.setTitle("Y8950");
+        this.setTitle("Y8950Inst");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();

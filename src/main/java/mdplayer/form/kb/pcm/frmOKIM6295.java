@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -24,7 +23,7 @@ import mdplayer.MDChipParams;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.OkiM6295;
+import mdsound.chips.OkiM6295;
 
 
 public class frmOKIM6295 extends frmBase {
@@ -107,7 +106,7 @@ public class frmOKIM6295 extends frmBase {
     };
 
     public void screenChangeParams() {
-        OkiM6295.OkiM6295State.ChannelInfo info = Audio.getOKIM6295Info(chipID);
+        OkiM6295.ChannelInfo info = audio.getOKIM6295Info(chipID);
         if (info == null) return;
 
         for (int c = 0; c < 4; c++) {

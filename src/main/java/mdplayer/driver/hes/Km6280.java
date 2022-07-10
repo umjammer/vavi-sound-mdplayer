@@ -1981,7 +1981,7 @@ public class Km6280 {
         }
 
         /*
-             HuC6280 clock cycle table
+             OotakeHuC6280 clock cycle table
 
              -0         undefined OP-code
              BRK(#$00)  +7 by Interrupt

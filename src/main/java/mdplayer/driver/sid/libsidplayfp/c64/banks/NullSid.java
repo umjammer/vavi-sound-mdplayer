@@ -25,7 +25,7 @@ import mdplayer.driver.sid.libsidplayfp.c64.C64Sid;
 
 
 /**
- * Sid chip placeholder which does nothing and returns 0xff on reading.
+ * Sid chips placeholder which does nothing and returns 0xff on reading.
  */
 public class NullSid extends C64Sid {
 

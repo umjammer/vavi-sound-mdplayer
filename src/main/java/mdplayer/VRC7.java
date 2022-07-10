@@ -1,7 +1,10 @@
 
 package mdplayer;
 
-public class VRC7 extends mdsound.Ym2413 {
+import mdsound.instrument.Ym2413Inst;
+
+
+public class VRC7 extends Ym2413Inst {
     @Override
     public String getName() {
         return "VRC7";

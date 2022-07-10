@@ -199,9 +199,9 @@ public class frmYM2151 extends frmBase {
             };
 
     public void screenChangeParams() {
-        int[] ym2151Register = Audio.getYM2151Register(chipID);
-        int[] fmKeyYM2151 = Audio.getYM2151KeyOn(chipID);
-        int[] fmYM2151Vol = Audio.getYM2151Volume(chipID);
+        int[] ym2151Register = audio.getYM2151Register(chipID);
+        int[] fmKeyYM2151 = audio.getYM2151KeyOn(chipID);
+        int[] fmYM2151Vol = audio.getYM2151Volume(chipID);
 
         for (int ch = 0; ch < 8; ch++) {
             for (int i = 0; i < 4; i++) {
@@ -228,11 +228,10 @@ public class frmYM2151 extends frmBase {
             int note = (ym2151Register[0x28 + ch] & 0x0f);
             note = (note < 3) ? note : (note < 7 ? note - 1 : (note < 11 ? note - 2 : note - 3));
             int oct = ((ym2151Register[0x28 + ch] & 0x70) >> 4);
-            //newParam.ym2151[chipID].channels[ch].note = (fmKeyYM2151[ch] > 0) ? (oct * 12 + note + Audio.vgmReal.YM2151Hosei + 1 + 9) : -1;
+            //newParam.ym2151[chipID].channels[ch].note = (fmKeyYM2151[ch] > 0) ? (oct * 12 + note + audio.vgmReal.YM2151Hosei + 1 + 9) : -1;
             int hosei = 0;
-            if (Audio.driverVirtual != null) // is Vgm)
-            {
-                hosei = (Audio.driverVirtual).ym2151Hosei[chipID];
+            if (audio.driverVirtual != null) { // is Vgm)
+                hosei = (audio.driverVirtual).ym2151Hosei[chipID];
             }
             newParam.channels[ch].note = ((fmKeyYM2151[ch] & 1) != 0) ? (oct * 12 + note + hosei) : -1;
 
@@ -260,8 +259,8 @@ public class frmYM2151 extends frmBase {
         newParam.ne = ((ym2151Register[0x0f] & 0x80) >> 7);
         newParam.nfrq = ((ym2151Register[0x0f] & 0x1f) >> 0);
         newParam.lfrq = ((ym2151Register[0x18] & 0xff) >> 0);
-        newParam.pmd = Audio.getYM2151PMD(chipID);
-        newParam.amd = Audio.getYM2151AMD(chipID);
+        newParam.pmd = audio.getYM2151PMD(chipID);
+        newParam.amd = audio.getYM2151AMD(chipID);
         newParam.waveform = ((ym2151Register[0x1b] & 0x3) >> 0);
         newParam.lfosync = ((ym2151Register[0x01] & 0x02) >> 1);
 

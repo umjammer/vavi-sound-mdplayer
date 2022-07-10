@@ -212,7 +212,7 @@ public class Mixer {
     public void doMix() {
         // extract buffer info now that the Sid instanceof updated.
         // clock() may update bufferpos.
-        // NB: if more than one chip exists, their bufferpos instanceof identical to first chip's.
+        // NB: if more than one chips exists, their bufferpos instanceof identical to first chips's.
         int sampleCount = chips.get(0).bufferPos();
 
         int i = 0;

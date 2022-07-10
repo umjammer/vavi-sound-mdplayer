@@ -3,7 +3,6 @@ package mdplayer.form.sys;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
@@ -29,14 +28,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -44,31 +41,24 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.JToolBar;
-import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
-import javax.swing.event.ListSelectionEvent;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 
-import dotnet4j.util.compat.Tuple;
-import dotnet4j.util.compat.Tuple4;
 import dotnet4j.io.Directory;
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
+import dotnet4j.util.compat.Tuple;
+import dotnet4j.util.compat.Tuple4;
 import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmArcType;
-import mdplayer.Common.FileFormat;
-import mdplayer.Log;
 import mdplayer.MDChipParams;
 import mdplayer.PlayList;
 import mdplayer.Setting;
+import mdplayer.format.FileFormat;
 import mdplayer.properties.Resources;
-import org.intellij.lang.annotations.JdkConstants.FontStyle;
 import vavi.awt.dnd.BasicDTListener;
-import vavi.swing.JHistoryComboBox;
-import vavi.util.Debug;
 
 
 public class frmPlayList extends JFrame {
@@ -95,7 +85,7 @@ public class frmPlayList extends JFrame {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmPlayList.class);
 
-    private static final String[] sext = ".Vgm;.vgz;.zip;.lzh;.nrd;.Xgm;.Zgm;.s98;.Nsf;.Hes;.Sid;.mnd;.mgs;.mdr;.mdx;.mub;.muc;.m;.m2;.mz;.mml;.mid;.rcp;.wav;.mp3;.aiff;.m3u".split(";");
+    private static final String[] sext = ".vgm;.vgz;.zip;.lzh;.nrd;.xgm;.zgm;.s98;.nsf;.hes;.sid;.mnd;.mgs;.mdr;.mdx;.mub;.muc;.m;.m2;.mz;.mml;.mid;.rcp;.wav;.mp3;.aiff;.m3u".split(";");
 
     public frmPlayList(frmMain frm) {
         frmMain = frm;
@@ -103,7 +93,7 @@ public class frmPlayList extends JFrame {
         initializeComponent();
 
         playList = PlayList.Load(null);
-        playList.SetDGV(dgvList);
+        playList.setDGV(dgvList);
         playIndex = -1;
 
         oldPlayIndex = -1;
@@ -148,7 +138,7 @@ public class frmPlayList extends JFrame {
         playing = false;
     }
 
-    public void Save() {
+    public void save() {
         if (setting.getOther().getEmptyPlayList()) {
             playList.setMusics(new ArrayList<>());
         }
@@ -199,7 +189,7 @@ public class frmPlayList extends JFrame {
         }
     };
 
-    public void Refresh() {
+    public void refresh() {
         DefaultTableModel m = (DefaultTableModel) dgvList.getModel();
         m.setRowCount(0);
         List<Object[]> rows = playList.makeRow(playList.getMusics());
@@ -310,7 +300,7 @@ public class frmPlayList extends JFrame {
         }
 
         frmMain.loadAndPlay(m, songNo, fn, zfn);
-        if (!Audio.errMsg.isEmpty()) {
+        if (!Audio.getInstance().errMsg.isEmpty()) {
             playing = false;
             return;
         }
@@ -334,14 +324,14 @@ public class frmPlayList extends JFrame {
         String fn, zfn;
 
         switch (mode) {
-        case 0:// 通常
+        case 0: // 通常
             if (dgvList.getRowCount() <= playIndex + 1) return;
             pi++;
             break;
-        case 1:// ランダム
+        case 1: // ランダム
 
             if (pi != -1) {
-                 // 再生履歴の更新
+                // 再生履歴の更新
                 fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
                 zfn = (String) dgvList.getValueAt(pi, cols.clmZipFileName.ordinal());
 
@@ -352,13 +342,13 @@ public class frmPlayList extends JFrame {
 
             pi = rand.nextInt(dgvList.getRowCount());
             break;
-        case 2:// 全曲ループ
+        case 2: // 全曲ループ
             pi++;
             if (pi >= dgvList.getRowCount()) {
                 pi = 0;
             }
             break;
-        case 3:// １曲ループ
+        case 3: // １曲ループ
             break;
         }
 
@@ -499,7 +489,7 @@ loopEx:
             m = dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmType.ordinal()).toString().charAt(0) - 'A';
             if (m < 0 || m > 9) m = 0;
         }
-        int songNo = 0;
+        int songNo;
         try {
             songNo = (int) dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmSongNo.ordinal());
         } catch (Exception e) {
@@ -559,21 +549,21 @@ loopEx:
                 pl = PlayList.Load(filename);
                 playing = false;
                 playList = pl;
-                playList.SetDGV(dgvList);
+                playList.setDGV(dgvList);
             } else {
                 pl = PlayList.LoadM3U(filename);
                 playing = false;
                 playList.getMusics().clear();
                 for (PlayList.Music ms : pl.getMusics()) {
-                    playList.AddFile(ms.fileName);
-                    //AddList(ms.fileName);
+                    playList.addFile(ms.fileName);
+                    //addList(ms.fileName);
                 }
             }
 
             playIndex = -1;
             oldPlayIndex = -1;
 
-            Refresh();
+            refresh();
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -636,7 +626,7 @@ loopEx:
 
         JFileChooser ofd = new JFileChooser();
         Arrays.stream(Resources.getCntSupportFile().split("\\s")).forEach(l -> {
-            String[] p = l.split("|");
+            String[] p = l.split("\\|");
             ofd.setFileFilter(new FileFilter() {
                 @Override public boolean accept(java.io.File f) { return f.getName().toLowerCase().endsWith(p[1]); }
                 @Override public String getDescription() { return p[0]; }
@@ -647,7 +637,7 @@ loopEx:
 
         if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(frmMain.setting.getOther().getDefaultDataPath()) && IsInitialOpenFolder) {
             ofd.setCurrentDirectory(new java.io.File(frmMain.setting.getOther().getDefaultDataPath()));
-        } else {
+//        } else {
 //            ofd.RestoreDirectory = true;
         }
 //        ofd.CheckPathExists = true;
@@ -664,7 +654,7 @@ loopEx:
 
         try {
             for (java.io.File fn : ofd.getSelectedFiles()) {
-                playList.AddFile(fn.getPath());
+                playList.addFile(fn.getPath());
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -674,10 +664,10 @@ loopEx:
     }
 
     static final String[] _exts = {
-            ".VGM", ".VGZ", ".ZIP", ".NRD",
-            ".XGM", ".S98", ".NSF", ".HES",
-            ".Sid", ".MID", ".RCP", ".M3U",
-            ".MDR"
+            ".vgm", ".vgz", ".zip", ".nrd",
+            ".xgm", ".s98", ".nsf", ".hes",
+            ".sid", ".mid", ".rcp", ".m3u",
+            ".mdr"
     };
 
     private void tsbAddFolder_Click(ActionEvent ev) {
@@ -698,7 +688,7 @@ loopEx:
             Files.list(Paths.get(fbd.getSelectedFile().getPath())).forEach(p -> {
                 String ext = Path.getExtension(p.getFileName().toString()).toUpperCase();
                 if (Arrays.asList(_exts).contains(ext)) {
-                    playList.AddFile(p.toFile().getAbsolutePath());
+                    playList.addFile(p.toFile().getAbsolutePath());
                 }
             });
         } catch (IOException ex) {
@@ -769,8 +759,8 @@ loopEx:
             //System.err.println("keycode%d %d %d", e.KeyCode, e.KeyData, e.KeyValue);
 
             switch (e.getKeyCode()) {
-            case 32:  // Space
-            case 13:  // Enter
+            case 32: // Space
+            case 13: // Enter
                 if (dgvList.getSelectedRowCount() == 0) {
                     return;
                 }
@@ -801,7 +791,7 @@ loopEx:
 
                 playing = true;
                 break;
-            case 46:  // Delete
+            case 46: // Delete
 //                e.Handled = true;
                 tsmiDelThis_Click(null);
                 break;
@@ -869,11 +859,11 @@ loopEx:
 //
 //                String[] filename = ((String[]) e.Data.GetData(DataFormats.FileDrop));
 //
-//                 // ドロップされたアイテムがフォルダーの場合は下位フォルダー内も含めた
-//                 // 実際のファイルのリストを取得する
+//                // ドロップされたアイテムがフォルダーの場合は下位フォルダー内も含めた
+//                // 実際のファイルのリストを取得する
 //                List<String> result = new ArrayList<>();
 //                GetTrueFileNameList(result, Arrays.asList(filename));
-//                 // 重複を取り除く
+//                // 重複を取り除く
 //                filename = result.stream().distinct().toArray(String[]::new);
 //
 //                int i = playList.getMusics().size();
@@ -883,10 +873,10 @@ loopEx:
 //                    if (hti.RowIndex < playList.getMusics().size()) i = hti.RowIndex;
 //                }
 //
-//                 // 曲を停止
+//                // 曲を停止
 //                stop();
 //                frmMain.stop();
-//                while (!Audio.isStopped())
+//                while (!audio.isStopped())
 //                    Application.DoEvents();
 //
 //                int buIndex = i;
@@ -898,10 +888,9 @@ loopEx:
 //                }
 //                i = buIndex;
 //
-//                 // 選択位置の曲を再生する
+//                // 選択位置の曲を再生する
 //                String fn = playList.getMusics().get(i).fileName;
-//                if (
-//                        fn.toLowerCase().lastIndexOf(".lzh") == -1
+//                if (fn.toLowerCase().lastIndexOf(".lzh") == -1
 //                                && fn.toLowerCase().lastIndexOf(".zip") == -1
 //                                && fn.toLowerCase().lastIndexOf(".m3u") == -1
 //                    //&& fn.toLowerCase().lastIndexOf(".Sid") == -1
@@ -925,7 +914,7 @@ loopEx:
         }
     };
 
-    private void GetTrueFileNameList(List<String> res, List<String> files) {
+    private void getTrueFileNameList(List<String> res, List<String> files) {
         for (String f : files) {
             if (File.exists(f)) {
                 if (!res.contains(f)) {
@@ -936,7 +925,7 @@ loopEx:
                 if (Directory.exists(f)) {
                     try {
                         List<String> fs = Files.list(Paths.get(f)).map(java.nio.file.Path::toString).collect(Collectors.toList());
-                        GetTrueFileNameList(res, fs);
+                        getTrueFileNameList(res, fs);
                     } catch (IOException ev) {
                         throw new UncheckedIOException(ev);
                     }
@@ -969,7 +958,7 @@ loopEx:
         String fn = "";
         String arcFn = "";
 
-        Audio.getPlayingFileName(fn, arcFn);
+        Audio.getInstance().getPlayingFileName(fn, arcFn);
 
         if (fn.equals(ofn) && arcFn.equals(oafn)) return;
         ofn = fn;
@@ -980,7 +969,7 @@ loopEx:
         exts[2] = setting.getOther().getImageExt().split(";");
 
         String bfn = Path.combine(Path.getDirectoryName(fn), Path.getFileNameWithoutExtension(fn));
-        String bfnfld = Path.combine(Path.getDirectoryName(fn), Path.getFileName(Path.getDirectoryName(fn)));
+        String bfnFld = Path.combine(Path.getDirectoryName(fn), Path.getFileName(Path.getDirectoryName(fn)));
 
         text = "";
         for (String ext : exts[0]) {
@@ -988,8 +977,8 @@ loopEx:
                 text = bfn + "." + ext;
                 break;
             }
-            if (File.exists(bfnfld + "." + ext)) {
-                text = bfnfld + "." + ext;
+            if (File.exists(bfnFld + "." + ext)) {
+                text = bfnFld + "." + ext;
                 break;
             }
         }
@@ -999,8 +988,8 @@ loopEx:
                 mml = bfn + "." + ext;
                 break;
             }
-            if (File.exists(bfnfld + "." + ext)) {
-                mml = bfnfld + "." + ext;
+            if (File.exists(bfnFld + "." + ext)) {
+                mml = bfnFld + "." + ext;
                 break;
             }
         }
@@ -1010,8 +999,8 @@ loopEx:
                 img = bfn + "." + ext;
                 break;
             }
-            if (File.exists(bfnfld + "." + ext)) {
-                img = bfnfld + "." + ext;
+            if (File.exists(bfnFld + "." + ext)) {
+                img = bfnFld + "." + ext;
                 break;
             }
         }

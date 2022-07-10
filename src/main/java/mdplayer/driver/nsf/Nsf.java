@@ -3,13 +3,11 @@ package mdplayer.driver.nsf;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
-import mdplayer.Log;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
@@ -32,13 +30,14 @@ import mdsound.np.chip.NesVrc7;
 import mdsound.np.cpu.Km6502;
 import mdsound.np.memory.NesBank;
 import mdsound.np.memory.NesMem;
-import vavi.util.Debug;
+
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 
 
 public class Nsf extends BaseDriver {
 
-    public Nsf(Setting setting) {
-        this.setting = setting;
+    public Nsf() {
+        this.setting = Setting.getInstance();
         rate = setting.getOutputDevice().getSampleRate();
     }
 
@@ -65,7 +64,7 @@ public class Nsf extends BaseDriver {
             if (buf[tagAdr] == 0) break;
             strLst.add(buf[tagAdr++]);
         }
-        title_nsf = new String(mdsound.Common.toByteArray(strLst), Charset.forName("MS932"));
+        title_nsf = new String(toByteArray(strLst), Charset.forName("MS932"));
         title = title_nsf;
 
         strLst.clear();
@@ -74,7 +73,7 @@ public class Nsf extends BaseDriver {
             if (buf[tagAdr] == 0) break;
             strLst.add(buf[tagAdr++]);
         }
-        artist_nsf = new String(mdsound.Common.toByteArray(strLst), Charset.forName("MS932"));
+        artist_nsf = new String(toByteArray(strLst), Charset.forName("MS932"));
         artist = artist_nsf;
 
         //memcpy(copyright_nsf, image + 0x4e, 32);
@@ -85,7 +84,7 @@ public class Nsf extends BaseDriver {
             if (buf[tagAdr] == 0) break;
             strLst.add(buf[tagAdr++]);
         }
-        copyrightNsf = new String(mdsound.Common.toByteArray(strLst), Charset.forName("MS932"));
+        copyrightNsf = new String(toByteArray(strLst), Charset.forName("MS932"));
         copyright = copyrightNsf;
 
         ripper = ""; // NSFe only
@@ -318,9 +317,9 @@ public class Nsf extends BaseDriver {
         dcf.setRate(setting.getOutputDevice().getSampleRate());
         dcf.reset();
         dcf.setParam(270, 256 - setting.getNsf().getHPF()); // HPF:256-(Range0-256(Def:92))
-        lpf.SetParam(4700.0, setting.getNsf().getLPF());  // LPF:(Range 0-400(Def:112))
-        //System.err.println("dcf:%d", dcf.GetFactor());
-        //System.err.println("lpf:%d", lpf.GetFactor());
+        lpf.SetParam(4700.0, setting.getNsf().getLPF()); // LPF:(Range 0-400(Def:112))
+        //Debug.println("dcf:%d", dcf.GetFactor());
+        //Debug.println("lpf:%d", lpf.GetFactor());
 
         int i, bmax = 0;
 
@@ -328,10 +327,10 @@ public class Nsf extends BaseDriver {
             if (bmax < bankSwitch[i])
                 bmax = bankSwitch[i];
 
-        chipRegister.nes_mem.setImage(body, load_address, bodySize);
+        chipRegister.nes_mem.setImage(body, load_address & 0xffff, bodySize);
 
         if (bmax != 0) {
-            chipRegister.nes_bank.setImage(body, load_address, bodySize);
+            chipRegister.nes_bank.setImage(body, load_address & 0xffff, bodySize);
             for (i = 0; i < 8; i++)
                 chipRegister.nes_bank.setBankDefault((byte) (i + 8), bankSwitch[i]);
         }
@@ -341,7 +340,6 @@ public class Nsf extends BaseDriver {
         apuBus.detachAll();
 
         ld = new LoopDetector.NESDetector(0);
-        //            ld = new NESDetectorEx();
         ld.reset();
         stack.attach(ld);
 
@@ -426,7 +424,7 @@ public class Nsf extends BaseDriver {
         cpu_clock_rest = 0.0;
         silent_length = 0;
 
-        Region region = GetRegion(palNtsc);
+        Region region = getRegion(palNtsc);
         double speed;
         speed = 1000000.0 / ((region == Region.NTSC) ? speedNtsc : speedPal);
 
@@ -436,7 +434,7 @@ public class Nsf extends BaseDriver {
         chipRegister.nes_cpu.start(initAddress, playAddress, speed, song, (region == Region.PAL) ? 1 : 0, 0);
     }
 
-    private Region GetRegion(byte flags) {
+    private Region getRegion(byte flags) {
         int pref = 0;
 
         // user forced region
@@ -458,11 +456,11 @@ public class Nsf extends BaseDriver {
         return Region.NTSC; // fallback for invalid Flags
     }
 
-    public int Render(short[] b, int length) {
-        return Render(b, length, 0);
+    public int render(short[] b, int length) {
+        return render(b, length, 0);
     }
 
-    public int Render(short[] b, int length, int offset) {
+    public int render(short[] b, int length, int offset) {
         if (model == EnmModel.RealModel) return length;
         if (chipRegister == null) return length;
 
@@ -478,7 +476,6 @@ public class Nsf extends BaseDriver {
         int master_volume;
 
         master_volume = 0x80;
-
 
         double apu_clock_per_sample = 0;
         if (chipRegister.nes_cpu != null) {

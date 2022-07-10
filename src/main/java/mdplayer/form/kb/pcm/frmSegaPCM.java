@@ -25,6 +25,7 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
+import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
 
 
@@ -162,7 +163,7 @@ public class frmSegaPCM extends frmBase {
     }
 
     public void screenChangeParams() {
-        //MDSound.segapcm.segapcm_state segapcmState = Audio.GetSegaPCMRegister(chipID);
+        //MDSound.segapcm.segapcm_state segapcmState = audio.GetSegaPCMRegister(chipID);
         //if (segapcmState != null && segapcmState.ram != null && segapcmState.rom != null)
         //{
         //    for (int ch = 0; ch < 16; ch++)
@@ -198,8 +199,8 @@ public class frmSegaPCM extends frmBase {
         //    }
         //}
 
-        byte[] segapcmReg = Audio.getSEGAPCMRegister(chipID);
-        boolean[] segapcmKeyOn = Audio.getSEGAPCMKeyOn(chipID);
+        byte[] segapcmReg = audio.getSEGAPCMRegister(chipID);
+        boolean[] segapcmKeyOn = audio.getSEGAPCMKeyOn(chipID);
         if (segapcmReg != null) {
             for (int ch = 0; ch < 16; ch++) {
                 int l = segapcmReg[ch * 8 + 2] & 0x7f;

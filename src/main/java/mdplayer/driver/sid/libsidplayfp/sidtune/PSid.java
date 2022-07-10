@@ -132,7 +132,7 @@ public class PSid extends SidTuneBase {
         SID_ANY // SID_6581 | SID_8580
     }
 
-    // Format Strings
+    // FileFormat Strings
     public static final String TXT_FORMAT_PSID = "PlaySID one-file format (PSid)";
     public static final String TXT_FORMAT_RSID = "Real C64 one-file format (RSID)";
     public static final String TXT_UNKNOWN_PSID = "Unsupported PSid version";

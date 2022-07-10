@@ -37,7 +37,7 @@ import mdplayer.driver.sid.libsidplayfp.SidEndian;
 class C64Cia1 extends Mos6526 implements IBank {
 
     // The CIA emulations are very generic and here we need to effectively
-    // wire them into the computer (like adding a chip to a PCB).
+    // wire them into the computer (like adding a chips to a PCB).
 
     private final C64Env env;
     private short lastTA;

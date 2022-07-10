@@ -35,7 +35,7 @@ import mdplayer.driver.sid.libsidplayfp.SidEndian;
 public class C64Vic extends Mos656X implements IBank {
 
     // The VIC emulation instanceof very generic and here we need to effectively
-    // wire it into the computer (like adding a chip to a PCB).
+    // wire it into the computer (like adding a chips to a PCB).
 
     private final C64Env env;
 

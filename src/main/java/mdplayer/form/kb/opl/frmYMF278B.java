@@ -121,7 +121,7 @@ public class frmYMF278B extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[][] ymf278bRegister = Audio.getYMF278BRegister(chipID);
+        int[][] ymf278bRegister = audio.getYMF278BRegister(chipID);
         MDChipParams.Channel nyc;
         int slot = 0;
         int slotP = 0;
@@ -214,7 +214,7 @@ public class frmYMF278B extends frmBase {
             }
         }
 
-        int ko = Audio.getYMF278BFMKeyON(chipID);
+        int ko = audio.getYMF278BFMKeyON(chipID);
 
         for (int c = 0; c < 18; c++) {
             nyc = newParam.channels[c];
@@ -317,7 +317,7 @@ public class frmYMF278B extends frmBase {
 
         //Audio.resetYMF278BFMKeyON(chipID);
 
-        int r = Audio.getYMF278BRyhthmKeyON(chipID);
+        int r = audio.getYMF278BRyhthmKeyON(chipID);
 
         //slot14 TL 0x51 HH
         //slot15 TL 0x52 TOM
@@ -365,11 +365,11 @@ public class frmYMF278B extends frmBase {
             if (newParam.channels[22].volume < 0) newParam.channels[22].volume = 0;
         }
 
-        Audio.resetYMF278BRyhthmKeyON(chipID);
+        audio.resetYMF278BRyhthmKeyON(chipID);
 
         //PCM
-        int[] pcmKey = Audio.getYMF278BPCMKeyON(chipID);
-        int[] mdPCMKey = Audio.getMoonDriverPCMKeyOn();
+        int[] pcmKey = audio.getYMF278BPCMKeyON(chipID);
+        int[] mdPCMKey = audio.getMoonDriverPCMKeyOn();
         for (int c = 23; c < 23 + 24; c++) {
             nyc = newParam.channels[c];
             //Pan
@@ -444,7 +444,7 @@ public class frmYMF278B extends frmBase {
             //Wav
             nyc.inst[12] = (ymf278bRegister[2][0x08 + (c - 23)]) + ((ymf278bRegister[2][0x20 + (c - 23)] & 0x1) << 8);
         }
-        Audio.resetYMF278BPCMKeyON(chipID);
+        audio.resetYMF278BPCMKeyON(chipID);
     }
 
     public void screenDrawParams() {

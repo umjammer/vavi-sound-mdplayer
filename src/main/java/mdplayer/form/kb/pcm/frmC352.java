@@ -162,7 +162,7 @@ public class frmC352 extends frmBase {
     private int searchC352Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = Audio.clockC352;
+        int clock = audio.clockC352;
 
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
@@ -181,8 +181,8 @@ public class frmC352 extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] c352Register = Audio.getC352Register(chipID);
-        int[] c352key = Audio.getC352KeyOn(chipID);
+        int[] c352Register = audio.getC352Register(chipID);
+        int[] c352key = audio.getC352KeyOn(chipID);
 
         for (int ch = 0; ch < 32; ch++) {
             newParam.channels[ch].note = searchC352Note(c352Register[ch * 8 + 2]);
@@ -190,10 +190,10 @@ public class frmC352 extends frmBase {
             if (c352key != null) {
                 newParam.channels[ch].pan = ((c352Register[ch * 8 + 0] >> 12) & 0xf) | (((((short) c352Register[ch * 8 + 0] & 0xff) >> 4) & 0xf) << 4);
                 if ((c352Register[ch * 8 + 3] & 0x4000) != 0 && (c352key[ch] & 0x8000) != 0) {
-                    newParam.channels[ch].volumeL = Common.Range((int) (((short) c352Register[ch * 8 + 0] >> 8) / 11.7), 0, 19);
-                    newParam.channels[ch].volumeR = Common.Range((int) (((short) c352Register[ch * 8 + 0] & 0xff) / 11.7), 0, 19);
-                    newParam.channels[ch].volumeRL = Common.Range((int) (((short) c352Register[ch * 8 + 1] >> 8) / 11.7), 0, 19);
-                    newParam.channels[ch].volumeRR = Common.Range((int) (((short) c352Register[ch * 8 + 1] & 0xff) / 11.7), 0, 19);
+                    newParam.channels[ch].volumeL = Common.range((int) (((short) c352Register[ch * 8 + 0] >> 8) / 11.7), 0, 19);
+                    newParam.channels[ch].volumeR = Common.range((int) (((short) c352Register[ch * 8 + 0] & 0xff) / 11.7), 0, 19);
+                    newParam.channels[ch].volumeRL = Common.range((int) (((short) c352Register[ch * 8 + 1] >> 8) / 11.7), 0, 19);
+                    newParam.channels[ch].volumeRR = Common.range((int) (((short) c352Register[ch * 8 + 1] & 0xff) / 11.7), 0, 19);
                 }
 
                 if (newParam.channels[ch].mask == null || newParam.channels[ch].mask) {
@@ -291,7 +291,7 @@ public class frmC352 extends frmBase {
         this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
 //        this.MaximizeBox = false;
         this.setName("frmC352");
-        this.setTitle("C352");
+        this.setTitle("C352Inst");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();

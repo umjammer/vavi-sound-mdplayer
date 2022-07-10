@@ -141,12 +141,12 @@ public class frmYM2608 extends frmBase {
 
     public void screenChangeParams() {
         boolean isFmEx;
-        int[][] ym2608Register = Audio.getYM2608Register(chipID);
-        int[] fmKeyYM2608 = Audio.getYM2608KeyOn(chipID);
-        int[] ym2608Vol = Audio.getYM2608Volume(chipID);
-        int[] ym2608Ch3SlotVol = Audio.getYM2608Ch3SlotVolume(chipID);
-        int[][] ym2608Rhythm = Audio.getYM2608RhythmVolume(chipID);
-        int[] ym2608AdpcmVol = Audio.getYM2608AdpcmVolume(chipID);
+        int[][] ym2608Register = audio.getYM2608Register(chipID);
+        int[] fmKeyYM2608 = audio.getYM2608KeyOn(chipID);
+        int[] ym2608Vol = audio.getYM2608Volume(chipID);
+        int[] ym2608Ch3SlotVol = audio.getYM2608Ch3SlotVolume(chipID);
+        int[][] ym2608Rhythm = audio.getYM2608RhythmVolume(chipID);
+        int[] ym2608AdpcmVol = audio.getYM2608AdpcmVolume(chipID);
 
         newParam.timerA = ym2608Register[0][0x24] | ((ym2608Register[0][0x25] & 0x3) << 8);
         newParam.timerB = ym2608Register[0][0x26];
@@ -159,9 +159,9 @@ public class frmYM2608 extends frmBase {
         int defaultMasterClock = 7987200;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        if (Audio.clockYM2608 != 0) {
-            ssgMul = Audio.clockYM2608 / (float) defaultMasterClock;
-            masterClock = Audio.clockYM2608;
+        if (audio.clockYM2608 != 0) {
+            ssgMul = audio.clockYM2608 / (float) defaultMasterClock;
+            masterClock = audio.clockYM2608;
         }
 
         int divInd = ym2608Register[0][0x2d];
@@ -366,7 +366,7 @@ public class frmYM2608 extends frmBase {
                 DrawBuff.volume(frameBuffer, 288 + 1, 8 + (c + 3) * 8, 0, oyc.volumeL, nyc.volumeL, tp);
                 //if (c == 7 && oyc.note != nyc.note) {
                 //System.err.println("note:%d", nyc.note);
-                //int[][] ym2608Register = Audio.GetYM2608Register(chipID);
+                //int[][] ym2608Register = audio.GetYM2608Register(chipID);
                 //int freq1 = ym2608Register[0][0xa9] + (ym2608Register[0][0xad] ) * 0x100;
                 //int freq2 = ym2608Register[0][0xa8] + (ym2608Register[0][0xac] ) * 0x100;
                 //int freq3 = ym2608Register[0][0xaa] + (ym2608Register[0][0xae] ) * 0x100;

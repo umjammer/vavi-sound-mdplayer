@@ -3,7 +3,6 @@ package mdplayer.driver.mgsdrv;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import dotnet4j.io.File;
 import konamiman.z80.Z80Processor;
@@ -13,11 +12,12 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
-import mdplayer.Log;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import vavi.util.Debug;
+
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 
 
 public class MGSDRV extends BaseDriver {
@@ -304,7 +304,7 @@ public class MGSDRV extends BaseDriver {
                 messageAddress++;
             }
 
-            String StringToPrint = new String(mdsound.Common.toByteArray(bytesToPrint), StandardCharsets.US_ASCII);
+            String StringToPrint = new String(toByteArray(bytesToPrint), StandardCharsets.US_ASCII);
             System.err.printf(StringToPrint);
         } else if (function == 2) {
             byte byteToPrint = z80.getRegisters().getE();
@@ -368,6 +368,6 @@ public class MGSDRV extends BaseDriver {
             bytesToPrint.add(byteToPrint);
             messageAddress++;
         }
-        return new String(mdsound.Common.toByteArray(bytesToPrint), StandardCharsets.US_ASCII);
+        return new String(toByteArray(bytesToPrint), StandardCharsets.US_ASCII);
     }
 }

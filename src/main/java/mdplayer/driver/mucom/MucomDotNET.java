@@ -34,6 +34,8 @@ import musicDriverInterface.Tag;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
 
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+
 
 public class MucomDotNET extends BaseDriver {
     private ICompiler mucomCompiler = null;
@@ -308,7 +310,7 @@ public class MucomDotNET extends BaseDriver {
             dest.add(md != null ? (byte) (md.dat & 0xff) : (byte) 0);
         }
 
-        return mdsound.Common.toByteArray(dest);
+        return toByteArray(dest);
     }
 
     private MUCOMFileType checkFileType(byte[] buf) {
@@ -467,14 +469,14 @@ public class MucomDotNET extends BaseDriver {
 
     private void writeOPNB1PCMData(byte[] dat, int v, int v2) {
         if (v == 0)
-            chipRegister.writeYM2610_SetAdpcmA(0, dat, EnmModel.VirtualModel);
+            chipRegister.writeYm2610_SetAdpcmA(0, dat, EnmModel.VirtualModel);
         else
             chipRegister.WriteYM2610_SetAdpcmB(0, dat, EnmModel.VirtualModel);
     }
 
     private void writeOPNB2PCMData(byte[] dat, int v, int v2) {
         if (v == 0)
-            chipRegister.writeYM2610_SetAdpcmA(1, dat, EnmModel.VirtualModel);
+            chipRegister.writeYm2610_SetAdpcmA(1, dat, EnmModel.VirtualModel);
         else
             chipRegister.WriteYM2610_SetAdpcmB(1, dat, EnmModel.VirtualModel);
     }

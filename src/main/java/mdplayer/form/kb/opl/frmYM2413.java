@@ -115,9 +115,9 @@ public class frmYM2413 extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[] ym2413Register = Audio.getYM2413Register(chipID);
+        int[] ym2413Register = audio.getYM2413Register(chipID);
         MDChipParams.Channel nyc;
-        mdplayer.ChipRegister.ChipKeyInfo ki = Audio.getYM2413KeyInfo(chipID);
+        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getYM2413KeyInfo(chipID);
 
         for (int ch = 0; ch < 9; ch++) {
             nyc = newParam.channels[ch];
@@ -142,7 +142,7 @@ public class frmYM2413 extends frmBase {
 
         }
 
-        //int r = Audio.getYM2413RyhthmKeyON(chipID);
+        //int r = audio.getYM2413RyhthmKeyON(chipID);
 
         //BD
         if (ki.On[9]) {

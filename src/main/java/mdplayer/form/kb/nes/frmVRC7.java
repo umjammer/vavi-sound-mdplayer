@@ -106,11 +106,11 @@ public class frmVRC7 extends frmBase {
     };
 
     public void screenChangeParams() {
-        byte[] vrc7Register = Audio.getVRC7Register(chipID);
+        byte[] vrc7Register = audio.getVRC7Register(chipID);
         if (vrc7Register == null) return;
 
         //キーオン(ワンショット)があったかを取得する
-        mdplayer.ChipRegister.ChipKeyInfo ki = Audio.getVRC7KeyInfo(chipID);
+        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getVRC7KeyInfo(chipID);
 
         for (int ch = 0; ch < 6; ch++) {
             MDChipParams.Channel nyc = newParam.channels[ch];

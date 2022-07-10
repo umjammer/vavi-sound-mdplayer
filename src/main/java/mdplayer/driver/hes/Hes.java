@@ -1,7 +1,6 @@
 package mdplayer.driver.hes;
 
 import java.util.Arrays;
-import java.util.logging.Level;
 
 import mdplayer.Audio;
 import mdplayer.ChipRegister;
@@ -10,7 +9,7 @@ import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
-import mdplayer.Log;
+import mdplayer.plugin.BasePlugin;
 import vavi.util.Debug;
 
 
@@ -118,6 +117,7 @@ public class Hes extends BaseDriver {
     public boolean playtime_detected = false;
 
     private int[] buf = new int[2];
+    BasePlugin Audio; // TODO
 
     public void additionalUpdate(mdsound.MDSound.Chip sender, byte chipID, int[][] Buffer, int Length) {
         if (Audio.isStopped()) {

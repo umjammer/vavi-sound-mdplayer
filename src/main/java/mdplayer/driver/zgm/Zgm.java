@@ -9,7 +9,6 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
-import mdplayer.Log;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.zgm.zgmChip.ChipFactory;
 import mdplayer.driver.zgm.zgmChip.ZgmChip;
@@ -123,7 +122,7 @@ public class Zgm extends BaseDriver {
             chipCount.put(chip.name, chipCount.get(chip.name) + 1);
 
             chip.setUp(chipCount.get(chip.name), pos, vgmCmdTbl);
-            //chips.add(chip);
+            //chips.add(chips);
         }
 
         //usedChips = getUsedChipsString(chips);
@@ -161,7 +160,7 @@ public class Zgm extends BaseDriver {
         public int clock = 0;
         public byte[] option = null;
 
-        //public ClsChip chip = null;
+        //public ClsChip chips = null;
         public int offset = 0;
     }
 }

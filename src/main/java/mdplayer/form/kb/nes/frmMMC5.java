@@ -110,7 +110,7 @@ public class frmMMC5 extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        byte[] reg = Audio.getMMC5Register(chipID);
+        byte[] reg = audio.getMMC5Register(chipID);
         int freq;
         int vol;
         int note;

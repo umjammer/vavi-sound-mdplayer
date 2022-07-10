@@ -19,6 +19,7 @@ import dotnet4j.io.StreamReader;
 import dotnet4j.io.StreamWriter;
 import mdplayer.Common.EnmChip;
 import mdplayer.form.sys.frmMain;
+import mdplayer.plugin.BasePlugin;
 import mdsound.MDSound;
 import vavi.util.Debug;
 
@@ -30,6 +31,7 @@ public class YM2612MIDI {
     private frmMain parent;
     private MDSound mdsMIDI;
     public MDChipParams newParam;
+    Audio audio = Audio.getInstance();
 
     private int[][] _noteLog = new int[][] {new int[100], new int[100], new int[100], new int[100], new int[100], new int[100]};
 
@@ -76,11 +78,11 @@ public class YM2612MIDI {
         int ch = parent.setting.getMidiKbd().getUseMonoChannel();
         if (ch < 0 || ch > 5) return -1;
 
-        mdsMIDI.writeYM2612((byte) 0, (byte) (ch / 3), (byte) (0xa4 + (ch % 3)), (byte) (((fnum & 0x700) >> 8) | (oct << 3)));
-        mdsMIDI.writeYM2612((byte) 0, (byte) (ch / 3), (byte) (0xa0 + (ch % 3)), (byte) (fnum & 0xff));
+        mdsMIDI.writeYm2612((byte) 0, (byte) (ch / 3), (byte) (0xa4 + (ch % 3)), (byte) (((fnum & 0x700) >> 8) | (oct << 3)));
+        mdsMIDI.writeYm2612((byte) 0, (byte) (ch / 3), (byte) (0xa0 + (ch % 3)), (byte) (fnum & 0xff));
 
-        mdsMIDI.writeYM2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0x00 + ch + (ch / 3)));
-        mdsMIDI.writeYM2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0xf0 + ch + (ch / 3)));
+        mdsMIDI.writeYm2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0x00 + ch + (ch / 3)));
+        mdsMIDI.writeYm2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0xf0 + ch + (ch / 3)));
         latestNoteNumberMONO = noteNumber;
 
         return ch;
@@ -91,7 +93,7 @@ public class YM2612MIDI {
         if (ch < 0 || ch > 5) return;
 
         if (noteNumber == latestNoteNumberMONO)
-            mdsMIDI.writeYM2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0x00 + ch + (ch / 3)));
+            mdsMIDI.writeYm2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0x00 + ch + (ch / 3)));
     }
 
     private int noteON(int noteNumber) {
@@ -113,11 +115,11 @@ public class YM2612MIDI {
         }
         if (!sw) return -1;
 
-        mdsMIDI.writeYM2612((byte) 0, (byte) (ch / 3), (byte) (0xa4 + (ch % 3)), (byte) (((fnum & 0x700) >> 8) | (oct << 3)));
-        mdsMIDI.writeYM2612((byte) 0, (byte) (ch / 3), (byte) (0xa0 + (ch % 3)), (byte) (fnum & 0xff));
+        mdsMIDI.writeYm2612((byte) 0, (byte) (ch / 3), (byte) (0xa4 + (ch % 3)), (byte) (((fnum & 0x700) >> 8) | (oct << 3)));
+        mdsMIDI.writeYm2612((byte) 0, (byte) (ch / 3), (byte) (0xa0 + (ch % 3)), (byte) (fnum & 0xff));
 
-        mdsMIDI.writeYM2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0x00 + ch + (ch / 3)));
-        mdsMIDI.writeYM2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0xf0 + ch + (ch / 3)));
+        mdsMIDI.writeYm2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0x00 + ch + (ch / 3)));
+        mdsMIDI.writeYm2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0xf0 + ch + (ch / 3)));
         latestNoteNumber[ch] = noteNumber;
 
         return ch;
@@ -139,11 +141,11 @@ public class YM2612MIDI {
         if (!sw) return;
 
         latestNoteNumber[ch] = -1;
-        mdsMIDI.writeYM2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0x00 + ch + (ch / 3)));
+        mdsMIDI.writeYm2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0x00 + ch + (ch / 3)));
     }
 
     private void voiceCopy() {
-        int[][] reg = Audio.getFMRegister(0);// chipRegister.fmRegisterYM2612[0];
+        int[][] reg = audio.getFMRegister(0); // chipRegister.fmRegisterYM2612[0];
         if (reg == null) return;
 
         for (int i = 0; i < 6; i++) {
@@ -155,12 +157,12 @@ public class YM2612MIDI {
 
         for (int i = 0x30; i < 0xa0; i += 0x10) {
             for (int j = 0; j < 4; j++) {
-                mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (i + j * 4 + (des % 3)), (byte) reg[src / 3][i + j * 4 + (src % 3)]);
+                mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (i + j * 4 + (des % 3)), (byte) reg[src / 3][i + j * 4 + (src % 3)]);
             }
         }
 
-        mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0xb0 + (des % 3)), (byte) reg[src / 3][0xb0 + (src % 3)]);
-        mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) ((0xb4 + (des % 3)) | 0xc0), (byte) reg[src / 3][0xb4 + (src % 3)]);
+        mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0xb0 + (des % 3)), (byte) reg[src / 3][0xb0 + (src % 3)]);
+        mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) ((0xb4 + (des % 3)) | 0xc0), (byte) reg[src / 3][0xb4 + (src % 3)]);
 
         int alg = (byte) reg[src / 3][0xb0 + (src % 3)] & 0x7;
         byte[] algTl = new byte[] {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
@@ -175,7 +177,7 @@ public class YM2612MIDI {
 
         for (int j = 0; j < 4; j++) {
             if ((algTl[alg] & (1 << j)) != 0)
-                mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x40 + j * 4 + (des % 3)), (byte) (tls[j] - max));
+                mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x40 + j * 4 + (des % 3)), (byte) (tls[j] - max));
         }
     }
 
@@ -184,15 +186,15 @@ public class YM2612MIDI {
             int opn = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
             int opm = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
 
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x50 + opn + (des % 3)), (byte) (reg[0x80 + opm + src] & 0xdf)); // AR + KS
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x60 + opn + (des % 3)), (byte) (reg[0xa0 + opm + src] & 0x9f)); // DR + AM
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x70 + opn + (des % 3)), (byte) (reg[0xc0 + opm + src] & 0x1f)); // SR
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x80 + opn + (des % 3)), (byte) (reg[0xe0 + opm + src] & 0xff)); // RR + SL
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x40 + opn + (des % 3)), (byte) (reg[0x60 + opm + src] & 0x7f)); // TL
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x30 + opn + (des % 3)), (byte) (reg[0x40 + opm + src] & 0x7f)); // ML + DT
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x50 + opn + (des % 3)), (byte) (reg[0x80 + opm + src] & 0xdf)); // AR + KS
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x60 + opn + (des % 3)), (byte) (reg[0xa0 + opm + src] & 0x9f)); // DR + AM
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x70 + opn + (des % 3)), (byte) (reg[0xc0 + opm + src] & 0x1f)); // SR
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x80 + opn + (des % 3)), (byte) (reg[0xe0 + opm + src] & 0xff)); // RR + SL
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x40 + opn + (des % 3)), (byte) (reg[0x60 + opm + src] & 0x7f)); // TL
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x30 + opn + (des % 3)), (byte) (reg[0x40 + opm + src] & 0x7f)); // ML + DT
         }
 
-        mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0xb0 + (des % 3)), (byte) (reg[0x20 + src] & 0x3f)); // AL + FB
+        mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0xb0 + (des % 3)), (byte) (reg[0x20 + src] & 0x3f)); // AL + FB
 
         int alg = (byte) reg[0x20 + src] & 0x7;
         byte[] algTl = new byte[] {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
@@ -207,7 +209,7 @@ public class YM2612MIDI {
 
         for (int j = 0; j < 4; j++) {
             if ((algTl[alg] & (1 << j)) != 0)
-                mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x40 + j * 4 + (des % 3)), (byte) (tls[j] - max));
+                mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x40 + j * 4 + (des % 3)), (byte) (tls[j] - max));
         }
     }
 
@@ -218,22 +220,22 @@ public class YM2612MIDI {
         for (int i = 0; i < 4; i++) {
             int opn = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
 
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x50 + opn + (des % 3)), (byte) ((tone.ops[i].ar & 0x1f) + ((tone.ops[i].ks & 0x3) << 6))); // AR + KS
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x60 + opn + (des % 3)), (byte) ((tone.ops[i].dr & 0x1f) + ((tone.ops[i].am & 0x1) << 7))); // DR + AM
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x70 + opn + (des % 3)), (byte) ((tone.ops[i].sr & 0x1f))); // SR
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x80 + opn + (des % 3)), (byte) ((tone.ops[i].rr & 0xf) + ((tone.ops[i].sl & 0xf) << 4))); // RR + SL
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x40 + opn + (des % 3)), (byte) ((tone.ops[i].tl & 0x7f))); // TL
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x30 + opn + (des % 3)), (byte) ((tone.ops[i].ml & 0xf) + ((tone.ops[i].dt & 0x7) << 4))); // ML + DT
-            mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0x90 + opn + (des % 3)), (byte) ((tone.ops[i].sg & 0xf))); // SG
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x50 + opn + (des % 3)), (byte) ((tone.ops[i].ar & 0x1f) + ((tone.ops[i].ks & 0x3) << 6))); // AR + KS
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x60 + opn + (des % 3)), (byte) ((tone.ops[i].dr & 0x1f) + ((tone.ops[i].am & 0x1) << 7))); // DR + AM
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x70 + opn + (des % 3)), (byte) ((tone.ops[i].sr & 0x1f))); // SR
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x80 + opn + (des % 3)), (byte) ((tone.ops[i].rr & 0xf) + ((tone.ops[i].sl & 0xf) << 4))); // RR + SL
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x40 + opn + (des % 3)), (byte) ((tone.ops[i].tl & 0x7f))); // TL
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x30 + opn + (des % 3)), (byte) ((tone.ops[i].ml & 0xf) + ((tone.ops[i].dt & 0x7) << 4))); // ML + DT
+            mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0x90 + opn + (des % 3)), (byte) ((tone.ops[i].sg & 0xf))); // SG
         }
 
-        mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0xb0 + (des % 3)), (byte) ((tone.al & 0x7) + ((tone.fb & 0x7) << 3))); // AL + FB
-        mdsMIDI.writeYM2612((byte) 0, (byte) (des / 3), (byte) (0xb4 + (des % 3)), (byte) (0xc0 + (tone.pms & 0x7) + ((tone.ams & 0x3) << 4))); // PMS + AMS
+        mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0xb0 + (des % 3)), (byte) ((tone.al & 0x7) + ((tone.fb & 0x7) << 3))); // AL + FB
+        mdsMIDI.writeYm2612((byte) 0, (byte) (des / 3), (byte) (0xb4 + (des % 3)), (byte) (0xc0 + (tone.pms & 0x7) + ((tone.ams & 0x3) << 4))); // PMS + AMS
     }
 
     private Tone voiceCopyChToTone(int des, String name) {
         Tone tone = new Tone();
-        int[][] reg = mdsMIDI.ReadYM2612Register((byte) 0);
+        int[][] reg = mdsMIDI.ReadYm2612Register((byte) 0);
 
         for (int i = 0; i < 4; i++) {
             int opn = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
@@ -290,13 +292,13 @@ public class YM2612MIDI {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2610 || chip == EnmChip.YM2203) {
             int[][] srcRegs = null;
             if (chip == EnmChip.YM2612) {
-                srcRegs = Audio.getFMRegister(chipID);
+                srcRegs = audio.getFMRegister(chipID);
             } else if (chip == EnmChip.YM2608) {
-                srcRegs = Audio.getYM2608Register(chipID);
+                srcRegs = audio.getYM2608Register(chipID);
             } else if (chip == EnmChip.YM2610) {
-                srcRegs = Audio.getYM2610Register(chipID);
+                srcRegs = audio.getYM2610Register(chipID);
             } else if (chip == EnmChip.YM2203) {
-                int[] sReg = Audio.getYm2203Register(chipID);
+                int[] sReg = audio.getYm2203Register(chipID);
                 srcRegs = new int[][] {sReg, null};
             }
             for (int i = 0; i < 6; i++) {
@@ -305,7 +307,7 @@ public class YM2612MIDI {
                 }
             }
         } else if (chip == EnmChip.YM2151) {
-            int[] reg = Audio.getYM2151Register(chipID);
+            int[] reg = audio.getYM2151Register(chipID);
             for (int i = 0; i < 6; i++) {
                 if (parent.setting.getMidiKbd().getUseChannel()[i]) {
                     voiceCopyChFromOPM(ch, i, reg);
@@ -316,7 +318,7 @@ public class YM2612MIDI {
 
     public void allNoteOff() {
         for (int ch = 0; ch < 6; ch++) {
-            mdsMIDI.writeYM2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0x00 + ch + (ch / 3)));
+            mdsMIDI.writeYm2612((byte) 0, (byte) 0, (byte) 0x28, (byte) (0x00 + ch + (ch / 3)));
         }
     }
 

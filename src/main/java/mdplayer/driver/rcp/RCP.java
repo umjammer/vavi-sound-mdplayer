@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.function.BiConsumer;
-import java.util.logging.Level;
 
 import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.Path;
@@ -16,13 +15,13 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
-import mdplayer.Log;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.MidiOutInfo;
-import vavi.util.Debug;
+
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 
 
 public class RCP extends BaseDriver {
@@ -160,7 +159,7 @@ public class RCP extends BaseDriver {
             if (buf[ptr + i] == 0) break;
             title.add(buf[ptr + i]);
         }
-        str = new StringBuilder(new String(mdsound.Common.toByteArray(title), CHARSET).trim());
+        str = new StringBuilder(new String(toByteArray(title), CHARSET).trim());
         ptr += 64;
         gd3.trackName = str.toString();
         gd3.trackNameJ = str.toString();
@@ -721,7 +720,7 @@ public class RCP extends BaseDriver {
                     pk[1],
                     MIDISpEventType.ChExclusive,
                     new byte[][] {
-                            mdsound.Common.toByteArray(ex)
+                            toByteArray(ex)
                     });
             break;
         case 0x90: // User Exclusive 1
@@ -881,7 +880,7 @@ public class RCP extends BaseDriver {
                         0,
                         MIDISpEventType.Comment,
                         new byte[][] {
-                                mdsound.Common.toByteArray(ex)
+                                toByteArray(ex)
                         });
             } else {
                 ex.add((byte) pk[2]);
@@ -896,7 +895,7 @@ public class RCP extends BaseDriver {
                         pk[1],
                         MIDISpEventType.Comment,
                         new byte[][] {
-                                mdsound.Common.toByteArray(ex)
+                                toByteArray(ex)
                         });
             }
             break;
@@ -1178,7 +1177,7 @@ public class RCP extends BaseDriver {
             dat.add(pMIDIMessage[i]);
 //            chipRegister.sendMIDIout(model, n, vv, vstDelta);
         }
-        chipRegister.sendMIDIout(model, n, mdsound.Common.toByteArray(dat), vstDelta);
+        chipRegister.sendMIDIout(model, n, toByteArray(dat), vstDelta);
     }
 
     /**
@@ -1781,7 +1780,7 @@ public class RCP extends BaseDriver {
 
         ret.add((byte) 0xf7);
 
-        return mdsound.Common.toByteArray(ret);
+        return toByteArray(ret);
     }
 
     private void getGSD1Buf(List<CtlSysex> dBuf) {
@@ -2182,7 +2181,7 @@ public class RCP extends BaseDriver {
         }
         lst.add((byte) 0x84);
 
-        return mdsound.Common.toByteArray(lst);
+        return toByteArray(lst);
     }
 
     private void sendControl() {

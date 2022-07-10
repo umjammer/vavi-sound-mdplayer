@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -25,7 +24,7 @@ import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.ScdPcm;
+import mdsound.chips.PcmChip;
 
 
 public class frmMegaCD extends frmBase {
@@ -108,19 +107,19 @@ public class frmMegaCD extends frmBase {
     };
 
     public void screenChangeParams() {
-        ScdPcm.PcmChip rf5c164Register = Audio.getRf5c164Register(chipID);
+        PcmChip rf5c164Register = audio.getRf5c164Register(chipID);
         if (rf5c164Register != null) {
             for (int ch = 0; ch < 8; ch++) {
-                if (rf5c164Register.channels[ch].enable != 0) {
-                    newParam.channels[ch].note = searchRf5c164Note(rf5c164Register.channels[ch].stepB);
-                    newParam.channels[ch].volumeL = Math.min(Math.max(rf5c164Register.channels[ch].mulL / 3, 0), 19);
-                    newParam.channels[ch].volumeR = Math.min(Math.max(rf5c164Register.channels[ch].mulR / 3, 0), 19);
+                if (rf5c164Register.getChannel(ch).enable != 0) {
+                    newParam.channels[ch].note = searchRf5c164Note(rf5c164Register.getChannel(ch).stepB);
+                    newParam.channels[ch].volumeL = Math.min(Math.max(rf5c164Register.getChannel(ch).mulL / 3, 0), 19);
+                    newParam.channels[ch].volumeR = Math.min(Math.max(rf5c164Register.getChannel(ch).mulR / 3, 0), 19);
                 } else {
                     newParam.channels[ch].note = -1;
                     newParam.channels[ch].volumeL = 0;
                     newParam.channels[ch].volumeR = 0;
                 }
-                newParam.channels[ch].pan = rf5c164Register.channels[ch].pan;
+                newParam.channels[ch].pan = rf5c164Register.getChannel(ch).pan;
             }
         }
     }

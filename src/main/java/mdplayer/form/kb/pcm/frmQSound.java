@@ -151,7 +151,7 @@ public class frmQSound extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] QSoundRegister = Audio.getQSoundRegister(chipID);
+        int[] QSoundRegister = audio.getQSoundRegister(chipID);
 
         //PCM 16ch
         for (int ch = 0; ch < 16; ch++) {
@@ -289,7 +289,7 @@ public class frmQSound extends frmBase {
         this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
 //        this.MaximizeBox = false;
         this.setName("frmQSound");
-        this.setTitle("QSound");
+        this.setTitle("QSoundInst");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();

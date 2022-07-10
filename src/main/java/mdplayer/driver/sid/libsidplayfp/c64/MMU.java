@@ -37,7 +37,7 @@ import mdplayer.driver.sid.libsidplayfp.SidMemory;
 
 
 /**
- * The C64 MMU chip.
+ * The C64 MMU chips.
  */
 public final class MMU implements SidMemory, IPLA {
 

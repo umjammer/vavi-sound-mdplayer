@@ -1,16 +1,12 @@
 package mdplayer.driver.moonDriver;
 
-import java.util.logging.Level;
-
 import dotnet4j.util.compat.Tuple;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
-import mdplayer.Log;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
-import vavi.util.Debug;
 
 
 public class MoonDriver extends BaseDriver {
@@ -3556,7 +3552,7 @@ public class MoonDriver extends BaseDriver {
         d = 0x04;
         moon_wave_out();
 
-        // the last should be lowest to set chip's private pointer.
+        // the last should be lowest to set chips's private pointer.
         // (trigger to set)
 
         a = MDB_BASE[MDB_ADRLO];

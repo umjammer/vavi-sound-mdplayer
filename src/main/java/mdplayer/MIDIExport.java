@@ -2,20 +2,20 @@ package mdplayer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.Common.EnmChip;
-import vavi.util.Debug;
+
+import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 
 
 public class MIDIExport {
 
     private Setting setting;
 
-    private midiChip midi2151 = new midiChip();
-    private midiChip midi2612 = new midiChip();
+    private MidiChip midi2151 = new MidiChip();
+    private MidiChip midi2612 = new MidiChip();
 
     private List<Byte> cData = null;
 
@@ -23,8 +23,8 @@ public class MIDIExport {
     public int[][][] fmRegisterYM2612 = null;
     public int[][] fmRegisterYM2151 = null;
 
-    public MIDIExport(Setting setting) {
-        this.setting = setting;
+    public MIDIExport() {
+        this.setting = Setting.getInstance();
     }
 
     public void outMIDIData(EnmChip chip, int chipID, int dPort, int dAddr, int dData, int hosei, long vgmFrameCounter) {
@@ -130,7 +130,7 @@ public class MIDIExport {
             if (setting.getMidiExport().getUseYM2151Export()) for (List<Byte> dat : midi2151.data) buf.addAll(dat);
             if (setting.getMidiExport().getUseYM2612Export()) for (List<Byte> dat : midi2612.data) buf.addAll(dat);
 
-            File.writeAllBytes(Path.combine(setting.getMidiExport().getExportPath(), Path.changeExtension(Path.getFileName(fn), ".mid")), mdsound.Common.toByteArray(buf));
+            File.writeAllBytes(Path.combine(setting.getMidiExport().getExportPath(), Path.changeExtension(Path.getFileName(fn), ".mid")), toByteArray(buf));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -677,7 +677,7 @@ public class MIDIExport {
         return note;
     }
 
-    private void SetDelta(int ch, midiChip chip, long NewFrameCounter) {
+    private void SetDelta(int ch, MidiChip chip, long NewFrameCounter) {
         if (ch >= chip.oldFrameCounter.length) return;
 
         long sub = NewFrameCounter - chip.oldFrameCounter[ch];
@@ -760,7 +760,7 @@ public class MIDIExport {
     }
 
     private void InitYM2151() {
-        midi2151 = new midiChip();
+        midi2151 = new MidiChip();
         midi2151.maxTrk = 8;
         midi2151.oldCode = new int[midi2151.maxTrk];
         midi2151.oldFreq = new int[midi2151.maxTrk];
@@ -835,7 +835,7 @@ public class MIDIExport {
     }
 
     private void InitYM2612() {
-        midi2612 = new midiChip();
+        midi2612 = new MidiChip();
         midi2612.maxTrk = 6;
         midi2612.oldCode = new int[midi2612.maxTrk];
         midi2612.oldFreq = new int[midi2612.maxTrk];
@@ -910,7 +910,7 @@ public class MIDIExport {
         }
     }
 
-    static class midiChip {
+    static class MidiChip {
         public List<Byte>[] data = null;
         public long[] oldFrameCounter = null;
         public int[] oldCode = null;
