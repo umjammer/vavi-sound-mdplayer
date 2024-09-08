@@ -30,7 +30,7 @@ import vavi.util.Debug;
 
 /**
  * SidDatabase
- * An utility class to deal with the songlength DataBase.
+ * An utility class to deal with the songlength dataBase.
  */
 public class SidDatabase {
 
@@ -44,7 +44,7 @@ public class SidDatabase {
         return errorString;
     }
 
-    private static final String ERR_DATABASE_CORRUPT = "Sid DATABASE ERROR: Database seems to be corrupt.";
+    private static final String ERR_DATABASE_CORRUPT = "Sid DATABASE ERROR: database seems to be corrupt.";
     private static final String ERR_NO_DATABASE_LOADED = "Sid DATABASE ERROR: Songlength database not loaded.";
     private static final String ERR_NO_SELECTED_SONG = "Sid DATABASE ERROR: No song selected for retrieving song length.";
     private static final String ERR_UNABLE_TO_LOAD_DATABASE = "Sid DATABASE ERROR: Unable to load the songlegnth datasuper.";
@@ -95,7 +95,7 @@ public class SidDatabase {
     }
 
     /**
-     * Open the songlength DataBase.
+     * Open the songlength dataBase.
      * <p>
      * @param filename songlengthDB file name with full path.
      * @return false : case of errors, true otherwise.
@@ -113,7 +113,7 @@ public class SidDatabase {
     }
 
     /**
-     * Close the songlength DataBase.
+     * Close the songlength dataBase.
      */
     public void close() {
         parser = null;

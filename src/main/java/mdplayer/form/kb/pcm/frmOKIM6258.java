@@ -32,7 +32,7 @@ public class frmOKIM6258 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
 
     private MDChipParams.OKIM6258 newParam = null;
@@ -41,10 +41,10 @@ public class frmOKIM6258 extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmOKIM6258.class);
 
-    public frmOKIM6258(frmMain frm, int chipID, int zoom, MDChipParams.OKIM6258 newParam) {
+    public frmOKIM6258(frmMain frm, int chipId, int zoom, MDChipParams.OKIM6258 newParam) {
         super(frm);
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
 
         initializeComponent();
@@ -68,9 +68,9 @@ public class frmOKIM6258 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosOKIM6258()[chipID] = getLocation();
+                parent.setting.getLocation().getPosOKIM6258()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosOKIM6258()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosOKIM6258()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -105,7 +105,7 @@ public class frmOKIM6258 extends frmBase {
     };
 
     public void screenChangeParams() {
-        OkiM6258 okim6258State = audio.getOKIM6258Register(chipID);
+        OkiM6258 okim6258State = audio.getOKIM6258Register(chipId);
         if (okim6258State == null) return;
 
         switch (okim6258State.getPan() & 0x3) {
@@ -162,11 +162,10 @@ public class frmOKIM6258 extends frmBase {
             ost.pbFreq = nst.pbFreq;
         }
 
-        DrawBuff.volume(frameBuffer, 256, 8 + 0 * 8, 1, ost.volumeL, nst.volumeL / 2, 0);
-        DrawBuff.volume(frameBuffer, 256, 8 + 0 * 8, 2, ost.volumeR, nst.volumeR / 2, 0);
+        ost.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + 0 * 8, 1, ost.volumeL, nst.volumeL / 2, 0);
+        ost.volumeR = DrawBuff.volume(frameBuffer, 256, 8 + 0 * 8, 2, ost.volumeR, nst.volumeR / 2, 0);
 
         DrawBuff.ChOKIM6258(frameBuffer, ost.mask, nst.mask, 0);
-
     }
 
     public void screenInit() {
@@ -178,37 +177,37 @@ public class frmOKIM6258 extends frmBase {
         newParam.volumeR = 0;
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
 
-            //上部のラベル行の場合は何もしない
+            // 上部のラベル行の場合は何もしない
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // 但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     if (newParam.mask)
-                        parent.resetChannelMask(EnmChip.OKIM6258, chipID, 0);
+                        parent.resetChannelMask(EnmChip.OKIM6258, chipId, 0);
                     else
-                        parent.setChannelMask(EnmChip.OKIM6258, chipID, 0);
+                        parent.setChannelMask(EnmChip.OKIM6258, chipId, 0);
                 }
                 return;
             }
 
-            //鍵盤
+            // 鍵盤
             if (py < 2 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    //マスク
-                    parent.setChannelMask(EnmChip.OKIM6258, chipID, 0);
+                    // マスク
+                    parent.setChannelMask(EnmChip.OKIM6258, chipId, 0);
                     return;
                 }
 
-                //マスク解除
-                parent.resetChannelMask(EnmChip.OKIM6258, chipID, 0);
+                // マスク解除
+                parent.resetChannelMask(EnmChip.OKIM6258, chipId, 0);
             }
         }
     };

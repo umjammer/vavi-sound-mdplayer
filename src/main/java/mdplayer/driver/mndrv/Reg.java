@@ -278,10 +278,10 @@ class FMTimer {
     private int timerReg;
     // ステータスレジスタ (下位2ビット)
     private int statReg;
-    private boolean isOPM = false;
+    private boolean isOPM;
     private Runnable csmKeyOn;
-    private double step = 0.0;
-    private double masterClock = 3579545.0;
+    private double step;
+    private double masterClock;
 
     public FMTimer(boolean isOPM, Runnable csmKeyOn, double masterClock) {
         this.isOPM = isOPM;
@@ -340,7 +340,7 @@ class FMTimer {
         case 0x14:
             // タイマー制御レジスタ
             timerReg = data & 0x8F;
-            statReg &= 0xFF - ((data >> 4) & 3);
+            statReg &= 0xff - ((data >> 4) & 3);
             break;
         }
     }
@@ -363,7 +363,7 @@ class FMTimer {
         case 0x27:
             // タイマー制御レジスタ
             timerReg = data & 0x8F;
-            statReg &= 0xFF - ((data >> 4) & 3);
+            statReg &= 0xff - ((data >> 4) & 3);
             break;
         }
     }

@@ -6,7 +6,6 @@ import javax.swing.JFrame;
 
 import mdplayer.Audio;
 import mdplayer.form.sys.frmMain;
-import mdplayer.plugin.BasePlugin;
 
 
 public class frmBase extends JFrame {

@@ -29,7 +29,7 @@ import java.nio.ByteBuffer;
  */
 public interface SidMemory {
 
-    // # include <stdint.h>
+    //# include <stdint.h>
 
     /**
      //Read one byte from memory.
@@ -51,7 +51,7 @@ public interface SidMemory {
      //@param addr the memory location where to write
      //@param value the value to write
      */
-    void writeMemByte(short addr, byte value);
+    void writeMemByte(int addr, byte value);
 
     /**
      //Write two contiguous bytes to memory.

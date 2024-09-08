@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -24,7 +23,6 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
-import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
 
 import static mdplayer.Common.searchSSGNote;
@@ -36,19 +34,19 @@ public class frmS5B extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
     private MDChipParams.S5B newParam;
     private MDChipParams.S5B oldParam;
     private FrameBuffer frameBuffer = new FrameBuffer();
     static Preferences prefs = Preferences.userNodeForPackage(frmS5B.class);
 
-    public frmS5B(frmMain frm, int chipID, int zoom, MDChipParams.S5B newParam, MDChipParams.S5B oldParam) {
+    public frmS5B(frmMain frm, int chipId, int zoom, MDChipParams.S5B newParam, MDChipParams.S5B oldParam) {
         super(frm);
 
         initializeComponent();
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         this.newParam = newParam;
         this.oldParam = oldParam;
@@ -71,9 +69,9 @@ public class frmS5B extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosS5B()[chipID] = getLocation();
+                parent.setting.getLocation().getPosS5B()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosS5B()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosS5B()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -108,7 +106,7 @@ public class frmS5B extends frmBase {
     };
 
     public void screenChangeParams() {
-        byte[] S5BRegister = audio.getS5BRegister(chipID);
+        byte[] S5BRegister = audio.getS5BRegister(chipId);
         if (S5BRegister == null) return;
 
         for (int ch = 0; ch < 3; ch++) { //SSG
@@ -151,7 +149,7 @@ public class frmS5B extends frmBase {
             MDChipParams.Channel oyc = oldParam.channels[c];
             MDChipParams.Channel nyc = newParam.channels[c];
 
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 0, oyc.volume, nyc.volume, tp);
+            oyc.volume = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 0, oyc.volume, nyc.volume, tp);
             DrawBuff.keyBoard(frameBuffer, c, oyc.note, nyc.note, tp);
             DrawBuff.ToneNoise(frameBuffer, 6, 2, c, oyc.tn, nyc.tn, oyc.tntp, tp);
 
@@ -192,9 +190,9 @@ public class frmS5B extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 3; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.FME7, chipID, ch);
+                            parent.resetChannelMask(EnmChip.FME7, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.FME7, chipID, ch);
+                            parent.setChannelMask(EnmChip.FME7, chipId, ch);
                     }
                 }
                 return;
@@ -207,12 +205,12 @@ public class frmS5B extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
-                    parent.setChannelMask(EnmChip.FME7, chipID, ch);
+                    parent.setChannelMask(EnmChip.FME7, chipId, ch);
                     return;
                 }
 
                 //マスク解除
-                for (ch = 0; ch < 3; ch++) parent.resetChannelMask(EnmChip.FME7, chipID, ch);
+                for (ch = 0; ch < 3; ch++) parent.resetChannelMask(EnmChip.FME7, chipId, ch);
             }
         }
     };

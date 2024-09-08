@@ -127,7 +127,7 @@ public class M3U {
             List<String> lbuf = new ArrayList<>();
             for (int i = 0; i < buf.length; ) {
                 StringBuilder s = new StringBuilder();
-                boolean flg = false;
+                boolean flg;
                 do {
                     flg = false;
                     s.append(buf[i]);
@@ -154,7 +154,7 @@ public class M3U {
             ms.time = buf[3].trim();
             if (buf.length < 5) return ms;
 
-            analyzeLoopTime(buf[4], ms.loopStartTime, ms.loopEndTime);
+            analyzeLoopTime(buf[4], ms);
             if (buf.length < 6) return ms;
 
             ms.fadeoutTime = buf[5].trim();
@@ -170,12 +170,9 @@ public class M3U {
     }
 
     private static int analyzeSongNo(String s) {
-        int n = -1;
+        int n;
 
-        if (s.length() > 0 && s.charAt(0) == '$') {
-            if (s.length() < 1) {
-                return -1;
-            }
+        if (!s.isEmpty() && s.charAt(0) == '$') {
             try {
                 n = Integer.parseInt(s.substring(1), 16);
             } catch (NumberFormatException e) {
@@ -194,15 +191,15 @@ public class M3U {
         return n;
     }
 
-    private static void analyzeLoopTime(String s, String loopStartTime, String loopEndTime) {
-        loopStartTime = "";
-        loopEndTime = "";
+    private static void analyzeLoopTime(String s, PlayList.Music ms) {
+        ms.loopStartTime = "";
+        ms.loopEndTime = "";
 
-        if (s.length() > 0 && s.charAt(s.length() - 1) == '-') {
-            loopStartTime = s.substring(0, s.length() - 1);
+        if (!s.isEmpty() && s.charAt(s.length() - 1) == '-') {
+            ms.loopStartTime = s.substring(0, s.length() - 1);
             return;
         }
 
-        loopEndTime = s;
+        ms.loopEndTime = s;
     }
 }

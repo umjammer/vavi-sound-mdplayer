@@ -30,9 +30,9 @@ package mdplayer.driver.sid.libsidplayfp.c64.banks;
  */
 public class IOBank implements IBank {
 
-    // # include <stdint.h>
-    // # include "Bank.h"
-    // # include "sidcxx11.h"
+    //# include <stdint.h>
+    //# include "Bank.h"
+    //# include "sidcxx11.h"
 
     private IBank[] map = new IBank[16];
 
@@ -44,11 +44,13 @@ public class IOBank implements IBank {
         return map[num];
     }
 
-    public byte peek(short addr) {
+    @Override
+    public byte peek(int addr) {
         return map[addr >> 8 & 0xf].peek(addr);
     }
 
-    public void poke(short addr, byte data) {
+    @Override
+    public void poke(int addr, byte data) {
         // System.err.println("%d", addr >> 8 & 0xf);
         map[addr >> 8 & 0xf].poke(addr, data);
     }

@@ -34,6 +34,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import javax.sound.midi.MidiDevice;
@@ -142,6 +144,9 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 public class frmMain extends JFrame {
+
+    ResourceBundle rb = ResourceBundle.getBundle("mdplayer/form/sys/frmMain", Locale.getDefault());
+
     static final Point empty = new Point(0, 0);
 
     private BufferedImage pbRf5c164Screen;
@@ -219,7 +224,7 @@ public class frmMain extends JFrame {
 
     private Transmitter midiin = null;
     private boolean forcedExit = false;
-    private YM2612MIDI ym2612MIDI = null;
+    private YM2612MIDI ym2612MIDI;
     private boolean flgReinit = false;
     public boolean reqAllScreenInit = true;
 
@@ -320,13 +325,23 @@ public class frmMain extends JFrame {
 
         audio.init();
 
-        ym2612MIDI = new mdplayer.YM2612MIDI(this, audio.audio.mdsMIDI, newParam);
+        ym2612MIDI = new mdplayer.YM2612MIDI(audio.audio.mdsMIDI, newParam);
+        ym2612MIDI.fadeout = this::fadeout;
+        ym2612MIDI.next = this::next;
+        ym2612MIDI.ff = this::ff;
+        ym2612MIDI.pause = this::pause;
+        ym2612MIDI.play = this::play;
+        ym2612MIDI.prev = this::prev;
+        ym2612MIDI.slow = this::slow;
+        ym2612MIDI.stop = this::stop;
 
         Debug.println(Level.SEVERE, "起動時のAudio初期化処理完了");
 
         StartMIDIInMonitoring();
 
         Debug.println(Level.SEVERE, "frmMain(コンストラクタ):STEP 04");
+
+setVisible(true);
     }
 
     private void ClearWindowPos() {
@@ -400,44 +415,44 @@ public class frmMain extends JFrame {
         if (setting.getLocation().getOpenYm2612MIDI()) openMIDIKeyboard();
         if (setting.getLocation().getOpenVisWave()) openFormVisWave();
 
-        for (int chipID = 0; chipID < 2; chipID++) {
-            if (setting.getLocation().getOpenAY8910()[chipID]) OpenFormAY8910(chipID, false);
-            if (setting.getLocation().getOpenC140()[chipID]) OpenFormC140(chipID, false);
-            if (setting.getLocation().getOpenPPZ8()[chipID]) OpenFormPPZ8(chipID, false);
-            if (setting.getLocation().getOpenS5B()[chipID]) OpenFormS5B(chipID, false);
-            if (setting.getLocation().getOpenDMG()[chipID]) OpenFormDMG(chipID, false);
-            if (setting.getLocation().getOpenYMZ280B()[chipID]) OpenFormYMZ280B(chipID, false);
-            if (setting.getLocation().getOpenC352()[chipID]) OpenFormC352(chipID, false);
-            if (setting.getLocation().getOpenMultiPCM()[chipID]) OpenFormMultiPCM(chipID, false);
-            if (setting.getLocation().getOpenQSound()[chipID]) OpenFormQSound(chipID, false);
-            if (setting.getLocation().getOpenHuC6280()[chipID]) OpenFormHuC6280(chipID, false);
-            if (setting.getLocation().getOpenK051649()[chipID]) OpenFormK051649(chipID, false);
-            if (setting.getLocation().getOpenMIDI()[chipID]) OpenFormMIDI(chipID, false);
-            if (setting.getLocation().getOpenNESDMC()[chipID]) openFormNESDMC(chipID, false);
-            if (setting.getLocation().getOpenFDS()[chipID]) openFormFDS(chipID, false);
-            if (setting.getLocation().getOpenMMC5()[chipID]) openFormMMC5(chipID, false);
-            if (setting.getLocation().getOpenOKIM6258()[chipID]) OpenFormOKIM6258(chipID, false);
-            if (setting.getLocation().getOpenOKIM6295()[chipID]) OpenFormOKIM6295(chipID, false);
-            if (setting.getLocation().getOpenRf5c164()[chipID]) OpenFormMegaCD(chipID, false);
-            if (setting.getLocation().getOpenRf5c68()[chipID]) OpenFormRf5c68(chipID, false);
-            if (setting.getLocation().getOpenSN76489()[chipID]) OpenFormSN76489(chipID, false);
-            if (setting.getLocation().getOpenSegaPCM()[chipID]) OpenFormSegaPCM(chipID, false);
-            if (setting.getLocation().getOpenYm2151()[chipID]) OpenFormYM2151(chipID, false);
-            if (setting.getLocation().getOpenYm2203()[chipID]) OpenFormYM2203(chipID, false);
-            if (setting.getLocation().getOpenYm2413()[chipID]) OpenFormYM2413(chipID, false);
-            if (setting.getLocation().getOpenYm2608()[chipID]) OpenFormYM2608(chipID, false);
-            if (setting.getLocation().getOpenYm2610()[chipID]) OpenFormYM2610(chipID, false);
-            if (setting.getLocation().getOpenYm2612()[chipID]) openFormYM2612(chipID, false);
-            if (setting.getLocation().getOpenYm3526()[chipID]) OpenFormYM3526(chipID, false);
-            if (setting.getLocation().getOpenY8950()[chipID]) OpenFormY8950(chipID, false);
-            if (setting.getLocation().getOpenYm3812()[chipID]) OpenFormYM3812(chipID, false);
-            if (setting.getLocation().getOpenYmf262()[chipID]) OpenFormYMF262(chipID, false);
-            if (setting.getLocation().getOpenYMF271()[chipID]) OpenFormYMF271(chipID, false);
-            if (setting.getLocation().getOpenYmf278b()[chipID]) OpenFormYMF278B(chipID, false);
-            if (setting.getLocation().getOpenVrc6()[chipID]) openFormVRC6(chipID, false);
-            if (setting.getLocation().getOpenVrc7()[chipID]) openFormVRC7(chipID, false);
-            if (setting.getLocation().getOpenRegTest()[chipID]) openFormRegTest(chipID, null, false);
-            if (setting.getLocation().getOpenN106()[chipID]) openFormN106(chipID, false);
+        for (int chipId = 0; chipId < 2; chipId++) {
+            if (setting.getLocation().getOpenAY8910()[chipId]) OpenFormAY8910(chipId, false);
+            if (setting.getLocation().getOpenC140()[chipId]) OpenFormC140(chipId, false);
+            if (setting.getLocation().getOpenPPZ8()[chipId]) OpenFormPPZ8(chipId, false);
+            if (setting.getLocation().getOpenS5B()[chipId]) OpenFormS5B(chipId, false);
+            if (setting.getLocation().getOpenDMG()[chipId]) OpenFormDMG(chipId, false);
+            if (setting.getLocation().getOpenYMZ280B()[chipId]) OpenFormYMZ280B(chipId, false);
+            if (setting.getLocation().getOpenC352()[chipId]) OpenFormC352(chipId, false);
+            if (setting.getLocation().getOpenMultiPCM()[chipId]) OpenFormMultiPCM(chipId, false);
+            if (setting.getLocation().getOpenQSound()[chipId]) OpenFormQSound(chipId, false);
+            if (setting.getLocation().getOpenHuC6280()[chipId]) OpenFormHuC6280(chipId, false);
+            if (setting.getLocation().getOpenK051649()[chipId]) OpenFormK051649(chipId, false);
+            if (setting.getLocation().getOpenMIDI()[chipId]) OpenFormMIDI(chipId, false);
+            if (setting.getLocation().getOpenNESDMC()[chipId]) openFormNESDMC(chipId, false);
+            if (setting.getLocation().getOpenFDS()[chipId]) openFormFDS(chipId, false);
+            if (setting.getLocation().getOpenMMC5()[chipId]) openFormMMC5(chipId, false);
+            if (setting.getLocation().getOpenOKIM6258()[chipId]) OpenFormOKIM6258(chipId, false);
+            if (setting.getLocation().getOpenOKIM6295()[chipId]) OpenFormOKIM6295(chipId, false);
+            if (setting.getLocation().getOpenRf5c164()[chipId]) OpenFormMegaCD(chipId, false);
+            if (setting.getLocation().getOpenRf5c68()[chipId]) OpenFormRf5c68(chipId, false);
+            if (setting.getLocation().getOpenSN76489()[chipId]) OpenFormSN76489(chipId, false);
+            if (setting.getLocation().getOpenSegaPCM()[chipId]) OpenFormSegaPCM(chipId, false);
+            if (setting.getLocation().getOpenYm2151()[chipId]) OpenFormYM2151(chipId, false);
+            if (setting.getLocation().getOpenYm2203()[chipId]) OpenFormYM2203(chipId, false);
+            if (setting.getLocation().getOpenYm2413()[chipId]) OpenFormYM2413(chipId, false);
+            if (setting.getLocation().getOpenYm2608()[chipId]) OpenFormYM2608(chipId, false);
+            if (setting.getLocation().getOpenYm2610()[chipId]) OpenFormYM2610(chipId, false);
+            if (setting.getLocation().getOpenYm2612()[chipId]) openFormYM2612(chipId, false);
+            if (setting.getLocation().getOpenYm3526()[chipId]) OpenFormYM3526(chipId, false);
+            if (setting.getLocation().getOpenY8950()[chipId]) OpenFormY8950(chipId, false);
+            if (setting.getLocation().getOpenYm3812()[chipId]) OpenFormYM3812(chipId, false);
+            if (setting.getLocation().getOpenYmf262()[chipId]) OpenFormYMF262(chipId, false);
+            if (setting.getLocation().getOpenYMF271()[chipId]) OpenFormYMF271(chipId, false);
+            if (setting.getLocation().getOpenYmf278b()[chipId]) OpenFormYMF278B(chipId, false);
+            if (setting.getLocation().getOpenVrc6()[chipId]) openFormVRC6(chipId, false);
+            if (setting.getLocation().getOpenVrc7()[chipId]) openFormVRC7(chipId, false);
+            if (setting.getLocation().getOpenRegTest()[chipId]) openFormRegTest(chipId, null, false);
+            if (setting.getLocation().getOpenN106()[chipId]) openFormN106(chipId, false);
         }
 
         Debug.println(Level.SEVERE, "frmMain_Load:STEP 08");
@@ -1101,43 +1116,43 @@ public class frmMain extends JFrame {
         setting.getLocation().setOMixer(false);
         setting.getLocation().setOpenYm2612MIDI(false);
         setting.getLocation().setOpenVisWave(false);
-        for (int chipID = 0; chipID < 2; chipID++) {
-            setting.getLocation().getOpenAY8910()[chipID] = false;
-            setting.getLocation().getOpenC140()[chipID] = false;
-            setting.getLocation().getOpenPPZ8()[chipID] = false;
-            setting.getLocation().getOpenS5B()[chipID] = false;
-            setting.getLocation().getOpenDMG()[chipID] = false;
-            setting.getLocation().getOpenYMZ280B()[chipID] = false;
-            setting.getLocation().getOpenC352()[chipID] = false;
-            setting.getLocation().getOpenQSound()[chipID] = false;
-            setting.getLocation().getOpenHuC6280()[chipID] = false;
-            setting.getLocation().getOpenK051649()[chipID] = false;
-            setting.getLocation().getOpenMIDI()[chipID] = false;
-            setting.getLocation().getOpenNESDMC()[chipID] = false;
-            setting.getLocation().getOpenFDS()[chipID] = false;
-            setting.getLocation().getOpenMMC5()[chipID] = false;
-            setting.getLocation().getOpenVrc6()[chipID] = false;
-            setting.getLocation().getOpenVrc7()[chipID] = false;
-            setting.getLocation().getOpenN106()[chipID] = false;
-            setting.getLocation().getOpenOKIM6258()[chipID] = false;
-            setting.getLocation().getOpenOKIM6295()[chipID] = false;
-            setting.getLocation().getOpenRf5c164()[chipID] = false;
-            setting.getLocation().getOpenRf5c68()[chipID] = false;
-            setting.getLocation().getOpenSegaPCM()[chipID] = false;
-            setting.getLocation().getOpenSN76489()[chipID] = false;
-            setting.getLocation().getOpenYm2151()[chipID] = false;
-            setting.getLocation().getOpenYm2203()[chipID] = false;
-            setting.getLocation().getOpenYm2413()[chipID] = false;
-            setting.getLocation().getOpenYm2608()[chipID] = false;
-            setting.getLocation().getOpenYm2610()[chipID] = false;
-            setting.getLocation().getOpenYm2612()[chipID] = false;
-            setting.getLocation().getOpenYm3526()[chipID] = false;
-            setting.getLocation().getOpenY8950()[chipID] = false;
-            setting.getLocation().getOpenYm3812()[chipID] = false;
-            setting.getLocation().getOpenYmf262()[chipID] = false;
-            setting.getLocation().getOpenYMF271()[chipID] = false;
-            setting.getLocation().getOpenYmf278b()[chipID] = false;
-            setting.getLocation().getOpenRegTest()[chipID] = false;
+        for (int chipId = 0; chipId < 2; chipId++) {
+            setting.getLocation().getOpenAY8910()[chipId] = false;
+            setting.getLocation().getOpenC140()[chipId] = false;
+            setting.getLocation().getOpenPPZ8()[chipId] = false;
+            setting.getLocation().getOpenS5B()[chipId] = false;
+            setting.getLocation().getOpenDMG()[chipId] = false;
+            setting.getLocation().getOpenYMZ280B()[chipId] = false;
+            setting.getLocation().getOpenC352()[chipId] = false;
+            setting.getLocation().getOpenQSound()[chipId] = false;
+            setting.getLocation().getOpenHuC6280()[chipId] = false;
+            setting.getLocation().getOpenK051649()[chipId] = false;
+            setting.getLocation().getOpenMIDI()[chipId] = false;
+            setting.getLocation().getOpenNESDMC()[chipId] = false;
+            setting.getLocation().getOpenFDS()[chipId] = false;
+            setting.getLocation().getOpenMMC5()[chipId] = false;
+            setting.getLocation().getOpenVrc6()[chipId] = false;
+            setting.getLocation().getOpenVrc7()[chipId] = false;
+            setting.getLocation().getOpenN106()[chipId] = false;
+            setting.getLocation().getOpenOKIM6258()[chipId] = false;
+            setting.getLocation().getOpenOKIM6295()[chipId] = false;
+            setting.getLocation().getOpenRf5c164()[chipId] = false;
+            setting.getLocation().getOpenRf5c68()[chipId] = false;
+            setting.getLocation().getOpenSegaPCM()[chipId] = false;
+            setting.getLocation().getOpenSN76489()[chipId] = false;
+            setting.getLocation().getOpenYm2151()[chipId] = false;
+            setting.getLocation().getOpenYm2203()[chipId] = false;
+            setting.getLocation().getOpenYm2413()[chipId] = false;
+            setting.getLocation().getOpenYm2608()[chipId] = false;
+            setting.getLocation().getOpenYm2610()[chipId] = false;
+            setting.getLocation().getOpenYm2612()[chipId] = false;
+            setting.getLocation().getOpenYm3526()[chipId] = false;
+            setting.getLocation().getOpenY8950()[chipId] = false;
+            setting.getLocation().getOpenYm3812()[chipId] = false;
+            setting.getLocation().getOpenYmf262()[chipId] = false;
+            setting.getLocation().getOpenYMF271()[chipId] = false;
+            setting.getLocation().getOpenYmf278b()[chipId] = false;
+            setting.getLocation().getOpenRegTest()[chipId] = false;
         }
 
         Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 04");
@@ -1168,155 +1183,155 @@ public class frmMain extends JFrame {
 //            setting.getLocation().setOpenVSTeffectList(true);
 //        }
 
-        for (int chipID = 0; chipID < 2; chipID++) {
-            if (frmAY8910[chipID] != null && !frmAY8910[chipID].isClosed) {
-                frmAY8910[chipID].setVisible(false);
-                setting.getLocation().getOpenAY8910()[chipID] = true;
+        for (int chipId = 0; chipId < 2; chipId++) {
+            if (frmAY8910[chipId] != null && !frmAY8910[chipId].isClosed) {
+                frmAY8910[chipId].setVisible(false);
+                setting.getLocation().getOpenAY8910()[chipId] = true;
             }
-            if (frmC140[chipID] != null && !frmC140[chipID].isClosed) {
-                frmC140[chipID].setVisible(false);
-                setting.getLocation().getOpenC140()[chipID] = true;
+            if (frmC140[chipId] != null && !frmC140[chipId].isClosed) {
+                frmC140[chipId].setVisible(false);
+                setting.getLocation().getOpenC140()[chipId] = true;
             }
-            if (frmPPZ8[chipID] != null && !frmPPZ8[chipID].isClosed) {
-                frmPPZ8[chipID].setVisible(false);
-                setting.getLocation().getOpenPPZ8()[chipID] = true;
+            if (frmPPZ8[chipId] != null && !frmPPZ8[chipId].isClosed) {
+                frmPPZ8[chipId].setVisible(false);
+                setting.getLocation().getOpenPPZ8()[chipId] = true;
             }
-            if (frmS5B[chipID] != null && !frmS5B[chipID].isClosed) {
-                frmS5B[chipID].setVisible(false);
-                setting.getLocation().getOpenS5B()[chipID] = true;
+            if (frmS5B[chipId] != null && !frmS5B[chipId].isClosed) {
+                frmS5B[chipId].setVisible(false);
+                setting.getLocation().getOpenS5B()[chipId] = true;
             }
-            if (frmDMG[chipID] != null && !frmDMG[chipID].isClosed) {
-                frmDMG[chipID].setVisible(false);
-                setting.getLocation().getOpenDMG()[chipID] = true;
+            if (frmDMG[chipId] != null && !frmDMG[chipId].isClosed) {
+                frmDMG[chipId].setVisible(false);
+                setting.getLocation().getOpenDMG()[chipId] = true;
             }
-            if (frmYMZ280B[chipID] != null && !frmYMZ280B[chipID].isClosed) {
-                frmYMZ280B[chipID].setVisible(false);
-                setting.getLocation().getOpenYMZ280B()[chipID] = true;
+            if (frmYMZ280B[chipId] != null && !frmYMZ280B[chipId].isClosed) {
+                frmYMZ280B[chipId].setVisible(false);
+                setting.getLocation().getOpenYMZ280B()[chipId] = true;
             }
-            if (frmC352[chipID] != null && !frmC352[chipID].isClosed) {
-                frmC352[chipID].setVisible(false);
-                setting.getLocation().getOpenC352()[chipID] = true;
+            if (frmC352[chipId] != null && !frmC352[chipId].isClosed) {
+                frmC352[chipId].setVisible(false);
+                setting.getLocation().getOpenC352()[chipId] = true;
             }
-            if (frmQSound[chipID] != null && !frmQSound[chipID].isClosed) {
-                frmQSound[chipID].setVisible(false);
-                setting.getLocation().getOpenQSound()[chipID] = true;
+            if (frmQSound[chipId] != null && !frmQSound[chipId].isClosed) {
+                frmQSound[chipId].setVisible(false);
+                setting.getLocation().getOpenQSound()[chipId] = true;
             }
-            if (frmFDS[chipID] != null && !frmFDS[chipID].isClosed) {
-                frmFDS[chipID].setVisible(false);
-                setting.getLocation().getOpenFDS()[chipID] = true;
+            if (frmFDS[chipId] != null && !frmFDS[chipId].isClosed) {
+                frmFDS[chipId].setVisible(false);
+                setting.getLocation().getOpenFDS()[chipId] = true;
             }
-            if (frmHuC6280[chipID] != null && !frmHuC6280[chipID].isClosed) {
-                frmHuC6280[chipID].setVisible(false);
-                setting.getLocation().getOpenHuC6280()[chipID] = true;
+            if (frmHuC6280[chipId] != null && !frmHuC6280[chipId].isClosed) {
+                frmHuC6280[chipId].setVisible(false);
+                setting.getLocation().getOpenHuC6280()[chipId] = true;
             }
-            if (frmK051649[chipID] != null && !frmK051649[chipID].isClosed) {
-                frmK051649[chipID].setVisible(false);
-                setting.getLocation().getOpenK051649()[chipID] = true;
+            if (frmK051649[chipId] != null && !frmK051649[chipId].isClosed) {
+                frmK051649[chipId].setVisible(false);
+                setting.getLocation().getOpenK051649()[chipId] = true;
             }
-            if (frmK051649[chipID] != null && !frmK051649[chipID].isClosed) {
-                frmK051649[chipID].setVisible(false);
-                setting.getLocation().getOpenK051649()[chipID] = true;
+            if (frmK051649[chipId] != null && !frmK051649[chipId].isClosed) {
+                frmK051649[chipId].setVisible(false);
+                setting.getLocation().getOpenK051649()[chipId] = true;
             }
-            if (frmMCD[chipID] != null && !frmMCD[chipID].isClosed) {
-                frmMCD[chipID].setVisible(false);
-                setting.getLocation().getOpenRf5c164()[chipID] = true;
+            if (frmMCD[chipId] != null && !frmMCD[chipId].isClosed) {
+                frmMCD[chipId].setVisible(false);
+                setting.getLocation().getOpenRf5c164()[chipId] = true;
             }
-            if (frmRf5c68[chipID] != null && !frmRf5c68[chipID].isClosed) {
-                frmRf5c68[chipID].setVisible(false);
-                setting.getLocation().getOpenRf5c68()[chipID] = true;
+            if (frmRf5c68[chipId] != null && !frmRf5c68[chipId].isClosed) {
+                frmRf5c68[chipId].setVisible(false);
+                setting.getLocation().getOpenRf5c68()[chipId] = true;
             }
-            if (frmMIDI[chipID] != null && !frmMIDI[chipID].isClosed) {
-                frmMIDI[chipID].setVisible(false);
-                setting.getLocation().getOpenMIDI()[chipID] = true;
+            if (frmMIDI[chipId] != null && !frmMIDI[chipId].isClosed) {
+                frmMIDI[chipId].setVisible(false);
+                setting.getLocation().getOpenMIDI()[chipId] = true;
             }
-            if (frmMMC5[chipID] != null && !frmMMC5[chipID].isClosed) {
-                frmMMC5[chipID].setVisible(false);
-                setting.getLocation().getOpenMMC5()[chipID] = true;
+            if (frmMMC5[chipId] != null && !frmMMC5[chipId].isClosed) {
+                frmMMC5[chipId].setVisible(false);
+                setting.getLocation().getOpenMMC5()[chipId] = true;
             }
-            if (frmVRC6[chipID] != null && !frmVRC6[chipID].isClosed) {
-                frmVRC6[chipID].setVisible(false);
-                setting.getLocation().getOpenVrc6()[chipID] = true;
+            if (frmVRC6[chipId] != null && !frmVRC6[chipId].isClosed) {
+                frmVRC6[chipId].setVisible(false);
+                setting.getLocation().getOpenVrc6()[chipId] = true;
             }
-            if (frmVRC7[chipID] != null && !frmVRC7[chipID].isClosed) {
-                frmVRC7[chipID].setVisible(false);
-                setting.getLocation().getOpenVrc7()[chipID] = true;
+            if (frmVRC7[chipId] != null && !frmVRC7[chipId].isClosed) {
+                frmVRC7[chipId].setVisible(false);
+                setting.getLocation().getOpenVrc7()[chipId] = true;
             }
-            if (frmN106[chipID] != null && !frmN106[chipID].isClosed) {
-                frmN106[chipID].setVisible(false);
-                setting.getLocation().getOpenN106()[chipID] = true;
+            if (frmN106[chipId] != null && !frmN106[chipId].isClosed) {
+                frmN106[chipId].setVisible(false);
+                setting.getLocation().getOpenN106()[chipId] = true;
             }
-            if (frmNESDMC[chipID] != null && !frmNESDMC[chipID].isClosed) {
-                frmNESDMC[chipID].setVisible(false);
-                setting.getLocation().getOpenNESDMC()[chipID] = true;
+            if (frmNESDMC[chipId] != null && !frmNESDMC[chipId].isClosed) {
+                frmNESDMC[chipId].setVisible(false);
+                setting.getLocation().getOpenNESDMC()[chipId] = true;
             }
-            if (frmOKIM6258[chipID] != null && !frmOKIM6258[chipID].isClosed) {
-                frmOKIM6258[chipID].setVisible(false);
-                setting.getLocation().getOpenOKIM6258()[chipID] = true;
+            if (frmOKIM6258[chipId] != null && !frmOKIM6258[chipId].isClosed) {
+                frmOKIM6258[chipId].setVisible(false);
+                setting.getLocation().getOpenOKIM6258()[chipId] = true;
             }
-            if (frmOKIM6295[chipID] != null && !frmOKIM6295[chipID].isClosed) {
-                frmOKIM6295[chipID].setVisible(false);
-                setting.getLocation().getOpenOKIM6295()[chipID] = true;
+            if (frmOKIM6295[chipId] != null && !frmOKIM6295[chipId].isClosed) {
+                frmOKIM6295[chipId].setVisible(false);
+                setting.getLocation().getOpenOKIM6295()[chipId] = true;
             }
-            if (frmSegaPCM[chipID] != null && !frmSegaPCM[chipID].isClosed) {
-                frmSegaPCM[chipID].setVisible(false);
-                setting.getLocation().getOpenSegaPCM()[chipID] = true;
+            if (frmSegaPCM[chipId] != null && !frmSegaPCM[chipId].isClosed) {
+                frmSegaPCM[chipId].setVisible(false);
+                setting.getLocation().getOpenSegaPCM()[chipId] = true;
             }
-            if (frmSN76489[chipID] != null && !frmSN76489[chipID].isClosed) {
-                frmSN76489[chipID].setVisible(false);
-                setting.getLocation().getOpenSN76489()[chipID] = true;
+            if (frmSN76489[chipId] != null && !frmSN76489[chipId].isClosed) {
+                frmSN76489[chipId].setVisible(false);
+                setting.getLocation().getOpenSN76489()[chipId] = true;
             }
-            if (frmYM2151[chipID] != null && !frmYM2151[chipID].isClosed) {
-                frmYM2151[chipID].setVisible(false);
-                setting.getLocation().getOpenYm2151()[chipID] = true;
+            if (frmYM2151[chipId] != null && !frmYM2151[chipId].isClosed) {
+                frmYM2151[chipId].setVisible(false);
+                setting.getLocation().getOpenYm2151()[chipId] = true;
             }
-            if (frmYM2203[chipID] != null && !frmYM2203[chipID].isClosed) {
-                frmYM2203[chipID].setVisible(false);
-                setting.getLocation().getOpenYm2203()[chipID] = true;
+            if (frmYM2203[chipId] != null && !frmYM2203[chipId].isClosed) {
+                frmYM2203[chipId].setVisible(false);
+                setting.getLocation().getOpenYm2203()[chipId] = true;
             }
-            if (frmYM2413[chipID] != null && !frmYM2413[chipID].isClosed) {
-                frmYM2413[chipID].setVisible(false);
-                setting.getLocation().getOpenYm2413()[chipID] = true;
+            if (frmYM2413[chipId] != null && !frmYM2413[chipId].isClosed) {
+                frmYM2413[chipId].setVisible(false);
+                setting.getLocation().getOpenYm2413()[chipId] = true;
             }
-            if (frmYM2608[chipID] != null && !frmYM2608[chipID].isClosed) {
-                frmYM2608[chipID].setVisible(false);
-                setting.getLocation().getOpenYm2608()[chipID] = true;
+            if (frmYM2608[chipId] != null && !frmYM2608[chipId].isClosed) {
+                frmYM2608[chipId].setVisible(false);
+                setting.getLocation().getOpenYm2608()[chipId] = true;
             }
-            if (frmYM2610[chipID] != null && !frmYM2610[chipID].isClosed) {
-                frmYM2610[chipID].setVisible(false);
-                setting.getLocation().getOpenYm2610()[chipID] = true;
+            if (frmYM2610[chipId] != null && !frmYM2610[chipId].isClosed) {
+                frmYM2610[chipId].setVisible(false);
+                setting.getLocation().getOpenYm2610()[chipId] = true;
             }
-            if (frmYM2612[chipID] != null && !frmYM2612[chipID].isClosed) {
-                frmYM2612[chipID].setVisible(false);
-                setting.getLocation().getOpenYm2612()[chipID] = true;
+            if (frmYM2612[chipId] != null && !frmYM2612[chipId].isClosed) {
+                frmYM2612[chipId].setVisible(false);
+                setting.getLocation().getOpenYm2612()[chipId] = true;
             }
-            if (frmYM3526[chipID] != null && !frmYM3526[chipID].isClosed) {
-                frmYM3526[chipID].setVisible(false);
-                setting.getLocation().getOpenYm3526()[chipID] = true;
+            if (frmYM3526[chipId] != null && !frmYM3526[chipId].isClosed) {
+                frmYM3526[chipId].setVisible(false);
+                setting.getLocation().getOpenYm3526()[chipId] = true;
             }
-            if (frmY8950[chipID] != null && !frmY8950[chipID].isClosed) {
-                frmY8950[chipID].setVisible(false);
-                setting.getLocation().getOpenY8950()[chipID] = true;
+            if (frmY8950[chipId] != null && !frmY8950[chipId].isClosed) {
+                frmY8950[chipId].setVisible(false);
+                setting.getLocation().getOpenY8950()[chipId] = true;
             }
-            if (frmYM3812[chipID] != null && !frmYM3812[chipID].isClosed) {
-                frmYM3812[chipID].setVisible(false);
-                setting.getLocation().getOpenYm3812()[chipID] = true;
+            if (frmYM3812[chipId] != null && !frmYM3812[chipId].isClosed) {
+                frmYM3812[chipId].setVisible(false);
+                setting.getLocation().getOpenYm3812()[chipId] = true;
             }
-            if (frmYMF262[chipID] != null && !frmYMF262[chipID].isClosed) {
-                frmYMF262[chipID].setVisible(false);
-                setting.getLocation().getOpenYmf262()[chipID] = true;
+            if (frmYMF262[chipId] != null && !frmYMF262[chipId].isClosed) {
+                frmYMF262[chipId].setVisible(false);
+                setting.getLocation().getOpenYmf262()[chipId] = true;
             }
-            if (frmYMF271[chipID] != null && !frmYMF271[chipID].isClosed) {
-                frmYMF271[chipID].setVisible(false);
-                setting.getLocation().getOpenYMF271()[chipID] = true;
+            if (frmYMF271[chipId] != null && !frmYMF271[chipId].isClosed) {
+                frmYMF271[chipId].setVisible(false);
+                setting.getLocation().getOpenYMF271()[chipId] = true;
             }
-            if (frmYMF278B[chipID] != null && !frmYMF278B[chipID].isClosed) {
-                frmYMF278B[chipID].setVisible(false);
-                setting.getLocation().getOpenYmf278b()[chipID] = true;
+            if (frmYMF278B[chipId] != null && !frmYMF278B[chipId].isClosed) {
+                frmYMF278B[chipId].setVisible(false);
+                setting.getLocation().getOpenYmf278b()[chipId] = true;
             }
 
             if (frmRegTest != null && !frmRegTest.isClosed) {
                 frmRegTest.setVisible(false);
-                setting.getLocation().getOpenRegTest()[chipID] = true;
+                setting.getLocation().getOpenRegTest()[chipId] = true;
             }
 
             if (frmVisWave != null && !frmVisWave.isClosed) {
@@ -1752,1513 +1767,1513 @@ public class frmMain extends JFrame {
     }
 
 
-    private void OpenFormMegaCD(int chipID, boolean force/* = false*/) {
-        if (frmMCD[chipID] != null) {
+    private void OpenFormMegaCD(int chipId, boolean force/* = false*/) {
+        if (frmMCD[chipId] != null) {
             if (!force) {
-                CloseFormMegaCD(chipID);
+                CloseFormMegaCD(chipId);
                 return;
             } else
                 return;
         }
 
-        frmMCD[chipID] = new frmMegaCD(this, chipID, setting.getOther().getZoom(), newParam.rf5c164[chipID], oldParam.rf5c164[chipID]);
-        if (setting.getLocation().getPosRf5c164()[chipID].equals(empty)) {
-            frmMCD[chipID].x = this.getLocation().x;
-            frmMCD[chipID].y = this.getLocation().y + 264;
+        frmMCD[chipId] = new frmMegaCD(this, chipId, setting.getOther().getZoom(), newParam.rf5c164[chipId], oldParam.rf5c164[chipId]);
+        if (setting.getLocation().getPosRf5c164()[chipId].equals(empty)) {
+            frmMCD[chipId].x = this.getLocation().x;
+            frmMCD[chipId].y = this.getLocation().y + 264;
         } else {
-            frmMCD[chipID].x = setting.getLocation().getPosRf5c164()[chipID].x;
-            frmMCD[chipID].y = setting.getLocation().getPosRf5c164()[chipID].y;
+            frmMCD[chipId].x = setting.getLocation().getPosRf5c164()[chipId].x;
+            frmMCD[chipId].y = setting.getLocation().getPosRf5c164()[chipId].y;
         }
 
-        frmMCD[chipID].setVisible(true);
-        frmMCD[chipID].update();
-        frmMCD[chipID].setTitle(String.format("RF5C164 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.rf5c164[chipID] = new MDChipParams.RF5C164();
+        frmMCD[chipId].setVisible(true);
+        frmMCD[chipId].update();
+        frmMCD[chipId].setTitle(String.format("RF5C164 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.rf5c164[chipId] = new MDChipParams.RF5C164();
 
-        checkAndSetForm(frmMCD[chipID]);
+        checkAndSetForm(frmMCD[chipId]);
     }
 
-    private void CloseFormMegaCD(int chipID) {
-        if (frmMCD[chipID] == null) return;
+    private void CloseFormMegaCD(int chipId) {
+        if (frmMCD[chipId] == null) return;
 
         try {
-            frmMCD[chipID].setVisible(false);
+            frmMCD[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
 
         }
         try {
-            frmMCD[chipID].dispose();
+            frmMCD[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmMCD[chipID] = null;
+        frmMCD[chipId] = null;
     }
 
-    private void OpenFormRf5c68(int chipID, boolean force/* = false*/) {
-        if (frmRf5c68[chipID] != null) {
+    private void OpenFormRf5c68(int chipId, boolean force/* = false*/) {
+        if (frmRf5c68[chipId] != null) {
             if (!force) {
-                CloseFormRf5c68(chipID);
+                CloseFormRf5c68(chipId);
                 return;
             } else
                 return;
         }
 
-        frmRf5c68[chipID] = new frmRf5c68(this, chipID, setting.getOther().getZoom(), newParam.rf5c68[chipID], oldParam.rf5c68[chipID]);
-        if (setting.getLocation().getPosRf5c68()[chipID].equals(empty)) {
-            frmRf5c68[chipID].x = this.getLocation().x;
-            frmRf5c68[chipID].y = this.getLocation().y + 264;
+        frmRf5c68[chipId] = new frmRf5c68(this, chipId, setting.getOther().getZoom(), newParam.rf5c68[chipId], oldParam.rf5c68[chipId]);
+        if (setting.getLocation().getPosRf5c68()[chipId].equals(empty)) {
+            frmRf5c68[chipId].x = this.getLocation().x;
+            frmRf5c68[chipId].y = this.getLocation().y + 264;
         } else {
-            frmRf5c68[chipID].x = setting.getLocation().getPosRf5c68()[chipID].x;
-            frmRf5c68[chipID].y = setting.getLocation().getPosRf5c68()[chipID].y;
+            frmRf5c68[chipId].x = setting.getLocation().getPosRf5c68()[chipId].x;
+            frmRf5c68[chipId].y = setting.getLocation().getPosRf5c68()[chipId].y;
         }
 
-        frmRf5c68[chipID].setVisible(true);
-        frmRf5c68[chipID].update();
-        frmRf5c68[chipID].setTitle(String.format("RF5C68 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.rf5c68[chipID] = new MDChipParams.RF5C68();
+        frmRf5c68[chipId].setVisible(true);
+        frmRf5c68[chipId].update();
+        frmRf5c68[chipId].setTitle(String.format("RF5C68 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.rf5c68[chipId] = new MDChipParams.RF5C68();
 
-        checkAndSetForm(frmRf5c68[chipID]);
+        checkAndSetForm(frmRf5c68[chipId]);
     }
 
-    private void CloseFormRf5c68(int chipID) {
-        if (frmRf5c68[chipID] == null) return;
+    private void CloseFormRf5c68(int chipId) {
+        if (frmRf5c68[chipId] == null) return;
 
         try {
-            frmRf5c68[chipID].setVisible(false);
+            frmRf5c68[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
 
         }
         try {
-            frmRf5c68[chipID].dispose();
+            frmRf5c68[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmRf5c68[chipID] = null;
+        frmRf5c68[chipId] = null;
     }
 
 
-    private void OpenFormYMF271(int chipID, boolean force/* = false*/) {
-        if (frmYMF271[chipID] != null)// && frmInfo.isClosed)
+    private void OpenFormYMF271(int chipId, boolean force/* = false*/) {
+        if (frmYMF271[chipId] != null)// && frmInfo.isClosed)
         {
             if (!force) {
-                CloseFormYMF271(chipID);
+                CloseFormYMF271(chipId);
                 return;
             } else
                 return;
         }
 
-        frmYMF271[chipID] = new frmYMF271(this, chipID, setting.getOther().getZoom(), newParam.ymf271[chipID], oldParam.ymf271[chipID]);
-        if (setting.getLocation().getPosYMF271()[chipID].equals(empty)) {
-            frmYMF271[chipID].x = this.getLocation().x;
-            frmYMF271[chipID].y = this.getLocation().y + 264;
+        frmYMF271[chipId] = new frmYMF271(this, chipId, setting.getOther().getZoom(), newParam.ymf271[chipId], oldParam.ymf271[chipId]);
+        if (setting.getLocation().getPosYMF271()[chipId].equals(empty)) {
+            frmYMF271[chipId].x = this.getLocation().x;
+            frmYMF271[chipId].y = this.getLocation().y + 264;
         } else {
-            frmYMF271[chipID].x = setting.getLocation().getPosYMF271()[chipID].x;
-            frmYMF271[chipID].y = setting.getLocation().getPosYMF271()[chipID].y;
+            frmYMF271[chipId].x = setting.getLocation().getPosYMF271()[chipId].x;
+            frmYMF271[chipId].y = setting.getLocation().getPosYMF271()[chipId].y;
         }
 
-        frmYMF271[chipID].setVisible(true);
-        frmYMF271[chipID].update();
-        frmYMF271[chipID].setTitle(String.format("YMF271 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ymf271[chipID] = new MDChipParams.YMF271();
+        frmYMF271[chipId].setVisible(true);
+        frmYMF271[chipId].update();
+        frmYMF271[chipId].setTitle(String.format("YMF271 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ymf271[chipId] = new MDChipParams.YMF271();
 
-        checkAndSetForm(frmYMF271[chipID]);
+        checkAndSetForm(frmYMF271[chipId]);
     }
 
-    private void CloseFormYMF271(int chipID) {
-        if (frmYMF271[chipID] == null) return;
+    private void CloseFormYMF271(int chipId) {
+        if (frmYMF271[chipId] == null) return;
 
         try {
-            frmYMF271[chipID].setVisible(false);
+            frmYMF271[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
 
         }
         try {
-            frmYMF271[chipID].dispose();
+            frmYMF271[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmYMF271[chipID] = null;
+        frmYMF271[chipId] = null;
     }
 
-    private void OpenFormYM2608(int chipID, boolean force/* = false*/) {
-        if (frmYM2608[chipID] != null)// && frmInfo.isClosed)
+    private void OpenFormYM2608(int chipId, boolean force/* = false*/) {
+        if (frmYM2608[chipId] != null)// && frmInfo.isClosed)
         {
             if (!force) {
-                CloseFormYM2608(chipID);
+                CloseFormYM2608(chipId);
                 return;
             } else
                 return;
         }
 
-        frmYM2608[chipID] = new frmYM2608(this, chipID, setting.getOther().getZoom(), newParam.ym2608[chipID], oldParam.ym2608[chipID]);
+        frmYM2608[chipId] = new frmYM2608(this, chipId, setting.getOther().getZoom(), newParam.ym2608[chipId], oldParam.ym2608[chipId]);
 
-        if (setting.getLocation().getPosYm2608()[chipID].equals(empty)) {
-            frmYM2608[chipID].x = this.getLocation().x;
-            frmYM2608[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosYm2608()[chipId].equals(empty)) {
+            frmYM2608[chipId].x = this.getLocation().x;
+            frmYM2608[chipId].y = this.getLocation().y + 264;
         } else {
-            frmYM2608[chipID].x = setting.getLocation().getPosYm2608()[chipID].x;
-            frmYM2608[chipID].y = setting.getLocation().getPosYm2608()[chipID].y;
+            frmYM2608[chipId].x = setting.getLocation().getPosYm2608()[chipId].x;
+            frmYM2608[chipId].y = setting.getLocation().getPosYm2608()[chipId].y;
         }
 
-        frmYM2608[chipID].setVisible(true);
-        frmYM2608[chipID].update();
-        frmYM2608[chipID].setTitle(String.format("YM2608 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ym2608[chipID] = new MDChipParams.YM2608();
+        frmYM2608[chipId].setVisible(true);
+        frmYM2608[chipId].update();
+        frmYM2608[chipId].setTitle(String.format("YM2608 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ym2608[chipId] = new MDChipParams.YM2608();
 
-        checkAndSetForm(frmYM2608[chipID]);
+        checkAndSetForm(frmYM2608[chipId]);
     }
 
-    private void CloseFormYM2608(int chipID) {
-        if (frmYM2608[chipID] == null) return;
+    private void CloseFormYM2608(int chipId) {
+        if (frmYM2608[chipId] == null) return;
 
         try {
-            frmYM2608[chipID].setVisible(false);
+            frmYM2608[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmYM2608[chipID].dispose();
+            frmYM2608[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmYM2608[chipID] = null;
+        frmYM2608[chipId] = null;
     }
 
-    private void OpenFormYM2151(int chipID, boolean force/* = false*/) {
-        if (frmYM2151[chipID] != null)// && frmInfo.isClosed)
+    private void OpenFormYM2151(int chipId, boolean force/* = false*/) {
+        if (frmYM2151[chipId] != null)// && frmInfo.isClosed)
         {
             if (!force) {
-                CloseFormYM2151(chipID);
+                CloseFormYM2151(chipId);
                 return;
             } else return;
         }
 
-        frmYM2151[chipID] = new frmYM2151(this, chipID, setting.getOther().getZoom(), newParam.ym2151[chipID], oldParam.ym2151[chipID]);
+        frmYM2151[chipId] = new frmYM2151(this, chipId, setting.getOther().getZoom(), newParam.ym2151[chipId], oldParam.ym2151[chipId]);
 
-        if (setting.getLocation().getPosYm2151()[chipID].equals(empty)) {
-            frmYM2151[chipID].x = this.getLocation().x;
-            frmYM2151[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosYm2151()[chipId].equals(empty)) {
+            frmYM2151[chipId].x = this.getLocation().x;
+            frmYM2151[chipId].y = this.getLocation().y + 264;
         } else {
-            frmYM2151[chipID].x = setting.getLocation().getPosYm2151()[chipID].x;
-            frmYM2151[chipID].y = setting.getLocation().getPosYm2151()[chipID].y;
+            frmYM2151[chipId].x = setting.getLocation().getPosYm2151()[chipId].x;
+            frmYM2151[chipId].y = setting.getLocation().getPosYm2151()[chipId].y;
         }
 
-        frmYM2151[chipID].setVisible(true);
-        frmYM2151[chipID].update();
-        frmYM2151[chipID].setTitle(String.format("YM2151 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ym2151[chipID] = new MDChipParams.YM2151();
+        frmYM2151[chipId].setVisible(true);
+        frmYM2151[chipId].update();
+        frmYM2151[chipId].setTitle(String.format("YM2151 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ym2151[chipId] = new MDChipParams.YM2151();
 
-        checkAndSetForm(frmYM2151[chipID]);
+        checkAndSetForm(frmYM2151[chipId]);
     }
 
-    private void CloseFormYM2151(int chipID) {
-        if (frmYM2151[chipID] == null) return;
+    private void CloseFormYM2151(int chipId) {
+        if (frmYM2151[chipId] == null) return;
 
         try {
-            frmYM2151[chipID].setVisible(false);
+            frmYM2151[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmYM2151[chipID].dispose();
+            frmYM2151[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmYM2151[chipID] = null;
+        frmYM2151[chipId] = null;
     }
 
-    private void OpenFormC140(int chipID, boolean force/* = false*/) {
-        if (frmC140[chipID] != null) {
+    private void OpenFormC140(int chipId, boolean force/* = false*/) {
+        if (frmC140[chipId] != null) {
             if (!force) {
-                CloseFormC140(chipID);
+                CloseFormC140(chipId);
                 return;
             } else return;
         }
 
-        frmC140[chipID] = new frmC140(this, chipID, setting.getOther().getZoom(), newParam.c140[chipID], oldParam.c140[chipID]);
+        frmC140[chipId] = new frmC140(this, chipId, setting.getOther().getZoom(), newParam.c140[chipId], oldParam.c140[chipId]);
 
-        if (setting.getLocation().getPosC140()[chipID].equals(empty)) {
-            frmC140[chipID].x = this.getLocation().x;
-            frmC140[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosC140()[chipId].equals(empty)) {
+            frmC140[chipId].x = this.getLocation().x;
+            frmC140[chipId].y = this.getLocation().y + 264;
         } else {
-            frmC140[chipID].x = setting.getLocation().getPosC140()[chipID].x;
-            frmC140[chipID].y = setting.getLocation().getPosC140()[chipID].y;
+            frmC140[chipId].x = setting.getLocation().getPosC140()[chipId].x;
+            frmC140[chipId].y = setting.getLocation().getPosC140()[chipId].y;
         }
 
-        frmC140[chipID].setVisible(true);
-        frmC140[chipID].update();
-        frmC140[chipID].setTitle(String.format("C140Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.c140[chipID] = new MDChipParams.C140();
+        frmC140[chipId].setVisible(true);
+        frmC140[chipId].update();
+        frmC140[chipId].setTitle(String.format("C140Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.c140[chipId] = new MDChipParams.C140();
 
-        checkAndSetForm(frmC140[chipID]);
+        checkAndSetForm(frmC140[chipId]);
     }
 
-    private void CloseFormC140(int chipID) {
-        if (frmC140[chipID] == null) return;
+    private void CloseFormC140(int chipId) {
+        if (frmC140[chipId] == null) return;
 
         try {
-            frmC140[chipID].setVisible(false);
+            frmC140[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmC140[chipID].dispose();
+            frmC140[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmC140[chipID] = null;
+        frmC140[chipId] = null;
     }
 
-    private void OpenFormPPZ8(int chipID, boolean force/* = false*/) {
-        if (frmPPZ8[chipID] != null) {
+    private void OpenFormPPZ8(int chipId, boolean force/* = false*/) {
+        if (frmPPZ8[chipId] != null) {
             if (!force) {
-                CloseFormPPZ8(chipID);
+                CloseFormPPZ8(chipId);
                 return;
             } else return;
         }
 
-        frmPPZ8[chipID] = new frmPPZ8(this, chipID, setting.getOther().getZoom(), newParam.ppz8[chipID], oldParam.ppz8[chipID]);
+        frmPPZ8[chipId] = new frmPPZ8(this, chipId, setting.getOther().getZoom(), newParam.ppz8[chipId], oldParam.ppz8[chipId]);
 
-        if (setting.getLocation().getPosPPZ8()[chipID].equals(empty)) {
-            frmPPZ8[chipID].x = this.getLocation().x;
-            frmPPZ8[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosPPZ8()[chipId].equals(empty)) {
+            frmPPZ8[chipId].x = this.getLocation().x;
+            frmPPZ8[chipId].y = this.getLocation().y + 264;
         } else {
-            frmPPZ8[chipID].x = setting.getLocation().getPosPPZ8()[chipID].x;
-            frmPPZ8[chipID].y = setting.getLocation().getPosPPZ8()[chipID].y;
+            frmPPZ8[chipId].x = setting.getLocation().getPosPPZ8()[chipId].x;
+            frmPPZ8[chipId].y = setting.getLocation().getPosPPZ8()[chipId].y;
         }
 
-        frmPPZ8[chipID].setVisible(true);
-        frmPPZ8[chipID].update();
-        frmPPZ8[chipID].setTitle(String.format("Ppz8Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ppz8[chipID] = new MDChipParams.PPZ8();
+        frmPPZ8[chipId].setVisible(true);
+        frmPPZ8[chipId].update();
+        frmPPZ8[chipId].setTitle(String.format("Ppz8Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ppz8[chipId] = new MDChipParams.PPZ8();
 
-        checkAndSetForm(frmPPZ8[chipID]);
+        checkAndSetForm(frmPPZ8[chipId]);
     }
 
-    private void CloseFormPPZ8(int chipID) {
-        if (frmPPZ8[chipID] == null) return;
+    private void CloseFormPPZ8(int chipId) {
+        if (frmPPZ8[chipId] == null) return;
 
         try {
-            frmPPZ8[chipID].setVisible(false);
+            frmPPZ8[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmPPZ8[chipID].dispose();
+            frmPPZ8[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmPPZ8[chipID] = null;
+        frmPPZ8[chipId] = null;
     }
 
-    private void OpenFormS5B(int chipID, boolean force/* = false*/) {
-        if (frmS5B[chipID] != null) {
+    private void OpenFormS5B(int chipId, boolean force/* = false*/) {
+        if (frmS5B[chipId] != null) {
             if (!force) {
-                CloseFormS5B(chipID);
+                CloseFormS5B(chipId);
                 return;
             } else return;
         }
 
-        frmS5B[chipID] = new frmS5B(this, chipID, setting.getOther().getZoom(), newParam.s5b[chipID], oldParam.s5b[chipID]);
+        frmS5B[chipId] = new frmS5B(this, chipId, setting.getOther().getZoom(), newParam.s5b[chipId], oldParam.s5b[chipId]);
 
-        if (setting.getLocation().getPosS5B()[chipID].equals(empty)) {
-            frmS5B[chipID].x = this.getLocation().x;
-            frmS5B[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosS5B()[chipId].equals(empty)) {
+            frmS5B[chipId].x = this.getLocation().x;
+            frmS5B[chipId].y = this.getLocation().y + 264;
         } else {
-            frmS5B[chipID].x = setting.getLocation().getPosS5B()[chipID].x;
-            frmS5B[chipID].y = setting.getLocation().getPosS5B()[chipID].y;
+            frmS5B[chipId].x = setting.getLocation().getPosS5B()[chipId].x;
+            frmS5B[chipId].y = setting.getLocation().getPosS5B()[chipId].y;
         }
 
-        frmS5B[chipID].setVisible(true);
-        frmS5B[chipID].update();
-        frmS5B[chipID].setTitle(String.format("S5B (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.s5b[chipID] = new MDChipParams.S5B();
+        frmS5B[chipId].setVisible(true);
+        frmS5B[chipId].update();
+        frmS5B[chipId].setTitle(String.format("S5B (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.s5b[chipId] = new MDChipParams.S5B();
 
-        checkAndSetForm(frmS5B[chipID]);
+        checkAndSetForm(frmS5B[chipId]);
     }
 
-    private void CloseFormS5B(int chipID) {
-        if (frmS5B[chipID] == null) return;
+    private void CloseFormS5B(int chipId) {
+        if (frmS5B[chipId] == null) return;
 
         try {
-            frmS5B[chipID].setVisible(false);
+            frmS5B[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmS5B[chipID].dispose();
+            frmS5B[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmS5B[chipID] = null;
+        frmS5B[chipId] = null;
     }
 
-    private void OpenFormDMG(int chipID, boolean force/* = false*/) {
-        if (frmDMG[chipID] != null) {
+    private void OpenFormDMG(int chipId, boolean force/* = false*/) {
+        if (frmDMG[chipId] != null) {
             if (!force) {
-                CloseFormDMG(chipID);
+                CloseFormDMG(chipId);
                 return;
             } else return;
         }
 
-        frmDMG[chipID] = new frmDMG(this, chipID, setting.getOther().getZoom(), newParam.dmg[chipID], oldParam.dmg[chipID]);
+        frmDMG[chipId] = new frmDMG(this, chipId, setting.getOther().getZoom(), newParam.dmg[chipId], oldParam.dmg[chipId]);
 
-        if (setting.getLocation().getPosDMG()[chipID].equals(empty)) {
-            frmDMG[chipID].x = this.getLocation().x;
-            frmDMG[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosDMG()[chipId].equals(empty)) {
+            frmDMG[chipId].x = this.getLocation().x;
+            frmDMG[chipId].y = this.getLocation().y + 264;
         } else {
-            frmDMG[chipID].x = setting.getLocation().getPosDMG()[chipID].x;
-            frmDMG[chipID].y = setting.getLocation().getPosDMG()[chipID].y;
+            frmDMG[chipId].x = setting.getLocation().getPosDMG()[chipId].x;
+            frmDMG[chipId].y = setting.getLocation().getPosDMG()[chipId].y;
         }
 
-        frmDMG[chipID].setVisible(true);
-        frmDMG[chipID].update();
-        frmDMG[chipID].setTitle(String.format("DMG (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.dmg[chipID] = new MDChipParams.DMG();
+        frmDMG[chipId].setVisible(true);
+        frmDMG[chipId].update();
+        frmDMG[chipId].setTitle(String.format("DMG (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.dmg[chipId] = new MDChipParams.DMG();
 
-        checkAndSetForm(frmDMG[chipID]);
+        checkAndSetForm(frmDMG[chipId]);
     }
 
-    private void CloseFormDMG(int chipID) {
-        if (frmDMG[chipID] == null) return;
+    private void CloseFormDMG(int chipId) {
+        if (frmDMG[chipId] == null) return;
 
         try {
-            frmDMG[chipID].setVisible(false);
+            frmDMG[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmDMG[chipID].dispose();
+            frmDMG[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmDMG[chipID] = null;
+        frmDMG[chipId] = null;
     }
 
-    private void OpenFormYMZ280B(int chipID, boolean force/* = false*/) {
-        if (frmYMZ280B[chipID] != null) {
+    private void OpenFormYMZ280B(int chipId, boolean force/* = false*/) {
+        if (frmYMZ280B[chipId] != null) {
             if (!force) {
-                CloseFormYMZ280B(chipID);
+                CloseFormYMZ280B(chipId);
                 return;
             } else return;
         }
 
-        frmYMZ280B[chipID] = new frmYMZ280B(this, chipID, setting.getOther().getZoom(), newParam.ymz280b[chipID], oldParam.ymz280b[chipID]);
+        frmYMZ280B[chipId] = new frmYMZ280B(this, chipId, setting.getOther().getZoom(), newParam.ymz280b[chipId], oldParam.ymz280b[chipId]);
 
-        if (setting.getLocation().getPosYMZ280B()[chipID].equals(empty)) {
-            frmYMZ280B[chipID].x = this.getLocation().x;
-            frmYMZ280B[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosYMZ280B()[chipId].equals(empty)) {
+            frmYMZ280B[chipId].x = this.getLocation().x;
+            frmYMZ280B[chipId].y = this.getLocation().y + 264;
         } else {
-            frmYMZ280B[chipID].x = setting.getLocation().getPosYMZ280B()[chipID].x;
-            frmYMZ280B[chipID].y = setting.getLocation().getPosYMZ280B()[chipID].y;
+            frmYMZ280B[chipId].x = setting.getLocation().getPosYMZ280B()[chipId].x;
+            frmYMZ280B[chipId].y = setting.getLocation().getPosYMZ280B()[chipId].y;
         }
 
-        frmYMZ280B[chipID].setVisible(true);
-        frmYMZ280B[chipID].update();
-        frmYMZ280B[chipID].setTitle(String.format("YMZ280B (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ymz280b[chipID] = new MDChipParams.YMZ280B();
+        frmYMZ280B[chipId].setVisible(true);
+        frmYMZ280B[chipId].update();
+        frmYMZ280B[chipId].setTitle(String.format("YMZ280B (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ymz280b[chipId] = new MDChipParams.YMZ280B();
 
-        checkAndSetForm(frmYMZ280B[chipID]);
+        checkAndSetForm(frmYMZ280B[chipId]);
     }
 
-    private void CloseFormYMZ280B(int chipID) {
-        if (frmYMZ280B[chipID] == null) return;
+    private void CloseFormYMZ280B(int chipId) {
+        if (frmYMZ280B[chipId] == null) return;
 
         try {
-            frmYMZ280B[chipID].setVisible(false);
+            frmYMZ280B[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmYMZ280B[chipID].dispose();
+            frmYMZ280B[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmYMZ280B[chipID] = null;
+        frmYMZ280B[chipId] = null;
     }
 
-    private void OpenFormC352(int chipID, boolean force/* = false*/) {
-        if (frmC352[chipID] != null) {
+    private void OpenFormC352(int chipId, boolean force/* = false*/) {
+        if (frmC352[chipId] != null) {
             if (!force) {
-                CloseFormC352(chipID);
+                CloseFormC352(chipId);
                 return;
             } else return;
         }
 
-        frmC352[chipID] = new frmC352(this, chipID, setting.getOther().getZoom(), newParam.c352[chipID], oldParam.c352[chipID]);
+        frmC352[chipId] = new frmC352(this, chipId, setting.getOther().getZoom(), newParam.c352[chipId], oldParam.c352[chipId]);
 
-        if (setting.getLocation().getPosC352()[chipID].equals(empty)) {
-            frmC352[chipID].x = this.getLocation().x;
-            frmC352[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosC352()[chipId].equals(empty)) {
+            frmC352[chipId].x = this.getLocation().x;
+            frmC352[chipId].y = this.getLocation().y + 264;
         } else {
-            frmC352[chipID].x = setting.getLocation().getPosC352()[chipID].x;
-            frmC352[chipID].y = setting.getLocation().getPosC352()[chipID].y;
+            frmC352[chipId].x = setting.getLocation().getPosC352()[chipId].x;
+            frmC352[chipId].y = setting.getLocation().getPosC352()[chipId].y;
         }
 
-        frmC352[chipID].setVisible(true);
-        frmC352[chipID].update();
-        frmC352[chipID].setTitle(String.format("C352Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.c352[chipID] = new MDChipParams.C352();
+        frmC352[chipId].setVisible(true);
+        frmC352[chipId].update();
+        frmC352[chipId].setTitle(String.format("C352Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.c352[chipId] = new MDChipParams.C352();
 
-        checkAndSetForm(frmC352[chipID]);
+        checkAndSetForm(frmC352[chipId]);
     }
 
-    private void CloseFormC352(int chipID) {
-        if (frmC352[chipID] == null) return;
+    private void CloseFormC352(int chipId) {
+        if (frmC352[chipId] == null) return;
 
         try {
-            frmC352[chipID].setVisible(false);
+            frmC352[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmC352[chipID].dispose();
+            frmC352[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmC352[chipID] = null;
+        frmC352[chipId] = null;
     }
 
-    private void OpenFormMultiPCM(int chipID, boolean force/* = false*/) {
-        if (frmMultiPCM[chipID] != null)// && frmInfo.isClosed)
+    private void OpenFormMultiPCM(int chipId, boolean force/* = false*/) {
+        if (frmMultiPCM[chipId] != null)// && frmInfo.isClosed)
         {
             if (!force) {
-                CloseFormMultiPCM(chipID);
+                CloseFormMultiPCM(chipId);
                 return;
             } else return;
         }
 
-        frmMultiPCM[chipID] = new frmMultiPCM(this, chipID, setting.getOther().getZoom(), newParam.multiPCM[chipID], oldParam.multiPCM[chipID]);
+        frmMultiPCM[chipId] = new frmMultiPCM(this, chipId, setting.getOther().getZoom(), newParam.multiPCM[chipId], oldParam.multiPCM[chipId]);
 
-        if (setting.getLocation().getPosMultiPCM()[chipID].equals(empty)) {
-            frmMultiPCM[chipID].x = this.getLocation().x;
-            frmMultiPCM[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosMultiPCM()[chipId].equals(empty)) {
+            frmMultiPCM[chipId].x = this.getLocation().x;
+            frmMultiPCM[chipId].y = this.getLocation().y + 264;
         } else {
-            frmMultiPCM[chipID].x = setting.getLocation().getPosMultiPCM()[chipID].x;
-            frmMultiPCM[chipID].y = setting.getLocation().getPosMultiPCM()[chipID].y;
+            frmMultiPCM[chipId].x = setting.getLocation().getPosMultiPCM()[chipId].x;
+            frmMultiPCM[chipId].y = setting.getLocation().getPosMultiPCM()[chipId].y;
         }
 
-        frmMultiPCM[chipID].setVisible(true);
-        frmMultiPCM[chipID].update();
-        frmMultiPCM[chipID].setTitle(String.format("MultiPCM (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.multiPCM[chipID] = new MDChipParams.MultiPCM();
+        frmMultiPCM[chipId].setVisible(true);
+        frmMultiPCM[chipId].update();
+        frmMultiPCM[chipId].setTitle(String.format("MultiPCM (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.multiPCM[chipId] = new MDChipParams.MultiPCM();
 
-        checkAndSetForm(frmMultiPCM[chipID]);
+        checkAndSetForm(frmMultiPCM[chipId]);
     }
 
-    private void CloseFormMultiPCM(int chipID) {
-        if (frmMultiPCM[chipID] == null) return;
+    private void CloseFormMultiPCM(int chipId) {
+        if (frmMultiPCM[chipId] == null) return;
 
         try {
-            frmMultiPCM[chipID].setVisible(false);
+            frmMultiPCM[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmMultiPCM[chipID].dispose();
+            frmMultiPCM[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmMultiPCM[chipID] = null;
+        frmMultiPCM[chipId] = null;
     }
 
-    private void OpenFormQSound(int chipID, boolean force/* = false*/) {
-        if (frmQSound[chipID] != null) {
+    private void OpenFormQSound(int chipId, boolean force/* = false*/) {
+        if (frmQSound[chipId] != null) {
             if (!force) {
-                CloseFormQSound(chipID);
+                CloseFormQSound(chipId);
                 return;
             } else return;
         }
 
-        frmQSound[chipID] = new frmQSound(this, chipID, setting.getOther().getZoom(), newParam.qSound[chipID], oldParam.qSound[chipID]);
+        frmQSound[chipId] = new frmQSound(this, chipId, setting.getOther().getZoom(), newParam.qSound[chipId], oldParam.qSound[chipId]);
 
-        if (setting.getLocation().getPosQSound()[chipID].equals(empty)) {
-            frmQSound[chipID].x = this.getLocation().x;
-            frmQSound[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosQSound()[chipId].equals(empty)) {
+            frmQSound[chipId].x = this.getLocation().x;
+            frmQSound[chipId].y = this.getLocation().y + 264;
         } else {
-            frmQSound[chipID].x = setting.getLocation().getPosQSound()[chipID].x;
-            frmQSound[chipID].y = setting.getLocation().getPosQSound()[chipID].y;
+            frmQSound[chipId].x = setting.getLocation().getPosQSound()[chipId].x;
+            frmQSound[chipId].y = setting.getLocation().getPosQSound()[chipId].y;
         }
 
-        frmQSound[chipID].setVisible(true);
-        frmQSound[chipID].update();
-        frmQSound[chipID].setTitle(String.format("QSoundInst (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.qSound[chipID] = new MDChipParams.QSound();
+        frmQSound[chipId].setVisible(true);
+        frmQSound[chipId].update();
+        frmQSound[chipId].setTitle(String.format("QSoundInst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.qSound[chipId] = new MDChipParams.QSound();
 
-        checkAndSetForm(frmQSound[chipID]);
+        checkAndSetForm(frmQSound[chipId]);
     }
 
-    private void CloseFormQSound(int chipID) {
-        if (frmQSound[chipID] == null) return;
+    private void CloseFormQSound(int chipId) {
+        if (frmQSound[chipId] == null) return;
 
         try {
-            frmQSound[chipID].setVisible(false);
+            frmQSound[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmQSound[chipID].dispose();
+            frmQSound[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmQSound[chipID] = null;
+        frmQSound[chipId] = null;
     }
 
-    private void OpenFormYM2203(int chipID, boolean force/* = false*/) {
-        if (frmYM2203[chipID] != null) {
+    private void OpenFormYM2203(int chipId, boolean force/* = false*/) {
+        if (frmYM2203[chipId] != null) {
             if (!force) {
-                CloseFormYM2203(chipID);
+                CloseFormYM2203(chipId);
                 return;
             } else return;
         }
 
-        frmYM2203[chipID] = new frmYM2203(this, chipID, setting.getOther().getZoom(), newParam.ym2203[chipID], oldParam.ym2203[chipID]);
+        frmYM2203[chipId] = new frmYM2203(this, chipId, setting.getOther().getZoom(), newParam.ym2203[chipId], oldParam.ym2203[chipId]);
 
-        if (setting.getLocation().getPosYm2203()[chipID].equals(empty)) {
-            frmYM2203[chipID].x = this.getLocation().x;
-            frmYM2203[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosYm2203()[chipId].equals(empty)) {
+            frmYM2203[chipId].x = this.getLocation().x;
+            frmYM2203[chipId].y = this.getLocation().y + 264;
         } else {
-            frmYM2203[chipID].x = setting.getLocation().getPosYm2203()[chipID].x;
-            frmYM2203[chipID].y = setting.getLocation().getPosYm2203()[chipID].y;
+            frmYM2203[chipId].x = setting.getLocation().getPosYm2203()[chipId].x;
+            frmYM2203[chipId].y = setting.getLocation().getPosYm2203()[chipId].y;
         }
 
-        frmYM2203[chipID].setVisible(true);
-        frmYM2203[chipID].update();
-        frmYM2203[chipID].setTitle(String.format("YM2203 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ym2203[chipID] = new MDChipParams.YM2203();
+        frmYM2203[chipId].setVisible(true);
+        frmYM2203[chipId].update();
+        frmYM2203[chipId].setTitle(String.format("YM2203 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ym2203[chipId] = new MDChipParams.YM2203();
 
-        checkAndSetForm(frmYM2203[chipID]);
+        checkAndSetForm(frmYM2203[chipId]);
     }
 
-    private void CloseFormYM2203(int chipID) {
-        if (frmYM2203[chipID] == null) return;
+    private void CloseFormYM2203(int chipId) {
+        if (frmYM2203[chipId] == null) return;
 
         try {
-            frmYM2203[chipID].setVisible(false);
+            frmYM2203[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmYM2203[chipID].dispose();
+            frmYM2203[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmYM2203[chipID] = null;
+        frmYM2203[chipId] = null;
     }
 
-    private void OpenFormYM2610(int chipID, boolean force/* = false*/) {
-        if (frmYM2610[chipID] != null) {
+    private void OpenFormYM2610(int chipId, boolean force/* = false*/) {
+        if (frmYM2610[chipId] != null) {
             if (!force) {
-                CloseFormYM2610(chipID);
+                CloseFormYM2610(chipId);
                 return;
             } else return;
         }
 
-        frmYM2610[chipID] = new frmYM2610(this, chipID, setting.getOther().getZoom(), newParam.ym2610[chipID], oldParam.ym2610[chipID]);
+        frmYM2610[chipId] = new frmYM2610(this, chipId, setting.getOther().getZoom(), newParam.ym2610[chipId], oldParam.ym2610[chipId]);
 
-        if (setting.getLocation().getPosYm2610()[chipID].equals(empty)) {
-            frmYM2610[chipID].x = this.getLocation().x;
-            frmYM2610[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosYm2610()[chipId].equals(empty)) {
+            frmYM2610[chipId].x = this.getLocation().x;
+            frmYM2610[chipId].y = this.getLocation().y + 264;
         } else {
-            frmYM2610[chipID].x = setting.getLocation().getPosYm2610()[chipID].x;
-            frmYM2610[chipID].y = setting.getLocation().getPosYm2610()[chipID].y;
+            frmYM2610[chipId].x = setting.getLocation().getPosYm2610()[chipId].x;
+            frmYM2610[chipId].y = setting.getLocation().getPosYm2610()[chipId].y;
         }
 
-        frmYM2610[chipID].setVisible(true);
-        frmYM2610[chipID].update();
-        frmYM2610[chipID].setTitle(String.format("YM2610 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ym2610[chipID] = new MDChipParams.YM2610();
+        frmYM2610[chipId].setVisible(true);
+        frmYM2610[chipId].update();
+        frmYM2610[chipId].setTitle(String.format("YM2610 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ym2610[chipId] = new MDChipParams.YM2610();
 
-        checkAndSetForm(frmYM2610[chipID]);
+        checkAndSetForm(frmYM2610[chipId]);
     }
 
-    private void CloseFormYM2610(int chipID) {
-        if (frmYM2610[chipID] == null) return;
+    private void CloseFormYM2610(int chipId) {
+        if (frmYM2610[chipId] == null) return;
 
         try {
-            frmYM2610[chipID].setVisible(false);
+            frmYM2610[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmYM2610[chipID].dispose();
+            frmYM2610[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmYM2610[chipID] = null;
+        frmYM2610[chipId] = null;
     }
 
-    private void openFormYM2612(int chipID, boolean force/* = false*/) {
-        if (frmYM2612[chipID] != null)// && frmInfo.isClosed)
+    private void openFormYM2612(int chipId, boolean force/* = false*/) {
+        if (frmYM2612[chipId] != null)// && frmInfo.isClosed)
         {
             if (!force) {
-                closeFormYM2612(chipID);
+                closeFormYM2612(chipId);
                 return;
             } else return;
         }
 
-        oldParam.ym2612[chipID] = new MDChipParams.YM2612();
-        for (int i = 0; i < oldParam.ym2612[chipID].channels.length; i++) {
-            oldParam.ym2612[chipID].channels[i].mask = null;
+        oldParam.ym2612[chipId] = new MDChipParams.YM2612();
+        for (int i = 0; i < oldParam.ym2612[chipId].channels.length; i++) {
+            oldParam.ym2612[chipId].channels[i].mask = null;
         }
-        frmYM2612[chipID] = new frmYM2612(this, chipID, setting.getOther().getZoom(), newParam.ym2612[chipID], oldParam.ym2612[chipID]);
+        frmYM2612[chipId] = new frmYM2612(this, chipId, setting.getOther().getZoom(), newParam.ym2612[chipId], oldParam.ym2612[chipId]);
 
-        if (setting.getLocation().getPosYm2612()[chipID].equals(empty)) {
-            frmYM2612[chipID].x = this.getLocation().x;
-            frmYM2612[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosYm2612()[chipId].equals(empty)) {
+            frmYM2612[chipId].x = this.getLocation().x;
+            frmYM2612[chipId].y = this.getLocation().y + 264;
         } else {
-            frmYM2612[chipID].x = setting.getLocation().getPosYm2612()[chipID].x;
-            frmYM2612[chipID].y = setting.getLocation().getPosYm2612()[chipID].y;
+            frmYM2612[chipId].x = setting.getLocation().getPosYm2612()[chipId].x;
+            frmYM2612[chipId].y = setting.getLocation().getPosYm2612()[chipId].y;
         }
 
-        frmYM2612[chipID].setVisible(true);
-        frmYM2612[chipID].update();
-        frmYM2612[chipID].setTitle(String.format("Ym2612Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmYM2612[chipId].setVisible(true);
+        frmYM2612[chipId].update();
+        frmYM2612[chipId].setTitle(String.format("Ym2612Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
 
-        checkAndSetForm(frmYM2612[chipID]);
+        checkAndSetForm(frmYM2612[chipId]);
     }
 
-    private void closeFormYM2612(int chipID) {
-        if (frmYM2612[chipID] == null) return;
+    private void closeFormYM2612(int chipId) {
+        if (frmYM2612[chipId] == null) return;
         try {
-            frmYM2612[chipID].setVisible(false);
+            frmYM2612[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmYM2612[chipID].dispose();
+            frmYM2612[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmYM2612[chipID] = null;
+        frmYM2612[chipId] = null;
     }
 
-    private void OpenFormOKIM6258(int chipID, boolean force/* = false*/) {
-        if (frmOKIM6258[chipID] != null) {
+    private void OpenFormOKIM6258(int chipId, boolean force/* = false*/) {
+        if (frmOKIM6258[chipId] != null) {
             if (!force) {
-                CloseFormOKIM6258(chipID);
+                CloseFormOKIM6258(chipId);
                 return;
             } else return;
         }
 
-        frmOKIM6258[chipID] = new frmOKIM6258(this, chipID, setting.getOther().getZoom(), newParam.okim6258[chipID]);
+        frmOKIM6258[chipId] = new frmOKIM6258(this, chipId, setting.getOther().getZoom(), newParam.okim6258[chipId]);
 
-        if (setting.getLocation().getPosOKIM6258()[chipID].equals(empty)) {
-            frmOKIM6258[chipID].x = this.getLocation().x;
-            frmOKIM6258[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosOKIM6258()[chipId].equals(empty)) {
+            frmOKIM6258[chipId].x = this.getLocation().x;
+            frmOKIM6258[chipId].y = this.getLocation().y + 264;
         } else {
-            frmOKIM6258[chipID].x = setting.getLocation().getPosOKIM6258()[chipID].x;
-            frmOKIM6258[chipID].y = setting.getLocation().getPosOKIM6258()[chipID].y;
+            frmOKIM6258[chipId].x = setting.getLocation().getPosOKIM6258()[chipId].x;
+            frmOKIM6258[chipId].y = setting.getLocation().getPosOKIM6258()[chipId].y;
         }
 
-        frmOKIM6258[chipID].setVisible(true);
-        frmOKIM6258[chipID].update();
-        frmOKIM6258[chipID].setTitle(String.format("OKIM6258 (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmOKIM6258[chipId].setVisible(true);
+        frmOKIM6258[chipId].update();
+        frmOKIM6258[chipId].setTitle(String.format("OKIM6258 (%s)", chipId == 0 ? "Primary" : "Secondary"));
 
-        checkAndSetForm(frmOKIM6258[chipID]);
+        checkAndSetForm(frmOKIM6258[chipId]);
     }
 
-    private void CloseFormOKIM6258(int chipID) {
-        if (frmOKIM6258[chipID] == null) return;
+    private void CloseFormOKIM6258(int chipId) {
+        if (frmOKIM6258[chipId] == null) return;
 
         try {
-            frmOKIM6258[chipID].setVisible(false);
+            frmOKIM6258[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmOKIM6258[chipID].dispose();
+            frmOKIM6258[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmOKIM6258[chipID] = null;
+        frmOKIM6258[chipId] = null;
     }
 
-    private void OpenFormOKIM6295(int chipID, boolean force/* = false*/) {
-        if (frmOKIM6295[chipID] != null) {
+    private void OpenFormOKIM6295(int chipId, boolean force/* = false*/) {
+        if (frmOKIM6295[chipId] != null) {
             if (!force) {
-                CloseFormOKIM6295(chipID);
+                CloseFormOKIM6295(chipId);
                 return;
             } else return;
         }
 
-        frmOKIM6295[chipID] = new frmOKIM6295(this, chipID, setting.getOther().getZoom(), newParam.okim6295[chipID], oldParam.okim6295[chipID]);
+        frmOKIM6295[chipId] = new frmOKIM6295(this, chipId, setting.getOther().getZoom(), newParam.okim6295[chipId], oldParam.okim6295[chipId]);
 
-        if (setting.getLocation().getPosOKIM6295()[chipID].equals(empty)) {
-            frmOKIM6295[chipID].x = this.getLocation().x;
-            frmOKIM6295[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosOKIM6295()[chipId].equals(empty)) {
+            frmOKIM6295[chipId].x = this.getLocation().x;
+            frmOKIM6295[chipId].y = this.getLocation().y + 264;
         } else {
-            frmOKIM6295[chipID].x = setting.getLocation().getPosOKIM6295()[chipID].x;
-            frmOKIM6295[chipID].y = setting.getLocation().getPosOKIM6295()[chipID].y;
+            frmOKIM6295[chipId].x = setting.getLocation().getPosOKIM6295()[chipId].x;
+            frmOKIM6295[chipId].y = setting.getLocation().getPosOKIM6295()[chipId].y;
         }
 
-        frmOKIM6295[chipID].setVisible(true);
-        frmOKIM6295[chipID].update();
-        frmOKIM6295[chipID].setTitle(String.format("OKIM6295 (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmOKIM6295[chipId].setVisible(true);
+        frmOKIM6295[chipId].update();
+        frmOKIM6295[chipId].setTitle(String.format("OKIM6295 (%s)", chipId == 0 ? "Primary" : "Secondary"));
 
-        checkAndSetForm(frmOKIM6295[chipID]);
+        checkAndSetForm(frmOKIM6295[chipId]);
     }
 
-    private void CloseFormOKIM6295(int chipID) {
-        if (frmOKIM6295[chipID] == null) return;
+    private void CloseFormOKIM6295(int chipId) {
+        if (frmOKIM6295[chipId] == null) return;
 
         try {
-            frmOKIM6295[chipID].setVisible(false);
+            frmOKIM6295[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmOKIM6295[chipID].dispose();
+            frmOKIM6295[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmOKIM6295[chipID] = null;
+        frmOKIM6295[chipId] = null;
     }
 
-    private void OpenFormSN76489(int chipID, boolean force/* = false*/) {
-        if (frmSN76489[chipID] != null) {
+    private void OpenFormSN76489(int chipId, boolean force/* = false*/) {
+        if (frmSN76489[chipId] != null) {
             if (!force) {
-                CloseFormSN76489(chipID);
+                CloseFormSN76489(chipId);
                 return;
             } else return;
         }
 
-        frmSN76489[chipID] = new frmSN76489(this, chipID, setting.getOther().getZoom(), newParam.sn76489[chipID], oldParam.sn76489[chipID]);
+        frmSN76489[chipId] = new frmSN76489(this, chipId, setting.getOther().getZoom(), newParam.sn76489[chipId], oldParam.sn76489[chipId]);
 
-        if (setting.getLocation().getPosSN76489()[chipID].equals(empty)) {
-            frmSN76489[chipID].x = this.getLocation().x;
-            frmSN76489[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosSN76489()[chipId].equals(empty)) {
+            frmSN76489[chipId].x = this.getLocation().x;
+            frmSN76489[chipId].y = this.getLocation().y + 264;
         } else {
-            frmSN76489[chipID].x = setting.getLocation().getPosSN76489()[chipID].x;
-            frmSN76489[chipID].y = setting.getLocation().getPosSN76489()[chipID].y;
+            frmSN76489[chipId].x = setting.getLocation().getPosSN76489()[chipId].x;
+            frmSN76489[chipId].y = setting.getLocation().getPosSN76489()[chipId].y;
         }
 
-        frmSN76489[chipID].setVisible(true);
-        frmSN76489[chipID].update();
-        frmSN76489[chipID].setTitle(String.format("SN76489 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.sn76489[chipID] = new MDChipParams.SN76489();
+        frmSN76489[chipId].setVisible(true);
+        frmSN76489[chipId].update();
+        frmSN76489[chipId].setTitle(String.format("SN76489 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.sn76489[chipId] = new MDChipParams.SN76489();
 
-        checkAndSetForm(frmSN76489[chipID]);
+        checkAndSetForm(frmSN76489[chipId]);
     }
 
-    private void CloseFormSN76489(int chipID) {
-        if (frmSN76489[chipID] == null) return;
+    private void CloseFormSN76489(int chipId) {
+        if (frmSN76489[chipId] == null) return;
 
         try {
-            frmSN76489[chipID].setVisible(false);
+            frmSN76489[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmSN76489[chipID].dispose();
+            frmSN76489[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmSN76489[chipID] = null;
+        frmSN76489[chipId] = null;
     }
 
-    private void OpenFormSegaPCM(int chipID, boolean force/* = false*/) {
-        if (frmSegaPCM[chipID] != null) {
+    private void OpenFormSegaPCM(int chipId, boolean force/* = false*/) {
+        if (frmSegaPCM[chipId] != null) {
             if (!force) {
-                CloseFormSegaPCM(chipID);
+                CloseFormSegaPCM(chipId);
                 return;
             } else return;
         }
 
-        frmSegaPCM[chipID] = new frmSegaPCM(this, chipID, setting.getOther().getZoom(), newParam.segaPcm[chipID], oldParam.segaPcm[chipID]);
+        frmSegaPCM[chipId] = new frmSegaPCM(this, chipId, setting.getOther().getZoom(), newParam.segaPcm[chipId], oldParam.segaPcm[chipId]);
 
-        if (setting.getLocation().getPosSegaPCM()[chipID].equals(empty)) {
-            frmSegaPCM[chipID].x = this.getLocation().x;
-            frmSegaPCM[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosSegaPCM()[chipId].equals(empty)) {
+            frmSegaPCM[chipId].x = this.getLocation().x;
+            frmSegaPCM[chipId].y = this.getLocation().y + 264;
         } else {
-            frmSegaPCM[chipID].x = setting.getLocation().getPosSegaPCM()[chipID].x;
-            frmSegaPCM[chipID].y = setting.getLocation().getPosSegaPCM()[chipID].y;
+            frmSegaPCM[chipId].x = setting.getLocation().getPosSegaPCM()[chipId].x;
+            frmSegaPCM[chipId].y = setting.getLocation().getPosSegaPCM()[chipId].y;
         }
 
-        frmSegaPCM[chipID].setVisible(true);
-        frmSegaPCM[chipID].update();
-        frmSegaPCM[chipID].setTitle(String.format("SegaPCM (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.segaPcm[chipID] = new MDChipParams.SegaPcm();
+        frmSegaPCM[chipId].setVisible(true);
+        frmSegaPCM[chipId].update();
+        frmSegaPCM[chipId].setTitle(String.format("SegaPCM (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.segaPcm[chipId] = new MDChipParams.SegaPcm();
 
-        checkAndSetForm(frmSegaPCM[chipID]);
+        checkAndSetForm(frmSegaPCM[chipId]);
     }
 
-    private void CloseFormSegaPCM(int chipID) {
-        if (frmSegaPCM[chipID] == null) return;
+    private void CloseFormSegaPCM(int chipId) {
+        if (frmSegaPCM[chipId] == null) return;
 
         try {
-            frmSegaPCM[chipID].setVisible(false);
+            frmSegaPCM[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmSegaPCM[chipID].dispose();
+            frmSegaPCM[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmSegaPCM[chipID] = null;
+        frmSegaPCM[chipId] = null;
     }
 
 
-    private void OpenFormAY8910(int chipID, boolean force /*= false*/) {
-        if (frmAY8910[chipID] != null) {
+    private void OpenFormAY8910(int chipId, boolean force /*= false*/) {
+        if (frmAY8910[chipId] != null) {
             if (!force) {
-                CloseFormAY8910(chipID);
+                CloseFormAY8910(chipId);
                 return;
             } else return;
         }
 
-        frmAY8910[chipID] = new frmAY8910(this, chipID, setting.getOther().getZoom(), newParam.ay8910[chipID], oldParam.ay8910[chipID]);
+        frmAY8910[chipId] = new frmAY8910(this, chipId, setting.getOther().getZoom(), newParam.ay8910[chipId], oldParam.ay8910[chipId]);
 
-        if (setting.getLocation().getPosAY8910()[chipID].equals(empty)) {
-            frmAY8910[chipID].x = this.getLocation().x;
-            frmAY8910[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosAY8910()[chipId].equals(empty)) {
+            frmAY8910[chipId].x = this.getLocation().x;
+            frmAY8910[chipId].y = this.getLocation().y + 264;
         } else {
-            frmAY8910[chipID].x = setting.getLocation().getPosAY8910()[chipID].x;
-            frmAY8910[chipID].y = setting.getLocation().getPosAY8910()[chipID].y;
+            frmAY8910[chipId].x = setting.getLocation().getPosAY8910()[chipId].x;
+            frmAY8910[chipId].y = setting.getLocation().getPosAY8910()[chipId].y;
         }
 
-        frmAY8910[chipID].setVisible(true);
-        frmAY8910[chipID].update();
-        frmAY8910[chipID].setTitle(String.format("AY8910 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ay8910[chipID] = new MDChipParams.AY8910();
+        frmAY8910[chipId].setVisible(true);
+        frmAY8910[chipId].update();
+        frmAY8910[chipId].setTitle(String.format("AY8910 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ay8910[chipId] = new MDChipParams.AY8910();
 
-        checkAndSetForm(frmAY8910[chipID]);
+        checkAndSetForm(frmAY8910[chipId]);
     }
 
-    private void CloseFormAY8910(int chipID) {
-        if (frmAY8910[chipID] == null) return;
+    private void CloseFormAY8910(int chipId) {
+        if (frmAY8910[chipId] == null) return;
 
         try {
-            frmAY8910[chipID].setVisible(false);
+            frmAY8910[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmAY8910[chipID].dispose();
+            frmAY8910[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmAY8910[chipID] = null;
+        frmAY8910[chipId] = null;
     }
 
-    private void OpenFormHuC6280(int chipID, boolean force/* = false*/) {
-        if (frmHuC6280[chipID] != null) {
+    private void OpenFormHuC6280(int chipId, boolean force/* = false*/) {
+        if (frmHuC6280[chipId] != null) {
             if (!force) {
-                CloseFormHuC6280(chipID);
+                CloseFormHuC6280(chipId);
                 return;
             } else return;
         }
 
-        frmHuC6280[chipID] = new frmHuC6280(this, chipID, setting.getOther().getZoom(), newParam.huc6280[chipID], oldParam.huc6280[chipID]);
+        frmHuC6280[chipId] = new frmHuC6280(this, chipId, setting.getOther().getZoom(), newParam.huc6280[chipId], oldParam.huc6280[chipId]);
 
-        if (setting.getLocation().getPosHuC6280()[chipID].equals(empty)) {
-            frmHuC6280[chipID].x = this.getLocation().x;
-            frmHuC6280[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosHuC6280()[chipId].equals(empty)) {
+            frmHuC6280[chipId].x = this.getLocation().x;
+            frmHuC6280[chipId].y = this.getLocation().y + 264;
         } else {
-            frmHuC6280[chipID].x = setting.getLocation().getPosHuC6280()[chipID].x;
-            frmHuC6280[chipID].y = setting.getLocation().getPosHuC6280()[chipID].y;
+            frmHuC6280[chipId].x = setting.getLocation().getPosHuC6280()[chipId].x;
+            frmHuC6280[chipId].y = setting.getLocation().getPosHuC6280()[chipId].y;
         }
 
-        frmHuC6280[chipID].setVisible(true);
-        frmHuC6280[chipID].update();
-        frmHuC6280[chipID].setTitle(String.format("OotakeHuC6280 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.huc6280[chipID] = new MDChipParams.HuC6280();
+        frmHuC6280[chipId].setVisible(true);
+        frmHuC6280[chipId].update();
+        frmHuC6280[chipId].setTitle(String.format("OotakeHuC6280 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.huc6280[chipId] = new MDChipParams.HuC6280();
 
-        checkAndSetForm(frmHuC6280[chipID]);
+        checkAndSetForm(frmHuC6280[chipId]);
     }
 
-    private void CloseFormHuC6280(int chipID) {
-        if (frmHuC6280[chipID] == null) return;
+    private void CloseFormHuC6280(int chipId) {
+        if (frmHuC6280[chipId] == null) return;
 
         try {
-            frmHuC6280[chipID].setVisible(false);
+            frmHuC6280[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmHuC6280[chipID].dispose();
+            frmHuC6280[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmHuC6280[chipID] = null;
+        frmHuC6280[chipId] = null;
     }
 
-    private void OpenFormK051649(int chipID, boolean force/* = false*/) {
-        if (frmK051649[chipID] != null)// && frmInfo.isClosed)
+    private void OpenFormK051649(int chipId, boolean force/* = false*/) {
+        if (frmK051649[chipId] != null)// && frmInfo.isClosed)
         {
             if (!force) {
-                CloseFormK051649(chipID);
+                CloseFormK051649(chipId);
                 return;
             } else return;
         }
 
-        frmK051649[chipID] = new frmK051649(this, chipID, setting.getOther().getZoom(), newParam.k051649[chipID]);
+        frmK051649[chipId] = new frmK051649(this, chipId, setting.getOther().getZoom(), newParam.k051649[chipId]);
 
-        if (setting.getLocation().getPosK051649()[chipID].equals(empty)) {
-            frmK051649[chipID].x = this.getLocation().x;
-            frmK051649[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosK051649()[chipId].equals(empty)) {
+            frmK051649[chipId].x = this.getLocation().x;
+            frmK051649[chipId].y = this.getLocation().y + 264;
         } else {
-            frmK051649[chipID].x = setting.getLocation().getPosK051649()[chipID].x;
-            frmK051649[chipID].y = setting.getLocation().getPosK051649()[chipID].y;
+            frmK051649[chipId].x = setting.getLocation().getPosK051649()[chipId].x;
+            frmK051649[chipId].y = setting.getLocation().getPosK051649()[chipId].y;
         }
 
-        frmK051649[chipID].setVisible(true);
-        frmK051649[chipID].update();
-        frmK051649[chipID].setTitle(String.format("K051649Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.k051649[chipID] = new MDChipParams.K051649();
+        frmK051649[chipId].setVisible(true);
+        frmK051649[chipId].update();
+        frmK051649[chipId].setTitle(String.format("K051649Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.k051649[chipId] = new MDChipParams.K051649();
 
-        checkAndSetForm(frmK051649[chipID]);
+        checkAndSetForm(frmK051649[chipId]);
     }
 
-    private void CloseFormK051649(int chipID) {
-        if (frmK051649[chipID] == null) return;
+    private void CloseFormK051649(int chipId) {
+        if (frmK051649[chipId] == null) return;
 
         try {
-            frmK051649[chipID].setVisible(false);
+            frmK051649[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmK051649[chipID].dispose();
+            frmK051649[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmK051649[chipID] = null;
+        frmK051649[chipId] = null;
     }
 
-    private void OpenFormYM2413(int chipID, boolean force/* = false*/) {
-        if (frmYM2413[chipID] != null) {
+    private void OpenFormYM2413(int chipId, boolean force/* = false*/) {
+        if (frmYM2413[chipId] != null) {
             if (!force) {
-                CloseFormYM2413(chipID);
+                CloseFormYM2413(chipId);
                 return;
             } else return;
         }
 
-        frmYM2413[chipID] = new frmYM2413(this, chipID, setting.getOther().getZoom(), newParam.ym2413[chipID], oldParam.ym2413[chipID]);
+        frmYM2413[chipId] = new frmYM2413(this, chipId, setting.getOther().getZoom(), newParam.ym2413[chipId], oldParam.ym2413[chipId]);
 
-        if (setting.getLocation().getPosYm2413()[chipID].equals(empty)) {
-            frmYM2413[chipID].x = this.getLocation().x;
-            frmYM2413[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosYm2413()[chipId].equals(empty)) {
+            frmYM2413[chipId].x = this.getLocation().x;
+            frmYM2413[chipId].y = this.getLocation().y + 264;
         } else {
-            frmYM2413[chipID].x = setting.getLocation().getPosYm2413()[chipID].x;
-            frmYM2413[chipID].y = setting.getLocation().getPosYm2413()[chipID].y;
+            frmYM2413[chipId].x = setting.getLocation().getPosYm2413()[chipId].x;
+            frmYM2413[chipId].y = setting.getLocation().getPosYm2413()[chipId].y;
         }
 
-        frmYM2413[chipID].setVisible(true);
-        frmYM2413[chipID].update();
-        frmYM2413[chipID].setTitle(String.format("YM2413/VRC7 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ym2413[chipID] = new MDChipParams.YM2413();
+        frmYM2413[chipId].setVisible(true);
+        frmYM2413[chipId].update();
+        frmYM2413[chipId].setTitle(String.format("YM2413/VRC7 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ym2413[chipId] = new MDChipParams.YM2413();
 
-        checkAndSetForm(frmYM2413[chipID]);
+        checkAndSetForm(frmYM2413[chipId]);
     }
 
-    private void CloseFormYM2413(int chipID) {
-        if (frmYM2413[chipID] == null) return;
+    private void CloseFormYM2413(int chipId) {
+        if (frmYM2413[chipId] == null) return;
 
         try {
-            frmYM2413[chipID].setVisible(false);
+            frmYM2413[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmYM2413[chipID].dispose();
+            frmYM2413[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmYM2413[chipID] = null;
+        frmYM2413[chipId] = null;
     }
 
-    private void OpenFormYM3526(int chipID, boolean force/* = false*/) {
-        if (frmYM3526[chipID] != null) {
+    private void OpenFormYM3526(int chipId, boolean force/* = false*/) {
+        if (frmYM3526[chipId] != null) {
             if (!force) {
-                CloseFormYM3526(chipID);
+                CloseFormYM3526(chipId);
                 return;
             } else return;
         }
 
-        frmYM3526[chipID] = new frmYM3526(this, chipID, setting.getOther().getZoom(), newParam.ym3526[chipID], oldParam.ym3526[chipID]);
+        frmYM3526[chipId] = new frmYM3526(this, chipId, setting.getOther().getZoom(), newParam.ym3526[chipId], oldParam.ym3526[chipId]);
 
-        if (setting.getLocation().getPosYm3526()[chipID].equals(empty)) {
-            frmYM3526[chipID].x = this.getLocation().x;
-            frmYM3526[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosYm3526()[chipId].equals(empty)) {
+            frmYM3526[chipId].x = this.getLocation().x;
+            frmYM3526[chipId].y = this.getLocation().y + 264;
         } else {
-            frmYM3526[chipID].x = setting.getLocation().getPosYm3526()[chipID].x;
-            frmYM3526[chipID].y = setting.getLocation().getPosYm3526()[chipID].y;
+            frmYM3526[chipId].x = setting.getLocation().getPosYm3526()[chipId].x;
+            frmYM3526[chipId].y = setting.getLocation().getPosYm3526()[chipId].y;
         }
 
-        frmYM3526[chipID].setVisible(true);
-        frmYM3526[chipID].update();
-        frmYM3526[chipID].setTitle(String.format("YM3526 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ym3526[chipID] = new MDChipParams.YM3526();
+        frmYM3526[chipId].setVisible(true);
+        frmYM3526[chipId].update();
+        frmYM3526[chipId].setTitle(String.format("YM3526 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ym3526[chipId] = new MDChipParams.YM3526();
 
-        checkAndSetForm(frmYM3526[chipID]);
+        checkAndSetForm(frmYM3526[chipId]);
     }
 
-    private void CloseFormYM3526(int chipID) {
-        if (frmYM3526[chipID] == null) return;
+    private void CloseFormYM3526(int chipId) {
+        if (frmYM3526[chipId] == null) return;
 
         try {
-            frmYM3526[chipID].setVisible(false);
+            frmYM3526[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmYM3526[chipID].dispose();
+            frmYM3526[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmYM3526[chipID] = null;
+        frmYM3526[chipId] = null;
     }
 
-    private void OpenFormY8950(int chipID, boolean force/* = false*/) {
-        if (frmY8950[chipID] != null) {
+    private void OpenFormY8950(int chipId, boolean force/* = false*/) {
+        if (frmY8950[chipId] != null) {
             if (!force) {
-                CloseFormY8950(chipID);
+                CloseFormY8950(chipId);
                 return;
             } else return;
         }
 
-        frmY8950[chipID] = new frmY8950(this, chipID, setting.getOther().getZoom(), newParam.y8950[chipID]);
+        frmY8950[chipId] = new frmY8950(this, chipId, setting.getOther().getZoom(), newParam.y8950[chipId]);
 
-        if (setting.getLocation().getPosY8950()[chipID].equals(empty)) {
-            frmY8950[chipID].x = this.getLocation().x;
-            frmY8950[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosY8950()[chipId].equals(empty)) {
+            frmY8950[chipId].x = this.getLocation().x;
+            frmY8950[chipId].y = this.getLocation().y + 264;
         } else {
-            frmY8950[chipID].x = setting.getLocation().getPosY8950()[chipID].x;
-            frmY8950[chipID].y = setting.getLocation().getPosY8950()[chipID].y;
+            frmY8950[chipId].x = setting.getLocation().getPosY8950()[chipId].x;
+            frmY8950[chipId].y = setting.getLocation().getPosY8950()[chipId].y;
         }
 
-        frmY8950[chipID].setVisible(true);
-        frmY8950[chipID].update();
-        frmY8950[chipID].setTitle(String.format("Y8950Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.y8950[chipID] = new MDChipParams.Y8950();
+        frmY8950[chipId].setVisible(true);
+        frmY8950[chipId].update();
+        frmY8950[chipId].setTitle(String.format("Y8950Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.y8950[chipId] = new MDChipParams.Y8950();
 
-        checkAndSetForm(frmY8950[chipID]);
+        checkAndSetForm(frmY8950[chipId]);
     }
 
-    private void CloseFormY8950(int chipID) {
-        if (frmY8950[chipID] == null) return;
+    private void CloseFormY8950(int chipId) {
+        if (frmY8950[chipId] == null) return;
 
         try {
-            frmY8950[chipID].setVisible(false);
+            frmY8950[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmY8950[chipID].dispose();
+            frmY8950[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmY8950[chipID] = null;
+        frmY8950[chipId] = null;
     }
 
-    private void OpenFormYM3812(int chipID, boolean force/* = false*/) {
-        if (frmYM3812[chipID] != null) {
+    private void OpenFormYM3812(int chipId, boolean force/* = false*/) {
+        if (frmYM3812[chipId] != null) {
             if (!force) {
-                CloseFormYM3812(chipID);
+                CloseFormYM3812(chipId);
                 return;
             } else return;
         }
 
-        frmYM3812[chipID] = new frmYM3812(this, chipID, setting.getOther().getZoom(), newParam.ym3812[chipID], oldParam.ym3812[chipID]);
+        frmYM3812[chipId] = new frmYM3812(this, chipId, setting.getOther().getZoom(), newParam.ym3812[chipId], oldParam.ym3812[chipId]);
 
-        if (setting.getLocation().getPosYm3812()[chipID].equals(empty)) {
-            frmYM3812[chipID].x = this.getLocation().x;
-            frmYM3812[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosYm3812()[chipId].equals(empty)) {
+            frmYM3812[chipId].x = this.getLocation().x;
+            frmYM3812[chipId].y = this.getLocation().y + 264;
         } else {
-            frmYM3812[chipID].x = setting.getLocation().getPosYm3812()[chipID].x;
-            frmYM3812[chipID].y = setting.getLocation().getPosYm3812()[chipID].y;
+            frmYM3812[chipId].x = setting.getLocation().getPosYm3812()[chipId].x;
+            frmYM3812[chipId].y = setting.getLocation().getPosYm3812()[chipId].y;
         }
 
-        frmYM3812[chipID].setVisible(true);
-        frmYM3812[chipID].update();
-        frmYM3812[chipID].setTitle(String.format("YM3812 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ym3812[chipID] = new MDChipParams.YM3812();
+        frmYM3812[chipId].setVisible(true);
+        frmYM3812[chipId].update();
+        frmYM3812[chipId].setTitle(String.format("YM3812 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ym3812[chipId] = new MDChipParams.YM3812();
 
-        checkAndSetForm(frmYM3812[chipID]);
+        checkAndSetForm(frmYM3812[chipId]);
     }
 
-    private void CloseFormYM3812(int chipID) {
-        if (frmYM3812[chipID] == null) return;
+    private void CloseFormYM3812(int chipId) {
+        if (frmYM3812[chipId] == null) return;
 
         try {
-            frmYM3812[chipID].setVisible(false);
+            frmYM3812[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmYM3812[chipID].dispose();
+            frmYM3812[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmYM3812[chipID] = null;
+        frmYM3812[chipId] = null;
     }
 
-    private void OpenFormYMF262(int chipID, boolean force/* = false*/) {
-        if (frmYMF262[chipID] != null) {
+    private void OpenFormYMF262(int chipId, boolean force/* = false*/) {
+        if (frmYMF262[chipId] != null) {
             if (!force) {
-                CloseFormYMF262(chipID);
+                CloseFormYMF262(chipId);
                 return;
             } else return;
         }
 
-        frmYMF262[chipID] = new frmYMF262(this, chipID, setting.getOther().getZoom(), newParam.ymf262[chipID], oldParam.ymf262[chipID]);
+        frmYMF262[chipId] = new frmYMF262(this, chipId, setting.getOther().getZoom(), newParam.ymf262[chipId], oldParam.ymf262[chipId]);
 
-        if (setting.getLocation().getPosYmf262()[chipID].equals(empty)) {
-            frmYMF262[chipID].x = this.getLocation().x;
-            frmYMF262[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosYmf262()[chipId].equals(empty)) {
+            frmYMF262[chipId].x = this.getLocation().x;
+            frmYMF262[chipId].y = this.getLocation().y + 264;
         } else {
-            frmYMF262[chipID].x = setting.getLocation().getPosYmf262()[chipID].x;
-            frmYMF262[chipID].y = setting.getLocation().getPosYmf262()[chipID].y;
+            frmYMF262[chipId].x = setting.getLocation().getPosYmf262()[chipId].x;
+            frmYMF262[chipId].y = setting.getLocation().getPosYmf262()[chipId].y;
         }
 
-        frmYMF262[chipID].setVisible(true);
-        frmYMF262[chipID].update();
-        frmYMF262[chipID].setTitle(String.format("YMF262 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ymf262[chipID] = new MDChipParams.YMF262();
+        frmYMF262[chipId].setVisible(true);
+        frmYMF262[chipId].update();
+        frmYMF262[chipId].setTitle(String.format("YMF262 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ymf262[chipId] = new MDChipParams.YMF262();
 
-        checkAndSetForm(frmYMF262[chipID]);
+        checkAndSetForm(frmYMF262[chipId]);
     }
 
-    private void CloseFormYMF262(int chipID) {
-        if (frmYMF262[chipID] == null) return;
+    private void CloseFormYMF262(int chipId) {
+        if (frmYMF262[chipId] == null) return;
 
         try {
-            frmYMF262[chipID].setVisible(false);
+            frmYMF262[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmYMF262[chipID].dispose();
+            frmYMF262[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmYMF262[chipID] = null;
+        frmYMF262[chipId] = null;
     }
 
-    private void OpenFormYMF278B(int chipID, boolean force/* = false*/) {
-        if (frmYMF278B[chipID] != null) {
+    private void OpenFormYMF278B(int chipId, boolean force/* = false*/) {
+        if (frmYMF278B[chipId] != null) {
             if (!force) {
-                CloseFormYMF278B(chipID);
+                CloseFormYMF278B(chipId);
                 return;
             } else return;
         }
 
-        frmYMF278B[chipID] = new frmYMF278B(this, chipID, setting.getOther().getZoom(), newParam.ymf278b[chipID]);
+        frmYMF278B[chipId] = new frmYMF278B(this, chipId, setting.getOther().getZoom(), newParam.ymf278b[chipId]);
 
-        if (setting.getLocation().getPosYmf278b()[chipID].equals(empty)) {
-            frmYMF278B[chipID].x = this.getLocation().x;
-            frmYMF278B[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosYmf278b()[chipId].equals(empty)) {
+            frmYMF278B[chipId].x = this.getLocation().x;
+            frmYMF278B[chipId].y = this.getLocation().y + 264;
         } else {
-            frmYMF278B[chipID].x = setting.getLocation().getPosYmf278b()[chipID].x;
-            frmYMF278B[chipID].y = setting.getLocation().getPosYmf278b()[chipID].y;
+            frmYMF278B[chipId].x = setting.getLocation().getPosYmf278b()[chipId].x;
+            frmYMF278B[chipId].y = setting.getLocation().getPosYmf278b()[chipId].y;
         }
 
-        frmYMF278B[chipID].setVisible(true);
-        frmYMF278B[chipID].update();
-        frmYMF278B[chipID].setTitle(String.format("YMF278B (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.ymf278b[chipID] = new MDChipParams.YMF278B();
+        frmYMF278B[chipId].setVisible(true);
+        frmYMF278B[chipId].update();
+        frmYMF278B[chipId].setTitle(String.format("YMF278B (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.ymf278b[chipId] = new MDChipParams.YMF278B();
 
-        checkAndSetForm(frmYMF278B[chipID]);
+        checkAndSetForm(frmYMF278B[chipId]);
     }
 
-    private void CloseFormYMF278B(int chipID) {
-        if (frmYMF278B[chipID] == null) return;
+    private void CloseFormYMF278B(int chipId) {
+        if (frmYMF278B[chipId] == null) return;
 
         try {
-            frmYMF278B[chipID].setVisible(false);
+            frmYMF278B[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmYMF278B[chipID].dispose();
+            frmYMF278B[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmYMF278B[chipID] = null;
+        frmYMF278B[chipId] = null;
     }
 
-    private void OpenFormMIDI(int chipID, boolean force/* = false*/) {
-        if (frmMIDI[chipID] != null) {
+    private void OpenFormMIDI(int chipId, boolean force/* = false*/) {
+        if (frmMIDI[chipId] != null) {
             if (!force) {
-                closeFormMIDI(chipID);
+                closeFormMIDI(chipId);
                 return;
             } else return;
         }
 
-        frmMIDI[chipID] = new frmMIDI(this, chipID, setting.getOther().getZoom(), newParam.midi[chipID]);
+        frmMIDI[chipId] = new frmMIDI(this, chipId, setting.getOther().getZoom(), newParam.midi[chipId]);
 
-        if (setting.getLocation().getPosMIDI()[chipID].equals(empty)) {
-            frmMIDI[chipID].x = this.getLocation().x;
-            frmMIDI[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosMIDI()[chipId].equals(empty)) {
+            frmMIDI[chipId].x = this.getLocation().x;
+            frmMIDI[chipId].y = this.getLocation().y + 264;
         } else {
-            frmMIDI[chipID].x = setting.getLocation().getPosMIDI()[chipID].x;
-            frmMIDI[chipID].y = setting.getLocation().getPosMIDI()[chipID].y;
+            frmMIDI[chipId].x = setting.getLocation().getPosMIDI()[chipId].x;
+            frmMIDI[chipId].y = setting.getLocation().getPosMIDI()[chipId].y;
         }
 
-        frmMIDI[chipID].setVisible(true);
-        frmMIDI[chipID].update();
-        frmMIDI[chipID].setTitle(String.format("MIDI (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.midi[chipID] = new MIDIParam();
+        frmMIDI[chipId].setVisible(true);
+        frmMIDI[chipId].update();
+        frmMIDI[chipId].setTitle(String.format("MIDI (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.midi[chipId] = new MIDIParam();
 
-        checkAndSetForm(frmMIDI[chipID]);
+        checkAndSetForm(frmMIDI[chipId]);
     }
 
-    private void closeFormMIDI(int chipID) {
-        if (frmMIDI[chipID] == null) return;
+    private void closeFormMIDI(int chipId) {
+        if (frmMIDI[chipId] == null) return;
 
         try {
-            frmMIDI[chipID].setVisible(false);
+            frmMIDI[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmMIDI[chipID].dispose();
+            frmMIDI[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmMIDI[chipID] = null;
+        frmMIDI[chipId] = null;
     }
 
-    private void openFormNESDMC(int chipID, boolean force/* = false*/) {
-        if (frmNESDMC[chipID] != null) {
+    private void openFormNESDMC(int chipId, boolean force/* = false*/) {
+        if (frmNESDMC[chipId] != null) {
             if (!force) {
-                closeFormNESDMC(chipID);
+                closeFormNESDMC(chipId);
                 return;
             } else return;
         }
 
-        frmNESDMC[chipID] = new frmNESDMC(this, chipID, setting.getOther().getZoom(), newParam.nesdmc[chipID]);
+        frmNESDMC[chipId] = new frmNESDMC(this, chipId, setting.getOther().getZoom(), newParam.nesdmc[chipId]);
 
-        if (setting.getLocation().getPosNESDMC()[chipID].equals(empty)) {
-            frmNESDMC[chipID].x = this.getLocation().x;
-            frmNESDMC[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosNESDMC()[chipId].equals(empty)) {
+            frmNESDMC[chipId].x = this.getLocation().x;
+            frmNESDMC[chipId].y = this.getLocation().y + 264;
         } else {
-            frmNESDMC[chipID].x = setting.getLocation().getPosNESDMC()[chipID].x;
-            frmNESDMC[chipID].y = setting.getLocation().getPosNESDMC()[chipID].y;
+            frmNESDMC[chipId].x = setting.getLocation().getPosNESDMC()[chipId].x;
+            frmNESDMC[chipId].y = setting.getLocation().getPosNESDMC()[chipId].y;
         }
 
-        frmNESDMC[chipID].setVisible(true);
-        frmNESDMC[chipID].update();
-        frmNESDMC[chipID].setTitle(String.format("NES&DMC (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.nesdmc[chipID] = new MDChipParams.NESDMC();
+        frmNESDMC[chipId].setVisible(true);
+        frmNESDMC[chipId].update();
+        frmNESDMC[chipId].setTitle(String.format("NES&DMC (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.nesdmc[chipId] = new MDChipParams.NESDMC();
 
-        checkAndSetForm(frmNESDMC[chipID]);
+        checkAndSetForm(frmNESDMC[chipId]);
     }
 
-    private void closeFormNESDMC(int chipID) {
-        if (frmNESDMC[chipID] == null) return;
+    private void closeFormNESDMC(int chipId) {
+        if (frmNESDMC[chipId] == null) return;
 
         try {
-            frmNESDMC[chipID].setVisible(false);
+            frmNESDMC[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmNESDMC[chipID].dispose();
+            frmNESDMC[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmNESDMC[chipID] = null;
+        frmNESDMC[chipId] = null;
     }
 
-    private void openFormFDS(int chipID, boolean force/* = false*/) {
-        if (frmFDS[chipID] != null) {
+    private void openFormFDS(int chipId, boolean force/* = false*/) {
+        if (frmFDS[chipId] != null) {
             if (!force) {
-                closeFormFDS(chipID);
+                closeFormFDS(chipId);
                 return;
             } else return;
         }
 
-        frmFDS[chipID] = new frmFDS(this, chipID, setting.getOther().getZoom(), newParam.fds[chipID]);
+        frmFDS[chipId] = new frmFDS(this, chipId, setting.getOther().getZoom(), newParam.fds[chipId]);
 
-        if (setting.getLocation().getPosFDS()[chipID].equals(empty)) {
-            frmFDS[chipID].x = this.getLocation().x;
-            frmFDS[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosFDS()[chipId].equals(empty)) {
+            frmFDS[chipId].x = this.getLocation().x;
+            frmFDS[chipId].y = this.getLocation().y + 264;
         } else {
-            frmFDS[chipID].x = setting.getLocation().getPosFDS()[chipID].x;
-            frmFDS[chipID].y = setting.getLocation().getPosFDS()[chipID].y;
+            frmFDS[chipId].x = setting.getLocation().getPosFDS()[chipId].x;
+            frmFDS[chipId].y = setting.getLocation().getPosFDS()[chipId].y;
         }
 
-        frmFDS[chipID].setVisible(true);
-        frmFDS[chipID].update();
-        frmFDS[chipID].setTitle(String.format("FDS (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.fds[chipID] = new MDChipParams.FDS();
+        frmFDS[chipId].setVisible(true);
+        frmFDS[chipId].update();
+        frmFDS[chipId].setTitle(String.format("FDS (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.fds[chipId] = new MDChipParams.FDS();
 
-        checkAndSetForm(frmFDS[chipID]);
+        checkAndSetForm(frmFDS[chipId]);
     }
 
-    private void closeFormFDS(int chipID) {
-        if (frmFDS[chipID] == null) return;
+    private void closeFormFDS(int chipId) {
+        if (frmFDS[chipId] == null) return;
 
         try {
-            frmFDS[chipID].setVisible(false);
+            frmFDS[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmFDS[chipID].dispose();
+            frmFDS[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmFDS[chipID] = null;
+        frmFDS[chipId] = null;
     }
 
-    private void openFormVRC6(int chipID, boolean force/* = false*/) {
-        if (frmVRC6[chipID] != null) {
+    private void openFormVRC6(int chipId, boolean force/* = false*/) {
+        if (frmVRC6[chipId] != null) {
             if (!force) {
-                closeFormVRC6(chipID);
+                closeFormVRC6(chipId);
                 return;
             } else return;
         }
 
-        oldParam.vrc6[chipID] = new MDChipParams.VRC6();
-        for (int i = 0; i < oldParam.vrc6[chipID].channels.length; i++) {
-            oldParam.vrc6[chipID].channels[i].mask = null;
+        oldParam.vrc6[chipId] = new MDChipParams.VRC6();
+        for (int i = 0; i < oldParam.vrc6[chipId].channels.length; i++) {
+            oldParam.vrc6[chipId].channels[i].mask = null;
         }
-        frmVRC6[chipID] = new frmVRC6(this, chipID, setting.getOther().getZoom(), newParam.vrc6[chipID], oldParam.vrc6[chipID]);
+        frmVRC6[chipId] = new frmVRC6(this, chipId, setting.getOther().getZoom(), newParam.vrc6[chipId], oldParam.vrc6[chipId]);
 
-        if (setting.getLocation().getPosVrc6()[chipID].equals(empty)) {
-            frmVRC6[chipID].x = this.getLocation().x;
-            frmVRC6[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosVrc6()[chipId].equals(empty)) {
+            frmVRC6[chipId].x = this.getLocation().x;
+            frmVRC6[chipId].y = this.getLocation().y + 264;
         } else {
-            frmVRC6[chipID].x = setting.getLocation().getPosVrc6()[chipID].x;
-            frmVRC6[chipID].y = setting.getLocation().getPosVrc6()[chipID].y;
+            frmVRC6[chipId].x = setting.getLocation().getPosVrc6()[chipId].x;
+            frmVRC6[chipId].y = setting.getLocation().getPosVrc6()[chipId].y;
         }
 
-        frmVRC6[chipID].setVisible(true);
-        frmVRC6[chipID].update();
-        frmVRC6[chipID].setTitle(String.format("Vrc6Inst (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.vrc6[chipID] = new MDChipParams.VRC6();
+        frmVRC6[chipId].setVisible(true);
+        frmVRC6[chipId].update();
+        frmVRC6[chipId].setTitle(String.format("Vrc6Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.vrc6[chipId] = new MDChipParams.VRC6();
 
-        checkAndSetForm(frmVRC6[chipID]);
+        checkAndSetForm(frmVRC6[chipId]);
     }
 
-    private void closeFormVRC6(int chipID) {
-        if (frmVRC6[chipID] == null) return;
+    private void closeFormVRC6(int chipId) {
+        if (frmVRC6[chipId] == null) return;
 
         try {
-            frmVRC6[chipID].setVisible(false);
+            frmVRC6[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmVRC6[chipID].dispose();
+            frmVRC6[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmVRC6[chipID] = null;
+        frmVRC6[chipId] = null;
     }
 
-    private void openFormVRC7(int chipID, boolean force/* = false*/) {
-        if (frmVRC7[chipID] != null)// && frmInfo.isClosed)
+    private void openFormVRC7(int chipId, boolean force/* = false*/) {
+        if (frmVRC7[chipId] != null)// && frmInfo.isClosed)
         {
             if (!force) {
-                closeFormVRC7(chipID);
+                closeFormVRC7(chipId);
                 return;
             } else return;
         }
 
-        frmVRC7[chipID] = new frmVRC7(this, chipID, setting.getOther().getZoom(), newParam.vrc7[chipID]);
+        frmVRC7[chipId] = new frmVRC7(this, chipId, setting.getOther().getZoom(), newParam.vrc7[chipId]);
 
-        if (setting.getLocation().getPosVrc7()[chipID].equals(empty)) {
-            frmVRC7[chipID].x = this.getLocation().x;
-            frmVRC7[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosVrc7()[chipId].equals(empty)) {
+            frmVRC7[chipId].x = this.getLocation().x;
+            frmVRC7[chipId].y = this.getLocation().y + 264;
         } else {
-            frmVRC7[chipID].x = setting.getLocation().getPosVrc7()[chipID].x;
-            frmVRC7[chipID].y = setting.getLocation().getPosVrc7()[chipID].y;
+            frmVRC7[chipId].x = setting.getLocation().getPosVrc7()[chipId].x;
+            frmVRC7[chipId].y = setting.getLocation().getPosVrc7()[chipId].y;
         }
 
-        frmVRC7[chipID].setVisible(true);
-        frmVRC7[chipID].update();
-        frmVRC7[chipID].setTitle(String.format("VRC7 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.vrc7[chipID] = new MDChipParams.VRC7();
+        frmVRC7[chipId].setVisible(true);
+        frmVRC7[chipId].update();
+        frmVRC7[chipId].setTitle(String.format("VRC7 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.vrc7[chipId] = new MDChipParams.VRC7();
 
-        checkAndSetForm(frmVRC7[chipID]);
+        checkAndSetForm(frmVRC7[chipId]);
     }
 
-    private void closeFormVRC7(int chipID) {
-        if (frmVRC7[chipID] == null) return;
+    private void closeFormVRC7(int chipId) {
+        if (frmVRC7[chipId] == null) return;
 
         try {
-            frmVRC7[chipID].setVisible(false);
+            frmVRC7[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmVRC7[chipID].dispose();
+            frmVRC7[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmVRC7[chipID] = null;
+        frmVRC7[chipId] = null;
     }
 
-    private void openFormMMC5(int chipID, boolean force/* = false*/) {
-        if (frmMMC5[chipID] != null) {
+    private void openFormMMC5(int chipId, boolean force/* = false*/) {
+        if (frmMMC5[chipId] != null) {
             if (!force) {
-                closeFormMMC5(chipID);
+                closeFormMMC5(chipId);
                 return;
             } else return;
         }
 
-        frmMMC5[chipID] = new frmMMC5(this, chipID, setting.getOther().getZoom(), newParam.mmc5[chipID]);
+        frmMMC5[chipId] = new frmMMC5(this, chipId, setting.getOther().getZoom(), newParam.mmc5[chipId]);
 
-        if (setting.getLocation().getPosMMC5()[chipID].equals(empty)) {
-            frmMMC5[chipID].x = this.getLocation().x;
-            frmMMC5[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosMMC5()[chipId].equals(empty)) {
+            frmMMC5[chipId].x = this.getLocation().x;
+            frmMMC5[chipId].y = this.getLocation().y + 264;
         } else {
-            frmMMC5[chipID].x = setting.getLocation().getPosMMC5()[chipID].x;
-            frmMMC5[chipID].y = setting.getLocation().getPosMMC5()[chipID].y;
+            frmMMC5[chipId].x = setting.getLocation().getPosMMC5()[chipId].x;
+            frmMMC5[chipId].y = setting.getLocation().getPosMMC5()[chipId].y;
         }
 
-        frmMMC5[chipID].setVisible(true);
-        frmMMC5[chipID].update();
-        frmMMC5[chipID].setTitle(String.format("MMC5 (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.mmc5[chipID] = new MDChipParams.MMC5();
+        frmMMC5[chipId].setVisible(true);
+        frmMMC5[chipId].update();
+        frmMMC5[chipId].setTitle(String.format("MMC5 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.mmc5[chipId] = new MDChipParams.MMC5();
 
-        checkAndSetForm(frmMMC5[chipID]);
+        checkAndSetForm(frmMMC5[chipId]);
     }
 
-    private void closeFormMMC5(int chipID) {
-        if (frmMMC5[chipID] == null) return;
+    private void closeFormMMC5(int chipId) {
+        if (frmMMC5[chipId] == null) return;
 
         try {
-            frmMMC5[chipID].setVisible(false);
+            frmMMC5[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmMMC5[chipID].dispose();
+            frmMMC5[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmMMC5[chipID] = null;
+        frmMMC5[chipId] = null;
     }
 
-    private void openFormRegTest(int chipID, EnmChip selectedChip/* = EnmChip.Unuse*/, boolean force/* = false*/) {
+    private void openFormRegTest(int chipId, EnmChip selectedChip/* = EnmChip.Unuse*/, boolean force/* = false*/) {
         if (frmRegTest != null) {
             frmRegTest.changeChip(selectedChip);
             return;
         }
 
-        frmRegTest = new frmRegTest(this, chipID, selectedChip, setting.getOther().getZoom());
+        frmRegTest = new frmRegTest(this, chipId, selectedChip, setting.getOther().getZoom());
 
-        if (setting.getLocation().getPosRegTest()[chipID].equals(empty)) {
+        if (setting.getLocation().getPosRegTest()[chipId].equals(empty)) {
             frmRegTest.x = this.getLocation().x;
             frmRegTest.y = this.getLocation().y + 264;
         } else {
-            frmRegTest.x = setting.getLocation().getPosRegTest()[chipID].x;
-            frmRegTest.y = setting.getLocation().getPosRegTest()[chipID].y;
+            frmRegTest.x = setting.getLocation().getPosRegTest()[chipId].x;
+            frmRegTest.y = setting.getLocation().getPosRegTest()[chipId].y;
         }
 
         frmRegTest.setVisible(true);
         frmRegTest.update();
         frmRegTest.changeChip(selectedChip);
-        frmRegTest.setTitle(String.format("RegTest (%s)", chipID == 0 ? "Primary" : "Secondary"));
+        frmRegTest.setTitle(String.format("RegTest (%s)", chipId == 0 ? "Primary" : "Secondary"));
 
         checkAndSetForm(frmRegTest);
     }
@@ -3284,53 +3299,53 @@ public class frmMain extends JFrame {
         checkAndSetForm(frmVisWave);
     }
 
-    private void openFormN106(int chipID, boolean force/* = false*/) {
-        if (frmN106[chipID] != null) {
+    private void openFormN106(int chipId, boolean force/* = false*/) {
+        if (frmN106[chipId] != null) {
             if (!force) {
-                closeFormN106(chipID);
+                closeFormN106(chipId);
                 return;
             } else return;
         }
 
-        oldParam.n106[chipID] = new MDChipParams.N106();
-        for (int i = 0; i < oldParam.n106[chipID].channels.length; i++) {
-            oldParam.n106[chipID].channels[i].mask = null;
+        oldParam.n106[chipId] = new MDChipParams.N106();
+        for (int i = 0; i < oldParam.n106[chipId].channels.length; i++) {
+            oldParam.n106[chipId].channels[i].mask = null;
         }
-        frmN106[chipID] = new frmN106(this, chipID, setting.getOther().getZoom(), newParam.n106[chipID], oldParam.n106[chipID]);
+        frmN106[chipId] = new frmN106(this, chipId, setting.getOther().getZoom(), newParam.n106[chipId], oldParam.n106[chipId]);
 
-        if (setting.getLocation().getPosN106()[chipID].equals(empty)) {
-            frmN106[chipID].x = this.getLocation().x;
-            frmN106[chipID].y = this.getLocation().y + 264;
+        if (setting.getLocation().getPosN106()[chipId].equals(empty)) {
+            frmN106[chipId].x = this.getLocation().x;
+            frmN106[chipId].y = this.getLocation().y + 264;
         } else {
-            frmN106[chipID].x = setting.getLocation().getPosN106()[chipID].x;
-            frmN106[chipID].y = setting.getLocation().getPosN106()[chipID].y;
+            frmN106[chipId].x = setting.getLocation().getPosN106()[chipId].x;
+            frmN106[chipId].y = setting.getLocation().getPosN106()[chipId].y;
         }
 
-        frmN106[chipID].setVisible(true);
-        frmN106[chipID].update();
-        frmN106[chipID].setTitle(String.format("N163(N106) (%s)", chipID == 0 ? "Primary" : "Secondary"));
-        oldParam.n106[chipID] = new MDChipParams.N106();
+        frmN106[chipId].setVisible(true);
+        frmN106[chipId].update();
+        frmN106[chipId].setTitle(String.format("N163(N106) (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        oldParam.n106[chipId] = new MDChipParams.N106();
 
-        checkAndSetForm(frmN106[chipID]);
+        checkAndSetForm(frmN106[chipId]);
     }
 
-    private void closeFormN106(int chipID) {
-        if (frmN106[chipID] == null) return;
+    private void closeFormN106(int chipId) {
+        if (frmN106[chipId] == null) return;
 
         try {
-            frmN106[chipID].setVisible(false);
+            frmN106[chipId].setVisible(false);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         try {
-            frmN106[chipID].dispose();
+            frmN106[chipId].dispose();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        frmN106[chipID] = null;
+        frmN106[chipId] = null;
     }
 
-    private void closeFormRegTest(int chipID) {
+    private void closeFormRegTest(int chipId) {
         if (frmRegTest == null) return;
 
         try {
@@ -3466,7 +3481,12 @@ public class frmMain extends JFrame {
         }
     }
 
-    BasePlugin audio;
+    BasePlugin audio = new BasePlugin() {
+        @Override
+        public boolean play(String playingFileName, FileFormat format) {
+            return false;
+        }
+    };
 
     private void reinit(Setting setting) {
         if (!flgReinit) return;
@@ -3761,115 +3781,115 @@ public class frmMain extends JFrame {
     }
 
     private void screenChangeParamsForms() {
-        for (int chipID = 0; chipID < 2; chipID++) {
-            if (frmMCD[chipID] != null && !frmMCD[chipID].isClosed) frmMCD[chipID].screenChangeParams();
-            else frmMCD[chipID] = null;
+        for (int chipId = 0; chipId < 2; chipId++) {
+            if (frmMCD[chipId] != null && !frmMCD[chipId].isClosed) frmMCD[chipId].screenChangeParams();
+            else frmMCD[chipId] = null;
 
-            if (frmRf5c68[chipID] != null && !frmRf5c68[chipID].isClosed) frmRf5c68[chipID].screenChangeParams();
-            else frmRf5c68[chipID] = null;
+            if (frmRf5c68[chipId] != null && !frmRf5c68[chipId].isClosed) frmRf5c68[chipId].screenChangeParams();
+            else frmRf5c68[chipId] = null;
 
-            if (frmC140[chipID] != null && !frmC140[chipID].isClosed) frmC140[chipID].screenChangeParams();
-            else frmC140[chipID] = null;
+            if (frmC140[chipId] != null && !frmC140[chipId].isClosed) frmC140[chipId].screenChangeParams();
+            else frmC140[chipId] = null;
 
-            if (frmS5B[chipID] != null && !frmS5B[chipID].isClosed) frmS5B[chipID].screenChangeParams();
-            else frmS5B[chipID] = null;
+            if (frmS5B[chipId] != null && !frmS5B[chipId].isClosed) frmS5B[chipId].screenChangeParams();
+            else frmS5B[chipId] = null;
 
-            if (frmDMG[chipID] != null && !frmDMG[chipID].isClosed) frmDMG[chipID].screenChangeParams();
-            else frmDMG[chipID] = null;
+            if (frmDMG[chipId] != null && !frmDMG[chipId].isClosed) frmDMG[chipId].screenChangeParams();
+            else frmDMG[chipId] = null;
 
-            if (frmPPZ8[chipID] != null && !frmPPZ8[chipID].isClosed) frmPPZ8[chipID].screenChangeParams();
-            else frmPPZ8[chipID] = null;
+            if (frmPPZ8[chipId] != null && !frmPPZ8[chipId].isClosed) frmPPZ8[chipId].screenChangeParams();
+            else frmPPZ8[chipId] = null;
 
-            if (frmYMZ280B[chipID] != null && !frmYMZ280B[chipID].isClosed) frmYMZ280B[chipID].screenChangeParams();
-            else frmYMZ280B[chipID] = null;
+            if (frmYMZ280B[chipId] != null && !frmYMZ280B[chipId].isClosed) frmYMZ280B[chipId].screenChangeParams();
+            else frmYMZ280B[chipId] = null;
 
-            if (frmC352[chipID] != null && !frmC352[chipID].isClosed) frmC352[chipID].screenChangeParams();
-            else frmC352[chipID] = null;
+            if (frmC352[chipId] != null && !frmC352[chipId].isClosed) frmC352[chipId].screenChangeParams();
+            else frmC352[chipId] = null;
 
-            if (frmMultiPCM[chipID] != null && !frmMultiPCM[chipID].isClosed) frmMultiPCM[chipID].screenChangeParams();
-            else frmMultiPCM[chipID] = null;
+            if (frmMultiPCM[chipId] != null && !frmMultiPCM[chipId].isClosed) frmMultiPCM[chipId].screenChangeParams();
+            else frmMultiPCM[chipId] = null;
 
-            if (frmQSound[chipID] != null && !frmQSound[chipID].isClosed) frmQSound[chipID].screenChangeParams();
-            else frmQSound[chipID] = null;
+            if (frmQSound[chipId] != null && !frmQSound[chipId].isClosed) frmQSound[chipId].screenChangeParams();
+            else frmQSound[chipId] = null;
 
-            if (frmYM2608[chipID] != null && !frmYM2608[chipID].isClosed) frmYM2608[chipID].screenChangeParams();
-            else frmYM2608[chipID] = null;
+            if (frmYM2608[chipId] != null && !frmYM2608[chipId].isClosed) frmYM2608[chipId].screenChangeParams();
+            else frmYM2608[chipId] = null;
 
-            if (frmYM2151[chipID] != null && !frmYM2151[chipID].isClosed) frmYM2151[chipID].screenChangeParams();
-            else frmYM2151[chipID] = null;
+            if (frmYM2151[chipId] != null && !frmYM2151[chipId].isClosed) frmYM2151[chipId].screenChangeParams();
+            else frmYM2151[chipId] = null;
 
-            if (frmYM2203[chipID] != null && !frmYM2203[chipID].isClosed) frmYM2203[chipID].screenChangeParams();
-            else frmYM2203[chipID] = null;
+            if (frmYM2203[chipId] != null && !frmYM2203[chipId].isClosed) frmYM2203[chipId].screenChangeParams();
+            else frmYM2203[chipId] = null;
 
-            if (frmYM2413[chipID] != null && !frmYM2413[chipID].isClosed) frmYM2413[chipID].screenChangeParams();
-            else frmYM2413[chipID] = null;
+            if (frmYM2413[chipId] != null && !frmYM2413[chipId].isClosed) frmYM2413[chipId].screenChangeParams();
+            else frmYM2413[chipId] = null;
 
-            if (frmYM2610[chipID] != null && !frmYM2610[chipID].isClosed) frmYM2610[chipID].screenChangeParams();
-            else frmYM2610[chipID] = null;
+            if (frmYM2610[chipId] != null && !frmYM2610[chipId].isClosed) frmYM2610[chipId].screenChangeParams();
+            else frmYM2610[chipId] = null;
 
-            if (frmYM2612[chipID] != null && !frmYM2612[chipID].isClosed) frmYM2612[chipID].screenChangeParams();
-            else frmYM2612[chipID] = null;
+            if (frmYM2612[chipId] != null && !frmYM2612[chipId].isClosed) frmYM2612[chipId].screenChangeParams();
+            else frmYM2612[chipId] = null;
 
-            if (frmYM3526[chipID] != null && !frmYM3526[chipID].isClosed) frmYM3526[chipID].screenChangeParams();
-            else frmYM3526[chipID] = null;
+            if (frmYM3526[chipId] != null && !frmYM3526[chipId].isClosed) frmYM3526[chipId].screenChangeParams();
+            else frmYM3526[chipId] = null;
 
-            if (frmY8950[chipID] != null && !frmY8950[chipID].isClosed) frmY8950[chipID].screenChangeParams();
-            else frmY8950[chipID] = null;
+            if (frmY8950[chipId] != null && !frmY8950[chipId].isClosed) frmY8950[chipId].screenChangeParams();
+            else frmY8950[chipId] = null;
 
-            if (frmYM3812[chipID] != null && !frmYM3812[chipID].isClosed) frmYM3812[chipID].screenChangeParams();
-            else frmYM3812[chipID] = null;
+            if (frmYM3812[chipId] != null && !frmYM3812[chipId].isClosed) frmYM3812[chipId].screenChangeParams();
+            else frmYM3812[chipId] = null;
 
-            if (frmYMF262[chipID] != null && !frmYMF262[chipID].isClosed) frmYMF262[chipID].screenChangeParams();
-            else frmYMF262[chipID] = null;
+            if (frmYMF262[chipId] != null && !frmYMF262[chipId].isClosed) frmYMF262[chipId].screenChangeParams();
+            else frmYMF262[chipId] = null;
 
-            if (frmYMF271[chipID] != null && !frmYMF271[chipID].isClosed) frmYMF271[chipID].screenChangeParams();
-            else frmYMF271[chipID] = null;
+            if (frmYMF271[chipId] != null && !frmYMF271[chipId].isClosed) frmYMF271[chipId].screenChangeParams();
+            else frmYMF271[chipId] = null;
 
-            if (frmYMF278B[chipID] != null && !frmYMF278B[chipID].isClosed) frmYMF278B[chipID].screenChangeParams();
-            else frmYMF278B[chipID] = null;
+            if (frmYMF278B[chipId] != null && !frmYMF278B[chipId].isClosed) frmYMF278B[chipId].screenChangeParams();
+            else frmYMF278B[chipId] = null;
 
-            if (frmOKIM6258[chipID] != null && !frmOKIM6258[chipID].isClosed) frmOKIM6258[chipID].screenChangeParams();
-            else frmOKIM6258[chipID] = null;
+            if (frmOKIM6258[chipId] != null && !frmOKIM6258[chipId].isClosed) frmOKIM6258[chipId].screenChangeParams();
+            else frmOKIM6258[chipId] = null;
 
-            if (frmOKIM6295[chipID] != null && !frmOKIM6295[chipID].isClosed) frmOKIM6295[chipID].screenChangeParams();
-            else frmOKIM6295[chipID] = null;
+            if (frmOKIM6295[chipId] != null && !frmOKIM6295[chipId].isClosed) frmOKIM6295[chipId].screenChangeParams();
+            else frmOKIM6295[chipId] = null;
 
-            if (frmSN76489[chipID] != null && !frmSN76489[chipID].isClosed) frmSN76489[chipID].screenChangeParams();
-            else frmSN76489[chipID] = null;
+            if (frmSN76489[chipId] != null && !frmSN76489[chipId].isClosed) frmSN76489[chipId].screenChangeParams();
+            else frmSN76489[chipId] = null;
 
-            if (frmSegaPCM[chipID] != null && !frmSegaPCM[chipID].isClosed) frmSegaPCM[chipID].screenChangeParams();
-            else frmSegaPCM[chipID] = null;
+            if (frmSegaPCM[chipId] != null && !frmSegaPCM[chipId].isClosed) frmSegaPCM[chipId].screenChangeParams();
+            else frmSegaPCM[chipId] = null;
 
-            if (frmAY8910[chipID] != null && !frmAY8910[chipID].isClosed) {
-                frmAY8910[chipID].screenChangeParams();
-            } else frmAY8910[chipID] = null;
+            if (frmAY8910[chipId] != null && !frmAY8910[chipId].isClosed) {
+                frmAY8910[chipId].screenChangeParams();
+            } else frmAY8910[chipId] = null;
 
-            if (frmHuC6280[chipID] != null && !frmHuC6280[chipID].isClosed) frmHuC6280[chipID].screenChangeParams();
-            else frmHuC6280[chipID] = null;
+            if (frmHuC6280[chipId] != null && !frmHuC6280[chipId].isClosed) frmHuC6280[chipId].screenChangeParams();
+            else frmHuC6280[chipId] = null;
 
-            if (frmK051649[chipID] != null && !frmK051649[chipID].isClosed) frmK051649[chipID].screenChangeParams();
-            else frmK051649[chipID] = null;
+            if (frmK051649[chipId] != null && !frmK051649[chipId].isClosed) frmK051649[chipId].screenChangeParams();
+            else frmK051649[chipId] = null;
 
-            if (frmMIDI[chipID] != null && !frmMIDI[chipID].isClosed) frmMIDI[chipID].screenChangeParams();
-            else frmMIDI[chipID] = null;
+            if (frmMIDI[chipId] != null && !frmMIDI[chipId].isClosed) frmMIDI[chipId].screenChangeParams();
+            else frmMIDI[chipId] = null;
 
-            if (frmNESDMC[chipID] != null && !frmNESDMC[chipID].isClosed) frmNESDMC[chipID].screenChangeParams();
-            else frmNESDMC[chipID] = null;
+            if (frmNESDMC[chipId] != null && !frmNESDMC[chipId].isClosed) frmNESDMC[chipId].screenChangeParams();
+            else frmNESDMC[chipId] = null;
 
-            if (frmFDS[chipID] != null && !frmFDS[chipID].isClosed) frmFDS[chipID].screenChangeParams();
-            else frmFDS[chipID] = null;
+            if (frmFDS[chipId] != null && !frmFDS[chipId].isClosed) frmFDS[chipId].screenChangeParams();
+            else frmFDS[chipId] = null;
 
-            if (frmMMC5[chipID] != null && !frmMMC5[chipID].isClosed) frmMMC5[chipID].screenChangeParams();
-            else frmMMC5[chipID] = null;
+            if (frmMMC5[chipId] != null && !frmMMC5[chipId].isClosed) frmMMC5[chipId].screenChangeParams();
+            else frmMMC5[chipId] = null;
 
-            if (frmVRC6[chipID] != null && !frmVRC6[chipID].isClosed) frmVRC6[chipID].screenChangeParams();
-            else frmVRC6[chipID] = null;
+            if (frmVRC6[chipId] != null && !frmVRC6[chipId].isClosed) frmVRC6[chipId].screenChangeParams();
+            else frmVRC6[chipId] = null;
 
-            if (frmVRC7[chipID] != null && !frmVRC7[chipID].isClosed) frmVRC7[chipID].screenChangeParams();
-            else frmVRC7[chipID] = null;
+            if (frmVRC7[chipId] != null && !frmVRC7[chipId].isClosed) frmVRC7[chipId].screenChangeParams();
+            else frmVRC7[chipId] = null;
 
-            if (frmN106[chipID] != null && !frmN106[chipID].isClosed) frmN106[chipID].screenChangeParams();
-            else frmN106[chipID] = null;
+            if (frmN106[chipId] != null && !frmN106[chipId].isClosed) frmN106[chipId].screenChangeParams();
+            else frmN106[chipId] = null;
 
         }
         if (frmYM2612MIDI != null && !frmYM2612MIDI.isClosed) frmYM2612MIDI.screenChangeParams();
@@ -3944,7 +3964,7 @@ public class frmMain extends JFrame {
             long d = r - v;
             if (r != -1 && v != -1)
                 DrawBuff.drawFont8(screen.mainScreen, 0, 16, 0, String.format("R.CHIP-EMU : %12d ", d));
-            DrawBuff.drawFont8(screen.mainScreen, 0, 24, 0, String.format("PROC TIME  : %12d ", audio.ProcTimePer1Frame));
+            DrawBuff.drawFont8(screen.mainScreen, 0, 24, 0, String.format("PROC TIME  : %12d ", audio.audio.procTimePer1Frame));
         }
 
         screen.Refresh(null);
@@ -3969,187 +3989,187 @@ public class frmMain extends JFrame {
     }
 
     private void screenDrawParamsForms() {
-        for (int chipID = 0; chipID < 2; chipID++) {
-            if (frmMCD[chipID] != null && !frmMCD[chipID].isClosed) {
-                frmMCD[chipID].screenDrawParams();
-                frmMCD[chipID].update();
-            } else frmMCD[chipID] = null;
+        for (int chipId = 0; chipId < 2; chipId++) {
+            if (frmMCD[chipId] != null && !frmMCD[chipId].isClosed) {
+                frmMCD[chipId].screenDrawParams();
+                frmMCD[chipId].update();
+            } else frmMCD[chipId] = null;
 
-            if (frmRf5c68[chipID] != null && !frmRf5c68[chipID].isClosed) {
-                frmRf5c68[chipID].screenDrawParams();
-                frmRf5c68[chipID].update();
-            } else frmRf5c68[chipID] = null;
+            if (frmRf5c68[chipId] != null && !frmRf5c68[chipId].isClosed) {
+                frmRf5c68[chipId].screenDrawParams();
+                frmRf5c68[chipId].update();
+            } else frmRf5c68[chipId] = null;
 
-            if (frmC140[chipID] != null && !frmC140[chipID].isClosed) {
-                frmC140[chipID].screenDrawParams();
-                frmC140[chipID].update();
-            } else frmC140[chipID] = null;
+            if (frmC140[chipId] != null && !frmC140[chipId].isClosed) {
+                frmC140[chipId].screenDrawParams();
+                frmC140[chipId].update();
+            } else frmC140[chipId] = null;
 
-            if (frmPPZ8[chipID] != null && !frmPPZ8[chipID].isClosed) {
-                frmPPZ8[chipID].screenDrawParams();
-                frmPPZ8[chipID].update();
-            } else frmPPZ8[chipID] = null;
+            if (frmPPZ8[chipId] != null && !frmPPZ8[chipId].isClosed) {
+                frmPPZ8[chipId].screenDrawParams();
+                frmPPZ8[chipId].update();
+            } else frmPPZ8[chipId] = null;
 
-            if (frmS5B[chipID] != null && !frmS5B[chipID].isClosed) {
-                frmS5B[chipID].screenDrawParams();
-                frmS5B[chipID].update();
-            } else frmS5B[chipID] = null;
+            if (frmS5B[chipId] != null && !frmS5B[chipId].isClosed) {
+                frmS5B[chipId].screenDrawParams();
+                frmS5B[chipId].update();
+            } else frmS5B[chipId] = null;
 
-            if (frmDMG[chipID] != null && !frmDMG[chipID].isClosed) {
-                frmDMG[chipID].screenDrawParams();
-                frmDMG[chipID].update();
-            } else frmDMG[chipID] = null;
+            if (frmDMG[chipId] != null && !frmDMG[chipId].isClosed) {
+                frmDMG[chipId].screenDrawParams();
+                frmDMG[chipId].update();
+            } else frmDMG[chipId] = null;
 
-            if (frmYMZ280B[chipID] != null && !frmYMZ280B[chipID].isClosed) {
-                frmYMZ280B[chipID].screenDrawParams();
-                frmYMZ280B[chipID].update();
-            } else frmYMZ280B[chipID] = null;
+            if (frmYMZ280B[chipId] != null && !frmYMZ280B[chipId].isClosed) {
+                frmYMZ280B[chipId].screenDrawParams();
+                frmYMZ280B[chipId].update();
+            } else frmYMZ280B[chipId] = null;
 
-            if (frmC352[chipID] != null && !frmC352[chipID].isClosed) {
-                frmC352[chipID].screenDrawParams();
-                frmC352[chipID].update();
-            } else frmC352[chipID] = null;
+            if (frmC352[chipId] != null && !frmC352[chipId].isClosed) {
+                frmC352[chipId].screenDrawParams();
+                frmC352[chipId].update();
+            } else frmC352[chipId] = null;
 
-            if (frmMultiPCM[chipID] != null && !frmMultiPCM[chipID].isClosed) {
-                frmMultiPCM[chipID].screenDrawParams();
-                frmMultiPCM[chipID].update();
-            } else frmMultiPCM[chipID] = null;
+            if (frmMultiPCM[chipId] != null && !frmMultiPCM[chipId].isClosed) {
+                frmMultiPCM[chipId].screenDrawParams();
+                frmMultiPCM[chipId].update();
+            } else frmMultiPCM[chipId] = null;
 
-            if (frmQSound[chipID] != null && !frmQSound[chipID].isClosed) {
-                frmQSound[chipID].screenDrawParams();
-                frmQSound[chipID].update();
-            } else frmQSound[chipID] = null;
+            if (frmQSound[chipId] != null && !frmQSound[chipId].isClosed) {
+                frmQSound[chipId].screenDrawParams();
+                frmQSound[chipId].update();
+            } else frmQSound[chipId] = null;
 
-            if (frmYM2608[chipID] != null && !frmYM2608[chipID].isClosed) {
-                frmYM2608[chipID].screenDrawParams();
-                frmYM2608[chipID].update();
-            } else frmYM2608[chipID] = null;
+            if (frmYM2608[chipId] != null && !frmYM2608[chipId].isClosed) {
+                frmYM2608[chipId].screenDrawParams();
+                frmYM2608[chipId].update();
+            } else frmYM2608[chipId] = null;
 
-            if (frmYM2151[chipID] != null && !frmYM2151[chipID].isClosed) {
-                frmYM2151[chipID].screenDrawParams();
-                frmYM2151[chipID].update();
-            } else frmYM2151[chipID] = null;
+            if (frmYM2151[chipId] != null && !frmYM2151[chipId].isClosed) {
+                frmYM2151[chipId].screenDrawParams();
+                frmYM2151[chipId].update();
+            } else frmYM2151[chipId] = null;
 
-            if (frmYM2203[chipID] != null && !frmYM2203[chipID].isClosed) {
-                frmYM2203[chipID].screenDrawParams();
-                frmYM2203[chipID].update();
-            } else frmYM2203[chipID] = null;
+            if (frmYM2203[chipId] != null && !frmYM2203[chipId].isClosed) {
+                frmYM2203[chipId].screenDrawParams();
+                frmYM2203[chipId].update();
+            } else frmYM2203[chipId] = null;
 
-            if (frmYM2413[chipID] != null && !frmYM2413[chipID].isClosed) {
-                frmYM2413[chipID].screenDrawParams();
-                frmYM2413[chipID].update();
-            } else frmYM2413[chipID] = null;
+            if (frmYM2413[chipId] != null && !frmYM2413[chipId].isClosed) {
+                frmYM2413[chipId].screenDrawParams();
+                frmYM2413[chipId].update();
+            } else frmYM2413[chipId] = null;
 
-            if (frmYM2610[chipID] != null && !frmYM2610[chipID].isClosed) {
-                frmYM2610[chipID].screenDrawParams();
-                frmYM2610[chipID].update();
-            } else frmYM2610[chipID] = null;
+            if (frmYM2610[chipId] != null && !frmYM2610[chipId].isClosed) {
+                frmYM2610[chipId].screenDrawParams();
+                frmYM2610[chipId].update();
+            } else frmYM2610[chipId] = null;
 
-            if (frmYM2612[chipID] != null && !frmYM2612[chipID].isClosed) {
-                frmYM2612[chipID].screenDrawParams();
-                frmYM2612[chipID].update();
-            } else frmYM2612[chipID] = null;
+            if (frmYM2612[chipId] != null && !frmYM2612[chipId].isClosed) {
+                frmYM2612[chipId].screenDrawParams();
+                frmYM2612[chipId].update();
+            } else frmYM2612[chipId] = null;
 
-            if (frmYM3526[chipID] != null && !frmYM3526[chipID].isClosed) {
-                frmYM3526[chipID].screenDrawParams();
-                frmYM3526[chipID].update();
-            } else frmYM3526[chipID] = null;
+            if (frmYM3526[chipId] != null && !frmYM3526[chipId].isClosed) {
+                frmYM3526[chipId].screenDrawParams();
+                frmYM3526[chipId].update();
+            } else frmYM3526[chipId] = null;
 
-            if (frmY8950[chipID] != null && !frmY8950[chipID].isClosed) {
-                frmY8950[chipID].screenDrawParams();
-                frmY8950[chipID].update();
-            } else frmY8950[chipID] = null;
+            if (frmY8950[chipId] != null && !frmY8950[chipId].isClosed) {
+                frmY8950[chipId].screenDrawParams();
+                frmY8950[chipId].update();
+            } else frmY8950[chipId] = null;
 
-            if (frmYM3812[chipID] != null && !frmYM3812[chipID].isClosed) {
-                frmYM3812[chipID].screenDrawParams();
-                frmYM3812[chipID].update();
-            } else frmYM3812[chipID] = null;
+            if (frmYM3812[chipId] != null && !frmYM3812[chipId].isClosed) {
+                frmYM3812[chipId].screenDrawParams();
+                frmYM3812[chipId].update();
+            } else frmYM3812[chipId] = null;
 
-            if (frmYMF262[chipID] != null && !frmYMF262[chipID].isClosed) {
-                frmYMF262[chipID].screenDrawParams();
-                frmYMF262[chipID].update();
-            } else frmYMF262[chipID] = null;
+            if (frmYMF262[chipId] != null && !frmYMF262[chipId].isClosed) {
+                frmYMF262[chipId].screenDrawParams();
+                frmYMF262[chipId].update();
+            } else frmYMF262[chipId] = null;
 
-            if (frmYMF271[chipID] != null && !frmYMF271[chipID].isClosed) {
-                frmYMF271[chipID].screenDrawParams();
-                frmYMF271[chipID].update();
-            } else frmYMF271[chipID] = null;
+            if (frmYMF271[chipId] != null && !frmYMF271[chipId].isClosed) {
+                frmYMF271[chipId].screenDrawParams();
+                frmYMF271[chipId].update();
+            } else frmYMF271[chipId] = null;
 
-            if (frmYMF278B[chipID] != null && !frmYMF278B[chipID].isClosed) {
-                frmYMF278B[chipID].screenDrawParams();
-                frmYMF278B[chipID].update();
-            } else frmYMF278B[chipID] = null;
+            if (frmYMF278B[chipId] != null && !frmYMF278B[chipId].isClosed) {
+                frmYMF278B[chipId].screenDrawParams();
+                frmYMF278B[chipId].update();
+            } else frmYMF278B[chipId] = null;
 
-            if (frmOKIM6258[chipID] != null && !frmOKIM6258[chipID].isClosed) {
-                frmOKIM6258[chipID].screenDrawParams();
-                frmOKIM6258[chipID].update();
-            } else frmOKIM6258[chipID] = null;
+            if (frmOKIM6258[chipId] != null && !frmOKIM6258[chipId].isClosed) {
+                frmOKIM6258[chipId].screenDrawParams();
+                frmOKIM6258[chipId].update();
+            } else frmOKIM6258[chipId] = null;
 
-            if (frmOKIM6295[chipID] != null && !frmOKIM6295[chipID].isClosed) {
-                frmOKIM6295[chipID].screenDrawParams();
-                frmOKIM6295[chipID].update();
-            } else frmOKIM6295[chipID] = null;
+            if (frmOKIM6295[chipId] != null && !frmOKIM6295[chipId].isClosed) {
+                frmOKIM6295[chipId].screenDrawParams();
+                frmOKIM6295[chipId].update();
+            } else frmOKIM6295[chipId] = null;
 
-            if (frmSN76489[chipID] != null && !frmSN76489[chipID].isClosed) {
-                frmSN76489[chipID].screenDrawParams();
-                frmSN76489[chipID].update();
-            } else frmSN76489[chipID] = null;
+            if (frmSN76489[chipId] != null && !frmSN76489[chipId].isClosed) {
+                frmSN76489[chipId].screenDrawParams();
+                frmSN76489[chipId].update();
+            } else frmSN76489[chipId] = null;
 
-            if (frmSegaPCM[chipID] != null && !frmSegaPCM[chipID].isClosed) {
-                frmSegaPCM[chipID].screenDrawParams();
-                frmSegaPCM[chipID].update();
-            } else frmSegaPCM[chipID] = null;
+            if (frmSegaPCM[chipId] != null && !frmSegaPCM[chipId].isClosed) {
+                frmSegaPCM[chipId].screenDrawParams();
+                frmSegaPCM[chipId].update();
+            } else frmSegaPCM[chipId] = null;
 
-            if (frmAY8910[chipID] != null && !frmAY8910[chipID].isClosed) {
-                frmAY8910[chipID].screenDrawParams();
-                frmAY8910[chipID].update();
-            } else frmAY8910[chipID] = null;
+            if (frmAY8910[chipId] != null && !frmAY8910[chipId].isClosed) {
+                frmAY8910[chipId].screenDrawParams();
+                frmAY8910[chipId].update();
+            } else frmAY8910[chipId] = null;
 
-            if (frmHuC6280[chipID] != null && !frmHuC6280[chipID].isClosed) {
-                frmHuC6280[chipID].screenDrawParams();
-                frmHuC6280[chipID].update();
-            } else frmHuC6280[chipID] = null;
+            if (frmHuC6280[chipId] != null && !frmHuC6280[chipId].isClosed) {
+                frmHuC6280[chipId].screenDrawParams();
+                frmHuC6280[chipId].update();
+            } else frmHuC6280[chipId] = null;
 
-            if (frmK051649[chipID] != null && !frmK051649[chipID].isClosed) {
-                frmK051649[chipID].screenDrawParams();
-                frmK051649[chipID].update();
-            } else frmK051649[chipID] = null;
+            if (frmK051649[chipId] != null && !frmK051649[chipId].isClosed) {
+                frmK051649[chipId].screenDrawParams();
+                frmK051649[chipId].update();
+            } else frmK051649[chipId] = null;
 
-            if (frmMIDI[chipID] != null && !frmMIDI[chipID].isClosed) {
-                frmMIDI[chipID].screenDrawParams();
-                frmMIDI[chipID].update();
-            } else frmMIDI[chipID] = null;
+            if (frmMIDI[chipId] != null && !frmMIDI[chipId].isClosed) {
+                frmMIDI[chipId].screenDrawParams();
+                frmMIDI[chipId].update();
+            } else frmMIDI[chipId] = null;
 
-            if (frmNESDMC[chipID] != null && !frmNESDMC[chipID].isClosed) {
-                frmNESDMC[chipID].screenDrawParams();
-                frmNESDMC[chipID].update();
-            } else frmNESDMC[chipID] = null;
+            if (frmNESDMC[chipId] != null && !frmNESDMC[chipId].isClosed) {
+                frmNESDMC[chipId].screenDrawParams();
+                frmNESDMC[chipId].update();
+            } else frmNESDMC[chipId] = null;
 
-            if (frmVRC6[chipID] != null && !frmVRC6[chipID].isClosed) {
-                frmVRC6[chipID].screenDrawParams();
-                frmVRC6[chipID].update();
-            } else frmVRC6[chipID] = null;
+            if (frmVRC6[chipId] != null && !frmVRC6[chipId].isClosed) {
+                frmVRC6[chipId].screenDrawParams();
+                frmVRC6[chipId].update();
+            } else frmVRC6[chipId] = null;
 
-            if (frmVRC7[chipID] != null && !frmVRC7[chipID].isClosed) {
-                frmVRC7[chipID].screenDrawParams();
-                frmVRC7[chipID].update();
-            } else frmVRC7[chipID] = null;
+            if (frmVRC7[chipId] != null && !frmVRC7[chipId].isClosed) {
+                frmVRC7[chipId].screenDrawParams();
+                frmVRC7[chipId].update();
+            } else frmVRC7[chipId] = null;
 
-            if (frmFDS[chipID] != null && !frmFDS[chipID].isClosed) {
-                frmFDS[chipID].screenDrawParams();
-                frmFDS[chipID].update();
-            } else frmFDS[chipID] = null;
+            if (frmFDS[chipId] != null && !frmFDS[chipId].isClosed) {
+                frmFDS[chipId].screenDrawParams();
+                frmFDS[chipId].update();
+            } else frmFDS[chipId] = null;
 
-            if (frmMMC5[chipID] != null && !frmMMC5[chipID].isClosed) {
-                frmMMC5[chipID].screenDrawParams();
-                frmMMC5[chipID].update();
-            } else frmMMC5[chipID] = null;
+            if (frmMMC5[chipId] != null && !frmMMC5[chipId].isClosed) {
+                frmMMC5[chipId].screenDrawParams();
+                frmMMC5[chipId].update();
+            } else frmMMC5[chipId] = null;
 
-            if (frmN106[chipID] != null && !frmN106[chipID].isClosed) {
-                frmN106[chipID].screenDrawParams();
-                frmN106[chipID].update();
+            if (frmN106[chipId] != null && !frmN106[chipId].isClosed) {
+                frmN106[chipId].screenDrawParams();
+                frmN106[chipId].update();
             } else
-                frmN106[chipID] = null;
+                frmN106[chipId] = null;
 
         }
         if (frmYM2612MIDI != null && !frmYM2612MIDI.isClosed) {
@@ -4170,9 +4190,10 @@ public class frmMain extends JFrame {
             frmRegTest = null;
     }
 
+    @Override
     public void setTitle(String newInfo) {
         if (!this.getTitle().equals(newInfo)) {
-            this.setTitle(newInfo);
+            super.setTitle(newInfo);
         }
     }
 
@@ -4261,8 +4282,8 @@ public class frmMain extends JFrame {
     }
 
     public void stop() {
-        if (audio.getIsPaused()) {
-            audio.pause();
+        if (audio.audio.isPaused()) {
+            audio.audio.pause();
         }
 
         if (audio.audio.getTrdStopped() && audio.isStopped()) {
@@ -4276,20 +4297,16 @@ public class frmMain extends JFrame {
     }
 
     public void pause() {
-        audio.pause();
+        audio.audio.pause();
     }
 
     public void fadeout() {
-        if (audio.getIsPaused()) {
-            audio.pause();
-        }
-
-        audio.fadeout();
+        audio.audio.fadeoutCommand();
     }
 
     public void prev() {
-        if (audio.getIsPaused()) {
-            audio.pause();
+        if (audio.audio.isPaused()) {
+            audio.audio.pause();
         }
 
         frmPlayList.prevPlay(newButtonMode[9]);
@@ -4297,8 +4314,8 @@ public class frmMain extends JFrame {
 
     public void play() {
 
-        if (audio.getIsPaused()) {
-            audio.pause();
+        if (audio.audio.isPaused()) {
+            audio.audio.pause();
         }
 
         String[] fn;
@@ -4334,30 +4351,30 @@ public class frmMain extends JFrame {
                 return;
             }
 
-            if (audio.getIsPaused()) {
-                audio.pause();
+            if (audio.audio.isPaused()) {
+                audio.audio.pause();
             }
             //stop();
 
-            //for (int chipID = 0; chipID < 2; chipID++) {
-            //    for (int ch = 0; ch < 3; ch++) ForceChannelMask(EnmChip.AY8910, chipID, ch, newParam.ay8910[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 8; ch++) ForceChannelMask(EnmChip.YM2151, chipID, ch, newParam.ym2151[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 9; ch++) ForceChannelMask(EnmChip.YM2203, chipID, ch, newParam.ym2203[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2413, chipID, ch, newParam.ym2413[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2608, chipID, ch, newParam.ym2608[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2610, chipID, ch, newParam.ym2610[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.Ym2612Inst, chipID, ch, newParam.ym2612[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 4; ch++) ForceChannelMask(EnmChip.SN76489, chipID, ch, newParam.sn76489[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 8; ch++) ForceChannelMask(EnmChip.RF5C164, chipID, ch, newParam.rf5c164[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 24; ch++) ForceChannelMask(EnmChip.C140Inst, chipID, ch, newParam.c140[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 32; ch++) ForceChannelMask(EnmChip.C352Inst, chipID, ch, newParam.c352[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 16; ch++) ForceChannelMask(EnmChip.SEGAPCM, chipID, ch, newParam.segaPcm[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.OotakeHuC6280, chipID, ch, newParam.huc6280[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 4; ch++) ForceChannelMask(EnmChip.OKIM6295, chipID, ch, newParam.okim6295[chipID].channels[ch].mask);
-            //    for (int ch = 0; ch < 2; ch++) ResetChannelMask(EnmChip.NES, chipID, ch);
-            //    for (int ch = 0; ch < 3; ch++) ResetChannelMask(EnmChip.DMC, chipID, ch);
-            //    for (int ch = 0; ch < 3; ch++) ResetChannelMask(EnmChip.MMC5, chipID, ch);
-            //    ResetChannelMask(EnmChip.FDS, chipID, 0);
+            //for (int chipId = 0; chipId < 2; chipId++) {
+            //    for (int ch = 0; ch < 3; ch++) ForceChannelMask(EnmChip.AY8910, chipId, ch, newParam.ay8910[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 8; ch++) ForceChannelMask(EnmChip.YM2151, chipId, ch, newParam.ym2151[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 9; ch++) ForceChannelMask(EnmChip.YM2203, chipId, ch, newParam.ym2203[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2413, chipId, ch, newParam.ym2413[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2608, chipId, ch, newParam.ym2608[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2610, chipId, ch, newParam.ym2610[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.Ym2612Inst, chipId, ch, newParam.ym2612[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 4; ch++) ForceChannelMask(EnmChip.SN76489, chipId, ch, newParam.sn76489[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 8; ch++) ForceChannelMask(EnmChip.RF5C164, chipId, ch, newParam.rf5c164[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 24; ch++) ForceChannelMask(EnmChip.C140Inst, chipId, ch, newParam.c140[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 32; ch++) ForceChannelMask(EnmChip.C352Inst, chipId, ch, newParam.c352[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 16; ch++) ForceChannelMask(EnmChip.SEGAPCM, chipId, ch, newParam.segaPcm[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.OotakeHuC6280, chipId, ch, newParam.huc6280[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 4; ch++) ForceChannelMask(EnmChip.OKIM6295, chipId, ch, newParam.okim6295[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 2; ch++) ResetChannelMask(EnmChip.NES, chipId, ch);
+            //    for (int ch = 0; ch < 3; ch++) ResetChannelMask(EnmChip.DMC, chipId, ch);
+            //    for (int ch = 0; ch < 3; ch++) ResetChannelMask(EnmChip.MMC5, chipId, ch);
+            //    ResetChannelMask(EnmChip.FDS, chipId, 0);
             //}
 
             //oldParam = new MDChipParams();
@@ -4388,7 +4405,7 @@ public class frmMain extends JFrame {
                 }
             }
 
-            if (!audio.play(setting)) {
+            if (!audio.play()) {
                 try {
                     frmPlayList.stop();
                     Request req = new Request(enmRequest.Stop, null, null);
@@ -4405,51 +4422,51 @@ public class frmMain extends JFrame {
                 }
             }
 
-            for (int chipID = 0; chipID < 2; chipID++) {
+            for (int chipId = 0; chipId < 2; chipId++) {
                 for (int ch = 0; ch < 3; ch++)
-                    forceChannelMask(EnmChip.AY8910, chipID, ch, newParam.ay8910[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.AY8910, chipId, ch, newParam.ay8910[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 8; ch++)
-                    forceChannelMask(EnmChip.YM2151, chipID, ch, newParam.ym2151[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.YM2151, chipId, ch, newParam.ym2151[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 9; ch++)
-                    forceChannelMask(EnmChip.YM2203, chipID, ch, newParam.ym2203[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.YM2203, chipId, ch, newParam.ym2203[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 14; ch++)
-                    forceChannelMask(EnmChip.YM2413, chipID, ch, newParam.ym2413[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.YM2413, chipId, ch, newParam.ym2413[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 14; ch++)
-                    forceChannelMask(EnmChip.YM2608, chipID, ch, newParam.ym2608[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.YM2608, chipId, ch, newParam.ym2608[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 14; ch++)
-                    forceChannelMask(EnmChip.YM2610, chipID, ch, newParam.ym2610[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.YM2610, chipId, ch, newParam.ym2610[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 6; ch++)
-                    forceChannelMask(EnmChip.YM2612, chipID, ch, newParam.ym2612[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.YM2612, chipId, ch, newParam.ym2612[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 4; ch++)
-                    forceChannelMask(EnmChip.SN76489, chipID, ch, newParam.sn76489[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.SN76489, chipId, ch, newParam.sn76489[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 8; ch++)
-                    forceChannelMask(EnmChip.RF5C164, chipID, ch, newParam.rf5c164[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.RF5C164, chipId, ch, newParam.rf5c164[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 8; ch++)
-                    forceChannelMask(EnmChip.RF5C68, chipID, ch, newParam.rf5c68[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.RF5C68, chipId, ch, newParam.rf5c68[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 24; ch++)
-                    forceChannelMask(EnmChip.C140, chipID, ch, newParam.c140[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.C140, chipId, ch, newParam.c140[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 32; ch++)
-                    forceChannelMask(EnmChip.C352, chipID, ch, newParam.c352[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.C352, chipId, ch, newParam.c352[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 16; ch++)
-                    forceChannelMask(EnmChip.SEGAPCM, chipID, ch, newParam.segaPcm[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.SEGAPCM, chipId, ch, newParam.segaPcm[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 19; ch++)
-                    forceChannelMask(EnmChip.QSound, chipID, ch, newParam.qSound[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.QSound, chipId, ch, newParam.qSound[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 6; ch++)
-                    forceChannelMask(EnmChip.HuC6280, chipID, ch, newParam.huc6280[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.HuC6280, chipId, ch, newParam.huc6280[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 4; ch++)
-                    forceChannelMask(EnmChip.OKIM6295, chipID, ch, newParam.okim6295[chipID].channels[ch].mask);
-                for (int ch = 0; ch < 2; ch++) ForceChannelMaskNES(EnmChip.NES, chipID, ch, newParam.nesdmc);
-                for (int ch = 2; ch < 5; ch++) ForceChannelMaskNES(EnmChip.DMC, chipID, ch, newParam.nesdmc);
-                for (int ch = 0; ch < 3; ch++) resetChannelMask(EnmChip.MMC5, chipID, ch);
+                    forceChannelMask(EnmChip.OKIM6295, chipId, ch, newParam.okim6295[chipId].channels[ch].mask);
+                for (int ch = 0; ch < 2; ch++) ForceChannelMaskNES(EnmChip.NES, chipId, ch, newParam.nesdmc);
+                for (int ch = 2; ch < 5; ch++) ForceChannelMaskNES(EnmChip.DMC, chipId, ch, newParam.nesdmc);
+                for (int ch = 0; ch < 3; ch++) resetChannelMask(EnmChip.MMC5, chipId, ch);
                 for (int ch = 0; ch < 8; ch++)
-                    forceChannelMask(EnmChip.PPZ8, chipID, ch, newParam.ppz8[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.PPZ8, chipId, ch, newParam.ppz8[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 4; ch++)
-                    forceChannelMask(EnmChip.DMG, chipID, ch, newParam.dmg[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.DMG, chipId, ch, newParam.dmg[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 3; ch++)
-                    forceChannelMask(EnmChip.VRC6, chipID, ch, newParam.vrc6[chipID].channels[ch].mask);
+                    forceChannelMask(EnmChip.VRC6, chipId, ch, newParam.vrc6[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 8; ch++)
-                    forceChannelMask(EnmChip.N163, chipID, ch, newParam.n106[chipID].channels[ch].mask);
-                resetChannelMask(EnmChip.FDS, chipID, 0);
+                    forceChannelMask(EnmChip.N163, chipId, ch, newParam.n106[chipId].channels[ch].mask);
+                resetChannelMask(EnmChip.FDS, chipId, 0);
             }
 
             audio.go();
@@ -4647,16 +4664,16 @@ public class frmMain extends JFrame {
     }
 
     public void ff() {
-        if (audio.getIsPaused()) {
-            audio.pause();
+        if (audio.audio.isPaused()) {
+            audio.audio.pause();
         }
 
         audio.ff();
     }
 
     public void next() {
-        if (audio.getIsPaused()) {
-            audio.pause();
+        if (audio.audio.isPaused()) {
+            audio.audio.pause();
         }
 
         Request req = new Request(enmRequest.Stop, null, null);
@@ -4677,9 +4694,9 @@ public class frmMain extends JFrame {
     }
 
     public void slow() {
-        if (audio.getIsPaused()) {
+        if (audio.audio.isPaused()) {
             audio.stepPlay(4000);
-            audio.pause();
+            audio.audio.pause();
             return;
         }
 
@@ -4762,9 +4779,9 @@ public class frmMain extends JFrame {
         cmsOpenOtherPanel.setLocation(p.x, p.y);
     }
 
-    public void getInstCh(EnmChip chip, int ch, int chipID) {
+    public void getInstCh(EnmChip chip, int ch, int chipId) {
         try {
-            ym2612MIDI.setVoiceFromChipRegister(chip, chipID, ch);
+            ym2612MIDI.setVoiceFromChipRegister(chip, chipId, ch);
 
             if (!setting.getOther().getUseGetInst()) return;
 
@@ -4772,72 +4789,72 @@ public class frmMain extends JFrame {
                 if (setting.getOther().getInstFormat() == EnmInstFormat.MML2VGM) {
 
                 } else if (setting.getOther().getInstFormat() == EnmInstFormat.SendMML2VGM) {
-                    getInstChForSendMML2VGM(chip, ch, chipID);
+                    getInstChForSendMML2VGM(chip, ch, chipId);
                 } else {
-                    getInstChForMGSC(chip, ch, chipID);
+                    getInstChForMGSC(chip, ch, chipId);
                 }
             } else if (chip == EnmChip.YM3812 || chip == EnmChip.YMF262 || chip == EnmChip.YMF278B) {
                 if (setting.getOther().getInstFormat() == EnmInstFormat.OPLI) {
-                    getInstChForOPLI(chip, ch, chipID);
+                    getInstChForOPLI(chip, ch, chipId);
                 } else {
-                    getInstChForSendMML2VGM(chip, ch, chipID);
+                    getInstChForSendMML2VGM(chip, ch, chipId);
                 }
             } else if (chip == EnmChip.VRC7) {
-                getInstChForMGSC(chip, ch, chipID);
+                getInstChForMGSC(chip, ch, chipId);
             } else if (chip == EnmChip.K051649) {
                 if (setting.getOther().getInstFormat() == EnmInstFormat.MGSCSCC_PLAIN) {
-                    getInstChForMGSCSCCPLAIN(ch, chipID);
+                    getInstChForMGSCSCCPLAIN(ch, chipId);
                 } else {
-                    getInstChForMGSC(chip, ch, chipID);
+                    getInstChForMGSC(chip, ch, chipId);
                 }
             } else if (chip == EnmChip.N163) {
-                getInstChForMCK(chip, ch, chipID);
+                getInstChForMCK(chip, ch, chipId);
             } else {
                 switch (setting.getOther().getInstFormat()) {
                 case FMP7:
-                    getInstChForFMP7(chip, ch, chipID);
+                    getInstChForFMP7(chip, ch, chipId);
                     break;
                 case MDX:
-                    getInstChForMDX(chip, ch, chipID);
+                    getInstChForMDX(chip, ch, chipId);
                     break;
                 case MML2VGM:
-                    getInstChForMML2VGM(chip, ch, chipID);
+                    getInstChForMML2VGM(chip, ch, chipId);
                     break;
                 case MUCOM88:
-                    getInstChForMucom88(chip, ch, chipID);
+                    getInstChForMucom88(chip, ch, chipId);
                     break;
                 case MUSICLALF:
-                    getInstChForMUSICLALF(chip, ch, chipID);
+                    getInstChForMUSICLALF(chip, ch, chipId);
                     break;
                 case MUSICLALF2:
-                    getInstChForMUSICLALF2(chip, ch, chipID);
+                    getInstChForMUSICLALF2(chip, ch, chipId);
                     break;
                 case TFI:
-                    getInstChForTFI(chip, ch, chipID);
+                    getInstChForTFI(chip, ch, chipId);
                     break;
                 case NRTDRV:
-                    getInstChForNRTDRV(chip, ch, chipID);
+                    getInstChForNRTDRV(chip, ch, chipId);
                     break;
                 case HUSIC:
-                    getInstChForHuSIC(chip, ch, chipID);
+                    getInstChForHuSIC(chip, ch, chipId);
                     break;
                 case VOPM:
-                    getInstChForVOPM(chip, ch, chipID);
+                    getInstChForVOPM(chip, ch, chipId);
                     break;
                 case PMD:
-                    getInstChForPMD(chip, ch, chipID);
+                    getInstChForPMD(chip, ch, chipId);
                     break;
                 case DMP:
-                    getInstChForDMP(chip, ch, chipID);
+                    getInstChForDMP(chip, ch, chipId);
                     break;
                 case OPNI:
-                    getInstChForOPNI(chip, ch, chipID);
+                    getInstChForOPNI(chip, ch, chipId);
                     break;
                 case RYM2612:
-                    getInstChForRYM2612(chip, ch, chipID);
+                    getInstChForRYM2612(chip, ch, chipId);
                     break;
                 case SendMML2VGM:
-                    getInstChForSendMML2VGM(chip, ch, chipID);
+                    getInstChForSendMML2VGM(chip, ch, chipId);
                     break;
                 }
             }
@@ -4847,14 +4864,14 @@ public class frmMain extends JFrame {
         }
     }
 
-    private void getInstChForFMP7(EnmChip chip, int ch, int chipID) {
+    private void getInstChForFMP7(EnmChip chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n.append("'@ FA xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT  AM\n");
 
@@ -4879,7 +4896,7 @@ public class frmMain extends JFrame {
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
             ));
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
             n.append("'@ FC xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AM\n");
 
             for (int i = 0; i < 4; i++) {
@@ -4908,14 +4925,14 @@ public class frmMain extends JFrame {
         if (n.length() != 0) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMDX(EnmChip chip, int ch, int chipID) {
+    private void getInstChForMDX(EnmChip chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n.append("'@xx = {\n/* AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\n");
 
@@ -4941,7 +4958,7 @@ public class frmMain extends JFrame {
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
             ));
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
             n.append("'@xx = {\n/* AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\n");
 
@@ -4971,13 +4988,13 @@ public class frmMain extends JFrame {
         if (n.length() != 0) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMML2VGM(EnmChip chip, int ch, int chipID) {
-        String n = getInstChForMML2VGMFormat(chip, ch, chipID);
+    private void getInstChForMML2VGM(EnmChip chip, int ch, int chipId) {
+        String n = getInstChForMML2VGMFormat(chip, ch, chipId);
         if (n != null && n.isEmpty()) Common.setClipboard(n);
     }
 
-    private void getInstChForSendMML2VGM(EnmChip chip, int ch, int chipID) {
-        String n = getInstChForMML2VGMFormat(chip, ch, chipID);
+    private void getInstChForSendMML2VGM(EnmChip chip, int ch, int chipId) {
+        String n = getInstChForMML2VGMFormat(chip, ch, chipId);
         if (n == null || !n.isEmpty()) return;
 
         MmfControl mmf = new MmfControl(true, "mml2vgmFMVoicePool", 1024 * 4);
@@ -4995,14 +5012,14 @@ public class frmMain extends JFrame {
     private static final int[] slot1Tbl = new int[] {0, 1, 2, 6, 7, 8, 12, 13, 14};
     private static final int[] slot2Tbl = new int[] {3, 4, 5, 9, 10, 11, 15, 16, 17};
 
-    private String getInstChForMML2VGMFormat(EnmChip chip, int ch, int chipID) {
+    private String getInstChForMML2VGMFormat(EnmChip chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n.append("'@ N xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT  AM  SSG-EG\n");
 
@@ -5028,7 +5045,7 @@ public class frmMain extends JFrame {
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
             ));
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
             n.append("'@ M xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\n");
 
             for (int i = 0; i < 4; i++) {
@@ -5053,7 +5070,7 @@ public class frmMain extends JFrame {
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
             ));
         } else if (chip == EnmChip.HuC6280) {
-            OotakeHuC6280 huc6280Register = audio.audio.getHuC6280Register(chipID);
+            OotakeHuC6280 huc6280Register = audio.audio.getHuC6280Register(chipId);
             if (huc6280Register == null) return null;
             OotakeHuC6280.Psg psg = huc6280Register.getPsg(ch);
             if (psg == null) return null;
@@ -5076,7 +5093,7 @@ public class frmMain extends JFrame {
             }
         } else if (chip == EnmChip.YM2413) {
             //Ym2413
-            int[] regs = audio.audio.getYM2413Register(chipID);
+            int[] regs = audio.audio.getYM2413Register(chipId);
         } else if (chip == EnmChip.YM3812) {
             //OPL2
             //'@ L No "Name"
@@ -5084,7 +5101,7 @@ public class frmMain extends JFrame {
             //'@ AR DR SL RR KSL TL MT AM VIB EGT KSR WS
             //'@ CNT FB
 
-            int[] regs = audio.audio.getYM3812Register(chipID);
+            int[] regs = audio.audio.getYM3812Register(chipId);
             int slot;
             if (ch < 0 || ch > 8) return null;
 
@@ -5118,14 +5135,14 @@ public class frmMain extends JFrame {
         return n.toString();
     }
 
-    private void getInstChForMUSICLALF(EnmChip chip, int ch, int chipID) {
+    private void getInstChForMUSICLALF(EnmChip chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n.append(String.format("  @xx:{{\n  %3d %3d\n"
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
@@ -5148,7 +5165,7 @@ public class frmMain extends JFrame {
             }
             n.append("  }\n");
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
             n.append(String.format("  @xx:{{\n  %3d %3d\n"
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
@@ -5175,14 +5192,14 @@ public class frmMain extends JFrame {
         if (n.length() == 0) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMucom88(EnmChip chip, int ch, int chipID) {
+    private void getInstChForMucom88(EnmChip chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n.append(String.format("  @xx:{{\n  %3d, %3d\n"
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
@@ -5205,7 +5222,7 @@ public class frmMain extends JFrame {
             }
             n.append(",\"MDP\"  }\n");
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
             n.append(String.format("  @xx:{{\n  %3d, %3d\n"
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
@@ -5232,14 +5249,14 @@ public class frmMain extends JFrame {
         if (n.length() == 0) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMUSICLALF2(EnmChip chip, int ch, int chipID) {
+    private void getInstChForMUSICLALF2(EnmChip chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n.append("@%xxx\n");
 
@@ -5255,7 +5272,7 @@ public class frmMain extends JFrame {
                     , fmRegister[p][0xb0 + c] //FB/AL
             ));
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
             n.append("@%xxx\n");
 
@@ -5304,14 +5321,14 @@ public class frmMain extends JFrame {
         if (n.length() == 0) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForNRTDRV(EnmChip chip, int ch, int chipID) {
+    private void getInstChForNRTDRV(EnmChip chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n.append("@ xxxx {\n");
             n.append(String.format("000,%3d,%3d,015\n"
@@ -5337,7 +5354,7 @@ public class frmMain extends JFrame {
             }
             n.append("}\n");
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
             n.append("@ xxxx {\n");
             n.append(String.format("000,%3d,%3d,015\n"
@@ -5367,12 +5384,12 @@ public class frmMain extends JFrame {
         if (n.length() == 0) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForHuSIC(EnmChip chip, int ch, int chipID) {
+    private void getInstChForHuSIC(EnmChip chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
         if (chip == EnmChip.HuC6280) {
-            OotakeHuC6280 huc6280Register = audio.audio.getHuC6280Register(chipID);
+            OotakeHuC6280 huc6280Register = audio.audio.getHuC6280Register(chipId);
             if (huc6280Register == null) return;
             OotakeHuC6280.Psg psg = huc6280Register.getPsg(ch);
             if (psg == null) return;
@@ -5400,22 +5417,22 @@ public class frmMain extends JFrame {
         if (n.length() == 0) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMGSC(EnmChip chip, int ch, int chipID) {
+    private void getInstChForMGSC(EnmChip chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
         int[] register = null;
 
         if (chip == EnmChip.YM2413) {
-            register = audio.audio.getYM2413Register(chipID);
+            register = audio.audio.getYM2413Register(chipId);
         } else if (chip == EnmChip.VRC7) {
-            byte[] r = audio.audio.getVRC7Register(chipID);
+            byte[] r = audio.audio.getVRC7Register(chipId);
             if (r == null) return;
             register = new int[r.length];
             for (int i = 0; i < r.length; i++) {
                 register[i] = r[i];
             }
         } else if (chip == EnmChip.K051649) {
-            getInstChForMGSCSCC(ch, chipID);
+            getInstChForMGSCSCC(ch, chipId);
             return;
         }
 
@@ -5459,8 +5476,8 @@ public class frmMain extends JFrame {
         Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMGSCSCC(int ch, int chipID) {
-        K051649 chip = audio.audio.getK051649Register(chipID);
+    private void getInstChForMGSCSCC(int ch, int chipId) {
+        K051649 chip = audio.audio.getK051649Register(chipId);
         if (chip == null) return;
         int[] register = new int[32];
         for (int i = 0; i < 32; i++) register[i] = chip.getWaveRam(ch, i);
@@ -5477,8 +5494,8 @@ public class frmMain extends JFrame {
         Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMGSCSCCPLAIN(int ch, int chipID) {
-        K051649 chip = audio.audio.getK051649Register(chipID);
+    private void getInstChForMGSCSCCPLAIN(int ch, int chipId) {
+        K051649 chip = audio.audio.getK051649Register(chipId);
         if (chip == null) return;
         int[] register = new int[32];
         for (int i = 0; i < 32; i++) register[i] = chip.getWaveRam(ch, i);
@@ -5495,7 +5512,7 @@ public class frmMain extends JFrame {
         Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMCK(EnmChip chip, int ch, int chipID) {
+    private void getInstChForMCK(EnmChip chip, int ch, int chipId) {
         if (chip == EnmChip.N163) {
             NesN106.TrackInfo[] info = (NesN106.TrackInfo[]) audio.audio.getN106Register(0);
             if (info == null) return;
@@ -5511,14 +5528,14 @@ public class frmMain extends JFrame {
         }
     }
 
-    private void getInstChForTFI(EnmChip chip, int ch, int chipID) {
+    private void getInstChForTFI(EnmChip chip, int ch, int chipId) {
 
         byte[] n = new byte[42];
 
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n[0] = (byte) (fmRegister[p][0xb0 + c] & 0x07); // AL
             n[1] = (byte) ((fmRegister[p][0xb0 + c] & 0x38) >> 3); // FB
@@ -5544,7 +5561,7 @@ public class frmMain extends JFrame {
             }
 
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
             n[0] = (byte) (ym2151Register[0x20 + ch] & 0x07); // AL
             n[1] = (byte) ((ym2151Register[0x20 + ch] & 0x38) >> 3); // FB
@@ -5600,7 +5617,7 @@ public class frmMain extends JFrame {
         }
     }
 
-    private void getInstChForDMP(EnmChip chip, int ch, int chipID) {
+    private void getInstChForDMP(EnmChip chip, int ch, int chipId) {
 
         byte[] n = new byte[51];
         n[0] = 0x0b; // FILE_VERSION
@@ -5609,7 +5626,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n[1] = 0x02; // SYSTEM_GENESIS
 
@@ -5640,7 +5657,7 @@ public class frmMain extends JFrame {
             }
 
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
             n[1] = 0x08; // SYSTEM_YM2151
 
@@ -5718,10 +5735,10 @@ public class frmMain extends JFrame {
     //  License:
     //      MIT License
     //
-    private void getInstChForRYM2612(EnmChip chip, int ch, int chipID) {
+    private void getInstChForRYM2612(EnmChip chip, int ch, int chipId) {
 
         List<String>[] op = new List[] {new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()};
-        final int[] muls = new int[] {0, 1054, 1581, 2635, 3689, 4743, 5797, 6851, 7905, 8959, 10013, 10540, 11594, 12648, 14229, 15000};
+        int[] muls = new int[] {0, 1054, 1581, 2635, 3689, 4743, 5797, 6851, 7905, 8959, 10013, 10540, 11594, 12648, 14229, 15000};
         StringBuilder buf = new StringBuilder("<?xml version = \"1.0\" encoding = \"UTF-8\"?>\n");
         buf.append("\n");
         int alg = 0, fb = 0, ams = 0, pms = 0;
@@ -5742,12 +5759,12 @@ public class frmMain extends JFrame {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == EnmChip.YM2612)
-                    ? audio.audio.getFMRegister(chipID)
+                    ? audio.audio.getFMRegister(chipId)
                     : (chip == EnmChip.YM2608
-                    ? audio.audio.getYM2608Register(chipID)
+                    ? audio.audio.getYM2608Register(chipId)
                     : (chip == EnmChip.YM2203
-                    ? new int[][] {audio.audio.getYm2203Register(chipID), null}
-                    : audio.audio.getYM2610Register(chipID)
+                    ? new int[][] {audio.audio.getYm2203Register(chipId), null}
+                    : audio.audio.getYM2610Register(chipId)
             ));
 
             alg = (fmRegister[p][0xb0 + c] & 0x07) >> 0;
@@ -5780,7 +5797,7 @@ public class frmMain extends JFrame {
             }
 
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
             alg = (ym2151Register[0x20 + ch] & 0x07) >> 0;
             fb = (ym2151Register[0x20 + ch] & 0x38) >> 3;
@@ -5871,7 +5888,7 @@ public class frmMain extends JFrame {
         }
     }
 
-    private void getInstChForOPNI(EnmChip chip, int ch, int chipID) {
+    private void getInstChForOPNI(EnmChip chip, int ch, int chipId) {
 
         byte[] n = new byte[77];
         Arrays.fill(n, 0, n.length, (byte) 0);
@@ -5888,7 +5905,7 @@ public class frmMain extends JFrame {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n[12 + 32 + 3] = (byte) (fmRegister[p][0xb0 + c] & 0x3f); // FB & ALG
             n[12 + 32 + 4] = 0x10; // 0x00:OPN2  0x10:OPNA
@@ -5906,7 +5923,7 @@ public class frmMain extends JFrame {
             }
 
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
             n[12 + 32 + 3] = (byte) ym2151Register[0x20 + ch]; // FB & ALG
             n[12 + 32 + 4] = 0x10; // 0x00:OPN2  0x10:OPNA
@@ -5957,14 +5974,14 @@ public class frmMain extends JFrame {
         }
     }
 
-    private void getInstChForOPLI(EnmChip chip, int ch, int chipID) {
+    private void getInstChForOPLI(EnmChip chip, int ch, int chipId) {
         if (chip != EnmChip.YM3812 && chip != EnmChip.YMF262 && chip != EnmChip.YMF278B) return;
 
         int[][] reg;
-        if (chip == EnmChip.YMF262) reg = audio.audio.getYMF262Register(chipID);
-        else if (chip == EnmChip.YMF278B) reg = audio.audio.getYMF278BRegister(chipID);
+        if (chip == EnmChip.YMF262) reg = audio.audio.getYMF262Register(chipId);
+        else if (chip == EnmChip.YMF278B) reg = audio.audio.getYMF278BRegister(chipId);
         else {
-            int[] r = audio.audio.getYM3812Register(chipID);
+            int[] r = audio.audio.getYM3812Register(chipId);
             reg = new int[1][];
             reg[0] = r;
         }
@@ -6029,7 +6046,7 @@ public class frmMain extends JFrame {
 
         int p = c / 9;
         //int adr = c % 9;
-        final int[] chTbl = new int[] {0, 3, 1, 4, 2, 5, 6, 7, 8};
+        int[] chTbl = new int[] {0, 3, 1, 4, 2, 5, 6, 7, 8};
         //adr = chTbl[adr];
 
         for (int i = 0; i < 4; i++) {
@@ -6099,14 +6116,14 @@ public class frmMain extends JFrame {
         }
     }
 
-    private void getInstChForVOPM(EnmChip chip, int ch, int chipID) {
+    private void getInstChForVOPM(EnmChip chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n.append("@: n MDPlayer\n");
             n.append("LFO:  0   0   0   0   0\n");
@@ -6134,7 +6151,7 @@ public class frmMain extends JFrame {
                 ));
             }
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
             n.append("@: n MDPlayer\n");
             n.append("LFO:  0   0   0   0   0\n");
@@ -6167,14 +6184,14 @@ public class frmMain extends JFrame {
         if (n.length() == 0) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForPMD(EnmChip chip, int ch, int chipID) {
+    private void getInstChForPMD(EnmChip chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipID) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipID) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipID), null} : audio.audio.getYM2610Register(chipID)));
+            int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n.append("; nm alg fbl\n");
             n.append(String.format("@xxx %3d %3d                            =      MDPlayer\n"
@@ -6200,7 +6217,7 @@ public class frmMain extends JFrame {
                 ));
             }
         } else if (chip == EnmChip.YM2151) {
-            int[] ym2151Register = audio.audio.getYM2151Register(chipID);
+            int[] ym2151Register = audio.audio.getYM2151Register(chipId);
             n.append("; nm alg fbl\n");
             n.append(String.format("@xxx %3d %3d                            =      MDPlayer\n"
                     , ym2151Register[0x20 + ch] & 0x07 // AL
@@ -6236,8 +6253,8 @@ public class frmMain extends JFrame {
             if (setting.getOther().getInitAlways()) flgReinit = true;
             reinit(setting);
 
-            if (audio.getIsPaused()) {
-                audio.pause();
+            if (audio.audio.isPaused()) {
+                audio.audio.pause();
             }
 
             String playingFileName = fn;
@@ -6285,8 +6302,8 @@ public class frmMain extends JFrame {
             if (setting.getOther().getInitAlways()) flgReinit = true;
             reinit(setting);
 
-            if (audio.getIsPaused()) {
-                audio.pause();
+            if (audio.audio.isPaused()) {
+                audio.audio.pause();
             }
 
             String playingFileName = fullPath;
@@ -6319,98 +6336,98 @@ public class frmMain extends JFrame {
         return true;
     }
 
-    public void setChannelMask(EnmChip chip, int chipID, int ch) {
+    public void setChannelMask(EnmChip chip, int chipId, int ch) {
         switch (chip) {
         case YM2203:
             if (ch >= 0 && ch < 9) {
-                audio.audio.setYM2203Mask(chipID, ch);
-                newParam.ym2203[chipID].channels[ch].mask = true;
+                audio.audio.setYM2203Mask(chipId, ch);
+                newParam.ym2203[chipId].channels[ch].mask = true;
 
                 // FM(2ch) FMex
                 if ((ch == 2) || (ch >= 6 && ch < 9)) {
-                    newParam.ym2203[chipID].channels[2].mask = true;
-                    newParam.ym2203[chipID].channels[6].mask = true;
-                    newParam.ym2203[chipID].channels[7].mask = true;
-                    newParam.ym2203[chipID].channels[8].mask = true;
+                    newParam.ym2203[chipId].channels[2].mask = true;
+                    newParam.ym2203[chipId].channels[6].mask = true;
+                    newParam.ym2203[chipId].channels[7].mask = true;
+                    newParam.ym2203[chipId].channels[8].mask = true;
                 }
             }
             break;
         case YM2413:
             if (ch >= 0 && ch < 14) {
-                if (!newParam.ym2413[chipID].channels[ch].mask || newParam.ym2413[chipID].channels[ch].mask == null)
-                    audio.audio.setYM2413Mask(chipID, ch);
+                if (!newParam.ym2413[chipId].channels[ch].mask || newParam.ym2413[chipId].channels[ch].mask == null)
+                    audio.audio.setYM2413Mask(chipId, ch);
                 else
-                    audio.audio.resetYM2413Mask(chipID, ch);
+                    audio.audio.resetYM2413Mask(chipId, ch);
 
-                newParam.ym2413[chipID].channels[ch].mask = !newParam.ym2413[chipID].channels[ch].mask;
+                newParam.ym2413[chipId].channels[ch].mask = !newParam.ym2413[chipId].channels[ch].mask;
             }
             break;
         case YM3526:
             if (ch >= 0 && ch < 14) {
-                if (!newParam.ym3526[chipID].channels[ch].mask || newParam.ym3526[chipID].channels[ch].mask == null)
-                    audio.audio.setYM3526Mask(chipID, ch);
+                if (!newParam.ym3526[chipId].channels[ch].mask || newParam.ym3526[chipId].channels[ch].mask == null)
+                    audio.audio.setYM3526Mask(chipId, ch);
                 else
-                    audio.audio.resetYM3526Mask(chipID, ch);
+                    audio.audio.resetYM3526Mask(chipId, ch);
 
-                newParam.ym3526[chipID].channels[ch].mask = !newParam.ym3526[chipID].channels[ch].mask;
+                newParam.ym3526[chipId].channels[ch].mask = !newParam.ym3526[chipId].channels[ch].mask;
 
             }
             break;
         case Y8950:
             if (ch >= 0 && ch < 15) {
-                if (!newParam.y8950[chipID].channels[ch].mask || newParam.y8950[chipID].channels[ch].mask == null)
-                    audio.audio.setY8950Mask(chipID, ch);
+                if (!newParam.y8950[chipId].channels[ch].mask || newParam.y8950[chipId].channels[ch].mask == null)
+                    audio.audio.setY8950Mask(chipId, ch);
                 else
-                    audio.audio.resetY8950Mask(chipID, ch);
+                    audio.audio.resetY8950Mask(chipId, ch);
 
-                newParam.y8950[chipID].channels[ch].mask = !newParam.y8950[chipID].channels[ch].mask;
+                newParam.y8950[chipId].channels[ch].mask = !newParam.y8950[chipId].channels[ch].mask;
 
             }
             break;
         case YM3812:
             if (ch >= 0 && ch < 14) {
-                if (!newParam.ym3812[chipID].channels[ch].mask || newParam.ym3812[chipID].channels[ch].mask == null)
-                    audio.audio.setYM3812Mask(chipID, ch);
+                if (!newParam.ym3812[chipId].channels[ch].mask || newParam.ym3812[chipId].channels[ch].mask == null)
+                    audio.audio.setYM3812Mask(chipId, ch);
                 else
-                    audio.audio.resetYM3812Mask(chipID, ch);
+                    audio.audio.resetYM3812Mask(chipId, ch);
 
-                newParam.ym3812[chipID].channels[ch].mask = !newParam.ym3812[chipID].channels[ch].mask;
+                newParam.ym3812[chipId].channels[ch].mask = !newParam.ym3812[chipId].channels[ch].mask;
 
             }
             break;
         case YMF262:
             if (ch >= 0 && ch < 23) {
-                if (!newParam.ymf262[chipID].channels[ch].mask || newParam.ymf262[chipID].channels[ch].mask == null)
-                    audio.audio.setYMF262Mask(chipID, ch);
+                if (!newParam.ymf262[chipId].channels[ch].mask || newParam.ymf262[chipId].channels[ch].mask == null)
+                    audio.audio.setYMF262Mask(chipId, ch);
                 else
-                    audio.audio.resetYMF262Mask(chipID, ch);
+                    audio.audio.resetYMF262Mask(chipId, ch);
 
-                newParam.ymf262[chipID].channels[ch].mask = !newParam.ymf262[chipID].channels[ch].mask;
+                newParam.ymf262[chipId].channels[ch].mask = !newParam.ymf262[chipId].channels[ch].mask;
 
             }
             break;
         case YMF278B:
             if (ch >= 0 && ch < 47) {
-                if (!newParam.ymf278b[chipID].channels[ch].mask || newParam.ymf278b[chipID].channels[ch].mask == null)
-                    audio.audio.setYMF278BMask(chipID, ch);
+                if (!newParam.ymf278b[chipId].channels[ch].mask || newParam.ymf278b[chipId].channels[ch].mask == null)
+                    audio.audio.setYMF278BMask(chipId, ch);
                 else
-                    audio.audio.resetYMF278BMask(chipID, ch);
+                    audio.audio.resetYMF278BMask(chipId, ch);
 
-                newParam.ymf278b[chipID].channels[ch].mask = !newParam.ymf278b[chipID].channels[ch].mask;
+                newParam.ymf278b[chipId].channels[ch].mask = !newParam.ymf278b[chipId].channels[ch].mask;
 
             }
             break;
         case YM2608:
             if (ch >= 0 && ch < 14) {
-                audio.audio.setYM2608Mask(chipID, ch);
-                newParam.ym2608[chipID].channels[ch].mask = true;
+                audio.audio.setYM2608Mask(chipId, ch);
+                newParam.ym2608[chipId].channels[ch].mask = true;
 
                 //FM(2ch) FMex
                 if ((ch == 2) || (ch >= 9 && ch < 12)) {
-                    newParam.ym2608[chipID].channels[2].mask = true;
-                    newParam.ym2608[chipID].channels[9].mask = true;
-                    newParam.ym2608[chipID].channels[10].mask = true;
-                    newParam.ym2608[chipID].channels[11].mask = true;
+                    newParam.ym2608[chipId].channels[2].mask = true;
+                    newParam.ym2608[chipId].channels[9].mask = true;
+                    newParam.ym2608[chipId].channels[10].mask = true;
+                    newParam.ym2608[chipId].channels[11].mask = true;
                 }
             }
             break;
@@ -6420,298 +6437,298 @@ public class frmMain extends JFrame {
                 if (ch == 12) c = 13;
                 if (ch == 13) c = 12;
 
-                audio.audio.setYM2610Mask(chipID, ch);
-                newParam.ym2610[chipID].channels[c].mask = true;
+                audio.audio.setYM2610Mask(chipId, ch);
+                newParam.ym2610[chipId].channels[c].mask = true;
 
                 //FM(2ch) FMex
                 if ((ch == 2) || (ch >= 9 && ch < 12)) {
-                    newParam.ym2610[chipID].channels[2].mask = true;
-                    newParam.ym2610[chipID].channels[9].mask = true;
-                    newParam.ym2610[chipID].channels[10].mask = true;
-                    newParam.ym2610[chipID].channels[11].mask = true;
+                    newParam.ym2610[chipId].channels[2].mask = true;
+                    newParam.ym2610[chipId].channels[9].mask = true;
+                    newParam.ym2610[chipId].channels[10].mask = true;
+                    newParam.ym2610[chipId].channels[11].mask = true;
                 }
             }
             break;
         case YM2612:
             if (ch >= 0 && ch < 9) {
-                audio.audio.setYM2612Mask(chipID, ch);
-                newParam.ym2612[chipID].channels[ch].mask = true;
+                audio.audio.setYM2612Mask(chipId, ch);
+                newParam.ym2612[chipId].channels[ch].mask = true;
 
                 //FM(2ch) FMex
                 if ((ch == 2) || (ch >= 6 && ch < 9)) {
-                    newParam.ym2612[chipID].channels[2].mask = true;
-                    newParam.ym2612[chipID].channels[6].mask = true;
-                    newParam.ym2612[chipID].channels[7].mask = true;
-                    newParam.ym2612[chipID].channels[8].mask = true;
+                    newParam.ym2612[chipId].channels[2].mask = true;
+                    newParam.ym2612[chipId].channels[6].mask = true;
+                    newParam.ym2612[chipId].channels[7].mask = true;
+                    newParam.ym2612[chipId].channels[8].mask = true;
                 }
             }
             break;
         case SN76489:
-            if (!newParam.sn76489[chipID].channels[ch].mask || newParam.sn76489[chipID].channels[ch].mask == null) {
-                audio.audio.setSN76489Mask(chipID, ch);
+            if (!newParam.sn76489[chipId].channels[ch].mask || newParam.sn76489[chipId].channels[ch].mask == null) {
+                audio.audio.setSN76489Mask(chipId, ch);
             } else {
-                audio.audio.resetSN76489Mask(chipID, ch);
+                audio.audio.resetSN76489Mask(chipId, ch);
             }
-            newParam.sn76489[chipID].channels[ch].mask = !newParam.sn76489[chipID].channels[ch].mask;
+            newParam.sn76489[chipId].channels[ch].mask = !newParam.sn76489[chipId].channels[ch].mask;
             break;
         case RF5C164:
-            if (!newParam.rf5c164[chipID].channels[ch].mask || newParam.rf5c164[chipID].channels[ch].mask == null) {
-                audio.audio.setRF5C164Mask(chipID, ch);
+            if (!newParam.rf5c164[chipId].channels[ch].mask || newParam.rf5c164[chipId].channels[ch].mask == null) {
+                audio.audio.setRF5C164Mask(chipId, ch);
             } else {
-                audio.audio.resetRF5C164Mask(chipID, ch);
+                audio.audio.resetRF5C164Mask(chipId, ch);
             }
-            newParam.rf5c164[chipID].channels[ch].mask = !newParam.rf5c164[chipID].channels[ch].mask;
+            newParam.rf5c164[chipId].channels[ch].mask = !newParam.rf5c164[chipId].channels[ch].mask;
             break;
         case RF5C68:
-            if (!newParam.rf5c68[chipID].channels[ch].mask || newParam.rf5c68[chipID].channels[ch].mask == null) {
-                audio.audio.setRF5C68Mask(chipID, ch);
+            if (!newParam.rf5c68[chipId].channels[ch].mask || newParam.rf5c68[chipId].channels[ch].mask == null) {
+                audio.audio.setRF5C68Mask(chipId, ch);
             } else {
-                audio.audio.resetRF5C68Mask(chipID, ch);
+                audio.audio.resetRF5C68Mask(chipId, ch);
             }
-            newParam.rf5c68[chipID].channels[ch].mask = !newParam.rf5c68[chipID].channels[ch].mask;
+            newParam.rf5c68[chipId].channels[ch].mask = !newParam.rf5c68[chipId].channels[ch].mask;
             break;
         case YM2151:
-            if (!newParam.ym2151[chipID].channels[ch].mask || newParam.ym2151[chipID].channels[ch].mask == null) {
-                audio.audio.setYM2151Mask(chipID, ch);
+            if (!newParam.ym2151[chipId].channels[ch].mask || newParam.ym2151[chipId].channels[ch].mask == null) {
+                audio.audio.setYM2151Mask(chipId, ch);
             } else {
-                audio.audio.resetYM2151Mask(chipID, ch);
+                audio.audio.resetYM2151Mask(chipId, ch);
             }
-            newParam.ym2151[chipID].channels[ch].mask = !newParam.ym2151[chipID].channels[ch].mask;
+            newParam.ym2151[chipId].channels[ch].mask = !newParam.ym2151[chipId].channels[ch].mask;
             break;
         case C140:
-            if (!newParam.c140[chipID].channels[ch].mask || newParam.c140[chipID].channels[ch].mask == null) {
-                audio.audio.setC140Mask(chipID, ch);
+            if (!newParam.c140[chipId].channels[ch].mask || newParam.c140[chipId].channels[ch].mask == null) {
+                audio.audio.setC140Mask(chipId, ch);
             } else {
-                audio.audio.resetC140Mask(chipID, ch);
+                audio.audio.resetC140Mask(chipId, ch);
             }
-            newParam.c140[chipID].channels[ch].mask = !newParam.c140[chipID].channels[ch].mask;
+            newParam.c140[chipId].channels[ch].mask = !newParam.c140[chipId].channels[ch].mask;
             break;
         case PPZ8:
-            if (!newParam.ppz8[chipID].channels[ch].mask || newParam.ppz8[chipID].channels[ch].mask == null) {
-                audio.audio.setPPZ8Mask(chipID, ch);
+            if (!newParam.ppz8[chipId].channels[ch].mask || newParam.ppz8[chipId].channels[ch].mask == null) {
+                audio.audio.setPPZ8Mask(chipId, ch);
             } else {
-                audio.audio.resetPPZ8Mask(chipID, ch);
+                audio.audio.resetPPZ8Mask(chipId, ch);
             }
-            newParam.ppz8[chipID].channels[ch].mask = !newParam.ppz8[chipID].channels[ch].mask;
+            newParam.ppz8[chipId].channels[ch].mask = !newParam.ppz8[chipId].channels[ch].mask;
             break;
         case C352:
-            if (!newParam.c352[chipID].channels[ch].mask || newParam.c352[chipID].channels[ch].mask == null) {
-                audio.audio.setC352Mask(chipID, ch);
+            if (!newParam.c352[chipId].channels[ch].mask || newParam.c352[chipId].channels[ch].mask == null) {
+                audio.audio.setC352Mask(chipId, ch);
             } else {
-                audio.audio.resetC352Mask(chipID, ch);
+                audio.audio.resetC352Mask(chipId, ch);
             }
-            newParam.c352[chipID].channels[ch].mask = !newParam.c352[chipID].channels[ch].mask;
+            newParam.c352[chipId].channels[ch].mask = !newParam.c352[chipId].channels[ch].mask;
             break;
         case SEGAPCM:
-            if (!newParam.segaPcm[chipID].channels[ch].mask || newParam.segaPcm[chipID].channels[ch].mask == null) {
-                audio.audio.setSegaPCMMask(chipID, ch);
+            if (!newParam.segaPcm[chipId].channels[ch].mask || newParam.segaPcm[chipId].channels[ch].mask == null) {
+                audio.audio.setSegaPCMMask(chipId, ch);
             } else {
-                audio.audio.resetSegaPCMMask(chipID, ch);
+                audio.audio.resetSegaPCMMask(chipId, ch);
             }
-            newParam.segaPcm[chipID].channels[ch].mask = !newParam.segaPcm[chipID].channels[ch].mask;
+            newParam.segaPcm[chipId].channels[ch].mask = !newParam.segaPcm[chipId].channels[ch].mask;
             break;
         case QSound:
-            if (!newParam.qSound[chipID].channels[ch].mask || newParam.qSound[chipID].channels[ch].mask == null) {
-                audio.audio.setQSoundMask(chipID, ch);
+            if (!newParam.qSound[chipId].channels[ch].mask || newParam.qSound[chipId].channels[ch].mask == null) {
+                audio.audio.setQSoundMask(chipId, ch);
             } else {
-                audio.audio.resetQSoundMask(chipID, ch);
+                audio.audio.resetQSoundMask(chipId, ch);
             }
-            newParam.qSound[chipID].channels[ch].mask = !newParam.qSound[chipID].channels[ch].mask;
+            newParam.qSound[chipId].channels[ch].mask = !newParam.qSound[chipId].channels[ch].mask;
             break;
         case AY8910:
-            if (!newParam.ay8910[chipID].channels[ch].mask || newParam.ay8910[chipID].channels[ch].mask == null) {
-                audio.audio.setAY8910Mask(chipID, ch);
+            if (!newParam.ay8910[chipId].channels[ch].mask || newParam.ay8910[chipId].channels[ch].mask == null) {
+                audio.audio.setAY8910Mask(chipId, ch);
             } else {
-                audio.audio.resetAY8910Mask(chipID, ch);
+                audio.audio.resetAY8910Mask(chipId, ch);
             }
-            newParam.ay8910[chipID].channels[ch].mask = !newParam.ay8910[chipID].channels[ch].mask;
+            newParam.ay8910[chipId].channels[ch].mask = !newParam.ay8910[chipId].channels[ch].mask;
             break;
         case HuC6280:
-            if (!newParam.huc6280[chipID].channels[ch].mask || newParam.huc6280[chipID].channels[ch].mask == null) {
-                audio.audio.setHuC6280Mask(chipID, ch);
+            if (!newParam.huc6280[chipId].channels[ch].mask || newParam.huc6280[chipId].channels[ch].mask == null) {
+                audio.audio.setHuC6280Mask(chipId, ch);
             } else {
-                audio.audio.resetHuC6280Mask(chipID, ch);
+                audio.audio.resetHuC6280Mask(chipId, ch);
             }
-            newParam.huc6280[chipID].channels[ch].mask = !newParam.huc6280[chipID].channels[ch].mask;
+            newParam.huc6280[chipId].channels[ch].mask = !newParam.huc6280[chipId].channels[ch].mask;
             break;
         case OKIM6258:
-            if (!newParam.okim6258[chipID].mask || newParam.okim6258[chipID].mask == null) {
-                audio.audio.setOKIM6258Mask(chipID);
+            if (!newParam.okim6258[chipId].mask || newParam.okim6258[chipId].mask == null) {
+                audio.audio.setOKIM6258Mask(chipId);
             } else {
-                audio.audio.resetOKIM6258Mask(chipID);
+                audio.audio.resetOKIM6258Mask(chipId);
             }
-            newParam.okim6258[chipID].mask = !newParam.okim6258[chipID].mask;
+            newParam.okim6258[chipId].mask = !newParam.okim6258[chipId].mask;
             break;
         case OKIM6295:
-            if (!newParam.okim6295[chipID].channels[ch].mask || newParam.okim6295[chipID].channels[ch].mask == null) {
-                audio.audio.setOKIM6295Mask(chipID, ch);
+            if (!newParam.okim6295[chipId].channels[ch].mask || newParam.okim6295[chipId].channels[ch].mask == null) {
+                audio.audio.setOKIM6295Mask(chipId, ch);
             } else {
-                audio.audio.resetOKIM6295Mask(chipID, ch);
+                audio.audio.resetOKIM6295Mask(chipId, ch);
             }
-            newParam.okim6295[chipID].channels[ch].mask = !newParam.okim6295[chipID].channels[ch].mask;
+            newParam.okim6295[chipId].channels[ch].mask = !newParam.okim6295[chipId].channels[ch].mask;
             break;
         case NES:
-            if (!newParam.nesdmc[chipID].sqrChannels[ch].mask || newParam.nesdmc[chipID].sqrChannels[ch].mask == null) {
-                audio.audio.setNESMask(chipID, ch);
+            if (!newParam.nesdmc[chipId].sqrChannels[ch].mask || newParam.nesdmc[chipId].sqrChannels[ch].mask == null) {
+                audio.audio.setNESMask(chipId, ch);
             } else {
-                audio.audio.resetNESMask(chipID, ch);
+                audio.audio.resetNESMask(chipId, ch);
             }
-            newParam.nesdmc[chipID].sqrChannels[ch].mask = !newParam.nesdmc[chipID].sqrChannels[ch].mask;
+            newParam.nesdmc[chipId].sqrChannels[ch].mask = !newParam.nesdmc[chipId].sqrChannels[ch].mask;
             break;
         case DMC:
             switch (ch) {
             case 0:
-                if (!newParam.nesdmc[chipID].triChannel.mask || newParam.nesdmc[chipID].triChannel.mask == null)
-                    audio.audio.setDMCMask(chipID, ch);
-                else audio.audio.resetDMCMask(chipID, ch);
-                newParam.nesdmc[chipID].triChannel.mask = !newParam.nesdmc[chipID].triChannel.mask;
+                if (!newParam.nesdmc[chipId].triChannel.mask || newParam.nesdmc[chipId].triChannel.mask == null)
+                    audio.audio.setDMCMask(chipId, ch);
+                else audio.audio.resetDMCMask(chipId, ch);
+                newParam.nesdmc[chipId].triChannel.mask = !newParam.nesdmc[chipId].triChannel.mask;
                 break;
             case 1:
-                if (!newParam.nesdmc[chipID].noiseChannel.mask || newParam.nesdmc[chipID].noiseChannel.mask == null)
-                    audio.audio.setDMCMask(chipID, ch);
-                else audio.audio.resetDMCMask(chipID, ch);
-                newParam.nesdmc[chipID].noiseChannel.mask = !newParam.nesdmc[chipID].noiseChannel.mask;
+                if (!newParam.nesdmc[chipId].noiseChannel.mask || newParam.nesdmc[chipId].noiseChannel.mask == null)
+                    audio.audio.setDMCMask(chipId, ch);
+                else audio.audio.resetDMCMask(chipId, ch);
+                newParam.nesdmc[chipId].noiseChannel.mask = !newParam.nesdmc[chipId].noiseChannel.mask;
                 break;
             case 2:
-                if (!newParam.nesdmc[chipID].dmcChannel.mask || newParam.nesdmc[chipID].dmcChannel.mask == null)
-                    audio.audio.setDMCMask(chipID, ch);
-                else audio.audio.resetDMCMask(chipID, ch);
-                newParam.nesdmc[chipID].dmcChannel.mask = !newParam.nesdmc[chipID].dmcChannel.mask;
+                if (!newParam.nesdmc[chipId].dmcChannel.mask || newParam.nesdmc[chipId].dmcChannel.mask == null)
+                    audio.audio.setDMCMask(chipId, ch);
+                else audio.audio.resetDMCMask(chipId, ch);
+                newParam.nesdmc[chipId].dmcChannel.mask = !newParam.nesdmc[chipId].dmcChannel.mask;
                 break;
             }
             break;
         case FDS:
-            if (!newParam.fds[chipID].channel.mask || newParam.fds[chipID].channel.mask == null)
-                audio.audio.setFDSMask(chipID);
-            else audio.audio.resetFDSMask(chipID);
-            newParam.fds[chipID].channel.mask = !newParam.fds[chipID].channel.mask;
+            if (!newParam.fds[chipId].channel.mask || newParam.fds[chipId].channel.mask == null)
+                audio.audio.setFDSMask(chipId);
+            else audio.audio.resetFDSMask(chipId);
+            newParam.fds[chipId].channel.mask = !newParam.fds[chipId].channel.mask;
             break;
         case MMC5:
             switch (ch) {
             case 0:
-                if (!newParam.mmc5[chipID].sqrChannels[0].mask || newParam.mmc5[chipID].sqrChannels[ch].mask == null)
-                    audio.audio.setMMC5Mask(chipID, ch);
-                else audio.audio.resetMMC5Mask(chipID, ch);
-                newParam.mmc5[chipID].sqrChannels[0].mask = !newParam.mmc5[chipID].sqrChannels[0].mask;
+                if (!newParam.mmc5[chipId].sqrChannels[0].mask || newParam.mmc5[chipId].sqrChannels[ch].mask == null)
+                    audio.audio.setMMC5Mask(chipId, ch);
+                else audio.audio.resetMMC5Mask(chipId, ch);
+                newParam.mmc5[chipId].sqrChannels[0].mask = !newParam.mmc5[chipId].sqrChannels[0].mask;
                 break;
             case 1:
-                if (!newParam.mmc5[chipID].sqrChannels[1].mask || newParam.mmc5[chipID].sqrChannels[ch].mask == null)
-                    audio.audio.setMMC5Mask(chipID, ch);
-                else audio.audio.resetMMC5Mask(chipID, ch);
-                newParam.mmc5[chipID].sqrChannels[1].mask = !newParam.mmc5[chipID].sqrChannels[1].mask;
+                if (!newParam.mmc5[chipId].sqrChannels[1].mask || newParam.mmc5[chipId].sqrChannels[ch].mask == null)
+                    audio.audio.setMMC5Mask(chipId, ch);
+                else audio.audio.resetMMC5Mask(chipId, ch);
+                newParam.mmc5[chipId].sqrChannels[1].mask = !newParam.mmc5[chipId].sqrChannels[1].mask;
                 break;
             case 2:
-                if (!newParam.mmc5[chipID].pcmChannel.mask || newParam.mmc5[chipID].pcmChannel.mask == null)
-                    audio.audio.setMMC5Mask(chipID, ch);
-                else audio.audio.resetMMC5Mask(chipID, ch);
-                newParam.mmc5[chipID].pcmChannel.mask = !newParam.mmc5[chipID].pcmChannel.mask;
+                if (!newParam.mmc5[chipId].pcmChannel.mask || newParam.mmc5[chipId].pcmChannel.mask == null)
+                    audio.audio.setMMC5Mask(chipId, ch);
+                else audio.audio.resetMMC5Mask(chipId, ch);
+                newParam.mmc5[chipId].pcmChannel.mask = !newParam.mmc5[chipId].pcmChannel.mask;
                 break;
             }
             break;
         case VRC7:
             if (ch >= 0 && ch < 6) {
-                if (!newParam.vrc7[chipID].channels[ch].mask || newParam.vrc7[chipID].channels[ch].mask == null)
-                    audio.audio.setVRC7Mask(chipID, ch);
+                if (!newParam.vrc7[chipId].channels[ch].mask || newParam.vrc7[chipId].channels[ch].mask == null)
+                    audio.audio.setVRC7Mask(chipId, ch);
                 else
-                    audio.audio.resetVRC7Mask(chipID, ch);
+                    audio.audio.resetVRC7Mask(chipId, ch);
 
-                newParam.vrc7[chipID].channels[ch].mask = !newParam.vrc7[chipID].channels[ch].mask;
+                newParam.vrc7[chipId].channels[ch].mask = !newParam.vrc7[chipId].channels[ch].mask;
             }
             break;
         case K051649:
             if (ch >= 0 && ch < 5) {
-                if (!newParam.k051649[chipID].channels[ch].mask || newParam.k051649[chipID].channels[ch].mask == null)
-                    audio.audio.setK051649Mask(chipID, ch);
+                if (!newParam.k051649[chipId].channels[ch].mask || newParam.k051649[chipId].channels[ch].mask == null)
+                    audio.audio.setK051649Mask(chipId, ch);
                 else
-                    audio.audio.resetK051649Mask(chipID, ch);
+                    audio.audio.resetK051649Mask(chipId, ch);
 
-                newParam.k051649[chipID].channels[ch].mask = !newParam.k051649[chipID].channels[ch].mask;
+                newParam.k051649[chipId].channels[ch].mask = !newParam.k051649[chipId].channels[ch].mask;
             }
             break;
         case DMG:
             if (ch >= 0 && ch < 4) {
-                if (!newParam.dmg[chipID].channels[ch].mask || newParam.dmg[chipID].channels[ch].mask == null)
-                    audio.audio.setDMGMask(chipID, ch);
+                if (!newParam.dmg[chipId].channels[ch].mask || newParam.dmg[chipId].channels[ch].mask == null)
+                    audio.audio.setDMGMask(chipId, ch);
                 else
-                    audio.audio.resetDMGMask(chipID, ch);
+                    audio.audio.resetDMGMask(chipId, ch);
 
-                newParam.dmg[chipID].channels[ch].mask = !newParam.dmg[chipID].channels[ch].mask;
+                newParam.dmg[chipId].channels[ch].mask = !newParam.dmg[chipId].channels[ch].mask;
             }
             break;
         case VRC6:
             if (ch >= 0 && ch < 3) {
-                if (!newParam.vrc6[chipID].channels[ch].mask || newParam.vrc6[chipID].channels[ch].mask == null)
-                    audio.audio.setVRC6Mask(chipID, ch);
+                if (!newParam.vrc6[chipId].channels[ch].mask || newParam.vrc6[chipId].channels[ch].mask == null)
+                    audio.audio.setVRC6Mask(chipId, ch);
                 else
-                    audio.audio.resetVRC6Mask(chipID, ch);
+                    audio.audio.resetVRC6Mask(chipId, ch);
 
-                newParam.vrc6[chipID].channels[ch].mask = !newParam.vrc6[chipID].channels[ch].mask;
+                newParam.vrc6[chipId].channels[ch].mask = !newParam.vrc6[chipId].channels[ch].mask;
             }
             break;
         case N163:
             if (ch >= 0 && ch < 8) {
-                if (!newParam.n106[chipID].channels[ch].mask || newParam.n106[chipID].channels[ch].mask == null)
-                    audio.audio.setN163Mask(chipID, ch);
+                if (!newParam.n106[chipId].channels[ch].mask || newParam.n106[chipId].channels[ch].mask == null)
+                    audio.audio.setN163Mask(chipId, ch);
                 else
-                    audio.audio.resetN163Mask(chipID, ch);
+                    audio.audio.resetN163Mask(chipId, ch);
 
-                newParam.n106[chipID].channels[ch].mask = !newParam.n106[chipID].channels[ch].mask;
+                newParam.n106[chipId].channels[ch].mask = !newParam.n106[chipId].channels[ch].mask;
             }
             break;
         }
     }
 
-    public void resetChannelMask(EnmChip chip, int chipID, int ch) {
+    public void resetChannelMask(EnmChip chip, int chipId, int ch) {
         switch (chip) {
         case SN76489:
-            newParam.sn76489[chipID].channels[ch].mask = false;
-            audio.audio.resetSN76489Mask(chipID, ch);
+            newParam.sn76489[chipId].channels[ch].mask = false;
+            audio.audio.resetSN76489Mask(chipId, ch);
             break;
         case RF5C164:
-            newParam.rf5c164[chipID].channels[ch].mask = false;
-            audio.audio.resetRF5C164Mask(chipID, ch);
+            newParam.rf5c164[chipId].channels[ch].mask = false;
+            audio.audio.resetRF5C164Mask(chipId, ch);
             break;
         case RF5C68:
-            newParam.rf5c68[chipID].channels[ch].mask = false;
-            audio.audio.resetRF5C68Mask(chipID, ch);
+            newParam.rf5c68[chipId].channels[ch].mask = false;
+            audio.audio.resetRF5C68Mask(chipId, ch);
             break;
         case YM2151:
-            newParam.ym2151[chipID].channels[ch].mask = false;
-            audio.audio.resetYM2151Mask(chipID, ch);
+            newParam.ym2151[chipId].channels[ch].mask = false;
+            audio.audio.resetYM2151Mask(chipId, ch);
             break;
         case YM2203:
             if (ch >= 0 && ch < 9) {
-                audio.audio.resetYM2203Mask(chipID, ch);
-                newParam.ym2203[chipID].channels[ch].mask = false;
+                audio.audio.resetYM2203Mask(chipId, ch);
+                newParam.ym2203[chipId].channels[ch].mask = false;
 
                 // FM(2ch) FMex
                 if ((ch == 2) || (ch >= 6 && ch < 9)) {
-                    newParam.ym2203[chipID].channels[2].mask = false;
-                    newParam.ym2203[chipID].channels[6].mask = false;
-                    newParam.ym2203[chipID].channels[7].mask = false;
-                    newParam.ym2203[chipID].channels[8].mask = false;
+                    newParam.ym2203[chipId].channels[2].mask = false;
+                    newParam.ym2203[chipId].channels[6].mask = false;
+                    newParam.ym2203[chipId].channels[7].mask = false;
+                    newParam.ym2203[chipId].channels[8].mask = false;
                 }
             }
             break;
         case YM2413:
-            newParam.ym2413[chipID].channels[ch].mask = false;
-            audio.audio.resetYM2413Mask(chipID, ch);
+            newParam.ym2413[chipId].channels[ch].mask = false;
+            audio.audio.resetYM2413Mask(chipId, ch);
             break;
         case VRC7:
-            newParam.vrc7[chipID].channels[ch].mask = false;
-            audio.audio.resetVRC7Mask(chipID, ch);
+            newParam.vrc7[chipId].channels[ch].mask = false;
+            audio.audio.resetVRC7Mask(chipId, ch);
             break;
         case YM2608:
             if (ch >= 0 && ch < 14) {
-                audio.audio.resetYM2608Mask(chipID, ch);
-                newParam.ym2608[chipID].channels[ch].mask = false;
+                audio.audio.resetYM2608Mask(chipId, ch);
+                newParam.ym2608[chipId].channels[ch].mask = false;
 
                 // FM(2ch) FMex
                 if ((ch == 2) || (ch >= 9 && ch < 12)) {
-                    newParam.ym2608[chipID].channels[2].mask = false;
-                    newParam.ym2608[chipID].channels[9].mask = false;
-                    newParam.ym2608[chipID].channels[10].mask = false;
-                    newParam.ym2608[chipID].channels[11].mask = false;
+                    newParam.ym2608[chipId].channels[2].mask = false;
+                    newParam.ym2608[chipId].channels[9].mask = false;
+                    newParam.ym2608[chipId].channels[10].mask = false;
+                    newParam.ym2608[chipId].channels[11].mask = false;
                 }
             }
             break;
@@ -6721,290 +6738,290 @@ public class frmMain extends JFrame {
                 if (ch == 12) c = 13;
                 if (ch == 13) c = 12;
 
-                audio.audio.resetYM2610Mask(chipID, ch);
-                newParam.ym2610[chipID].channels[c].mask = false;
+                audio.audio.resetYM2610Mask(chipId, ch);
+                newParam.ym2610[chipId].channels[c].mask = false;
 
                 //FM(2ch) FMex
                 if ((ch == 2) || (ch >= 9 && ch < 12)) {
-                    newParam.ym2610[chipID].channels[2].mask = false;
-                    newParam.ym2610[chipID].channels[9].mask = false;
-                    newParam.ym2610[chipID].channels[10].mask = false;
-                    newParam.ym2610[chipID].channels[11].mask = false;
+                    newParam.ym2610[chipId].channels[2].mask = false;
+                    newParam.ym2610[chipId].channels[9].mask = false;
+                    newParam.ym2610[chipId].channels[10].mask = false;
+                    newParam.ym2610[chipId].channels[11].mask = false;
                 }
             }
             break;
         case YM2612:
             if (ch >= 0 && ch < 9) {
-                audio.audio.resetYM2612Mask(chipID, ch);
-                newParam.ym2612[chipID].channels[ch].mask = false;
+                audio.audio.resetYM2612Mask(chipId, ch);
+                newParam.ym2612[chipId].channels[ch].mask = false;
 
                 //FM(2ch) FMex
                 if ((ch == 2) || (ch >= 6 && ch < 9)) {
-                    newParam.ym2612[chipID].channels[2].mask = false;
-                    newParam.ym2612[chipID].channels[6].mask = false;
-                    newParam.ym2612[chipID].channels[7].mask = false;
-                    newParam.ym2612[chipID].channels[8].mask = false;
+                    newParam.ym2612[chipId].channels[2].mask = false;
+                    newParam.ym2612[chipId].channels[6].mask = false;
+                    newParam.ym2612[chipId].channels[7].mask = false;
+                    newParam.ym2612[chipId].channels[8].mask = false;
                 }
             }
             break;
         case YM3526:
-            newParam.ym3526[chipID].channels[ch].mask = false;
-            audio.audio.resetYM3526Mask(chipID, ch);
+            newParam.ym3526[chipId].channels[ch].mask = false;
+            audio.audio.resetYM3526Mask(chipId, ch);
             break;
         case Y8950:
-            newParam.y8950[chipID].channels[ch].mask = false;
-            audio.audio.resetY8950Mask(chipID, ch);
+            newParam.y8950[chipId].channels[ch].mask = false;
+            audio.audio.resetY8950Mask(chipId, ch);
             break;
         case YM3812:
-            newParam.ym3812[chipID].channels[ch].mask = false;
-            audio.audio.resetYM3812Mask(chipID, ch);
+            newParam.ym3812[chipId].channels[ch].mask = false;
+            audio.audio.resetYM3812Mask(chipId, ch);
             break;
         case YMF262:
-            newParam.ymf262[chipID].channels[ch].mask = false;
-            audio.audio.resetYMF262Mask(chipID, ch);
+            newParam.ymf262[chipId].channels[ch].mask = false;
+            audio.audio.resetYMF262Mask(chipId, ch);
             break;
         case YMF278B:
-            newParam.ymf278b[chipID].channels[ch].mask = false;
-            audio.audio.resetYMF278BMask(chipID, ch);
+            newParam.ymf278b[chipId].channels[ch].mask = false;
+            audio.audio.resetYMF278BMask(chipId, ch);
             break;
         case C140:
-            newParam.c140[chipID].channels[ch].mask = false;
-            if (ch < 24) audio.audio.resetC140Mask(chipID, ch);
+            newParam.c140[chipId].channels[ch].mask = false;
+            if (ch < 24) audio.audio.resetC140Mask(chipId, ch);
             break;
         case PPZ8:
-            newParam.ppz8[chipID].channels[ch].mask = false;
-            if (ch < 8) audio.audio.resetPPZ8Mask(chipID, ch);
+            newParam.ppz8[chipId].channels[ch].mask = false;
+            if (ch < 8) audio.audio.resetPPZ8Mask(chipId, ch);
             break;
         case C352:
-            newParam.c352[chipID].channels[ch].mask = false;
-            if (ch < 32) audio.audio.resetC352Mask(chipID, ch);
+            newParam.c352[chipId].channels[ch].mask = false;
+            if (ch < 32) audio.audio.resetC352Mask(chipId, ch);
             break;
         case SEGAPCM:
-            newParam.segaPcm[chipID].channels[ch].mask = false;
-            if (ch < 16) audio.audio.resetSegaPCMMask(chipID, ch);
+            newParam.segaPcm[chipId].channels[ch].mask = false;
+            if (ch < 16) audio.audio.resetSegaPCMMask(chipId, ch);
             break;
         case QSound:
-            newParam.qSound[chipID].channels[ch].mask = false;
-            if (ch < 19) audio.audio.resetQSoundMask(chipID, ch);
+            newParam.qSound[chipId].channels[ch].mask = false;
+            if (ch < 19) audio.audio.resetQSoundMask(chipId, ch);
             break;
         case AY8910:
-            newParam.ay8910[chipID].channels[ch].mask = false;
-            audio.audio.resetAY8910Mask(chipID, ch);
+            newParam.ay8910[chipId].channels[ch].mask = false;
+            audio.audio.resetAY8910Mask(chipId, ch);
             break;
         case HuC6280:
-            newParam.huc6280[chipID].channels[ch].mask = false;
-            audio.audio.resetHuC6280Mask(chipID, ch);
+            newParam.huc6280[chipId].channels[ch].mask = false;
+            audio.audio.resetHuC6280Mask(chipId, ch);
             break;
         case K051649:
-            newParam.k051649[chipID].channels[ch].mask = false;
-            audio.audio.resetK051649Mask(chipID, ch);
+            newParam.k051649[chipId].channels[ch].mask = false;
+            audio.audio.resetK051649Mask(chipId, ch);
             break;
         case OKIM6258:
-            newParam.okim6258[chipID].mask = false;
-            audio.audio.resetOKIM6258Mask(chipID);
+            newParam.okim6258[chipId].mask = false;
+            audio.audio.resetOKIM6258Mask(chipId);
             break;
         case OKIM6295:
-            newParam.okim6295[chipID].channels[ch].mask = false;
-            audio.audio.resetOKIM6295Mask(chipID, ch);
+            newParam.okim6295[chipId].channels[ch].mask = false;
+            audio.audio.resetOKIM6295Mask(chipId, ch);
             break;
         case NES:
             switch (ch) {
             case 0:
             case 1:
-                newParam.nesdmc[chipID].sqrChannels[ch].mask = false;
-                audio.audio.resetNESMask(chipID, ch);
+                newParam.nesdmc[chipId].sqrChannels[ch].mask = false;
+                audio.audio.resetNESMask(chipId, ch);
                 break;
             case 2:
-                newParam.nesdmc[chipID].triChannel.mask = false;
-                audio.audio.resetDMCMask(chipID, 0);
+                newParam.nesdmc[chipId].triChannel.mask = false;
+                audio.audio.resetDMCMask(chipId, 0);
                 break;
             case 3:
-                newParam.nesdmc[chipID].noiseChannel.mask = false;
-                audio.audio.resetDMCMask(chipID, 1);
+                newParam.nesdmc[chipId].noiseChannel.mask = false;
+                audio.audio.resetDMCMask(chipId, 1);
                 break;
             case 4:
-                newParam.nesdmc[chipID].dmcChannel.mask = false;
-                audio.audio.resetDMCMask(chipID, 2);
+                newParam.nesdmc[chipId].dmcChannel.mask = false;
+                audio.audio.resetDMCMask(chipId, 2);
                 break;
             }
             break;
         case DMC:
             switch (ch) {
             case 0:
-                newParam.nesdmc[chipID].triChannel.mask = false;
-                audio.audio.resetDMCMask(chipID, 0);
+                newParam.nesdmc[chipId].triChannel.mask = false;
+                audio.audio.resetDMCMask(chipId, 0);
                 break;
             case 1:
-                newParam.nesdmc[chipID].noiseChannel.mask = false;
-                audio.audio.resetDMCMask(chipID, 1);
+                newParam.nesdmc[chipId].noiseChannel.mask = false;
+                audio.audio.resetDMCMask(chipId, 1);
                 break;
             case 2:
-                newParam.nesdmc[chipID].dmcChannel.mask = false;
-                audio.audio.resetDMCMask(chipID, 2);
+                newParam.nesdmc[chipId].dmcChannel.mask = false;
+                audio.audio.resetDMCMask(chipId, 2);
                 break;
             }
             break;
         case FDS:
-            newParam.fds[chipID].channel.mask = false;
-            audio.audio.resetFDSMask(chipID);
+            newParam.fds[chipId].channel.mask = false;
+            audio.audio.resetFDSMask(chipId);
             break;
         case MMC5:
             switch (ch) {
             case 0:
-                newParam.mmc5[chipID].sqrChannels[0].mask = false;
+                newParam.mmc5[chipId].sqrChannels[0].mask = false;
                 break;
             case 1:
-                newParam.mmc5[chipID].sqrChannels[1].mask = false;
+                newParam.mmc5[chipId].sqrChannels[1].mask = false;
                 break;
             case 2:
-                newParam.mmc5[chipID].pcmChannel.mask = false;
+                newParam.mmc5[chipId].pcmChannel.mask = false;
                 break;
             }
-            audio.audio.resetMMC5Mask(chipID, ch);
+            audio.audio.resetMMC5Mask(chipId, ch);
             break;
         case DMG:
-            newParam.dmg[chipID].channels[ch].mask = false;
-            audio.audio.resetDMGMask(chipID, ch);
+            newParam.dmg[chipId].channels[ch].mask = false;
+            audio.audio.resetDMGMask(chipId, ch);
             break;
         case VRC6:
-            newParam.vrc6[chipID].channels[ch].mask = false;
-            audio.audio.resetVRC6Mask(chipID, ch);
+            newParam.vrc6[chipId].channels[ch].mask = false;
+            audio.audio.resetVRC6Mask(chipId, ch);
             break;
         case N163:
-            newParam.n106[chipID].channels[ch].mask = false;
-            audio.audio.resetN163Mask(chipID, ch);
+            newParam.n106[chipId].channels[ch].mask = false;
+            audio.audio.resetN163Mask(chipId, ch);
             break;
         }
     }
 
-    public void forceChannelMask(EnmChip chip, int chipID, int ch, boolean mask) {
+    public void forceChannelMask(EnmChip chip, int chipId, int ch, boolean mask) {
         switch (chip) {
         case AY8910:
             if (mask)
-                audio.audio.setAY8910Mask(chipID, ch);
+                audio.audio.setAY8910Mask(chipId, ch);
             else
-                audio.audio.resetAY8910Mask(chipID, ch);
-            newParam.ay8910[chipID].channels[ch].mask = mask;
-            oldParam.ay8910[chipID].channels[ch].mask = !mask;
+                audio.audio.resetAY8910Mask(chipId, ch);
+            newParam.ay8910[chipId].channels[ch].mask = mask;
+            oldParam.ay8910[chipId].channels[ch].mask = !mask;
             break;
         case C140:
             if (mask)
-                audio.audio.setC140Mask(chipID, ch);
+                audio.audio.setC140Mask(chipId, ch);
             else
-                audio.audio.resetC140Mask(chipID, ch);
-            newParam.c140[chipID].channels[ch].mask = mask;
-            oldParam.c140[chipID].channels[ch].mask = !mask;
+                audio.audio.resetC140Mask(chipId, ch);
+            newParam.c140[chipId].channels[ch].mask = mask;
+            oldParam.c140[chipId].channels[ch].mask = !mask;
             break;
         case C352:
             if (mask)
-                audio.audio.setC352Mask(chipID, ch);
+                audio.audio.setC352Mask(chipId, ch);
             else
-                audio.audio.resetC352Mask(chipID, ch);
-            newParam.c352[chipID].channels[ch].mask = mask;
-            oldParam.c352[chipID].channels[ch].mask = !mask;
+                audio.audio.resetC352Mask(chipId, ch);
+            newParam.c352[chipId].channels[ch].mask = mask;
+            oldParam.c352[chipId].channels[ch].mask = !mask;
             break;
         case HuC6280:
             if (mask)
-                audio.audio.setHuC6280Mask(chipID, ch);
+                audio.audio.setHuC6280Mask(chipId, ch);
             else
-                audio.audio.resetHuC6280Mask(chipID, ch);
-            newParam.huc6280[chipID].channels[ch].mask = mask;
-            oldParam.huc6280[chipID].channels[ch].mask = !mask;
+                audio.audio.resetHuC6280Mask(chipId, ch);
+            newParam.huc6280[chipId].channels[ch].mask = mask;
+            oldParam.huc6280[chipId].channels[ch].mask = !mask;
             break;
         case RF5C164:
             if (mask)
-                audio.audio.setRF5C164Mask(chipID, ch);
+                audio.audio.setRF5C164Mask(chipId, ch);
             else
-                audio.audio.resetRF5C164Mask(chipID, ch);
-            newParam.rf5c164[chipID].channels[ch].mask = mask;
-            oldParam.rf5c164[chipID].channels[ch].mask = !mask;
+                audio.audio.resetRF5C164Mask(chipId, ch);
+            newParam.rf5c164[chipId].channels[ch].mask = mask;
+            oldParam.rf5c164[chipId].channels[ch].mask = !mask;
             break;
         case RF5C68:
             if (mask)
-                audio.audio.setRF5C68Mask(chipID, ch);
+                audio.audio.setRF5C68Mask(chipId, ch);
             else
-                audio.audio.resetRF5C68Mask(chipID, ch);
-            newParam.rf5c68[chipID].channels[ch].mask = mask;
-            oldParam.rf5c68[chipID].channels[ch].mask = !mask;
+                audio.audio.resetRF5C68Mask(chipId, ch);
+            newParam.rf5c68[chipId].channels[ch].mask = mask;
+            oldParam.rf5c68[chipId].channels[ch].mask = !mask;
             break;
         case SEGAPCM:
             if (mask)
-                audio.audio.setSegaPCMMask(chipID, ch);
+                audio.audio.setSegaPCMMask(chipId, ch);
             else
-                audio.audio.resetSegaPCMMask(chipID, ch);
-            newParam.segaPcm[chipID].channels[ch].mask = mask;
-            oldParam.segaPcm[chipID].channels[ch].mask = !mask;
+                audio.audio.resetSegaPCMMask(chipId, ch);
+            newParam.segaPcm[chipId].channels[ch].mask = mask;
+            oldParam.segaPcm[chipId].channels[ch].mask = !mask;
             break;
         case QSound:
             if (mask)
-                audio.audio.setQSoundMask(chipID, ch);
+                audio.audio.setQSoundMask(chipId, ch);
             else
-                audio.audio.resetQSoundMask(chipID, ch);
-            newParam.qSound[chipID].channels[ch].mask = mask;
-            oldParam.qSound[chipID].channels[ch].mask = !mask;
+                audio.audio.resetQSoundMask(chipId, ch);
+            newParam.qSound[chipId].channels[ch].mask = mask;
+            oldParam.qSound[chipId].channels[ch].mask = !mask;
             break;
         case YM2151:
             if (mask)
-                audio.audio.setYM2151Mask(chipID, ch);
+                audio.audio.setYM2151Mask(chipId, ch);
             else
-                audio.audio.resetYM2151Mask(chipID, ch);
-            newParam.ym2151[chipID].channels[ch].mask = mask;
-            oldParam.ym2151[chipID].channels[ch].mask = !mask;
+                audio.audio.resetYM2151Mask(chipId, ch);
+            newParam.ym2151[chipId].channels[ch].mask = mask;
+            oldParam.ym2151[chipId].channels[ch].mask = !mask;
             break;
         case YM2203:
             if (ch >= 0 && ch < 9) {
                 if (mask)
-                    audio.audio.setYM2203Mask(chipID, ch);
+                    audio.audio.setYM2203Mask(chipId, ch);
                 else
-                    audio.audio.resetYM2203Mask(chipID, ch);
+                    audio.audio.resetYM2203Mask(chipId, ch);
 
-                newParam.ym2203[chipID].channels[ch].mask = mask;
-                oldParam.ym2203[chipID].channels[ch].mask = !mask;
+                newParam.ym2203[chipId].channels[ch].mask = mask;
+                oldParam.ym2203[chipId].channels[ch].mask = !mask;
 
                 //FM(2ch) FMex
                 if ((ch == 2) || (ch >= 6 && ch < 9)) {
-                    newParam.ym2203[chipID].channels[2].mask = mask;
-                    newParam.ym2203[chipID].channels[6].mask = mask;
-                    newParam.ym2203[chipID].channels[7].mask = mask;
-                    newParam.ym2203[chipID].channels[8].mask = mask;
-                    oldParam.ym2203[chipID].channels[2].mask = !mask;
-                    oldParam.ym2203[chipID].channels[6].mask = !mask;
-                    oldParam.ym2203[chipID].channels[7].mask = !mask;
-                    oldParam.ym2203[chipID].channels[8].mask = !mask;
+                    newParam.ym2203[chipId].channels[2].mask = mask;
+                    newParam.ym2203[chipId].channels[6].mask = mask;
+                    newParam.ym2203[chipId].channels[7].mask = mask;
+                    newParam.ym2203[chipId].channels[8].mask = mask;
+                    oldParam.ym2203[chipId].channels[2].mask = !mask;
+                    oldParam.ym2203[chipId].channels[6].mask = !mask;
+                    oldParam.ym2203[chipId].channels[7].mask = !mask;
+                    oldParam.ym2203[chipId].channels[8].mask = !mask;
                 }
             }
             break;
         case YM2413:
             if (ch >= 0 && ch < 14) {
                 if (mask)
-                    audio.audio.setYM2413Mask(chipID, ch);
+                    audio.audio.setYM2413Mask(chipId, ch);
                 else
-                    audio.audio.resetYM2413Mask(chipID, ch);
+                    audio.audio.resetYM2413Mask(chipId, ch);
 
-                newParam.ym2413[chipID].channels[ch].mask = mask;
-                oldParam.ym2413[chipID].channels[ch].mask = !mask;
+                newParam.ym2413[chipId].channels[ch].mask = mask;
+                oldParam.ym2413[chipId].channels[ch].mask = !mask;
             }
             break;
         case YM2608:
             if (ch >= 0 && ch < 14) {
                 //if (mask)
-                //    audio.audio.setYM2608Mask(chipID, ch);
+                //    audio.audio.setYM2608Mask(chipId, ch);
                 //else
-                //    audio.audio.resetYM2608Mask(chipID, ch);
+                //    audio.audio.resetYM2608Mask(chipId, ch);
 
-                newParam.ym2608[chipID].channels[ch].mask = mask;
-                oldParam.ym2608[chipID].channels[ch].mask = !mask;
+                newParam.ym2608[chipId].channels[ch].mask = mask;
+                oldParam.ym2608[chipId].channels[ch].mask = !mask;
 
                 //FM(2ch) FMex
                 if ((ch == 2) || (ch >= 9 && ch < 12)) {
-                    newParam.ym2608[chipID].channels[2].mask = mask;
-                    newParam.ym2608[chipID].channels[9].mask = mask;
-                    newParam.ym2608[chipID].channels[10].mask = mask;
-                    newParam.ym2608[chipID].channels[11].mask = mask;
-                    oldParam.ym2608[chipID].channels[2].mask = !mask;
-                    oldParam.ym2608[chipID].channels[9].mask = !mask;
-                    oldParam.ym2608[chipID].channels[10].mask = !mask;
-                    oldParam.ym2608[chipID].channels[11].mask = !mask;
+                    newParam.ym2608[chipId].channels[2].mask = mask;
+                    newParam.ym2608[chipId].channels[9].mask = mask;
+                    newParam.ym2608[chipId].channels[10].mask = mask;
+                    newParam.ym2608[chipId].channels[11].mask = mask;
+                    oldParam.ym2608[chipId].channels[2].mask = !mask;
+                    oldParam.ym2608[chipId].channels[9].mask = !mask;
+                    oldParam.ym2608[chipId].channels[10].mask = !mask;
+                    oldParam.ym2608[chipId].channels[11].mask = !mask;
                 }
             }
             break;
@@ -7015,180 +7032,180 @@ public class frmMain extends JFrame {
                 if (ch == 13) c = 12;
 
                 if (mask)
-                    audio.audio.setYM2610Mask(chipID, ch);
+                    audio.audio.setYM2610Mask(chipId, ch);
                 else
-                    audio.audio.resetYM2610Mask(chipID, ch);
-                newParam.ym2610[chipID].channels[c].mask = mask;
-                oldParam.ym2610[chipID].channels[c].mask = !mask;
+                    audio.audio.resetYM2610Mask(chipId, ch);
+                newParam.ym2610[chipId].channels[c].mask = mask;
+                oldParam.ym2610[chipId].channels[c].mask = !mask;
 
                 //FM(2ch) FMex
                 if ((ch == 2) || (ch >= 9 && ch < 12)) {
-                    newParam.ym2610[chipID].channels[2].mask = mask;
-                    newParam.ym2610[chipID].channels[9].mask = mask;
-                    newParam.ym2610[chipID].channels[10].mask = mask;
-                    newParam.ym2610[chipID].channels[11].mask = mask;
-                    oldParam.ym2610[chipID].channels[2].mask = !mask;
-                    oldParam.ym2610[chipID].channels[9].mask = !mask;
-                    oldParam.ym2610[chipID].channels[10].mask = !mask;
-                    oldParam.ym2610[chipID].channels[11].mask = !mask;
+                    newParam.ym2610[chipId].channels[2].mask = mask;
+                    newParam.ym2610[chipId].channels[9].mask = mask;
+                    newParam.ym2610[chipId].channels[10].mask = mask;
+                    newParam.ym2610[chipId].channels[11].mask = mask;
+                    oldParam.ym2610[chipId].channels[2].mask = !mask;
+                    oldParam.ym2610[chipId].channels[9].mask = !mask;
+                    oldParam.ym2610[chipId].channels[10].mask = !mask;
+                    oldParam.ym2610[chipId].channels[11].mask = !mask;
                 }
             }
             break;
         case YM2612:
             if (ch >= 0 && ch < 9) {
                 if (mask)
-                    audio.audio.setYM2612Mask(chipID, ch);
+                    audio.audio.setYM2612Mask(chipId, ch);
                 else
-                    audio.audio.resetYM2612Mask(chipID, ch);
+                    audio.audio.resetYM2612Mask(chipId, ch);
 
-                newParam.ym2612[chipID].channels[ch].mask = mask;
-                oldParam.ym2612[chipID].channels[ch].mask = null;
+                newParam.ym2612[chipId].channels[ch].mask = mask;
+                oldParam.ym2612[chipId].channels[ch].mask = null;
 
                 //FM(2ch) FMex
                 if ((ch == 2) || (ch >= 6 && ch < 9)) {
-                    newParam.ym2612[chipID].channels[2].mask = mask;
-                    newParam.ym2612[chipID].channels[6].mask = mask;
-                    newParam.ym2612[chipID].channels[7].mask = mask;
-                    newParam.ym2612[chipID].channels[8].mask = mask;
-                    oldParam.ym2612[chipID].channels[2].mask = null;
-                    oldParam.ym2612[chipID].channels[6].mask = null;
-                    oldParam.ym2612[chipID].channels[7].mask = null;
-                    oldParam.ym2612[chipID].channels[8].mask = null;
+                    newParam.ym2612[chipId].channels[2].mask = mask;
+                    newParam.ym2612[chipId].channels[6].mask = mask;
+                    newParam.ym2612[chipId].channels[7].mask = mask;
+                    newParam.ym2612[chipId].channels[8].mask = mask;
+                    oldParam.ym2612[chipId].channels[2].mask = null;
+                    oldParam.ym2612[chipId].channels[6].mask = null;
+                    oldParam.ym2612[chipId].channels[7].mask = null;
+                    oldParam.ym2612[chipId].channels[8].mask = null;
                 }
             }
             break;
         case YM3526:
             if (ch >= 0 && ch < 14) {
                 if (mask)
-                    audio.audio.setYM3526Mask(chipID, ch);
+                    audio.audio.setYM3526Mask(chipId, ch);
                 else
-                    audio.audio.resetYM3526Mask(chipID, ch);
+                    audio.audio.resetYM3526Mask(chipId, ch);
 
-                newParam.ym3526[chipID].channels[ch].mask = mask;
-                oldParam.ym3526[chipID].channels[ch].mask = !mask;
+                newParam.ym3526[chipId].channels[ch].mask = mask;
+                oldParam.ym3526[chipId].channels[ch].mask = !mask;
             }
             break;
         case Y8950:
             if (ch >= 0 && ch < 15) {
                 if (mask)
-                    audio.audio.setY8950Mask(chipID, ch);
+                    audio.audio.setY8950Mask(chipId, ch);
                 else
-                    audio.audio.resetY8950Mask(chipID, ch);
+                    audio.audio.resetY8950Mask(chipId, ch);
 
-                newParam.y8950[chipID].channels[ch].mask = mask;
-                oldParam.y8950[chipID].channels[ch].mask = !mask;
+                newParam.y8950[chipId].channels[ch].mask = mask;
+                oldParam.y8950[chipId].channels[ch].mask = !mask;
             }
             break;
         case YM3812:
             if (ch >= 0 && ch < 14) {
                 if (mask)
-                    audio.audio.setYM3812Mask(chipID, ch);
+                    audio.audio.setYM3812Mask(chipId, ch);
                 else
-                    audio.audio.resetYM3812Mask(chipID, ch);
+                    audio.audio.resetYM3812Mask(chipId, ch);
 
-                newParam.ym3812[chipID].channels[ch].mask = mask;
-                oldParam.ym3812[chipID].channels[ch].mask = !mask;
+                newParam.ym3812[chipId].channels[ch].mask = mask;
+                oldParam.ym3812[chipId].channels[ch].mask = !mask;
             }
             break;
         case YMF262:
             if (ch >= 0 && ch < 24) {
                 if (mask)
-                    audio.audio.setYMF262Mask(chipID, ch);
+                    audio.audio.setYMF262Mask(chipId, ch);
                 else
-                    audio.audio.resetYMF262Mask(chipID, ch);
+                    audio.audio.resetYMF262Mask(chipId, ch);
 
-                newParam.ymf262[chipID].channels[ch].mask = mask;
-                oldParam.ymf262[chipID].channels[ch].mask = !mask;
+                newParam.ymf262[chipId].channels[ch].mask = mask;
+                oldParam.ymf262[chipId].channels[ch].mask = !mask;
             }
             break;
         case YMF278B:
             if (ch >= 0 && ch < 47) {
                 if (mask)
-                    audio.audio.setYMF278BMask(chipID, ch);
+                    audio.audio.setYMF278BMask(chipId, ch);
                 else
-                    audio.audio.resetYMF278BMask(chipID, ch);
+                    audio.audio.resetYMF278BMask(chipId, ch);
 
-                newParam.ymf278b[chipID].channels[ch].mask = mask;
-                oldParam.ymf278b[chipID].channels[ch].mask = !mask;
+                newParam.ymf278b[chipId].channels[ch].mask = mask;
+                oldParam.ymf278b[chipId].channels[ch].mask = !mask;
             }
             break;
         case SN76489:
             if (mask)
-                audio.audio.setSN76489Mask(chipID, ch);
+                audio.audio.setSN76489Mask(chipId, ch);
             else
-                audio.audio.resetSN76489Mask(chipID, ch);
-            newParam.sn76489[chipID].channels[ch].mask = mask;
-            oldParam.sn76489[chipID].channels[ch].mask = !mask;
+                audio.audio.resetSN76489Mask(chipId, ch);
+            newParam.sn76489[chipId].channels[ch].mask = mask;
+            oldParam.sn76489[chipId].channels[ch].mask = !mask;
             break;
         case OKIM6295:
             if (mask)
-                audio.audio.setOKIM6295Mask(chipID, ch);
+                audio.audio.setOKIM6295Mask(chipId, ch);
             else
-                audio.audio.resetOKIM6295Mask(chipID, ch);
-            newParam.okim6295[chipID].channels[ch].mask = mask;
-            oldParam.okim6295[chipID].channels[ch].mask = !mask;
+                audio.audio.resetOKIM6295Mask(chipId, ch);
+            newParam.okim6295[chipId].channels[ch].mask = mask;
+            oldParam.okim6295[chipId].channels[ch].mask = !mask;
             break;
         case DMG:
             if (mask)
-                audio.audio.setDMGMask(chipID, ch);
+                audio.audio.setDMGMask(chipId, ch);
             else
-                audio.audio.resetDMGMask(chipID, ch);
-            newParam.dmg[chipID].channels[ch].mask = mask;
-            oldParam.dmg[chipID].channels[ch].mask = !mask;
+                audio.audio.resetDMGMask(chipId, ch);
+            newParam.dmg[chipId].channels[ch].mask = mask;
+            oldParam.dmg[chipId].channels[ch].mask = !mask;
             break;
         case VRC6:
             if (mask)
-                audio.audio.setVRC6Mask(chipID, ch);
+                audio.audio.setVRC6Mask(chipId, ch);
             else
-                audio.audio.resetVRC6Mask(chipID, ch);
-            newParam.vrc6[chipID].channels[ch].mask = mask;
-            oldParam.vrc6[chipID].channels[ch].mask = !mask;
+                audio.audio.resetVRC6Mask(chipId, ch);
+            newParam.vrc6[chipId].channels[ch].mask = mask;
+            oldParam.vrc6[chipId].channels[ch].mask = !mask;
             break;
         case N163:
             if (mask)
-                audio.audio.setN163Mask(chipID, ch);
+                audio.audio.setN163Mask(chipId, ch);
             else
-                audio.audio.resetN163Mask(chipID, ch);
-            newParam.n106[chipID].channels[ch].mask = mask;
-            oldParam.n106[chipID].channels[ch].mask = !mask;
+                audio.audio.resetN163Mask(chipId, ch);
+            newParam.n106[chipId].channels[ch].mask = mask;
+            oldParam.n106[chipId].channels[ch].mask = !mask;
             break;
         }
     }
 
-    public void ForceChannelMaskNES(EnmChip chip, int chipID, int ch, MDChipParams.NESDMC[] param) {
+    public void ForceChannelMaskNES(EnmChip chip, int chipId, int ch, MDChipParams.NESDMC[] param) {
         if (ch == 0 || ch == 1) {
-            if (param[chipID].sqrChannels[ch].mask) {
-                newParam.nesdmc[chipID].sqrChannels[ch].mask = true;
-                audio.audio.setNESMask(chipID, ch);
+            if (param[chipId].sqrChannels[ch].mask) {
+                newParam.nesdmc[chipId].sqrChannels[ch].mask = true;
+                audio.audio.setNESMask(chipId, ch);
             } else {
-                newParam.nesdmc[chipID].sqrChannels[ch].mask = false;
-                audio.audio.resetNESMask(chipID, ch);
+                newParam.nesdmc[chipId].sqrChannels[ch].mask = false;
+                audio.audio.resetNESMask(chipId, ch);
             }
         } else if (ch == 2) {
-            if (param[chipID].triChannel.mask) {
-                newParam.nesdmc[chipID].triChannel.mask = true;
-                audio.audio.setDMCMask(chipID, 0);
+            if (param[chipId].triChannel.mask) {
+                newParam.nesdmc[chipId].triChannel.mask = true;
+                audio.audio.setDMCMask(chipId, 0);
             } else {
-                newParam.nesdmc[chipID].triChannel.mask = false;
-                audio.audio.resetDMCMask(chipID, 0);
+                newParam.nesdmc[chipId].triChannel.mask = false;
+                audio.audio.resetDMCMask(chipId, 0);
             }
 
         } else if (ch == 3) {
-            if (param[chipID].noiseChannel.mask) {
-                newParam.nesdmc[chipID].noiseChannel.mask = true;
-                audio.audio.setDMCMask(chipID, 1);
+            if (param[chipId].noiseChannel.mask) {
+                newParam.nesdmc[chipId].noiseChannel.mask = true;
+                audio.audio.setDMCMask(chipId, 1);
             } else {
-                newParam.nesdmc[chipID].noiseChannel.mask = false;
-                audio.audio.resetDMCMask(chipID, 1);
+                newParam.nesdmc[chipId].noiseChannel.mask = false;
+                audio.audio.resetDMCMask(chipId, 1);
             }
 
         } else if (ch == 4) {
-            if (param[chipID].dmcChannel.mask) {
-                newParam.nesdmc[chipID].dmcChannel.mask = true;
-                audio.audio.setDMCMask(chipID, 2);
+            if (param[chipId].dmcChannel.mask) {
+                newParam.nesdmc[chipId].dmcChannel.mask = true;
+                audio.audio.setDMCMask(chipId, 2);
             } else {
-                newParam.nesdmc[chipID].dmcChannel.mask = false;
-                audio.audio.resetDMCMask(chipID, 2);
+                newParam.nesdmc[chipId].dmcChannel.mask = false;
+                audio.audio.resetDMCMask(chipId, 2);
             }
         }
     }
@@ -7213,7 +7230,7 @@ public class frmMain extends JFrame {
         if (midiin == null) {
             MidiDevice.Info[] midiDeviceInfos = MidiSystem.getMidiDeviceInfo();
             for (var info : midiDeviceInfos) {
-                MidiDevice device = null;
+                MidiDevice device;
                 try {
                     device = MidiSystem.getMidiDevice(info);
                 } catch (MidiUnavailableException e) {
@@ -7367,7 +7384,7 @@ public class frmMain extends JFrame {
         if (!setting.getAutoBalance().getUseThis()) return;
 
         try {
-            Setting.Balance balance = null;
+            Setting.Balance balance;
             String fullPath = mdplayer.Common.settingFilePath;
             fullPath = Path.combine(fullPath, "MixerBalance");
             if (!Directory.exists(fullPath)) Directory.createDirectory(fullPath);
@@ -7473,6 +7490,7 @@ public class frmMain extends JFrame {
     public static Consumer<NativeKeyEvent> keyHookMeth = null;
 
     NativeKeyListener keyboardHook1_KeyboardHooked = new NativeKeyListener() {
+        @Override
         public void nativeKeyPressed(NativeKeyEvent e) {
             System.out.println("Key Pressed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
 
@@ -7567,8 +7585,8 @@ public class frmMain extends JFrame {
     }
 
     private void addFileAndPlay(String[] fn) {
-        if (audio.getIsPaused()) {
-            audio.pause();
+        if (audio.audio.isPaused()) {
+            audio.audio.pause();
         }
 
         if (fn.length == 1) {
@@ -7947,11 +7965,11 @@ public class frmMain extends JFrame {
 
     private void updateOpeButtonActiveState() {
         lstOpeButtonActive[1] = (audio.isStopped()); // STOP button
-        lstOpeButtonActive[2] = audio.isStopped() ? false : audio.getIsPaused(); // PAUSE button
-        lstOpeButtonActive[3] = audio.isStopped() ? false : audio.getIsFadeOut(); // Fade button
-        lstOpeButtonActive[5] = audio.getIsSlow(); // Slowbutton
-        lstOpeButtonActive[6] = audio.getIsPaused() ? false : (audio.getIsSlow() || audio.getIsFF() || audio.getIsFadeOut() ? false : !audio.isStopped()); // PLAY button
-        lstOpeButtonActive[7] = audio.getIsFF(); // FFbutton
+        lstOpeButtonActive[2] = audio.isStopped() ? false : audio.audio.isPaused(); // PAUSE button
+        lstOpeButtonActive[3] = audio.isStopped() ? false : audio.isFadeOut(); // Fade button
+        lstOpeButtonActive[5] = audio.isSlow(); // Slowbutton
+        lstOpeButtonActive[6] = audio.audio.isPaused() ? false : (audio.isSlow() || audio.isFF() || audio.isFadeOut() ? false : !audio.isStopped()); // PLAY button
+        lstOpeButtonActive[7] = audio.isFF(); // FFbutton
     }
 
     private void initializeComponent() {
@@ -9078,7 +9096,7 @@ public class frmMain extends JFrame {
 //            //this.opeButtonSetting.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonSetting.setName("opeButtonSetting");
         this.opeButtonSetting.setActionCommand("0");
-        this.opeButtonSetting.setToolTipText(Resources.getResourceManager().getString("opeButtonSetting.ToolTip"));
+        this.opeButtonSetting.setToolTipText(rb.getString("opeButtonSetting.ToolTip"));
         // this.opeButtonSetting.UseVisualStyl.setBackground(false);
         this.opeButtonSetting.addActionListener(this::opeButtonSetting_Click);
 //        this.opeButtonSetting.addDragAndDropListenr(this::pbScreen_DragDrop);
@@ -9098,7 +9116,7 @@ public class frmMain extends JFrame {
 //            //this.opeButtonStop.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonStop.setName("opeButtonStop");
         this.opeButtonStop.setActionCommand("1");
-        this.opeButtonStop.setToolTipText(Resources.getResourceManager().getString("opeButtonStop.ToolTip"));
+//        this.opeButtonStop.setToolTipText(Resources.getResourceManager().getString("opeButtonStop.ToolTip"));
         // this.opeButtonStop.UseVisualStyl.setBackground(false);
         this.opeButtonStop.addActionListener(this::opeButtonStop_Click);
 //        this.opeButtonStop.addDragAndDropListenr(this::pbScreen_DragDrop);
@@ -9118,7 +9136,7 @@ public class frmMain extends JFrame {
 //            //this.opeButtonPause.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonPause.setName("opeButtonPause");
         this.opeButtonPause.setActionCommand("2");
-        this.opeButtonPause.setToolTipText(Resources.getResourceManager().getString("opeButtonPause.ToolTip"));
+//        this.opeButtonPause.setToolTipText(Resources.getResourceManager().getString("opeButtonPause.ToolTip"));
         // this.opeButtonPause.UseVisualStyl.setBackground(false);
         this.opeButtonPause.addActionListener(this::opeButtonPause_Click);
 //        this.opeButtonPause.addDragAndDropListenr(this::pbScreen_DragDrop);
@@ -9138,7 +9156,7 @@ public class frmMain extends JFrame {
         //this.opeButtonFadeout.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonFadeout.setName("opeButtonFadeout");
         this.opeButtonFadeout.setActionCommand("3");
-        this.opeButtonFadeout.setToolTipText(Resources.getResourceManager().getString("opeButtonFadeout.ToolTip"));
+//        this.opeButtonFadeout.setToolTipText(Resources.getResourceManager().getString("opeButtonFadeout.ToolTip"));
         // this.opeButtonFadeout.UseVisualStyl.setBackground(false);
         this.opeButtonFadeout.addActionListener(this::opeButtonFadeout_Click);
 //        this.opeButtonFadeout.addDragAndDropListenr(this::pbScreen_DragDrop);
@@ -9158,7 +9176,7 @@ public class frmMain extends JFrame {
         //this.opeButtonPrevious.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonPrevious.setName("opeButtonPrevious");
         this.opeButtonPrevious.setActionCommand("4");
-        this.opeButtonPrevious.setToolTipText(Resources.getResourceManager().getString("opeButtonPrevious.ToolTip"));
+//        this.opeButtonPrevious.setToolTipText(Resources.getResourceManager().getString("opeButtonPrevious.ToolTip"));
         // this.opeButtonPrevious.UseVisualStyl.setBackground(false);
         this.opeButtonPrevious.addActionListener(this::opeButtonPrevious_Click);
 //        this.opeButtonPrevious.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9178,7 +9196,7 @@ public class frmMain extends JFrame {
         //this.opeButtonSlow.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonSlow.setName("opeButtonSlow");
         this.opeButtonSlow.setActionCommand("5");
-        this.opeButtonSlow.setToolTipText(Resources.getResourceManager().getString("opeButtonSlow.ToolTip"));
+//        this.opeButtonSlow.setToolTipText(Resources.getResourceManager().getString("opeButtonSlow.ToolTip"));
         // this.opeButtonSlow.UseVisualStyl.setBackground(false);
         this.opeButtonSlow.addActionListener(this::opeButtonSlow_Click);
 //        this.opeButtonSlow.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9198,7 +9216,7 @@ public class frmMain extends JFrame {
         //this.opeButtonPlay.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonPlay.setName("opeButtonPlay");
         this.opeButtonPlay.setActionCommand("6");
-        this.opeButtonPlay.setToolTipText(Resources.getResourceManager().getString("opeButtonPlay.ToolTip"));
+//        this.opeButtonPlay.setToolTipText(Resources.getResourceManager().getString("opeButtonPlay.ToolTip"));
         // this.opeButtonPlay.UseVisualStyl.setBackground(false);
         this.opeButtonPlay.addActionListener(this::opeButtonPlay_Click);
 //        this.opeButtonPlay.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9218,7 +9236,7 @@ public class frmMain extends JFrame {
         //this.opeButtonFast.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonFast.setName("opeButtonFast");
         this.opeButtonFast.setActionCommand("7");
-        this.opeButtonFast.setToolTipText(Resources.getResourceManager().getString("opeButtonFast.ToolTip"));
+//        this.opeButtonFast.setToolTipText(Resources.getResourceManager().getString("opeButtonFast.ToolTip"));
         // this.opeButtonFast.UseVisualStyl.setBackground(false);
         this.opeButtonFast.addActionListener(this::opeButtonFast_Click);
 //        this.opeButtonFast.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9238,7 +9256,7 @@ public class frmMain extends JFrame {
         //this.opeButtonNext.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonNext.setName("opeButtonNext");
         this.opeButtonNext.setActionCommand("8");
-        this.opeButtonNext.setToolTipText(Resources.getResourceManager().getString("opeButtonNext.ToolTip"));
+//        this.opeButtonNext.setToolTipText(Resources.getResourceManager().getString("opeButtonNext.ToolTip"));
         // this.opeButtonNext.UseVisualStyl.setBackground(false);
         this.opeButtonNext.addActionListener(this::opeButtonNext_Click);
 //        this.opeButtonNext.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9258,7 +9276,7 @@ public class frmMain extends JFrame {
         //this.opeButtonZoom.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonZoom.setName("opeButtonZoom");
         this.opeButtonZoom.setActionCommand("17");
-        this.opeButtonZoom.setToolTipText(Resources.getResourceManager().getString("opeButtonZoom.ToolTip"));
+//        this.opeButtonZoom.setToolTipText(Resources.getResourceManager().getString("opeButtonZoom.ToolTip"));
         // this.opeButtonZoom.UseVisualStyl.setBackground(false);
         this.opeButtonZoom.addActionListener(this::opeButtonZoom_Click);
 //        this.opeButtonZoom.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9278,7 +9296,7 @@ public class frmMain extends JFrame {
         //this.opeButtonMIDIKBD.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonMIDIKBD.setName("opeButtonMIDIKBD");
         this.opeButtonMIDIKBD.setActionCommand("16");
-        this.opeButtonMIDIKBD.setToolTipText(Resources.getResourceManager().getString("opeButtonMIDIKBD.ToolTip"));
+//        this.opeButtonMIDIKBD.setToolTipText(Resources.getResourceManager().getString("opeButtonMIDIKBD.ToolTip"));
         // this.opeButtonMIDIKBD.UseVisualStyl.setBackground(false);
         this.opeButtonMIDIKBD.addActionListener(this::opeButtonMIDIKBD_Click);
 //        this.opeButtonMIDIKBD.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9298,7 +9316,7 @@ public class frmMain extends JFrame {
         //this.opeButtonVST.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonVST.setName("opeButtonVST");
         this.opeButtonVST.setActionCommand("15");
-        this.opeButtonVST.setToolTipText(Resources.getResourceManager().getString("opeButtonVST.ToolTip"));
+//        this.opeButtonVST.setToolTipText(Resources.getResourceManager().getString("opeButtonVST.ToolTip"));
         // this.opeButtonVST.UseVisualStyl.setBackground(false);
         this.opeButtonVST.addActionListener(this::opeButtonVST_Click);
 //        this.opeButtonVST.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9318,7 +9336,7 @@ public class frmMain extends JFrame {
         //this.opeButtonKBD.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonKBD.setName("opeButtonKBD");
         this.opeButtonKBD.setActionCommand("14");
-        this.opeButtonKBD.setToolTipText(Resources.getResourceManager().getString("opeButtonKBD.ToolTip"));
+//        this.opeButtonKBD.setToolTipText(Resources.getResourceManager().getString("opeButtonKBD.ToolTip"));
         // this.opeButtonKBD.UseVisualStyl.setBackground(false);
         this.opeButtonKBD.addActionListener(this::opeButtonKBD_Click);
 //        this.opeButtonKBD.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9338,7 +9356,7 @@ public class frmMain extends JFrame {
         //this.opeButtonMixer.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonMixer.setName("opeButtonMixer");
         this.opeButtonMixer.setActionCommand("13");
-        this.opeButtonMixer.setToolTipText(Resources.getResourceManager().getString("opeButtonMixer.ToolTip"));
+//        this.opeButtonMixer.setToolTipText(Resources.getResourceManager().getString("opeButtonMixer.ToolTip"));
         // this.opeButtonMixer.UseVisualStyl.setBackground(false);
         this.opeButtonMixer.addActionListener(this::opeButtonMixer_Click);
 //        this.opeButtonMixer.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9358,7 +9376,7 @@ public class frmMain extends JFrame {
         //this.opeButtonInformation.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonInformation.setName("opeButtonInformation");
         this.opeButtonInformation.setActionCommand("12");
-        this.opeButtonInformation.setToolTipText(Resources.getResourceManager().getString("opeButtonInformation.ToolTip"));
+//        this.opeButtonInformation.setToolTipText(Resources.getResourceManager().getString("opeButtonInformation.ToolTip"));
         // this.opeButtonInformation.UseVisualStyl.setBackground(false);
         this.opeButtonInformation.addActionListener(this::opeButtonInformation_Click);
 //        this.opeButtonInformation.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9378,7 +9396,7 @@ public class frmMain extends JFrame {
         //this.opeButtonPlayList.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonPlayList.setName("opeButtonPlayList");
         this.opeButtonPlayList.setActionCommand("11");
-        this.opeButtonPlayList.setToolTipText(Resources.getResourceManager().getString("opeButtonPlayList.ToolTip"));
+//        this.opeButtonPlayList.setToolTipText(Resources.getResourceManager().getString("opeButtonPlayList.ToolTip"));
         // this.opeButtonPlayList.UseVisualStyl.setBackground(false);
         this.opeButtonPlayList.addActionListener(this::opeButtonPlayList_Click);
 //        this.opeButtonPlayList.addDragDropListenr(this.pbScreen_DragDrop);
@@ -9398,7 +9416,7 @@ public class frmMain extends JFrame {
         //this.opeButtonOpen.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonOpen.setName("opeButtonOpen");
         this.opeButtonOpen.setActionCommand("10");
-        this.opeButtonOpen.setToolTipText(Resources.getResourceManager().getString("opeButtonOpen.ToolTip"));
+//        this.opeButtonOpen.setToolTipText(Resources.getResourceManager().getString("opeButtonOpen.ToolTip"));
         // this.opeButtonOpen.UseVisualStyl.setBackground(false);
         this.opeButtonOpen.addActionListener(this::opeButtonOpen_Click);
 //        this.opeButtonOpen.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9418,7 +9436,7 @@ public class frmMain extends JFrame {
         //this.opeButtonMode.FlatAppearance.MouseOve.setBackground(Color.black);
         this.opeButtonMode.setName("opeButtonMode");
         this.opeButtonMode.setActionCommand("9");
-        this.opeButtonMode.setToolTipText(Resources.getResourceManager().getString("opeButtonMode.ToolTip"));
+//        this.opeButtonMode.setToolTipText(Resources.getResourceManager().getString("opeButtonMode.ToolTip"));
         // this.opeButtonMode.UseVisualStyl.setBackground(false);
         this.opeButtonMode.addActionListener(this::opeButtonMode_Click);
 //        this.opeButtonMode.addDragAndDropListenr(this.pbScreen_DragDrop);
@@ -9621,4 +9639,91 @@ public class frmMain extends JFrame {
     private JButton opeButtonOpen;
     private JButton opeButtonMode;
     private JMenuItem tsmiVisualizer;
+
+    private int[] getChipStatus() {
+        int[] chips = new int[256];
+
+        chips[0] = audio.audio.chipRegister.chipLED.get("PriOPN");
+        audio.audio.chipRegister.chipLED.put("PriOPN", audio.audio.chipLED.get("PriOPN"));
+        chips[1] = audio.audio.chipRegister.chipLED.get("PriOPN2");
+        audio.audio.chipRegister.chipLED.put("PriOPN2", audio.audio.chipLED.get("PriOPN2"));
+        chips[2] = audio.audio.chipRegister.chipLED.get("PriOPNA");
+        audio.audio.chipRegister.chipLED.put("PriOPNA", audio.audio.chipLED.get("PriOPNA"));
+        chips[3] = audio.audio.chipRegister.chipLED.get("PriOPNB");
+        audio.audio.chipRegister.chipLED.put("PriOPNB", audio.audio.chipLED.get("PriOPNB"));
+
+        chips[4] = audio.audio.chipRegister.chipLED.get("PriOPM");
+        audio.audio.chipRegister.chipLED.put("PriOPM", audio.audio.chipLED.get("PriOPM"));
+        chips[5] = audio.audio.chipRegister.chipLED.get("PriDCSG");
+        audio.audio.chipRegister.chipLED.put("PriDCSG", audio.audio.chipLED.get("PriDCSG"));
+        chips[6] = audio.audio.chipRegister.chipLED.get("PriRF5C");
+        audio.audio.chipRegister.chipLED.put("PriRF5C", audio.audio.chipLED.get("PriRF5C"));
+        chips[7] = audio.audio.chipRegister.chipLED.get("PriPWM");
+        audio.audio.chipRegister.chipLED.put("PriPWM", audio.audio.chipLED.get("PriPWM"));
+
+        chips[8] = audio.audio.chipRegister.chipLED.get("PriOKI5");
+        audio.audio.chipRegister.chipLED.put("PriOKI5", audio.audio.chipLED.get("PriOKI5"));
+        chips[9] = audio.audio.chipRegister.chipLED.get("PriOKI9");
+        audio.audio.chipRegister.chipLED.put("PriOKI9", audio.audio.chipLED.get("PriOKI9"));
+        chips[10] = audio.audio.chipRegister.chipLED.get("PriC140");
+        audio.audio.chipRegister.chipLED.put("PriC140", audio.audio.chipLED.get("PriC140"));
+        chips[11] = audio.audio.chipRegister.chipLED.get("PriSPCM");
+        audio.audio.chipRegister.chipLED.put("PriSPCM", audio.audio.chipLED.get("PriSPCM"));
+
+        chips[12] = audio.audio.chipRegister.chipLED.get("PriAY10");
+        audio.audio.chipRegister.chipLED.put("PriAY10", audio.audio.chipLED.get("PriAY10"));
+        chips[13] = audio.audio.chipRegister.chipLED.get("PriOPLL");
+        audio.audio.chipRegister.chipLED.put("PriOPLL", audio.audio.chipLED.get("PriOPLL"));
+        chips[14] = audio.audio.chipRegister.chipLED.get("PriHuC");
+        audio.audio.chipRegister.chipLED.put("PriHuC", audio.audio.chipLED.get("PriHuC"));
+        chips[15] = audio.audio.chipRegister.chipLED.get("PriC352");
+        audio.audio.chipRegister.chipLED.put("PriC352", audio.audio.chipLED.get("PriC352"));
+        chips[16] = audio.audio.chipRegister.chipLED.get("PriK054539");
+        audio.audio.chipRegister.chipLED.put("PriK054539", audio.audio.chipLED.get("PriK054539"));
+        chips[17] = audio.audio.chipRegister.chipLED.get("PriRF5C68");
+        audio.audio.chipRegister.chipLED.put("PriRF5C68", audio.audio.chipLED.get("PriRF5C68"));
+
+
+        chips[128 + 0] = audio.audio.chipRegister.chipLED.get("SecOPN");
+        audio.audio.chipRegister.chipLED.put("SecOPN", audio.audio.chipLED.get("SecOPN"));
+        chips[128 + 1] = audio.audio.chipRegister.chipLED.get("SecOPN2");
+        audio.audio.chipRegister.chipLED.put("SecOPN2", audio.audio.chipLED.get("SecOPN2"));
+        chips[128 + 2] = audio.audio.chipRegister.chipLED.get("SecOPNA");
+        audio.audio.chipRegister.chipLED.put("SecOPNA", audio.audio.chipLED.get("SecOPNA"));
+        chips[128 + 3] = audio.audio.chipRegister.chipLED.get("SecOPNB");
+        audio.audio.chipRegister.chipLED.put("SecOPNB", audio.audio.chipLED.get("SecOPNB"));
+
+        chips[128 + 4] = audio.audio.chipRegister.chipLED.get("SecOPM");
+        audio.audio.chipRegister.chipLED.put("SecOPM", audio.audio.chipLED.get("SecOPM"));
+        chips[128 + 5] = audio.audio.chipRegister.chipLED.get("SecDCSG");
+        audio.audio.chipRegister.chipLED.put("SecDCSG", audio.audio.chipLED.get("SecDCSG"));
+        chips[128 + 6] = audio.audio.chipRegister.chipLED.get("SecRF5C");
+        audio.audio.chipRegister.chipLED.put("SecRF5C", audio.audio.chipLED.get("SecRF5C"));
+        chips[128 + 7] = audio.audio.chipRegister.chipLED.get("SecPWM");
+        audio.audio.chipRegister.chipLED.put("SecPWM", audio.audio.chipLED.get("SecPWM"));
+
+        chips[128 + 8] = audio.audio.chipRegister.chipLED.get("SecOKI5");
+        audio.audio.chipRegister.chipLED.put("SecOKI5", audio.audio.chipLED.get("SecOKI5"));
+        chips[128 + 9] = audio.audio.chipRegister.chipLED.get("SecOKI9");
+        audio.audio.chipRegister.chipLED.put("SecOKI9", audio.audio.chipLED.get("SecOKI9"));
+        chips[128 + 10] = audio.audio.chipRegister.chipLED.get("SecC140");
+        audio.audio.chipRegister.chipLED.put("SecC140", audio.audio.chipLED.get("SecC140"));
+        chips[128 + 11] = audio.audio.chipRegister.chipLED.get("SecSPCM");
+        audio.audio.chipRegister.chipLED.put("SecSPCM", audio.audio.chipLED.get("SecSPCM"));
+
+        chips[128 + 12] = audio.audio.chipRegister.chipLED.get("SecAY10");
+        audio.audio.chipRegister.chipLED.put("SecAY10", audio.audio.chipLED.get("SecAY10"));
+        chips[128 + 13] = audio.audio.chipRegister.chipLED.get("SecOPLL");
+        audio.audio.chipRegister.chipLED.put("SecOPLL", audio.audio.chipLED.get("SecOPLL"));
+        chips[128 + 14] = audio.audio.chipRegister.chipLED.get("SecHuC");
+        audio.audio.chipRegister.chipLED.put("SecHuC", audio.audio.chipLED.get("SecHuC"));
+        chips[128 + 15] = audio.audio.chipRegister.chipLED.get("SecC352");
+        audio.audio.chipRegister.chipLED.put("SecC352", audio.audio.chipLED.get("SecC352"));
+        chips[128 + 16] = audio.audio.chipRegister.chipLED.get("SecK054539");
+        audio.audio.chipRegister.chipLED.put("SecK054539", audio.audio.chipLED.get("SecK054539"));
+        chips[128 + 17] = audio.audio.chipRegister.chipLED.get("SecRF5C68");
+        audio.audio.chipRegister.chipLED.put("SecRF5C68", audio.audio.chipLED.get("SecRF5C68"));
+
+        return chips;
+    }
 }

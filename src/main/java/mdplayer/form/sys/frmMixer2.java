@@ -20,6 +20,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Arrays;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -31,6 +32,7 @@ import javax.swing.JSeparator;
 import javax.swing.filechooser.FileFilter;
 
 import dotnet4j.io.Path;
+import dotnet4j.util.compat.Tuple;
 import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.DrawBuff;
@@ -39,8 +41,9 @@ import mdplayer.MDChipParams;
 import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.form.kb.wf.frmHuC6280;
-import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
+import mdsound.Instrument;
+import mdsound.instrument.*;
 
 
 public class frmMixer2 extends JFrame {
@@ -50,7 +53,7 @@ public class frmMixer2 extends JFrame {
     public frmMain parent;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int zoom = 1;
+    private int zoom;
     private int chipn = -1;
 
     private MDChipParams.Mixer newParam;
@@ -80,11 +83,22 @@ public class frmMixer2 extends JFrame {
             int py = ev.getY() / parent.setting.getOther().getZoom();
             chipn = px / 20 + (py / 72) * 16;
             int delta = (int) Math.signum(ev.getWheelRotation());
-
-            if (chipn < 0 || chipn >= audio.getInstance().setVolume.length) return;
-            audio.getInstance().setVolume[chipn].accept(false, delta);
+            setVolume(chipn, false, delta);
         }
     };
+
+    private void setVolume(int i, boolean isAbs, int delta) {
+        if (i == 0) {
+            audio.setMasterVolume(isAbs, delta);
+        } else if (i == setVolume.length) {
+            audio.setGimicOPNVolume(false, delta);
+        } else if (i == setVolume.length + 1) {
+            audio.setGimicOPNAVolume(false, delta);
+        } else if (i > 0 && i < setVolume.length) {
+            var t = setVolume[chipn];
+            audio.setVolume(t.getItem1(), t.getItem2(), isAbs, delta);
+        }
+    }
 
     public void update() {
         frameBuffer.Refresh(null);
@@ -96,6 +110,7 @@ public class frmMixer2 extends JFrame {
     }
 
     private WindowListener windowListener = new WindowAdapter() {
+        @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
                 parent.setting.getLocation().setPosMixer(getLocation());
@@ -105,6 +120,7 @@ public class frmMixer2 extends JFrame {
             isClosed = true;
         }
 
+        @Override
         public void windowOpened(WindowEvent ev) {
             setLocation(new Point(x, y));
 
@@ -149,60 +165,60 @@ public class frmMixer2 extends JFrame {
     public void screenChangeParams() {
 
         newParam.Master.Volume = parent.setting.getBalance().getMasterVolume();
-        newParam.YM2151.Volume = parent.setting.getBalance().getYM2151Volume();
-        newParam.YM2203.Volume = parent.setting.getBalance().getYM2203Volume();
-        newParam.YM2203FM.Volume = parent.setting.getBalance().getYM2203FMVolume();
-        newParam.YM2203PSG.Volume = parent.setting.getBalance().getYM2203PSGVolume();
-        newParam.YM2612.Volume = parent.setting.getBalance().getYM2612Volume();
-        newParam.YM2608.Volume = parent.setting.getBalance().getYM2608Volume();
-        newParam.YM2608FM.Volume = parent.setting.getBalance().getYM2608FMVolume();
-        newParam.YM2608PSG.Volume = parent.setting.getBalance().getYM2608PSGVolume();
-        newParam.YM2608Rhythm.Volume = parent.setting.getBalance().getYM2608RhythmVolume();
-        newParam.YM2608Adpcm.Volume = parent.setting.getBalance().getYM2608AdpcmVolume();
-        newParam.YM2610.Volume = parent.setting.getBalance().getYM2610Volume();
-        newParam.YM2610FM.Volume = parent.setting.getBalance().getYM2610FMVolume();
-        newParam.YM2610PSG.Volume = parent.setting.getBalance().getYM2610PSGVolume();
-        newParam.YM2610AdpcmA.Volume = parent.setting.getBalance().getYM2610AdpcmAVolume();
-        newParam.YM2610AdpcmB.Volume = parent.setting.getBalance().getYM2610AdpcmBVolume();
+        newParam.YM2151.Volume = parent.setting.getBalance().getVolume("MAIN", Ym2151Inst.class);
+        newParam.YM2203.Volume = parent.setting.getBalance().getVolume("MAIN", Ym2203Inst.class);
+        newParam.YM2203FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2203Inst.class);
+        newParam.YM2203PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2203Inst.class);
+        newParam.YM2612.Volume = parent.setting.getBalance().getVolume("MAIN", Ym2612Inst.class);
+        newParam.YM2608.Volume = parent.setting.getBalance().getVolume("MAIN", Ym2608Inst.class);
+        newParam.YM2608FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2608Inst.class);
+        newParam.YM2608PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2608Inst.class);
+        newParam.YM2608Rhythm.Volume = parent.setting.getBalance().getVolume("Rhythm", Ym2608Inst.class);
+        newParam.YM2608Adpcm.Volume = parent.setting.getBalance().getVolume("Adpcm", Ym2608Inst.class);
+        newParam.YM2610.Volume = parent.setting.getBalance().getVolume("MAIN", Ym2610Inst.class);
+        newParam.YM2610FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2610Inst.class);
+        newParam.YM2610PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2610Inst.class);
+        newParam.YM2610AdpcmA.Volume = parent.setting.getBalance().getVolume("AdpcmA", Ym2610Inst.class);
+        newParam.YM2610AdpcmB.Volume = parent.setting.getBalance().getVolume("AdpcmB", Ym2610Inst.class);
 
-        newParam.YM2413.Volume = parent.setting.getBalance().getYM2413Volume();
-        newParam.YM3526.Volume = parent.setting.getBalance().getYM3526Volume();
-        newParam.Y8950.Volume = parent.setting.getBalance().getY8950Volume();
-        newParam.YM3812.Volume = parent.setting.getBalance().getYM3812Volume();
-        newParam.YMF262.Volume = parent.setting.getBalance().getYMF262Volume();
-        newParam.YMF278B.Volume = parent.setting.getBalance().getYMF278BVolume();
-        newParam.YMZ280B.Volume = parent.setting.getBalance().getYMZ280BVolume();
-        newParam.YMF271.Volume = parent.setting.getBalance().getYMF271Volume();
-        newParam.AY8910.Volume = parent.setting.getBalance().getAY8910Volume();
-        newParam.SN76489.Volume = parent.setting.getBalance().getSN76489Volume();
-        newParam.HuC6280.Volume = parent.setting.getBalance().getHuC6280Volume();
+        newParam.YM2413.Volume = parent.setting.getBalance().getVolume("MAIN", Ym2413Inst.class);
+        newParam.YM3526.Volume = parent.setting.getBalance().getVolume("MAIN", Ym3526Inst.class);
+        newParam.Y8950.Volume = parent.setting.getBalance().getVolume("MAIN", Y8950Inst.class);
+        newParam.YM3812.Volume = parent.setting.getBalance().getVolume("MAIN", Ym3812Inst.class);
+        newParam.YMF262.Volume = parent.setting.getBalance().getVolume("MAIN", YmF262Inst.class);
+        newParam.YMF278B.Volume = parent.setting.getBalance().getVolume("MAIN", YmF278bInst.class);
+        newParam.YMZ280B.Volume = parent.setting.getBalance().getVolume("MAIN", YmZ280bInst.class);
+        newParam.YMF271.Volume = parent.setting.getBalance().getVolume("MAIN", YmF271Inst.class);
+        newParam.AY8910.Volume = parent.setting.getBalance().getVolume("MAIN", Ay8910Inst.class);
+        newParam.SN76489.Volume = parent.setting.getBalance().getVolume("MAIN", Sn76489Inst.class);
+        newParam.HuC6280.Volume = parent.setting.getBalance().getVolume("MAIN", HuC6280Inst.class);
 
-        newParam.RF5C164.Volume = parent.setting.getBalance().getRF5C164Volume();
-        newParam.RF5C68.Volume = parent.setting.getBalance().getRF5C68Volume();
-        newParam.PWM.Volume = parent.setting.getBalance().getPWMVolume();
-        newParam.OKIM6258.Volume = parent.setting.getBalance().getOKIM6258Volume();
-        newParam.OKIM6295.Volume = parent.setting.getBalance().getOKIM6295Volume();
-        newParam.C140.Volume = parent.setting.getBalance().getC140Volume();
-        newParam.C352.Volume = parent.setting.getBalance().getC352Volume();
-        newParam.SAA1099.Volume = parent.setting.getBalance().getSAA1099Volume();
-        newParam.PPZ8.Volume = parent.setting.getBalance().getPPZ8Volume();
-        newParam.SEGAPCM.Volume = parent.setting.getBalance().getSEGAPCMVolume();
-        newParam.MultiPCM.Volume = parent.setting.getBalance().getMultiPCMVolume();
-        newParam.K051649.Volume = parent.setting.getBalance().getK051649Volume();
-        newParam.K053260.Volume = parent.setting.getBalance().getK053260Volume();
-        newParam.K054539.Volume = parent.setting.getBalance().getK054539Volume();
-        newParam.QSound.Volume = parent.setting.getBalance().getQSoundVolume();
-        newParam.GA20.Volume = parent.setting.getBalance().getGA20Volume();
+        newParam.RF5C164.Volume = parent.setting.getBalance().getVolume("MAIN", ScdPcmInst.class);
+        newParam.RF5C68.Volume = parent.setting.getBalance().getVolume("MAIN", Rf5c68Inst.class);
+        newParam.PWM.Volume = parent.setting.getBalance().getVolume("MAIN", PwmInst.class);
+        newParam.OKIM6258.Volume = parent.setting.getBalance().getVolume("MAIN", OkiM6258Inst.class);
+        newParam.OKIM6295.Volume = parent.setting.getBalance().getVolume("MAIN", OkiM6295Inst.class);
+        newParam.C140.Volume = parent.setting.getBalance().getVolume("MAIN", C140Inst.class);
+        newParam.C352.Volume = parent.setting.getBalance().getVolume("MAIN", C352Inst.class);
+        newParam.SAA1099.Volume = parent.setting.getBalance().getVolume("MAIN", Saa1099Inst.class);
+        newParam.PPZ8.Volume = parent.setting.getBalance().getVolume("MAIN", Ppz8Inst.class);
+        newParam.SEGAPCM.Volume = parent.setting.getBalance().getVolume("MAIN", SegaPcmInst.class);
+        newParam.MultiPCM.Volume = parent.setting.getBalance().getVolume("MAIN", MultiPcmInst.class);
+        newParam.K051649.Volume = parent.setting.getBalance().getVolume("MAIN", K051649Inst.class);
+        newParam.K053260.Volume = parent.setting.getBalance().getVolume("MAIN", K053260Inst.class);
+        newParam.K054539.Volume = parent.setting.getBalance().getVolume("MAIN", K054539Inst.class);
+        newParam.QSound.Volume = parent.setting.getBalance().getVolume("MAIN", QSoundInst.class);
+        newParam.GA20.Volume = parent.setting.getBalance().getVolume("MAIN", Ga20Inst.class);
 
-        newParam.APU.Volume = parent.setting.getBalance().getAPUVolume();
-        newParam.DMC.Volume = parent.setting.getBalance().getDMCVolume();
-        newParam.FDS.Volume = parent.setting.getBalance().getFDSVolume();
-        newParam.MMC5.Volume = parent.setting.getBalance().getMMC5Volume();
-        newParam.N160.Volume = parent.setting.getBalance().getN160Volume();
-        newParam.VRC6.Volume = parent.setting.getBalance().getVRC6Volume();
-        newParam.VRC7.Volume = parent.setting.getBalance().getVRC7Volume();
-        newParam.FME7.Volume = parent.setting.getBalance().getFME7Volume();
-        newParam.DMG.Volume = parent.setting.getBalance().getDMGVolume();
+        newParam.APU.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.class);
+        newParam.DMC.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.DMC.class);
+        newParam.FDS.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.FDS.class);
+        newParam.MMC5.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.MMC5.class);
+        newParam.N160.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.N160.class);
+        newParam.VRC6.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.VRC6.class);
+        newParam.VRC7.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.VRC7.class);
+        newParam.FME7.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.FME7.class);
+        newParam.DMG.Volume = parent.setting.getBalance().getVolume("MAIN", DmgInst.class);
 
         newParam.GimicOPN.Volume = parent.setting.getBalance().getGimicOPNVolume();
         newParam.GimicOPNA.Volume = parent.setting.getBalance().getGimicOPNAVolume();
@@ -884,7 +900,7 @@ public class frmMixer2 extends JFrame {
             int py = ev.getY() / parent.setting.getOther().getZoom();
             chipn = px / 20 + (py / 72) * 16;
             boolean b = ev.getButton() == MouseEvent.BUTTON3;
-            if (b) audio.setVolume[chipn].accept(true, 0);
+            if (b) setVolume(chipn, true, 0);
         }
 
         @Override
@@ -892,7 +908,7 @@ public class frmMixer2 extends JFrame {
             int px = ev.getX() / parent.setting.getOther().getZoom();
             int py = ev.getY() / parent.setting.getOther().getZoom();
             py = py % 72;
-            int n = 0;
+            int n;
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 if (chipn < 62) {
                     if (py < 18) {
@@ -912,8 +928,7 @@ public class frmMixer2 extends JFrame {
                     }
                 }
 
-                if (chipn < 0 || chipn >= audio.setVolume.length) return;
-                audio.setVolume[chipn].accept(true, n);
+                setVolume(chipn, true, n);
             }
         }
 
@@ -1080,4 +1095,70 @@ public class frmMixer2 extends JFrame {
     private JMenuItem tsmiLoadDriverBalance;
     private JMenuItem tsmiLoadSongBalance;
     private JSeparator toolStripSeparator1;
+
+    @SuppressWarnings("unchecked")
+    private Tuple<String, Class<? extends Instrument>>[] setVolume = Arrays.<Tuple<String, Class<? extends Instrument>>>asList(
+            null, // master
+            new Tuple<>("MAIN", Ym2151Inst.class),
+            new Tuple<>("MAIN", Ym2203Inst.class),
+            new Tuple<>("FM", Ym2203Inst.class),
+            new Tuple<>("PSG", Ym2203Inst.class),
+            new Tuple<>("MAIN", Ym2612Inst.class),
+            new Tuple<>("MAIN", Ym2608Inst.class),
+            new Tuple<>("FM", Ym2608Inst.class),
+            new Tuple<>("PSG", Ym2608Inst.class),
+            new Tuple<>("Rhythm", Ym2608Inst.class),
+            new Tuple<>("Adpcm", Ym2608Inst.class),
+            new Tuple<>("MAIN", Ym2610Inst.class),
+            new Tuple<>("FM", Ym2610Inst.class),
+            new Tuple<>("PSG", Ym2610Inst.class),
+            new Tuple<>("AdpcmA", Ym2610Inst.class),
+            new Tuple<>("AdpcmB", Ym2610Inst.class),
+            new Tuple<>("MAIN", Ym2413Inst.class),
+            new Tuple<>("MAIN", Ym3526Inst.class),
+            new Tuple<>("MAIN", Y8950Inst.class),
+            new Tuple<>("MAIN", Ym3812Inst.class),
+            new Tuple<>("MAIN", YmF262Inst.class),
+            new Tuple<>("MAIN", YmF278bInst.class),
+            new Tuple<>("MAIN", YmZ280bInst.class),
+            new Tuple<>("MAIN", YmF271Inst.class),
+            null,
+            new Tuple<>("MAIN", Ay8910Inst.class),
+            new Tuple<>("MAIN", Sn76489Inst.class),
+            new Tuple<>("MAIN", HuC6280Inst.class),
+            new Tuple<>("MAIN", Saa1099Inst.class),
+            null,
+            null,
+            null,
+            null,
+            null,
+            new Tuple<>("MAIN", ScdPcmInst.class),
+            new Tuple<>("MAIN", Rf5c68Inst.class),
+            new Tuple<>("MAIN", PwmInst.class),
+            new Tuple<>("MAIN", OkiM6258Inst.class),
+            new Tuple<>("MAIN", OkiM6295Inst.class),
+            new Tuple<>("MAIN", C140Inst.class),
+            new Tuple<>("MAIN", C352Inst.class),
+            new Tuple<>("MAIN", SegaPcmInst.class),
+            new Tuple<>("MAIN", MultiPcmInst.class),
+            new Tuple<>("MAIN", K051649Inst.class),
+            new Tuple<>("MAIN", K053260Inst.class),
+            new Tuple<>("MAIN", K054539Inst.class),
+            new Tuple<>("MAIN", QSoundInst.class),
+            new Tuple<>("MAIN", Ga20Inst.class),
+            new Tuple<>("MAIN", IntFNesInst.class),
+            new Tuple<>("MAIN", IntFNesInst.DMC.class),
+            new Tuple<>("MAIN", IntFNesInst.FDS.class),
+            new Tuple<>("MAIN", IntFNesInst.MMC5.class),
+            new Tuple<>("MAIN", IntFNesInst.N160.class),
+            new Tuple<>("MAIN", IntFNesInst.VRC6.class),
+            new Tuple<>("MAIN", IntFNesInst.VRC7.class),
+            new Tuple<>("MAIN", IntFNesInst.FME7.class),
+            new Tuple<>("MAIN", DmgInst.class),
+            null,
+            null,
+            null,
+            null,
+            new Tuple<>("MAIN", Ppz8Inst.class)
+    ).toArray(Tuple[]::new);
 }

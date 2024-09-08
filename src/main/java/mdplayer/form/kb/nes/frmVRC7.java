@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -32,8 +31,8 @@ public class frmVRC7 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
 
     private MDChipParams.VRC7 newParam;
     private MDChipParams.VRC7 oldParam = new MDChipParams.VRC7();
@@ -41,10 +40,10 @@ public class frmVRC7 extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmVRC7.class);
 
-    public frmVRC7(frmMain frm, int chipID, int zoom, MDChipParams.VRC7 newParam) {
+    public frmVRC7(frmMain frm, int chipId, int zoom, MDChipParams.VRC7 newParam) {
         super(frm);
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         initializeComponent();
 
@@ -69,9 +68,9 @@ public class frmVRC7 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosVrc7()[chipID] = getLocation();
+                parent.setting.getLocation().getPosVrc7()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosVrc7()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosVrc7()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -106,11 +105,11 @@ public class frmVRC7 extends frmBase {
     };
 
     public void screenChangeParams() {
-        byte[] vrc7Register = audio.getVRC7Register(chipID);
+        byte[] vrc7Register = audio.getVRC7Register(chipId);
         if (vrc7Register == null) return;
 
         //キーオン(ワンショット)があったかを取得する
-        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getVRC7KeyInfo(chipID);
+        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getVRC7KeyInfo(chipId);
 
         for (int ch = 0; ch < 6; ch++) {
             MDChipParams.Channel nyc = newParam.channels[ch];
@@ -189,25 +188,25 @@ public class frmVRC7 extends frmBase {
             oyc = oldParam.channels[c];
             nyc = newParam.channels[c];
 
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 0, oyc.volumeL, nyc.volumeL, tp);
+            oyc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 0, oyc.volumeL, nyc.volumeL, tp);
             DrawBuff.keyBoard(frameBuffer, c, oyc.note, nyc.note, tp);
 
-            DrawBuff.drawInstNumber(frameBuffer, (c % 3) * 16 + 37, (c / 3) * 2 + 16, oyc.inst[0], nyc.inst[0]);
+            oyc.inst[0] = DrawBuff.drawInstNumber(frameBuffer, (c % 3) * 16 + 37, (c / 3) * 2 + 16, oyc.inst[0], nyc.inst[0]);
             DrawBuff.susFlag(frameBuffer, (c % 3) * 16 + 41, (c / 3) * 2 + 16, 0, oyc.inst[1], nyc.inst[1]);
             DrawBuff.susFlag(frameBuffer, (c % 3) * 16 + 44, (c / 3) * 2 + 16, 0, oyc.inst[2], nyc.inst[2]);
-            DrawBuff.drawInstNumber(frameBuffer, (c % 3) * 16 + 46, (c / 3) * 2 + 16, oyc.inst[3], nyc.inst[3]);
+            oyc.inst[3] = DrawBuff.drawInstNumber(frameBuffer, (c % 3) * 16 + 46, (c / 3) * 2 + 16, oyc.inst[3], nyc.inst[3]);
 
             DrawBuff.chYM2413(frameBuffer, c, oyc.mask, nyc.mask, tp);
         }
 
         oyc = oldParam.channels[0];
         nyc = newParam.channels[0];
-        DrawBuff.drawInstNumber(frameBuffer, 9, 14, oyc.inst[4], nyc.inst[4]); //TL
-        DrawBuff.drawInstNumber(frameBuffer, 14, 14, oyc.inst[5], nyc.inst[5]); //FB
+        oyc.inst[4] = DrawBuff.drawInstNumber(frameBuffer, 9, 14, oyc.inst[4], nyc.inst[4]); // TL
+        DrawBuff.drawInstNumber(frameBuffer, 14, 14, oyc.inst[5], nyc.inst[5]); // FB
 
         for (int c = 0; c < 11; c++) {
-            DrawBuff.drawInstNumber(frameBuffer, c * 3, 18, oyc.inst[6 + c], nyc.inst[6 + c]);
-            DrawBuff.drawInstNumber(frameBuffer, c * 3, 20, oyc.inst[17 + c], nyc.inst[17 + c]);
+            oyc.inst[6 + c] = DrawBuff.drawInstNumber(frameBuffer, c * 3, 18, oyc.inst[6 + c], nyc.inst[6 + c]);
+            oyc.inst[17 + c] = DrawBuff.drawInstNumber(frameBuffer, c * 3, 20, oyc.inst[17 + c], nyc.inst[17 + c]);
         }
     }
 
@@ -259,9 +258,9 @@ public class frmVRC7 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 6; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.VRC7, chipID, ch);
+                            parent.resetChannelMask(EnmChip.VRC7, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.VRC7, chipID, ch);
+                            parent.setChannelMask(EnmChip.VRC7, chipId, ch);
                     }
                 }
                 return;
@@ -282,19 +281,19 @@ public class frmVRC7 extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
-                    parent.setChannelMask(EnmChip.VRC7, chipID, ch);
+                    parent.setChannelMask(EnmChip.VRC7, chipId, ch);
                     return;
                 }
 
                 //マスク解除
-                for (ch = 0; ch < 6; ch++) parent.resetChannelMask(EnmChip.VRC7, chipID, ch);
+                for (ch = 0; ch < 6; ch++) parent.resetChannelMask(EnmChip.VRC7, chipId, ch);
                 return;
             }
 
             //音色欄
             if (py < 15 * 8 && px < 16 * 8) {
                 //クリップボードに音色をコピーする
-                parent.getInstCh(EnmChip.VRC7, 0, chipID);
+                parent.getInstCh(EnmChip.VRC7, 0, chipId);
             }
         }
     };

@@ -267,8 +267,8 @@ public enum Manufacturers {
 	Softsound(149, "Softsound, Ltd."),
 	/** Norris Communications, Inc. */
 	Norris(150, "Norris Communications, Inc."),
-	/** Danka Data Devices */
-	Ddd(151, "Danka Data Devices"),
+	/** Danka data Devices */
+	Ddd(151, "Danka data Devices"),
 	/** EuPhonics */
 	Euphonics(152, "EuPhonics"),
 	/** Precept Software, Inc. */

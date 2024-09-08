@@ -73,12 +73,12 @@ public class frmPlayList extends JFrame {
     public EnmArcType playArcType = EnmArcType.unknown;
     public int playSongNum = -1;
 
-    private PlayList playList = null;
-    private frmMain frmMain = null;
+    private PlayList playList;
+    private frmMain frmMain;
 
     private boolean playing = false;
-    private int playIndex = -1;
-    private int oldPlayIndex = -1;
+    private int playIndex;
+    private int oldPlayIndex;
 
     private Random rand = new Random();
     private boolean IsInitialOpenFolder = true;
@@ -287,7 +287,7 @@ public class frmPlayList extends JFrame {
         String fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
         String zfn = (String) dgvList.getValueAt(pi, cols.clmZipFileName.ordinal());
         int m = 0;
-        int songNo = 0;
+        int songNo;
         try {
             songNo = (int) dgvList.getValueAt(pi, cols.clmSongNo.ordinal());
         } catch (Exception e) {
@@ -364,7 +364,7 @@ public class frmPlayList extends JFrame {
             m = dgvList.getValueAt(pi, cols.clmType.ordinal()).toString().charAt(0) - 'A';
             if (m < 0 || m > 9) m = 0;
         }
-        int songNo = 0;
+        int songNo;
         try {
             songNo = (int) dgvList.getValueAt(pi, cols.clmSongNo.ordinal());
         } catch (Exception e) {
@@ -431,7 +431,7 @@ loopEx:
             m = dgvList.getValueAt(pi, cols.clmType.ordinal()).toString().charAt(0) - 'A';
             if (m < 0 || m > 9) m = 0;
         }
-        int songNo = 0;
+        int songNo;
         try {
             songNo = (int) dgvList.getValueAt(pi, cols.clmSongNo.ordinal());
         } catch (Exception e) {
@@ -542,7 +542,7 @@ loopEx:
         IsInitialOpenFolder = false;
 
         try {
-            PlayList pl = null;
+            PlayList pl;
             String filename = ofd.getSelectedFile().getPath();
 
             if (filename.toLowerCase().lastIndexOf(".m3u") == -1) {
@@ -778,7 +778,7 @@ loopEx:
                     m = dgvList.getValueAt(index, cols.clmType.ordinal()).toString().charAt(0) - 'A';
                     if (m < 0 || m > 9) m = 0;
                 }
-                int songNo = 0;
+                int songNo;
                 try {
                     songNo = (int) dgvList.getValueAt(index, cols.clmSongNo.ordinal());
                 } catch (Exception ex) {
@@ -1587,7 +1587,7 @@ loopEx:
         this.getContentPane().add(this.toolStripContainer1);
 //        this.KeyPreview = true;
         this.setName("frmPlayList");
-        this.setOpacity(0);
+//        this.setOpacity(0);
         this.addWindowListener(this.windowListener);
         this.addKeyListener(this.frmPlayList_KeyDown);
         // this.toolStripContainer1.ContentPanel.ResumeLayout(false);

@@ -35,6 +35,7 @@ import dotnet4j.util.compat.Tuple3;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import vavi.awt.dnd.BasicDTListener;
+import vavi.util.ByteUtil;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.util.function.Predicate.not;
@@ -78,14 +79,13 @@ public class Common {
     public static String settingFilePath = "";
     public static String playingFilePath = "";
 
-    @Deprecated
     public static int getBE16(byte[] buf, int adr) {
         if (buf == null || buf.length - 1 < adr + 1) {
             throw new IndexOutOfBoundsException();
         }
 
         int dat;
-        dat = (int) buf[adr] * 0x100 + (int) buf[adr + 1];
+        dat = (buf[adr] & 0xff) * 0x100 + (buf[adr + 1] & 0xff);
 
         return dat;
     }
@@ -96,10 +96,7 @@ public class Common {
             throw new IndexOutOfBoundsException();
         }
 
-        int dat;
-        dat = (int) buf[adr] + (int) buf[adr + 1] * 0x100;
-
-        return dat;
+        return ByteUtil.readLeShort(buf, adr);
     }
 
     public static int getLE24(byte[] buf, int adr) {
@@ -107,10 +104,7 @@ public class Common {
             throw new IndexOutOfBoundsException();
         }
 
-        int dat;
-        dat = (int) buf[adr] + (int) buf[adr + 1] * 0x100 + (int) buf[adr + 2] * 0x10000;
-
-        return dat;
+        return ByteUtil.readLe24(buf, adr);
     }
 
     @Deprecated
@@ -119,24 +113,21 @@ public class Common {
             throw new IndexOutOfBoundsException();
         }
 
-        int dat;
-        dat = (int) buf[adr] + (int) buf[adr + 1] * 0x100 + (int) buf[adr + 2] * 0x10000 + (int) buf[adr + 3] * 0x1000000;
-
-        return dat;
+        return ByteUtil.readLeInt(buf, adr);
     }
 
-    /** find a asciiz string from a byte array */
-    public static byte[] getByteArray(byte[] buf, int adr) {
-        if (adr >= buf.length) throw new IndexOutOfBoundsException(adr + " > " + buf.length);
+    /** find an asciiz string from a byte array */
+    public static byte[] getByteArray(byte[] buf, int[] adr) {
+        if (adr[0] >= buf.length) throw new IndexOutOfBoundsException(adr[0] + " > " + buf.length);
 
         List<Byte> ary = new ArrayList<>();
-        while (buf[adr] != 0 || buf[adr + 1] != 0) {
-            ary.add(buf[adr]);
-            adr++;
-            ary.add(buf[adr]);
-            adr++;
+        while (buf[adr[0]] != 0 || buf[adr[0] + 1] != 0) {
+            ary.add(buf[adr[0]]);
+            adr[0]++;
+            ary.add(buf[adr[0]]);
+            adr[0]++;
         }
-        adr += 2;
+        adr[0] += 2;
 
         return toByteArray(ary);
     }
@@ -159,25 +150,26 @@ public class Common {
         gd3.usedChips = "";
 
         try {
-            gd3.trackName = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            gd3.trackNameJ = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            gd3.gameName = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            gd3.gameNameJ = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            gd3.systemName = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            gd3.systemNameJ = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            gd3.composer = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            gd3.composerJ = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            gd3.converted = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            gd3.vgmBy = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
-            gd3.notes = new String(Common.getByteArray(buf, adr), StandardCharsets.UTF_8);
+            int[] adr_ = new int[] {adr};
+            gd3.trackName = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
+            gd3.trackNameJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
+            gd3.gameName = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
+            gd3.gameNameJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
+            gd3.systemName = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
+            gd3.systemNameJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
+            gd3.composer = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
+            gd3.composerJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
+            gd3.converted = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
+            gd3.vgmBy = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
+            gd3.notes = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
             // Lyric(独自拡張)
-            byte[] bLyric = Common.getByteArray(buf, adr);
+            byte[] bLyric = Common.getByteArray(buf, adr_);
             gd3.lyrics = new ArrayList<>();
             int i = 0;
             int st = 0;
             while (i < bLyric.length) {
-                byte h = bLyric[i];
-                byte l = bLyric[i + 1];
+                int h = bLyric[i] & 0xff;
+                int l = bLyric[i + 1] & 0xff;
                 if ((h == 0x5b && l == 0x00 && i != 0) || i >= bLyric.length - 2) {
                     if ((i >= bLyric.length - 2) || (bLyric[i + 2] != 0x5b || bLyric[i + 3] != 0x00)) {
                         String m = new String(bLyric, st, i - st + ((i >= bLyric.length - 2) ? 2 : 0), StandardCharsets.UTF_8);
@@ -558,6 +550,7 @@ public class Common {
          * @param ev the DropTargetDragEvent object
          * @return whether the flavor is acceptable
          */
+        @Override
         protected boolean isDragFlavorSupported(DropTargetDragEvent ev) {
             return ev.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
         }
@@ -566,8 +559,9 @@ public class Common {
          * Called by drop
          * Checks the flavors and operations
          * @param ev the DropTargetDropEvent object
-         * @return the chosen DataFlavor or null if none match
+         * @return the chosen dataFlavor or null if none match
          */
+        @Override
         protected DataFlavor chooseDropFlavor(DropTargetDropEvent ev) {
 // Debug.println(ev.getCurrentDataFlavorsAsList());
             if (ev.isLocalTransfer() && ev.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
@@ -585,6 +579,7 @@ public class Common {
          * data is deserialized clone
          * @param data dropped
          */
+        @Override
         @SuppressWarnings("unchecked")
         protected boolean dropImpl(DropTargetDropEvent ev, Object data) {
             drop.accept((List<java.io.File>) data);

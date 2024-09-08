@@ -7,7 +7,6 @@ import java.util.List;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
-import mdplayer.Audio;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
@@ -32,6 +31,7 @@ public class NSFFileFormat extends BaseFileFormat {
         return new String[] {".nsf"};
     }
 
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
@@ -73,6 +73,7 @@ public class NSFFileFormat extends BaseFileFormat {
         return musics;
     }
 
+    @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
@@ -143,6 +144,7 @@ public class NSFFileFormat extends BaseFileFormat {
         return new NSFPlugin();
     }
 
+    @Override
     public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
         byte[] buf;
         if (entry == null) {
@@ -175,6 +177,7 @@ public class NSFFileFormat extends BaseFileFormat {
         return musics;
     }
 
+    @Override
     public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
         byte[] buf;
         if (entry == null) {

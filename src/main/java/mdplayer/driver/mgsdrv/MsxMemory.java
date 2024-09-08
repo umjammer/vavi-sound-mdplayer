@@ -18,11 +18,13 @@ public class MsxMemory implements Memory {
         this.slot = new MSXSlot(chipRegister, model);
     }
 
+    @Override
     public byte get(int address) {
         int page = address / Cartridge.PAGE_SIZE;
         return slot.pages[page].get(address);
     }
 
+    @Override
     public void set(int address, byte value) {
         int page = address / Cartridge.PAGE_SIZE;
         slot.pages[page].set(address, value);
@@ -30,10 +32,12 @@ public class MsxMemory implements Memory {
 
     public int size = 65536;
 
+    @Override
     public int getSize() {
         return size;
     }
 
+    @Override
     public byte[] getContents(int startAddress, int length) {
         if (startAddress >= this.size)
             throw new IndexOutOfBoundsException("startAddress cannot go beyond memory size");
@@ -50,6 +54,7 @@ public class MsxMemory implements Memory {
         return ret;
     }
 
+    @Override
     public void setContents(int startAddress,
                             byte[] contents,
                             int startIndex /* = 0 */,

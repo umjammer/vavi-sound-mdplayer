@@ -33,19 +33,19 @@ public class frmDMG extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
     private MDChipParams.DMG newParam;
     private MDChipParams.DMG oldParam;
     private FrameBuffer frameBuffer = new FrameBuffer();
     static Preferences prefs = Preferences.userNodeForPackage(frmDMG.class);
 
-    public frmDMG(frmMain frm, int chipID, int zoom, MDChipParams.DMG newParam, MDChipParams.DMG oldParam) {
+    public frmDMG(frmMain frm, int chipId, int zoom, MDChipParams.DMG newParam, MDChipParams.DMG oldParam) {
         super(frm);
 
         initializeComponent();
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         this.newParam = newParam;
         this.oldParam = oldParam;
@@ -68,9 +68,9 @@ public class frmDMG extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosDMG()[chipID] = getLocation();
+                parent.setting.getLocation().getPosDMG()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosDMG()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosDMG()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -105,7 +105,7 @@ public class frmDMG extends frmBase {
     };
 
     public void screenChangeParams() {
-        GbSound dat = audio.getDMGRegister(chipID);
+        GbSound dat = audio.getDMGRegister(chipId);
         if (dat == null) return;
 
         // pan
@@ -299,9 +299,9 @@ public class frmDMG extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 4; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.DMG, chipID, ch);
+                            parent.resetChannelMask(EnmChip.DMG, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.DMG, chipID, ch);
+                            parent.setChannelMask(EnmChip.DMG, chipId, ch);
                     }
                 }
                 return;
@@ -314,12 +314,12 @@ public class frmDMG extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // マスク
-                    parent.setChannelMask(EnmChip.DMG, chipID, ch);
+                    parent.setChannelMask(EnmChip.DMG, chipId, ch);
                     return;
                 }
 
                 // マスク解除
-                for (ch = 0; ch < 4; ch++) parent.resetChannelMask(EnmChip.DMG, chipID, ch);
+                for (ch = 0; ch < 4; ch++) parent.resetChannelMask(EnmChip.DMG, chipId, ch);
             }
         }
     };

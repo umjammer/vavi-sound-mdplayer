@@ -135,13 +135,13 @@ public class NRTDRV extends BaseDriver {
             throw new IllegalStateException("Driverの初期化に失敗しました。", ex);
         }
 
-        for (int chipID = 0; chipID < 2; chipID++) {
-            ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, 3579545);
+        for (int chipId = 0; chipId < 2; chipId++) {
+            ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
-                ym2151Hosei[chipID] = 0;
-                int clock = chipRegister.getYM2151Clock((byte) chipID);
+                ym2151Hosei[chipId] = 0;
+                int clock = chipRegister.getYM2151Clock(chipId);
                 if (clock != -1) {
-                    ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, clock);
+                    ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
             }
         }
@@ -436,8 +436,8 @@ public class NRTDRV extends BaseDriver {
     private float CTC3DownCounter = 0.0f;
     private float CTC3DownCounterMAX = 0.0f;
     // private boolean CTC3Paluse = false;
-    private float ctcStep = 4000000.0f / 1; // sampleRate;
-    private float ctc1Step = 4000000.0f / 1; // sampleRate;
+    private float ctcStep; // sampleRate;
+    private float ctc1Step; // sampleRate;
 
     @Override
     public void processOneFrame() {
@@ -1247,7 +1247,7 @@ public class NRTDRV extends BaseDriver {
 
         private void VSETJ(byte e, int hl) {
             byte d = (byte) (0x40 + e);
-            byte a = e;
+            byte a;
 
             for (int i = 0; i < 24; i++) {
                 a = ram[hl];
@@ -2305,8 +2305,8 @@ public class NRTDRV extends BaseDriver {
 
         private void PENV(byte e) {
             int hl = this.psgToneAdr;
-            byte a = 0;
-            byte c = 0;
+            byte a;
+            byte c;
             while (true) {
                 a = ram[hl];
                 hl++;
@@ -3007,7 +3007,7 @@ public class NRTDRV extends BaseDriver {
         private void PEPMH1(byte a, byte h, byte l, byte e) {
             byte b = e;
             // byte c = 0;
-            int hl = 0;
+            int hl;
 
             if (a == 4 || a == 7) {
                 // PEPMMH

@@ -27,23 +27,23 @@ public class MIDIExport {
         this.setting = Setting.getInstance();
     }
 
-    public void outMIDIData(EnmChip chip, int chipID, int dPort, int dAddr, int dData, int hosei, long vgmFrameCounter) {
+    public void outMIDIData(EnmChip chip, int chipId, int dPort, int dAddr, int dData, int hosei, long vgmFrameCounter) {
         if (!setting.getMidiExport().getUseMIDIExport()) return;
         if (setting.getMidiExport().getExportPath().isEmpty()) return;
         if (vgmFrameCounter < 0) return;
-        if (chipID != 0) return;
+        if (chipId != 0) return;
 
         if (chip != EnmChip.YM2612 && chip != EnmChip.YM2151) return;
 
         switch (chip) {
         case YM2151:
             if (setting.getMidiExport().getUseYM2151Export()) {
-                outMIDIData_YM2151(chipID, dPort, dAddr, dData, hosei, vgmFrameCounter);
+                outMIDIData_YM2151(chipId, dPort, dAddr, dData, hosei, vgmFrameCounter);
             }
             break;
         case YM2612:
             if (setting.getMidiExport().getUseYM2612Export()) {
-                outMIDIData_YM2612(chipID, dPort, dAddr, dData, vgmFrameCounter);
+                outMIDIData_YM2612(chipId, dPort, dAddr, dData, vgmFrameCounter);
             }
             break;
         }
@@ -140,22 +140,22 @@ public class MIDIExport {
         midi2612 = null;
     }
 
-    private void outMIDIData_YM2151(int chipID, int dPort, int dAddr, int dData, int hosei, long vgmFrameCounter) {
+    private void outMIDIData_YM2151(int chipId, int dPort, int dAddr, int dData, int hosei, long vgmFrameCounter) {
         if (cData == null) {
             makeHeader();
         }
 
         if (dAddr == 0x08) {
-            byte ch = (byte) (dData & 0x7);
-            byte cmd = (byte) ((dData & 0x78) != 0 ? 0x90 : 0x80);
+            int ch = dData & 0x7;
+            int cmd = (dData & 0x78) != 0 ? 0x90 : 0x80;
 
-            int freq = (fmRegisterYM2151[chipID][0x28 + ch] & 0x7f) + (fmRegisterYM2151[chipID][0x30 + ch] & 0xfc) * 0x100;
-            int octNote = fmRegisterYM2151[chipID][0x28 + ch] & 0x7f;
+            int freq = (fmRegisterYM2151[chipId][0x28 + ch] & 0x7f) + (fmRegisterYM2151[chipId][0x30 + ch] & 0xfc) * 0x100;
+            int octNote = fmRegisterYM2151[chipId][0x28 + ch] & 0x7f;
             if (octNote == 0) return;
             int octav = (octNote & 0x70) >> 4;
             int note = searchOPMNote(octNote) + hosei;
-            byte code = (byte) (octav * 12 + note);
-            byte vel = (byte) (127 - fmRegisterYM2151[chipID][0x78 + ch]);
+            int code = octav * 12 + note;
+            int vel = 127 - fmRegisterYM2151[chipId][0x78 + ch];
 
             if (midi2151.oldFreq[ch] < 0 && cmd == 0x80) return;
 
@@ -174,11 +174,11 @@ public class MIDIExport {
 
             if (cmd == 0x90) {
                 midi2151.data[ch].add((byte) (0x90 | ch));
-                midi2151.data[ch].add(code);
+                midi2151.data[ch].add((byte) code);
                 if (setting.getMidiExport().getUseVOPMex()) {
                     midi2151.data[ch].add((byte) 127);
                 } else {
-                    midi2151.data[ch].add(vel);
+                    midi2151.data[ch].add((byte) vel);
                 }
 
                 midi2151.oldCode[ch] = code;
@@ -190,7 +190,7 @@ public class MIDIExport {
 
         if (!setting.getMidiExport().getKeyOnFnum()) {
             if (dAddr >= 0x28 && dAddr < 0x30) {
-                byte ch = (byte) (dAddr & 0x7);
+                int ch = dAddr & 0x7;
                 int freq = midi2151.oldFreq[ch];
                 if (freq == -1) return;
 
@@ -201,7 +201,7 @@ public class MIDIExport {
                    //if (freq2nd == 0) return;
                     int octav = (freq & 0x0070) >> 4;
                     int note = searchOPMNote(freq2nd) + hosei;
-                    byte code = (byte) (octav * 12 + note);
+                    int code = octav * 12 + note;
 
                     if (midi2151.oldCode[ch] != -1 && midi2151.oldCode[ch] != code) {
                         SetDelta(ch, midi2151, vgmFrameCounter);
@@ -211,12 +211,12 @@ public class MIDIExport {
 
                         midi2151.data[ch].add((byte) 0); // delta0
                         midi2151.data[ch].add((byte) (0x90 | ch));
-                        midi2151.data[ch].add(code);
+                        midi2151.data[ch].add((byte) code);
                         if (setting.getMidiExport().getUseVOPMex()) {
                             midi2151.data[ch].add((byte) 127);
                         } else {
-                            byte vel = (byte) (127 - fmRegisterYM2151[chipID][0x78 + ch]);
-                            midi2151.data[ch].add(vel);
+                            int vel = 127 - fmRegisterYM2151[chipId][0x78 + ch];
+                            midi2151.data[ch].add((byte) vel);
                         }
 
                         midi2151.oldFreq[ch] = freq;
@@ -388,7 +388,7 @@ public class MIDIExport {
         }
     }
 
-    private void outMIDIData_YM2612(int chipID, int dPort, int dAddr, int dData, long vgmFrameCounter) {
+    private void outMIDIData_YM2612(int chipId, int dPort, int dAddr, int dData, long vgmFrameCounter) {
         if (cData == null) {
             makeHeader();
         }
@@ -405,7 +405,7 @@ public class MIDIExport {
             if (ch > 5) return;
 
             // キーオンしたチャンネルのFnumを取得
-            midi2612.oldFreq[ch] = fmRegisterYM2612[chipID][p][0xa0 + vch] + (fmRegisterYM2612[chipID][p][0xa4 + vch] & 0x3f) * 0x100;
+            midi2612.oldFreq[ch] = fmRegisterYM2612[chipId][p][0xa0 + vch] + (fmRegisterYM2612[chipId][p][0xa4 + vch] & 0x3f) * 0x100;
             int freq = midi2612.oldFreq[ch] & 0x7ff;
             if (freq == 0) return;
             int octave = (midi2612.oldFreq[ch] & 0x3800) >> 11;
@@ -413,7 +413,7 @@ public class MIDIExport {
             byte code = (byte) (octave * 12 + note);
 
             // オペレータ4のトータルレベルのみ取得(音量として使う)
-            byte vel = (byte) (127 - fmRegisterYM2612[chipID][p][0x4c + vch]);
+            byte vel = (byte) (127 - fmRegisterYM2612[chipId][p][0x4c + vch]);
 
             // 前回のコードが負で且つ noteOFFなら何もせずに処理終了
             if (midi2612.oldCode[ch] < 0 && cmd == (byte) 0x80) return;
@@ -485,7 +485,7 @@ public class MIDIExport {
                         if (setting.getMidiExport().getUseVOPMex()) {
                             midi2612.data[ch].add((byte) 127);
                         } else {
-                            byte vel = (byte) (127 - fmRegisterYM2612[chipID][dPort][0x4c + vch]);
+                            byte vel = (byte) (127 - fmRegisterYM2612[chipId][dPort][0x4c + vch]);
                             midi2612.data[ch].add(vel);
                         }
 
@@ -692,7 +692,6 @@ public class MIDIExport {
             d |= (byte) ((i != 3) ? 0x80 : 0x00);
             chip.data[ch].add(d);
         }
-
     }
 
     private void makeHeader() {

@@ -5,7 +5,7 @@ import mdplayer.Common.EnmModel;
 
 public class DacControl {
 
-    private static final int MAX_CHIPS = 0xFF;
+    private static final int MAX_CHIPS = 0xff;
     private DacControl_[] DACData = new DacControl_[MAX_CHIPS];
     private Setting setting;
     public EnmModel model = EnmModel.VirtualModel;
@@ -15,63 +15,63 @@ public class DacControl {
         this.setting = setting;
     }
 
-    public void update(byte chipID, int samples) {
-// #if DEBUG
+    public void update(int chipId, int samples) {
+//#if DEBUG
         if (model != EnmModel.VirtualModel) return;
-// #endif
-        DacControl_ chip = DACData[chipID];
+//#endif
+        DacControl_ chip = DACData[chipId];
         chip.update(samples);
     }
 
-    public byte device_start_daccontrol(byte chipID) {
-        if (chipID >= MAX_CHIPS)
+    public int device_start_daccontrol(int chipId) {
+        if ((chipId & 0xff) >= MAX_CHIPS)
             return 0;
 
-        DacControl_ chip = DACData[chipID];
+        DacControl_ chip = DACData[chipId];
         chip.startDacControl();
 
         return 1;
     }
 
-    public void device_stop_daccontrol(byte chipID) {
-        DacControl_ chip = DACData[chipID];
+    public void device_stop_daccontrol(int chipId) {
+        DacControl_ chip = DACData[chipId];
         chip.stopDacControl();
     }
 
-    public void device_reset_daccontrol(byte chipID) {
-        DacControl_ chip = DACData[chipID];
+    public void device_reset_daccontrol(int chipId) {
+        DacControl_ chip = DACData[chipId];
         chip.reset();
     }
 
-    public void setupChip(byte chipID, byte chType, byte chNum, int command) {
-        DacControl_ chip = DACData[chipID];
+    public void setupChip(int chipId, int chType, int chNum, int command) {
+        DacControl_ chip = DACData[chipId];
         chip.setup(chType, chNum, command);
     }
 
-    public void setData(byte chipID, byte[] data, int dataLen, byte stepSize, byte stepBase) {
-        DacControl_ chip = DACData[chipID];
+    public void setData(int chipId, byte[] data, int dataLen, int stepSize, int stepBase) {
+        DacControl_ chip = DACData[chipId];
         chip.setData(data, dataLen, stepSize, stepBase);
     }
 
-    public void refresh_data(byte chipID, byte[] data, int dataLen) {
+    public void refresh_data(int chipId, byte[] data, int dataLen) {
         // Should be called to fix the data pointer. (e.g. after a realloc)
-        DacControl_ chip = DACData[chipID];
+        DacControl_ chip = DACData[chipId];
         chip.refreshData(data, dataLen);
     }
 
-    public void set_frequency(byte chipID, int frequency) {
-        //Debug.printf(("chipID%d frequency%d", chipID, frequency);
-        DacControl_ chip = DACData[chipID];
-        chip.setFrequency(chipID, frequency);
+    public void set_frequency(int chipId, int frequency) {
+        //Debug.printf(("chipId%d frequency%d", chipId, frequency);
+        DacControl_ chip = DACData[chipId];
+        chip.setFrequency(chipId, frequency);
     }
 
-    public void start(byte chipID, int dataPos, byte lenMode, int length) {
-        DacControl_ chip = DACData[chipID];
+    public void start(int chipId, int dataPos, int lenMode, int length) {
+        DacControl_ chip = DACData[chipId];
         chip.start(dataPos, lenMode, length);
     }
 
-    public void stop(byte ChipID) {
-        DacControl_ chip = DACData[ChipID];
+    public void stop(int chipId) {
+        DacControl_ chip = DACData[chipId];
         chip.stop();
     }
 
@@ -79,7 +79,7 @@ public class DacControl {
         for (int i = 0; i < MAX_CHIPS; i++) DACData[i] = new DacControl_();
     }
 
-    private void writeChipReg(byte chipType2, byte chipId, byte port, byte offset, byte data) {
+    private void writeChipReg(int chipType2, int chipId, int port, int offset, int data) {
         switch (chipType2) {
         case 0x00: // SN76489
             chipRegister.setSN76489Register(chipId, data, model);
@@ -150,116 +150,116 @@ public class DacControl {
 
     public class DacControl_ {
 
-        private static final byte DCTRL_LMODE_IGNORE = 0x00;
-        private static final byte DCTRL_LMODE_CMDS = 0x01;
-        private static final byte DCTRL_LMODE_MSEC = 0x02;
-        private static final byte DCTRL_LMODE_TOEND = 0x03;
-        public static final byte DCTRL_LMODE_BYTES = 0x0F;
+        private static final int DCTRL_LMODE_IGNORE = 0x00;
+        private static final int DCTRL_LMODE_CMDS = 0x01;
+        private static final int DCTRL_LMODE_MSEC = 0x02;
+        private static final int DCTRL_LMODE_TOEND = 0x03;
+        public static final int DCTRL_LMODE_BYTES = 0x0F;
         private static final int DAC_SMPL_RATE = 44100; // DAC control独自のサンプルレートです(Fixed)
 
         private static int mulDiv64Round(int multiplicand, int multiplier, int divisor) {
             // Yes, I'm correctly rounding the values.
-            return (int) (((long) multiplicand * multiplier + divisor / 2) / divisor);
+            return (multiplicand * multiplier + divisor / 2) / divisor;
         }
 
         // Commands sent to dest-chips
-        public byte dstChipType2;
-        public byte dstChipID;
+        public int dstChipType2;
+        public int dstChipID;
         public int dstCommand;
-        public byte cmdSize;
+        public int cmdSize;
 
         // Frequency (Hz) at which the commands are sent
         public int frequency;
-        // to protect from reading beyond End Of Data
+        // to protect from reading beyond End Of data
         public int dataLen;
-        public byte[] Data;
+        public byte[] data;
         // Position where to start
         public int dataStart;
         // usually 1, set to 2 for L/R interleaved data
-        public byte StepSize;
+        public int stepSize;
         // usually 0, set to 0/1 for L/R interleaved data
-        public byte StepBase;
+        public int stepBase;
         public int cmdsToSend;
 
         // Running Bits:	0 (01) - instanceof playing
         //					2 (04) - loop sample (simple loop from start to end)
         //					4 (10) - already sent this command
         //					7 (80) - disabled
-        public byte running;
-        public byte reverse;
+        public int running;
+        public int reverse;
         // Position : Player SampleRate
         public int step;
-        // Position : Data SampleRate
+        // Position : data SampleRate
         public int pos;
         public int remainCmds;
-        // true Position : Data (== Pos, if Reverse instanceof off)
+        // true Position : data (== Pos, if Reverse instanceof off)
         public int realPos;
-        // always StepSize * cmdSize
-        public byte dataStep;
+        // always stepSize * cmdSize
+        public int dataStep;
 
         public void sendCommand() {
-            byte port;
-            byte command;
-            byte data;
+            int port;
+            int command;
+            int data;
 
             if ((running & 0x10) != 0)   // command already sent
                 return;
             if (dataStart + realPos >= dataLen)
                 return;
 
-            //if (! chips->Reverse)
-            //ChipData00 = chips.data[(chips.DataStart + chips.RealPos)];
-            //ChipData01 = chips.data[(chips.DataStart + chips.RealPos+1)];
-            //else
-            //	ChipData = chips->data + (chips->DataStart + chips->CmdsToSend - 1 - chips->Pos);
+//            if (!chips -> Reverse) {
+//                ChipData00 = chips.data[(chips.DataStart + chips.RealPos)];
+//                ChipData01 = chips.data[(chips.DataStart + chips.RealPos + 1)];
+//            } else
+//                ChipData = chips -> data + (chips -> dataStart + chips -> CmdsToSend - 1 - chips -> Pos);
             switch (dstChipType2) {
             // Support for the important chips
             case 0x02: // Ym2612Inst (16-bit Register (actually 9 Bit), 8-bit data)
-                port = (byte) ((dstCommand & 0xFF00) >> 8);
-                command = (byte) ((dstCommand & 0x00FF) >> 0);
-                data = this.Data[(dataStart + realPos)];
+                port = (dstCommand & 0xff00) >> 8;
+                command = dstCommand & 0x00FF;
+                data = this.data[(dataStart + realPos)];
                 //if (model == enmModel.RealModel) Debug.printf(String.format("%x %x", data, chips.RealPos));
 
                 writeChipReg(dstChipType2, dstChipID, port, command, data);
                 break;
             case 0x11: // PWM (4-bit Register, 12-bit data)
-                port = (byte) ((dstCommand & 0x000F) >> 0);
-                command = (byte) (this.Data[dataStart + realPos + 1] & 0x0F);
-                data = this.Data[dataStart + realPos];
+                port = dstCommand & 0x000F;
+                command = this.data[dataStart + realPos + 1] & 0x0F;
+                data = this.data[dataStart + realPos];
                 writeChipReg(dstChipType2, dstChipID, port, command, data);
                 break;
             // Support for other chips (mainly for completeness)
             case 0x00: // SN76496 (4-bit Register, 4-bit/10-bit data)
-                command = (byte) ((dstCommand & 0x00F0) >> 0);
-                data = (byte) (this.Data[dataStart + realPos] & 0x0F);
+                command = dstCommand & 0x00F0;
+                data = this.data[dataStart + realPos] & 0x0F;
                 if ((command & 0x10) != 0) {
                     // Volume Change (4-Bit value)
-                    writeChipReg(dstChipType2, dstChipID, (byte) 0x00, (byte) 0x00, (byte) (command | data));
+                    writeChipReg(dstChipType2, dstChipID, 0x00, 0x00, command | data);
                 } else {
                     // Frequency Write (10-Bit value)
-                    port = (byte) (((this.Data[dataStart + realPos + 1] & 0x03) << 4) | ((this.Data[dataStart + realPos] & 0xF0) >> 4));
-                    writeChipReg(dstChipType2, dstChipID, (byte) 0x00, (byte) 0x00, (byte) (command | data));
-                    writeChipReg(dstChipType2, dstChipID, (byte) 0x00, (byte) 0x00, port);
+                    port = ((this.data[dataStart + realPos + 1] & 0x03) << 4) | ((this.data[dataStart + realPos] & 0xF0) >> 4);
+                    writeChipReg(dstChipType2, dstChipID, 0x00, 0x00, command | data);
+                    writeChipReg(dstChipType2, dstChipID, 0x00, 0x00, port);
                 }
                 break;
             case 0x18: // OKIM6295 - TODO: verify
-                command = (byte) ((dstCommand & 0x00FF) >> 0);
-                data = this.Data[dataStart + realPos];
+                command = dstCommand & 0x00FF;
+                data = this.data[dataStart + realPos];
 
                 if (command == 0) {
                     port = (byte) ((dstCommand & 0x0F00) >> 8);
                     if ((data & 0x80) > 0) {
                         // Sample Start
                         // write sample ID
-                        writeChipReg(dstChipType2, dstChipID, (byte) 0x00, command, data);
+                        writeChipReg(dstChipType2, dstChipID, 0x00, command, data);
                         // write channel(s) that should play the sample
-                        writeChipReg(dstChipType2, dstChipID, (byte) 0x00, command, (byte) (port << 4));
+                        writeChipReg(dstChipType2, dstChipID, 0x00, command, port << 4);
                     } else {
                         // Sample Stop
-                        writeChipReg(dstChipType2, dstChipID, (byte) 0x00, command, (byte) (port << 3));
+                        writeChipReg(dstChipType2, dstChipID, 0x00, command, port << 3);
                     }
                 } else {
-                    writeChipReg(dstChipType2, dstChipID, (byte) 0x00, command, data);
+                    writeChipReg(dstChipType2, dstChipID, 0x00, command, data);
                 }
                 break;
             // Generic support: 8-bit Register, 8-bit data
@@ -278,9 +278,9 @@ public class DacControl {
             case 0x17: // OKIM6258
             case 0x1D: // K053260Inst - TODO: Verify
             case 0x1E: // PokeyInst - TODO: Verify
-                command = (byte) ((dstCommand & 0x00FF) >> 0);
-                data = this.Data[dataStart + realPos];
-                writeChipReg(dstChipType2, dstChipID, (byte) 0x00, command, data);
+                command = dstCommand & 0x00FF;
+                data = this.data[dataStart + realPos];
+                writeChipReg(dstChipType2, dstChipID, 0x00, command, data);
                 break;
             // Generic support: 16-bit Register, 8-bit data
             case 0x07: // YM2608
@@ -291,23 +291,23 @@ public class DacControl {
             case 0x19: // K051649Inst - TODO: Verify
             case 0x1A: // K054539Inst - TODO: Verify
             case 0x1C: // C140Inst - TODO: Verify
-                port = (byte) ((dstCommand & 0xFF00) >> 8);
-                command = (byte) ((dstCommand & 0x00FF) >> 0);
-                data = this.Data[dataStart + realPos];
+                port = (dstCommand & 0xff00) >> 8;
+                command = dstCommand & 0x00FF;
+                data = this.data[dataStart + realPos];
                 writeChipReg(dstChipType2, dstChipID, port, command, data);
                 break;
             // Generic support: 8-bit Register with Channel Select, 8-bit data
             case 0x05: // RF5C68
             case 0x10: // RF5C164
             case 0x1B: // OotakeHuC6280
-                port = (byte) ((dstCommand & 0xFF00) >> 8);
-                command = (byte) ((dstCommand & 0x00FF) >> 0);
-                data = this.Data[dataStart + realPos];
+                port = (dstCommand & 0xff00) >> 8;
+                command = dstCommand & 0x00FF;
+                data = this.data[dataStart + realPos];
 
-                if (port == (byte) 0xFF) // Send Channel Select
-                    writeChipReg(dstChipType2, dstChipID, (byte) 0x00, (byte) (command & 0x0f), data);
+                if (port == 0xff) // Send Channel Select
+                    writeChipReg(dstChipType2, dstChipID, 0x00, command & 0x0f, data);
                 else {
-                    byte prevChn;
+                    int prevChn;
 
                     prevChn = port; // by default don't restore channel
                     // get current channel for supported chips
@@ -316,24 +316,24 @@ public class DacControl {
                     else if (dstChipType2 == 0x05) {
                     } // TODO
                     else if (dstChipType2 == 0x1B)
-                        prevChn = chipRegister.ReadHuC6280Register(dstChipID, (byte) 0x00, model);
+                        prevChn = chipRegister.readHuC6280Register(dstChipID, 0x00, model);
 
                     // Send Channel Select
-                    writeChipReg(dstChipType2, dstChipID, (byte) 0x00, (byte) (command >> 4), port);
+                    writeChipReg(dstChipType2, dstChipID, 0x00, command >> 4, port);
                     // Send data
-                    writeChipReg(dstChipType2, dstChipID, (byte) 0x00, (byte) (command & 0x0F), data);
+                    writeChipReg(dstChipType2, dstChipID, 0x00, command & 0x0F, data);
                     // restore old channel
                     if (prevChn != port)
-                        writeChipReg(dstChipType2, dstChipID, (byte) 0x00, (byte) (command >> 4), prevChn);
+                        writeChipReg(dstChipType2, dstChipID, 0x00, command >> 4, prevChn);
 
                     // Send data
-                    writeChipReg(dstChipType2, dstChipID, (byte) 0x00, (byte) (command & 0x0F), data);
+                    writeChipReg(dstChipType2, dstChipID, 0x00, command & 0x0F, data);
                 }
                 break;
             // Generic support: 8-bit Register, 16-bit data
             case 0x1F: // QSoundInst
-                command = (byte) ((dstCommand & 0x00FF) >> 0);
-                writeChipReg(dstChipType2, dstChipID, this.Data[dataStart + realPos], this.Data[dataStart + realPos + 1], command);
+                command = dstCommand & 0x00FF;
+                writeChipReg(dstChipType2, dstChipID, this.data[dataStart + realPos] & 0xff, this.data[dataStart + realPos + 1] & 0xff, command);
                 break;
             }
             running |= 0x10;
@@ -343,7 +343,7 @@ public class DacControl {
             int newPos;
             int realDataStp;
 
-            //Debug.printf(("DAC update chipID%d samples%d this.Running%d ", chipID, samples, this.Running);
+            //Debug.printf(("DAC update chipId%d samples%d this.Running%d ", chipId, samples, this.Running);
             if ((this.running & 0x80) != 0) // disabled
                 return;
             if ((this.running & 0x01) == 0) // stopped
@@ -396,15 +396,15 @@ public class DacControl {
         }
 
         public void startDacControl() {
-            this.dstChipType2 = (byte) 0xFF;
+            this.dstChipType2 = 0xff;
             this.dstChipID = 0x00;
             this.dstCommand = 0x0000;
 
-            this.running = (byte) 0xFF; // disable all actions (except setup_chip)
+            this.running = 0xff; // disable all actions (except setup_chip)
         }
 
         public void stopDacControl() {
-            this.running = (byte) 0xFF;
+            this.running = 0xff;
         }
 
         public void reset() {
@@ -415,10 +415,10 @@ public class DacControl {
 
             this.frequency = 0;
             this.dataLen = 0x00;
-            this.Data = null;
+            this.data = null;
             this.dataStart = 0x00;
-            this.StepSize = 0x00;
-            this.StepBase = 0x00;
+            this.stepSize = 0x00;
+            this.stepBase = 0x00;
 
             this.running = 0x00;
             this.reverse = 0x00;
@@ -429,7 +429,7 @@ public class DacControl {
             this.dataStep = 0x00;
         }
 
-        public void setup(byte chType, byte chNum, int command) {
+        public void setup(int chType, int chNum, int command) {
             this.dstChipType2 = chType; // TypeID (e.g. 0x02 for Ym2612Inst)
             this.dstChipID = chNum; // chips number (to send commands to 1st or 2nd chips)
             this.dstCommand = command; // Port and command (would be 0x02A for Ym2612Inst)
@@ -452,23 +452,23 @@ public class DacControl {
                 this.cmdSize = 0x01;
                 break;
             }
-            this.dataStep = (byte) (this.cmdSize * this.StepSize);
+            this.dataStep = this.cmdSize * this.stepSize;
         }
 
-        public void setData(byte[] data, int dataLen, byte stepSize, byte stepBase) {
+        public void setData(byte[] data, int dataLen, int stepSize, int stepBase) {
             if ((this.running & 0x80) > 0)
                 return;
 
             if (dataLen > 0 && data != null) {
                 this.dataLen = dataLen;
-                this.Data = data;
+                this.data = data;
             } else {
                 this.dataLen = 0x00;
-                this.Data = null;
+                this.data = null;
             }
-            this.StepSize = (byte) (stepSize > 0 ? stepSize : 1);
-            this.StepBase = stepBase;
-            this.dataStep = (byte) (this.cmdSize * this.StepSize);
+            this.stepSize = stepSize > 0 ? stepSize : 1;
+            this.stepBase = stepBase;
+            this.dataStep = this.cmdSize * this.stepSize;
         }
 
         public void refreshData(byte[] data, int dataLen) {
@@ -477,14 +477,14 @@ public class DacControl {
 
             if (dataLen > 0 && data != null) {
                 this.dataLen = dataLen;
-                this.Data = data;
+                this.data = data;
             } else {
                 this.dataLen = 0x00;
-                this.Data = null;
+                this.data = null;
             }
         }
 
-        public void setFrequency(byte chipID, int frequency) {
+        public void setFrequency(int chipId, int frequency) {
             if ((this.running & 0x80) != 0)
                 return;
 
@@ -493,14 +493,14 @@ public class DacControl {
             this.frequency = frequency;
         }
 
-        public void start(int dataPos, byte lenMode, int length) {
+        public void start(int dataPos, int lenMode, int length) {
             int cmdStepBase;
 
             if ((this.running & 0x80) != 0)
                 return;
 
-            cmdStepBase = this.cmdSize * this.StepBase;
-            if (dataPos != 0xFFFFFFFF) { // skip setting DataStart, if Pos == -1
+            cmdStepBase = this.cmdSize * this.stepBase;
+            if (dataPos != 0xffff_ffff) { // skip setting dataStart, if Pos == -1
                 this.dataStart = dataPos + cmdStepBase;
                 if (this.dataStart > this.dataLen) // catch bad value and force silence
                     this.dataStart = this.dataLen;
@@ -525,7 +525,7 @@ public class DacControl {
                 this.cmdsToSend = 0x00;
                 break;
             }
-            this.reverse = (byte) ((lenMode & 0x10) >> 4);
+            this.reverse = (lenMode & 0x10) >> 4;
 
             this.remainCmds = this.cmdsToSend;
             this.step = 0x00;

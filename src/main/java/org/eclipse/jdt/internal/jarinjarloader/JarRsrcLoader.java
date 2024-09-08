@@ -11,9 +11,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-
-import vavi.util.Debug;
 
 
 public class JarRsrcLoader {
@@ -32,11 +29,11 @@ public class JarRsrcLoader {
          }
       }
 
-      ClassLoader jceClassLoader = new URLClassLoader(rsrcUrls, (ClassLoader)null);
+      ClassLoader jceClassLoader = new URLClassLoader(rsrcUrls, null);
       Thread.currentThread().setContextClassLoader(jceClassLoader);
       Class<?> c = Class.forName(mi.rsrcMainClass, true, jceClassLoader);
       Method main = c.getMethod("main", args.getClass());
-      main.invoke((Object)null, args);
+      main.invoke(null, (Object) args);
    }
 
    private static ManifestInfo getManifestInfo() throws IOException {
@@ -47,7 +44,7 @@ public class JarRsrcLoader {
             URL url = (URL)resEnum.nextElement();
             InputStream is = url.openStream();
             if (is != null) {
-               ManifestInfo result = new ManifestInfo((ManifestInfo)null);
+               ManifestInfo result = new ManifestInfo(null);
                Manifest manifest = new Manifest(is);
                Attributes mainAttribs = manifest.getMainAttributes();
                result.rsrcMainClass = mainAttribs.getValue("Rsrc-Main-Class");

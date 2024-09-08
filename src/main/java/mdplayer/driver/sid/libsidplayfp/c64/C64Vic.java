@@ -54,11 +54,13 @@ public class C64Vic extends Mos656X implements IBank {
         this.env = env;
     }
 
-    public void poke(short address, byte value) {
-        write(SidEndian.to16lo8(address), value);
+    @Override
+    public void poke(int address, byte value) {
+        write(SidEndian.to16lo8((short) address), value);
     }
 
-    public byte peek(short address) {
-        return read(SidEndian.to16lo8(address));
+    @Override
+    public byte peek(int address) {
+        return read(SidEndian.to16lo8((short) address));
     }
 }

@@ -23,11 +23,13 @@ public class MDLFileFormat extends BaseFileFormat {
         return new String[] {};
     }
 
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
         PlayList.Music music = new PlayList.Music();
         return Collections.singletonList(music);
     }
 
+    @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
         return getMusicCommon(ms, buf, zipFile);
     }

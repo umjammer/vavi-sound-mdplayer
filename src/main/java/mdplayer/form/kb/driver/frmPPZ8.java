@@ -34,19 +34,19 @@ public class frmPPZ8 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
     private MDChipParams.PPZ8 newParam = null;
     private MDChipParams.PPZ8 oldParam = new MDChipParams.PPZ8();
     private FrameBuffer frameBuffer = new FrameBuffer();
     static Preferences prefs = Preferences.userNodeForPackage(frmPPZ8.class);
 
-    public frmPPZ8(frmMain frm, int chipID, int zoom, MDChipParams.PPZ8 newParam, MDChipParams.PPZ8 oldParam) {
+    public frmPPZ8(frmMain frm, int chipId, int zoom, MDChipParams.PPZ8 newParam, MDChipParams.PPZ8 oldParam) {
         super(frm);
 
         initializeComponent();
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         this.newParam = newParam;
         this.oldParam = oldParam;
@@ -69,9 +69,9 @@ public class frmPPZ8 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosPPZ8()[chipID] = getLocation();
+                parent.setting.getLocation().getPosPPZ8()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosPPZ8()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosPPZ8()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -116,11 +116,11 @@ public class frmPPZ8 extends frmBase {
 
             if (ch < 8) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.PPZ8, chipID, ch);
+                    parent.setChannelMask(EnmChip.PPZ8, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.PPZ8, chipID, ch);
+                for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.PPZ8, chipId, ch);
             }
         }
     };
@@ -153,7 +153,7 @@ public class frmPPZ8 extends frmBase {
 
 
     public void screenInit() {
-        boolean PPZ8Type = false;//  (chipID == 0) ? parent.setting.PPZ8Type.UseScci : parent.setting.PPZ8SType.UseScci;
+        boolean PPZ8Type = false;//  (chipId == 0) ? parent.setting.PPZ8Type.UseScci : parent.setting.PPZ8SType.UseScci;
         int tp = PPZ8Type ? 1 : 0;
         for (int ch = 0; ch < 8; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {
@@ -172,7 +172,7 @@ public class frmPPZ8 extends frmBase {
     }
 
     public void screenChangeParams() {
-        PPZ8Status.Channel[] ppz8State = audio.getPPZ8Register(chipID);
+        PPZ8Status.Channel[] ppz8State = audio.getPPZ8Register(chipId);
         if (ppz8State == null) return;
 
         for (int ch = 0; ch < 8; ch++) {
@@ -210,7 +210,7 @@ public class frmPPZ8 extends frmBase {
     }
 
     public void screenDrawParams() {
-        int tp = 0;// ((chipID == 0) ? parent.setting.PPZ8Type.UseScci : parent.setting.PPZ8SType.UseScci) ? 1 : 0;
+        int tp = 0;// ((chipId == 0) ? parent.setting.PPZ8Type.UseScci : parent.setting.PPZ8SType.UseScci) ? 1 : 0;
 
         for (int c = 0; c < 8; c++) {
 
@@ -251,8 +251,8 @@ public class frmPPZ8 extends frmBase {
             DrawBuff.font4Hex32Bit(frameBuffer, 4 * 61, c * 8 + 8 * 10, 0, dmy, nrc.leadr);
             orc.leadr = dmy;
 
-            DrawBuff.font4HexByte(frameBuffer, 4 * 71, c * 8 + 8 * 10, 0, orc.volumeRL, nrc.volumeRL);
-            DrawBuff.font4HexByte(frameBuffer, 4 * 75, c * 8 + 8 * 10, 0, orc.volumeRR, nrc.volumeRR);
+            orc.volumeRL = DrawBuff.font4HexByte(frameBuffer, 4 * 71, c * 8 + 8 * 10, 0, orc.volumeRL, nrc.volumeRL);
+            orc.volumeRR = DrawBuff.font4HexByte(frameBuffer, 4 * 75, c * 8 + 8 * 10, 0, orc.volumeRR, nrc.volumeRR);
         }
     }
 

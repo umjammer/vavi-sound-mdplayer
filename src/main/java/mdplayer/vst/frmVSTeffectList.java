@@ -81,7 +81,7 @@ public class frmVSTeffectList extends JFrame {
 
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             isClosed = true;

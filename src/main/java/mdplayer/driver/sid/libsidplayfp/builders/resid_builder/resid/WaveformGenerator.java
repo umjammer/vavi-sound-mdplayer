@@ -21,9 +21,6 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
 
 
 import java.util.Scanner;
-import java.util.logging.Level;
-
-import vavi.util.Debug;
 
 
 /**
@@ -531,7 +528,7 @@ public class WaveformGenerator {
 
     {
         try {
-            final int[][] x = new int[][] {
+            int[][] x = new int[][] {
                     new int[] {0, 3},new int[] {0, 5},new int[] {0, 6},new int[] {0, 7},
                     new int[] {1, 3},new int[] {1, 5},new int[] {1, 6},new int[] {1, 7}
             };

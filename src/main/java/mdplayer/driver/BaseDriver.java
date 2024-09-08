@@ -25,7 +25,7 @@ public abstract class BaseDriver {
 
     public boolean stopped = false;
 
-    public long vgmFrameCounter;
+    public int vgmFrameCounter;
 
     public Vgm.Gd3 gd3 = new Vgm.Gd3();
 
@@ -89,13 +89,13 @@ public abstract class BaseDriver {
     public abstract Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3);
 
     public void setYm2151Hosei(float ym2151ClockValue) {
-        for (int chipID = 0; chipID < 2; chipID++) {
-            ym2151Hosei[chipID] = Common.getYM2151Hosei(ym2151ClockValue, 3579545);
+        for (int chipId = 0; chipId < 2; chipId++) {
+            ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, 3579545);
             if (model == EnmModel.RealModel) {
-                ym2151Hosei[chipID] = 0;
-                int clock = chipRegister.getYM2151Clock((byte) chipID);
+                ym2151Hosei[chipId] = 0;
+                int clock = chipRegister.getYM2151Clock(chipId);
                 if (clock != -1) {
-                    ym2151Hosei[chipID] = Common.getYM2151Hosei(ym2151ClockValue, clock);
+                    ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, clock);
                 }
             }
         }

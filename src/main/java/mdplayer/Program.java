@@ -1,12 +1,8 @@
 
 package mdplayer;
 
-import java.util.Arrays;
-import java.util.List;
 import javax.swing.JOptionPane;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
 import mdplayer.form.sys.frmMain;
 
 

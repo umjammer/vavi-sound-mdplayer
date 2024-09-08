@@ -33,7 +33,7 @@ public class frmMegaCD extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
 
     private MDChipParams.RF5C164 newParam;
@@ -42,10 +42,10 @@ public class frmMegaCD extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmMegaCD.class);
 
-    public frmMegaCD(frmMain frm, int chipID, int zoom, MDChipParams.RF5C164 newParam, MDChipParams.RF5C164 oldParam) {
+    public frmMegaCD(frmMain frm, int chipId, int zoom, MDChipParams.RF5C164 newParam, MDChipParams.RF5C164 oldParam) {
         super(frm);
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
 
         initializeComponent();
@@ -70,9 +70,9 @@ public class frmMegaCD extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosRf5c164()[chipID] = getLocation();
+                parent.setting.getLocation().getPosRf5c164()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosRf5c164()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosRf5c164()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -107,7 +107,7 @@ public class frmMegaCD extends frmBase {
     };
 
     public void screenChangeParams() {
-        PcmChip rf5c164Register = audio.getRf5c164Register(chipID);
+        PcmChip rf5c164Register = audio.getRf5c164Register(chipId);
         if (rf5c164Register != null) {
             for (int ch = 0; ch < 8; ch++) {
                 if (rf5c164Register.getChannel(ch).enable != 0) {
@@ -130,15 +130,15 @@ public class frmMegaCD extends frmBase {
             MDChipParams.Channel orc = oldParam.channels[c];
             MDChipParams.Channel nrc = newParam.channels[c];
 
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, orc.volumeL, nrc.volumeL, 0);
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, orc.volumeR, nrc.volumeR, 0);
+            orc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, orc.volumeL, nrc.volumeL, 0);
+            orc.volumeR = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, orc.volumeR, nrc.volumeR, 0);
             DrawBuff.keyBoard(frameBuffer, c, orc.note, nrc.note, 0);
             DrawBuff.PanType2(frameBuffer, c, orc.pan, nrc.pan, 0);
             DrawBuff.ChRF5C164(frameBuffer, c, orc.mask, nrc.mask, 0);
         }
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
@@ -150,9 +150,9 @@ public class frmMegaCD extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.RF5C164, chipID, ch);
+                            parent.resetChannelMask(EnmChip.RF5C164, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.RF5C164, chipID, ch);
+                            parent.setChannelMask(EnmChip.RF5C164, chipId, ch);
                     }
                 }
                 return;
@@ -162,11 +162,11 @@ public class frmMegaCD extends frmBase {
             if (ch < 0) return;
 
             if (ev.getButton() == MouseEvent.BUTTON1) {
-                parent.setChannelMask(EnmChip.RF5C164, chipID, ch);
+                parent.setChannelMask(EnmChip.RF5C164, chipId, ch);
                 return;
             }
 
-            for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.RF5C164, chipID, ch);
+            for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.RF5C164, chipId, ch);
         }
     };
 

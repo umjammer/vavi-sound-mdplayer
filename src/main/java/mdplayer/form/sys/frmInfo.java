@@ -14,7 +14,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -26,9 +25,7 @@ import dotnet4j.util.compat.Tuple3;
 import mdplayer.Audio;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
-import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
-import vavi.util.Debug;
 
 
 public class frmInfo extends JFrame {

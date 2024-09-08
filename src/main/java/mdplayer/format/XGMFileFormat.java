@@ -23,8 +23,10 @@ import vavi.util.archive.Entry;
  */
 public class XGMFileFormat extends BaseFileFormat {
 
+    @Override
     public String[] getExtensions() { return new String[] {".xgm"}; }
 
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
@@ -46,6 +48,7 @@ public class XGMFileFormat extends BaseFileFormat {
         return Collections.singletonList(music);
     }
 
+    @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();

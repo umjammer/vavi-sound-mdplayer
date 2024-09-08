@@ -14,7 +14,7 @@ import mdplayer.plugin.Plugin;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
-import vavi.util.archive.zip.ZipEntry;
+import vavi.util.archive.zip.JdkZipEntry;
 
 
 /**
@@ -30,6 +30,7 @@ public class UnknownFileFormat extends BaseFileFormat {
         return new String[] {};
     }
 
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
@@ -55,7 +56,7 @@ public class UnknownFileFormat extends BaseFileFormat {
                 int num;
                 buf = new byte[1024]; // 1Kbytesずつ処理する
 
-                if (entry == null || entry instanceof ZipEntry) {
+                if (entry == null || entry instanceof JdkZipEntry) {
                     if (archive == null && entry == null) {
                         archive = Archives.getArchive(new java.io.File(zipFile));
                         entry = archive.getEntry(file);
@@ -124,6 +125,7 @@ public class UnknownFileFormat extends BaseFileFormat {
         return musics;
     }
 
+    @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();

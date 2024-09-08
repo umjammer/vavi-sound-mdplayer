@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -25,7 +24,6 @@ import mdplayer.MDChipParams;
 import mdplayer.driver.Xgm;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
-import mdplayer.format.FileFormat;
 import mdplayer.format.XGMFileFormat;
 import mdplayer.properties.Resources;
 
@@ -36,7 +34,7 @@ public class frmYM2612 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
 
     private MDChipParams.YM2612 newParam = null;
@@ -45,9 +43,9 @@ public class frmYM2612 extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYM2612.class);
 
-    public frmYM2612(frmMain frm, int chipID, int zoom, MDChipParams.YM2612 newParam, MDChipParams.YM2612 oldParam) {
+    public frmYM2612(frmMain frm, int chipId, int zoom, MDChipParams.YM2612 newParam, MDChipParams.YM2612 oldParam) {
         super(frm);
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         initializeComponent();
 
@@ -59,9 +57,9 @@ public class frmYM2612 extends frmBase {
     }
 
     public void screenInit() {
-        boolean YM2612Type = (chipID == 0) ? parent.setting.getYM2612Type()[0].getUseReal()[0] : parent.setting.getYM2612Type()[1].getUseReal()[0];
+        boolean YM2612Type = (chipId == 0) ? parent.setting.getYM2612Type()[0].getUseReal()[0] : parent.setting.getYM2612Type()[1].getUseReal()[0];
         int tp = YM2612Type ? 1 : 0;
-        DrawBuff.screenInitYM2612(frameBuffer, tp, (chipID == 0)
+        DrawBuff.screenInitYM2612(frameBuffer, tp, (chipId == 0)
                         ? parent.setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation()
                         : parent.setting.getYM2612Type()[1].getRealChipInfo()[0].getOnlyPCMEmulation()
                 , newParam.fileFormat instanceof XGMFileFormat);
@@ -81,9 +79,9 @@ public class frmYM2612 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosYm2612()[chipID] = getLocation();
+                parent.setting.getLocation().getPosYm2612()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosYm2612()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosYm2612()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -129,10 +127,10 @@ public class frmYM2612 extends frmBase {
             };
 
     public void screenChangeParams() {
-        int[][] fmRegister = audio.getFMRegister(chipID);
-        int[] fmVol = audio.getFMVolume(chipID);
-        int[] fmCh3SlotVol = audio.getFMCh3SlotVolume(chipID);
-        int[] fmKey = audio.getFMKeyOn(chipID);
+        int[][] fmRegister = audio.getFMRegister(chipId);
+        int[] fmVol = audio.getFMVolume(chipId);
+        int[] fmCh3SlotVol = audio.getFMCh3SlotVolume(chipId);
+        int[] fmKey = audio.getFMKeyOn(chipId);
 
         boolean isFmEx = (fmRegister[0][0x27] & 0x40) != 0;
         newParam.channels[2].ex = isFmEx;
@@ -186,7 +184,7 @@ public class frmYM2612 extends frmBase {
             newParam.channels[ch].pan = (fmRegister[p][0xb4 + c] & 0xc0) >> 6;
 
             int freq = 0;
-            int octav = 0;
+            int octav;
             int n = -1;
             if (ch != 2 || !isFmEx) {
                 freq = fmRegister[p][0xa0 + c] + (fmRegister[p][0xa4 + c] & 0x07) * 0x100;
@@ -308,35 +306,35 @@ public class frmYM2612 extends frmBase {
             MDChipParams.Channel oyc = oldParam.channels[c];
             MDChipParams.Channel nyc = newParam.channels[c];
 
-            boolean YM2612type = (chipID == 0)
+            boolean YM2612type = (chipId == 0)
                     ? parent.setting.getYM2612Type()[0].getUseReal()[0]
                     : parent.setting.getYM2612Type()[1].getUseReal()[0];
             int tp = YM2612type ? 1 : 0;
 
             if (c == 2) {
-                DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
-                DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
+                oyc.volumeL = DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
+                oyc.volumeR = DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
                 DrawBuff.Pan(frameBuffer, 25, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp);
                 DrawBuff.KeyBoardOPNM(frameBuffer, c, oyc.note, nyc.note, tp);
                 DrawBuff.InstOPN2(frameBuffer, 13, 96, c, oyc.inst, nyc.inst);
                 DrawBuff.Ch3YM2612(frameBuffer, c, oyc.mask, nyc.mask, oyc.ex, nyc.ex, tp);
-                DrawBuff.Slot(frameBuffer, 1 + 4 * 64, 8 + c * 8, oyc.slot, nyc.slot);
+                oyc.slot = DrawBuff.slot(frameBuffer, 1 + 4 * 64, 8 + c * 8, oyc.slot, nyc.slot);
                 DrawBuff.font4Hex16Bit(frameBuffer, 1 + 4 * 68, 8 + c * 8, 0, oyc.freq, nyc.freq);
             } else if (c < 5) {
-                DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
-                DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
+                oyc.volumeL = DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
+                oyc.volumeR = DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
                 DrawBuff.Pan(frameBuffer, 25, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp);
                 DrawBuff.KeyBoardOPNM(frameBuffer, c, oyc.note, nyc.note, tp);
                 DrawBuff.InstOPN2(frameBuffer, 13, 96, c, oyc.inst, nyc.inst);
                 DrawBuff.ChYM2612(frameBuffer, c, oyc.mask, nyc.mask, tp);
-                DrawBuff.Slot(frameBuffer, 1 + 4 * 64, 8 + c * 8, oyc.slot, nyc.slot);
+                oyc.slot = DrawBuff.slot(frameBuffer, 1 + 4 * 64, 8 + c * 8, oyc.slot, nyc.slot);
                 DrawBuff.font4Hex16Bit(frameBuffer, 1 + 4 * 68, 8 + c * 8, 0, oyc.freq, nyc.freq);
             } else if (c == 5) {
                 int tp6 = tp;
                 int tp6v = tp;
                 if (tp6 == 1 && parent.setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation()) {
-                    tp6v = newParam.channels[5].pcmMode == 0 ? 1 : 0;//volumeのみモードの判定を行う
-                    //tp6 = 0;
+                    tp6v = newParam.channels[5].pcmMode == 0 ? 1 : 0; // volumeのみモードの判定を行う
+//                    tp6 = 0;
                 }
 
                 DrawBuff.Pan(frameBuffer, 25, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp6v);
@@ -352,10 +350,10 @@ public class frmYM2612 extends frmBase {
                     }
 
                     DrawBuff.Ch6YM2612(frameBuffer, nyc.pcmBuff, oyc.pcmMode, nyc.pcmMode, oyc.mask, nyc.mask, oyc.tp, tp6v);
-                    DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp6v);
-                    DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp6v);
+                    oyc.volumeL = DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp6v);
+                    oyc.volumeR = DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp6v);
                     DrawBuff.KeyBoardOPNM(frameBuffer, c, oyc.note, nyc.note, tp6v);
-                    DrawBuff.Slot(frameBuffer, 1 + 4 * 64, 8 + c * 8, oyc.slot, nyc.slot);
+                    oyc.slot = DrawBuff.slot(frameBuffer, 1 + 4 * 64, 8 + c * 8, oyc.slot, nyc.slot);
                     DrawBuff.font4Hex16Bit(frameBuffer, 1 + 4 * 68, 8 + c * 8, 0, oyc.freq, nyc.freq);
                 } else {
                     if (oldParam.fileFormat != newParam.fileFormat) {
@@ -365,10 +363,10 @@ public class frmYM2612 extends frmBase {
 
                     DrawBuff.Ch6YM2612XGM(frameBuffer, nyc.pcmBuff, oyc.pcmMode, nyc.pcmMode, oyc.mask, nyc.mask, oyc.tp, tp6v);
                     if (newParam.channels[5].pcmMode == 0) {
-                        DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp6v);
-                        DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp6v);
+                        oyc.volumeL = DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp6v);
+                        oyc.volumeR = DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp6v);
                         DrawBuff.KeyBoardOPNM(frameBuffer, c, oyc.note, nyc.note, tp6v);
-                        DrawBuff.Slot(frameBuffer, 1 + 4 * 64, 8 + c * 8, oyc.slot, nyc.slot);
+                        oyc.slot = DrawBuff.slot(frameBuffer, 1 + 4 * 64, 8 + c * 8, oyc.slot, nyc.slot);
                         DrawBuff.font4Hex16Bit(frameBuffer, 1 + 4 * 68, 8 + c * 8, 0, oyc.freq, nyc.freq);
                     } else {
                         for (int i = 0; i < 4; i++) {
@@ -382,7 +380,7 @@ public class frmYM2612 extends frmBase {
                     }
                 }
             } else {
-                DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 0, oyc.volumeL, nyc.volumeL, tp);
+                oyc.volumeL = DrawBuff.volume(frameBuffer, 289, 8 + c * 8, 0, oyc.volumeL, nyc.volumeL, tp);
                 DrawBuff.KeyBoardOPNM(frameBuffer, c, oyc.note, nyc.note, tp);
                 DrawBuff.ChYM2612(frameBuffer, c, oyc.mask, nyc.mask, tp);
                 oyc.freq = 0;
@@ -394,7 +392,7 @@ public class frmYM2612 extends frmBase {
         DrawBuff.LfoSw(frameBuffer, 16 + 1, 176, oldParam.lfoSw, newParam.lfoSw);
         DrawBuff.LfoFrq(frameBuffer, 64 + 1, 176, oldParam.lfoFrq, newParam.lfoFrq);
         DrawBuff.font4Hex12Bit(frameBuffer, 1 + 29 * 4, 44 * 4, 0, oldParam.timerA, newParam.timerA);
-        DrawBuff.font4HexByte(frameBuffer, 1 + 43 * 4, 44 * 4, 0, oldParam.timerB, newParam.timerB);
+        oldParam.timerB = DrawBuff.font4HexByte(frameBuffer, 1 + 43 * 4, 44 * 4, 0, oldParam.timerB, newParam.timerB);
     }
 
     private MouseListener pbScreen_MouseClick = new MouseAdapter() {
@@ -409,9 +407,9 @@ public class frmYM2612 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 6; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YM2612, chipID, ch);
+                            parent.resetChannelMask(EnmChip.YM2612, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YM2612, chipID, ch);
+                            parent.setChannelMask(EnmChip.YM2612, chipId, ch);
                     }
                 }
                 return;
@@ -428,14 +426,14 @@ public class frmYM2612 extends frmBase {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
                     if (newParam.channels[ch].mask)
-                        parent.resetChannelMask(EnmChip.YM2612, chipID, ch);
+                        parent.resetChannelMask(EnmChip.YM2612, chipId, ch);
                     else
-                        parent.setChannelMask(EnmChip.YM2612, chipID, ch);
+                        parent.setChannelMask(EnmChip.YM2612, chipId, ch);
                     return;
                 }
 
                 //マスク解除
-                for (ch = 0; ch < 6; ch++) parent.resetChannelMask(EnmChip.YM2612, chipID, ch);
+                for (ch = 0; ch < 6; ch++) parent.resetChannelMask(EnmChip.YM2612, chipId, ch);
                 return;
             }
 
@@ -449,7 +447,7 @@ public class frmYM2612 extends frmBase {
 
             if (instCh < 6) {
                 //クリップボードに音色をコピーする
-                parent.getInstCh(EnmChip.YM2612, instCh, chipID);
+                parent.getInstCh(EnmChip.YM2612, instCh, chipId);
             }
         }
     };

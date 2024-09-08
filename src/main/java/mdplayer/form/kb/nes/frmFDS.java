@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -32,7 +31,7 @@ public class frmFDS extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID;
+    private int chipId;
     private int zoom;
 
     private MDChipParams.FDS newParam;
@@ -41,9 +40,9 @@ public class frmFDS extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmFDS.class);
 
-    public frmFDS(frmMain frm, int chipID, int zoom, MDChipParams.FDS newParam) {
+    public frmFDS(frmMain frm, int chipId, int zoom, MDChipParams.FDS newParam) {
         super(frm);
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
 
         initializeComponent();
@@ -67,9 +66,9 @@ public class frmFDS extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosFDS()[chipID] = getLocation();
+                parent.setting.getLocation().getPosFDS()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosFDS()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosFDS()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -108,7 +107,7 @@ public class frmFDS extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        mdsound.np.NpNesFds reg = audio.getFDSRegister(chipID);
+        mdsound.np.NpNesFds reg = audio.getFDSRegister(chipId);
         int freq;
         int vol;
         int note;
@@ -152,7 +151,7 @@ public class frmFDS extends frmBase {
 
     public void screenDrawParams() {
         DrawBuff.keyBoard(frameBuffer, 0, oldParam.channel.note, newParam.channel.note, 0);
-        DrawBuff.volume(frameBuffer, 256, 8 + 0 * 8, 0, oldParam.channel.volume, newParam.channel.volume, 0);
+        oldParam.channel.volume = DrawBuff.volume(frameBuffer, 256, 8 + 0 * 8, 0, oldParam.channel.volume, newParam.channel.volume, 0);
 
         DrawBuff.WaveFormToFDS(frameBuffer, 0, oldParam.wave, newParam.wave);
         DrawBuff.WaveFormToFDS(frameBuffer, 1, oldParam.mod, newParam.mod);
@@ -192,9 +191,9 @@ public class frmFDS extends frmBase {
                 //但しchをクリックした場合はマスク反転
                 if (px < 8) {
                     if (newParam.channel.mask)
-                        parent.resetChannelMask(EnmChip.FDS, chipID, 0);
+                        parent.resetChannelMask(EnmChip.FDS, chipId, 0);
                     else
-                        parent.setChannelMask(EnmChip.FDS, chipID, 0);
+                        parent.setChannelMask(EnmChip.FDS, chipId, 0);
                 }
                 return;
             }
@@ -203,13 +202,13 @@ public class frmFDS extends frmBase {
             if (py < 2 * 8) {
                 if (ev.getButton() == MouseEvent.BUTTON2) {
                     //マスク解除
-                    parent.resetChannelMask(EnmChip.FDS, chipID, 0);
+                    parent.resetChannelMask(EnmChip.FDS, chipId, 0);
                     return;
                 }
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
-                    parent.setChannelMask(EnmChip.FDS, chipID, 0);
+                    parent.setChannelMask(EnmChip.FDS, chipId, 0);
                 }
             }
         }

@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -34,19 +33,19 @@ public class frmVRC6 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
-    private MDChipParams.VRC6 newParam = null;
-    private MDChipParams.VRC6 oldParam = null;
+    private int chipId;
+    private int zoom;
+    private MDChipParams.VRC6 newParam;
+    private MDChipParams.VRC6 oldParam;
     private FrameBuffer frameBuffer = new FrameBuffer();
     static Preferences prefs = Preferences.userNodeForPackage(frmVRC6.class);
 
-    public frmVRC6(frmMain frm, int chipID, int zoom, MDChipParams.VRC6 newParam, MDChipParams.VRC6 oldParam) {
+    public frmVRC6(frmMain frm, int chipId, int zoom, MDChipParams.VRC6 newParam, MDChipParams.VRC6 oldParam) {
         super(frm);
 
         initializeComponent();
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         this.newParam = newParam;
         this.oldParam = oldParam;
@@ -69,9 +68,9 @@ public class frmVRC6 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosVrc6()[chipID] = getLocation();
+                parent.setting.getLocation().getPosVrc6()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosVrc6()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosVrc6()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -117,9 +116,9 @@ public class frmVRC6 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 3; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.VRC6, chipID, ch);
+                            parent.resetChannelMask(EnmChip.VRC6, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.VRC6, chipID, ch);
+                            parent.setChannelMask(EnmChip.VRC6, chipId, ch);
                     }
                 }
                 return;
@@ -128,7 +127,7 @@ public class frmVRC6 extends frmBase {
             if (ev.getButton() == MouseEvent.BUTTON2) {
                 for (int i = 0; i < 3; i++) {
                     //マスク解除
-                    parent.resetChannelMask(EnmChip.VRC6, chipID, i);
+                    parent.resetChannelMask(EnmChip.VRC6, chipId, i);
                 }
 
                 return;
@@ -139,7 +138,7 @@ public class frmVRC6 extends frmBase {
             ch /= 2;
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 //マスク
-                parent.setChannelMask(EnmChip.VRC6, chipID, ch);
+                parent.setChannelMask(EnmChip.VRC6, chipId, ch);
             }
         }
     };
@@ -192,11 +191,11 @@ public class frmVRC6 extends frmBase {
                 DrawBuff.drawDuty(frameBuffer, 24, (1 + ch * 2) * 8, oyc.volumeR, nyc.volumeR);
                 DrawBuff.font4Int2(frameBuffer, 6 * 4, ch * 16 + 16, 0, 2, oyc.kf, nyc.kf);
                 DrawBuff.font4Int2(frameBuffer, 10 * 4, ch * 16 + 16, 0, 2, oyc.volumeL, nyc.volumeL);
-                DrawBuff.volume(frameBuffer, 256, 8 + ch * 2 * 8, 0, oyc.volume, nyc.volume, 0);
+                oyc.volume = DrawBuff.volume(frameBuffer, 256, 8 + ch * 2 * 8, 0, oyc.volume, nyc.volume, 0);
                 DrawBuff.chVRC6(frameBuffer, ch, oldParam.channels[ch].mask, newParam.channels[ch].mask, 0);
             } else {
                 DrawBuff.font4Int2(frameBuffer, 9 * 4, ch * 16 + 16, 0, 3, oyc.volumeL, nyc.volumeL);
-                DrawBuff.volume(frameBuffer, 256, 8 + ch * 2 * 8, 0, oyc.volume, nyc.volume, 0);
+                oyc.volume = DrawBuff.volume(frameBuffer, 256, 8 + ch * 2 * 8, 0, oyc.volume, nyc.volume, 0);
                 DrawBuff.drawNESSw(frameBuffer, 55 * 4, ch * 16 + 16
                         , oldParam.channels[ch].bit[1], newParam.channels[ch].bit[1]);
                 DrawBuff.font4Int1(frameBuffer, 62 * 4, ch * 16 + 16, 0, oyc.sadr, nyc.sadr);

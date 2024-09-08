@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2022 by Naohide Sano, All rights reserved.
+ *
+ * Programmed by Naohide Sano
+ */
+
 import java.io.IOException;
 import java.io.Reader;
 
@@ -45,7 +51,7 @@ public class Test002 {
     }
 
     /**
-     * fuckin' intellij won't to support test classpass
+     * fuckin' intellij won't support test classpass
      * @see "https://youtrack.jetbrains.com/issue/IDEA-90676"
      */
     @Test

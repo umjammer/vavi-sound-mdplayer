@@ -15,7 +15,7 @@ public class RealChip implements Closeable {
 
 //    private Nc86ctl.Nc86ctl nc86ctl;
 
-    // // #region IDisposable Support
+    // //#region IDisposable Support
 
     private boolean disposedValue = false;
 
@@ -29,11 +29,12 @@ public class RealChip implements Closeable {
         }
     }
 
+    @Override
     public void close() {
         Dispose(true);
     }
 
-    // // #endregion
+    // //#endregion
 
     public RealChip(boolean sw) {
         Debug.println(Level.SEVERE, "RealChip:Ctr:STEP 00(Start)");
@@ -445,7 +446,7 @@ public class RealChip implements Closeable {
 
         public abstract int setMasterClock(int mClock);
 
-        public abstract void setSSGVolume(byte vol);
+        public abstract void setSSGVolume(int vol);
     }
 
     public static class RScciSoundChip extends RSoundChip {
@@ -521,7 +522,7 @@ public class RealChip implements Closeable {
         }
 
         @Override
-        public void setSSGVolume(byte vol) {
+        public void setSSGVolume(int vol) {
             // SCCIはSSG音量の変更不可
 //            if (realChip == null)
 //                return;
@@ -593,7 +594,7 @@ public class RealChip implements Closeable {
         }
 
         @Override
-        public void setSSGVolume(byte vol) {
+        public void setSSGVolume(int vol) {
 //            NIGimic2 gm = realChip.QueryInterface();
 //            gm.setSSGVolume(vol);
         }

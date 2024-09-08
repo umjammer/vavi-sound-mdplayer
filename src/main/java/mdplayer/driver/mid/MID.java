@@ -46,8 +46,8 @@ public class MID extends BaseDriver {
 
     byte midiEvent = 0;
     List<Byte> midiEventBackup = null;
-    byte midiEventCh = 0;
-    byte midiEventChBackup = 0;
+    int midiEventCh = 0;
+    int midiEventChBackup = 0;
     private List<Byte> eventStr = new ArrayList<>();
     private String eventText = "";
     private String eventCopyrightNotice = "";
@@ -76,7 +76,7 @@ public class MID extends BaseDriver {
                 if (buf.length <= adr) break;
 
                 if (Common.getLE32(buf, adr) != FCC_TRK) return null;
-                int len = buf[adr + 4] * 0x1000000 + buf[adr + 5] * 0x10000 + buf[adr + 6] * 0x100 + buf[adr + 7];
+                int len = (buf[adr + 4] & 0xff) * 0x1000000 + (buf[adr + 5] & 0xff) * 0x10000 + (buf[adr + 6] & 0xff) * 0x100 + (buf[adr + 7] & 0xff);
                 adr += 8;
                 int trkEndadr = adr + len;
 
@@ -269,9 +269,9 @@ public class MID extends BaseDriver {
     }
 
     private void oneFrameMID() {
-// #if DEBUG
+//#if DEBUG
         if (model == EnmModel.VirtualModel) return;
-// #endif
+//#endif
         boolean trksEnd = true;
         for (int trk = 0; trk < trkCount; trk++) {
             if (isEnd.get(trk)) continue;
@@ -283,38 +283,38 @@ public class MID extends BaseDriver {
             while (midWaitCounter.get(trk) < 1) {
                 int ptr = musicPtr.get(trk);
                 int delta;
-// #if DEBUG
+//#if DEBUG
                 System.err.println();
                 System.err.printf("ptr:[%08x] trk:[%2d] ", ptr, trk);
-// #endif
+//#endif
 
                 if (isDelta.get(trk)) {
                     delta = Common.getDelta(ptr, vgmBuf);
                     midWaitCounter.set(trk, delta);
 
-// #if DEBUG
+//#if DEBUG
                     System.err.printf("delta:%10d ", delta);
-// #endif
+//#endif
                 } else {
                     byte cmd = vgmBuf[ptr++];
 
-// #if DEBUG
+//#if DEBUG
                     //System.err.printf("cmd:%2x ", delta, cmd);
-// #endif
+//#endif
 
                     if ((cmd & 0xff) == 0xf0 || (cmd & 0xff) == 0xf7) {
                         int eventLen = Common.getDelta(ptr, vgmBuf);
-// #if DEBUG
+//#if DEBUG
                         //System.err.printf("evntLen:%10D ", eventLen);
                         System.err.printf("%2x ", cmd);
-// #endif
+//#endif
                         List<Byte> eventData = new ArrayList<>();
                         eventData.add(cmd);
                         for (int j = 0; j < eventLen; j++) {
                             eventData.add(vgmBuf[ptr + j]);
-// #if DEBUG
+//#if DEBUG
                             System.err.printf("%2x ", vgmBuf[ptr + j]);
-// #endif
+//#endif
                         }
 
                         chipRegister.sendMIDIout(model, trkPort.get(trk), toByteArray(eventData), vstDelta);
@@ -325,16 +325,16 @@ public class MID extends BaseDriver {
                         byte eventType = vgmBuf[ptr++];
                         int eventLen = Common.getDelta(ptr, vgmBuf);
 
-// #if DEBUG
+//#if DEBUG
                         System.err.printf("evntTyp:%2x evntLen:%10d ", eventType, eventLen);
-// #endif
+//#endif
 
                         List<Byte> eventData = new ArrayList<>();
                         for (int j = 0; j < eventLen; j++) {
                             eventData.add(vgmBuf[ptr + j]);
-// #if DEBUG
+//#if DEBUG
                             System.err.printf("%2x ", vgmBuf[ptr + j]);
-// #endif
+//#endif
                         }
                         ptr = ptr + eventLen;
                         if (eventData.size() > 0) {
@@ -350,115 +350,115 @@ public class MID extends BaseDriver {
                             switch (eventType) {
                             case 0x01:
                                 eventText = new String(toByteArray(eventData), Charset.forName("MS932"));
-// #if DEBUG
+//#if DEBUG
                                 System.err.printf("eventText:%s", eventText);
-// #endif
+//#endif
                                 break;
                             case 0x02:
                                 eventCopyrightNotice = new String(toByteArray(eventData), Charset.forName("MS932"));
-// #if DEBUG
+//#if DEBUG
                                 System.err.printf("eventCopyrightNotice:%s", eventCopyrightNotice);
-// #endif
+//#endif
                                 break;
                             case 0x03:
                                 eventSequenceTrackName = new String(toByteArray(eventData), Charset.forName("MS932"));
-// #if DEBUG
+//#if DEBUG
                                 System.err.printf("eventSequenceTrackName:%s", eventSequenceTrackName);
-// #endif
+//#endif
                                 break;
                             case 0x04:
                                 eventInstrumentName = new String(toByteArray(eventData), Charset.forName("MS932"));
-// #if DEBUG
+//#if DEBUG
                                 System.err.printf("eventInstrumentName:%s", eventInstrumentName);
-// #endif
+//#endif
                                 break;
                             case 0x05:
                                 eventLyric = new String(toByteArray(eventData), Charset.forName("MS932"));
-// #if DEBUG
+//#if DEBUG
                                 System.err.printf("eventLyric:%s", eventLyric);
-// #endif
+//#endif
                                 chipRegister.midiParams[trkPort.get(trk)].Lyric = eventLyric;
                                 break;
                             case 0x06:
                                 eventMarker = new String(toByteArray(eventData), Charset.forName("MS932"));
-// #if DEBUG
+//#if DEBUG
                                 System.err.printf("eventMarker:%s", eventMarker);
-// #endif
+//#endif
                                 break;
                             case 0x07:
                                 eventText = new String(toByteArray(eventData), Charset.forName("MS932"));
-// #if DEBUG
+//#if DEBUG
                                 System.err.printf("eventText:%s", eventText);
-// #endif
+//#endif
                                 break;
                             case 0x21:
                                 trkPort.set(trk, eventData.get(0) & 0xff);
-// #if DEBUG
+//#if DEBUG
                                 System.err.printf("PortPrefix:%s", trkPort.get(trk));
-// #endif
+//#endif
                                 break;
                             case 0x2f:
                                 ptr = trkEndAdr.get(trk);
-// #if DEBUG
+//#if DEBUG
                                 System.err.printf("End of Track:%s", ptr);
-// #endif
+//#endif
                                 break;
                             case 0x51:
                                 int Tempo = eventData.get(0) * 0x10000 + eventData.get(1) * 0x100 + eventData.get(2);
                                 // reso 4分音符当たりの分解能
                                 // tempo 4分音符当たりのマイクロ秒
-                                oneSyncTime = (double) (Tempo / reso) * 0.000001;
-// #if DEBUG
+                                oneSyncTime = (Tempo / (double) reso) * 0.000001;
+//#if DEBUG
                                 System.err.printf("Set Tempo:%s", Tempo);
-// #endif
+//#endif
                                 break;
                             case 0x54:
-// #if DEBUG
+//#if DEBUG
                                 System.err.print("SMPTE Offset ");
-// #endif
+//#endif
                                 break;
                             case 0x58:
-// #if DEBUG
+//#if DEBUG
                                 System.err.print("Time Signature");
-// #endif
+//#endif
                                 break;
                             case 0x59:
-// #if DEBUG
+//#if DEBUG
                                 System.err.print("Key Signature");
-// #endif
+//#endif
                                 break;
                             case 0x7f:
-// #if DEBUG
+//#if DEBUG
                                 System.err.print("Sequencer Specific Meta-Event ");
-// #endif
+//#endif
                                 break;
                             default:
-// #if DEBUG
-                                System.err.printf("!! Unknown Meta Event !! eventType:%2x Adr:%1x", eventType, ptr);
-// #endif
+//#if DEBUG
+                                System.err.printf("!! Unknown Meta Event !! eventType:%2x adr:%1x", eventType, ptr);
+//#endif
                                 break;
                             }
                         }
                     } else {
                         if ((cmd & 0x80) != 0) {
                             midiEventBackup.set(trk, (byte) (cmd & 0xff));
-                            midiEventChBackup = (byte) (cmd & 0x0f);
+                            midiEventChBackup = cmd & 0x0f;
                             midiEvent = midiEventBackup.get(trk);
                             midiEventCh = midiEventChBackup;
 
                             if ((cmd & 0xf0) != 0xC0 && (cmd & 0xf0) != 0xD0) {
                                 chipRegister.sendMIDIout(model, trkPort.get(trk), cmd, vgmBuf[ptr], vgmBuf[ptr + 1], vstDelta);
-// #if DEBUG
+//#if DEBUG
                                 //System.err.printf("V1:%2x V2:%2X ", vgmBuf[ptr], vgmBuf[ptr + 1]);
                                 System.err.printf("%2x %2x %2x", cmd, vgmBuf[ptr], vgmBuf[ptr + 1]);
-// #endif
+//#endif
                                 ptr += 2;
                             } else {
                                 chipRegister.sendMIDIout(model, trkPort.get(trk), cmd, vgmBuf[ptr], vstDelta);
-// #if DEBUG
+//#if DEBUG
                                 //System.err.printf("V1:%2X V2:-- ", vgmBuf[ptr]);
                                 System.err.printf("%2x %2x", cmd, vgmBuf[ptr]);
-// #endif
+//#endif
                                 ptr++;
                             }
                         } else {
@@ -468,17 +468,17 @@ public class MID extends BaseDriver {
 
                             if ((midiEvent & 0xf0) != 0xC0 && (midiEvent & 0xf0) != 0xD0) {
                                 chipRegister.sendMIDIout(model, trkPort.get(trk), midiEvent, cmd, vgmBuf[ptr], vstDelta);
-// #if DEBUG
+//#if DEBUG
                                 //System.err.printf("RunSta V1:%2X V2:%2X ", cmd, vgmBuf[ptr]);
                                 System.err.printf("%2x %2x %2x", midiEvent, cmd, vgmBuf[ptr]);
-// #endif
+//#endif
                                 ptr++;
                             } else {
                                 chipRegister.sendMIDIout(model, trkPort.get(trk), midiEvent, cmd, vstDelta);
-// #if DEBUG
+//#if DEBUG
                                 //System.err.printf("RunSta V1:%2X V2:-- ", cmd);
                                 System.err.printf("%2x %2x ", midiEvent, cmd);
-// #endif
+//#endif
                             }
                         }
                     }
@@ -536,7 +536,7 @@ public class MID extends BaseDriver {
 
     private boolean makeBeforeSendCommand() {
         try {
-            MidiOutInfo[] infos = chipRegister.GetMIDIoutInfo();
+            MidiOutInfo[] infos = chipRegister.getMIDIoutInfo();
             if (infos == null || infos.length < 1) return true;
 
             beforeSend = new List[infos.length];

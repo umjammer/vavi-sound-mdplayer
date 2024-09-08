@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -24,7 +23,6 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
-import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
 
 
@@ -34,7 +32,7 @@ public class frmC140 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
     private MDChipParams.C140 newParam = null;
     private MDChipParams.C140 oldParam = new MDChipParams.C140();
@@ -42,12 +40,12 @@ public class frmC140 extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmC140.class);
 
-    public frmC140(frmMain frm, int chipID, int zoom, MDChipParams.C140 newParam, MDChipParams.C140 oldParam) {
+    public frmC140(frmMain frm, int chipId, int zoom, MDChipParams.C140 newParam, MDChipParams.C140 oldParam) {
         super(frm);
         initializeComponent();
 
         parent = frm;
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         this.newParam = newParam;
         this.oldParam = oldParam;
@@ -70,9 +68,9 @@ public class frmC140 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosC140()[chipID] = getLocation();
+                parent.setting.getLocation().getPosC140()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosC140()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosC140()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -118,9 +116,9 @@ public class frmC140 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 24; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.C140, chipID, ch);
+                            parent.resetChannelMask(EnmChip.C140, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.C140, chipID, ch);
+                            parent.setChannelMask(EnmChip.C140, chipId, ch);
                     }
                 }
                 return;
@@ -131,11 +129,11 @@ public class frmC140 extends frmBase {
 
             if (ch < 24) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.C140, chipID, ch);
+                    parent.setChannelMask(EnmChip.C140, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 24; ch++) parent.resetChannelMask(EnmChip.C140, chipID, ch);
+                for (ch = 0; ch < 24; ch++) parent.resetChannelMask(EnmChip.C140, chipId, ch);
             }
         }
     };
@@ -168,7 +166,7 @@ public class frmC140 extends frmBase {
 
 
     public void screenInit() {
-        boolean C140Type = (chipID == 0) ? parent.setting.getC140Type()[0].getUseReal()[0] : parent.setting.getC140Type()[1].getUseReal()[0];
+        boolean C140Type = (chipId == 0) ? parent.setting.getC140Type()[0].getUseReal()[0] : parent.setting.getC140Type()[1].getUseReal()[0];
         int tp = C140Type ? 1 : 0;
         for (int ch = 0; ch < 24; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {
@@ -180,15 +178,15 @@ public class frmC140 extends frmBase {
             DrawBuff.drawPanType2P(frameBuffer, 24, ch * 8 + 8, 0, tp);
             DrawBuff.ChC140_P(frameBuffer, 0, 8 + ch * 8, ch, false, tp);
             int d = 99;
-            DrawBuff.VolumeToC140(frameBuffer, ch, 1, d, 0, tp);
+            d = DrawBuff.VolumeToC140(frameBuffer, ch, 1, d, 0, tp);
             d = 99;
-            DrawBuff.VolumeToC140(frameBuffer, ch, 2, d, 0, tp);
+            d = DrawBuff.VolumeToC140(frameBuffer, ch, 2, d, 0, tp);
         }
     }
 
     public void screenChangeParams() {
-        byte[] c140State = audio.getC140Register(chipID);
-        boolean[] c140KeyOn = audio.getC140KeyOn(chipID);
+        byte[] c140State = audio.getC140Register(chipId);
+        boolean[] c140KeyOn = audio.getC140KeyOn(chipId);
         if (c140State != null) {
             for (int ch = 0; ch < 24; ch++) {
                 int frequency = c140State[ch * 16 + 2] * 256 + c140State[ch * 16 + 3];
@@ -228,15 +226,15 @@ public class frmC140 extends frmBase {
     }
 
     public void screenDrawParams() {
-        int tp = ((chipID == 0) ? parent.setting.getC140Type()[0].getUseReal()[0] : parent.setting.getC140Type()[1].getUseReal()[0]) ? 1 : 0;
+        int tp = ((chipId == 0) ? parent.setting.getC140Type()[0].getUseReal()[0] : parent.setting.getC140Type()[1].getUseReal()[0]) ? 1 : 0;
 
         for (int c = 0; c < 24; c++) {
 
             MDChipParams.Channel orc = oldParam.channels[c];
             MDChipParams.Channel nrc = newParam.channels[c];
 
-            DrawBuff.VolumeToC140(frameBuffer, c, 1, orc.volumeL, nrc.volumeL, tp);
-            DrawBuff.VolumeToC140(frameBuffer, c, 2, orc.volumeR, nrc.volumeR, tp);
+            orc.volumeL = DrawBuff.VolumeToC140(frameBuffer, c, 1, orc.volumeL, nrc.volumeL, tp);
+            orc.volumeR = DrawBuff.VolumeToC140(frameBuffer, c, 2, orc.volumeR, nrc.volumeR, tp);
             DrawBuff.KeyBoardToC140(frameBuffer, c, orc.note, nrc.note, tp);
             DrawBuff.PanType2(frameBuffer, c, orc.pan, nrc.pan, tp);
 
@@ -245,7 +243,7 @@ public class frmC140 extends frmBase {
             DrawBuff.drawNESSw(frameBuffer, 64 * 4, c * 8 + 8, oldParam.channels[c].bit[0], newParam.channels[c].bit[0]);
             DrawBuff.drawNESSw(frameBuffer, 65 * 4, c * 8 + 8, oldParam.channels[c].bit[1], newParam.channels[c].bit[1]);
             DrawBuff.font4Hex16Bit(frameBuffer, 4 * 67, c * 8 + 8, 0, orc.freq, nrc.freq);
-            DrawBuff.font4HexByte(frameBuffer, 4 * 72, c * 8 + 8, 0, orc.bank, nrc.bank);
+            orc.bank = DrawBuff.font4HexByte(frameBuffer, 4 * 72, c * 8 + 8, 0, orc.bank, nrc.bank);
             DrawBuff.font4Hex16Bit(frameBuffer, 4 * 75, c * 8 + 8, 0, orc.sadr, nrc.sadr);
             DrawBuff.font4Hex16Bit(frameBuffer, 4 * 80, c * 8 + 8, 0, orc.eadr, nrc.eadr);
             DrawBuff.font4Hex16Bit(frameBuffer, 4 * 85, c * 8 + 8, 0, orc.ladr, nrc.ladr);

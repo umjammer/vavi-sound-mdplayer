@@ -700,7 +700,7 @@ public class Sid {
             for (int j = -firN / 2; j <= firN / 2; j++) {
                 double jx = j - jOffset;
                 double wt = wc * jx / fCyclesPerSample;
-                double temp = jx / (firN / 2);
+                double temp = jx / (firN / 2.);
                 double kaiser = Math.abs(temp) <= 1 ? I0(beta * Math.sqrt(1 - temp * temp)) / I0beta : 0;
                 double sinCwt = Math.abs(wt) >= 1e-6 ? Math.sin(wt) / wt : 1;
                 double val = (1 << EnmSid.FIR_SHIFT.v) * filterScale * fSamplesPerCycle * wc / pi * sinCwt * kaiser;

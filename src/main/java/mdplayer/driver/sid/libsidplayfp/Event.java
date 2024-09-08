@@ -50,29 +50,36 @@ public class Event implements IEvent {
      * Event code to be executed. Events are allowed to safely reschedule
      * themselves with the EventScheduler during invocations.
      */
+    @Override
     public void event() {
     }
 
+    @Override
     public void setNext(IEvent val) {
         next = val;
     }
 
+    @Override
     public IEvent getNext() {
         return next;
     }
 
+    @Override
     public void setTriggerTime(long val) {
         triggerTime = val;
     }
 
+    @Override
     public long getTriggerTime() {
         return triggerTime;
     }
 
+    @Override
     public void setName(String val) {
         name = val;
     }
 
+    @Override
     public String getName() {
         return name;
     }

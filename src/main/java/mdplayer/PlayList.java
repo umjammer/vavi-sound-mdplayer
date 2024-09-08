@@ -231,7 +231,7 @@ public class PlayList implements Serializable {
     private void addFileLoop(Music mc, Archive archive, Entry entry/* = null*/) {
         try {
             musics = mc.format.addFileLoop(mc, archive, entry);
-            if (musics == null) return;;
+            if (musics == null) return;
 
             List<Object[]> rows = makeRow(musics);
             for (Object[] row : rows)
@@ -245,7 +245,7 @@ public class PlayList implements Serializable {
     private void addFileLoop(int[] index, Music mc, Archive archive, Entry entry/* = null*/) {
         try {
             musics = mc.format.addFileLoop(index[0], mc, archive, entry);
-            if (musics == null) return;;
+            if (musics == null) return;
 
             List<Object[]> rows = makeRow(musics);
             for (Object[] row : rows)

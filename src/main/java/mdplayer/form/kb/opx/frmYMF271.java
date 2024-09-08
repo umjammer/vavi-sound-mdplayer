@@ -33,7 +33,7 @@ public class frmYMF271 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
 
     private MDChipParams.YMF271 newParam;
@@ -59,10 +59,10 @@ public class frmYMF271 extends frmBase {
             11, 35, 23, 47,
     };
 
-    public frmYMF271(frmMain frm, int chipID, int zoom, MDChipParams.YMF271 newParam, MDChipParams.YMF271 oldParam) {
+    public frmYMF271(frmMain frm, int chipId, int zoom, MDChipParams.YMF271 newParam, MDChipParams.YMF271 oldParam) {
         super(frm);
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
 
         initializeComponent();
@@ -78,9 +78,9 @@ public class frmYMF271 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosYMF271()[chipID] = getLocation();
+                parent.setting.getLocation().getPosYMF271()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosYMF271()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosYMF271()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -144,7 +144,7 @@ public class frmYMF271 extends frmBase {
     }
 
     public void screenChangeParams() {
-        YmF271 reg = audio.getYMF271Register(chipID);
+        YmF271 reg = audio.getYMF271Register(chipId);
         if (reg != null) {
             for (int i = 0; i < 48; i++) {
                 int slot = slotTbl[i];
@@ -211,8 +211,8 @@ public class frmYMF271 extends frmBase {
             MDChipParams.Channel orc = oldParam.channels[slot];
             MDChipParams.Channel nrc = newParam.channels[slot];
 
-            DrawBuff.volume(frameBuffer, 273, 8 + i * 8, 1, orc.volumeL, nrc.volumeL, 0);
-            DrawBuff.volume(frameBuffer, 273, 12 + i * 8, 1, orc.volumeR, nrc.volumeR, 0);
+            orc.volumeL = DrawBuff.volume(frameBuffer, 273, 8 + i * 8, 1, orc.volumeL, nrc.volumeL, 0);
+            orc.volumeR = DrawBuff.volume(frameBuffer, 273, 12 + i * 8, 1, orc.volumeR, nrc.volumeR, 0);
             DrawBuff.font4Int2(frameBuffer, 25, 8 + i * 8, 0, 2, orc.echo, slot + 1);//slotnum
             DrawBuff.PanType2(frameBuffer, 33, 8 + i * 8, orc.pan, nrc.pan, 0);
             DrawBuff.PanType2(frameBuffer, 41, 8 + i * 8, orc.pantp, nrc.pantp, 0);

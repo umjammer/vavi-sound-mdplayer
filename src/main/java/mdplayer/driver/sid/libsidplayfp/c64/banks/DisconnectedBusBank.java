@@ -25,9 +25,9 @@ package mdplayer.driver.sid.libsidplayfp.c64.banks;
      *
      //memory mapped registers or machine code routines of optional external devices.
      *
-     //I/O Area // #1 located at $DE00-$DEFF
+     //I/O Area //#1 located at $DE00-$DEFF
      *
-     //I/O Area // #2 located at $DF00-$DFFF
+     //I/O Area //#2 located at $DF00-$DFFF
      */
     public class DisconnectedBusBank implements IBank
     {
@@ -41,14 +41,16 @@ package mdplayer.driver.sid.libsidplayfp.c64.banks;
         /**
          //No device instanceof connected so this instanceof a no-op.
          */
-        public  void poke(short a, byte b) { }
+        @Override
+        public  void poke(int a, byte b) { }
 
         /**
          //This should actually return last byte read from VIC
          //but since the VIC emulation currently does not fetch
          //any value from memory we return zero.
          */
-        public  byte peek(short a) { return 0; }
+        @Override
+        public  byte peek(int a) { return 0; }
 
 
 

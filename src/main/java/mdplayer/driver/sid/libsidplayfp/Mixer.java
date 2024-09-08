@@ -363,7 +363,7 @@ public class Mixer {
     }
 
     /**
-     * Set mixing volumes, from 0 to // #VOLUME_MAX.
+     * Set mixing volumes, from 0 to //#VOLUME_MAX.
      * <p>
      * @param left volume for left or mono channel
      * @param right volume for right channel : stereo mode

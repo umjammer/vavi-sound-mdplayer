@@ -14,10 +14,11 @@ import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
+import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
-import vavi.util.archive.zip.ZipEntry;
+import vavi.util.archive.zip.JdkZipEntry;
 
 import static dotnet4j.io.Path.getDirectoryName;
 
@@ -100,7 +101,7 @@ public abstract class BaseFileFormat implements FileFormat {
                 String trgFn = Path.combine(getDirectoryName(srcFn), extFn);
                 trgFn = trgFn.replace("\\", "/").trim();
 
-                if (entry instanceof ZipEntry) {
+                if (entry instanceof JdkZipEntry) {
                     String[] arcFn = new String[1];
                     return getBytesFromZipFile(archive, entry, arcFn);
                 } else {
@@ -141,7 +142,7 @@ public abstract class BaseFileFormat implements FileFormat {
 
         if (FileFormat.getFileFormat(entry.getName()) instanceof VGMFileFormat) {
             try {
-                int vgm = (int) buf[0] + (int) buf[1] * 0x100 + (int) buf[2] * 0x10000 + (int) buf[3] * 0x1000000;
+                int vgm = ByteUtil.readLeInt(buf);
                 if (vgm != VGMFileFormat.FCC_VGM) {
 
                     try (InputStream inStream = archive.getInputStream(entry);
@@ -167,6 +168,7 @@ public abstract class BaseFileFormat implements FileFormat {
     /**
      * 汎用
      */
+    @Override
     public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/*=null*/) throws IOException {
         byte[] buf;
         if (entry == null) {
@@ -207,6 +209,7 @@ public abstract class BaseFileFormat implements FileFormat {
         return musics;
     }
 
+    @Override
     public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
         byte[] buf;
         if (entry == null) {
@@ -246,6 +249,6 @@ public abstract class BaseFileFormat implements FileFormat {
     @Override
     public Tuple<byte[], List<Tuple<String, byte[]>>> load(String archive, String fn) throws IOException {
         byte[] srcBuf = getAllBytes(fn);
-        return new Tuple(srcBuf, getExtendFile(fn, srcBuf, null, null));
+        return new Tuple<>(srcBuf, getExtendFile(fn, srcBuf, null, null));
     }
 }

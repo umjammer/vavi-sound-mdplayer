@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -33,7 +32,7 @@ public class frmYM2203 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
 
     private MDChipParams.YM2203 newParam;
@@ -42,19 +41,19 @@ public class frmYM2203 extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYM2203.class);
 
-    public frmYM2203(frmMain frm, int chipID, int zoom, MDChipParams.YM2203 newParam, MDChipParams.YM2203 oldParam) {
+    public frmYM2203(frmMain frm, int chipId, int zoom, MDChipParams.YM2203 newParam, MDChipParams.YM2203 oldParam) {
         super(frm);
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         initializeComponent();
 
         this.newParam = newParam;
         this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneYM2203(), null, zoom);
-        boolean YM2203Type = (chipID == 0)
+        boolean YM2203Type = (chipId == 0)
                 ? parent.setting.getYM2203Type()[0].getUseReal()[0]
                 : parent.setting.getYM2203Type()[1].getUseReal()[0];
-        int YM2203SoundLocation = (chipID == 0)
+        int YM2203SoundLocation = (chipId == 0)
                 ? parent.setting.getYM2203Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYM2203Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !YM2203Type ? 0 : (YM2203SoundLocation < 0 ? 2 : 1);
@@ -75,9 +74,9 @@ public class frmYM2203 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosYm2203()[chipID] = getLocation();
+                parent.setting.getLocation().getPosYm2203()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosYm2203()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosYm2203()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -127,10 +126,10 @@ public class frmYM2203 extends frmBase {
 
     public void screenChangeParams() {
         boolean isFmEx;
-        int[] ym2203Register = audio.getYm2203Register(chipID);
-        int[] fmKeyYM2203 = audio.getYM2203KeyOn(chipID);
-        int[] ym2203Vol = audio.getYM2203Volume(chipID);
-        int[] ym2203Ch3SlotVol = audio.getYM2203Ch3SlotVolume(chipID);
+        int[] ym2203Register = audio.getYm2203Register(chipId);
+        int[] fmKeyYM2203 = audio.getYM2203KeyOn(chipId);
+        int[] ym2203Vol = audio.getYM2203Volume(chipId);
+        int[] ym2203Ch3SlotVol = audio.getYM2203Ch3SlotVolume(chipId);
 
         isFmEx = (ym2203Register[0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
@@ -276,10 +275,10 @@ public class frmYM2203 extends frmBase {
 
 
     public void screenDrawParams() {
-        boolean YM2203Type = (chipID == 0)
+        boolean YM2203Type = (chipId == 0)
                 ? parent.setting.getYM2203Type()[0].getUseReal()[0]
                 : parent.setting.getYM2203Type()[1].getUseReal()[0];
-        int YM2203SoundLocation = (chipID == 0)
+        int YM2203SoundLocation = (chipId == 0)
                 ? parent.setting.getYM2203Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYM2203Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !YM2203Type ? 0 : (YM2203SoundLocation < 0 ? 2 : 1);
@@ -290,17 +289,17 @@ public class frmYM2203 extends frmBase {
             MDChipParams.Channel nyc = newParam.channels[c];
 
             if (c == 2) {
-                DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 0, oyc.volumeL, nyc.volumeL, tp);
+                oyc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 0, oyc.volumeL, nyc.volumeL, tp);
                 DrawBuff.keyBoard(frameBuffer, c, oyc.note, nyc.note, tp);
                 DrawBuff.Inst(frameBuffer, 1, 12, c, oyc.inst, nyc.inst);
                 DrawBuff.Ch3YM2203(frameBuffer, c, oyc.mask, nyc.mask, oyc.ex, nyc.ex, tp);
             } else if (c < 3) {
-                DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 0, oyc.volumeL, nyc.volumeL, tp);
+                oyc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 0, oyc.volumeL, nyc.volumeL, tp);
                 DrawBuff.keyBoard(frameBuffer, c, oyc.note, nyc.note, tp);
                 DrawBuff.Inst(frameBuffer, 1, 12, c, oyc.inst, nyc.inst);
                 DrawBuff.ChYM2203(frameBuffer, c, oyc.mask, nyc.mask, tp);
             } else {
-                DrawBuff.volume(frameBuffer, 256, 8 + (c + 3) * 8, 0, oyc.volumeL, nyc.volumeL, tp);
+                oyc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + (c + 3) * 8, 0, oyc.volumeL, nyc.volumeL, tp);
                 DrawBuff.keyBoard(frameBuffer, c + 3, oyc.note, nyc.note, tp);
                 DrawBuff.ChYM2203(frameBuffer, c, oyc.mask, nyc.mask, tp);
             }
@@ -310,7 +309,7 @@ public class frmYM2203 extends frmBase {
             MDChipParams.Channel oyc = oldParam.channels[c + 6];
             MDChipParams.Channel nyc = newParam.channels[c + 6];
 
-            DrawBuff.volume(frameBuffer, 256, 8 + (c + 3) * 8, 0, oyc.volume, nyc.volume, tp);
+            oyc.volume = DrawBuff.volume(frameBuffer, 256, 8 + (c + 3) * 8, 0, oyc.volume, nyc.volume, tp);
             DrawBuff.keyBoard(frameBuffer, c + 3, oyc.note, nyc.note, tp);
             DrawBuff.Tn(frameBuffer, 6, 2, c + 3, oyc.tn, nyc.tn, oyc.tntp, tp * 2);
 
@@ -323,10 +322,10 @@ public class frmYM2203 extends frmBase {
     }
 
     public void screenInit() {
-        boolean YM2203Type = (chipID == 0)
+        boolean YM2203Type = (chipId == 0)
                 ? parent.setting.getYM2203Type()[0].getUseReal()[0]
                 : parent.setting.getYM2203Type()[1].getUseReal()[0];
-        int YM2203SoundLocation = (chipID == 0)
+        int YM2203SoundLocation = (chipId == 0)
                 ? parent.setting.getYM2203Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYM2203Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !YM2203Type ? 0 : (YM2203SoundLocation < 0 ? 2 : 1);
@@ -387,9 +386,9 @@ public class frmYM2203 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 6; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YM2203, chipID, ch);
+                            parent.resetChannelMask(EnmChip.YM2203, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YM2203, chipID, ch);
+                            parent.setChannelMask(EnmChip.YM2203, chipId, ch);
                     }
                 }
                 return;
@@ -403,14 +402,14 @@ public class frmYM2203 extends frmBase {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
                     if (newParam.channels[ch].mask)
-                        parent.resetChannelMask(EnmChip.YM2203, chipID, ch);
+                        parent.resetChannelMask(EnmChip.YM2203, chipId, ch);
                     else
-                        parent.setChannelMask(EnmChip.YM2203, chipID, ch);
+                        parent.setChannelMask(EnmChip.YM2203, chipId, ch);
                     return;
                 }
 
                 //マスク解除
-                for (ch = 0; ch < 9; ch++) parent.resetChannelMask(EnmChip.YM2203, chipID, ch);
+                for (ch = 0; ch < 9; ch++) parent.resetChannelMask(EnmChip.YM2203, chipId, ch);
                 return;
             }
 
@@ -422,7 +421,7 @@ public class frmYM2203 extends frmBase {
 
             if (instCh < 3) {
                 //クリップボードに音色をコピーする
-                parent.getInstCh(EnmChip.YM2203, instCh, chipID);
+                parent.getInstCh(EnmChip.YM2203, instCh, chipId);
             }
         }
     };

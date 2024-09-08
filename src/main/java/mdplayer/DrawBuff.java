@@ -214,11 +214,10 @@ public class DrawBuff {
 
         o = 0;
         n = 38;
-        volume(screen, 256, 8 + 0 * 8, 1, o, n / 2, 0);
+        o = volume(screen, 256, 8 + 0 * 8, 1, o, n / 2, 0);
         o = 0;
         n = 38;
-        volume(screen, 256, 8 + 0 * 8, 2, o, n / 2, 0);
-
+        o = volume(screen, 256, 8 + 0 * 8, 2, o, n / 2, 0);
     }
 
     public static void screenInitOKIM6295(FrameBuffer screen) {
@@ -240,7 +239,7 @@ public class DrawBuff {
             DrawBuff.ChSN76489_P(screen, 0, ch * 8 + 8, ch, false, tp);
 
             int d = 99;
-            DrawBuff.volume(screen, 256, 8 + ch * 8, 0, d, 0, tp);
+            d = DrawBuff.volume(screen, 256, 8 + ch * 8, 0, d, 0, tp);
         }
     }
 
@@ -259,7 +258,7 @@ public class DrawBuff {
             }
 
             int d = 99;
-            volume(screen, 256, 8 + y * 8, 0, d, 0, tp);
+            d = volume(screen, 256, 8 + y * 8, 0, d, 0, tp);
 
             if (y < 9) {
                 ChYM2203_P(screen, 0, y * 8 + 8, y, false, tp);
@@ -289,11 +288,11 @@ public class DrawBuff {
 
             int d = 99;
             if (y > 5 && y < 9) {
-                volume(screen, 289, 8 + y * 8, 0, d, 0, tp);
+                d = volume(screen, 289, 8 + y * 8, 0, d, 0, tp);
             } else {
-                volume(screen, 289, 8 + y * 8, 1, d, 0, tp);
+                d = volume(screen, 289, 8 + y * 8, 1, d, 0, tp);
                 d = 99;
-                volume(screen, 289, 8 + y * 8, 2, d, 0, tp);
+                d = volume(screen, 289, 8 + y * 8, 2, d, 0, tp);
             }
         }
 
@@ -313,8 +312,8 @@ public class DrawBuff {
 
         for (int y = 0; y < 9; y++) {
 
-            int d = 99;
-            // boolean YM2612type = chipID==0 ?
+            int d;
+            // boolean YM2612type = chipId==0 ?
             // parent.setting.YM2612Type.UseScci : setting.YM2612SType.UseScci;
             int tp6 = tp;
             if (tp6 == 1 && onlyPCM) {
@@ -342,14 +341,14 @@ public class DrawBuff {
 
             if (y != 5) {
                 d = -1;
-                volume(screen, 289, 8 + y * 8, 0, d, 0, tp);
+                d = volume(screen, 289, 8 + y * 8, 0, d, 0, tp);
             }
 
             if (y < 6) {
                 d = 99;
                 DrawBuff.Pan(screen, 25, 8 + y * 8, d, 3, d, tp);
-                byte b = (byte) 255;
-                Slot(screen, 257, 8 + y * 8, b, (byte) 0);
+                int b = 255;
+                b = slot(screen, 257, 8 + y * 8, b, 0);
             }
             d = 1;
             font4Hex16Bit(screen, 273, 8 + y * 8, 0, d, 0);
@@ -359,7 +358,7 @@ public class DrawBuff {
             } else {
                 // Ch6YM2612_P(screen, 1, y * 8 + 8, 0, false, tp6);
                 d = -1;
-                volume(screen, 289, 8 + y * 8, 0, d, 0, tp6);
+                d = volume(screen, 289, 8 + y * 8, 0, d, 0, tp6);
                 d = -1;
                 DrawBuff.Pan(screen, 25, 8 + y * 8, d, 3, d, tp6);
             }
@@ -384,9 +383,8 @@ public class DrawBuff {
 
             // Volume
             int d = 99;
-            volume(screen, 256, 8 + y * 8, 0, d, 19, tp);
+            d = volume(screen, 256, 8 + y * 8, 0, d, 19, tp);
         }
-
     }
 
     public static void screenInitY8950(FrameBuffer screen, int tp) {
@@ -403,9 +401,8 @@ public class DrawBuff {
 
             // Volume
             int d = 99;
-            volume(screen, 256, 8 + y * 8, 0, d, 19, tp);
+            d = volume(screen, 256, 8 + y * 8, 0, d, 19, tp);
         }
-
     }
 
     public static void screenInitYM3812(FrameBuffer screen, int tp) {
@@ -425,9 +422,8 @@ public class DrawBuff {
 
             // Volume
             int d = 99;
-            volume(screen, 256, 8 + y * 8, 0, d, 19, tp);
+            d = volume(screen, 256, 8 + y * 8, 0, d, 19, tp);
         }
-
     }
 
     public static void screenInitYMF262(FrameBuffer screen, int tp) {
@@ -452,8 +448,8 @@ public class DrawBuff {
 
             // Volume
             int d = 99;
-            volume(screen, 256, 8 + y * 8, 0, d, 19, tp);
-            volume(screen, 256, 8 + y * 8, 0, d, 0, tp);
+            d = volume(screen, 256, 8 + y * 8, 0, d, 19, tp);
+            d = volume(screen, 256, 8 + y * 8, 0, d, 0, tp);
         }
 
     }
@@ -472,7 +468,7 @@ public class DrawBuff {
 
             // Volume
             int d = 99;
-            volume(screen, 256, 8 + y * 8, 0, d, 19, tp);
+            d = volume(screen, 256, 8 + y * 8, 0, d, 19, tp);
         }
 
         for (int y = 19; y < 19 + 24; y++) {
@@ -550,7 +546,7 @@ public class DrawBuff {
 
             // Volume
             int d = 99;
-            volume(screen, 256, 8 + y * 8, 0, d, 0, tp);
+            d = volume(screen, 256, 8 + y * 8, 0, d, 0, tp);
         }
     }
 
@@ -688,9 +684,9 @@ public class DrawBuff {
         }
     }
 
-    public static void Slot(FrameBuffer screen, int x, int y, byte os, byte ns) {
+    public static int slot(FrameBuffer screen, int x, int y, /* ref */ int os, int ns) {
         if (os == ns)
-            return;
+            return os;
 
         screen.drawByteArray(x + 0, y, rNESDMC, 64, ((ns & 1) != 0 ? 1 : 0) * 4 + 32, 0, 4, 8);
         screen.drawByteArray(x + 4, y, rNESDMC, 64, ((ns & 2) != 0 ? 1 : 0) * 4 + 32, 0, 4, 8);
@@ -698,42 +694,44 @@ public class DrawBuff {
         screen.drawByteArray(x + 12, y, rNESDMC, 64, ((ns & 8) != 0 ? 1 : 0) * 4 + 32, 0, 4, 8);
 
         os = ns;
+        return os;
     }
 
-    public static void drawInstNumber(FrameBuffer screen, int x, int y, int oi, int ni) {
+    public static int drawInstNumber(FrameBuffer screen, int x, int y, /* ref */ int oi, int ni) {
         if (oi != ni) {
             drawFont4Int(screen, x * 4, y * 4, 0, 2, ni);
             oi = ni;
         }
+        return oi;
     }
 
     /**
      * ボリュームメータ描画
      * @param screen 描画対象バッファ@param
-     * @param x x座標(x1)@param  @param y y座標(x1)@param
-     * @param c 0:Mono 1:Stereo(L) 2:Stereo(R)@param
-     * @param ov 前回の値(ref)@param  @param nv 今回の値@param
-     * @param tp 0:EMU 1:Real @param
+     * @param x x座標(x1)
+     * @param y y座標(x1)
+     * @param c 0:Mono 1:Stereo(L) 2:Stereo(R)
+     * @param ov 前回の値(ref)
+     * @param nv 今回の値
+     * @param tp 0:EMU 1:Real
      */
-    public static void volume(FrameBuffer screen, int x, int y, int c, int ov, int nv, int tp) {
+    public static int volume(FrameBuffer screen, int x, int y, int c, /* ref */ int ov, int nv, int tp) {
         if (ov == nv)
-            return;
+            return ov;
 
-        // int t = 0;
-        // int sy = 0;
-        // if (c == 1 || c == 2) { t = 4; }
-        // if (c == 2) { sy = 4; }
-        // y = (y + 1) * 8;
+//        int t = 0;
+//        int sy = 0;
+//        if (c == 1 || c == 2) { t = 4; }
+//        if (c == 2) { sy = 4; }
+//        y = (y + 1) * 8;
 
-        // for (int i = 0; i <= 19; i++)
-        // {
-        // VolumeP(screen, 256 + i * 2, y + sy, (1 + t), tp);
-        // }
+//        for (int i = 0; i <= 19; i++) {
+//            VolumeP(screen, 256 + i * 2, y + sy, (1 + t), tp);
+//        }
 
-        // for (int i = 0; i <= nv; i++)
-        // {
-        // VolumeP(screen, 256 + i * 2, y + sy, i > 17 ? (2 + t) : (0 + t), tp);
-        // }
+//        for (int i = 0; i <= nv; i++) {
+//            VolumeP(screen, 256 + i * 2, y + sy, i > 17 ? (2 + t) : (0 + t), tp);
+//        }
 
         int t = 0;
         int sy = 0;
@@ -754,12 +752,12 @@ public class DrawBuff {
         }
 
         ov = nv;
-
+        return ov;
     }
 
-    public static void VolumeToC140(FrameBuffer screen, int y, int c, int ov, int nv, int tp) {
+    public static int VolumeToC140(FrameBuffer screen, int y, int c, /* ref */ int ov, int nv, int tp) {
         if (ov == nv)
-            return;
+            return ov;
 
         int t = 0;
         int sy = 0;
@@ -780,6 +778,7 @@ public class DrawBuff {
         }
 
         ov = nv;
+        return ov;
     }
 
     public static void VolumeSt(FrameBuffer screen, int x, int y, int c, int ov, int nv) {
@@ -833,9 +832,9 @@ public class DrawBuff {
         ov = nv;
     }
 
-    public static void VolumeToOKIM6295(FrameBuffer screen, int y, int ov, int nv) {
+    public static int VolumeToOKIM6295(FrameBuffer screen, int y, /* ref */ int ov, int nv) {
         if (ov == nv)
-            return;
+            return ov;
 
         int t = 0;
         int sy = 0;
@@ -850,6 +849,7 @@ public class DrawBuff {
         }
 
         ov = nv;
+        return ov;
     }
 
     public static void VolumeLCDToMIDILCD(FrameBuffer screen,
@@ -863,7 +863,7 @@ public class DrawBuff {
         if (oldValue1 == value1 && oldValue2 == value2)
             return;
 
-        int s = 0;
+        int s;
         int vy = y;
         // for (int n = (Math.min(oldValue1, value1) / 8); n < 16; n++)
         for (int n = 0; n < 16; n++) {
@@ -879,17 +879,18 @@ public class DrawBuff {
         oldValue2 = value2;
     }
 
-    public static void VolumeToMIDILCD(FrameBuffer screen, int MIDImodule, int x, int y, int oldValue, int value) {
+    public static int VolumeToMIDILCD(FrameBuffer screen, int MIDImodule, int x, int y, /* ref */ int oldValue, int value) {
         if (oldValue == value)
-            return;
+            return oldValue;
 
-        int s = 0;
+        int s;
         for (int n = (Math.min(oldValue, value) / 5); n < (Math.max(oldValue, value) / 5) + 1; n++) {
             s = (value / 5) < n ? 2 : 0;
             screen.drawByteArray(n * 2 + x, y, rMIDILCD_Vol[MIDImodule], 32, 0 + (n > 23 ? 4 : 0) + s, 0, 2, 8);
         }
 
         oldValue = value;
+        return oldValue;
     }
 
     public static void VolumeXY(FrameBuffer screen, int x, int y, int c, int ov, int nv, int tp) {
@@ -1001,8 +1002,8 @@ public class DrawBuff {
         if (ot == nt)
             return;
 
-        int kx = 0;
-        int kt = 0;
+        int kx;
+        int kt;
 
         y = (y + 1) * 8;
 
@@ -1034,8 +1035,8 @@ public class DrawBuff {
         if (ot == nt)
             return;
 
-        int kx = 0;
-        int kt = 0;
+        int kx;
+        int kt;
 
         if (ot >= 0 && ot < 12 * 8) {
             kx = Tables.kbl[(ot % 12) * 2] + ot / 12 * 28;
@@ -1065,8 +1066,8 @@ public class DrawBuff {
         if (ot == nt)
             return;
 
-        int kx = 0;
-        int kt = 0;
+        int kx;
+        int kt;
 
         if (ot >= 0 && ot < 12 * 8) {
             kx = Tables.kbl[(ot % 12) * 2] + ot / 12 * 28;
@@ -1096,8 +1097,8 @@ public class DrawBuff {
         if (ot == nt)
             return;
 
-        int kx = 0;
-        int kt = 0;
+        int kx;
+        int kt;
 
         y = (y + 1) * 8;
 
@@ -1129,8 +1130,8 @@ public class DrawBuff {
         if (ot == nt)
             return;
 
-        int kx = 0;
-        int kt = 0;
+        int kx;
+        int kt;
 
         y = (y + 1) * 8;
 
@@ -1162,8 +1163,8 @@ public class DrawBuff {
         if (ot == nt)
             return;
 
-        int kx = 0;
-        int kt = 0;
+        int kx;
+        int kt;
 
         y = (y + 1) * 8;
 
@@ -1192,8 +1193,8 @@ public class DrawBuff {
         if (ot == nt)
             return;
 
-        int kx = 0;
-        int kt = 0;
+        int kx;
+        int kt;
 
         y = (y + 1) * 8;
 
@@ -1222,8 +1223,8 @@ public class DrawBuff {
         if (ot == nt)
             return;
 
-        int kx = 0;
-        int kt = 0;
+        int kx;
+        int kt;
 
         y = (y + 1) * 8;
 
@@ -1252,8 +1253,8 @@ public class DrawBuff {
         if (ot == nt)
             return;
 
-        int kx = 0;
-        int kt = 0;
+        int kx;
+        int kt;
 
         y = (y + 1) * 8;
 
@@ -1285,8 +1286,8 @@ public class DrawBuff {
         if (ot == nt)
             return;
 
-        int kx = 0;
-        int kt = 0;
+        int kx;
+        int kt;
 
         y = (y + 1) * 8;
 
@@ -1449,14 +1450,15 @@ public class DrawBuff {
         om = nm;
     }
 
-    public static void ChOKIM6295(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
+    public static boolean ChOKIM6295(FrameBuffer screen, int ch, /* ref */ boolean om, Boolean nm, int tp) {
 
         if (om == nm) {
-            return;
+            return om;
         }
 
         ChOKIM6295_P(screen, 0, 8 + ch * 8, ch, nm != null && nm, tp);
         om = nm;
+        return om;
     }
 
     public static void ChK051649(FrameBuffer screen, int ch, boolean om, Boolean nm, int tp) {
@@ -1851,7 +1853,7 @@ public class DrawBuff {
             int x = i + (((c > 2) ? c - 3 : c) * 8 * 13) + 4 * 7;
             int y = (((c > 2) ? 1 : 0) * 8 * 5) + 4 * 22;
 
-            int m = 0;
+            int m;
             m = (n > 7) ? 8 : n;
             screen.drawByteArray(x, y, rWavGraph, 64, m, 0, 1, 8);
             m = (n > 15) ? 8 : (Math.max((n - 8), 0));
@@ -1876,7 +1878,7 @@ public class DrawBuff {
             int y = c / 3;
             y = y * 48 + 80;
 
-            int m = 0;
+            int m;
             m = (n > 7) ? 8 : n;
             screen.drawByteArray(x, y, rWavGraph, 64, m, 0, 1, 8);
             m = (n > 15) ? 8 : (Math.max((n - 8), 0));
@@ -1899,7 +1901,7 @@ public class DrawBuff {
             int x = i + c * 4 * 31 + 8;
             int y = 8 * 6;
 
-            int m = 0;
+            int m;
             m = (n > 7) ? 8 : n;
             screen.drawByteArray(x, y, rWavGraph, 64, m, 0, 1, 8);
             m = (n > 15) ? 8 : (Math.max((n - 8), 0));
@@ -1934,7 +1936,7 @@ public class DrawBuff {
 
             int n = ni[i];
 
-            int m = 0;
+            int m;
             m = (n > 7) ? 8 : n;
             screen.drawByteArray(x + i, y, rWavGraph, 64, m, 0, 1, 8);
             m = (n > 15) ? 8 : (Math.max((n - 8), 0));
@@ -2015,15 +2017,15 @@ public class DrawBuff {
         od = nd;
     }
 
-    public static void drawMIDILCD_Fader(FrameBuffer screen,
+    public static byte drawMIDILCD_Fader(FrameBuffer screen,
                                          int MIDImodule,
                                          int faderType,
                                          int x,
                                          int y,
-                                         byte oldValue,
+                                         /* ref */ byte oldValue,
                                          byte value) {
         if (oldValue == value)
-            return;
+            return oldValue;
         oldValue = value;
 
         int v;
@@ -2037,18 +2039,18 @@ public class DrawBuff {
             drawMIDILCD_FaderP(screen, MIDImodule, 1, x, y, v);
             break;
         }
-
+        return oldValue;
     }
 
-    public static void drawMIDILCD_Fader(FrameBuffer screen,
+    public static short drawMIDILCD_Fader(FrameBuffer screen,
                                          int MIDImodule,
                                          int faderType,
                                          int x,
                                          int y,
-                                         short oldValue,
+                                         /* ref */ short oldValue,
                                          short value) {
         if (oldValue == value)
-            return;
+            return oldValue;
         oldValue = value;
 
         int v;
@@ -2060,34 +2062,37 @@ public class DrawBuff {
         case 1:
             break;
         }
+        return oldValue;
     }
 
-    public static void drawMIDILCD_Kbd(FrameBuffer screen, int x, int y, int note, byte oldVel, byte vel) {
+    public static byte drawMIDILCD_Kbd(FrameBuffer screen, int x, int y, int note, /* ref */ byte oldVel, byte vel) {
         if (oldVel == vel)
-            return;
+            return oldVel;
         oldVel = vel;
 
         drawMIDILCD_KbdP(screen, x, y, note, vel);
+        return oldVel;
     }
 
-    public static void drawFont4MIDINotes(FrameBuffer screen, int x, int y, int t, String oldnotes, String notes) {
+    public static String drawFont4MIDINotes(FrameBuffer screen, int x, int y, int t, /* ref */ String oldnotes, String notes) {
         if (oldnotes.equals(notes))
-            return;
+            return oldnotes;
         oldnotes = notes;
 
         if (screen == null)
-            return;
+            return oldnotes;
 
         drawFont4(screen, x, y, t, notes);
+        return oldnotes;
     }
 
-    public static void drawMIDI_Lyric(FrameBuffer screen, int chipID, int x, int y, String oldValue1, String value1) {
+    public static void drawMIDI_Lyric(FrameBuffer screen, int chipId, int x, int y, String oldValue1, String value1) {
         // if (oldValue1 == value1) return;
 
-//        gMIDILyric[chipID].clear(Color.black);
+//        gMIDILyric[chipId].clear(Color.black);
 //        JTextRenderer
-//                .DrawText(gMIDILyric[chipID], value1, fntMIDILyric[chipID], new Point(0, 0), Color.white);
-        byte[] bit = getByteArray(bitmapMIDILyric[chipID]);
+//                .DrawText(gMIDILyric[chipId], value1, fntMIDILyric[chipId], new Point(0, 0), Color.white);
+        byte[] bit = getByteArray(bitmapMIDILyric[chipId]);
         screen.drawByteArray(x, y, bit, 200, 0, 0, 200, 24);
 
         oldValue1 = value1;
@@ -2130,7 +2135,7 @@ public class DrawBuff {
             if (screen == null)
                 return;
 
-            int cd = 0;
+            int cd;
             // if (i < len)
             cd = Tables.spc[i] - ' ';
 
@@ -2154,7 +2159,7 @@ public class DrawBuff {
             if (screen == null)
                 return;
 
-            int cd = 0;
+            int cd;
             // if (i < len)
             cd = value[i] - ' ';
 
@@ -2224,7 +2229,7 @@ public class DrawBuff {
         drawFaderSlitP(screen, x, y - 8);
         drawFont4IntM(screen, x, y + 48, 3, nd);
 
-        int n = 0;
+        int n;
 
         if (nd >= 0) {
             n = -(int) (nd / 20.0 * 8.0);
@@ -2687,12 +2692,13 @@ public class DrawBuff {
         on = nn;
     }
 
-    public static void font4HexByte(FrameBuffer screen, int x, int y, int t, int on, int nn) {
+    public static int font4HexByte(FrameBuffer screen, int x, int y, int t, int on, int nn) {
         if (on == nn)
-            return;
+            return on;
 
         drawFont4HexByte(screen, x, y, t, nn);
         on = nn;
+        return on;
     }
 
     public static void font4Hex12Bit(FrameBuffer screen, int x, int y, int t, int on, int nn) {
@@ -2711,12 +2717,13 @@ public class DrawBuff {
         on = nn;
     }
 
-    public static void font4Hex20Bit(FrameBuffer screen, int x, int y, int t, int on, int nn) {
+    public static int font4Hex20Bit(FrameBuffer screen, int x, int y, int t, /* ref */ int on, int nn) {
         if (on == nn)
-            return;
+            return on;
 
         drawFont4Hex20Bit(screen, x, y, t, nn);
         on = nn;
+        return on;
     }
 
     public static void font4Hex24Bit(FrameBuffer screen, int x, int y, int t, int on, int nn) {

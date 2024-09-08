@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -34,7 +33,7 @@ public class frmQSound extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
     private MDChipParams.QSound newParam;
     private MDChipParams.QSound oldParam;
@@ -42,12 +41,12 @@ public class frmQSound extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmQSound.class);
 
-    public frmQSound(frmMain frm, int chipID, int zoom, MDChipParams.QSound newParam, MDChipParams.QSound oldParam) {
+    public frmQSound(frmMain frm, int chipId, int zoom, MDChipParams.QSound newParam, MDChipParams.QSound oldParam) {
         super(frm);
 
         initializeComponent();
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         this.newParam = newParam;
         this.oldParam = oldParam;
@@ -70,9 +69,9 @@ public class frmQSound extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosQSound()[chipID] = getLocation();
+                parent.setting.getLocation().getPosQSound()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosQSound()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosQSound()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -118,9 +117,9 @@ public class frmQSound extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 19; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.QSound, chipID, ch);
+                            parent.resetChannelMask(EnmChip.QSound, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.QSound, chipID, ch);
+                            parent.setChannelMask(EnmChip.QSound, chipId, ch);
                     }
                 }
                 return;
@@ -131,11 +130,11 @@ public class frmQSound extends frmBase {
 
             if (ch < 19) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.QSound, chipID, ch);
+                    parent.setChannelMask(EnmChip.QSound, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 19; ch++) parent.resetChannelMask(EnmChip.QSound, chipID, ch);
+                for (ch = 0; ch < 19; ch++) parent.resetChannelMask(EnmChip.QSound, chipId, ch);
             }
         }
     };
@@ -151,7 +150,7 @@ public class frmQSound extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] QSoundRegister = audio.getQSoundRegister(chipID);
+        int[] QSoundRegister = audio.getQSoundRegister(chipId);
 
         //PCM 16ch
         for (int ch = 0; ch < 16; ch++) {

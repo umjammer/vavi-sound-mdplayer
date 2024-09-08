@@ -2,30 +2,24 @@
 
 package mdplayer.driver.sid.libsidplayfp.utils.md5;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-
 
 public class KimMD5 {
 
-    static byte[] M;
-    static long[] T = new long[64];
-    static long[] X = new long[16];
-    static long A = 0x67452301;
-    static long B = 0xEFCDAB89;
-    static long C = 0x98BADCFE;
-    static long D = 0x10325476;
+    byte[] M;
+    long[] T = new long[64];
+    long[] X = new long[16];
+    static long A = 0x6745_2301;
+    static long B = 0xefcd_ab89L;
+    static long C = 0x98ba_dcfeL;
+    static long D = 0x1032_5476;
 
-    static long temp_A;
-    static long temp_B;
-    static long temp_C;
-    static long temp_D;
+    long temp_A;
+    long temp_B;
+    long temp_C;
+    long temp_D;
 
     public static long rotate_left(long x, long s) {
-        return ((x) << (s)) | ((x) >>> (32 - s)) & 0xFFFFFFFFL;
+        return ((x) << (s)) | ((x) >>> (32 - s)) & 0xffff_ffffL;
     }
 
     public static long encode(long t) {
@@ -33,19 +27,19 @@ public class KimMD5 {
     }
 
     public static long ff(long a, long b, long c, long d, long k, long s, long i) {
-        return (b + rotate_left(((a + ((b & c) | ((~b) & d)) + k + i) & 0xFFFFFFFFL), s)) & 0xFFFFFFFFL;
+        return (b + rotate_left(((a + ((b & c) | ((~b) & d)) + k + i) & 0xffff_ffffL), s)) & 0xffff_ffffL;
     }
 
     public static long gg(long a, long b, long c, long d, long k, long s, long i) {
-        return (b + rotate_left(((a + ((b & d) | (c & (~d))) + k + i) & 0xFFFFFFFFL), s)) & 0xFFFFFFFFL;
+        return (b + rotate_left(((a + ((b & d) | (c & (~d))) + k + i) & 0xffff_ffffL), s)) & 0xffff_ffffL;
     }
 
     public static long hh(long a, long b, long c, long d, long k, long s, long i) {
-        return (b + rotate_left(((a + (b ^ c ^ d) + k + i) & 0xFFFFFFFFL), s)) & 0xFFFFFFFFL;
+        return (b + rotate_left(((a + (b ^ c ^ d) + k + i) & 0xffff_ffffL), s)) & 0xffff_ffffL;
     }
 
     public static long ii(long a, long b, long c, long d, long k, long s, long i) {
-        return (b + rotate_left(((a + (c ^ (b | (~d))) + k + i) & 0xFFFFFFFFL), s)) & 0xFFFFFFFFL;
+        return (b + rotate_left(((a + (c ^ (b | (~d))) + k + i) & 0xffff_ffffL), s)) & 0xffff_ffffL;
     }
 
     public static byte[] longToByteArray(long value) {
@@ -61,7 +55,7 @@ public class KimMD5 {
         };
     }
 
-    public static void table_T() {
+    public void table_T() {
         for (int i = 0; i < 64; i++) {
             T[i] = (long) (Math.floor(Math.abs(Math.sin(i + 1)) * (long) Math.pow(2, 32)));
         }
@@ -101,13 +95,13 @@ public class KimMD5 {
         pad = longToByteArray(length * 8);
 
         for (i = 0; i < 8; i++) {
-            M[(int) (i + length + padding_length)] = (byte) pad[i];
+            M[(int) (i + length + padding_length)] = pad[i];
         }
 
         table_T();
         for (i = 0; i < (length + padding_length + 8) / 64; i++) {
             for (j = 0, k = 0; j < 16; j++, k += 4) {
-                X[j] = ((int) M[i * 64 + k] & 0xFF) | ((int) M[i * 64 + k + 1] & 0xFF) << 8 | ((int) M[i * 64 + k + 2] & 0xFF) << 16 | ((int) M[i * 64 + k + 3] & 0xFF) << 24;
+                X[j] = ((int) M[i * 64 + k] & 0xff) | ((int) M[i * 64 + k + 1] & 0xff) << 8 | ((int) M[i * 64 + k + 2] & 0xff) << 16 | (long) ((int) M[i * 64 + k + 3] & 0xff) << 24;
             }
             temp_A = A;
             temp_B = B;
@@ -169,10 +163,10 @@ public class KimMD5 {
                     break;
                 }
             }
-            A = (A + temp_A) & 0xFFFFFFFFL;
-            B = (B + temp_B) & 0xFFFFFFFFL;
-            C = (C + temp_C) & 0xFFFFFFFFL;
-            D = (D + temp_D) & 0xFFFFFFFFL;
+            A = (A + temp_A) & 0xffff_ffffL;
+            B = (B + temp_B) & 0xffff_ffffL;
+            C = (C + temp_C) & 0xffff_ffffL;
+            D = (D + temp_D) & 0xffff_ffffL;
         }
 
         A = encode(A);

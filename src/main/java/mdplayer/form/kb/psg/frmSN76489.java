@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -35,7 +34,7 @@ public class frmSN76489 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
 
     private MDChipParams.SN76489 newParam;
@@ -44,10 +43,10 @@ public class frmSN76489 extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmSN76489.class);
 
-    public frmSN76489(frmMain frm, int chipID, int zoom, MDChipParams.SN76489 newParam, MDChipParams.SN76489 oldParam) {
+    public frmSN76489(frmMain frm, int chipId, int zoom, MDChipParams.SN76489 newParam, MDChipParams.SN76489 oldParam) {
         super(frm);
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
 
         initializeComponent();
@@ -55,7 +54,7 @@ public class frmSN76489 extends frmBase {
         this.newParam = newParam;
         this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneSN76489(), null, zoom);
-        boolean SN76489Type = (chipID == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
+        boolean SN76489Type = (chipId == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
         int tp = SN76489Type ? 1 : 0;
         DrawBuff.screenInitSN76489(frameBuffer, tp);
         update();
@@ -74,9 +73,9 @@ public class frmSN76489 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosSN76489()[chipID] = getLocation();
+                parent.setting.getLocation().getPosSN76489()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosSN76489()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosSN76489()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -112,14 +111,14 @@ public class frmSN76489 extends frmBase {
 
 
     public void screenChangeParams() {
-        int[] psgRegister = audio.getPSGRegister(chipID);
+        int[] psgRegister = audio.getPSGRegister(chipId);
         int[] psgRegister1 = null;
-        int psgRegisterPan = audio.getPSGRegisterGGPanning(chipID);
-        int[][] psgVol = audio.getPSGVolume(chipID);
+        int psgRegisterPan = audio.getPSGRegisterGGPanning(chipId);
+        int[][] psgVol = audio.getPSGVolume(chipId);
         int[][] psgVol1 = null;
         boolean NGPFlag = audio.getSn76489NGPFlag();
 
-        if (NGPFlag && chipID == 1) {
+        if (NGPFlag && chipId == 1) {
             for (int ch = 0; ch < 4; ch++) {
                 newParam.channels[ch].note = -1;
 
@@ -187,7 +186,7 @@ public class frmSN76489 extends frmBase {
     }
 
     public void screenDrawParams() {
-        boolean SN76489Type = (chipID == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
+        boolean SN76489Type = (chipId == 0) ? parent.setting.getSN76489Type()[0].getUseReal()[0] : parent.setting.getSN76489Type()[1].getUseReal()[0];
         int tp = SN76489Type ? 1 : 0;
         MDChipParams.Channel osc;
         MDChipParams.Channel nsc;
@@ -197,8 +196,8 @@ public class frmSN76489 extends frmBase {
             osc = oldParam.channels[c];
             nsc = newParam.channels[c];
 
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, osc.volumeL, nsc.volumeL, tp);
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, osc.volumeR, nsc.volumeR, tp);
+            osc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, osc.volumeL, nsc.volumeL, tp);
+            osc.volumeR = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, osc.volumeR, nsc.volumeR, tp);
             DrawBuff.keyBoard(frameBuffer, c, osc.note, nsc.note, tp);
             DrawBuff.ChSN76489(frameBuffer, c, osc.mask, nsc.mask, tp);
             if (NGPFlag) {
@@ -210,8 +209,8 @@ public class frmSN76489 extends frmBase {
 
         osc = oldParam.channels[3];
         nsc = newParam.channels[3];
-        DrawBuff.volume(frameBuffer, 256, 8 + 3 * 8, 1, osc.volumeL, nsc.volumeL, tp);
-        DrawBuff.volume(frameBuffer, 256, 8 + 3 * 8, 2, osc.volumeR, nsc.volumeR, tp);
+        osc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + 3 * 8, 1, osc.volumeL, nsc.volumeL, tp);
+        osc.volumeR = DrawBuff.volume(frameBuffer, 256, 8 + 3 * 8, 2, osc.volumeR, nsc.volumeR, tp);
         DrawBuff.ChSN76489(frameBuffer, 3, osc.mask, nsc.mask, tp);
         DrawBuff.ChSN76489Noise(frameBuffer, osc, nsc, tp);
         if (NGPFlag) {
@@ -253,9 +252,9 @@ public class frmSN76489 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 4; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.SN76489, chipID, ch);
+                            parent.resetChannelMask(EnmChip.SN76489, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.SN76489, chipID, ch);
+                            parent.setChannelMask(EnmChip.SN76489, chipId, ch);
                     }
                 }
                 return;
@@ -270,15 +269,15 @@ public class frmSN76489 extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
-                    parent.setChannelMask(EnmChip.SN76489, chipID, ch);
-                    if (NGPFlag && chipID == 0) parent.setChannelMask(EnmChip.SN76489, 1, ch);
+                    parent.setChannelMask(EnmChip.SN76489, chipId, ch);
+                    if (NGPFlag && chipId == 0) parent.setChannelMask(EnmChip.SN76489, 1, ch);
                     return;
                 }
 
                 //マスク解除
                 for (ch = 0; ch < 4; ch++) {
-                    parent.resetChannelMask(EnmChip.SN76489, chipID, ch);
-                    if (NGPFlag && chipID == 0) parent.resetChannelMask(EnmChip.SN76489, 1, ch);
+                    parent.resetChannelMask(EnmChip.SN76489, chipId, ch);
+                    if (NGPFlag && chipId == 0) parent.resetChannelMask(EnmChip.SN76489, 1, ch);
                 }
             }
         }

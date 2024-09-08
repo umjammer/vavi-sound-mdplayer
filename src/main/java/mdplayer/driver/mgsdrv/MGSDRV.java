@@ -238,7 +238,7 @@ public class MGSDRV extends BaseDriver {
             Debug.printf("Call InterSlot");
         } else if (z80.getRegisters().getPC() == 0x4601) {
             Debug.printf("JP NEWSTT(0x4601) Reg.HL=%04x", z80.getRegisters().getHL());
-            String msg = getASCIIZ(z80, (int) z80.getRegisters().getHL());
+            String msg = getASCIIZ(z80, z80.getRegisters().getHL());
             Debug.printf("(HL)=%s", msg);
             if (msg.equals(":_SYSTEM")) {
                 args.getExecutionStopper().stop(false);
@@ -319,7 +319,7 @@ public class MGSDRV extends BaseDriver {
         } else if (function == 0x6b) {
             // _GENV
             //Debug.printf("_GENV HL:%04x DE:%04x B:%02x", z80.getRegisters().getHL(), z80.getRegisters().getDE(), z80.getRegisters().getB());
-            String msg = getASCIIZ(z80, (int) z80.getRegisters().getHL());
+            String msg = getASCIIZ(z80, z80.getRegisters().getHL());
             //Debug.printf("(HL)=%d", msg);
 
             if (msg.equals("PARAMETERS")) {
@@ -344,7 +344,7 @@ public class MGSDRV extends BaseDriver {
             String msg = getASCIIZ(z80, z80.getRegisters().getHL() & 0xffff);
             //Debug.printf("(HL)=%d", msg);
 
-            msg = getASCIIZ(z80, (int) z80.getRegisters().getDE());
+            msg = getASCIIZ(z80, z80.getRegisters().getDE());
             //Debug.printf("(DE)=%d", msg);
 
             z80.getRegisters().setA((byte) 0x00); // Error number

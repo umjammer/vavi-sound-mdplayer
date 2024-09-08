@@ -33,8 +33,8 @@ public class frmY8950 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
 
     private MDChipParams.Y8950 newParam;
     private MDChipParams.Y8950 oldParam = new MDChipParams.Y8950();
@@ -42,15 +42,15 @@ public class frmY8950 extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmY8950.class);
 
-    public frmY8950(frmMain frm, int chipID, int zoom, MDChipParams.Y8950 newParam) {
+    public frmY8950(frmMain frm, int chipId, int zoom, MDChipParams.Y8950 newParam) {
         super(frm);
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         initializeComponent();
 
         this.newParam = newParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneY8950(), null, zoom);
-        boolean Y8950Type = false;// (chipID == 0) ? parent.setting.Y8950Type.UseScci : parent.setting.Y8950Type.UseScci;
+        boolean Y8950Type = false;// (chipId == 0) ? parent.setting.Y8950Type.UseScci : parent.setting.Y8950Type.UseScci;
         int tp = Y8950Type ? 1 : 0;
         DrawBuff.screenInitY8950(frameBuffer, tp);
         update();
@@ -60,9 +60,9 @@ public class frmY8950 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosY8950()[chipID] = getLocation();
+                parent.setting.getLocation().getPosY8950()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosY8950()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosY8950()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -101,9 +101,9 @@ public class frmY8950 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 9 + 5 + 1; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.Y8950, chipID, ch);
+                            parent.resetChannelMask(EnmChip.Y8950, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.Y8950, chipID, ch);
+                            parent.setChannelMask(EnmChip.Y8950, chipId, ch);
                     }
                 }
                 return;
@@ -125,12 +125,12 @@ public class frmY8950 extends frmBase {
 
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 //マスク
-                parent.setChannelMask(EnmChip.Y8950, chipID, ch);
+                parent.setChannelMask(EnmChip.Y8950, chipId, ch);
                 return;
             }
 
             //マスク解除
-            for (ch = 0; ch < 9 + 5 + 1; ch++) parent.resetChannelMask(EnmChip.Y8950, chipID, ch);
+            for (ch = 0; ch < 9 + 5 + 1; ch++) parent.resetChannelMask(EnmChip.Y8950, chipId, ch);
         }
     };
 
@@ -161,10 +161,10 @@ public class frmY8950 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] Y8950Register = audio.getY8950Register(chipID);
+        int[] Y8950Register = audio.getY8950Register(chipId);
         MDChipParams.Channel nyc;
-        int slot = 0;
-        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getY8950KeyInfo(chipID);
+        int slot;
+        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getY8950KeyInfo(chipId);
         mdsound.MDSound.Chip chipInfo = audio.getMDSChipInfo(Y8950Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock;
 
@@ -238,7 +238,7 @@ public class frmY8950 extends frmBase {
         newParam.channels[9].dda = ((Y8950Register[0xbd] >> 7) & 0x01) != 0;//DA
         newParam.channels[10].dda = ((Y8950Register[0xbd] >> 6) & 0x01) != 0;//DV
 
-        // // #region リズム情報の取得
+        // //#region リズム情報の取得
 
         //slot14 TL 0x51 HH
         //slot15 TL 0x52 TOM
@@ -255,9 +255,9 @@ public class frmY8950 extends frmBase {
             }
         }
 
-        // // #endregion
+        // //#endregion
 
-        // // #region ADPCM
+        // //#region ADPCM
 
         //Delta
         newParam.channels[14].inst[12] = Y8950Register[0x10]
@@ -286,7 +286,7 @@ public class frmY8950 extends frmBase {
             if (newParam.channels[14].volume < 0) newParam.channels[14].volume = 0;
         }
 
-        // // #endregion
+        // //#endregion
     }
 
     public void screenDrawParams() {

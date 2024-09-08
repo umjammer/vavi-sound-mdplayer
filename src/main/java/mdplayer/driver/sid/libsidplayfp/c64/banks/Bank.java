@@ -29,24 +29,26 @@ public abstract class Bank implements IBank {
     /**
      * Bank write.
      * <p>
-     * @Override this method if you expect write operations on your bank. Leave
-     *           unimplemented if it's logically/operationally impossible for
-     *           writes to ever arrive to bank.
-     * <p>
+     * this method if you expect write operations on your bank. Leave
+     * unimplemented if it's logically/operationally impossible for
+     * writes to ever arrive to bank.
+     *
      * @param address address to write to
-     * @param value value to write
+     * @param value   value to write
      */
-    public void poke(short address, byte value) {
+    @Override
+    public void poke(int address, byte value) {
     }
 
     /**
      * Bank read. You probably should @Override this method, except if the Bank
      * instanceof only used in write context.
-     * <p>
+     *
      * @param address value to read from
      * @return value at address
      */
-    public byte peek(short address) {
+    @Override
+    public byte peek(int address) {
         return 0;
     }
 }

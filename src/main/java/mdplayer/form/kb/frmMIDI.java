@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MIDIParam;
@@ -32,19 +31,19 @@ public class frmMIDI extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
 
-    private MIDIParam newParam = null;
+    private MIDIParam newParam;
     private MIDIParam oldParam = new MIDIParam();
     private FrameBuffer frameBuffer = new FrameBuffer();
     private String notes = "";
 
     static Preferences prefs = Preferences.userNodeForPackage(frmMIDI.class);
 
-    public frmMIDI(frmMain frm, int chipID, int zoom, MIDIParam newParam) {
+    public frmMIDI(frmMain frm, int chipId, int zoom, MIDIParam newParam) {
         super(frm);
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
 
         initializeComponent();
@@ -68,9 +67,9 @@ public class frmMIDI extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosMIDI()[chipID] = getLocation();
+                parent.setting.getLocation().getPosMIDI()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosMIDI()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosMIDI()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -105,7 +104,7 @@ public class frmMIDI extends frmBase {
     };
 
     public void screenChangeParams() {
-        MIDIParam prm = audio.getMIDIInfos(chipID);
+        MIDIParam prm = audio.getMIDIInfos(chipId);
 
         for (int ch = 0; ch < 16; ch++) {
             System.arraycopy(prm.cc[ch], 0, newParam.cc[ch], 0, 256);
@@ -161,7 +160,7 @@ public class frmMIDI extends frmBase {
 
         newParam.MIDIModule = prm.MIDIModule;
 
-         // Display Data
+         // Display data
         System.arraycopy(prm.LCDDisplay, 0, newParam.LCDDisplay, 0, 64);
         newParam.LCDDisplayTime = prm.LCDDisplayTime;
         prm.LCDDisplayTime -= 3;
@@ -176,7 +175,7 @@ public class frmMIDI extends frmBase {
         prm.LCDDisplayTimeXG -= 3;
         if (prm.LCDDisplayTimeXG < 0) prm.LCDDisplayTimeXG = 0;
 
-         // Display Letter Data
+         // Display Letter data
         System.arraycopy(prm.LCDDisplayLetter, 0, newParam.LCDDisplayLetter, 0, 32);
         newParam.LCDDisplayLetterLen = prm.LCDDisplayLetterLen;
         newParam.LCDDisplayLetterTime = prm.LCDDisplayLetterTime;
@@ -246,26 +245,26 @@ public class frmMIDI extends frmBase {
 
         DrawBuff.drawFont4IntMIDI(frameBuffer, 60 * 4, 17 * 16 + 8, 2 + module, oldParam.MasterVolume, newParam.MasterVolume);
 
-        DrawBuff.drawMIDI_Lyric(frameBuffer, chipID, 60 * 4, 41 * 8, oldParam.Lyric, newParam.Lyric);
+        DrawBuff.drawMIDI_Lyric(frameBuffer, chipId, 60 * 4, 41 * 8, oldParam.Lyric, newParam.Lyric);
 
         for (int ch = 0; ch < 16; ch++) {
-            byte b = (byte) (128 - newParam.cc[ch][10]);
-            b = (byte) (b > 127 ? 127 : b);
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 0, 64, ch * 16 + 16, oldParam.cc[ch][10], b); // Panpot
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 68, ch * 16 + 16, oldParam.cc[ch][7], newParam.cc[ch][7]); // Volume
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 72, ch * 16 + 16, oldParam.cc[ch][11], newParam.cc[ch][11]); // Expression
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 0, 76, ch * 16 + 16, oldParam.bend[ch], newParam.bend[ch]); // PitchBend
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 80, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][1]); // Modulation
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 84, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][91]); // Reverb
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 88, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][93]); // Chorus
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 92, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][94]); // Variation(Delay)
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 96, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][64]); // Hold(DumperPedal)
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 100, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][67]); // Soft
-            DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 104, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][66]); // Sostenuto
+            byte b = (byte) (128 - newParam.cc[ch][10] & 0xff);
+            b = b < 0 ? 127 : b;
+            oldParam.cc[ch][10] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 0, 64, ch * 16 + 16, oldParam.cc[ch][10], b); // Panpot
+            oldParam.cc[ch][7] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 68, ch * 16 + 16, oldParam.cc[ch][7], newParam.cc[ch][7]); // Volume
+            oldParam.cc[ch][11] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 72, ch * 16 + 16, oldParam.cc[ch][11], newParam.cc[ch][11]); // Expression
+            oldParam.bend[ch] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 0, 76, ch * 16 + 16, oldParam.bend[ch], newParam.bend[ch]); // PitchBend
+            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 80, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][1]); // Modulation
+            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 84, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][91]); // Reverb
+            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 88, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][93]); // Chorus
+            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 92, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][94]); // Variation(Delay)
+            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 96, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][64]); // Hold(DumperPedal)
+            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 100, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][67]); // Soft
+            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 104, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][66]); // Sostenuto
 
             notes = "";
             for (int n = 0; n < 120; n++) {
-                DrawBuff.drawMIDILCD_Kbd(frameBuffer, 108
+                oldParam.note[ch][n] = DrawBuff.drawMIDILCD_Kbd(frameBuffer, 108
                         , ch * 16 + 16, n, oldParam.note[ch][n], newParam.note[ch][n]);
 
                 if (newParam.note[ch][n] > 0) {
@@ -274,10 +273,10 @@ public class frmMIDI extends frmBase {
             }
             notes += "                           ";
             notes = notes.substring(0, 26);
-            DrawBuff.drawFont4MIDINotes(frameBuffer, 71 * 4, ch * 16 + 24, module + 2, oldParam.notes[ch], notes);
+            oldParam.notes[ch] = DrawBuff.drawFont4MIDINotes(frameBuffer, 71 * 4, ch * 16 + 24, module + 2, oldParam.notes[ch], notes);
 
-            DrawBuff.VolumeToMIDILCD(frameBuffer, module, 388, ch * 16 + 16, oldParam.level[ch][0], newParam.level[ch][0]);
-            DrawBuff.VolumeToMIDILCD(frameBuffer, module, 388, ch * 16 + 24, oldParam.level[ch][2], newParam.level[ch][2]);
+            oldParam.level[ch][0] = DrawBuff.VolumeToMIDILCD(frameBuffer, module, 388, ch * 16 + 16, oldParam.level[ch][0], newParam.level[ch][0]);
+            oldParam.level[ch][2] = DrawBuff.VolumeToMIDILCD(frameBuffer, module, 388, ch * 16 + 24, oldParam.level[ch][2], newParam.level[ch][2]);
 
              // L1:
             if (newParam.LCDDisplayTime == 0 && newParam.LCD8850DisplayTime == 0 && newParam.LCDDisplayTimeXG == 0) {
@@ -290,7 +289,7 @@ public class frmMIDI extends frmBase {
                         , oldParam.level[ch][3]
                         , newParam.level[ch][3]);
             } else {
-                int s = 0;
+                int s;
                 for (int n = 0; n < 16; n++) {
                     oldParam.level[ch][1] = 256;
                     oldParam.level[ch][3] = 256;

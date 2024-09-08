@@ -33,7 +33,7 @@ public class frmRf5c68 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
 
     private MDChipParams.RF5C68 newParam;
@@ -42,9 +42,9 @@ public class frmRf5c68 extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmRf5c68.class);
 
-    public frmRf5c68(frmMain frm, int chipID, int zoom, MDChipParams.RF5C68 newParam, MDChipParams.RF5C68 oldParam) {
+    public frmRf5c68(frmMain frm, int chipId, int zoom, MDChipParams.RF5C68 newParam, MDChipParams.RF5C68 oldParam) {
         super(frm);
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
 
         initializeComponent();
@@ -60,9 +60,9 @@ public class frmRf5c68 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosRf5c68()[chipID] = getLocation();
+                parent.setting.getLocation().getPosRf5c68()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosRf5c68()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosRf5c68()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -106,9 +106,9 @@ public class frmRf5c68 extends frmBase {
     };
 
     public void screenChangeParams() {
-        Rf5c68 rf5c68Register = audio.getRf5c68Register(chipID);
+        Rf5c68 rf5c68Register = audio.getRf5c68Register(chipId);
         if (rf5c68Register != null) {
-            //int[][] rf5c164Vol = audio.GetRf5c164Volume(chipID);
+            //int[][] rf5c164Vol = audio.GetRf5c164Volume(chipId);
             for (int ch = 0; ch < 8; ch++) {
                 if (newParam.channels[ch].volume > 0) newParam.channels[ch].volume--;
 
@@ -147,12 +147,11 @@ public class frmRf5c68 extends frmBase {
             MDChipParams.Channel orc = oldParam.channels[c];
             MDChipParams.Channel nrc = newParam.channels[c];
 
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, orc.volumeL, nrc.volumeL, 0);
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, orc.volumeR, nrc.volumeR, 0);
+            orc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, orc.volumeL, nrc.volumeL, 0);
+            orc.volumeR = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, orc.volumeR, nrc.volumeR, 0);
             DrawBuff.keyBoard(frameBuffer, c, orc.note, nrc.note, 0);
             DrawBuff.PanType2(frameBuffer, c, orc.pan, nrc.pan, 0);
             DrawBuff.ChRF5C164(frameBuffer, c, orc.mask, nrc.mask, 0);
-
         }
     }
 
@@ -168,9 +167,9 @@ public class frmRf5c68 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.RF5C68, chipID, ch);
+                            parent.resetChannelMask(EnmChip.RF5C68, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.RF5C68, chipID, ch);
+                            parent.setChannelMask(EnmChip.RF5C68, chipId, ch);
                     }
                 }
                 return;
@@ -180,11 +179,11 @@ public class frmRf5c68 extends frmBase {
             if (ch < 0) return;
 
             if (ev.getButton() == MouseEvent.BUTTON1) {
-                parent.setChannelMask(EnmChip.RF5C68, chipID, ch);
+                parent.setChannelMask(EnmChip.RF5C68, chipId, ch);
                 return;
             }
 
-            for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.RF5C68, chipID, ch);
+            for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.RF5C68, chipId, ch);
         }
     };
 

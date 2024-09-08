@@ -22,7 +22,7 @@ public class frmChipBase extends frmBase {
     public int y = -1;
     protected int frameSizeW = 0;
     protected int frameSizeH = 0;
-    protected int chipID = 0;
+    protected int chipId = 0;
     protected int zoom = 1;
 
     protected MDChipParams.AY8910 newParam = null;
@@ -52,10 +52,10 @@ public class frmChipBase extends frmBase {
         initializeComponent();
     }
 
-    public frmChipBase(frmMain frm, int chipID, int zoom, MDChipParams.AY8910 newParam) {
+    public frmChipBase(frmMain frm, int chipId, int zoom, MDChipParams.AY8910 newParam) {
         super(frm);
         parent = frm;
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         this.newParam = newParam;
 

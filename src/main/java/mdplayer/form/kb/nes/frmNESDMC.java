@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -32,20 +31,20 @@ public class frmNESDMC extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
 
     //
-    private MDChipParams.NESDMC newParam = null;
+    private MDChipParams.NESDMC newParam;
     private MDChipParams.NESDMC oldParam = new MDChipParams.NESDMC();
     private FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmNESDMC.class);
 
-    public frmNESDMC(frmMain frm, int chipID, int zoom, MDChipParams.NESDMC newParam) {
+    public frmNESDMC(frmMain frm, int chipId, int zoom, MDChipParams.NESDMC newParam) {
         super(frm);
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
 
         initializeComponent();
@@ -69,9 +68,9 @@ public class frmNESDMC extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosNESDMC()[chipID] = getLocation();
+                parent.setting.getLocation().getPosNESDMC()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosNESDMC()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosNESDMC()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -110,7 +109,7 @@ public class frmNESDMC extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        byte[] reg = audio.getAPURegister(chipID);
+        byte[] reg = audio.getAPURegister(chipId);
         int freq;
         int vol;
         int note;
@@ -133,7 +132,7 @@ public class frmNESDMC extends frmBase {
             }
         }
 
-        byte[] reg2 = audio.getDMCRegister(chipID);
+        byte[] reg2 = audio.getDMCRegister(chipId);
         if (reg2 == null) return;
 
         int tri = reg2[0x10];
@@ -189,7 +188,7 @@ public class frmNESDMC extends frmBase {
         boolean ob;
         for (int i = 0; i < 2; i++) {
             DrawBuff.keyBoard(frameBuffer, i * 2, oldParam.sqrChannels[i].note, newParam.sqrChannels[i].note, 0);
-            DrawBuff.volume(frameBuffer, 256, 8 + i * 2 * 8, 0, oldParam.sqrChannels[i].volume, newParam.sqrChannels[i].volume, 0);
+            oldParam.sqrChannels[i].volume = DrawBuff.volume(frameBuffer, 256, 8 + i * 2 * 8, 0, oldParam.sqrChannels[i].volume, newParam.sqrChannels[i].volume, 0);
             DrawBuff.font4Int2(frameBuffer, 16 * 4, (2 + i * 2) * 8, 0, 2, oldParam.sqrChannels[i].nfrq, newParam.sqrChannels[i].nfrq);
             DrawBuff.font4Int2(frameBuffer, 19 * 4, (2 + i * 2) * 8, 0, 2, oldParam.sqrChannels[i].pan, newParam.sqrChannels[i].pan);
             DrawBuff.font4Int2(frameBuffer, 22 * 4, (2 + i * 2) * 8, 0, 2, oldParam.sqrChannels[i].pantp, newParam.sqrChannels[i].pantp);
@@ -207,13 +206,13 @@ public class frmNESDMC extends frmBase {
         }
 
         DrawBuff.keyBoard(frameBuffer, 4, oldParam.triChannel.note, newParam.triChannel.note, 0);
-        DrawBuff.volume(frameBuffer, 256, 8 + 4 * 8, 0, oldParam.triChannel.volume, newParam.triChannel.volume, 0);
+        oldParam.triChannel.volume = DrawBuff.volume(frameBuffer, 256, 8 + 4 * 8, 0, oldParam.triChannel.volume, newParam.triChannel.volume, 0);
         DrawBuff.drawNESSw(frameBuffer, 36, 6 * 8, oldParam.triChannel.dda, newParam.triChannel.dda);
         DrawBuff.font4Int3(frameBuffer, 13 * 4, 6 * 8, 0, 3, oldParam.triChannel.nfrq, newParam.triChannel.nfrq);
         DrawBuff.font4Int2(frameBuffer, 19 * 4, 6 * 8, 0, 2, oldParam.triChannel.pantp, newParam.triChannel.pantp);
         DrawBuff.ChNESDMC(frameBuffer, 2, oldParam.triChannel.mask, newParam.triChannel.mask, 0);
 
-        DrawBuff.volume(frameBuffer, 256, 8 + 3 * 8, 0, oldParam.noiseChannel.volume, newParam.noiseChannel.volume, 0);
+        oldParam.noiseChannel.volume = DrawBuff.volume(frameBuffer, 256, 8 + 3 * 8, 0, oldParam.noiseChannel.volume, newParam.noiseChannel.volume, 0);
         DrawBuff.drawNESSw(frameBuffer, 228, 32, oldParam.noiseChannel.dda, newParam.noiseChannel.dda);
         DrawBuff.drawNESSw(frameBuffer, 144, 32, oldParam.noiseChannel.noise, newParam.noiseChannel.noise);
         ob = oldParam.noiseChannel.volumeL != 0;
@@ -223,13 +222,13 @@ public class frmNESDMC extends frmBase {
         DrawBuff.font4Int2(frameBuffer, 196, 32, 0, 2, oldParam.noiseChannel.nfrq, newParam.noiseChannel.nfrq);
         DrawBuff.ChNESDMC(frameBuffer, 3, oldParam.noiseChannel.mask, newParam.noiseChannel.mask, 0);
 
-        DrawBuff.volume(frameBuffer, 256, 8 + 5 * 8, 0, oldParam.dmcChannel.volume, newParam.dmcChannel.volume, 0);
+        oldParam.dmcChannel.volume = DrawBuff.volume(frameBuffer, 256, 8 + 5 * 8, 0, oldParam.dmcChannel.volume, newParam.dmcChannel.volume, 0);
         DrawBuff.drawNESSw(frameBuffer, 144, 48, oldParam.dmcChannel.dda, newParam.dmcChannel.dda);
         DrawBuff.drawNESSw(frameBuffer, 152, 48, oldParam.dmcChannel.dda, newParam.dmcChannel.noise);
         DrawBuff.font4Int2(frameBuffer, 176, 48, 0, 2, oldParam.dmcChannel.volumeL, newParam.dmcChannel.volumeL);
         DrawBuff.font4Int3(frameBuffer, 192, 48, 0, 3, oldParam.dmcChannel.volumeR, newParam.dmcChannel.volumeR);
-        DrawBuff.font4HexByte(frameBuffer, 220, 48, 0, oldParam.dmcChannel.nfrq, newParam.dmcChannel.nfrq);
-        DrawBuff.font4HexByte(frameBuffer, 244, 48, 0, oldParam.dmcChannel.pantp, newParam.dmcChannel.pantp);
+        oldParam.dmcChannel.nfrq = DrawBuff.font4HexByte(frameBuffer, 220, 48, 0, oldParam.dmcChannel.nfrq, newParam.dmcChannel.nfrq);
+        oldParam.dmcChannel.pantp = DrawBuff.font4HexByte(frameBuffer, 244, 48, 0, oldParam.dmcChannel.pantp, newParam.dmcChannel.pantp);
         DrawBuff.ChNESDMC(frameBuffer, 4, oldParam.dmcChannel.mask, newParam.dmcChannel.mask, 0);
     }
 
@@ -280,25 +279,25 @@ public class frmNESDMC extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 2; ch++) {
                         if (newParam.sqrChannels[ch].mask)
-                            parent.resetChannelMask(EnmChip.NES, chipID, ch);
+                            parent.resetChannelMask(EnmChip.NES, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.NES, chipID, ch);
+                            parent.setChannelMask(EnmChip.NES, chipId, ch);
                     }
 
                     if (newParam.triChannel.mask)
-                        parent.resetChannelMask(EnmChip.DMC, chipID, 0);
+                        parent.resetChannelMask(EnmChip.DMC, chipId, 0);
                     else
-                        parent.setChannelMask(EnmChip.DMC, chipID, 0);
+                        parent.setChannelMask(EnmChip.DMC, chipId, 0);
 
                     if (newParam.noiseChannel.mask)
-                        parent.resetChannelMask(EnmChip.DMC, chipID, 1);
+                        parent.resetChannelMask(EnmChip.DMC, chipId, 1);
                     else
-                        parent.setChannelMask(EnmChip.DMC, chipID, 1);
+                        parent.setChannelMask(EnmChip.DMC, chipId, 1);
 
                     if (newParam.dmcChannel.mask)
-                        parent.resetChannelMask(EnmChip.DMC, chipID, 2);
+                        parent.resetChannelMask(EnmChip.DMC, chipId, 2);
                     else
-                        parent.setChannelMask(EnmChip.DMC, chipID, 2);
+                        parent.setChannelMask(EnmChip.DMC, chipId, 2);
                 }
                 return;
             }
@@ -308,8 +307,8 @@ public class frmNESDMC extends frmBase {
                 if (ev.getButton() == MouseEvent.BUTTON2) {
                     for (int i = 0; i < 5; i++) {
                         //マスク解除
-                        if (i < 2) parent.resetChannelMask(EnmChip.NES, chipID, i);
-                        else parent.resetChannelMask(EnmChip.DMC, chipID, i - 2);
+                        if (i < 2) parent.resetChannelMask(EnmChip.NES, chipId, i);
+                        else parent.resetChannelMask(EnmChip.DMC, chipId, i - 2);
                     }
 
                     return;
@@ -322,8 +321,8 @@ public class frmNESDMC extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
-                    if (ch < 2) parent.setChannelMask(EnmChip.NES, chipID, ch);
-                    else parent.setChannelMask(EnmChip.DMC, chipID, ch - 2);
+                    if (ch < 2) parent.setChannelMask(EnmChip.NES, chipId, ch);
+                    else parent.setChannelMask(EnmChip.DMC, chipId, ch - 2);
 
                 }
             }

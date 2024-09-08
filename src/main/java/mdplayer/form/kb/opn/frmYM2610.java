@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -34,7 +33,7 @@ public class frmYM2610 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
 
     private MDChipParams.YM2610 newParam = null;
@@ -43,9 +42,9 @@ public class frmYM2610 extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYM2610.class);
 
-    public frmYM2610(frmMain frm, int chipID, int zoom, MDChipParams.YM2610 newParam, MDChipParams.YM2610 oldParam) {
+    public frmYM2610(frmMain frm, int chipId, int zoom, MDChipParams.YM2610 newParam, MDChipParams.YM2610 oldParam) {
         super(frm);
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         initializeComponent();
 
@@ -69,9 +68,9 @@ public class frmYM2610 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosYm2610()[chipID] = getLocation();
+                parent.setting.getLocation().getPosYm2610()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosYm2610()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosYm2610()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -125,9 +124,9 @@ public class frmYM2610 extends frmBase {
                         if (ch == 13) c = 12;
 
                         if (newParam.channels[c].mask)
-                            parent.resetChannelMask(EnmChip.YM2610, chipID, ch);
+                            parent.resetChannelMask(EnmChip.YM2610, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YM2610, chipID, ch);
+                            parent.setChannelMask(EnmChip.YM2610, chipId, ch);
                     }
                 }
                 return;
@@ -144,13 +143,13 @@ public class frmYM2610 extends frmBase {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
                     if (newParam.channels[c].mask)
-                        parent.resetChannelMask(EnmChip.YM2610, chipID, ch);
+                        parent.resetChannelMask(EnmChip.YM2610, chipId, ch);
                     else
-                        parent.setChannelMask(EnmChip.YM2610, chipID, ch);
+                        parent.setChannelMask(EnmChip.YM2610, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 14; ch++) parent.resetChannelMask(EnmChip.YM2610, chipID, ch);
+                for (ch = 0; ch < 14; ch++) parent.resetChannelMask(EnmChip.YM2610, chipId, ch);
                 return;
             }
 
@@ -162,14 +161,14 @@ public class frmYM2610 extends frmBase {
 
             if (instCh < 6) {
                 //クリップボードに音色をコピーする
-                parent.getInstCh(EnmChip.YM2610, instCh, chipID);
+                parent.getInstCh(EnmChip.YM2610, instCh, chipId);
             }
         }
     };
 
     public void screenInit() {
         int tp = (
-                (chipID == 0)
+                (chipId == 0)
                         ? (parent.setting.getYM2610Type()[0].getUseReal()[0] || (parent.setting.getYM2610Type()[0].getUseReal().length > 1 && parent.setting.getYM2610Type()[0].getUseReal()[1]))
                         : (parent.setting.getYM2610Type()[1].getUseReal()[0] || (parent.setting.getYM2610Type()[1].getUseReal().length > 1 && parent.setting.getYM2610Type()[1].getUseReal()[1]))
         )
@@ -194,11 +193,11 @@ public class frmYM2610 extends frmBase {
 
             int d = 99;
             if (y > 5 && y < 9) {
-                DrawBuff.volume(frameBuffer, 256, 8 + y * 8, 0, d, 0, tp);
+                d = DrawBuff.volume(frameBuffer, 256, 8 + y * 8, 0, d, 0, tp);
             } else {
-                DrawBuff.volume(frameBuffer, 256, 8 + y * 8, 1, d, 0, tp);
+                d = DrawBuff.volume(frameBuffer, 256, 8 + y * 8, 1, d, 0, tp);
                 d = 99;
-                DrawBuff.volume(frameBuffer, 256, 8 + y * 8, 2, d, 0, tp);
+                d = DrawBuff.volume(frameBuffer, 256, 8 + y * 8, 2, d, 0, tp);
             }
         }
 
@@ -233,14 +232,14 @@ public class frmYM2610 extends frmBase {
         int delta;
         float frq;
 
-        int[][] YM2610Register = audio.getYM2610Register(chipID);
-        int[] fmKeyYM2610 = audio.getYM2610KeyOn(chipID);
-        int[] YM2610Vol = audio.getYM2610Volume(chipID);
-        int[] YM2610Ch3SlotVol = audio.getYM2610Ch3SlotVolume(chipID);
-        int[][] YM2610Rhythm = audio.getYM2610RhythmVolume(chipID);
-        int[] YM2610AdpcmVol = audio.getYM2610AdpcmVolume(chipID);
+        int[][] YM2610Register = audio.getYM2610Register(chipId);
+        int[] fmKeyYM2610 = audio.getYM2610KeyOn(chipId);
+        int[] YM2610Vol = audio.getYM2610Volume(chipId);
+        int[] YM2610Ch3SlotVol = audio.getYM2610Ch3SlotVolume(chipId);
+        int[][] YM2610Rhythm = audio.getYM2610RhythmVolume(chipId);
+        int[] YM2610AdpcmVol = audio.getYM2610AdpcmVolume(chipId);
 
-        boolean isFmEx = (YM2610Register[chipID][0x27] & 0x40) > 0;
+        boolean isFmEx = (YM2610Register[chipId][0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
 
         int defaultMasterClock = 8000000;
@@ -413,7 +412,7 @@ public class frmYM2610 extends frmBase {
             if (newParam.channels[12].volumeR > 0) newParam.channels[12].volumeR--;
         }
         delta = (YM2610Register[0][0x1a] << 8) | YM2610Register[0][0x19];
-        frq = delta / 9447.0f;//Delta=9447 at freq=8kHz
+        frq = delta / 9447.0f; // Delta=9447 at freq=8kHz
         newParam.channels[12].note = (YM2610Register[0][0x10] & 0x80) != 0 ? Common.searchYM2608Adpcm(frq) : -1;
         if ((YM2610Register[0][0x11] & 0xc0) == 0) {
             newParam.channels[12].note = -1;
@@ -421,7 +420,7 @@ public class frmYM2610 extends frmBase {
 
 
         int tl = YM2610Register[1][0x01] & 0x3f;
-        for (int ch = 13; ch < 19; ch++) //ADPCM a
+        for (int ch = 13; ch < 19; ch++) // ADPCM a
         {
             newParam.channels[ch].pan = (YM2610Register[1][0x08 + ch - 13] & 0xc0) >> 6;
             //newParam.channels[ch].volumeL = Math.min(Math.max(YM2610Rhythm[ch - 13][0] / 80, 0), 19);
@@ -445,60 +444,60 @@ public class frmYM2610 extends frmBase {
 
     public void screenDrawParams() {
         int tp = (
-                (chipID == 0)
+                (chipId == 0)
                         ? (parent.setting.getYM2610Type()[0].getUseReal()[0] || (parent.setting.getYM2610Type()[0].getUseReal().length > 1 && parent.setting.getYM2610Type()[0].getUseReal()[1]))
                         : (parent.setting.getYM2610Type()[1].getUseReal()[0] || (parent.setting.getYM2610Type()[1].getUseReal().length > 1 && parent.setting.getYM2610Type()[1].getUseReal()[1]))
         )
                 ? 1
                 : 0;
 
-        //FM - SSG
+        // FM - SSG
         for (int c = 0; c < 9; c++) {
 
             MDChipParams.Channel oyc = oldParam.channels[c];
             MDChipParams.Channel nyc = newParam.channels[c];
 
             if (c == 2) {
-                DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
-                DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
+                oyc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
+                oyc.volumeR = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
                 DrawBuff.Pan(frameBuffer, 24, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp);
                 DrawBuff.keyBoard(frameBuffer, c, oyc.note, nyc.note, tp);
                 DrawBuff.Inst(frameBuffer, 1, 17, c, oyc.inst, nyc.inst);
                 DrawBuff.Ch3YM2610(frameBuffer, c, oyc.mask, nyc.mask, oyc.ex, nyc.ex, tp);
             } else if (c < 6) {
-                DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
-                DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
+                oyc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
+                oyc.volumeR = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
                 DrawBuff.Pan(frameBuffer, 24, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp);
                 DrawBuff.keyBoard(frameBuffer, c, oyc.note, nyc.note, tp);
                 DrawBuff.Inst(frameBuffer, 1, 17, c, oyc.inst, nyc.inst);
                 DrawBuff.ChYM2610(frameBuffer, c, oyc.mask, nyc.mask, tp);
             } else {
-                DrawBuff.volume(frameBuffer, 256, 8 + (c + 3) * 8, 0, oyc.volumeL, nyc.volumeL, tp);
+                oyc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + (c + 3) * 8, 0, oyc.volumeL, nyc.volumeL, tp);
                 DrawBuff.keyBoard(frameBuffer, c + 3, oyc.note, nyc.note, tp);
                 DrawBuff.ChYM2610(frameBuffer, c, oyc.mask, nyc.mask, tp);
             }
         }
 
-        //FMex
+        // FMex
         for (int c = 0; c < 3; c++) {
             MDChipParams.Channel oyc = oldParam.channels[c + 9];
             MDChipParams.Channel nyc = newParam.channels[c + 9];
 
-            DrawBuff.volume(frameBuffer, 256, 8 + (c + 6) * 8, 0, oyc.volume, nyc.volume, tp);
+            oyc.volume = DrawBuff.volume(frameBuffer, 256, 8 + (c + 6) * 8, 0, oyc.volume, nyc.volume, tp);
             DrawBuff.keyBoard(frameBuffer, c + 6, oyc.note, nyc.note, tp);
             DrawBuff.Tn(frameBuffer, 6, 2, c + 6, oyc.tn, nyc.tn, oyc.tntp, tp);
 
             DrawBuff.ChYM2610(frameBuffer, c + 9, oyc.mask, nyc.mask, tp);
         }
 
-        //ADPCM B
-        DrawBuff.volume(frameBuffer, 256, 8 + 13 * 8, 1, oldParam.channels[12].volumeL, newParam.channels[12].volumeL, tp);
-        DrawBuff.volume(frameBuffer, 256, 8 + 13 * 8, 2, oldParam.channels[12].volumeR, newParam.channels[12].volumeR, tp);
+        // ADPCM B
+        oldParam.channels[12].volumeL = DrawBuff.volume(frameBuffer, 256, 8 + 13 * 8, 1, oldParam.channels[12].volumeL, newParam.channels[12].volumeL, tp);
+        oldParam.channels[12].volumeR = DrawBuff.volume(frameBuffer, 256, 8 + 13 * 8, 2, oldParam.channels[12].volumeR, newParam.channels[12].volumeR, tp);
         DrawBuff.Pan(frameBuffer, 24, 8 + 13 * 8, oldParam.channels[12].pan, newParam.channels[12].pan, oldParam.channels[12].pantp, tp);
         DrawBuff.keyBoard(frameBuffer, 13, oldParam.channels[12].note, newParam.channels[12].note, tp);
         DrawBuff.ChYM2610(frameBuffer, 13, oldParam.channels[12].mask, newParam.channels[12].mask, tp);
 
-        //ADPCM a(Rhythm)
+        // ADPCM a(Rhythm)
         for (int c = 0; c < 6; c++) {
             MDChipParams.Channel oyc = oldParam.channels[c + 13];
             MDChipParams.Channel nyc = newParam.channels[c + 13];

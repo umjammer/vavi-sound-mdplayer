@@ -391,7 +391,7 @@ public class VstMng {
                 , 0 // noteOffVelocity
         );
         vstMidiOuts.get(num).AddMidiEvent(evt);
-        if (num < midiParams.length) midiParams[num].SendBuffer(new byte[] {cmd, prm1, prm2});
+        if (num < midiParams.length) midiParams[num].sendBuffer(new byte[] {cmd, prm1, prm2});
     }
 
     public void sendMIDIout(EnmModel model, int num, byte cmd, byte prm1, int deltaFrames/* = 0*/) {
@@ -409,7 +409,7 @@ public class VstMng {
                 , 0 // noteOffVelocity
         );
         vstMidiOuts.get(num).AddMidiEvent(evt);
-        if (num < midiParams.length) midiParams[num].SendBuffer(new byte[] {cmd, prm1});
+        if (num < midiParams.length) midiParams[num].sendBuffer(new byte[] {cmd, prm1});
     }
 
     public void sendMIDIout(EnmModel model, int num, byte[] data, int deltaFrames/* = 0*/) {
@@ -427,7 +427,7 @@ public class VstMng {
                 , 0 // noteOffVelocity
         );
         vstMidiOuts.get(num).AddMidiEvent(evt);
-        if (num < midiParams.length) midiParams[num].SendBuffer(data);
+        if (num < midiParams.length) midiParams[num].sendBuffer(data);
     }
 
     public void resetAllMIDIout(EnmModel model) {

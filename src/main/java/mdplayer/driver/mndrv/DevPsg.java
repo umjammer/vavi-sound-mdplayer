@@ -1258,7 +1258,7 @@ public class DevPsg {
     }
 
     public static final byte[] _psg_env_default = new byte[] {
-            0x00, 0x01, (byte) 0xFF, (byte) 0xFF, 0x00, (byte) 0x81, 0x00, 0x00, 0x00, (byte) 0x81, 0x00, 0x00, (byte) 0xFF, (byte) 0x81, 0x00, 0x00
+            0x00, 0x01, (byte) 0xff, (byte) 0xff, 0x00, (byte) 0x81, 0x00, 0x00, 0x00, (byte) 0x81, 0x00, 0x00, (byte) 0xff, (byte) 0x81, 0x00, 0x00
     };
 
     /**
@@ -1954,7 +1954,7 @@ _ch_psg_lfo_end2: {
         //_ch_psg_bend_job:
         reg.setD0_B(mm.readByte(reg.a5 + W.lfo));
         if ((byte) reg.getD0_B() >= 0) return;
-        // btst.b	// #1,w_flag2(a5)
+        // btst.b	//#1,w_flag2(a5)
         if ((mm.readByte(reg.a5 + W.flag2) & 0x02) != 0) {
             _ch_psg_porta();
             return;

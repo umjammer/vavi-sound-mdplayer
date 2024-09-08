@@ -50,20 +50,24 @@ public class MapperRAMCartridge implements Cartridge, IMapper {
         visibleMemory[page][address % PAGE_SIZE] = value;
     }
 
+    @Override
     public int getSegmentNumberFromPageNumber(int pageNumber) {
         return visibleMemorySegmentNumber[pageNumber % 4];
     }
 
+    @Override
     public void setSegmentToPage(int segmentNumber, int pageNumber) {
         visibleMemory[pageNumber % 4] = physicalMemory[segmentNumber % physicalMemory.length];
         visibleMemorySegmentNumber[pageNumber % 4] = segmentNumber % physicalMemory.length;
         use(segmentNumber % physicalMemory.length);
     }
 
+    @Override
     public void clearUseFlag() {
         Arrays.fill(useFlag, false);
     }
 
+    @Override
     public boolean use(int segmentNumber) {
         return useFlag[segmentNumber % physicalMemory.length];
     }

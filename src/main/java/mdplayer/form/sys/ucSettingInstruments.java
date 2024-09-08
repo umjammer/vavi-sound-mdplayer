@@ -2079,7 +2079,7 @@ public class ucSettingInstruments extends JPanel {
 
     }
 
-    // // #endregion
+    // //#endregion
     private JPanel groupBox1;
     private JPanel groupBox2;
     private JPanel groupBox3;

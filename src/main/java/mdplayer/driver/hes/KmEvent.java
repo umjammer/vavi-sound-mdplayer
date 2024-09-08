@@ -22,13 +22,13 @@ public class KmEvent {
         /** イベント発生時間 */
         public int count;
         /** 双方向リンクリスト */
-        public byte prev;
+        public int prev;
         /** 双方向リンクリスト */
-        public byte next;
+        public int next;
         /** 内部状態フラグ */
-        public byte sysflag;
+        public int sysflag;
         /** 未使用 */
-        public byte flag2;
+        public int flag2;
     }
 
     public static class Event {
@@ -37,12 +37,12 @@ public class KmEvent {
     }
 
     private enum Flag {
-        BREAKED((byte) 0x01),
-        DISPATCHED((byte) 0x02),
-        ALLOCED((byte) 0x80);
-        final byte v;
+        BREAKED(0x01),
+        DISPATCHED(0x02),
+        ALLOCED(0x80);
+        final int v;
 
-        Flag(byte v) {
+        Flag(int v) {
             this.v = v;
         }
     }
@@ -50,10 +50,10 @@ public class KmEvent {
     private void kmevent_reset(Event kme) {
         kme.item[0].count = 0;
         for (int id = 0; id <= KMEVENT_ITEM_MAX; id++) {
-            kme.item[id].sysflag &= (byte) ~Flag.ALLOCED.v;
+            kme.item[id].sysflag &= ~Flag.ALLOCED.v;
             kme.item[id].count = 0;
-            kme.item[id].next = (byte) id;
-            kme.item[id].prev = (byte) id;
+            kme.item[id].next = id;
+            kme.item[id].prev = id;
         }
     }
 
@@ -92,10 +92,10 @@ public class KmEvent {
         cur = kme.item[curid];
         next = kme.item[baseid];
         prev = kme.item[next.prev];
-        cur.next = (byte) baseid;
+        cur.next = baseid;
         cur.prev = next.prev;
-        prev.next = (byte) curid;
-        next.prev = (byte) curid;
+        prev.next = curid;
+        next.prev = curid;
     }
 
     /** ソート済リストに挿入 */
@@ -140,34 +140,34 @@ public class KmEvent {
         int nextcount;
         kme.item[0].count += cycles;
         if (kme.item[0].next == 0) {
-            /* リストが空なら終わり */
+            // リストが空なら終わり
             kme.item[0].count = 0;
             return;
         }
         nextcount = kme.item[kme.item[0].next].count;
         while (nextcount != 0 && kme.item[0].count >= nextcount) {
-            /* イベント発生済フラグのリセット */
+            // イベント発生済フラグのリセット
             for (id = kme.item[0].next; id != 0; id = kme.item[id].next) {
-                kme.item[id].sysflag &= 0xfc;// ~((byte)Flag.KMEVENT_FLAG_BREAKED + (byte)Flag.KMEVENT_FLAG_DISPATCHED);
+                kme.item[id].sysflag &= 0xfc; // ~((byte)Flag.KMEVENT_FLAG_BREAKED + (byte)Flag.KMEVENT_FLAG_DISPATCHED);
             }
-            /* nextcount分進行 */
+            // nextcount分進行
             kme.item[0].count -= nextcount;
             for (id = kme.item[0].next; id != 0; id = kme.item[id].next) {
                 if (kme.item[id].count == 0) continue;
                 kme.item[id].count -= nextcount;
                 if (kme.item[id].count != 0) continue;
-                /* イベント発生フラグのセット */
+                // イベント発生フラグのセット
                 kme.item[id].sysflag |= Flag.BREAKED.v;
             }
             for (id = kme.item[0].next; id != 0; id = kme.item[id].next) {
-                /* イベント発生済フラグの確認 */
+                // イベント発生済フラグの確認
                 if ((kme.item[id].sysflag & Flag.DISPATCHED.v) != 0) continue;
                 kme.item[id].sysflag |= Flag.DISPATCHED.v;
-                /* イベント発生フラグの確認 */
+                // イベント発生フラグの確認
                 if ((kme.item[id].sysflag & Flag.BREAKED.v) == 0) continue;
-                /* 対象イベント起動 */
+                // 対象イベント起動
                 kme.item[id].proc.accept(kme, id, kme.item[id].user);
-                /* 先頭から再走査 */
+                // 先頭から再走査
                 id = 0;
             }
             nextcount = kme.item[kme.item[0].next].count;

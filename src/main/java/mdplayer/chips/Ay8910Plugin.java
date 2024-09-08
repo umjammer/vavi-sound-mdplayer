@@ -1,7 +1,5 @@
 package mdplayer.chips;
 
-import mdplayer.Setting;
-
 
 /**
  * Ay8910Plugin.

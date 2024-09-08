@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -33,28 +32,28 @@ public class frmYMF262 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
 
-    private MDChipParams.YMF262 newParam = null;
-    private MDChipParams.YMF262 oldParam = null;
+    private MDChipParams.YMF262 newParam;
+    private MDChipParams.YMF262 oldParam;
     private FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYMF262.class);
 
-    public frmYMF262(frmMain frm, int chipID, int zoom, MDChipParams.YMF262 newParam, MDChipParams.YMF262 oldParam) {
+    public frmYMF262(frmMain frm, int chipId, int zoom, MDChipParams.YMF262 newParam, MDChipParams.YMF262 oldParam) {
         super(frm);
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         initializeComponent();
 
         this.newParam = newParam;
         this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneYMF262(), null, zoom);
-        boolean YMF262Type = (chipID == 0)
+        boolean YMF262Type = (chipId == 0)
                 ? parent.setting.getYMF262Type()[0].getUseReal()[0]
                 : parent.setting.getYMF262Type()[1].getUseReal()[0];
-        int YMF262SoundLocation = (chipID == 0)
+        int YMF262SoundLocation = (chipId == 0)
                 ? parent.setting.getYMF262Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYMF262Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !YMF262Type ? 0 : (YMF262SoundLocation < 0 ? 2 : 1);
@@ -75,9 +74,9 @@ public class frmYMF262 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosYmf262()[chipID] = getLocation();
+                parent.setting.getLocation().getPosYmf262()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosYmf262()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosYmf262()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -119,10 +118,10 @@ public class frmYMF262 extends frmBase {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;
         }
-        boolean YMF262Type = (chipID == 0)
+        boolean YMF262Type = (chipId == 0)
                 ? parent.setting.getYMF262Type()[0].getUseReal()[0]
                 : parent.setting.getYMF262Type()[1].getUseReal()[0];
-        int YMF262SoundLocation = (chipID == 0)
+        int YMF262SoundLocation = (chipId == 0)
                 ? parent.setting.getYMF262Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYMF262Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !YMF262Type ? 0 : (YMF262SoundLocation < 0 ? 2 : 1);
@@ -130,10 +129,10 @@ public class frmYMF262 extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[][] ymf262Register = audio.getYMF262Register(chipID);
+        int[][] ymf262Register = audio.getYMF262Register(chipId);
         MDChipParams.Channel nyc;
-        int slot = 0;
-        int slotP = 0;
+        int slot;
+        int slotP;
 
         //FM
         for (int c = 0; c < 18; c++) {
@@ -219,7 +218,7 @@ public class frmYMF262 extends frmBase {
             }
         }
 
-        int ko = audio.getYMF262FMKeyON(chipID);
+        int ko = audio.getYMF262FMKeyON(chipId);
 
         for (int c = 0; c < 18; c++) {
             nyc = newParam.channels[c];
@@ -284,9 +283,9 @@ public class frmYMF262 extends frmBase {
 
         }
 
-        // // #region リズム情報の取得
+        // //#region リズム情報の取得
 
-        int r = audio.getYMF262RyhthmKeyON(chipID);
+        int r = audio.getYMF262RyhthmKeyON(chipId);
 
         //slot14 TL 0x51 HH
         //slot15 TL 0x52 TOM
@@ -334,17 +333,17 @@ public class frmYMF262 extends frmBase {
             if (newParam.channels[22].volume < 0) newParam.channels[22].volume = 0;
         }
 
-        //Audio.resetYMF278BRyhthmKeyON(chipID);
+        //Audio.resetYMF278BRyhthmKeyON(chipId);
 
-        // // #endregion
+        // //#endregion
 
     }
 
     public void screenDrawParams() {
-        boolean ChipType2 = (chipID == 0)
+        boolean ChipType2 = (chipId == 0)
                 ? parent.setting.getYMF262Type()[0].getUseReal()[0]
                 : parent.setting.getYMF262Type()[1].getUseReal()[0];
-        int chipSoundLocation = (chipID == 0)
+        int chipSoundLocation = (chipId == 0)
                 ? parent.setting.getYMF262Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYMF262Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !ChipType2 ? 0 : (chipSoundLocation < 0 ? 2 : 1);
@@ -418,9 +417,9 @@ public class frmYMF262 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 23; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YMF262, chipID, ch);
+                            parent.resetChannelMask(EnmChip.YMF262, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YMF262, chipID, ch);
+                            parent.setChannelMask(EnmChip.YMF262, chipId, ch);
                     }
                 }
                 return;
@@ -435,7 +434,7 @@ public class frmYMF262 extends frmBase {
                     //音色欄をクリック
                     //クリップボードに音色をコピーする
                     if (ev.getButton() == MouseEvent.BUTTON1)
-                        parent.getInstCh(EnmChip.YMF262, ch - 20, chipID);
+                        parent.getInstCh(EnmChip.YMF262, ch - 20, chipId);
                 }
                 return;
             }
@@ -452,12 +451,12 @@ public class frmYMF262 extends frmBase {
 
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 //マスク
-                parent.setChannelMask(EnmChip.YMF262, chipID, ch);
+                parent.setChannelMask(EnmChip.YMF262, chipId, ch);
                 return;
             }
 
             //マスク解除
-            for (ch = 0; ch < 18 + 5; ch++) parent.resetChannelMask(EnmChip.YMF262, chipID, ch);
+            for (ch = 0; ch < 18 + 5; ch++) parent.resetChannelMask(EnmChip.YMF262, chipId, ch);
         }
     };
 

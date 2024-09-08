@@ -1,5 +1,7 @@
 package mdplayer;
 
+import java.nio.ByteBuffer;
+import java.nio.ShortBuffer;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -8,11 +10,14 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineEvent.Type;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 
 import dotnet4j.threading.SynchronizationContext;
 import dotnet4j.util.compat.TriFunction;
+import vavi.util.Debug;
+import vavi.util.StringUtil;
 
 
 public class NAudioWrap {
@@ -33,18 +38,18 @@ public class NAudioWrap {
     static final UUID Empty = new UUID(0, 0);
 
     public NAudioWrap(int sampleRate, naudioCallBack nCallBack) {
-        Init(sampleRate, nCallBack);
+        init(sampleRate, nCallBack);
     }
 
-    public void Init(int sampleRate, naudioCallBack nCallBack) {
+    public void init(int sampleRate, naudioCallBack nCallBack) {
 
-        Stop();
+        stop();
 
         this.sampleRate = sampleRate;
-        callBack = nCallBack;
+        callBack = nCallBack; // maybe no need
     }
 
-    public void Start(Setting setting) {
+    public void start(Setting setting) {
         this.setting = setting;
         if (dsOut != null) dsOut.close();
         dsOut = null;
@@ -52,10 +57,11 @@ public class NAudioWrap {
         nullOut = null;
 
         try {
+Debug.println("OutputDeviceType: " + setting.getOutputDevice().getDeviceType());
             switch (setting.getOutputDevice().getDeviceType()) {
-            case 0:
+            case 0: // wave out
                 break;
-            case 1:
+            case 1: // direct sound
                 Line.Info g = null;
                 Mixer.Info [] mixersInfo = AudioSystem.getMixerInfo();
                 for (Mixer.Info mixerInfo : mixersInfo) {
@@ -75,16 +81,17 @@ public class NAudioWrap {
                 } else {
                     dsOut = AudioSystem.getSourceDataLine(format);
                 }
+Debug.println(format);
                 dsOut.addLineListener(this::DeviceOut_PlaybackStopped);
                 dsOut.open();
                 dsOut.start();
                 break;
-            case 2:
+            case 2: // mmdevice???
                 break;
-            case 3:
+            case 3: // asio
                 break;
 
-            case 5:
+            case 5: // null
                 nullOut = new NullOut(true);
                 nullOut.Init();
                 nullOut.play();
@@ -96,12 +103,15 @@ public class NAudioWrap {
     }
 
     private void DeviceOut_PlaybackStopped(LineEvent e) {
-        Consumer handler = this.playbackStopped;
-        if (handler != null) {
-            if (this.syncContext == null) {
-                handler.accept(e);
-            } else {
-                syncContext.post(state -> handler.accept(e), null);
+        Consumer<LineEvent> handler = this.playbackStopped;
+Debug.println("line: " + e.getType());
+        if (e.getType() == Type.STOP) {
+            if (handler != null) {
+                if (this.syncContext == null) {
+                    handler.accept(e);
+                } else {
+                    syncContext.post(state -> handler.accept(e), null);
+                }
             }
         }
     }
@@ -109,7 +119,7 @@ public class NAudioWrap {
     /**
      * コールバックの中から呼び出さないこと(ハングします)
      */
-    public void Stop() {
+    public void stop() {
         if (dsOut != null) {
             try {
                 dsOut.drain();
@@ -135,10 +145,19 @@ public class NAudioWrap {
         }
 
          // 一休み
-        //for (int i = 0; i < 10; i++) {
-        //    Thread.sleep(1);
-        //    JApplication.DoEvents();
-        //}
+//        for (int i = 0; i < 10; i++) {
+//            Thread.sleep(1);
+//            JApplication.DoEvents();
+//        }
+    }
+
+    public int write(short[] buffer, int offset, int count) {
+        ByteBuffer bb = ByteBuffer.allocate(count * Short.BYTES - offset);
+        ShortBuffer sb = bb.asShortBuffer();
+        sb.put(buffer, offset, count);
+        sb.rewind();
+//Debug.println("write to line\n" + StringUtil.getDump(bb.array()));
+        return dsOut.write(bb.array(), 0, count * Short.BYTES);
     }
 
     public LineEvent.Type getPlaybackState() {

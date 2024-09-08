@@ -7,13 +7,11 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
-import java.util.logging.Level;
 import javax.swing.JDialog;
 import javax.swing.Timer;
 
 import mdplayer.properties.Resources;
 import org.urish.jnavst.VstPlugin;
-import vavi.util.Debug;
 
 
 public class frmVST extends JDialog {

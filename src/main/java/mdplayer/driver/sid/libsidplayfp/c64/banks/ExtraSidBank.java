@@ -64,11 +64,13 @@ public class ExtraSidBank implements IBank {
             mapper[i] = bank;
     }
 
-    public byte peek(short addr) {
+    @Override
+    public byte peek(int addr) {
         return mapper[mapperIndex(addr)].peek(addr);
     }
 
-    public void poke(short addr, byte data) {
+    @Override
+    public void poke(int addr, byte data) {
         mapper[mapperIndex(addr)].poke(addr, data);
     }
 

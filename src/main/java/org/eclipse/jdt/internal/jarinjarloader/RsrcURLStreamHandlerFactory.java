@@ -11,6 +11,7 @@ public class RsrcURLStreamHandlerFactory implements URLStreamHandlerFactory {
       this.classLoader = cl;
    }
 
+   @Override
    public URLStreamHandler createURLStreamHandler(String protocol) {
       if ("rsrc".equals(protocol)) {
          return new RsrcURLStreamHandler(this.classLoader);

@@ -29,6 +29,7 @@ public class MNDFileFormat extends BaseFileFormat {
         return new String[] {".mnd"};
     }
 
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
@@ -46,6 +47,7 @@ public class MNDFileFormat extends BaseFileFormat {
         return Collections.singletonList(music);
     }
 
+    @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
         return getMusicCommon(ms, buf, zipFile);
     }
@@ -56,7 +58,7 @@ public class MNDFileFormat extends BaseFileFormat {
         byte[] buf;
 
         int hs = (srcBuf[0x06] << 8) + srcBuf[0x07];
-        int pcmptr[] = new int[] {(srcBuf[0x14] << 24) + (srcBuf[0x15] << 16) + (srcBuf[0x16] << 8) + srcBuf[0x17]};
+        int[] pcmptr = new int[] {(srcBuf[0x14] << 24) + (srcBuf[0x15] << 16) + (srcBuf[0x16] << 8) + srcBuf[0x17]};
         if (hs < 0x18) pcmptr[0] = 0;
         if (pcmptr[0] != 0) {
             int pcmnum = (srcBuf[pcmptr[0]] << 8) + srcBuf[pcmptr[0] + 1];

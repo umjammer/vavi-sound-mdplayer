@@ -33,7 +33,7 @@ public class RCP extends BaseDriver {
     }
 
     private double oneSyncTime = 0.009;
-    private double musicStep = 1;
+    private double musicStep;
     private double musicDownCounter = 0.0;
 
     private List<CtlSysex>[] beforeSend = null;
@@ -549,7 +549,7 @@ public class RCP extends BaseDriver {
             // size dummy(?) skip
             if (isG36) ptr += 2;
 
-            int trkNumber = 0;
+            int trkNumber;
             if (isG36) {
                 trkNumber = i;
                 ptr++;
@@ -613,7 +613,7 @@ public class RCP extends BaseDriver {
         while (evt != null) {
             if (evt.getEventType() == MIDIEventType.MetaSequencerSpecific && evt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.ordinal()) {
 
-                int ofsMea = 0;
+                int ofsMea;
                 if (isG36) {
                     ofsMea = evt.getMIDIMessages()[0][0] + evt.getMIDIMessages()[0][2] * 0x100;
                     // if (trkLen == 36)
@@ -624,14 +624,14 @@ public class RCP extends BaseDriver {
                     ofsMea = evt.getMIDIMessages()[0][0] + (evt.getMIDIMessages()[0][1] & 3) * 0x100;
                 }
                 int Mea = 0;
-                int MeaS = 0;
+                int MeaS;
                 MIDIEvent mEvt = trk.getPart().get(0).getStartEvent();
                 if (ofsMea != 0) {
                     while (mEvt != null) {
                         MeaS = 0;
                         if (mEvt.getEventType() == MIDIEventType.MetaSequencerSpecific) {
                             MIDIEvent nEvt = trk.getPart().get(0).getNextEvent(mEvt);
-                            int s = 0;
+                            int s;
                             if (nEvt.getEventType() == MIDIEventType.MetaSequencerSpecific
                                     && nEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.ordinal()) {
                                 s = 0;
@@ -668,7 +668,7 @@ public class RCP extends BaseDriver {
 
         while (!endTrack) {
             MIDIEvent pEvt = trkn.getPart().get(meaInd).getEndEvent();
-            int[] pk = null;
+            int[] pk;
             if (!isG36) {
                 pk = new int[] {ebs[pt], ebs[pt + 1], ebs[pt + 2], ebs[pt + 3]};
             } else {
@@ -691,7 +691,7 @@ public class RCP extends BaseDriver {
     }
 
     private void command(MIDITrack trkn, int[] pk, byte[] ebs, MIDIEvent pEvt) {
-        List<Byte> ex = null;
+        List<Byte> ex;
         switch (pk[0]) {
         case 0x98: // CH Exclusive
             pt += skipPtr;
@@ -2221,7 +2221,7 @@ public class RCP extends BaseDriver {
 
     private boolean makeBeforeSendCommand() {
         try {
-            MidiOutInfo[] infos = chipRegister.GetMIDIoutInfo();
+            MidiOutInfo[] infos = chipRegister.getMIDIoutInfo();
             if (infos == null || infos.length < 1) return true;
 
             beforeSend = new List[infos.length];
@@ -2305,7 +2305,7 @@ public class RCP extends BaseDriver {
             break;
         }
 
-// #if DEBUG
+//#if DEBUG
         for (CtlSysex ex : buf) {
             System.err.printf("delta:%10d", ex.delta);
             for (byte b : ex.data) {
@@ -2313,7 +2313,7 @@ public class RCP extends BaseDriver {
             }
             System.err.println();
         }
-// #endif
+//#endif
     }
 }
 

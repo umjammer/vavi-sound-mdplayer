@@ -1,23 +1,25 @@
 package mdplayer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Receiver;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.LineEvent;
 
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.moonDriver.MoonDriver;
+import mdplayer.driver.mxdrv.MXDRV;
 import mdplayer.driver.nrtdrv.NRTDRV;
 import mdplayer.driver.nsf.Nsf;
 import mdplayer.driver.sid.Sid;
 import mdplayer.form.sys.frmMain;
+import mdplayer.format.FileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.chips.GbSound;
@@ -31,16 +33,17 @@ import mdsound.chips.PcmChip;
 import mdsound.chips.Rf5c68;
 import mdsound.chips.SegaPcm;
 import mdsound.chips.YmF271;
-import mdsound.instrument.Sn76489Inst;
-import mdsound.instrument.Ym2612Inst;
+import mdsound.instrument.*;
 import mdsound.np.chip.DeviceInfo;
+import vavi.util.ByteUtil;
+import vavi.util.Debug;
 
 
 public class Audio {
 
-    private Setting setting = Setting.getInstance();
+    private final Setting setting = Setting.getInstance();
 
-    private static Audio instance = new Audio();
+    private static final Audio instance = new Audio();
 
     public BaseDriver driverVirtual = null;
 
@@ -48,18 +51,18 @@ public class Audio {
 
     public Set<Common.EnmChip> useChip = new HashSet<>();
 
-    public ChipRegister chipRegister = null;
+    public ChipRegister chipRegister;
 
     public ChipLEDs chipLED = new ChipLEDs();
     public final VisVolume visVolume = new VisVolume();
 
-    public final int SamplingBuffer = 1024;
+    public static final int SamplingBuffer = 1024;
 
     public int clockAY8910 = 1789750;
-    public final int clockS5B = 1789772;
+    public static final int clockS5B = 1789772;
     public int clockK051649 = 1500000;
-    public final int clockC140 = 21390;
-    public final int clockPPZ8 = 44100;
+    public static final int clockC140 = 21390;
+    public static final int clockPPZ8 = 44100;
     public int clockC352 = 24192000;
     public int clockFDS = 0;
     public int clockHuC6280 = 0;
@@ -80,30 +83,367 @@ public class Audio {
 
     public String errMsg = "";
 
+    protected short[] bufVirtualFunction_MIDIKeyboard = null;
+
+    public FileFormat playingFileFormat;
+
+    public String naudioFileName = null;
+    public AudioInputStream naudioFileReader = null;
+//    protected NWave.SampleProviders.SampleToWaveProvider16 naudioWs = null;
+    protected byte[] naudioSrcbuffer = null;
+    public int procTimePer1Frame = 0;
+    public int stepCounter = 0;
+    public double vgmFadeoutCounter;
+    public double vgmFadeoutCounterV;
+
+    public byte[] ensure(byte[] buffer, int bytesRequired) {
+        if (buffer == null || buffer.length < bytesRequired) {
+            buffer = new byte[bytesRequired];
+        }
+        return buffer;
+    }
+
+    protected void convert2ByteToShort(short[] destBuffer, int offset, byte[] source, int shortCount) {
+        int samplesRead = shortCount;
+        for (int n = 0; n < samplesRead; n++) {
+            destBuffer[n] = ByteUtil.readLeShort(source, offset + n * Short.BYTES); // volume;
+        }
+    }
+
+    public int nAudioRead(short[] buffer, int offset, int count) {
+        try {
+            naudioSrcbuffer = ensure(naudioSrcbuffer, count * 2);
+//            naudioWs.read(naudioSrcbuffer, 0, count * 2);
+            convert2ByteToShort(buffer, offset, naudioSrcbuffer, count);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return count;
+    }
+
+    public int trdVgmVirtualFunction(short[] buffer, int offset, int sampleCount) {
+//Debug.println(": " + sampleCount);
+        //return nAaudioRead(buffer, offset, sampleCount);
+
+        if (naudioFileReader != null) {
+            if (trdClosed) {
+                _trdStopped = true;
+                //vgmFadeout = false;
+                //Stopped = true;
+            }
+            return nAudioRead(buffer, offset, sampleCount);
+        }
+
+        int cnt = trdVgmVirtualMainFunction(buffer, offset, sampleCount);
+
+        if (setting.getMidiKbd().getUseMIDIKeyboard()) {
+            if (bufVirtualFunction_MIDIKeyboard == null || bufVirtualFunction_MIDIKeyboard.length < sampleCount) {
+                bufVirtualFunction_MIDIKeyboard = new short[sampleCount];
+            }
+            mdsMIDI.update(bufVirtualFunction_MIDIKeyboard, 0, sampleCount, null);
+            for (int i = 0; i < sampleCount; i++) {
+                buffer[i + offset] += bufVirtualFunction_MIDIKeyboard[i];
+            }
+        }
+
+        return cnt;
+    }
+
+    public int limit(int v, int max, int min) {
+        return v > max ? max : Math.max(v, min);
+    }
+
+int CC;
+    protected int trdVgmVirtualMainFunction(short[] buffer, int offset, int sampleCount) {
+        if (buffer == null || buffer.length < 1 || sampleCount == 0) return 0;
+        if (driverVirtual == null) return sampleCount;
+
+        try {
+            //stwh.Reset(); stwh.Start();
+
+            int i;
+            int cnt;
+//if (CC++ > 100) { System.exit(1); }
+//Debug.println("stop: " + stopped + ", " + hashCode());
+            if (stopped || paused) {
+                if (setting.getOther().getNonRenderingForPause()
+                        || driverVirtual instanceof Nsf
+                ) {
+                    for (int d = offset; d < offset + sampleCount; d++) buffer[d] = 0;
+                    return sampleCount;
+                }
+
+                int ret = mds.update(buffer, offset, sampleCount, null);
+                return ret;
+            }
+
+            if (driverVirtual instanceof Nsf) {
+//                driverVirtual.vstDelta = 0;
+                cnt = ((Nsf) driverVirtual).render(buffer, sampleCount / 2, offset) * 2;
+            } else if (driverVirtual instanceof Sid) {
+//                driverVirtual.vstDelta = 0;
+                cnt = ((Sid) driverVirtual).render(buffer, sampleCount);
+            } else if (driverVirtual instanceof MXDRV) {
+                mds.setIncFlag();
+//                driverVirtual.vstDelta = 0;
+                for (i = 0; i < sampleCount; i += 2) {
+                    cnt = ((MXDRV) driverVirtual).render(buffer, offset + i, 2);
+                    mds.update(buffer, offset + i, 2, null);
+                }
+                //cnt = (int)((MXDRV.MXDRV)driverVirtual).Render(buffer, offset , sampleCount);
+                //mds.Update(buffer, offset , sampleCount, null);
+                cnt = sampleCount;
+            } else {
+                if (hiyorimiNecessary && driverReal != null && driverReal.isDataBlock)
+                    return mds.update(buffer, offset, sampleCount, null);
+
+                if (stepCounter > 0) {
+                    stepCounter -= sampleCount;
+                    if (stepCounter <= 0) {
+                        paused = true;
+                        stepCounter = 0;
+                        return mds.update(buffer, offset, sampleCount, null);
+                    }
+                }
+
+//                driverVirtual.vstDelta = 0;
+//                stwh.reset();
+//                stwh.start();
+//Debug.println("driver: " + driverVirtual.getClass().getSimpleName());
+                cnt = mds.update(buffer, offset, sampleCount, driverVirtual::processOneFrame);
+                procTimePer1Frame = (int) ((double) System.currentTimeMillis() / (sampleCount + 1) * 1000000.0);
+            }
+//Debug.println("sampleCount: " + sampleCount);
+
+            // VST
+//            vstMng.VST_Update(buffer, offset, sampleCount);
+
+            for (i = 0; i < sampleCount; i++) {
+                int mul = (int) (16384.0 * Math.pow(10.0, masterVolume / 40.0));
+                buffer[offset + i] = (short) limit((buffer[offset + i] * mul) >> 13, 0x7fff, -0x8000);
+
+                if (!vgmFadeout) continue;
+
+                // フェードアウト処理
+                buffer[offset + i] = (short) (buffer[offset + i] * vgmFadeoutCounter);
+
+                vgmFadeoutCounter -= vgmFadeoutCounterV;
+                if (vgmFadeoutCounterV >= 0.004 && vgmFadeoutCounterV != 0.1) {
+                    vgmFadeoutCounterV = 0.004;
+                }
+
+                if (vgmFadeoutCounter < 0.0) {
+                    vgmFadeoutCounter = 0.0;
+                }
+
+                // フェードアウト完了後、演奏を完全停止する
+                if (vgmFadeoutCounter == 0.0) {
+                    softReset(Common.EnmModel.VirtualModel);
+                    softReset(Common.EnmModel.RealModel);
+
+                    waveWriter.write(buffer, offset, i + 1);
+
+                    waveWriter.close();
+
+                    if (mds == null)
+                        mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), SamplingBuffer, null);
+                    else
+                        mds.init(setting.getOutputDevice().getSampleRate(), SamplingBuffer, null);
+
+
+                    chipRegister.close();
+
+                    //Thread.sleep(500); // noise対策
+
+                    stopped = true;
+Debug.println("stop: " + stopped);
+
+                    // 1frame当たりの処理時間
+                    //procTimePer1Frame = (int)((double)stwh.ElapsedMilliseconds / (i + 1) * 1000000.0);
+                    return i + 1;
+                }
+            }
+
+            if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
+                updateVisualVolume(buffer, offset);
+            }
+
+            waveWriter.write(buffer, offset, sampleCount);
+
+            // //1frame当たりの処理時間
+            //procTimePer1Frame = (int)((double)stwh.ElapsedMilliseconds / sampleCount * 1000000.0);
+            return cnt;
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            _fatalError = true;
+            stopped = true;
+        }
+
+        return -1;
+    }
+
+    protected void naudioWrapPlaybackStopped(LineEvent e) {
+//        if (e.getException != null) {
+//            JOptionPane.showMessageDialog(null,
+//                    String.format("デバイスが何らかの原因で停止しました。\nメッセージ:\n%s\nスタックトレース:\n%s"
+//                            , e.Exception.Message
+//                            , e.Exception.StackTrace)
+//                    , "エラー"
+//                    , JOptionPane.ERROR_MESSAGE);
+//            flgReinit = true;
+//
+//            try {
+//                naudioWrap.Stop();
+//            } catch (Exception ex) {
+//                Log.forcedWrite(ex);
+//            }
+//
+//        } else {
+        try {
+            stop();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+//        }
+    }
+
+    public void stop() {
+
+        try {
+            if (paused) pause();
+
+            if (stopped) {
+                trdClosed = true;
+                while (!_trdStopped) {
+                    Thread.sleep(1);
+                }
+
+                if (playingFileFormat != null && !playingFileFormat.isSampled()
+                        && naudioFileReader != null) {
+                    nAudioStop();
+                }
+
+                return;
+            }
+
+            if (!paused) {
+                LineEvent.Type ps = naudioWrap.getPlaybackState();
+                if (ps != null && ps != LineEvent.Type.STOP) {
+                    vgmFadeoutCounterV = 0.1;
+                    vgmFadeout = true;
+                    int cnt = 0;
+                    while (!stopped && cnt < 100) {
+                        Thread.yield();
+                        cnt++;
+                    }
+                }
+            }
+            trdClosed = true;
+
+            if (naudioFileReader != null) {
+                nAudioStop();
+                return;
+            }
+
+            softReset(Common.EnmModel.VirtualModel);
+            softReset(Common.EnmModel.RealModel);
+
+            int timeout = 5000;
+            while (!_trdStopped) {
+                Thread.yield();
+                timeout--;
+                if (timeout < 1) break;
+            }
+            while (!stopped) {
+                Thread.yield();
+                timeout--;
+                if (timeout < 1) break;
+            }
+            stopped = true;
+new Exception().printStackTrace();
+Debug.println("stop: " + stopped + ", " + hashCode());
+
+            softReset(Common.EnmModel.VirtualModel);
+            softReset(Common.EnmModel.RealModel);
+
+            //chipRegister.outMIDIData_Close();
+            if (setting.getOther().getWavSwitch()) {
+                Thread.sleep(500);
+                waveWriter.close();
+            }
+
+            // DEBUG
+            //vstparse();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void nAudioStop() {
+        try {
+            AudioInputStream dmy = naudioFileReader;
+            naudioFileReader = null;
+            dmy.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private Audio() {
-        // midi  のインスタンスを作成
-        makeMIDIout(setting, 1);
-        chipRegister.resetAllMIDIout();
+        Debug.println("Audio:Init:STEP 01");
+
+        naudioWrap = new NAudioWrap(setting.getOutputDevice().getSampleRate(), this::trdVgmVirtualFunction);
+        naudioWrap.playbackStopped = this::naudioWrapPlaybackStopped;
+
+        if (mds == null)
+            mds = new MDSound(setting.getOutputDevice().getSampleRate(), SamplingBuffer, null);
+        else
+            mds.init(setting.getOutputDevice().getSampleRate(), SamplingBuffer, null);
+
+        chipRegister = new ChipRegister(
+                mds
+//                , SoundChip.realChip
+//                , vstMng
+//                , SoundChip.scYM2612
+//                , SoundChip.scSN76489
+//                , SoundChip.scYM2608
+//                , SoundChip.scYM2151
+//                , SoundChip.scYM2203
+//                , SoundChip.scYM2413
+//                , SoundChip.scYM2610
+//                , SoundChip.scYM2610EA
+//                , SoundChip.scYM2610EB
+//                , SoundChip.scYM3526
+//                , SoundChip.scYM3812
+//                , SoundChip.scYMF262
+//                , SoundChip.scC140
+//                , SoundChip.scSEGAPCM
+//                , SoundChip.scAY8910
+//                , SoundChip.scK051649
+        );
+        chipRegister.initChipRegister(null);
 
         //
         List<MDSound.Chip> lstChips = new ArrayList<>();
         MDSound.Chip chip;
 
         chip = new MDSound.Chip();
-        chip.id = (byte) 0;
+        chip.id = 0;
         chip.instrument = new Ym2612Inst();
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
-        chip.volume = setting.getBalance().getYM2612Volume();
+        chip.volume = setting.getBalance().getVolume("MAIN", Ym2612Inst.class);
         chip.clock = 7670454;
         chip.option = null;
         chipLED.put("PriOPN2", 1);
         lstChips.add(chip);
 
         chip = new MDSound.Chip();
-        chip.id = (byte) 0;
+        chip.id = 0;
         chip.instrument = new Sn76489Inst();
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
-        chip.volume = setting.getBalance().getSN76489Volume();
+        chip.volume = setting.getBalance().getVolume("MAIN", Sn76489Inst.class);
         chip.clock = 3579545;
         chip.option = null;
         chipLED.put("PriDCSG", 1);
@@ -113,6 +453,10 @@ public class Audio {
             mdsMIDI = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
         else
             mdsMIDI.init(setting.getOutputDevice().getSampleRate(), SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
+
+        // midi  のインスタンスを作成
+        makeMIDIout(setting, 1);
+        chipRegister.resetAllMIDIout();
     }
 
     public static Audio getInstance() {
@@ -142,7 +486,7 @@ public class Audio {
             MidiDevice.Info[] midiDeviceInfos = MidiSystem.getMidiDeviceInfo();
             int j = 0;
             for (var info : midiDeviceInfos) {
-                MidiDevice device = null;
+                MidiDevice device;
                 try {
                     device = MidiSystem.getMidiDevice(info);
                 } catch (MidiUnavailableException e) {
@@ -199,7 +543,6 @@ public class Audio {
 
     public void close() {
         try {
-
             // midi outをリリース
             if (midiOuts.size() > 0) {
                 for (int i = 0; i < midiOuts.size(); i++) {
@@ -217,7 +560,7 @@ public class Audio {
 
 //            SoundChip.realChip = null;
 
-            naudioWrap.Stop();
+            naudioWrap.stop();
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -256,111 +599,24 @@ public class Audio {
         }
     }
 
-    public Object getSIDRegister(int chipID) {
-        return chipRegister.getSIDRegister(chipID);
+    public Object getSIDRegister(int chipId) {
+        return chipRegister.getSIDRegister(chipId);
     }
 
     public Sid getCurrentSIDContext() {
         return chipRegister.SID;
     }
 
-    public OkiM6295.ChannelInfo getOKIM6295Info(int chipID) {
-        return chipRegister.getOKIM6295Info(chipID);
+    public OkiM6295.ChannelInfo getOKIM6295Info(int chipId) {
+        return chipRegister.getOKIM6295Info(chipId);
     }
 
     public void updateVisualVolume(short[] buffer, int offset) {
         visVolume.master = buffer[offset];
 
         for (var i : mds.getFirstInstruments()) {
-            var vs = i.getVisVolume();
+            var vs = i.getView("volume", null);
         }
-    }
-
-    protected final int[] chips = new int[256];
-
-    public int[] getChipStatus() {
-        chips[0] = chipRegister.chipLED.get("PriOPN");
-        chipRegister.chipLED.put("PriOPN", chipLED.get("PriOPN"));
-        chips[1] = chipRegister.chipLED.get("PriOPN2");
-        chipRegister.chipLED.put("PriOPN2", chipLED.get("PriOPN2"));
-        chips[2] = chipRegister.chipLED.get("PriOPNA");
-        chipRegister.chipLED.put("PriOPNA", chipLED.get("PriOPNA"));
-        chips[3] = chipRegister.chipLED.get("PriOPNB");
-        chipRegister.chipLED.put("PriOPNB", chipLED.get("PriOPNB"));
-
-        chips[4] = chipRegister.chipLED.get("PriOPM");
-        chipRegister.chipLED.put("PriOPM", chipLED.get("PriOPM"));
-        chips[5] = chipRegister.chipLED.get("PriDCSG");
-        chipRegister.chipLED.put("PriDCSG", chipLED.get("PriDCSG"));
-        chips[6] = chipRegister.chipLED.get("PriRF5C");
-        chipRegister.chipLED.put("PriRF5C", chipLED.get("PriRF5C"));
-        chips[7] = chipRegister.chipLED.get("PriPWM");
-        chipRegister.chipLED.put("PriPWM", chipLED.get("PriPWM"));
-
-        chips[8] = chipRegister.chipLED.get("PriOKI5");
-        chipRegister.chipLED.put("PriOKI5", chipLED.get("PriOKI5"));
-        chips[9] = chipRegister.chipLED.get("PriOKI9");
-        chipRegister.chipLED.put("PriOKI9", chipLED.get("PriOKI9"));
-        chips[10] = chipRegister.chipLED.get("PriC140");
-        chipRegister.chipLED.put("PriC140", chipLED.get("PriC140"));
-        chips[11] = chipRegister.chipLED.get("PriSPCM");
-        chipRegister.chipLED.put("PriSPCM", chipLED.get("PriSPCM"));
-
-        chips[12] = chipRegister.chipLED.get("PriAY10");
-        chipRegister.chipLED.put("PriAY10", chipLED.get("PriAY10"));
-        chips[13] = chipRegister.chipLED.get("PriOPLL");
-        chipRegister.chipLED.put("PriOPLL", chipLED.get("PriOPLL"));
-        chips[14] = chipRegister.chipLED.get("PriHuC");
-        chipRegister.chipLED.put("PriHuC", chipLED.get("PriHuC"));
-        chips[15] = chipRegister.chipLED.get("PriC352");
-        chipRegister.chipLED.put("PriC352", chipLED.get("PriC352"));
-        chips[16] = chipRegister.chipLED.get("PriK054539");
-        chipRegister.chipLED.put("PriK054539", chipLED.get("PriK054539"));
-        chips[17] = chipRegister.chipLED.get("PriRF5C68");
-        chipRegister.chipLED.put("PriRF5C68", chipLED.get("PriRF5C68"));
-
-
-        chips[128 + 0] = chipRegister.chipLED.get("SecOPN");
-        chipRegister.chipLED.put("SecOPN", chipLED.get("SecOPN"));
-        chips[128 + 1] = chipRegister.chipLED.get("SecOPN2");
-        chipRegister.chipLED.put("SecOPN2", chipLED.get("SecOPN2"));
-        chips[128 + 2] = chipRegister.chipLED.get("SecOPNA");
-        chipRegister.chipLED.put("SecOPNA", chipLED.get("SecOPNA"));
-        chips[128 + 3] = chipRegister.chipLED.get("SecOPNB");
-        chipRegister.chipLED.put("SecOPNB", chipLED.get("SecOPNB"));
-
-        chips[128 + 4] = chipRegister.chipLED.get("SecOPM");
-        chipRegister.chipLED.put("SecOPM", chipLED.get("SecOPM"));
-        chips[128 + 5] = chipRegister.chipLED.get("SecDCSG");
-        chipRegister.chipLED.put("SecDCSG", chipLED.get("SecDCSG"));
-        chips[128 + 6] = chipRegister.chipLED.get("SecRF5C");
-        chipRegister.chipLED.put("SecRF5C", chipLED.get("SecRF5C"));
-        chips[128 + 7] = chipRegister.chipLED.get("SecPWM");
-        chipRegister.chipLED.put("SecPWM", chipLED.get("SecPWM"));
-
-        chips[128 + 8] = chipRegister.chipLED.get("SecOKI5");
-        chipRegister.chipLED.put("SecOKI5", chipLED.get("SecOKI5"));
-        chips[128 + 9] = chipRegister.chipLED.get("SecOKI9");
-        chipRegister.chipLED.put("SecOKI9", chipLED.get("SecOKI9"));
-        chips[128 + 10] = chipRegister.chipLED.get("SecC140");
-        chipRegister.chipLED.put("SecC140", chipLED.get("SecC140"));
-        chips[128 + 11] = chipRegister.chipLED.get("SecSPCM");
-        chipRegister.chipLED.put("SecSPCM", chipLED.get("SecSPCM"));
-
-        chips[128 + 12] = chipRegister.chipLED.get("SecAY10");
-        chipRegister.chipLED.put("SecAY10", chipLED.get("SecAY10"));
-        chips[128 + 13] = chipRegister.chipLED.get("SecOPLL");
-        chipRegister.chipLED.put("SecOPLL", chipLED.get("SecOPLL"));
-        chips[128 + 14] = chipRegister.chipLED.get("SecHuC");
-        chipRegister.chipLED.put("SecHuC", chipLED.get("SecHuC"));
-        chips[128 + 15] = chipRegister.chipLED.get("SecC352");
-        chipRegister.chipLED.put("SecC352", chipLED.get("SecC352"));
-        chips[128 + 16] = chipRegister.chipLED.get("SecK054539");
-        chipRegister.chipLED.put("SecK054539", chipLED.get("SecK054539"));
-        chips[128 + 17] = chipRegister.chipLED.get("SecRF5C68");
-        chipRegister.chipLED.put("SecRF5C68", chipLED.get("SecRF5C68"));
-
-        return chips;
     }
 
     public void clearFadeoutVolume() {
@@ -376,8 +632,8 @@ public class Audio {
         chipRegister.setFadeoutVolYM2151(1, 0);
         chipRegister.setFadeoutVolYM2612(0, 0);
         chipRegister.setFadeoutVolYM2612(1, 0);
-        chipRegister.setFadeoutVolSN76489((byte) 0, 0);
-        chipRegister.setFadeoutVolSN76489((byte) 1, 0);
+        chipRegister.setFadeoutVolSN76489( 0, 0);
+        chipRegister.setFadeoutVolSN76489( 1, 0);
         chipRegister.setFadeoutVolYM3526(0, 0);
         chipRegister.setFadeoutVolYM3526(1, 0);
         chipRegister.setFadeoutVolYM3812(0, 0);
@@ -395,8 +651,7 @@ public class Audio {
     public BaseDriver driverReal = null;
 
     protected long sw = System.currentTimeMillis();
-    public final double swFreq = 1000d / 44100;
-
+    public static final double swFreq = 1000d / 44100;
 
     public void softReset(Common.EnmModel model) {
         chipRegister.softResetYM2203(0, model);
@@ -425,182 +680,180 @@ public class Audio {
 //        }
     }
 
+//#region register
 
-
-
-    public int[][] getFMRegister(int chipID) {
-        return chipRegister.fmRegisterYM2612[chipID];
+    public int[][] getFMRegister(int chipId) {
+        return chipRegister.fmRegisterYM2612[chipId];
     }
 
     public int[][] getYM2612MIDIRegister() {
-        return mdsMIDI.ReadYm2612Register(0, (byte) 0);
+        return mdsMIDI.ReadYm2612Register(0, 0);
     }
 
-    public int[] getYM2151Register(int chipID) {
-        return chipRegister.fmRegisterYM2151[chipID];
+    public int[] getYM2151Register(int chipId) {
+        return chipRegister.fmRegisterYM2151[chipId];
     }
 
-    public int[] getYm2203Register(int chipID) {
-        return chipRegister.fmRegisterYM2203[chipID];
+    public int[] getYm2203Register(int chipId) {
+        return chipRegister.fmRegisterYM2203[chipId];
     }
 
-    public int[] getYM2413Register(int chipID) {
-        return chipRegister.fmRegisterYM2413[chipID];
+    public int[] getYM2413Register(int chipId) {
+        return chipRegister.fmRegisterYM2413[chipId];
     }
 
-    public DeviceInfo.TrackInfo[] getVRC6Register(int chipID) {
-        return chipRegister.getVRC6Register(chipID);
+    public DeviceInfo.TrackInfo[] getVRC6Register(int chipId) {
+        return chipRegister.getVRC6Register(chipId);
     }
 
-    public byte[] getVRC7Register(int chipID) {
-        return chipRegister.getVRC7Register(chipID);
+    public byte[] getVRC7Register(int chipId) {
+        return chipRegister.getVRC7Register(chipId);
     }
 
-    public DeviceInfo.TrackInfo[] getN106Register(int chipID) {
-        return chipRegister.getN106Register(chipID);
+    public DeviceInfo.TrackInfo[] getN106Register(int chipId) {
+        return chipRegister.getN106Register(chipId);
     }
 
-    public int[][] getYM2608Register(int chipID) {
-        return chipRegister.fmRegisterYM2608[chipID];
+    public int[][] getYM2608Register(int chipId) {
+        return chipRegister.fmRegisterYM2608[chipId];
     }
 
-    public int[][] getYM2610Register(int chipID) {
-        return chipRegister.fmRegisterYM2610[chipID];
+    public int[][] getYM2610Register(int chipId) {
+        return chipRegister.fmRegisterYM2610[chipId];
     }
 
-    public int[] getYM3526Register(int chipID) {
-        return chipRegister.fmRegisterYM3526[chipID];
+    public int[] getYM3526Register(int chipId) {
+        return chipRegister.fmRegisterYM3526[chipId];
     }
 
-    public int[] getY8950Register(int chipID) {
-        return chipRegister.fmRegisterY8950[chipID];
+    public int[] getY8950Register(int chipId) {
+        return chipRegister.fmRegisterY8950[chipId];
     }
 
-    public int[] getYM3812Register(int chipID) {
-        return chipRegister.fmRegisterYM3812[chipID];
+    public int[] getYM3812Register(int chipId) {
+        return chipRegister.fmRegisterYM3812[chipId];
     }
 
-    public int[][] getYMF262Register(int chipID) {
-        return chipRegister.fmRegisterYMF262[chipID];
+    public int[][] getYMF262Register(int chipId) {
+        return chipRegister.fmRegisterYMF262[chipId];
     }
 
-    public int[][] getYMF278BRegister(int chipID) {
-        return chipRegister.fmRegisterYMF278B[chipID];
+    public int[][] getYMF278BRegister(int chipId) {
+        return chipRegister.fmRegisterYMF278B[chipId];
     }
 
-    public int[] getPSGRegister(int chipID) {
-        return chipRegister.sn76489Register[chipID];
+    public int[] getPSGRegister(int chipId) {
+        return chipRegister.sn76489Register[chipId];
     }
 
-    public int getPSGRegisterGGPanning(int chipID) {
-        return chipRegister.sn76489RegisterGGPan[chipID];
+    public int getPSGRegisterGGPanning(int chipId) {
+        return chipRegister.sn76489RegisterGGPan[chipId];
     }
 
-    public int[] getAY8910Register(int chipID) {
-        return chipRegister.psgRegisterAY8910[chipID];
+    public int[] getAY8910Register(int chipId) {
+        return chipRegister.psgRegisterAY8910[chipId];
     }
 
-    public OotakeHuC6280 getHuC6280Register(int chipID) {
-        return mds.ReadOotakePsgStatus(chipID);
+    public OotakeHuC6280 getHuC6280Register(int chipId) {
+        return mds.ReadOotakePsgStatus(chipId);
     }
 
-    public K051649 getK051649Register(int chipID) {
-        return chipRegister.scc_k051649.GetK051649_State((byte) chipID);
+    public K051649 getK051649Register(int chipId) {
+        return chipRegister.scc_k051649.GetK051649_State(chipId);
     }
 
-    public MIDIParam getMIDIInfos(int chipID) {
-        return chipRegister.midiParams[chipID];
+    public MIDIParam getMIDIInfos(int chipId) {
+        return chipRegister.midiParams[chipId];
     }
 
-    public PcmChip getRf5c164Register(int chipID) {
-        return mds.ReadRf5c164Register(chipID);
+    public PcmChip getRf5c164Register(int chipId) {
+        return mds.ReadRf5c164Register(chipId);
     }
 
-    public Rf5c68 getRf5c68Register(int chipID) {
-        return mds.ReadRf5c68Register(chipID);
+    public Rf5c68 getRf5c68Register(int chipId) {
+        return mds.ReadRf5c68Register(chipId);
     }
 
-    public YmF271 getYMF271Register(int chipID) {
-        return mds.ReadYmf271Register(chipID);
+    public YmF271 getYMF271Register(int chipId) {
+        return mds.ReadYmf271Register(chipId);
     }
 
-
-    public byte[] getC140Register(int chipID) {
-        return chipRegister.pcmRegisterC140[chipID];
+    public byte[] getC140Register(int chipId) {
+        return chipRegister.pcmRegisterC140[chipId];
     }
 
-    public PPZ8Status.Channel[] getPPZ8Register(int chipID) {
-        return chipRegister.GetPPZ8Register(chipID);
+    public PPZ8Status.Channel[] getPPZ8Register(int chipId) {
+        return chipRegister.getPPZ8Register(chipId);
     }
 
-    public boolean[] getC140KeyOn(int chipID) {
-        return chipRegister.pcmKeyOnC140[chipID];
+    public boolean[] getC140KeyOn(int chipId) {
+        return chipRegister.pcmKeyOnC140[chipId];
     }
 
-    public int[] getYMZ280BRegister(int chipID) {
-        return chipRegister.YMZ280BRegister[chipID];
+    public int[] getYMZ280BRegister(int chipId) {
+        return chipRegister.YMZ280BRegister[chipId];
     }
 
-    public int[] getC352Register(int chipID) {
-        return chipRegister.pcmRegisterC352[chipID];
+    public int[] getC352Register(int chipId) {
+        return chipRegister.pcmRegisterC352[chipId];
     }
 
-    public MultiPCM getMultiPCMRegister(int chipID) {
-        return chipRegister.getMultiPCMRegister(chipID);
+    public MultiPCM getMultiPCMRegister(int chipId) {
+        return chipRegister.getMultiPCMRegister(chipId);
     }
 
-    public int[] getC352KeyOn(int chipID) {
-        return chipRegister.readC352((byte) chipID);
+    public int[] getC352KeyOn(int chipId) {
+        return chipRegister.readC352(chipId);
     }
 
-    public int[] getQSoundRegister(int chipID) {
-        return chipRegister.getQSoundRegister(chipID);
+    public int[] getQSoundRegister(int chipId) {
+        return chipRegister.getQSoundRegister(chipId);
     }
 
-    public byte[] getSEGAPCMRegister(int chipID) {
-        return chipRegister.pcmRegisterSEGAPCM[chipID];
+    public byte[] getSEGAPCMRegister(int chipId) {
+        return chipRegister.pcmRegisterSEGAPCM[chipId];
     }
 
-    public boolean[] getSEGAPCMKeyOn(int chipID) {
-        return chipRegister.pcmKeyOnSEGAPCM[chipID];
+    public boolean[] getSEGAPCMKeyOn(int chipId) {
+        return chipRegister.pcmKeyOnSEGAPCM[chipId];
     }
 
-    public OkiM6258 getOKIM6258Register(int chipID) {
-        return mds.ReadOkiM6258Status(chipID);
+    public OkiM6258 getOKIM6258Register(int chipId) {
+        return mds.ReadOkiM6258Status(chipId);
     }
 
-    public SegaPcm getSegaPCMRegister(int chipID) {
-        return mds.ReadSegaPCMStatus(chipID);
+    public SegaPcm getSegaPCMRegister(int chipId) {
+        return mds.ReadSegaPCMStatus(chipId);
     }
 
-    public byte[] getAPURegister(int chipID) {
+    public byte[] getAPURegister(int chipId) {
         byte[] reg;
 
         // nsf向け
         if (chipRegister == null) reg = null;
         else if (chipRegister.nes_apu == null) reg = null;
         else if (chipRegister.nes_apu.apu == null) reg = null;
-        else if (chipID == 1) reg = null;
+        else if (chipId == 1) reg = null;
         else reg = chipRegister.nes_apu.apu.reg;
 
         // vgm向け
-        if (reg == null) reg = chipRegister.getNESRegisterAPU(chipID, Common.EnmModel.VirtualModel);
+        if (reg == null) reg = chipRegister.getNESRegisterAPU(chipId, Common.EnmModel.VirtualModel);
 
         return reg;
     }
 
-    public byte[] getDMCRegister(int chipID) {
+    public byte[] getDMCRegister(int chipId) {
         byte[] reg;
         try {
             // nsf向け
             if (chipRegister == null) reg = null;
             else if (chipRegister.nes_apu == null) reg = null;
             else if (chipRegister.nes_apu.apu == null) reg = null;
-            else if (chipID == 1) reg = null;
+            else if (chipId == 1) reg = null;
             else reg = chipRegister.nes_dmc.dmc.reg;
 
             // vgm向け
-            if (reg == null) reg = chipRegister.getNESRegisterDMC(chipID, Common.EnmModel.VirtualModel);
+            if (reg == null) reg = chipRegister.getNESRegisterDMC(chipId, Common.EnmModel.VirtualModel);
 
             return reg;
         } catch (Exception e) {
@@ -609,29 +862,29 @@ public class Audio {
         }
     }
 
-    public mdsound.np.NpNesFds getFDSRegister(int chipID) {
+    public mdsound.np.NpNesFds getFDSRegister(int chipId) {
         mdsound.np.NpNesFds reg;
 
         // nsf向け
         if (chipRegister == null) reg = null;
         else if (chipRegister.nes_apu == null) reg = null;
         else if (chipRegister.nes_apu.apu == null) reg = null;
-        else if (chipID == 1) reg = null;
+        else if (chipId == 1) reg = null;
         else reg = chipRegister.nes_fds.fds;
 
         // vgm向け
-        if (reg == null) reg = chipRegister.getFDSRegister(chipID, Common.EnmModel.VirtualModel);
+        if (reg == null) reg = chipRegister.getFDSRegister(chipId, Common.EnmModel.VirtualModel);
 
         return reg;
     }
 
     protected final byte[] s5bregs = new byte[0x20];
 
-    public byte[] getS5BRegister(int chipID) {
+    public byte[] getS5BRegister(int chipId) {
         // nsf 向け
         if (chipRegister == null) return null;
         else if (chipRegister.nes_fme7 == null) return null;
-        else if (chipID == 1) return null;
+        else if (chipId == 1) return null;
 
         int[] dat = new int[] { 0 };
         for (int adr = 0x00; adr < 0x20; adr++) {
@@ -642,20 +895,20 @@ public class Audio {
         return s5bregs;
     }
 
-    public GbSound getDMGRegister(int chipID) {
+    public GbSound getDMGRegister(int chipId) {
         if (mds == null) return null;
-        else if (chipID == 1) return null;
+        else if (chipId == 1) return null;
 
-        return mds.ReadGb((byte) chipID);
+        return mds.ReadGb(chipId);
     }
 
     protected final byte[] mmc5regs = new byte[10];
 
-    public byte[] getMMC5Register(int chipID) {
+    public byte[] getMMC5Register(int chipId) {
         // nsf 向け
         if (chipRegister == null) return null;
         else if (chipRegister.nes_mmc5 == null) return null;
-        else if (chipID == 1) return null;
+        else if (chipId == 1) return null;
 
         int[] dat = new int[] { 0 };
         for (int adr = 0x5000; adr < 0x5008; adr++) {
@@ -667,345 +920,360 @@ public class Audio {
         mmc5regs[8] = (byte) (chipRegister.nes_mmc5.pcmMode ? 1 : 0);
         mmc5regs[9] = chipRegister.nes_mmc5.pcm;
 
-
         return mmc5regs;
     }
 
-    public int[] getFMKeyOn(int chipID) {
-        return chipRegister.fmKeyOnYM2612[chipID];
+//#endregion
+
+//#region key on
+
+    public int[] getFMKeyOn(int chipId) {
+        return chipRegister.fmKeyOnYM2612[chipId];
     }
 
-    public int[] getYM2151KeyOn(int chipID) {
-        return chipRegister.fmKeyOnYM2151[chipID];
+    public int[] getYM2151KeyOn(int chipId) {
+        return chipRegister.fmKeyOnYM2151[chipId];
     }
 
-    public boolean getOKIM6258KeyOn(int chipID) {
-        return chipRegister.okim6258Keyon[chipID];
+    public boolean getOKIM6258KeyOn(int chipId) {
+        return chipRegister.okim6258Keyon[chipId];
     }
 
-    public void resetOKIM6258KeyOn(int chipID) {
-        chipRegister.okim6258Keyon[chipID] = false;
+    public void resetOKIM6258KeyOn(int chipId) {
+        chipRegister.okim6258Keyon[chipId] = false;
     }
 
-    public int getYM2151PMD(int chipID) {
-        return chipRegister.fmPMDYM2151[chipID];
+    public int getYM2151PMD(int chipId) {
+        return chipRegister.fmPMDYM2151[chipId];
     }
 
-    public int getYM2151AMD(int chipID) {
-        return chipRegister.fmAMDYM2151[chipID];
+    public int getYM2151AMD(int chipId) {
+        return chipRegister.fmAMDYM2151[chipId];
     }
 
-    public int[] getYM2608KeyOn(int chipID) {
-        return chipRegister.fmKeyOnYM2608[chipID];
+    public int[] getYM2608KeyOn(int chipId) {
+        return chipRegister.fmKeyOnYM2608[chipId];
     }
 
-    public int[] getYM2610KeyOn(int chipID) {
-        return chipRegister.fmKeyOnYM2610[chipID];
+    public int[] getYM2610KeyOn(int chipId) {
+        return chipRegister.fmKeyOnYM2610[chipId];
     }
 
-    public int[] getYM2203KeyOn(int chipID) {
-        return chipRegister.fmKeyOnYM2203[chipID];
+    public int[] getYM2203KeyOn(int chipId) {
+        return chipRegister.fmKeyOnYM2203[chipId];
     }
 
-    public mdplayer.ChipRegister.ChipKeyInfo getYM2413KeyInfo(int chipID) {
-        return chipRegister.getYM2413KeyInfo(chipID);
+    public int getYMF262FMKeyON(int chipId) {
+        return chipRegister.getYMF262FMKeyON(chipId);
     }
 
-    public mdplayer.ChipRegister.ChipKeyInfo getYM3526KeyInfo(int chipID) {
-        return chipRegister.getYM3526KeyInfo(chipID);
+    public int getYMF262RyhthmKeyON(int chipId) {
+        return chipRegister.getYMF262RyhthmKeyON(chipId);
     }
 
-    public mdplayer.ChipRegister.ChipKeyInfo getY8950KeyInfo(int chipID) {
-        return chipRegister.getY8950KeyInfo(chipID);
+    public int getYMF278BFMKeyON(int chipId) {
+        return chipRegister.getYMF278BFMKeyON(chipId);
     }
 
-    public mdplayer.ChipRegister.ChipKeyInfo getYM3812KeyInfo(int chipID) {
-        return chipRegister.getYM3812KeyInfo(chipID);
+    public void resetYMF278BFMKeyON(int chipId) {
+        chipRegister.resetYMF278BFMKeyON(chipId);
     }
 
-    public mdplayer.ChipRegister.ChipKeyInfo getVRC7KeyInfo(int chipID) {
-        return chipRegister.getVRC7KeyInfo(chipID);
+    public int getYMF278BRyhthmKeyON(int chipId) {
+        return chipRegister.getYMF278BRyhthmKeyON(chipId);
     }
 
-    public int getYMF262FMKeyON(int chipID) {
-        return chipRegister.getYMF262FMKeyON(chipID);
+    public void resetYMF278BRyhthmKeyON(int chipId) {
+        chipRegister.resetYMF278BRyhthmKeyON(chipId);
     }
 
-    public int getYMF262RyhthmKeyON(int chipID) {
-        return chipRegister.getYMF262RyhthmKeyON(chipID);
+    public int[] getYMF278BPCMKeyON(int chipId) {
+        return chipRegister.getYMF278BPCMKeyON(chipId);
     }
 
-    public int getYMF278BFMKeyON(int chipID) {
-        return chipRegister.getYMF278BFMKeyON(chipID);
+    public void resetYMF278BPCMKeyON(int chipId) {
+        chipRegister.resetYMF278BPCMKeyON(chipId);
     }
 
-    public void resetYMF278BFMKeyON(int chipID) {
-        chipRegister.resetYMF278BFMKeyON(chipID);
+//#endregion
+
+//#region key info
+
+    public mdplayer.ChipRegister.ChipKeyInfo getYM2413KeyInfo(int chipId) {
+        return chipRegister.getYM2413KeyInfo(chipId);
     }
 
-    public int getYMF278BRyhthmKeyON(int chipID) {
-        return chipRegister.getYMF278BRyhthmKeyON(chipID);
+    public mdplayer.ChipRegister.ChipKeyInfo getYM3526KeyInfo(int chipId) {
+        return chipRegister.getYM3526KeyInfo(chipId);
     }
 
-    public void resetYMF278BRyhthmKeyON(int chipID) {
-        chipRegister.resetYMF278BRyhthmKeyON(chipID);
+    public mdplayer.ChipRegister.ChipKeyInfo getY8950KeyInfo(int chipId) {
+        return chipRegister.getY8950KeyInfo(chipId);
     }
 
-    public int[] getYMF278BPCMKeyON(int chipID) {
-        return chipRegister.getYMF278BPCMKeyON(chipID);
+    public mdplayer.ChipRegister.ChipKeyInfo getYM3812KeyInfo(int chipId) {
+        return chipRegister.getYM3812KeyInfo(chipId);
     }
 
-    public void resetYMF278BPCMKeyON(int chipID) {
-        chipRegister.resetYMF278BPCMKeyON(chipID);
+    public mdplayer.ChipRegister.ChipKeyInfo getVRC7KeyInfo(int chipId) {
+        return chipRegister.getVRC7KeyInfo(chipId);
     }
 
-    public int[] getFMVolume(int chipID) {
-        return chipRegister.getYM2612Volume(chipID);
+//#endregion
+
+//#region volume
+
+    public int[] getFMVolume(int chipId) {
+        return chipRegister.getYM2612Volume(chipId);
     }
 
-    public int[] getYM2151Volume(int chipID) {
-        return chipRegister.getYM2151Volume(chipID);
+    public int[] getYM2151Volume(int chipId) {
+        return chipRegister.getYM2151Volume(chipId);
     }
 
-    public int[] getYM2608Volume(int chipID) {
-        return chipRegister.getYM2608Volume(chipID);
+    public int[] getYM2608Volume(int chipId) {
+        return chipRegister.getYM2608Volume(chipId);
     }
 
-    public int[][] getYM2608RhythmVolume(int chipID) {
-        return chipRegister.getYM2608RhythmVolume(chipID);
+    public int[][] getYM2608RhythmVolume(int chipId) {
+        return chipRegister.getYM2608RhythmVolume(chipId);
     }
 
-    public int[] getYM2608AdpcmVolume(int chipID) {
-        return chipRegister.getYM2608AdpcmVolume(chipID);
+    public int[] getYM2608AdpcmVolume(int chipId) {
+        return chipRegister.getYM2608AdpcmVolume(chipId);
     }
 
-    public int[] getYM2610Volume(int chipID) {
-        return chipRegister.getYM2610Volume(chipID);
+    public int[] getYM2610Volume(int chipId) {
+        return chipRegister.getYM2610Volume(chipId);
     }
 
-    public int[][] getYM2610RhythmVolume(int chipID) {
-        return chipRegister.getYM2610RhythmVolume(chipID);
+    public int[][] getYM2610RhythmVolume(int chipId) {
+        return chipRegister.getYM2610RhythmVolume(chipId);
     }
 
-    public int[] getYM2610AdpcmVolume(int chipID) {
-        return chipRegister.getYM2610AdpcmVolume(chipID);
+    public int[] getYM2610AdpcmVolume(int chipId) {
+        return chipRegister.getYM2610AdpcmVolume(chipId);
     }
 
-    public int[] getYM2203Volume(int chipID) {
-        return chipRegister.getYM2203Volume(chipID);
+    public int[] getYM2203Volume(int chipId) {
+        return chipRegister.getYM2203Volume(chipId);
     }
 
-    public int[] getFMCh3SlotVolume(int chipID) {
-        return chipRegister.getYM2612Ch3SlotVolume(chipID);
+    public int[] getFMCh3SlotVolume(int chipId) {
+        return chipRegister.getYM2612Ch3SlotVolume(chipId);
     }
 
-    public int[] getYM2608Ch3SlotVolume(int chipID) {
-        return chipRegister.getYM2608Ch3SlotVolume(chipID);
+    public int[] getYM2608Ch3SlotVolume(int chipId) {
+        return chipRegister.getYM2608Ch3SlotVolume(chipId);
     }
 
-    public int[] getYM2610Ch3SlotVolume(int chipID) {
-        return chipRegister.getYM2610Ch3SlotVolume(chipID);
+    public int[] getYM2610Ch3SlotVolume(int chipId) {
+        return chipRegister.getYM2610Ch3SlotVolume(chipId);
     }
 
-    public int[] getYM2203Ch3SlotVolume(int chipID) {
-        return chipRegister.getYM2203Ch3SlotVolume(chipID);
+    public int[] getYM2203Ch3SlotVolume(int chipId) {
+        return chipRegister.getYM2203Ch3SlotVolume(chipId);
     }
 
-    public int[][] getPSGVolume(int chipID) {
-        return chipRegister.getPSGVolume(chipID);
+    public int[][] getPSGVolume(int chipId) {
+        return chipRegister.getPSGVolume(chipId);
     }
 
-    public void setRF5C164Mask(int chipID, int ch) {
-        chipRegister.setMaskRF5C164(chipID, ch, true);
+//#endregion
+
+//#region mask
+
+    public void setRF5C164Mask(int chipId, int ch) {
+        chipRegister.setMaskRF5C164(chipId, ch, true);
     }
 
-    public void setRF5C68Mask(int chipID, int ch) {
-        chipRegister.setMaskRF5C68(chipID, ch, true);
+    public void setRF5C68Mask(int chipId, int ch) {
+        chipRegister.setMaskRF5C68(chipId, ch, true);
     }
 
-    public void setSN76489Mask(int chipID, int ch) {
-        chipRegister.setMaskSN76489(chipID, ch, true);
-        sn76489ForcedSendVolume(chipID, ch);
+    public void setSN76489Mask(int chipId, int ch) {
+        chipRegister.setMaskSN76489(chipId, ch, true);
+        sn76489ForcedSendVolume(chipId, ch);
     }
 
-    public void resetSN76489Mask(int chipID, int ch) {
+    public void resetSN76489Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskSN76489(chipID, ch, false);
-            sn76489ForcedSendVolume(chipID, ch);
+            chipRegister.setMaskSN76489(chipId, ch, false);
+            sn76489ForcedSendVolume(chipId, ch);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    protected void sn76489ForcedSendVolume(int chipID, int ch) {
-        Setting.ChipType2 ct = setting.getSN76489Type()[chipID];
-        chipRegister.setSN76489Register(chipID
+    protected void sn76489ForcedSendVolume(int chipId, int ch) {
+        Setting.ChipType2 ct = setting.getSN76489Type()[chipId];
+        chipRegister.setSN76489Register(chipId
                 , (byte) (0x90
                         | ((ch & 3) << 5)
-                        | (15 - (Math.max(chipRegister.sn76489Vol[chipID][ch][0], chipRegister.sn76489Vol[chipID][ch][1]) & 0xf)))
+                        | (15 - (Math.max(chipRegister.sn76489Vol[chipId][ch][0], chipRegister.sn76489Vol[chipId][ch][1]) & 0xf)))
                 , ct.getUseEmu()[0] ? Common.EnmModel.VirtualModel : Common.EnmModel.RealModel);
     }
 
-    public void setYM2151Mask(int chipID, int ch) {
-        chipRegister.setMaskYM2151(chipID, ch, true, false);
+    public void setYM2151Mask(int chipId, int ch) {
+        chipRegister.setMaskYM2151(chipId, ch, true, false);
     }
 
-    public void setYM2203Mask(int chipID, int ch) {
-        chipRegister.setMaskYM2203(chipID, ch, true, false);
+    public void setYM2203Mask(int chipId, int ch) {
+        chipRegister.setMaskYM2203(chipId, ch, true, false);
     }
 
-    public void setYM2413Mask(int chipID, int ch) {
-        chipRegister.setMaskYM2413(chipID, ch, true);
+    public void setYM2413Mask(int chipId, int ch) {
+        chipRegister.setMaskYM2413(chipId, ch, true);
     }
 
-    public void setYM2608Mask(int chipID, int ch) {
-        chipRegister.setMaskYM2608(chipID, ch, true, false);
+    public void setYM2608Mask(int chipId, int ch) {
+        chipRegister.setMaskYM2608(chipId, ch, true, false);
     }
 
-    public void setYM2610Mask(int chipID, int ch) {
-        chipRegister.setMaskYM2610(chipID, ch, true);
+    public void setYM2610Mask(int chipId, int ch) {
+        chipRegister.setMaskYM2610(chipId, ch, true);
     }
 
-    public void setYM2612Mask(int chipID, int ch) {
-        chipRegister.setMaskYM2612(chipID, ch, true);
+    public void setYM2612Mask(int chipId, int ch) {
+        chipRegister.setMaskYM2612(chipId, ch, true);
     }
 
-    public void setYM3526Mask(int chipID, int ch) {
-        chipRegister.setMaskYM3526(chipID, ch, true);
+    public void setYM3526Mask(int chipId, int ch) {
+        chipRegister.setMaskYM3526(chipId, ch, true);
     }
 
-    public void setY8950Mask(int chipID, int ch) {
-        chipRegister.setMaskY8950(chipID, ch, true);
+    public void setY8950Mask(int chipId, int ch) {
+        chipRegister.setMaskY8950(chipId, ch, true);
     }
 
-    public void setYM3812Mask(int chipID, int ch) {
-        chipRegister.setMaskYM3812(chipID, ch, true);
+    public void setYM3812Mask(int chipId, int ch) {
+        chipRegister.setMaskYM3812(chipId, ch, true);
     }
 
-    public void setYMF262Mask(int chipID, int ch) {
-        chipRegister.setMaskYMF262(chipID, ch, true);
+    public void setYMF262Mask(int chipId, int ch) {
+        chipRegister.setMaskYMF262(chipId, ch, true);
     }
 
-    public void setYMF278BMask(int chipID, int ch) {
-        chipRegister.setMaskYMF278B(chipID, ch, true);
+    public void setYMF278BMask(int chipId, int ch) {
+        chipRegister.setMaskYMF278B(chipId, ch, true);
     }
 
-    public void setC140Mask(int chipID, int ch) {
-        chipRegister.setMaskC140(chipID, ch, true);
+    public void setC140Mask(int chipId, int ch) {
+        chipRegister.setMaskC140(chipId, ch, true);
     }
 
-    public void setPPZ8Mask(int chipID, int ch) {
-        chipRegister.setMaskPPZ8(chipID, ch, true);
+    public void setPPZ8Mask(int chipId, int ch) {
+        chipRegister.setMaskPPZ8(chipId, ch, true);
     }
 
-    public void setC352Mask(int chipID, int ch) {
-        chipRegister.setMaskC352(chipID, ch, true);
+    public void setC352Mask(int chipId, int ch) {
+        chipRegister.setMaskC352(chipId, ch, true);
     }
 
-    public void setSegaPCMMask(int chipID, int ch) {
-        chipRegister.setMaskSegaPCM(chipID, ch, true);
+    public void setSegaPCMMask(int chipId, int ch) {
+        chipRegister.setMaskSegaPCM(chipId, ch, true);
     }
 
-    public void setQSoundMask(int chipID, int ch) {
-        chipRegister.setMaskQSound(chipID, ch, true);
+    public void setQSoundMask(int chipId, int ch) {
+        chipRegister.setMaskQSound(chipId, ch, true);
     }
 
-    public void setAY8910Mask(int chipID, int ch) {
-        chipRegister.setMaskAY8910(chipID, ch, true);
+    public void setAY8910Mask(int chipId, int ch) {
+        chipRegister.setMaskAY8910(chipId, ch, true);
     }
 
-    public void setHuC6280Mask(int chipID, int ch) {
-        chipRegister.setMaskHuC6280(chipID, ch, true);
+    public void setHuC6280Mask(int chipId, int ch) {
+        chipRegister.setMaskHuC6280(chipId, ch, true);
     }
 
-    public void setOKIM6258Mask(int chipID) {
-        chipRegister.setMaskOKIM6258(chipID, true);
+    public void setOKIM6258Mask(int chipId) {
+        chipRegister.setMaskOKIM6258(chipId, true);
     }
 
-    public void setOKIM6295Mask(int chipID, int ch) {
-        chipRegister.setMaskOKIM6295(chipID, ch, true);
+    public void setOKIM6295Mask(int chipId, int ch) {
+        chipRegister.setMaskOKIM6295(chipId, ch, true);
     }
 
-    public void resetOKIM6295Mask(int chipID, int ch) {
-        chipRegister.setMaskOKIM6295(chipID, ch, false);
+    public void resetOKIM6295Mask(int chipId, int ch) {
+        chipRegister.setMaskOKIM6295(chipId, ch, false);
     }
 
-    public void setNESMask(int chipID, int ch) {
-        chipRegister.setNESMask(chipID, ch);
+    public void setNESMask(int chipId, int ch) {
+        chipRegister.setNESMask(chipId, ch);
     }
 
-    public void setDMCMask(int chipID, int ch) {
-        chipRegister.setNESMask(chipID, ch + 2);
+    public void setDMCMask(int chipId, int ch) {
+        chipRegister.setNESMask(chipId, ch + 2);
     }
 
-    public void setFDSMask(int chipID) {
-        chipRegister.setFDSMask(chipID);
+    public void setFDSMask(int chipId) {
+        chipRegister.setFDSMask(chipId);
     }
 
-    public void setMMC5Mask(int chipID, int ch) {
-        chipRegister.setMMC5Mask(chipID, ch);
+    public void setMMC5Mask(int chipId, int ch) {
+        chipRegister.setMMC5Mask(chipId, ch);
     }
 
-    public void setVRC7Mask(int chipID, int ch) {
-        chipRegister.setVRC7Mask(chipID, ch);
+    public void setVRC7Mask(int chipId, int ch) {
+        chipRegister.setVRC7Mask(chipId, ch);
     }
 
-    public void setK051649Mask(int chipID, int ch) {
-        chipRegister.setK051649Mask(chipID, ch);
+    public void setK051649Mask(int chipId, int ch) {
+        chipRegister.setK051649Mask(chipId, ch);
     }
 
-    public void setDMGMask(int chipID, int ch) {
-        chipRegister.setDMGMask(chipID, ch);
+    public void setDMGMask(int chipId, int ch) {
+        chipRegister.setDMGMask(chipId, ch);
     }
 
-    public void setVRC6Mask(int chipID, int ch) {
-        chipRegister.setVRC6Mask(chipID, ch);
+    public void setVRC6Mask(int chipId, int ch) {
+        chipRegister.setVRC6Mask(chipId, ch);
     }
 
-    public void setN163Mask(int chipID, int ch) {
-        chipRegister.setN163Mask(chipID, ch);
+    public void setN163Mask(int chipId, int ch) {
+        chipRegister.setN163Mask(chipId, ch);
     }
 
 
-    public void resetOKIM6258Mask(int chipID) {
-        chipRegister.setMaskOKIM6258(chipID, false);
+    public void resetOKIM6258Mask(int chipId) {
+        chipRegister.setMaskOKIM6258(chipId, false);
     }
 
-    public void resetYM2612Mask(int chipID, int ch) {
+    public void resetYM2612Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskYM2612(chipID, ch, false);
+            chipRegister.setMaskYM2612(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetYM2203Mask(int chipID, int ch) {
+    public void resetYM2203Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskYM2203(chipID, ch, false, stopped);
+            chipRegister.setMaskYM2203(chipId, ch, false, stopped);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetYM2413Mask(int chipID, int ch) {
+    public void resetYM2413Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskYM2413(chipID, ch, false);
+            chipRegister.setMaskYM2413(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetRF5C164Mask(int chipID, int ch) {
+    public void resetRF5C164Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskRF5C164(chipID, ch, false);
+            chipRegister.setMaskRF5C164(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetRF5C68Mask(int chipID, int ch) {
+    public void resetRF5C68Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskRF5C68(chipID, ch, false);
+            chipRegister.setMaskRF5C68(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1013,657 +1281,153 @@ public class Audio {
 
     public boolean stopped = false;
 
-    public void resetYM2151Mask(int chipID, int ch) {
+    public void resetYM2151Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskYM2151(chipID, ch, false, stopped);
+            chipRegister.setMaskYM2151(chipId, ch, false, stopped);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetYM2608Mask(int chipID, int ch) {
+    public void resetYM2608Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskYM2608(chipID, ch, false, stopped);
+            chipRegister.setMaskYM2608(chipId, ch, false, stopped);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetYM2610Mask(int chipID, int ch) {
+    public void resetYM2610Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskYM2610(chipID, ch, false);
+            chipRegister.setMaskYM2610(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetYM3526Mask(int chipID, int ch) {
+    public void resetYM3526Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskYM3526(chipID, ch, false);
+            chipRegister.setMaskYM3526(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetY8950Mask(int chipID, int ch) {
+    public void resetY8950Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskY8950(chipID, ch, false);
+            chipRegister.setMaskY8950(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetYM3812Mask(int chipID, int ch) {
+    public void resetYM3812Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskYM3812(chipID, ch, false);
+            chipRegister.setMaskYM3812(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetYMF262Mask(int chipID, int ch) {
+    public void resetYMF262Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskYMF262(chipID, ch, false);
+            chipRegister.setMaskYMF262(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetYMF278BMask(int chipID, int ch) {
+    public void resetYMF278BMask(int chipId, int ch) {
         try {
-            chipRegister.setMaskYMF278B(chipID, ch, false);
+            chipRegister.setMaskYMF278B(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetC140Mask(int chipID, int ch) {
+    public void resetC140Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskC140(chipID, ch, false);
+            chipRegister.setMaskC140(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetPPZ8Mask(int chipID, int ch) {
+    public void resetPPZ8Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskPPZ8(chipID, ch, false);
+            chipRegister.setMaskPPZ8(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetC352Mask(int chipID, int ch) {
+    public void resetC352Mask(int chipId, int ch) {
         try {
-            chipRegister.setMaskC352(chipID, ch, false);
+            chipRegister.setMaskC352(chipId, ch, false);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void resetSegaPCMMask(int chipID, int ch) {
-        chipRegister.setMaskSegaPCM(chipID, ch, false);
+    public void resetSegaPCMMask(int chipId, int ch) {
+        chipRegister.setMaskSegaPCM(chipId, ch, false);
     }
 
-    public void resetQSoundMask(int chipID, int ch) {
-        chipRegister.setMaskQSound(chipID, ch, false);
+    public void resetQSoundMask(int chipId, int ch) {
+        chipRegister.setMaskQSound(chipId, ch, false);
     }
 
-    public void resetAY8910Mask(int chipID, int ch) {
-        chipRegister.setMaskAY8910(chipID, ch, false);
+    public void resetAY8910Mask(int chipId, int ch) {
+        chipRegister.setMaskAY8910(chipId, ch, false);
     }
 
-    public void resetHuC6280Mask(int chipID, int ch) {
-        chipRegister.setMaskHuC6280(chipID, ch, false);
+    public void resetHuC6280Mask(int chipId, int ch) {
+        chipRegister.setMaskHuC6280(chipId, ch, false);
     }
 
-    public void resetNESMask(int chipID, int ch) {
-        chipRegister.resetNESMask(chipID, ch);
+    public void resetNESMask(int chipId, int ch) {
+        chipRegister.resetNESMask(chipId, ch);
     }
 
-    public void resetDMCMask(int chipID, int ch) {
-        chipRegister.resetNESMask(chipID, ch + 2);
+    public void resetDMCMask(int chipId, int ch) {
+        chipRegister.resetNESMask(chipId, ch + 2);
     }
 
-    public void resetFDSMask(int chipID) {
-        chipRegister.resetFDSMask(chipID);
+    public void resetFDSMask(int chipId) {
+        chipRegister.resetFDSMask(chipId);
     }
 
-    public void resetMMC5Mask(int chipID, int ch) {
-        chipRegister.resetMMC5Mask(chipID, ch);
+    public void resetMMC5Mask(int chipId, int ch) {
+        chipRegister.resetMMC5Mask(chipId, ch);
     }
 
-    public void resetVRC7Mask(int chipID, int ch) {
-        chipRegister.resetVRC7Mask(chipID, ch);
+    public void resetVRC7Mask(int chipId, int ch) {
+        chipRegister.resetVRC7Mask(chipId, ch);
     }
 
-    public void resetK051649Mask(int chipID, int ch) {
-        chipRegister.resetK051649Mask(chipID, ch);
+    public void resetK051649Mask(int chipId, int ch) {
+        chipRegister.resetK051649Mask(chipId, ch);
     }
 
-    public void resetDMGMask(int chipID, int ch) {
-        chipRegister.resetDMGMask(chipID, ch);
+    public void resetDMGMask(int chipId, int ch) {
+        chipRegister.resetDMGMask(chipId, ch);
     }
 
-    public void resetVRC6Mask(int chipID, int ch) {
-        chipRegister.resetVRC6Mask(chipID, ch);
+    public void resetVRC6Mask(int chipId, int ch) {
+        chipRegister.resetVRC6Mask(chipId, ch);
     }
 
-    public void resetN163Mask(int chipID, int ch) {
-        chipRegister.resetN163Mask(chipID, ch);
+    public void resetN163Mask(int chipId, int ch) {
+        chipRegister.resetN163Mask(chipId, ch);
     }
 
-    public void setAY8910Volume(boolean isAbs, int volume) {
+//#endregion
+
+    public void setVolume(String tag, Class<? extends Instrument> c, boolean isAbs, int volume) {
         try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getAY8910Volume()) + volume, -192, 20);
-            mds.setVolumeAY8910(v);
-            setting.getBalance().setAY8910Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2151Volume(boolean isAbs, int volume) {
-        try {
-            int vol = Common.range((isAbs ? 0 : setting.getBalance().getYM2151Volume()) + volume, -192, 20);
-            setting.getBalance().setYM2151Volume(vol);
-
-            mds.setVolumeYm2151(vol);
-            mds.setVolumeYm2151Mame(vol);
-            mds.SetVolumeYm2151X68Sound(vol);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2203Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2203Volume()) + volume, -192, 20);
-            mds.SetVolumeYm2203(v);
-            setting.getBalance().setYM2203Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2203FMVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2203FMVolume()) + volume, -192, 20);
-            mds.SetVolumeYm2203FM(v);
-            setting.getBalance().setYM2203FMVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2203PSGVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2203PSGVolume()) + volume, -192, 20);
-            mds.SetVolumeYm2203PSG(v);
-            setting.getBalance().setYM2203PSGVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2413Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2413Volume()) + volume, -192, 20);
-            mds.SetVolumeYm2413(v);
-            setting.getBalance().setYM2413Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setK053260Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getK053260Volume()) + volume, -192, 20);
-            mds.SetVolumeK053260(v);
-            setting.getBalance().setK053260Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setRF5C68Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getRF5C68Volume()) + volume, -192, 20);
-            mds.SetVolumeRf5c68(v);
-            setting.getBalance().setRF5C68Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM3812Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM3812Volume()) + volume, -192, 20);
-            mds.SetVolumeYm3812(v);
-            setting.getBalance().setYM3812Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setY8950Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getY8950Volume()) + volume, -192, 20);
-            mds.SetVolumeY8950(v);
-            setting.getBalance().setY8950Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM3526Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM3526Volume()) + volume, -192, 20);
-            mds.SetVolumeYm3526(v);
-            setting.getBalance().setYM3526Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2608Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2608Volume()) + volume, -192, 20);
-            mds.SetVolumeYm2608(v);
-            setting.getBalance().setYM2608Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2608FMVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2608FMVolume()) + volume, -192, 20);
-            mds.SetVolumeYm2608FM(v);
-            setting.getBalance().setYM2608FMVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2608PSGVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2608PSGVolume()) + volume, -192, 20);
-            mds.SetVolumeYm2608PSG(v);
-            setting.getBalance().setYM2608PSGVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2608RhythmVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2608RhythmVolume()) + volume, -192, 20);
-            mds.SetVolumeYm2608Rhythm(v);
-            setting.getBalance().setYM2608RhythmVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2608AdpcmVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2608AdpcmVolume()) + volume, -192, 20);
-            mds.SetVolumeYm2608Adpcm(v);
-            setting.getBalance().setYM2608AdpcmVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2610Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2610Volume()) + volume, -192, 20);
-            mds.SetVolumeYm2610(v);
-            setting.getBalance().setYM2610Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2610FMVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2610FMVolume()) + volume, -192, 20);
-            mds.SetVolumeYm2610FM(v);
-            setting.getBalance().setYM2610FMVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2610PSGVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2610PSGVolume()) + volume, -192, 20);
-            mds.SetVolumeYm2610PSG(v);
-            setting.getBalance().setYM2610PSGVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2610AdpcmAVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2610AdpcmAVolume()) + volume, -192, 20);
-            mds.SetVolumeYm2610AdpcmA(v);
-            setting.getBalance().setYM2610AdpcmAVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2610AdpcmBVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2610AdpcmBVolume()) + volume, -192, 20);
-            mds.SetVolumeYm2610AdpcmB(v);
-            setting.getBalance().setYM2610AdpcmBVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYM2612Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYM2612Volume()) + volume, -192, 20);
-            mds.SetVolumeYm2612(v);
-            setting.getBalance().setYM2612Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setSN76489Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getSN76489Volume()) + volume, -192, 20);
-            mds.SetVolumeSn76489(v);
-            setting.getBalance().setSN76489Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setHuC6280Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getHuC6280Volume()) + volume, -192, 20);
-            mds.setVolumeOotakePsg(v);
-            setting.getBalance().setHuC6280Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setRF5C164Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getRF5C164Volume()) + volume, -192, 20);
-            mds.SetVolumeScdPcm(v);
-            setting.getBalance().setRF5C164Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setPWMVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getPWMVolume()) + volume, -192, 20);
-            mds.SetVolumePwm(v);
-            setting.getBalance().setPWMVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setOKIM6258Volume(boolean isAbs, int volume) {
-        try {
-            int vol = Common.range((isAbs ? 0 : setting.getBalance().getOKIM6258Volume()) + volume, -192, 20);
-            setting.getBalance().setOKIM6258Volume(vol);
-
-            mds.SetVolumeOkiM6258(vol);
-            mds.SetVolumeMpcmX68k(vol);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setOKIM6295Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getOKIM6295Volume()) + volume, -192, 20);
-            mds.SetVolumeOkiM6295(v);
-            setting.getBalance().setOKIM6295Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setC140Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getC140Volume()) + volume, -192, 20);
-            mds.SetVolumeC140(v);
-            setting.getBalance().setC140Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setSegaPCMVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getSEGAPCMVolume()) + volume, -192, 20);
-            mds.setVolumeSegaPCM(v);
-            setting.getBalance().setSEGAPCMVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setC352Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getC352Volume()) + volume, -192, 20);
-            mds.SetVolumeC352(v);
-            setting.getBalance().setC352Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setSA1099Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getSAA1099Volume()) + volume, -192, 20);
-            mds.SetVolumeSaa1099(v);
-            setting.getBalance().setSAA1099Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setPPZ8Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getPPZ8Volume()) + volume, -192, 20);
-            mds.SetVolumePPZ8(v);
-            setting.getBalance().setPPZ8Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setK051649Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getK051649Volume()) + volume, -192, 20);
-            mds.SetVolumeK051649(v);
-            setting.getBalance().setK051649Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setK054539Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getK054539Volume()) + volume, -192, 20);
-            mds.SetVolumeK054539(v);
-            setting.getBalance().setK054539Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setQSoundVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getQSoundVolume()) + volume, -192, 20);
-            mds.SetVolumeQSoundCtr(v);
-            setting.getBalance().setQSoundVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setDMGVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getDMGVolume()) + volume, -192, 20);
-            mds.setVolumeGb(v);
-            setting.getBalance().setDMGVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setGA20Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getGA20Volume()) + volume, -192, 20);
-            mds.setVolumeIremga20(v);
-            setting.getBalance().setGA20Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYMZ280BVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYMZ280BVolume()) + volume, -192, 20);
-            mds.setVolumeYmZ280b(v);
-            setting.getBalance().setYMZ280BVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYMF271Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYMF271Volume()) + volume, -192, 20);
-            mds.setVolumeYmf271(v);
-            setting.getBalance().setYMF271Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYMF262Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYMF262Volume()) + volume, -192, 20);
-            mds.SetVolumeYmF262(v);
-            setting.getBalance().setYMF262Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setYMF278BVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getYMF278BVolume()) + volume, -192, 20);
-            mds.SetVolumeYmF278b(v);
-            setting.getBalance().setYMF278BVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setMultiPCMVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getMultiPCMVolume()) + volume, -192, 20);
-            mds.setVolumeMultiPCM(v);
-            setting.getBalance().setMultiPCMVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-    public void setAPUVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getAPUVolume()) + volume, -192, 20);
-            mds.SetVolumeNES(v);
-            setting.getBalance().setAPUVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setDMCVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getDMCVolume()) + volume, -192, 20);
-            mds.SetVolumeDMC(v);
-            setting.getBalance().setDMCVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setFDSVolume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getFDSVolume()) + volume, -192, 20);
-            mds.SetVolumeFDS(v);
-            setting.getBalance().setFDSVolume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setMMC5Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getMMC5Volume()) + volume, -192, 20);
-            mds.SetVolumeMMC5(v);
-            setting.getBalance().setMMC5Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setN160Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getN160Volume()) + volume, -192, 20);
-            mds.SetVolumeN160(v);
-            setting.getBalance().setN160Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setVRC6Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getVRC6Volume()) + volume, -192, 20);
-            mds.SetVolumeVRC6(v);
-            setting.getBalance().setVRC6Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setVRC7Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getVRC7Volume()) + volume, -192, 20);
-            mds.SetVolumeVRC7(v);
-            setting.getBalance().setVRC7Volume(v);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setFME7Volume(boolean isAbs, int volume) {
-        try {
-            int v = Common.range((isAbs ? 0 : setting.getBalance().getFME7Volume()) + volume, -192, 20);
-            mds.SetVolumeFME7(v);
-            setting.getBalance().setFME7Volume(v);
+            int v = Common.range((isAbs ? 0 : setting.getBalance().getVolume(tag, c)) + volume, -192, 20);
+            mds.setVolume(tag, c, v);
+            setting.getBalance().setVolume(tag, c, v);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1685,31 +1449,8 @@ public class Audio {
         setting.getBalance().setGimicOPNAVolume(Common.range((isAbs ? 0 : setting.getBalance().getGimicOPNAVolume()) + volume, 0, 127));
     }
 
-    @SuppressWarnings("unchecked")
-    public BiConsumer<Boolean, Integer>[] setVolume = Arrays.<BiConsumer<Boolean, Integer>>asList(
-            this::setMasterVolume, this::setYM2151Volume, this::setYM2203Volume, this::setYM2203FMVolume
-            , this::setYM2203PSGVolume, this::setYM2612Volume, this::setYM2608Volume, this::setYM2608FMVolume
-            , this::setYM2608PSGVolume, this::setYM2608RhythmVolume, this::setYM2608AdpcmVolume, this::setYM2610Volume
-            , this::setYM2610FMVolume, this::setYM2610PSGVolume, this::setYM2610AdpcmAVolume, this::setYM2610AdpcmBVolume
-
-            , this::setYM2413Volume, this::setYM3526Volume, this::setY8950Volume, this::setYM3812Volume
-            , this::setYMF262Volume, this::setYMF278BVolume, this::setYMZ280BVolume, this::setYMF271Volume
-            , null, this::setAY8910Volume, this::setSN76489Volume, this::setHuC6280Volume
-            , this::setSA1099Volume, null, null, null
-
-            , null, null, this::setRF5C164Volume, this::setRF5C68Volume
-            , this::setPWMVolume, this::setOKIM6258Volume, this::setOKIM6295Volume, this::setC140Volume
-            , this::setC352Volume, this::setSegaPCMVolume, this::setMultiPCMVolume, this::setK051649Volume
-            , this::setK053260Volume, this::setK054539Volume, this::setQSoundVolume, this::setGA20Volume
-
-            , this::setAPUVolume, this::setDMCVolume, this::setFDSVolume, this::setMMC5Volume
-            , this::setN160Volume, this::setVRC6Volume, this::setVRC7Volume, this::setFME7Volume
-            , this::setDMGVolume, null, null, null
-            , null, this::setPPZ8Volume, this::setGimicOPNVolume, this::setGimicOPNAVolume
-    ).toArray(BiConsumer[]::new);
-
     public MDSound.Chip getMDSChipInfo(Class<? extends Instrument> typ) {
-        return chipRegister.GetChipInfo(typ);
+        return chipRegister.getChipInfo(typ);
     }
 
     public boolean sn76489NGPFlag = false;
@@ -1725,7 +1466,7 @@ public class Audio {
 
     public int[] getMoonDriverPCMKeyOn() {
         if (driverVirtual instanceof MoonDriver) {
-            return ((MoonDriver) driverVirtual).GetPCMKeyOn();
+            return ((MoonDriver) driverVirtual).getPCMKeyOn();
         }
         return null;
     }
@@ -1770,5 +1511,33 @@ public class Audio {
 
         if (mds == null) return;
         mds.visWaveBuffer.copy(dest);
+    }
+
+    public boolean paused = false;
+    public boolean vgmFadeout;
+
+    public void fadeoutCommand() {
+        if (isPaused()) {
+            pause();
+        }
+
+        fadeout();
+    }
+
+    public void pause() {
+
+        try {
+            paused = !paused;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public void fadeout() {
+        vgmFadeout = true;
     }
 }

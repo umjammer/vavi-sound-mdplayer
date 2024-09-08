@@ -101,10 +101,10 @@ public class MoonDriverDotNET extends BaseDriver {
         vgmFrameCounter = -latency - waitTime;
         vgmSpeed = 1;
 
-// #if DEBUG
+//#if DEBUG
         //実チップスレッドは処理をスキップ(デバッグ向け)
         if (model == EnmModel.RealModel) return true;
-// #endif
+//#endif
 
         if (mtype == MoonDriverFileType.MDL) return initMDL();
         else return initMDR();
@@ -117,13 +117,13 @@ public class MoonDriverDotNET extends BaseDriver {
 
     @Override
     public void processOneFrame() {
-// #if DEBUG
+//#if DEBUG
         //実チップスレッドは処理をスキップ(デバッグ向け)
         if (model == EnmModel.RealModel) {
             stopped = true;
             return;
         }
-// #endif
+//#endif
 
         try {
             vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
@@ -159,7 +159,7 @@ public class MoonDriverDotNET extends BaseDriver {
         moonDriverCompiler.setCompileSwitch(String.format("MoonDriverOption=%s", PlayingFileName));
 
         MmlDatum[] ret;
-        CompilerInfo info = null;
+        CompilerInfo info;
         try {
             try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
                 ret = moonDriverCompiler.compile(sourceMML, this::appendFileReaderCallback);
@@ -275,7 +275,7 @@ public class MoonDriverDotNET extends BaseDriver {
     private boolean initMDR() {
         if (moonDriverDriver == null) moonDriverDriver = im.getDriver("MoonDriverDotNET.Driver.Driver");
 
-        List<MmlDatum> buf = new ArrayList<MmlDatum>();
+        List<MmlDatum> buf = new ArrayList<>();
         for (byte b : vgmBuf) buf.add(new MmlDatum(b));
 
         List<ChipAction> lca = new ArrayList<>();
@@ -317,9 +317,9 @@ public class MoonDriverDotNET extends BaseDriver {
     //        pcmdata.clear();
     //    }
 
-    //    if (dat.addtionalData != null) {
-    //        if (dat.addtionalData instanceof MmlDatum) {
-    //            MmlDatum md = (MmlDatum)dat.addtionalData;
+    //    if (dat.additionalData != null) {
+    //        if (dat.additionalData instanceof MmlDatum) {
+    //            MmlDatum md = (MmlDatum)dat.additionalData;
     //            if (md.linePos != null) md.linePos.srcMMLID = filename;
     //            od = new outDatum(md.type, md.args, md.linePos, (byte)md.dat);
     //        }
@@ -354,7 +354,7 @@ public class MoonDriverDotNET extends BaseDriver {
         //Thread.sleep(m);
     }
 
-    public class MoonDriverChipAction implements ChipAction {
+    public static class MoonDriverChipAction implements ChipAction {
         private Consumer<ChipDatum> opl4Write;
         private BiConsumer<Long, Integer> opl4WaitSend;
 

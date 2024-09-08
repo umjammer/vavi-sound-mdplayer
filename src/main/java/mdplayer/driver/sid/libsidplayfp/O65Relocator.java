@@ -87,13 +87,13 @@ public class O65Relocator {
      * @param value
      */
     private void setWord(byte[] buffer, int idx, int value) {
-        buffer[idx] = (byte) (value & 0xff);
-        buffer[idx + 1] = (byte) ((value >> 8) & 0xff);
+        buffer[idx] = (byte) value;
+        buffer[idx + 1] = (byte) (value >> 8);
     }
 
     private void setWord(ByteBuffer buffer, int idx, int value) {
-        buffer.put(idx, (byte) (value & 0xff));
-        buffer.put(idx + 1, (byte) ((value >> 8) & 0xff));
+        buffer.put(idx, (byte) value);
+        buffer.put(idx + 1, (byte) (value >> 8));
     }
 
     /**
@@ -104,10 +104,10 @@ public class O65Relocator {
     private int readOptions(byte[] buf, int ptr) {
         int l = 0;
 
-        byte c = buf[0 + ptr];
+        int c = buf[0 + ptr] & 0xff;
         while (c != 0) {
             l += c;
-            c = buf[l + ptr];
+            c = buf[l + ptr] & 0xff;
         }
         return ++l;
     }
@@ -220,14 +220,14 @@ public class O65Relocator {
         int zLen = getWord(tmpBuf, 21);
         zDiff = zFlag ? this.zBase - zBase : 0;
 
-        ByteBuffer segt = ByteBuffer.wrap(tmpBuf.array(), tmpBuf.position(), hLen);                    // Text segment
-        ByteBuffer segd = ByteBuffer.wrap(segt.array(), segt.position(), tLen);                      // Data segment
-        ByteBuffer utab = ByteBuffer.wrap(segd.array(), segd.position(), dLen);                      // Undefined references list
+        ByteBuffer segt = ByteBuffer.wrap(tmpBuf.array(), tmpBuf.position(), hLen); // Text segment
+        ByteBuffer segd = ByteBuffer.wrap(segt.array(), segt.position(), tLen); // data segment
+        ByteBuffer utab = ByteBuffer.wrap(segd.array(), segd.position(), dLen); // Undefined references list
 
-        ByteBuffer rttab = ByteBuffer.wrap(utab.array(), utab.position(), readUndef(utab));         // Text relocation table
+        ByteBuffer rttab = ByteBuffer.wrap(utab.array(), utab.position(), readUndef(utab)); // Text relocation table
 
-        ByteBuffer rdtab = relocateSegment(segt, tLen, rttab);    // Data relocation table
-        ByteBuffer extab = relocateSegment(segd, dLen, rdtab);    // Exported globals list
+        ByteBuffer rdtab = relocateSegment(segt, tLen, rttab); // data relocation table
+        ByteBuffer extab = relocateSegment(segd, dLen, rdtab); // Exported globals list
 
         reloccateGlobals(extab);
 
@@ -270,19 +270,14 @@ public class O65Relocator {
         return ret;
     }
 
-    private int relDiff(byte s) {
-        switch (s) {
-        case 2:
-            return tDiff;
-        case 3:
-            return dDiff;
-        case 4:
-            return bDiff;
-        case 5:
-            return zDiff;
-        default:
-            return 0;
-        }
+    private int relDiff(int s) {
+        return switch (s) {
+            case 2 -> tDiff;
+            case 3 -> dDiff;
+            case 4 -> bDiff;
+            case 5 -> zDiff;
+            default -> 0;
+        };
     }
 
     /**
@@ -302,10 +297,10 @@ public class O65Relocator {
             } else {
                 adress += table.get(0) & 255;
                 table.position(table.position() + 1);
-                byte type = (byte) (table.get(0) & 0xe0);
-                byte seg = (byte) (table.get(0) & 0x07);
+                int type = table.get(0) & 0xe0;
+                int seg = table.get(0) & 0x07;
                 table.position(table.position() + 1);
-                switch (type & 0xff) {
+                switch (type) {
                 case 0x80: {
                     int oldVal = getWord(buf, adress);
                     int newVal = oldVal + relDiff(seg);
@@ -315,15 +310,15 @@ public class O65Relocator {
                 case 0x40: {
                     int oldVal = buf.get(adress) * 256 + table.get(0);
                     int newVal = oldVal + relDiff(seg);
-                    buf.put(adress, (byte) ((newVal >> 8) & 255));
-                    table.put(0, (byte) (newVal & 255));
+                    buf.put(adress, (byte) (newVal >> 8));
+                    table.put(0, (byte) newVal);
                     table.position(table.position() + 1);
                     break;
                 }
                 case 0x20: {
                     int oldVal = buf.get(adress);
                     int newVal = oldVal + relDiff(seg);
-                    buf.put(adress, (byte) (newVal & 255));
+                    buf.put(adress, (byte) newVal);
                     break;
                 }
                 }
@@ -355,7 +350,7 @@ public class O65Relocator {
             while (buf.get(buf.position()) != 0) {
                 buf.position(buf.position() + 1);
             }
-            byte seg = buf.get(buf.position());
+            int seg = buf.get(buf.position()) & 0xff;
             int oldVal = getWord(buf, 1);
             int newVal = oldVal + relDiff(seg);
             setWord(buf, 1, newVal);

@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -33,7 +32,7 @@ public class frmYM2608 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
 
     private MDChipParams.YM2608 newParam;
@@ -42,19 +41,19 @@ public class frmYM2608 extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYM2608.class);
 
-    public frmYM2608(frmMain frm, int chipID, int zoom, MDChipParams.YM2608 newParam, MDChipParams.YM2608 oldParam) {
+    public frmYM2608(frmMain frm, int chipId, int zoom, MDChipParams.YM2608 newParam, MDChipParams.YM2608 oldParam) {
         super(frm);
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         initializeComponent();
 
         this.newParam = newParam;
         this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneD(), null, zoom);
-        boolean YM2608Type = (chipID == 0)
+        boolean YM2608Type = (chipId == 0)
                 ? parent.setting.getYM2608Type()[0].getUseReal()[0]
                 : parent.setting.getYM2608Type()[1].getUseReal()[0];
-        int YM2608SoundLocation = (chipID == 0)
+        int YM2608SoundLocation = (chipId == 0)
                 ? parent.setting.getYM2608Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYM2608Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !YM2608Type ? 0 : (YM2608SoundLocation < 0 ? 2 : 1);
@@ -75,9 +74,9 @@ public class frmYM2608 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosYm2608()[chipID] = getLocation();
+                parent.setting.getLocation().getPosYm2608()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosYm2608()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosYm2608()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -114,10 +113,10 @@ public class frmYM2608 extends frmBase {
         for (int c = 0; c < newParam.channels.length; c++) {
             newParam.channels[c].note = -1;
         }
-        boolean YM2608Type = (chipID == 0)
+        boolean YM2608Type = (chipId == 0)
                 ? parent.setting.getYM2608Type()[0].getUseReal()[0]
                 : parent.setting.getYM2608Type()[1].getUseReal()[0];
-        int YM2608SoundLocation = (chipID == 0)
+        int YM2608SoundLocation = (chipId == 0)
                 ? parent.setting.getYM2608Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYM2608Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !YM2608Type ? 0 : (YM2608SoundLocation < 0 ? 2 : 1);
@@ -141,12 +140,12 @@ public class frmYM2608 extends frmBase {
 
     public void screenChangeParams() {
         boolean isFmEx;
-        int[][] ym2608Register = audio.getYM2608Register(chipID);
-        int[] fmKeyYM2608 = audio.getYM2608KeyOn(chipID);
-        int[] ym2608Vol = audio.getYM2608Volume(chipID);
-        int[] ym2608Ch3SlotVol = audio.getYM2608Ch3SlotVolume(chipID);
-        int[][] ym2608Rhythm = audio.getYM2608RhythmVolume(chipID);
-        int[] ym2608AdpcmVol = audio.getYM2608AdpcmVolume(chipID);
+        int[][] ym2608Register = audio.getYM2608Register(chipId);
+        int[] fmKeyYM2608 = audio.getYM2608KeyOn(chipId);
+        int[] ym2608Vol = audio.getYM2608Volume(chipId);
+        int[] ym2608Ch3SlotVol = audio.getYM2608Ch3SlotVolume(chipId);
+        int[][] ym2608Rhythm = audio.getYM2608RhythmVolume(chipId);
+        int[] ym2608AdpcmVol = audio.getYM2608AdpcmVolume(chipId);
 
         newParam.timerA = ym2608Register[0][0x24] | ((ym2608Register[0][0x25] & 0x3) << 8);
         newParam.timerB = ym2608Register[0][0x26];
@@ -331,10 +330,10 @@ public class frmYM2608 extends frmBase {
     }
 
     public void screenDrawParams() {
-        boolean ChipType2 = (chipID == 0)
+        boolean ChipType2 = (chipId == 0)
                 ? parent.setting.getYM2608Type()[0].getUseReal()[0]
                 : parent.setting.getYM2608Type()[1].getUseReal()[0];
-        int chipSoundLocation = (chipID == 0)
+        int chipSoundLocation = (chipId == 0)
                 ? parent.setting.getYM2608Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYM2608Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !ChipType2 ? 0 : (chipSoundLocation < 0 ? 2 : 1);
@@ -345,47 +344,45 @@ public class frmYM2608 extends frmBase {
             MDChipParams.Channel nyc = newParam.channels[c];
 
             if (c == 2) {
-                DrawBuff.volume(frameBuffer, 288 + 1, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
-                DrawBuff.volume(frameBuffer, 288 + 1, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
+                oyc.volumeL = DrawBuff.volume(frameBuffer, 288 + 1, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
+                oyc.volumeR = DrawBuff.volume(frameBuffer, 288 + 1, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
                 DrawBuff.Pan(frameBuffer, 25, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp);
                 DrawBuff.KeyBoardOPNA(frameBuffer, 33, 8 + c * 8, oyc.note, nyc.note, tp);
                 DrawBuff.InstOPNA(frameBuffer, 4, 17 * 8, c, oyc.inst, nyc.inst);
                 DrawBuff.Ch3YM2608(frameBuffer, c, oyc.mask, nyc.mask, oyc.ex, nyc.ex, tp);
-                DrawBuff.Slot(frameBuffer, 1 + 4 * 64, 8 + c * 8, oyc.slot, nyc.slot);
+                oyc.slot = DrawBuff.slot(frameBuffer, 1 + 4 * 64, 8 + c * 8, oyc.slot, nyc.slot);
                 DrawBuff.font4Hex16Bit(frameBuffer, 1 + 4 * 68, 8 + c * 8, 0, oyc.freq, nyc.freq);
             } else if (c < 6) {
-                DrawBuff.volume(frameBuffer, 288 + 1, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
-                DrawBuff.volume(frameBuffer, 288 + 1, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
+                oyc.volumeL = DrawBuff.volume(frameBuffer, 288 + 1, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
+                oyc.volumeR = DrawBuff.volume(frameBuffer, 288 + 1, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
                 DrawBuff.Pan(frameBuffer, 25, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp);
                 DrawBuff.KeyBoardOPNA(frameBuffer, 33, 8 + c * 8, oyc.note, nyc.note, tp);
                 DrawBuff.InstOPNA(frameBuffer, 4, 17 * 8, c, oyc.inst, nyc.inst);
                 DrawBuff.ChYM2608(frameBuffer, c, oyc.mask, nyc.mask, tp);
-                DrawBuff.Slot(frameBuffer, 1 + 4 * 64, 8 + c * 8, oyc.slot, nyc.slot);
+                oyc.slot = DrawBuff.slot(frameBuffer, 1 + 4 * 64, 8 + c * 8, oyc.slot, nyc.slot);
                 DrawBuff.font4Hex16Bit(frameBuffer, 1 + 4 * 68, 8 + c * 8, 0, oyc.freq, nyc.freq);
             } else {
-                DrawBuff.volume(frameBuffer, 288 + 1, 8 + (c + 3) * 8, 0, oyc.volumeL, nyc.volumeL, tp);
-                //if (c == 7 && oyc.note != nyc.note) {
-                //System.err.println("note:%d", nyc.note);
-                //int[][] ym2608Register = audio.GetYM2608Register(chipID);
-                //int freq1 = ym2608Register[0][0xa9] + (ym2608Register[0][0xad] ) * 0x100;
-                //int freq2 = ym2608Register[0][0xa8] + (ym2608Register[0][0xac] ) * 0x100;
-                //int freq3 = ym2608Register[0][0xaa] + (ym2608Register[0][0xae] ) * 0x100;
-                //int freq4 = ym2608Register[0][0xa2] + (ym2608Register[0][0xa6] ) * 0x100;
-                //System.err.println("frq:%4x %4x %4x %4x", freq1, freq2, freq3, freq4);
-                //}
+                oyc.volumeL = DrawBuff.volume(frameBuffer, 288 + 1, 8 + (c + 3) * 8, 0, oyc.volumeL, nyc.volumeL, tp);
+//                if (c == 7 && oyc.note != nyc.note) {
+//                    System.err.println("note:%d", nyc.note);
+//                    int[][] ym2608Register = audio.GetYM2608Register(chipId);
+//                    int freq1 = ym2608Register[0][0xa9] + (ym2608Register[0][0xad]) * 0x100;
+//                    int freq2 = ym2608Register[0][0xa8] + (ym2608Register[0][0xac]) * 0x100;
+//                    int freq3 = ym2608Register[0][0xaa] + (ym2608Register[0][0xae]) * 0x100;
+//                    int freq4 = ym2608Register[0][0xa2] + (ym2608Register[0][0xa6]) * 0x100;
+//                    System.err.println("frq:%4x %4x %4x %4x", freq1, freq2, freq3, freq4);
+//                }
                 DrawBuff.KeyBoardOPNA(frameBuffer, 33, 8 + (c + 3) * 8, oyc.note, nyc.note, tp);
                 DrawBuff.ChYM2608(frameBuffer, c, oyc.mask, nyc.mask, tp);
                 DrawBuff.font4Hex16Bit(frameBuffer, 1 + 4 * 68, 8 + (c + 3) * 8, 0, oyc.freq, nyc.freq);
             }
-
-
         }
         // SSG
         for (int c = 0; c < 3; c++) {
             MDChipParams.Channel oyc = oldParam.channels[c + 9];
             MDChipParams.Channel nyc = newParam.channels[c + 9];
 
-            DrawBuff.volume(frameBuffer, 289, 8 + (c + 6) * 8, 0, oyc.volume, nyc.volume, tp);
+            oyc.volume = DrawBuff.volume(frameBuffer, 289, 8 + (c + 6) * 8, 0, oyc.volume, nyc.volume, tp);
             DrawBuff.KeyBoardOPNA(frameBuffer, 33, (c + 6) * 8 + 8, oyc.note, nyc.note, tp);
             DrawBuff.TnOPNA(frameBuffer, 6, 2, c + 6, oyc.tn, nyc.tn, oyc.tntp, tp * 2);
 
@@ -394,8 +391,8 @@ public class frmYM2608 extends frmBase {
         }
 
         // ADPCM
-        DrawBuff.volume(frameBuffer, 289, 8 + 12 * 8, 1, oldParam.channels[12].volumeL, newParam.channels[12].volumeL, tp);
-        DrawBuff.volume(frameBuffer, 289, 8 + 12 * 8, 2, oldParam.channels[12].volumeR, newParam.channels[12].volumeR, tp);
+        oldParam.channels[12].volumeL = DrawBuff.volume(frameBuffer, 289, 8 + 12 * 8, 1, oldParam.channels[12].volumeL, newParam.channels[12].volumeL, tp);
+        oldParam.channels[12].volumeR = DrawBuff.volume(frameBuffer, 289, 8 + 12 * 8, 2, oldParam.channels[12].volumeR, newParam.channels[12].volumeR, tp);
         DrawBuff.Pan(frameBuffer, 25, 8 + 12 * 8, oldParam.channels[12].pan, newParam.channels[12].pan, oldParam.channels[12].pantp, tp);
         DrawBuff.KeyBoardOPNA(frameBuffer, 33, 8 + 12 * 8, oldParam.channels[12].note, newParam.channels[12].note, tp);
         DrawBuff.ChYM2608(frameBuffer, 12, oldParam.channels[12].mask, newParam.channels[12].mask, tp);
@@ -414,7 +411,7 @@ public class frmYM2608 extends frmBase {
         DrawBuff.ChYM2608Rhythm(frameBuffer, 0, oldParam.channels[13].mask, newParam.channels[13].mask, tp);
 
         DrawBuff.font4Hex12Bit(frameBuffer, 85 * 4, 30 * 4, 0, oldParam.timerA, newParam.timerA);
-        DrawBuff.font4HexByte(frameBuffer, 85 * 4, 32 * 4, 0, oldParam.timerB, newParam.timerB);
+        oldParam.timerB = DrawBuff.font4HexByte(frameBuffer, 85 * 4, 32 * 4, 0, oldParam.timerB, newParam.timerB);
 
         DrawBuff.LfoSw(frameBuffer, 84 * 4, 18 * 8, oldParam.lfoSw, newParam.lfoSw);
         DrawBuff.LfoFrq(frameBuffer, 84 * 4, 19 * 8, oldParam.lfoFrq, newParam.lfoFrq);
@@ -442,9 +439,9 @@ public class frmYM2608 extends frmBase {
                         if (ch >= 9 && ch <= 11) continue;
 
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YM2608, chipID, ch);
+                            parent.resetChannelMask(EnmChip.YM2608, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YM2608, chipID, ch);
+                            parent.setChannelMask(EnmChip.YM2608, chipId, ch);
                     }
                 }
                 return;
@@ -458,13 +455,13 @@ public class frmYM2608 extends frmBase {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
                     if (newParam.channels[ch].mask)
-                        parent.resetChannelMask(EnmChip.YM2608, chipID, ch);
+                        parent.resetChannelMask(EnmChip.YM2608, chipId, ch);
                     else
-                        parent.setChannelMask(EnmChip.YM2608, chipID, ch);
+                        parent.setChannelMask(EnmChip.YM2608, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 14; ch++) parent.resetChannelMask(EnmChip.YM2608, chipID, ch);
+                for (ch = 0; ch < 14; ch++) parent.resetChannelMask(EnmChip.YM2608, chipId, ch);
                 return;
             }
 
@@ -476,7 +473,7 @@ public class frmYM2608 extends frmBase {
 
             if (instCh < 6) {
                 //クリップボードに音色をコピーする
-                parent.getInstCh(EnmChip.YM2608, instCh, chipID);
+                parent.getInstCh(EnmChip.YM2608, instCh, chipId);
             }
         }
     };

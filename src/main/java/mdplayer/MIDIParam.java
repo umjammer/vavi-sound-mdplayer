@@ -30,18 +30,18 @@ public class MIDIParam {
     public int LCDDisplayTimeXG;
     public byte[] LCDDisplayLetter;
     public int LCDDisplayLetterTime;
-    public int LCDDisplayLetterTimeXG = 0;
+    public int LCDDisplayLetterTimeXG;
     public int LCDDisplayLetterLen = 0;
-    public String Lyric = "";
+    public String Lyric;
 
     public byte MasterVolume = 0;
 
     public int ReverbXG = 1;  // HALL1
     public int ChorusXG = 1;  // CHORUS1
     public int VariationXG = 15;  // DELAY LCR
-    public int Insertion1XG = 56;// DISTORTION
+    public int Insertion1XG = 56; // DISTORTION
     public int Insertion2XG = 56; // DISTORTION
-    public int Insertion3XG = 56;// DISTORTION
+    public int Insertion3XG = 56; // DISTORTION
     public int Insertion4XG = 56; // DISTORTION
 
     public int ReverbGS = 4; // Room1(default)
@@ -66,9 +66,9 @@ public class MIDIParam {
     public int EFXType_MSB = 0;
     public int EFXType_LSB = 0;
 
-    private byte[] msg = null;
-    private int msgInd = 0;
-    private boolean NowSystemMsg = false;
+    private byte[] msg;
+    private int msgInd;
+    private boolean NowSystemMsg;
 
     private static final int[] tblRevTypeXG = new int[] {
             0x0000
@@ -177,7 +177,7 @@ public class MIDIParam {
         nrpnEGDecay = new byte[16];
         nrpnEGRls = new byte[16];
         LCDDisplay = new byte[64];
-        LCD8850Display = new byte[27 * 4 * 16];// 160*8];
+        LCD8850Display = new byte[27 * 4 * 16]; // 160*8];
         LCDDisplayTime = 0;
         LCD8850DisplayTime = 0;
         LCDDisplayTimeXG = 0;
@@ -200,32 +200,32 @@ public class MIDIParam {
             bend[ch] = 8192;
             notes[ch] = "          ";
 
-            //nrpnVibRate[ch] = 64;
-            //nrpnVibDepth[ch] = 64;
-            //nrpnVibDelay[ch] = 64;
-            //nrpnLPF[ch] = 64;
-            //nrpnLPFRsn[ch] = 64;
-            //nrpnHPF[ch] = 64;
-            //nrpnEQBaseGain[ch] = 64;
-            //nrpnEQTrebleGain[ch] = 64;
-            //nrpnEQBaseFrq[ch] = 64;
-            //nrpnEQTrebleFrq[ch] = 64;
-            //nrpnEGAttack[ch] = 64;
-            //nrpnEGDecay[ch] = 64;
-            //nrpnEGRls[ch] = 64;
+//            nrpnVibRate[ch] = 64;
+//            nrpnVibDepth[ch] = 64;
+//            nrpnVibDelay[ch] = 64;
+//            nrpnLPF[ch] = 64;
+//            nrpnLPFRsn[ch] = 64;
+//            nrpnHPF[ch] = 64;
+//            nrpnEQBaseGain[ch] = 64;
+//            nrpnEQTrebleGain[ch] = 64;
+//            nrpnEQBaseFrq[ch] = 64;
+//            nrpnEQTrebleFrq[ch] = 64;
+//            nrpnEGAttack[ch] = 64;
+//            nrpnEGDecay[ch] = 64;
+//            nrpnEGRls[ch] = 64;
 
         }
         Lyric = "";
     }
 
-    public void SendBuffer(byte[] dat) {
+    public void sendBuffer(byte[] dat) {
         for (byte d : dat) {
             boolean IsStatusByte = (d & 0x80) != 0;
 
             if (IsStatusByte) {
                 //System.err.println("");
                 NowSystemMsg = ((d & 0xf0) == 0xf0);
-                if (d == 0xf7 && NowSystemMsg) {
+                if ((d & 0xff) == 0xf7 && NowSystemMsg) {
                     if (msgInd < msg.length) msg[msgInd] = (byte) 0xf7;
                     analyzeSystemMsg();
                     NowSystemMsg = false;
@@ -245,21 +245,21 @@ public class MIDIParam {
 
     private void analyze() {
         if (msgInd == 2) {
-            byte cmd = (byte) (msg[0] & 0xf0);
-            byte ch = (byte) (msg[0] & 0xf);
+            int cmd = msg[0] & 0xf0;
+            int ch = msg[0] & 0xf;
             switch (cmd) {
-            case (byte) 0xc0: // Program Change
+            case 0xc0: // Program Change
                 pc[ch] = msg[1];
                 break;
             }
         } else if (msgInd == 3) {
-            byte cmd = (byte) (msg[0] & 0xf0);
-            byte ch = (byte) (msg[0] & 0xf);
+            int cmd = msg[0] & 0xf0;
+            int ch = msg[0] & 0xf;
             switch (cmd) {
-            case (byte) 0x80: // Note OFF
+            case 0x80: // Note OFF
                 note[ch][msg[1]] = 0;
                 break;
-            case (byte) 0x90: // Note ON
+            case 0x90: // Note ON
                 note[ch][msg[1]] = msg[2];
 
                 if (msg[2] != 0) // NOTE OFF の代用の場合は液晶パラメータの更新を行わない
@@ -267,43 +267,43 @@ public class MIDIParam {
                     int lv = cc[ch][7] * cc[ch][11] * msg[2] >> (7 + 7);
                     int lvl = (lv * (cc[ch][10] > 64 ? ((127 - cc[ch][10]) * 2) : 127)) >> (7);  // 65->124 127->0
                     int lvr = (lv * (cc[ch][10] < 64 ? (cc[ch][10] * 2) : 127)) >> (7); // 63->126 0->0
-                    level[ch][0] = (byte) lvl;
-                    level[ch][1] = (byte) lv;
-                    level[ch][2] = (byte) lvr;
+                    level[ch][0] = lvl;
+                    level[ch][1] = lv;
+                    level[ch][2] = lvr;
                     if (level[ch][3] < lv) {
-                        level[ch][3] = (byte) lv;
+                        level[ch][3] = lv;
                         level[ch][4] = 100;
                     }
                 }
                 break;
-            case (byte) 0xa0: // Key Press
+            case 0xa0: // Key Press
                 keyPress[ch][msg[1]] = msg[2];
                 break;
-            case (byte) 0xb0: // Control Change
+            case 0xb0: // Control Change
                 cc[ch][msg[1]] = msg[2];
                 analyzeControlChange(ch);
                 break;
-            case (byte) 0xd0: // Ch Press
+            case 0xd0: // Ch Press
                 cPress[ch] = msg[1];
                 break;
-            case (byte) 0xe0: // Pitch Bend
+            case 0xe0: // Pitch Bend
                 bend[ch] = (short) (msg[2] * 0x80 + msg[1]);
                 break;
             }
         }
     }
 
-    private void analyzeControlChange(byte ch) {
+    private void analyzeControlChange(int ch) {
         switch (msg[1]) {
-        case 0x06: // Data Entry MSB
+        case 0x06: // data Entry MSB
             analyzeDataEntryMSB(ch);
             break;
-        case 0x26: // Data Entry LSB
+        case 0x26: // data Entry LSB
             break;
         }
     }
 
-    private void analyzeDataEntryMSB(byte ch) {
+    private void analyzeDataEntryMSB(int ch) {
         switch (cc[ch][0x63]) { // NRPN MSB
         case 0x01:
             switch (cc[ch][0x62]) { // NRPN LSB
@@ -353,7 +353,7 @@ public class MIDIParam {
 
     private void analyzeSystemMsg() {
 
-        if (msg[0] != 0xf0) return;
+        if ((msg[0] & 0xff) != 0xf0) return;
         if (msgInd < 8) return;
 
         byte manufactureID = msg[1];
@@ -371,63 +371,63 @@ public class MIDIParam {
             adr = msg[5] * 0x10000 + msg[6] * 0x100 + msg[7];
             ptr = 8;
         } else if (manufactureID == 0x7f) { // universal realtime message
-            if (msg[2] == 0x7f && msg[3] == 0x04 && msg[4] == 0x01 && msg[7] == 0xf7) {
+            if ((msg[2] & 0xff) == 0x7f && (msg[3] & 0xff) == 0x04 && (msg[4] & 0xff) == 0x01 && (msg[7] & 0xff) == 0xf7) {
                 MasterVolume = msg[5];
             }
             return;
         }
 
-        while (ptr < msg.length && msg[ptr] != 0xf7) {
-            byte dat = msg[ptr];
+        while (ptr < msg.length && (msg[ptr] & 0xff) != 0xf7) {
+            int dat = msg[ptr] & 0xff;
 
             if (manufactureID == 0x43) { // YAMAHA
                 if (adr == 0x020100 || adr == 0x020101) {
-                    //REVERB TYPE MSB/LSB
-                    if (adr == 0x020100) RevType_MSB = dat & 0xff;
-                    else RevType_LSB = dat & 0xff;
+                    // REVERB TYPE MSB/LSB
+                    if (adr == 0x020100) RevType_MSB = dat;
+                    else RevType_LSB = dat;
                     ReverbXG = getRevTypeXG();
                 } else if (adr == 0x020120 || adr == 0x020121) {
-                    //CHORUS TYPE MSB/LSB
-                    if (adr == 0x020120) ChoType_MSB = dat & 0xff;
-                    else ChoType_LSB = dat & 0xff;
+                    // CHORUS TYPE MSB/LSB
+                    if (adr == 0x020120) ChoType_MSB = dat;
+                    else ChoType_LSB = dat;
                     ChorusXG = getChoTypeXG();
                 } else if (adr == 0x020140 || adr == 0x020141) {
-                    //VARIATION TYPE MSB/LSB
-                    if (adr == 0x020140) VarType_MSB = dat & 0xff;
-                    else VarType_LSB = dat & 0xff;
+                    // VARIATION TYPE MSB/LSB
+                    if (adr == 0x020140) VarType_MSB = dat;
+                    else VarType_LSB = dat;
                     VariationXG = getVarTypeXG();
                 } else if (adr == 0x030000 || adr == 0x030001) {
-                    //INSERTION EFFECT1 TYPE MSB/LSB
-                    if (adr == 0x030000) Ins1Type_MSB = dat & 0xff;
-                    else Ins1Type_LSB = dat & 0xff;
+                    // INSERTION EFFECT1 TYPE MSB/LSB
+                    if (adr == 0x030000) Ins1Type_MSB = dat;
+                    else Ins1Type_LSB = dat;
                     Insertion1XG = getIns1TypeXG();
                 } else if (adr == 0x030100 || adr == 0x030101) {
-                    //INSERTION EFFECT2 TYPE MSB/LSB
-                    if (adr == 0x030100) Ins2Type_MSB = dat & 0xff;
-                    else Ins2Type_LSB = dat & 0xff;
+                    // INSERTION EFFECT2 TYPE MSB/LSB
+                    if (adr == 0x030100) Ins2Type_MSB = dat;
+                    else Ins2Type_LSB = dat;
                     Insertion2XG = getIns2TypeXG();
                 } else if (adr == 0x030200 || adr == 0x030201) {
-                    //INSERTION EFFECT3 TYPE MSB/LSB
-                    if (adr == 0x030200) Ins3Type_MSB = dat & 0xff;
-                    else Ins3Type_LSB = dat & 0xff;
+                    // INSERTION EFFECT3 TYPE MSB/LSB
+                    if (adr == 0x030200) Ins3Type_MSB = dat;
+                    else Ins3Type_LSB = dat;
                     Insertion3XG = getIns3TypeXG();
                 } else if (adr == 0x030300 || adr == 0x030301) {
-                    //INSERTION EFFECT4 TYPE MSB/LSB
-                    if (adr == 0x030300) Ins4Type_MSB = dat & 0xff;
-                    else Ins4Type_LSB = dat & 0xff;
+                    // INSERTION EFFECT4 TYPE MSB/LSB
+                    if (adr == 0x030300) Ins4Type_MSB = dat;
+                    else Ins4Type_LSB = dat;
                     Insertion4XG = getIns4TypeXG();
                 } else if (adr >= 0x060000 && adr <= 0x06001f) {
                     if (adr == 0x060000) for (int i = 0; i < 32; i++) LCDDisplayLetter[i] = 0x20;
 
-                    //DISPLAY LETTER Data
-                    dat = (byte) ((dat < 0x20 || dat > 0x7f) ? 0x20 : dat);
-                    LCDDisplayLetter[adr & 0x1f] = dat;
+                    // DISPLAY LETTER data
+                    dat = (dat < 0x20 || dat > 0x7f) ? 0x20 : dat;
+                    LCDDisplayLetter[adr & 0x1f] = (byte) dat;
                     LCDDisplayLetterLen = (adr & 0x1f) + 1;
                     LCDDisplayLetterTime = 400;
                     if (LCDDisplayLetterLen > 16) LCDDisplayLetterTime = 40;
                 } else if (adr >= 0x070000 && adr <= 0x07002f) {
-                    //DISPLAY Dot Data
-                    LCDDisplay[adr & 0x3f] = dat;
+                    // DISPLAY Dot data
+                    LCDDisplay[adr & 0x3f] = (byte) dat;
                     if (adr == 0x07002f) {
                         LCDDisplayTimeXG = 400;
                     }
@@ -436,22 +436,22 @@ public class MIDIParam {
                 if (adr >= 0x100000 && adr <= 0x10001f) {
                     if (adr == 0x100000) for (int i = 0; i < 32; i++) LCDDisplayLetter[i] = 0x20;
 
-                    //DISPLAY LETTER Data
-                    dat = (byte) ((dat < 0x20 || dat > 0x7f) ? 0x20 : dat);
-                    LCDDisplayLetter[adr & 0x1f] = dat;
+                    // DISPLAY LETTER data
+                    dat = (dat < 0x20 || dat > 0x7f) ? 0x20 : dat;
+                    LCDDisplayLetter[adr & 0x1f] = (byte) dat;
                     LCDDisplayLetterLen = (adr & 0x1f);// + 1;
                     LCDDisplayLetterTime = 400;
                     if (LCDDisplayLetterLen > 16) LCDDisplayLetterTime = 40;
                 } else if (adr >= 0x100100 && adr <= 0x10013f) {
-                    //DISPLAY Dot Data
-                    LCDDisplay[adr & 0x3f] = dat;
+                    // DISPLAY Dot data
+                    LCDDisplay[adr & 0x3f] = (byte) dat;
                     if (adr == 0x10013f) {
                         LCDDisplayTime = 400;
                     }
                 } else if (adr >= 0x200000 && adr < 0x201000) {
-                    //8850Display Dot Data(160px x 64 px) ((27byte x 4row) x 16set)
+                    //8850Display Dot data(160px x 64 px) ((27byte x 4row) x 16set)
                     if ((adr & 0x7f) < 108) {
-                        LCD8850Display[((adr & 0xf00) >> 8) * 108 + (adr & 0x7f)] = dat;// % (27*4)] = dat;
+                        LCD8850Display[((adr & 0xf00) >> 8) * 108 + (adr & 0x7f)] = (byte) dat; // % (27*4)] = dat;
                     }
                     if (adr == 0x200000 + 0xf00 + 108 - 1) {
                         LCD8850DisplayTime = 400;
@@ -467,11 +467,11 @@ public class MIDIParam {
                     if (dat >= 0 && dat <= 9) DelayGS = dat;
                 } else if (adr == 0x400300) {
                     //EFX Type
-                    EFXType_MSB = dat & 0xff;
+                    EFXType_MSB = dat;
                     EFXGS = getIns1TypeFromEFX();
                 } else if (adr == 0x400301) {
                     //EFX Type
-                    EFXType_LSB = dat & 0xff;
+                    EFXType_LSB = dat;
                     EFXGS = getIns1TypeFromEFX();
                 }
             }
@@ -479,7 +479,6 @@ public class MIDIParam {
             ptr++;
             adr++;
         }
-
     }
 
     private int getRevTypeXG() {

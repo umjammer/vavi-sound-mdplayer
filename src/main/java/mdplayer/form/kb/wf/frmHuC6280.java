@@ -73,8 +73,8 @@ public class frmHuC6280 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
 
     private MDChipParams.HuC6280 newParam;
     private MDChipParams.HuC6280 oldParam;
@@ -82,10 +82,10 @@ public class frmHuC6280 extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmHuC6280.class);
 
-    public frmHuC6280(frmMain frm, int chipID, int zoom, MDChipParams.HuC6280 newParam, MDChipParams.HuC6280 oldParam) {
+    public frmHuC6280(frmMain frm, int chipId, int zoom, MDChipParams.HuC6280 newParam, MDChipParams.HuC6280 oldParam) {
         super(frm);
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
 
         initializeComponent();
@@ -110,9 +110,9 @@ public class frmHuC6280 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosHuC6280()[chipID] = getLocation();
+                parent.setting.getLocation().getPosHuC6280()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosHuC6280()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosHuC6280()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -148,7 +148,7 @@ public class frmHuC6280 extends frmBase {
 
     public void screenChangeParams() {
 
-        OotakeHuC6280 chip = audio.getHuC6280Register(chipID);
+        OotakeHuC6280 chip = audio.getHuC6280Register(chipId);
         if (chip == null) return;
 
         //System.err.println("%d  %d", chips.MainVolumeL,chips.MainVolumeR);
@@ -231,9 +231,9 @@ public class frmHuC6280 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 6; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.HuC6280, chipID, ch);
+                            parent.resetChannelMask(EnmChip.HuC6280, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.HuC6280, chipID, ch);
+                            parent.setChannelMask(EnmChip.HuC6280, chipId, ch);
                     }
                 }
                 return;
@@ -246,12 +246,12 @@ public class frmHuC6280 extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
-                    parent.setChannelMask(EnmChip.HuC6280, chipID, ch);
+                    parent.setChannelMask(EnmChip.HuC6280, chipId, ch);
                     return;
                 }
 
                 //マスク解除
-                for (ch = 0; ch < 6; ch++) parent.resetChannelMask(EnmChip.HuC6280, chipID, ch);
+                for (ch = 0; ch < 6; ch++) parent.resetChannelMask(EnmChip.HuC6280, chipId, ch);
                 return;
             }
 
@@ -265,7 +265,7 @@ public class frmHuC6280 extends frmBase {
 
             if (instCh < 6) {
                 //クリップボードに音色をコピーする
-                parent.getInstCh(EnmChip.HuC6280, instCh, chipID);
+                parent.getInstCh(EnmChip.HuC6280, instCh, chipId);
             }
         }
     };

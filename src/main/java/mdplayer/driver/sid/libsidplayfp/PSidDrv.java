@@ -160,10 +160,10 @@ public class PSidDrv {
      * all counts and offsets are 1 less than they should be
      */
     private void copyPowerOnPattern(SidMemory mem) {
-        short addr = 0;
+        int addr = 0;
         for (int i = 0; i < POWER_ON.length; ) {
-            byte off = POWER_ON[i++];
-            byte count = 0;
+            int off = POWER_ON[i++] & 0xff;
+            int count = 0;
             boolean compressed = false;
 
             // Determine data count/compression
@@ -216,11 +216,11 @@ public class PSidDrv {
         // $35 for init/play : $e000 - $ffff
         // $36 for load end/play : $a000 - $ffff
         // $37 for the rest
-        if (address < 0xa000)
+        if ((address & 0xffff) < 0xa000)
             return 0x37;  // Basic-ROM, Kernal-ROM, I/O
-        if (address < 0xd000)
+        if ((address & 0xffff) < 0xd000)
             return 0x36;  // Kernal-ROM, I/O
-        if (address >= 0xe000)
+        if ((address & 0xffff) >= 0xe000)
             return 0x35;  // I/O only
 
         return 0x34;  // RAM only
@@ -229,7 +229,7 @@ public class PSidDrv {
     /**
      * Relocate the driver.
      * <p>
-     * @return false if something's wrong, check // #errorString for error details
+     * @return false if something's wrong, check //#errorString for error details
      */
     public boolean relocateDriver() {
         int startLp = tuneInfo.loadAddr() >> 8;

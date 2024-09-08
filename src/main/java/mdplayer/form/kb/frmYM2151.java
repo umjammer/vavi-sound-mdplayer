@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -33,18 +32,18 @@ public class frmYM2151 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
 
-    private MDChipParams.YM2151 newParam = null;
-    private MDChipParams.YM2151 oldParam = null;
+    private MDChipParams.YM2151 newParam;
+    private MDChipParams.YM2151 oldParam;
     private FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYM2151.class);
 
-    public frmYM2151(frmMain frm, int chipID, int zoom, MDChipParams.YM2151 newParam, MDChipParams.YM2151 oldParam) {
+    public frmYM2151(frmMain frm, int chipId, int zoom, MDChipParams.YM2151 newParam, MDChipParams.YM2151 oldParam) {
         super(frm);
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         initializeComponent();
 
@@ -68,9 +67,9 @@ public class frmYM2151 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosYm2151()[chipID] = getLocation();
+                parent.setting.getLocation().getPosYm2151()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosYm2151()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosYm2151()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -118,9 +117,9 @@ public class frmYM2151 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YM2151, chipID, ch);
+                            parent.resetChannelMask(EnmChip.YM2151, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YM2151, chipID, ch);
+                            parent.setChannelMask(EnmChip.YM2151, chipId, ch);
                     }
                 }
                 return;
@@ -131,11 +130,11 @@ public class frmYM2151 extends frmBase {
 
             if (ch < 8) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.YM2151, chipID, ch);
+                    parent.setChannelMask(EnmChip.YM2151, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.YM2151, chipID, ch);
+                for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.YM2151, chipId, ch);
                 return;
 
             }
@@ -148,16 +147,16 @@ public class frmYM2151 extends frmBase {
 
             if (instCh < 8) {
                  // クリップボードに音色をコピーする
-                parent.getInstCh(EnmChip.YM2151, instCh, chipID);
+                parent.getInstCh(EnmChip.YM2151, instCh, chipId);
             }
         }
     };
 
     public void screenInit() {
-        boolean YM2151Type = (chipID == 0)
+        boolean YM2151Type = (chipId == 0)
                 ? parent.setting.getYM2151Type()[0].getUseReal()[0]
                 : parent.setting.getYM2151Type()[1].getUseReal()[0];
-        int YM2151SoundLocation = (chipID == 0)
+        int YM2151SoundLocation = (chipId == 0)
                 ? parent.setting.getYM2151Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYM2151Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !YM2151Type ? 0 : (YM2151SoundLocation < 0 ? 2 : 1);
@@ -175,10 +174,9 @@ public class frmYM2151 extends frmBase {
             DrawBuff.ChYM2151_P(frameBuffer, 0, ch * 8 + 8, ch, false, tp);
             DrawBuff.drawPanP(frameBuffer, 24, ch * 8 + 8, 3, tp);
             int d = 99;
-            DrawBuff.volume(frameBuffer, 256, 8 + ch * 8, 1, d, 0, tp);
+            d = DrawBuff.volume(frameBuffer, 256, 8 + ch * 8, 1, d, 0, tp);
             d = 99;
-            DrawBuff.volume(frameBuffer, 256, 8 + ch * 8, 2, d, 0, tp);
-
+            d = DrawBuff.volume(frameBuffer, 256, 8 + ch * 8, 2, d, 0, tp);
         }
     }
 
@@ -199,9 +197,9 @@ public class frmYM2151 extends frmBase {
             };
 
     public void screenChangeParams() {
-        int[] ym2151Register = audio.getYM2151Register(chipID);
-        int[] fmKeyYM2151 = audio.getYM2151KeyOn(chipID);
-        int[] fmYM2151Vol = audio.getYM2151Volume(chipID);
+        int[] ym2151Register = audio.getYM2151Register(chipId);
+        int[] fmKeyYM2151 = audio.getYM2151KeyOn(chipId);
+        int[] fmYM2151Vol = audio.getYM2151Volume(chipId);
 
         for (int ch = 0; ch < 8; ch++) {
             for (int i = 0; i < 4; i++) {
@@ -228,10 +226,10 @@ public class frmYM2151 extends frmBase {
             int note = (ym2151Register[0x28 + ch] & 0x0f);
             note = (note < 3) ? note : (note < 7 ? note - 1 : (note < 11 ? note - 2 : note - 3));
             int oct = ((ym2151Register[0x28 + ch] & 0x70) >> 4);
-            //newParam.ym2151[chipID].channels[ch].note = (fmKeyYM2151[ch] > 0) ? (oct * 12 + note + audio.vgmReal.YM2151Hosei + 1 + 9) : -1;
+            //newParam.ym2151[chipId].channels[ch].note = (fmKeyYM2151[ch] > 0) ? (oct * 12 + note + audio.vgmReal.YM2151Hosei + 1 + 9) : -1;
             int hosei = 0;
             if (audio.driverVirtual != null) { // is Vgm)
-                hosei = (audio.driverVirtual).ym2151Hosei[chipID];
+                hosei = (audio.driverVirtual).ym2151Hosei[chipId];
             }
             newParam.channels[ch].note = ((fmKeyYM2151[ch] & 1) != 0) ? (oct * 12 + note + hosei) : -1;
 
@@ -259,8 +257,8 @@ public class frmYM2151 extends frmBase {
         newParam.ne = ((ym2151Register[0x0f] & 0x80) >> 7);
         newParam.nfrq = ((ym2151Register[0x0f] & 0x1f) >> 0);
         newParam.lfrq = ((ym2151Register[0x18] & 0xff) >> 0);
-        newParam.pmd = audio.getYM2151PMD(chipID);
-        newParam.amd = audio.getYM2151AMD(chipID);
+        newParam.pmd = audio.getYM2151PMD(chipId);
+        newParam.amd = audio.getYM2151AMD(chipId);
         newParam.waveform = ((ym2151Register[0x1b] & 0x3) >> 0);
         newParam.lfosync = ((ym2151Register[0x01] & 0x02) >> 1);
 
@@ -271,10 +269,10 @@ public class frmYM2151 extends frmBase {
             MDChipParams.Channel oyc = oldParam.channels[c];
             MDChipParams.Channel nyc = newParam.channels[c];
 
-            boolean YM2151Type = (chipID == 0)
+            boolean YM2151Type = (chipId == 0)
                     ? parent.setting.getYM2151Type()[0].getUseReal()[0]
                     : parent.setting.getYM2151Type()[1].getUseReal()[0];
-            int YM2151SoundLocation = (chipID == 0)
+            int YM2151SoundLocation = (chipId == 0)
                     ? parent.setting.getYM2151Type()[0].getRealChipInfo()[0].getSoundLocation()
                     : parent.setting.getYM2151Type()[1].getRealChipInfo()[0].getSoundLocation();
             int tp = !YM2151Type ? 0 : (YM2151SoundLocation < 0 ? 2 : 1);
@@ -284,8 +282,8 @@ public class frmYM2151 extends frmBase {
             DrawBuff.Pan(frameBuffer, 24, 8 + c * 8, oyc.pan, nyc.pan, oyc.pantp, tp);
             DrawBuff.keyBoard(frameBuffer, c, oyc.note, nyc.note, tp);
 
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
+            oyc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, oyc.volumeL, nyc.volumeL, tp);
+            oyc.volumeR = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, oyc.volumeR, nyc.volumeR, tp);
 
             DrawBuff.ChYM2151(frameBuffer, c, oyc.mask, nyc.mask, tp);
 

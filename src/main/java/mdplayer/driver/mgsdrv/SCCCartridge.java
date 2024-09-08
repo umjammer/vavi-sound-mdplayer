@@ -16,16 +16,18 @@ public class SCCCartridge implements Cartridge {
         this.model = model;
     }
 
+    @Override
     public byte get(int address) {
         return read(address);
     }
 
+    @Override
     public void set(int address, byte value) {
         write(address, value);
     }
 
     private void write(int address, byte data) {
-        //Debug.printf(String.format("SCC Write : Adr:%04x Dat:%02x", address, data));
+        //Debug.printf(String.format("SCC Write : adr:%04x Dat:%02x", address, data));
         if (address == 0x9000) {
             if (data == 0) readOnly = true;
             else if (data == 0x3f) readOnly = false;
@@ -68,7 +70,7 @@ public class SCCCartridge implements Cartridge {
     }
 
     private byte read(int address) {
-        //System.err.println("SCC Read : Adr:%04x Dat:%02x", address, 0);
+        //System.err.println("SCC Read : adr:%04x Dat:%02x", address, 0);
         return mem[address];
     }
 }

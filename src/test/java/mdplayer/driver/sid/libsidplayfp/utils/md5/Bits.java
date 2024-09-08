@@ -16,10 +16,10 @@ public class Bits {
 	 * @param offset offset into byte array
 	 */
 	public static int toInt(byte[] b, int offset) {
-		return ((b[offset] & 0xFF) << 24)
-		| ((b[offset+1] & 0xFF) << 16)
-		| ((b[offset+2] & 0xFF) << 8)
-		| (b[offset+3] & 0xFF);
+		return ((b[offset] & 0xff) << 24)
+		| ((b[offset+1] & 0xff) << 16)
+		| ((b[offset+2] & 0xff) << 8)
+		| (b[offset+3] & 0xff);
 	}
 
 	/**
@@ -28,10 +28,10 @@ public class Bits {
 	 * @param offset offset into byte array
 	 */
 	public static int toBigEndianInt(byte[] bytes, int offset) {
-		return ((bytes[offset+3] & 0xFF) << 24)
-		| ((bytes[offset+2] & 0xFF) << 16)
-		| ((bytes[offset+1] & 0xFF) << 8)
-		| (bytes[offset] & 0xFF);
+		return ((bytes[offset+3] & 0xff) << 24)
+		| ((bytes[offset+2] & 0xff) << 16)
+		| ((bytes[offset+1] & 0xff) << 8)
+		| (bytes[offset] & 0xff);
 	}
 
 	/**
@@ -42,7 +42,7 @@ public class Bits {
 		byte[] b = new byte[8];
 		for (int i=7; i>=0; i--) {
 			// grab the least significant byte
-			b[i] = (byte)(l & 0xFFL);
+			b[i] = (byte)(l & 0xffL);
 			// shift right by one byte
 			l = l >> 8;
 		}
@@ -56,7 +56,7 @@ public class Bits {
 	public static void toBytes(long l, byte[] b, int offset) {
 		for (int i=7; i>=0; i--) {
 			// grab the least significant byte
-			b[offset + i] = (byte)(l & 0xFFL);
+			b[offset + i] = (byte)(l & 0xffL);
 			// shift right by one byte
 			l = l >> 8;
 		}
@@ -144,17 +144,17 @@ public class Bits {
 
 	public static String toHexString(byte[] b) {
 		StringBuilder sb = new StringBuilder();
-		for (int i=0; i<b.length; i++) {
-			sb.append(String.format("%02x",b[i]));
+		for (byte value : b) {
+			sb.append(String.format("%02x", value));
 		}
 		return sb.toString();
 	}
 
     public static Object toHexString(int[] data) {
         StringBuilder sb = new StringBuilder();
-        for (int i=0; i<data.length; i++) {
-            sb.append(String.format("%08x",data[i]));
-        }
+		for (int datum : data) {
+			sb.append(String.format("%08x", datum));
+		}
         return sb.toString();
     }
 

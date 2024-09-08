@@ -64,7 +64,7 @@ public class frmK051649 extends frmBase {
 //            this.ResumeLayout(false);
     }
 
-    // // #endregion
+    // //#endregion
 
     BufferedImage image;
     public JPanel pbScreen;
@@ -73,19 +73,19 @@ public class frmK051649 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
 
-    private MDChipParams.K051649 newParam = null;
+    private MDChipParams.K051649 newParam;
     private MDChipParams.K051649 oldParam = new MDChipParams.K051649();
     private FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmK051649.class);
 
-    public frmK051649(frmMain frm, int chipID, int zoom, MDChipParams.K051649 newParam) {
+    public frmK051649(frmMain frm, int chipId, int zoom, MDChipParams.K051649 newParam) {
         super(frm);
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
 
         initializeComponent();
@@ -109,9 +109,9 @@ public class frmK051649 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosK051649()[chipID] = getLocation();
+                parent.setting.getLocation().getPosK051649()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosK051649()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosK051649()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -141,7 +141,7 @@ public class frmK051649 extends frmBase {
     };
 
     public void screenChangeParams() {
-        K051649 chip = audio.getK051649Register(chipID);
+        K051649 chip = audio.getK051649Register(chipId);
         if (chip == null) return;
 
         for (int ch = 0; ch < 5; ch++) {
@@ -170,7 +170,7 @@ public class frmK051649 extends frmBase {
             int y = c / 3;
 
             DrawBuff.keyBoard(frameBuffer, c, oyc.note, nyc.note, tp);
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 0, oyc.volume, nyc.volume, tp);
+            oyc.volume = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 0, oyc.volume, nyc.volume, tp);
             DrawBuff.font4Hex12Bit(frameBuffer, x * 4 * 26 + 4 * 14, y * 8 * 6 + 8 * 11, tp, oyc.freq, nyc.freq);
             DrawBuff.font4Hex4Bit(frameBuffer, x * 4 * 26 + 4 * 22, y * 8 * 6 + 8 * 11, tp, oyc.volumeL, nyc.volumeL);
             DrawBuff.drawNESSw(frameBuffer, x * 4 * 26 + 4 * 25, y * 8 * 6 + 8 * 11, oyc.dda, nyc.dda);
@@ -181,7 +181,7 @@ public class frmK051649 extends frmBase {
             for (int i = 0; i < 32; i++) {
                 int fx = i % 8;
                 int fy = i / 8;
-                DrawBuff.font4HexByte(frameBuffer, x * 4 * 26 + 4 * 10 + fx * 8, y * 8 * 6 + 8 * 7 + fy * 8, 0, oyc.inst[i], nyc.inst[i]);
+                oyc.inst[i] = DrawBuff.font4HexByte(frameBuffer, x * 4 * 26 + 4 * 10 + fx * 8, y * 8 * 6 + 8 * 7 + fy * 8, 0, oyc.inst[i], nyc.inst[i]);
             }
         }
     }
@@ -198,9 +198,9 @@ public class frmK051649 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 5; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.K051649, chipID, ch);
+                            parent.resetChannelMask(EnmChip.K051649, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.K051649, chipID, ch);
+                            parent.setChannelMask(EnmChip.K051649, chipId, ch);
                     }
                 }
                 return;
@@ -213,12 +213,12 @@ public class frmK051649 extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     //マスク
-                    parent.setChannelMask(EnmChip.K051649, chipID, ch);
+                    parent.setChannelMask(EnmChip.K051649, chipId, ch);
                     return;
                 }
 
                 //マスク解除
-                for (ch = 0; ch < 5; ch++) parent.resetChannelMask(EnmChip.K051649, chipID, ch);
+                for (ch = 0; ch < 5; ch++) parent.resetChannelMask(EnmChip.K051649, chipId, ch);
                 return;
             }
 
@@ -230,7 +230,7 @@ public class frmK051649 extends frmBase {
 
             if (instCh < 5) {
                 //クリップボードに音色をコピーする
-                parent.getInstCh(EnmChip.K051649, instCh, chipID);
+                parent.getInstCh(EnmChip.K051649, instCh, chipId);
             }
         }
     };

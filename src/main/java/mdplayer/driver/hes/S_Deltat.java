@@ -235,10 +235,10 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
             public int start;
             public int stop;
             public int level32;
-            public byte key;
-            public byte level;
-            public byte granuality;
-            public byte pad4_3;
+            public int key;
+            public int level;
+            public int granuality;
+            public int pad4_3;
             public byte[] regs = new byte[0x10];
         }
 
@@ -249,8 +249,8 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
         public int rammask;
         public byte[] rombuf;
         public int rommask;
-        public byte ymdeltatpcm_type;
-        public byte memShift;
+        public int ymdeltatpcm_type;
+        public int memShift;
         public int ram_size;
 
         public YMDELTATPCMSOUND_ YMDELTATPCMSOUND;
@@ -432,7 +432,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
                 break;
             case 0x02: // Start Address L
             case 0x03: // Start Address H
-                this.common.granuality = (byte) ((v & 2) != 0 ? 1 : 4);
+                this.common.granuality = (v & 2) != 0 ? 1 : 4;
                 this.common.start = ((this.common.regs[3] << 8) + this.common.regs[2]) << (this.memShift + 1);
                 this.common.mem = this.common.start;
                 break;
@@ -443,7 +443,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
             case 0x06: // Prescale L
             case 0x07: // Prescale H
                 break;
-            case 0x08: // Data
+            case 0x08: // data
                 if ((this.common.regs[0] & 0x60) == 0x60) writeram(v);
                 break;
             case 0x09: // Delta-N L
@@ -452,7 +452,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
                 if (this.common.deltan < 0x100) this.common.deltan = 0x100;
                 break;
             case 0x0b: // Level Control
-                this.common.level = (byte) v;
+                this.common.level = v;
                 this.common.level32 = (this.common.level * this.logtbl.LogToLin(this.common.mastervolume, KMIF_LOGTABLE.LOG_LIN_BITS - 15)) >> 7;
                 if (this.ymdeltatpcm_type == 3) // MSM5205)
                 {
@@ -554,7 +554,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
         sndp.rambuf = new byte[ramSize];
         if (sndp == null) return null;
         sndp.ram_size = ramSize;
-        sndp.ymdeltatpcm_type = (byte) ymDeltaTPcmType;
+        sndp.ymdeltatpcm_type = ymDeltaTPcmType;
         switch (ymDeltaTPcmType) {
         case 0: // YMDELTATPCM_TYPE_Y8950:
             sndp.memShift = 2;

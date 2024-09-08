@@ -244,7 +244,7 @@ public class Mos6526 {
     // TOD
     protected Tod tod;
 
-    // Serial Data Registers
+    // Serial data Registers
     protected SerialPort serialPort;
 
     // Have we already scheduled CIA->CPU Interrupt transition?
@@ -308,7 +308,7 @@ public class Mos6526 {
     /**
      * Create a new CIA.
      * <p>
-     * @param context the event context
+     * @param scheduler the event context
      */
     protected Mos6526(EventScheduler scheduler) {
         eventScheduler = scheduler;

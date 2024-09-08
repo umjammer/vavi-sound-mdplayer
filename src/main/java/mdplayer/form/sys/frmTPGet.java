@@ -8,7 +8,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.ArrayList;
-import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -249,7 +248,7 @@ public class frmTPGet extends JDialog {
 //        this.PerformLayout();
     }
 
-    // // #endregion
+    // //#endregion
     private JPanel groupBox1;
     private JTable dgvTonePallet;
     private JLabel label1;
@@ -290,7 +289,7 @@ public class frmTPGet extends JDialog {
             if (tonePallet.getLstTone() == null) tonePallet.setLstTone(new ArrayList<>(256));
 
             for (int i = 0; i < 256; i++) {
-                String toneName = "";
+                String toneName;
                 if (tonePallet.getLstTone().size() < i + 1 || tonePallet.getLstTone().get(i) == null) {
                     tonePallet.getLstTone().add(new Tone());
                 }

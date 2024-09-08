@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -25,7 +24,6 @@ import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
-import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
 
 
@@ -35,7 +33,7 @@ public class frmSegaPCM extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
 
     private MDChipParams.SegaPcm newParam = null;
@@ -44,10 +42,10 @@ public class frmSegaPCM extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmSegaPCM.class);
 
-    public frmSegaPCM(frmMain frm, int chipID, int zoom, MDChipParams.SegaPcm newParam, MDChipParams.SegaPcm oldParam) {
+    public frmSegaPCM(frmMain frm, int chipId, int zoom, MDChipParams.SegaPcm newParam, MDChipParams.SegaPcm oldParam) {
         super(frm);
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
 
         initializeComponent();
@@ -72,9 +70,9 @@ public class frmSegaPCM extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosSegaPCM()[chipID] = getLocation();
+                parent.setting.getLocation().getPosSegaPCM()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosSegaPCM()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosSegaPCM()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -120,9 +118,9 @@ public class frmSegaPCM extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 16; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.SEGAPCM, chipID, ch);
+                            parent.resetChannelMask(EnmChip.SEGAPCM, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.SEGAPCM, chipID, ch);
+                            parent.setChannelMask(EnmChip.SEGAPCM, chipId, ch);
                     }
                 }
                 return;
@@ -133,24 +131,24 @@ public class frmSegaPCM extends frmBase {
 
             if (ch < 16) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.SEGAPCM, chipID, ch);
+                    parent.setChannelMask(EnmChip.SEGAPCM, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 16; ch++) parent.resetChannelMask(EnmChip.SEGAPCM, chipID, ch);
+                for (ch = 0; ch < 16; ch++) parent.resetChannelMask(EnmChip.SEGAPCM, chipId, ch);
 
             }
         }
     };
 
     public void screenInit() {
-        boolean SEGAPCMType = (chipID == 0) ? parent.setting.getSEGAPCMType()[0].getUseReal()[0] : parent.setting.getSEGAPCMType()[1].getUseReal()[0];
+        boolean SEGAPCMType = (chipId == 0) ? parent.setting.getSEGAPCMType()[0].getUseReal()[0] : parent.setting.getSEGAPCMType()[1].getUseReal()[0];
         int tp = SEGAPCMType ? 1 : 0;
         for (int ch = 0; ch < 16; ch++) {
             int o = -1;
-            DrawBuff.volume(frameBuffer, 256, 8 + ch * 8, 1, o, 0, tp);
+            o = DrawBuff.volume(frameBuffer, 256, 8 + ch * 8, 1, o, 0, tp);
             o = -1;
-            DrawBuff.volume(frameBuffer, 256, 8 + ch * 8, 2, o, 0, tp);
+            o = DrawBuff.volume(frameBuffer, 256, 8 + ch * 8, 2, o, 0, tp);
             for (int ot = 0; ot < 12 * 8; ot++) {
                 int kx = Tables.kbl[(ot % 12) * 2] + ot / 12 * 28;
                 int kt = Tables.kbl[(ot % 12) * 2 + 1];
@@ -163,44 +161,39 @@ public class frmSegaPCM extends frmBase {
     }
 
     public void screenChangeParams() {
-        //MDSound.segapcm.segapcm_state segapcmState = audio.GetSegaPCMRegister(chipID);
-        //if (segapcmState != null && segapcmState.ram != null && segapcmState.rom != null)
-        //{
-        //    for (int ch = 0; ch < 16; ch++)
-        //    {
-        //        int l = segapcmState.ram[ch * 8 + 2] & 0x7f;
-        //        int r = segapcmState.ram[ch * 8 + 3] & 0x7f;
-        //        int dt = segapcmState.ram[ch * 8 + 7];
-        //        double ml = dt / 256.0;
+//        MDSound.segapcm.segapcm_state segapcmState = audio.GetSegaPCMRegister(chipId);
+//        if (segapcmState != null && segapcmState.ram != null && segapcmState.rom != null) {
+//            for (int ch = 0; ch < 16; ch++) {
+//                int l = segapcmState.ram[ch * 8 + 2] & 0x7f;
+//                int r = segapcmState.ram[ch * 8 + 3] & 0x7f;
+//                int dt = segapcmState.ram[ch * 8 + 7];
+//                double ml = dt / 256.0;
+//
+//                int ptrRom = segapcmState.ptrRom + ((segapcmState.ram[ch * 8 + 0x86] & segapcmState.bankmask) << segapcmState.bankshift);
+//                int addr = (int) ((segapcmState.ram[ch * 8 + 0x85] << 16) | (segapcmState.ram[ch * 8 + 0x84] << 8) | segapcmState.low[ch]);
+//                int vdt = 0;
+//                if (ptrRom + ((addr >> 8) & segapcmState.rgnmask) < segapcmState.rom.length) {
+//                    vdt = Math.abs((byte) (segapcmState.rom[ptrRom + ((addr >> 8) & segapcmState.rgnmask)]) - 0x80);
+//                }
+//                byte end = (byte) (segapcmState.ram[ch * 8 + 6] + 1);
+//                if ((segapcmState.ram[ch * 8 + 0x86] & 1) != 0) vdt = 0;
+//                if ((addr >> 16) == end) {
+//                    if ((segapcmState.ram[ch * 8 + 0x86] & 2) == 0)
+//                        ml = 0;
+//                }
+//
+//                newParam.channels[ch].volumeL = Math.min(Math.max((l * vdt) >> 8, 0), 19);
+//                newParam.channels[ch].volumeR = Math.min(Math.max((r * vdt) >> 8, 0), 19);
+//                if (newParam.channels[ch].volumeL == 0 && newParam.channels[ch].volumeR == 0) {
+//                    ml = 0;
+//                }
+//                newParam.channels[ch].note = (ml == 0 || vdt == 0) ? -1 : (common.searchSegaPCMNote(ml));
+//                newParam.channels[ch].pan = (r >> 3) * 0x10 + (l >> 3);
+//            }
+//        }
 
-        //        int ptrRom = segapcmState.ptrRom + ((segapcmState.ram[ch * 8 + 0x86] & segapcmState.bankmask) << segapcmState.bankshift);
-        //        int addr = (int)((segapcmState.ram[ch * 8 + 0x85] << 16) | (segapcmState.ram[ch * 8 + 0x84] << 8) | segapcmState.low[ch]);
-        //        int vdt = 0;
-        //        if (ptrRom + ((addr >> 8) & segapcmState.rgnmask) < segapcmState.rom.length)
-        //        {
-        //            vdt = Math.abs((byte)(segapcmState.rom[ptrRom + ((addr >> 8) & segapcmState.rgnmask)]) - 0x80);
-        //        }
-        //        byte end = (byte)(segapcmState.ram[ch * 8 + 6] + 1);
-        //        if ((segapcmState.ram[ch * 8 + 0x86] & 1) != 0) vdt = 0;
-        //        if ((addr >> 16) == end)
-        //        {
-        //            if ((segapcmState.ram[ch * 8 + 0x86] & 2) == 0)
-        //                ml = 0;
-        //        }
-
-        //        newParam.channels[ch].volumeL = Math.min(Math.max((l * vdt) >> 8, 0), 19);
-        //        newParam.channels[ch].volumeR = Math.min(Math.max((r * vdt) >> 8, 0), 19);
-        //        if (newParam.channels[ch].volumeL == 0 && newParam.channels[ch].volumeR == 0)
-        //        {
-        //            ml = 0;
-        //        }
-        //        newParam.channels[ch].note = (ml == 0 || vdt == 0) ? -1 : (common.searchSegaPCMNote(ml));
-        //        newParam.channels[ch].pan = (r >> 3) * 0x10 + (l >> 3);
-        //    }
-        //}
-
-        byte[] segapcmReg = audio.getSEGAPCMRegister(chipID);
-        boolean[] segapcmKeyOn = audio.getSEGAPCMKeyOn(chipID);
+        byte[] segapcmReg = audio.getSEGAPCMRegister(chipId);
+        boolean[] segapcmKeyOn = audio.getSEGAPCMKeyOn(chipId);
         if (segapcmReg != null) {
             for (int ch = 0; ch < 16; ch++) {
                 int l = segapcmReg[ch * 8 + 2] & 0x7f;
@@ -226,19 +219,18 @@ public class frmSegaPCM extends frmBase {
                 segapcmKeyOn[ch] = false;
             }
         }
-
     }
 
     public void screenDrawParams() {
-        int tp = ((chipID == 0) ? parent.setting.getSEGAPCMType()[0].getUseReal()[0] : parent.setting.getSEGAPCMType()[1].getUseReal()[0]) ? 1 : 0;
+        int tp = ((chipId == 0) ? parent.setting.getSEGAPCMType()[0].getUseReal()[0] : parent.setting.getSEGAPCMType()[1].getUseReal()[0]) ? 1 : 0;
 
         for (int c = 0; c < 16; c++) {
 
             MDChipParams.Channel orc = oldParam.channels[c];
             MDChipParams.Channel nrc = newParam.channels[c];
 
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, orc.volumeL, nrc.volumeL, tp);
-            DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, orc.volumeR, nrc.volumeR, tp);
+            orc.volumeL = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 1, orc.volumeL, nrc.volumeL, tp);
+            orc.volumeR = DrawBuff.volume(frameBuffer, 256, 8 + c * 8, 2, orc.volumeR, nrc.volumeR, tp);
             DrawBuff.keyBoard(frameBuffer, c, orc.note, nrc.note, tp);
             DrawBuff.PanType2(frameBuffer, c, orc.pan, nrc.pan, tp);
 

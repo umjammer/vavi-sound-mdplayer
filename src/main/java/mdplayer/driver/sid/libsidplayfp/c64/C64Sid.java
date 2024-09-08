@@ -42,11 +42,13 @@ public class C64Sid implements IBank {
     }
 
     // Bank functions
-    public void poke(short address, byte value) {
+    @Override
+    public void poke(int address, byte value) {
         write((byte) (address & 0x1f), value);
     }
 
-    public byte peek(short address) {
+    @Override
+    public byte peek(int address) {
         return read((byte) (address & 0x1f));
     }
 }

@@ -24,11 +24,11 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         public byte[] regs = new byte[0x18];
         public int outfreq;
         public int freq;
-        public short addr;
-        public short writeptr;
-        public short readptr;
-        public byte playflag;
-        public byte repeatflag;
+        public int addr;
+        public int writeptr;
+        public int readptr;
+        public int playflag;
+        public int repeatflag;
         public int length;
         public int volume;
         public int fadetimer;
@@ -108,12 +108,12 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         case 0x8:
             // port low
             sndp.addr &= 0xff00;
-            sndp.addr |= (short) v;
+            sndp.addr |= v;
             break;
         case 0x9:
             // port high
             sndp.addr &= 0xff;
-            sndp.addr |= (short) (v << 8);
+            sndp.addr |= v << 8;
             break;
         case 0xA:
             // write buffer
@@ -137,17 +137,17 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
             }
             if ((v & 0x08) != 0) {
                 // set read pointer
-                sndp.readptr = (short) (sndp.addr != 0 ? sndp.addr - 1 : sndp.addr);
+                sndp.readptr = sndp.addr != 0 ? sndp.addr - 1 : sndp.addr;
                 sndp.regs[0x12] = (byte) (sndp.readptr & 0xff);
-                sndp.regs[0x13] = (byte) (sndp.readptr >> 8);
+                sndp.regs[0x13] = (byte) ((sndp.readptr >> 8) & 0xff);
             }
             if ((v & 0x10) != 0) {
                 sndp.length = sndp.addr;
                 sndp.regs[0x14] = (byte) (sndp.length & 0xff);
-                sndp.regs[0x15] = (byte) (sndp.length >> 8);
+                sndp.regs[0x15] = (byte) ((sndp.length >> 8) & 0xff);
             }
-            sndp.repeatflag = (byte) (((v & 0x20) == 0x20) ? 1 : 0);
-            sndp.playflag = (byte) (((v & 0x40) == 0x40) ? 1 : 0);
+            sndp.repeatflag = ((v & 0x20) == 0x20) ? 1 : 0;
+            sndp.playflag = ((v & 0x40) == 0x40) ? 1 : 0;
             if (sndp.playflag != 0) {
                 sndp.deltadev.write.accept(2, sndp.readptr & 0xff);
                 sndp.deltadev.write.accept(3, (sndp.readptr >> 8) & 0xff);
@@ -304,19 +304,19 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         sndp = new S_Deltat.YMDELTATPCMSOUND_();
         if (sndp == null) return null;
         sndp.ram_size = ram_size;
-        sndp.ymdeltatpcm_type = (byte) ymdeltatpcm_type;
+        sndp.ymdeltatpcm_type = ymdeltatpcm_type;
         switch (ymdeltatpcm_type) {
-        case 0://                    YMDELTATPCM_TYPE_Y8950:
+        case 0: // YMDELTATPCM_TYPE_Y8950:
             sndp.memShift = 2;
             break;
-        case 1://                    YMDELTATPCM_TYPE_YM2608:
-            /* OPNA */
+        case 1: // YMDELTATPCM_TYPE_YM2608:
+            // OPNA
             sndp.memShift = 6;
             break;
-        case 2://                    YMDELTATPCM_TYPE_YM2610:
+        case 2: // YMDELTATPCM_TYPE_YM2610:
             sndp.memShift = 9;
             break;
-        case 3://                    MSM5205:
+        case 3: // MSM5205:
             sndp.memShift = 0;
             break;
         }
@@ -330,11 +330,11 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         sndp.kmif.write = this::sndwrite;
         sndp.kmif.read = this::sndread;
         sndp.kmif.setinst = this.setinst;
-        /* RAM */
-        // ram_size != 0 ? (byte[])(sndp + 1) : 0;
+        // RAM
+        //ram_size != 0 ? (byte[])(sndp + 1) : 0;
         sndp.rambuf = pcmbuf;
         sndp.rammask = ram_size != 0 ? (ram_size - 1) : 0;
-        /* ROM */
+        // ROM
         sndp.rombuf = null;
         sndp.rommask = 0;
         sndp.logtbl = S_Deltat.KMIF_LOGTABLE.LogTableAddRef();
@@ -342,11 +342,11 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
             sndp.releaseSound();
             return null;
         }
-         // ここからレジスタビュアー設定
-        //sndpr = sndp;
-        //if (ioview_ioread_DEV_ADPCM == NULL) ioview_ioread_DEV_ADPCM = ioview_ioread_bf;
-        //if (ioview_ioread_DEV_ADPCM2 == NULL) ioview_ioread_DEV_ADPCM2 = ioview_ioread_bf2;
-         // ここまでレジスタビュアー設定
+        // ここからレジスタビュアー設定
+//        sndpr = sndp;
+//        if (ioview_ioread_DEV_ADPCM == NULL) ioview_ioread_DEV_ADPCM = ioview_ioread_bf;
+//        if (ioview_ioread_DEV_ADPCM2 == NULL) ioview_ioread_DEV_ADPCM2 = ioview_ioread_bf2;
+        // ここまでレジスタビュアー設定
         return sndp.kmif;
     }
 }

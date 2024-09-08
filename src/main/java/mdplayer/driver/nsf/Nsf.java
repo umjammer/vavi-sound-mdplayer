@@ -51,12 +51,12 @@ public class Nsf extends BaseDriver {
         if (buf.length < 0x80) // no header?
             return null;
 
-        version = buf[0x05];
-        songs = buf[0x06];
-        start = buf[0x07];
-        load_address = (short) (buf[0x08] | (buf[0x09] << 8));
-        initAddress = (short) (buf[0x0a] | (buf[0x0B] << 8));
-        playAddress = (short) (buf[0x0c] | (buf[0x0D] << 8));
+        version = buf[0x05] & 0xff;
+        songs = buf[0x06] & 0xff;
+        start = buf[0x07] & 0xff;
+        load_address = buf[0x08] | (buf[0x09] << 8);
+        initAddress = buf[0x0a] | (buf[0x0B] << 8);
+        playAddress = buf[0x0c] | (buf[0x0D] << 8);
 
         List<Byte> strLst = new ArrayList<>();
         int tagAdr = 0x0e;
@@ -90,9 +90,9 @@ public class Nsf extends BaseDriver {
         ripper = ""; // NSFe only
         text = ""; // NSFe only
         text_len = 0; // NSFe only
-        speedNtsc = (short) (buf[0x6e] | (buf[0x6f] << 8));
+        speedNtsc = buf[0x6e] | (buf[0x6f] << 8);
         System.arraycopy(buf, 112, bankSwitch, 0, 8);
-        speedPal = (short) (buf[0x78] | (buf[0x79] << 8));
+        speedPal = buf[0x78] | (buf[0x79] << 8);
         palNtsc = buf[0x7a];
 
         if (speedPal == 0)
@@ -100,7 +100,7 @@ public class Nsf extends BaseDriver {
         if (speedNtsc == 0)
             speedNtsc = 0x411A;
 
-        soundChip = buf[0x7b];
+        soundChip = buf[0x7b] & 0xff;
 
         useVrc6 = (soundChip & 1) != 0;
         useVrc7 = (soundChip & 2) != 0;
@@ -187,12 +187,12 @@ public class Nsf extends BaseDriver {
 
     public static final int FCC_NSF = 0x4d53454e; // "NESM"
 
-    public byte version;
-    public byte songs;
-    public byte start;
-    public short load_address;
-    public short initAddress;
-    public short playAddress;
+    public int version;
+    public int songs;
+    public int start;
+    public int load_address;
+    public int initAddress;
+    public int playAddress;
     public String filename;
     // margin 64 chars.
     public String printTitle;
@@ -208,11 +208,11 @@ public class Nsf extends BaseDriver {
     public String text;
     // NSFe only
     public int text_len;
-    public short speedNtsc;
+    public int speedNtsc;
     public byte[] bankSwitch = new byte[8];
-    public short speedPal;
-    public byte palNtsc;
-    public byte soundChip;
+    public int speedPal;
+    public int palNtsc;
+    public int soundChip;
     public boolean useVrc7;
     public boolean useVrc6;
     public boolean useFds;
@@ -245,8 +245,10 @@ public class Nsf extends BaseDriver {
 
     private Device.Bus stack;
     private Device.Layer layer;
-    private mdsound.np.DCFilter dcf;                        // 最終出力段に掛ける直流フィルタ
-    private mdsound.np.Filter lpf;                          // 最終出力に掛けるローパスフィルタ
+    /** 最終出力段に掛ける直流フィルタ */
+    private mdsound.np.DCFilter dcf;
+    /** 最終出力に掛けるローパスフィルタ */
+    private mdsound.np.Filter lpf;
 
     public mdsound.MDSound.Chip cAPU = null;
     public mdsound.MDSound.Chip cDMC = null;
@@ -258,9 +260,9 @@ public class Nsf extends BaseDriver {
     public mdsound.MDSound.Chip cFME7 = null;
 
     private LoopDetector.NESDetector ld = null;
-    //        private NESDetectorEx ld = null;
+//    private NESDetectorEx ld = null;
 
-    private double rate = 1;// setting.getoutputDevice().SampleRate;
+    private double rate; // setting.getoutputDevice().SampleRate;
     private double cpu_clock_rest;
     private double apu_clock_rest;
     private int time_in_ms;
@@ -434,7 +436,7 @@ public class Nsf extends BaseDriver {
         chipRegister.nes_cpu.start(initAddress, playAddress, speed, song, (region == Region.PAL) ? 1 : 0, 0);
     }
 
-    private Region getRegion(byte flags) {
+    private Region getRegion(int flags) {
         int pref = 0;
 
         // user forced region
@@ -470,7 +472,7 @@ public class Nsf extends BaseDriver {
         }
 
         int[] buf = new int[2];
-        int[] _out = new int[2];
+        int[] out = new int[2];
         int outm;
         int i;
         int master_volume;
@@ -492,7 +494,7 @@ public class Nsf extends BaseDriver {
 
             // tick CPU
             cpu_clock_rest += cpu_clock_per_sample;
-            int cpu_clocks = (int) (cpu_clock_rest);
+            int cpu_clocks = (int) cpu_clock_rest;
             if (cpu_clocks > 0) {
                 int real_cpu_clocks = chipRegister.nes_cpu.exec(cpu_clocks);
                 cpu_clock_rest -= real_cpu_clocks;
@@ -503,11 +505,11 @@ public class Nsf extends BaseDriver {
                     chipRegister.nes_mmc5.tickFrameSequence(real_cpu_clocks);
             }
 
-            //updateInfo();
+//            updateInfo();
 
             // tick APU / expansions
             apu_clock_rest += apu_clock_per_sample;
-            int apu_clocks = (int) (apu_clock_rest);
+            int apu_clocks = (int) apu_clock_rest;
             if (apu_clocks > 0) {
                 apu_clock_rest -= apu_clocks;
             }
@@ -517,95 +519,95 @@ public class Nsf extends BaseDriver {
             chipRegister.nes_apu.render(buf);
 
             int mul = (int) (16384.0 * Math.pow(10.0, cAPU.getTVolume() / 40.0));
-            _out[0] = (buf[0] * mul) >> 13;
-            _out[1] = (buf[1] * mul) >> 13;
+            out[0] = (buf[0] * mul) >> 13;
+            out[1] = (buf[1] * mul) >> 13;
 
             chipRegister.nes_dmc.tick(apu_clocks);
             chipRegister.nes_dmc.render(buf);
             mul = (int) (16384.0 * Math.pow(10.0, cDMC.getTVolume() / 40.0));
-            _out[0] += (buf[0] * mul) >> 13;
-            _out[1] += (buf[1] * mul) >> 13;
+            out[0] += (buf[0] * mul) >> 13;
+            out[1] += (buf[1] * mul) >> 13;
 
             if (useFds) {
                 chipRegister.nes_fds.tick(apu_clocks);
                 chipRegister.nes_fds.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cFDS.getTVolume() / 40.0));
-                _out[0] += (buf[0] * mul) >> 13;
-                _out[1] += (buf[1] * mul) >> 13;
+                out[0] += (buf[0] * mul) >> 13;
+                out[1] += (buf[1] * mul) >> 13;
             }
 
             if (useN106) {
                 chipRegister.nes_n106.tick(apu_clocks);
                 chipRegister.nes_n106.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cN160.getTVolume() / 40.0));
-                _out[0] += (buf[0] * mul) >> 10;
-                _out[1] += (buf[1] * mul) >> 10;
+                out[0] += (buf[0] * mul) >> 10;
+                out[1] += (buf[1] * mul) >> 10;
             }
 
             if (useVrc6) {
                 chipRegister.nes_vrc6.tick(apu_clocks);
                 chipRegister.nes_vrc6.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cVRC6.getTVolume() / 40.0));
-                _out[0] += (buf[0] * mul) >> 10;
-                _out[1] += (buf[1] * mul) >> 10;
+                out[0] += (buf[0] * mul) >> 10;
+                out[1] += (buf[1] * mul) >> 10;
             }
 
             if (useMmc5) {
                 chipRegister.nes_mmc5.tick(apu_clocks);
                 chipRegister.nes_mmc5.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cMMC5.getTVolume() / 40.0));
-                _out[0] += (buf[0] * mul) >> 10;
-                _out[1] += (buf[1] * mul) >> 10;
+                out[0] += (buf[0] * mul) >> 10;
+                out[1] += (buf[1] * mul) >> 10;
             }
 
             if (useFme7) {
                 chipRegister.nes_fme7.tick(apu_clocks);
                 chipRegister.nes_fme7.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cFME7.getTVolume() / 40.0));
-                _out[0] += (buf[0] * mul) >> 9;
-                _out[1] += (buf[1] * mul) >> 9;
+                out[0] += (buf[0] * mul) >> 9;
+                out[1] += (buf[1] * mul) >> 9;
             }
 
             if (useVrc7) {
                 chipRegister.nes_vrc7.tick(apu_clocks);
                 chipRegister.nes_vrc7.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cVRC7.getTVolume() / 40.0));
-                _out[0] += (buf[0] * mul) >> 10;
-                _out[1] += (buf[1] * mul) >> 10;
+                out[0] += (buf[0] * mul) >> 10;
+                out[1] += (buf[1] * mul) >> 10;
             }
 
-            outm = (_out[0] + _out[1]);// >> 1; // mono mix
+            outm = (out[0] + out[1]); // >> 1; // mono mix
             if (outm == last_out) silent_length++;
             else silent_length = 0;
             last_out = outm;
 
-            dcf.fastRender(_out);
-            lpf.fastRender(_out);
+            dcf.fastRender(out);
+            lpf.fastRender(out);
 
-            _out[0] = (_out[0] * master_volume) >> 9;
-            _out[1] = (_out[1] * master_volume) >> 9;
+            out[0] = (out[0] * master_volume) >> 9;
+            out[1] = (out[1] * master_volume) >> 9;
 
-            if (_out[0] < -32767)
-                _out[0] = -32767;
-            else if (32767 < _out[0])
-                _out[0] = 32767;
+            if (out[0] < -32767)
+                out[0] = -32767;
+            else if (32767 < out[0])
+                out[0] = 32767;
 
-            if (_out[1] < -32767)
-                _out[1] = -32767;
-            else if (32767 < _out[1])
-                _out[1] = 32767;
+            if (out[1] < -32767)
+                out[1] = -32767;
+            else if (32767 < out[1])
+                out[1] = 32767;
 
-            //if (nch == 2) {
-            b[offset + i * 2] = (short) _out[0];
-            b[offset + i * 2 + 1] = (short) _out[1];
+//            if (nch == 2) {
+            b[offset + i * 2] = (short) out[0];
+            b[offset + i * 2 + 1] = (short) out[1];
 
-            visWB.enq((short) _out[0], (short) _out[1]);
-            //} else { // if not 2 channels, presume mono
-            //    outm = (_out[0] + _out[1]) >> 1;
-            //    for (int i = 0; i<nch; ++i)
-            //        b[0] = outm;
-            //}
-            //b += nch;
+            visWB.enq((short) out[0], (short) out[1]);
+//            } else { // if not 2 channels, presume mono
+//                outm = (out[0] + out[1]) >> 1;
+//                for (int i = 0; i<nch; ++i)
+//                    b[0] = outm;
+//            }
+//            b += nch;
         }
 
         time_in_ms += (int) (1000 * length / rate * vgmSpeed);

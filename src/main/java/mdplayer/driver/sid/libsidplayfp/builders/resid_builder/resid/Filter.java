@@ -1744,7 +1744,7 @@ public class Filter {
                 Spline sp = new Spline();
                 //sp.interpolate(scaledVoltage, scaledVoltage + fi1.opamp_voltage_size - 1,
                 //Spline.PointPlotter<Integer>(opamp), 1.0);
-                sp.interpolate(scaledVoltage, fi1.opampVoltageSize - 1, opamp, 1.0);
+                Spline.interpolate(scaledVoltage, fi1.opampVoltageSize - 1, opamp, 1.0);
 
                 // Store both fn and dfn : the same table.
                 mf.ak = (int) scaledVoltage[0][0];

@@ -22,12 +22,9 @@
 
 package mdplayer.driver.sid.libsidplayfp.builders.resid_builder;
 
-import java.util.logging.Level;
-
 import mdplayer.Setting;
 import mdplayer.driver.sid.libsidplayfp.SidEmu;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidBuilder;
-import vavi.util.Debug;
 
 
 /**

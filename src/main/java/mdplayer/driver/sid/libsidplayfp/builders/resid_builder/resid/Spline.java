@@ -122,26 +122,26 @@ public class Spline {
      */
     public static void cubicCoefficients(double x1, double y1, double x2, double y2,
                                   double k1, double k2,
-                                  double a, double b, double c, double d) {
+                                  /* ref */ double[] a, /* ref */ double[] b, /* ref */ double[] c, /* ref */ double[] d) {
         double dx = x2 - x1, dy = y2 - y1;
 
-        a = ((k1 + k2) - 2 * dy / dx) / (dx * dx);
-        b = ((k2 - k1) / dx - 3 * (x1 + x2) * a) / 2;
-        c = k1 - (3 * x1 * a + 2 * b) * x1;
-        d = y1 - ((x1 * a + b) * x1 + c) * x1;
+        a[0] = ((k1 + k2) - 2 * dy / dx) / (dx * dx);
+        b[0] = ((k2 - k1) / dx - 3 * (x1 + x2) * a[0]) / 2;
+        c[0] = k1 - (3 * x1 * a[0] + 2 * b[0]) * x1;
+        d[0] = y1 - ((x1 * a[0] + b[0]) * x1 + c[0]) * x1;
     }
 
     /**
      * Evaluation of cubic polynomial by forward differencing.
      */
     public static void interpolateForwardDifference(double x1, double y1, double x2, double y2, double k1, double k2, int[] plot, double res) {
-        double a = 0, b = 0, c = 0, d = 0;
+        double[] a = new double[1], b = new double[1], c = new double[1], d = new double[1];
         cubicCoefficients(x1, y1, x2, y2, k1, k2, a, b, c, d);
 
-        double y = ((a * x1 + b) * x1 + c) * x1 + d;
-        double dy = (3 * a * (x1 + res) + 2 * b) * x1 * res + ((a * res + b) * res + c) * res;
-        double d2y = (6 * a * (x1 + res) + 2 * b) * res * res;
-        double d3y = 6 * a * res * res * res;
+        double y = ((a[0] * x1 + b[0]) * x1 + c[0]) * x1 + d[0];
+        double dy = (3 * a[0] * (x1 + res) + 2 * b[0]) * x1 * res + ((a[0] * res + b[0]) * res + c[0]) * res;
+        double d2y = (6 * a[0] * (x1 + res) + 2 * b[0]) * res * res;
+        double d3y = 6 * a[0] * res * res * res;
 
         // Calculate each point.
         for (double x = x1; x <= x2; x += res) {

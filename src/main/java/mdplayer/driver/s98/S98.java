@@ -33,7 +33,7 @@ public class S98 extends BaseDriver {
     private List<String> chips = null;
     private int musicPtr = 0;
     private double oneSyncTime;
-    private double musicStep = 1;// setting.getoutputDevice().SampleRate / 60.0;
+    private double musicStep = 1; // setting.getoutputDevice().SampleRate / 60.0;
     private double musicDownCounter = 0.0;
     private int s98WaitCounter;
     public int SSGVolumeFromTAG = -1;
@@ -48,41 +48,41 @@ public class S98 extends BaseDriver {
 
         try {
             if (Common.getLE24(buf, 0) != FCC_S98) return null;
-            int Format = buf[3] - '0';
-            int TAGAdr = Common.getLE32(buf, 0x10);
-            if (Format < 2) {
+            int format = buf[3] - '0';
+            int tagAdr = Common.getLE32(buf, 0x10);
+            if (format < 2) {
                 List<Byte> strLst = new ArrayList<>();
                 String str;
-                while (buf[TAGAdr] != 0x0a && buf[TAGAdr] != 0x00) {
-                    strLst.add(buf[TAGAdr++]);
+                while (buf[tagAdr] != 0x0a && buf[tagAdr] != 0x00) {
+                    strLst.add(buf[tagAdr++]);
                 }
                 str = new String(toByteArray(strLst), Charset.forName("MS932"));
                 gd3.trackName = str;
                 gd3.trackNameJ = str;
-            } else if (Format == 3) {
-                if (buf[TAGAdr++] != 0x5b) return null;
-                if (buf[TAGAdr++] != 0x53) return null;
-                if (buf[TAGAdr++] != 0x39) return null;
-                if (buf[TAGAdr++] != 0x38) return null;
-                if (buf[TAGAdr++] != 0x5d) return null;
-                boolean IsUTF8 = false;
-                if (Common.getLE24(buf, TAGAdr) == FCC_BOM) {
-                    IsUTF8 = true;
-                    TAGAdr += 3;
+            } else if (format == 3) {
+                if (buf[tagAdr++] != 0x5b) return null;
+                if (buf[tagAdr++] != 0x53) return null;
+                if (buf[tagAdr++] != 0x39) return null;
+                if (buf[tagAdr++] != 0x38) return null;
+                if (buf[tagAdr++] != 0x5d) return null;
+                boolean isUTF8 = false;
+                if (Common.getLE24(buf, tagAdr) == FCC_BOM) {
+                    isUTF8 = true;
+                    tagAdr += 3;
                 }
 
-                while (buf.length > TAGAdr && buf[TAGAdr] != 0x00) {
+                while (buf.length > tagAdr && buf[tagAdr] != 0x00) {
                     List<Byte> strLst = new ArrayList<>();
                     String str;
-                    while (buf[TAGAdr] != 0x0a && buf[TAGAdr] != 0x00) {
-                        strLst.add(buf[TAGAdr++]);
+                    while (buf[tagAdr] != 0x0a && buf[tagAdr] != 0x00) {
+                        strLst.add(buf[tagAdr++]);
                     }
-                    if (IsUTF8) {
+                    if (isUTF8) {
                         str = new String(toByteArray(strLst), StandardCharsets.UTF_8);
                     } else {
                         str = new String(toByteArray(strLst), Charset.forName("MS932"));
                     }
-                    TAGAdr++;
+                    tagAdr++;
 
                     if (str.toLowerCase().contains("artist=")) {
                         try {
@@ -246,8 +246,8 @@ public class S98 extends BaseDriver {
         s98Info.DeviceInfos = new ArrayList<>();
         if (s98Info.DeviceCount == 0) {
             S98DevInfo info = new S98DevInfo();
-            info.ChipID = 0;
-            info.DeviceType = 4;
+            info.chipId = 0;
+            info.deviceType = 4;
             info.clock = 7987200;
             info.Pan = 3;
             s98Info.DeviceInfos.add(info);
@@ -258,13 +258,13 @@ public class S98 extends BaseDriver {
                 int i = 0;
                 while (Common.getLE32(vgmBuf, 0x20 + i * 0x10) != 0) {
                     S98DevInfo info = new S98DevInfo();
-                    info.DeviceType = Common.getLE32(vgmBuf, 0x20 + i * 0x10);
-                    if (devIDs[info.DeviceType] > 1) {
+                    info.deviceType = Common.getLE32(vgmBuf, 0x20 + i * 0x10);
+                    if (devIDs[info.deviceType] > 1) {
                         i++;
                         continue; // 同じchipは2こまで
                     }
                     info.clock = Common.getLE32(vgmBuf, 0x24 + i * 0x10);
-                    switch (info.DeviceType) {
+                    switch (info.deviceType) {
                     case 1:
                         chips.add("YM2149");
                         break;
@@ -282,19 +282,19 @@ public class S98 extends BaseDriver {
                         break;
                     }
 
-                    info.ChipID = devIDs[info.DeviceType]++;
+                    info.chipId = devIDs[info.deviceType]++;
                     s98Info.DeviceInfos.add(info);
                 }
                 s98Info.DeviceCount = i;
             } else {
                 for (int i = 0; i < s98Info.DeviceCount; i++) {
                     S98DevInfo info = new S98DevInfo();
-                    info.DeviceType = Common.getLE32(vgmBuf, 0x20 + i * 0x10);
-                    if (devIDs[info.DeviceType] > 1) continue; // 同じchipは2こまで
+                    info.deviceType = Common.getLE32(vgmBuf, 0x20 + i * 0x10);
+                    if (devIDs[info.deviceType] > 1) continue; // 同じchipは2こまで
 
                     info.clock = Common.getLE32(vgmBuf, 0x24 + i * 0x10);
                     info.Pan = Common.getLE32(vgmBuf, 0x28 + i * 0x10);
-                    switch (info.DeviceType) {
+                    switch (info.deviceType) {
                     case 1:
                         chips.add("YM2149");
                         break;
@@ -330,7 +330,7 @@ public class S98 extends BaseDriver {
                         break;
                     }
 
-                    info.ChipID = devIDs[info.DeviceType]++;
+                    info.chipId = devIDs[info.deviceType]++;
                     s98Info.DeviceInfos.add(info);
                 }
             }
@@ -355,8 +355,8 @@ public class S98 extends BaseDriver {
     }
 
     public static class S98DevInfo {
-        public byte ChipID = 0;
-        public int DeviceType = 0;
+        public byte chipId = 0;
+        public int deviceType = 0;
         public int clock = 0;
         public int Pan = 0;
     }
@@ -382,7 +382,7 @@ public class S98 extends BaseDriver {
     }
 
     private int ym2608WaitCounter = 0;
-    //private boolean ym2608WaitSw = false;
+//    private boolean ym2608WaitSw = false;
 
     private void oneFrameS98() {
         try {
@@ -391,7 +391,7 @@ public class S98 extends BaseDriver {
                     break;
                 }
 
-                byte cmd = vgmBuf[musicPtr++];
+                int cmd = vgmBuf[musicPtr++] & 0xff;
 
                 // wait 1Sync
                 if (cmd == 0xff) {
@@ -420,23 +420,22 @@ public class S98 extends BaseDriver {
                 }
 
                 int devNo = cmd / 2;
-                if (devNo >= s98Info.DeviceInfos.size())
-                {
+                if (devNo >= s98Info.DeviceInfos.size()) {
                     musicPtr += 2;
                     continue;
                 }
 
-                byte devPort = (byte) (cmd % 2);
+                int devPort = cmd % 2;
 
-                switch (s98Info.DeviceInfos.get(devNo).DeviceType) {
+                switch (s98Info.DeviceInfos.get(devNo).deviceType) {
                 case 1:
-                    WriteAY8910(s98Info.DeviceInfos.get(devNo).ChipID, vgmBuf[musicPtr], vgmBuf[musicPtr + 1]);
+                    writeAY8910(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 2:
-                    WriteYM2203(s98Info.DeviceInfos.get(devNo).ChipID, vgmBuf[musicPtr], vgmBuf[musicPtr + 1]);
+                    writeYM2203(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 3:
-                    WriteYM2612(s98Info.DeviceInfos.get(devNo).ChipID, devPort, vgmBuf[musicPtr], vgmBuf[musicPtr + 1]);
+                    writeYM2612(s98Info.DeviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 4:
 
@@ -445,45 +444,45 @@ public class S98 extends BaseDriver {
                             isDataBlock = true;
                             ym2608WaitCounter = 0;
 
-                            try { Thread.sleep(10); } catch (InterruptedException e) {}
-                            //while ((chipRegister.getYM2608Register(s98Info.DeviceInfos.get(devNo).ChipID, 0x1, 0x00, model) & 0xbf) != 0) {
-                            //    Thread.sleep(0);
-                            //}
+                            try { Thread.sleep(10); } catch (InterruptedException ignored) {}
+//                            while ((chipRegister.getYM2608Register(s98Info.DeviceInfos.get(devNo).chipId, 0x1, 0x00, model) & 0xbf) != 0) {
+//                                Thread.sleep(0);
+//                            }
 
                             isDataBlock = false;
                         }
 
-                        //if (ym2608WaitCounter > 1000) {
-                        //    ym2608WaitSw = true;
-                        //} else if (ym2608WaitSw && ym2608WaitCounter == 1) {
-                        //    chipRegister.sendDataYM2608(s98Info.DeviceInfos.get(devNo).ChipID, model);
-                        //    ym2608WaitSw = false;
-                        //}
+//                        if (ym2608WaitCounter > 1000) {
+//                            ym2608WaitSw = true;
+//                        } else if (ym2608WaitSw && ym2608WaitCounter == 1) {
+//                            chipRegister.sendDataYM2608(s98Info.DeviceInfos.get(devNo).chipId, model);
+//                            ym2608WaitSw = false;
+//                        }
                     }
 
-                    WriteYM2608(s98Info.DeviceInfos.get(devNo).ChipID, devPort, vgmBuf[musicPtr], vgmBuf[musicPtr + 1]);
+                    writeYM2608(s98Info.DeviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr], vgmBuf[musicPtr + 1]);
                     ym2608WaitCounter++;
                     break;
                 case 5:
-                    WriteYM2151(s98Info.DeviceInfos.get(devNo).ChipID, devPort, vgmBuf[musicPtr], vgmBuf[musicPtr + 1]);
+                    writeYM2151(s98Info.DeviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 6:
-                    WriteYM2413(s98Info.DeviceInfos.get(devNo).ChipID, vgmBuf[musicPtr], vgmBuf[musicPtr + 1]);
+                    writeYM2413(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 7:
-                    WriteYM3526(s98Info.DeviceInfos.get(devNo).ChipID, vgmBuf[musicPtr], vgmBuf[musicPtr + 1]);
+                    writeYM3526(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 8:
-                    WriteYM3812(s98Info.DeviceInfos.get(devNo).ChipID, vgmBuf[musicPtr], vgmBuf[musicPtr + 1]);
+                    writeYM3812(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 9:
-                    WriteYMF262(s98Info.DeviceInfos.get(devNo).ChipID, devPort, vgmBuf[musicPtr], vgmBuf[musicPtr + 1]);
+                    writeYMF262(s98Info.DeviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 15:
-                    WriteAY8910(s98Info.DeviceInfos.get(devNo).ChipID, vgmBuf[musicPtr], vgmBuf[musicPtr + 1]);
+                    writeAY8910(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 16:
-                    WriteSN76489(s98Info.DeviceInfos.get(devNo).ChipID, vgmBuf[musicPtr + 1]);
+                    writeSN76489(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 }
                 musicPtr += 2;
@@ -495,44 +494,44 @@ public class S98 extends BaseDriver {
         }
     }
 
-    private void WriteYM2203(int chipID, byte adr, byte data) {
-        chipRegister.setYM2203Register(chipID, adr, data, model);
+    private void writeYM2203(int chipId, int adr, int data) {
+        chipRegister.setYM2203Register(chipId, adr, data, model);
     }
 
-    private void WriteYM2612(int chipID, byte port, byte adr, byte data) {
-        chipRegister.setYM2612Register(chipID, port, adr, data, model, 0);
+    private void writeYM2612(int chipId, int port, int adr, int data) {
+        chipRegister.setYM2612Register(chipId, port, adr, data, model, 0);
     }
 
-    private void WriteYM2608(int chipID, byte port, byte adr, byte data) {
-        chipRegister.setYM2608Register(chipID, port, adr, data, model);
+    private void writeYM2608(int chipId, int port, int adr, int data) {
+        chipRegister.setYM2608Register(chipId, port, adr, data, model);
     }
 
-    private void WriteYM2151(int chipID, byte port, byte adr, byte data) {
-        chipRegister.setYM2151Register(chipID, port, adr, data, model, ym2151Hosei[chipID], 0);
+    private void writeYM2151(int chipId, int port, int adr, int data) {
+        chipRegister.setYM2151Register(chipId, port, adr, data, model, ym2151Hosei[chipId], 0);
     }
 
-    private void WriteYM2413(int chipID, byte adr, byte data) {
-        chipRegister.setYM2413Register(chipID, adr, data, model);
+    private void writeYM2413(int chipId, int adr, int data) {
+        chipRegister.setYM2413Register(chipId, adr, data, model);
     }
 
-    private void WriteYM3526(int chipID, byte adr, byte data) {
-        chipRegister.setYM3526Register(chipID, adr, data, model);
+    private void writeYM3526(int chipId, int adr, int data) {
+        chipRegister.setYM3526Register(chipId, adr, data, model);
     }
 
-    private void WriteYM3812(int chipID, byte adr, byte data) {
-        chipRegister.setYM3812Register(chipID, adr, data, model);
+    private void writeYM3812(int chipId, int adr, int data) {
+        chipRegister.setYM3812Register(chipId, adr, data, model);
     }
 
-    private void WriteAY8910(int chipID, byte adr, byte data) {
-        chipRegister.setAY8910Register(chipID, adr, data, model);
+    private void writeAY8910(int chipId, int adr, int data) {
+        chipRegister.setAY8910Register(chipId, adr, data, model);
     }
 
-    private void WriteSN76489(int chipID, byte data) {
-        chipRegister.setSN76489Register(chipID, data, model);
+    private void writeSN76489(int chipId, int data) {
+        chipRegister.setSN76489Register(chipId, data, model);
     }
 
-    private void WriteYMF262(int chipID, byte port, byte adr, byte data) {
-        chipRegister.setYMF262Register(chipID, port, adr, data, model);
+    private void writeYMF262(int chipId, int port, int adr, int data) {
+        chipRegister.setYMF262Register(chipId, port, adr, data, model);
     }
 
     static int getVv(byte[] buf, int musicPtr) {

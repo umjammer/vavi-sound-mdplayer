@@ -221,10 +221,10 @@ public class MucomDotNET extends BaseDriver {
         vgmFrameCounter = -latency - waitTime;
         vgmSpeed = 1;
 
-// #if DEBUG
+//#if DEBUG
         //実チップスレッドは処理をスキップ(デバッグ向け)
         //if (model == EnmModel.RealModel) return true;
-// #endif
+//#endif
 
         if (mType == MUCOMFileType.MUC) return initMUC();
         else return initMUB();
@@ -238,13 +238,13 @@ public class MucomDotNET extends BaseDriver {
     @Override
     public void processOneFrame() {
 
-// #if DEBUG
+//#if DEBUG
 //        // 実チップスレッドは処理をスキップ(デバッグ向け)
 //        if (model == EnmModel.RealModel) {
 //            Stopped = true;
 //            return;
 //        }
-// #endif
+//#endif
 
         try {
             vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
@@ -484,13 +484,13 @@ public class MucomDotNET extends BaseDriver {
     private void sendOPNAWait(long size, int elapsed) {
         if (model == EnmModel.VirtualModel) {
             //JOptionPane.showMessageDialog(String.format("elapsed:%d size:%d", elapsed, size));
-            //int n = Math.max((int)(size / 20 - elapsed), 0); // 20 閾値(magic number)
+            //int n = Math.max((int)(size / 20 - elapsed), 0); // 20: threshold (magic number)
             //Thread.sleep(n);
             return;
         }
 
         // サイズと経過時間から、追加でウエイトする。
-        int m = Math.max((int) (size / 20 - elapsed), 0);//20 閾値(magic number)
+        int m = Math.max((int) (size / 20 - elapsed), 0); // 20: threshold (magic number)
         try { Thread.sleep(m); } catch (InterruptedException e) {}
     }
 
@@ -529,13 +529,13 @@ public class MucomDotNET extends BaseDriver {
     //private void chipWaitSend(long elapsed, int size) {
     //    if (model == EnmModel.VirtualModel) {
     //        //JOptionPane.showMessageDialog(String.format("elapsed:%d size:%d", elapsed, size));
-    //        //int n = Math.max((int)(size / 20 - elapsed), 0); // 20 閾値(magic number)
+    //        //int n = Math.max((int)(size / 20 - elapsed), 0); // 20: threshold (magic number)
     //        //Thread.sleep(n);
     //        return;
     //    }
 
     //    //サイズと経過時間から、追加でウエイトする。
-    //    int m = Math.max((int)(size / 20 - elapsed), 0); // 20 閾値(magic number)
+    //    int m = Math.max((int)(size / 20 - elapsed), 0); // 20: threshold (magic number)
     //    Thread.sleep(m);
     //}
 

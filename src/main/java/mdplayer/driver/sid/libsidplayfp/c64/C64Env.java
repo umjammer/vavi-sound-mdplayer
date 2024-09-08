@@ -49,9 +49,9 @@ public class C64Env {
     public void cpuWrite(short addr, byte data) {
     }
 
-// #if PC64_TESTSUITE
+//#if PC64_TESTSUITE
 //    public void loadFile(String file) {}
-// #endif
+//#endif
 
     public void interruptIRQ(boolean state) {
     }

@@ -35,7 +35,7 @@ import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 // Base address 000000
 // Exec address 0017ea
 // Text size    001ba6 bytes
-// Data size    000000 byte(s)
+// data size    000000 byte(s)
 // Bss  size    0006a2 byte(s)
 // 438 Labels
 // Code Generate date Wed May 06 12:59:13 1998
@@ -266,13 +266,13 @@ public class MXDRV extends BaseDriver {
         vgmFrameCounter = -latency - waitTime;
         vgmSpeed = 1;
 
-        for (int chipID = 0; chipID < 2; chipID++) {
-            ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, 3579545);
+        for (int chipId = 0; chipId < 2; chipId++) {
+            ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
-                ym2151Hosei[chipID] = 0;
-                int clock = chipRegister.getYM2151Clock((byte) chipID);
+                ym2151Hosei[chipId] = 0;
+                int clock = chipRegister.getYM2151Clock(chipId);
                 if (clock != -1) {
-                    ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, clock);
+                    ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
             }
         }
@@ -298,13 +298,13 @@ public class MXDRV extends BaseDriver {
         vgmFrameCounter = -latency - waitTime;
         vgmSpeed = 1;
 
-        for (int chipID = 0; chipID < 2; chipID++) {
-            ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, 3579545);
+        for (int chipId = 0; chipId < 2; chipId++) {
+            ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
-                ym2151Hosei[chipID] = 0;
-                int clock = chipRegister.getYM2151Clock((byte) chipID);
+                ym2151Hosei[chipId] = 0;
+                int clock = chipRegister.getYM2151Clock(chipId);
                 if (clock != -1) {
-                    ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, clock);
+                    ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
             }
         }
@@ -422,7 +422,7 @@ public class MXDRV extends BaseDriver {
     private void makeMdxBuf(byte[] buf, byte[][] mdx, int[] mdxSize, String[] pdxFileName) {
         // タイトルをスキップ
         int p = 8;
-        byte c = 0;
+        byte c;
         mdx[0] = new byte[buf.length + 8];
         System.arraycopy(buf, 0, mdx[0], 8, mdxSize[0]);
 
@@ -942,7 +942,7 @@ public class MXDRV extends BaseDriver {
         measurePlayTime = false;
         mdxPCM.x68sound[0].opmInt(this::OPMINTFUNC);
 
-        return ((int) (mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) * (long) 1024 / 4000 + (1 - Math.ulp(1.0))) + 2000);
+        return ((int) (mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) * (long) 1024 / 4000. + (1 - Math.ulp(1.0))) + 2000);
     }
 
     // 
@@ -1563,7 +1563,7 @@ exit:   {
                 D1--;
 
                 int a3_l = A3;
-                int a4_l = A4;
+                int a4_l;
 
                 do {
                     a4_l = a3_l;
@@ -2537,7 +2537,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
         D7 = 0x00;
 
         do {
-            //Debug.println("Ch%02d Adr:%04x",D7,mm.Readint(A6+MXWORK_CH.S0000));
+            //Debug.println("Ch%02d adr:%04x",D7,mm.Readint(A6+MXWORK_CH.S0000));
             L001050();
             L0011b4();
             D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c);

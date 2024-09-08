@@ -23,7 +23,6 @@ import javax.swing.JSeparator;
 import javax.swing.Timer;
 
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Audio;
 import mdplayer.form.frmBase;
 import mdplayer.properties.Resources;
 import vavi.util.SplitRadixFft;
@@ -170,6 +169,7 @@ public class frmVisWave extends frmBase {
     private short[] destS2 = new short[2048];
     private Tuple<Float, Float>[] fftsample = new Tuple[2048]; // Complex
 
+    // @see "https://raptorcafeterrace.hatenablog.com/entry/2017/05/08/191704"
     public void processFFT(float[] sdata) {
         FFT fft = new FFT();
 
@@ -233,7 +233,7 @@ public class frmVisWave extends frmBase {
                 return;
             }
 
-            newipsize = (int) (2 + Math.sqrt(n / 2));
+            newipsize = (int) (2 + Math.sqrt(n / 2.));
             if (newipsize > ipsize) {
                 ipsize = newipsize;
                 ip = new int[ipsize];
@@ -308,6 +308,7 @@ public class frmVisWave extends frmBase {
         // toolStripContainer1.TopToolStripPanel
         //
         this.toolStripContainer1.addMouseListener(new MouseAdapter() {
+            @Override
             public void mousePressed(MouseEvent event) {
                 if (event.isPopupTrigger()) {
                     toolStrip1.show(event.getComponent(), event.getX(), event.getY());

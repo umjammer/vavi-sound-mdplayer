@@ -115,7 +115,7 @@ public class ExternalFilter {
     /**
      * Audio Output (16 bits).
      */
-    final int half = 1 << 15;
+    static final int half = 1 << 15;
 
     public short output() {
         // Saturated arithmetics to guard against 16 bit sample overflow.

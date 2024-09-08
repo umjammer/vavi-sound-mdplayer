@@ -2,7 +2,6 @@ package mdplayer.driver.hes;
 
 import java.util.Arrays;
 
-import mdplayer.Audio;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
@@ -23,11 +22,11 @@ public class Hes extends BaseDriver {
         if (buf.length < 0x20) // no header?
             return null;
 
-        version = buf[0x04];
-        songs = (byte) 255;
-        start = (byte) (buf[0x05] + 1);
+        version = buf[0x04] & 0xff;
+        songs = 255;
+        start = (buf[0x05] & 0xff) + 1;
         load_address = 0;
-        init_address = (short) (buf[0x06] | (buf[0x07] << 8));
+        init_address = (buf[0x06] & 0xff) | ((buf[0x07] & 0xff) << 8);
         play_address = 0;
 
         // HESの曲情報はほぼ無い?
@@ -98,13 +97,13 @@ public class Hes extends BaseDriver {
 
     public static final int FCC_HES = 0x4d534548;  // "HESM"
 
-    public byte version;
-    public byte songs;
-    public byte start;
-    public short load_address;
-    public short init_address;
-    public short play_address;
-    public byte song;
+    public int version;
+    public int songs;
+    public int start;
+    public int load_address;
+    public int init_address;
+    public int play_address;
+    public int song;
 
     public Hes hes;
     public M_Hes.NEZ_PLAY nez_play;
@@ -117,16 +116,16 @@ public class Hes extends BaseDriver {
     public boolean playtime_detected = false;
 
     private int[] buf = new int[2];
-    BasePlugin Audio; // TODO
+    BasePlugin audio; // TODO
 
-    public void additionalUpdate(mdsound.MDSound.Chip sender, byte chipID, int[][] Buffer, int Length) {
-        if (Audio.isStopped()) {
+    public void additionalUpdate(mdsound.MDSound.Chip sender, int chipId, int[][] buffer, int length) {
+        if (audio.isStopped()) {
             return;
         }
         try {
-            for (int i = 0; i < Length; i++) {
+            for (int i = 0; i < length; i++) {
 
-                int m = Buffer[0][i] + Buffer[1][i];
+                int m = buffer[0][i] + buffer[1][i];
                 if (m == last_out && vgmFrameCounter >= 0) silent_length++;
                 else silent_length = 0;
                 last_out = m;
@@ -135,8 +134,8 @@ public class Hes extends BaseDriver {
                     buf[0] = 0;
                     buf[1] = 0;
                     nez_play.heshes.synth(buf);
-                    Buffer[0][i] += buf[0];
-                    Buffer[1][i] += buf[1];
+                    buffer[0][i] += buf[0];
+                    buffer[1][i] += buf[1];
                 }
             }
 
@@ -146,7 +145,7 @@ public class Hes extends BaseDriver {
                 stopped = true;
             }
 
-            time_in_ms += (1000 * Length / (double) setting.getOutputDevice().getSampleRate() * vgmSpeed);// ((* config)["MULT_SPEED"].GetInt()) / 256);
+            time_in_ms += (1000 * length / (double) setting.getOutputDevice().getSampleRate() * vgmSpeed);// ((* config)["MULT_SPEED"].GetInt()) / 256);
             if (!playtime_detected && ld.isLooped((int) time_in_ms, 30000, 5000)) {
                 playtime_detected = true;
                 totalCounter = (long) ld.getLoopEnd() * (long) setting.getOutputDevice().getSampleRate() / 1000L;
@@ -178,6 +177,7 @@ public class Hes extends BaseDriver {
             return false;
         }
 
+        @Override
         public boolean isLooped(int time_in_ms, int match_second, int match_interval) {
             int i, j;
             int match_size, match_length;
@@ -220,6 +220,7 @@ public class Hes extends BaseDriver {
             return false;
         }
 
+        @Override
         public int getLoopStart() {
             return loopStart;
         }

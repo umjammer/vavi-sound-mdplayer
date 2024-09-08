@@ -290,7 +290,7 @@ public interface OpCodes {
     int SHAay = 0x9F;
     int LAXay = 0xBF;
     int DCPax = 0xDF;
-    int ISBax = 0xFF;
+    int ISBax = 0xff;
 
     // Instruction Aliases
     int ASOix = SLOix;

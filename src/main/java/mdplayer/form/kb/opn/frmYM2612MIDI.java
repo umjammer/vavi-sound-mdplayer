@@ -28,7 +28,6 @@ import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 
 import dotnet4j.io.Directory;
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;

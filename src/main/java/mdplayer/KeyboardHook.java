@@ -14,6 +14,7 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 public class KeyboardHook {
 
     static class GlobalKeyListenerExample implements NativeKeyListener {
+        @Override
         public void nativeKeyPressed(NativeKeyEvent e) {
             System.out.println("Key Pressed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
 
@@ -26,10 +27,12 @@ public class KeyboardHook {
             }
         }
 
+        @Override
         public void nativeKeyReleased(NativeKeyEvent e) {
             System.out.println("Key Released: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
         }
 
+        @Override
         public void nativeKeyTyped(NativeKeyEvent e) {
             System.out.println("Key Typed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
         }

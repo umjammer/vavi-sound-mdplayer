@@ -33,7 +33,7 @@ public class frmYM3526 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
 
     private MDChipParams.YM3526 newParam = null;
@@ -42,19 +42,19 @@ public class frmYM3526 extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYM3526.class);
 
-    public frmYM3526(frmMain frm, int chipID, int zoom, MDChipParams.YM3526 newParam, MDChipParams.YM3526 oldParam) {
+    public frmYM3526(frmMain frm, int chipId, int zoom, MDChipParams.YM3526 newParam, MDChipParams.YM3526 oldParam) {
         super(frm);
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         initializeComponent();
 
         this.newParam = newParam;
         this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneYM3526(), null, zoom);
-        boolean YM3526Type = (chipID == 0)
+        boolean YM3526Type = (chipId == 0)
                 ? parent.setting.getYM3526Type()[0].getUseReal()[0]
                 : parent.setting.getYM3526Type()[1].getUseReal()[0];
-        int YM3526SoundLocation = (chipID == 0)
+        int YM3526SoundLocation = (chipId == 0)
                 ? parent.setting.getYM3526Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYM3526Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !YM3526Type ? 0 : (YM3526SoundLocation < 0 ? 2 : 1);
@@ -76,9 +76,9 @@ public class frmYM3526 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosYm3526()[chipID] = getLocation();
+                parent.setting.getLocation().getPosYm3526()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosYm3526()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosYm3526()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -123,10 +123,10 @@ public class frmYM3526 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] ym3526Register = audio.getYM3526Register(chipID);
+        int[] ym3526Register = audio.getYM3526Register(chipId);
         MDChipParams.Channel nyc;
         int slot = 0;
-        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getYM3526KeyInfo(chipID);
+        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getYM3526KeyInfo(chipId);
 
         mdsound.MDSound.Chip chipInfo = audio.getMDSChipInfo(Ym3526Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock; //3579545 -> Default master clock
@@ -201,7 +201,7 @@ public class frmYM3526 extends frmBase {
         newParam.channels[9].dda = ((ym3526Register[0xbd] >> 7) & 0x01) != 0;//DA
         newParam.channels[10].dda = ((ym3526Register[0xbd] >> 6) & 0x01) != 0;//DV
 
-        // // #region リズム情報の取得
+        // //#region リズム情報の取得
 
         //slot14 TL 0x51 HH
         //slot15 TL 0x52 TOM
@@ -218,14 +218,14 @@ public class frmYM3526 extends frmBase {
             }
         }
 
-        // // #endregion
+        // //#endregion
     }
 
     public void screenDrawParams() {
-        boolean YM3526Type = (chipID == 0)
+        boolean YM3526Type = (chipId == 0)
                 ? parent.setting.getYM3526Type()[0].getUseReal()[0]
                 : parent.setting.getYM3526Type()[1].getUseReal()[0];
-        int YM3526SoundLocation = (chipID == 0)
+        int YM3526SoundLocation = (chipId == 0)
                 ? parent.setting.getYM3526Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYM3526Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !YM3526Type ? 0 : (YM3526SoundLocation < 0 ? 2 : 1);
@@ -286,9 +286,9 @@ public class frmYM3526 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 9 + 5; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YM3526, chipID, ch);
+                            parent.resetChannelMask(EnmChip.YM3526, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YM3526, chipID, ch);
+                            parent.setChannelMask(EnmChip.YM3526, chipId, ch);
                     }
                 }
                 return;
@@ -308,12 +308,12 @@ public class frmYM3526 extends frmBase {
 
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 //マスク
-                parent.setChannelMask(EnmChip.YM3526, chipID, ch);
+                parent.setChannelMask(EnmChip.YM3526, chipId, ch);
                 return;
             }
 
             //マスク解除
-            for (ch = 0; ch < 9 + 5; ch++) parent.resetChannelMask(EnmChip.YM3526, chipID, ch);
+            for (ch = 0; ch < 9 + 5; ch++) parent.resetChannelMask(EnmChip.YM3526, chipId, ch);
         }
     };
 

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dotnet4j.io.File;
-import mdplayer.Audio;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
@@ -31,6 +30,7 @@ public class SIDFileFormat extends BaseFileFormat {
         return new String[] {".sid"};
     }
 
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
         List<PlayList.Music> musics = new ArrayList<>();
         Sid sid = new Sid();
@@ -61,6 +61,7 @@ public class SIDFileFormat extends BaseFileFormat {
         return musics;
     }
 
+    @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
         return getMusicCommon(ms, buf, zipFile);
     }
@@ -78,6 +79,7 @@ public class SIDFileFormat extends BaseFileFormat {
         return new SIDPlugin();
     }
 
+    @Override
     public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
         byte[] buf;
         if (entry == null) {
@@ -110,6 +112,7 @@ public class SIDFileFormat extends BaseFileFormat {
         return musics;
     }
 
+    @Override
     public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
         byte[] buf;
         if (entry == null) {

@@ -77,13 +77,15 @@ public class RomBank implements IBank {
     /**
      * Writing to ROM instanceof a no-op.
      */
-    public void poke(short a, byte b) {
+    @Override
+    public void poke(int a, byte b) {
     }
 
     /**
      * //Read from ROM.
      */
-    public byte peek(short address) {
+    @Override
+    public byte peek(int address) {
         return rom.get(address & (N - 1));
     }
 

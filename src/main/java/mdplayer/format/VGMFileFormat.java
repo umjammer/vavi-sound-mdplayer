@@ -14,6 +14,7 @@ import mdplayer.PlayList;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.VGMPlugin;
 import mdplayer.properties.Resources;
+import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -26,9 +27,11 @@ import vavi.util.archive.Entry;
  */
 public class VGMFileFormat extends BaseFileFormat {
 
+    @Override
     public String[] getExtensions() { return new String[] { ".vgm", ".vgz" }; }
 
-    public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
+    @Override
+    public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
         return Collections.singletonList(music);
     }
@@ -37,7 +40,8 @@ public class VGMFileFormat extends BaseFileFormat {
         return false;
     }
 
-    public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
+    @Override
+    public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */) {
         return getMusicCommon(ms, buf, zipFile);
     }
 
@@ -47,7 +51,7 @@ public class VGMFileFormat extends BaseFileFormat {
     public byte[] getAllBytes(String filename) {
         // .VGMの場合はヘッダの確認とGzipで解凍後のファイルのヘッダの確認
         byte[] buf = super.getAllBytes(filename);
-        int vgm = (int) buf[0] + (int) buf[1] * 0x100 + (int) buf[2] * 0x10000 + (int) buf[3] * 0x1000000;
+        int vgm = ByteUtil.readLeInt(buf);
         if (vgm == FCC_VGM) {
             return buf;
         }

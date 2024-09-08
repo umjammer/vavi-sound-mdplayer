@@ -45,11 +45,13 @@ public class SystemRAMBank implements IBank {
         }
     }
 
-    public byte peek(short address) {
+    @Override
+    public byte peek(int address) {
         return ram[address];
     }
 
-    public void poke(short address, byte value) {
+    @Override
+    public void poke(int address, byte value) {
         ram[address] = value;
     }
 }

@@ -2,19 +2,14 @@
 package mdplayer;
 
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.Closeable;
-import java.util.logging.Level;
 import javax.swing.JComponent;
-
-import vavi.util.Debug;
 
 
 public class DoubleBuffer implements Closeable {
 
-    public FrameBuffer mainScreen = null;
+    public FrameBuffer mainScreen;
 
     public Setting setting = null;
 
@@ -25,6 +20,7 @@ public class DoubleBuffer implements Closeable {
         mainScreen.Add(pbMainScreen, initialImage, g -> {}, zoom);
     }
 
+    @Override
     public void close() {
         if (mainScreen != null)
             mainScreen.Remove(g -> {});

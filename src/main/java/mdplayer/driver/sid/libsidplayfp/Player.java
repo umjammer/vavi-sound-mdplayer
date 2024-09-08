@@ -24,7 +24,6 @@ package mdplayer.driver.sid.libsidplayfp;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import dotnet4j.io.FileStream;
 import mdplayer.Setting;
@@ -34,7 +33,6 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidInfo;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidBuilder;
-import vavi.util.Debug;
 
 
 public class Player {

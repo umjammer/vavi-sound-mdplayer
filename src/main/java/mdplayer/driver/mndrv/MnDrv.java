@@ -44,13 +44,13 @@ public class MnDrv extends BaseDriver {
         vgmFrameCounter = -latency - waitTime;
         vgmSpeed = 1;
 
-        for (int chipID = 0; chipID < 2; chipID++) {
-            ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, 3579545);
+        for (int chipId = 0; chipId < 2; chipId++) {
+            ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
-                ym2151Hosei[chipID] = 0;
-                int clock = chipRegister.getYM2151Clock((byte) chipID);
+                ym2151Hosei[chipId] = 0;
+                int clock = chipRegister.getYM2151Clock(chipId);
                 if (clock != -1) {
-                    ym2151Hosei[chipID] = Common.getYM2151Hosei(4000000, clock);
+                    ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
             }
         }
@@ -887,7 +887,7 @@ public class MnDrv extends BaseDriver {
 //            return;
         }
 //            L1:
-        // ori.W	// #$700,sr		; Wed Mar 22 06:09 JST 2000 (saori)
+        // ori.W	//#$700,sr		; Wed Mar 22 06:09 JST 2000 (saori)
         int sr = 0;
         sr |= 0x700; // ?
 
@@ -1080,10 +1080,10 @@ public class MnDrv extends BaseDriver {
             reg.a3 = reg.a0 + reg.D1_L;
             mm.write(reg.a5 + W.dataptr, reg.a3);
 
-// #if DEBUG
+//#if DEBUG
             Debug.printf("TrackWorkAdr:%x", reg.a5);
             Debug.printf("DataPtr:%x", reg.a3);
-// #endif
+//#endif
 
             reg.D1_L = 0;
             reg.setD1_B(mm.readByte(reg.a2++));
@@ -1208,9 +1208,9 @@ public class MnDrv extends BaseDriver {
         case 20:
         case 22:
         case 24:
-// #if DEBUG
+//#if DEBUG
             Debug.printf("Track : OPN %d", reg.getD1_W() / 2);
-// #endif
+//#endif
             _track_opn();
             break;
         case 26:
@@ -1243,9 +1243,9 @@ public class MnDrv extends BaseDriver {
         case 72:
         case 74:
         case 76:
-// #if DEBUG
+//#if DEBUG
             Debug.printf("Track : Psg %d", (reg.getD1_W() - 64) / 2);
-// #endif
+//#endif
             _track_psg();
             break;
         case 78:
@@ -1280,9 +1280,9 @@ public class MnDrv extends BaseDriver {
             break;
         case 130:
         case 132:
-// #if DEBUG
+//#if DEBUG
             Debug.printf("Track : RHY %d", (reg.getD1_W() - 128) / 2);
-// #endif
+//#endif
             _track_rhy();
             break;
         case 134:
@@ -1363,9 +1363,9 @@ public class MnDrv extends BaseDriver {
         case 268:
         case 270:
         case 272:
-// #if DEBUG
+//#if DEBUG
             Debug.printf("Track : OPM %d", (reg.getD1_W() - 256) / 2);
-// #endif
+//#endif
             _track_opm();
             break;
         case 274:
@@ -1412,9 +1412,9 @@ public class MnDrv extends BaseDriver {
         case 348:
         case 350:
         case 352:
-// #if DEBUG
+//#if DEBUG
             Debug.printf("Track : PCM %d", (reg.getD1_W() - 320) / 2);
-// #endif
+//#endif
             _track_pcm();
             break;
         }
@@ -2109,7 +2109,7 @@ public class MnDrv extends BaseDriver {
 
         //_pause_loop:
         while (reg.getD7_W() != 0) {
-            int x = 9;
+            int x;
             if ((byte) (mm.readByte(reg.a5 + W.ch) - 0xa0) >= 0) { x = 9; } // break L9;
             else if ((byte) (mm.readByte(reg.a5 + W.ch) - 0x80) >= 0) { x = 2; } // break L2;
             else if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x1) != 0) { x = 9; } // break L9;
@@ -2151,7 +2151,7 @@ public class MnDrv extends BaseDriver {
         reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK));
 // _pause_rel_loop:
         do {
-            int x = 9;
+            int x;
             if ((mm.readByte(reg.a5 + W.ch) & 0xff) >= 0x80) { x = 2; } // break L2b;
             else if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x1) != 0) { x = 9; } // break L9b;
             else if (mm.readByte(reg.a5 + W.ch) >= 0x40) { x = 9; } // break L9b;
@@ -2356,7 +2356,7 @@ public class MnDrv extends BaseDriver {
 
         while ((mm.readByte(reg.a6 + Dw.DRV_STATUS) & 0x01) != 0) ;
 
-        // ori.W	// #$700,sr
+        // ori.W	//#$700,sr
 
         reg.D7_L = 3;
         reg.D1_L = 0x10;
@@ -2971,7 +2971,7 @@ public class MnDrv extends BaseDriver {
         } while ((byte) reg.getD1_B() < 0); // break L1g;
 
         // move.W	sr,-(sp)  ?
-        // ori.W	// #$700,sr  ?
+        // ori.W	//#$700,sr  ?
         reg.setD0_B(mm.readByte(0x9da));
         reg.setD0_B(reg.getD0_B() & 0x40);
         mm.write(0x9da, (byte) reg.getD0_B());
@@ -3015,7 +3015,7 @@ public class MnDrv extends BaseDriver {
             , 0x27, 0x30
             , 0x29, (byte) 0x80
 
-            , (byte) 0xFF, 0x00
+            , (byte) 0xff, 0x00
     };
 
     public static final byte[] _opn_reset_table2 = new byte[] {
@@ -3024,10 +3024,10 @@ public class MnDrv extends BaseDriver {
             , 0x48, 0x7F, 0x49, 0x7F, 0x4A, 0x7F
             , 0x4C, 0x7F, 0x4D, 0x7F, 0x4E, 0x7F
 
-            , (byte) 0x80, (byte) 0xFF, (byte) 0x81, (byte) 0xFF, (byte) 0x82, (byte) 0xFF
-            , (byte) 0x84, (byte) 0xFF, (byte) 0x85, (byte) 0xFF, (byte) 0x86, (byte) 0xFF
-            , (byte) 0x88, (byte) 0xFF, (byte) 0x89, (byte) 0xFF, (byte) 0x8A, (byte) 0xFF
-            , (byte) 0x8C, (byte) 0xFF, (byte) 0x8D, (byte) 0xFF, (byte) 0x8E, (byte) 0xFF
+            , (byte) 0x80, (byte) 0xff, (byte) 0x81, (byte) 0xff, (byte) 0x82, (byte) 0xff
+            , (byte) 0x84, (byte) 0xff, (byte) 0x85, (byte) 0xff, (byte) 0x86, (byte) 0xff
+            , (byte) 0x88, (byte) 0xff, (byte) 0x89, (byte) 0xff, (byte) 0x8A, (byte) 0xff
+            , (byte) 0x8C, (byte) 0xff, (byte) 0x8D, (byte) 0xff, (byte) 0x8E, (byte) 0xff
 
             , (byte) 0x90, 0x00, (byte) 0x91, 0x00, (byte) 0x92, 0x00
             , (byte) 0x94, 0x00, (byte) 0x95, 0x00, (byte) 0x96, 0x00
@@ -3036,7 +3036,7 @@ public class MnDrv extends BaseDriver {
 
             , (byte) 0xB4, (byte) 0xC0, (byte) 0xB5, (byte) 0xC0, (byte) 0xB6, (byte) 0xC0
 
-            , (byte) 0xFF, 0x00
+            , (byte) 0xff, 0x00
     };
 
     public static final byte[] _opm_reset_table = new byte[] {
@@ -3053,7 +3053,7 @@ public class MnDrv extends BaseDriver {
             , 0x38, 0x00, 0x39, 0x00, 0x3A, 0x00, 0x3B, 0x00
             , 0x3C, 0x00, 0x3D, 0x00, 0x3E, 0x00, 0x3F, 0x00
 
-            , (byte) 0xFF, 0x00
+            , (byte) 0xff, 0x00
     };
 
     /** */
@@ -3073,7 +3073,7 @@ public class MnDrv extends BaseDriver {
 
         // スーパーバイザ処理　不要
 
-        // ori.W	// #$700,sr ?
+        // ori.W	//#$700,sr ?
 
         _sw_chk();
         if (_mndrv_check() == 0) {
@@ -3134,7 +3134,7 @@ public class MnDrv extends BaseDriver {
                 sw_help = true;
                 break;
             }
-            int x = 0;
+            int x;
             if (reg.getD0_B() - 'r' == 0) { x = 0; } // break sw_release;
             else if (reg.getD0_B() - 'k' == 0) { x = 1; } //  break sw_keyoff;
             else if (reg.getD0_B() - 'b' == 0) { x = 2; } //  break sw_bufsize;
@@ -3432,7 +3432,7 @@ public class MnDrv extends BaseDriver {
      */
     public void _reset_work() {
         // move.W	sr,-(sp)
-        // ori.W	// #$700,sr
+        // ori.W	//#$700,sr
 
         reg.a6 = _work_top; //  mm.Readint(_work_top);
         reg.a5 = reg.a6 + Dw.OPMREGWORK;
@@ -3448,7 +3448,7 @@ public class MnDrv extends BaseDriver {
 
     public void _work_init() {
         // move.W	sr,-(sp)
-        // ori.W	// #$700,sr
+        // ori.W	//#$700,sr
 
         reg.a6 = _work_top; //  mm.Readint(_work_top);
         reg.a5 = reg.a6;
@@ -3551,7 +3551,7 @@ public class MnDrv extends BaseDriver {
 
     /** */
     public byte[] _psg_env_pattern = new byte[] {
-            0x00, 0x01, (byte) 0xFF, (byte) 0xFF, 0x00, (byte) 0x81, 0x00, 0x00, 0x00, (byte) 0x81, 0x00, 0x00, (byte) 0xFF, (byte) 0x81, 0x00, 0x00
+            0x00, 0x01, (byte) 0xff, (byte) 0xff, 0x00, (byte) 0x81, 0x00, 0x00, 0x00, (byte) 0x81, 0x00, 0x00, (byte) 0xff, (byte) 0x81, 0x00, 0x00
     };
 
     /** 多分使用しない */
@@ -3564,7 +3564,7 @@ public class MnDrv extends BaseDriver {
         mm.write(0xe88015, (byte) (mm.readByte(0xe88015) & 0xf7));
 
         // move.W	sr,-(sp)
-        // ori.W	// #$700,sr
+        // ori.W	//#$700,sr
 
         //wait 多分不要
         //while (mm.readByte(0xe9a001) != 0 || (mm.readByte(Reg.a6 + Dw.DRV_STATUS) & 1) != 0) ;
@@ -3871,7 +3871,7 @@ public class MnDrv extends BaseDriver {
             mm.write(reg.a2++, (byte) reg.getD1_B());
             reg.setD6_B(FREQ_KC_BASE[reg.a1 + reg.getD5_W() + 1]); // mm.readByte(Reg.a1 + reg.getD5_W() + 1);
             reg.setD1_W(reg.getD2_W());
-            boolean MAKE_FREQTBL5 = false;
+            boolean MAKE_FREQTBL5;
             if (reg.getD1_W() == 0) { // break MAKE_FREQTBL5;
 
                 reg.setD5_B(reg.getD5_B() + 1);
@@ -4060,7 +4060,7 @@ public class MnDrv extends BaseDriver {
     public static final String M_already = "すでに常駐しています\n";
     public static final String M_notkept = "mndrvは常駐していません\n";
     public static final String M_notremove = "占有されているので解除出来ません\n";
-    public static final String M_trap4err = "trap // #4がすでに使われています\n";
+    public static final String M_trap4err = "trap //#4がすでに使われています\n";
     public static final String M_opmerr = "OPM割り込みがすでに使われています\n";
     public static final String M_memory_msg = "メモリが足りません\n";
     public static final String M_numover = "数値が範囲外です\n";

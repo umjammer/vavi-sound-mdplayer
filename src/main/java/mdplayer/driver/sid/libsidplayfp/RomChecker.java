@@ -23,9 +23,6 @@ package mdplayer.driver.sid.libsidplayfp;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-
-import vavi.util.Debug;
 
 
 /**

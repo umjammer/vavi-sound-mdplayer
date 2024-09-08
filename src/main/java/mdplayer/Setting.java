@@ -9,14 +9,15 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
+import java.util.Map;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.properties.Resources;
-import vavi.util.Debug;
+import mdsound.Instrument;
 import vavi.util.serdes.Serdes;
 
 
@@ -825,7 +826,12 @@ public class Setting implements Serializable {
     public static final Point EmptyPoint = new Point(0, 0);
     public static final Dimension EmptyDimension = new Dimension(0, 0);
 
-    private static Setting instance = new Setting();
+    private static final Setting instance;
+
+    static {
+        instance = new Setting();
+        instance.init();
+    }
 
     public void init() {
         if (this.getAY8910Type() == null || this.getAY8910Type().length < 2) {
@@ -945,7 +951,7 @@ public class Setting implements Serializable {
         }
 
         if (this.getYM2612Type() == null || this.getYM2612Type().length < 2) {
-            this.setYM2612Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
+            this._YM2612Type = new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()};
             for (int i = 0; i < 2; i++) {
                 this.getYM2612Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 this.getYM2612Type()[i].setUseEmu(new boolean[3]);
@@ -1036,14 +1042,9 @@ public class Setting implements Serializable {
         ay8910Type = value;
     }
 
-    // private ChipType2[] _AY8910SType = new ChipType2();
-    // public ChipType2[] AY8910SType {
-    // get() {
-    // return _AY8910SType;
-    // }
-    // set {
-    // _AY8910SType = value;
-    // }
+//    private ChipType2[] _AY8910SType = new ChipType2();
+//    AY8910SType getAY8910SType() { return _AY8910SType; }
+//    setAY8910SType(ChipType2[] value) { _AY8910SType = value; }
 
     private ChipType2[] ym2151Type = null;
     public ChipType2[] getYM2151Type() {
@@ -1081,14 +1082,9 @@ public class Setting implements Serializable {
         k051649Type = value;
     }
 
-    // private ChipType2[] _YM2413SType = null;
-    // public ChipType2[] YM2413SType
-    // get() {
-    // return _YM2413SType;
-    // }
-    // set {
-    // _YM2413SType = value;
-    // }
+//    private ChipType2[] _YM2413SType = null;
+//    public getYM2413SType() { return _YM2413SType; }
+//    setYM2413SType(ChipType2[] value) { _YM2413SType = value; }
 
     private ChipType2[] ym2608Type = null;
     public ChipType2[] getYM2608Type() {
@@ -1136,9 +1132,6 @@ public class Setting implements Serializable {
     public ChipType2[] getYM2612Type() {
         return _YM2612Type;
     }
-    public void setYM2612Type(ChipType2[] value) {
-        _YM2612Type = value;
-    }
     private ChipType2[] _SN76489Type = null;
     public ChipType2[] getSN76489Type() {
         return _SN76489Type;
@@ -1148,83 +1141,28 @@ public class Setting implements Serializable {
     }
 
     // private ChipType2 _YM2151SType = new ChipType2();
-    // public ChipType2 YM2151SType
-    // get() {
-    // return _YM2151SType;
-    // }
-    // set {
-    // _YM2151SType = value;
-    // }
+    // public getYM2151SType() { return _YM2151SType; }
+    // setYM2151SType(ChipType2 ) { _YM2151SType = value; }
 
     // private ChipType2 _YM2203SType = new ChipType2();
-    // public ChipType2 YM2203SType
-    // {
-    // get()
-    // {
-    // return _YM2203SType;
-    // }
-
-    // set
-    // {
-    // _YM2203SType = value;
-    // }
-    // }
+    // public ChipType2 getYM2203SType() { return _YM2203SType; }
+    // setYM2203SType(ChipType2 value) { _YM2203SType = value; }
 
     // private ChipType2 _YM2608SType = new ChipType2();
-    // public ChipType2 YM2608SType
-    // {
-    // get()
-    // {
-    // return _YM2608SType;
-    // }
-
-    // set
-    // {
-    // _YM2608SType = value;
-    // }
-    // }
+    // public ChipType2 getYM2608SType() { return _YM2608SType; }
+    // setYM2608SType(ChipType2) { _YM2608SType = value; }
 
     // private ChipType2 _YM2610SType = new ChipType2();
-    // public ChipType2 YM2610SType
-    // {
-    // get()
-    // {
-    // return _YM2610SType;
-    // }
-
-    // set
-    // {
-    // _YM2610SType = value;
-    // }
-    // }
+    // public ChipType2 getYM2610SType() { return _YM2610SType; }
+    // setYM2610SType(ChipType2 { _YM2610SType = value; }
 
     // private ChipType2 _YM2612SType = new ChipType2();
-    // public ChipType2 YM2612SType
-    // {
-    // get()
-    // {
-    // return _YM2612SType;
-    // }
-
-    // set
-    // {
-    // _YM2612SType = value;
-    // }
-    // }
+    // public ChipType2 getYM2612SType() { return _YM2612SType; }
+    // setYM2612SType(ChipType2 { _YM2612SType = value; }
 
     // private ChipType2 _YMF262SType = new ChipType2();
-    // public ChipType2 YMF262SType
-    // {
-    // get()
-    // {
-    // return _YMF262SType;
-    // }
-
-    // set
-    // {
-    // _YMF262SType = value;
-    // }
-    // }
+    // public ChipType2 getYMF262SType() { return _YMF262SType; }
+    // setYMF262SType(ChipType2 { _YMF262SType = value; }
 
     // private ChipType2 _YMF271SType = new ChipType2();
     // public ChipType2 YMF271SType
@@ -1550,7 +1488,7 @@ public class Setting implements Serializable {
 
     public static class OutputDevice implements Serializable {
 
-        private int deviceType = 0;
+        private int deviceType = 1;
         public int getDeviceType() {
             return deviceType;
         }
@@ -2237,6 +2175,25 @@ public class Setting implements Serializable {
                 masterVolume = 0;
         }
 
+        private Map<String, Integer> volumes = new HashMap<>();
+
+        private boolean outRange(int v) {
+            return v > 20 || v < -192;
+        }
+        private String getKey(String tag, Class<? extends Instrument> c) {
+            return c.getSimpleName().replaceFirst("Inst$", ".") + tag;
+        }
+
+        public int getVolume(String tag, Class<? extends Instrument> c) {
+            return volumes.getOrDefault(getKey(tag, c), 100);
+        }
+
+        public void setVolume(String tag, Class<? extends Instrument> c, int v) {
+            volumes.put(getKey(tag, c), outRange(v) ? 0 : v );
+        }
+
+//#range Volume
+/*
         private int ym2612Volume = 0;
 
         public int getYM2612Volume() {
@@ -2992,6 +2949,8 @@ public class Setting implements Serializable {
             if (_K053260Volume > 20 || _K053260Volume < -192)
                 _K053260Volume = 0;
         }
+*/
+//#endrange
 
         private int _GimicOPNVolume = 0;
 
@@ -3024,6 +2983,7 @@ public class Setting implements Serializable {
         public Balance copy() {
             Balance balance = new Balance();
             balance.masterVolume = this.masterVolume;
+/*
             balance.ym2151Volume = this.ym2151Volume;
             balance.ym2203Volume = this.ym2203Volume;
             balance.ym2203Fmvolume = this.ym2203Fmvolume;
@@ -3079,6 +3039,7 @@ public class Setting implements Serializable {
             balance._YM3812Volume = this._YM3812Volume;
 
             balance._PPZ8Volume = this._PPZ8Volume;
+*/
             balance._GimicOPNVolume = this._GimicOPNVolume;
             balance._GimicOPNAVolume = this._GimicOPNAVolume;
 

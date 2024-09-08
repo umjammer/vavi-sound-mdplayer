@@ -41,13 +41,16 @@ public class ZeroRAMBank implements IBank {
      * Interface to PLA functions.
      */
     private static class PLA implements IPLA {
+        @Override
         public void setCpuPort(byte state) {
         }
 
+        @Override
         public byte getLastReadByte() {
             return 0;
         }
 
+        @Override
         public long getPhi2Time() {
             return 0;
         }
@@ -68,10 +71,10 @@ public class ZeroRAMBank implements IBank {
      * - when a an unused bit changes from Output to input, and the current Output
      * bit instanceof 1, the drop-off timer will restart again
      */
-    private static class DataBit {
+    private static class dataBit {
         private int bit;
 
-        public DataBit(int bit) {
+        public dataBit(int bit) {
             this.bit = bit;
         }
 
@@ -129,7 +132,7 @@ public class ZeroRAMBank implements IBank {
     }
 
     // not emulated
-    private final boolean tapeSense = false;
+    private static final boolean tapeSense = false;
 
     public IPLA pla;
 
@@ -137,8 +140,8 @@ public class ZeroRAMBank implements IBank {
     private SystemRAMBank ramBank;
 
     // Unused bits of the data port.
-    private DataBit dataBit6 = new DataBit(6);
-    private DataBit dataBit7 = new DataBit(7);
+    private dataBit dataBit6 = new dataBit(6);
+    private dataBit dataBit7 = new dataBit(7);
 
     // Value written to processor port.
     private byte dir;
@@ -183,7 +186,8 @@ public class ZeroRAMBank implements IBank {
         updateCpuPort();
     }
 
-    public byte peek(short address) {
+    @Override
+    public byte peek(int address) {
         switch (address) {
         case 0:
             return dir;
@@ -211,7 +215,8 @@ public class ZeroRAMBank implements IBank {
         }
     }
 
-    public void poke(short address, byte value) {
+    @Override
+    public void poke(int address, byte value) {
         switch (address) {
         case 0:
             // when switching an unused bit from Output (where it contained a

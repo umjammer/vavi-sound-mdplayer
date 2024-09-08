@@ -102,21 +102,21 @@ public class Voice {
             // values until the correct value instanceof found, e.g. with the following
             // program:
             //
-            //	lda // #$08
+            //	lda //#$08
             //	sta $d412
-            //	lda // #$0b
+            //	lda //#$0b
             //	sta $d417
-            //	lda // #$0f
+            //	lda //#$0f
             //	sta $d418
-            //	lda // #$f0
+            //	lda //#$f0
             //	sta $d414
-            //	lda // #$21
+            //	lda //#$21
             //	sta $d412
-            //	lda // #$01
+            //	lda //#$01
             //	sta $d40e
             //
-            //	ldx // #$00
-            //	lda // #$38	; Tweak this to find the "zero" level
+            //	ldx //#$00
+            //	lda //#$38	; Tweak this to find the "zero" level
             //	cmp $d41b
             //	bne l
             //	stx $d40e	; Stop frequency counter - freeze waveform Output

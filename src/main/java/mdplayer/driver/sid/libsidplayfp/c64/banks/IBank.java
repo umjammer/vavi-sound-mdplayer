@@ -2,8 +2,8 @@
 package mdplayer.driver.sid.libsidplayfp.c64.banks;
 
 public interface IBank {
-    void poke(short address, byte value);
+    void poke(int address, byte value);
 
-    byte peek(short address);
+    byte peek(int address);
 }
 

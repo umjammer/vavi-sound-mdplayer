@@ -23,9 +23,9 @@ public class MSXMusicCartridge implements Cartridge {
 
     @Override
     public void set(int address, byte value) {
-        Write(address, value);
+        write(address, value);
     }
 
-    private void Write(int adr, byte dat) {
+    private void write(int adr, byte dat) {
     }
 }

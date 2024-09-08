@@ -1,20 +1,13 @@
 
 package mdplayer;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
-
-import vavi.util.Debug;
 
 
 public class FrameBuffer {
@@ -106,7 +99,7 @@ public class FrameBuffer {
             baPlaneBuffer[i] = 0x00; // R
             baPlaneBuffer[i + 1] = 0x00; // G
             baPlaneBuffer[i + 2] = 0x00; // B
-            baPlaneBuffer[i + 3] = (byte) 0xFF; // a
+            baPlaneBuffer[i + 3] = (byte) 0xff; // a
         }
         // Arrays.fill(baPlaneBuffer, 0, baPlaneBuffer.length);
     }
@@ -194,7 +187,7 @@ public class FrameBuffer {
                             continue;
                         }
 
-                        if (src[adr2 + j + 0] == 0x00 && src[adr2 + j + 1] == 0xff && src[adr2 + j + 2] == 0x00)
+                        if (src[adr2 + j + 0] == 0x00 && (src[adr2 + j + 1] & 0xff) == 0xff && src[adr2 + j + 2] == 0x00)
                             continue;
 
                         baPlaneBuffer[adr1 + j + 0] = src[adr2 + j + 0];

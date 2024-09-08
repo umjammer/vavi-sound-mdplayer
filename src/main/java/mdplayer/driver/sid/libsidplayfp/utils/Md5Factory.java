@@ -27,11 +27,11 @@ public class Md5Factory {
 
     public IMd5 get() {
         return
-// #if GCRYPT_WITH_MD5
+//#if GCRYPT_WITH_MD5
                 new GCryptMd5();
-// #else
+//#else
 //        new md5Internal();
-// #endif
+//#endif
 
     }
 }

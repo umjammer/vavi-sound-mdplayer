@@ -1,6 +1,7 @@
 
 package mdplayer;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,10 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import dotnet4j.io.Path;
-import vavi.util.Debug;
 import vavi.util.serdes.JacksonXMLBeanBinder;
 import vavi.util.serdes.Serdes;
 
@@ -37,7 +36,7 @@ public class TonePallet implements Serializable {
     }
 
     public void save(String fileName) {
-        String fullPath = "";
+        String fullPath;
 
         if (fileName == null || fileName.isEmpty()) {
             fullPath = Common.settingFilePath;
@@ -55,10 +54,10 @@ public class TonePallet implements Serializable {
 
     public static TonePallet load(String fileName) {
         try {
-            String fullPath = "";
+            String fullPath;
             if (fileName == null || fileName.isEmpty()) {
                 fullPath = Common.settingFilePath;
-                fullPath = Path.getFullPath(fullPath + "DefaultTonePallet.xml");
+                fullPath = Path.getFullPath(fullPath + "DefaultTonePallet.xml").replace('\\', File.separatorChar);
             } else {
                 fullPath = fileName;
             }

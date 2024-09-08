@@ -30,10 +30,10 @@ public interface FileFormat {
 
     Plugin getPlugin();
 
-    List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException;
+    List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException;
 
     /** for insert TODO index might not use */
-    List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException;
+    List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException;
 
     Tuple<byte[], List<Tuple<String, byte[]>>> load(String archive, String fn) throws IOException;
 

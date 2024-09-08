@@ -1,5 +1,7 @@
 package mdplayer.driver;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,11 +17,16 @@ import mdplayer.Common;
 import mdplayer.DacControl;
 import mdplayer.Setting;
 import mdsound.chips.C140;
+import vavi.util.ByteUtil;
+import vavi.util.Debug;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+import static java.lang.System.getLogger;
 
 
 public class Vgm extends BaseDriver {
+
+    private static final Logger logger = getLogger(Vgm.class.getName());
 
     public Vgm() {
         this.setting = Setting.getInstance();
@@ -40,7 +47,6 @@ public class Vgm extends BaseDriver {
     public static final int DefaultSEGAPCMClockValue = 4000000;
     public static final int DefaultAY8910ClockValue = 1789750;
 
-
     public int sn76489ClockValue = DefaultSN76489ClockValue;
     public int ym2612ClockValue = DefaultYM2612ClockValue;
     public int rf5C68ClockValue = 12500000;
@@ -49,7 +55,7 @@ public class Vgm extends BaseDriver {
     public int c140ClockValue = DefaultC140ClockValue;
     public C140.Type C140Type = DefaultC140Type;
     public int okiM6258ClockValue = DefaultOKIM6258ClockValue;
-    public byte okiM6258Type = 0;
+    public int okiM6258Type = 0;
     public int okiM6295ClockValue = DefaultOKIM6295ClockValue;
     public int segaPCMClockValue = DefaultSEGAPCMClockValue;
     public int segaPCMInterface = 0;
@@ -72,11 +78,11 @@ public class Vgm extends BaseDriver {
     public int wSwanClockValue;
     public int x1_010ClockValue;
     public int c352ClockValue;
-    public byte c352ClockDivider;
+    public int c352ClockDivider;
     public int ga20ClockValue;
     public int k053260ClockValue;
     public int k054539ClockValue;
-    public byte k054539Flags;
+    public int k054539Flags;
     public int k051649ClockValue;
     public int dmgClockValue;
     public int nesClockValue;
@@ -119,11 +125,10 @@ public class Vgm extends BaseDriver {
     public boolean multiPCMDualChipFlag;
     public boolean pokeyDualChipFlag;
 
-    public DacControl dacControl = null;
+    public DacControl dacControl;
     public boolean isPcmRAMWrite = false;
     public boolean useChipYM2612Ch6 = false;
-    //public Setting setting = null;
-
+//    public Setting setting = null;
 
     private Runnable[] vgmCmdTbl = new Runnable[0x100];
 
@@ -131,18 +136,18 @@ public class Vgm extends BaseDriver {
 
     private int vgmAdr;
     private int vgmWait;
-    private long vgmLoopOffset = 0;
+    private int vgmLoopOffset = 0;
     private int vgmEof;
     private boolean vgmAnalyze;
 
-    private long vgmDataOffset = 0;
+    private int vgmDataOffset = 0;
 
     private static final int PCM_BANK_COUNT = 0x40;
     private VgmPcmBank[] pcmBank = new VgmPcmBank[PCM_BANK_COUNT];
     private PcmBankTbl pcmTbl = new PcmBankTbl();
-    private byte dacCtrlUsed;
-    private byte[] dacCtrlUsg = new byte[0xFF];
-    private DacCtrlData[] dacCtrl = new DacCtrlData[0xFF];
+    private int dacCtrlUsed;
+    private byte[] dacCtrlUsg = new byte[0xff];
+    private DacCtrlData[] dacCtrl = new DacCtrlData[0xff];
 
     private byte[][] ym2610AdpcmA = new byte[][] {null, null};
     private byte[][] ym2610AdpcmB = new byte[][] {null, null};
@@ -164,7 +169,7 @@ public class Vgm extends BaseDriver {
 
         if (!getInformationHeader()) return false;
 
-        vgmAdr = (int) vgmDataOffset;
+        vgmAdr = vgmDataOffset;
         vgmWait = 0;
         vgmAnalyze = true;
         counter = 0;
@@ -176,7 +181,7 @@ public class Vgm extends BaseDriver {
         for (int i = 0; i < PCM_BANK_COUNT; i++) pcmBank[i] = new VgmPcmBank();
         dacControl.refresh();
         dacCtrlUsed = 0x00;
-        for (byte curChip = 0x00; (curChip & 0xff) < 0xFF; curChip++) {
+        for (int curChip = 0x00; curChip < 0xff; curChip++) {
             dacCtrl[curChip] = new DacCtrlData();
             dacCtrl[curChip].enable = false;
         }
@@ -214,7 +219,7 @@ public class Vgm extends BaseDriver {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -225,6 +230,7 @@ public class Vgm extends BaseDriver {
             vgmWait--;
             counter++;
             vgmFrameCounter++;
+//Debug.println("ret: wait: " + vgmWait + ", fc: " + vgmFrameCounter);
             return;
         }
 
@@ -234,6 +240,7 @@ public class Vgm extends BaseDriver {
             //if (model == enmModel.VirtualModel)
             //    oneFrameVGMStream();
             stopped = true;
+Debug.println("ret: not analyze");
             return;
         }
 
@@ -241,38 +248,39 @@ public class Vgm extends BaseDriver {
         while (vgmWait <= 0) {
             if (vgmAdr >= vgmBuf.length || (vgmEof != 0 && vgmAdr >= vgmEof)) {
                 if (loopCounter != 0) {
-                    vgmAdr = (int) (vgmLoopOffset + 0x1c);
+                    vgmAdr = vgmLoopOffset + 0x1c;
                     vgmCurLoop++;
                     counter = 0;
                 } else {
                     vgmAnalyze = false;
+Debug.println("ret: not analyze 2");
                     return;
                 }
             }
 
-            byte cmd = vgmBuf[vgmAdr];
-            //System.err.println("[%s]: Adr:%x Dat:%x", model, vgmAdr, vgmBuf[vgmAdr]);
+            int cmd = vgmBuf[vgmAdr] & 0xff;
+logger.log(Level.DEBUG, String.format("[%s]: adr: %x Dat: %x", model, vgmAdr, vgmBuf[vgmAdr])); // ok
             if (vgmCmdTbl[cmd] != null) {
                 //if (model == EnmModel.VirtualModel) System.err.println("%05x : %02x ", vgmAdr, vgmBuf[vgmAdr]);
                 vgmCmdTbl[cmd].run();
             } else {
                  // わからんコマンド
-                System.err.printf("[%s]:unknown command: Adr:{%x} Dat:{%x}", model, vgmAdr, vgmBuf[vgmAdr]);
+logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x", model, vgmAdr, vgmBuf[vgmAdr]));
                 vgmAdr++;
             }
             countNum++;
             if (countNum > 100) {
                 if (model == mdplayer.Common.EnmModel.RealModel && countNum % 100 == 0) {
                     isDataBlock = true;
-                    chipRegister.sendDataYM2608((byte) 0, model);
-                    chipRegister.setYM2608SyncWait((byte) 0, 1);
-                    chipRegister.sendDataYM2151((byte) 0, model);
-                    chipRegister.setYM2151SyncWait((byte) 0, 1);
+                    chipRegister.sendDataYM2608(0, model);
+                    chipRegister.setYM2608SyncWait(0, 1);
+                    chipRegister.sendDataYM2151(0, model);
+                    chipRegister.setYM2151SyncWait(0, 1);
 
-                    chipRegister.sendDataYM2608((byte) 1, model);
-                    chipRegister.setYM2608SyncWait((byte) 1, 1);
-                    chipRegister.sendDataYM2151((byte) 1, model);
-                    chipRegister.setYM2151SyncWait((byte) 1, 1);
+                    chipRegister.sendDataYM2608(1, model);
+                    chipRegister.setYM2608SyncWait(1, 1);
+                    chipRegister.sendDataYM2151(1, model);
+                    chipRegister.setYM2151SyncWait(1, 1);
                 }
             }
         }
@@ -283,11 +291,11 @@ public class Vgm extends BaseDriver {
             countNum = 0;
         }
 
-        //Send wait
+        // Send wait
         if (model == mdplayer.Common.EnmModel.RealModel) {
             if (vgmSpeed == 1) { // 等速の場合のみウェイトをかける
                 if (useChipYM2612Ch6)
-                    chipRegister.setYM2612SyncWait((byte) 0, vgmWait);
+                    chipRegister.setYM2612SyncWait(0, vgmWait);
 //                if ((useChip & enmUseChip.SN76489) == enmUseChip.SN76489)
 //                    chipRegister.setSN76489SyncWait(vgmWait);
 //                chipRegister.setYM2608SyncWait(vgmWait);
@@ -301,12 +309,11 @@ public class Vgm extends BaseDriver {
         vgmWait--;
         counter++;
         vgmFrameCounter++;
-
     }
 
     private void oneFrameVGMStream() {
         for (int curChip = 0x00; curChip < dacCtrlUsed; curChip++) {
-            dacControl.update(dacCtrlUsg[curChip], 1);
+            dacControl.update(dacCtrlUsg[curChip] & 0xff, 1);
         }
     }
 
@@ -440,21 +447,21 @@ public class Vgm extends BaseDriver {
         vgmCmdTbl[0xae] = this::vcYMF262Port0;
         vgmCmdTbl[0xaf] = this::vcYMF262Port1;
 
-        //if ((useChip & enmUseChip.RF5C164) == enmUseChip.RF5C164) {
+//        if ((useChip & enmUseChip.RF5C164) == enmUseChip.RF5C164) {
         vgmCmdTbl[0xb0] = this::vcRf5c68;
         vgmCmdTbl[0xc1] = this::vcRf5c68MemoryWrite;
         vgmCmdTbl[0xb1] = this::vcRf5c164;
         vgmCmdTbl[0xc2] = this::vcRf5c164MemoryWrite;
-        //} else {
-        //    vgmCmdTbl[0xb1] = this::vcDummy2Ope;
-        //    vgmCmdTbl[0xc2] = this::vcDummy3Ope;
-        //}
+//        } else {
+//            vgmCmdTbl[0xb1] = this::vcDummy2Ope;
+//            vgmCmdTbl[0xc2] = this::vcDummy3Ope;
+//        }
 
-        //if ((useChip & enmUseChip.PWM) == enmUseChip.PWM) {
+//        if ((useChip & enmUseChip.PWM) == enmUseChip.PWM) {
         vgmCmdTbl[0xb2] = this::vcPWM;
-        //} else {
-        //vgmCmdTbl[0xb2] = this::vcDummy2Ope;
-        //}
+//        } else {
+//        vgmCmdTbl[0xb2] = this::vcDummy2Ope;
+//        }
         vgmCmdTbl[0xb3] = this::vcDMG;
         vgmCmdTbl[0xb4] = this::vcNES;
         vgmCmdTbl[0xb5] = this::vcMultiPCM;
@@ -562,12 +569,12 @@ public class Vgm extends BaseDriver {
     }
 
     private void vcGGPSGPort06() {
-        chipRegister.setSN76489RegisterGGpanning(vgmBuf[vgmAdr] == 0x4f ? 0 : 1, vgmBuf[vgmAdr + 1], model);
+        chipRegister.setSN76489RegisterGGpanning(vgmBuf[vgmAdr] == 0x4f ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, model);
         vgmAdr += 2;
     }
 
     private void vcPSG() {
-        chipRegister.setSN76489Register(vgmBuf[vgmAdr] == 0x50 ? 0 : 1, vgmBuf[vgmAdr + 1], model);
+        chipRegister.setSN76489Register(vgmBuf[vgmAdr] == 0x50 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, model);
         vgmAdr += 2;
     }
 
@@ -599,108 +606,108 @@ public class Vgm extends BaseDriver {
     }
 
     private void vcQSound() {
-        chipRegister.setQSoundRegister(0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3], model);
+        chipRegister.setQSoundRegister(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr + 3] & 0xff, model);
         vgmAdr += 4;
     }
 
     private void vcX1_010() {
-        chipRegister.setX1_010Register((byte) ((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1), (byte) (vgmBuf[vgmAdr + 1] & 0x7f), vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3], model);
+        chipRegister.setX1_010Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr + 3] & 0xff, model);
         vgmAdr += 4;
     }
 
     private void vcYM2413() {
-        chipRegister.setYM2413Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+        chipRegister.setYM2413Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYM3812() {
-        chipRegister.setYM3812Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+        chipRegister.setYM3812Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcHuC6280() {
-        chipRegister.setHuC6280Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], model);
+        chipRegister.setHuC6280Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcGA20() {
-        chipRegister.setGA20Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], model);
+        chipRegister.setGA20Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYM2612Port0() {
-        chipRegister.setYM2612Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model, vgmFrameCounter);
+        chipRegister.setYM2612Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, vgmFrameCounter);
         vgmAdr += 3;
     }
 
     private void vcYM2612Port1() {
-        chipRegister.setYM2612Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model, vgmFrameCounter);
+        chipRegister.setYM2612Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, vgmFrameCounter);
         vgmAdr += 3;
     }
 
     private void vcYM2203() {
-        chipRegister.setYM2203Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+        chipRegister.setYM2203Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYM2608Port0() {
-        chipRegister.setYM2608Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+        chipRegister.setYM2608Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYM2608Port1() {
-        int adr = vgmBuf[vgmAdr + 1];
-        int dat = vgmBuf[vgmAdr + 2];
-        //if (adr >= 0x00 && adr <= 0x10 && model== enmModel.RealModel) {
-        //    System.err.println("%2X:%2X", adr, dat);
-        //}
-        //if (adr == 0x01) {
-        //    //dat &= 0xfd;
-        //    //dat |= 1;
-        //}
-        //if (adr == 0x00 && (dat & 0x20) != 0) {
-        //    //dat &= 0xdf;
-        //}
+        int adr = vgmBuf[vgmAdr + 1] & 0xff;
+        int dat = vgmBuf[vgmAdr + 2] & 0xff;
+//        if (adr >= 0x00 && adr <= 0x10 && model == enmModel.RealModel) {
+//            System.err.println("%2X:%2X", adr, dat);
+//        }
+//        if (adr == 0x01) {
+//            //dat &= 0xfd;
+//            //dat |= 1;
+//        }
+//        if (adr == 0x00 && (dat & 0x20) != 0) {
+//            //dat &= 0xdf;
+//        }
         chipRegister.setYM2608Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
         vgmAdr += 3;
     }
 
     private void vcYM2610Port0() {
-        chipRegister.setYM2610Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+        chipRegister.setYM2610Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYM2610Port1() {
-        int adr = vgmBuf[vgmAdr + 1];
-        int dat = vgmBuf[vgmAdr + 2];
+        int adr = vgmBuf[vgmAdr + 1] & 0xff;
+        int dat = vgmBuf[vgmAdr + 2] & 0xff;
         chipRegister.setYM2610Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
         vgmAdr += 3;
     }
 
     private void vcYMF262Port0() {
-        chipRegister.setYMF262Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+        chipRegister.setYMF262Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYMF262Port1() {
-        int adr = vgmBuf[vgmAdr + 1];
-        int dat = vgmBuf[vgmAdr + 2];
+        int adr = vgmBuf[vgmAdr + 1] & 0xff;
+        int dat = vgmBuf[vgmAdr + 2] & 0xff;
         chipRegister.setYMF262Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
         vgmAdr += 3;
     }
 
     private void vcYM3526() {
-        chipRegister.setYM3526Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+        chipRegister.setYM3526Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcY8950() {
-        chipRegister.setY8950Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+        chipRegister.setY8950Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYMZ280B() {
-        chipRegister.setYMZ280BRegister((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+        chipRegister.setYMZ280BRegister((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
@@ -708,8 +715,8 @@ public class Vgm extends BaseDriver {
         chipRegister.setYMF271Register(
                 (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1
                 , vgmBuf[vgmAdr + 1] & 0x7f
-                , vgmBuf[vgmAdr + 2]
-                , vgmBuf[vgmAdr + 3]
+                , vgmBuf[vgmAdr + 2] & 0xff
+                , vgmBuf[vgmAdr + 3] & 0xff
                 , model);
         vgmAdr += 4;
     }
@@ -718,59 +725,56 @@ public class Vgm extends BaseDriver {
         chipRegister.setYMF278BRegister(
                 (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1
                 , vgmBuf[vgmAdr + 1] & 0x7f
-                , vgmBuf[vgmAdr + 2]
-                , vgmBuf[vgmAdr + 3]
+                , vgmBuf[vgmAdr + 2] & 0xff
+                , vgmBuf[vgmAdr + 3] & 0xff
                 , model);
-        //System.err.println("fm:%02x:%02x:%02x:", vgmBuf[vgmAdr + 1] & 0x7f
-        //, vgmBuf[vgmAdr + 2]
-        //, vgmBuf[vgmAdr + 3]
-//);
+//System.err.println("fm:%02x:%02x:%02x:", vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3]);
         vgmAdr += 4;
     }
 
     private void vcYM2151() {
-        chipRegister.setYM2151Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model, (vgmBuf[vgmAdr] & 0x80) == 0 ? ym2151Hosei[0] : ym2151Hosei[1], vgmFrameCounter);
+        chipRegister.setYM2151Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, (vgmBuf[vgmAdr] & 0x80) == 0 ? ym2151Hosei[0] : ym2151Hosei[1], vgmFrameCounter);
         vgmAdr += 3;
     }
 
     private void vcOKIM6258() {
-        chipRegister.writeOKIM6258((byte) 0, (byte) (vgmBuf[vgmAdr + 0x01] & 0x7F), vgmBuf[vgmAdr + 0x02], model);
+        chipRegister.writeOKIM6258(0, vgmBuf[vgmAdr + 0x01] & 0x7F, vgmBuf[vgmAdr + 0x02] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcOKIM6295() {
-        chipRegister.writeOKIM6295((byte) ((vgmBuf[vgmAdr + 0x01] & 0x80) == 0 ? 0 : 1), (byte) (vgmBuf[vgmAdr + 0x01] & 0x7F), vgmBuf[vgmAdr + 0x02], model);
+        chipRegister.writeOKIM6295((vgmBuf[vgmAdr + 0x01] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 0x01] & 0x7F, vgmBuf[vgmAdr + 0x02] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcSAA1099() {
-        chipRegister.writeSAA1099((byte) ((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1), (byte) (vgmBuf[vgmAdr + 1] & 0x7f), vgmBuf[vgmAdr + 2], model);
+        chipRegister.writeSAA1099((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcWSwan() {
-        chipRegister.writeWSwan((byte) ((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1), (byte) (vgmBuf[vgmAdr + 1] & 0x7f), vgmBuf[vgmAdr + 2], model);
+        chipRegister.writeWSwan((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcWSwanMem() {
-        chipRegister.writeWSwanMem((byte) 0, (vgmBuf[vgmAdr + 0x01] & 0xFF) | ((vgmBuf[vgmAdr + 0x02] & 0xFF) << 8), vgmBuf[vgmAdr + 0x03], model);
+        chipRegister.writeWSwanMem(0, (vgmBuf[vgmAdr + 0x01] & 0xff) | ((vgmBuf[vgmAdr + 0x02] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
         vgmAdr += 4;
     }
 
     private void vcPOKEY() {
-        chipRegister.writePOKEY((byte) ((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1), (byte) (vgmBuf[vgmAdr + 1] & 0x7f), vgmBuf[vgmAdr + 2], model);
+        chipRegister.writePOKEY((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcSEGAPCM() {
-        //System.err.println("%4X %4X", vgmBuf[vgmAdr + 0x01], vgmBuf[vgmAdr + 0x02]);
-        chipRegister.writeSEGAPCM((byte) 0, (vgmBuf[vgmAdr + 0x01] & 0xFF) | ((vgmBuf[vgmAdr + 0x02] & 0xFF) << 8), vgmBuf[vgmAdr + 0x03], model);
+//System.err.println("%4X %4X", vgmBuf[vgmAdr + 0x01], vgmBuf[vgmAdr + 0x02]);
+        chipRegister.writeSEGAPCM(0, (vgmBuf[vgmAdr + 0x01] & 0xff) | ((vgmBuf[vgmAdr + 0x02] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
         vgmAdr += 4;
     }
 
     private void vcWaitNSamples() {
-        vgmWait += getLE16(vgmAdr + 1);
+        vgmWait += ByteUtil.readLeShort(vgmBuf, vgmAdr + 1);
         vgmAdr += 3;
     }
 
@@ -797,12 +801,12 @@ public class Vgm extends BaseDriver {
         isDataBlock = true;
 
         int bAdr = vgmAdr + 7;
-        byte bType = vgmBuf[vgmAdr + 2];
-        int bLen = getLE32(vgmAdr + 3);
-        byte chipID = 0;
-        if ((bLen & 0x80000000) != 0) {
-            bLen &= 0x7fffffff;
-            chipID = 1;
+        int bType = vgmBuf[vgmAdr + 2] & 0xff;
+        int bLen = ByteUtil.readLeInt(vgmBuf, vgmAdr + 3);
+        int chipId = 0;
+        if ((bLen & 0x8000_0000) != 0) {
+            bLen &= 0x7fff_ffff;
+            chipId = 1;
         }
 
         switch (bType & 0xc0) {
@@ -812,205 +816,204 @@ public class Vgm extends BaseDriver {
             vgmAdr += bLen + 7;
             break;
         case 0x80:
-            int romSize = getLE32(vgmAdr + 7);
-            int startAddress = getLE32(vgmAdr + 0x0B);
+            int romSize = ByteUtil.readLeInt(vgmBuf, vgmAdr + 7);
+            int startAddress = ByteUtil.readLeInt(vgmBuf, vgmAdr + 0x0B);
             switch (bType & 0xff) {
             case 0x80:
                  // SEGA PCM
-                chipRegister.writeSEGAPCMPCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeSEGAPCMPCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpDataForSegaPCM(model, "SEGAPCM_PCMData", vgmAdr + 15, bLen - 8);
                 break;
             case 0x81:
 
                 // YM2608
 
-                chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x20, model);
-                chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x21, model);
-                chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x00, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x00, 0x20, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x00, 0x21, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x00, 0x00, model);
 
-                chipRegister.setYM2608Register(chipID, 0x1, 0x10, 0x00, model);
-                chipRegister.setYM2608Register(chipID, 0x1, 0x10, 0x80, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x10, 0x00, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x10, 0x80, model);
 
-                chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x61, model);
-                chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x68, model);
-                chipRegister.setYM2608Register(chipID, 0x1, 0x01, opnaRamType, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x00, 0x61, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x00, 0x68, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x01, opnaRamType, model);
 
                 if (opnaRamType != 2) {
-                    chipRegister.setYM2608Register(chipID, 0x1, 0x02, (startAddress >> 2) & 0xff, model);
-                    chipRegister.setYM2608Register(chipID, 0x1, 0x03, (startAddress >> 10) & 0xff, model);
+                    chipRegister.setYM2608Register(chipId, 0x1, 0x02, (startAddress >> 2) & 0xff, model);
+                    chipRegister.setYM2608Register(chipId, 0x1, 0x03, (startAddress >> 10) & 0xff, model);
                 } else {
-                    chipRegister.setYM2608Register(chipID, 0x1, 0x02, (startAddress >> 5) & 0xff, model);
-                    chipRegister.setYM2608Register(chipID, 0x1, 0x03, (startAddress >> 13) & 0xff, model);
+                    chipRegister.setYM2608Register(chipId, 0x1, 0x02, (startAddress >> 5) & 0xff, model);
+                    chipRegister.setYM2608Register(chipId, 0x1, 0x03, (startAddress >> 13) & 0xff, model);
                 }
-                chipRegister.setYM2608Register(chipID, 0x1, 0x04, 0xff, model);
-                chipRegister.setYM2608Register(chipID, 0x1, 0x05, 0xff, model);
-                chipRegister.setYM2608Register(chipID, 0x1, 0x0c, 0xff, model);
-                chipRegister.setYM2608Register(chipID, 0x1, 0x0d, 0xff, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x04, 0xff, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x05, 0xff, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x0c, 0xff, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x0d, 0xff, model);
 
                 // データ転送
                 for (int cnt = 0; cnt < bLen - 8; cnt++) {
-                    chipRegister.setYM2608Register(chipID, 0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt], model);
+                    chipRegister.setYM2608Register(chipId, 0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt] & 0xff, model);
                 }
-                chipRegister.setYM2608Register(chipID, 0x1, 0x00, 0x00, model);
-                chipRegister.setYM2608Register(chipID, 0x1, 0x10, 0x80, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x00, 0x00, model);
+                chipRegister.setYM2608Register(chipId, 0x1, 0x10, 0x80, model);
 
-                //chipRegister.setYM2608Register(0x1, 0x10, 0x13, model);
-                //chipRegister.setYM2608Register(0x1, 0x10, 0x80, model);
-                //chipRegister.setYM2608Register(0x1, 0x00, 0x60, model);
-                //chipRegister.setYM2608Register(0x1, 0x01, 0x00, model);
+//                chipRegister.setYM2608Register(0x1, 0x10, 0x13, model);
+//                chipRegister.setYM2608Register(0x1, 0x10, 0x80, model);
+//                chipRegister.setYM2608Register(0x1, 0x00, 0x60, model);
+//                chipRegister.setYM2608Register(0x1, 0x01, 0x00, model);
 
-                //chipRegister.setYM2608Register(0x1, 0x02, (int)((startAddress >> 2) & 0xff), model);
-                //chipRegister.setYM2608Register(0x1, 0x03, (int)((startAddress >> 10) & 0xff), model);
-                //chipRegister.setYM2608Register(0x1, 0x04, (int)(((startAddress + bLen - 8) >> 2) & 0xff), model);
-                //chipRegister.setYM2608Register(0x1, 0x05, (int)(((startAddress + bLen - 8) >> 10) & 0xff), model);
-                //chipRegister.setYM2608Register(0x1, 0x0c, 0xff, model);
-                //chipRegister.setYM2608Register(0x1, 0x0d, 0xff, model);
+//                chipRegister.setYM2608Register(0x1, 0x02, (int)((startAddress >> 2) & 0xff), model);
+//                chipRegister.setYM2608Register(0x1, 0x03, (int)((startAddress >> 10) & 0xff), model);
+//                chipRegister.setYM2608Register(0x1, 0x04, (int)(((startAddress + bLen - 8) >> 2) & 0xff), model);
+//                chipRegister.setYM2608Register(0x1, 0x05, (int)(((startAddress + bLen - 8) >> 10) & 0xff), model);
+//                chipRegister.setYM2608Register(0x1, 0x0c, 0xff, model);
+//                chipRegister.setYM2608Register(0x1, 0x0d, 0xff, model);
 
-                //for (int cnt = 0; cnt < bLen - 8; cnt++)
-                //{
-                //    chipRegister.setYM2608Register(0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt], model);
-                //    chipRegister.setYM2608Register(0x1, 0x10, 0x1b, model);
-                //    chipRegister.setYM2608Register(0x1, 0x10, 0x13, model);
-                //}
+//                for (int cnt = 0; cnt < bLen - 8; cnt++) {
+//                    chipRegister.setYM2608Register(0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt], model);
+//                    chipRegister.setYM2608Register(0x1, 0x10, 0x1b, model);
+//                    chipRegister.setYM2608Register(0x1, 0x10, 0x13, model);
+//                }
 
-                //chipRegister.setYM2608Register(0x1, 0x00, 0x00, model);
-                //chipRegister.setYM2608Register(0x1, 0x10, 0x80, model);
+//                chipRegister.setYM2608Register(0x1, 0x00, 0x00, model);
+//                chipRegister.setYM2608Register(0x1, 0x10, 0x80, model);
 
-                while ((chipRegister.getYM2608Register(chipID, 0x1, 0x00, model) & 0xbf) != 0) {
+                while ((chipRegister.getYM2608Register(chipId, 0x1, 0x00, model) & 0xbf) != 0) {
                     try { Thread.sleep(0); } catch (InterruptedException e) {}
                 }
                 if (model == mdplayer.Common.EnmModel.RealModel) {
-                    if ((chipID == 0 && setting.getYM2608Type()[0].getUseReal()[0])
-                            || (chipID == 1 && setting.getYM2608Type()[1].getUseReal()[0])) {
+                    if ((chipId == 0 && setting.getYM2608Type()[0].getUseReal()[0])
+                            || (chipId == 1 && setting.getYM2608Type()[1].getUseReal()[0])) {
                         try { Thread.sleep(500); } catch (InterruptedException e) {}
                     }
                 }
 
-                chipRegister.sendDataYM2608(chipID, model);
+                chipRegister.sendDataYM2608(chipId, model);
                 dumpData(model, "YM2608_ADPCM", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x82:
-                if (ym2610AdpcmA[chipID] == null || ym2610AdpcmA[chipID].length != romSize)
-                    ym2610AdpcmA[chipID] = new byte[romSize];
-                if (ym2610AdpcmA[chipID].length > 0) {
+                if (ym2610AdpcmA[chipId] == null || ym2610AdpcmA[chipId].length != romSize)
+                    ym2610AdpcmA[chipId] = new byte[romSize];
+                if (ym2610AdpcmA[chipId].length > 0) {
                     for (int cnt = 0; cnt < bLen - 8; cnt++) {
-                        ym2610AdpcmA[chipID][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
+                        ym2610AdpcmA[chipId][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
                     }
                     if (model == mdplayer.Common.EnmModel.VirtualModel)
-                        chipRegister.writeYm2610_SetAdpcmA(chipID, ym2610AdpcmA[chipID], model);
+                        chipRegister.writeYm2610_SetAdpcmA(chipId, ym2610AdpcmA[chipId], model);
                     else
-                        chipRegister.writeYm2610_SetAdpcmA(chipID, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
+                        chipRegister.writeYm2610_SetAdpcmA(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                     dumpData(model, "YM2610_ADPCMA", vgmAdr + 15, bLen - 8);
                 }
                 break;
             case 0x83:
-                if (ym2610AdpcmB[chipID] == null || ym2610AdpcmB[chipID].length != romSize)
-                    ym2610AdpcmB[chipID] = new byte[romSize];
-                if (ym2610AdpcmB[chipID].length > 0) {
+                if (ym2610AdpcmB[chipId] == null || ym2610AdpcmB[chipId].length != romSize)
+                    ym2610AdpcmB[chipId] = new byte[romSize];
+                if (ym2610AdpcmB[chipId].length > 0) {
                     for (int cnt = 0; cnt < bLen - 8; cnt++) {
-                        ym2610AdpcmB[chipID][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
+                        ym2610AdpcmB[chipId][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
                     }
                     if (model == mdplayer.Common.EnmModel.VirtualModel)
-                        chipRegister.WriteYM2610_SetAdpcmB(chipID, ym2610AdpcmB[chipID], model);
+                        chipRegister.WriteYM2610_SetAdpcmB(chipId, ym2610AdpcmB[chipId], model);
                     else
-                        chipRegister.WriteYM2610_SetAdpcmB(chipID, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
+                        chipRegister.WriteYM2610_SetAdpcmB(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                     dumpData(model, "YM2610_ADPCMB", vgmAdr + 15, bLen - 8);
                 }
                 break;
 
             case 0x84:
                 // YMF278B
-                chipRegister.writeYmF278BPCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeYmF278BPCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "YMF278B_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x85:
                 // YMF271
-                chipRegister.writeYmF271PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeYmF271PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "YMF271_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x86:
                 // YMZ280B
-                chipRegister.writeYmZ280BPCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeYmZ280BPCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "YMZ280B_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x87:
                 // YMF278B
-                chipRegister.writeYmF278BPCMRAMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeYmF278BPCMRAMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "YMF278B_PCMRAMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x88:
                 // Y8950Inst
-                chipRegister.writeY8950PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeY8950PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "Y8950_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x89:
                 // MultiPCM
-                chipRegister.writeMultiPCMPCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeMultiPCMPCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "MultiPCM_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8b:
                 // OKIM6295
-                chipRegister.writeOKIM6295PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeOKIM6295PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "OKIM6295_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8c:
                 // K054539Inst
-                chipRegister.writeK054539PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeK054539PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "K054539_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8d:
                 // C140Inst
-                chipRegister.writeC140PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeC140PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "C140_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8e:
                 // K053260Inst
-                chipRegister.writeK053260PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeK053260PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "K053260_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8f:
                 // QSoundInst
-                chipRegister.writeQSoundPCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeQSoundPCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "QSound_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x91:
                 // X1-010
-                chipRegister.writeX1_010PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeX1_010PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "X1-010_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x92:
                 // C352Inst
-                chipRegister.writeC352PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeC352PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "C352_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x93:
                 // GA20
-                chipRegister.writeGA20PCMData(chipID, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                chipRegister.writeGA20PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "GA20_PCMData", vgmAdr + 15, bLen - 8);
                 break;
             }
             vgmAdr += bLen + 7;
             break;
         case 0xc0:
-            int stAdr = getLE16(vgmAdr + 7);
+            int stAdr = ByteUtil.readLeShort(vgmBuf, vgmAdr + 7);
             int dataSize = bLen - 2;
             int romData = vgmAdr + 9;
             if ((bType & 0x20) != 0) {
-                stAdr = getLE32(vgmAdr + 7);
+                stAdr = ByteUtil.readLeInt(vgmBuf, vgmAdr + 7);
                 dataSize = bLen - 4;
                 romData = vgmAdr + 11;
             }
@@ -1018,15 +1021,15 @@ public class Vgm extends BaseDriver {
             try {
                 switch (bType & 0xff) {
                 case 0xc0:
-                    chipRegister.writeRF5C68PCMData(chipID, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
+                    chipRegister.writeRF5C68PCMData(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
                     dumpData(model, "RF5C68_PCMData(8BitMonoSigned)", vgmAdr + 9, dataSize);
                     break;
                 case 0xc1:
-                    chipRegister.writeRF5C164PCMData(chipID, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
+                    chipRegister.writeRF5C164PCMData(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
                     dumpData(model, "RF5C164_PCMData(8BitMonoSigned)", vgmAdr + 9, dataSize);
                     break;
                 case 0xc2:
-                    chipRegister.writeNESPCMData(chipID, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
+                    chipRegister.writeNESPCMData(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
                     dumpData(model, "NES_PCMData", vgmAdr + 9, dataSize);
                     break;
                 }
@@ -1083,8 +1086,8 @@ public class Vgm extends BaseDriver {
             int fsize = len + 36;
             des.add((byte) ((fsize & 0xff) >> 0));
             des.add((byte) ((fsize & 0xff00) >> 8));
-            des.add((byte) ((fsize & 0xff0000) >> 16));
-            des.add((byte) ((fsize & 0xff000000) >>> 24));
+            des.add((byte) ((fsize & 0xff_0000) >> 16));
+            des.add((byte) ((fsize & 0xff00_0000) >>> 24));
             // 'WAVE'
             des.add((byte) 'W');
             des.add((byte) 'A');
@@ -1131,8 +1134,8 @@ public class Vgm extends BaseDriver {
             // サイズ(データサイズ)
             des.add((byte) ((len & 0xff) >> 0));
             des.add((byte) ((len & 0xff00) >> 8));
-            des.add((byte) ((len & 0xff0000) >> 16));
-            des.add((byte) ((len & 0xff000000) >>> 24));
+            des.add((byte) ((len & 0xff_0000) >> 16));
+            des.add((byte) ((len & 0xff00_0000) >>> 24));
 
             for (int i = 0; i < len; i++) {
                 des.add(vgmBuf[adr + i]);
@@ -1150,19 +1153,19 @@ public class Vgm extends BaseDriver {
 
         isPcmRAMWrite = true;
 
-        byte bType = (byte) (vgmBuf[vgmAdr + 2] & 0x7f);
+        int bType = vgmBuf[vgmAdr + 2] & 0x7f;
         //CurrentChip = (vgmBuf[vgmAdr + 2] & 0x80)>>7;
-        int bReadOffset = getLE24(vgmAdr + 3);
-        int bWriteOffset = getLE24(vgmAdr + 6);
-        int bSize = getLE24(vgmAdr + 9);
-        if (bSize == 0) bSize = 0x1000000;
-        int pcmAdr = getPCMAddressFromPCMBank(bType, bReadOffset);
-        if (pcmAdr != 0) {
+        int bReadOffset = ByteUtil.readLe24(vgmBuf, vgmAdr + 3);
+        int bWriteOffset = ByteUtil.readLe24(vgmBuf, vgmAdr + 6);
+        int bSize = ByteUtil.readLe24(vgmBuf, vgmAdr + 9);
+        if (bSize == 0) bSize = 0x100_0000;
+        Integer pcmAdr = getPCMAddressFromPCMBank(bType, bReadOffset);
+        if (pcmAdr != null) {
             if (bType == 0x01) {
-                chipRegister.writeRF5C68PCMData((byte) 0, bWriteOffset, bSize, pcmBank[bType].data, pcmAdr, model);
+                chipRegister.writeRF5C68PCMData(0, bWriteOffset, bSize, pcmBank[bType].data, pcmAdr, model);
             }
             if (bType == 0x02) {
-                chipRegister.writeRF5C164PCMData((byte) 0, bWriteOffset, bSize, pcmBank[bType].data, pcmAdr, model);
+                chipRegister.writeRF5C164PCMData(0, bWriteOffset, bSize, pcmBank[bType].data, pcmAdr, model);
             }
         }
 
@@ -1172,14 +1175,14 @@ public class Vgm extends BaseDriver {
     }
 
     private void vcWaitN1Samples() {
-        vgmWait += vgmBuf[vgmAdr] - 0x6f;
+        vgmWait += (vgmBuf[vgmAdr] & 0xff) - 0x6f;
         vgmAdr++;
     }
 
     private void vcWaitNSamplesAndSendYM26120x2a() {
-        byte dat = getDACFromPCMBank();
+        int dat = getDACFromPCMBank();
 
-        vgmWait += vgmBuf[vgmAdr] - 0x80;
+        vgmWait += (vgmBuf[vgmAdr] & 0xff) - 0x80;
 
         chipRegister.setYM2612Register(0, 0, 0x2a, dat, model, vgmFrameCounter);
 
@@ -1187,13 +1190,13 @@ public class Vgm extends BaseDriver {
     }
 
     private void vcSetupStreamControl() {
-        //if (model != enmModel.VirtualModel) {
-        //    vgmAdr += 5;
-        //    return;
-        //}
+//        if (model != enmModel.VirtualModel) {
+//            vgmAdr += 5;
+//            return;
+//        }
 
-        byte si = vgmBuf[vgmAdr + 1];
-        if ((si & 0xff) == 0xff) {
+        int si = vgmBuf[vgmAdr + 1] & 0xff;
+        if (si == 0xff) {
             vgmAdr += 5;
             return;
         }
@@ -1201,199 +1204,198 @@ public class Vgm extends BaseDriver {
             dacControl.device_start_daccontrol(si);
             dacControl.device_reset_daccontrol(si);
             dacCtrl[si].enable = true;
-            dacCtrlUsg[dacCtrlUsed] = si;
+            dacCtrlUsg[dacCtrlUsed] = (byte) si;
             dacCtrlUsed++;
         }
-        byte chipId = vgmBuf[vgmAdr + 2];
-        byte port = vgmBuf[vgmAdr + 3];
-        byte cmd = vgmBuf[vgmAdr + 4];
+        int chipId = vgmBuf[vgmAdr + 2] & 0xff;
+        int port = vgmBuf[vgmAdr + 3] & 0xff;
+        int cmd = vgmBuf[vgmAdr + 4] & 0xff;
 
-        dacControl.setupChip(si, (byte) (chipId & 0x7F), (byte) ((chipId & 0x80) >> 7), port * 0x100 + cmd);
+        dacControl.setupChip(si, chipId & 0x7F, (chipId & 0x80) >> 7, port * 0x100 + cmd);
         vgmAdr += 5;
     }
 
     private void vcSetStreamData() {
-        //if (model != enmModel.VirtualModel) {
-        //    vgmAdr += 5;
-        //    return;
-        //}
+//        if (model != enmModel.VirtualModel) {
+//            vgmAdr += 5;
+//            return;
+//        }
 
-        byte si = vgmBuf[vgmAdr + 1];
+        int si = vgmBuf[vgmAdr + 1] & 0xff;
         if (si == 0xff) {
             vgmAdr += 5;
             return;
         }
-        dacCtrl[si].bank = vgmBuf[vgmAdr + 2];
+        dacCtrl[si].bank = vgmBuf[vgmAdr + 2] & 0xff;
         if (dacCtrl[si].bank >= PCM_BANK_COUNT)
             dacCtrl[si].bank = 0x00;
 
         VgmPcmBank tempPCM = pcmBank[dacCtrl[si].bank];
         //last95Max = tempPCM->BankCount;
-        dacControl.setData(si, tempPCM.data, tempPCM.dataSize,
-                vgmBuf[vgmAdr + 3], vgmBuf[vgmAdr + 4]);
+        dacControl.setData(si, tempPCM.data, tempPCM.dataSize, vgmBuf[vgmAdr + 3] & 0xff, vgmBuf[vgmAdr + 4] & 0xff);
 
         vgmAdr += 5;
     }
 
     private void vcSetStreamFrequency() {
-        //if (model != enmModel.VirtualModel) {
-        //    vgmAdr += 6;
-        //    return;
-        //}
+//        if (model != enmModel.VirtualModel) {
+//            vgmAdr += 6;
+//            return;
+//        }
 
-        byte si = vgmBuf[vgmAdr + 1];
-        if (si == 0xFF || !dacCtrl[si].enable) {
+        int si = vgmBuf[vgmAdr + 1] & 0xff;
+        if (si == 0xff || !dacCtrl[si].enable) {
             vgmAdr += 0x06;
             return;
         }
-        int tempLng = getLE32(vgmAdr + 2);
+        int tempLng = ByteUtil.readLeInt(vgmBuf, vgmAdr + 2);
         //last95Freq = tempLng;
         dacControl.set_frequency(si, tempLng);
         vgmAdr += 6;
     }
 
     private void vcStartStream() {
-        //if (model != enmModel.VirtualModel) {
-        //    vgmAdr += 8;
-        //    return;
-        //}
+//        if (model != enmModel.VirtualModel) {
+//            vgmAdr += 8;
+//            return;
+//        }
 
-        byte si = vgmBuf[vgmAdr + 1];
-        if (si == 0xFF || !dacCtrl[si].enable || pcmBank[dacCtrl[si].bank].bankCount == 0) {
+        int si = vgmBuf[vgmAdr + 1] & 0xff;
+        if (si == 0xff || !dacCtrl[si].enable || pcmBank[dacCtrl[si].bank].bankCount == 0) {
             vgmAdr += 0x08;
             return;
         }
-        int dataStart = getLE32(vgmAdr + 2);
-        //last95Drum = 0xFFFF;
-        byte tempByt = vgmBuf[vgmAdr + 6];
-        int dataLen = getLE32(vgmAdr + 7);
+        int dataStart = ByteUtil.readLeInt(vgmBuf, vgmAdr + 2);
+        //last95Drum = 0xffFF;
+        int tempByt = vgmBuf[vgmAdr + 6] & 0xff;
+        int dataLen = ByteUtil.readLeInt(vgmBuf, vgmAdr + 7);
         dacControl.start(si, dataStart, tempByt, dataLen);
         vgmAdr += 0x0B;
     }
 
     private void vcStopStream() {
-        //if (model != enmModel.VirtualModel) {
-        //    vgmAdr += 2;
-        //    return;
-        //}
+//        if (model != enmModel.VirtualModel) {
+//            vgmAdr += 2;
+//            return;
+//        }
 
-        byte si = vgmBuf[vgmAdr + 1];
+        int si = vgmBuf[vgmAdr + 1] & 0xff;
         if (!dacCtrl[si].enable) {
             vgmAdr += 0x02;
             return;
         }
-        // last95Drum = 0xFFFF;
-        if (si < 0xFF) {
+        // last95Drum = 0xffFF;
+        if (si < 0xff) {
             dacControl.stop(si);
         } else {
-            for (si = 0x00; si < 0xFF; si++)
+            for (si = 0x00; si < 0xff; si++)
                 dacControl.stop(si);
         }
         vgmAdr += 0x02;
     }
 
     private void vcStartStreamFastCall() {
-        //if (model != enmModel.VirtualModel) {
-        //    vgmAdr += 5;
-        //    return;
-        //}
+//        if (model != enmModel.VirtualModel) {
+//            vgmAdr += 5;
+//            return;
+//        }
 
-        byte curChip = vgmBuf[vgmAdr + 1];
-        if (curChip == 0xFF || !dacCtrl[curChip].enable ||
+        int curChip = vgmBuf[vgmAdr + 1] & 0xff;
+        if (curChip == 0xff || !dacCtrl[curChip].enable ||
                 pcmBank[dacCtrl[curChip].bank].bankCount == 0) {
             vgmAdr += 0x05;
             return;
         }
         VgmPcmBank tempPCM = pcmBank[dacCtrl[curChip].bank];
-        int TempSht = getLE16(vgmAdr + 2);
+        int TempSht = ByteUtil.readLeShort(vgmBuf, vgmAdr + 2);
         //Last95Drum = TempSht;
         //Last95Max = tempPCM->BankCount;
         if (TempSht >= tempPCM.bankCount)
             TempSht = 0x00;
         VgmPcmData tempBnk = tempPCM.bank.get(TempSht);
 
-        byte tempByt = (byte) (DacControl.DacControl_.DCTRL_LMODE_BYTES |
+        int tempByt = DacControl.DacControl_.DCTRL_LMODE_BYTES |
                 (vgmBuf[vgmAdr + 4] & 0x10) |         // Reverse Mode
-                ((vgmBuf[vgmAdr + 4] & 0x01) << 7));   // Looping
+                ((vgmBuf[vgmAdr + 4] & 0x01) << 7);   // Looping
         dacControl.start(curChip, tempBnk.dataStart, tempByt, tempBnk.dataSize);
         vgmAdr += 0x05;
     }
 
     private void vcSeekToOffsetInPCMDataBank() {
-        pcmBank[0x00].dataPos = getLE32(vgmAdr + 1);
+        pcmBank[0x00].dataPos = ByteUtil.readLeInt(vgmBuf, vgmAdr + 1);
         vgmAdr += 5;
     }
 
     private void vcRf5c68() {
-        byte id = (byte) ((vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0);
-        byte cmd = (byte) (vgmBuf[vgmAdr + 1] & 0x7f);
-        chipRegister.writeRF5C68(id, cmd, vgmBuf[vgmAdr + 2], model);
+        int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
+        int cmd = vgmBuf[vgmAdr + 1] & 0x7f;
+        chipRegister.writeRF5C68(id, cmd, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcRf5c68MemoryWrite() {
-        int offset = getLE16(vgmAdr + 1);
-        chipRegister.writeRF5C68MemW((byte) 0, offset, vgmBuf[vgmAdr + 3], model);
+        int offset = ByteUtil.readLeShort(vgmBuf, vgmAdr + 1);
+        chipRegister.writeRF5C68MemW(0, offset, vgmBuf[vgmAdr + 3] & 0xff, model);
         vgmAdr += 4;
     }
 
     private void vcRf5c164() {
-        byte id = (byte) ((vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0);
-        byte cmd = (byte) (vgmBuf[vgmAdr + 1] & 0x7f);
-        chipRegister.writeRF5C164(id, cmd, vgmBuf[vgmAdr + 2], model);
+        int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
+        int cmd = vgmBuf[vgmAdr + 1] & 0x7f;
+        chipRegister.writeRF5C164(id, cmd, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcRf5c164MemoryWrite() {
-        int offset = getLE16(vgmAdr + 1);
-        chipRegister.writeRF5C164MemW((byte) 0, offset, vgmBuf[vgmAdr + 3], model);
+        int offset = ByteUtil.readLeShort(vgmBuf, vgmAdr + 1);
+        chipRegister.writeRF5C164MemW(0, offset, vgmBuf[vgmAdr + 3] & 0xff, model);
         vgmAdr += 4;
     }
 
     private void vcPWM() {
-        byte cmd = (byte) ((vgmBuf[vgmAdr + 1] & 0xf0) >> 4);
-        int data = (vgmBuf[vgmAdr + 1] & 0xf) * 0x100 + vgmBuf[vgmAdr + 2];
-        chipRegister.writePWM((byte) 0, cmd, data, model);
+        int cmd = (vgmBuf[vgmAdr + 1] & 0xf0) >> 4;
+        int data = (vgmBuf[vgmAdr + 1] & 0xf) * 0x100 + vgmBuf[vgmAdr + 2] & 0xff;
+        chipRegister.writePWM(0, cmd, data, model);
         vgmAdr += 3;
     }
 
     private void vcK051649() {
         int scc1_port = vgmBuf[vgmAdr + 1] & 0x7f;
-        byte scc1_offset = vgmBuf[vgmAdr + 2];
-        byte rDat = vgmBuf[vgmAdr + 3];
-        byte scc1_chipid = (byte) ((vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0);
+        int scc1_offset = vgmBuf[vgmAdr + 2] & 0xff;
+        int rDat = vgmBuf[vgmAdr + 3] & 0xff;
+        int scc1_chipId = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         vgmAdr += 4;
-        chipRegister.writeK051649(scc1_chipid, (scc1_port << 1) | 0x00, scc1_offset, model);
-        chipRegister.writeK051649(scc1_chipid, (scc1_port << 1) | 0x01, rDat, model);
+        chipRegister.writeK051649(scc1_chipId, (scc1_port << 1) | 0x00, scc1_offset, model);
+        chipRegister.writeK051649(scc1_chipId, (scc1_port << 1) | 0x01, rDat, model);
 
     }
 
     private void vcK053260() {
-        byte id = (byte) ((vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0);
+        int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = vgmBuf[vgmAdr + 1] & 0x7f;
-        byte data = vgmBuf[vgmAdr + 2];
+        int data = vgmBuf[vgmAdr + 2] & 0xff;
         chipRegister.writeK053260(id, adr, data, model);
         vgmAdr += 3;
     }
 
     private void vcK054539() {
-        byte id = (byte) ((vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0);
+        int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
-        byte data = vgmBuf[vgmAdr + 3];
+        int data = vgmBuf[vgmAdr + 3] & 0xff;
         chipRegister.writeK054539(id, adr, data, model);
         vgmAdr += 4;
     }
 
     private void vcC140() {
-        byte id = (byte) ((vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0);
+        int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
-        byte data = vgmBuf[vgmAdr + 3];
+        int data = vgmBuf[vgmAdr + 3] & 0xff;
         chipRegister.writeC140(id, adr, data, model);
         vgmAdr += 4;
     }
 
     private void vcC352() {
-        byte id = (byte) ((vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0);
+        int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         int data = (vgmBuf[vgmAdr + 3] & 0xff) * 0x100 + (vgmBuf[vgmAdr + 4] & 0xff);
 
@@ -1401,67 +1403,45 @@ public class Vgm extends BaseDriver {
         vgmAdr += 5;
     }
 
-    private int getLE16(int adr) {
-        int dat;
-        dat = (int) vgmBuf[adr] + (int) vgmBuf[adr + 1] * 0x100;
-
-        return dat;
-    }
-
-    private int getLE24(int adr) {
-        int dat;
-        dat = (int) vgmBuf[adr] + (int) vgmBuf[adr + 1] * 0x100 + (int) vgmBuf[adr + 2] * 0x10000;
-
-        return dat;
-    }
-
-    private int getLE32(int adr) {
-        int dat;
-        dat = (int) vgmBuf[adr] + (int) vgmBuf[adr + 1] * 0x100 + (int) vgmBuf[adr + 2] * 0x10000 + (int) vgmBuf[adr + 3] * 0x1000000;
-
-        return dat;
-    }
-
-    private void addPCMData(byte Type, int dataSize, int adr) {
+    private void addPCMData(int Type, int dataSize, int adr) {
         int curBnk;
         VgmPcmBank tempPCM;
         VgmPcmData tempBnk;
         int bankSize;
-        //boolean retVal;
-        byte bnkType;
-        byte curDAC;
+//        boolean retVal;
+        int bnkType;
+        int curDAC;
 
-        bnkType = (byte) (Type & 0x3F);
+        bnkType = Type & 0x3F;
         if (bnkType >= PCM_BANK_COUNT || vgmCurLoop > 0)
             return;
 
         if (Type == 0x7F) {
-            //ReadPCMTable(dataSize, Data);
+            //ReadPCMTable(dataSize, data);
             readPCMTable(dataSize, adr);
             return;
         }
 
-        tempPCM = pcmBank[bnkType];// &PCMBank[bnkType];
+        tempPCM = pcmBank[bnkType]; // &PCMBank[bnkType];
         tempPCM.bnkPos++;
         if (tempPCM.bnkPos <= tempPCM.bankCount)
             return; // Speed hack for restarting playback (skip already loaded blocks)
         curBnk = tempPCM.bankCount;
         tempPCM.bankCount++;
-        //if (Last95Max != 0xFFFF) Last95Max = tempPCM.BankCount;
-        tempPCM.bank.add(new VgmPcmData());// = (VgmPcmData*)realloc(tempPCM->Bank,
-        // sizeof(VgmPcmData) * tempPCM->BankCount);
+        //if (Last95Max != 0xffFF) Last95Max = tempPCM.BankCount;
+        tempPCM.bank.add(new VgmPcmData()); // = (VgmPcmData*)realloc(tempPCM->Bank, sizeof(VgmPcmData) * tempPCM->BankCount);
 
         if ((Type & 0x40) == 0)
             bankSize = dataSize;
         else
-            bankSize = getLE32(adr + 1);// ReadLE32(&Data[0x01]);
+            bankSize = ByteUtil.readLeInt(vgmBuf, adr + 1); // ReadLE32(&Data[0x01]);
 
         byte[] newData = new byte[tempPCM.dataSize + bankSize];
         if (tempPCM.data != null && tempPCM.data.length > 0)
             System.arraycopy(tempPCM.data, 0, newData, 0, tempPCM.data.length);
         tempPCM.data = newData;
 
-        //tempPCM.Data = new byte[tempPCM.dataSize + bankSize];// realloc(tempPCM->Data, tempPCM->dataSize + bankSize);
+        //tempPCM.Data = new byte[tempPCM.dataSize + bankSize]; // realloc(tempPCM->Data, tempPCM->dataSize + bankSize);
         tempBnk = tempPCM.bank.get(curBnk);
         tempBnk.dataStart = tempPCM.dataSize;
         tempBnk.data = new byte[bankSize];
@@ -1473,7 +1453,7 @@ public class Vgm extends BaseDriver {
                 tempBnk.data[i] = vgmBuf[adr + i];
             }
             //tempBnk.Data = tempPCM.Data + tempBnk.DataStart;
-            //memcpy(tempBnk->Data, Data, dataSize);
+            //memcpy(tempBnk->Data, data, dataSize);
         } else {
             //tempBnk.Data = tempPCM.Data + tempBnk.DataStart;
             retVal = decompressDataBlk(tempBnk, dataSize, adr);
@@ -1482,25 +1462,25 @@ public class Vgm extends BaseDriver {
                 tempBnk.dataSize = 0x00;
             } else {
                 // dataSize; i++)
-                System.arraycopy(tempBnk.data, 0, tempPCM.data, 0 + tempBnk.dataStart, bankSize);
+                System.arraycopy(tempBnk.data, 0, tempPCM.data, tempBnk.dataStart, bankSize);
             }
         }
-        //if (bankSize != tempBnk.dataSize) System.err.printf("Error reading Data Block! Data size conflict!\n");
+        //if (bankSize != tempBnk.dataSize) System.err.printf("Error reading data Block! data size conflict!\n");
         if (retVal)
             tempPCM.dataSize += bankSize;
 
         // realloc may've moved the Bank block, so refresh all DAC Streams
         for (curDAC = 0x00; curDAC < dacCtrlUsed; curDAC++) {
             if (dacCtrl[dacCtrlUsg[curDAC]].bank == bnkType)
-                dacControl.refresh_data(dacCtrlUsg[curDAC], tempPCM.data, tempPCM.dataSize);
+                dacControl.refresh_data(dacCtrlUsg[curDAC] & 0xff, tempPCM.data, tempPCM.dataSize);
         }
     }
 
     private boolean decompressDataBlk(VgmPcmData bank, int dataSize, int adr) {
-        byte comprType;
-        byte bitDec;
-        byte bitCmp;
-        byte cmpSubType;
+        int comprType;
+        int bitDec;
+        int bitCmp;
+        int cmpSubType;
         int addVal;
         int inPos;
         int inDataEnd;
@@ -1508,37 +1488,37 @@ public class Vgm extends BaseDriver {
         int outDataEnd;
         int inVal;
         int outVal = 0;// FUINT16 outVal;
-        byte valSize;
-        byte inShift;
-        byte outShift;
+        int valSize;
+        int inShift;
+        int outShift;
         int ent1B = 0;// UINT8* ent1B;
         int ent2B = 0;// UINT16* ent2B;
-        //#if defined(_DEBUG) && defined(WIN32)
-        //	UINT32 Time;
-        //#endif
+//#if defined(_DEBUG) && defined(WIN32)
+//        UINT32 Time;
+//#endif
 
         // ReadBits Variables
-        byte bitsToRead;
-        byte bitReadVal;
-        byte inValB;
-        byte bitMask;
-        byte outBit;
+        int bitsToRead;
+        int bitReadVal;
+        int inValB;
+        int bitMask;
+        int outBit;
 
         // Variables for DPCM
         int outMask;
 
-        //#if defined(_DEBUG) && defined(WIN32)
-        //	Time = GetTickCount();
-        //#endif
+//#if defined(_DEBUG) && defined(WIN32)
+//        Time = GetTickCount();
+//#endif
         comprType = vgmBuf[adr + 0];
-        bank.dataSize = getLE32(adr + 1);
+        bank.dataSize = ByteUtil.readLeInt(vgmBuf, adr + 1);
 
         switch (comprType) {
         case 0x00:  // n-Bit compression
             bitDec = vgmBuf[adr + 5];
             bitCmp = vgmBuf[adr + 6];
             cmpSubType = vgmBuf[adr + 7];
-            addVal = getLE16(adr + 8);
+            addVal = ByteUtil.readLeShort(vgmBuf, adr + 8);
 
             if (cmpSubType == 0x02) {
                 //bank.dataSize = 0x00;
@@ -1552,7 +1532,7 @@ public class Vgm extends BaseDriver {
                     return false;
                 } else if (bitDec != pcmTbl.bitDec || bitCmp != pcmTbl.bitCmp) {
                     bank.dataSize = 0x00;
-                    //printf("Warning! Data block and loaded value table incompatible!\n");
+                    //printf("Warning! data block and loaded value table incompatible!\n");
                     return false;
                 }
             }
@@ -1561,8 +1541,8 @@ public class Vgm extends BaseDriver {
             inPos = adr + 0x0A;
             inDataEnd = adr + dataSize;
             inShift = 0;
-            outShift = (byte) (bitDec - bitCmp);
-            //                    outDataEnd = bank.Data + bank.dataSize;
+            outShift = bitDec - bitCmp;
+//            outDataEnd = bank.Data + bank.dataSize;
             outDataEnd = bank.dataSize;
 
             //for (outPos = bank->Data; outPos < outDataEnd && inPos < inDataEnd; outPos += valSize)
@@ -1573,18 +1553,18 @@ public class Vgm extends BaseDriver {
                 inVal = 0x0000;
                 bitsToRead = bitCmp;
                 while (bitsToRead != 0) {
-                    bitReadVal = (byte) ((bitsToRead >= 8) ? 8 : bitsToRead);
+                    bitReadVal = Math.min(bitsToRead, 8);
                     bitsToRead -= bitReadVal;
-                    bitMask = (byte) ((1 << bitReadVal) - 1);
+                    bitMask = (1 << bitReadVal) - 1;
 
                     inShift += bitReadVal;
                     //inValB = (byte)((vgmBuf[inPos] << inShift >> 8) & bitMask);
-                    inValB = (byte) ((vgmBuf[inPos] << inShift >> 8) & bitMask);
+                    inValB = (vgmBuf[inPos] << inShift >> 8) & bitMask;
                     if (inShift >= 8) {
                         inShift -= 8;
                         inPos++;
                         if (inShift != 0)
-                            inValB |= (byte) ((vgmBuf[inPos] << inShift >> 8) & bitMask);
+                            inValB |= (vgmBuf[inPos] << inShift >> 8) & bitMask;
                     }
 
                     inVal |= inValB << outBit;
@@ -1604,55 +1584,56 @@ public class Vgm extends BaseDriver {
                         outVal = pcmTbl.entries[ent1B + inVal];
                         break;
                     case 0x02:
-                        //#ifndef BIG_ENDIAN
-                        //					outVal = ent2B[inVal];
-                        //#else
-                        outVal = pcmTbl.entries[ent2B + inVal * 2] + pcmTbl.entries[ent2B + inVal * 2 + 1] * 0x100;// ReadLE16((UINT8*)&ent2B[inVal]);
-                        //#endif
+//#ifndef BIG_ENDIAN
+//                        outVal = ent2B[inVal];
+//#else
+                        //ReadLE16((UINT8*)&ent2B[inVal]);
+                        outVal = (pcmTbl.entries[ent2B + inVal * 2] & 0xff) + (pcmTbl.entries[ent2B + inVal * 2 + 1] & 0xff) * 0x100;
+//#endif
                         break;
                     }
                     break;
                 }
 
-                //#ifndef BIG_ENDIAN
-                //			//memcpy(outPos, &outVal, valSize);
-                //			if (valSize == 0x01)
-                //               *((UINT8*)outPos) = (UINT8)outVal;
-                //			else //if (valSize == 0x02)
-                //                *((UINT16*)outPos) = (UINT16)outVal;
-                //#else
+//#ifndef BIG_ENDIAN
+//                //memcpy(outPos, &outVal, valSize);
+//                if (valSize == 0x01)
+//                    *((UINT8 *) outPos) =(UINT8) outVal;
+//                else //if (valSize == 0x02)
+//                    *((UINT16 *) outPos) =(UINT16) outVal;
+//#else
                 if (valSize == 0x01) {
                     bank.data[outPos] = (byte) outVal;
                 } else { // if (valSize == 0x02)
                     bank.data[outPos + 0x00] = (byte) ((outVal & 0x00FF) >> 0);
-                    bank.data[outPos + 0x01] = (byte) ((outVal & 0xFF00) >> 8);
+                    bank.data[outPos + 0x01] = (byte) ((outVal & 0xff00) >> 8);
                 }
-                //#endif
+//#endif
             }
             break;
         case 0x01:  // Delta-PCM
-            bitDec = vgmBuf[adr + 5];// Data[0x05];
-            bitCmp = vgmBuf[adr + 6];// Data[0x06];
-            outVal = getLE16(adr + 8);// ReadLE16(&Data[0x08]);
+            bitDec = vgmBuf[adr + 5] & 0xff; // data[0x05];
+            bitCmp = vgmBuf[adr + 6] & 0xff; // data[0x06];
+            outVal = ByteUtil.readLeShort(vgmBuf, adr + 8);// ReadLE16(&Data[0x08]);
 
-            ent1B = 0;// (UINT8*)PCMTbl.Entries;
-            ent2B = 0;// (UINT16*)PCMTbl.Entries;
+            ent1B = 0; // (UINT8*)PCMTbl.Entries;
+            ent2B = 0; // (UINT16*)PCMTbl.Entries;
             if (pcmTbl.entryCount == 0) {
                 bank.dataSize = 0x00;
                 //printf("Error loading table-compressed data block! No table loaded!\n");
                 return false;
             } else if (bitDec != pcmTbl.bitDec || bitCmp != pcmTbl.bitCmp) {
                 bank.dataSize = 0x00;
-                //printf("Warning! Data block and loaded value table incompatible!\n");
+                //printf("Warning! data block and loaded value table incompatible!\n");
                 return false;
             }
 
-            valSize = (byte) ((bitDec + 7) / 8);
+            valSize = (bitDec + 7) / 8;
             outMask = (1 << bitDec) - 1;
             inPos = adr + 0xa;
             inDataEnd = adr + dataSize;
             inShift = 0;
-            outShift = (byte) (bitDec - bitCmp);
+            outShift = bitDec - bitCmp;
             outDataEnd = bank.dataSize;// bank.Data + bank.dataSize;
             addVal = 0x0000;
 
@@ -1664,45 +1645,45 @@ public class Vgm extends BaseDriver {
                 inVal = 0x0000;
                 bitsToRead = bitCmp;
                 while (bitsToRead != 0) {
-                    bitReadVal = (byte) ((bitsToRead >= 8) ? 8 : bitsToRead);
+                    bitReadVal = Math.min(bitsToRead, 8);
                     bitsToRead -= bitReadVal;
-                    bitMask = (byte) ((1 << bitReadVal) - 1);
+                    bitMask = (1 << bitReadVal) - 1;
 
                     inShift += bitReadVal;
-                    inValB = (byte) ((vgmBuf[inPos] << inShift >> 8) & bitMask);
+                    inValB = (vgmBuf[inPos] << inShift >> 8) & bitMask;
                     if (inShift >= 8) {
                         inShift -= 8;
                         inPos++;
                         if (inShift != 0)
-                            inValB |= (byte) ((vgmBuf[inPos] << inShift >> 8) & bitMask);
+                            inValB |= (vgmBuf[inPos] << inShift >> 8) & bitMask;
                     }
 
-                    inVal |= (byte) (inValB << outBit);
+                    inVal |= inValB << outBit;
                     outBit += bitReadVal;
                 }
 
                 switch (valSize) {
                 case 0x01:
-                    addVal = pcmTbl.entries[ent1B + inVal];
+                    addVal = pcmTbl.entries[ent1B + inVal] & 0xff;
                     outVal += addVal;
                     outVal &= outMask;
-                    bank.data[outPos] = (byte) outVal;// *((UINT8*)outPos) = (UINT8)outVal;
+                    bank.data[outPos] = (byte) outVal; // *((UINT8*)outPos) = (UINT8)outVal;
                     break;
                 case 0x02:
-                    //#ifndef BIG_ENDIAN
-                    //				addVal = ent2B[inVal];
-                    //#else
-                    addVal = pcmTbl.entries[ent2B + inVal] + pcmTbl.entries[ent2B + inVal + 1] * 0x100;
+//#ifndef BIG_ENDIAN
+//                    addVal = ent2B[inVal];
+//#else
+                    addVal = (pcmTbl.entries[ent2B + inVal] & 0xff) + (pcmTbl.entries[ent2B + inVal + 1] & 0xff) * 0x100;
                     //addVal = ReadLE16((UINT8*)&ent2B[inVal]);
-                    //#endif
+//#endif
                     outVal += addVal;
                     outVal &= outMask;
-                    //#ifndef BIG_ENDIAN
-                    //				*((UINT16*)outPos) = (UINT16)outVal;
-                    //#else
+//#ifndef BIG_ENDIAN
+//                    *((UINT16*)outPos) = (UINT16)outVal;
+//#else
                     bank.data[outPos + 0x00] = (byte) ((outVal & 0x00FF) >> 0);
-                    bank.data[outPos + 0x01] = (byte) ((outVal & 0xFF00) >> 8);
-                    //#endif
+                    bank.data[outPos + 0x01] = (byte) ((outVal & 0xff00) >> 8);
+//#endif
                     break;
                 }
             }
@@ -1712,25 +1693,25 @@ public class Vgm extends BaseDriver {
             return false;
         }
 
-        //#if defined(_DEBUG) && defined(WIN32)
-        //	Time = GetTickCount() - Time;
-        //	printf("Decompression Time: %lu\n", Time);
-        //#endif
+//#if defined(_DEBUG) && defined(WIN32)
+//        Time = GetTickCount() - Time;
+//        printf("Decompression Time: %lu\n", Time);
+//#endif
 
         return true;
     }
 
     private void readPCMTable(int dataSize, int adr) {
-        byte valSize;
+        int valSize;
         int tblSize;
 
-        pcmTbl.comprType = vgmBuf[adr + 0];// Data[0x00];
-        pcmTbl.cmpSubType = vgmBuf[adr + 1];// Data[0x01];
-        pcmTbl.bitDec = vgmBuf[adr + 2];// Data[0x02];
-        pcmTbl.bitCmp = vgmBuf[adr + 3];// Data[0x03];
-        pcmTbl.entryCount = getLE16(adr + 4);// ReadLE16(&Data[0x04]);
+        pcmTbl.comprType = vgmBuf[adr + 0] & 0xff; // data[0x00];
+        pcmTbl.cmpSubType = vgmBuf[adr + 1] & 0xff; // data[0x01];
+        pcmTbl.bitDec = vgmBuf[adr + 2] & 0xff; // data[0x02];
+        pcmTbl.bitCmp = vgmBuf[adr + 3] & 0xff; // data[0x03];
+        pcmTbl.entryCount = ByteUtil.readLeShort(vgmBuf, adr + 4);// ReadLE16(&Data[0x04]);
 
-        valSize = (byte) ((pcmTbl.bitDec + 7) / 8);
+        valSize = (pcmTbl.bitDec + 7) / 8;
         tblSize = pcmTbl.entryCount * valSize;
 
         pcmTbl.entries = new byte[tblSize];// realloc(PCMTbl.Entries, tblSize);
@@ -1743,42 +1724,41 @@ public class Vgm extends BaseDriver {
         }
     }
 
-    private byte getDACFromPCMBank() {
+    private int getDACFromPCMBank() {
         // for Ym2612Inst DAC data only
-            /*VgmPcmBank* TempPCM;
-            UINT32 CurBnk;*/
-        int DataPos;
+//        VgmPcmBank* TempPCM;
+//        UINT32 CurBnk;
+        int dataPos;
 
-            /*TempPCM = &PCMBank[0x00];
-            DataPos = TempPCM->DataPos;
-            for (CurBnk = 0x00; CurBnk < TempPCM->BankCount; CurBnk ++)
-            {
-                if (DataPos < TempPCM->Bank[CurBnk].DataSize)
-                {
-                    if (TempPCM->DataPos < TempPCM->DataSize)
-                        TempPCM->DataPos ++;
-                    return TempPCM->Bank[CurBnk].Data[DataPos];
-                }
-                DataPos -= TempPCM->Bank[CurBnk].DataSize;
-            }
-            return 0x80;*/
+//        TempPCM = &PCMBank[0x00];
+//        dataPos = TempPCM -> dataPos;
+//        for (CurBnk = 0x00; CurBnk < TempPCM -> BankCount; CurBnk++) {
+//            if (dataPos < TempPCM -> Bank[CurBnk].DataSize) {
+//                if (TempPCM -> dataPos < TempPCM -> dataSize)
+//                    TempPCM -> dataPos++;
+//                return TempPCM -> Bank[CurBnk].Data[dataPos];
+//            }
+//            dataPos -= TempPCM -> Bank[CurBnk].DataSize;
+//        }
+//        return 0x80;
 
-        DataPos = pcmBank[0x00].dataPos;
-        if (DataPos >= pcmBank[0x00].dataSize)
-            return (byte) 0x80;
+        dataPos = pcmBank[0x00].dataPos;
+        if (dataPos >= pcmBank[0x00].dataSize)
+            return 0x80;
 
         pcmBank[0x00].dataPos++;
-        return pcmBank[0x00].bank.get(0).data[DataPos];
+        return pcmBank[0x00].bank.get(0).data[dataPos] & 0xff;
     }
 
-    private Integer getPCMAddressFromPCMBank(byte Type, int DataPos) {
-        if (Type >= PCM_BANK_COUNT)
+    /** @return nullable */
+    private Integer getPCMAddressFromPCMBank(int type, int dataPos) {
+        if (type >= PCM_BANK_COUNT)
             return null;
 
-        if (DataPos >= pcmBank[Type].dataSize)
+        if (dataPos >= pcmBank[type].dataSize)
             return null;
 
-        return DataPos;
+        return dataPos;
     }
 
     private boolean getInformationHeader() {
@@ -1810,18 +1790,17 @@ public class Vgm extends BaseDriver {
         x1_010ClockValue = 0;
         wSwanClockValue = 0;
 
-
          // ヘッダーを読み込めるサイズをもっているかチェック
         if (vgmBuf.length < 0x40) return false;
 
          // ヘッダーから情報取得
 
-        int vgm = getLE32(0x00);
+        int vgm = ByteUtil.readLeInt(vgmBuf, 0x00);
         if (vgm != FCC_VGM) return false;
 
-        vgmEof = getLE32(0x04);
+        vgmEof = ByteUtil.readLeInt(vgmBuf, 0x04);
 
-        int version = getLE32(0x08);
+        int version = ByteUtil.readLeInt(vgmBuf, 0x08);
         this.version = String.format("%d.%d%d", (version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
          // バージョンチェック
         if (version < 0x0101) {
@@ -1829,11 +1808,11 @@ public class Vgm extends BaseDriver {
             //return false;
         }
 
-        int SN76489clock = getLE32(0x0c);
+        int SN76489clock = ByteUtil.readLeInt(vgmBuf, 0x0c);
         if (SN76489clock != 0) {
-            sn76489ClockValue = SN76489clock & 0x3fffffff;
-            sn76489DualChipFlag = (SN76489clock & 0x40000000) != 0;
-            sn76489NGPFlag = (SN76489clock & 0x80000000) != 0;
+            sn76489ClockValue = SN76489clock & 0x3fff_ffff;
+            sn76489DualChipFlag = (SN76489clock & 0x4000_0000) != 0;
+            sn76489NGPFlag = (SN76489clock & 0x8000_0000) != 0;
             if (version < 0x0150) {
                 sn76489Option = new Object[] {
                         (byte) 9,
@@ -1853,10 +1832,10 @@ public class Vgm extends BaseDriver {
             else chips.add("SN76489");
         }
 
-        int YM2413clock = getLE32(0x10);
+        int YM2413clock = ByteUtil.readLeInt(vgmBuf, 0x10);
         if (YM2413clock != 0) {
-            ym2413ClockValue = YM2413clock & 0x3fffffff;
-            ym2413DualChipFlag = (YM2413clock & 0x40000000) != 0;
+            ym2413ClockValue = YM2413clock & 0x3fff_ffff;
+            ym2413DualChipFlag = (YM2413clock & 0x4000_0000) != 0;
             ym2413VRC7Flag = (YM2413clock & 0x8000_0000) != 0;
             if (!ym2413VRC7Flag) {
                 if (ym2413DualChipFlag) chips.add("YM2413x2");
@@ -1868,51 +1847,51 @@ public class Vgm extends BaseDriver {
         }
 
         if (version == 0x0101) {
-            int YM2612clock = getLE32(0x10);
+            int YM2612clock = ByteUtil.readLeInt(vgmBuf, 0x10);
             if (YM2612clock != 0) {
-                ym2612ClockValue = YM2612clock & 0x3fffffff;
-                ym2612DualChipFlag = (YM2612clock & 0x40000000) != 0;
+                ym2612ClockValue = YM2612clock & 0x3fff_ffff;
+                ym2612DualChipFlag = (YM2612clock & 0x4000_0000) != 0;
                 if (ym2612DualChipFlag) chips.add("YM2612x2");
                 else chips.add("Ym2612Inst");
             }
 
-            int YM2151clock = getLE32(0x10);
+            int YM2151clock = ByteUtil.readLeInt(vgmBuf, 0x10);
             if (YM2151clock != 0) {
-                yn2151ClockValue = YM2151clock & 0x3fffffff;
-                ym2151DualChipFlag = (YM2151clock & 0x40000000) != 0;
+                yn2151ClockValue = YM2151clock & 0x3fff_ffff;
+                ym2151DualChipFlag = (YM2151clock & 0x4000_0000) != 0;
                 if (ym2151DualChipFlag) chips.add("YM2151x2");
                 else chips.add("YM2151");
             }
         }
 
-        totalCounter = getLE32(0x18);
+        totalCounter = ByteUtil.readLeInt(vgmBuf, 0x18);
         if (totalCounter < 0) return false;
 
-        vgmLoopOffset = getLE32(0x1c);
+        vgmLoopOffset = ByteUtil.readLeInt(vgmBuf, 0x1c);
 
-        loopCounter = getLE32(0x20);
+        loopCounter = ByteUtil.readLeInt(vgmBuf, 0x20);
 
         if (version > 0x0101) {
 
-            int YM2612clock = getLE32(0x2c);
+            int YM2612clock = ByteUtil.readLeInt(vgmBuf, 0x2c);
             if (YM2612clock != 0) {
-                ym2612ClockValue = YM2612clock & 0x3fffffff;
-                ym2612DualChipFlag = (YM2612clock & 0x40000000) != 0;
+                ym2612ClockValue = YM2612clock & 0x3fff_ffff;
+                ym2612DualChipFlag = (YM2612clock & 0x4000_0000) != 0;
                 if (ym2612DualChipFlag) chips.add("YM2612x2");
                 else chips.add("Ym2612Inst");
             }
 
-            int YM2151clock = getLE32(0x30);
+            int YM2151clock = ByteUtil.readLeInt(vgmBuf, 0x30);
             if (YM2151clock != 0) {
-                yn2151ClockValue = YM2151clock & 0x3fffffff;
-                ym2151DualChipFlag = (YM2151clock & 0x40000000) != 0;
+                yn2151ClockValue = YM2151clock & 0x3fff_ffff;
+                ym2151DualChipFlag = (YM2151clock & 0x4000_0000) != 0;
                 if (ym2151DualChipFlag) chips.add("YM2151x2");
                 else chips.add("YM2151");
             }
 
             //setYM2151Hosei();
 
-            vgmDataOffset = getLE32(0x34);
+            vgmDataOffset = ByteUtil.readLeInt(vgmBuf, 0x34);
             if (vgmDataOffset == 0) {
                 vgmDataOffset = 0x40;
             } else {
@@ -1922,8 +1901,8 @@ public class Vgm extends BaseDriver {
             //if (version >= 0x0151)
             {
                 if (vgmDataOffset > 0x38) {
-                    int SegaPCMclock = getLE32(0x38);
-                    int SPCMInterface = getLE32(0x3c);
+                    int SegaPCMclock = ByteUtil.readLeInt(vgmBuf, 0x38);
+                    int SPCMInterface = ByteUtil.readLeInt(vgmBuf, 0x3c);
                     if (SegaPCMclock != 0 && SPCMInterface != 0) {
                         chips.add("Sega PCM");
                         segaPCMClockValue = SegaPCMclock;
@@ -1932,30 +1911,30 @@ public class Vgm extends BaseDriver {
                 }
 
                 if (vgmDataOffset > 0x40) {
-                    int RF5C68clock = getLE32(0x40);
+                    int RF5C68clock = ByteUtil.readLeInt(vgmBuf, 0x40);
                     if (RF5C68clock != 0) {
-                        rf5C68ClockValue = RF5C68clock & 0x3fffffff;
-                        rf5C68DualChipFlag = (RF5C68clock & 0x40000000) != 0;
+                        rf5C68ClockValue = RF5C68clock & 0x3fff_ffff;
+                        rf5C68DualChipFlag = (RF5C68clock & 0x4000_0000) != 0;
                         if (rf5C68DualChipFlag) chips.add("RF5C68x2");
                         else chips.add("RF5C68");
                     }
                 }
 
                 if (vgmDataOffset > 0x44) {
-                    int YM2203clock = getLE32(0x44);
+                    int YM2203clock = ByteUtil.readLeInt(vgmBuf, 0x44);
                     if (YM2203clock != 0) {
-                        ym2203ClockValue = YM2203clock & 0x3fffffff;
-                        ym2203DualChipFlag = (YM2203clock & 0x40000000) != 0;
+                        ym2203ClockValue = YM2203clock & 0x3fff_ffff;
+                        ym2203DualChipFlag = (YM2203clock & 0x4000_0000) != 0;
                         if (ym2203DualChipFlag) chips.add("YM2203x2");
                         else chips.add("YM2203");
                     }
                 }
 
                 if (vgmDataOffset > 0x48) {
-                    int YM2608clock = getLE32(0x48);
+                    int YM2608clock = ByteUtil.readLeInt(vgmBuf, 0x48);
                     if (YM2608clock != 0) {
-                        yn2608ClockValue = YM2608clock & 0x3fffffff;
-                        ym2608DualChipFlag = (YM2608clock & 0x40000000) != 0;
+                        yn2608ClockValue = YM2608clock & 0x3fff_ffff;
+                        ym2608DualChipFlag = (YM2608clock & 0x4000_0000) != 0;
                         if (ym2608DualChipFlag) chips.add("YM2608x2");
                         else chips.add("YM2608");
 
@@ -1964,90 +1943,90 @@ public class Vgm extends BaseDriver {
                 }
 
                 if (vgmDataOffset > 0x4c) {
-                    int YM2610Bclock = getLE32(0x4c);
+                    int YM2610Bclock = ByteUtil.readLeInt(vgmBuf, 0x4c);
                     if (YM2610Bclock != 0) {
-                        ym2610ClockValue = YM2610Bclock & 0x3fffffff;
-                        ym2610DualChipFlag = (YM2610Bclock & 0x40000000) != 0;
+                        ym2610ClockValue = YM2610Bclock & 0x3fff_ffff;
+                        ym2610DualChipFlag = (YM2610Bclock & 0x4000_0000) != 0;
                         if (ym2610DualChipFlag) chips.add("YM2610/Bx2");
                         else chips.add("YM2610/B");
                     }
                 }
 
                 if (vgmDataOffset > 0x50) {
-                    int YM3812clock = getLE32(0x50);
+                    int YM3812clock = ByteUtil.readLeInt(vgmBuf, 0x50);
                     if (YM3812clock != 0) {
-                        ym3812ClockValue = YM3812clock & 0x3fffffff;
-                        ym3812DualChipFlag = (YM3812clock & 0x40000000) != 0;
+                        ym3812ClockValue = YM3812clock & 0x3fff_ffff;
+                        ym3812DualChipFlag = (YM3812clock & 0x4000_0000) != 0;
                         if (ym2610DualChipFlag) chips.add("YM3812x2");
                         else chips.add("YM3812");
                     }
                 }
 
                 if (vgmDataOffset > 0x54) {
-                    int YM3526clock = getLE32(0x54);
+                    int YM3526clock = ByteUtil.readLeInt(vgmBuf, 0x54);
                     if (YM3526clock != 0) {
-                        ym3526ClockValue = YM3526clock & 0x3fffffff;
-                        ym3526DualChipFlag = (YM3526clock & 0x40000000) != 0;
+                        ym3526ClockValue = YM3526clock & 0x3fff_ffff;
+                        ym3526DualChipFlag = (YM3526clock & 0x4000_0000) != 0;
                         if (ym3526DualChipFlag) chips.add("YM3526x2");
                         else chips.add("YM3526");
                     }
                 }
 
                 if (vgmDataOffset > 0x58) {
-                    int Y8950clock = getLE32(0x58);
+                    int Y8950clock = ByteUtil.readLeInt(vgmBuf, 0x58);
                     if (Y8950clock != 0) {
-                        y8950ClockValue = Y8950clock & 0x3fffffff;
-                        y8950DualChipFlag = (Y8950clock & 0x40000000) != 0;
+                        y8950ClockValue = Y8950clock & 0x3fff_ffff;
+                        y8950DualChipFlag = (Y8950clock & 0x4000_0000) != 0;
                         if (y8950DualChipFlag) chips.add("Y8950x2");
                         else chips.add("Y8950Inst");
                     }
                 }
 
                 if (vgmDataOffset > 0x5c) {
-                    int YMF262clock = getLE32(0x5c);
+                    int YMF262clock = ByteUtil.readLeInt(vgmBuf, 0x5c);
                     if (YMF262clock != 0) {
-                        ymF262ClockValue = YMF262clock & 0x3fffffff;
-                        ymF262DualChipFlag = (YMF262clock & 0x40000000) != 0;
+                        ymF262ClockValue = YMF262clock & 0x3fff_ffff;
+                        ymF262DualChipFlag = (YMF262clock & 0x4000_0000) != 0;
                         if (ymF262DualChipFlag) chips.add("YMF262x2");
                         else chips.add("YMF262");
                     }
                 }
 
                 if (vgmDataOffset > 0x60) {
-                    int YMF278Bclock = getLE32(0x60);
+                    int YMF278Bclock = ByteUtil.readLeInt(vgmBuf, 0x60);
                     if (YMF278Bclock != 0) {
-                        ymF278BClockValue = YMF278Bclock & 0x3fffffff;
-                        ymF278BDualChipFlag = (YMF278Bclock & 0x40000000) != 0;
+                        ymF278BClockValue = YMF278Bclock & 0x3fff_ffff;
+                        ymF278BDualChipFlag = (YMF278Bclock & 0x4000_0000) != 0;
                         if (ymF278BDualChipFlag) chips.add("YMF278Bx2");
                         else chips.add("YMF278B");
                     }
                 }
 
                 if (vgmDataOffset > 0x64) {
-                    int YMF271clock = getLE32(0x64);
+                    int YMF271clock = ByteUtil.readLeInt(vgmBuf, 0x64);
                     if (YMF271clock != 0) {
-                        ymF271ClockValue = YMF271clock & 0x3fffffff;
-                        ymF271DualChipFlag = (YMF271clock & 0x40000000) != 0;
+                        ymF271ClockValue = YMF271clock & 0x3fff_ffff;
+                        ymF271DualChipFlag = (YMF271clock & 0x4000_0000) != 0;
                         if (ymF271DualChipFlag) chips.add("YMF271x2");
                         else chips.add("YMF271");
                     }
                 }
 
                 if (vgmDataOffset > 0x68) {
-                    int YMZ280Bclock = getLE32(0x68);
+                    int YMZ280Bclock = ByteUtil.readLeInt(vgmBuf, 0x68);
                     if (YMZ280Bclock != 0) {
-                        ymZ280BClockValue = YMZ280Bclock & 0x3fffffff;
-                        ymZ280BDualChipFlag = (YMZ280Bclock & 0x40000000) != 0;
+                        ymZ280BClockValue = YMZ280Bclock & 0x3fff_ffff;
+                        ymZ280BDualChipFlag = (YMZ280Bclock & 0x4000_0000) != 0;
                         if (ymZ280BDualChipFlag) chips.add("YMZ280Bx2");
                         else chips.add("YMZ280B");
                     }
                 }
 
                 if (vgmDataOffset > 0x6c) {
-                    int RF5C164clock = getLE32(0x6c);
+                    int RF5C164clock = ByteUtil.readLeInt(vgmBuf, 0x6c);
                     if (RF5C164clock != 0) {
-                        rf5C164ClockValue = RF5C164clock & 0x3fffffff;
-                        rf5C164DualChipFlag = (RF5C164clock & 0x40000000) != 0;
+                        rf5C164ClockValue = RF5C164clock & 0x3fff_ffff;
+                        rf5C164DualChipFlag = (RF5C164clock & 0x4000_0000) != 0;
                         if (rf5C164DualChipFlag) chips.add("RF5C164x2");
                         else chips.add("RF5C164");
                     }
@@ -2055,7 +2034,7 @@ public class Vgm extends BaseDriver {
 
 
                 if (vgmDataOffset > 0x70) {
-                    int PWMclock = getLE32(0x70);
+                    int PWMclock = ByteUtil.readLeInt(vgmBuf, 0x70);
                     if (PWMclock != 0) {
                         chips.add("PWM");
                         pwmClockValue = PWMclock;
@@ -2063,85 +2042,85 @@ public class Vgm extends BaseDriver {
                 }
 
                 if (vgmDataOffset > 0x74) {
-                    int AY8910clock = getLE32(0x74);
+                    int AY8910clock = ByteUtil.readLeInt(vgmBuf, 0x74);
                     if (AY8910clock != 0) {
-                        ay8910ClockValue = AY8910clock & 0x3fffffff;
-                        ay8910DualChipFlag = (AY8910clock & 0x40000000) != 0;
+                        ay8910ClockValue = AY8910clock & 0x3fff_ffff;
+                        ay8910DualChipFlag = (AY8910clock & 0x4000_0000) != 0;
                         if (ay8910DualChipFlag) chips.add("AY8910x2");
                         else chips.add("AY8910");
                     }
                 }
             }
 
-            //okiM6258ClockValue = 0;
-            //huC6280ClockValue = 0;
-            //okiM6295ClockValue = 0;
+//            okiM6258ClockValue = 0;
+//            huC6280ClockValue = 0;
+//            okiM6295ClockValue = 0;
 
-            //if (version >= 0x0161)
+//            if (version >= 0x0161)
             {
                 if (vgmDataOffset > 0x80) {
-                    int DMGclock = getLE32(0x80);
+                    int DMGclock = ByteUtil.readLeInt(vgmBuf, 0x80);
                     if (DMGclock != 0) {
-                        dmgClockValue = DMGclock & 0x3fffffff;
-                        dmgDualChipFlag = (DMGclock & 0x40000000) != 0;
+                        dmgClockValue = DMGclock & 0x3fff_ffff;
+                        dmgDualChipFlag = (DMGclock & 0x4000_0000) != 0;
                         if (dmgDualChipFlag) chips.add("DMGx2");
                         else chips.add("DMG");
                     }
                 }
 
                 if (vgmDataOffset > 0x84) {
-                    int NESclock = getLE32(0x84);
+                    int NESclock = ByteUtil.readLeInt(vgmBuf, 0x84);
                     if (NESclock != 0) {
-                        nesClockValue = NESclock & 0xbfffffff;
-                        nesDualChipFlag = (NESclock & 0x40000000) != 0;
+                        nesClockValue = NESclock & 0xbfff_ffff;
+                        nesDualChipFlag = (NESclock & 0x4000_0000) != 0;
                         if (nesDualChipFlag) chips.add("NES_APUx2");
                         else chips.add("NES_APU");
                     }
                 }
 
                 if (vgmDataOffset > 0x88) {
-                    int MultiPCMclock = getLE32(0x88);
+                    int MultiPCMclock = ByteUtil.readLeInt(vgmBuf, 0x88);
                     if (MultiPCMclock != 0) {
-                        multiPCMClockValue = MultiPCMclock & 0x3fffffff;
-                        multiPCMDualChipFlag = (MultiPCMclock & 0x40000000) != 0;
+                        multiPCMClockValue = MultiPCMclock & 0x3fff_ffff;
+                        multiPCMDualChipFlag = (MultiPCMclock & 0x4000_0000) != 0;
                         if (multiPCMDualChipFlag) chips.add("MultiPCMx2");
                         else chips.add("MultiPCM");
                     }
                 }
 
                 if (vgmDataOffset > 0x90) {
-                    int OKIM6258clock = getLE32(0x90);
+                    int OKIM6258clock = ByteUtil.readLeInt(vgmBuf, 0x90);
                     if (OKIM6258clock != 0) {
                         chips.add("OKIM6258");
                         okiM6258ClockValue = OKIM6258clock;
-                        okiM6258Type = vgmBuf[0x94];
+                        okiM6258Type = vgmBuf[0x94] & 0xff;
                     }
                 }
 
                 if (vgmDataOffset > 0x9c) {
-                    int K051649clock = getLE32(0x9c);
+                    int K051649clock = ByteUtil.readLeInt(vgmBuf, 0x9c);
                     if (K051649clock != 0) {
-                        k051649ClockValue = K051649clock & 0x3fffffff;
-                        k051649DualChipFlag = (K051649clock & 0x40000000) != 0;
+                        k051649ClockValue = K051649clock & 0x3fff_ffff;
+                        k051649DualChipFlag = (K051649clock & 0x4000_0000) != 0;
                         if (k051649DualChipFlag) chips.add("K051649x2");
                         else chips.add("K051649Inst");
                     }
                 }
 
                 if (vgmDataOffset > 0xa0) {
-                    int K054539clock = getLE32(0xa0);
+                    int K054539clock = ByteUtil.readLeInt(vgmBuf, 0xa0);
                     if (K054539clock != 0) {
                         k054539ClockValue = K054539clock & 0x3fff_ffff;
-                        k054539DualChipFlag = (K054539clock & 0x40000000) != 0;
+                        k054539DualChipFlag = (K054539clock & 0x4000_0000) != 0;
                         if (k054539DualChipFlag) chips.add("K054539x2");
                         else chips.add("K054539Inst");
-                        k054539Flags = vgmBuf[0x95];
+                        k054539Flags = vgmBuf[0x95] & 0xff;
                     }
                 }
 
                 if (vgmDataOffset > 0xa4) {
 
-                    int HuC6280clock = getLE32(0xa4);
+                    int HuC6280clock = ByteUtil.readLeInt(vgmBuf, 0xa4);
                     if (HuC6280clock != 0) {
                         chips.add("OotakeHuC6280");
                         huC6280ClockValue = HuC6280clock;
@@ -2150,7 +2129,7 @@ public class Vgm extends BaseDriver {
 
                 if (vgmDataOffset > 0xa8) {
 
-                    int C140clock = getLE32(0xa8);
+                    int C140clock = ByteUtil.readLeInt(vgmBuf, 0xa8);
                     if (C140clock != 0) {
                         c140ClockValue = C140clock & 0x3fff_ffff;
                         c140DualChipFlag = (C140clock & 0x4000_0000) != 0;
@@ -2174,10 +2153,10 @@ public class Vgm extends BaseDriver {
 
                 if (vgmDataOffset > 0xac) {
 
-                    int k053260clock = getLE32(0xac);
+                    int k053260clock = ByteUtil.readLeInt(vgmBuf, 0xac);
                     if (k053260clock != 0) {
-                        k053260ClockValue = k053260clock & 0x3fffffff;
-                        k053260DualChipFlag = (k053260clock & 0x40000000) != 0;
+                        k053260ClockValue = k053260clock & 0x3fff_ffff;
+                        k053260DualChipFlag = (k053260clock & 0x4000_0000) != 0;
                         if (k053260DualChipFlag) chips.add("K053260x2");
                         else chips.add("K053260Inst");
                     }
@@ -2185,10 +2164,10 @@ public class Vgm extends BaseDriver {
 
                 if (vgmDataOffset > 0xb0) {
 
-                    int pokeyClock = getLE32(0xb0);
+                    int pokeyClock = ByteUtil.readLeInt(vgmBuf, 0xb0);
                     if (pokeyClock != 0) {
-                        pokeyClockValue = pokeyClock & 0x3fffffff;
-                        pokeyDualChipFlag = (pokeyClock & 0x40000000) != 0;
+                        pokeyClockValue = pokeyClock & 0x3fff_ffff;
+                        pokeyDualChipFlag = (pokeyClock & 0x4000_0000) != 0;
                         if (pokeyDualChipFlag) chips.add("POKEYx2");
                         else chips.add("POKEY");
                     }
@@ -2196,7 +2175,7 @@ public class Vgm extends BaseDriver {
 
                 if (vgmDataOffset > 0xb4) {
 
-                    int qSoundClock = getLE32(0xb4);
+                    int qSoundClock = ByteUtil.readLeInt(vgmBuf, 0xb4);
                     if (qSoundClock != 0) {
                         chips.add("QSoundInst");
                         qSoundClockValue = qSoundClock;
@@ -2204,15 +2183,15 @@ public class Vgm extends BaseDriver {
                 }
 
                 if (vgmDataOffset > 0x98) {
-                    int okiM6295clock = getLE32(0x98);
+                    int okiM6295clock = ByteUtil.readLeInt(vgmBuf, 0x98);
                     if (okiM6295clock != 0) {
-                        okiM6295DualChipFlag = (okiM6295clock & 0x40000000) != 0;
+                        okiM6295DualChipFlag = (okiM6295clock & 0x4000_0000) != 0;
                         if (okiM6295DualChipFlag) {
                             chips.add("OKIM6295x2");
                         } else {
                             chips.add("OKIM6295");
                         }
-                        okiM6295ClockValue = okiM6295clock & 0xbfffffff;
+                        okiM6295ClockValue = okiM6295clock & 0xbfff_ffff;
                     }
                 }
 
@@ -2220,7 +2199,7 @@ public class Vgm extends BaseDriver {
             if (version >= 0x0171) {
                 if (vgmDataOffset > 0xc0) {
 
-                    int wSwanClock = getLE32(0xc0);
+                    int wSwanClock = ByteUtil.readLeInt(vgmBuf, 0xc0);
                     if (wSwanClock != 0) {
                         wSwanClockValue = wSwanClock & 0x3fff_ffff;
                         wSwanDualChipFlag = (wSwanClock & 0x4000_0000) != 0;
@@ -2231,7 +2210,7 @@ public class Vgm extends BaseDriver {
 
                 if (vgmDataOffset > 0xc8) {
 
-                    int saa1099Clock = getLE32(0xc8);
+                    int saa1099Clock = ByteUtil.readLeInt(vgmBuf, 0xc8);
                     if (saa1099Clock != 0) {
                         saa1099ClockValue = saa1099Clock & 0x3fff_ffff;
                         saA1099DualChipFlag = (saa1099Clock & 0x4000_0000) != 0;
@@ -2242,7 +2221,7 @@ public class Vgm extends BaseDriver {
 
                 if (vgmDataOffset > 0xd8) {
 
-                    int x1_010Clock = getLE32(0xd8);
+                    int x1_010Clock = ByteUtil.readLeInt(vgmBuf, 0xd8);
                     if (x1_010Clock != 0) {
                         x1_010ClockValue = x1_010Clock & 0x3fff_ffff;
                         x1_010DualChipFlag = (x1_010Clock & 0x4000_0000) != 0;
@@ -2253,47 +2232,41 @@ public class Vgm extends BaseDriver {
 
                 if (vgmDataOffset > 0xdc) {
 
-                    int c352clock = getLE32(0xdc);
+                    int c352clock = ByteUtil.readLeInt(vgmBuf, 0xdc);
                     if (c352clock != 0) {
                         c352ClockValue = c352clock & 0x3fff_ffff;
                         c352DualChipFlag = (c352clock & 0x4000_0000) != 0;
                         if (c352DualChipFlag) chips.add("C352x2");
                         else chips.add("C352Inst");
 
-                        c352ClockDivider = vgmBuf[0xd6];
+                        c352ClockDivider = vgmBuf[0xd6] & 0xff;
                     }
                 }
 
                 if (vgmDataOffset > 0xe0) {
 
-                    int ga20Clock = getLE32(0xe0);
+                    int ga20Clock = ByteUtil.readLeInt(vgmBuf, 0xe0);
                     if (ga20Clock != 0) {
-                        ga20DualChipFlag = (ga20Clock & 0x40000000) != 0;
+                        ga20DualChipFlag = (ga20Clock & 0x4000_0000) != 0;
                         if (ga20DualChipFlag) {
-                            ga20ClockValue = ga20Clock & 0x3fffffff;
+                            ga20ClockValue = ga20Clock & 0x3fff_ffff;
                             chips.add("GA20x2");
                         } else {
-                            ga20ClockValue = ga20Clock & 0xbfffffff;
+                            ga20ClockValue = ga20Clock & 0xbfff_ffff;
                             chips.add("GA20");
                         }
                     }
                 }
-
             }
         } else {
             vgmDataOffset = 0x40;
         }
 
-        for (String chip : chips) {
-            usedChips += chip + " , ";
-        }
-        if (usedChips.length() > 2) {
-            usedChips = usedChips.substring(0, usedChips.length() - 3);
-        }
+        usedChips = String.join(" , ", chips);
 
-        int vgmGd3 = getLE32(0x14);
+        int vgmGd3 = ByteUtil.readLeInt(vgmBuf, 0x14);
         if (vgmGd3 != 0) {
-            int vgmGd3Id = getLE32(vgmGd3 + 0x14);
+            int vgmGd3Id = ByteUtil.readLeInt(vgmBuf, vgmGd3 + 0x14);
             if (vgmGd3Id != FCC_GD3) return false;
             gd3 = getGD3Info(vgmBuf, vgmGd3);
         }
@@ -2307,15 +2280,15 @@ public class Vgm extends BaseDriver {
      */
     private boolean searchOpnaRamType() {
         try {
-            long adr = vgmDataOffset;
+            int adr = vgmDataOffset;
 
-            while (adr < vgmBuf.length && vgmBuf[(int) adr] != 0x66) {
-                byte dat = vgmBuf[(int) adr];
+            while (adr < vgmBuf.length && (vgmBuf[adr] & 0xff) != 0x66) {
+                int dat = vgmBuf[adr] & 0xff;
                 if (dat < 0x51) adr += 2;
                 else if (dat < 0x57) adr += 3;
                 else if (dat == 0x57) {
-                    byte reg = vgmBuf[(int) adr + 1];
-                    byte val = vgmBuf[(int) adr + 2];
+                    int reg = vgmBuf[adr + 1] & 0xff;
+                    int val = vgmBuf[adr + 2] & 0xff;
                     adr += 3;
                     if (reg == 1) {
                         if ((val & 2) != 0) {
@@ -2327,24 +2300,24 @@ public class Vgm extends BaseDriver {
                 else if (dat == 0x64) adr += 4;
                 else if (dat == 0x66) adr++;
                 else if (dat == 0x67) {
-                    int bLen = getLE32((int) (adr + 3));
-                    bLen &= 0x7fffffff;
+                    int bLen = ByteUtil.readLeInt(vgmBuf, adr + 3);
+                    bLen &= 0x7fff_ffff;
                     adr += bLen + 7;
                 } else if (dat == 0x68) {
                     adr += 12;
-                } else if (dat < 0x90) adr++;
+                } else if ((dat & 0xff) < 0x90) adr++;
                 else if (dat == 0x90) adr += 5;
                 else if (dat == 0x91) adr += 5;
                 else if (dat == 0x92) adr += 6;
                 else if (dat == 0x93) adr += 11;
                 else if (dat == 0x94) adr += 2;
                 else if (dat == 0x95) adr += 5;
-                else if (dat < 0xc0) adr += 3;
-                else if (dat < 0xe0) adr += 4;
+                else if ((dat & 0xff) < 0xc0) adr += 3;
+                else if ((dat & 0xff) < 0xe0) adr += 4;
                 else adr += 5;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
 
         return false;
@@ -2377,14 +2350,14 @@ public class Vgm extends BaseDriver {
 
     static class DacCtrlData {
         public boolean enable;
-        public byte bank;
+        public int bank;
     }
 
     static class PcmBankTbl {
-        public byte comprType;
-        public byte cmpSubType;
-        public byte bitDec;
-        public byte bitCmp;
+        public int comprType;
+        public int cmpSubType;
+        public int bitDec;
+        public int bitCmp;
         public int entryCount;
         public byte[] entries;
     }

@@ -33,7 +33,7 @@ public class frmMultiPCM extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
+    private int chipId = 0;
     private int zoom = 1;
     private MDChipParams.MultiPCM newParam = null;
     private MDChipParams.MultiPCM oldParam = new MDChipParams.MultiPCM();
@@ -41,12 +41,12 @@ public class frmMultiPCM extends frmBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmMultiPCM.class);
 
-    public frmMultiPCM(frmMain frm, int chipID, int zoom, MDChipParams.MultiPCM newParam, MDChipParams.MultiPCM oldParam) {
+    public frmMultiPCM(frmMain frm, int chipId, int zoom, MDChipParams.MultiPCM newParam, MDChipParams.MultiPCM oldParam) {
         super(frm);
 
         initializeComponent();
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         this.newParam = newParam;
         this.oldParam = oldParam;
@@ -69,9 +69,9 @@ public class frmMultiPCM extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosMultiPCM()[chipID] = getLocation();
+                parent.setting.getLocation().getPosMultiPCM()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosMultiPCM()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosMultiPCM()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -117,9 +117,9 @@ public class frmMultiPCM extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 28; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.MultiPCM, chipID, ch);
+                            parent.resetChannelMask(EnmChip.MultiPCM, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.MultiPCM, chipID, ch);
+                            parent.setChannelMask(EnmChip.MultiPCM, chipId, ch);
                     }
                 }
                 return;
@@ -130,18 +130,18 @@ public class frmMultiPCM extends frmBase {
 
             if (ch < 28) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.MultiPCM, chipID, ch);
+                    parent.setChannelMask(EnmChip.MultiPCM, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 28; ch++) parent.resetChannelMask(EnmChip.MultiPCM, chipID, ch);
+                for (ch = 0; ch < 28; ch++) parent.resetChannelMask(EnmChip.MultiPCM, chipId, ch);
 
             }
         }
     };
 
     public void screenInit() {
-        boolean multiPCMType = false;// (chipID == 0) ? parent.setting.multiPCMType.UseScci : parent.setting.MultiPCMSType.UseScci;
+        boolean multiPCMType = false;// (chipId == 0) ? parent.setting.multiPCMType.UseScci : parent.setting.MultiPCMSType.UseScci;
         int tp = multiPCMType ? 1 : 0;
         for (int ch = 0; ch < 28; ch++) {
             for (int ot = 0; ot < 12 * 8; ot++) {
@@ -183,7 +183,7 @@ public class frmMultiPCM extends frmBase {
     }
 
     public void screenChangeParams() {
-        MultiPCM multiPCMRegister = audio.getMultiPCMRegister(chipID);
+        MultiPCM multiPCMRegister = audio.getMultiPCMRegister(chipId);
         if (multiPCMRegister == null) return;
 
         for (int ch = 0; ch < 28; ch++) {
@@ -224,10 +224,10 @@ public class frmMultiPCM extends frmBase {
 
             if (newParam.channels[ch].bit[0]) {
                 newParam.channels[ch].volumeL =
-                        Math.min((int) (((0x7f - newParam.channels[ch].inst[1]) * ((newParam.channels[ch].pan >> 4) & 0xf) / 0xf) / 4.5)
+                        Math.min((int) (((0x7f - newParam.channels[ch].inst[1]) * ((newParam.channels[ch].pan >> 4) & 0xf) / (double) 0xf) / 4.5)
                                 , 19);
                 newParam.channels[ch].volumeR =
-                        Math.min((int) (((0x7f - newParam.channels[ch].inst[1]) * ((newParam.channels[ch].pan) & 0xf) / 0xf) / 4.5)
+                        Math.min((int) (((0x7f - newParam.channels[ch].inst[1]) * ((newParam.channels[ch].pan) & 0xf) / (double) 0xf) / 4.5)
                                 , 19);
             } else {
                 newParam.channels[ch].note = -1;
@@ -248,24 +248,24 @@ public class frmMultiPCM extends frmBase {
             DrawBuff.PanType2(frameBuffer, ch, oyc.pan, nyc.pan, 0);
 
             DrawBuff.drawNESSw(frameBuffer, 64 * 4, ch * 8 + 8, oldParam.channels[ch].bit[0], newParam.channels[ch].bit[0]);
-            DrawBuff.font4HexByte(frameBuffer, 4 * 66, ch * 8 + 8, 0, oyc.inst[0], nyc.inst[0]);
+            oyc.inst[0] = DrawBuff.font4HexByte(frameBuffer, 4 * 66, ch * 8 + 8, 0, oyc.inst[0], nyc.inst[0]);
             DrawBuff.font4Hex12Bit(frameBuffer, 4 * 69, ch * 8 + 8, 0, oyc.freq, nyc.freq);
             DrawBuff.drawNESSw(frameBuffer, 72 * 4, ch * 8 + 8, oldParam.channels[ch].bit[1], newParam.channels[ch].bit[1]); // TL Interpolation
-            DrawBuff.font4HexByte(frameBuffer, 4 * 74, ch * 8 + 8, 0, oyc.inst[1], nyc.inst[1]); // TL
+            oyc.inst[1] = DrawBuff.font4HexByte(frameBuffer, 4 * 74, ch * 8 + 8, 0, oyc.inst[1], nyc.inst[1]); // TL
             DrawBuff.font4Hex4Bit(frameBuffer, 4 * 77, ch * 8 + 8, 0, oyc.inst[2], nyc.inst[2]); // LFO freq
             DrawBuff.font4Hex4Bit(frameBuffer, 4 * 79, ch * 8 + 8, 0, oyc.inst[3], nyc.inst[3]); // PLFO
             DrawBuff.font4Hex4Bit(frameBuffer, 4 * 81, ch * 8 + 8, 0, oyc.inst[4], nyc.inst[4]); // ALFO
             DrawBuff.font4Hex24Bit(frameBuffer, 4 * 83, ch * 8 + 8, 0, oyc.sadr, nyc.sadr);
             DrawBuff.font4Hex16Bit(frameBuffer, 4 * 90, ch * 8 + 8, 0, oyc.eadr, nyc.eadr);
             DrawBuff.font4Hex16Bit(frameBuffer, 4 * 95, ch * 8 + 8, 0, oyc.ladr, nyc.ladr);
-            DrawBuff.font4HexByte(frameBuffer, 4 * 100, ch * 8 + 8, 0, oyc.inst[5], nyc.inst[5]); // LFOVIB
+            oyc.inst[5] = DrawBuff.font4HexByte(frameBuffer, 4 * 100, ch * 8 + 8, 0, oyc.inst[5], nyc.inst[5]); // LFOVIB
             DrawBuff.font4Hex4Bit(frameBuffer, 4 * 103, ch * 8 + 8, 0, oyc.inst[6], nyc.inst[6]); // AR
             DrawBuff.font4Hex4Bit(frameBuffer, 4 * 105, ch * 8 + 8, 0, oyc.inst[7], nyc.inst[7]); // DR1
             DrawBuff.font4Hex4Bit(frameBuffer, 4 * 107, ch * 8 + 8, 0, oyc.inst[8], nyc.inst[8]); // DR2
             DrawBuff.font4Hex4Bit(frameBuffer, 4 * 109, ch * 8 + 8, 0, oyc.inst[9], nyc.inst[9]); // DL
             DrawBuff.font4Hex4Bit(frameBuffer, 4 * 111, ch * 8 + 8, 0, oyc.inst[10], nyc.inst[10]); // RR
             DrawBuff.font4Hex4Bit(frameBuffer, 4 * 113, ch * 8 + 8, 0, oyc.inst[11], nyc.inst[11]); // KRS
-            DrawBuff.font4HexByte(frameBuffer, 4 * 115, ch * 8 + 8, 0, oyc.inst[12], nyc.inst[12]); // AM
+            oyc.inst[12] = DrawBuff.font4HexByte(frameBuffer, 4 * 115, ch * 8 + 8, 0, oyc.inst[12], nyc.inst[12]); // AM
 
             DrawBuff.VolumeXY(frameBuffer, 117, ch * 2 + 2, 1, oyc.volumeL, nyc.volumeL, 0); // Front
             DrawBuff.VolumeXY(frameBuffer, 117, ch * 2 + 3, 1, oyc.volumeR, nyc.volumeR, 0); // Front

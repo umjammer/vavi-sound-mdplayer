@@ -30,8 +30,8 @@ public class Xgm extends BaseDriver {
     private int sampleDataBlockAddr = 0;
     private int musicDataBlockSize = 0;
     private int musicDataBlockAddr = 0;
-    private byte versionInformation = 0;
-    private byte dataInformation = 0;
+    private int versionInformation = 0;
+    private int dataInformation = 0;
     private boolean isNTSC = false;
     private boolean existGD3 = false;
     private boolean multiTrackFile = false;
@@ -108,6 +108,7 @@ public class Xgm extends BaseDriver {
         return gd3;
     }
 
+    @Override
     public Vgm.Gd3 getGD3Info(byte[] vgmBuf) {
 
         if (!existGD3) return new Vgm.Gd3();
@@ -133,9 +134,9 @@ public class Xgm extends BaseDriver {
 
             sampleDataBlockSize = Common.getLE16(vgmBuf, 0x100);
 
-            versionInformation = vgmBuf[0x102];
+            versionInformation = vgmBuf[0x102] & 0xff;
 
-            dataInformation = vgmBuf[0x103];
+            dataInformation = vgmBuf[0x103] & 0xff;
 
             isNTSC = (dataInformation & 0x1) == 0;
 
@@ -169,12 +170,12 @@ public class Xgm extends BaseDriver {
     }
 
 
-    private double musicStep = 1;// setting.getoutputDevice().SampleRate / 60.0;
-    private double pcmStep = 1;// setting.getoutputDevice().SampleRate / 14000.0;
+    private double musicStep;// setting.getoutputDevice().SampleRate / 60.0;
+    private double pcmStep;// setting.getoutputDevice().SampleRate / 14000.0;
     private double musicDownCounter = 0.0;
     private double pcmDownCounter = 0.0;
     private int musicPtr = 0;
-    private byte DACEnable = 0;
+    private int DACEnable = 0;
 
     private void oneFrameMain() {
         try {
@@ -223,7 +224,7 @@ public class Xgm extends BaseDriver {
     private void oneFrameXGM() {
         while (true) {
 
-            byte cmd = vgmBuf[musicPtr++];
+            int cmd = vgmBuf[musicPtr++] & 0xff;
 
              // wait
             if (cmd == 0) break;
@@ -241,7 +242,7 @@ public class Xgm extends BaseDriver {
                 break;
             }
 
-            byte X = (byte) (cmd & 0xf);
+            int X = cmd & 0xf;
             cmd &= 0xf0;
 
             if (cmd == 0x10) {
@@ -263,33 +264,33 @@ public class Xgm extends BaseDriver {
         }
     }
 
-    private void writePSG(byte X) {
+    private void writePSG(int X) {
         for (int i = 0; i < X + 1; i++) {
-            byte data = vgmBuf[musicPtr++];
+            int data = vgmBuf[musicPtr++] & 0xff;
             chipRegister.setSN76489Register(0, data, model);
         }
     }
 
-    private void writeYM2612P0(byte X) {
+    private void writeYM2612P0(int X) {
         for (int i = 0; i < X + 1; i++) {
-            byte adr = vgmBuf[musicPtr++];
-            byte val = vgmBuf[musicPtr++];
-            if (adr == 0x2b) DACEnable = (byte) (val & 0x80);
+            int adr = vgmBuf[musicPtr++] & 0xff;
+            int val = vgmBuf[musicPtr++] & 0xff;
+            if (adr == 0x2b) DACEnable = val & 0x80;
             chipRegister.setYM2612Register(0, 0, adr, val, model, vgmFrameCounter);
         }
     }
 
-    private void writeYM2612P1(byte X) {
+    private void writeYM2612P1(int X) {
         for (int i = 0; i < X + 1; i++) {
-            byte adr = vgmBuf[musicPtr++];
-            byte val = vgmBuf[musicPtr++];
+            int adr = vgmBuf[musicPtr++] & 0xff;
+            int val = vgmBuf[musicPtr++] & 0xff;
             chipRegister.setYM2612Register(0, 1, adr, val, model, vgmFrameCounter);
         }
     }
 
-    private void writeYM2612Key(byte X) {
+    private void writeYM2612Key(int X) {
         for (int i = 0; i < X + 1; i++) {
-            byte val = vgmBuf[musicPtr++];
+            int val = vgmBuf[musicPtr++] & 0xff;
             chipRegister.setYM2612Register(0, 0, 0x28, val, model, vgmFrameCounter);
         }
     }
@@ -301,16 +302,16 @@ public class Xgm extends BaseDriver {
         public int addr = 0;
         public int inst = 0;
         public boolean isPlaying = false;
-        public byte data = 0;
+        public int data = 0;
     }
 
     public XgmPcm[] xgmpcm = null;
     private double pcmSpeedCounter;
 
-    private void playPCM(byte X) {
-        byte priority = (byte) (X & 0xc);
-        byte channel = (byte) (X & 0x3);
-        byte id = vgmBuf[musicPtr++];
+    private void playPCM(int X) {
+        int priority = X & 0xc;
+        int channel = X & 0x3;
+        int id = vgmBuf[musicPtr++] & 0xff;
 
          // 優先度が高い場合または消音中の場合のみ発音できる
         if (xgmpcm[channel].priority <= priority || !xgmpcm[channel].isPlaying) {
@@ -340,9 +341,9 @@ public class Xgm extends BaseDriver {
 
         for (int i = 0; i < 4; i++) {
             if (!xgmpcm[i].isPlaying) continue;
-            byte d = vgmBuf[xgmpcm[i].addr++];
+            byte d = vgmBuf[xgmpcm[i].addr++]; // signed
             o += d;
-            xgmpcm[i].data = (byte) Math.abs(d);
+            xgmpcm[i].data = Math.abs(d);
             if (xgmpcm[i].addr >= xgmpcm[i].endAddr) {
                 xgmpcm[i].isPlaying = false;
                 xgmpcm[i].data = 0;

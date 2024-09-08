@@ -7,7 +7,6 @@ import java.util.List;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
-import mdplayer.Audio;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
@@ -32,6 +31,7 @@ public class HESFileFormat extends BaseFileFormat {
         return new String[] {".hes"};
     }
 
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
         List<PlayList.Music> musics = new ArrayList<>();
         Hes hes = new Hes();
@@ -61,6 +61,7 @@ public class HESFileFormat extends BaseFileFormat {
         return musics;
     }
 
+    @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
         return getMusicCommon(ms, buf, zipFile);
     }
@@ -78,6 +79,7 @@ public class HESFileFormat extends BaseFileFormat {
         return new HESPlugin();
     }
 
+    @Override
     public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
         byte[] buf;
         if (entry == null) {
@@ -110,6 +112,7 @@ public class HESFileFormat extends BaseFileFormat {
         return musics;
     }
 
+    @Override
     public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) throws IOException {
         byte[] buf;
         if (entry == null) {

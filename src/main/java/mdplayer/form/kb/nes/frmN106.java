@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -34,19 +33,19 @@ public class frmN106 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
-    private MDChipParams.N106 newParam = null;
-    private MDChipParams.N106 oldParam = null;
+    private int chipId;
+    private int zoom;
+    private MDChipParams.N106 newParam;
+    private MDChipParams.N106 oldParam;
     private FrameBuffer frameBuffer = new FrameBuffer();
     static Preferences prefs = Preferences.userNodeForPackage(frmN106.class);
 
-    public frmN106(frmMain frm, int chipID, int zoom, MDChipParams.N106 newParam, MDChipParams.N106 oldParam) {
+    public frmN106(frmMain frm, int chipId, int zoom, MDChipParams.N106 newParam, MDChipParams.N106 oldParam) {
         super(frm);
 
         initializeComponent();
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         this.newParam = newParam;
         this.oldParam = oldParam;
@@ -69,9 +68,9 @@ public class frmN106 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosN106()[chipID] = getLocation();
+                parent.setting.getLocation().getPosN106()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosN106()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosN106()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -117,9 +116,9 @@ public class frmN106 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.N163, chipID, ch);
+                            parent.resetChannelMask(EnmChip.N163, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.N163, chipID, ch);
+                            parent.setChannelMask(EnmChip.N163, chipId, ch);
                     }
                 }
                 return;
@@ -133,17 +132,17 @@ public class frmN106 extends frmBase {
             if (ev.getButton() == MouseEvent.BUTTON2) {
                 for (int i = 0; i < 8; i++) {
                     //マスク解除
-                    parent.resetChannelMask(EnmChip.N163, chipID, i);
+                    parent.resetChannelMask(EnmChip.N163, chipId, i);
                 }
                 return;
             }
 
             if (m != 0) {
                 //クリップボードに音色をコピーする
-                parent.getInstCh(EnmChip.N163, ch, chipID);
+                parent.getInstCh(EnmChip.N163, ch, chipId);
             } else {
                 //マスク
-                parent.setChannelMask(EnmChip.N163, chipID, ch);
+                parent.setChannelMask(EnmChip.N163, chipId, ch);
             }
         }
     };
@@ -205,22 +204,22 @@ public class frmN106 extends frmBase {
             oyc = oldParam.channels[ch];
             nyc = newParam.channels[ch];
 
-            //Enable
+            // Enable
             DrawBuff.drawNESSw(frameBuffer, 6 * 4, ch * 24 + 8
                     , oldParam.channels[ch].bit[1], newParam.channels[ch].bit[1]);
 
-            //Key
+            // Key
             DrawBuff.drawNESSw(frameBuffer, 7 * 4, ch * 24 + 8
                     , oldParam.channels[ch].bit[0], newParam.channels[ch].bit[0]);
 
-            //vol
-            DrawBuff.volume(frameBuffer, 256, 8 + ch * 3 * 8, 0, oyc.volume, nyc.volume, 0);
+            // vol
+            oyc.volume = DrawBuff.volume(frameBuffer, 256, 8 + ch * 3 * 8, 0, oyc.volume, nyc.volume, 0);
             DrawBuff.font4Hex4Bit(frameBuffer, 4 * 4, ch * 24 + 16, 0, oyc.volumeR, nyc.volumeR);
 
-            //freq
-            DrawBuff.font4Hex20Bit(frameBuffer, 4 * 4, ch * 24 + 24, 0, oyc.freq, nyc.freq);
+            // freq
+            oyc.freq = DrawBuff.font4Hex20Bit(frameBuffer, 4 * 4, ch * 24 + 24, 0, oyc.freq, nyc.freq);
 
-            //Note
+            // Note
             DrawBuff.keyBoard(frameBuffer, ch * 3, oyc.note, nyc.note, 0);
 
             if (oyc.aryWave16bit == null && nyc.aryWave16bit != null)

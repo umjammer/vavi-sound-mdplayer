@@ -20,23 +20,28 @@ public class MsxPort implements Memory {
         this.model = model;
     }
 
+    @Override
     public byte get(int address) {
         return inPort(address);
     }
 
+    @Override
     public void set(int address, byte value) {
         outPort(address, value);
     }
 
+    @Override
     public int getSize() {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public byte[] getContents(int startAddress, int length) {
         throw new UnsupportedOperationException();
     }
 
-    public void setContents(int startAddress, byte[] contents, int startIndex/* = 0*/, Integer length/* = null*/) {
+    @Override
+    public void setContents(int startAddress, byte[] contents, int startIndex /* = 0 */, Integer length /* = null */) {
         throw new UnsupportedOperationException();
     }
 
@@ -47,24 +52,24 @@ public class MsxPort implements Memory {
             ay8910Adr = value;
             break;
         case 0xa1:
-            chipRegister.setAY8910Register(0, ay8910Adr, value, model);
+            chipRegister.setAY8910Register(0, ay8910Adr & 0xff, value, model);
             break;
         case 0xa2:
-            //Debug.printf("Psg Port Adr:%04x Dat:%02x", address, value);
+            //Debug.printf("Psg Port adr:%04x Dat:%02x", address, value);
             break;
         case 0x7c:
             opllAdr = value;
             break;
         case 0x7d:
-            chipRegister.setYM2413Register(0, opllAdr, value, model);
-            //Debug.printf("Ym2413 Port Adr:%04x Dat:%02x", address, value);
+            chipRegister.setYM2413Register(0, opllAdr & 0xff, value, model);
+            //Debug.printf("Ym2413 Port adr:%04x Dat:%02x", address, value);
             break;
         case 0xa8:
-            //Debug.printf("ChangeSlot Port Adr:%04x Dat:%02x", address, value);
+            //Debug.printf("ChangeSlot Port adr:%04x Dat:%02x", address, value);
             changeSlot(value);
             break;
         default:
-            Debug.printf("Port  Adr:%04x Dat:%02x", address, value);
+            Debug.printf("Port  adr:%04x Dat:%02x", address, value);
             break;
         }
     }
@@ -72,11 +77,11 @@ public class MsxPort implements Memory {
     private byte inPort(int address) {
 
         if (address == 0xa8) {
-            //Debug.printf("ChangeSlot Port :  Adr:%04x", address);
+            //Debug.printf("ChangeSlot Port :  adr:%04x", address);
             return readSlot();
         }
 
-        Debug.printf("Port :  Adr:%04x", address);
+        Debug.printf("Port :  adr:%04x", address);
         return 0;
     }
 

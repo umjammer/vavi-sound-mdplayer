@@ -129,11 +129,11 @@ public class PMDDotNET extends BaseDriver {
         vgmFrameCounter = -latency - waitTime;
         vgmSpeed = 1;
 
-// #if DEBUG
+//#if DEBUG
         // 実チップスレッドは処理をスキップ(デバッグ向け)
         if (model == EnmModel.RealModel)
             return true;
-// #endif
+//#endif
 
         if (mtype == PMDFileType.MML)
             return initMML();
@@ -144,13 +144,13 @@ public class PMDDotNET extends BaseDriver {
     @Override
     public void processOneFrame() {
 
-// #if DEBUG
+//#if DEBUG
         // 実チップスレッドは処理をスキップ(デバッグ向け)
         if (model == EnmModel.RealModel) {
             stopped = true;
             return;
         }
-// #endif
+//#endif
 
         try {
             vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
@@ -355,7 +355,7 @@ public class PMDDotNET extends BaseDriver {
         // boolean notSoundBoard2 = false;
         boolean isLoadADPCM = true;
         boolean loadADPCMOnly = false;
-        List<MmlDatum> buf = new ArrayList<MmlDatum>();
+        List<MmlDatum> buf = new ArrayList<>();
         for (byte b : vgmBuf)
             buf.add(new MmlDatum(b & 0xff));
 
@@ -440,9 +440,9 @@ public class PMDDotNET extends BaseDriver {
             return 0;
 
         if (arg.port == 0x05) {
-            chipRegister.PPSDRVLoad(0, (byte[]) arg.addtionalData, model);
+            chipRegister.loadPPSDRV(0, (byte[]) arg.additionalData, model);
         } else {
-            chipRegister.PPSDRVWrite(0, arg.port, arg.address, arg.data, model);
+            chipRegister.writePPSDRV(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -453,9 +453,9 @@ public class PMDDotNET extends BaseDriver {
             return 0;
 
         if (arg.port == 0x00) {
-            chipRegister.P86LoadPcm(0, (byte) arg.address, (byte) arg.data, (byte[]) arg.addtionalData, model);
+            chipRegister.loadPcmP86(0, arg.address, arg.data, (byte[]) arg.additionalData, model);
         } else {
-            chipRegister.P86Write(0, arg.port, arg.address, arg.data, model);
+            chipRegister.writeP86(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -466,7 +466,7 @@ public class PMDDotNET extends BaseDriver {
             return 0;
 
         if (arg.port == 0x03) {
-            chipRegister.loadPcmPPZ8(0, (byte) arg.address, (byte) arg.data, (byte[][]) arg.addtionalData, model);
+            chipRegister.loadPcmPPZ8(0, arg.address, arg.data, (byte[][]) arg.additionalData, model);
         } else {
             chipRegister.writePPZ8(0, arg.port, arg.address, arg.data, model);
         }

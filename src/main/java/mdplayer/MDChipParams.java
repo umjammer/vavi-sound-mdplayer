@@ -41,7 +41,7 @@ public class MDChipParams {
         public int pcmMode = -1;
         public int pcmBuff = 0;
         public Boolean mask = false;
-        public byte slot = 0;
+        public int slot = 0;
         public int tp = -1;
         public int kf = -1; // OPM only
         public int tn = 0; // Psg only
@@ -56,7 +56,7 @@ public class MDChipParams {
         public int[] inst = new int[48];
         public int[] typ = new int[48];
         public boolean[] bit = new boolean[48];
-        public short[] aryWave16bit = null;
+        public short[] aryWave16bit;
 
         public Channel() {
             aryWave16bit = null;

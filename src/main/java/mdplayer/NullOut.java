@@ -30,6 +30,7 @@ public class NullOut implements Closeable {
 
     public Consumer<LineEvent> playbackStopped;
 
+    @Override
     public void close() {
     }
 

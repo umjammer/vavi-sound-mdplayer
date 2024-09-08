@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -33,27 +32,27 @@ public class frmYMF278B extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
 
-    private MDChipParams.YMF278B newParam = null;
+    private MDChipParams.YMF278B newParam;
     private MDChipParams.YMF278B oldParam = new MDChipParams.YMF278B();
     private FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYMF278B.class);
 
-    public frmYMF278B(frmMain frm, int chipID, int zoom, MDChipParams.YMF278B newParam) {
+    public frmYMF278B(frmMain frm, int chipId, int zoom, MDChipParams.YMF278B newParam) {
         super(frm);
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         initializeComponent();
 
         this.newParam = newParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneYMF278B(), null, zoom);
-        boolean ymF278BType = (chipID == 0)
+        boolean ymF278BType = (chipId == 0)
                 ? parent.setting.getYMF278BType()[0].getUseReal()[0]
                 : parent.setting.getYMF278BType()[1].getUseReal()[0];
-        int ymF278BSoundLocation = (chipID == 0)
+        int ymF278BSoundLocation = (chipId == 0)
                 ? parent.setting.getYMF278BType()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYMF278BType()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = ymF278BType ? 1 : 0;
@@ -74,9 +73,9 @@ public class frmYMF278B extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosYmf278b()[chipID] = getLocation();
+                parent.setting.getLocation().getPosYmf278b()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosYmf278b()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosYmf278b()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -121,10 +120,10 @@ public class frmYMF278B extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[][] ymf278bRegister = audio.getYMF278BRegister(chipID);
+        int[][] ymf278bRegister = audio.getYMF278BRegister(chipId);
         MDChipParams.Channel nyc;
-        int slot = 0;
-        int slotP = 0;
+        int slot;
+        int slotP;
 
         //FM
         for (int c = 0; c < 18; c++) {
@@ -214,7 +213,7 @@ public class frmYMF278B extends frmBase {
             }
         }
 
-        int ko = audio.getYMF278BFMKeyON(chipID);
+        int ko = audio.getYMF278BFMKeyON(chipId);
 
         for (int c = 0; c < 18; c++) {
             nyc = newParam.channels[c];
@@ -315,9 +314,9 @@ public class frmYMF278B extends frmBase {
 
         }
 
-        //Audio.resetYMF278BFMKeyON(chipID);
+        //Audio.resetYMF278BFMKeyON(chipId);
 
-        int r = audio.getYMF278BRyhthmKeyON(chipID);
+        int r = audio.getYMF278BRyhthmKeyON(chipId);
 
         //slot14 TL 0x51 HH
         //slot15 TL 0x52 TOM
@@ -365,10 +364,10 @@ public class frmYMF278B extends frmBase {
             if (newParam.channels[22].volume < 0) newParam.channels[22].volume = 0;
         }
 
-        audio.resetYMF278BRyhthmKeyON(chipID);
+        audio.resetYMF278BRyhthmKeyON(chipId);
 
         //PCM
-        int[] pcmKey = audio.getYMF278BPCMKeyON(chipID);
+        int[] pcmKey = audio.getYMF278BPCMKeyON(chipId);
         int[] mdPCMKey = audio.getMoonDriverPCMKeyOn();
         for (int c = 23; c < 23 + 24; c++) {
             nyc = newParam.channels[c];
@@ -444,14 +443,14 @@ public class frmYMF278B extends frmBase {
             //Wav
             nyc.inst[12] = (ymf278bRegister[2][0x08 + (c - 23)]) + ((ymf278bRegister[2][0x20 + (c - 23)] & 0x1) << 8);
         }
-        audio.resetYMF278BPCMKeyON(chipID);
+        audio.resetYMF278BPCMKeyON(chipId);
     }
 
     public void screenDrawParams() {
-        boolean YMF278BType = (chipID == 0)
+        boolean YMF278BType = (chipId == 0)
                 ? parent.setting.getYMF278BType()[0].getUseReal()[0]
                 : parent.setting.getYMF278BType()[1].getUseReal()[0];
-        int YMF278BSoundLocation = (chipID == 0)
+        int YMF278BSoundLocation = (chipId == 0)
                 ? parent.setting.getYMF278BType()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYMF278BType()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = YMF278BType ? 1 : 0;
@@ -562,9 +561,9 @@ public class frmYMF278B extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 47; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YMF278B, chipID, ch);
+                            parent.resetChannelMask(EnmChip.YMF278B, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YMF278B, chipID, ch);
+                            parent.setChannelMask(EnmChip.YMF278B, chipId, ch);
                     }
                 }
                 return;
@@ -586,16 +585,16 @@ public class frmYMF278B extends frmBase {
 
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 if (ch < 18) {
-                    parent.getInstCh(EnmChip.YMF278B, ch, chipID);
+                    parent.getInstCh(EnmChip.YMF278B, ch, chipId);
                 }
 
                 //マスク
-                parent.setChannelMask(EnmChip.YMF278B, chipID, ch);
+                parent.setChannelMask(EnmChip.YMF278B, chipId, ch);
                 return;
             }
 
             //マスク解除
-            for (ch = 0; ch < 47; ch++) parent.resetChannelMask(EnmChip.YMF278B, chipID, ch);
+            for (ch = 0; ch < 47; ch++) parent.resetChannelMask(EnmChip.YMF278B, chipId, ch);
         }
     };
 

@@ -31,10 +31,10 @@ import mdplayer.driver.sid.libsidplayfp.c64.C64Sid;
  */
 public class SidBank implements IBank {
 
-    // # include "Bank.h"
-    // # include "C64/C64Sid.h"
-    // # include "sidcxx11.h"
-    // # include "NullSid.h"
+    //# include "Bank.h"
+    //# include "C64/C64Sid.h"
+    //# include "sidcxx11.h"
+    //# include "NullSid.h"
     // Sid chips
     private C64Sid sid;
 
@@ -47,11 +47,13 @@ public class SidBank implements IBank {
         sid.reset((byte) 0xf);
     }
 
-    public byte peek(short addr) {
+    @Override
+    public byte peek(int addr) {
         return sid.peek(addr);
     }
 
-    public void poke(short addr, byte data) {
+    @Override
+    public void poke(int addr, byte data) {
         sid.poke(addr, data);
     }
 

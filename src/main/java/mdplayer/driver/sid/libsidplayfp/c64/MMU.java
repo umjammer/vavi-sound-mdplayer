@@ -41,7 +41,7 @@ import mdplayer.driver.sid.libsidplayfp.SidMemory;
  */
 public final class MMU implements SidMemory, IPLA {
 
-    private EventScheduler eventScheduler = null;
+    private EventScheduler eventScheduler;
 
     /** CPU port signals */
     private boolean loRam, hiRam, charEn;
@@ -71,10 +71,12 @@ public final class MMU implements SidMemory, IPLA {
     private ZeroRAMBank zeroRAMBank;
 
     // public void setCpuPort(byte state) { }
+    @Override
     public byte getLastReadByte() {
         return 0;
     }
 
+    @Override
     public long getPhi2Time() {
         return eventScheduler.getTime(EventScheduler.EventPhase.CLOCK_PHI2);
     }
@@ -97,7 +99,7 @@ public final class MMU implements SidMemory, IPLA {
     }
 
     @Override
-    public void writeMemByte(short addr, byte value) {
+    public void writeMemByte(int addr, byte value) {
         ramBank.poke(addr, value);
     }
 
@@ -175,6 +177,7 @@ public final class MMU implements SidMemory, IPLA {
         }
     }
 
+    @Override
     public void setCpuPort(byte state) {
         loRam = (state & 1) != 0;
         hiRam = (state & 2) != 0;

@@ -1,7 +1,6 @@
 package mdplayer.driver.sid;
 
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
 
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
@@ -20,7 +19,6 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
 import mdsound.VisWaveBuffer;
-import vavi.util.Debug;
 
 
 public class Sid extends BaseDriver {

@@ -35,8 +35,8 @@ public class Km6280 {
         /** (incremental)cycle counter */
         public int clock;
         public int lastCode;
-        /** pointer to user area */
-        //public Km6280 user;
+//        /** pointer to user area */
+//        public Km6280 user;
         /** pointer to user area */
         public M_Hes.HESHES user;
 
@@ -92,11 +92,11 @@ public class Km6280 {
 
         public static final int BASE_OF_ZERO = 0x2000;
 
-        public static final int VEC_RESET = 0xFFFE;
-        public static final int VEC_NMI = 0xFFFC;
-        public static final int VEC_TIMER = 0xFFFA;
-        public static final int VEC_INT1 = 0xFFF8;
-        public static final int VEC_INT = 0xFFF6;
+        public static final int VEC_RESET = 0xffFE;
+        public static final int VEC_NMI = 0xffFC;
+        public static final int VEC_TIMER = 0xffFA;
+        public static final int VEC_INT1 = 0xffF8;
+        public static final int VEC_INT = 0xffF6;
 
         public static final int VEC_BRK = VEC_INT;
 
@@ -308,27 +308,27 @@ public class Km6280 {
         }
 
         public void KMI_SBC(int src) {
-            KM_ALUADDER(src ^ 0xFF);
+            KM_ALUADDER(src ^ 0xff);
         }
 
         public void KMI_SBC_D(int src) {
-            KM_ALUADDER_D(((src ^ 0xFF) + (0x100 - 0x66)) & 0xff);
+            KM_ALUADDER_D(((src ^ 0xff) + (0x100 - 0x66)) & 0xff);
         }
 
         public void KM_CMP(int src) {
-            int w = this.a + (src ^ 0xFF) + 1;
+            int w = this.a + (src ^ 0xff) + 1;
             this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
             this.p += FLAG_NZC(w);
         }
 
         public void KM_CPX(int src) {
-            int w = this.x + (src ^ 0xFF) + 1;
+            int w = this.x + (src ^ 0xff) + 1;
             this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
             this.p += FLAG_NZC(w);
         }
 
         public void KM_CPY(int src) {
-            int w = this.y + (src ^ 0xFF) + 1;
+            int w = this.y + (src ^ 0xff) + 1;
             this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
             this.p += FLAG_NZC(w);
         }
@@ -428,7 +428,7 @@ public class Km6280 {
         }
 
         public int KM_TRB(int mem) {
-            int w = (this.a ^ 0xFF) & mem;
+            int w = (this.a ^ 0xff) & mem;
             this.p &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
             this.p += (mem & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
             return w;
@@ -1866,7 +1866,8 @@ public class Km6280 {
             int imm = readK(KA_IMM());
             KM_TST(imm, readK(KA_ABSX()));
         }
-        //#endif
+
+//#endif
 
         /* --- TAX ---  */
         public void OpcodeAA() { // AA - TAX
@@ -1898,7 +1899,8 @@ public class Km6280 {
             this.a = KM_LD(this.y);
         }
 
-        //#if BUILD_HUC6280
+//#if BUILD_HUC6280
+
         public void Opcode73() { // 73 - TII
             int src, des, len;
             src = KI_READWORD(KA_IMM16());
@@ -2748,7 +2750,7 @@ public class Km6280 {
             case 0xEF:
                 OpcodeEF();
                 break;
-            case 0xFF:
+            case 0xff:
                 OpcodeFF();
                 break;
 
@@ -2897,7 +2899,7 @@ public class Km6280 {
             case 0xD4:
                 OpcodeD4();
                 break;
-            //#endif
+//#endif
             }
         }
 
@@ -2910,54 +2912,54 @@ public class Km6280 {
                     this.a = 0;
                     this.x = 0;
                     this.y = 0;
-                    this.s = 0xFF;
+                    this.s = 0xff;
                     this.p = Z_FLAG | R_FLAG | I_FLAG;
                     this.iRequest = 0;
-                    this.iMask = 0xffffffff;// ~0;
+                    this.iMask = 0xffff_ffff;// ~0;
                     KI_ADDCLOCK(7);
                     return;
                 } else if ((this.iRequest & IRQ_RESET) != 0) {
-                    //#if BUILD_HUC6280
+//#if BUILD_HUC6280
                     this.lowClockMode = 1;
-                    writeMPRK(0x80, 0x00); /* IPL(TOP OF ROM) */
-                    //#endif
+                    writeMPRK(0x80, 0x00); // IPL(TOP OF ROM)
+//#endif
                     this.a = 0;
                     this.x = 0;
                     this.y = 0;
-                    this.s = 0xFF;
+                    this.s = 0xff;
                     this.p = Z_FLAG | R_FLAG | I_FLAG;
                     this.pc = KI_READWORD(VEC_RESET);
                     this.iRequest = 0;
-                    this.iMask = 0xffffffff;// ~0;
+                    this.iMask = 0xffff_ffff;// ~0;
                 } else if ((this.iRequest & IRQ_NMI) != 0) {
                     KM_PUSH((this.pc >> 8) & 0xff);
                     KM_PUSH((this.pc) & 0xff);
                     KM_PUSH(this.p | R_FLAG | B_FLAG);
-                    //#if BUILD_M65C02 || BUILD_HUC6280
+//#if BUILD_M65C02 || BUILD_HUC6280
                     this.p = (this.p & ~(D_FLAG | T_FLAG)) | I_FLAG;
                     this.iRequest &= ~(int) IRQ_NMI;
-                    //#else
-                    //__THIS__.p = (__THIS__.p & ~T_FLAG) | I_FLAG;   /* 6502 bug */
-                    //__THIS__.iRequest &= ~(IRQ_NMI | IRQ_BRK);
-                    //#endif
+//#else
+//                    __THIS__.p = (__THIS__.p & ~T_FLAG) | I_FLAG;   // 6502 bug
+//                    __THIS__.iRequest &= ~(IRQ_NMI | IRQ_BRK);
+//#endif
                     this.pc = KI_READWORD(VEC_NMI);
                     KI_ADDCLOCK(7);
                 } else if ((this.iRequest & IRQ_BRK) != 0) {
                     KM_PUSH((this.pc >> 8) & 0xff);
                     KM_PUSH((this.pc) & 0xff);
                     KM_PUSH(this.p | R_FLAG | B_FLAG);
-                    //#if BUILD_M65C02 || BUILD_HUC6280
+//#if BUILD_M65C02 || BUILD_HUC6280
                     this.p = (this.p & ~(D_FLAG | T_FLAG)) | I_FLAG;
-                    //#else
-                    //__THIS__.p = (__THIS__.p & ~T_FLAG) | I_FLAG;   /* 6502 bug */
-                    //#endif
+//#else
+//                    __THIS__.p = (__THIS__.p & ~T_FLAG) | I_FLAG;   // 6502 bug
+//#endif
                     this.iRequest &= ~(int) IRQ_BRK;
                     this.pc = KI_READWORD(VEC_BRK);
                     KI_ADDCLOCK(7);
                 } else if ((this.p & I_FLAG) != 0) {
                     /* Interrupt disabled */
                 }
-                //#if BUILD_HUC6280
+//#if BUILD_HUC6280
                 else if ((this.iMask & this.iRequest & IRQ_INT1) != 0) {
                     KM_PUSH((this.pc >> 8) & 0xff);
                     KM_PUSH((this.pc) & 0xff);

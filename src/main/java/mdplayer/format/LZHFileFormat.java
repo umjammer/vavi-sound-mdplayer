@@ -30,11 +30,13 @@ public class LZHFileFormat extends BaseFileFormat {
         return new String[] {".lzh"};
     }
 
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
         PlayList.Music music = new PlayList.Music();
         return Collections.singletonList(music);
     }
 
+    @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
         return getMusicCommon(ms, buf, zipFile);
     }
@@ -44,6 +46,7 @@ public class LZHFileFormat extends BaseFileFormat {
         return null;
     }
 
+    @Override
     public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/* = null*/) {
         if (entry != null) return null;
 
@@ -115,6 +118,7 @@ public class LZHFileFormat extends BaseFileFormat {
         return musics;
     }
 
+    @Override
     public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry/* = null*/) {
         if (entry != null) return null;
 

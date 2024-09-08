@@ -822,7 +822,7 @@ public class DevOpn {
         }
 
         reg.setD5_B(mm.readByte(reg.a5 + W.lfo));
-        int f = reg.getD5_B() & 0x40; //lsl.b // #2
+        int f = reg.getD5_B() & 0x40; //lsl.b //#2
         reg.setD5_B(reg.getD5_B() << 2);
         if (f != 0) {
             reg.a4 = reg.a5 + W.v_pattern3;

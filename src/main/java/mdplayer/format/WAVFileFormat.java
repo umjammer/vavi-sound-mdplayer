@@ -25,6 +25,7 @@ public class WAVFileFormat extends BaseFileFormat implements FileFormat.SampledF
         return new String[] {".wav"};
     }
 
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
@@ -33,6 +34,7 @@ public class WAVFileFormat extends BaseFileFormat implements FileFormat.SampledF
         return Collections.singletonList(music);
     }
 
+    @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
         return getMusicCommon(ms, buf, zipFile);
     }

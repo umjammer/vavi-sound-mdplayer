@@ -39,11 +39,13 @@ public class ColorRAMBank implements IBank {
         Arrays.fill(ram, (byte) 0);
     }
 
-    public void poke(short address, byte value) {
+    @Override
+    public void poke(int address, byte value) {
         ram[address & 0x3ff] = (byte) (value & 0xf);
     }
 
-    public byte peek(short address) {
+    @Override
+    public byte peek(int address) {
         return ram[address & 0x3ff];
     }
 }

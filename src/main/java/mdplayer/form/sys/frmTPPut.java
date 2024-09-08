@@ -51,7 +51,7 @@ public class frmTPPut extends JFrame {
             if (tonePallet.getLstTone() == null) tonePallet.setLstTone(new ArrayList<>(256));
 
             for (int i = 0; i < 256; i++) {
-                String toneName = "";
+                String toneName;
                 if (tonePallet.getLstTone().size() < i + 1 || tonePallet.getLstTone().get(i) == null) {
                     tonePallet.getLstTone().add(new Tone());
                 }

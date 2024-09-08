@@ -22,11 +22,8 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidplayfp;
 
-import java.util.logging.Level;
-
 import mdplayer.driver.sid.libsidplayfp.SidMemory;
 import mdplayer.driver.sid.libsidplayfp.sidtune.SidTuneBase;
-import vavi.util.Debug;
 
 
 /**
@@ -162,7 +159,7 @@ public class SidTune {
     /**
      * Retrieve current active sub-song specific information.
      * <p>
-     * @return a pointer to // #SidTuneInfo, 0 if no tune instanceof loaded. The pointer must not be deleted.
+     * @return a pointer to //#SidTuneInfo, 0 if no tune instanceof loaded. The pointer must not be deleted.
      */
     public SidTuneInfo getInfo() {
         return tune != null ? tune.getInfo() : null;

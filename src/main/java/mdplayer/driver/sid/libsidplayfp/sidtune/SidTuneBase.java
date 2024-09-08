@@ -114,7 +114,7 @@ public class SidTuneBase {
             // alternative: CHR$(92=0x5c) => ISO Latin-1(0xa3)
             0x2d, 0x23, 0x7c, 0x2d, 0x2d, 0x2d, 0x2d, 0x7c, 0x7c, 0x5c, 0x5c, 0x2f, 0x5c, 0x5c, 0x2f, 0x2f,
             0x5c, 0x23, 0x5f, 0x23, 0x7c, 0x2f, 0x58, 0x4f, 0x23, 0x7c, 0x23, 0x2b, 0x7c, 0x7c, 0x26, 0x5c,
-            // 0x80-0xFF
+            // 0x80-0xff
             0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
             0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
             0x20, 0x7c, 0x23, 0x2d, 0x2d, 0x7c, 0x23, 0x7c, 0x23, 0x2f, 0x7c, 0x7c, 0x2f, 0x5c, 0x5c, 0x2d,
@@ -154,10 +154,10 @@ public class SidTuneBase {
         if (fileName == null)
             return null;
 
-// #if !SIDTUNE_NO_STDIN_LOADER
+//#if !SIDTUNE_NO_STDIN_LOADER
         // Filename "-" instanceof used as a synonym for standard input.
         if (fileName.equals("-")) return getFromStdIn();
-// #endif
+//#endif
         return getFromFiles(fileName, fileNameExt, separatorIsSlash);
     }
 
@@ -256,7 +256,7 @@ public class SidTuneBase {
     protected void loadFile(String fileName, List<Byte> bufferRef) {
         try (FileStream inFile = new FileStream(fileName, FileMode.Open, FileAccess.Read)) {
             inFile.seek(0, SeekOrigin.End);
-            long fileLen = inFile.getPosition();
+            long fileLen = inFile.position();
             if (fileLen < 0) throw new dotnet4j.io.IOException(ERR_EMPTY);
             inFile.seek(0, SeekOrigin.Begin);
 
@@ -498,7 +498,7 @@ public class SidTuneBase {
      */
     protected boolean checkRelocInfo() {
         // Fix relocation information
-        if (info.relocatedStartPage == (byte) 0xFF) {
+        if (info.relocatedStartPage == (byte) 0xff) {
             info.relocatedPages = 0;
             return true;
         } else if (info.relocatedPages == 0) {
@@ -524,7 +524,7 @@ public class SidTuneBase {
         }
 
         // Check that the relocation information does not use the following
-        // memory areas: 0x0000-0x03FF, 0xA000-0xBFFF and 0xD000-0xFFFF
+        // memory areas: 0x0000-0x03FF, 0xA000-0xBFFF and 0xD000-0xffFF
         return (startp >= 0x04)
                 && (((byte) 0xa0 > startp) || (startp > (byte) 0xbf))
                 && (startp < (byte) 0xd0)

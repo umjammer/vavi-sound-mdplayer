@@ -26,6 +26,7 @@ public class ZGMFileFormat extends BaseFileFormat {
         return new String[] {".zgm"};
     }
 
+    @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
@@ -47,6 +48,7 @@ public class ZGMFileFormat extends BaseFileFormat {
         return Collections.singletonList(music);
     }
 
+    @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
         return getMusicCommon(ms, buf, zipFile);
     }

@@ -22,7 +22,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.driver.sid.Sid;
@@ -196,9 +195,9 @@ public class frmRegTest extends frmChipBase {
         put(EnmChip.SID, 20);
     }};
 
-    public frmRegTest(frmMain frm, int chipID, EnmChip enmPage, int zoom) {
+    public frmRegTest(frmMain frm, int chipId, EnmChip enmPage, int zoom) {
         parent = frm;
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         int pageSel = 0;
         pageDict.getOrDefault(enmPage, pageSel);
@@ -218,6 +217,7 @@ public class frmRegTest extends frmChipBase {
         update();
     }
 
+    @Override
     public void update() {
         if (regMan.needRefresh) {
             frameBuffer.clearScreen();
@@ -235,9 +235,9 @@ public class frmRegTest extends frmChipBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosRegTest()[chipID] = getLocation();
+                parent.setting.getLocation().getPosRegTest()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosRegTest()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosRegTest()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             parent.setting.getLocation().setChipSelect(regMan.getSelect());
             update();
@@ -287,9 +287,11 @@ public class frmRegTest extends frmChipBase {
 //        }
 //    }
 
+    @Override
     public void screenChangeParams() {
     }
 
+    @Override
     public void screenDrawParams() {
         //if (RegMan.needRefresh) { frameBuffer.clearScreen(); RegMan.needRefresh = false; }
         String Name = regMan.getName();

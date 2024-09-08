@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -32,20 +31,20 @@ public class frmMMC5 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
 
     //
-    private MDChipParams.MMC5 newParam = null;
+    private MDChipParams.MMC5 newParam;
     private MDChipParams.MMC5 oldParam = new MDChipParams.MMC5();
     private FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmMMC5.class);
 
-    public frmMMC5(frmMain frm, int chipID, int zoom, MDChipParams.MMC5 newParam) {
+    public frmMMC5(frmMain frm, int chipId, int zoom, MDChipParams.MMC5 newParam) {
         super(frm);
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
 
         initializeComponent();
@@ -69,9 +68,9 @@ public class frmMMC5 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosMMC5()[chipID] = getLocation();
+                parent.setting.getLocation().getPosMMC5()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosMMC5()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosMMC5()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -110,7 +109,7 @@ public class frmMMC5 extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        byte[] reg = audio.getMMC5Register(chipID);
+        byte[] reg = audio.getMMC5Register(chipId);
         int freq;
         int vol;
         int note;
@@ -139,7 +138,7 @@ public class frmMMC5 extends frmBase {
     public void screenDrawParams() {
         for (int i = 0; i < 2; i++) {
             DrawBuff.keyBoard(frameBuffer, i * 2, oldParam.sqrChannels[i].note, newParam.sqrChannels[i].note, 0);
-            DrawBuff.volume(frameBuffer, 256, 8 + i * 2 * 8, 0, oldParam.sqrChannels[i].volume, newParam.sqrChannels[i].volume, 0);
+            oldParam.sqrChannels[i].volume = DrawBuff.volume(frameBuffer, 256, 8 + i * 2 * 8, 0, oldParam.sqrChannels[i].volume, newParam.sqrChannels[i].volume, 0);
             DrawBuff.font4Int2(frameBuffer, 22 * 4, (2 + i * 2) * 8, 0, 2, oldParam.sqrChannels[i].pantp, newParam.sqrChannels[i].pantp);
             DrawBuff.drawDuty(frameBuffer, 24, (1 + i * 2) * 8, oldParam.sqrChannels[i].kf, newParam.sqrChannels[i].kf);
             DrawBuff.drawNESSw(frameBuffer, 32, (2 + i * 2) * 8, oldParam.sqrChannels[i].dda, newParam.sqrChannels[i].dda);
@@ -147,10 +146,10 @@ public class frmMMC5 extends frmBase {
             DrawBuff.ChMMC5(frameBuffer, i, oldParam.sqrChannels[i].mask, newParam.sqrChannels[i].mask, 0);
         }
 
-        DrawBuff.volume(frameBuffer, 256, 8 + 3 * 8, 0, oldParam.pcmChannel.volume, newParam.pcmChannel.volume, 0);
+        oldParam.pcmChannel.volume = DrawBuff.volume(frameBuffer, 256, 8 + 3 * 8, 0, oldParam.pcmChannel.volume, newParam.pcmChannel.volume, 0);
         DrawBuff.drawNESSw(frameBuffer, 148, 32, oldParam.pcmChannel.dda, newParam.pcmChannel.dda);
         DrawBuff.drawNESSw(frameBuffer, 160, 32, oldParam.pcmChannel.noise, newParam.pcmChannel.noise);
-        DrawBuff.font4HexByte(frameBuffer, 196, 32, 0, oldParam.pcmChannel.note, newParam.pcmChannel.note);
+        oldParam.pcmChannel.note = DrawBuff.font4HexByte(frameBuffer, 196, 32, 0, oldParam.pcmChannel.note, newParam.pcmChannel.note);
         DrawBuff.ChMMC5(frameBuffer, 2, oldParam.pcmChannel.mask, newParam.pcmChannel.mask, 0);
 
     }
@@ -182,15 +181,15 @@ public class frmMMC5 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 2; ch++) {
                         if (newParam.sqrChannels[ch].mask)
-                            parent.resetChannelMask(EnmChip.MMC5, chipID, ch);
+                            parent.resetChannelMask(EnmChip.MMC5, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.MMC5, chipID, ch);
+                            parent.setChannelMask(EnmChip.MMC5, chipId, ch);
                     }
 
                     if (newParam.pcmChannel.mask)
-                        parent.resetChannelMask(EnmChip.MMC5, chipID, 0);
+                        parent.resetChannelMask(EnmChip.MMC5, chipId, 0);
                     else
-                        parent.setChannelMask(EnmChip.MMC5, chipID, 0);
+                        parent.setChannelMask(EnmChip.MMC5, chipId, 0);
 
                 }
                 return;
@@ -201,7 +200,7 @@ public class frmMMC5 extends frmBase {
                 if (ev.getButton() == MouseEvent.BUTTON2) {
                     for (int i = 0; i < 3; i++) {
                         //マスク解除
-                        if (i < 3) parent.resetChannelMask(EnmChip.MMC5, chipID, i);
+                        if (i < 3) parent.resetChannelMask(EnmChip.MMC5, chipId, i);
                     }
 
                     return;
@@ -224,7 +223,7 @@ public class frmMMC5 extends frmBase {
                         return;
                     }
                     //マスク
-                    parent.setChannelMask(EnmChip.MMC5, chipID, ch);
+                    parent.setChannelMask(EnmChip.MMC5, chipId, ch);
 
                 }
             }

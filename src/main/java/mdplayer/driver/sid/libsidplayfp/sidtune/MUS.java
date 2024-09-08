@@ -959,7 +959,7 @@ public class MUS extends SidTuneBase {
         }
 
         if (strBuf.length != 0 && info.getSidChips() > 1) {
-            // Install MUS data // #2 _NOT_ including load address.
+            // Install MUS data //#2 _NOT_ including load address.
             //musBuf.AddRange(strBuf);
             List<Byte> b = toList(musBuf);
             List<Byte> c = toList(strBuf);
@@ -981,22 +981,22 @@ public class MUS extends SidTuneBase {
     }
 
     private void installPlayer(SidMemory mem) {
-        // Install MUS player // #1.
+        // Install MUS player //#1.
         short dest = SidEndian.to16(player1.get(1), player1.get(0));
 
         mem.fillRam(dest, player1, player1Size - 2);
         removeReads(mem, dest);
-        // Point player // #1 to data // #1.
-        mem.writeMemByte((short) (dest + 0xc6e), (byte) ((SIDTUNE_MUS_DATA_ADDR + 2) & 0xFF));
+        // Point player //#1 to data //#1.
+        mem.writeMemByte((short) (dest + 0xc6e), (byte) ((SIDTUNE_MUS_DATA_ADDR + 2) & 0xff));
         mem.writeMemByte((short) (dest + 0xc70), (byte) ((SIDTUNE_MUS_DATA_ADDR + 2) >> 8));
 
         if (info.getSidChips() > 1) {
-            // Install MUS player // #2.
+            // Install MUS player //#2.
             dest = SidEndian.to16(player2.get(1), player2.get(0));
             mem.fillRam(dest, player2, player2Size - 2);
             removeReads(mem, dest);
-            // Point player // #2 to data // #2.
-            mem.writeMemByte((short) (dest + 0xc6e), (byte) ((SIDTUNE_MUS_DATA_ADDR + musDataLen + 2) & 0xFF));
+            // Point player //#2 to data //#2.
+            mem.writeMemByte((short) (dest + 0xc6e), (byte) ((SIDTUNE_MUS_DATA_ADDR + musDataLen + 2) & 0xff));
             mem.writeMemByte((short) (dest + 0xc70), (byte) ((SIDTUNE_MUS_DATA_ADDR + musDataLen + 2) >> 8));
         }
     }

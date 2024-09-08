@@ -1,12 +1,14 @@
 
 package mdplayer;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
 public class ChipLEDs {
 
-    private Map<String, Integer> leds;
+    // TODO this class should be respond realtime, map might be slow.
+    private Map<String, Integer> leds = new HashMap<>();
 
     public int get(String key) {
         return leds.get(key);

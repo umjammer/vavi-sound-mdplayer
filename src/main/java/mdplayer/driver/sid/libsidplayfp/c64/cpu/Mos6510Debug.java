@@ -27,7 +27,7 @@ public class Mos6510Debug {
 
 
     public void DumpState(long time, Mos6510 cpu) {
-// #if false
+//#if false
         System.err.printf(" pc  I  a  x  y  SP  DR PR NV-BDIZC  Instruction (%d)\n", time);
 //        System.err.printf("%04x ", cpu.instrStartPC);
 //        System.err.printf(cpu.irqAssertedOnPin ? "t " : "f ");
@@ -952,7 +952,7 @@ public class Mos6510Debug {
         case 0xC2:
         case 0xE2:
         case 0x89:
-//            System.err.printf("b  // #%02x", SidEndian.to16lo8(cpu.instrOperand));
+//            System.err.printf("b  //#%02x", SidEndian.to16lo8(cpu.instrOperand));
             break;
 
         // Relative Addressing Mode Handler
@@ -964,7 +964,7 @@ public class Mos6510Debug {
         case OpCodes.BPLr:
         case OpCodes.BVCr:
         case OpCodes.BVSr:
-//            System.err.printf("r  // #%02x", SidEndian.to16lo8(cpu.instrOperand));
+//            System.err.printf("r  //#%02x", SidEndian.to16lo8(cpu.instrOperand));
 //            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
             break;
 

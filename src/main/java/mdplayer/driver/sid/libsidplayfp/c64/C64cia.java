@@ -57,8 +57,9 @@ class C64Cia1 extends Mos6526 implements IBank {
         this.env = env;
     }
 
-    public void poke(short address, byte value) {
-        write(SidEndian.to16lo8(address), value);
+    @Override
+    public void poke(int address, byte value) {
+        write(SidEndian.to16lo8((short) address), value);
 
         // Save the value written to Timer a
         if ((address & 0xffff) == 0xDC04 || (address & 0xffff) == 0xDC05) {
@@ -67,8 +68,9 @@ class C64Cia1 extends Mos6526 implements IBank {
         }
     }
 
-    public byte peek(short address) {
-        return read(SidEndian.to16lo8(address));
+    @Override
+    public byte peek(int address) {
+        return read(SidEndian.to16lo8((short) address));
     }
 
     @Override
@@ -104,11 +106,13 @@ class C64Cia2 extends Mos6526 implements IBank {
         this.env = env;
     }
 
-    public void poke(short address, byte value) {
+    @Override
+    public void poke(int address, byte value) {
         write((byte) address, value);
     }
 
-    public byte peek(short address) {
+    @Override
+    public byte peek(int address) {
         return read((byte) address);
     }
 }

@@ -8,6 +8,7 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.hes.KmEvent.Event;
+import vavi.util.ByteUtil;
 
 
 /*
@@ -148,14 +149,14 @@ public class M_Hes {
         public byte[] playerRom = new byte[0x10];
 
         /** IO $C01 ($C00)*/
-        public byte hestimReload;
+        public int hestimReload;
         /** IO $C00 */
-        public byte hestimCounter;
+        public int hestimCounter;
         /** IO $C01 */
-        public byte hestimStart;
-        public byte hesvdcStatus;
-        public byte hesvdcCr;
-        public byte hesvdcAdr;
+        public int hestimStart;
+        public int hesvdcStatus;
+        public int hesvdcCr;
+        public int hesvdcAdr;
 
         private KmEvent kmEvent = new KmEvent();
 
@@ -164,12 +165,12 @@ public class M_Hes {
         private boolean disableSendChip = false;
 
         private static int getWordLE(byte[] p, int ptr) {
-            return (int) p[ptr + 0] | ((int) p[ptr + 1] << 8);
+            return ByteUtil.readLeShort(p, ptr);
         }
 
         private static int getDwordLE(byte[] p, int ptr) {
             if (p.length <= ptr + 3) return 0;
-            return (int) p[ptr + 0] | ((int) p[ptr + 1] << 8) | ((int) p[ptr + 2] << 16) | ((int) p[ptr + 3] << 24);
+            return ByteUtil.readLeInt(p, ptr);
         }
 
         private static int fixDiv(int p1, int p2, int fix) {
@@ -244,12 +245,12 @@ public class M_Hes {
         private void write6270(int a, int v) {
             switch (a) {
             case 0:
-                this.hesvdcAdr = (byte) v;
+                this.hesvdcAdr = v;
                 break;
             case 2:
                 switch (this.hesvdcAdr) {
                 case 5: // CR */
-                    this.hesvdcCr = (byte) v;
+                    this.hesvdcCr = v;
                     break;
                 }
                 break;
@@ -265,10 +266,10 @@ public class M_Hes {
                     this.hesvdcStatus = 0;
                     v = 0x20;
                 }
-                this.ctx.iRequest &= 0xFFFFFFDF;// ~Km6280.IRQ.INT1;
-                //#if 0
-                 // v = 0x20;	/* 常にVSYNC期間 */
-                //#endif
+                this.ctx.iRequest &= 0xffFF_FFDF;// ~Km6280.IRQ.INT1;
+//#if 0
+//                v = 0x20;	// 常にVSYNC期間
+//#endif
             }
             return v;
         }
@@ -295,7 +296,7 @@ public class M_Hes {
                     return v;
                 }
                 case 3: {
-                    byte v = 0;
+                    int v = 0;
                     if ((this.ctx.iRequest & Km6280.K6280Context.IRQ.TIMER.v) != 0) v |= 4;
                     if ((this.ctx.iRequest & Km6280.K6280Context.IRQ.INT1.v) != 0) v |= 2;
                     if ((this.ctx.iRequest & Km6280.K6280Context.IRQ.INT2.v) != 0) v |= 1;
@@ -342,13 +343,13 @@ public class M_Hes {
             case 3: // TIMER
                 switch (a & 1) {
                 case 0:
-                    this.hestimReload = (byte) (v & 127);
+                    this.hestimReload = v & 127;
                     break;
                 case 1:
                     v &= 1;
                     if (v != 0 && this.hestimStart == 0)
                         this.hestimCounter = this.hestimReload;
-                    this.hestimStart = (byte) v;
+                    this.hestimStart = v;
                     break;
                 }
                 break;
@@ -429,17 +430,19 @@ public class M_Hes {
                 }
         }
 
+        @Deprecated
         private int getWordLE(byte[] p) {
-            return p[0] | (p[1] << 8);
+            return ByteUtil.readLeShort(p);
         }
 
+        @Deprecated
         private int getDwordLE(byte[] p) {
-            return p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
+            return ByteUtil.readLeInt(p);
         }
 
         public int allocPhysicalAddress(int a, int l) {
-            byte page = (byte) (a >> 13);
-            byte lastPage = (byte) ((a + l - 1) >> 13);
+            int page = a >> 13;
+            int lastPage = (a + l - 1) >> 13;
             for (; page <= lastPage; page++) {
                 if (this.memMap[page] == null) {
                     this.memMap[page] = new byte[0x2000];
@@ -450,7 +453,7 @@ public class M_Hes {
         }
 
         public void copy_physical_address(int a, int l, byte[] p, int pP) {
-            byte page = (byte) (a >> 13);
+            int page = a >> 13;
             int w;
             if ((a & 0x1fff) != 0) {
                 w = 0x2000 - (a & 0x1fff);
@@ -478,11 +481,11 @@ public class M_Hes {
             while (ctx.clock < cycles) {
                 if (THIS_.breaked == 0) {
 
-                    //System.err.println("pc:%4x s:%2x SPDAT0x1FF:%2x%2x",
-                    //    THIS_.ctx.pc,THIS_.ctx.s,
-                    //    THIS_.memMap[0xf8][0x1ff], THIS_.memMap[0xf8][0x1fe]
-                    //    );
-                    /* Execute 1op */
+//                    System.err.println("pc:%4x s:%2x SPDAT0x1FF:%2x%2x",
+//                        THIS_.ctx.pc,THIS_.ctx.s,
+//                        THIS_.memMap[0xf8][0x1ff], THIS_.memMap[0xf8][0x1fe]
+//                        );
+                    // Execute 1op
                     ctx.K_EXEC();
 
                     if (ctx.pc == THIS_.bp) {
@@ -491,20 +494,20 @@ public class M_Hes {
                     }
                 } else {
                     int nextcount;
-                    /* break時は次のイベントまで一度に進める */
+                    // break時は次のイベントまで一度に進める
                     nextcount = THIS_.kme.item[THIS_.kme.item[0].next].count;
                     if (kmEvent.kmevent_gettimer(THIS_.kme, 0, nextcount) != 0) {
-                        /* イベント有り */
+                        // イベント有り
                         if (ctx.clock + nextcount < cycles)
-                            ctx.clock += nextcount; // 期間中にイベント有り */
+                            ctx.clock += nextcount; // 期間中にイベント有り
                         else
-                            ctx.clock = cycles; // 期間中にイベント無し */
+                            ctx.clock = cycles; // 期間中にイベント無し
                     } else {
-                        /* イベント無し */
+                        // イベント無し
                         ctx.clock = cycles;
                     }
                 }
-                /* イベント進行 */
+                // イベント進行
                 kmEvent.kmevent_process(THIS_.kme, ctx.clock - kmecycle);
                 kmecycle = ctx.clock;
             }
@@ -521,7 +524,7 @@ public class M_Hes {
             this.hespcm.reset.accept(HES_BASECYCLES, freq);
             this.kmEvent.kmevent_init(this.kme);
 
-            /* RAM CLEAR */
+            // RAM CLEAR
             for (i = 0xf8; i <= 0xfb; i++)
                 if (this.memMap[i] != null) {
                     //XMEMSET(this.memMap[i], 0, 0x2000);
@@ -553,16 +556,16 @@ public class M_Hes {
             //this.ctx.a = (int)((49 - 1) & 0xff);
             this.ctx.p = Km6280.K6280Context.Flags.Z.v + Km6280.K6280Context.Flags.I.v;
             this.ctx.x = this.ctx.y = 0;
-            this.ctx.s = 0xFF;
+            this.ctx.s = 0xff;
             this.ctx.pc = this.playerRomAddr;
             this.ctx.iRequest = 0;
-            this.ctx.iMask = 0xffffffff;// ~0;
+            this.ctx.iMask = 0xffff_ffff;// ~0;
             this.ctx.lowClockMode = 0;
 
-            this.playerRom[0x00] = 0x20; // JSR */
+            this.playerRom[0x00] = 0x20; // JSR
             this.playerRom[0x01] = (byte) ((this.initAddr >> 0) & 0xff);
             this.playerRom[0x02] = (byte) ((this.initAddr >> 8) & 0xff);
-            this.playerRom[0x03] = 0x4c; // JMP */
+            this.playerRom[0x03] = 0x4c; // JMP
             this.playerRom[0x04] = (byte) (((this.playerRomAddr + 3) >> 0) & 0xff);
             this.playerRom[0x05] = (byte) (((this.playerRomAddr + 3) >> 8) & 0xff);
 
@@ -573,7 +576,7 @@ public class M_Hes {
             this.hestimReload = this.hestimCounter = this.hestimStart = 0;
             this.setUpTimer();
 
-            /* request execute(5sec) */
+            // request execute(5sec)
             initbreak = 5 << 8;
 
             this.disableSendChip = true;
@@ -586,43 +589,43 @@ public class M_Hes {
 
             if (this.breaked != 0) {
                 this.breaked = 0;
-                this.ctx.p &= 0xfffffffb;// ~Km6280.Flags.I;
+                this.ctx.p &= 0xffff_fffb; // ~Km6280.Flags.I;
             } else {
                 this.ctx.a = (nezPlay.song.songno - 1) & 0xff;
                 this.ctx.p = Km6280.K6280Context.Flags.Z.v + Km6280.K6280Context.Flags.I.v;
                 this.ctx.x = this.ctx.y = 0;
-                this.ctx.s = 0xFF;
+                this.ctx.s = 0xff;
                 this.ctx.pc = this.playerRomAddr;
                 this.ctx.iRequest = 0;
-                this.ctx.iMask = 0xffffffff;// ~0;
+                this.ctx.iMask = 0xffff_ffff;// ~0;
                 this.ctx.lowClockMode = 0;
             }
 
             this.cpsRem = this.cpsGap = this.totalCycles = 0;
 
-             // ここからメモリービュアー設定
-            //memview_context = this.heshes;
-            //MEM_MAX = 0xffff;
-            //MEM_IO = 0x0000;
-            //MEM_RAM = 0x2000;
-            //MEM_ROM = 0x4000;
-            //memview_memread = memview_memread_hes;
-             // ここまでメモリービュアー設定
+            // ここからメモリービュアー設定
+//            memview_context = this.heshes;
+//            MEM_MAX = 0xffff;
+//            MEM_IO = 0x0000;
+//            MEM_RAM = 0x2000;
+//            MEM_ROM = 0x4000;
+//            memview_memread = memview_memread_hes;
+            // ここまでメモリービュアー設定
 
-             // ここからダンプ設定
-            //pNezPlayDump = pNezPlay;
-            //dump_MEM_PCE = dump_MEM_PCE_bf;
-            //dump_DEV_HUC6230 = dump_DEV_HUC6230_bf;
-            //dump_DEV_ADPCM = dump_DEV_ADPCM_bf;
-             // ここまでダンプ設定
+            // ここからダンプ設定
+//            pNezPlayDump = pNezPlay;
+//            dump_MEM_PCE = dump_MEM_PCE_bf;
+//            dump_DEV_HUC6230 = dump_DEV_HUC6230_bf;
+//            dump_DEV_ADPCM = dump_DEV_ADPCM_bf;
+            // ここまでダンプ設定
         }
 
         private int load(NEZ_PLAY nezPlay, byte[] pData, int uSize) {
             int i, p;
-            //XMEMSET(this., 0, sizeof(HESHES));
-            //this. = new HESHES();
-            //this..hessnd = 0;
-            //this..hespcm = 0;
+//            XMEMSET(this., 0, sizeof(HESHES));
+//            this. = new HESHES();
+//            this..hessnd = 0;
+//            this..hespcm = 0;
             for (i = 0; i < 0x100; i++) this.memMap[i] = null;
 
             if (uSize < 0x20) return Error.FORMAT.ordinal();

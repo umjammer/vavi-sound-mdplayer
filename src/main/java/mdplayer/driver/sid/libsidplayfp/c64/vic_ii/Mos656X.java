@@ -59,12 +59,12 @@ public class Mos656X extends Event {
     private interface ClockFunc extends Supplier<Long> {
     }
 
-    private static class Data {
+    private static class data {
         public int rasterLines;
         public int cyclesPerLine;
         public ClockFunc clock;
 
-        public Data(int rasterLines, int cyclesPerLine, ClockFunc clock) {
+        public data(int rasterLines, int cyclesPerLine, ClockFunc clock) {
             this.rasterLines = rasterLines;
             this.cyclesPerLine = cyclesPerLine;
             this.clock = clock;
@@ -295,7 +295,7 @@ public class Mos656X extends Event {
 
     private static final int VICII_SCREEN_TEXTCOLS = 40;
 
-    private Data[] modelData = null;
+    private data[] modelData = null;
 
     public String credits() {
         return
@@ -311,11 +311,11 @@ public class Mos656X extends Event {
 
     protected Mos656X(EventScheduler scheduler) {
         super("VIC Raster");
-        modelData = new Data[] {
-                new Data(262, 64, this::clockOldNTSC), // Old NTSC (MOS6567R56A)
-                new Data(263, 65, this::clockNTSC),    // NTSC-M   (MOS6567R8)
-                new Data(312, 63, this::clockPAL),     // PAL-B    (MOS6569R1, MOS6569R3)
-                new Data(312, 65, this::clockNTSC),    // PAL-N    (MOS6572)
+        modelData = new data[] {
+                new data(262, 64, this::clockOldNTSC), // Old NTSC (MOS6567R56A)
+                new data(263, 65, this::clockNTSC),    // NTSC-M   (MOS6567R8)
+                new data(312, 63, this::clockPAL),     // PAL-B    (MOS6569R1, MOS6569R3)
+                new data(312, 65, this::clockNTSC),    // PAL-N    (MOS6572)
         };
 
         eventScheduler = (scheduler);
@@ -380,7 +380,7 @@ public class Mos656X extends Event {
             return (byte) ((regs[addr] & 0x7f) | (byte) ((rasterY & 0x100) >> 1));
         case 0x12:
             // Raster counter
-            return (byte) (rasterY & 0xFF);
+            return (byte) (rasterY & 0xff);
         case 0x13:
             return lp.getX();
         case 0x14:
@@ -407,7 +407,7 @@ public class Mos656X extends Event {
      * Write to VIC register.
      *
      * @param addr Register to write to.
-     * @param data Data byte to write.
+     * @param data data byte to write.
      */
     protected void write(byte addr, byte data) {
         addr &= 0x3f;

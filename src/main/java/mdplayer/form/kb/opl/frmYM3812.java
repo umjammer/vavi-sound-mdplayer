@@ -33,29 +33,29 @@ public class frmYM3812 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
+    private int chipId;
+    private int zoom;
 
-    private MDChipParams.YM3812 newParam = null;
-    private MDChipParams.YM3812 oldParam = null;
+    private MDChipParams.YM3812 newParam;
+    private MDChipParams.YM3812 oldParam;
     private FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYM3812.class);
 
-    public frmYM3812(frmMain frm, int chipID, int zoom, MDChipParams.YM3812 newParam, MDChipParams.YM3812 oldParam) {
+    public frmYM3812(frmMain frm, int chipId, int zoom, MDChipParams.YM3812 newParam, MDChipParams.YM3812 oldParam) {
         super(frm);
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         initializeComponent();
 
         this.newParam = newParam;
         this.oldParam = oldParam;
         frameBuffer.Add(pbScreen, Resources.getPlaneYM3812(), null, zoom);
-        boolean YM3812Type = (chipID == 0)
+        boolean YM3812Type = (chipId == 0)
                 ? parent.setting.getYM3812Type()[0].getUseReal()[0]
                 : parent.setting.getYM3812Type()[1].getUseReal()[0];
-        int YM3812SoundLocation = (chipID == 0)
+        int YM3812SoundLocation = (chipId == 0)
                 ? parent.setting.getYM3812Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYM3812Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !YM3812Type ? 0 : (YM3812SoundLocation < 0 ? 2 : 1);
@@ -77,9 +77,9 @@ public class frmYM3812 extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosYm3812()[chipID] = getLocation();
+                parent.setting.getLocation().getPosYm3812()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosYm3812()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosYm3812()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -124,10 +124,10 @@ public class frmYM3812 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] ym3812Register = audio.getYM3812Register(chipID);
+        int[] ym3812Register = audio.getYM3812Register(chipId);
         MDChipParams.Channel nyc;
-        int slot = 0;
-        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getYM3812KeyInfo(chipID);
+        int slot;
+        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getYM3812KeyInfo(chipId);
 
         mdsound.MDSound.Chip chipInfo = audio.getMDSChipInfo(Ym3812Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock; //3579545 -> Default master clock
@@ -206,7 +206,7 @@ public class frmYM3812 extends frmBase {
         newParam.channels[9].dda = ((ym3812Register[0xbd] >> 7) & 0x01) != 0;//DA
         newParam.channels[10].dda = ((ym3812Register[0xbd] >> 6) & 0x01) != 0;//DV
 
-        // // #region リズム情報の取得
+        // //#region リズム情報の取得
 
         //slot14 TL 0x51 HH
         //slot15 TL 0x52 TOM
@@ -223,14 +223,14 @@ public class frmYM3812 extends frmBase {
             }
         }
 
-        // // #endregion
+        // //#endregion
     }
 
     public void screenDrawParams() {
-        boolean YM3812Type = (chipID == 0)
+        boolean YM3812Type = (chipId == 0)
                 ? parent.setting.getYM3812Type()[0].getUseReal()[0]
                 : parent.setting.getYM3812Type()[1].getUseReal()[0];
-        int YM3812SoundLocation = (chipID == 0)
+        int YM3812SoundLocation = (chipId == 0)
                 ? parent.setting.getYM3812Type()[0].getRealChipInfo()[0].getSoundLocation()
                 : parent.setting.getYM3812Type()[1].getRealChipInfo()[0].getSoundLocation();
         int tp = !YM3812Type ? 0 : (YM3812SoundLocation < 0 ? 2 : 1);
@@ -292,9 +292,9 @@ public class frmYM3812 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 9 + 5; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YM3812, chipID, ch);
+                            parent.resetChannelMask(EnmChip.YM3812, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YM3812, chipID, ch);
+                            parent.setChannelMask(EnmChip.YM3812, chipId, ch);
                     }
                 }
                 return;
@@ -313,17 +313,17 @@ public class frmYM3812 extends frmBase {
             }
 
             if (ev.getButton() == MouseEvent.BUTTON1 && ch > 10 && ch < 20) {
-                parent.getInstCh(EnmChip.YM3812, ch - 11, chipID);
+                parent.getInstCh(EnmChip.YM3812, ch - 11, chipId);
             }
 
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 //マスク
-                parent.setChannelMask(EnmChip.YM3812, chipID, ch);
+                parent.setChannelMask(EnmChip.YM3812, chipId, ch);
                 return;
             }
 
             //マスク解除
-            for (ch = 0; ch < 9 + 5; ch++) parent.resetChannelMask(EnmChip.YM3812, chipID, ch);
+            for (ch = 0; ch < 9 + 5; ch++) parent.resetChannelMask(EnmChip.YM3812, chipId, ch);
         }
     };
 

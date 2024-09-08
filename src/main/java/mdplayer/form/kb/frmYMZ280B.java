@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Audio;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
@@ -32,20 +31,20 @@ public class frmYMZ280B extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipID = 0;
-    private int zoom = 1;
-    private MDChipParams.YMZ280B newParam = null;
+    private int chipId;
+    private int zoom;
+    private MDChipParams.YMZ280B newParam;
     private MDChipParams.YMZ280B oldParam = new MDChipParams.YMZ280B();
     private FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYMZ280B.class);
 
-    public frmYMZ280B(frmMain frm, int chipID, int zoom, MDChipParams.YMZ280B newParam, MDChipParams.YMZ280B oldParam) {
+    public frmYMZ280B(frmMain frm, int chipId, int zoom, MDChipParams.YMZ280B newParam, MDChipParams.YMZ280B oldParam) {
         super(frm);
 
         initializeComponent();
 
-        this.chipID = chipID;
+        this.chipId = chipId;
         this.zoom = zoom;
         this.newParam = newParam;
         this.oldParam = oldParam;
@@ -68,9 +67,9 @@ public class frmYMZ280B extends frmBase {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
-                parent.setting.getLocation().getPosYMZ280B()[chipID] = getLocation();
+                parent.setting.getLocation().getPosYMZ280B()[chipId] = getLocation();
             } else {
-                parent.setting.getLocation().getPosYMZ280B()[chipID] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
+                parent.setting.getLocation().getPosYMZ280B()[chipId] = new Point(prefs.getInt("x", 0), prefs.getInt("y", 0));
             }
             isClosed = true;
         }
@@ -117,9 +116,9 @@ public class frmYMZ280B extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YMZ280B, chipID, ch);
+                            parent.resetChannelMask(EnmChip.YMZ280B, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YMZ280B, chipID, ch);
+                            parent.setChannelMask(EnmChip.YMZ280B, chipId, ch);
                     }
                 }
                 return;
@@ -130,11 +129,11 @@ public class frmYMZ280B extends frmBase {
 
             if (ch < 8) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.YMZ280B, chipID, ch);
+                    parent.setChannelMask(EnmChip.YMZ280B, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.YMZ280B, chipID, ch);
+                for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.YMZ280B, chipId, ch);
             }
         }
     };
@@ -143,7 +142,7 @@ public class frmYMZ280B extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] reg = audio.getYMZ280BRegister(chipID);
+        int[] reg = audio.getYMZ280BRegister(chipId);
         if (reg == null) return;
 
         for (int ch = 0; ch < 8; ch++) {
@@ -186,7 +185,7 @@ public class frmYMZ280B extends frmBase {
             DrawBuff.font4Hex24Bit(frameBuffer, 4 * 27, ch * 8 + 8, 0, orc.leadr, nrc.leadr);
             DrawBuff.font4Hex24Bit(frameBuffer, 4 * 34, ch * 8 + 8, 0, orc.eadr, nrc.eadr);
             DrawBuff.font4Hex12Bit(frameBuffer, 4 * 41, ch * 8 + 8, 0, orc.freq, nrc.freq); // PITCH
-            DrawBuff.font4HexByte(frameBuffer, 4 * 45, ch * 8 + 8, 0, orc.nfrq, nrc.nfrq); // TL
+            orc.nfrq = DrawBuff.font4HexByte(frameBuffer, 4 * 45, ch * 8 + 8, 0, orc.nfrq, nrc.nfrq); // TL
         }
     }
 

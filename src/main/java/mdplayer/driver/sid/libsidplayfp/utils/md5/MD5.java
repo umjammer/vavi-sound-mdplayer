@@ -180,8 +180,8 @@ public class MD5 {
             // order.  (This also works on machines of unknown byte order.)
             ByteBuffer xp = data;
             for (int i = 0; i < 16; ++i, xp.position(xp.position() + 4)) {
-                tmpBuf[i] = (xp.get(0) & 0xFF) + ((xp.get(1) & 0xFF) << 8) +
-                        ((xp.get(2) & 0xFF) << 16) + ((xp.get(3) & 0xFF) << 24);
+                tmpBuf[i] = (xp.get(0) & 0xff) + ((xp.get(1) & 0xff) << 8) +
+                        ((xp.get(2) & 0xff) << 16) + ((xp.get(3) & 0xff) << 24);
             }
             x = tmpBuf;
         } else {
@@ -191,14 +191,14 @@ public class MD5 {
                 /* data are properly aligned */
                 x = new int[data.array().length / 4];
                 for (int i = 0; i < 64 / 4; i++) {
-                    x[i] = (data.get(3 + i * 4) & 0xFF) + ((data.get(2 + i * 4) & 0xFF) << 8) +
-                            ((data.get(1 + i * 4) & 0xFF) << 16) + ((data.get(0 + i * 4) & 0xFF) << 24);
+                    x[i] = (data.get(3 + i * 4) & 0xff) + ((data.get(2 + i * 4) & 0xff) << 8) +
+                            ((data.get(1 + i * 4) & 0xff) << 16) + ((data.get(0 + i * 4) & 0xff) << 24);
                 }
             } else {
                 /* not aligned */
                 for (int i = 0; i < 64 / 4; i++) {
-                    tmpBuf[i] = (data.get(3 + i * 4) & 0xFF) + ((data.get(2 + i * 4) & 0xFF) << 8) +
-                            ((data.get(1 + i * 4) & 0xFF) << 16) + ((data.get(0 + i * 4) & 0xFF) << 24);
+                    tmpBuf[i] = (data.get(3 + i * 4) & 0xff) + ((data.get(2 + i * 4) & 0xff) << 8) +
+                            ((data.get(1 + i * 4) & 0xff) << 16) + ((data.get(0 + i * 4) & 0xff) << 24);
                 }
                 x = tmpBuf;
             }

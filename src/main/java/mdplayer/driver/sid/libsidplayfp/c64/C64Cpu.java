@@ -42,7 +42,7 @@ public class C64Cpu extends Mos6510 {
         this.env = env;
     }
 
-// # if PC64_TESTSUITE
+//# if PC64_TESTSUITE
 //@Override public void loadFile(String file)  { m_env.loadFile(file); }
-// #endif
+//#endif
 }

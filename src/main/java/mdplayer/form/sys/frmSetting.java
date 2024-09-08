@@ -55,7 +55,6 @@ import javax.swing.table.TableColumn;
 
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import dotnet4j.io.Directory;
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.Common.EnmRealChipType;
@@ -64,7 +63,6 @@ import mdplayer.MidiOutInfo;
 import mdplayer.Setting;
 import mdplayer.Setting.ChipType2;
 import mdplayer.chips.RealChipPlugin;
-import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
 import vavi.util.Debug;
 
@@ -117,7 +115,7 @@ public class frmSetting extends JDialog {
             Line.Info [] sourceLineInfo = mixer.getSourceLineInfo();
             for (Line.Info info : sourceLineInfo) {
                 if (info instanceof DataLine.Info dataLineInfo)
-                cmbDirectSoundDevice.addItem(dataLineInfo.toString());
+                    cmbDirectSoundDevice.addItem(dataLineInfo.toString());
             }
         }
 
@@ -306,11 +304,11 @@ public class frmSetting extends JDialog {
         lblLatencyUnit.setEnabled(!rbAsioOut.isSelected());
         cmbLatency.setEnabled(!rbAsioOut.isSelected());
 
-        if (((DefaultComboBoxModel) cmbLatency.getModel()).getIndexOf(String.valueOf(setting.getOutputDevice().getLatency())) > -1) {
+        if (((DefaultComboBoxModel<?>) cmbLatency.getModel()).getIndexOf(String.valueOf(setting.getOutputDevice().getLatency())) > -1) {
             cmbLatency.setSelectedItem(String.valueOf(setting.getOutputDevice().getLatency()));
         }
 
-        if (((DefaultComboBoxModel) cmbWaitTime.getModel()).getIndexOf(String.valueOf(setting.getOutputDevice().getWaitTime())) > -1) {
+        if (((DefaultComboBoxModel<?>) cmbWaitTime.getModel()).getIndexOf(String.valueOf(setting.getOutputDevice().getWaitTime())) > -1) {
             cmbWaitTime.setSelectedItem(String.valueOf(setting.getOutputDevice().getWaitTime()));
         }
 
@@ -1015,7 +1013,7 @@ public class frmSetting extends JDialog {
     private void btnOK_Click(ActionEvent ev) {
         if (!checkSetting()) return;
 
-        int i = 0;
+        int i;
 
 //#region 出力
 
@@ -1042,7 +1040,6 @@ public class frmSetting extends JDialog {
 //#region Sound
 
         setting.setUnuseRealChip(cbUnuseRealChip.isSelected());
-        setting.setYM2612Type(new ChipType2[2]);
         setting.getYM2612Type()[0] = new ChipType2();
         setChipType2FromControls(
                 setting.getYM2612Type()[0]
@@ -1387,7 +1384,7 @@ public class frmSetting extends JDialog {
                 , null, null, null, null, null
         );
 
-// #endregion
+//#endregion
 
 
         setting.getMidiKbd().setMidiInDeviceName(cmbMIDIIN.getSelectedItem() != null ? cmbMIDIIN.getSelectedItem().toString() : "");
@@ -2655,6 +2652,7 @@ public class frmSetting extends JDialog {
     }
 
     private FocusListener tbPMDPPSDRVFreq_Click = new FocusAdapter() {
+        @Override
         public void focusGained(FocusEvent e) {
             rbPMDUsePPSDRVManualFreq_CheckedChanged(null);
         }
@@ -2668,6 +2666,7 @@ public class frmSetting extends JDialog {
     };
 
     private FocusListener groupBox20_Enter = new FocusAdapter() {
+        @Override
         public void focusGained(FocusEvent e) {
         }
     };
@@ -2689,7 +2688,7 @@ public class frmSetting extends JDialog {
         this.rbShare = new JCheckBox();
         this.cmbWasapiDevice = new JComboBox();
         this.gbDirectSound = new JPanel();
-        this.cmbDirectSoundDevice = new JComboBox();
+        this.cmbDirectSoundDevice = new JComboBox<>();
         this.tcSetting = new JTabbedPane();
         this.tpOutput = new JTabbedPane();
         this.rbNullDevice = new JCheckBox();
@@ -2700,12 +2699,12 @@ public class frmSetting extends JDialog {
         this.label28 = new JLabel();
         this.label65 = new JLabel();
         this.lblLatency = new JLabel();
-        this.cmbWaitTime = new JComboBox();
+        this.cmbWaitTime = new JComboBox<>();
         this.cmbSampleRate = new JComboBox();
         this.cmbLatency = new JComboBox();
         this.rbSPPCM = new JCheckBox();
         this.groupBox16 = new JPanel();
-        this.cmbSPPCMDevice = new JComboBox();
+        this.cmbSPPCMDevice = new JComboBox<>();
         this.tpModule = new JTabbedPane();
         this.groupBox1 = new JPanel();
         this.cbUnuseRealChip = new JCheckBox();
@@ -2839,8 +2838,8 @@ public class frmSetting extends JDialog {
         this.clmIsVST = new JCheckBox();
         this.clmFileName = new JTextArea();
         this.JListTextBoxColumn2 = new JTextArea();
-        this.clmType = new JComboBox();
-        this.ClmBeforeSend = new JComboBox();
+        this.clmType = new JComboBox<>();
+        this.ClmBeforeSend = new JComboBox<>();
         this.JListTextBoxColumn3 = new JTextArea();
         this.JListTextBoxColumn4 = new JTextArea();
         this.btnUP_A = new JButton();
@@ -2967,7 +2966,7 @@ public class frmSetting extends JDialog {
         this.cbFM5 = new JCheckBox();
         this.cbFM3 = new JCheckBox();
         this.cbFM4 = new JCheckBox();
-        this.cmbMIDIIN = new JComboBox();
+        this.cmbMIDIIN = new JComboBox<>();
         this.label5 = new JLabel();
         this.tpKeyBoard = new JTabbedPane();
         this.cbUseKeyBoardHook = new JCheckBox();

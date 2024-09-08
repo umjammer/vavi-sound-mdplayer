@@ -196,7 +196,7 @@ public class STIL {
     // final ios_base::openmode STILopenFlags = ios::in | ios::binary;
     public FileMode STILopenFlags = FileMode.Open; // | ios::binary;
 
-    public final float VERSION_NO = 3.0f;
+    public static final float VERSION_NO = 3.0f;
 
     private static final Logger logger = Logger.getLogger(STIL.class.getName());
 
@@ -522,12 +522,12 @@ public class STIL {
      *                       equivalent to saying tuneNo = 0, field = all.)
      *                       However, the file-global comment instanceof *NOT* returned with it any
      *                       more! (Unlike : versions before v2.00.) It led to confusions:
-     *                       eg. when a comment was asked for tune // #3, it returned the
-     *                       file-global comment even if there was no specific entry for tune // #3!
+     *                       eg. when a comment was asked for tune //#3, it returned the
+     *                       file-global comment even if there was no specific entry for tune //#3!
      *                       - tuneNo != 0, field = &lt;other&gt; : the specific field of the specific
      *                       tune number instanceof returned. If the tune number doesn't exist (eg. if
      *                       tuneNo=2 for single-tune entries, or if tuneNo=2 when there's no
-     *                       STIL entry for tune // #2 : a multitune entry), returns NULL.
+     *                       STIL entry for tune //#2 : a multitune entry), returns NULL.
      *                       <p>
      *                       NOTE: For older versions of STIL (older than v2.59) the tuneNo and
      *                       field parameters are ignored and are assumed to be tuneNo=0 and
@@ -974,7 +974,7 @@ public class STIL {
 
                 // Store the info
                 if (newDir) {
-                    int position = (int) (inFile.getPosition() - line.length() - 1L);
+                    int position = (int) (inFile.position() - line.length() - 1L);
 
                     logger.fine("getDirs() dirName=" + dirName + ", pos=" + position + "\n");
 
@@ -1057,7 +1057,7 @@ public class STIL {
         do {
             getStilLine(inFile, line);
 
-            if (inFile.getLength() == inFile.getPosition()) {
+            if (inFile.getLength() == inFile.position()) {
                 break;
             }
 
@@ -1089,7 +1089,7 @@ public class STIL {
 
         if (foundIt) {
             // Reposition the file pointer back to the start of the entry.
-            inFile.seek(inFile.getPosition() - line.length() - 1L, SeekOrigin.Begin);
+            inFile.seek(inFile.position() - line.length() - 1L, SeekOrigin.Begin);
             logger.fine("pos2Entry() entry found" + "\n");
             return true;
         } else {
