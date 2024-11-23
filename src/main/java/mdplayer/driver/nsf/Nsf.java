@@ -30,6 +30,7 @@ import mdsound.np.chip.NesVrc7;
 import mdsound.np.cpu.Km6502;
 import mdsound.np.memory.NesBank;
 import mdsound.np.memory.NesMem;
+import vavi.util.ByteUtil;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 
@@ -43,7 +44,7 @@ public class Nsf extends BaseDriver {
 
     @Override
     public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        if (Common.getLE32(buf, 0) != FCC_NSF) {
+        if (ByteUtil.readLeInt(buf, 0) != FCC_NSF) {
              // NSFeはとりあえず未サポート
             return null;
         }

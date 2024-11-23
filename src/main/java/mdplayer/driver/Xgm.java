@@ -6,6 +6,7 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import vavi.util.ByteUtil;
 import vavi.util.Debug;
 
 
@@ -124,15 +125,15 @@ public class Xgm extends BaseDriver {
         if (vgmBuf == null) return false;
 
         try {
-            if (Common.getLE32(vgmBuf, 0) != FCC_XGM) return false;
+            if (ByteUtil.readLeInt(vgmBuf, 0) != FCC_XGM) return false;
 
             for (int i = 0; i < 63; i++) {
                 sampleID[i] = new XGMSampleID();
-                sampleID[i].addr = (Common.getLE16(vgmBuf, i * 4 + 4) * 256);
-                sampleID[i].size = (Common.getLE16(vgmBuf, i * 4 + 6) * 256);
+                sampleID[i].addr = ((int) ByteUtil.readLeShort(vgmBuf, i * 4 + 4) * 256);
+                sampleID[i].size = ((int) ByteUtil.readLeShort(vgmBuf, i * 4 + 6) * 256);
             }
 
-            sampleDataBlockSize = Common.getLE16(vgmBuf, 0x100);
+            sampleDataBlockSize = ByteUtil.readLeShort(vgmBuf, 0x100);
 
             versionInformation = vgmBuf[0x102] & 0xff;
 
@@ -146,7 +147,7 @@ public class Xgm extends BaseDriver {
 
             sampleDataBlockAddr = 0x104;
 
-            musicDataBlockSize = Common.getLE32(vgmBuf, sampleDataBlockAddr + sampleDataBlockSize * 256);
+            musicDataBlockSize = ByteUtil.readLeInt(vgmBuf, sampleDataBlockAddr + sampleDataBlockSize * 256);
 
             musicDataBlockAddr = sampleDataBlockAddr + sampleDataBlockSize * 256 + 4;
 
@@ -231,7 +232,7 @@ public class Xgm extends BaseDriver {
 
              // loop command
             if (cmd == 0x7e) {
-                musicPtr = musicDataBlockAddr + Common.getLE24(vgmBuf, musicPtr);
+                musicPtr = musicDataBlockAddr + ByteUtil.readLe24(vgmBuf, musicPtr);
                 vgmCurLoop++;
                 continue;
             }

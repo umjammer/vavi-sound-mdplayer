@@ -35,7 +35,6 @@ import dotnet4j.util.compat.Tuple3;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import vavi.awt.dnd.BasicDTListener;
-import vavi.util.ByteUtil;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.util.function.Predicate.not;
@@ -88,32 +87,6 @@ public class Common {
         dat = (buf[adr] & 0xff) * 0x100 + (buf[adr + 1] & 0xff);
 
         return dat;
-    }
-
-    @Deprecated
-    public static int getLE16(byte[] buf, int adr) {
-        if (buf == null || buf.length - 1 < adr + 1) {
-            throw new IndexOutOfBoundsException();
-        }
-
-        return ByteUtil.readLeShort(buf, adr);
-    }
-
-    public static int getLE24(byte[] buf, int adr) {
-        if (buf == null || buf.length - 1 < adr + 2) {
-            throw new IndexOutOfBoundsException();
-        }
-
-        return ByteUtil.readLe24(buf, adr);
-    }
-
-    @Deprecated
-    public static int getLE32(byte[] buf, int adr) {
-        if (buf == null || buf.length - 1 < adr + 3) {
-            throw new IndexOutOfBoundsException();
-        }
-
-        return ByteUtil.readLeInt(buf, adr);
     }
 
     /** find an asciiz string from a byte array */

@@ -13,6 +13,7 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.zgm.zgmChip.ChipFactory;
 import mdplayer.driver.zgm.zgmChip.ZgmChip;
 import mdplayer.driver.Vgm.Gd3;
+import vavi.util.ByteUtil;
 import vavi.util.Debug;
 
 
@@ -73,39 +74,39 @@ public class Zgm extends BaseDriver {
     private boolean getZGMGD3Info(byte[] buf) {
         if (buf == null) return false;
 
-        int vgmGd3 = Common.getLE32(buf, (byte) 0x18);
+        int vgmGd3 = ByteUtil.readLeInt(buf, (byte) 0x18);
         if (vgmGd3 == 0) return false;
-        int vgmGd3Id = Common.getLE32(buf, vgmGd3);
+        int vgmGd3Id = ByteUtil.readLeInt(buf, vgmGd3);
         if (vgmGd3Id != FCC_GD3) throw new IndexOutOfBoundsException();
 
-        vgmEof = Common.getLE32(vgmBuf, (byte) 0x04);
+        vgmEof = ByteUtil.readLeInt(vgmBuf, (byte) 0x04);
 
-        int version = Common.getLE32(vgmBuf, 0x08);
+        int version = ByteUtil.readLeInt(vgmBuf, 0x08);
          // バージョンチェック
         if (version < 10) return false;
         this.version = String.format("%d.%d%d", (version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
-        totalCounter = Common.getLE32(vgmBuf, 0x0c);
+        totalCounter = ByteUtil.readLeInt(vgmBuf, 0x0c);
         if (totalCounter < 0) return false;
-        vgmLoopOffset = Common.getLE32(vgmBuf, 0x14);
-        loopCounter = Common.getLE32(vgmBuf, 0x10);
+        vgmLoopOffset = ByteUtil.readLeInt(vgmBuf, 0x14);
+        loopCounter = ByteUtil.readLeInt(vgmBuf, 0x10);
 
-        int defineAddress = Common.getLE32(vgmBuf, 0x1c);
-        int defineCount = Common.getLE16(vgmBuf, 0x24);
+        int defineAddress = ByteUtil.readLeInt(vgmBuf, 0x1c);
+        int defineCount = ByteUtil.readLeShort(vgmBuf, 0x24);
          // 音源定義数チェック
         if (defineCount < 1) return false;
 
         chipCommandSize = (defineCount > 128) ? 2 : 1;
 
-        int trackAddress = Common.getLE32(vgmBuf, 0x20);
-        int trackCounter = Common.getLE16(vgmBuf, 0x26);
+        int trackAddress = ByteUtil.readLeInt(vgmBuf, 0x20);
+        int trackCounter = ByteUtil.readLeShort(vgmBuf, 0x26);
         vgmDataOffset = trackAddress + 11;
          // トラック数チェック
         if (trackCounter != 1) return false;
-        int fcc = Common.getLE24(vgmBuf, trackAddress);
+        int fcc = ByteUtil.readLe24(vgmBuf, trackAddress);
         if (fcc != FCC_TRK) return false;
-        int trackLength = Common.getLE32(vgmBuf, trackAddress + 3);
-        vgmLoopOffset = Common.getLE32(vgmBuf, trackAddress + 7);
+        int trackLength = ByteUtil.readLeInt(vgmBuf, trackAddress + 3);
+        vgmLoopOffset = ByteUtil.readLeInt(vgmBuf, trackAddress + 7);
         if (vgmLoopOffset != 0) loopCounter = 1;
         vgmEof = trackAddress + trackLength;
 
@@ -113,9 +114,9 @@ public class Zgm extends BaseDriver {
 
         Map<String, Integer> chipCount = new HashMap<>();
         for (int i = 0; i < defineCount; i++) {
-            fcc = Common.getLE24(vgmBuf, pos);
+            fcc = ByteUtil.readLe24(vgmBuf, pos);
             if (fcc != FCC_DEF) return false;
-            ZgmChip chip = (new ChipFactory()).Create(Common.getLE32(vgmBuf, pos + 0x4), chipRegister, setting, vgmBuf);
+            ZgmChip chip = (new ChipFactory()).Create(ByteUtil.readLeInt(vgmBuf, pos + 0x4), chipRegister, setting, vgmBuf);
             if (chip == null) return false;//non support
 
             if (!chipCount.containsKey(chip.name)) chipCount.put(chip.name, -1);
@@ -138,7 +139,7 @@ public class Zgm extends BaseDriver {
         if (vgmBuf == null) return false;
 
         try {
-            if (Common.getLE32(vgmBuf, 0) != FCC_ZGM) return false;
+            if (ByteUtil.readLeInt(vgmBuf, 0) != FCC_ZGM) return false;
 
             if (!getZGMGD3Info(vgmBuf)) return false;
         } catch (Exception e) {

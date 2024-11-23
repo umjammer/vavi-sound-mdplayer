@@ -1,8 +1,11 @@
 package mdplayer.format;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,7 +13,6 @@ import java.util.List;
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
@@ -21,9 +23,12 @@ import vavi.util.archive.Entry;
 import vavi.util.archive.zip.JdkZipEntry;
 
 import static dotnet4j.io.Path.getDirectoryName;
+import static java.lang.System.getLogger;
 
 
 public abstract class BaseFileFormat implements FileFormat {
+
+    private static final Logger logger = getLogger(BaseFileFormat.class.getName());
 
     protected List<PlayList.Music> getMusicCommon(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
         List<PlayList.Music> musics = new ArrayList<>();
@@ -33,19 +38,19 @@ public abstract class BaseFileFormat implements FileFormat {
             musics.add(music);
             return musics;
         }
-        if (Common.getLE32(buf, 0x00) != Vgm.FCC_VGM) {
+        if (ByteUtil.readLeInt(buf, 0x00) != Vgm.FCC_VGM) {
             musics.add(music);
             return musics;
         }
 
         music.format = this;
-        int version = Common.getLE32(buf, 0x08);
+        int version = ByteUtil.readLeInt(buf, 0x08);
         String _version = String.format("%d.%d%d", (version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
-        int vgmGd3 = Common.getLE32(buf, 0x14);
+        int vgmGd3 = ByteUtil.readLeInt(buf, 0x14);
         Vgm.Gd3 gd3 = new Vgm.Gd3();
         if (vgmGd3 != 0) {
-            int vgmGd3Id = Common.getLE32(buf, vgmGd3 + 0x14);
+            int vgmGd3Id = ByteUtil.readLeInt(buf, vgmGd3 + 0x14);
             if (vgmGd3Id != Vgm.FCC_GD3) {
                 musics.add(music);
                 return musics;
@@ -53,9 +58,9 @@ public abstract class BaseFileFormat implements FileFormat {
             gd3 = (new Vgm()).getGD3Info(buf, vgmGd3);
         }
 
-        int totalCounter = Common.getLE32(buf, 0x18);
-        int vgmLoopOffset = Common.getLE32(buf, 0x1c);
-        int loopCounter = Common.getLE32(buf, 0x20);
+        int totalCounter = ByteUtil.readLeInt(buf, 0x18);
+        int vgmLoopOffset = ByteUtil.readLeInt(buf, 0x1c);
+        int loopCounter = ByteUtil.readLeInt(buf, 0x20);
 
         music.title = gd3.trackName;
         music.titleJ = gd3.trackNameJ;
@@ -109,7 +114,7 @@ public abstract class BaseFileFormat implements FileFormat {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             return null;
         }
     }
@@ -146,13 +151,13 @@ public abstract class BaseFileFormat implements FileFormat {
                 if (vgm != VGMFileFormat.FCC_VGM) {
 
                     try (InputStream inStream = archive.getInputStream(entry);
-                         InputStream decompStream = Archives.getInputStream(inStream)
+                         InputStream decompStream = Archives.getInputStream(new BufferedInputStream(inStream))
                     ) {
                         buf = decompStream.readAllBytes();
                     }
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.log(Level.ERROR, ex.getMessage(), ex);
                 buf = null;
             }
         }
@@ -175,7 +180,7 @@ public abstract class BaseFileFormat implements FileFormat {
             try {
                 buf = File.readAllBytes(mc.fileName);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.log(Level.ERROR, ex.getMessage(), ex);
                 buf = null;
             }
             if (buf == null && mc.format instanceof VGMFileFormat) {
@@ -187,7 +192,7 @@ public abstract class BaseFileFormat implements FileFormat {
                 try {
                     buf = File.readAllBytes(mc.fileName);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log(Level.ERROR, ex.getMessage(), ex);
                     buf = null;
                 }
             }
@@ -196,7 +201,7 @@ public abstract class BaseFileFormat implements FileFormat {
                 try {
                     buf = reader.readAllBytes();
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log(Level.ERROR, ex.getMessage(), ex);
                     buf = null;
                 }
             }
@@ -216,7 +221,7 @@ public abstract class BaseFileFormat implements FileFormat {
             try {
                 buf = File.readAllBytes(mc.fileName);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.log(Level.ERROR, ex.getMessage(), ex);
                 buf = null;
             }
             if (buf == null && mc.format instanceof VGMFileFormat) {
@@ -228,7 +233,7 @@ public abstract class BaseFileFormat implements FileFormat {
                 try {
                     buf = File.readAllBytes(mc.fileName);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log(Level.ERROR, ex.getMessage(), ex);
                     buf = null;
                 }
             }

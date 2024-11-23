@@ -33,6 +33,7 @@ import musicDriverInterface.MmlDatum;
 import musicDriverInterface.Tag;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
+import vavi.util.ByteUtil;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 
@@ -136,7 +137,7 @@ public class MucomDotNET extends BaseDriver {
             for (int j = 0; j < partCount[i]; j++) {
                 pageLength[i][j] = new Integer[pageCount[i][j]];
                 for (int k = 0; k < pageCount[i][j]; k++) {
-                    pageLength[i][j][k] = Common.getLE32(buf, p);
+                    pageLength[i][j][k] = ByteUtil.readLeInt(buf, p);
                     p += 8;
                 }
             }

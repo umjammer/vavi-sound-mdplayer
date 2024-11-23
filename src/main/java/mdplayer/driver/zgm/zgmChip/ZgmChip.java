@@ -4,9 +4,9 @@ package mdplayer.driver.zgm.zgmChip;
 import java.util.Map;
 
 import mdplayer.ChipRegister;
-import mdplayer.Common;
 import mdplayer.Setting;
 import mdplayer.driver.zgm.Zgm;
+import vavi.util.ByteUtil;
 
 
 public abstract class ZgmChip extends Chip {
@@ -30,9 +30,9 @@ public abstract class ZgmChip extends Chip {
         this.index = chipIndex;
         defineInfo = new Zgm.DefineInfo();
         defineInfo.length = vgmBuf[dataPos + 0x03];
-        defineInfo.chipIdentNo = Common.getLE32(vgmBuf, dataPos + 0x4);
-        defineInfo.commandNo = Common.getLE16(vgmBuf, dataPos + 0x8);
-        defineInfo.clock = Common.getLE32(vgmBuf, dataPos + 0xa);
+        defineInfo.chipIdentNo = ByteUtil.readLeInt(vgmBuf, dataPos + 0x4);
+        defineInfo.commandNo = ByteUtil.readLeShort(vgmBuf, dataPos + 0x8);
+        defineInfo.clock = ByteUtil.readLeInt(vgmBuf, dataPos + 0xa);
         defineInfo.option = null;
         if (defineInfo.length > 14) {
             defineInfo.option = new byte[defineInfo.length - 14];

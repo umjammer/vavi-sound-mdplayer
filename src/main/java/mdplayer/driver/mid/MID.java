@@ -13,6 +13,7 @@ import mdplayer.driver.rcp.RCP;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.MidiOutInfo;
+import vavi.util.ByteUtil;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 
@@ -66,7 +67,7 @@ public class MID extends BaseDriver {
 
 
         try {
-            if (Common.getLE32(buf, 0) != FCC_MID) return null;
+            if (ByteUtil.readLeInt(buf, 0) != FCC_MID) return null;
             int format = buf[8] * 0x100 + buf[9];
             int trkCount = buf[10] * 0x100 + buf[11];
             int adr = 14;
@@ -75,7 +76,7 @@ public class MID extends BaseDriver {
             for (int i = 0; i < trkCount; i++) {
                 if (buf.length <= adr) break;
 
-                if (Common.getLE32(buf, adr) != FCC_TRK) return null;
+                if (ByteUtil.readLeInt(buf, adr) != FCC_TRK) return null;
                 int len = (buf[adr + 4] & 0xff) * 0x1000000 + (buf[adr + 5] & 0xff) * 0x10000 + (buf[adr + 6] & 0xff) * 0x100 + (buf[adr + 7] & 0xff);
                 adr += 8;
                 int trkEndadr = adr + len;
@@ -193,7 +194,7 @@ public class MID extends BaseDriver {
 
     private boolean getInformationHeader() {
         if (vgmBuf == null) return false;
-        if (Common.getLE32(vgmBuf, 0) != FCC_MID) return false;
+        if (ByteUtil.readLeInt(vgmBuf, 0) != FCC_MID) return false;
 
         format = vgmBuf[8] * 0x100 + vgmBuf[9];
         trkCount = vgmBuf[10] * 0x100 + vgmBuf[11];
@@ -213,7 +214,7 @@ public class MID extends BaseDriver {
             isEnd.add(false);
             isDelta.add(true);
 
-            if (Common.getLE32(vgmBuf, adr) != FCC_TRK) return false;
+            if (ByteUtil.readLeInt(vgmBuf, adr) != FCC_TRK) return false;
             int len = vgmBuf[adr + 4] * 0x1000000 + vgmBuf[adr + 5] * 0x10000 + vgmBuf[adr + 6] * 0x100 + vgmBuf[adr + 7];
             adr += 8;
             musicPtr.add(adr);

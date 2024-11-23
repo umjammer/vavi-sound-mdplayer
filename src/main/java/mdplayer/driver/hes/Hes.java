@@ -9,13 +9,14 @@ import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.plugin.BasePlugin;
+import vavi.util.ByteUtil;
 import vavi.util.Debug;
 
 
 public class Hes extends BaseDriver {
     @Override
     public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        if (Common.getLE32(buf, 0) != FCC_HES) {
+        if (ByteUtil.readLeInt(buf, 0) != FCC_HES) {
             return null;
         }
 

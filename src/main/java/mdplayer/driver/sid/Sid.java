@@ -1,5 +1,7 @@
 package mdplayer.driver.sid;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 
 import dotnet4j.io.File;
@@ -19,9 +21,14 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
 import mdsound.VisWaveBuffer;
+import vavi.util.ByteUtil;
+
+import static java.lang.System.getLogger;
 
 
 public class Sid extends BaseDriver {
+
+    private static final Logger logger = getLogger(Sid.class.getName());
 
     public static final int FCC_PSID = 0x44495350;
     public static final int FCC_RSID = 0x44495352;
@@ -38,8 +45,9 @@ public class Sid extends BaseDriver {
     public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         if (buf == null) return null;
 
-        if (Common.getLE32(buf, 0) != FCC_PSID && Common.getLE32(buf, 0) != FCC_RSID)
+        if (ByteUtil.readLeInt(buf, 0) != FCC_PSID && ByteUtil.readLeInt(buf, 0) != FCC_RSID) {
             return null;
+        }
 
         songs = Common.getBE16(buf, 0x0e);
 
@@ -47,32 +55,32 @@ public class Sid extends BaseDriver {
         try {
             gd3.trackName = new String(buf, 0x16, 32, StandardCharsets.US_ASCII).trim();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
             gd3.trackName = gd3.trackName.substring(0, gd3.trackName.indexOf((char) 0));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
             gd3.composer = new String(buf, 0x36, 32, StandardCharsets.US_ASCII).trim();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
             gd3.composer = gd3.composer.substring(0, gd3.composer.indexOf((char) 0));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
             gd3.notes = new String(buf, 0x56, 32, StandardCharsets.US_ASCII).trim();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
             gd3.notes = gd3.notes.substring(0, gd3.notes.indexOf((char) 0));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
 
         return gd3;
@@ -130,7 +138,7 @@ public class Sid extends BaseDriver {
             }
             //Stopped = !isPlaying();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -195,12 +203,12 @@ public class Sid extends BaseDriver {
 
         // Get tune details
         tuneInfo = tune.getInfo();
-        //if (!m_track.single)
-        //    m_track.songs = (short)tuneInfo.songs();
-        //if (!createOutput(m_driver.Output, tuneInfo))
-        //    return false;
-        //if (!createSidEmu(m_driver.Sid))
-        //    return false;
+//        if (!m_track.single)
+//            m_track.songs = (short)tuneInfo.songs();
+//        if (!createOutput(m_driver.Output, tuneInfo))
+//            return false;
+//        if (!createSidEmu(m_driver.Sid))
+//            return false;
 
         cfg = new SidConfig(setting);
         cfg.frequency = setting.getOutputDevice().getSampleRate();

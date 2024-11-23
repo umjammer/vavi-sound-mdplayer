@@ -1,7 +1,10 @@
 package mdplayer.format;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,10 +14,13 @@ import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
 import mdplayer.plugin.Plugin;
+import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
 import vavi.util.archive.zip.JdkZipEntry;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -24,6 +30,8 @@ import vavi.util.archive.zip.JdkZipEntry;
  * @version 0.00 2022-07-07 nsano initial version <br>
  */
 public class UnknownFileFormat extends BaseFileFormat {
+
+    private static final Logger logger = getLogger(UnknownFileFormat.class.getName());
 
     @Override
     public String[] getExtensions() {
@@ -48,7 +56,7 @@ public class UnknownFileFormat extends BaseFileFormat {
             musics.add(music);
             return musics;
         }
-        if (Common.getLE32(buf, 0x00) != Vgm.FCC_VGM) {
+        if (ByteUtil.readLeInt(buf, 0x00) != Vgm.FCC_VGM) {
             // musics.add(Music);
             // return musics;
             // VGZかもしれないので確認する
@@ -62,7 +70,7 @@ public class UnknownFileFormat extends BaseFileFormat {
                         entry = archive.getEntry(file);
                     }
                     try (InputStream inStream = archive.getInputStream(entry);
-                         InputStream decompStream = Archives.getInputStream(inStream);
+                         InputStream decompStream = Archives.getInputStream(new BufferedInputStream(inStream));
                          ByteArrayOutputStream outStream = new ByteArrayOutputStream()
                     ) {
                         while ((num = decompStream.read(buf, 0, buf.length)) > 0) {
@@ -74,24 +82,24 @@ public class UnknownFileFormat extends BaseFileFormat {
                     buf = archive.getInputStream(entry).readAllBytes();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
                 // vgzではなかった
             }
         }
 
-        if (Common.getLE32(buf, 0x00) != Vgm.FCC_VGM) {
+        if (ByteUtil.readLeInt(buf, 0x00) != Vgm.FCC_VGM) {
             musics.add(music);
             return musics;
         }
 
         music.format = null; // TODO VGM
-        int version = Common.getLE32(buf, 0x08);
+        int version = ByteUtil.readLeInt(buf, 0x08);
         String _version = String.format("%d.%d%d", (version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
-        int vgmGd3 = Common.getLE32(buf, 0x14);
+        int vgmGd3 = ByteUtil.readLeInt(buf, 0x14);
         Vgm.Gd3 gd3 = new Vgm.Gd3();
         if (vgmGd3 != 0) {
-            int vgmGd3Id = Common.getLE32(buf, vgmGd3 + 0x14);
+            int vgmGd3Id = ByteUtil.readLeInt(buf, vgmGd3 + 0x14);
             if (vgmGd3Id != Vgm.FCC_GD3) {
                 musics.add(music);
                 return musics;
@@ -99,9 +107,9 @@ public class UnknownFileFormat extends BaseFileFormat {
             gd3 = (new Vgm()).getGD3Info(buf, vgmGd3);
         }
 
-        int TotalCounter = Common.getLE32(buf, 0x18);
-        int vgmLoopOffset = Common.getLE32(buf, 0x1c);
-        int loopCounter = Common.getLE32(buf, 0x20);
+        int TotalCounter = ByteUtil.readLeInt(buf, 0x18);
+        int vgmLoopOffset = ByteUtil.readLeInt(buf, 0x1c);
+        int loopCounter = ByteUtil.readLeInt(buf, 0x20);
 
         music.title = gd3.trackName;
         music.titleJ = gd3.trackNameJ;

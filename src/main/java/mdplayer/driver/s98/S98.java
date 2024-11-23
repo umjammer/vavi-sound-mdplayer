@@ -7,13 +7,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import mdplayer.ChipRegister;
-import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
+import vavi.util.ByteUtil;
 import vavi.util.Debug;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
@@ -47,9 +47,9 @@ public class S98 extends BaseDriver {
         chips = new ArrayList<>();
 
         try {
-            if (Common.getLE24(buf, 0) != FCC_S98) return null;
+            if (ByteUtil.readLe24(buf, 0) != FCC_S98) return null;
             int format = buf[3] - '0';
-            int tagAdr = Common.getLE32(buf, 0x10);
+            int tagAdr = ByteUtil.readLeInt(buf, 0x10);
             if (format < 2) {
                 List<Byte> strLst = new ArrayList<>();
                 String str;
@@ -66,7 +66,7 @@ public class S98 extends BaseDriver {
                 if (buf[tagAdr++] != 0x38) return null;
                 if (buf[tagAdr++] != 0x5d) return null;
                 boolean isUTF8 = false;
-                if (Common.getLE24(buf, tagAdr) == FCC_BOM) {
+                if (ByteUtil.readLe24(buf, tagAdr) == FCC_BOM) {
                     isUTF8 = true;
                     tagAdr += 3;
                 }
@@ -207,37 +207,37 @@ public class S98 extends BaseDriver {
         switch (s98Info.FormatVersion) {
         case 0:
         case 1:
-            s98Info.SyncNumerator = Common.getLE32(vgmBuf, 4);
+            s98Info.SyncNumerator = ByteUtil.readLeInt(vgmBuf, 4);
             if (s98Info.SyncNumerator == 0) s98Info.SyncNumerator = 10;
             s98Info.SyncDnumerator = 1000;
-            s98Info.Compressing = Common.getLE32(vgmBuf, 0xc); // not support
-            s98Info.TAGAddress = Common.getLE32(vgmBuf, 0x10);
-            s98Info.DumpAddress = Common.getLE32(vgmBuf, 0x14);
-            s98Info.LoopAddress = Common.getLE32(vgmBuf, 0x18);
+            s98Info.Compressing = ByteUtil.readLeInt(vgmBuf, 0xc); // not support
+            s98Info.TAGAddress = ByteUtil.readLeInt(vgmBuf, 0x10);
+            s98Info.DumpAddress = ByteUtil.readLeInt(vgmBuf, 0x14);
+            s98Info.LoopAddress = ByteUtil.readLeInt(vgmBuf, 0x18);
             s98Info.DeviceCount = 0;
             break;
         case 2:
-            s98Info.SyncNumerator = Common.getLE32(vgmBuf, 4);
+            s98Info.SyncNumerator = ByteUtil.readLeInt(vgmBuf, 4);
             if (s98Info.SyncNumerator == 0) s98Info.SyncNumerator = 10;
-            s98Info.SyncDnumerator = Common.getLE32(vgmBuf, 8);
+            s98Info.SyncDnumerator = ByteUtil.readLeInt(vgmBuf, 8);
             if (s98Info.SyncDnumerator == 0) s98Info.SyncDnumerator = 1000;
-            s98Info.Compressing = Common.getLE32(vgmBuf, 0xc); // not support
-            s98Info.TAGAddress = Common.getLE32(vgmBuf, 0x10);
-            s98Info.DumpAddress = Common.getLE32(vgmBuf, 0x14);
-            s98Info.LoopAddress = Common.getLE32(vgmBuf, 0x18);
+            s98Info.Compressing = ByteUtil.readLeInt(vgmBuf, 0xc); // not support
+            s98Info.TAGAddress = ByteUtil.readLeInt(vgmBuf, 0x10);
+            s98Info.DumpAddress = ByteUtil.readLeInt(vgmBuf, 0x14);
+            s98Info.LoopAddress = ByteUtil.readLeInt(vgmBuf, 0x18);
             //0x1c Compressed data not support
-            if (Common.getLE32(vgmBuf, 0x20) == 0) s98Info.DeviceCount = 0;
+            if (ByteUtil.readLeInt(vgmBuf, 0x20) == 0) s98Info.DeviceCount = 0;
             break;
         case 3:
-            s98Info.SyncNumerator = Common.getLE32(vgmBuf, 4);
+            s98Info.SyncNumerator = ByteUtil.readLeInt(vgmBuf, 4);
             if (s98Info.SyncNumerator == 0) s98Info.SyncNumerator = 10;
-            s98Info.SyncDnumerator = Common.getLE32(vgmBuf, 8);
+            s98Info.SyncDnumerator = ByteUtil.readLeInt(vgmBuf, 8);
             if (s98Info.SyncDnumerator == 0) s98Info.SyncDnumerator = 1000;
-            s98Info.Compressing = Common.getLE32(vgmBuf, 0xc);
-            s98Info.TAGAddress = Common.getLE32(vgmBuf, 0x10);
-            s98Info.DumpAddress = Common.getLE32(vgmBuf, 0x14);
-            s98Info.LoopAddress = Common.getLE32(vgmBuf, 0x18);
-            s98Info.DeviceCount = Common.getLE32(vgmBuf, 0x1c);
+            s98Info.Compressing = ByteUtil.readLeInt(vgmBuf, 0xc);
+            s98Info.TAGAddress = ByteUtil.readLeInt(vgmBuf, 0x10);
+            s98Info.DumpAddress = ByteUtil.readLeInt(vgmBuf, 0x14);
+            s98Info.LoopAddress = ByteUtil.readLeInt(vgmBuf, 0x18);
+            s98Info.DeviceCount = ByteUtil.readLeInt(vgmBuf, 0x1c);
             break;
         }
 
@@ -256,14 +256,15 @@ public class S98 extends BaseDriver {
         } else {
             if (s98Info.FormatVersion == 2) {
                 int i = 0;
-                while (Common.getLE32(vgmBuf, 0x20 + i * 0x10) != 0) {
+                while (true) {
+                    if (!(ByteUtil.readLeInt(vgmBuf, 0x20 + i * 0x10) != 0)) break;
                     S98DevInfo info = new S98DevInfo();
-                    info.deviceType = Common.getLE32(vgmBuf, 0x20 + i * 0x10);
+                    info.deviceType = ByteUtil.readLeInt(vgmBuf, 0x20 + i * 0x10);
                     if (devIDs[info.deviceType] > 1) {
                         i++;
                         continue; // 同じchipは2こまで
                     }
-                    info.clock = Common.getLE32(vgmBuf, 0x24 + i * 0x10);
+                    info.clock = ByteUtil.readLeInt(vgmBuf, 0x24 + i * 0x10);
                     switch (info.deviceType) {
                     case 1:
                         chips.add("YM2149");
@@ -289,11 +290,11 @@ public class S98 extends BaseDriver {
             } else {
                 for (int i = 0; i < s98Info.DeviceCount; i++) {
                     S98DevInfo info = new S98DevInfo();
-                    info.deviceType = Common.getLE32(vgmBuf, 0x20 + i * 0x10);
+                    info.deviceType = ByteUtil.readLeInt(vgmBuf, 0x20 + i * 0x10);
                     if (devIDs[info.deviceType] > 1) continue; // 同じchipは2こまで
 
-                    info.clock = Common.getLE32(vgmBuf, 0x24 + i * 0x10);
-                    info.Pan = Common.getLE32(vgmBuf, 0x28 + i * 0x10);
+                    info.clock = ByteUtil.readLeInt(vgmBuf, 0x24 + i * 0x10);
+                    info.Pan = ByteUtil.readLeInt(vgmBuf, 0x28 + i * 0x10);
                     switch (info.deviceType) {
                     case 1:
                         chips.add("YM2149");
