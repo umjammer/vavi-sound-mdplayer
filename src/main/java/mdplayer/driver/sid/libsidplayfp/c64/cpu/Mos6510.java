@@ -331,9 +331,9 @@ public class Mos6510 {
         if (cycleCount > interruptCycle + 2) {
 //# if DEBUG
             //long cycles = eventScheduler.getTime(EventPhase.EVENT_CLOCK_PHI2);
-            //System.err.printf("****************************************************\n");
-            //System.err.printf(" Interrupt (%d)\n", cycles);
-            //System.err.printf("****************************************************\n");
+            //logger.log(Level.TRACE, "****************************************************\n");
+            //logger.log(Level.TRACE, " Interrupt (%d)".formatted(cycles));
+            //logger.log(Level.TRACE, "****************************************************\n");
             //DumpState((long)cycles, this);
 //#endif
             cpuRead(registerProgramCounter);
@@ -708,37 +708,31 @@ public class Mos6510 {
     private void doJSR() {
         registerProgramCounter = cycleEffectiveAddress;
 
-//# if PC64_TESTSUITE
+//#if PC64_TESTSUITE
 //            // trap handlers
-//            if (Register_ProgramCounter == 0xffd2)
-//            {
+//            if (Register_ProgramCounter == 0xffd2) {
 //                // Print character
 //                byte ch = CHRtab[Register_Accumulator];
-//                switch (ch)
-//                {
+//                switch (ch) {
 //                    case 0:
 //                        break;
 //                    case 1:
-//                        System.err.printf(" ");
+//                        logger.log(Level.TRACE, " ");
 //                        break;
 //                    case 0xd:
-//                        System.err.printf( "\n");
+//                        logger.log(Level.TRACE,  "\n");
 //                        filepos = 0;
 //                        break;
 //                    default:
 //                        filetmp[filepos++] = ch;
-//                        System.err.printf( "%d", ch);
+//                        logger.log(Level.TRACE,  "%d".formatted(ch));
 //                }
-//            }
-//            else if (Register_ProgramCounter == 0xe16f)
-//            {
+//            } else if (Register_ProgramCounter == 0xe16f) {
 //                // Load
 //                filetmp[filepos] = '\0';
 //                loadFile(filetmp);
-//            }
-//            else if (Register_ProgramCounter == 0x8000
-//                || Register_ProgramCounter == 0xa474)
-//            {
+//            } else if (Register_ProgramCounter == 0x8000
+//                || Register_ProgramCounter == 0xa474) {
 //                // Stop
 //                exit(0);
 //            }
@@ -757,9 +751,9 @@ public class Mos6510 {
      * Interrupt routine as soon as the opcode ends, if necessary.
      */
     private void rtiInstr() {
-//# if DEBUG
-        //if (dodump)
-        //    System.err.printf("****************************************************\n\n");
+//#if DEBUG
+//if (dodump)
+// logger.log(Level.TRACE, "****************************************************\n\n");
 //#endif
         registerProgramCounter = cycleEffectiveAddress;
         interruptsAndNextOpcode();
@@ -810,23 +804,18 @@ public class Mos6510 {
     private void shInstr(byte offset) {
         byte tmp = (byte) (cycleData & (to16hi8((short) (cycleEffectiveAddress - offset)) + 1));
 
-//# if CORRECT_SH_INSTRUCTIONS
-            /*
-             //When a DMA instanceof going on (the CPU instanceof halted by the VIC-II)
-             //while the instruction sha/shx/shy executes then the last
-             //term of the ANDing (ADH+1) drops off.
-             *
-             //http://sourceforge.net/p/vice-emu/bugs/578/
-             */
+//#if CORRECT_SH_INSTRUCTIONS
+        // When a DMA instanceof going on (the CPU instanceof halted by the VIC-II)
+        // while the instruction sha/shx/shy executes then the last
+        // term of the ANDing (ADH+1) drops off.
+        // http://sourceforge.net/p/vice-emu/bugs/578/
         if (rdyOnThrowAwayRead) {
             cycleData = tmp;
         }
 //#endif
 
-            /*
-             //When the addressing/indexing causes a page boundary crossing
-             //the highbyte of the target address becomes equal to the value stored.
-             */
+        // When the addressing/indexing causes a page boundary crossing
+        // the highbyte of the target address becomes equal to the value stored.
         if (adlCarry)
             to16hi8(cycleEffectiveAddress, tmp);
         putEffAddrDataByte();
@@ -1449,7 +1438,7 @@ public class Mos6510 {
 
         for (int i = 0; i < 0x100; i++) {
 //#if DEBUG
-            //System.err.printf("Building Command %d[%02x]... ", i, i);
+            //logger.log(Level.TRACE, "Building Command %d[%02x]... ".formatted(i, i));
 //#endif
 
              //So: what cycles are marked as stealable? Rules are:
@@ -2435,7 +2424,7 @@ public class Mos6510 {
             instrTable[buildCycle].func = this::interruptsAndNextOpcode;
 
 //#if DEBUG
-            //System.err.printf("Done [%d Cycles]\n", buildCycle - (i << 3));
+            //logger.log(Level.TRACE, "Done [%d Cycles]".formatted(buildCycle - (i << 3)));
 //#endif
         }
     }

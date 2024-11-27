@@ -208,9 +208,9 @@ public class DrawBuff {
         n = 3;
         PanToOKIM6258(screen, o, n, o, 0);
 
-        drawFont4(screen, 12 * 4, 8, 0, String.format("%5d", 0));
-        drawFont4(screen, 19 * 4, 8, 0, String.format("%5d", 0));
-        drawFont4(screen, 26 * 4, 8, 0, String.format("%5d", 0));
+        drawFont4(screen, 12 * 4, 8, 0, "%5d".formatted(0));
+        drawFont4(screen, 19 * 4, 8, 0, "%5d".formatted(0));
+        drawFont4(screen, 26 * 4, 8, 0, "%5d".formatted(0));
 
         o = 0;
         n = 38;
@@ -706,13 +706,13 @@ public class DrawBuff {
     }
 
     /**
-     * ボリュームメータ描画
-     * @param screen 描画対象バッファ@param
-     * @param x x座標(x1)
-     * @param y y座標(x1)
+     * Volume meter drawing
+     * @param screen Buffer to be drawn
+     * @param x x-coordinate (x1)
+     * @param y y-coordinate (x1)
      * @param c 0:Mono 1:Stereo(L) 2:Stereo(R)
-     * @param ov 前回の値(ref)
-     * @param nv 今回の値
+     * @param ov Previous value (ref)
+     * @param nv This value
      * @param tp 0:EMU 1:Real
      */
     public static int volume(FrameBuffer screen, int x, int y, int c, /* ref */ int ov, int nv, int tp) {
@@ -1827,7 +1827,7 @@ public class DrawBuff {
 
         x *= 4;
         y *= 4;
-        drawFont4(screen, x, y, 0, String.format("%5d", nefrq));
+        drawFont4(screen, x, y, 0, "%5d".formatted(nefrq));
 
         oefrq = nefrq;
     }
@@ -1980,7 +1980,7 @@ public class DrawBuff {
         int x = (((c > 2) ? c - 3 : c) * 8 * 13) + 4 * 22;
         int y = (((c > 2) ? 1 : 0) * 8 * 5) + 4 * 22;
 
-        drawFont4(screen, x, y, 0, String.format("%2d", nd));
+        drawFont4(screen, x, y, 0, "%2d".formatted(nd));
         od = nd;
     }
 
@@ -1991,7 +1991,7 @@ public class DrawBuff {
         int x = 8 * 9;
         int y = c * 8 + 8 * 17;
 
-        drawFont4(screen, x, y, 0, String.format("%2d", nd));
+        drawFont4(screen, x, y, 0, "%2d".formatted(nd));
         od = nd;
     }
 
@@ -2002,7 +2002,7 @@ public class DrawBuff {
         int x = 8 * 17;
         int y = 8 * 17;
 
-        drawFont4(screen, x, y, 0, String.format("%1d", nd));
+        drawFont4(screen, x, y, 0, "%1d".formatted(nd));
         od = nd;
     }
 
@@ -2013,7 +2013,7 @@ public class DrawBuff {
         int x = 8 * 16;
         int y = 8 * 18;
 
-        drawFont4(screen, x, y, 0, String.format("%3d", nd));
+        drawFont4(screen, x, y, 0, "%3d".formatted(nd));
         od = nd;
     }
 
@@ -3404,7 +3404,7 @@ public class DrawBuff {
         // if (ch < 9) drawFont8(screen, x + 16, y, mask ? 1 : 0, (1 +
         // ch).toString());
         // else
-        drawFont4(screen, x + 16, y, mask ? 1 : 0, String.format("%2d", 1 + ch));
+        drawFont4(screen, x + 16, y, mask ? 1 : 0, "%2d".formatted(1 + ch));
     }
 
     public static void ChQSound_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
@@ -3415,7 +3415,7 @@ public class DrawBuff {
         // if (ch < 9) drawFont8(screen, x + 16, y, mask ? 1 : 0, (1 +
         // ch).toString());
         // else
-        drawFont4(screen, x + 16, y, mask ? 1 : 0, String.format("%2d", 1 + ch));
+        drawFont4(screen, x + 16, y, mask ? 1 : 0, "%2d".formatted(1 + ch));
     }
 
     public static void ChQSoundAdpcm_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
@@ -3426,7 +3426,7 @@ public class DrawBuff {
         // if (ch < 9) drawFont8(screen, x + 16, y, mask ? 1 : 0, (1 +
         // ch).toString());
         // else
-        drawFont4(screen, x + 20, y, mask ? 1 : 0, String.format("%1d", 1 + ch));
+        drawFont4(screen, x + 20, y, mask ? 1 : 0, "%1d".formatted(1 + ch));
     }
 
     public static void ChC352_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
@@ -3437,7 +3437,7 @@ public class DrawBuff {
         // if (ch < 9) drawFont8(screen, x + 16, y, mask ? 1 : 0, (1 +
         // ch).toString());
         // else
-        drawFont4(screen, x + 16, y, mask ? 1 : 0, String.format("%2d", 1 + ch));
+        drawFont4(screen, x + 16, y, mask ? 1 : 0, "%2d".formatted(1 + ch));
     }
 
     private static void ChHuC6280_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
@@ -3487,7 +3487,7 @@ public class DrawBuff {
         // if (ch < 9) drawFont8(screen, x + 16, y, mask ? 1 : 0, (1 +
         // ch).toString());
         // else
-        drawFont4(screen, x + 16, y, mask ? 1 : 0, String.format("%2d", 1 + ch));
+        drawFont4(screen, x + 16, y, mask ? 1 : 0, "%2d".formatted(1 + ch));
     }
 
     private static void ChSN76489_P(FrameBuffer screen, int x, int y, int ch, boolean mask, int tp) {
@@ -3650,7 +3650,7 @@ public class DrawBuff {
             // if (ch < 9) drawFont8(screen, x + 16, y, mask ? 1 : 0, (1 +
             // ch).toString());
             // else
-            drawFont4(screen, x + 16, y, mask ? 1 : 0, String.format("%2d", 1 + ch));
+            drawFont4(screen, x + 16, y, mask ? 1 : 0, "%2d".formatted(1 + ch));
         } else if (ch < 23) {
             switch (ch) {
             case 18:
@@ -3679,7 +3679,7 @@ public class DrawBuff {
 
         if (ch < 18) {
             screen.drawByteArray(x, y, rType[tp * 2 + (mask ? 1 : 0)], 128, 0, 0, 16, 8);
-            drawFont4(screen, x + 16, y, mask ? 1 : 0, String.format("%2d", 1 + ch));
+            drawFont4(screen, x + 16, y, mask ? 1 : 0, "%2d".formatted(1 + ch));
         } else if (ch < 23) {
             switch (ch) {
             case 18:
@@ -3702,7 +3702,7 @@ public class DrawBuff {
         } else {
             screen.drawByteArray(x, y, rType[tp * 2 + (mask ? 1 : 0)], 128, 16, 0, 16, 8);
             ch -= 23;
-            drawFont4(screen, x + 16, y, mask ? 1 : 0, String.format("%2d", 1 + ch));
+            drawFont4(screen, x + 16, y, mask ? 1 : 0, "%2d".formatted(1 + ch));
         }
     }
 

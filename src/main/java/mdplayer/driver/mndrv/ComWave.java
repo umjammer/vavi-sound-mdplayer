@@ -613,7 +613,7 @@ public class ComWave {
                 reg.a0 = mm.readInt(reg.a3 + W_W.adrs_work);
                 reg.D0_L = 0;
                 reg.setD0_B(mm.readByte(reg.a3 + W_W.depth));
-                reg.D0_L = (short) (mm.readShort(reg.a0) * (short) reg.getD0_W()); // 68020未満のCPUはw*W=lのみ?
+                reg.D0_L = (short) (mm.readShort(reg.a0) * (short) reg.getD0_W()); // For CPUs less than 68020, only w*W=l?
 
                 if (reg.a0 - mm.readInt(reg.a3 + W_W.end_adrs_work) == 0) { // break _com_w10;
 
@@ -641,7 +641,7 @@ public class ComWave {
         reg.setD0_W(mm.readShort(reg.a4 + W_L.bendwork));
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _com_wave_lw() {
         mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) { // break _com_wave_k_exit;

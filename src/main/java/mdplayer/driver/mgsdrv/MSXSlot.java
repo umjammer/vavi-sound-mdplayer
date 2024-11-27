@@ -39,11 +39,10 @@ public class MSXSlot extends Slot {
         setPageFromSlot(3, 3, 1);
 
         // e3-1 512(32*16)kB Mapped RAM
-        // MAIN ROM 設定
-        slots[3][1].set(0xfcc1, (byte) 0x09);// exslot none MAIN ROMの位置(?) (
-                                             // ExtSLOT : 3-1 )
-        slots[3][1].set(0xfcc2, (byte) 0x00);// exslot none
-        slots[3][1].set(0xfcc3, (byte) 0x80);// exslot exist
-        slots[3][1].set(0xfcc4, (byte) 0x80);// exslot exist
+        // MAIN ROM settings
+        slots[3][1].set(0xfcc1, (byte) 0x09); // exslot none MAIN ROM position(?) (ExtSLOT : 3-1 )
+        slots[3][1].set(0xfcc2, (byte) 0x00); // exslot none
+        slots[3][1].set(0xfcc3, (byte) 0x80); // exslot exist
+        slots[3][1].set(0xfcc4, (byte) 0x80); // exslot exist
     }
 }

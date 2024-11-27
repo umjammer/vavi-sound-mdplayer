@@ -74,7 +74,7 @@ class TestMd5 {
             byte[] digest = md5.digest(test[i]);
             StringBuilder sb = new StringBuilder();
             for (int di = 0; di < 16; ++di) {
-                String p = String.format("%02x", digest[di] & 0xff);
+                String p = "%02x".formatted(digest[di] & 0xff);
                 sb.append(p);
             }
 Debug.print("MD5 (\"" + strTest[i] + "\") = " + sb);
@@ -91,7 +91,7 @@ Debug.print("MD5 (\"" + strTest[i] + "\") = " + sb);
             md5.finish();
             StringBuilder sb = new StringBuilder();
             for (int di = 0; di < 16; ++di) {
-                String p = String.format("%02x", md5.getDigest()[di] & 0xff);
+                String p = "%02x".formatted(md5.getDigest()[di] & 0xff);
                 sb.append(p);
             }
 Debug.print("MD5 (\"" + strTest[i] + "\") = " + sb);
@@ -108,7 +108,7 @@ Debug.print("MD5 (\"" + strTest[i] + "\") = " + sb);
             byte[] digest = md5.digest(test[i]);
             StringBuilder sb = new StringBuilder();
             for (int di = 0; di < 16; ++di) {
-                String p = String.format("%02x", digest[di] & 0xff);
+                String p = "%02x".formatted(digest[di] & 0xff);
                 sb.append(p);
             }
 Debug.print("MD5 (\"" + strTest[i] + "\") = " + sb);
@@ -124,7 +124,7 @@ Debug.print("MD5 (\"" + strTest[i] + "\") = " + sb);
             byte[] digest = md5.doFinal(test[i]);
             StringBuilder sb = new StringBuilder();
             for (int di = 0; di < 16; ++di) {
-                String p = String.format("%02x", digest[di] & 0xff);
+                String p = "%02x".formatted(digest[di] & 0xff);
                 sb.append(p);
             }
 Debug.print("MD5 (\"" + strTest[i] + "\") = " + sb);

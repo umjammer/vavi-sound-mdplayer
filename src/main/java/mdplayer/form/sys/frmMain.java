@@ -26,6 +26,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.UncheckedIOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -37,7 +39,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
-import java.util.logging.Level;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiSystem;
@@ -140,10 +141,13 @@ import mdsound.np.chip.NesN106;
 import vavi.util.Debug;
 
 import static dotnet4j.io.Path.getDirectoryName;
+import static java.lang.System.getLogger;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
 public class frmMain extends JFrame {
+
+    private static final Logger logger = getLogger(frmMain.class.getName());
 
     ResourceBundle rb = ResourceBundle.getBundle("mdplayer/form/sys/frmMain", Locale.getDefault());
 
@@ -251,8 +255,8 @@ public class frmMain extends JFrame {
     private List<String[]> remoteReq = new ArrayList<>();
 
     public frmMain() {
-        Debug.println(Level.SEVERE, "起動処理開始");
-        Debug.println(Level.SEVERE, "frmMain(コンストラクタ):STEP 00");
+        logger.log(Level.ERROR, "起動処理開始");
+        logger.log(Level.ERROR, "frmMainコンストラクタ):STEP 00");
 
         initializeComponent();
         DrawBuff.Init();
@@ -286,7 +290,7 @@ public class frmMain extends JFrame {
         lstForm.add(frmVRC6);
         lstForm.add(frmVRC7);
 
-        Debug.println(Level.SEVERE, "frmMain(コンストラクタ):STEP 01");
+        logger.log(Level.ERROR, "frmMain(コンストラクタ):STEP 01");
 
         // 引数が指定されている場合のみプロセスチェックを行い、自分と同じアプリケーションが実行中ならばそちらに引数を渡し終了する
 //        if (Common.getCommandLineArgs().length > 1) {
@@ -302,13 +306,13 @@ public class frmMain extends JFrame {
 //            }
 //        }
 
-        Debug.println(Level.SEVERE, "frmMain(コンストラクタ):STEP 02");
+        logger.log(Level.ERROR, "frmMainコンストラクタ):STEP 02");
 
 //        pbScreen.AllowDrop = true;
 
-        Debug.println(Level.SEVERE, "frmMain(コンストラクタ):STEP 03");
+        logger.log(Level.ERROR, "frmMainコンストラクタ):STEP 03");
         if (setting == null) {
-            Debug.println(Level.SEVERE, "frmMain(コンストラクタ):setting instanceof null");
+            logger.log(Level.ERROR, "frmMainコンストラクタ):setting instanceof null");
         } else {
 //            if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift) {
 //                int res = JOptionPane.showConfirmDialog(this,
@@ -321,7 +325,7 @@ public class frmMain extends JFrame {
 //            }
         }
 
-        Debug.println(Level.SEVERE, "起動時のAudio初期化処理開始");
+        logger.log(Level.ERROR, "起動時のAudio初期化処理開始");
 
         audio.init();
 
@@ -335,11 +339,11 @@ public class frmMain extends JFrame {
         ym2612MIDI.slow = this::slow;
         ym2612MIDI.stop = this::stop;
 
-        Debug.println(Level.SEVERE, "起動時のAudio初期化処理完了");
+        logger.log(Level.ERROR, "起動時のAudio初期化処理完了");
 
         StartMIDIInMonitoring();
 
-        Debug.println(Level.SEVERE, "frmMain(コンストラクタ):STEP 04");
+        logger.log(Level.ERROR, "frmMainコンストラクタ):STEP 04");
 
 setVisible(true);
     }
@@ -373,7 +377,7 @@ setVisible(true);
     private void frmMain_Load(WindowEvent ev) {
         Runtime.getRuntime().addShutdownHook(new Thread(this::SystemEvents_SessionEnding));
 
-        Debug.println(Level.SEVERE, "frmMain_Load:STEP 05");
+        logger.log(Level.ERROR, "frmMain_Load:STEP 05");
 
         if (!setting.getLocation().getPMain().equals(empty))
             this.setLocation(setting.getLocation().getPMain());
@@ -382,7 +386,7 @@ setVisible(true);
 
         pbRf5c164Screen = new BufferedImage(320, 72, BufferedImage.TYPE_INT_ARGB);
 
-        Debug.println(Level.SEVERE, "frmMain_Load:STEP 06");
+        logger.log(Level.ERROR, "frmMain_Load:STEP 06");
 
         screen = new DoubleBuffer(pbScreen, Resources.getPlaneControl(), 1);
         screen.setting = setting;
@@ -390,7 +394,7 @@ setVisible(true);
         //newParam = new MDChipParams();
         reqAllScreenInit = true;
 
-        Debug.println(Level.SEVERE, "frmMain_Load:STEP 07");
+        logger.log(Level.ERROR, "frmMain_Load:STEP 07");
 
         pWidth = pbScreen.getWidth();
         pHeight = pbScreen.getHeight();
@@ -455,7 +459,7 @@ setVisible(true);
             if (setting.getLocation().getOpenN106()[chipId]) openFormN106(chipId, false);
         }
 
-        Debug.println(Level.SEVERE, "frmMain_Load:STEP 08");
+        logger.log(Level.ERROR, "frmMain_Load:STEP 08");
 
         frameSizeW = this.getWidth() - this.getSize().width;
         frameSizeH = this.getHeight() - this.getSize().height;
@@ -486,7 +490,7 @@ setVisible(true);
                         opeButtonMode
                 };
 
-        Debug.println(Level.SEVERE, "frmMain_Load:STEP 09");
+        logger.log(Level.ERROR, "frmMain_Load:STEP 09");
 
          // //operationフォルダクリア
         //opeFolder = mdplayer.Common.GetOperationFolder(true);
@@ -530,7 +534,7 @@ setVisible(true);
                 try {
                     File.delete(trgFile);
                 } catch (Exception deleteEx) {
-                    deleteEx.printStackTrace();
+                    logger.log(Level.ERROR, deleteEx.getMessage(), deleteEx);
                 }
                 return;
             }
@@ -546,7 +550,7 @@ setVisible(true);
                     try {
                         File.delete(trgFile);
                     } catch (Exception deleteEx) {
-                        deleteEx.printStackTrace();
+                        logger.log(Level.ERROR, deleteEx.getMessage(), deleteEx);
                     }
                     return;
                 }
@@ -560,7 +564,7 @@ setVisible(true);
                         lins = Files.readAllLines(Paths.get(trgFile));
                         retry = 0;
                     } catch (IOException e1) {
-                        Debug.println(Level.WARNING, e);
+                        logger.log(Level.WARNING, e);
                         Thread.sleep(100);
                         retry--;
                     }
@@ -569,13 +573,13 @@ setVisible(true);
                 try {
                     File.delete(trgFile);
                 } catch (Exception deleteEx) {
-                    deleteEx.printStackTrace();
+                    logger.log(Level.ERROR, deleteEx.getMessage(), deleteEx);
                 }
 
                 remoteReq.add(lins.toArray(String[]::new));
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         } finally {
             synchronized (remoteLockObj) {
                 remoteBusy = false;
@@ -655,7 +659,7 @@ setVisible(true);
                 break;
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -1016,7 +1020,7 @@ setVisible(true);
     }
 
     private void frmMain_Shown(WindowEvent ev) {
-        Debug.println(Level.SEVERE, "frmMain_Shown:STEP 09");
+        logger.log(Level.ERROR, "frmMain_Shown:STEP 09");
 
         Thread trd = new Thread(this::screenMainLoop);
         trd.setPriority(Thread.MIN_PRIORITY);
@@ -1030,7 +1034,7 @@ setVisible(true);
             return;
         }
 
-        Debug.println(Level.SEVERE, "frmMain_Shown:STEP 10");
+        logger.log(Level.ERROR, "frmMain_Shown:STEP 10");
 
         try {
 
@@ -1055,12 +1059,12 @@ setVisible(true);
             frmPlayList.play();
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             JOptionPane.showMessageDialog(this, "ファイルの読み込みに失敗しました。");
         }
 
-        Debug.println(Level.SEVERE, "frmMain_Shown:STEP 11");
-        Debug.println(Level.SEVERE, "起動処理完了");
+        logger.log(Level.ERROR, "frmMain_Shown:STEP 11");
+        logger.log(Level.ERROR, "起動処理完了");
     }
 
     private ComponentListener componentListener = new ComponentAdapter() {
@@ -1079,15 +1083,15 @@ setVisible(true);
     private void frmMain_FormClosing(WindowEvent e) {
         if (forcedExit) return;
 
-        Debug.println(Level.SEVERE, "終了処理開始");
-        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 00");
+        logger.log(Level.ERROR, "終了処理開始");
+        logger.log(Level.ERROR, "frmMain_FormClosing:STEP 00");
 
         frmPlayList.stop();
         frmPlayList.save();
 
         tonePallet.save(null);
 
-        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 01");
+        logger.log(Level.ERROR, "frmMain_FormClosing:STEP 01");
 
         StopMIDIInMonitoring();
         Request req = new Request(enmRequest.Die, null, null);
@@ -1096,7 +1100,7 @@ setVisible(true);
             Thread.yield();
         }
 
-        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 02");
+        logger.log(Level.ERROR, "frmMain_FormClosing:STEP 02");
 
         isRunning = false;
         while (!stopped) {
@@ -1104,7 +1108,7 @@ setVisible(true);
 //            Application.DoEvents();
         }
 
-        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 03");
+        logger.log(Level.ERROR, "frmMain_FormClosing:STEP 03");
 
         ym2612MIDI.close();
 
@@ -1155,7 +1159,7 @@ setVisible(true);
             setting.getLocation().getOpenRegTest()[chipId] = false;
         }
 
-        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 04");
+        logger.log(Level.ERROR, "frmMain_FormClosing:STEP 04");
 
         if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
             setting.getLocation().setPMain(getLocation());
@@ -1340,15 +1344,15 @@ setVisible(true);
             }
         }
 
-        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 05");
+        logger.log(Level.ERROR, "frmMain_FormClosing:STEP 05");
 
         setting.save();
 
-        Debug.println(Level.SEVERE, "frmMain_FormClosing:STEP 06");
+        logger.log(Level.ERROR, "frmMain_FormClosing:STEP 06");
 
         mmf.close();
 
-        Debug.println(Level.SEVERE, "終了処理完了");
+        logger.log(Level.ERROR, "終了処理完了");
     }
 
     private MouseMotionListener pbScreen_MouseMove = new MouseMotionAdapter() {
@@ -1787,7 +1791,7 @@ setVisible(true);
 
         frmMCD[chipId].setVisible(true);
         frmMCD[chipId].update();
-        frmMCD[chipId].setTitle(String.format("RF5C164 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmMCD[chipId].setTitle("RF5C164 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.rf5c164[chipId] = new MDChipParams.RF5C164();
 
         checkAndSetForm(frmMCD[chipId]);
@@ -1799,13 +1803,13 @@ setVisible(true);
         try {
             frmMCD[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
 
         }
         try {
             frmMCD[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmMCD[chipId] = null;
     }
@@ -1830,7 +1834,7 @@ setVisible(true);
 
         frmRf5c68[chipId].setVisible(true);
         frmRf5c68[chipId].update();
-        frmRf5c68[chipId].setTitle(String.format("RF5C68 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmRf5c68[chipId].setTitle("RF5C68 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.rf5c68[chipId] = new MDChipParams.RF5C68();
 
         checkAndSetForm(frmRf5c68[chipId]);
@@ -1842,13 +1846,13 @@ setVisible(true);
         try {
             frmRf5c68[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
 
         }
         try {
             frmRf5c68[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmRf5c68[chipId] = null;
     }
@@ -1875,7 +1879,7 @@ setVisible(true);
 
         frmYMF271[chipId].setVisible(true);
         frmYMF271[chipId].update();
-        frmYMF271[chipId].setTitle(String.format("YMF271 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmYMF271[chipId].setTitle("YMF271 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ymf271[chipId] = new MDChipParams.YMF271();
 
         checkAndSetForm(frmYMF271[chipId]);
@@ -1887,13 +1891,13 @@ setVisible(true);
         try {
             frmYMF271[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
 
         }
         try {
             frmYMF271[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmYMF271[chipId] = null;
     }
@@ -1920,7 +1924,7 @@ setVisible(true);
 
         frmYM2608[chipId].setVisible(true);
         frmYM2608[chipId].update();
-        frmYM2608[chipId].setTitle(String.format("YM2608 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmYM2608[chipId].setTitle("YM2608 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ym2608[chipId] = new MDChipParams.YM2608();
 
         checkAndSetForm(frmYM2608[chipId]);
@@ -1932,12 +1936,12 @@ setVisible(true);
         try {
             frmYM2608[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmYM2608[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmYM2608[chipId] = null;
     }
@@ -1963,7 +1967,7 @@ setVisible(true);
 
         frmYM2151[chipId].setVisible(true);
         frmYM2151[chipId].update();
-        frmYM2151[chipId].setTitle(String.format("YM2151 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmYM2151[chipId].setTitle("YM2151 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ym2151[chipId] = new MDChipParams.YM2151();
 
         checkAndSetForm(frmYM2151[chipId]);
@@ -1975,12 +1979,12 @@ setVisible(true);
         try {
             frmYM2151[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmYM2151[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmYM2151[chipId] = null;
     }
@@ -2005,7 +2009,7 @@ setVisible(true);
 
         frmC140[chipId].setVisible(true);
         frmC140[chipId].update();
-        frmC140[chipId].setTitle(String.format("C140Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmC140[chipId].setTitle("C140Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.c140[chipId] = new MDChipParams.C140();
 
         checkAndSetForm(frmC140[chipId]);
@@ -2017,12 +2021,12 @@ setVisible(true);
         try {
             frmC140[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmC140[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmC140[chipId] = null;
     }
@@ -2047,7 +2051,7 @@ setVisible(true);
 
         frmPPZ8[chipId].setVisible(true);
         frmPPZ8[chipId].update();
-        frmPPZ8[chipId].setTitle(String.format("Ppz8Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmPPZ8[chipId].setTitle("Ppz8Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ppz8[chipId] = new MDChipParams.PPZ8();
 
         checkAndSetForm(frmPPZ8[chipId]);
@@ -2059,12 +2063,12 @@ setVisible(true);
         try {
             frmPPZ8[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmPPZ8[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmPPZ8[chipId] = null;
     }
@@ -2089,7 +2093,7 @@ setVisible(true);
 
         frmS5B[chipId].setVisible(true);
         frmS5B[chipId].update();
-        frmS5B[chipId].setTitle(String.format("S5B (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmS5B[chipId].setTitle("S5B (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.s5b[chipId] = new MDChipParams.S5B();
 
         checkAndSetForm(frmS5B[chipId]);
@@ -2101,12 +2105,12 @@ setVisible(true);
         try {
             frmS5B[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmS5B[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmS5B[chipId] = null;
     }
@@ -2131,7 +2135,7 @@ setVisible(true);
 
         frmDMG[chipId].setVisible(true);
         frmDMG[chipId].update();
-        frmDMG[chipId].setTitle(String.format("DMG (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmDMG[chipId].setTitle("DMG (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.dmg[chipId] = new MDChipParams.DMG();
 
         checkAndSetForm(frmDMG[chipId]);
@@ -2143,12 +2147,12 @@ setVisible(true);
         try {
             frmDMG[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmDMG[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmDMG[chipId] = null;
     }
@@ -2173,7 +2177,7 @@ setVisible(true);
 
         frmYMZ280B[chipId].setVisible(true);
         frmYMZ280B[chipId].update();
-        frmYMZ280B[chipId].setTitle(String.format("YMZ280B (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmYMZ280B[chipId].setTitle("YMZ280B (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ymz280b[chipId] = new MDChipParams.YMZ280B();
 
         checkAndSetForm(frmYMZ280B[chipId]);
@@ -2185,12 +2189,12 @@ setVisible(true);
         try {
             frmYMZ280B[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmYMZ280B[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmYMZ280B[chipId] = null;
     }
@@ -2215,7 +2219,7 @@ setVisible(true);
 
         frmC352[chipId].setVisible(true);
         frmC352[chipId].update();
-        frmC352[chipId].setTitle(String.format("C352Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmC352[chipId].setTitle("C352Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.c352[chipId] = new MDChipParams.C352();
 
         checkAndSetForm(frmC352[chipId]);
@@ -2227,12 +2231,12 @@ setVisible(true);
         try {
             frmC352[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmC352[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmC352[chipId] = null;
     }
@@ -2258,7 +2262,7 @@ setVisible(true);
 
         frmMultiPCM[chipId].setVisible(true);
         frmMultiPCM[chipId].update();
-        frmMultiPCM[chipId].setTitle(String.format("MultiPCM (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmMultiPCM[chipId].setTitle("MultiPCM (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.multiPCM[chipId] = new MDChipParams.MultiPCM();
 
         checkAndSetForm(frmMultiPCM[chipId]);
@@ -2270,12 +2274,12 @@ setVisible(true);
         try {
             frmMultiPCM[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmMultiPCM[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmMultiPCM[chipId] = null;
     }
@@ -2300,7 +2304,7 @@ setVisible(true);
 
         frmQSound[chipId].setVisible(true);
         frmQSound[chipId].update();
-        frmQSound[chipId].setTitle(String.format("QSoundInst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmQSound[chipId].setTitle("QSoundInst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.qSound[chipId] = new MDChipParams.QSound();
 
         checkAndSetForm(frmQSound[chipId]);
@@ -2312,12 +2316,12 @@ setVisible(true);
         try {
             frmQSound[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmQSound[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmQSound[chipId] = null;
     }
@@ -2342,7 +2346,7 @@ setVisible(true);
 
         frmYM2203[chipId].setVisible(true);
         frmYM2203[chipId].update();
-        frmYM2203[chipId].setTitle(String.format("YM2203 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmYM2203[chipId].setTitle("YM2203 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ym2203[chipId] = new MDChipParams.YM2203();
 
         checkAndSetForm(frmYM2203[chipId]);
@@ -2354,12 +2358,12 @@ setVisible(true);
         try {
             frmYM2203[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmYM2203[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmYM2203[chipId] = null;
     }
@@ -2384,7 +2388,7 @@ setVisible(true);
 
         frmYM2610[chipId].setVisible(true);
         frmYM2610[chipId].update();
-        frmYM2610[chipId].setTitle(String.format("YM2610 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmYM2610[chipId].setTitle("YM2610 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ym2610[chipId] = new MDChipParams.YM2610();
 
         checkAndSetForm(frmYM2610[chipId]);
@@ -2396,12 +2400,12 @@ setVisible(true);
         try {
             frmYM2610[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmYM2610[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmYM2610[chipId] = null;
     }
@@ -2431,7 +2435,7 @@ setVisible(true);
 
         frmYM2612[chipId].setVisible(true);
         frmYM2612[chipId].update();
-        frmYM2612[chipId].setTitle(String.format("Ym2612Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmYM2612[chipId].setTitle("Ym2612Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
 
         checkAndSetForm(frmYM2612[chipId]);
     }
@@ -2441,12 +2445,12 @@ setVisible(true);
         try {
             frmYM2612[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmYM2612[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmYM2612[chipId] = null;
     }
@@ -2471,7 +2475,7 @@ setVisible(true);
 
         frmOKIM6258[chipId].setVisible(true);
         frmOKIM6258[chipId].update();
-        frmOKIM6258[chipId].setTitle(String.format("OKIM6258 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmOKIM6258[chipId].setTitle("OKIM6258 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
 
         checkAndSetForm(frmOKIM6258[chipId]);
     }
@@ -2482,12 +2486,12 @@ setVisible(true);
         try {
             frmOKIM6258[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmOKIM6258[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmOKIM6258[chipId] = null;
     }
@@ -2512,7 +2516,7 @@ setVisible(true);
 
         frmOKIM6295[chipId].setVisible(true);
         frmOKIM6295[chipId].update();
-        frmOKIM6295[chipId].setTitle(String.format("OKIM6295 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmOKIM6295[chipId].setTitle("OKIM6295 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
 
         checkAndSetForm(frmOKIM6295[chipId]);
     }
@@ -2523,12 +2527,12 @@ setVisible(true);
         try {
             frmOKIM6295[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmOKIM6295[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmOKIM6295[chipId] = null;
     }
@@ -2553,7 +2557,7 @@ setVisible(true);
 
         frmSN76489[chipId].setVisible(true);
         frmSN76489[chipId].update();
-        frmSN76489[chipId].setTitle(String.format("SN76489 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmSN76489[chipId].setTitle("SN76489 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.sn76489[chipId] = new MDChipParams.SN76489();
 
         checkAndSetForm(frmSN76489[chipId]);
@@ -2565,12 +2569,12 @@ setVisible(true);
         try {
             frmSN76489[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmSN76489[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmSN76489[chipId] = null;
     }
@@ -2595,7 +2599,7 @@ setVisible(true);
 
         frmSegaPCM[chipId].setVisible(true);
         frmSegaPCM[chipId].update();
-        frmSegaPCM[chipId].setTitle(String.format("SegaPCM (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmSegaPCM[chipId].setTitle("SegaPCM (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.segaPcm[chipId] = new MDChipParams.SegaPcm();
 
         checkAndSetForm(frmSegaPCM[chipId]);
@@ -2607,12 +2611,12 @@ setVisible(true);
         try {
             frmSegaPCM[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmSegaPCM[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmSegaPCM[chipId] = null;
     }
@@ -2638,7 +2642,7 @@ setVisible(true);
 
         frmAY8910[chipId].setVisible(true);
         frmAY8910[chipId].update();
-        frmAY8910[chipId].setTitle(String.format("AY8910 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmAY8910[chipId].setTitle("AY8910 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ay8910[chipId] = new MDChipParams.AY8910();
 
         checkAndSetForm(frmAY8910[chipId]);
@@ -2650,12 +2654,12 @@ setVisible(true);
         try {
             frmAY8910[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmAY8910[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmAY8910[chipId] = null;
     }
@@ -2680,7 +2684,7 @@ setVisible(true);
 
         frmHuC6280[chipId].setVisible(true);
         frmHuC6280[chipId].update();
-        frmHuC6280[chipId].setTitle(String.format("OotakeHuC6280 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmHuC6280[chipId].setTitle("OotakeHuC6280 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.huc6280[chipId] = new MDChipParams.HuC6280();
 
         checkAndSetForm(frmHuC6280[chipId]);
@@ -2692,12 +2696,12 @@ setVisible(true);
         try {
             frmHuC6280[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmHuC6280[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmHuC6280[chipId] = null;
     }
@@ -2723,7 +2727,7 @@ setVisible(true);
 
         frmK051649[chipId].setVisible(true);
         frmK051649[chipId].update();
-        frmK051649[chipId].setTitle(String.format("K051649Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmK051649[chipId].setTitle("K051649Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.k051649[chipId] = new MDChipParams.K051649();
 
         checkAndSetForm(frmK051649[chipId]);
@@ -2735,12 +2739,12 @@ setVisible(true);
         try {
             frmK051649[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmK051649[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmK051649[chipId] = null;
     }
@@ -2765,7 +2769,7 @@ setVisible(true);
 
         frmYM2413[chipId].setVisible(true);
         frmYM2413[chipId].update();
-        frmYM2413[chipId].setTitle(String.format("YM2413/VRC7 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmYM2413[chipId].setTitle("YM2413/VRC7 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ym2413[chipId] = new MDChipParams.YM2413();
 
         checkAndSetForm(frmYM2413[chipId]);
@@ -2777,12 +2781,12 @@ setVisible(true);
         try {
             frmYM2413[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmYM2413[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmYM2413[chipId] = null;
     }
@@ -2807,7 +2811,7 @@ setVisible(true);
 
         frmYM3526[chipId].setVisible(true);
         frmYM3526[chipId].update();
-        frmYM3526[chipId].setTitle(String.format("YM3526 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmYM3526[chipId].setTitle("YM3526 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ym3526[chipId] = new MDChipParams.YM3526();
 
         checkAndSetForm(frmYM3526[chipId]);
@@ -2819,12 +2823,12 @@ setVisible(true);
         try {
             frmYM3526[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmYM3526[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmYM3526[chipId] = null;
     }
@@ -2849,7 +2853,7 @@ setVisible(true);
 
         frmY8950[chipId].setVisible(true);
         frmY8950[chipId].update();
-        frmY8950[chipId].setTitle(String.format("Y8950Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmY8950[chipId].setTitle("Y8950Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.y8950[chipId] = new MDChipParams.Y8950();
 
         checkAndSetForm(frmY8950[chipId]);
@@ -2861,12 +2865,12 @@ setVisible(true);
         try {
             frmY8950[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmY8950[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmY8950[chipId] = null;
     }
@@ -2891,7 +2895,7 @@ setVisible(true);
 
         frmYM3812[chipId].setVisible(true);
         frmYM3812[chipId].update();
-        frmYM3812[chipId].setTitle(String.format("YM3812 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmYM3812[chipId].setTitle("YM3812 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ym3812[chipId] = new MDChipParams.YM3812();
 
         checkAndSetForm(frmYM3812[chipId]);
@@ -2903,12 +2907,12 @@ setVisible(true);
         try {
             frmYM3812[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmYM3812[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmYM3812[chipId] = null;
     }
@@ -2933,7 +2937,7 @@ setVisible(true);
 
         frmYMF262[chipId].setVisible(true);
         frmYMF262[chipId].update();
-        frmYMF262[chipId].setTitle(String.format("YMF262 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmYMF262[chipId].setTitle("YMF262 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ymf262[chipId] = new MDChipParams.YMF262();
 
         checkAndSetForm(frmYMF262[chipId]);
@@ -2945,12 +2949,12 @@ setVisible(true);
         try {
             frmYMF262[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmYMF262[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmYMF262[chipId] = null;
     }
@@ -2975,7 +2979,7 @@ setVisible(true);
 
         frmYMF278B[chipId].setVisible(true);
         frmYMF278B[chipId].update();
-        frmYMF278B[chipId].setTitle(String.format("YMF278B (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmYMF278B[chipId].setTitle("YMF278B (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.ymf278b[chipId] = new MDChipParams.YMF278B();
 
         checkAndSetForm(frmYMF278B[chipId]);
@@ -2987,12 +2991,12 @@ setVisible(true);
         try {
             frmYMF278B[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmYMF278B[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmYMF278B[chipId] = null;
     }
@@ -3017,7 +3021,7 @@ setVisible(true);
 
         frmMIDI[chipId].setVisible(true);
         frmMIDI[chipId].update();
-        frmMIDI[chipId].setTitle(String.format("MIDI (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmMIDI[chipId].setTitle("MIDI (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.midi[chipId] = new MIDIParam();
 
         checkAndSetForm(frmMIDI[chipId]);
@@ -3029,12 +3033,12 @@ setVisible(true);
         try {
             frmMIDI[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmMIDI[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmMIDI[chipId] = null;
     }
@@ -3059,7 +3063,7 @@ setVisible(true);
 
         frmNESDMC[chipId].setVisible(true);
         frmNESDMC[chipId].update();
-        frmNESDMC[chipId].setTitle(String.format("NES&DMC (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmNESDMC[chipId].setTitle("NES&DMC (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.nesdmc[chipId] = new MDChipParams.NESDMC();
 
         checkAndSetForm(frmNESDMC[chipId]);
@@ -3071,12 +3075,12 @@ setVisible(true);
         try {
             frmNESDMC[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmNESDMC[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmNESDMC[chipId] = null;
     }
@@ -3101,7 +3105,7 @@ setVisible(true);
 
         frmFDS[chipId].setVisible(true);
         frmFDS[chipId].update();
-        frmFDS[chipId].setTitle(String.format("FDS (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmFDS[chipId].setTitle("FDS (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.fds[chipId] = new MDChipParams.FDS();
 
         checkAndSetForm(frmFDS[chipId]);
@@ -3113,12 +3117,12 @@ setVisible(true);
         try {
             frmFDS[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmFDS[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmFDS[chipId] = null;
     }
@@ -3147,7 +3151,7 @@ setVisible(true);
 
         frmVRC6[chipId].setVisible(true);
         frmVRC6[chipId].update();
-        frmVRC6[chipId].setTitle(String.format("Vrc6Inst (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmVRC6[chipId].setTitle("Vrc6Inst (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.vrc6[chipId] = new MDChipParams.VRC6();
 
         checkAndSetForm(frmVRC6[chipId]);
@@ -3159,12 +3163,12 @@ setVisible(true);
         try {
             frmVRC6[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmVRC6[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmVRC6[chipId] = null;
     }
@@ -3190,7 +3194,7 @@ setVisible(true);
 
         frmVRC7[chipId].setVisible(true);
         frmVRC7[chipId].update();
-        frmVRC7[chipId].setTitle(String.format("VRC7 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmVRC7[chipId].setTitle("VRC7 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.vrc7[chipId] = new MDChipParams.VRC7();
 
         checkAndSetForm(frmVRC7[chipId]);
@@ -3202,12 +3206,12 @@ setVisible(true);
         try {
             frmVRC7[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmVRC7[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmVRC7[chipId] = null;
     }
@@ -3232,7 +3236,7 @@ setVisible(true);
 
         frmMMC5[chipId].setVisible(true);
         frmMMC5[chipId].update();
-        frmMMC5[chipId].setTitle(String.format("MMC5 (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmMMC5[chipId].setTitle("MMC5 (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.mmc5[chipId] = new MDChipParams.MMC5();
 
         checkAndSetForm(frmMMC5[chipId]);
@@ -3244,12 +3248,12 @@ setVisible(true);
         try {
             frmMMC5[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmMMC5[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmMMC5[chipId] = null;
     }
@@ -3273,7 +3277,7 @@ setVisible(true);
         frmRegTest.setVisible(true);
         frmRegTest.update();
         frmRegTest.changeChip(selectedChip);
-        frmRegTest.setTitle(String.format("RegTest (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmRegTest.setTitle("RegTest (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
 
         checkAndSetForm(frmRegTest);
     }
@@ -3323,7 +3327,7 @@ setVisible(true);
 
         frmN106[chipId].setVisible(true);
         frmN106[chipId].update();
-        frmN106[chipId].setTitle(String.format("N163(N106) (%s)", chipId == 0 ? "Primary" : "Secondary"));
+        frmN106[chipId].setTitle("N163(N106) (%s)".formatted(chipId == 0 ? "Primary" : "Secondary"));
         oldParam.n106[chipId] = new MDChipParams.N106();
 
         checkAndSetForm(frmN106[chipId]);
@@ -3335,12 +3339,12 @@ setVisible(true);
         try {
             frmN106[chipId].setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmN106[chipId].dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmN106[chipId] = null;
     }
@@ -3351,12 +3355,12 @@ setVisible(true);
         try {
             frmRegTest.setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmRegTest.dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmRegTest = null;
     }
@@ -3367,12 +3371,12 @@ setVisible(true);
         try {
             frmVisWave.setVisible(false);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         try {
             frmVisWave.dispose();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         frmVisWave = null;
     }
@@ -3383,7 +3387,7 @@ setVisible(true);
                 frmInfo.setVisible(false);
                 frmInfo.dispose();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             } finally {
                 frmInfo = null;
             }
@@ -3395,7 +3399,7 @@ setVisible(true);
                 frmInfo.setVisible(false);
                 frmInfo.dispose();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             } finally {
                 frmInfo = null;
             }
@@ -3430,7 +3434,7 @@ setVisible(true);
                 frmYM2612MIDI.setVisible(false);
                 frmYM2612MIDI.dispose();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             } finally {
                 frmYM2612MIDI = null;
             }
@@ -3442,7 +3446,7 @@ setVisible(true);
                 frmYM2612MIDI.setVisible(false);
                 frmYM2612MIDI.dispose();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             } finally {
                 frmYM2612MIDI = null;
             }
@@ -3519,11 +3523,11 @@ setVisible(true);
         reqAllScreenInit = true;
         //screen.screenInitAll();
 
-        Debug.println(Level.SEVERE, "設定が変更されたため、再度Audio初期化処理開始");
+        logger.log(Level.ERROR, "設定が変更されたため、再度Audio初期化処理開始");
 
         audio.init();
 
-        Debug.println(Level.SEVERE, "Audio初期化処理完了");
+        logger.log(Level.ERROR, "Audio初期化処理完了");
 
 //        frmVSTeffectList.dispPluginList();
         StartMIDIInMonitoring();
@@ -3547,7 +3551,7 @@ setVisible(true);
                 frmMixer2.setVisible(false);
                 frmMixer2.dispose();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             } finally {
                 frmMixer2 = null;
             }
@@ -3559,7 +3563,7 @@ setVisible(true);
                 frmMixer2.setVisible(false);
                 frmMixer2.dispose();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             } finally {
                 frmMixer2 = null;
             }
@@ -3617,7 +3621,7 @@ setVisible(true);
                 frmPlayList.play();
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             JOptionPane.showMessageDialog(null, "ファイルの読み込みに失敗しました。");
         }
     }
@@ -3692,7 +3696,7 @@ setVisible(true);
             if (tickCount < nextFrame) {
                 if (nextFrame - tickCount > 1) {
                     try {
-                        Thread.sleep((int) (nextFrame - tickCount));
+                        Thread.sleep((long) (nextFrame - tickCount));
                     } catch (InterruptedException ignored) {
                     }
                 }
@@ -3723,7 +3727,7 @@ setVisible(true);
             }
 
             if (audio.audio.getFatalError()) {
-                Debug.println(Level.SEVERE, "AudioでFatalErrorが発生。再度Audio初期化処理開始");
+                logger.log(Level.ERROR, "AudioでFatalErrorが発生。再度Audio初期化処理開始");
 
                 frmPlayList.stop();
                 try {
@@ -3732,19 +3736,19 @@ setVisible(true);
                     while (!req.getEnd()) Thread.sleep(1);
                     //audio.audio.Stop();
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log(Level.ERROR, ex.getMessage(), ex);
                 }
 
                 try {
                     audio.audio.close();
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log(Level.ERROR, ex.getMessage(), ex);
                 }
 
                 audio.audio.setFatalError(false);
                 audio.init();
 
-                Debug.println(Level.SEVERE, "Audio初期化処理完了");
+                logger.log(Level.ERROR, "Audio初期化処理完了");
             }
         }
 
@@ -3958,13 +3962,13 @@ setVisible(true);
 
         if (setting.getDebug_DispFrameCounter()) {
             long v = audio.getVirtualFrameCounter();
-            if (v != -1) DrawBuff.drawFont8(screen.mainScreen, 0, 0, 0, String.format("EMU        : %12d ", v));
+            if (v != -1) DrawBuff.drawFont8(screen.mainScreen, 0, 0, 0, "EMU        : %12d ".formatted(v));
             long r = audio.getRealFrameCounter();
-            if (r != -1) DrawBuff.drawFont8(screen.mainScreen, 0, 8, 0, String.format("REAL CHIP  : %12d ", r));
+            if (r != -1) DrawBuff.drawFont8(screen.mainScreen, 0, 8, 0, "REAL CHIP  : %12d ".formatted(r));
             long d = r - v;
             if (r != -1 && v != -1)
-                DrawBuff.drawFont8(screen.mainScreen, 0, 16, 0, String.format("R.CHIP-EMU : %12d ", d));
-            DrawBuff.drawFont8(screen.mainScreen, 0, 24, 0, String.format("PROC TIME  : %12d ", audio.audio.procTimePer1Frame));
+                DrawBuff.drawFont8(screen.mainScreen, 0, 16, 0, "R.CHIP-EMU : %12d ".formatted(d));
+            DrawBuff.drawFont8(screen.mainScreen, 0, 24, 0, "PROC TIME  : %12d ".formatted(audio.audio.procTimePer1Frame));
         }
 
         screen.Refresh(null);
@@ -3976,7 +3980,7 @@ setVisible(true);
         if (gd3 != null) {
             String title = gd3.trackName;
             String usedChips = gd3.usedChips;
-            newInfo = String.format("MDPlayer - [%s] %s", usedChips, title);
+            newInfo = "MDPlayer - [%s] %s".formatted(usedChips, title);
         } else {
             newInfo = "MDPlayer";
         }
@@ -3984,7 +3988,7 @@ setVisible(true);
         try {
             setTitle(newInfo);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -4413,11 +4417,11 @@ setVisible(true);
                     //while (!req.end) Thread.sleep(1);
                     //audio.audio.Stop();
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log(Level.ERROR, ex.getMessage(), ex);
                 }
                 if (audio.audio.errMsg.isEmpty()) throw new Exception();
                 else {
-                    JOptionPane.showMessageDialog(this, audio.audio.errMsg, "エラー", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, audio.audio.errMsg, "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
             }
@@ -4658,7 +4662,7 @@ setVisible(true);
                 else CloseFormYMF271(1);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             audio.audio.errMsg = e.getMessage();
         }
     }
@@ -4729,7 +4733,7 @@ setVisible(true);
                 }
             });
         });
-        ofd.setDialogTitle("ファイルを選択してください");
+        ofd.setDialogTitle("Select a file");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
         if (!setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(setting.getOther().getDefaultDataPath()) && isInitialOpenFolder) {
@@ -4859,8 +4863,8 @@ setVisible(true);
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "音色出力エラー", "エラー", JOptionPane.ERROR_MESSAGE);
+            logger.log(Level.ERROR, e.getMessage(), e);
+            JOptionPane.showMessageDialog(this, "音色出力エラー", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -4877,8 +4881,8 @@ setVisible(true);
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
-                n.append(String.format("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n"
-                        , fmRegister[p][0x50 + ops + c] & 0x1f  // AR
+                n.append("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
+                        fmRegister[p][0x50 + ops + c] & 0x1f  // AR
                         , fmRegister[p][0x60 + ops + c] & 0x1f  // DR
                         , fmRegister[p][0x70 + ops + c] & 0x1f  // SR
                         , fmRegister[p][0x80 + ops + c] & 0x0f  // RR
@@ -4891,8 +4895,8 @@ setVisible(true);
                 ));
             }
             n.append("   ALG FB\n");
-            n.append(String.format("'@ %3d,%3d\n"
-                    , fmRegister[p][0xb0 + c] & 0x07 // AL
+            n.append("'@ %3d,%3d\n".formatted(
+                    fmRegister[p][0xb0 + c] & 0x07 // AL
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
             ));
         } else if (chip == EnmChip.YM2151) {
@@ -4901,8 +4905,8 @@ setVisible(true);
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
-                n.append(String.format("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n"
-                        , ym2151Register[0x80 + ops + ch] & 0x1f  // AR
+                n.append("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
+                        ym2151Register[0x80 + ops + ch] & 0x1f  // AR
                         , ym2151Register[0xa0 + ops + ch] & 0x1f  // DR
                         , ym2151Register[0xc0 + ops + ch] & 0x1f  // SR
                         , ym2151Register[0xe0 + ops + ch] & 0x0f  // RR
@@ -4916,8 +4920,8 @@ setVisible(true);
                 ));
             }
             n.append("   ALG FB\n");
-            n.append(String.format("'@ %3d,%3d\n"
-                    , ym2151Register[0x20 + ch] & 0x07  // AL
+            n.append("'@ %3d,%3d\n".formatted(
+                    ym2151Register[0x20 + ch] & 0x07  // AL
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
             ));
         }
@@ -4938,24 +4942,24 @@ setVisible(true);
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
-                n.append(String.format("   %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n"
-                        , fmRegister[p][0x50 + ops + c] & 0x1f  // AR
+                n.append("   %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
+                        fmRegister[p][0x50 + ops + c] & 0x1f  // AR
                         , fmRegister[p][0x60 + ops + c] & 0x1f  // DR
                         , fmRegister[p][0x70 + ops + c] & 0x1f  // SR
                         , fmRegister[p][0x80 + ops + c] & 0x0f  // RR
                         , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
                         , fmRegister[p][0x40 + ops + c] & 0x7f // TL
                         , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f//ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
+                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
+                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
                         , 0
-                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7//AM
+                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7 // AM
                 ));
             }
             n.append("/* ALG FB  OP\n");
-            n.append(String.format("   %3d,%3d,15\n}}\n"
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
-                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
+            n.append("   %3d,%3d,15\n}}\n".formatted(
+                    fmRegister[p][0xb0 + c] & 0x07 //AL
+                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3 //FB
             ));
         } else if (chip == EnmChip.YM2151) {
             int[] ym2151Register = audio.audio.getYM2151Register(chipId);
@@ -4964,28 +4968,28 @@ setVisible(true);
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
-                n.append(String.format("   %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n"
-                        , ym2151Register[0x80 + ops + ch] & 0x1f //AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f //DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f //ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
-                        , (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 //DT2
-                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7 //AM
+                n.append("   %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
+                        ym2151Register[0x80 + ops + ch] & 0x1f // AR
+                        , ym2151Register[0xa0 + ops + ch] & 0x1f // DR
+                        , ym2151Register[0xc0 + ops + ch] & 0x1f // SR
+                        , ym2151Register[0xe0 + ops + ch] & 0x0f // RR
+                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 // SL
+                        , ym2151Register[0x60 + ops + ch] & 0x7f // TL
+                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 // KS
+                        , ym2151Register[0x40 + ops + ch] & 0x0f // ML
+                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT
+                        , (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 // DT2
+                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7 // AM
                 ));
             }
             n.append("/* ALG FB  OP\n");
-            n.append(String.format("   %3d,%3d,15\n}}\n"
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
-                    , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
+            n.append("   %3d,%3d,15\n}}\n".formatted(
+                    ym2151Register[0x20 + ch] & 0x07 // AL
+                    , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
             ));
         }
 
-        if (n.length() != 0) Common.setClipboard(n.toString());
+        if (!n.isEmpty()) Common.setClipboard(n.toString());
     }
 
     private void getInstChForMML2VGM(EnmChip chip, int ch, int chipId) {
@@ -5001,10 +5005,10 @@ setVisible(true);
         try {
             mmf.sendMessage(String.join(":", "SendVoice", n));
         } catch (IndexOutOfBoundsException e) {
-            e.printStackTrace();
-            System.err.println("メッセージが長すぎ");
+            logger.log(Level.ERROR, e.getMessage(), e);
+            logger.log(Level.TRACE, "メッセージが長すぎ");
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             JOptionPane.showMessageDialog(this, "mml2vgmの共有メモリが見つかりませんでした");
         }
     }
@@ -5025,23 +5029,23 @@ setVisible(true);
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
-                n.append(String.format("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n"
-                        , fmRegister[p][0x50 + ops + c] & 0x1f //AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f //DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f //SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f //RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f//ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
-                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7//AM
-                        , fmRegister[p][0x90 + ops + c] & 0x0f//SG
+                n.append("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
+                        fmRegister[p][0x50 + ops + c] & 0x1f // AR
+                        , fmRegister[p][0x60 + ops + c] & 0x1f // DR
+                        , fmRegister[p][0x70 + ops + c] & 0x1f // SR
+                        , fmRegister[p][0x80 + ops + c] & 0x0f // RR
+                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
+                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
+                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
+                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
+                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
+                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7 // AM
+                        , fmRegister[p][0x90 + ops + c] & 0x0f // SG
                 ));
             }
             n.append("   ALG FB\n");
-            n.append(String.format("'@ %3d,%3d\n"
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
+            n.append("'@ %3d,%3d\n".formatted(
+                    fmRegister[p][0xb0 + c] & 0x07//AL
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
             ));
         } else if (chip == EnmChip.YM2151) {
@@ -5050,24 +5054,24 @@ setVisible(true);
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
-                n.append(String.format("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n"
-                        , ym2151Register[0x80 + ops + ch] & 0x1f //AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f //DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f //ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT1
-                        , (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 //DT2
-                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7 //AM
+                n.append("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
+                        ym2151Register[0x80 + ops + ch] & 0x1f // AR
+                        , ym2151Register[0xa0 + ops + ch] & 0x1f // DR
+                        , ym2151Register[0xc0 + ops + ch] & 0x1f // SR
+                        , ym2151Register[0xe0 + ops + ch] & 0x0f // RR
+                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 // SL
+                        , ym2151Register[0x60 + ops + ch] & 0x7f // TL
+                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 // KS
+                        , ym2151Register[0x40 + ops + ch] & 0x0f // ML
+                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT1
+                        , (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 // DT2
+                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7 // AM
                 ));
             }
             n.append("   ALG FB\n");
-            n.append(String.format("'@ %3d,%3d\n"
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
-                    , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
+            n.append("'@ %3d,%3d\n".formatted(
+                    ym2151Register[0x20 + ch] & 0x07 // AL
+                    , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
             ));
         } else if (chip == EnmChip.HuC6280) {
             OotakeHuC6280 huc6280Register = audio.audio.getHuC6280Register(chipId);
@@ -5080,8 +5084,8 @@ setVisible(true);
             n.append("'@ H xx,\n   +0 +1 +2 +3 +4 +5 +6 +7\n");
 
             for (int i = 0; i < 32; i += 8) {
-                n.append(String.format("'@ %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d\n"
-                        , (17 - psg.wave[i + 0])
+                n.append("'@ %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d\n".formatted(
+                        (17 - psg.wave[i + 0])
                         , (17 - psg.wave[i + 1])
                         , (17 - psg.wave[i + 2])
                         , (17 - psg.wave[i + 3])
@@ -5111,8 +5115,8 @@ setVisible(true);
                 else slot = slot2Tbl[ch];
 
                 slot = (slot % 6) + 8 * (slot / 6);
-                n.append(String.format("'@ %2d,%2d,%2d,%2d, %2d,%2d,%2d,%2d, %2d, %2d, %2d,%2d\n"
-                        , regs[0x60 + slot] >> 4
+                n.append("'@ %2d,%2d,%2d,%2d, %2d,%2d,%2d,%2d, %2d, %2d, %2d,%2d\n".formatted(
+                        regs[0x60 + slot] >> 4
                         , regs[0x60 + slot] & 0xf
                         , regs[0x80 + slot] >> 4
                         , regs[0x80 + slot] & 0xf
@@ -5126,8 +5130,8 @@ setVisible(true);
                         , (regs[0xe0 + slot] & 3)
                 ));
             }
-            n.append(String.format("   CNT FB\n'@  %2d,%2d\n"
-                    , (regs[0xc0 + ch] & 1)
+            n.append("   CNT FB\n'@  %2d,%2d\n".formatted(
+                    (regs[0xc0 + ch] & 1)
                     , (regs[0xc0 + ch] >> 1) & 7
             ));
         }
@@ -5144,52 +5148,52 @@ setVisible(true);
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
-            n.append(String.format("  @xx:{{\n  %3d %3d\n"
-                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
+            n.append("  @xx:{{\n  %3d %3d\n".formatted(
+                    (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
                     , fmRegister[p][0xb0 + c] & 0x07//AL
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
-                n.append(String.format("  %3d %3d %3d %3d %3d %3d %3d %3d %3d\n"
-                        , fmRegister[p][0x50 + ops + c] & 0x1f //AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f //DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f //SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f //RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f//ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
+                n.append("  %3d %3d %3d %3d %3d %3d %3d %3d %3d\n".formatted(
+                        fmRegister[p][0x50 + ops + c] & 0x1f //A R
+                        , fmRegister[p][0x60 + ops + c] & 0x1f // DR
+                        , fmRegister[p][0x70 + ops + c] & 0x1f // SR
+                        , fmRegister[p][0x80 + ops + c] & 0x0f // RR
+                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
+                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
+                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
+                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
+                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
                 ));
             }
             n.append("  }\n");
         } else if (chip == EnmChip.YM2151) {
             int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
-            n.append(String.format("  @xx:{{\n  %3d %3d\n"
-                    , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
+            n.append("  @xx:{{\n  %3d %3d\n".formatted(
+                    (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
+                    , ym2151Register[0x20 + ch] & 0x07 // AL
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
-                n.append(String.format("  %3d %3d %3d %3d %3d %3d %3d %3d %3d\n"
-                        , ym2151Register[0x80 + ops + ch] & 0x1f //AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f //DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f //ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
+                n.append("  %3d %3d %3d %3d %3d %3d %3d %3d %3d\n".formatted(
+                        ym2151Register[0x80 + ops + ch] & 0x1f // AR
+                        , ym2151Register[0xa0 + ops + ch] & 0x1f // DR
+                        , ym2151Register[0xc0 + ops + ch] & 0x1f // SR
+                        , ym2151Register[0xe0 + ops + ch] & 0x0f // RR
+                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 // SL
+                        , ym2151Register[0x60 + ops + ch] & 0x7f // TL
+                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 // KS
+                        , ym2151Register[0x40 + ops + ch] & 0x0f // ML
+                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT
                 ));
             }
             n.append("  }\n");
         }
 
-        if (n.length() == 0) Common.setClipboard(n.toString());
+        if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
     private void getInstChForMucom88(EnmChip chip, int ch, int chipId) {
@@ -5201,52 +5205,52 @@ setVisible(true);
             int c = (ch > 2) ? ch - 3 : ch;
             int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
-            n.append(String.format("  @xx:{{\n  %3d, %3d\n"
-                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
+            n.append("  @xx:{{\n  %3d, %3d\n".formatted(
+                    (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
+                    , fmRegister[p][0xb0 + c] & 0x07 // AL
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
-                n.append(String.format("  %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d" + (i != 3 ? "\n" : "")
-                        , fmRegister[p][0x50 + ops + c] & 0x1f //AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f //DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f //SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f //RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f//ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
+                n.append(("  %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d" + (i != 3 ? "\n" : "")).formatted(
+                        fmRegister[p][0x50 + ops + c] & 0x1f // AR
+                        , fmRegister[p][0x60 + ops + c] & 0x1f // DR
+                        , fmRegister[p][0x70 + ops + c] & 0x1f // SR
+                        , fmRegister[p][0x80 + ops + c] & 0x0f // RR
+                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
+                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
+                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
+                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
+                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
                 ));
             }
             n.append(",\"MDP\"  }\n");
         } else if (chip == EnmChip.YM2151) {
             int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
-            n.append(String.format("  @xx:{{\n  %3d, %3d\n"
-                    , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
+            n.append("  @xx:{{\n  %3d, %3d\n".formatted(
+                    (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
+                    , ym2151Register[0x20 + ch] & 0x07 // AL
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
-                n.append(String.format("  %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d" + (i != 3 ? "\n" : "")
-                        , ym2151Register[0x80 + ops + ch] & 0x1f //AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f //DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f //ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
+                n.append(("  %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d" + (i != 3 ? "\n" : "")).formatted(
+                        ym2151Register[0x80 + ops + ch] & 0x1f // AR
+                        , ym2151Register[0xa0 + ops + ch] & 0x1f // DR
+                        , ym2151Register[0xc0 + ops + ch] & 0x1f // SR
+                        , ym2151Register[0xe0 + ops + ch] & 0x0f // RR
+                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 // SL
+                        , ym2151Register[0x60 + ops + ch] & 0x7f // TL
+                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 // KS
+                        , ym2151Register[0x40 + ops + ch] & 0x0f // ML
+                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT
                 ));
             }
             n.append(",\"MDP\"  }\n");
         }
 
-        if (n.length() == 0) Common.setClipboard(n.toString());
+        if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
     private void getInstChForMUSICLALF2(EnmChip chip, int ch, int chipId) {
@@ -5261,64 +5265,62 @@ setVisible(true);
             n.append("@%xxx\n");
 
             for (int i = 0; i < 6; i++) {
-                n.append(String.format("$%3x,$%3x,$%3x,$%3x\n"
-                        , fmRegister[p][0x30 + 0 + c + i * 0x10] & 0xff
+                n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
+                        fmRegister[p][0x30 + 0 + c + i * 0x10] & 0xff
                         , fmRegister[p][0x30 + 8 + c + i * 0x10] & 0xff
                         , fmRegister[p][0x30 + 16 + c + i * 0x10] & 0xff
                         , fmRegister[p][0x30 + 24 + c + i * 0x10] & 0xff
                 ));
             }
-            n.append(String.format("$%3x\n"
-                    , fmRegister[p][0xb0 + c] //FB/AL
+            n.append("$%3x\n".formatted(
+                    fmRegister[p][0xb0 + c] // FB/AL
             ));
         } else if (chip == EnmChip.YM2151) {
             int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
             n.append("@%xxx\n");
 
-            n.append(String.format("$%3x,$%3x,$%3x,$%3x\n"
-                    , (ym2151Register[0x40 + 0 + ch] & 0x7f) //DT/ML
-                    , (ym2151Register[0x40 + 8 + ch] & 0x7f) //DT/ML
-                    , (ym2151Register[0x40 + 16 + ch] & 0x7f)//DT/ML
-                    , (ym2151Register[0x40 + 24 + ch] & 0x7f)//DT/ML
+            n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
+                    (ym2151Register[0x40 + 0 + ch] & 0x7f)    // DT/ML
+                    , (ym2151Register[0x40 + 8 + ch] & 0x7f)  // DT/ML
+                    , (ym2151Register[0x40 + 16 + ch] & 0x7f) // DT/ML
+                    , (ym2151Register[0x40 + 24 + ch] & 0x7f) // DT/ML
             ));
-            n.append(String.format("$%3x,$%3x,$%3x,$%3x\n"
-                    , (ym2151Register[0x60 + 0 + ch] & 0x7f) //TL
-                    , (ym2151Register[0x60 + 8 + ch] & 0x7f) //TL
-                    , (ym2151Register[0x60 + 16 + ch] & 0x7f)//TL
-                    , (ym2151Register[0x60 + 24 + ch] & 0x7f)//TL
+            n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
+                    (ym2151Register[0x60 + 0 + ch] & 0x7f)    // TL
+                    , (ym2151Register[0x60 + 8 + ch] & 0x7f)  // TL
+                    , (ym2151Register[0x60 + 16 + ch] & 0x7f) // TL
+                    , (ym2151Register[0x60 + 24 + ch] & 0x7f) // TL
             ));
-            n.append(String.format("$%3x,$%3x,$%3x,$%3x\n"
-                    , (ym2151Register[0x80 + 0 + ch] & 0xdf) //KS/AR
-                    , (ym2151Register[0x80 + 8 + ch] & 0xdf) //KS/AR
-                    , (ym2151Register[0x80 + 16 + ch] & 0xdf)//KS/AR
-                    , (ym2151Register[0x80 + 24 + ch] & 0xdf)//KS/AR
+            n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
+                    (ym2151Register[0x80 + 0 + ch] & 0xdf)    // KS/AR
+                    , (ym2151Register[0x80 + 8 + ch] & 0xdf)  // KS/AR
+                    , (ym2151Register[0x80 + 16 + ch] & 0xdf) // KS/AR
+                    , (ym2151Register[0x80 + 24 + ch] & 0xdf) // KS/AR
             ));
-            n.append(String.format("$%3x,$%3x,$%3x,$%3x\n"
-                    , (ym2151Register[0xa0 + 0 + ch] & 0x9f) //AM/DR
-                    , (ym2151Register[0xa0 + 8 + ch] & 0x9f) //AM/DR
-                    , (ym2151Register[0xa0 + 16 + ch] & 0x9f)//AM/DR
-                    , (ym2151Register[0xa0 + 24 + ch] & 0x9f)//AM/DR
+            n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
+                    (ym2151Register[0xa0 + 0 + ch] & 0x9f)    // AM/DR
+                    , (ym2151Register[0xa0 + 8 + ch] & 0x9f)  // AM/DR
+                    , (ym2151Register[0xa0 + 16 + ch] & 0x9f) // AM/DR
+                    , (ym2151Register[0xa0 + 24 + ch] & 0x9f) // AM/DR
             ));
-            n.append(String.format("$%3x,$%3x,$%3x,$%3x\n"
-                    , (ym2151Register[0xc0 + 0 + ch] & 0x1f) //SR
-                    , (ym2151Register[0xc0 + 8 + ch] & 0x1f) //SR
-                    , (ym2151Register[0xc0 + 16 + ch] & 0x1f)//SR
-                    , (ym2151Register[0xc0 + 24 + ch] & 0x1f)//SR
+            n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
+                    (ym2151Register[0xc0 + 0 + ch] & 0x1f)    // SR
+                    , (ym2151Register[0xc0 + 8 + ch] & 0x1f)  // SR
+                    , (ym2151Register[0xc0 + 16 + ch] & 0x1f) // SR
+                    , (ym2151Register[0xc0 + 24 + ch] & 0x1f) // SR
             ));
-            n.append(String.format("$%3x,$%3x,$%3x,$%3x\n"
-                    , (ym2151Register[0xe0 + 0 + ch] & 0xff) //SL/RR
-                    , (ym2151Register[0xe0 + 8 + ch] & 0xff) //SL/RR
-                    , (ym2151Register[0xe0 + 16 + ch] & 0xff)//SL/RR
-                    , (ym2151Register[0xe0 + 24 + ch] & 0xff)//SL/RR
+            n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
+                    (ym2151Register[0xe0 + 0 + ch] & 0xff)    // SL/RR
+                    , (ym2151Register[0xe0 + 8 + ch] & 0xff)  // SL/RR
+                    , (ym2151Register[0xe0 + 16 + ch] & 0xff) // SL/RR
+                    , (ym2151Register[0xe0 + 24 + ch] & 0xff) // SL/RR
             ));
 
-            n.append(String.format("$%3x\n"
-                    , ym2151Register[0x20 + ch] //FB/AL
-            ));
+            n.append("$%3x\n".formatted(ym2151Register[0x20 + ch])); // FB/AL
         }
 
-        if (n.length() == 0) Common.setClipboard(n.toString());
+        if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
     private void getInstChForNRTDRV(EnmChip chip, int ch, int chipId) {
@@ -5331,25 +5333,25 @@ setVisible(true);
             int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n.append("@ xxxx {\n");
-            n.append(String.format("000,%3d,%3d,015\n"
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
+            n.append("000,%3d,%3d,015\n".formatted(
+                    fmRegister[p][0xb0 + c] & 0x07//AL
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
-                n.append(String.format(" %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n"
-                        , fmRegister[p][0x50 + ops + c] & 0x1f //AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f //DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f //SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f //RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4//SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f//TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6//KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f//ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4//DT
+                n.append(" %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
+                        fmRegister[p][0x50 + ops + c] & 0x1f // AR
+                        , fmRegister[p][0x60 + ops + c] & 0x1f // DR
+                        , fmRegister[p][0x70 + ops + c] & 0x1f // SR
+                        , fmRegister[p][0x80 + ops + c] & 0x0f // RR
+                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
+                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
+                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
+                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
+                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
                         , 0
-                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7//AM
+                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7 // AM
                 ));
             }
             n.append("}\n");
@@ -5357,15 +5359,15 @@ setVisible(true);
             int[] ym2151Register = audio.audio.getYM2151Register(chipId);
 
             n.append("@ xxxx {\n");
-            n.append(String.format("000,%3d,%3d,015\n"
-                    , ym2151Register[0x20 + ch] & 0x07 //AL
-                    , (ym2151Register[0x20 + ch] & 0x38) >> 3//FB
+            n.append("000,%3d,%3d,015\n".formatted(
+                    ym2151Register[0x20 + ch] & 0x07 // AL
+                    , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
-                n.append(String.format(" %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n"
-                        , ym2151Register[0x80 + ops + ch] & 0x1f //AR
+                n.append(" %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
+                        ym2151Register[0x80 + ops + ch] & 0x1f //AR
                         , ym2151Register[0xa0 + ops + ch] & 0x1f //DR
                         , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
                         , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
@@ -5381,7 +5383,7 @@ setVisible(true);
             n.append("}\n");
         }
 
-        if (n.length() == 0) Common.setClipboard(n.toString());
+        if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
     private void getInstChForHuSIC(EnmChip chip, int ch, int chipId) {
@@ -5399,8 +5401,8 @@ setVisible(true);
             n.append("@WTx={\n");
 
             for (int i = 0; i < 32; i += 8) {
-                n.append(String.format("$%2x,$%2x,$%2x,$%2x,$%2x,$%2x,$%2x,$%2x,\n"
-                        , (17 - psg.wave[i + 0])
+                n.append("$%2x,$%2x,$%2x,$%2x,$%2x,$%2x,$%2x,$%2x,\n".formatted(
+                        (17 - psg.wave[i + 0])
                         , (17 - psg.wave[i + 1])
                         , (17 - psg.wave[i + 2])
                         , (17 - psg.wave[i + 3])
@@ -5414,7 +5416,7 @@ setVisible(true);
             n = new StringBuilder(n.substring(0, n.length() - 3) + "\n}\n");
         }
 
-        if (n.length() == 0) Common.setClipboard(n.toString());
+        if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
     private void getInstChForMGSC(EnmChip chip, int ch, int chipId) {
@@ -5439,14 +5441,14 @@ setVisible(true);
         if (register == null) return;
         n.append("@vXX = { \n");
         n.append("   ;       TL FB\n");
-        n.append(String.format("           %2d,%2d,\n"
-                , register[0x02] & 0x3f
+        n.append("           %2d,%2d,\n".formatted(
+                register[0x02] & 0x3f
                 , register[0x03] & 0x7
         ));
         n.append("   ;       AR DR SL RR KL MT AM VB EG KR DT\n");
 
-        n.append(String.format("           %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,\n"
-                , (register[0x04] & 0xf0) >> 4
+        n.append("           %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,\n".formatted(
+                (register[0x04] & 0xf0) >> 4
                 , (register[0x04] & 0x0f)
                 , (register[0x06] & 0xf0) >> 4
                 , (register[0x06] & 0x0f)
@@ -5459,8 +5461,8 @@ setVisible(true);
                 , (register[0x03] & 0x08) >> 3
         ));
 
-        n.append(String.format("           %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d }}\n"
-                , (register[0x05] & 0xf0) >> 4
+        n.append("           %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d }}\n".formatted(
+                (register[0x05] & 0xf0) >> 4
                 , (register[0x05] & 0x0f)
                 , (register[0x07] & 0xf0) >> 4
                 , (register[0x07] & 0x0f)
@@ -5484,7 +5486,7 @@ setVisible(true);
 
         StringBuilder n = new StringBuilder("@sXX = {");
         for (int i = 0; i < 8; i++) {
-            n.append(String.format(" %02x%02x%02x%02x",
+            n.append(" %02x%02x%02x%02x".formatted(
                     (byte) register[i * 4 + 0], (byte) register[i * 4 + 1],
                     (byte) register[i * 4 + 2], (byte) register[i * 4 + 3]
             ));
@@ -5502,7 +5504,7 @@ setVisible(true);
 
         StringBuilder n = new StringBuilder();
         for (int i = 0; i < 8; i++) {
-            n.append(String.format("%2x%2x%2x%2x",
+            n.append("%2x%2x%2x%2x".formatted(
                     (byte) register[i * 4 + 0], (byte) register[i * 4 + 1],
                     (byte) register[i * 4 + 2], (byte) register[i * 4 + 3]
             ));
@@ -5518,9 +5520,9 @@ setVisible(true);
             if (info == null) return;
 
             StringBuilder n = new StringBuilder("@Nxx = { ");
-            n.append(String.format("%d ", info[ch].wavelen));
+            n.append("%d ".formatted(info[ch].wavelen));
             for (int i = 0; i < info[ch].wavelen; i++) {
-                n.append(String.format("%d ", (byte) info[ch].wave[i]));
+                n.append("%d ".formatted((byte) info[ch].wave[i]));
             }
             n.append("}\n");
 
@@ -5752,7 +5754,7 @@ setVisible(true);
                 patch_Name = pn + "_%d";
             }
         }
-        patch_Name = String.format(patch_Name, Instant.now().toEpochMilli());
+        patch_Name = patch_Name.formatted(Instant.now().toEpochMilli());
         buf.append("<RYM2612Params patchName = \"{patch_Name}\" category = \"Piano\" rating = \"3\" type = \"User\" >\n");
 
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
@@ -5778,22 +5780,22 @@ setVisible(true);
                 int vel = 0;
                 int ssg = fmRegister[p][0x90 + ops + c] & 0x0f;
                 ssg = ((ssg & 0x8) == 0) ? 0 : ((ssg & 0x7) + 1);
-                op[i].add(String.format("  <PARAM id=\"OP%dVel\" value=\"%d.0\"/>", i + 1, vel));
-                op[i].add(String.format("  <PARAM id=\"OP%dTL\" value=\"%d.0\"/>", i + 1, tl));
-                op[i].add(String.format("  <PARAM id=\"OP%dSSGEG\" value=\"%d.0\"/>", i + 1, ssg));
-                op[i].add(String.format("  <PARAM id=\"OP%dRS\" value=\"%d.0\"/>", i + 1, (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6));
-                op[i].add(String.format("  <PARAM id=\"OP%dRR\" value=\"%d.0\"/>", i + 1, (fmRegister[p][0x80 + ops + c] & 0x0f) >> 0));
-                op[i].add(String.format("  <PARAM id=\"OP%dMW\" value=\"0.0\"/>", i + 1));
-                op[i].add(String.format("  <PARAM id=\"OP%dMUL\" value=\"%d.0\"/>", i + 1, muls[(fmRegister[p][0x30 + ops + c] & 0x0f) >> 0]));
-                op[i].add(String.format("  <PARAM id=\"OP%dFixed\" value=\"0.0\"/>", i + 1));
+                op[i].add("  <PARAM id=\"OP%dVel\" value=\"%d.0\"/>".formatted(i + 1, vel));
+                op[i].add("  <PARAM id=\"OP%dTL\" value=\"%d.0\"/>".formatted(i + 1, tl));
+                op[i].add("  <PARAM id=\"OP%dSSGEG\" value=\"%d.0\"/>".formatted(i + 1, ssg));
+                op[i].add("  <PARAM id=\"OP%dRS\" value=\"%d.0\"/>".formatted(i + 1, (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6));
+                op[i].add("  <PARAM id=\"OP%dRR\" value=\"%d.0\"/>".formatted(i + 1, (fmRegister[p][0x80 + ops + c] & 0x0f) >> 0));
+                op[i].add("  <PARAM id=\"OP%dMW\" value=\"0.0\"/>".formatted(i + 1));
+                op[i].add("  <PARAM id=\"OP%dMUL\" value=\"%d.0\"/>".formatted(i + 1, muls[(fmRegister[p][0x30 + ops + c] & 0x0f) >> 0]));
+                op[i].add("  <PARAM id=\"OP%dFixed\" value=\"0.0\"/>".formatted(i + 1));
                 int dt = (fmRegister[p][0x30 + ops + c] & 0x70) >> 4;
                 dt = (dt >= 4) ? (4 - dt) : dt;
-                op[i].add(String.format("  <PARAM id=\"OP%dDT\" value=\"%d.0\"/>", i + 1, dt));
-                op[i].add(String.format("  <PARAM id=\"OP%dD2R\" value=\"%d.0\"/>", i + 1, (fmRegister[p][0x70 + ops + c] & 0x1f) >> 0));
-                op[i].add(String.format("  <PARAM id=\"OP%dD2L\" value=\"%d.0\"/>", i + 1, 15 - ((fmRegister[p][0x80 + ops + c] & 0xf0) >> 4)));
-                op[i].add(String.format("  <PARAM id=\"OP%dD1R\" value=\"%d.0\"/>", i + 1, (fmRegister[p][0x60 + ops + c] & 0x1f) >> 0));
-                op[i].add(String.format("  <PARAM id=\"OP%dAR\" value=\"%d.0\"/>", i + 1, (fmRegister[p][0x50 + ops + c] & 0x1f) >> 0));
-                op[i].add(String.format("  <PARAM id=\"OP%dAM\" value=\"%d.0\"/>", i + 1, (fmRegister[p][0x60 + ops + c] & 0x80) >> 7));
+                op[i].add("  <PARAM id=\"OP%dDT\" value=\"%d.0\"/>".formatted(i + 1, dt));
+                op[i].add("  <PARAM id=\"OP%dD2R\" value=\"%d.0\"/>".formatted(i + 1, (fmRegister[p][0x70 + ops + c] & 0x1f) >> 0));
+                op[i].add("  <PARAM id=\"OP%dD2L\" value=\"%d.0\"/>".formatted(i + 1, 15 - ((fmRegister[p][0x80 + ops + c] & 0xf0) >> 4)));
+                op[i].add("  <PARAM id=\"OP%dD1R\" value=\"%d.0\"/>".formatted(i + 1, (fmRegister[p][0x60 + ops + c] & 0x1f) >> 0));
+                op[i].add("  <PARAM id=\"OP%dAR\" value=\"%d.0\"/>".formatted(i + 1, (fmRegister[p][0x50 + ops + c] & 0x1f) >> 0));
+                op[i].add("  <PARAM id=\"OP%dAM\" value=\"%d.0\"/>".formatted(i + 1, (fmRegister[p][0x60 + ops + c] & 0x80) >> 7));
             }
 
         } else if (chip == EnmChip.YM2151) {
@@ -5808,22 +5810,22 @@ setVisible(true);
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
                 int tl = 127 - ((ym2151Register[0x60 + ops + ch] & 0x7f) >> 0);
                 int vel = 0;
-                op[i].add(String.format("  <PARAM id=\"OP%dVel\" value=\"%d.0\"/>", i + 1, vel));
-                op[i].add(String.format("  <PARAM id=\"OP%dTL\" value=\"%d.0\"/>", i + 1, tl));
-                op[i].add(String.format("  <PARAM id=\"OP%dSSGEG\" value=\"0.0\"/>", i + 1));
-                op[i].add(String.format("  <PARAM id=\"OP%dRS\" value=\"%d.0\"/>", i + 1, (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6));
-                op[i].add(String.format("  <PARAM id=\"OP%dRR\" value=\"%d.0\"/>", i + 1, (ym2151Register[0xe0 + ops + ch] & 0x0f) >> 0));
-                op[i].add(String.format("  <PARAM id=\"OP%dMW\" value=\"0.0\"/>", i + 1));
-                op[i].add(String.format("  <PARAM id=\"OP%dMUL\" value=\"%d.0\"/>", i + 1, muls[(ym2151Register[0x40 + ops + ch] & 0x0f) >> 0]));
-                op[i].add(String.format("  <PARAM id=\"OP%dFixed\" value=\"0.0\"/>", i + 1));
+                op[i].add("  <PARAM id=\"OP%dVel\" value=\"%d.0\"/>".formatted(i + 1, vel));
+                op[i].add("  <PARAM id=\"OP%dTL\" value=\"%d.0\"/>".formatted(i + 1, tl));
+                op[i].add("  <PARAM id=\"OP%dSSGEG\" value=\"0.0\"/>".formatted(i + 1));
+                op[i].add("  <PARAM id=\"OP%dRS\" value=\"%d.0\"/>".formatted(i + 1, (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6));
+                op[i].add("  <PARAM id=\"OP%dRR\" value=\"%d.0\"/>".formatted(i + 1, (ym2151Register[0xe0 + ops + ch] & 0x0f) >> 0));
+                op[i].add("  <PARAM id=\"OP%dMW\" value=\"0.0\"/>".formatted(i + 1));
+                op[i].add("  <PARAM id=\"OP%dMUL\" value=\"%d.0\"/>".formatted(i + 1, muls[(ym2151Register[0x40 + ops + ch] & 0x0f) >> 0]));
+                op[i].add("  <PARAM id=\"OP%dFixed\" value=\"0.0\"/>".formatted(i + 1));
                 int dt = (ym2151Register[0x40 + ops + ch] & 0x70) >> 4;
                 dt = (dt >= 4) ? (4 - dt) : dt;
-                op[i].add(String.format("  <PARAM id=\"OP%dDT\" value=\"%d.0\"/>", i + 1, dt));
-                op[i].add(String.format("  <PARAM id=\"OP%dD2R\" value=\"%d.0\"/>", i + 1, (ym2151Register[0xc0 + ops + ch] & 0x1f) >> 0));
-                op[i].add(String.format("  <PARAM id=\"OP%dD2L\" value=\"%d.0\"/>", i + 1, 15 - ((ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4)));
-                op[i].add(String.format("  <PARAM id=\"OP%dD1R\" value=\"%d.0\"/>", i + 1, (ym2151Register[0xa0 + ops + ch] & 0x1f) >> 0));
-                op[i].add(String.format("  <PARAM id=\"OP%dAR\" value=\"%d.0\"/>", i + 1, (ym2151Register[0x80 + ops + ch] & 0x1f) >> 0));
-                op[i].add(String.format("  <PARAM id=\"OP%dAM\" value=\"%d.0\"/>", i + 1, (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7));
+                op[i].add("  <PARAM id=\"OP%dDT\" value=\"%d.0\"/>".formatted(i + 1, dt));
+                op[i].add("  <PARAM id=\"OP%dD2R\" value=\"%d.0\"/>".formatted(i + 1, (ym2151Register[0xc0 + ops + ch] & 0x1f) >> 0));
+                op[i].add("  <PARAM id=\"OP%dD2L\" value=\"%d.0\"/>".formatted(i + 1, 15 - ((ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4)));
+                op[i].add("  <PARAM id=\"OP%dD1R\" value=\"%d.0\"/>".formatted(i + 1, (ym2151Register[0xa0 + ops + ch] & 0x1f) >> 0));
+                op[i].add("  <PARAM id=\"OP%dAR\" value=\"%d.0\"/>".formatted(i + 1, (ym2151Register[0x80 + ops + ch] & 0x1f) >> 0));
+                op[i].add("  <PARAM id=\"OP%dAM\" value=\"%d.0\"/>".formatted(i + 1, (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7));
             }
         }
 
@@ -5843,13 +5845,13 @@ setVisible(true);
         buf.append("  <PARAM id=\"Pitchbend_Range\" value=\"2.0\"/>\n");
         buf.append("  <PARAM id=\"Legato_Retrig\" value=\"0.0\"/>\n");
         buf.append("  <PARAM id=\"LFO_Speed\" value=\"0.0\"/>\n");
-        buf.append(String.format("  <PARAM id=\"LFO_Enable\" value=\"%d.0\"/>\n", (pms != 0 || ams != 0) ? 1 : 0));
-        buf.append(String.format("  <PARAM id=\"Feedback\" value=\"%d.0\"/>\n", fb));
+        buf.append("  <PARAM id=\"LFO_Enable\" value=\"%d.0\"/>\n".formatted((pms != 0 || ams != 0) ? 1 : 0));
+        buf.append("  <PARAM id=\"Feedback\" value=\"%d.0\"/>\n".formatted(fb));
         buf.append("  <PARAM id=\"FMSMW\" value=\"0.0\"/>\n");
-        buf.append(String.format("  <PARAM id=\"FMS\" value=\"%d.0\"/>\n", pms));
+        buf.append("  <PARAM id=\"FMS\" value=\"%d.0\"/>\n".formatted(pms));
         buf.append("  <PARAM id=\"DAC_Prescaler\" value=\"0.0\"/>\n");
-        buf.append(String.format("  <PARAM id=\"Algorithm\" value=\"%d.0\"/>\n", alg + 1));
-        buf.append(String.format("  <PARAM id=\"AMS\" value=\"%d.0\"/>\n", ams));
+        buf.append("  <PARAM id=\"Algorithm\" value=\"%d.0\"/>\n".formatted(alg + 1));
+        buf.append("  <PARAM id=\"AMS\" value=\"%d.0\"/>\n".formatted(ams));
         buf.append("  <PARAM id=\"masterTune\"/>\n");
         buf.append("</RYM2612Params>\n");
 
@@ -6127,23 +6129,23 @@ setVisible(true);
 
             n.append("@: n MDPlayer\n");
             n.append("LFO:  0   0   0   0   0\n");
-            n.append(String.format("CH: 64  %2d  %2d   0   0 120   0\n"
-                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
+            n.append("CH: 64  %2d  %2d   0   0 120   0\n".formatted(
+                    (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
                     , fmRegister[p][0xb0 + c] & 0x07 // AL
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
-                n.append(String.format("%s:%3d %3d %3d %3d %3d "
-                        , "M1C1M2C2".substring(i * 2, 2)
+                n.append("%s:%3d %3d %3d %3d %3d ".formatted(
+                        "M1C1M2C2".substring(i * 2, 2)
                         , fmRegister[p][0x50 + ops + c] & 0x1f // AR
                         , fmRegister[p][0x60 + ops + c] & 0x1f // DR
                         , fmRegister[p][0x70 + ops + c] & 0x1f // SR
                         , fmRegister[p][0x80 + ops + c] & 0x0f // RR
                         , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
                 ));
-                n.append(String.format("%3d %3d %3d %3d   0 %3d\n"
-                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
+                n.append("%3d %3d %3d %3d   0 %3d\n".formatted(
+                        fmRegister[p][0x40 + ops + c] & 0x7f // TL
                         , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
                         , fmRegister[p][0x30 + ops + c] & 0x0f // ML
                         , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 //DT
@@ -6155,23 +6157,23 @@ setVisible(true);
 
             n.append("@: n MDPlayer\n");
             n.append("LFO:  0   0   0   0   0\n");
-            n.append(String.format("CH: 64  %2d  %2d   0   0 120   0\n"
-                    , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
+            n.append("CH: 64  %2d  %2d   0   0 120   0\n".formatted(
+                    (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
                     , ym2151Register[0x20 + ch] & 0x07 // AL
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
-                n.append(String.format("%s:%3d %3d %3d %3d %3d "
-                        , "M1C1M2C2".substring(i * 2, 2)
+                n.append("%s:%3d %3d %3d %3d %3d ".formatted(
+                        "M1C1M2C2".substring(i * 2, 2)
                         , ym2151Register[0x80 + ops + ch] & 0x1f // AR
                         , ym2151Register[0xa0 + ops + ch] & 0x1f // DR
                         , ym2151Register[0xc0 + ops + ch] & 0x1f // SR
                         , ym2151Register[0xe0 + ops + ch] & 0x0f // RR
                         , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 // SL
                 ));
-                n.append(String.format("%3d %3d %3d %3d %3d %3d\n"
-                        , ym2151Register[0x60 + ops + ch] & 0x7f // TL
+                n.append("%3d %3d %3d %3d %3d %3d\n".formatted(
+                        ym2151Register[0x60 + ops + ch] & 0x7f // TL
                         , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 // KS
                         , ym2151Register[0x40 + ops + ch] & 0x0f // ML
                         , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT
@@ -6181,7 +6183,7 @@ setVisible(true);
             }
         }
 
-        if (n.length() == 0) Common.setClipboard(n.toString());
+        if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
     private void getInstChForPMD(EnmChip chip, int ch, int chipId) {
@@ -6194,16 +6196,16 @@ setVisible(true);
             int[][] fmRegister = (chip == EnmChip.YM2612) ? audio.audio.getFMRegister(chipId) : (chip == EnmChip.YM2608 ? audio.audio.getYM2608Register(chipId) : (chip == EnmChip.YM2203 ? new int[][] {audio.audio.getYm2203Register(chipId), null} : audio.audio.getYM2610Register(chipId)));
 
             n.append("; nm alg fbl\n");
-            n.append(String.format("@xxx %3d %3d                            =      MDPlayer\n"
-                    , fmRegister[p][0xb0 + c] & 0x07 // AL
+            n.append("@xxx %3d %3d                            =      MDPlayer\n".formatted(
+                    fmRegister[p][0xb0 + c] & 0x07 // AL
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
             ));
             n.append("; ar  dr  sr  rr  sl  tl  ks  ml  dt ams   seg\n");
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
-                n.append(String.format(" %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d ; %3d\n"
-                        , fmRegister[p][0x50 + ops + c] & 0x1f // AR
+                n.append(" %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d ; %3d\n".formatted(
+                        fmRegister[p][0x50 + ops + c] & 0x1f // AR
                         , fmRegister[p][0x60 + ops + c] & 0x1f // DR
                         , fmRegister[p][0x70 + ops + c] & 0x1f // SR
                         , fmRegister[p][0x80 + ops + c] & 0x0f // RR
@@ -6219,16 +6221,16 @@ setVisible(true);
         } else if (chip == EnmChip.YM2151) {
             int[] ym2151Register = audio.audio.getYM2151Register(chipId);
             n.append("; nm alg fbl\n");
-            n.append(String.format("@xxx %3d %3d                            =      MDPlayer\n"
-                    , ym2151Register[0x20 + ch] & 0x07 // AL
+            n.append("@xxx %3d %3d                            =      MDPlayer\n".formatted(
+                    ym2151Register[0x20 + ch] & 0x07 // AL
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
             ));
             n.append("; ar  dr  sr  rr  sl  tl  ks  ml  dt ams   seg\n");
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
-                n.append(String.format(" %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d ; %3d\n"
-                        , ym2151Register[0x80 + ops + ch] & 0x1f // AR
+                n.append(" %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d ; %3d\n".formatted(
+                        ym2151Register[0x80 + ops + ch] & 0x1f // AR
                         , ym2151Register[0xa0 + ops + ch] & 0x1f // DR
                         , ym2151Register[0xc0 + ops + ch] & 0x1f // SR
                         , ym2151Register[0xe0 + ops + ch] & 0x0f // RR
@@ -6244,7 +6246,7 @@ setVisible(true);
             }
         }
 
-        if (n.length() == 0) Common.setClipboard(n.toString());
+        if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
     public boolean loadAndPlay(int m, int songNo, String fn, String zfn/* = null*/) {
@@ -6285,10 +6287,10 @@ setVisible(true);
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             srcBuf = null;
             JOptionPane.showMessageDialog(this,
-                    String.format("ファイルの読み込みに失敗しました。\nメッセージ=%s", ex.getMessage()),
+                    "ファイルの読み込みに失敗しました。\nメッセージ=%s".formatted(ex.getMessage()),
                     "MDPlayer", JOptionPane.ERROR_MESSAGE);
             return false;
         }
@@ -6325,10 +6327,10 @@ setVisible(true);
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             srcBuf = null;
             JOptionPane.showMessageDialog(this,
-                    String.format("ファイルの読み込みに失敗しました。\nメッセージ=%s", ex.getMessage()),
+                    "ファイルの読み込みに失敗しました。\nメッセージ=%s".formatted(ex.getMessage()),
                     "MDPlayer", JOptionPane.ERROR_MESSAGE);
             return false;
         }
@@ -7222,7 +7224,7 @@ setVisible(true);
                 midiIn_MessageReceived.close();
                 midiin = null;
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
                 midiin = null;
             }
         }
@@ -7244,7 +7246,7 @@ setVisible(true);
                         midiin = device.getTransmitter();
                         midiin.setReceiver(midiIn_MessageReceived);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.log(Level.ERROR, e.getMessage(), e);
                         midiin = null;
                     }
                 }
@@ -7253,8 +7255,7 @@ setVisible(true);
     }
 
 //    void midiIn_ErrorReceived(Object source, MidiInMessageEventArgs e) {
-//        System.err.printf("Error Time %s Message 0x%08x Event %s",
-//                e.Timestamp, e.RawMessage, e.MidiEvent));
+//        logger.log(Level.ERROR, "Error Time %s Message 0x%08x Event %s".formatted(e.Timestamp, e.RawMessage, e.MidiEvent));
 //    }
 
     private void StopMIDIInMonitoring() {
@@ -7264,7 +7265,7 @@ setVisible(true);
                 this.midiIn_MessageReceived.close();
                 midiin = null;
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
                 midiin = null;
             }
         }
@@ -7433,13 +7434,13 @@ setVisible(true);
 
             if (balance == null) return;
 
-            // ミキサーバランス変更処理
+            //  Mixerーバランス変更処理
             setting.setBalance(balance);
             if (frmMixer2 != null) frmMixer2.update();
 //            Application.DoEvents();
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -7466,7 +7467,7 @@ setVisible(true);
 
             balance.save(fullPath);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -7498,7 +7499,7 @@ setVisible(true);
                 try {
                     GlobalScreen.unregisterNativeHook();
                 } catch (NativeHookException nativeHookException) {
-                    nativeHookException.printStackTrace();
+                    logger.log(Level.ERROR, nativeHookException.getMessage(), nativeHookException);
                 }
             }
 
@@ -7609,7 +7610,7 @@ setVisible(true);
                     frmPlayList.getPlayList().addFile(f);
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.log(Level.ERROR, ex.getMessage(), ex);
             }
         }
     }
@@ -7885,7 +7886,7 @@ setVisible(true);
 
             button.setIcon(new ImageIcon(canvas));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 

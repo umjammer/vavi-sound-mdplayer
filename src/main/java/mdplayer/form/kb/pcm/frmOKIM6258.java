@@ -56,7 +56,7 @@ public class frmOKIM6258 extends frmBase {
     }
 
     public void update() {
-        frameBuffer.Refresh(null);
+        frameBuffer.refresh(null);
     }
 
 //    @Override
@@ -148,17 +148,17 @@ public class frmOKIM6258 extends frmBase {
         DrawBuff.PanToOKIM6258(frameBuffer, ost.pan, nst.pan, ost.pantp, 0);
 
         if (ost.masterFreq != nst.masterFreq) {
-            DrawBuff.drawFont4(frameBuffer, 12 * 4, 8, 0, String.format("{%5d}", nst.masterFreq));
+            DrawBuff.drawFont4(frameBuffer, 12 * 4, 8, 0, "{%5d}".formatted(nst.masterFreq));
             ost.masterFreq = nst.masterFreq;
         }
 
         if (ost.divider != nst.divider) {
-            DrawBuff.drawFont4(frameBuffer, 19 * 4, 8, 0, String.format("{%5d}", nst.divider));
+            DrawBuff.drawFont4(frameBuffer, 19 * 4, 8, 0, "{%5d}".formatted(nst.divider));
             ost.divider = nst.divider;
         }
 
         if (ost.pbFreq != nst.pbFreq) {
-            DrawBuff.drawFont4(frameBuffer, 26 * 4, 8, 0, String.format("{%5d}", nst.pbFreq));
+            DrawBuff.drawFont4(frameBuffer, 26 * 4, 8, 0, "{%5d}".formatted(nst.pbFreq));
             ost.pbFreq = nst.pbFreq;
         }
 

@@ -1,5 +1,7 @@
 package mdplayer.driver.nrtdrv;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -12,8 +14,12 @@ import mdplayer.Setting;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 
+import static java.lang.System.getLogger;
+
 
 public class NRTDRV extends BaseDriver {
+
+    private static final Logger logger = getLogger(NRTDRV.class.getName());
 
     public NRTDRV() {
         this.setting = Setting.getInstance();
@@ -161,7 +167,7 @@ public class NRTDRV extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 
     @Override
@@ -453,7 +459,7 @@ public class NRTDRV extends BaseDriver {
             }
             stopped = !IsPlaying();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -530,7 +536,7 @@ public class NRTDRV extends BaseDriver {
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -751,13 +757,13 @@ public class NRTDRV extends BaseDriver {
                 work.opm1VReg[d] = a;
                 // 実レジスタに書き込み
                 chipRegister.setYM2151Register(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
-                // System.err.println($"OPM1 Reg{d:X2} Dat{a:X2}");
+                // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
                 // 仮想レジスタに書き込み
                 work.opm2VReg[d] = a;
                 // 実レジスタに書き込み
                 chipRegister.setYM2151Register(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
-                // System.err.println($"OPM2 Reg{d:X2} Dat{a:X2}");
+                // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         } else {
             if (work.opmIo == 0x701) {
@@ -765,13 +771,13 @@ public class NRTDRV extends BaseDriver {
                 work.opm1VReg[d] = a;
                 // 実レジスタに書き込み
                 chipRegister.setYM2151Register(0, 0, d, a, EnmModel.RealModel, ym2151Hosei[0], 0);
-                // System.err.println($"OPM1 Reg{d:X2} Dat{a:X2}");
+                // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
                 // 仮想レジスタに書き込み
                 work.opm2VReg[d] = a;
                 // 実レジスタに書き込み
                 chipRegister.setYM2151Register(1, 0, d, a, EnmModel.RealModel, ym2151Hosei[1], 0);
-                // System.err.println($"OPM2 Reg{d:X2} Dat{a:X2}");
+                // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         }
     }
@@ -2663,13 +2669,12 @@ public class NRTDRV extends BaseDriver {
                 h = (byte) (hl >> 8);
                 l = (byte) (hl & 0xff);
 
-                // a = (byte)((hl >> 8) - b);
-                // if (((hl & 0xff) - c) < 0)
-                // {
-                //    a--;
-                //    h = (byte)(hl >> 8);
-                //    l = (byte)(hl & 0xff);
-                // }
+//                a = (byte) ((hl >> 8) - b);
+//                if (((hl & 0xff) - c) < 0) {
+//                    a--;
+//                    h = (byte) (hl >> 8);
+//                    l = (byte) (hl & 0xff);
+//                }
                 if (hl > b * 0x100 + c) {
                     h = b;
                     l = c;
@@ -2680,20 +2685,19 @@ public class NRTDRV extends BaseDriver {
             this.noteNumber = h;
             wopm((byte) (0x30 + e), l);
             wopm((byte) (0x28 + e), KTABLE[h]);
-            // System.err.println($"opmout Reg{l:X2} dat{ KTABLE[h]:X2}");
-
+//logger.log(Level.TRACE, "opmout Reg%02x dat%02x".formatted(l, KTABLE[h]));
         }
 
 
         private void EPM(byte e) {
             if (this.portaStartFlg != 0) return;
 
-            // System.err.println($"softPMProcCount[{this.softPMProcCount:d}]");
-            // System.err.println($"softPMStep[{this.softPMStep:d}]");
-            // System.err.println($"softPMStepCount[{this.softPMStepCount:d}]");
-            // System.err.println($"softPMPitch[{this.softPMPitch:d}]");
-            // System.err.println($"KF[{this.KF:d}]");
-            // System.err.println($"NoteNumber[{this.NoteNumber:d}]");
+//logger.log(Level.TRACE, "softPMProcCount[%d]".formatted(this.softPMProcCount));
+//logger.log(Level.TRACE, "softPMStep[%d]".formatted(this.softPMStep));
+//logger.log(Level.TRACE, "softPMStepCount[%d]".formatted(this.softPMStepCount));
+//logger.log(Level.TRACE, "softPMPitch[%d]".formatted(this.softPMPitch));
+//logger.log(Level.TRACE, "KF[%d]".formatted(this.KF));
+//logger.log(Level.TRACE, "NoteNumber[%d]".formatted(this.NoteNumber));
 
             if (this.softPMDelayCount - 1 != 0) {
                 this.softPMDelayCount--;
@@ -2814,10 +2818,10 @@ public class NRTDRV extends BaseDriver {
 
         private void EAM(byte e) {
 
-            // System.err.println($"softPMProcCount[{this.softPMProcCount:d}]");
-            // System.err.println($"softPMStep[{this.softPMStep:d}]");
-            // System.err.println($"softPMStepCount[{this.softPMStepCount:d}]");
-            // System.err.println($"softPMPitch[{this.softPMPitch:d}]");
+//logger.log(Level.TRACE, "softPMProcCount[%d]".formatted(this.softPMProcCount));
+//logger.log(Level.TRACE, "softPMStep[%d]".formatted(this.softPMStep));
+//logger.log(Level.TRACE, "softPMStepCount[%d]".formatted(this.softPMStepCount));
+//logger.log(Level.TRACE, "softPMPitch[%d]".formatted(this.softPMPitch));
 
             if (this.softAMDelayCount - 1 != 0) {
                 this.softAMDelayCount--;
@@ -2931,12 +2935,12 @@ public class NRTDRV extends BaseDriver {
         private void PEPM(byte e) {
             if (this.portaStartFlg != 0) return;
 
-            // System.err.println($"softPMProcCount[{this.softPMProcCount:d}]");
-            // System.err.println($"softPMStep[{this.softPMStep:d}]");
-            // System.err.println($"softPMStepCount[{this.softPMStepCount:d}]");
-            // System.err.println($"softPMPitch[{this.softPMPitch:d}]");
-            // System.err.println($"KF[{this.KF:d}]");
-            // System.err.println($"NoteNumber[{this.NoteNumber:d}]");
+//logger.log(Level.TRACE, "softPMProcCount[%d]".formatted(this.softPMProcCount));
+//logger.log(Level.TRACE, "softPMStep[%d]".formatted(this.softPMStep));
+//logger.log(Level.TRACE, "softPMStepCount[%d]".formatted(this.softPMStepCount));
+//logger.log(Level.TRACE, "softPMPitch[%d]".formatted(this.softPMPitch));
+//logger.log(Level.TRACE, "KF[%d]".formatted(this.KF));
+//logger.log(Level.TRACE, "NoteNumber[%d]".formatted(this.NoteNumber));
 
             if (this.softPMDelayCount - 1 != 0) {
                 this.softPMDelayCount--;

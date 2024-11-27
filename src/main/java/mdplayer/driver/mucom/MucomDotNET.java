@@ -1,5 +1,7 @@
 package mdplayer.driver.mucom;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -36,9 +38,13 @@ import musicDriverInterface.IDriver;
 import vavi.util.ByteUtil;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+import static java.lang.System.getLogger;
 
 
 public class MucomDotNET extends BaseDriver {
+
+    private static final Logger logger = getLogger(MucomDotNET.class.getName());
+
     private ICompiler mucomCompiler = null;
     private IDriver mucomDriver = null;
 
@@ -233,7 +239,7 @@ public class MucomDotNET extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 
     @Override
@@ -269,7 +275,7 @@ public class MucomDotNET extends BaseDriver {
                 stopped = true;
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -293,7 +299,7 @@ public class MucomDotNET extends BaseDriver {
             info = mucomCompiler.getCompilerInfo();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             ret = null;
             info = null;
         }
@@ -354,7 +360,7 @@ public class MucomDotNET extends BaseDriver {
             info = mucomCompiler.getCompilerInfo();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             ret = null;
             info = null;
         }
@@ -484,7 +490,7 @@ public class MucomDotNET extends BaseDriver {
 
     private void sendOPNAWait(long size, int elapsed) {
         if (model == EnmModel.VirtualModel) {
-            //JOptionPane.showMessageDialog(String.format("elapsed:%d size:%d", elapsed, size));
+            //JOptionPane.showMessageDialog("elapsed:%d size:%d".formatted(elapsed, size));
             //int n = Math.max((int)(size / 20 - elapsed), 0); // 20: threshold (magic number)
             //Thread.sleep(n);
             return;
@@ -529,7 +535,7 @@ public class MucomDotNET extends BaseDriver {
 
     //private void chipWaitSend(long elapsed, int size) {
     //    if (model == EnmModel.VirtualModel) {
-    //        //JOptionPane.showMessageDialog(String.format("elapsed:%d size:%d", elapsed, size));
+    //        //JOptionPane.showMessageDialog("elapsed:%d size:%d".formatted(elapsed, size));
     //        //int n = Math.max((int)(size / 20 - elapsed), 0); // 20: threshold (magic number)
     //        //Thread.sleep(n);
     //        return;
@@ -547,7 +553,7 @@ public class MucomDotNET extends BaseDriver {
     //    if (dat.port == -1) return;
 
     //    chipRegister.setYM2608Register(0, dat.port, dat.address, dat.data, model);
-    //    //Debug.println("%d %d", dat.address, dat.data);
+    //    //logger.log(Level.TRACE, "%d %d".formatted(dat.address, dat.data));
     //}
 
     private Stream appendFileReaderCallback(String arg) {
@@ -560,7 +566,7 @@ public class MucomDotNET extends BaseDriver {
         try {
             stream = new FileStream(fn, FileMode.Open, FileAccess.Read, FileShare.Read);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             stream = null;
         }
 

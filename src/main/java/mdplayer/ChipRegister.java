@@ -1278,7 +1278,7 @@ public class ChipRegister {
 
     public void softResetYM2151(int chipId, EnmModel model) {
 
-        // FM全チャネルキーオフ
+        // FM all channel keys off
         for (int i = 0; i < 8; i++) {
             // note off
             writeYm2151(chipId, 0, 0x08, 0x00 + i, model);
@@ -1713,12 +1713,11 @@ public class ChipRegister {
                 if (dAddr == 4) {
                     dData = maskChHuC6280[chipId][HuC6280CurrentCh[chipId]] ? 0 : dData;
                 }
-                // Debug.printf(("chipId:%d adr:%d Dat:%d",
-                // chipId, dAddr, dData);
+//logger.log(Level.TRACE, "chipId:%d adr:%d Dat:%d".formatted(chipId, dAddr, dData));
                 mds.write(HuC6280Inst.class, chipId, 0, dAddr, dData);
             }
         } else {
-            // if (scHuC6280[chipId] == null) return;
+//            if (scHuC6280[chipId] == null) return;
         }
     }
 
@@ -1860,7 +1859,7 @@ public class ChipRegister {
     public void softResetYM2203(int chipId, EnmModel model) {
         int i;
 
-        // FM全チャネルキーオフ
+        // FM all channel key off
         writeYm2203(chipId, 0, 0x28, 0x00, model);
         writeYm2203(chipId, 0, 0x28, 0x01, model);
         writeYm2203(chipId, 0, 0x28, 0x02, model);
@@ -1895,13 +1894,13 @@ public class ChipRegister {
         writeYm2203(chipId, 0, 0x26, 0x00, model); // Timer-B
         writeYm2203(chipId, 0, 0x27, 0x30, model); // Timer Control
 
-        // SSG 音程(2byte*3ch)
+        // SSG Pitch(2byte*3ch)
         for (i = 0x00; i < 0x05 + 1; i++) {
             writeYm2203(chipId, 0, i, 0x00, model);
         }
-        writeYm2203(chipId, 0, 0x06, 0x00, model); // SSG ノイズ周波数
-        writeYm2203(chipId, 0, 0x07, 0x38, model); // SSG ミキサ
-        // SSG ボリューム(3ch)
+        writeYm2203(chipId, 0, 0x06, 0x00, model); // SSG Noise Frequency
+        writeYm2203(chipId, 0, 0x07, 0x38, model); // SSG Mixer
+        // SSG volume(3ch)
         for (i = 0x08; i < 0x0A + 1; i++) {
             writeYm2203(chipId, 0, i, 0x00, model);
         }
@@ -1914,17 +1913,17 @@ public class ChipRegister {
 
     public void softResetAY8910(int chipId, EnmModel model) {
 
-        // 全チャネルキーオフ
+        // All Channel Key Off
         setAY8910Register(chipId, 0x07, 0x00, model);
 
-        // ボリュームオフ
+        // Volume Off
         for (int ch = 0; ch < 3; ch++) {
             setAY8910Register(chipId, 0x8 + ch, 0x00, model);
         }
 
-        // ノイズ初期化
+        // Noise Initialization
         setAY8910Register(chipId, 0x06, 0x00, model);
-        // エンベロープ初期化
+        // Envelope Initialization
         setAY8910Register(chipId, 0x0b, 0x00, model);
         setAY8910Register(chipId, 0x0c, 0x00, model);
         setAY8910Register(chipId, 0x0d, 0x00, model);
@@ -1932,7 +1931,7 @@ public class ChipRegister {
 
     public void softResetYM2413(int chipId, EnmModel model) {
 
-        // FM全チャネルキーオフ
+        // FM All Channel Key Off
         for (int ch = 0; ch < 9; ch++) {
             setYM2413Register(chipId, 0x20 + ch, 0x00, model);
         }
@@ -1965,7 +1964,7 @@ public class ChipRegister {
             boolean cr = false;
             int twoOpChannel = (ch / 8) * 3 + ((ch % 8) % 3);
 
-            // 2opの時のキャリア判定
+            // Career determination during 2op
             if (ch % 8 > 2)
                 cr = true;
             else {
@@ -2052,7 +2051,7 @@ public class ChipRegister {
     public void softResetYM3526(int chipId, EnmModel model) {
         int i;
 
-        // FM全チャネルキーオフ
+        // FM All Channel Key Off
         for (i = 0; i < 9; i++) {
             writeYm3526(chipId, 0xb0 + i, 0x00, model);
         }
@@ -2085,7 +2084,7 @@ public class ChipRegister {
             boolean cr = false;
             int twoOpChannel = (ch / 8) * 3 + ((ch % 8) % 3);
 
-            // 2opの時のキャリア判定
+            // Career determination during 2op
             if (ch % 8 > 2)
                 cr = true;
             else {
@@ -2176,7 +2175,7 @@ public class ChipRegister {
     public void softResetYM3812(int chipId, EnmModel model) {
         int i;
 
-        // FM全チャネルキーオフ
+        // FM All Channel Key Off
         for (i = 0; i < 9; i++) {
             writeYm3812(chipId, 0xb0 + i, 0x00, model);
         }
@@ -2228,7 +2227,7 @@ public class ChipRegister {
             twoOpChannel += dPort * 9;
 
             if (!fourOpMode) {
-                // 2opの時のキャリア判定
+                // Career determination during 2op
                 if (ch % 8 > 2)
                     cr = true;
                 else {
@@ -2334,7 +2333,7 @@ public class ChipRegister {
     public void softResetYMF262(int chipId, EnmModel model) {
         int i;
 
-        // FM全チャネルキーオフ
+        // FM All Channel Key Off
         for (i = 0; i < 9; i++) {
             writeYmF262(chipId, 0, 0xb0 + i, 0x00, model);
             writeYmF262(chipId, 1, 0xb0 + i, 0x00, model);
@@ -2354,11 +2353,9 @@ public class ChipRegister {
     }
 
     public void setYM2608Register(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
-        // if (chipId == 0 && dPort == 1 && dAddr == 0x01)
-        // {
-        // Debug.printf(String.format("FM P1 Out:Adr[%02x] val[%02x]",
-        // (int)dAddr, (int)dData));
-        // }
+//if (chipId == 0 && dPort == 1 && dAddr == 0x01) {
+// logger.log(Level.TRACE, "FM P1 Out:Adr[%02x] val[%02x]".formatted((int) dAddr, (int) dData));
+//}
 
         if (ctYM2608 == null)
             return;
@@ -2512,8 +2509,7 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             if (!ctYM2608[chipId].getUseReal()[0] && ctYM2608[chipId].getUseEmu()[0]) {
-                // if(dAddr==0x29) System.err.printf("%2x:%2x:%2x ", dPort,
-                // dAddr, dData);
+//if (dAddr == 0x29) logger.log(Level.TRACE, "%2x:%2x:%2x ".formatted(dPort, dAddr, dData));
                 mds.write(Ym2608Inst.class, chipId, dPort, dAddr, dData);
             }
         } else {
@@ -2556,7 +2552,7 @@ public class ChipRegister {
     public void softResetYM2608(int chipId, EnmModel model) {
         int i;
 
-        // FM全チャネルキーオフ
+        // FM All Channel Key Off
         writeYm2608(chipId, 0, 0x28, 0x00, model);
         writeYm2608(chipId, 0, 0x28, 0x01, model);
         writeYm2608(chipId, 0, 0x28, 0x02, model);
@@ -2605,9 +2601,9 @@ public class ChipRegister {
         for (i = 0x00; i < 0x05 + 1; i++) {
             writeYm2608(chipId, 0, i, 0x00, model);
         }
-        writeYm2608(chipId, 0, 0x06, 0x00, model); // SSG ノイズ周波数
-        writeYm2608(chipId, 0, 0x07, 0x38, model); // SSG ミキサ
-        // SSG ボリューム(3ch)
+        writeYm2608(chipId, 0, 0x06, 0x00, model); // SSG Noise Frequency
+        writeYm2608(chipId, 0, 0x07, 0x38, model); // SSG Mixer
+        // SSG volume(3ch)
         for (i = 0x08; i < 0x0A + 1; i++) {
             writeYm2608(chipId, 0, i, 0x00, model);
         }
@@ -2617,19 +2613,19 @@ public class ChipRegister {
         }
 
         // RHYTHM
-        writeYm2608(chipId, 0, 0x10, 0xBF, model); // 強制発音停止
+        writeYm2608(chipId, 0, 0x10, 0xBF, model); // Forced sound stop
         writeYm2608(chipId, 0, 0x11, 0x00, model); // Total Level
-        writeYm2608(chipId, 0, 0x18, 0x00, model); // BD音量
-        writeYm2608(chipId, 0, 0x19, 0x00, model); // SD音量
-        writeYm2608(chipId, 0, 0x1A, 0x00, model); // CYM音量
-        writeYm2608(chipId, 0, 0x1B, 0x00, model); // HH音量
-        writeYm2608(chipId, 0, 0x1C, 0x00, model); // TOM音量
-        writeYm2608(chipId, 0, 0x1D, 0x00, model); // RIM音量
+        writeYm2608(chipId, 0, 0x18, 0x00, model); // BD volume
+        writeYm2608(chipId, 0, 0x19, 0x00, model); // SD volume
+        writeYm2608(chipId, 0, 0x1A, 0x00, model); // CYM volume
+        writeYm2608(chipId, 0, 0x1B, 0x00, model); // HH volume
+        writeYm2608(chipId, 0, 0x1C, 0x00, model); // TOM volume
+        writeYm2608(chipId, 0, 0x1D, 0x00, model); // RIM volume
 
         // ADPCM
-        writeYm2608(chipId, 1, 0x00, 0x21, model); // ADPCMリセット
-        writeYm2608(chipId, 1, 0x01, 0x06, model); // ADPCM消音
-        writeYm2608(chipId, 1, 0x10, 0x9C, model); // FLAGリセット }
+        writeYm2608(chipId, 1, 0x00, 0x21, model); // ADPCM reset
+        writeYm2608(chipId, 1, 0x01, 0x06, model); // ADPCM mute
+        writeYm2608(chipId, 1, 0x10, 0x9C, model); // FLAG reset
     }
 
     public void setYM2610Register(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
@@ -2652,15 +2648,14 @@ public class ChipRegister {
         }
 
 //#if DEBUG
-        //System.err.println("OPNB p:%02X a:%02X D:%02X", dPort, dAddr, dData);
+// logger.log(Level.TRACE, "OPNB p:%02X a:%02X D:%02X".formatted(dPort, dAddr, dData));
 //#endif
 
         if ((model == EnmModel.RealModel && ctYM2610[chipId].getUseReal()[0]) || (model == EnmModel.VirtualModel && !ctYM2610[chipId].getUseReal()[0])) {
             //fmRegisterYM2610[dPort][dAddr] = dData;
             if (dPort == 0 && dAddr == 0x28) {
                 int ch = (dData & 0x3) + ((dData & 0x4) > 0 ? 3 : 0);
-                if (ch >= 0 && ch < 6)// && (dData & 0xf0) > 0)
-                {
+                if (ch >= 0 && ch < 6 /* && (dData & 0xf0) > 0 */) {
                     if (ch != 2 || (fmRegisterYM2610[chipId][0][0x27] & 0xc0) != 0x40) {
                         if ((dData & 0xf0) != 0) {
                             fmKeyOnYM2610[chipId][ch] = (dData & 0xf0) | 1;
@@ -2810,7 +2805,7 @@ public class ChipRegister {
             if (scYM2610EA[chipId] != null) {
                 int dReg = (dPort << 8) | dAddr;
                 boolean bSend = true;
-                // レジスタをマスクして送信する
+                // Mask the register and send
                 if (dReg >= 0x100 && dReg <= 0x12d) {
                     // ADPCM-a
                     bSend = false;
@@ -2840,11 +2835,11 @@ public class ChipRegister {
                 scYM2610[chipId].setRegister((dPort << 8) | 0x01, (startAddr >> 8) & 0xff);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x02, (startAddr >> 16) & 0xff);
 
-                // pushReg(CMD_YM2610|0x02,0x03,0x01);
+                //pushReg(CMD_YM2610|0x02,0x03,0x01);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x03, 0x01);
-                // データ転送
+                // Data Transfer
                 for (byte b : ym2610AdpcmA) {
-                    // pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
+                    //pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
                     scYM2610[chipId].setRegister((dPort << 8) | 0x04, b & 0xff);
                 }
 
@@ -2857,11 +2852,11 @@ public class ChipRegister {
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10001, (startAddr >> 8) & 0xff);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10002, (startAddr >> 16) & 0xff);
 
-                // pushReg(CMD_YM2610|0x02,0x03,0x01);
+                //pushReg(CMD_YM2610|0x02,0x03,0x01);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10003, 0x01);
-                // データ転送
+                // Data Transfer
                 for (byte b : ym2610AdpcmA) {
-                    // pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
+                    //pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
                     scYM2610EB[chipId].setRegister((dPort << 8) | 0x10004, b & 0xff);
                 }
 
@@ -2879,11 +2874,11 @@ public class ChipRegister {
                 scYM2610[chipId].setRegister((dPort << 8) | 0x01, (startAddr >> 8) & 0xff);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x02, (startAddr >> 16) & 0xff);
 
-                // pushReg(CMD_YM2610|0x02,0x03,0x01);
+                //pushReg(CMD_YM2610|0x02,0x03,0x01);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x03, 0x01);
-                // データ転送
+                // Data Transfer
                 for (int cnt = 0; cnt < length; cnt++) {
-                    // pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
+                    //pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
                     scYM2610[chipId].setRegister((dPort << 8) | 0x04, buf[srcStartAddr + cnt] & 0xff);
                 }
 
@@ -2895,11 +2890,11 @@ public class ChipRegister {
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10001, (startAddr >> 8) & 0xff);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10002, (startAddr >> 16) & 0xff);
 
-                // pushReg(CMD_YM2610|0x02,0x03,0x01);
+                //pushReg(CMD_YM2610|0x02,0x03,0x01);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10003, 0x01);
-                // データ転送
+                // Data Transfer
                 for (int cnt = 0; cnt < length; cnt++) {
-                    // pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
+                    //pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
                     scYM2610EB[chipId].setRegister((dPort << 8) | 0x10004, buf[srcStartAddr + cnt] & 0xff);
                 }
 
@@ -2919,11 +2914,11 @@ public class ChipRegister {
                 scYM2610[chipId].setRegister((dPort << 8) | 0x01, (startAddr >> 8) & 0xff);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x02, (startAddr >> 16) & 0xff);
 
-                // pushReg(CMD_YM2610|0x02,0x03,0x01);
+                //pushReg(CMD_YM2610|0x02,0x03,0x01);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x03, 0x00);
-                // データ転送
+                // Data Transfer
                 for (byte b : ym2610AdpcmB) {
-                    // pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
+                    //pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
                     scYM2610[chipId].setRegister((dPort << 8) | 0x04, b & 0xff);
                 }
 
@@ -2936,11 +2931,11 @@ public class ChipRegister {
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10001, (startAddr >> 8) & 0xff);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10002, (startAddr >> 16) & 0xff);
 
-                // pushReg(CMD_YM2610|0x02,0x03,0x01);
+                //pushReg(CMD_YM2610|0x02,0x03,0x01);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10003, 0x00);
-                // データ転送
+                // Data Transfer
                 for (byte b : ym2610AdpcmB) {
-                    // pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
+                    //pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
                     scYM2610EB[chipId].setRegister((dPort << 8) | 0x10004, b & 0xff);
                 }
 
@@ -2958,11 +2953,11 @@ public class ChipRegister {
                 scYM2610[chipId].setRegister((dPort << 8) | 0x01, (startAddr >> 8) & 0xff);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x02, (startAddr >> 16) & 0xff);
 
-                // pushReg(CMD_YM2610|0x02,0x03,0x01);
+                //pushReg(CMD_YM2610|0x02,0x03,0x01);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x03, 0x00);
-                // データ転送
+                // Data Transfer
                 for (int cnt = 0; cnt < length; cnt++) {
-                    // pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
+                    //pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
                     scYM2610[chipId].setRegister((dPort << 8) | 0x04, buf[srcStartAddr + cnt] & 0xff);
                 }
 
@@ -2974,11 +2969,11 @@ public class ChipRegister {
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10001, (startAddr >> 8) & 0xff);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10002, (startAddr >> 16) & 0xff);
 
-                // pushReg(CMD_YM2610|0x02,0x03,0x01);
+                //pushReg(CMD_YM2610|0x02,0x03,0x01);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10003, 0x00);
-                // データ転送
+                // Data Transfer
                 for (int cnt = 0; cnt < length; cnt++) {
-                    // pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
+                    //pushReg(CMD_YM2610|0x02,0x04,*m_pDump);
                     scYM2610EB[chipId].setRegister((dPort << 8) | 0x10004, buf[srcStartAddr + cnt] & 0xff);
                 }
 
@@ -3023,7 +3018,7 @@ public class ChipRegister {
             fmRegisterYMF278B[chipId][dPort][dAddr] = dData;
 
 //             if (dPort == 2) {
-//                 System.err.println("p=2:adr%02x dat%02x", dAddr, dData);
+//                 logger.log(Level.TRACE, "p=2:adr%02x dat%02x".formatted(dAddr, dData));
 //             }
 
             if (dAddr >= 0xb0 && dAddr <= 0xb8) {
@@ -3251,7 +3246,7 @@ public class ChipRegister {
             int al = dData & 0x07; // AL
 
             if (ch != 3 && maskFMChYM2612[chipId][dPort * 3 + ch]) {
-                 // CarrierのTLを再設定する
+                 // Reconfigure the carrier's TL
                 for (int slot = 0; slot < 4; slot++) {
                     if ((algM[al] & (1 << slot)) != 0) {
                         int tslot = (slot == 1 ? 2 : (slot == 2 ? 1 : slot)) * 4;
@@ -3268,18 +3263,18 @@ public class ChipRegister {
         }
 
         if (dAddr == 0x2a) {
-             // PCMデータをマスクする
+             // Masking PCM data
             if (maskFMChYM2612[chipId][5]) dData = 0x00;
-            //System.err.println("%02x",dData);
+//logger.log(Level.TRACE, "%02x".formatted(dData));
         }
 
         if (model == EnmModel.VirtualModel) {
 
-             // 仮想音源の処理
+             // Virtual Sound Source Processing
 
             if (ctYM2612[chipId].getUseReal()[0]) {
-                 // Scciを使用する場合でも
-                 // PCM(6Ch)だけエミュで発音するとき
+                // When using Scci,
+                // only PCM (6Ch) is played by emulator
                 if (ctYM2612[chipId].getRealChipInfo()[0].getOnlyPCMEmulation()) {
                     if (dPort == 0 && dAddr == 0x2b) {
                         //if (ctYM2612[chipId].getUseEmu()[0])
@@ -3301,31 +3296,31 @@ public class ChipRegister {
             } else {
 
 //#if DEBUG
-                //if (dAddr == 0x2a || dAddr==0x2b) return; // DAC
-                //if (dPort == 1) return; // port1
-                //if (dAddr == 0x28 && (dData & 7) == 0) return; // Ch1Keyon/off
-                //if (dAddr == 0x28 && (dData & 7) == 1) return; // Ch2Keyon/off
-                //if (dAddr == 0x28 && (dData & 7) == 2) return; // Ch3Keyon/off
-                //if (dAddr == 0x28 && (dData & 7) == 4) return; // Ch4Keyon/off
-                //if (dAddr == 0x28 && (dData & 7) == 5) return; // Ch5Keyon/off
-                //if (dAddr == 0x28 && (dData & 7) == 6) return; // Ch6Keyon/off
-                //if ((dAddr & 0xf0) == 0x30) return; // DTMUL cancel
-                //if ((dAddr & 0xf0) == 0x40) return; // TL cancel
-                //if ((dAddr & 0xf0) == 0x50) return; // TL cancel
-                //if ((dAddr & 0xf0) == 0x60) return; // TL cancel
-                //if ((dAddr & 0xf0) == 0x70) return; // TL cancel
-                //if ((dAddr & 0xf0) == 0x80) return; // TL cancel
-                //if ((dAddr & 0xf0) == 0x90) return; // TL cancel
-                //if (dAddr >= 0x00 && dAddr < 0x22) return; // いろいろ cancel
-                //if (dAddr >= 0xb4) return; // TL cancel
-                //return;
+//                if (dAddr == 0x2a || dAddr == 0x2b) return; // DAC
+//                if (dPort == 1) return; // port1
+//                if (dAddr == 0x28 && (dData & 7) == 0) return; // Ch1Keyon/off
+//                if (dAddr == 0x28 && (dData & 7) == 1) return; // Ch2Keyon/off
+//                if (dAddr == 0x28 && (dData & 7) == 2) return; // Ch3Keyon/off
+//                if (dAddr == 0x28 && (dData & 7) == 4) return; // Ch4Keyon/off
+//                if (dAddr == 0x28 && (dData & 7) == 5) return; // Ch5Keyon/off
+//                if (dAddr == 0x28 && (dData & 7) == 6) return; // Ch6Keyon/off
+//                if ((dAddr & 0xf0) == 0x30) return; // DTMUL cancel
+//                if ((dAddr & 0xf0) == 0x40) return; // TL cancel
+//                if ((dAddr & 0xf0) == 0x50) return; // TL cancel
+//                if ((dAddr & 0xf0) == 0x60) return; // TL cancel
+//                if ((dAddr & 0xf0) == 0x70) return; // TL cancel
+//                if ((dAddr & 0xf0) == 0x80) return; // TL cancel
+//                if ((dAddr & 0xf0) == 0x90) return; // TL cancel
+//                if (dAddr >= 0x00 && dAddr < 0x22) return; // cancel various
+//                if (dAddr >= 0xb4) return; // TL cancel
+//                return;
 //#endif
 
                 if (ctYM2612[chipId].getUseEmu()[1] && dAddr == 0x21)
-                    return; // TESTレジスタへのデータ送信をキャンセルする
+                    return; // Cancel sending data to the TEST register
 
-                 // エミュを使用する場合のみMDSoundへデータを送る
-                //System.err.println("%d:%02X:%02X:%02X", chipId, dPort, dAddr, dData);
+                // Send data to MDSound only when using the emulator
+//logger.log(Level.TRACE, "%d:%02X:%02X:%02X".formatted(chipId, dPort, dAddr, dData));
                 if (ctYM2612[chipId].getUseEmu()[0])
                     mds.write(Ym2612Inst.class, chipId, dPort, dAddr, dData);
                 if (ctYM2612[chipId].getUseEmu()[1])
@@ -3335,13 +3330,13 @@ public class ChipRegister {
             }
         } else {
 
-             // 実音源(Scci)
+             // Real sound source (Scci)
 
             if (scYM2612[chipId] == null) return;
 
-             // PCM(6Ch)だけエミュで発音するとき
+             // When playing only PCM (6Ch) with an emulator
             if (ctYM2612[chipId].getRealChipInfo()[0].getOnlyPCMEmulation()) {
-                 // アドレスを調べてPCMにはデータを送らない
+                 // Check the address and do not send data to the PCM
                 if (dPort == 0 && dAddr == 0x2b) {
                     scYM2612[chipId].setRegister(dPort * 0x100 + dAddr, dData);
                 } else if (dPort == 0 && dAddr == 0x2a) {
@@ -3349,7 +3344,7 @@ public class ChipRegister {
                     scYM2612[chipId].setRegister(dPort * 0x100 + dAddr, dData);
                 }
             } else {
-                 // Scciへデータを送る
+                 // Send data to Scci
                 scYM2612[chipId].setRegister(dPort * 0x100 + dAddr, dData);
             }
         }
@@ -4241,14 +4236,14 @@ public class ChipRegister {
             if (!ctK051649[chipId].getUseReal()[0]) {
                 mds.write(K051649Inst.class, chipId, 0, adr, data);
 
-                // レジスタのデータを退避
+                // Save register data
                 scc_k051649.write(chipId, 0, adr, data);
             }
         } else {
             if (scK051649[chipId] == null)
                 return;
 
-            // レジスタのデータを退避
+            // Save register data
             scc_k051649.write(chipId, 0, adr, data);
 
             if ((adr & 1) == 0) {
@@ -4278,7 +4273,7 @@ public class ChipRegister {
     }
 
     public void softResetK051649(int chipId, EnmModel model) {
-        // 全チャネルボリュームzero
+        // All channel volume zero
         for (int i = 0; i < 5; i++) {
             writeK051649(chipId, (0x00 << 1) + 0, i, model);
             writeK051649(chipId, (0x02 << 1) + 1, 0x00, model);
@@ -4454,7 +4449,7 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             mds.write(OkiM6295Inst.class, chipId, 0, port, data);
-//Debug.printf("chipId=%d Port=%x data=%x", chipId, port, data);
+//logger.log(Level.TRACE, "chipId=%d Port=%x data=%x".formatted(chipId, port, data));
         }
     }
 
@@ -4635,7 +4630,7 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
             if (!ctSEGAPCM[chipId].getUseReal()[0])
                 mds.write(SegaPcmInst.class, chipId, 0, offset, data);
-//Debug.printf("chipId=%d offset=%x data=%x ", chipId, offset, data);
+//logger.log(Level.TRACE, "chipId=%d offset=%x data=%x ".formatted(chipId, offset, data));
         } else {
             if (scSEGAPCM != null && scSEGAPCM[chipId] != null)
                 scSEGAPCM[chipId].setRegister(offset, data);
@@ -4658,11 +4653,11 @@ public class ChipRegister {
             mds.WriteSegaPcmPCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
         } else {
             if (scSEGAPCM != null && scSEGAPCM[chipId] != null) {
-                // スタートアドレス設定
+                // Start address setting
                 scSEGAPCM[chipId].setRegister(0x10000, dataStart);
                 scSEGAPCM[chipId].setRegister(0x10001, dataStart >> 8);
                 scSEGAPCM[chipId].setRegister(0x10002, dataStart >> 16);
-                // データ転送
+                // Data Transfer
                 for (int cnt = 0; cnt < dataLength; cnt++) {
                     scSEGAPCM[chipId].setRegister(0x10004, romData[srcStartAdr + cnt]);
                 }
@@ -4688,7 +4683,7 @@ public class ChipRegister {
             if (scYM2203 != null && scYM2203[chipId] != null) {
                 if (scYM2203[chipId] instanceof RC86ctlSoundChip) {
 //                    Nc86ctl.ChipType ct = ((RC86ctlSoundChip) scYM2203[chipId]).ChipType;
-//                    // OPNA/OPN3Lが選ばれている場合は周波数を2倍にする
+//                    // If OPNA/OPN3L is selected, double the frequency
 //                    if (ct == Nc86ctl.ChipType.CHIP_OPN3L || ct == Nc86ctl.ChipType.CHIP_OPNA) {
 //                        clock *= 2;
 //                    }
@@ -4704,7 +4699,7 @@ public class ChipRegister {
             if (scAY8910 != null && scAY8910[chipId] != null) {
                 if (scAY8910[chipId] instanceof RC86ctlSoundChip) {
 //                    Nc86ctl.ChipType ct = ((RC86ctlSoundChip) scAY8910[chipId]).ChipType;
-//                    // YM2149が選ばれている場合は周波数を2倍にする
+//                    // If YM2149 is selected, double the frequency
 //                    if (ct == Nc86ctl.ChipType.CHIP_YM2149) {
 //                        clock *= 2;
 //                    }
@@ -4824,11 +4819,11 @@ public class ChipRegister {
             mds.writeC140PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
         else {
             if (scC140 != null && scC140[chipId] != null) {
-                // スタートアドレス設定
+                // Start address setting
                 scC140[chipId].setRegister(0x10000, dataStart);
                 scC140[chipId].setRegister(0x10001, dataStart >> 8);
                 scC140[chipId].setRegister(0x10002, dataStart >> 16);
-                // データ転送
+                // Data Transfer
                 for (int cnt = 0; cnt < dataLength; cnt++) {
                     scC140[chipId].setRegister(0x10004, romData[srcStartAdr + cnt]);
                 }
@@ -4863,11 +4858,11 @@ public class ChipRegister {
 //#region volume
 
     //
-    // 鍵盤のボリューム表示のため音量を取得する
+    // Gets the volume for displaying the keyboard volume
     //
 
     /**
-     * ボリューム情報の更新
+     * Update volume information
      */
     public void updateVol() {
         volF--;

@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -15,9 +17,13 @@ import dotnet4j.io.Path;
 import vavi.util.serdes.JacksonXMLBeanBinder;
 import vavi.util.serdes.Serdes;
 
+import static java.lang.System.getLogger;
+
 
 @Serdes(beanBinder = JacksonXMLBeanBinder.class)
 public class TonePallet implements Serializable {
+
+    private static final Logger logger = getLogger(TonePallet.class.getName());
 
     private List<Tone> _lstTone = new ArrayList<>(256);
 
@@ -67,7 +73,7 @@ public class TonePallet implements Serializable {
                 return pl;
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return new TonePallet();
         }
     }

@@ -98,14 +98,14 @@ public class ReSid extends SidEmu {
 
     @Override
     public byte read(byte addr) {
-        //System.err.println("[%010d]read  accessClock[%02x]", accessClock, addr);
+        //logger.log(Level.TRACE, "[%010d]read  accessClock[%02x]".formatted(accessClock, addr));
         clock();
         return (byte) sid.read(addr);
     }
 
     @Override
     public void write(byte addr, byte data) {
-        //System.err.println("[%010d]write accessClock[%02x] data[%02x]", accessClock, addr,data);
+        //logger.log(Level.TRACE, "[%010d]write accessClock[%02x] data[%02x]".formatted(accessClock, addr,data));
         clock();
         sid.write(addr, data);
     }

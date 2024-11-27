@@ -326,7 +326,7 @@ public class O65Relocator {
                     table.position(table.position() + 2);
                 }
             }
-            //System.err.println("buf[%d]=%d",adress,buf.get(adress));
+            //logger.log(Level.TRACE, "buf[%d]=%d".formatted(adress,buf.get(adress)));
             if (adress > len) {
                 // Warning: relocation table entries past segment end!
             }

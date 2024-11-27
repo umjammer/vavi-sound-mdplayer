@@ -67,7 +67,7 @@ public class frmYM2612 extends frmBase {
     }
 
     public void update() {
-        frameBuffer.Refresh(null);
+        frameBuffer.refresh(null);
     }
 
 //    @Override
@@ -197,7 +197,7 @@ public class frmYM2612 extends frmBase {
                     n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
                     //if (ch == 0)
                     //{
-                    //    System.err.println("freq:%d  masterClock:%d  fmDiv:%d  octav:%d ff:%d  n:%d", freq, masterClock, fmDiv, octav,ff,n);
+                    //    logger.log(Level.TRACE, "freq:%d  masterClock:%d  fmDiv:%d  octav:%d ff:%d  n:%d".formatted(freq, masterClock, fmDiv, octav,ff,n));
                     //}
                 }
 

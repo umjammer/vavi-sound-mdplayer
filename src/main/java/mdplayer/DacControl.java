@@ -60,7 +60,7 @@ public class DacControl {
     }
 
     public void set_frequency(int chipId, int frequency) {
-        //Debug.printf(("chipId%d frequency%d", chipId, frequency);
+        //logger.log(Level.TRACE, "chipId%d frequency%d".formatted(chipId, frequency));
         DacControl_ chip = DACData[chipId];
         chip.setFrequency(chipId, frequency);
     }
@@ -139,7 +139,7 @@ public class DacControl {
             chipRegister.setNESRegister(chipId, offset, data, model);
             break;
         case 0x17: // OKIM6258
-            if (model == EnmModel.VirtualModel)  // Debug.printf("[DAC]");
+            if (model == EnmModel.VirtualModel)  // logger.log(Level.TRACE, "[DAC]");
                 chipRegister.writeOKIM6258(chipId, offset, data, model);
             break;
         case 0x1b: // OotakeHuC6280
@@ -155,7 +155,7 @@ public class DacControl {
         private static final int DCTRL_LMODE_MSEC = 0x02;
         private static final int DCTRL_LMODE_TOEND = 0x03;
         public static final int DCTRL_LMODE_BYTES = 0x0F;
-        private static final int DAC_SMPL_RATE = 44100; // DAC control独自のサンプルレートです(Fixed)
+        private static final int DAC_SMPL_RATE = 44100; // DAC control's own sample rate (Fixed)
 
         private static int mulDiv64Round(int multiplicand, int multiplier, int divisor) {
             // Yes, I'm correctly rounding the values.
@@ -218,7 +218,7 @@ public class DacControl {
                 port = (dstCommand & 0xff00) >> 8;
                 command = dstCommand & 0x00FF;
                 data = this.data[(dataStart + realPos)];
-                //if (model == enmModel.RealModel) Debug.printf(String.format("%x %x", data, chips.RealPos));
+                //if (model == enmModel.RealModel) logger.log(Level.DEBUG, "%x %x".formatted(data, chips.RealPos)));
 
                 writeChipReg(dstChipType2, dstChipID, port, command, data);
                 break;
@@ -343,7 +343,7 @@ public class DacControl {
             int newPos;
             int realDataStp;
 
-            //Debug.printf(("DAC update chipId%d samples%d this.Running%d ", chipId, samples, this.Running);
+//logger.log(Level.TRACE, "DAC update chipId%d samples%d this.Running%d".formatted(chipId, samples, this.Running));
             if ((this.running & 0x80) != 0) // disabled
                 return;
             if ((this.running & 0x01) == 0) // stopped
@@ -368,13 +368,13 @@ public class DacControl {
             this.step += samples;
             // Formula: Step * Freq / SampleRate
             newPos = mulDiv64Round(this.step * this.dataStep, this.frequency, DAC_SMPL_RATE);
-            //Debug.printf("newPos%d this.Step%d this.DataStep%d this.Frequency%d DAC_SMPL_RATE%d \n", newPos, this.Step, this.DataStep, this.Frequency, (int)setting.getoutputDevice().SampleRate);
+//logger.log(Level.TRACE, "newPos%d this.Step%d this.DataStep%d this.Frequency%d DAC_SMPL_RATE%d".formatted(newPos, this.Step, this.DataStep, this.Frequency, (int)setting.getoutputDevice().SampleRate));
             this.sendCommand();
 
             while (this.remainCmds != 0 && this.pos < newPos) {
                 this.sendCommand();
                 this.pos += this.dataStep;
-                //if (model== enmModel.RealModel) Debug.printf(String.format("datastep:%d",this.DataStep));
+//if (model == enmModel.RealModel) logger.log(Level.DEBUG, "datastep:%d".formatted(this.DataStep));
                 this.realPos = this.realPos + realDataStp;
                 this.running &= 0xef;// ~0x10;
                 this.remainCmds--;

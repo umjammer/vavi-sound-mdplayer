@@ -1,5 +1,7 @@
 package mdplayer.driver.s98;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -14,12 +16,14 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import vavi.util.ByteUtil;
-import vavi.util.Debug;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+import static java.lang.System.getLogger;
 
 
 public class S98 extends BaseDriver {
+
+    private static final Logger logger = getLogger(S98.class.getName());
 
     public S98() {
         this.setting = Setting.getInstance();
@@ -89,7 +93,7 @@ public class S98 extends BaseDriver {
                             gd3.composer = str.substring(str.indexOf("=") + 1);
                             gd3.composerJ = str.substring(str.indexOf("=") + 1);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.log(Level.ERROR, e.getMessage(), e);
 
                         }
                     }
@@ -97,7 +101,7 @@ public class S98 extends BaseDriver {
                         try {
                             gd3.vgmBy = str.substring(str.indexOf("=") + 1);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.log(Level.ERROR, e.getMessage(), e);
                         }
                     }
                     if (str.toLowerCase().contains("game=")) {
@@ -105,7 +109,7 @@ public class S98 extends BaseDriver {
                             gd3.gameName = str.substring(str.indexOf("=") + 1);
                             gd3.gameNameJ = str.substring(str.indexOf("=") + 1);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.log(Level.ERROR, e.getMessage(), e);
                         }
                     }
                     SSGVolumeFromTAG = -1;
@@ -117,7 +121,7 @@ public class S98 extends BaseDriver {
                             if (gd3.systemName.indexOf("8801") > 0) SSGVolumeFromTAG = 63;
                             else if (gd3.systemName.indexOf("9801") > 0) SSGVolumeFromTAG = 31;
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.log(Level.ERROR, e.getMessage(), e);
                         }
                     }
                     if (str.toLowerCase().contains("title=")) {
@@ -125,21 +129,21 @@ public class S98 extends BaseDriver {
                             gd3.trackName = str.substring(str.indexOf("=") + 1);
                             gd3.trackNameJ = str.substring(str.indexOf("=") + 1);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.log(Level.ERROR, e.getMessage(), e);
                         }
                     }
                     if (str.toLowerCase().contains("year=")) {
                         try {
                             gd3.converted = str.substring(str.indexOf("=") + 1);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.log(Level.ERROR, e.getMessage(), e);
                         }
                     }
                 }
             }
 
         } catch (Exception e) {
-            Debug.printf("S98のTAG情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), Arrays.toString(e.getStackTrace()));
+            logger.log(Level.ERROR, e.getMessage(), e);
             return null;
         }
 
@@ -179,7 +183,7 @@ public class S98 extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 
     @Override
@@ -196,7 +200,7 @@ public class S98 extends BaseDriver {
             }
             //Stopped = !IsPlaying();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -262,7 +266,7 @@ public class S98 extends BaseDriver {
                     info.deviceType = ByteUtil.readLeInt(vgmBuf, 0x20 + i * 0x10);
                     if (devIDs[info.deviceType] > 1) {
                         i++;
-                        continue; // 同じchipは2こまで
+                        continue; // Up to 2 of the same chip
                     }
                     info.clock = ByteUtil.readLeInt(vgmBuf, 0x24 + i * 0x10);
                     switch (info.deviceType) {
@@ -291,7 +295,7 @@ public class S98 extends BaseDriver {
                 for (int i = 0; i < s98Info.DeviceCount; i++) {
                     S98DevInfo info = new S98DevInfo();
                     info.deviceType = ByteUtil.readLeInt(vgmBuf, 0x20 + i * 0x10);
-                    if (devIDs[info.deviceType] > 1) continue; // 同じchipは2こまで
+                    if (devIDs[info.deviceType] > 1) continue; // Up to 2 of the same chip
 
                     info.clock = ByteUtil.readLeInt(vgmBuf, 0x24 + i * 0x10);
                     info.Pan = ByteUtil.readLeInt(vgmBuf, 0x28 + i * 0x10);
@@ -378,7 +382,7 @@ public class S98 extends BaseDriver {
             musicDownCounter -= 1.0;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -490,7 +494,7 @@ public class S98 extends BaseDriver {
 
             }
         } catch (IndexOutOfBoundsException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             stopped = true;
         }
     }

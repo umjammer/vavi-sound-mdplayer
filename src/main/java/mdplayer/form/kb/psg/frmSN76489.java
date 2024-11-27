@@ -61,7 +61,7 @@ public class frmSN76489 extends frmBase {
     }
 
     public void update() {
-        frameBuffer.Refresh(null);
+        frameBuffer.refresh(null);
     }
 
 //    @Override
@@ -219,7 +219,7 @@ public class frmSN76489 extends frmBase {
             DrawBuff.Pan(frameBuffer, 24, 8 + 3 * 8, osc.pan, nsc.pan, osc.pantp, tp);
         }
         if (osc.freq != nsc.freq) {
-            DrawBuff.drawFont4(frameBuffer, 172, 32, 0, String.format("%04d", nsc.freq));
+            DrawBuff.drawFont4(frameBuffer, 172, 32, 0, "%04d".formatted(nsc.freq));
             osc.freq = nsc.freq;
         }
     }

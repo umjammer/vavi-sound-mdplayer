@@ -28,7 +28,7 @@ public class MP3FileFormat extends BaseFileFormat implements FileFormat.SampledF
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
-        music.title = String.format("(%s)", Path.getFileName(file));
+        music.title = "(%s)".formatted(Path.getFileName(file));
         return Collections.singletonList(music);
     }
 

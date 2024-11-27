@@ -192,7 +192,7 @@ public class M_Hes {
             _this.setUpVsync();
             if ((_this.hesvdcCr & 8) != 0) {
                 _this.ctx.iRequest |= Km6280.K6280Context.IRQ.INT1.v;
-                //System.err.println("vsyncEvent");
+                //logger.log(Level.TRACE, "vsyncEvent");
                 _this.breaked = 0;
             }
             _this.hesvdcStatus = 1;
@@ -202,7 +202,7 @@ public class M_Hes {
             if (_this.hestimStart != 0 && _this.hestimCounter-- == 0) {
                 _this.hestimCounter = _this.hestimReload;
                 _this.ctx.iRequest |= Km6280.K6280Context.IRQ.TIMER.v;
-                //System.err.println("timerEvent");
+                //logger.log(Level.TRACE, "timerEvent");
                 _this.breaked = 0;
             }
             _this.setUpTimer();
@@ -235,11 +235,11 @@ public class M_Hes {
         }
 
         private void setUpVsync() {
-            kmEvent.kmevent_settimer(this.kme, this.vsync, 4 * 342 * 262);
+            kmEvent.setTimer(this.kme, this.vsync, 4 * 342 * 262);
         }
 
         private void setUpTimer() {
-            kmEvent.kmevent_settimer(this.kme, this.timer, HES_TIMERCYCLES);
+            kmEvent.setTimer(this.kme, this.timer, HES_TIMERCYCLES);
         }
 
         private void write6270(int a, int v) {
@@ -268,7 +268,7 @@ public class M_Hes {
                 }
                 this.ctx.iRequest &= 0xffFF_FFDF;// ~Km6280.IRQ.INT1;
 //#if 0
-//                v = 0x20;	// 常にVSYNC期間
+//                v = 0x20;	// Always VSYNC period
 //#endif
             }
             return v;
@@ -276,17 +276,17 @@ public class M_Hes {
 
         private int readIO(int a) {
             switch (a >> 10) {
-            case 0: // VDC */
+            case 0: // VDC
                 return read6270(a & 3);
-            case 2: // Psg */
+            case 2: // Psg
                 //return this.hessnd.read(this.hessnd.ctx, a & 0xf);
                 return 0;
-            case 3: // TIMER */
+            case 3: // TIMER
                 if ((a & 1) != 0)
                     return this.hestimStart;
                 else
                     return this.hestimCounter;
-            case 5: // IRQ */
+            case 5: // IRQ
                 switch (a & 15) {
                 case 2: {
                     int v = 0xf8;
@@ -311,14 +311,14 @@ public class M_Hes {
                 a -= this.playerRomAddr;
                 if (a < 0x10) return this.playerRom[a];
                 return 0xff;
-            case 6: // CDROM */
+            case 6: // CDROM
                 switch (a & 15) {
                 case 0x0a:
                 case 0x0b:
                 case 0x0c:
                 case 0x0d:
-                case 0x0e: // デバッグ用
-                case 0x0f: // デバッグ用
+                case 0x0e: // for debug
+                case 0x0f: // for debug
                     return this.hespcm.read.apply(a & 0xf);
                 }
                 return 0xff;
@@ -335,7 +335,7 @@ public class M_Hes {
                 write6270(a & 3, v);
                 break;
             case 2: // Psg
-                //System.err.println("Adr:%2X Dat:%2X", (int) (a & 0xf), (int) v);
+                //logger.log(Level.TRACE, "Adr:%2X Dat:%2X".formatted((int) (a & 0xf), (int) v));
                 if (!disableSendChip)
                     chipRegister.setHuC6280Register(0, a & 0xf, v, EnmModel.VirtualModel);
                 ld.write(a & 0xf, v, 0);
@@ -481,10 +481,7 @@ public class M_Hes {
             while (ctx.clock < cycles) {
                 if (THIS_.breaked == 0) {
 
-//                    System.err.println("pc:%4x s:%2x SPDAT0x1FF:%2x%2x",
-//                        THIS_.ctx.pc,THIS_.ctx.s,
-//                        THIS_.memMap[0xf8][0x1ff], THIS_.memMap[0xf8][0x1fe]
-//                        );
+//logger.log(Level.TRACE, "pc:%4x s:%2x SPDAT0x1FF:%2x%2x",formatted(THIS_.ctx.pc, THIS_.ctx.s, THIS_.memMap[0xf8][0x1ff], THIS_.memMap[0xf8][0x1fe]));
                     // Execute 1op
                     ctx.K_EXEC();
 
@@ -493,22 +490,22 @@ public class M_Hes {
                             THIS_.breaked = 1;
                     }
                 } else {
-                    int nextcount;
-                    // break時は次のイベントまで一度に進める
-                    nextcount = THIS_.kme.item[THIS_.kme.item[0].next].count;
-                    if (kmEvent.kmevent_gettimer(THIS_.kme, 0, nextcount) != 0) {
-                        // イベント有り
-                        if (ctx.clock + nextcount < cycles)
-                            ctx.clock += nextcount; // 期間中にイベント有り
+                    int nextCount;
+                    // When you break, advance to the next event in one go.
+                    nextCount = THIS_.kme.item[THIS_.kme.item[0].next].count;
+                    if (kmEvent.getTimer(THIS_.kme, 0, nextCount) != 0) {
+                        // There is an event
+                        if (ctx.clock + nextCount < cycles)
+                            ctx.clock += nextCount; // There will be events during the period
                         else
-                            ctx.clock = cycles; // 期間中にイベント無し
+                            ctx.clock = cycles; // No events during this period
                     } else {
-                        // イベント無し
+                        // No event
                         ctx.clock = cycles;
                     }
                 }
-                // イベント進行
-                kmEvent.kmevent_process(THIS_.kme, ctx.clock - kmecycle);
+                // Process Event
+                kmEvent.process(THIS_.kme, ctx.clock - kmecycle);
                 kmecycle = ctx.clock;
             }
             ctx.clock = 0;
@@ -522,7 +519,7 @@ public class M_Hes {
 
             //this.hessnd.reset(this.hessnd.ctx, HES_BASECYCLES, freq);
             this.hespcm.reset.accept(HES_BASECYCLES, freq);
-            this.kmEvent.kmevent_init(this.kme);
+            this.kmEvent.init(this.kme);
 
             // RAM CLEAR
             for (i = 0xf8; i <= 0xfb; i++)
@@ -540,10 +537,10 @@ public class M_Hes {
             this.ctx.writeMPR = HESHES::writeMprEvent;
             this.ctx.write6270 = HESHES::write6270_event;
 
-            this.vsync = this.kmEvent.kmevent_alloc(this.kme);
-            this.timer = this.kmEvent.kmevent_alloc(this.kme);
-            this.kmEvent.kmevent_setevent(this.kme, this.vsync, this::vsyncEvent, this);
-            this.kmEvent.kmevent_setevent(this.kme, this.timer, this::timerEvent, this);
+            this.vsync = this.kmEvent.alloc(this.kme);
+            this.timer = this.kmEvent.alloc(this.kme);
+            this.kmEvent.setEvent(this.kme, this.vsync, this::vsyncEvent, this);
+            this.kmEvent.setEvent(this.kme, this.timer, this::timerEvent, this);
 
             this.bp = this.playerRomAddr + 3;
             for (i = 0; i < 8; i++) this.mpr[i] = this.firstMpr[i];
@@ -603,21 +600,21 @@ public class M_Hes {
 
             this.cpsRem = this.cpsGap = this.totalCycles = 0;
 
-            // ここからメモリービュアー設定
+            // Memory viewer settings from here
 //            memview_context = this.heshes;
 //            MEM_MAX = 0xffff;
 //            MEM_IO = 0x0000;
 //            MEM_RAM = 0x2000;
 //            MEM_ROM = 0x4000;
 //            memview_memread = memview_memread_hes;
-            // ここまでメモリービュアー設定
+            // Memory viewer settings up to here
 
-            // ここからダンプ設定
+            // Dump settings from here
 //            pNezPlayDump = pNezPlay;
 //            dump_MEM_PCE = dump_MEM_PCE_bf;
 //            dump_DEV_HUC6230 = dump_DEV_HUC6230_bf;
 //            dump_DEV_ADPCM = dump_DEV_ADPCM_bf;
-            // ここまでダンプ設定
+            // Dump settings up to here
         }
 
         private int load(NEZ_PLAY nezPlay, byte[] pData, int uSize) {
@@ -639,7 +636,7 @@ public class M_Hes {
             nezPlay.song.initaddress = this.initAddr;
             nezPlay.song.playaddress = 0;
 
-            nezPlay._songinfodata.detail = String.format(
+            nezPlay._songinfodata.detail =
                     "Type           : HES" +
                             "Start Song: %2x" +
                             "Init Address: %4x" +
@@ -650,8 +647,8 @@ public class M_Hes {
                             "First Mapper 4 : %2x" +
                             "First Mapper 5 : %2x" +
                             "First Mapper 6 : %2x" +
-                            "First Mapper 7 : %2x"
-                    , pData[5], this.initAddr
+                            "First Mapper 7 : %2x".formatted(
+                    pData[5], this.initAddr
                     , pData[0x8]
                     , pData[0x9]
                     , pData[0xa]
@@ -662,15 +659,15 @@ public class M_Hes {
                     , pData[0xf]
             );
 
-            if (this.allocPhysicalAddress(0xf8 << 13, 0x2000) == 0) // RAM */
+            if (this.allocPhysicalAddress(0xf8 << 13, 0x2000) == 0) // RAM
                 return Error.SHORTOFMEMORY.ordinal();
-            if (this.allocPhysicalAddress(0xf9 << 13, 0x2000) == 0) // SGX-RAM */
+            if (this.allocPhysicalAddress(0xf9 << 13, 0x2000) == 0) // SGX-RAM
                 return Error.SHORTOFMEMORY.ordinal();
-            if (this.allocPhysicalAddress(0xfa << 13, 0x2000) == 0) // SGX-RAM */
+            if (this.allocPhysicalAddress(0xfa << 13, 0x2000) == 0) // SGX-RAM
                 return Error.SHORTOFMEMORY.ordinal();
-            if (this.allocPhysicalAddress(0xfb << 13, 0x2000) == 0) // SGX-RAM */
+            if (this.allocPhysicalAddress(0xfb << 13, 0x2000) == 0) // SGX-RAM
                 return Error.SHORTOFMEMORY.ordinal();
-            if (this.allocPhysicalAddress(0x00 << 13, 0x2000) == 0) // IPL-ROM */
+            if (this.allocPhysicalAddress(0x00 << 13, 0x2000) == 0) // IPL-ROM
                 return Error.SHORTOFMEMORY.ordinal();
             for (p = 0x10; p + 0x10 < uSize; p += 0x10 + getDwordLE(pData, p + 4)) {
                 if (getDwordLE(pData, p) == 0x41544144) { // 'DATA'
@@ -693,7 +690,8 @@ public class M_Hes {
         }
     }
 
-     // ここからメモリービュアー設定
+    // Memory viewer settings from here
+
     public interface memview_memread extends Function<Integer, Integer> {
     }
 
@@ -704,10 +702,13 @@ public class M_Hes {
         if (a >= 0x1800 && a < 0x1c00 && (a & 0xf) == 0xa) return 0xff;
         return memview_context.readEvent(a);
     }
-     // ここまでメモリービュアー設定
 
-     // ここからダンプ設定
-    //private NEZ_PLAY pNezPlayDump;
+    // Memory viewer settings up to here
+
+    // Dump settings from here
+
+//    private NEZ_PLAY pNezPlayDump;
+
     public interface dump_MEM_PCE extends BiFunction<Integer, byte[], Integer> {
     }
 
@@ -719,6 +720,6 @@ public class M_Hes {
                 mem[i] = (byte) memview_memread_hes(i);
             return i;
         }
-        return 0xfffffffe;// (-2);
+        return 0xffff_fffe;// (-2);
     }
 }

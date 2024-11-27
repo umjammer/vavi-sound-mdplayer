@@ -1,9 +1,13 @@
 package mdplayer.plugin;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 import mdplayer.format.FileFormat;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -14,13 +18,15 @@ import mdplayer.format.FileFormat;
  */
 public class SampledPlugin extends BasePlugin {
 
+    private static final Logger logger = getLogger(SampledPlugin.class.getName());
+
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         try {
             audio.naudioFileReader = AudioSystem.getAudioInputStream(new java.io.File(audio.naudioFileName));
             return true;
         } catch (UnsupportedAudioFileException | java.io.IOException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             return false;
         }
     }

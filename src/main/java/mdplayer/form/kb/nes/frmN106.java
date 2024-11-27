@@ -56,7 +56,7 @@ public class frmN106 extends frmBase {
     }
 
     public void update() {
-        frameBuffer.Refresh(null);
+        frameBuffer.refresh(null);
     }
 
 //    @Override

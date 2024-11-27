@@ -1,7 +1,8 @@
 package mdplayer.plugin;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.List;
-import java.util.logging.Level;
 
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
@@ -17,8 +18,8 @@ import mdplayer.format.FileFormat;
 import mdplayer.format.MP3FileFormat;
 import mdplayer.format.WAVFileFormat;
 import mdsound.MDSound;
-import vavi.util.Debug;
 
+import static java.lang.System.getLogger;
 import static mdplayer.chips.RealChipPlugin.realChipClose;
 
 
@@ -30,14 +31,14 @@ import static mdplayer.chips.RealChipPlugin.realChipClose;
  */
 public abstract class BasePlugin implements Plugin {
 
+    private static final Logger logger = getLogger(BasePlugin.class.getName());
+
     protected Setting setting = Setting.getInstance();
 
     public Audio audio = Audio.getInstance();
 
-
     protected byte[] vgmBuf = null;
     protected double vgmSpeed;
-
 
     protected boolean oneTimeReset = false;
 
@@ -61,51 +62,51 @@ public abstract class BasePlugin implements Plugin {
 
     @Override
     public void init() {
-        Debug.println("Audio:Init:Begin");
+        logger.log(Level.DEBUG, "Audio:Init:Begin");
 
         Thread trd = new Thread(this::trdIF);
         trd.setPriority(Thread.NORM_PRIORITY);
         trd.start();
 
-        Debug.println("Audio:Init:STEP 02");
+        logger.log(Level.DEBUG, "Audio:Init:STEP 02");
 
 //        setting = Setting.getInstance();
 //        vstMng.setting = setting;
 
         audio.waveWriter = new WaveWriter(setting);
 
-        Debug.println("Audio:Init:STEP 03");
+        logger.log(Level.DEBUG, "Audio:Init:STEP 03");
 
         setting.init();
 
-        Debug.println("Audio:Init:STEP 05");
+        logger.log(Level.DEBUG, "Audio:Init:STEP 05");
 
         audio.paused = false;
         audio.stopped = true;
-Debug.println("stop: " + audio.stopped + ", " + audio.hashCode());
+logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
         audio._fatalError = false;
         oneTimeReset = false;
 
-        Debug.println("Audio:Init:STEP 06");
+        logger.log(Level.DEBUG, "Audio:Init:STEP 06");
 
 
-        Debug.println("Audio:Init:STEP 07");
+        logger.log(Level.DEBUG, "Audio:Init:STEP 07");
 
         // midi outをリリース
         audio.releaseAllMIDIout();
 
-        Debug.println("Audio:Init:STEP 08");
+        logger.log(Level.DEBUG, "Audio:Init:STEP 08");
 
 
-        Debug.println("Audio:Init:STEP 09");
+        logger.log(Level.DEBUG, "Audio:Init:STEP 09");
 
         // 各外部dllの動的読み込み
 
-        Debug.println("Audio:Init:STEP 10");
+        logger.log(Level.DEBUG, "Audio:Init:STEP 10");
 
         audio.naudioWrap.start(setting);
 
-        Debug.println("Audio:Init:Complete");
+        logger.log(Level.DEBUG, "Audio:Init:Complete");
     }
 
     protected void trdIF() {
@@ -256,7 +257,7 @@ new Exception(audio.driverReal.toString()).printStackTrace();
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
         audio._trdStopped = true;
     }
@@ -269,7 +270,7 @@ new Exception(audio.driverReal.toString()).printStackTrace();
     }
 
     public boolean play() {
-//Debug.println("@@@@@@@@@@@@@@@ HERE: " + audio.stopped + ", " + audio.hashCode());
+//logger.log(Level.TRACE, "@@@@@@@@@@@@@@@ HERE: " + audio.stopped + ", " + audio.hashCode());
         audio.errMsg = "";
 
         stop();
@@ -279,7 +280,7 @@ new Exception(audio.driverReal.toString()).printStackTrace();
         try {
             audio.waveWriter.open(playingFileName);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             audio.errMsg = "wave file open error.";
             return false;
         }
@@ -288,7 +289,7 @@ new Exception(audio.driverReal.toString()).printStackTrace();
 //        boolean r = plugin.play(playingFileName, audio.playingFileFormat);
 
         while (true) {
-//Debug.println("loop HERE");
+//logger.log(Level.TRACE, "loop HERE");
             short[] buffer = new short[4];
 
             audio.trdVgmVirtualFunction(buffer, 0, buffer.length);
@@ -332,7 +333,7 @@ new Exception(audio.driverReal.toString()).printStackTrace();
 
     public void go() {
         audio.stopped = false;
-//Debug.println("stopped: " + audio.stopped + ", " + audio.hashCode());
+//logger.log(Level.TRACE, "stopped: " + audio.stopped + ", " + audio.hashCode());
     }
 
     @Override

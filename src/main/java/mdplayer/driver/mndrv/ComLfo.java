@@ -231,7 +231,7 @@ public class ComLfo {
     }
 
     /**
-     * LFO 鋸波
+     * LFO Sawtooth
      */
     public void comLfoSaw() {
         mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
@@ -272,7 +272,7 @@ public class ComLfo {
      * LFO triangle
      */
     public void comLfoTriangle() {
-        //if(Reg.a4 == 0x14cf0) Debug.printf(String.format("adr:%x bendwork:%d",Reg.a4, mm.Readshort(Reg.a4 + W_L.bendwork)));
+        //if(Reg.a4 == 0x14cf0) logger.log(Level.DEBUG, "adr:%x bendwork:%d".formatted(Reg.a4, mm.Readshort(Reg.a4 + W_L.bendwork))));
 
         mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
         if (mm.readByte(reg.a4 + W_L.delay_work) == 0) { // break _com_lfo_triangle_end;
@@ -361,9 +361,9 @@ public class ComLfo {
     }
 
     /**
-     * 乱数を得る
+     * Get a random number
      * out
-     * d0.l	乱数
+     * d0.l	random number
      */
     public void getRandom() {
         reg.D0_L = mm.readInt(reg.a6 + Dw.RANDOMESEED);
@@ -383,7 +383,7 @@ public class ComLfo {
     }
 
     /**
-     * ソフトウェアエンベロープ
+     * Software Envelope
      */
     public void softEnv() {
 // _soft1:

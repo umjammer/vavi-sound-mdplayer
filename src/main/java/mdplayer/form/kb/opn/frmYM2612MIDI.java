@@ -19,6 +19,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -38,8 +40,13 @@ import mdplayer.form.sys.frmTPGet;
 import mdplayer.form.sys.frmTPPut;
 import mdplayer.properties.Resources;
 
+import static java.lang.System.getLogger;
+
 
 public class frmYM2612MIDI extends frmBase {
+
+    private static final Logger logger = getLogger(frmYM2612MIDI.class.getName());
+
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
@@ -67,7 +74,7 @@ public class frmYM2612MIDI extends frmBase {
     }
 
     public void update() {
-        frameBuffer.Refresh(null);
+        frameBuffer.refresh(null);
     }
 
 //    @Override
@@ -217,9 +224,9 @@ public class frmYM2612MIDI extends frmBase {
             if (py < 8) return;
 
             if (py < 16) {
-                //System.err.println("鍵盤");
+                //logger.log(Level.TRACE, "鍵盤");
             } else if (py < 32) {
-                //System.err.println("各機能メニュー");
+                //logger.log(Level.TRACE, "各機能メニュー");
                 int u = (py - 16) / 8;
                 int p = -1;
                 if (px >= 1 * 8 && px < 6 * 8) p = 0;
@@ -232,25 +239,25 @@ public class frmYM2612MIDI extends frmBase {
 
                 switch (u * 5 + p) {
                 case 0:
-                    //System.err.println("MONO");
+                    //logger.log(Level.TRACE, "MONO");
                     cmdSetMode(0);
                     break;
                 case 1:
                     break;
                 case 2:
-                    //System.err.println("PANIC");
+                    //logger.log(Level.TRACE, "PANIC");
                     cmdAllNoteOff();
                     break;
                 case 3:
-                    //System.err.println("TP.PUT");
+                    //logger.log(Level.TRACE, "TP.PUT");
                     cmdTPPut();
                     break;
                 case 4:
-                    //System.err.println("T.LOAD");
+                    //logger.log(Level.TRACE, "T.LOAD");
                     cmdTLoad();
                     break;
                 case 5:
-                    //System.err.println("POLY");
+                    //logger.log(Level.TRACE, "POLY");
                     cmdSetMode(1);
                     break;
                 case 6:
@@ -258,54 +265,54 @@ public class frmYM2612MIDI extends frmBase {
                     if (parent.setting.getMidiKbd().getUseFormat() > 4) parent.setting.getMidiKbd().setUseFormat(0);
                     break;
                 case 7:
-                    //System.err.println("L.CLS");
+                    //logger.log(Level.TRACE, "L.CLS");
                     cmdLogClear();
                     break;
                 case 8:
-                    //System.err.println("TP.GET");
+                    //logger.log(Level.TRACE, "TP.GET");
                     cmdTPGet();
                     break;
                 case 9:
-                    //System.err.println("T.SAVE");
+                    //logger.log(Level.TRACE, "T.SAVE");
                     cmdTSave();
                     break;
                 }
             } else if (py < 40) {
                 if ((px / 8) % 13 == 0) {
-                    //System.err.println("チャンネル選択");
+                    //logger.log(Level.TRACE, "チャンネル選択");
                     cmdSelectChannel(px / 8 / 13);
                 } else {
-                    //System.err.println("音色選択(1-3Ch)");
+                    //logger.log(Level.TRACE, "音色選択(1-3Ch)");
                     cmdSelectTone(px, py, ev);// / 8 / 13, e);
                 }
             } else if (py < 80) {
-                //System.err.println("音色選択(1-3Ch)");
+                //logger.log(Level.TRACE, "音色選択(1-3Ch)");
                 cmdSelectTone(px, py, ev);
             } else if (py < 104) {
                 if (py < 88 && (px / 8) % 13 == 3) {
-                    //System.err.println("ログクリア");
+                    //logger.log(Level.TRACE, "ログクリア");
                     cmdLogClear(px / 8 / 13);
                 } else {
-                    //System.err.println("ログ->MML変換(1-3Ch)");
+                    //logger.log(Level.TRACE, "ログ->MML変換(1-3Ch)");
                     cmdLog2MML(px / 8 / 13);
                 }
             } else if (py < 112) {
                 if ((px / 8) % 13 == 0) {
-                    //System.err.println("チャンネル選択");
+                    //logger.log(Level.TRACE, "チャンネル選択");
                     cmdSelectChannel((px / 8 / 13) + 3);
                 } else {
-                    //System.err.println("音色選択(4-6Ch)");
+                    //logger.log(Level.TRACE, "音色選択(4-6Ch)");
                     cmdSelectTone(px, py, ev);
                 }
             } else if (py < 152) {
-                //System.err.println("音色選択(4-6Ch)");
+                //logger.log(Level.TRACE, "音色選択(4-6Ch)");
                 cmdSelectTone(px, py, ev);
             } else if (py < 176) {
                 if (py < 160 && (px / 8) % 13 == 3) {
-                    //System.err.println("ログクリア");
+                    //logger.log(Level.TRACE, "ログクリア");
                     cmdLogClear((px / 8 / 13) + 3);
                 } else {
-                    //System.err.println("ログ->MML変換(4-6Ch)");
+                    //logger.log(Level.TRACE, "ログ->MML変換(4-6Ch)");
                     cmdLog2MML((px / 8 / 13) + 3);
                 }
             }
@@ -411,7 +418,7 @@ public class frmYM2612MIDI extends frmBase {
         try {
             parent.ym2612Midi_SaveTonePallet(sfd.getSelectedFile().getPath(), Common.getFilterIndex(sfd) + 1);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             JOptionPane.showMessageDialog(null, "ファイルの保存に失敗しました。");
         }
     }
@@ -458,7 +465,7 @@ public class frmYM2612MIDI extends frmBase {
         try {
             parent.ym2612Midi_LoadTonePallet(ofd.getSelectedFile().getPath(), Common.getFilterIndex(ofd) + 1);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             JOptionPane.showMessageDialog(null, "ファイルの読込に失敗しました。");
         }
     }
@@ -513,7 +520,7 @@ public class frmYM2612MIDI extends frmBase {
                 n += (row - 1) * 11;
             }
 
-            //System.err.println("row=%d col=%d ch=%d n=%d", row, col, ch, n);
+            //logger.log(Level.TRACE, "row=%d col=%d ch=%d n=%d".formatted(row, col, ch, n));
             parent.ym2612Midi_SetSelectInstParam(ch, n);
             return;
         }

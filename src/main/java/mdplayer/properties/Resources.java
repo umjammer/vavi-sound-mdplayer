@@ -57,7 +57,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getImage(String name) {
         try {
@@ -68,7 +68,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getAddFolderPL() {
 
@@ -76,7 +76,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getAddPL() {
 
@@ -84,7 +84,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcFadeout() {
 
@@ -92,7 +92,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcFast() {
 
@@ -100,7 +100,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcInformation() {
 
@@ -108,7 +108,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcKBD() {
 
@@ -116,7 +116,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcLoop() {
 
@@ -124,7 +124,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcLoopOne() {
 
@@ -132,7 +132,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcMIDIKBD() {
 
@@ -140,7 +140,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcMixer() {
 
@@ -148,7 +148,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcNext() {
 
@@ -156,7 +156,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcOpenFolder() {
 
@@ -164,7 +164,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcPause() {
 
@@ -172,7 +172,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcPlay() {
 
@@ -180,7 +180,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcPlayList() {
 
@@ -188,7 +188,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcPrevious() {
 
@@ -196,7 +196,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcRandom() {
 
@@ -204,7 +204,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcSetting() {
 
@@ -212,7 +212,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcSlow() {
 
@@ -220,7 +220,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcStep() {
 
@@ -228,7 +228,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcStop() {
 
@@ -236,7 +236,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcVST() {
 
@@ -244,7 +244,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCcZoom() {
 
@@ -252,7 +252,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChFadeout() {
 
@@ -260,7 +260,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChFast() {
 
@@ -268,7 +268,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChInformation() {
 
@@ -276,7 +276,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChKBD() {
 
@@ -284,7 +284,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChLoop() {
 
@@ -292,7 +292,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChLoopOne() {
 
@@ -300,77 +300,77 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChMIDIKBD() {
         return getImage("chMIDIKBD");
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChMixer() {
         return getImage("chMixer");
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChNext() {
         return getImage("chNext");
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChOpenFolder() {
         return getImage("chOpenFolder");
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChPause() {
         return getImage("chPause");
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChPlay() {
         return getImage("chPlay");
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChPlayList() {
         return getImage("chPlayList");
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChPrevious() {
         return getImage("chPrevious");
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChRandom() {
         return getImage("chRandom");
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChSetting() {
         return getImage("chSetting");
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChSlow() {
 
@@ -378,7 +378,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChStep() {
 
@@ -386,7 +386,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChStop() {
 
@@ -394,7 +394,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChVST() {
 
@@ -402,7 +402,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getChZoom() {
 
@@ -410,7 +410,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiFadeout() {
 
@@ -418,7 +418,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiFast() {
 
@@ -426,7 +426,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiInformation() {
 
@@ -434,7 +434,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiKBD() {
 
@@ -442,7 +442,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiLoop() {
 
@@ -450,7 +450,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiLoopOne() {
 
@@ -458,7 +458,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiMIDIKBD() {
 
@@ -466,7 +466,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiMixer() {
 
@@ -474,7 +474,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiNext() {
 
@@ -482,7 +482,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiOpenFolder() {
 
@@ -490,7 +490,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiPause() {
 
@@ -498,7 +498,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiPlay() {
 
@@ -506,7 +506,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiPlayList() {
 
@@ -514,7 +514,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiPrevious() {
 
@@ -522,7 +522,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiRandom() {
 
@@ -530,7 +530,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiSetting() {
 
@@ -538,7 +538,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiSlow() {
 
@@ -546,7 +546,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiStep() {
 
@@ -554,7 +554,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiStop() {
 
@@ -562,7 +562,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiVST() {
 
@@ -570,7 +570,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getCiZoom() {
 
@@ -579,10 +579,10 @@ public class Resources {
 
     /**
      * MDPlayer
-     * VGMファイルなどのPlayer(メガドライブ音源チップなどのエミュレーションによる演奏ツール)
+     * Player for VGM files (a performance tool that emulates the Mega Drive sound chip, etc.)
      * <p>
      * [概要]
-     * このツールは、鍵盤表示を行いながらVGMファイルの再生を行います。
+     * This tool plays VGM files while displaying a keyboard.
      * (NRD,XGM,S98,MID,RCP,NSF,HES,Sid,MDR,MDX,MND,MUC(TBD),MUB(TBD)ファイルにも対応。)
      * <p>
      * [注意]
@@ -594,7 +594,7 @@ public class Resources {
      * 直接MDPlayerについての連絡がいくことの無い様にお願いします。)
      * できるかぎり対応させていただくつもりですが、ご希望に添えないことも多々あります。ご了承ください。
      * <p>
-     * [対応フォーマ [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * [対応フォーマ [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getCntDescription() {
 
@@ -602,7 +602,7 @@ public class Resources {
     }
 
     /**
-     * 例外発生:\n- Type ------\n%d\n- Message ------\n%d\n- Source ------\n%d\n- StackTrace ------\n%d\n に類似しているローカライズされた文字列を検索します。
+     * Exception occurred:\n- Type ------\n%d\n- Message ------\n%d\n- Source ------\n%d\n- StackTrace ------\n%d\n Finds a localized string similar to ←.
      */
     public static String getCntExceptionFormat() {
 
@@ -610,7 +610,7 @@ public class Resources {
     }
 
     /**
-     * 内部例外:\n- Type ------\n%d\n- Message ------\n%d\n- Source ------\n%d\n- StackTrace ------\n%d\n に類似しているローカライズされた文字列を検索します。
+     * Internal Error:\n- Type ------\n%d\n- Message ------\n%d\n- Source ------\n%d\n- StackTrace ------\n%d\n Finds a localized string similar to ←.
      */
     public static String getCntInnerExceptionFormat() {
 
@@ -618,7 +618,7 @@ public class Resources {
     }
 
     /**
-     * Log.txt に類似しているローカライズされた文字列を検索します。
+     * Log.txt Finds a localized string similar to ←.
      */
     public static String getCntLogFilename() {
 
@@ -626,7 +626,7 @@ public class Resources {
     }
 
     /**
-     * Setting.xml に類似しているローカライズされた文字列を検索します。
+     * Setting.xml Finds a localized string similar to ←.
      */
     public static String getCntSettingFileName() {
 
@@ -634,26 +634,26 @@ public class Resources {
     }
 
     /**
-     * VGMファイル(*.Vgm;*.vgz)|*.Vgm;*.vgz|
-     * XGMファイル(*.Xgm)|*.Xgm|
-     * ZGMファイル(*.Zgm)|*.Zgm|
-     * HESファイル(*.Hes)|*.Hes|
-     * MDRファイル(*.mdr)|*.mdr|
-     * MDXファイル(*.mdx)|*.mdx|
-     * MGSファイル(*.mgs)|*.mgs|
-     * MNDファイル(*.mnd)|*.mnd|
-     * MUCOM88ファイル(*.mub;*.muc)|*.mub;*.muc|
-     * NRDファイル(*.nrd)|*.nrd|
-     * NSFファイル(*.Nsf)|*.Nsf|
-     * PMDファイル(*.m;*.m2;*.mz;*.mml)|*.m;*.m2;*.mz;*.mml|
-     * RCPファイル(*.rcp)|*.rcp|
-     * S98ファイル(*.s98)|*.s98|
-     * SIDファイル(*.Sid)|*.Sid|
-     * StandardMIDIファイル(*.mid)|*.mid|
-     * WAVファイル(*.wav)|*.wav|
-     * MP3ファイル(*.mp3)|*.mp3|
-     * AIFFファイル(*.aiff)|*.aiff|
-     * M3Uファイル [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * VGM file(*.Vgm;*.vgz)|*.Vgm;*.vgz|
+     * XGM file(*.Xgm)|*.Xgm|
+     * ZGM file(*.Zgm)|*.Zgm|
+     * HES file(*.Hes)|*.Hes|
+     * MDR file(*.mdr)|*.mdr|
+     * MDX file(*.mdx)|*.mdx|
+     * MGS file(*.mgs)|*.mgs|
+     * MND file(*.mnd)|*.mnd|
+     * MUCOM88 file(*.mub;*.muc)|*.mub;*.muc|
+     * NRD file(*.nrd)|*.nrd|
+     * NSF file(*.Nsf)|*.Nsf|
+     * PMD file(*.m;*.m2;*.mz;*.mml)|*.m;*.m2;*.mz;*.mml|
+     * RCP file(*.rcp)|*.rcp|
+     * S98 file(*.s98)|*.s98|
+     * SID file(*.Sid)|*.Sid|
+     * StandardMIDI file(*.mid)|*.mid|
+     * WAV file(*.wav)|*.wav|
+     * MP3 file(*.mp3)|*.mp3|
+     * AIFF file(*.aiff)|*.aiff|
+     * M3U file [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getCntSupportFile() {
 
@@ -661,7 +661,7 @@ public class Resources {
     }
 
     /**
-     * yyyy/MM/dd HH:mm:ss     に類似しているローカライズされた文字列を検索します。
+     * yyyy/MM/dd HH:mm:ss     Finds a localized string similar to ←.
      */
     public static String getCntTimeFormat() {
 
@@ -680,7 +680,7 @@ public class Resources {
      * &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
      * &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_HES() {
 
@@ -699,7 +699,7 @@ public class Resources {
      * &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
      * &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_MDR() {
 
@@ -718,7 +718,7 @@ public class Resources {
      * &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
      * &lt;OKIM6258Volume&gt;0&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVol [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVol [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_MDX() {
 
@@ -737,7 +737,7 @@ public class Resources {
      * &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
      * &lt;OKIM6258Volume&gt;0&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVol [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVol [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_MND() {
 
@@ -756,7 +756,7 @@ public class Resources {
      * &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
      * &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_MUB() {
 
@@ -775,7 +775,7 @@ public class Resources {
      * &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
      * &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_MUC() {
 
@@ -794,7 +794,7 @@ public class Resources {
      * &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
      * &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_NRT() {
 
@@ -813,7 +813,7 @@ public class Resources {
      * &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
      * &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_NSF() {
 
@@ -832,7 +832,7 @@ public class Resources {
      * &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
      * &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVol [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVol [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_S98() {
 
@@ -851,7 +851,7 @@ public class Resources {
      * &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
      * &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCM [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_SID() {
 
@@ -871,7 +871,7 @@ public class Resources {
      * &lt;OKIM6258Volume&gt;0&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;0&lt;/OKIM6295Volume&gt;
      * &lt;SEGAPCMVolume&gt;0&lt;/SEGAPCMVolume&gt;
-     * &lt;AY8910Volume&gt;0&lt; [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;AY8910Volume&gt;0&lt; [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_VGM() {
 
@@ -890,7 +890,7 @@ public class Resources {
      * &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
      * &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVolu [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVolu [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_XGM() {
 
@@ -909,7 +909,7 @@ public class Resources {
      * &lt;C140Volume&gt;-192&lt;/C140Volume&gt;
      * &lt;OKIM6258Volume&gt;-192&lt;/OKIM6258Volume&gt;
      * &lt;OKIM6295Volume&gt;-192&lt;/OKIM6295Volume&gt;
-     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVolu [残りの文字列は切り詰められました]&quot;; に類似しているローカライズされた文字列を検索します。
+     * &lt;SEGAPCMVolume&gt;-192&lt;/SEGAPCMVolu [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getDefaultVolumeBalance_ZGM() {
 
@@ -917,7 +917,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getDownPL() {
 
@@ -934,7 +934,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getFeliAndMD2() {
 
@@ -951,7 +951,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getImgPL() {
 
@@ -959,7 +959,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getJapPL() {
 
@@ -967,7 +967,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getMmlPL() {
 
@@ -975,7 +975,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getOpenPL() {
 
@@ -983,7 +983,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlane() {
 
@@ -991,7 +991,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneAY8910() {
 
@@ -999,7 +999,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneB() {
 
@@ -1007,7 +1007,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneC() {
 
@@ -1015,7 +1015,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneC352() {
 
@@ -1023,7 +1023,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneControl() {
 
@@ -1031,7 +1031,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneD() {
 
@@ -1039,7 +1039,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneDMG() {
 
@@ -1047,7 +1047,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneE() {
 
@@ -1055,7 +1055,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneF() {
 
@@ -1063,7 +1063,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneFDS() {
 
@@ -1071,7 +1071,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneHuC6280() {
 
@@ -1079,7 +1079,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneK051649() {
 
@@ -1087,7 +1087,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneMIDI_GM() {
 
@@ -1095,7 +1095,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneMIDI_GS() {
 
@@ -1103,21 +1103,21 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneMIDI_XG() {
         return getImage("planeMIDI_XG");
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneMixer() {
         return getImage("planeMixer");
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneMMC5() {
 
@@ -1125,7 +1125,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneMSM6258() {
 
@@ -1133,7 +1133,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneMSM6295() {
 
@@ -1141,7 +1141,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneMultiPCM() {
 
@@ -1149,7 +1149,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneN106() {
 
@@ -1157,7 +1157,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneNESDMC() {
 
@@ -1165,7 +1165,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlanePPZ8() {
 
@@ -1173,7 +1173,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneQSound() {
 
@@ -1181,7 +1181,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneS5B() {
 
@@ -1189,7 +1189,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneSEGAPCM() {
 
@@ -1197,7 +1197,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneSN76489() {
 
@@ -1205,7 +1205,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneVRC6() {
 
@@ -1213,7 +1213,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneVRC7() {
 
@@ -1221,7 +1221,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneY8950() {
 
@@ -1229,7 +1229,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneYM2203() {
 
@@ -1237,7 +1237,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneYM2413() {
 
@@ -1245,7 +1245,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneYM2610() {
 
@@ -1253,7 +1253,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneYM2612() {
 
@@ -1261,7 +1261,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneYM2612MIDI() {
 
@@ -1269,7 +1269,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneYM3526() {
 
@@ -1277,7 +1277,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneYM3812() {
 
@@ -1285,7 +1285,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneYMF262() {
 
@@ -1293,7 +1293,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneYMF271() {
 
@@ -1301,7 +1301,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneYMF278B() {
 
@@ -1309,7 +1309,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getPlaneYMZ280B() {
 
@@ -1317,7 +1317,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRChipName_01() {
 
@@ -1325,7 +1325,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRChipName_02() {
 
@@ -1333,7 +1333,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRChipName_03() {
 
@@ -1350,7 +1350,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRFader() {
 
@@ -1358,7 +1358,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRFont_01() {
 
@@ -1366,7 +1366,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRFont_02() {
 
@@ -1374,7 +1374,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRFont_03() {
 
@@ -1382,7 +1382,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRFont_04() {
 
@@ -1390,7 +1390,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRFont_05() {
 
@@ -1398,7 +1398,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRFont_06() {
 
@@ -1406,7 +1406,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRKakko_00() {
 
@@ -1414,7 +1414,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRKBD_01() {
 
@@ -1422,7 +1422,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRKBD_02() {
 
@@ -1430,7 +1430,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRKBD_03() {
 
@@ -1438,7 +1438,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMenuButtons_01() {
 
@@ -1446,7 +1446,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMenuButtons_02() {
 
@@ -1454,7 +1454,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_01() {
 
@@ -1462,7 +1462,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_02() {
 
@@ -1470,7 +1470,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_03() {
 
@@ -1478,7 +1478,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_Fader_01() {
 
@@ -1486,7 +1486,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_Fader_02() {
 
@@ -1494,7 +1494,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_Fader_03() {
 
@@ -1502,7 +1502,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_Font_01() {
 
@@ -1510,7 +1510,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_Font_02() {
 
@@ -1518,7 +1518,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_Font_03() {
 
@@ -1526,7 +1526,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_Font_04() {
 
@@ -1534,7 +1534,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_Font_05() {
 
@@ -1542,7 +1542,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_Font_06() {
 
@@ -1550,7 +1550,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_KBD_01() {
 
@@ -1558,7 +1558,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_Vol_01() {
 
@@ -1566,7 +1566,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_Vol_02() {
 
@@ -1574,7 +1574,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRMIDILCD_Vol_03() {
 
@@ -1582,7 +1582,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRNESDMC() {
 
@@ -1590,7 +1590,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRPan_01() {
 
@@ -1598,7 +1598,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRPan_02() {
 
@@ -1606,7 +1606,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRPan_03() {
 
@@ -1614,7 +1614,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRPan2_01() {
 
@@ -1622,7 +1622,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRPan2_02() {
 
@@ -1630,7 +1630,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRPSGEnv() {
 
@@ -1638,7 +1638,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRPSGMode_01() {
 
@@ -1646,7 +1646,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRPSGMode_02() {
 
@@ -1654,7 +1654,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRPSGMode_03() {
 
@@ -1662,7 +1662,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRPSGMode_04() {
 
@@ -1670,7 +1670,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRPSGMode_05() {
 
@@ -1678,7 +1678,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRPSGMode_06() {
 
@@ -1686,7 +1686,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRType_01() {
 
@@ -1694,7 +1694,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRType_02() {
 
@@ -1702,7 +1702,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRType_03() {
 
@@ -1710,7 +1710,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRType_04() {
 
@@ -1718,7 +1718,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRType_05() {
 
@@ -1726,7 +1726,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRType_06() {
 
@@ -1734,7 +1734,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRType_YMF271() {
 
@@ -1742,7 +1742,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRVol_01() {
 
@@ -1750,7 +1750,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRVol_02() {
 
@@ -1758,7 +1758,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRVol_03() {
 
@@ -1766,7 +1766,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRWavGraph() {
 
@@ -1774,7 +1774,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getRWavGraph2() {
 
@@ -1782,7 +1782,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getSavePL() {
 
@@ -1790,7 +1790,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getTxtPL() {
 
@@ -1798,7 +1798,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getUpPL() {
 
@@ -1806,7 +1806,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getVHeight1() {
 
@@ -1814,7 +1814,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getVHeight2() {
 
@@ -1822,7 +1822,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getVHeight3() {
 
@@ -1830,7 +1830,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getVType1() {
 
@@ -1838,7 +1838,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getVType2() {
 
@@ -1846,7 +1846,7 @@ public class Resources {
     }
 
     /**
-     * 型 BufferedImage のローカライズされたリソースを検索します。
+     * Looks up localized resources of type BufferedImage.
      */
     public static BufferedImage getVType3() {
 

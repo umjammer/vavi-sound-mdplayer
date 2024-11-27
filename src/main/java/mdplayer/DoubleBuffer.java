@@ -4,10 +4,16 @@ package mdplayer;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.Closeable;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import javax.swing.JComponent;
+
+import static java.lang.System.getLogger;
 
 
 public class DoubleBuffer implements Closeable {
+
+    private static final Logger logger = getLogger(DoubleBuffer.class.getName());
 
     public FrameBuffer mainScreen;
 
@@ -34,16 +40,16 @@ public class DoubleBuffer implements Closeable {
         try {
             if (mainScreen != null) {
                 try {
-                    mainScreen.Refresh(g);
+                    mainScreen.refresh(g);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log(Level.ERROR, ex.getMessage(), ex);
                     mainScreen.Remove(g2 -> {});
                     mainScreen = null;
                 }
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 }

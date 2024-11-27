@@ -1,8 +1,9 @@
 package mdplayer.plugin;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
@@ -11,7 +12,8 @@ import mdplayer.format.FileFormat;
 import mdsound.MDSound;
 import mdsound.instrument.YmF262Inst;
 import mdsound.instrument.YmF278bInst;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -21,6 +23,8 @@ import vavi.util.Debug;
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
 public class MDRPlugin extends BasePlugin {
+
+    private static final Logger logger = getLogger(MDRPlugin.class.getName());
 
     @Override
     public boolean play(String playingFileName, FileFormat format) {
@@ -35,7 +39,7 @@ public class MDRPlugin extends BasePlugin {
         }
         boolean r = mdrPlay();
         if (!r) {
-Debug.println(Level.WARNING, "cannot start: " + this);
+logger.log(Level.WARNING, "cannot start: " + this);
             return false;
         }
         super.play();
@@ -153,7 +157,7 @@ Debug.println(Level.WARNING, "cannot start: " + this);
 
             return true;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return false;
         }
     }

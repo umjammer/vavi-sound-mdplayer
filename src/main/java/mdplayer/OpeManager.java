@@ -21,7 +21,7 @@ public class OpeManager {
     }
 
     /**
-     * Audioがリクエストを受け取る
+     * Audio receives the request
      */
     public static Request getRequestToAudio() {
         synchronized (reqLock) {
@@ -36,7 +36,7 @@ public class OpeManager {
     }
 
     /**
-     * Audioがリクエストの処理を完了したらよばれる
+     * Called when Audio has finished processing a request.
      */
     public static void completeRequestToAudio(Request req) {
         synchronized (reqLock) {

@@ -18,19 +18,23 @@
 
 package mdplayer.driver.sid.libsidplayfp.utils;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.StreamReader;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 public class IniParser {
+
+    private static final Logger logger = getLogger(IniParser.class.getName());
 
     private List<Tuple<String, List<Tuple<String, String>>>> sections = new ArrayList<>();
     private Tuple<String, List<Tuple<String, String>>> curSection;
@@ -85,14 +89,14 @@ public class IniParser {
                             sections.add(new Tuple<>(section, keys));
                             it = sections.get(0);
                         } catch (ParseError e) {
-                            Debug.println(Level.WARNING, e);
+                            logger.log(Level.WARNING, e);
                         }
                         break;
                     default:
                         try {
                             it.getItem2().add(parseKey(buffer));
                         } catch (ParseError e) {
-                            Debug.println(Level.WARNING, e);
+                            logger.log(Level.WARNING, e);
                         }
                         break;
                     }
@@ -102,7 +106,7 @@ public class IniParser {
 
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             return false;
         }
     }

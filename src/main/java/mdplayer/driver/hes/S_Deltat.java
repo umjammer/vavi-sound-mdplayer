@@ -124,8 +124,8 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
         };
 
-         // チャンネルマスク用
-        public enum enmChMask { // 順番を変えたら恐ろしいことになる
+        // For channel mask
+        public enum enmChMask { // If you change the order, it'll be horrible.
             DEV_2A03_SQ1,
             DEV_2A03_SQ2,
             DEV_2A03_TR,
@@ -426,7 +426,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
                 break;
             // L,R,-,-,SAMPLE,DA/AD,RAMTYPE,ROM
             case 0x01: // Control Register 2
-                // MSX-AUDIOにADPCM用ROMは無いはずなので無効化
+                // MSX-AUDIO does not have ADPCM ROM, so disable it.
                 //sndp.romrambuf  = (sndp.common.regs[1] & 1) ? sndp.rombuf  : sndp.rambuf;
                 //sndp.romrammask = (sndp.common.regs[1] & 1) ? sndp.rommask : sndp.rammask;
                 break;
@@ -507,7 +507,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
         }
     }
 
-    // ここからレジスタビュアー設定
+    // Register viewer settings from here
 
     private YMDELTATPCMSOUND_ sndpr;
 
@@ -531,19 +531,19 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
         else return 0x100;
     }
 
-    // ここまでレジスタビュアー設定
+    // Register viewer settings up to here
 
     private KMIF_SOUND_DEVICE YMDELTATPCMSoundAlloc(int ymDeltaTPcmType, byte[] pcmBuf) {
         int ramSize;
         YMDELTATPCMSOUND_ sndp;
         switch (ymDeltaTPcmType) {
-        case 0://                    YMDELTATPCM_TYPE_Y8950:
+        case 0: // YMDELTATPCM_TYPE_Y8950:
             ramSize = 32 * 1024;
             break;
-        case 1://                    YMDELTATPCM_TYPE_YM2608:
+        case 1: // YMDELTATPCM_TYPE_YM2608:
             ramSize = 256 * 1024;
             break;
-        case 3://                    MSM5205:
+        case 3: // MSM5205:
             ramSize = 256 * 256;
             break;
         default:
@@ -592,11 +592,11 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
             sndp.releaseSound();
             return null;
         }
-        // ここからレジスタビュアー設定
+        // Register viewer settings from here
         sndpr = sndp;
         if (ioview_ioread_DEV_ADPCM_ == null) ioview_ioread_DEV_ADPCM_ = this::ioview_ioread_bf;
         if (ioview_ioread_DEV_ADPCM2_ == null) ioview_ioread_DEV_ADPCM2_ = this::ioview_ioread_bf2;
-        // ここまでレジスタビュアー設定
+        // Register viewer settings up to here
         return sndp.kmif;
     }
 }

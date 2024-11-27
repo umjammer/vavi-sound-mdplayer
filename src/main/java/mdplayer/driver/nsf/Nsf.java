@@ -1,5 +1,7 @@
 package mdplayer.driver.nsf;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,9 +35,12 @@ import mdsound.np.memory.NesMem;
 import vavi.util.ByteUtil;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+import static java.lang.System.getLogger;
 
 
 public class Nsf extends BaseDriver {
+
+    private static final Logger logger = getLogger(Nsf.class.getName());
 
     public Nsf() {
         this.setting = Setting.getInstance();
@@ -182,7 +187,7 @@ public class Nsf extends BaseDriver {
             }
             //Stopped = !IsPlaying();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -321,8 +326,8 @@ public class Nsf extends BaseDriver {
         dcf.reset();
         dcf.setParam(270, 256 - setting.getNsf().getHPF()); // HPF:256-(Range0-256(Def:92))
         lpf.SetParam(4700.0, setting.getNsf().getLPF()); // LPF:(Range 0-400(Def:112))
-        //Debug.println("dcf:%d", dcf.GetFactor());
-        //Debug.println("lpf:%d", lpf.GetFactor());
+        //logger.log(Level.TRACE, "dcf:%d".formatted(dcf.GetFactor()));
+        //logger.log(Level.TRACE, "lpf:%d".formatted(lpf.GetFactor()));
 
         int i, bmax = 0;
 
@@ -654,6 +659,6 @@ public class Nsf extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 }

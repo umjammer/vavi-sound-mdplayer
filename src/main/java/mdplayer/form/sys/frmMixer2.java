@@ -20,6 +20,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.Arrays;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
@@ -45,8 +47,13 @@ import mdplayer.properties.Resources;
 import mdsound.Instrument;
 import mdsound.instrument.*;
 
+import static java.lang.System.getLogger;
+
 
 public class frmMixer2 extends JFrame {
+
+    private static final Logger logger = getLogger(frmMixer2.class.getName());
+
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
@@ -101,7 +108,7 @@ public class frmMixer2 extends JFrame {
     }
 
     public void update() {
-        frameBuffer.Refresh(null);
+        frameBuffer.refresh(null);
     }
 
 //    @Override
@@ -950,12 +957,12 @@ public class frmMixer2 extends JFrame {
         try {
             String retMsg = parent.SaveDriverBalance(parent.setting.getBalance().copy());
             if (!retMsg.equals("")) {
-                JOptionPane.showMessageDialog(null, String.format("ドライバーのミキサーバランス[%s]を設定フォルダーに保存しました。", retMsg), "保存", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null, "ドライバーの Mixerーバランス[%s]を設定フォルダーに保存しました。".formatted(retMsg), "保存", JOptionPane.INFORMATION_MESSAGE);
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, String.format("%s", ex.getMessage()), "保存失敗", JOptionPane.ERROR_MESSAGE);
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+            JOptionPane.showMessageDialog(null, "%s".formatted(ex.getMessage()), "保存失敗", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -972,9 +979,9 @@ public class frmMixer2 extends JFrame {
             JFileChooser sfd = new JFileChooser();
             sfd.setFileFilter(new FileFilter() {
                 @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".mbc"); }
-                @Override public String getDescription() { return "ミキサーバランス(*.mbc)"; }
+                @Override public String getDescription() { return " Mixerーバランス(*.mbc)"; }
             });
-            sfd.setDialogTitle("ミキサーバランスを保存");
+            sfd.setDialogTitle(" Mixerーバランスを保存");
             sfd.setCurrentDirectory(new File(Path.getDirectoryName(ms.arcFileName == null || ms.arcFileName.isEmpty() ? ms.fileName : ms.arcFileName)));
             if (!parent.setting.getAutoBalance().getSamePositionAsSongData())
                 sfd.setCurrentDirectory(new File(Common.settingFilePath = "MixerBalance"));
@@ -989,8 +996,8 @@ public class frmMixer2 extends JFrame {
 
             bln.save(sfd.getSelectedFile().getPath());
         } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, String.format("%s", ex.getMessage()), "保存失敗", JOptionPane.ERROR_MESSAGE);
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+            JOptionPane.showMessageDialog(null, "%s".formatted(ex.getMessage()), "保存失敗", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -1035,7 +1042,7 @@ public class frmMixer2 extends JFrame {
         this.tsmiLoadDriverBalance.setEnabled(false);
         this.tsmiLoadDriverBalance.setName("tsmiLoadDriverBalance");
         this.tsmiLoadDriverBalance.setPreferredSize(new Dimension(223, 22));
-        this.tsmiLoadDriverBalance.setText("読込　ドライバーミキサーバランス");
+        this.tsmiLoadDriverBalance.setText("読込　ドライバー Mixerーバランス");
         this.tsmiLoadDriverBalance.addActionListener(this::tsmiLoadDriverBalance_Click);
         //
         // tsmiLoadSongBalance
@@ -1043,7 +1050,7 @@ public class frmMixer2 extends JFrame {
         this.tsmiLoadSongBalance.setEnabled(false);
         this.tsmiLoadSongBalance.setName("tsmiLoadSongBalance");
         this.tsmiLoadSongBalance.setPreferredSize(new Dimension(223, 22));
-        this.tsmiLoadSongBalance.setText("読込　ソングミキサーバランス");
+        this.tsmiLoadSongBalance.setText("読込　ソング Mixerーバランス");
         this.tsmiLoadSongBalance.addActionListener(this::tsmiLoadSongBalance_Click);
         //
         // toolStripSeparator1
@@ -1055,14 +1062,14 @@ public class frmMixer2 extends JFrame {
         //
         this.tsmiSaveDriverBalance.setName("tsmiSaveDriverBalance");
         this.tsmiSaveDriverBalance.setPreferredSize(new Dimension(223, 22));
-        this.tsmiSaveDriverBalance.setText("保存　ドライバーミキサーバランス");
+        this.tsmiSaveDriverBalance.setText("保存　ドライバー Mixerーバランス");
         this.tsmiSaveDriverBalance.addActionListener(this::tsmiSaveDriverBalance_Click);
         //
         // tsmiSaveSongBalance
         //
         this.tsmiSaveSongBalance.setName("tsmiSaveSongBalance");
         this.tsmiSaveSongBalance.setPreferredSize(new Dimension(223, 22));
-        this.tsmiSaveSongBalance.setText("保存　ソングミキサーバランス");
+        this.tsmiSaveSongBalance.setText("保存　ソング Mixerーバランス");
         this.tsmiSaveSongBalance.addActionListener(this::tsmiSaveSongBalance_Click);
         //
         // frmMixer2

@@ -74,7 +74,7 @@ public class frmTPPut extends JFrame {
         if (dgvTonePallet.getSelectedRowCount() < 1) return;
         int row = dgvTonePallet.getSelectedRows()[0];
 
-        String m = String.format("from Ch.%s", ((Button) ev.getSource()).getActionCommand());
+        String m = "from Ch.%s".formatted(((Button) ev.getSource()).getActionCommand());
         Object v = dgvTonePallet.getModel().getValueAt(row, cols.clmName.ordinal());
         String n = v == null ? "" : v.toString();
         dgvTonePallet.getModel().setValueAt(m.equals(n) ? "" : m, row, cols.clmName.ordinal());

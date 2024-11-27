@@ -23,6 +23,8 @@
 package mdplayer.driver.sid.libsidplayfp.sidtune;
 
 import java.io.UncheckedIOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -39,12 +41,15 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static dotnet4j.util.compat.CollectionUtilities.toList;
+import static java.lang.System.getLogger;
 
 
 /**
  * SidTuneBaseBase
  */
 public class SidTuneBase {
+
+    private static final Logger logger = getLogger(SidTuneBase.class.getName());
 
     /** Also PSid file format limit. */
     public static final int MAX_SONGS = 256;
@@ -453,7 +458,7 @@ public class SidTuneBase {
                             // The first tune loaded ok, so ignore errors on the
                             // second tune, may find an ok one later
                         } catch (dotnet4j.io.IOException e) {
-                            e.printStackTrace();
+                            logger.log(Level.ERROR, e.getMessage(), e);
                         }
                     }
                     n++;

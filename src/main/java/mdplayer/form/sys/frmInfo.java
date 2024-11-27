@@ -13,6 +13,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JFrame;
@@ -27,8 +29,13 @@ import mdplayer.Setting;
 import mdplayer.driver.Vgm;
 import mdplayer.properties.Resources;
 
+import static java.lang.System.getLogger;
+
 
 public class frmInfo extends JFrame {
+
+    private static final Logger logger = getLogger(frmInfo.class.getName());
+
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
@@ -189,12 +196,12 @@ public class frmInfo extends JFrame {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             try {
                 rtbLyrics.setText(null);
                 rtbLyrics.setText("LYLIC PARSE ERROR");
             } catch (Exception ex) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             }
         }
     }

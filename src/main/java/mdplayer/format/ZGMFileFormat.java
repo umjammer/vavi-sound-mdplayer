@@ -43,7 +43,7 @@ public class ZGMFileFormat extends BaseFileFormat {
         music.notes = gd3.notes;
 
         if (music.title.isEmpty() && music.titleJ.isEmpty() && music.game.isEmpty() && music.gameJ.isEmpty() && music.composer.isEmpty() && music.composerJ.isEmpty()) {
-            music.title = String.format("(%s)", Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.getFileName(file));
         }
         return Collections.singletonList(music);
     }

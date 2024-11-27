@@ -7,6 +7,8 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -26,8 +28,12 @@ import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 import vavi.util.serdes.Serdes;
 
+import static java.lang.System.getLogger;
+
 
 public class PlayList implements Serializable {
+
+    private static final Logger logger = getLogger(PlayList.class.getName());
 
     public static class Music {
         public FileFormat format;
@@ -127,7 +133,7 @@ public class PlayList implements Serializable {
                 return pl;
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return new PlayList();
         }
     }
@@ -154,7 +160,7 @@ public class PlayList implements Serializable {
 
             return pl;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return new PlayList();
         }
     }
@@ -204,14 +210,14 @@ public class PlayList implements Serializable {
 
             addFileLoop(mc, null, null);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, String.format("ファイル追加に失敗しました。\n詳細\nMessage=%s", ex.getMessage())
-                    , "エラー"
+            JOptionPane.showMessageDialog(null, "Failed to add a file.\nDetail\nMessage=%s".formatted(ex.getMessage())
+                    , "Error"
                     , JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
-    public void insertFile(/*ref*/int[] index, String[] filenames) {
+    public void insertFile(/* ref */ int[] index, String[] filenames) {
         try {
             for (String filename : filenames) {
                 Music mc = new Music();
@@ -221,14 +227,14 @@ public class PlayList implements Serializable {
                 addFileLoop(index, mc, null, null);
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, String.format("ファイル追加に失敗しました。\n詳細\nMessage=%s", ex.getMessage())
-                    , "エラー"
+            JOptionPane.showMessageDialog(null, "Failed to add a file.\nDetail\nMessage=%s".formatted(ex.getMessage())
+                    , "Error"
                     , JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
-    private void addFileLoop(Music mc, Archive archive, Entry entry/* = null*/) {
+    private void addFileLoop(Music mc, Archive archive, Entry entry /* = null */) {
         try {
             musics = mc.format.addFileLoop(mc, archive, entry);
             if (musics == null) return;
@@ -238,11 +244,11 @@ public class PlayList implements Serializable {
                 ((DefaultTableModel) dgvList.getModel()).addRow(row);
             this.musics.addAll(musics);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
-    private void addFileLoop(int[] index, Music mc, Archive archive, Entry entry/* = null*/) {
+    private void addFileLoop(int[] index, Music mc, Archive archive, Entry entry /* = null */) {
         try {
             musics = mc.format.addFileLoop(index[0], mc, archive, entry);
             if (musics == null) return;
@@ -253,7 +259,7 @@ public class PlayList implements Serializable {
             this.musics.addAll(index[0], musics);
             index[0] += rows.size();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 }

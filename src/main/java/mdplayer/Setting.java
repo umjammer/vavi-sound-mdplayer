@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -20,8 +22,12 @@ import mdplayer.properties.Resources;
 import mdsound.Instrument;
 import vavi.util.serdes.Serdes;
 
+import static java.lang.System.getLogger;
+
 
 public class Setting implements Serializable {
+
+    private static final Logger logger = getLogger(Setting.class.getName());
 
     public static class ChipType2 implements Serializable {
         private boolean[] useEmu = null;
@@ -56,7 +62,7 @@ public class Setting implements Serializable {
 
         public static class RealChipInfo {
 
-            /** Chip共通 識別情報 */
+            /** Chip common identification information */
             private int interfaceType = -1;
 
             public int getInterfaceType() {
@@ -127,9 +133,9 @@ public class Setting implements Serializable {
                 chipName = value;
             }
 
-            // Chip固有の追加設定
+            // Additional Chip-specific Settings
 
-            /** ウエイトコマンドをSCCIに送るか */
+            /** Send wait command to SCCI */
             private boolean useWait = true;
 
             public boolean getUseWait() {
@@ -140,7 +146,7 @@ public class Setting implements Serializable {
                 useWait = value;
             }
 
-            /** ウエイトコマンドを2倍にするか */
+            /** Do you want to double the wait command? */
             private boolean useWaitBoost = false;
 
             public boolean getUseWaitBoost() {
@@ -151,7 +157,7 @@ public class Setting implements Serializable {
                 useWaitBoost = value;
             }
 
-            /** PCMのみエミュレーションするか */
+            /** Do you want to emulate PCM only? */
             private boolean onlyPCMEmulation = false;
 
             public boolean getOnlyPCMEmulation() {
@@ -181,7 +187,7 @@ public class Setting implements Serializable {
             }
         }
 
-        /** Emulation時の遅延時間 */
+        /** Emulation delay time */
         private int latencyForEmulation = 0;
 
         public int getLatencyForEmulation() {
@@ -263,12 +269,12 @@ public class Setting implements Serializable {
     public static class NukedOPN2 implements Serializable {
         public int emuType = 0;
 
-        // ごめんGensのオプションもここ。。。
+        // Sorry, Gens options are here too...
 
         public boolean gensDACHPF = true;
         public boolean gensSSGEG = true;
 
-        public NukedOPN2 Copy() {
+        public NukedOPN2 copy() {
             NukedOPN2 no = new NukedOPN2();
             no.emuType = this.emuType;
             no.gensDACHPF = this.gensDACHPF;
@@ -1019,7 +1025,7 @@ public class Setting implements Serializable {
         return instance;
     }
 
-    // 多音源対応
+    // Multiple audio sources
     private String fileSearchPathList;
     public String getFileSearchPathList() {
         return fileSearchPathList;
@@ -2983,63 +2989,63 @@ public class Setting implements Serializable {
         public Balance copy() {
             Balance balance = new Balance();
             balance.masterVolume = this.masterVolume;
-/*
-            balance.ym2151Volume = this.ym2151Volume;
-            balance.ym2203Volume = this.ym2203Volume;
-            balance.ym2203Fmvolume = this.ym2203Fmvolume;
-            balance.ym2203Psgvolume = this.ym2203Psgvolume;
-            balance.ym2413Volume = this.ym2413Volume;
-            balance.ym2608Volume = this.ym2608Volume;
-            balance._YM2608FMVolume = this._YM2608FMVolume;
-            balance._YM2608PSGVolume = this._YM2608PSGVolume;
-            balance._YM2608RhythmVolume = this._YM2608RhythmVolume;
-            balance._YM2608AdpcmVolume = this._YM2608AdpcmVolume;
-            balance._YM2610Volume = this._YM2610Volume;
-            balance._YM2610FMVolume = this._YM2610FMVolume;
-            balance._YM2610PSGVolume = this._YM2610PSGVolume;
-            balance._YM2610AdpcmAVolume = this._YM2610AdpcmAVolume;
-            balance._YM2610AdpcmBVolume = this._YM2610AdpcmBVolume;
 
-            balance.ym2612Volume = this.ym2612Volume;
-            balance._AY8910Volume = this._AY8910Volume;
-            balance.sn76489Volume = this.sn76489Volume;
-            balance._HuC6280Volume = this._HuC6280Volume;
-            balance._SAA1099Volume = this._SAA1099Volume;
+//            balance.ym2151Volume = this.ym2151Volume;
+//            balance.ym2203Volume = this.ym2203Volume;
+//            balance.ym2203Fmvolume = this.ym2203Fmvolume;
+//            balance.ym2203Psgvolume = this.ym2203Psgvolume;
+//            balance.ym2413Volume = this.ym2413Volume;
+//            balance.ym2608Volume = this.ym2608Volume;
+//            balance._YM2608FMVolume = this._YM2608FMVolume;
+//            balance._YM2608PSGVolume = this._YM2608PSGVolume;
+//            balance._YM2608RhythmVolume = this._YM2608RhythmVolume;
+//            balance._YM2608AdpcmVolume = this._YM2608AdpcmVolume;
+//            balance._YM2610Volume = this._YM2610Volume;
+//            balance._YM2610FMVolume = this._YM2610FMVolume;
+//            balance._YM2610PSGVolume = this._YM2610PSGVolume;
+//            balance._YM2610AdpcmAVolume = this._YM2610AdpcmAVolume;
+//            balance._YM2610AdpcmBVolume = this._YM2610AdpcmBVolume;
+//
+//            balance.ym2612Volume = this.ym2612Volume;
+//            balance._AY8910Volume = this._AY8910Volume;
+//            balance.sn76489Volume = this.sn76489Volume;
+//            balance._HuC6280Volume = this._HuC6280Volume;
+//            balance._SAA1099Volume = this._SAA1099Volume;
+//
+//            balance.rf5C164Volume = this.rf5C164Volume;
+//            balance.rf5C68Volume = this.rf5C68Volume;
+//            balance.pwmVolume = this.pwmVolume;
+//            balance.OkiM6258Volume = this.OkiM6258Volume;
+//            balance._OKIM6295Volume = this._OKIM6295Volume;
+//            balance.c140Volume = this.c140Volume;
+//            balance._SEGAPCMVolume = this._SEGAPCMVolume;
+//            balance._C352Volume = this._C352Volume;
+//            balance._K051649Volume = this._K051649Volume;
+//            balance._K053260Volume = this._K053260Volume;
+//            balance._K054539Volume = this._K054539Volume;
+//            balance._QSoundVolume = this._QSoundVolume;
+//            balance._MultiPCMVolume = this._MultiPCMVolume;
+//
+//            balance._APUVolume = this._APUVolume;
+//            balance._DMCVolume = this._DMCVolume;
+//            balance._FDSVolume = this._FDSVolume;
+//            balance._MMC5Volume = this._MMC5Volume;
+//            balance._N160Volume = this._N160Volume;
+//            balance._VRC6Volume = this._VRC6Volume;
+//            balance._VRC7Volume = this._VRC7Volume;
+//            balance._FME7Volume = this._FME7Volume;
+//            balance._DMGVolume = this._DMGVolume;
+//            balance._GA20Volume = this._GA20Volume;
+//            balance._YMZ280BVolume = this._YMZ280BVolume;
+//            balance._YMF271Volume = this._YMF271Volume;
+//            balance._YMF262Volume = this._YMF262Volume;
+//            balance._YMF278BVolume = this._YMF278BVolume;
+//            balance._YM3526Volume = this._YM3526Volume;
+//            balance._Y8950Volume = this._Y8950Volume;
+//            balance._YM3812Volume = this._YM3812Volume;
+//
+//            balance._PPZ8Volume = this._PPZ8Volume;
 
-            balance.rf5C164Volume = this.rf5C164Volume;
-            balance.rf5C68Volume = this.rf5C68Volume;
-            balance.pwmVolume = this.pwmVolume;
-            balance.OkiM6258Volume = this.OkiM6258Volume;
-            balance._OKIM6295Volume = this._OKIM6295Volume;
-            balance.c140Volume = this.c140Volume;
-            balance._SEGAPCMVolume = this._SEGAPCMVolume;
-            balance._C352Volume = this._C352Volume;
-            balance._K051649Volume = this._K051649Volume;
-            balance._K053260Volume = this._K053260Volume;
-            balance._K054539Volume = this._K054539Volume;
-            balance._QSoundVolume = this._QSoundVolume;
-            balance._MultiPCMVolume = this._MultiPCMVolume;
-
-            balance._APUVolume = this._APUVolume;
-            balance._DMCVolume = this._DMCVolume;
-            balance._FDSVolume = this._FDSVolume;
-            balance._MMC5Volume = this._MMC5Volume;
-            balance._N160Volume = this._N160Volume;
-            balance._VRC6Volume = this._VRC6Volume;
-            balance._VRC7Volume = this._VRC7Volume;
-            balance._FME7Volume = this._FME7Volume;
-            balance._DMGVolume = this._DMGVolume;
-            balance._GA20Volume = this._GA20Volume;
-            balance._YMZ280BVolume = this._YMZ280BVolume;
-            balance._YMF271Volume = this._YMF271Volume;
-            balance._YMF262Volume = this._YMF262Volume;
-            balance._YMF278BVolume = this._YMF278BVolume;
-            balance._YM3526Volume = this._YM3526Volume;
-            balance._Y8950Volume = this._Y8950Volume;
-            balance._YM3812Volume = this._YM3812Volume;
-
-            balance._PPZ8Volume = this._PPZ8Volume;
-*/
             balance._GimicOPNVolume = this._GimicOPNVolume;
             balance._GimicOPNAVolume = this._GimicOPNAVolume;
 
@@ -3050,7 +3056,7 @@ public class Setting implements Serializable {
             try (OutputStream out = Files.newOutputStream(Paths.get(fullPath))) {
                 Serdes.Util.serialize(this, out);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                logger.log(Level.ERROR, ex.getMessage(), ex);
             }
         }
 
@@ -3061,7 +3067,7 @@ public class Setting implements Serializable {
             try (InputStream in = Files.newInputStream(p)) {
                 return Serdes.Util.deserialize(in, new Balance());
             } catch (IOException ex) {
-                ex.printStackTrace();
+                logger.log(Level.ERROR, ex.getMessage(), ex);
                 return null;
             }
         }
@@ -4154,7 +4160,7 @@ public class Setting implements Serializable {
             _ChipSelect = value;
         }
 
-        public Location Copy() {
+        public Location copy() {
             Location location = new Location();
 
             location._PMain = this._PMain;
@@ -4537,19 +4543,19 @@ public class Setting implements Serializable {
         setting.unuseRealChip = this.unuseRealChip;
         setting.fileSearchPathList = this.fileSearchPathList;
 
-        //setting._YM2151SType = this._YM2151SType.Copy();
-        //setting._YM2203SType = this._YM2203SType.Copy();
-        //setting._YM2413SType = this._YM2413SType.Copy();
-        //setting._AY8910SType = this._AY8910SType.Copy();
-        //setting._YM2608SType = this._YM2608SType.Copy();
-        //setting._YM2610SType = this._YM2610SType.Copy();
-        //setting._YM2612SType = this._YM2612SType.Copy();
-        //setting._YM3526SType = this._YM3526SType.Copy();
-        //setting._YM3812SType = this._YM3812SType.Copy();
-        //setting._YMF262SType = this._YMF262SType.Copy();
-        //setting._SN76489SType = this._SN76489SType.Copy();
-        //setting._C140SType = this._C140SType.Copy();
-        //setting._SEGAPCMSType = this._SEGAPCMSType.Copy();
+//        setting._YM2151SType = this._YM2151SType.copy();
+//        setting._YM2203SType = this._YM2203SType.copy();
+//        setting._YM2413SType = this._YM2413SType.copy();
+//        setting._AY8910SType = this._AY8910SType.copy();
+//        setting._YM2608SType = this._YM2608SType.copy();
+//        setting._YM2610SType = this._YM2610SType.copy();
+//        setting._YM2612SType = this._YM2612SType.copy();
+//        setting._YM3526SType = this._YM3526SType.copy();
+//        setting._YM3812SType = this._YM3812SType.copy();
+//        setting._YMF262SType = this._YMF262SType.copy();
+//        setting._SN76489SType = this._SN76489SType.copy();
+//        setting._C140SType = this._C140SType.copy();
+//        setting._SEGAPCMSType = this._SEGAPCMSType.copy();
 
         setting.other = this.other.copy();
         setting.balance = this.balance.copy();
@@ -4557,14 +4563,14 @@ public class Setting implements Serializable {
         setting.latencySCCI = this.latencySCCI;
         setting.debugDispFrameCounter = this.debugDispFrameCounter;
         setting.hiyorimiMode = this.hiyorimiMode;
-        setting.location = this.location.Copy();
+        setting.location = this.location.copy();
         setting.midiExport = this.midiExport.copy();
         setting.midiKbd = this.midiKbd.copy();
 //        setting.vst = this.vst.copy();
         setting.midiOut = this.midiOut.copy();
         setting.nsf = this.nsf.copy();
         setting.sid = this.sid.copy();
-        setting.nukedOPN2 = this.nukedOPN2.Copy();
+        setting.nukedOPN2 = this.nukedOPN2.copy();
         setting.autoBalance = this.autoBalance.copy();
         setting.pmdDotNET = this.pmdDotNET.copy();
 
@@ -4580,7 +4586,7 @@ public class Setting implements Serializable {
         try (OutputStream sw = Files.newOutputStream(Paths.get(fullPath))) {
             Serdes.Util.serialize(sw, this);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -4588,10 +4594,10 @@ public class Setting implements Serializable {
         try {
             String fn = Resources.getCntSettingFileName();
             if (File.exists(Path.getDirectoryName(System.getProperty("user.dir")) + fn)) {
-                // アプリケーションと同じフォルダに設定ファイルがあるならそちらを使用する
+                // If there is a configuration file in the same folder as the application, use that.
                 Common.settingFilePath = Path.getDirectoryName(System.getProperty("user.dir"));
             } else {
-                // 上記以外は、アプリケーション向けデータフォルダを使用する
+                // For anything other than the above, use the application data folder.
                 Common.settingFilePath = Common.getApplicationDataFolder(true);
             }
 
@@ -4605,7 +4611,7 @@ public class Setting implements Serializable {
                 return Serdes.Util.deserialize(sr, new Setting());
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return new Setting();
         }
     }

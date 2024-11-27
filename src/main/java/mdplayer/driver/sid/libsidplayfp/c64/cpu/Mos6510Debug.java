@@ -23,33 +23,40 @@
 package mdplayer.driver.sid.libsidplayfp.c64.cpu;
 
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
+import static java.lang.System.getLogger;
+
+
 public class Mos6510Debug {
 
+    private static final Logger logger = getLogger(Mos6510Debug.class.getName());
 
     public void DumpState(long time, Mos6510 cpu) {
 //#if false
-        System.err.printf(" pc  I  a  x  y  SP  DR PR NV-BDIZC  Instruction (%d)\n", time);
-//        System.err.printf("%04x ", cpu.instrStartPC);
-//        System.err.printf(cpu.irqAssertedOnPin ? "t " : "f ");
-//        System.err.printf("%02x ", cpu.Register_Accumulator);
-//        System.err.printf("%02x ", cpu.Register_X);
-//        System.err.printf("%02x ", cpu.Register_Y);
-//        System.err.printf("%02x ", SidEndian.to16lo8(cpu.Register_StackPointer));
-        System.err.printf("%02x ", cpu.cpuRead((short) 0));
-        System.err.printf("%02x ", cpu.cpuRead((short) 1));
+        logger.log(Level.TRACE, " pc  I  a  x  y  SP  DR PR NV-BDIZC  Instruction (%d)".formatted(time));
+//        logger.log(Level.TRACE, "%04x ".formatted(cpu.instrStartPC));
+//        logger.log(Level.TRACE, cpu.irqAssertedOnPin ? "t " : "f ");
+//        logger.log(Level.TRACE, "%02x ".formatted(cpu.Register_Accumulator));
+//        logger.log(Level.TRACE, "%02x ".formatted(cpu.Register_X));
+//        logger.log(Level.TRACE, "%02x ".formatted(cpu.Register_Y));
+//        logger.log(Level.TRACE, "%02x ".formatted(SidEndian.to16lo8(cpu.Register_StackPointer)));
+        logger.log(Level.TRACE, "%02x ".formatted(cpu.cpuRead((short) 0)));
+        logger.log(Level.TRACE, "%02x ".formatted(cpu.cpuRead((short) 1)));
 
-//        System.err.printf(cpu.Flags.getN() ? "1" : "0");
-//        System.err.printf(cpu.Flags.getV() ? "1" : "0");
-        System.err.print("1");
-//        System.err.printf(cpu.Flags.getB() ? "1" : "0");
-//        System.err.printf(cpu.Flags.getD() ? "1" : "0");
-//        System.err.printf(cpu.Flags.getI() ? "1" : "0");
-//        System.err.printf(cpu.Flags.getZ() ? "1" : "0");
-//        System.err.printf(cpu.Flags.getC() ? "1" : "0");
+//        logger.log(Level.TRACE, cpu.Flags.getN() ? "1" : "0");
+//        logger.log(Level.TRACE, cpu.Flags.getV() ? "1" : "0");
+        logger.log(Level.TRACE, "1");
+//        logger.log(Level.TRACE, cpu.Flags.getB() ? "1" : "0");
+//        logger.log(Level.TRACE, cpu.Flags.getD() ? "1" : "0");
+//        logger.log(Level.TRACE, cpu.Flags.getI() ? "1" : "0");
+//        logger.log(Level.TRACE, cpu.Flags.getZ() ? "1" : "0");
+//        logger.log(Level.TRACE, cpu.Flags.getC() ? "1" : "0");
 
         int opcode = cpu.cpuRead((short) 0/*cpu.instrStartPC*/);
 
-//        System.err.printf("  %02x ", opcode);
+//        logger.log(Level.TRACE, "  %02x ".formatted(opcode));
 
         switch (opcode) {
         // Accumulator or Implied cpu.Cycle_EffectiveAddressing
@@ -57,7 +64,7 @@ public class Mos6510Debug {
         case OpCodes.LSRn:
         case OpCodes.ROLn:
         case OpCodes.RORn:
-            System.err.print("      ");
+            logger.log(Level.TRACE, "      ");
             break;
         // Zero Page Addressing Mode Handler
         case OpCodes.ADCz:
@@ -93,7 +100,7 @@ public class Mos6510Debug {
         case OpCodes.RLAz:
         case OpCodes.RRAz:
             // ASOz AXSz DCMz INSz LSEz - Optional Opcode Names
-//            System.err.printf("%02x    ", SidEndian.to16lo8(cpu.instrOperand));
+//            logger.log(Level.TRACE, "%02x    ".formatted(SidEndian.to16lo8(cpu.instrOperand)));
             break;
         // Zero Page with x Offset Addressing Mode Handler
         case OpCodes.ADCzx:
@@ -125,7 +132,7 @@ public class Mos6510Debug {
         case OpCodes.STAzx:
         case OpCodes.STYzx:
             // ASOzx DCMzx INSzx LSEzx - Optional Opcode Names
-//            System.err.printf("%02x    ", SidEndian.to16lo8(cpu.instrOperand));
+//            logger.log(Level.TRACE, "%02x    ".formatted(SidEndian.to16lo8(cpu.instrOperand)));
             break;
         // Zero Page with y Offset Addressing Mode Handler
         case OpCodes.LDXzy:
@@ -133,7 +140,7 @@ public class Mos6510Debug {
         case OpCodes.SAXzy:
         case OpCodes.LAXzy:
             // AXSzx - Optional Opcode Names
-//            System.err.printf("%02x    ", SidEndian.to16lo8(cpu.instrOperand));
+//            logger.log(Level.TRACE, "%02x    ".formatted(SidEndian.to16lo8(cpu.instrOperand)));
             break;
         // Absolute Addressing Mode Handler
         case OpCodes.ADCa:
@@ -169,7 +176,7 @@ public class Mos6510Debug {
         case OpCodes.RLAa:
         case OpCodes.RRAa:
             // ASOa AXSa DCMa INSa LSEa - Optional Opcode Names
-//            System.err.printf("%02x %02x ", SidEndian.to16lo8(cpu.instrOperand), SidEndian.to16hi8(cpu.instrOperand));
+//            logger.log(Level.TRACE, "%02x %02x ".formatted(SidEndian.to16lo8(cpu.instrOperand), SidEndian.to16hi8(cpu.instrOperand)));
             break;
         // Absolute With x Offset Addresing Mode Handler
         case OpCodes.ADCax:
@@ -201,7 +208,7 @@ public class Mos6510Debug {
         case OpCodes.SREax:
         case OpCodes.STAax:
             // ASOax DCMax INSax LSEax SAYax - Optional Opcode Names
-//            System.err.printf("%02x %02x ", SidEndian.to16lo8(cpu.instrOperand), SidEndian.to16hi8(cpu.instrOperand));
+//            logger.log(Level.TRACE, "%02x %02x ".formatted(SidEndian.to16lo8(cpu.instrOperand), SidEndian.to16hi8(cpu.instrOperand)));
             break;
         // Absolute With y Offset Addresing Mode Handler
         case OpCodes.ADCay:
@@ -225,7 +232,7 @@ public class Mos6510Debug {
         case OpCodes.SREay:
         case OpCodes.STAay:
             // ASOay AXAay DCMay INSax LSEay TASay XASay - Optional Opcode Names
-//            System.err.printf("%02x %02x ", SidEndian.to16lo8(cpu.instrOperand), SidEndian.to16hi8(cpu.instrOperand));
+//            logger.log(Level.TRACE, "%02x %02x ".formatted(SidEndian.to16lo8(cpu.instrOperand), SidEndian.to16hi8(cpu.instrOperand)));
             break;
         // Immediate and Relative Addressing Mode Handler
         case OpCodes.ADCb:
@@ -261,11 +268,11 @@ public class Mos6510Debug {
         case 0XEB:
         case OpCodes.SBXb:
             // OALb ALRb XAAb - Optional Opcode Names
-//            System.err.printf("%02x    ", SidEndian.to16lo8(cpu.Cycle_Data));
+//            logger.log(Level.TRACE, "%02x    ".formatted(SidEndian.to16lo8(cpu.Cycle_Data)));
             break;
         // Indirect Addressing Mode Handler
         case OpCodes.JMPi:
-//            System.err.printf("%02x %02x ", SidEndian.to16lo8(cpu.instrOperand), SidEndian.to16hi8(cpu.instrOperand));
+//            logger.log(Level.TRACE, "%02x %02x ".formatted(SidEndian.to16lo8(cpu.instrOperand), SidEndian.to16hi8(cpu.instrOperand)));
             break;
         // Indexed with x Preinc Addressing Mode Handler
         case OpCodes.ADCix:
@@ -285,7 +292,7 @@ public class Mos6510Debug {
         case OpCodes.RLAix:
         case OpCodes.RRAix:
             // ASOix AXSix DCMix INSix LSEix - Optional Opcode Names
-//            System.err.printf("%02x    ", SidEndian.to16lo8(cpu.instrOperand));
+//            logger.log(Level.TRACE, "%02x    ".formatted(SidEndian.to16lo8(cpu.instrOperand)));
             break;
         // Indexed with y Postinc Addressing Mode Handler
         case OpCodes.ADCiy:
@@ -305,10 +312,10 @@ public class Mos6510Debug {
         case OpCodes.SREiy:
         case OpCodes.STAiy:
             // AXAiy ASOiy LSEiy DCMiy INSiy - Optional Opcode Names
-//            System.err.printf("%02x    ", SidEndian.to16lo8(cpu.instrOperand));
+//            logger.log(Level.TRACE, "%02x    ".formatted(SidEndian.to16lo8(cpu.instrOperand)));
             break;
         default:
-            System.err.print("      ");
+            logger.log(Level.TRACE, "      ");
             break;
         }
 
@@ -321,11 +328,11 @@ public class Mos6510Debug {
         case OpCodes.ADCay:
         case OpCodes.ADCix:
         case OpCodes.ADCiy:
-            System.err.print(" ADC");
+            logger.log(Level.TRACE, " ADC");
             break;
         case OpCodes.ANCb:
         case 0x2B:
-            System.err.print("*ANC");
+            logger.log(Level.TRACE, "*ANC");
             break;
         case OpCodes.ANDb:
         case OpCodes.ANDz:
@@ -335,29 +342,29 @@ public class Mos6510Debug {
         case OpCodes.ANDay:
         case OpCodes.ANDix:
         case OpCodes.ANDiy:
-            System.err.print(" AND");
+            logger.log(Level.TRACE, " AND");
             break;
         case OpCodes.ANEb: // Also known as XAA
-            System.err.print("*ANE");
+            logger.log(Level.TRACE, "*ANE");
             break;
         case OpCodes.ARRb:
-            System.err.print("*ARR");
+            logger.log(Level.TRACE, "*ARR");
             break;
         case OpCodes.ASLn:
         case OpCodes.ASLz:
         case OpCodes.ASLzx:
         case OpCodes.ASLa:
         case OpCodes.ASLax:
-            System.err.print(" ASL");
+            logger.log(Level.TRACE, " ASL");
             break;
         case OpCodes.ASRb: // Also known as ALR
-            System.err.print("*ASR");
+            logger.log(Level.TRACE, "*ASR");
             break;
         case OpCodes.BCCr:
-            System.err.print(" BCC");
+            logger.log(Level.TRACE, " BCC");
             break;
         case OpCodes.BCSr:
-            System.err.print(" BCS");
+            logger.log(Level.TRACE, " BCS");
             break;
         case OpCodes.BEQr:
             System.err.
@@ -365,38 +372,38 @@ public class Mos6510Debug {
             break;
         case OpCodes.BITz:
         case OpCodes.BITa:
-            System.err.print(" BIT");
+            logger.log(Level.TRACE, " BIT");
             break;
         case OpCodes.BMIr:
-            System.err.print(" BMI");
+            logger.log(Level.TRACE, " BMI");
             break;
         case OpCodes.BNEr:
-            System.err.print(" BNE");
+            logger.log(Level.TRACE, " BNE");
             break;
         case OpCodes.BPLr:
-            System.err.print(" BPL");
+            logger.log(Level.TRACE, " BPL");
             break;
         case OpCodes.BRKn:
-            System.err.print(" BRK");
+            logger.log(Level.TRACE, " BRK");
             break;
         case OpCodes.BVCr:
-            System.err.print(" BVC");
+            logger.log(Level.TRACE, " BVC");
             break;
         case OpCodes.BVSr:
             System.err.
                     print(" BVS");
             break;
         case OpCodes.CLCn:
-            System.err.print(" CLC");
+            logger.log(Level.TRACE, " CLC");
             break;
         case OpCodes.CLDn:
-            System.err.print(" CLD");
+            logger.log(Level.TRACE, " CLD");
             break;
         case OpCodes.CLIn:
-            System.err.print(" CLI");
+            logger.log(Level.TRACE, " CLI");
             break;
         case OpCodes.CLVn:
-            System.err.print(" CLV");
+            logger.log(Level.TRACE, " CLV");
             break;
         case OpCodes.CMPb:
         case OpCodes.CMPz:
@@ -406,17 +413,17 @@ public class Mos6510Debug {
         case OpCodes.CMPay:
         case OpCodes.CMPix:
         case OpCodes.CMPiy:
-            System.err.print(" CMP");
+            logger.log(Level.TRACE, " CMP");
             break;
         case OpCodes.CPXb:
         case OpCodes.CPXz:
         case OpCodes.CPXa:
-            System.err.print(" CPX");
+            logger.log(Level.TRACE, " CPX");
             break;
         case OpCodes.CPYb:
         case OpCodes.CPYz:
         case OpCodes.CPYa:
-            System.err.print(" CPY");
+            logger.log(Level.TRACE, " CPY");
             break;
         case OpCodes.DCPz:
         case OpCodes.DCPzx:
@@ -425,19 +432,19 @@ public class Mos6510Debug {
         case OpCodes.DCPay:
         case OpCodes.DCPix:
         case OpCodes.DCPiy: // Also known as DCM
-            System.err.print("*DCP");
+            logger.log(Level.TRACE, "*DCP");
             break;
         case OpCodes.DECz:
         case OpCodes.DECzx:
         case OpCodes.DECa:
         case OpCodes.DECax:
-            System.err.print(" DEC");
+            logger.log(Level.TRACE, " DEC");
             break;
         case OpCodes.DEXn:
-            System.err.print(" DEX");
+            logger.log(Level.TRACE, " DEX");
             break;
         case OpCodes.DEYn:
-            System.err.print(" DEY");
+            logger.log(Level.TRACE, " DEY");
             break;
         case OpCodes.EORb:
         case OpCodes.EORz:
@@ -447,19 +454,19 @@ public class Mos6510Debug {
         case OpCodes.EORay:
         case OpCodes.EORix:
         case OpCodes.EORiy:
-            System.err.print(" EOR");
+            logger.log(Level.TRACE, " EOR");
             break;
         case OpCodes.INCz:
         case OpCodes.INCzx:
         case OpCodes.INCa:
         case OpCodes.INCax:
-            System.err.print(" INC");
+            logger.log(Level.TRACE, " INC");
             break;
         case OpCodes.INXn:
-            System.err.print(" INX");
+            logger.log(Level.TRACE, " INX");
             break;
         case OpCodes.INYn:
-            System.err.print(" INY");
+            logger.log(Level.TRACE, " INY");
             break;
         case OpCodes.ISBz:
         case OpCodes.ISBzx:
@@ -468,17 +475,17 @@ public class Mos6510Debug {
         case OpCodes.ISBay:
         case OpCodes.ISBix:
         case OpCodes.ISBiy: // Also known as INS
-            System.err.print("*ISB");
+            logger.log(Level.TRACE, "*ISB");
             break;
         case OpCodes.JMPw:
         case OpCodes.JMPi:
-            System.err.print(" JMP");
+            logger.log(Level.TRACE, " JMP");
             break;
         case OpCodes.JSRw:
-            System.err.print(" JSR");
+            logger.log(Level.TRACE, " JSR");
             break;
         case OpCodes.LASay:
-            System.err.print("*LAS");
+            logger.log(Level.TRACE, "*LAS");
             break;
         case OpCodes.LAXz:
         case OpCodes.LAXzy:
@@ -486,7 +493,7 @@ public class Mos6510Debug {
         case OpCodes.LAXay:
         case OpCodes.LAXix:
         case OpCodes.LAXiy:
-            System.err.print("*LAX");
+            logger.log(Level.TRACE, "*LAX");
             break;
         case OpCodes.LDAb:
         case OpCodes.LDAz:
@@ -496,28 +503,28 @@ public class Mos6510Debug {
         case OpCodes.LDAay:
         case OpCodes.LDAix:
         case OpCodes.LDAiy:
-            System.err.print(" LDA");
+            logger.log(Level.TRACE, " LDA");
             break;
         case OpCodes.LDXb:
         case OpCodes.LDXz:
         case OpCodes.LDXzy:
         case OpCodes.LDXa:
         case OpCodes.LDXay:
-            System.err.print(" LDX");
+            logger.log(Level.TRACE, " LDX");
             break;
         case OpCodes.LDYb:
         case OpCodes.LDYz:
         case OpCodes.LDYzx:
         case OpCodes.LDYa:
         case OpCodes.LDYax:
-            System.err.print(" LDY");
+            logger.log(Level.TRACE, " LDY");
             break;
         case OpCodes.LSRz:
         case OpCodes.LSRzx:
         case OpCodes.LSRa:
         case OpCodes.LSRax:
         case OpCodes.LSRn:
-            System.err.print(" LSR");
+            logger.log(Level.TRACE, " LSR");
             break;
         case OpCodes.NOPn:
         case 0x1A:
@@ -547,12 +554,12 @@ public class Mos6510Debug {
         case 0x7C:
         case 0xDC:
         case 0xFC:
-            if (opcode != OpCodes.NOPn) System.err.print("*");
-            else System.err.print(" ");
-            System.err.print("NOP");
+            if (opcode != OpCodes.NOPn) logger.log(Level.TRACE, "*");
+            else logger.log(Level.TRACE, " ");
+            logger.log(Level.TRACE, "NOP");
             break;
         case OpCodes.LXAb: // Also known as OAL
-            System.err.print("*LXA");
+            logger.log(Level.TRACE, "*LXA");
             break;
         case OpCodes.ORAb:
         case OpCodes.ORAz:
@@ -562,19 +569,19 @@ public class Mos6510Debug {
         case OpCodes.ORAay:
         case OpCodes.ORAix:
         case OpCodes.ORAiy:
-            System.err.print(" ORA");
+            logger.log(Level.TRACE, " ORA");
             break;
         case OpCodes.PHAn:
-            System.err.print(" PHA");
+            logger.log(Level.TRACE, " PHA");
             break;
         case OpCodes.PHPn:
-            System.err.print(" PHP");
+            logger.log(Level.TRACE, " PHP");
             break;
         case OpCodes.PLAn:
-            System.err.print(" PLA");
+            logger.log(Level.TRACE, " PLA");
             break;
         case OpCodes.PLPn:
-            System.err.print(" PLP");
+            logger.log(Level.TRACE, " PLP");
             break;
         case OpCodes.RLAz:
         case OpCodes.RLAzx:
@@ -583,21 +590,21 @@ public class Mos6510Debug {
         case OpCodes.RLAax:
         case OpCodes.RLAay:
         case OpCodes.RLAiy:
-            System.err.print("*RLA");
+            logger.log(Level.TRACE, "*RLA");
             break;
         case OpCodes.ROLz:
         case OpCodes.ROLzx:
         case OpCodes.ROLa:
         case OpCodes.ROLax:
         case OpCodes.ROLn:
-            System.err.print(" ROL");
+            logger.log(Level.TRACE, " ROL");
             break;
         case OpCodes.RORz:
         case OpCodes.RORzx:
         case OpCodes.RORa:
         case OpCodes.RORax:
         case OpCodes.RORn:
-            System.err.print(" ROR");
+            logger.log(Level.TRACE, " ROR");
             break;
         case OpCodes.RRAa:
         case OpCodes.RRAax:
@@ -606,25 +613,25 @@ public class Mos6510Debug {
         case OpCodes.RRAzx:
         case OpCodes.RRAix:
         case OpCodes.RRAiy:
-            System.err.print("*RRA");
+            logger.log(Level.TRACE, "*RRA");
             break;
         case OpCodes.RTIn:
-            System.err.print(" RTI");
+            logger.log(Level.TRACE, " RTI");
             break;
         case OpCodes.RTSn:
-            System.err.print(" RTS");
+            logger.log(Level.TRACE, " RTS");
             break;
         case OpCodes.SAXz:
         case OpCodes.SAXzy:
         case OpCodes.SAXa:
         case OpCodes.SAXix: // Also known as AXS
-            System.err.print("*SAX");
+            logger.log(Level.TRACE, "*SAX");
             break;
         case OpCodes.SBCb:
         case 0XEB:
-            if (opcode != OpCodes.SBCb) System.err.print("*");
-            else System.err.print(" ");
-            System.err.print("SBC");
+            if (opcode != OpCodes.SBCb) logger.log(Level.TRACE, "*");
+            else logger.log(Level.TRACE, " ");
+            logger.log(Level.TRACE, "SBC");
             break;
         case OpCodes.SBCz:
         case OpCodes.SBCzx:
@@ -633,32 +640,32 @@ public class Mos6510Debug {
         case OpCodes.SBCay:
         case OpCodes.SBCix:
         case OpCodes.SBCiy:
-            System.err.print(" SBC");
+            logger.log(Level.TRACE, " SBC");
             break;
         case OpCodes.SBXb:
-            System.err.print("*SBX");
+            logger.log(Level.TRACE, "*SBX");
             break;
         case OpCodes.SECn:
-            System.err.print(" SEC");
+            logger.log(Level.TRACE, " SEC");
             break;
         case OpCodes.SEDn:
-            System.err.print(" SED");
+            logger.log(Level.TRACE, " SED");
             break;
         case OpCodes.SEIn:
-            System.err.print(" SEI");
+            logger.log(Level.TRACE, " SEI");
             break;
         case OpCodes.SHAay:
         case OpCodes.SHAiy: // Also known as AXA
-            System.err.print("*SHA");
+            logger.log(Level.TRACE, "*SHA");
             break;
         case OpCodes.SHSay: // Also known as TAS
-            System.err.print("*SHS");
+            logger.log(Level.TRACE, "*SHS");
             break;
         case OpCodes.SHXay: // Also known as XAS
-            System.err.print("*SHX");
+            logger.log(Level.TRACE, "*SHX");
             break;
         case OpCodes.SHYax: // Also known as SAY
-            System.err.print("*SHY");
+            logger.log(Level.TRACE, "*SHY");
             break;
         case OpCodes.SLOz:
         case OpCodes.SLOzx:
@@ -667,7 +674,7 @@ public class Mos6510Debug {
         case OpCodes.SLOay:
         case OpCodes.SLOix:
         case OpCodes.SLOiy: // Also known as ASO
-            System.err.print("*SLO");
+            logger.log(Level.TRACE, "*SLO");
             break;
         case OpCodes.SREz:
         case OpCodes.SREzx:
@@ -676,7 +683,7 @@ public class Mos6510Debug {
         case OpCodes.SREay:
         case OpCodes.SREix:
         case OpCodes.SREiy: // Also known as LSE
-            System.err.print("*SRE");
+            logger.log(Level.TRACE, "*SRE");
             break;
         case OpCodes.STAz:
         case OpCodes.STAzx:
@@ -685,38 +692,38 @@ public class Mos6510Debug {
         case OpCodes.STAay:
         case OpCodes.STAix:
         case OpCodes.STAiy:
-            System.err.print(" STA");
+            logger.log(Level.TRACE, " STA");
             break;
         case OpCodes.STXz:
         case OpCodes.STXzy:
         case OpCodes.STXa:
-            System.err.print(" STX");
+            logger.log(Level.TRACE, " STX");
             break;
         case OpCodes.STYz:
         case OpCodes.STYzx:
         case OpCodes.STYa:
-            System.err.print(" STY");
+            logger.log(Level.TRACE, " STY");
             break;
         case OpCodes.TAXn:
-            System.err.print(" TAX");
+            logger.log(Level.TRACE, " TAX");
             break;
         case OpCodes.TAYn:
-            System.err.print(" TAY");
+            logger.log(Level.TRACE, " TAY");
             break;
         case OpCodes.TSXn:
-            System.err.print(" TSX");
+            logger.log(Level.TRACE, " TSX");
             break;
         case OpCodes.TXAn:
-            System.err.print(" TXA");
+            logger.log(Level.TRACE, " TXA");
             break;
         case OpCodes.TXSn:
-            System.err.print(" TXS");
+            logger.log(Level.TRACE, " TXS");
             break;
         case OpCodes.TYAn:
-            System.err.print(" TYA");
+            logger.log(Level.TRACE, " TYA");
             break;
         default:
-            System.err.print("*HLT");
+            logger.log(Level.TRACE, "*HLT");
             break;
         }
 
@@ -726,7 +733,7 @@ public class Mos6510Debug {
         case OpCodes.LSRn:
         case OpCodes.ROLn:
         case OpCodes.RORn:
-            System.err.print("n  a");
+            logger.log(Level.TRACE, "n  a");
             break;
 
         // Zero Page Addressing Mode Handler
@@ -757,7 +764,7 @@ public class Mos6510Debug {
         case OpCodes.RLAz:
         case OpCodes.RRAz:
             // ASOz AXSz DCMz INSz LSEz - Optional Opcode Names
-//            System.err.printf("z  %02x %d%02x%d", SidEndian.to16lo8(cpu.instrOperand), cpu.Cycle_Data, "{", "}");
+//            logger.log(Level.TRACE, "z  %02x %d%02x%d", SidEndian.to16lo8(cpu.instrOperand), cpu.Cycle_Data, "{".formatted("}"));
             break;
         case OpCodes.SAXz:
         case OpCodes.STAz:
@@ -766,7 +773,7 @@ public class Mos6510Debug {
         case OpCodes.NOPz:
         case 0x44:
         case 0x64:
-//            System.err.printf("z  %02x", SidEndian.to16lo8(cpu.instrOperand));
+//            logger.log(Level.TRACE, "z  %02x".formatted(SidEndian.to16lo8(cpu.instrOperand)));
             break;
 
         // Zero Page with x Offset Addressing Mode Handler
@@ -791,8 +798,8 @@ public class Mos6510Debug {
         case OpCodes.SLOzx:
         case OpCodes.SREzx:
             // ASOzx DCMzx INSzx LSEzx - Optional Opcode Names
-//            System.err.printf("zx %02x,x", SidEndian.to16lo8(cpu.instrOperand));
-//            System.err.printf(" [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{", "}");
+//            logger.log(Level.TRACE, "zx %02x,x".formatted(SidEndian.to16lo8(cpu.instrOperand)));
+//            logger.log(Level.TRACE, " [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{".formatted("}"));
             break;
         case OpCodes.STAzx:
         case OpCodes.STYzx:
@@ -802,21 +809,21 @@ public class Mos6510Debug {
         case 0x74:
         case 0xD4:
         case 0xF4:
-//            System.err.printf("zx %02x,x", SidEndian.to16lo8(cpu.instrOperand));
-//            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
+//            logger.log(Level.TRACE, "zx %02x,x".formatted(SidEndian.to16lo8(cpu.instrOperand)));
+//            logger.log(Level.TRACE, " [%04x]".formatted(cpu.Cycle_EffectiveAddress));
             break;
 
         // Zero Page with y Offset Addressing Mode Handler
         case OpCodes.LAXzy:
         case OpCodes.LDXzy:
             // AXSzx - Optional Opcode Names
-//            System.err.printf("zy %02x,y", SidEndian.to16lo8(cpu.instrOperand));
-//            System.err.printf(" [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{", "}");
+//            logger.log(Level.TRACE, "zy %02x,y".formatted(SidEndian.to16lo8(cpu.instrOperand)));
+//            logger.log(Level.TRACE, " [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{".formatted("}"));
             break;
         case OpCodes.STXzy:
         case OpCodes.SAXzy:
-//            System.err.printf("zy %02x,y", SidEndian.to16lo8(cpu.instrOperand));
-//            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
+//            logger.log(Level.TRACE, "zy %02x,y".formatted(SidEndian.to16lo8(cpu.instrOperand)));
+//            logger.log(Level.TRACE, " [%04x]".formatted(cpu.Cycle_EffectiveAddress));
             break;
 
         // Absolute Addressing Mode Handler
@@ -846,18 +853,18 @@ public class Mos6510Debug {
         case OpCodes.RLAa:
         case OpCodes.RRAa:
             // ASOa AXSa DCMa INSa LSEa - Optional Opcode Names
-//            System.err.printf("a  %04x %d%02x%d", cpu.instrOperand, cpu.Cycle_Data, "{", "}");
+//            logger.log(Level.TRACE, "a  %04x %d%02x%d", cpu.instrOperand, cpu.Cycle_Data, "{".formatted("}"));
             break;
         case OpCodes.SAXa:
         case OpCodes.STAa:
         case OpCodes.STXa:
         case OpCodes.STYa:
         case OpCodes.NOPa:
-//            System.err.printf("a  %04x", cpu.instrOperand);
+//            logger.log(Level.TRACE, "a  %04x".formatted(cpu.instrOperand));
             break;
         case OpCodes.JMPw:
         case OpCodes.JSRw:
-//            System.err.printf("w  %04x", cpu.instrOperand);
+//            logger.log(Level.TRACE, "w  %04x".formatted(cpu.instrOperand));
             break;
 
         // Absolute With x Offset Addresing Mode Handler
@@ -882,8 +889,8 @@ public class Mos6510Debug {
         case OpCodes.SLOax:
         case OpCodes.SREax:
             // ASOax DCMax INSax LSEax SAYax - Optional Opcode Names
-//            System.err.printf("ax %04x,x", cpu.instrOperand);
-//            System.err.printf(" [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{", "}");
+//            logger.log(Level.TRACE, "ax %04x,x".formatted(cpu.instrOperand));
+//            logger.log(Level.TRACE, " [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{".formatted("}"));
             break;
         case OpCodes.SHYax:
         case OpCodes.STAax:
@@ -893,8 +900,8 @@ public class Mos6510Debug {
         case 0x7C:
         case 0xDC:
         case 0xFC:
-//            System.err.printf("ax %04x,x", cpu.instrOperand);
-//            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
+//            logger.log(Level.TRACE, "ax %04x,x".formatted(cpu.instrOperand));
+//            logger.log(Level.TRACE, " [%04x]".formatted(cpu.Cycle_EffectiveAddress));
             break;
 
         // Absolute With y Offset Addresing Mode Handler
@@ -916,14 +923,14 @@ public class Mos6510Debug {
         case OpCodes.SLOay:
         case OpCodes.SREay:
             // ASOay AXAay DCMay INSax LSEay TASay XASay - Optional Opcode Names
-//            System.err.printf("ay %04x,y", cpu.instrOperand);
-//            System.err.printf(" [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{", "}");
+//            logger.log(Level.TRACE, "ay %04x,y".formatted(cpu.instrOperand));
+//            logger.log(Level.TRACE, " [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{".formatted("}"));
             break;
         case OpCodes.SHAay:
         case OpCodes.SHXay:
         case OpCodes.STAay:
-//            System.err.printf("ay %04x,y", cpu.instrOperand);
-//            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
+//            logger.log(Level.TRACE, "ay %04x,y".formatted(cpu.instrOperand));
+//            logger.log(Level.TRACE, " [%04x]".formatted(cpu.Cycle_EffectiveAddress));
             break;
 
         // Immediate Addressing Mode Handler
@@ -952,7 +959,7 @@ public class Mos6510Debug {
         case 0xC2:
         case 0xE2:
         case 0x89:
-//            System.err.printf("b  //#%02x", SidEndian.to16lo8(cpu.instrOperand));
+//            logger.log(Level.TRACE, "b  //#%02x".formatted(SidEndian.to16lo8(cpu.instrOperand)));
             break;
 
         // Relative Addressing Mode Handler
@@ -964,14 +971,14 @@ public class Mos6510Debug {
         case OpCodes.BPLr:
         case OpCodes.BVCr:
         case OpCodes.BVSr:
-//            System.err.printf("r  //#%02x", SidEndian.to16lo8(cpu.instrOperand));
-//            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
+//            logger.log(Level.TRACE, "r  //#%02x".formatted(SidEndian.to16lo8(cpu.instrOperand)));
+//            logger.log(Level.TRACE, " [%04x]".formatted(cpu.Cycle_EffectiveAddress));
             break;
 
         // Indirect Addressing Mode Handler
         case OpCodes.JMPi:
-//            System.err.printf("i  (%04x)", cpu.instrOperand);
-//            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
+//            logger.log(Level.TRACE, "i  (%04x)".formatted(cpu.instrOperand));
+//            logger.log(Level.TRACE, " [%04x]".formatted(cpu.Cycle_EffectiveAddress));
             break;
 
         // Indexed with x Preinc Addressing Mode Handler
@@ -990,13 +997,13 @@ public class Mos6510Debug {
         case OpCodes.RLAix:
         case OpCodes.RRAix:
             // ASOix AXSix DCMix INSix LSEix - Optional Opcode Names
-//            System.err.printf("ix (%02x,x)", SidEndian.to16lo8(cpu.instrOperand));
-//            System.err.printf(" [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{", "}");
+//            logger.log(Level.TRACE, "ix (%02x,x)".formatted(SidEndian.to16lo8(cpu.instrOperand)));
+//            logger.log(Level.TRACE, " [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{".formatted("}"));
             break;
         case OpCodes.SAXix:
         case OpCodes.STAix:
-//            System.err.printf("ix (%02x,x)", SidEndian.to16lo8(cpu.instrOperand));
-//            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
+//            logger.log(Level.TRACE, "ix (%02x,x)".formatted(SidEndian.to16lo8(cpu.instrOperand)));
+//            logger.log(Level.TRACE, " [%04x]".formatted(cpu.Cycle_EffectiveAddress));
             break;
 
         // Indexed with y Postinc Addressing Mode Handler
@@ -1015,21 +1022,19 @@ public class Mos6510Debug {
         case OpCodes.SLOiy:
         case OpCodes.SREiy:
             // AXAiy ASOiy LSEiy DCMiy INSiy - Optional Opcode Names
-//            System.err.printf("iy (%02x),y", SidEndian.to16lo8(cpu.instrOperand));
-//            System.err.printf(" [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{", "}");
+//            logger.log(Level.TRACE, "iy (%02x),y".formatted(SidEndian.to16lo8(cpu.instrOperand)));
+//            logger.log(Level.TRACE, " [%04x]%d%02x%d", cpu.Cycle_EffectiveAddress, cpu.Cycle_Data, "{".formatted("}"));
             break;
         case OpCodes.SHAiy:
         case OpCodes.STAiy:
-//            System.err.printf("iy (%02x),y", SidEndian.to16lo8(cpu.instrOperand));
-//            System.err.printf(" [%04x]", cpu.Cycle_EffectiveAddress);
+//            logger.log(Level.TRACE, "iy (%02x),y".formatted(SidEndian.to16lo8(cpu.instrOperand)));
+//            logger.log(Level.TRACE, " [%04x]".formatted(cpu.Cycle_EffectiveAddress));
             break;
 
         default:
             break;
         }
 
-        System.err.print("\n\n");
+        logger.log(Level.TRACE, "\n\n");
     }
 }
-
-

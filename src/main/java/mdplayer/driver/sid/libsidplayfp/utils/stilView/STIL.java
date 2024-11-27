@@ -267,20 +267,17 @@ public class STIL {
      * number instanceof for the STIL class and other info.
      * If it instanceof called after setBaseDir(), the String also
      * has the STIL.txt file's version number : it.
-     *
-     * @return printable formatted String with version and copyright info
+     * <p>
+     * printable formatted String with version and copyright info
      * (It's kinda dangerous to return a pointer that points
-     * to an private structure, but I trust you. :)
+     * to a private structure, but I trust you. :)
      */
     private void setVersionString() {
-        String ss = String.format(
-                """
+        String ss = """
                             STILView v%2f
                             \tCopyright (C) 1998, 2002 by LaLa (LaLa@C64.org)
                             \tCopyright (C) 2012-2015 by Leandro Nini <drfiemost@users.sourceforge.net>
-                        """
-                , VERSION_NO
-        );
+                        """.formatted(VERSION_NO);
         versionString = ss;
     }
 
@@ -895,7 +892,7 @@ public class STIL {
             return false;
         }
 
-        logger.fine("detEOL() EOL1=0x" + String.format("%x", (int) STIL_EOL) + " EOL2=0x" + String.format("%x", (int) STIL_EOL2) + "\n");
+        logger.fine("detEOL() EOL1=0x" + "%x".formatted((int) STIL_EOL) + " EOL2=0x" + "%x".formatted((int) STIL_EOL2) + "\n");
 
         return true;
     }
@@ -939,7 +936,7 @@ public class STIL {
                     // Put it into the String, too.
                     String ss;
                     // ss = fixed << setw(4) << setprecision(2);
-                    ss = String.format("Sid Tune Information List (STIL) v%2f\n", version);
+                    ss = "Sid Tune Information List (STIL) v%2f\n".formatted(version);
                     versionString += ss;
 
                     logger.fine("getDirs() STILVersion=" + version + "\n");
@@ -1031,7 +1028,7 @@ public class STIL {
         boolean globComm = (pathLen == entryStrLen);
 
         // Find it : the table.
-        String entry = String.format(new String(entryStr.array()), pathLen);
+        String entry = new String(entryStr.array()).formatted(pathLen);
         // dirList::iterator elem = dirs.find(entry);
         Tuple<String, Integer> elem = null;
         for (Tuple<String, Integer> t : dirs) {
@@ -1042,7 +1039,7 @@ public class STIL {
         }
         if (elem == null) {
             // The directory was not found.
-            logger.fine("pos2Entry() did not find the dir" + "\n");
+            logger.fine("pos2Entry() did not find the dir");
             return false;
         }
 
@@ -1297,7 +1294,7 @@ public class STIL {
 
             // Search for the requested tune number.
 
-            tuneNoStr = String.format("(#%d)", tuneNo).getBytes(StandardCharsets.US_ASCII);
+            tuneNoStr = "(#%d)".formatted(tuneNo).getBytes(StandardCharsets.US_ASCII);
             tuneNoStr[7] = (byte) '\0';
             ByteBuffer myTuneNo = Ptr.strstr(start, new String(tuneNoStr));
 

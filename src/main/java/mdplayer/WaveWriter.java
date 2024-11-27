@@ -28,7 +28,7 @@ public class WaveWriter {
         String fn = Path.combine(setting.getOther().getWavPath(), Path.getFileNameWithoutExtension(filename) + ".wav");
         int i = 0;
         while (filename.equals(fn)) {
-            fn = Path.combine(setting.getOther().getWavPath(), Path.getFileNameWithoutExtension(filename) + String.format("_%d.wav", i));
+            fn = Path.combine(setting.getOther().getWavPath(), Path.getFileNameWithoutExtension(filename) + "_%d.wav".formatted(i));
         }
 
         dest = new FileStream(fn, FileMode.Create, FileAccess.Write);
@@ -41,12 +41,12 @@ public class WaveWriter {
         des.add((byte) 'I');
         des.add((byte) 'F');
         des.add((byte) 'F');
-        // サイズ
+        // Size
         int fsize = len + 36;
         des.add((byte) ((fsize & 0xff) >> 0));
         des.add((byte) ((fsize & 0xff00) >> 8));
-        des.add((byte) ((fsize & 0xff0000) >> 16));
-        des.add((byte) ((fsize & 0xff000000) >> 24));
+        des.add((byte) ((fsize & 0xff_0000) >> 16));
+        des.add((byte) ((fsize & 0xff00_0000) >> 24));
         // 'WAVE'
         des.add((byte) 'W');
         des.add((byte) 'A');
@@ -57,31 +57,31 @@ public class WaveWriter {
         des.add((byte) 'm');
         des.add((byte) 't');
         des.add((byte) ' ');
-        // サイズ(16)
+        // Size(16)
         des.add((byte) 0x10);
         des.add((byte) 0);
         des.add((byte) 0);
         des.add((byte) 0);
-        // フォーマット(1)
+        // Format(1)
         des.add((byte) 0x01);
         des.add((byte) 0x00);
-        // チャンネル数(ステレオ)
+        // Number of channels (stereo)
         des.add((byte) 0x02);
         des.add((byte) 0x00);
-        // サンプリング周波数(44100Hz)
+        // Sampling Frequency(44100Hz)
         des.add((byte) (setting.getOutputDevice().getSampleRate() >> 0));
         des.add((byte) (setting.getOutputDevice().getSampleRate() >> 8));
         des.add((byte) (setting.getOutputDevice().getSampleRate() >> 16));
         des.add((byte) (setting.getOutputDevice().getSampleRate() >> 24));
-        // 平均データ割合
+        // Average Data Percentage
         des.add((byte) 0x10);
         des.add((byte) 0xb1);
         des.add((byte) 0x02);
         des.add((byte) 0); // 10 B1 02 00
-        // ブロックサイズ(4)
+        // Block size(4)
         des.add((byte) 0x04);
         des.add((byte) 0x00);
-        // ビット数(16bit)
+        // Bit depth (16bit)
         des.add((byte) 0x10);
         des.add((byte) 0x00);
 
@@ -90,13 +90,13 @@ public class WaveWriter {
         des.add((byte) 'a');
         des.add((byte) 't');
         des.add((byte) 'a');
-        // サイズ(データサイズ)
+        // Size (data size)
         des.add((byte) ((len & 0xff) >> 0));
         des.add((byte) ((len & 0xff00) >> 8));
         des.add((byte) ((len & 0xff0000) >> 16));
         des.add((byte) ((len & 0xff000000) >> 24));
 
-        // 出力
+        // output
         dest.write(toByteArray(des), 0, des.size());
     }
 

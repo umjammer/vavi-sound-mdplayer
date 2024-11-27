@@ -3,32 +3,33 @@ package mdplayer.driver.mndrv;
 import mdplayer.driver.mxdrv.XMemory;
 
 
-//
-//	part of common commands
-//
+/**
+ * part of common commands
+ */
 public class ComCmds {
+
     public Reg reg;
     public XMemory mm;
     public MnDrv mndrv;
     public ComLfo comlfo;
     public Ab ab;
 
-    //	タイ
-    //		[$81]
+    /** tie [$81] */
     public void _COM_81() {
         if ((mm.readByte(reg.a5 + W.flag3) & 0x40) != 0) return;
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0xbf));
     }
 
-    //	スラー
-    //		[$83]
+    /** Slurs [$83] */
     public void _COM_83() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x40));
         mm.write(reg.a5 + W.flag3, (byte) (mm.readByte(reg.a5 + W.flag3) | 0x40));
     }
 
-    //	同期信号送信
-    //		[$86] + [track] b
+    /**
+     * Synchronization signal transmission
+     * [$86] + [track] b
+     */
     public void _COM_86() {
         reg.D0_L = 0;
         reg.a0 = Dw.TRACKWORKADR + reg.a6;
@@ -48,8 +49,10 @@ public class ComCmds {
         }
     }
 
-    //	同期信号待ち
-    //		[$87]
+    /**
+     * Waiting for sync signal
+     * [$87]
+     */
     public void _COM_87() {
         int a = mm.readByte(reg.a5 + W.flag4) & 0x40;
         mm.write(reg.a5 + W.flag4, (byte) (mm.readByte(reg.a5 + W.flag4) & 0xbf));
@@ -61,9 +64,12 @@ public class ComCmds {
         mm.write(reg.a5 + W.len, (byte) 1);
     }
 
-    //	q 設定
-    // [$90] + [DATA]b
-    //				$1 ～ $10 まで[16段階]
+    /**
+     * "q" settings
+     * [$90] + [DATA]b
+     * $1 ~ $10 [16 steps]
+     *
+     */
     public void _COM_90() {
         reg.D0_L = 0;
         reg.setD0_B(mm.readByte(reg.a1++));
@@ -73,7 +79,7 @@ public class ComCmds {
 
         if (mm.readByte(reg.a6 + Dw.MND_VER) < 8) {
             reg.a0 = Ab.dummyAddress;// _atq_old;
-            mm.write(reg.a5 + W.qtjob, reg.a0); // _atq_old = 0 とする
+            mm.write(reg.a5 + W.qtjob, reg.a0); // Set _atq_old = 0
             ab.hlw_qtjob.remove(reg.a5);
             ab.hlw_qtjob.put(reg.a5, this::_atq_old);
             return;
@@ -278,50 +284,59 @@ public class ComCmds {
         mm.write(reg.a5 + W.at_q_work, (byte) reg.getD0_B());
     }
 
-    //	@q 設定
-    //			[$91] + [DATA]b
+    /**
+     * "@q" settings
+     * [$91] + [DATA]b
+     */
     public void _COM_91() {
         mm.write(reg.a5 + W.at_q, mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) | 0x40));
         mm.write(reg.a5 + W.flag3, (byte) (mm.readByte(reg.a5 + W.flag3) & 0xdf));
     }
 
-    //	ネガティブ @q 設定
-    //			[$93] + [DATA]b
+    /**
+     * negative @q settings
+     * [$93] + [DATA]b
+     */
     public void _COM_93() {
         mm.write(reg.a5 + W.at_q, mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) | 0x40));
         mm.write(reg.a5 + W.flag3, (byte) (mm.readByte(reg.a5 + W.flag3) | 0x20));
     }
 
-    //	キーオフモード
-    //			[$94] + [switch]b
+    /**
+     * key off mode
+     * [$94] + [switch]b
+     */
     public void _COM_94() {
         mm.write(reg.a5 + W.kom, 0);
         reg.setD0_B(mm.readByte(reg.a1++));
         if (reg.getD0_B() != 0) mm.write(reg.a5 + W.kom, (byte) 0xff);
     }
 
-    //	擬似リバーブ
-    //		switch = $80 = ON
-    //			 $81 = OFF
-    //			 $82 = volume を直接指定にする
-    //			 $83 = volume を相対指定にする
-    //			 $84 = リバーブ動作は相対音量モードに依存する
-    //			 $85 = リバーブ動作は常に @v 単位
-    //
-    //			 $00 = + [volume]b
-    //			 $01 = + [volume]b + [pan]b
-    //			 $02 = + [volume]b + [tone]b
-    //			 $03 = + [volume]b + [panpot]b + [tone]b
-    //			 $04 = + [volume]b ( 微調整 )
-    //	work
-    //		bit4 1:常に @v
-    //		bit3 1:@v直接
-    //		bit2 1:微調整
-    //		bit1 1:音色変更
-    //		bit0 1:定位変更
-    //
+    /**
+     * Pseudo reverb
+     * <pre>
+     *  switch = $80 = ON
+     *    $81 = OFF
+     *    $82 = absolute volume specification
+     *    $83 = relative volume specification
+     *    $84 = Reverb behavior depends on relative volume mode
+     *    $85 = Reverb action always in @v units
+     *
+     *    $00 = + [volume]b
+     *    $01 = + [volume]b + [pan]b
+     *    $02 = + [volume]b + [tone]b
+     *    $03 = + [volume]b + [panpot]b + [tone]b
+     *    $04 = + [volume]b (fine tuning)
+     * work
+     *  bit4 1:Always @v
+     *  bit3 1:@v direct
+     *  bit2 1:fine tuning
+     *  bit1 1:change voice
+     *  bit0 1:change position
+     * </pre>
+     */
     public void _COM_98() {
         reg.D0_L = 0;
         reg.setD0_B(mm.readByte(reg.a1++));
@@ -398,27 +413,27 @@ public class ComCmds {
         mm.write(reg.a5 + W.reverb, (byte) (mm.readByte(reg.a5 + W.reverb) | 0x10));
     }
 
-    // volume
+    /** volume */
     public void _COM_98_0() {
         mm.write(reg.a5 + W.reverb_vol, mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.reverb, (byte) (mm.readByte(reg.a5 + W.reverb) | 0x80));
     }
 
-    // volume + pan
+    /** volume + pan */
     public void _COM_98_1() {
         mm.write(reg.a5 + W.reverb_vol, mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.reverb_pan, mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.reverb, (byte) (mm.readByte(reg.a5 + W.reverb) | 0x81));
     }
 
-    // volume + tone
+    /** volume + tone */
     public void _COM_98_2() {
         mm.write(reg.a5 + W.reverb_vol, mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.reverb_tone, mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.reverb, (byte) (mm.readByte(reg.a5 + W.reverb) | 0x82));
     }
 
-    // volume + panpot + tone
+    /** volume + panpot + tone */
     public void _COM_98_3() {
         mm.write(reg.a5 + W.reverb_vol, mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.reverb_pan, mm.readByte(reg.a1++));
@@ -426,13 +441,13 @@ public class ComCmds {
         mm.write(reg.a5 + W.reverb, (byte) (mm.readByte(reg.a5 + W.reverb) | 0x83));
     }
 
-    // volume
+    /** volume */
     public void _COM_98_4() {
         mm.write(reg.a5 + W.reverb_vol, mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.reverb, (byte) (mm.readByte(reg.a5 + W.reverb) | 0x84));
     }
 
-    // 擬似エコー(廃止コマンド？)
+    /** Pseudo echo (obsolete command?) */
     public void _COM_99() {
         reg.D0_L = 0;
         reg.setD0_B(mm.readByte(reg.a1++));
@@ -445,12 +460,12 @@ public class ComCmds {
         }
     }
 
-    //	擬似動作 step time
+    /** Pseudo-behaviour step time */
     public void _COM_9A() {
         mm.write(reg.a5 + W.reverb_time, mm.readByte(reg.a1++));
     }
 
-    //	音量テーブル切り替え
+    /** Volume table switching */
     public void _COM_A3() {
         reg.setD1_B(mm.readByte(reg.a1++));
         reg.setD5_B(mm.readByte(reg.a1++));
@@ -482,8 +497,8 @@ public class ComCmds {
             if (reg.getD4_W() == 0) {
                 return;
             }
-            reg.setD0_W(mm.readShort(reg.a2));  // Reg.a2 += 1;
-            reg.a2 = (reg.a2 + (int) (short) reg.getD0_W()) & 0x00ffffff;
+            reg.setD0_W(mm.readShort(reg.a2)); // Reg.a2 += 1;
+            reg.a2 = (reg.a2 + (int) (short) reg.getD0_W()) & 0x00ff_ffff;
         }
     }
 
@@ -492,7 +507,7 @@ public class ComCmds {
         reg.D0_L = 0x7f;
         reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a2));
         mm.write(reg.a5 + W.volcount, (byte) reg.getD0_B());
-        reg.a2 += 2;// (Reg.a2 & 0xffff0000) + (int)((int)Reg.a2 + 2);
+        reg.a2 += 2; // (Reg.a2 & 0xffff_0000) + (int) ((int) Reg.a2 + 2);
 
         reg.a0 = reg.a5 + W.voltable;
         do {
@@ -502,12 +517,12 @@ public class ComCmds {
         } while (reg.decAfterD0_W() != 0);
     }
 
-    //	相対音量モード
+    /** Relative Volume Mode */
     public void _COM_A8() {
         mm.write(reg.a5 + W.volmode, mm.readByte(reg.a1++));
     }
 
-    //	ドライバ動作モード変更
+    /** Driver operation mode change */
     public void _COM_B0() {
         reg.D0_L = 1;
         reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a1++));
@@ -588,12 +603,12 @@ public class ComCmds {
     }
 
 
-    //	トラックジャンプ
+    /** Track Jump */
     public void _COM_BE() {
         mm.write(reg.a6 + Dw.DRV_STATUS, (byte) (mm.readByte(reg.a6 + Dw.DRV_STATUS) ^ 0x08));
     }
 
-    //	フェードアウト
+    /** Fade out */
     public void _COM_BF_exit() {
         reg.a1++;
     }
@@ -637,8 +652,10 @@ public class ComCmds {
         mm.write(reg.a6 + Dw.FADESPEED_WORK, 7);
     }
 
-    //	ソフトウェアエンベロープ
-    //		[$C0] + [SV]b + [AR]b + [DR]b + [SL]b + [SR]b + [RR]b
+    /**
+     * Software Envelope
+     * [$C0] + [SV]b + [AR]b + [DR]b + [SL]b + [SR]b + [RR]b
+     */
     public void _COM_C0() {
         mm.write(reg.a5 + W.e_sv, mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.e_ar, mm.readByte(reg.a1++));
@@ -651,8 +668,10 @@ public class ComCmds {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) | 0x80));
     }
 
-    //	ソフトウェアエンベロープ 2
-    //		[$C1] + [AL]b + [DD]b + [SR]b + [RR]b
+    /**
+     * Software Envelope 2
+     * [$C1] + [AL]b + [DD]b + [SR]b + [RR]b
+     */
     public void _COM_C1() {
         mm.write(reg.a5 + W.e_al, mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.e_dd, mm.readByte(reg.a1++));
@@ -661,8 +680,10 @@ public class ComCmds {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) | 0x81));
     }
 
-    //	・ソフトウェアエンベロープスイッチ
-    //		[$C3] + [switch]
+    /**
+     * Software Envelope switch
+     * [$C3] + [switch]
+     */
     public void _COM_C3() {
         reg.setD0_B(mm.readByte(reg.a1++));
         if (reg.getD0_B() == 0) {
@@ -672,8 +693,10 @@ public class ComCmds {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) | 0x80));
     }
 
-    //	・エンベロープ切り替え
-    //		[$C4] + [num]
+    /**
+     * Envelope Switching
+     * [$C4] + [num]
+     */
     public void _COM_C4() {
         reg.setD5_B(mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.envnum, (byte) reg.getD5_B());
@@ -697,7 +720,7 @@ public class ComCmds {
             if (reg.getD4_W() == 0) return;
 
             reg.setD0_W(mm.readShort(reg.a2));
-            reg.a2 = (reg.a2 + (int) (short) reg.getD0_W()) & 0x00ffffff;
+            reg.a2 = (reg.a2 + (int) (short) reg.getD0_W()) & 0x00ff_ffff;
         }
     }
 
@@ -718,8 +741,10 @@ public class ComCmds {
         mm.write(reg.a5 + W.e_p, 4);
     }
 
-    //	・バンク&エンベロープ切り替え
-    //		[$C5] + [bank] + [num]
+    /**
+     * Bank & Envelope Switching
+     * [$C5] + [bank] + [num]
+     */
     public void _COM_C5() {
         reg.setD1_B(mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.envbank, (byte) reg.getD1_B());
@@ -758,18 +783,18 @@ public class ComCmds {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) | 0x80));
     }
 
-    //	キートランスポーズ
+    /** Key Transpose */
     public void _COM_D0() {
         mm.write(reg.a5 + W.key_trans, mm.readByte(reg.a1++));
     }
 
-    //	相対キートランスポーズ
+    /** Relative Key Transpose */
     public void _COM_D1() {
         reg.setD0_B(mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.key_trans, (byte) (mm.readByte(reg.a5 + W.key_trans) + (byte) reg.getD0_B()));
     }
 
-    //	detune 設定
+    /** detune settings */
     public void _COM_D8() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
         reg.setD0_W(mm.readShort(reg.a1));
@@ -777,7 +802,7 @@ public class ComCmds {
         mm.write(reg.a5 + W.detune, (short) reg.getD0_W());
     }
 
-    //	detune 設定
+    /** detune settings */
     public void _COM_D9() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
         reg.setD0_W(mm.readShort(reg.a1));
@@ -785,31 +810,32 @@ public class ComCmds {
         mm.write(reg.a5 + W.detune, (short) (mm.readShort(reg.a5 + W.detune) + (short) reg.getD0_W()));
     }
 
-    //	pitch LFO
-    //
-    //	$E2,num,wave,speed,count,delay,henka_w
+    /**
+     * pitch LFO
+     * $E2,num,wave,speed,count,delay,henka_w
+     */
     public void _COM_E2() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
         reg.D0_L = 1;
         reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a1++));
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         switch (reg.getD0_B()) {
-        case 2:
-            _COM_E2_0();
-            break;
-        case 4:
-            _COM_E2_1();
-            break;
-        case 6:
-            _COM_E2_2();
-            break;
-        case 8:
-            _COM_E2_3();
-            break;
+            case 2:
+                _COM_E2_0();
+                break;
+            case 4:
+                _COM_E2_1();
+                break;
+            case 6:
+                _COM_E2_2();
+                break;
+            case 8:
+                _COM_E2_3();
+                break;
         }
     }
 
-    //	pitch LFO ALL
+    /** pitch LFO ALL */
     public void _COM_E2_0() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0xe));
         reg.a0 = reg.a1;
@@ -835,7 +861,7 @@ public class ComCmds {
         }
     }
 
-    //	pitch LFO 1
+    /** pitch LFO 1 */
     public void _COM_E2_1() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x02));
 
@@ -847,7 +873,7 @@ public class ComCmds {
         }
     }
 
-    //	pitch LFO 2
+    /** pitch LFO 2 */
     public void _COM_E2_2() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x04));
 
@@ -859,7 +885,7 @@ public class ComCmds {
         }
     }
 
-    //	pitch LFO 3
+    /** pitch LFO 3 */
     public void _COM_E2_3() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x08));
 
@@ -871,7 +897,7 @@ public class ComCmds {
         }
     }
 
-    //	LFO SET COMMON
+    /** LFO SET COMMON */
     public void _COM_E2_common() {
         mm.write(reg.a4 + W_L.bendwork, (short) 0);
         mm.write(reg.a3 + W_W.use_flag, (byte) 0);
@@ -923,12 +949,12 @@ public class ComCmds {
 
         reg.setD1_W(mm.readShort(reg.a1));
         reg.a1 += 2;
-        mm.write(reg.a3 + W_W.start, (short) reg.getD1_W()); // 周期1
+        mm.write(reg.a3 + W_W.start, (short) reg.getD1_W()); // cycle1
 
         if (reg.getD2_B() != 0) {
             reg.setD1_W(reg.getD1_W() >> 1);
         }
-        mm.write(reg.a3 + W_W.loop_start, (short) reg.getD1_W()); // 周期2
+        mm.write(reg.a3 + W_W.loop_start, (short) reg.getD1_W()); // cycle2
 
         reg.setD1_W(mm.readShort(reg.a1));
         reg.a1 += 2;
@@ -937,11 +963,11 @@ public class ComCmds {
         if (reg.getD0_B() >= 4) {
             reg.D1_L = (short) reg.D1_L << 8;
         }
-        mm.write(reg.a3 + W_W.loop_end, reg.D1_L); // 増減1
+        mm.write(reg.a3 + W_W.loop_end, reg.D1_L); // fluctuation1
         if (reg.getD2_B() != 2) {
             reg.D1_L = 0;
         }
-        mm.write(reg.a3 + W_W.loop_count, reg.D1_L); // 増減2
+        mm.write(reg.a3 + W_W.loop_count, reg.D1_L); // fluctuation2
         reg.D2_L = 0;
     }
 
@@ -968,7 +994,7 @@ public class ComCmds {
     public void _get_wave_memory_e2() {
         reg.D1_L = mm.readInt(reg.a6 + Dw.WAVE_PTR);
         if (reg.D1_L == 0) {
-            reg.D2_L = 0xffffffff; // -1;
+            reg.D2_L = 0xffff_ffff; // -1;
             return;
         }
         reg.a2 = reg.D1_L;
@@ -980,14 +1006,14 @@ public class ComCmds {
         reg.setD1_W(mm.readShort(reg.a2));
         reg.a2 += 2;
         if (reg.D1_L == 0) {
-            reg.D2_L = 0xffffffff; // -1;
+            reg.D2_L = 0xffff_ffff; // -1;
             return;
         }
 
         reg.setD1_W(mm.readShort(reg.a2));
         reg.a2 += 2;
         if (reg.getD1_W() == 0) {
-            reg.D2_L = 0xffffffff; // -1;
+            reg.D2_L = 0xffff_ffff; // -1;
             return;
         }
 
@@ -997,9 +1023,9 @@ public class ComCmds {
             reg.D2_L = (reg.D2_L << 16) + (reg.D2_L >> 16);
             reg.setD2_W(mm.readShort(reg.a2 + 2));
             if (mm.readShort(reg.a2 + 4) != 0) {
-                reg.a2 = (reg.a2 + reg.D2_L) & 0xffffff;
+                reg.a2 = (reg.a2 + reg.D2_L) & 0xff_ffff;
                 if (reg.decAfterD1_W() != 0) continue; // break _com_e2_wm10;
-                reg.D2_L = 0xffffffff; // -1;
+                reg.D2_L = 0xffff_ffff; // -1;
                 return;
             } else {
                 break;
@@ -1067,7 +1093,7 @@ public class ComCmds {
         reg.setD0_W(mm.readShort(reg.a2));
         reg.a2 += 2;
         reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >> 16);
-        reg.setD0_W( mm.readShort(reg.a2));
+        reg.setD0_W(mm.readShort(reg.a2));
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
         mm.write(reg.a3 + W_W.ko_loop_end, reg.D0_L);
@@ -1083,9 +1109,10 @@ public class ComCmds {
         reg.D2_L = 0;
     }
 
-    //	pitch LFO on /off
-    //
-    //	$E3,num,switch
+    /**
+     * pitch LFO on /off
+     * $E3,num,switch
+     */
     public void _COM_E3() {
         reg.D0_L = 0;
         reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a1++));
@@ -1107,15 +1134,18 @@ public class ComCmds {
         }
     }
 
-    // bit15		0:enable 1:disable
-    // bit1 keyoff	0:enable 1:disable
-    // bit0 keyon	0:enable 1:disable
-    // $80  = at keyon
-    // $81  = at keyoff
-    // $82  = always
-    // $83  = async
-    // $84  = stop & init
-    //
+    /**
+     * <pre>
+     * bit15  0:enable 1:disable
+     * bit1 keyoff 0:enable 1:disable
+     * bit0 keyon 0:enable 1:disable
+     * $80  = at keyon
+     * $81  = at keyoff
+     * $82  = always
+     * $83  = async
+     * $84  = stop & init
+     * </pre>
+     */
     public void _COM_E3_0() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0xf1));
         reg.setD0_B(mm.readByte(reg.a1++));
@@ -1175,7 +1205,6 @@ public class ComCmds {
         mm.write(reg.a4 + W_L.flag, (short) 0x8002);
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x0e));
-
     }
 
     public void _COM_E3_1() {
@@ -1262,9 +1291,10 @@ public class ComCmds {
         mm.write(reg.a5 + W.lfo, (byte) reg.getD0_B());
     }
 
-    //	pitch LFO delay
-    //
-    //	$E4,num,delay
+    /**
+     * pitch LFO delay
+     * $E4,num,delay
+     */
     public void _COM_E4() {
         reg.D0_L = 1;
         reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a1++));
@@ -1285,7 +1315,7 @@ public class ComCmds {
         }
     }
 
-    //	pitch LFO ALL
+    /** pitch LFO ALL */
     public void _COM_E4_0() {
         reg.a0 = reg.a1;
         reg.a4 = W.p_pattern1 + reg.a5;
@@ -1298,19 +1328,19 @@ public class ComCmds {
         _COM_E49_common();
     }
 
-    //	pitch LFO 1
+    /** pitch LFO 1 */
     public void _COM_E4_1() {
         reg.a4 = W.p_pattern1 + reg.a5;
         _COM_E49_common();
     }
 
-    //	pitch LFO 2
+    /** pitch LFO 2 */
     public void _COM_E4_2() {
         reg.a4 = W.p_pattern2 + reg.a5;
         _COM_E49_common();
     }
 
-    //	pitch LFO 3
+    /** pitch LFO 3 */
     public void _COM_E4_3() {
         reg.a4 = W.p_pattern3 + reg.a5;
         _COM_E49_common();
@@ -1335,31 +1365,32 @@ public class ComCmds {
         mm.write(reg.a4 + W_L.delay_work, (byte) reg.getD0_B());
     }
 
-    //	音量 LFO
-    //
-    //	$E7,num,wave,delay,count,speed,henka_w
+    /**
+     * volume LFO
+     * $E7,num,wave,delay,count,speed,henka_w
+     */
     public void _COM_E7() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
         reg.D0_L = 1;
         reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a1++));
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         switch (reg.getD0_B()) {
-        case 2:
-            _COM_E7_0();
-            break;
-        case 4:
-            _COM_E7_1();
-            break;
-        case 6:
-            _COM_E7_2();
-            break;
-        case 8:
-            _COM_E7_3();
-            break;
+            case 2:
+                _COM_E7_0();
+                break;
+            case 4:
+                _COM_E7_1();
+                break;
+            case 6:
+                _COM_E7_2();
+                break;
+            case 8:
+                _COM_E7_3();
+                break;
         }
     }
 
-    //	音量 LFO
+    /** volume LFO */
     public void _COM_E7_0() {
         reg.a0 = reg.a1;
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x70));
@@ -1376,7 +1407,7 @@ public class ComCmds {
         _COM_E7_common();
     }
 
-    //	音量 LFO 1
+    /** volume LFO 1 */
     public void _COM_E7_1() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x10));
         reg.a4 = W.v_pattern1 + reg.a5;
@@ -1384,7 +1415,7 @@ public class ComCmds {
         _COM_E7_common();
     }
 
-    //	音量 LFO 2
+    /** volume LFO 2 */
     public void _COM_E7_2() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x20));
         reg.a4 = W.v_pattern2 + reg.a5;
@@ -1392,7 +1423,7 @@ public class ComCmds {
         _COM_E7_common();
     }
 
-    //	音量 LFO 3
+    /** volume LFO 3 */
     public void _COM_E7_3() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x40));
         reg.a4 = W.v_pattern3 + reg.a5;
@@ -1400,7 +1431,7 @@ public class ComCmds {
         _COM_E7_common();
     }
 
-    //	LFO SET COMMON
+    /** LFO SET COMMON */
     public void _COM_E7_common() {
         mm.write(reg.a4 + W_L.bendwork, (short) 0);
         mm.write(reg.a3 + W_W.use_flag, (byte) 0);
@@ -1426,7 +1457,7 @@ public class ComCmds {
         }
         reg.a1++;
         reg.setD0_B(mm.readByte(reg.a1++));
-        reg.setD0_W((short) reg.getD0_B()); //byte to short cast(signed)
+        reg.setD0_W((short) reg.getD0_B()); // byte to short cast(signed)
         mm.write(reg.a4 + W_L.henka, (short) reg.getD0_W());
         mm.write(reg.a4 + W_L.henka_work, (short) reg.getD0_W());
     }
@@ -1443,10 +1474,10 @@ public class ComCmds {
         mm.write(reg.a4 + W_L.lfo_sp, mm.readByte(reg.a1++));
         reg.setD1_W(mm.readShort(reg.a1));
         reg.a1 += 2;
-        mm.write(reg.a3 + W_W.start, (short) reg.getD1_W()); // 周期
+        mm.write(reg.a3 + W_W.start, (short) reg.getD1_W()); // cycle
         reg.setD0_W(mm.readShort(reg.a1));
         reg.a1 += 2;
-        mm.write(reg.a3 + W_W.loop_start, (short) reg.getD0_W()); // 増減
+        mm.write(reg.a3 + W_W.loop_start, (short) reg.getD0_W()); // fluctuation
 
         int f = reg.getD2_B() & 1;
         reg.setD2_B(reg.getD2_B() >> 1);
@@ -1457,7 +1488,7 @@ public class ComCmds {
         if ((short) reg.getD0_W() < 0) {
             reg.D0_L = 0;
         }
-        mm.write(reg.a3 + W_W.loop_end, (short) reg.getD0_W()); // 最大振幅
+        mm.write(reg.a3 + W_W.loop_end, (short) reg.getD0_W()); // Maximum Amplitude
 
         mm.write(reg.a3 + W_W.ko_start, mm.readShort(reg.a3 + W_W.start));
         mm.write(reg.a3 + W_W.ko_loop_start, mm.readShort(reg.a3 + W_W.loop_start));
@@ -1465,9 +1496,10 @@ public class ComCmds {
         reg.D2_L = 0;
     }
 
-    //	音量 LFO on /off
-    //
-    //	$E8,num,switch
+    /**
+     * volume LFO on /off
+     * $E8,num,switch
+     */
     public void _COM_E8() {
 
         reg.D0_L = 0;
@@ -1476,18 +1508,18 @@ public class ComCmds {
         reg.setD1_B(reg.getD1_B() + 3);
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         switch (reg.getD0_B()) {
-        case 0:
-            _COM_E8_0();
-            break;
-        case 2:
-            _COM_E8_1();
-            break;
-        case 4:
-            _COM_E8_2();
-            break;
-        case 6:
-            _COM_E8_3();
-            break;
+            case 0:
+                _COM_E8_0();
+                break;
+            case 2:
+                _COM_E8_1();
+                break;
+            case 4:
+                _COM_E8_2();
+                break;
+            case 6:
+                _COM_E8_3();
+                break;
         }
     }
 
@@ -1628,32 +1660,32 @@ public class ComCmds {
         mm.write(reg.a5 + W.lfo, (byte) reg.getD0_B());
     }
 
-    //─────────────────────────────────────
-    //	音量 LFO delay
-    //
+    /**
+     * volume LFO delay
+     */
     public void _COM_E9() {
         reg.D0_L = 1;
         reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a1++));
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         switch (reg.getD0_B()) {
-        case 2:
-            _COM_E9_0();
-            break;
-        case 4:
-            _COM_E9_1();
-            break;
-        case 6:
-            _COM_E9_2();
-            break;
-        case 8:
-            _COM_E9_3();
-            break;
+            case 2:
+                _COM_E9_0();
+                break;
+            case 4:
+                _COM_E9_1();
+                break;
+            case 6:
+                _COM_E9_2();
+                break;
+            case 8:
+                _COM_E9_3();
+                break;
         }
     }
 
-    //─────────────────────────────────────
-    //	音量 LFO
-    //
+    /**
+     * volume LFO
+     */
     public void _COM_E9_0() {
         reg.a0 = reg.a1;
         reg.a4 = W.v_pattern1 + reg.a5;
@@ -1666,53 +1698,56 @@ public class ComCmds {
         _COM_E49_common();
     }
 
-    //─────────────────────────────────────
-    //	音量 LFO 1
+    /**
+     * volume LFO 1
+     */
     public void _COM_E9_1() {
         reg.a4 = W.v_pattern1 + reg.a5;
         _COM_E49_common();
     }
 
-    //─────────────────────────────────────
-    //	音量 LFO 2
+    /**
+     * volume LFO 2
+     */
     public void _COM_E9_2() {
         reg.a4 = W.v_pattern2 + reg.a5;
         _COM_E49_common();
     }
 
-    //─────────────────────────────────────
-    //	音量 LFO 3
+    /**
+     * volume LFO 3
+     */
     public void _COM_E9_3() {
         reg.a4 = W.v_pattern3 + reg.a5;
         _COM_E49_common();
     }
 
-    //─────────────────────────────────────
-    //	音量 LFO switch 2
-    //
+    /**
+     * volume LFO switch 2
+     */
     public void _COM_EA() {
         reg.D0_L = 1;
         reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a1++));
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         switch (reg.getD0_B()) {
-        case 2:
-            _COM_EA_0();
-            break;
-        case 4:
-            _COM_EA_1();
-            break;
-        case 6:
-            _COM_EA_2();
-            break;
-        case 8:
-            _COM_EA_3();
-            break;
+            case 2:
+                _COM_EA_0();
+                break;
+            case 4:
+                _COM_EA_1();
+                break;
+            case 6:
+                _COM_EA_2();
+                break;
+            case 8:
+                _COM_EA_3();
+                break;
         }
     }
 
-    //─────────────────────────────────────
-    //	音量 LFO
-    //
+    /**
+     * volume LFO
+     */
     public void _COM_EA_0() {
         reg.D0_L = 0;
         reg.setD0_B(mm.readByte(reg.a1++));
@@ -1727,22 +1762,25 @@ public class ComCmds {
         mm.write(reg.a3 + W_W.slot, (byte) reg.getD0_B());
     }
 
-    //─────────────────────────────────────
-    //	音量 LFO 1
+    /**
+     * volume LFO 1
+     */
     public void _COM_EA_1() {
         reg.a3 = W.wv_pattern1 + reg.a5;
         _COM_EA_common();
     }
 
-    //─────────────────────────────────────
-    //	音量 LFO 2
+    /**
+     * volume LFO 2
+     */
     public void _COM_EA_2() {
         reg.a3 = W.wv_pattern2 + reg.a5;
         _COM_EA_common();
     }
 
-    //─────────────────────────────────────
-    //	音量 LFO 3
+    /**
+     * volume LFO 3
+     */
     public void _COM_EA_3() {
         reg.a3 = W.wv_pattern3 + reg.a5;
         _COM_EA_common();
@@ -1757,9 +1795,9 @@ public class ComCmds {
         mm.write(reg.a3 + W_W.slot, (byte) reg.getD0_B());
     }
 
-    //─────────────────────────────────────
-    //	わうわう
-    //
+    /**
+     * wowwow
+     */
     public void _COM_EB() {
         reg.a4 = W.ww_pattern1 + reg.a5;
 
@@ -1790,26 +1828,27 @@ public class ComCmds {
         }
     }
 
-    //─────────────────────────────────────
-    //	wavememory effect
-    //
-    //	[$ED] + [num]b + [switch]b ...
-    //	num
-    //		$00 ～ $03
-    //	switch
-    //	minus
-    //		$80 = ON
-    //		$81 = OFF
-    //		$82 = always
-    //		$83 = at keyon
-    //		$84 = at keyoff
-    //	plus = + [switch2]b + [wave]W + [delay]b + [speed]b + [sync]b + [reset]W
-    //	$00 = y command
-    //		波形データの上位バイトのレジスタに
-    //		下位バイトのデータを書き込む
-    //	$01 = tone
-    //	$02 = panpot
-    //
+    /**
+     * wavememory effect
+     * <pre>
+     * [$ED] + [num]b + [switch]b ...
+     * num
+     *  $00 ～ $03
+     * switch
+     * minus
+     *  $80 = ON
+     *  $81 = OFF
+     *  $82 = always
+     *  $83 = at keyon
+     *  $84 = at keyoff
+     * plus = + [switch2]b + [wave]W + [delay]b + [speed]b + [sync]b + [reset]W
+     * $00 = y command
+     *  Write the lower byte data to the upper byte
+     *  register of the waveform data
+     * $01 = tone
+     * $02 = panpot
+     * </pre>
+     */
     public void _COM_ED() {
         reg.D0_L = 0;
         reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a1++));
@@ -1928,9 +1967,9 @@ public class ComCmds {
         }
     }
 
-    //
-    //	ON
-    //
+    /**
+     * ON
+     */
     public void _com_ed_80() {
         reg.D0_L = 1;
         reg.D0_L <<= reg.D1_L;
@@ -1939,9 +1978,9 @@ public class ComCmds {
         reg.D0_L = 0;
     }
 
-    //
-    //	OFF
-    //
+    /**
+     * OFF
+     */
     public void _com_ed_81() {
         reg.D0_L = 1;
         reg.D0_L <<= reg.D1_L;
@@ -1959,25 +1998,25 @@ public class ComCmds {
         reg.D0_L = 0;
     }
 
-    //
-    //	always
-    //
+    /**
+     * always
+     */
     public void _com_ed_82() {
         mm.write(reg.a3 + W_We.exec, (byte) 0);
         reg.D0_L = 0;
     }
 
-    //
-    //	at keyon
-    //
+    /**
+     * at keyon
+     */
     public void _com_ed_83() {
         mm.write(reg.a3 + W_We.exec, (byte) 0x81);
         reg.D0_L = 0;
     }
 
-    //
-    //	at keyoff
-    //
+    /**
+     * at keyoff
+     */
     public void _com_ed_84() {
         mm.write(reg.a3 + W_We.exec, (byte) 0x82);
         reg.D0_L = 0;
@@ -2027,8 +2066,8 @@ public class ComCmds {
     }
 
     private static final byte[] _com_ed_sync_table = new byte[] {
-                    (byte) 0x80, 0x00, 0x01, 0x02
-            };
+            (byte) 0x80, 0x00, 0x01, 0x02
+    };
 
     public void _get_wave_memory_ed() {
         reg.D0_L = mm.readInt(reg.a6 + Dw.WAVE_PTR);
@@ -2146,13 +2185,13 @@ public class ComCmds {
     }
 
     public void _com_ed_wm_err_exit() {
-        reg.D2_L = 0xffffffff;// -1;
+        reg.D2_L = 0xffff_ffff; // -1;
     }
 
-    //─────────────────────────────────────
-    //	hardware LFO delay
-    //		[$EF] + [delay]b
-    //
+    /**
+     * hardware LFO delay
+     * [$EF] + [delay]b
+     */
     public void _COM_EF() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) | 0x04));
@@ -2177,16 +2216,18 @@ public class ComCmds {
         mm.write(reg.a4 + W_L.delay_work, (byte) reg.getD1_B());
     }
 
-    //─────────────────────────────────────
-    //	永久ループポイントマーク
-    //			[$F9]
+    /**
+     * Permanent loop point mark
+     * [$F9]
+     */
     public void _COM_F9() {
         mm.write(reg.a5 + W.loop, reg.a1);
     }
 
-    //─────────────────────────────────────
-    //	リピート抜け出し
-    //			[$FB] + [終端コマンドへのオフセット]W
+    /**
+     * Exit repeating
+     * [$FB] + [Offset to the end command]W
+     */
     public void _COM_FB() {
         reg.setD0_W(mm.readShort(reg.a1));
         reg.a1 += 2;
@@ -2197,17 +2238,19 @@ public class ComCmds {
         reg.a1 = reg.a0;
     }
 
-    //─────────────────────────────────────
-    //	リピート開始
-    //			[$FC] + [リピート回数]b + [$00]b
+    /**
+     * Start repeating
+     * [$FC] + [Repeat count]b + [$00]b
+     */
     public void _COM_FC() {
         mm.write(reg.a1 + 1, mm.readByte(reg.a1));
         reg.a1 += 2;
     }
 
-    //─────────────────────────────────────
-    //	リピート終端
-    //			[$FD] + [開始コマンドへのオフセット]W
+    /**
+     * End repeating
+     * [$FD] + [Offset to the start command]W
+     */
     public void _COM_FD() {
         reg.setD0_W(mm.readShort(reg.a1));
         reg.a1 += 2;
@@ -2221,14 +2264,14 @@ public class ComCmds {
         }
     }
 
-    //─────────────────────────────────────
-    //	tempo 設定
-    //
+    /**
+     * tempo settings
+     */
     public void _COM_FE() {
         mm.write(reg.a6 + Dw.TEMPO, mm.readByte(reg.a1++));
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _all_end_check() {
         reg.setD0_W(mm.readShort(reg.a6 + Dw.USE_TRACK));
         reg.a0 = reg.a6 + Dw.TRACKWORKADR;
@@ -2236,11 +2279,11 @@ public class ComCmds {
             if (mm.readByte(reg.a0 + W.flag) < 0) {
                 return;
             }
-            reg.a0 = reg.a0 + W._track_work_size;// Dw._work_size;
+            reg.a0 = reg.a0 + W._track_work_size; // Dw._work_size;
             reg.setD0_W(reg.getD0_W() - 1);
         } while (reg.getD0_W() != 0);
         mm.write(reg.a6 + Dw.DRV_STATUS, (byte) 0x20);
-        mm.write(reg.a6 + Dw.LOOP_COUNTER, (short) 0xffff);// -1
+        mm.write(reg.a6 + Dw.LOOP_COUNTER, (short) 0xffff); // -1
         reg.D0_L = 2;
         mndrv.SUBEVENT();
     }

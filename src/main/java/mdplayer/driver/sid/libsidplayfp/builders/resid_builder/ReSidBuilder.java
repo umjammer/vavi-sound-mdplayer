@@ -22,9 +22,14 @@
 
 package mdplayer.driver.sid.libsidplayfp.builders.resid_builder;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.Setting;
 import mdplayer.driver.sid.libsidplayfp.SidEmu;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidBuilder;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -32,7 +37,9 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidBuilder;
  */
 public class ReSidBuilder extends SidBuilder {
 
-    private Setting setting;
+    private static final Logger logger = getLogger(ReSidBuilder.class.getName());
+
+    private final Setting setting;
 
     public ReSidBuilder(String name, Setting setting) {
         super(name);
@@ -67,7 +74,7 @@ public class ReSidBuilder extends SidBuilder {
             }
             // Memory alloc failed?
             catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
                 errorBuffer = name() + " ERROR: Unable to create ReSid Object";
                 status = false;
                 break;

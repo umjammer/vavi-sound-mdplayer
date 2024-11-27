@@ -81,7 +81,7 @@ public class frmVST extends JDialog {
                 this.setPreferredSize(this.SizeFromClientSize(new Dimension(wndRect.width, wndRect.height)));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 

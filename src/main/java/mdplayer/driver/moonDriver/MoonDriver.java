@@ -1,5 +1,7 @@
 package mdplayer.driver.moonDriver;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.Set;
 
 import dotnet4j.util.compat.Tuple;
@@ -13,8 +15,12 @@ import net.sf.saxon.functions.Count;
 import vavi.util.ByteUtil;
 import vavi.util.win32.WAVE.data;
 
+import static java.lang.System.getLogger;
+
 
 public class MoonDriver extends BaseDriver {
+
+    private static final Logger logger = getLogger(MoonDriver.class.getName());
 
     @Override
     public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
@@ -128,7 +134,7 @@ public class MoonDriver extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 
     @Override
@@ -150,7 +156,7 @@ public class MoonDriver extends BaseDriver {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -223,7 +229,7 @@ public class MoonDriver extends BaseDriver {
                 ntscCounter += ntscStep;
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -816,7 +822,7 @@ public class MoonDriver extends BaseDriver {
      * dest : AF
      */
     private void changePage3() {
-        //System.err.println("ChangePage3:%d", a);
+        //logger.log(Level.TRACE, "ChangePage3:%d".formatted(a));
         a >>= 1; // srl
         a += 0x04; // The system uses 4pages for initial work area
         outport(RAM_PAGE3, a);
@@ -1125,7 +1131,7 @@ public class MoonDriver extends BaseDriver {
                 if (CP_CF(e)) {
                     work.seq_cur_ch = a;
                 }
-                //System.err.println("a:%d", a);
+                //logger.log(Level.TRACE, "a:%d".formatted(a));
 
             } while (CP_CF(e));
 
@@ -2961,7 +2967,7 @@ public class MoonDriver extends BaseDriver {
             chipRegister.setYMF262Register(0, 0, d, e, model);
         } else {
             chipRegister.setYMF278BRegister(0, 0, d, e, model);
-            //System.err.println("fm1out:%02x:%02x:", d, e);
+            //logger.log(Level.TRACE, "fm1out:%02x:%02x:".formatted(d, e));
         }
     }
 
@@ -2978,7 +2984,7 @@ public class MoonDriver extends BaseDriver {
         } else {
             chipRegister.setYMF278BRegister(0, 1, d, e, model);
         }
-        //System.err.println("fm2out:%02x:%02x:", d, e);
+        //logger.log(Level.TRACE, "fm2out:%02x:%02x:".formatted(d, e));
     }
 
     private void moon_wave_out() {
@@ -2996,7 +3002,7 @@ public class MoonDriver extends BaseDriver {
         }
 
         backDat = e;
-        //System.err.println("wave out:%02x:%02x:", d, e);
+        //logger.log(Level.TRACE, "wave out:%02x:%02x:".formatted(d, e));
     }
 
     private int backDat = 0;

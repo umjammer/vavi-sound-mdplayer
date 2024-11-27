@@ -57,7 +57,7 @@ public class frmOKIM6295 extends frmBase {
     }
 
     public void update() {
-        frameBuffer.Refresh(null);
+        frameBuffer.refresh(null);
     }
 
 //    @Override

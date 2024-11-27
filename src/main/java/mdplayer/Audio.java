@@ -1,5 +1,7 @@
 package mdplayer;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -36,10 +38,13 @@ import mdsound.chips.YmF271;
 import mdsound.instrument.*;
 import mdsound.np.chip.DeviceInfo;
 import vavi.util.ByteUtil;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 public class Audio {
+
+    private static final Logger logger = getLogger(Audio.class.getName());
 
     private final Setting setting = Setting.getInstance();
 
@@ -116,14 +121,14 @@ public class Audio {
 //            naudioWs.read(naudioSrcbuffer, 0, count * 2);
             convert2ByteToShort(buffer, offset, naudioSrcbuffer, count);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
 
         return count;
     }
 
     public int trdVgmVirtualFunction(short[] buffer, int offset, int sampleCount) {
-//Debug.println(": " + sampleCount);
+//logger.log(Level.TRACE, ": " + sampleCount);
         //return nAaudioRead(buffer, offset, sampleCount);
 
         if (naudioFileReader != null) {
@@ -165,7 +170,7 @@ int CC;
             int i;
             int cnt;
 //if (CC++ > 100) { System.exit(1); }
-//Debug.println("stop: " + stopped + ", " + hashCode());
+//logger.log(Level.TRACE, "stop: " + stopped + ", " + hashCode());
             if (stopped || paused) {
                 if (setting.getOther().getNonRenderingForPause()
                         || driverVirtual instanceof Nsf
@@ -210,11 +215,11 @@ int CC;
 //                driverVirtual.vstDelta = 0;
 //                stwh.reset();
 //                stwh.start();
-//Debug.println("driver: " + driverVirtual.getClass().getSimpleName());
+//logger.log(Level.TRACE, "driver: " + driverVirtual.getClass().getSimpleName());
                 cnt = mds.update(buffer, offset, sampleCount, driverVirtual::processOneFrame);
                 procTimePer1Frame = (int) ((double) System.currentTimeMillis() / (sampleCount + 1) * 1000000.0);
             }
-//Debug.println("sampleCount: " + sampleCount);
+//logger.log(Level.TRACE, "sampleCount: " + sampleCount);
 
             // VST
 //            vstMng.VST_Update(buffer, offset, sampleCount);
@@ -225,7 +230,7 @@ int CC;
 
                 if (!vgmFadeout) continue;
 
-                // フェードアウト処理
+                // Fade-out Processing
                 buffer[offset + i] = (short) (buffer[offset + i] * vgmFadeoutCounter);
 
                 vgmFadeoutCounter -= vgmFadeoutCounterV;
@@ -237,7 +242,7 @@ int CC;
                     vgmFadeoutCounter = 0.0;
                 }
 
-                // フェードアウト完了後、演奏を完全停止する
+                // After the fade out is complete, the music stops playing completely.
                 if (vgmFadeoutCounter == 0.0) {
                     softReset(Common.EnmModel.VirtualModel);
                     softReset(Common.EnmModel.RealModel);
@@ -254,13 +259,13 @@ int CC;
 
                     chipRegister.close();
 
-                    //Thread.sleep(500); // noise対策
+                    //Thread.sleep(500); // Noise countermeasures
 
                     stopped = true;
-Debug.println("stop: " + stopped);
+logger.log(Level.DEBUG, "stop: " + stopped);
 
-                    // 1frame当たりの処理時間
-                    //procTimePer1Frame = (int)((double)stwh.ElapsedMilliseconds / (i + 1) * 1000000.0);
+                    // Processing time per frame
+//                    procTimePer1Frame = (int) ((double) stwh.ElapsedMilliseconds / (i + 1) * 1000000.0);
                     return i + 1;
                 }
             }
@@ -271,12 +276,12 @@ Debug.println("stop: " + stopped);
 
             waveWriter.write(buffer, offset, sampleCount);
 
-            // //1frame当たりの処理時間
-            //procTimePer1Frame = (int)((double)stwh.ElapsedMilliseconds / sampleCount * 1000000.0);
+            // Processing time per frame
+//            procTimePer1Frame = (int) ((double) stwh.ElapsedMilliseconds / sampleCount * 1000000.0);
             return cnt;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             _fatalError = true;
             stopped = true;
         }
@@ -287,10 +292,9 @@ Debug.println("stop: " + stopped);
     protected void naudioWrapPlaybackStopped(LineEvent e) {
 //        if (e.getException != null) {
 //            JOptionPane.showMessageDialog(null,
-//                    String.format("デバイスが何らかの原因で停止しました。\nメッセージ:\n%s\nスタックトレース:\n%s"
-//                            , e.Exception.Message
-//                            , e.Exception.StackTrace)
-//                    , "エラー"
+//                    "The device has stopped for some reason.\nMessage:\n%s\nStack trace:\n%s".formatted(
+//                            e.Exception.Message, e.Exception.StackTrace)
+//                    , "Error"
 //                    , JOptionPane.ERROR_MESSAGE);
 //            flgReinit = true;
 //
@@ -304,7 +308,7 @@ Debug.println("stop: " + stopped);
         try {
             stop();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
 //        }
     }
@@ -363,7 +367,7 @@ Debug.println("stop: " + stopped);
             }
             stopped = true;
 new Exception().printStackTrace();
-Debug.println("stop: " + stopped + ", " + hashCode());
+logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
 
             softReset(Common.EnmModel.VirtualModel);
             softReset(Common.EnmModel.RealModel);
@@ -377,7 +381,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
             // DEBUG
             //vstparse();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -387,12 +391,12 @@ Debug.println("stop: " + stopped + ", " + hashCode());
             naudioFileReader = null;
             dmy.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
     private Audio() {
-        Debug.println("Audio:Init:STEP 01");
+        logger.log(Level.DEBUG, "Audio:Init:STEP 01");
 
         naudioWrap = new NAudioWrap(setting.getOutputDevice().getSampleRate(), this::trdVgmVirtualFunction);
         naudioWrap.playbackStopped = this::naudioWrapPlaybackStopped;
@@ -454,7 +458,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         else
             mdsMIDI.init(setting.getOutputDevice().getSampleRate(), SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
 
-        // midi  のインスタンスを作成
+        // Creates a midi instance.
         makeMIDIout(setting, 1);
         chipRegister.resetAllMIDIout();
     }
@@ -507,7 +511,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
                 try {
                     mo = MidiSystem.getReceiver();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.log(Level.ERROR, e.getMessage(), e);
                     mo = null;
                 }
             }
@@ -524,7 +528,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
     }
 
     public void releaseAllMIDIout() {
-        if (midiOuts.size() > 0) {
+        if (!midiOuts.isEmpty()) {
             for (int i = 0; i < midiOuts.size(); i++) {
                 if (midiOuts.get(i) != null) {
                     midiOuts.get(i).close();
@@ -543,8 +547,8 @@ Debug.println("stop: " + stopped + ", " + hashCode());
 
     public void close() {
         try {
-            // midi outをリリース
-            if (midiOuts.size() > 0) {
+            // release the midi out
+            if (!midiOuts.isEmpty()) {
                 for (int i = 0; i < midiOuts.size(); i++) {
                     if (midiOuts.get(i) != null) {
                         midiOuts.get(i).close();
@@ -563,7 +567,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
             naudioWrap.stop();
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -829,14 +833,14 @@ Debug.println("stop: " + stopped + ", " + hashCode());
     public byte[] getAPURegister(int chipId) {
         byte[] reg;
 
-        // nsf向け
+        // for nsf
         if (chipRegister == null) reg = null;
         else if (chipRegister.nes_apu == null) reg = null;
         else if (chipRegister.nes_apu.apu == null) reg = null;
         else if (chipId == 1) reg = null;
         else reg = chipRegister.nes_apu.apu.reg;
 
-        // vgm向け
+        // for vgm
         if (reg == null) reg = chipRegister.getNESRegisterAPU(chipId, Common.EnmModel.VirtualModel);
 
         return reg;
@@ -845,19 +849,19 @@ Debug.println("stop: " + stopped + ", " + hashCode());
     public byte[] getDMCRegister(int chipId) {
         byte[] reg;
         try {
-            // nsf向け
+            // for nsf
             if (chipRegister == null) reg = null;
             else if (chipRegister.nes_apu == null) reg = null;
             else if (chipRegister.nes_apu.apu == null) reg = null;
             else if (chipId == 1) reg = null;
             else reg = chipRegister.nes_dmc.dmc.reg;
 
-            // vgm向け
+            // for vgm
             if (reg == null) reg = chipRegister.getNESRegisterDMC(chipId, Common.EnmModel.VirtualModel);
 
             return reg;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             return null;
         }
     }
@@ -865,14 +869,14 @@ Debug.println("stop: " + stopped + ", " + hashCode());
     public mdsound.np.NpNesFds getFDSRegister(int chipId) {
         mdsound.np.NpNesFds reg;
 
-        // nsf向け
+        // for nsf
         if (chipRegister == null) reg = null;
         else if (chipRegister.nes_apu == null) reg = null;
         else if (chipRegister.nes_apu.apu == null) reg = null;
         else if (chipId == 1) reg = null;
         else reg = chipRegister.nes_fds.fds;
 
-        // vgm向け
+        // for vgm
         if (reg == null) reg = chipRegister.getFDSRegister(chipId, Common.EnmModel.VirtualModel);
 
         return reg;
@@ -881,7 +885,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
     protected final byte[] s5bregs = new byte[0x20];
 
     public byte[] getS5BRegister(int chipId) {
-        // nsf 向け
+        // for nsf
         if (chipRegister == null) return null;
         else if (chipRegister.nes_fme7 == null) return null;
         else if (chipId == 1) return null;
@@ -905,7 +909,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
     protected final byte[] mmc5regs = new byte[10];
 
     public byte[] getMMC5Register(int chipId) {
-        // nsf 向け
+        // for nsf
         if (chipRegister == null) return null;
         else if (chipRegister.nes_mmc5 == null) return null;
         else if (chipId == 1) return null;
@@ -1101,7 +1105,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
             chipRegister.setMaskSN76489(chipId, ch, false);
             sn76489ForcedSendVolume(chipId, ch);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1243,7 +1247,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskYM2612(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1251,7 +1255,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskYM2203(chipId, ch, false, stopped);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1259,7 +1263,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskYM2413(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1267,7 +1271,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskRF5C164(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1275,7 +1279,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskRF5C68(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1285,7 +1289,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskYM2151(chipId, ch, false, stopped);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1293,7 +1297,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskYM2608(chipId, ch, false, stopped);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1301,7 +1305,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskYM2610(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1309,7 +1313,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskYM3526(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1317,7 +1321,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskY8950(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1325,7 +1329,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskYM3812(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1333,7 +1337,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskYMF262(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1341,7 +1345,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskYMF278B(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1349,7 +1353,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskC140(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1357,7 +1361,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskPPZ8(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1365,7 +1369,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             chipRegister.setMaskC352(chipId, ch, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1429,7 +1433,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
             mds.setVolume(tag, c, v);
             setting.getBalance().setVolume(tag, c, v);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1529,7 +1533,7 @@ Debug.println("stop: " + stopped + ", " + hashCode());
         try {
             paused = !paused;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 

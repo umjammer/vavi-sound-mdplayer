@@ -94,7 +94,7 @@ public class UnknownFileFormat extends BaseFileFormat {
 
         music.format = null; // TODO VGM
         int version = ByteUtil.readLeInt(buf, 0x08);
-        String _version = String.format("%d.%d%d", (version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
+        String _version = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
         int vgmGd3 = ByteUtil.readLeInt(buf, 0x14);
         Vgm.Gd3 gd3 = new Vgm.Gd3();
@@ -128,7 +128,7 @@ public class UnknownFileFormat extends BaseFileFormat {
         int TCsecond = (int) sec;
         sec -= TCsecond;
         int TCmillisecond = (int) (sec * 100.0);
-        music.duration = String.format("%2d:%2d:%2d", TCminutes, TCsecond, TCmillisecond);
+        music.duration = "%2d:%2d:%2d".formatted(TCminutes, TCsecond, TCmillisecond);
 
         return musics;
     }

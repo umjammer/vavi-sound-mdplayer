@@ -306,7 +306,7 @@ public class frmTPGet extends JDialog {
         if (cc == null || cc.length != 1) return;
         int row = cc[0];
 
-        String m = String.format("to Ch.%s", ((Button) ev.getSource()).getActionCommand());
+        String m = "to Ch.%s".formatted(((Button) ev.getSource()).getActionCommand());
         String n = dgvTonePallet.getValueAt(row, 2) == null ? "" : dgvTonePallet.getValueAt(row, 2).toString();
         dgvTonePallet.setValueAt(m.equals(n) ? "" : m, row, 2);
 

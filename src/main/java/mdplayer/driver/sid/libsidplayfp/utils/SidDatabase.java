@@ -22,10 +22,12 @@
 
 package mdplayer.driver.sid.libsidplayfp.utils;
 
-import java.util.logging.Level;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -33,6 +35,8 @@ import vavi.util.Debug;
  * An utility class to deal with the songlength dataBase.
  */
 public class SidDatabase {
+
+    private static final Logger logger = getLogger(SidDatabase.class.getName());
 
     private IniParser parser;
     private String errorString;
@@ -85,7 +89,7 @@ public class SidDatabase {
                 n = Long.parseLong(src.substring(0, 1 + i), p);
                 ret = n;
             } catch (NumberFormatException e) {
-                Debug.println(Level.WARNING, e);
+                logger.log(Level.WARNING, e);
                 break;
             }
         }
@@ -173,7 +177,7 @@ public class SidDatabase {
             try {
                 str = parseTime(str, time);
             } catch (IllegalArgumentException e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
                 errorString = ERR_DATABASE_CORRUPT;
                 return -1;
             }

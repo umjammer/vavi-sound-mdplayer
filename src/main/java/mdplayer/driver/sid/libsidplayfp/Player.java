@@ -22,6 +22,8 @@
 
 package mdplayer.driver.sid.libsidplayfp;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,8 +36,12 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidBuilder;
 
+import static java.lang.System.getLogger;
+
 
 public class Player {
+
+    private static final Logger logger = getLogger(Player.class.getName());
 
     private enum State {
         STOPPED,
@@ -233,7 +239,7 @@ public class Player {
         }
 
         c64.resetCpu();
-        //System.err.println("%x", sm.readMemByte(0x17e3));
+        //logger.log(Level.TRACE, "%x".formatted(sm.readMemByte(0x17e3)));
     }
 
     public boolean load(SidTune tune) {
@@ -261,7 +267,7 @@ public class Player {
      */
     private void run(int events) {
         for (int i = 0; isPlaying != State.STOPPED && i < events; i++) {
-            //System.err.println("run counter i : %d",i);
+            //logger.log(Level.TRACE, "run counter i : %d".formatted(i));
             c64.clock();
         }
     }
@@ -277,7 +283,7 @@ public class Player {
 
         if (isPlaying == State.PLAYING) {
             mixer.begin(buffer, count);
-            //Debug.printf(String.format("%d", count));
+            //logger.log(Level.TRACE, "%d".formatted(count)));
             try {
                 if (mixer.getSid(0) != null) {
                     if (count != 0 && buffer != null) {
@@ -307,7 +313,7 @@ public class Player {
                     }
                 }
             } catch (Exception e) { // Mos6510.haltInstruction
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
                 errorString = "Illegal instruction executed";
                 isPlaying = State.STOPPING;
             }
@@ -317,7 +323,7 @@ public class Player {
             try {
                 initialise();
             } catch (Exception e) { // ConfigError
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
                 isPlaying = State.STOPPED;
             }
         }
@@ -377,7 +383,7 @@ public class Player {
                 // Configure, setup and install C64 environment/events
                 initialise();
             } catch (ConfigError e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
                 errorString = e.message();
                 config.sidEmulation = null;
                 if (config != cfg) {

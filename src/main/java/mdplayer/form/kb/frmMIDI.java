@@ -55,7 +55,7 @@ public class frmMIDI extends frmBase {
     }
 
     public void update() {
-        frameBuffer.Refresh(null);
+        frameBuffer.refresh(null);
     }
 
 //    @Override
@@ -268,7 +268,7 @@ public class frmMIDI extends frmBase {
                         , ch * 16 + 16, n, oldParam.note[ch][n], newParam.note[ch][n]);
 
                 if (newParam.note[ch][n] > 0) {
-                    notes = notes + String.format("%s%d ", Tables.kbns[n % 12], n / 12);
+                    notes = notes + "%s%d ".formatted(Tables.kbns[n % 12], n / 12);
                 }
             }
             notes += "                           ";

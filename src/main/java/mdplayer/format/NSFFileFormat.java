@@ -47,8 +47,8 @@ public class NSFFileFormat extends BaseFileFormat {
                 music.arcType = EnmArcType.unknown;
                 if (zipFile != null && zipFile.isEmpty())
                     music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-                music.title = String.format("%s - Trk %d", gd3.gameName, s + 1);
-                music.titleJ = String.format("%s - Trk %d", gd3.gameNameJ, s + 1);
+                music.title = "%s - Trk %d".formatted(gd3.gameName, s + 1);
+                music.titleJ = "%s - Trk %d".formatted(gd3.gameNameJ, s + 1);
                 music.game = gd3.gameName;
                 music.gameJ = gd3.gameNameJ;
                 music.composer = gd3.composer;
@@ -66,7 +66,7 @@ public class NSFFileFormat extends BaseFileFormat {
             music.arcFileName = zipFile;
             music.game = "unknown";
             music.type = "-";
-            music.title = String.format("(%s)", Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.getFileName(file));
             musics.add(music);
         }
 
@@ -87,8 +87,8 @@ public class NSFFileFormat extends BaseFileFormat {
                     music.format = this;
                     music.fileName = ms.fileName;
                     music.arcFileName = zipFile;
-                    music.title = String.format("%s - Trk %d", gd3.gameName, s);
-                    music.titleJ = String.format("%s - Trk %d", gd3.gameNameJ, s);
+                    music.title = "%s - Trk %d".formatted(gd3.gameName, s);
+                    music.titleJ = "%s - Trk %d".formatted(gd3.gameNameJ, s);
                     music.game = gd3.gameName;
                     music.gameJ = gd3.gameNameJ;
                     music.composer = gd3.composer;
@@ -124,7 +124,7 @@ public class NSFFileFormat extends BaseFileFormat {
             music.arcFileName = zipFile;
             music.game = "unknown";
             music.type = "-";
-            music.title = String.format("(%s)", Path.getFileName(ms.fileName));
+            music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
         }
 
         musics.add(music);

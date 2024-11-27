@@ -464,7 +464,7 @@ public class EnvelopeGenerator {
      * Read the envelope generator Output.
      */
     public short output() {
-        //System.err.println("%d",envelopeCounter);
+        //logger.log(Level.TRACE, "%d".formatted(envelopeCounter));
         // DAC imperfections are emulated by using envelope_counter as an index
         // into a DAC lookup table. readENV() uses envelope_counter directly.
         return modelDac[(short) sidModel.ordinal()][envelopeCounter];

@@ -40,8 +40,8 @@ public class VRC7 extends Ym2413Inst {
 
     @Override
     public int start(int chipId, int samplingRate, int ClockValue, Object... option) {
-        nv.setClock(ClockValue / 2.);// masterclock(NES:1789773)
-        nv.setRate(samplingRate);// samplerate
+        nv.setClock(ClockValue / 2.); // masterclock(NES:1789773)
+        nv.setRate(samplingRate); // samplerate
         nv.reset();
         rate = samplingRate;
         return samplingRate;
@@ -67,7 +67,7 @@ public class VRC7 extends Ym2413Inst {
 
             nv.tick(apu_clocks);
             nv.render(b);
-            // if(b[0]!=0)Debug.printf(("%d",b[0]);
+//            if (b[0] != 0) logger.log(Level.DEBUG, "%d".formatted(b[0]));
             outputs[0][i] += b[0] << 2;
             outputs[1][i] += b[1] << 2;
         }

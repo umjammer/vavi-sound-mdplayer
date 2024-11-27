@@ -1,6 +1,8 @@
 package mdplayer.vst;
 
 import java.io.File;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
@@ -15,13 +17,16 @@ import mdplayer.MidiOutInfo;
 import org.urish.jnavst.VstConst;
 import org.urish.jnavst.VstPlugin;
 import org.urish.jnavst.VstTimeInfo;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 public class VstMng {
 
+    private static final Logger logger = getLogger(VstMng.class.getName());
+
     public Setting setting = null;
-    //ChipRegisterからインスタンスをもらう
+    // Get an instance from ChipRegister
     public MIDIParam[] midiParams = null;
 
     private List<VstInfo2> vstPlugins = new ArrayList<>();
@@ -75,7 +80,7 @@ public class VstMng {
         try {
             Thread.sleep(1);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
         vi.vstPlugins = ctx;
         vi.fileName = kv.getKey();
@@ -159,7 +164,7 @@ public class VstMng {
             try {
                 vmo = vstPluginsInst.get(vn);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
                 vmo = null;
             }
         }
@@ -198,7 +203,7 @@ public class VstMng {
                 vstPlugin.location = vstPlugin.vstPluginsForm.Location;
                 vstPlugin.vstPluginsForm.Close();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             }
 
             try {
@@ -216,7 +221,7 @@ public class VstMng {
                     vstPlugin.vstPlugins.close();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             }
 
             VstInfo vi = new VstInfo();
@@ -239,7 +244,7 @@ public class VstMng {
                 vstInfo2.location = vstInfo2.vstPluginsForm.Location;
                 vstInfo2.vstPluginsForm.Close();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             }
 
             try {
@@ -257,7 +262,7 @@ public class VstMng {
                     vstInfo2.vstPlugins.close();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             }
 
             VstInfo vi = new VstInfo();
@@ -372,7 +377,7 @@ public class VstMng {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -447,7 +452,7 @@ public class VstMng {
                 }
 
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             }
         }
     }
@@ -468,7 +473,7 @@ public class VstMng {
 
             return ctx;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             //JOptionPane.showMessageDialog(this, e.toString(), Text, JOptionPane.ERROR_MESSAGE);
         }
 
@@ -480,9 +485,9 @@ public class VstMng {
 
         // can be null when called from inside the chips main entry point.
         if (hostCmdStub.PluginContext.PluginInfo != null) {
-            Debug.println("Plugin " + hostCmdStub.PluginContext.PluginInfo.PluginID + " called:" + e.getMessage());
+            logger.log(Level.DEBUG, "Plugin " + hostCmdStub.PluginContext.PluginInfo.PluginID + " called:" + e.getMessage());
         } else {
-            Debug.println("The loading Plugin called:" + e.getMessage());
+            logger.log(Level.DEBUG, "The loading Plugin called:" + e.getMessage());
         }
     }
 
@@ -598,7 +603,7 @@ public class VstMng {
                         vstPlugins.get(ind).vstPlugins.close();
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.log(Level.ERROR, e.getMessage(), e);
                 }
                 vstPlugins.remove(ind);
             }
@@ -838,7 +843,7 @@ public class VstMng {
         public VstPlugin vstPlugins = null;
         public frmVST vstPluginsForm = null;
 
-        // 実際にVSTiかどうかは問わない
+        // It doesn't matter if it's actually a VSTi or not.
         public boolean isInstrument = false;
         public List<VstMidiEvent> lstEvent = new ArrayList<>();
 

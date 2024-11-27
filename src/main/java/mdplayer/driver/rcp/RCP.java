@@ -1,5 +1,7 @@
 package mdplayer.driver.rcp;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,9 +24,12 @@ import mdplayer.driver.Vgm.Gd3;
 import mdplayer.MidiOutInfo;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+import static java.lang.System.getLogger;
 
 
 public class RCP extends BaseDriver {
+
+    private static final Logger logger = getLogger(RCP.class.getName());
 
     public static final Charset CHARSET = Charset.forName("Shift_JIS");
 
@@ -166,11 +171,11 @@ public class RCP extends BaseDriver {
 
         if (isG36) {
             ptr += 64;
-            str = new StringBuilder(String.format("%s\n", new String(buf, ptr, 360, CHARSET).replace("\0", "")));
+            str = new StringBuilder("%s\n".formatted(new String(buf, ptr, 360, CHARSET).replace("\0", "")));
         } else {
             str = new StringBuilder();
             for (int i = 0; i < 12; i++) {
-                str.append(String.format("%s\n", new String(buf, ptr + i * 28, 28, CHARSET).replace("\0", "")));
+                str.append("%s\n".formatted(new String(buf, ptr + i * 28, 28, CHARSET).replace("\0", "")));
             }
         }
         gd3.notes = str.toString();
@@ -216,7 +221,7 @@ public class RCP extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 
     @Override
@@ -235,7 +240,7 @@ public class RCP extends BaseDriver {
             }
             // Stopped = !IsPlaying();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -972,7 +977,7 @@ public class RCP extends BaseDriver {
             tracks[i].setNumber(i);
             tracks[i].clearAllPartMemory();
             parts[i] = new MIDIPart();
-            parts[i].setName(String.format("Track %d Part", i + 1));
+            parts[i].setName("Track %d Part".formatted(i + 1));
             tracks[i].insertPart(0, parts[i]);
         }
     }
@@ -1059,7 +1064,7 @@ public class RCP extends BaseDriver {
             musicDownCounter -= 1.0;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -1257,7 +1262,7 @@ public class RCP extends BaseDriver {
     }
 
     void efMetaSeqNumber(MIDITrack trk, MIDIEvent eve) {
-        System.err.println("MetaSeqNumberは未実装！");
+        logger.log(Level.TRACE, "MetaSeqNumber is not implemented!");
     }
 
     void efMetaTextEvent(MIDITrack trk, MIDIEvent eve) {
@@ -1273,7 +1278,7 @@ public class RCP extends BaseDriver {
     }
 
     void efMetaInstrumentName(MIDITrack trk, MIDIEvent eve) {
-        System.err.println("MetaInstrumentNameは未実装！");
+        logger.log(Level.TRACE, "MetaInstrumentName is not implemented!");
     }
 
     void efMetaLyric(MIDITrack trk, MIDIEvent eve) {
@@ -1281,33 +1286,33 @@ public class RCP extends BaseDriver {
     }
 
     void efMetaMarker(MIDITrack trk, MIDIEvent eve) {
-        System.err.println("MetaMarkerは未実装！");
+        logger.log(Level.TRACE, "MetaMarker is not implemented!");
     }
 
     void efMetaCuePoint(MIDITrack trk, MIDIEvent eve) {
-        System.err.println("MetaCuePointは未実装！");
+        logger.log(Level.TRACE, "MetaCuePoint is not implemented!");
     }
 
     void efMetaProgramName(MIDITrack trk, MIDIEvent eve) {
-        System.err.println("MetaProgramNameは未実装！");
+        logger.log(Level.TRACE, "MetaProgramName is not implemented!");
     }
 
     void efMetaDeviceName(MIDITrack trk, MIDIEvent eve) {
-        System.err.println("MetaDeviceNameは未実装！");
+        logger.log(Level.TRACE, "MetaDeviceName is not implemented!");
     }
 
     void efMetaChannelPrefix(MIDITrack trk, MIDIEvent eve) {
-        System.err.println("MetaChannelPrefixは未実装！");
+        logger.log(Level.TRACE, "MetaChannelPrefix is not implemented!");
     }
 
     void efMetaPortPrefix(MIDITrack trk, MIDIEvent eve) {
-        System.err.println("MetaPortPrefixは未実装！");
-        System.err.printf("+Track.Number[%d] Event.Index[%d]%n", trk.getNumber(), eve.getNumber());
-        System.err.printf("+Message [%d,%d,%d]%n", eve.getMIDIMessage()[0], eve.getMIDIMessage()[1], eve.getMIDIMessage()[2]);
+        logger.log(Level.TRACE, "MetaPortPrefix is not implemented!");
+        logger.log(Level.TRACE, "+Track.Number[%d] Event.Index[%d]%n".formatted(trk.getNumber(), eve.getNumber()));
+        logger.log(Level.TRACE, "+Message [%d,%d,%d]%n".formatted(eve.getMIDIMessage()[0], eve.getMIDIMessage()[1], eve.getMIDIMessage()[2]));
     }
 
     void efMetaEndOfTrack(MIDITrack trk, MIDIEvent eve) {
-        // 現時点では特に何も処理する必要なし
+        // No action is required at this time
     }
 
     void efMetaTempo(MIDITrack trk, MIDIEvent eve) {
@@ -1319,16 +1324,16 @@ public class RCP extends BaseDriver {
     }
 
     void efMetaSMPTEOffset(MIDITrack trk, MIDIEvent eve) {
-        System.err.println("MetaSMPTEOffsetは未実装！");
+        logger.log(Level.TRACE, "MetaSMPTEOffset is not implemented!");
     }
 
     void efMetaTimeSignature(MIDITrack trk, MIDIEvent eve) {
-        beatDen = eve.getMIDIMessage()[2]; // 分子
-        beatMol = (int) Math.pow(2.0, eve.getMIDIMessage()[3]); // 分母
+        beatDen = eve.getMIDIMessage()[2]; // numerator
+        beatMol = (int) Math.pow(2.0, eve.getMIDIMessage()[3]); // denominator
     }
 
     void efMetaKeySignature(MIDITrack trk, MIDIEvent eve) {
-        System.err.printf("MetaKeySignatureは未実装！Track.Number[%d] Event.Index[%d]%n", trk.getNumber(), eve.getNumber());
+        logger.log(Level.TRACE, "MetaKeySignature is not implemented! Track.Number[%d] Event.Index[%d]%n".formatted(trk.getNumber(), eve.getNumber()));
     }
 
     void efNoteOff(MIDITrack trk, MIDIEvent eve) {
@@ -1466,7 +1471,7 @@ public class RCP extends BaseDriver {
             j++;
             if (n == 0xf7) break;
             if (i >= msgBuf.length) {
-                System.err.println("sefChExclusive:バッファをオーバーするエクスクルーシブを検知しスキップ。");
+                logger.log(Level.TRACE, "sefChExclusive:バッファをオーバーするエクスクルーシブを検知しスキップ。");
                 return;// バッファをオーバーする時はエクスクルーシブを送らない
             }
         }
@@ -1474,7 +1479,7 @@ public class RCP extends BaseDriver {
     }
 
     void sefOutsideProcessExec(MIDITrack trk, MIDIEvent eve) {
-        System.err.println("spEventOutsideProcessExecは未実装！");
+        logger.log(Level.TRACE, "spEventOutsideProcessExec is not implemented!");
     }
 
     void sefBankProgram(MIDITrack trk, MIDIEvent eve) {
@@ -1488,7 +1493,7 @@ public class RCP extends BaseDriver {
     }
 
     void sefKeyScan(MIDITrack trk, MIDIEvent eve) {
-        System.err.println("spEventKeyScanは未実装！");
+        logger.log(Level.TRACE, "spEventKeyScan is not implemented!");
     }
 
     void sefMIDIChChange(MIDITrack trk, MIDIEvent eve) {
@@ -1735,7 +1740,7 @@ public class RCP extends BaseDriver {
             j++;
             if ((n & 0xff) == 0xf7) break;
             if (i >= msgBuf.length) {
-                System.err.println("sefUserExclusiveN:バッファをオーバーするエクスクルーシブを検知しスキップ。");
+                logger.log(Level.TRACE, "sefUserExclusiveN:バッファをオーバーするエクスクルーシブを検知しスキップ。");
                 return; // バッファをオーバーする時はエクスクルーシブを送らない
             }
         }
@@ -2257,7 +2262,7 @@ public class RCP extends BaseDriver {
 
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             return false;
         }
     }
@@ -2305,15 +2310,13 @@ public class RCP extends BaseDriver {
             break;
         }
 
-//#if DEBUG
         for (CtlSysex ex : buf) {
-            System.err.printf("delta:%10d", ex.delta);
+            logger.log(Level.TRACE, "delta:%10d".formatted(ex.delta));
             for (byte b : ex.data) {
-                System.err.printf("%02x ", b);
+                logger.log(Level.TRACE, "%02x ".formatted(b));
             }
-            System.err.println();
+            logger.log(Level.TRACE, "");
         }
-//#endif
     }
 }
 

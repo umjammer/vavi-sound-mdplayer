@@ -22,14 +22,21 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidplayfp;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.driver.sid.libsidplayfp.SidMemory;
 import mdplayer.driver.sid.libsidplayfp.sidtune.SidTuneBase;
+
+import static java.lang.System.getLogger;
 
 
 /**
  * SidTune
  */
 public class SidTune {
+
+    private static final Logger logger = getLogger(SidTune.class.getName());
 
     public static final int MD5_LENGTH = 32;
 
@@ -122,7 +129,7 @@ public class SidTune {
             status = true;
             statusString = MSG_NO_ERRORS;
         } catch (dotnet4j.io.IOException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             status = false;
             statusString = e.getMessage();
         }
@@ -140,7 +147,7 @@ public class SidTune {
             status = true;
             statusString = MSG_NO_ERRORS;
         } catch (dotnet4j.io.IOException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             status = false;
             statusString = e.getMessage();
         }

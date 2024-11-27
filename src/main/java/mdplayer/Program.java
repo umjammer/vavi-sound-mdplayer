@@ -1,15 +1,21 @@
 
 package mdplayer;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import javax.swing.JOptionPane;
 
 import mdplayer.form.sys.frmMain;
 
+import static java.lang.System.getLogger;
+
 
 class Program {
 
+    private static final Logger logger = getLogger(Program.class.getName());
+
     /**
-     * アプリケーションのメイン エントリ ポイントです。
+     * The main entry point for the application.
      */
     public static void main(String[] args) {
         Common.setCommandLineArgs(args);
@@ -17,8 +23,8 @@ class Program {
         String fn = checkFiles();
         if (fn != null) {
             JOptionPane.showMessageDialog(null,
-                    String.format("動作に必要なファイル(%s)がみつかりません。", fn),
-                    "エラー",
+                    "The file (%s) required for operation cannot be found.".formatted(fn),
+                    "Error",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -27,10 +33,10 @@ class Program {
         try {
             frm = new frmMain();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             JOptionPane.showMessageDialog(null,
-                    String.format("不明なエラーが発生しました。\nException Message:\n%s", e.getMessage()),
-                    "エラー",
+                    "An unknown error has occurred.:\n%s".formatted(e.getMessage()),
+                    "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }

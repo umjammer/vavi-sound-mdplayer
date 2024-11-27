@@ -12,6 +12,8 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -37,10 +39,13 @@ import mdplayer.driver.Vgm.Gd3;
 import vavi.awt.dnd.BasicDTListener;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+import static java.lang.System.getLogger;
 import static java.util.function.Predicate.not;
 
 
 public class Common {
+
+    private static final Logger logger = getLogger(Common.class.getName());
 
     private static String[] args;
 
@@ -135,7 +140,7 @@ public class Common {
             gd3.converted = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
             gd3.vgmBy = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
             gd3.notes = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
-            // Lyric(独自拡張)
+            // Lyric(Custom extensions)
             byte[] bLyric = Common.getByteArray(buf, adr_);
             gd3.lyrics = new ArrayList<>();
             int i = 0;
@@ -157,7 +162,7 @@ public class Common {
             }
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
 
         return gd3;
@@ -179,7 +184,7 @@ public class Common {
 
             return n;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
         return "";
     }
@@ -325,7 +330,7 @@ public class Common {
 
             return fullPath;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             return null;
         }
     }
@@ -337,17 +342,17 @@ public class Common {
             String fullPath = Path.combine(appDataFolder, "operation");
             if (!Directory.exists(fullPath)) Directory.createDirectory(fullPath);
             else
-                // 存在するならそのフォルダの中身をクリア
+                // If it exists, clear the contents of that folder.
                 deleteDataUnderDirectory(fullPath);
             return fullPath;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             return null;
         }
     }
 
     /**
-     * ディクトリを空にする
+     * Empty the directory
      */
     public static void deleteDataUnderDirectory(String directory) throws IOException {
         java.nio.file.Path dir = Paths.get(directory);
@@ -359,7 +364,7 @@ public class Common {
     }
 
     /**
-     * フォルダ/ファイルの属性を変更する
+     * Change the attributes of a folder or file
      */
     public static void removeReadonlyAttribute(java.nio.file.Path dir) {
         try {
@@ -392,7 +397,7 @@ public class Common {
             FileStream fs = new FileStream(ffn, FileMode.Open, FileAccess.Read, FileShare.Read);
             return fs;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             return null;
         }
     }
@@ -536,7 +541,7 @@ public class Common {
          */
         @Override
         protected DataFlavor chooseDropFlavor(DropTargetDropEvent ev) {
-// Debug.println(ev.getCurrentDataFlavorsAsList());
+// logger.log(Level.TRACE, ev.getCurrentDataFlavorsAsList());
             if (ev.isLocalTransfer() && ev.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                 return DataFlavor.javaFileListFlavor;
             }

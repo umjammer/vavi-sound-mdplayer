@@ -44,8 +44,8 @@ public class SIDFileFormat extends BaseFileFormat {
             music.arcType = EnmArcType.unknown;
             if (zipFile != null && zipFile.isEmpty())
                 music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-            music.title = String.format("%s - Trk %d", gd3.trackName, s + 1);
-            music.titleJ = String.format("%s - Trk %d", gd3.trackName, s + 1);
+            music.title = "%s - Trk %d".formatted(gd3.trackName, s + 1);
+            music.titleJ = "%s - Trk %d".formatted(gd3.trackName, s + 1);
             music.game = "";
             music.gameJ = "";
             music.composer = gd3.composer;

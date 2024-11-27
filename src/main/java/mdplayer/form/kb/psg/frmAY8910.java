@@ -117,14 +117,13 @@ public class frmAY8910 extends frmChipBase {
     public void screenChangeParams() {
         int[] AY8910Register = audio.getAY8910Register(chipId);
 
-        for (int ch = 0; ch < 3; ch++) // SSG
-        {
+        for (int ch = 0; ch < 3; ch++) { // SSG
+
             MDChipParams.Channel channel = newParam.channels[ch];
 
             boolean t = (AY8910Register[0x07] & (0x1 << ch)) == 0;
             boolean n = (AY8910Register[0x07] & (0x8 << ch)) == 0;
-            // System.err.println("r[8]=%x r[9]=%x r[10]=%x",
-            // AY8910Register[0x8], AY8910Register[0x9], AY8910Register[0xa]);
+//logger.log(Level.TRACE, "r[8]=%x r[9]=%x r[10]=%x".formatted(AY8910Register[0x8], AY8910Register[0x9], AY8910Register[0xa]);
             channel.tn = (t ? 1 : 0) + (n ? 2 : 0);
             newParam.nfrq = AY8910Register[0x06] & 0x1f;
             newParam.efrq = AY8910Register[0x0c] * 0x100 + AY8910Register[0x0b];

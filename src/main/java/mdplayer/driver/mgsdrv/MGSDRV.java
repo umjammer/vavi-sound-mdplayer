@@ -1,5 +1,7 @@
 package mdplayer.driver.mgsdrv;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +20,12 @@ import mdplayer.driver.Vgm.Gd3;
 import vavi.util.Debug;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+import static java.lang.System.getLogger;
 
 
 public class MGSDRV extends BaseDriver {
+
+    private static final Logger logger = getLogger(MGSDRV.class.getName());
 
     @Override
     public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
@@ -45,7 +50,7 @@ public class MGSDRV extends BaseDriver {
         try {
             Run(vgmBuf);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             return false;
         }
 
@@ -71,7 +76,7 @@ public class MGSDRV extends BaseDriver {
             }
             //Stopped = !IsPlaying();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -84,12 +89,12 @@ public class MGSDRV extends BaseDriver {
                 interrupt();
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
     private void interrupt() {
-        //Debug.printf("\n_INTER(001FH)");
+        //logger.log(Level.TRACE, "\n_INTER(001FH)");
         z80.getRegisters().setPC((short) 0x601F);
         z80.getRegisters().setSP((short) 0x000a);
         z80.continue_();
@@ -125,12 +130,12 @@ public class MGSDRV extends BaseDriver {
 
         z80.reset();
 
-        //プログラムの読み込みとメモリへのセット
+        // Loading a program and setting it in memory
         if (program == null) program = File.readAllBytes(fileName);
         z80.getMemory().setContents(0x100, program, 0, null);
         z80.getRegisters().setPC((short) 0x100);
 
-        //コマンドライン引数のセット
+        // A set of command line arguments
         byte[] option = "/z".getBytes(StandardCharsets.US_ASCII);
         z80.getMemory().set(0x80, (byte) option.length);
         for (int p = 0; p < option.length; p++) z80.getMemory().set(0x81 + p, option[p]);
@@ -138,22 +143,22 @@ public class MGSDRV extends BaseDriver {
         z80.continue_();
 
         //sw.Stop();
-        //Debug.printf("\nElapsed time: %d\n" , sw.Elapsed);
+        //logger.log(Level.TRACE, "Elapsed time: %d".formatted(sw.Elapsed));
 
-        // MGSDRVの存在するセグメントに切り替える
-        ((MsxMemory) z80.getMemory()).changePage(3, 1, 1); // slot3-1を Page1に
-        ((MapperRAMCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1]).setSegmentToPage(4, 1); // slot3-1のPage1にsegment0x4を設定
+        // Switch to the segment where MGSDRV exists
+        ((MsxMemory) z80.getMemory()).changePage(3, 1, 1); // slot3-1 to Page1
+        ((MapperRAMCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1]).setSegmentToPage(4, 1); // Set segment 0x4 to Page1 of slot3-1
 
-        Debug.printf("\n_SYSCK(0010H)");
+        logger.log(Level.DEBUG, "\n_SYSCK(0010H)");
         z80.getRegisters().setPC((short) 0x6010);
         z80.continue_();
         //DebugRegisters(z80);
 
-        Debug.printf("MSX-MUSIC slot %02x", z80.getRegisters().getD());
-        Debug.printf("SCC       slot %02x", z80.getRegisters().getA());
-        Debug.printf("MGSDRV Version %04x", z80.getRegisters().getHL());
+        logger.log(Level.DEBUG, "MSX-MUSIC slot %02x".formatted(z80.getRegisters().getD()));
+        logger.log(Level.DEBUG, "SCC       slot %02x".formatted(z80.getRegisters().getA()));
+        logger.log(Level.DEBUG, "MGSDRV Version %04x".formatted(z80.getRegisters().getHL()));
 
-        Debug.printf("\n_INITM(0013H)");
+        logger.log(Level.DEBUG, "\n_INITM(0013H)");
         z80.getRegisters().setPC((short) 0x6013);
         z80.continue_();
         //DebugRegisters(z80);
@@ -161,18 +166,18 @@ public class MGSDRV extends BaseDriver {
         byte[] mgsdata = vgmBuf;
         MapperRAMCartridge cart = ((MapperRAMCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1]);
         for (int i = 0; i < mgsdata.length; i++) {
-            if (i % 0x4000 == 0) cart.setSegmentToPage(5 + (i / 0x4000), 2); // segment 5以降をpage2へ
+            if (i % 0x4000 == 0) cart.setSegmentToPage(5 + (i / 0x4000), 2); // From segment 5 to page 2
             z80.getMemory().set(0x8000 + (i % 0x4000), mgsdata[i]);
         }
         cart.setSegmentToPage(5, 2);
 
-        Debug.printf("\n_DATCK(0028H)");
+        logger.log(Level.DEBUG, "\n_DATCK(0028H)");
         z80.getRegisters().setPC((short) 0x6028);
         z80.getRegisters().setHL((short) 0x8000);
         z80.continue_();
         //DebugRegisters(z80);
 
-        Debug.printf("\n_PLYST(0016H)");
+        logger.log(Level.DEBUG, "\n_PLYST(0016H)");
         z80.getRegisters().setPC((short) 0x6016);
         z80.getRegisters().setDE((short) 0x8000);
         z80.getRegisters().setHL((short) 0xffff);
@@ -198,10 +203,10 @@ public class MGSDRV extends BaseDriver {
         if (z80.getRegisters().getPC() == 0) { // 0:JP WBOOT
             args.getExecutionStopper().stop(false);
         } else if (z80.getRegisters().getPC() == 0x0005) {
-            //Debug.printf("Call BDOS(0x0005) Reg.C=%02x", z80.getRegisters().getC());
+            //logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC()));
             callBIOS(args, z80);
         } else if (z80.getRegisters().getPC() == 0x000c) {
-            //Debug.printf("Call RDSLT(0x000c) Reg.a=%02x Reg.HL=%04x", z80.getRegisters().getA(), z80.getRegisters().getHL());
+            //logger.log(Level.TRACE, "Call RDSLT(0x000c) Reg.a=%02x Reg.HL=%04x".formatted(z80.getRegisters().getA(), z80.getRegisters().getHL()));
 
             int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
             z80.getRegisters().setA(((MsxMemory) z80.getMemory()).readSlotMemoryAdr(
@@ -211,13 +216,13 @@ public class MGSDRV extends BaseDriver {
             ));
             z80.executeRet();
         } else if (z80.getRegisters().getPC() == 0x0014) {
-            Debug.printf("Call WRSLT(0x0014) Reg.a=%02x Reg.HL=%04x Reg.E=%02x", z80.getRegisters().getA(), z80.getRegisters().getHL(), z80.getRegisters().getE());
+            logger.log(Level.DEBUG, "Call WRSLT(0x0014) Reg.a=%02x Reg.HL=%04x Reg.E=%02x".formatted(z80.getRegisters().getA(), z80.getRegisters().getHL(), z80.getRegisters().getE()));
             throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x001c) {
-            Debug.printf("Call CALSLT(0x001c) Reg.IY=%04x Reg.IX=%04x", z80.getRegisters().getIY(), z80.getRegisters().getIX());
+            logger.log(Level.DEBUG, "Call CALSLT(0x001c) Reg.IY=%04x Reg.IX=%04x".formatted(z80.getRegisters().getIY(), z80.getRegisters().getIX()));
             throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x0024) {
-            //Debug.printf("\nCall ENASLT(0x0024) Reg.a=%02x Reg.HL=%04x", z80.getRegisters().getA(), z80.getRegisters().getHL());
+            //logger.log(Level.TRACE, "\nCall ENASLT(0x0024) Reg.a=%02x Reg.HL=%04x".formatted(z80.getRegisters().getA(), z80.getRegisters().getHL()));
             int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
             ((MsxMemory) z80.getMemory()).changePage(
                     (slot & 0x03),
@@ -226,28 +231,28 @@ public class MGSDRV extends BaseDriver {
             );
             z80.executeRet();
         } else if (z80.getRegisters().getPC() == 0x0030) {
-            Debug.printf("Call CALLF(0x0030)");
+            logger.log(Level.DEBUG, "Call CALLF(0x0030)");
             throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x0090) {
-            Debug.printf("Call GICINI (0090H/MAIN)");
+            logger.log(Level.DEBUG, "Call GICINI (0090H/MAIN)");
         } else if (z80.getRegisters().getPC() == 0x0093) {
-            Debug.printf("Call WRTPSG (0093H/MAIN)");
+            logger.log(Level.DEBUG, "Call WRTPSG (0093H/MAIN)");
         } else if (z80.getRegisters().getPC() == 0x0096) {
-            Debug.printf("Call RDPSG (0096H/MAIN)");
+            logger.log(Level.DEBUG, "Call RDPSG (0096H/MAIN)");
         } else if (z80.getRegisters().getPC() == 0x0138 || z80.getRegisters().getPC() == 0x013B || z80.getRegisters().getPC() == 0x015C || z80.getRegisters().getPC() == 0x015f) {
-            Debug.printf("Call InterSlot");
+            logger.log(Level.DEBUG, "Call InterSlot");
         } else if (z80.getRegisters().getPC() == 0x4601) {
-            Debug.printf("JP NEWSTT(0x4601) Reg.HL=%04x", z80.getRegisters().getHL());
+            logger.log(Level.DEBUG, "JP NEWSTT(0x4601) Reg.HL=%04x".formatted(z80.getRegisters().getHL()));
             String msg = getASCIIZ(z80, z80.getRegisters().getHL());
-            Debug.printf("(HL)=%s", msg);
+            logger.log(Level.DEBUG, "(HL)=%s".formatted(msg));
             if (msg.equals(":_SYSTEM")) {
                 args.getExecutionStopper().stop(false);
             }
         } else if (z80.getRegisters().getPC() >= mapper.jumpAddress && z80.getRegisters().getPC() < mapper.jumpAddress + 16) {
-            //Debug.printf("\nCall MAPPER PROC(0x%04x～) pc-%04x:%04x", mapper.JumpAddress, z80.getRegisters().getPC() - mapper.JumpAddress);
+            //logger.log(Level.TRACE, "\nCall MAPPER PROC(0x%04x～) pc-%04x:%04x".formatted(mapper.JumpAddress, z80.getRegisters().getPC() - mapper.JumpAddress));
             mapper.CallMapperProc(args, z80, z80.getRegisters().getPC() - mapper.jumpAddress);
         } else if ((z80.getRegisters().getPC() & 0xffff) == 0xffca) {
-            //Debug.printf("\nCall EXTBIO(0xffca) Reg.DE=%04x", z80.getRegisters().getDE());
+            //logger.log(Level.TRACE, "\nCall EXTBIO(0xffca) Reg.DE=%04x".formatted(z80.getRegisters().getDE()));
             callEXTBIO(args, z80);
         }
 
@@ -255,8 +260,8 @@ public class MGSDRV extends BaseDriver {
     }
 
     private static void debugRegisters(Z80Processor z80) {
-        Debug.printf(String.format("Reg pc:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x"
-                , z80.getRegisters().getPC()
+        logger.log(Level.DEBUG, "Reg pc:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x".formatted(
+                z80.getRegisters().getPC()
                 , z80.getRegisters().getAF(), z80.getRegisters().getBC(), z80.getRegisters().getDE(), z80.getRegisters().getHL()
                 , z80.getRegisters().getIX(), z80.getRegisters().getIY()));
     }
@@ -267,15 +272,15 @@ public class MGSDRV extends BaseDriver {
 
         switch (funcType & 0xff) {
         case 0x04:
-            //Debug.printf(" EXTBIO MemoryMapper");
+            //logger.log(Level.TRACE, " EXTBIO MemoryMapper");
             extbioMemorymapper(args, z80, function);
             break;
         case 0xf0:
-            // MGSDRV向けファンクションコール
-            z80.getRegisters().setA((byte) 0); // 非常駐時
+            // Function call for MGSDRV
+            z80.getRegisters().setA((byte) 0); // When not present
             break;
         default:
-            Debug.printf(" EXTBIO Unknown type");
+            logger.log(Level.DEBUG, " EXTBIO Unknown type");
             break;
         }
 
@@ -305,22 +310,22 @@ public class MGSDRV extends BaseDriver {
             }
 
             String StringToPrint = new String(toByteArray(bytesToPrint), StandardCharsets.US_ASCII);
-            System.err.printf(StringToPrint);
+            logger.log(Level.TRACE, StringToPrint);
         } else if (function == 2) {
             byte byteToPrint = z80.getRegisters().getE();
             char charToPrint = (char) (byteToPrint & 0xff);
-            System.err.print(charToPrint);
+            logger.log(Level.TRACE, charToPrint);
         } else if (function == 0x62) {
             // _TERM
-            Debug.printf("_TERM ErrorCode:%02x", z80.getRegisters().getB());
+            logger.log(Level.DEBUG, "_TERM ErrorCode:%02x".formatted(z80.getRegisters().getB()));
             args.getExecutionStopper().stop(false);
             return;
 
         } else if (function == 0x6b) {
             // _GENV
-            //Debug.printf("_GENV HL:%04x DE:%04x B:%02x", z80.getRegisters().getHL(), z80.getRegisters().getDE(), z80.getRegisters().getB());
+            //logger.log(Level.TRACE, "_GENV HL:%04x DE:%04x B:%02x".formatted(z80.getRegisters().getHL(), z80.getRegisters().getDE(), z80.getRegisters().getB()));
             String msg = getASCIIZ(z80, z80.getRegisters().getHL());
-            //Debug.printf("(HL)=%d", msg);
+            //logger.log(Level.TRACE, "(HL)=%d".formatted(msg));
 
             if (msg.equals("PARAMETERS")) {
                 byte[] option = "/z".getBytes(StandardCharsets.US_ASCII);
@@ -340,21 +345,21 @@ public class MGSDRV extends BaseDriver {
 
         } else if (function == 0x6c) {
             // _SENV
-            //Debug.printf("_SENV HL:%04x DE:%04x", z80.getRegisters().getHL(), z80.getRegisters().getDE());
+            //logger.log(Level.TRACE, "_SENV HL:%04x DE:%04x".formatted(z80.getRegisters().getHL(), z80.getRegisters().getDE()));
             String msg = getASCIIZ(z80, z80.getRegisters().getHL() & 0xffff);
-            //Debug.printf("(HL)=%d", msg);
+            //logger.log(Level.TRACE, "(HL)=%d".formatted(msg));
 
             msg = getASCIIZ(z80, z80.getRegisters().getDE());
-            //Debug.printf("(DE)=%d", msg);
+            //logger.log(Level.TRACE, "(DE)=%d".formatted(msg));
 
             z80.getRegisters().setA((byte) 0x00); // Error number
         } else if (function == 0x6f) {
             // _DOSVER
             z80.getRegisters().setBC((short) 0x0231); // ROM version
             z80.getRegisters().setDE((short) 0x0210); // DISK version
-            //Debug.printf("_DOSVER ret BC(ROMVer):%04x DE(DISKVer):%04x", z80.getRegisters().getBC(), z80.getRegisters().getDE());
+            //logger.log(Level.TRACE, "_DOSVER ret BC(ROMVer):%04x DE(DISKVer):%04x".formatted(z80.getRegisters().getBC(), z80.getRegisters().getDE()));
         } else {
-            Debug.printf("unknown 0x%02x", function);
+            logger.log(Level.DEBUG, "unknown 0x%02x".formatted(function));
         }
 
         z80.executeRet();

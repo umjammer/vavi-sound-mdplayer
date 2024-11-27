@@ -18,7 +18,7 @@ public class XMemory {
     }
 
     public void write(int v1, byte v2) {
-// System.err.println("%08x:%02x", v1, v2);
+// logger.log(Level.TRACE, "%08x:%02x".formatted(v1, v2));
         mm[v1] = v2;
     }
 

@@ -1,5 +1,7 @@
 package mdplayer.driver;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.Arrays;
 
 import mdplayer.ChipRegister;
@@ -7,10 +9,13 @@ import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import vavi.util.ByteUtil;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 public class Xgm extends BaseDriver {
+
+    private static final Logger logger = getLogger(Xgm.class.getName());
 
     public Xgm() {
         this.setting = Setting.getInstance();
@@ -65,7 +70,7 @@ public class Xgm extends BaseDriver {
             chipRegister.setYM2612SyncWait((byte) 1, 1);
         }
 
-         // Driverの初期化
+        // Initializing the Driver
         musicPtr = musicDataBlockAddr;
         xgmpcm = new XgmPcm[] {new XgmPcm(), new XgmPcm(), new XgmPcm(), new XgmPcm()};
         DACEnable = 0;
@@ -75,7 +80,7 @@ public class Xgm extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, Common.EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 
     @Override
@@ -99,7 +104,7 @@ public class Xgm extends BaseDriver {
 
             //Stopped = !IsPlaying();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -159,7 +164,7 @@ public class Xgm extends BaseDriver {
                 return false;
             }
         } catch (Exception e) {
-            Debug.printf("XGMの情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), Arrays.toString(e.getStackTrace()));
+            logger.log(Level.DEBUG, "An exception occurred while getting XGM information: " + e.getMessage(), e);
             return false;
         }
 
@@ -188,22 +193,21 @@ public class Xgm extends BaseDriver {
             musicStep = Common.VGMProcSampleRate / (isNTSC ? 60.0 : 50.0);
 
             if (musicDownCounter <= 0.0) {
-                 // xgm処理
+                // process xgm
                 oneFrameXGM();
                 musicDownCounter += musicStep;
             }
             musicDownCounter -= 1.0;
 
-            //if (pcmDownCounter <= 0.0)
-            //{
-            //     // pcm処理
+            //if (pcmDownCounter <= 0.0) {
+            //    // process pcm
             //    oneFramePCM();
             //    pcmDownCounter += pcmStep;
             //}
             //pcmDownCounter -= 1.0;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
 
         }
     }
@@ -211,14 +215,14 @@ public class Xgm extends BaseDriver {
     private void onePCMFrameMain() {
         try {
             if (pcmDownCounter <= 0.0) {
-                 // pcm処理
+                // process pcm
                 oneFramePCM();
                 pcmDownCounter += pcmStep;
             }
             pcmDownCounter -= 1.0;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -227,17 +231,17 @@ public class Xgm extends BaseDriver {
 
             int cmd = vgmBuf[musicPtr++] & 0xff;
 
-             // wait
+            // wait
             if (cmd == 0) break;
 
-             // loop command
+            // loop command
             if (cmd == 0x7e) {
                 musicPtr = musicDataBlockAddr + ByteUtil.readLe24(vgmBuf, musicPtr);
                 vgmCurLoop++;
                 continue;
             }
 
-             // end command
+            // end command
             if (cmd == 0x7f) {
                 stopped = true;
                 break;
@@ -247,19 +251,19 @@ public class Xgm extends BaseDriver {
             cmd &= 0xf0;
 
             if (cmd == 0x10) {
-                 // Psg register write:
+                // Psg register write:
                 writePSG(X);
             } else if (cmd == 0x20) {
-                 // Ym2612Inst port 0 register write:
+                // Ym2612Inst port 0 register write:
                 writeYM2612P0(X);
             } else if (cmd == 0x30) {
-                 // Ym2612Inst port 1 register write:
+                // Ym2612Inst port 1 register write:
                 writeYM2612P1(X);
             } else if (cmd == 0x40) {
-                 // Ym2612Inst key off/on ($28) command write:
+                // Ym2612Inst key off/on ($28) command write:
                 writeYM2612Key(X);
             } else if (cmd == 0x50) {
-                 // PCM play command:
+                // PCM play command:
                 playPCM(X);
             }
         }
@@ -314,15 +318,15 @@ public class Xgm extends BaseDriver {
         int channel = X & 0x3;
         int id = vgmBuf[musicPtr++] & 0xff;
 
-         // 優先度が高い場合または消音中の場合のみ発音できる
+        // Can only be played if priority is high or if muted
         if (xgmpcm[channel].priority <= priority || !xgmpcm[channel].isPlaying) {
             if (id == 0 || sampleID[id - 1].size == 0) {
-                 // IDが0の場合や、定義されていないIDが指定された場合は発音を停止する
+                // If the ID is 0 or an undefined ID is specified, the sound will stop.
                 xgmpcm[channel].priority = 0;
-                //xgmPcm[channel].startAddr = 0;
-                //xgmPcm[channel].endAddr = 0;
-                //xgmPcm[channel].addr = 0;
-                //xgmPcm[channel].inst = id;
+//                xgmPcm[channel].startAddr = 0;
+//                xgmPcm[channel].endAddr = 0;
+//                xgmPcm[channel].addr = 0;
+//                xgmPcm[channel].inst = id;
                 xgmpcm[channel].isPlaying = false;
             } else {
                 xgmpcm[channel].priority = priority;
@@ -356,4 +360,3 @@ public class Xgm extends BaseDriver {
         chipRegister.setYM2612Register(0, 0, 0x2a, o, model, vgmFrameCounter);
     }
 }
-

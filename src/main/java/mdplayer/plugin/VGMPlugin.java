@@ -1,9 +1,10 @@
 package mdplayer.plugin;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.logging.Level;
 
 import dotnet4j.io.Stream;
 import mdplayer.ChipLEDs;
@@ -15,7 +16,8 @@ import mdsound.instrument.*;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.chips.Ym3438Const;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -25,6 +27,8 @@ import vavi.util.Debug;
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
 public class VGMPlugin extends BasePlugin {
+
+    private static final Logger logger = getLogger(VGMPlugin.class.getName());
 
     @Override
     public boolean play(String playingFileName, FileFormat format) {
@@ -42,7 +46,7 @@ public class VGMPlugin extends BasePlugin {
 //        }
         boolean r = vgmPlay();
         if (!r) {
- Debug.println(Level.WARNING, "cannot start: " + this);
+ logger.log(Level.WARNING, "cannot start: " + this);
             return false;
         }
         super.play();
@@ -1138,7 +1142,7 @@ public class VGMPlugin extends BasePlugin {
 
             return true;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return false;
         }
     }

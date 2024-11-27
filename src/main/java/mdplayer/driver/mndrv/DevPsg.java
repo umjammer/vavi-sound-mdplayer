@@ -751,10 +751,10 @@ public class DevPsg {
             break; // C7
         case 0x48:
             _PSG_C8();
-            break; // C8	ノイズ周波数
+            break; // C8	Noise Frequency
         case 0x49:
             _PSG_C9();
-            break; // C9	ミキサー
+            break; // C9	 Mixerー
         case 0x4a:
             _PSG_NOP();
             break; // CA
@@ -1330,7 +1330,7 @@ public class DevPsg {
     }
 
     /**
-     * ミキサー設定
+     *  Mixerー設定
      */
     public void _PSG_C9() {
         reg.D1_L = 0;

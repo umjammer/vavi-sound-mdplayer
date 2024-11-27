@@ -54,9 +54,9 @@ public class frmVSTeffectList extends JFrame {
         JFileChooser ofd = new JFileChooser();
         ofd.setFileFilter(new FileFilter() {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".dll"); }
-            @Override public String getDescription() { return "VST Pluginファイル(*.dll)"; }
+            @Override public String getDescription() { return "VST Plugin file (*.dll)"; }
         });
-        ofd.setDialogTitle("ファイルを選択してください");
+        ofd.setDialogTitle("Select a file");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
         if (!setting.getVst().getDefaultPath().isEmpty() && Directory.exists(setting.getVst().getDefaultPath()) && isInitialOpenFolder) {

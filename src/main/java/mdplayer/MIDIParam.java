@@ -223,7 +223,7 @@ public class MIDIParam {
             boolean IsStatusByte = (d & 0x80) != 0;
 
             if (IsStatusByte) {
-                //System.err.println("");
+                //logger.log(Level.TRACE, "");
                 NowSystemMsg = ((d & 0xf0) == 0xf0);
                 if ((d & 0xff) == 0xf7 && NowSystemMsg) {
                     if (msgInd < msg.length) msg[msgInd] = (byte) 0xf7;
@@ -235,7 +235,7 @@ public class MIDIParam {
 
             if (msgInd < msg.length) {
                 msg[msgInd] = d;
-                //System.err.printf("%2X:", msg[msgInd]);
+                //logger.log(Level.TRACE, "%2X:".formatted(msg[msgInd]));
                 msgInd++;
             }
 
@@ -262,7 +262,7 @@ public class MIDIParam {
             case 0x90: // Note ON
                 note[ch][msg[1]] = msg[2];
 
-                if (msg[2] != 0) // NOTE OFF の代用の場合は液晶パラメータの更新を行わない
+                if (msg[2] != 0) // When used in place of "NOTE OFF", LCD parameters are not updated.
                 {
                     int lv = cc[ch][7] * cc[ch][11] * msg[2] >> (7 + 7);
                     int lvl = (lv * (cc[ch][10] > 64 ? ((127 - cc[ch][10]) * 2) : 127)) >> (7);  // 65->124 127->0

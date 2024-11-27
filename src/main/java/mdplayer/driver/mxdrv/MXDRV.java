@@ -8,6 +8,8 @@
 
 package mdplayer.driver.mxdrv;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -26,6 +28,7 @@ import mdsound.instrument.X68SoundYm2151Inst;
 import mdsound.x68sound.X68Sound;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+import static java.lang.System.getLogger;
 
 
 // 
@@ -43,6 +46,8 @@ import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 //         DIS version 2.75
 // 
 public class MXDRV extends BaseDriver {
+
+    private static final Logger logger = getLogger(MXDRV.class.getName());
 
     public interface MXWORK_CH {
         int S0000 = 0; // Ptr
@@ -319,7 +324,7 @@ public class MXDRV extends BaseDriver {
         makeMdxBuf(vgmBuf, mdx, mdxSize, pdxFileName);
         makePdxBuf(pdxFileName[0], pdx, pdxSize);
         if ((pdxFileName[0] == null || pdxFileName[0].isEmpty()) && pdx[0] == null) {
-            errMsg = String.format("PCMファイル[%s]の読み込みに失敗しました。", pdxFileName[0]);
+            errMsg = "PCMファイル[%s]の読み込みに失敗しました。".formatted(pdxFileName[0]);
             return false;
         }
 
@@ -341,19 +346,19 @@ public class MXDRV extends BaseDriver {
         mdxPCM.x68sound[0].MountMemory(mm.mm);
 
         int playtime = MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr, 1, Depend.TRUE);
-        // Debug.println("(%d:%02d) %d", playtime / 1000 / 60, playtime / 1000 % 60, "");
+        // logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
         totalCounter = (long) playtime * setting.getOutputDevice().getSampleRate() / 1000;
         terminatePlay = false;
         MXDRV_Play(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr);
 
-        // Debug.println("********************");
+        // logger.log(Level.TRACE, "********************");
 
         return true;
     }
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 
     short[] dummyBuf = new short[2];
@@ -387,7 +392,7 @@ public class MXDRV extends BaseDriver {
                 stopped = true;
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -397,15 +402,15 @@ public class MXDRV extends BaseDriver {
         }
         int ret = mdxPCM.x68sound[0].getPcm(buffer, offset, sampleCount, this::oneFrameProc2);
 
-        //Debug.println("0:%08x", mm.Readint(MXWORK_CHBUF_FM[8] + MXWORK_CH.S0012));
-        //Debug.println("1:%04x", mm.Readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0012) >> 6);
-        //Debug.println("1a:%04x", mm.Readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0014) >> 6);
-        //Debug.println("2:%d", mm.Readint(MXWORK_CHBUF_PCM[1] + MXWORK_CH.S0004));
-        //Debug.println("3:%d", mm.Readint(MXWORK_CHBUF_PCM[2] + MXWORK_CH.S0004));
-        //Debug.println("4:%d", mm.Readint(MXWORK_CHBUF_PCM[3] + MXWORK_CH.S0004));
-        //Debug.println("5:%d", mm.Readint(MXWORK_CHBUF_PCM[4] + MXWORK_CH.S0004));
-        //Debug.println("6:%d", mm.Readint(MXWORK_CHBUF_PCM[5] + MXWORK_CH.S0004));
-        //Debug.println("7:%d", mm.Readint(MXWORK_CHBUF_PCM[6] + MXWORK_CH.S0004));
+        //logger.log(Level.TRACE, "0:%08x".formatted(mm.Readint(MXWORK_CHBUF_FM[8] + MXWORK_CH.S0012)));
+        //logger.log(Level.TRACE, "1:%04x".formatted(mm.Readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0012) >> 6));
+        //logger.log(Level.TRACE, "1a:%04x".formatted(mm.Readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0014) >> 6));
+        //logger.log(Level.TRACE, "2:%d".formatted(mm.Readint(MXWORK_CHBUF_PCM[1] + MXWORK_CH.S0004)));
+        //logger.log(Level.TRACE, "3:%d".formatted(mm.Readint(MXWORK_CHBUF_PCM[2] + MXWORK_CH.S0004)));
+        //logger.log(Level.TRACE, "4:%d".formatted(mm.Readint(MXWORK_CHBUF_PCM[3] + MXWORK_CH.S0004)));
+        //logger.log(Level.TRACE, "5:%d".formatted(mm.Readint(MXWORK_CHBUF_PCM[4] + MXWORK_CH.S0004)));
+        //logger.log(Level.TRACE, "6:%d".formatted(mm.Readint(MXWORK_CHBUF_PCM[5] + MXWORK_CH.S0004)));
+        //logger.log(Level.TRACE, "7:%d".formatted(mm.Readint(MXWORK_CHBUF_PCM[6] + MXWORK_CH.S0004)));
 
         return ret;
     }
@@ -1020,7 +1025,7 @@ public class MXDRV extends BaseDriver {
     private void OPM_SUB() {
         if (measurePlayTime) return;
 
-        //Debug.printf("%02x %02x", D1 & 0xff, D2 & 0xff);
+        //logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
 
         mdxPCM.sound_Iocs[0].opmSet((byte) D1, (byte) D2);
         chipRegister.setYM2151Register(0, 0, D1, D2, model, ym2151Hosei[0], 0);
@@ -2537,7 +2542,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
         D7 = 0x00;
 
         do {
-            //Debug.println("Ch%02d adr:%04x",D7,mm.Readint(A6+MXWORK_CH.S0000));
+            //logger.log(Level.TRACE, "Ch%02d adr:%04x".formatted(D7,mm.Readint(A6+MXWORK_CH.S0000)));
             L001050();
             L0011b4();
             D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c);

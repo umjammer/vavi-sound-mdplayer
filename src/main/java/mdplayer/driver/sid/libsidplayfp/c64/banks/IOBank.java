@@ -51,7 +51,7 @@ public class IOBank implements IBank {
 
     @Override
     public void poke(int addr, byte data) {
-        // System.err.println("%d", addr >> 8 & 0xf);
+        // logger.log(Level.TRACE, "%d".formatted(addr >> 8 & 0xf));
         map[addr >> 8 & 0xf].poke(addr, data);
     }
 

@@ -3,6 +3,9 @@ package mdplayer.driver.mndrv;
 import mdplayer.driver.mxdrv.XMemory;
 
 
+/**
+ * part of YM2151
+ */
 public class DevOpm {
     public Reg reg;
     public XMemory mm;
@@ -12,11 +15,7 @@ public class DevOpm {
     public ComLfo comlfo;
     public ComWave comwave;
 
-    //
-    //	part of YM2151
-    //
-
-    //─────────────────────────────────────
+    /** */
     public void _opm_note_set() {
         mm.write(reg.a5 + W.key, (byte) reg.getD0_B());
         reg.D2_L = 0;
@@ -39,9 +38,9 @@ public class DevOpm {
         _opm_keyon();
     }
 
-    //─────────────────────────────────────
-    //	SET KC/KF
-    //
+    /**
+     * SET KC/KF
+     */
     public void _set_kckf() {
         mm.write(reg.a5 + W.keycode, (short) reg.getD2_W());
         //_set_kckf2:
@@ -60,7 +59,7 @@ public class DevOpm {
         }
     }
 
-    //─────────────────────────────────────
+    /** */
     public static final byte[] _kc_table = new byte[] {
             0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x04, 0x05, 0x06, 0x08, 0x09, 0x0A
             , 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x14, 0x15, 0x16, 0x18, 0x19, 0x1A
@@ -75,9 +74,9 @@ public class DevOpm {
             , 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F
     };
 
-    //─────────────────────────────────────
-    //	KEY ON
-    //
+    /**
+     * KEY ON
+     */
     public void _opm_keyon() {
         reg.D0_L = 3;
         reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.effect));
@@ -116,9 +115,9 @@ public class DevOpm {
         }
     }
 
-    //─────────────────────────────────────
-    //	KEY OFF
-    //
+    /**
+     * KEY OFF
+     */
     public void _opm_keyoff() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
         comwave._wave_init_kof();
@@ -150,8 +149,7 @@ public class DevOpm {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x98));
     }
 
-    //─────────────────────────────────────
-    //
+    /** */
     public void _OPM_RR_cut() {
         reg.D1_L = 0xe0;
         reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
@@ -174,8 +172,7 @@ public class DevOpm {
         mndrv._OPM_WRITE();
     }
 
-    //─────────────────────────────────────
-    //
+    /** */
     public void _OPM_RR_ret() {
         reg.D1_L = 0xe0;
         reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
@@ -196,8 +193,7 @@ public class DevOpm {
         mndrv._OPM_WRITE();
     }
 
-    //─────────────────────────────────────
-    //
+    /** */
     public void _OPM_echo() {
         if ((mm.readByte(reg.a5 + W.flag) & 0x20) == 0) return;
 
@@ -233,7 +229,7 @@ public class DevOpm {
         reg.setD4_W(sp);
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _opm_echo_volume() {
         if ((mm.readByte(reg.a5 + W.reverb) & 0x10) != 0) {
             _opm_echo_common_atv();
@@ -273,7 +269,7 @@ public class DevOpm {
         _opm_echo_volume_v();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _opm_echo_pan() {
         reg.setD0_B(mm.readByte(reg.a5 + W.pan_ampm));
         reg.setD0_B(reg.getD0_B() & 0x3f);
@@ -282,16 +278,16 @@ public class DevOpm {
         mndrv._OPM_WRITE4();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _opm_echo_tone() {
         reg.D5_L = 0;
         reg.setD5_B(mm.readByte(reg.a5 + W.reverb_tone));
         _opm_echo_tone_change();
     }
 
-    //─────────────────────────────────────
-    // v通常
-    //
+    /**
+     * v normal
+     */
     public void _opm_echo_common_v() {
         if ((mm.readByte(reg.a5 + W.reverb) & 0x08) != 0) {
             _opm_echo_direct_v();
@@ -330,9 +326,9 @@ public class DevOpm {
         _OPM_F2_softenv();
     }
 
-    //─────────────────────────────────────
-    // @v通常
-    //
+    /**
+     * "@v" normal
+     */
     public void _opm_echo_common_atv() {
         if ((mm.readByte(reg.a5 + W.reverb) & 0x08) != 0) {
             _opm_echo_direct_atv();
@@ -364,9 +360,9 @@ public class DevOpm {
         _OPM_F2_softenv();
     }
 
-    //─────────────────────────────────────
-    // v微調整
-    //
+    /**
+     * "v" fine tune
+     */
     public void _opm_echo_volume_v() {
         reg.D4_L = 0;
         reg.setD4_B(mm.readByte(reg.a5 + W.volume));
@@ -395,9 +391,9 @@ public class DevOpm {
         _OPM_F2_softenv();
     }
 
-    //─────────────────────────────────────
-    // @v微調整
-    //
+    /**
+     * "@v" fine tune
+     */
     public void _opm_echo_volume_atv() {
         reg.setD4_B(mm.readByte(reg.a5 + W.vol));
         reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol));
@@ -410,9 +406,9 @@ public class DevOpm {
         _OPM_F2_softenv();
     }
 
-    //─────────────────────────────────────
-    // v直接
-    //
+    /**
+     * "v" direct
+     */
     public void _opm_echo_direct_v() {
         reg.D4_L = 0;
         reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol));
@@ -421,15 +417,15 @@ public class DevOpm {
         _OPM_F2_softenv();
     }
 
-    //─────────────────────────────────────
-    // @v直接
-    //
+    /**
+     * "@v" direct
+     */
     public void _opm_echo_direct_atv() {
         reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol));
         _OPM_F2_softenv();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _OPM_echo_ret() {
         int sp = reg.getD4_W();
 
@@ -465,11 +461,9 @@ public class DevOpm {
             mndrv._OPM_WRITE4();
         }
         reg.setD4_W(sp);
-
     }
 
-    //─────────────────────────────────────
-    //
+    /** */
     public void _init_lfo_opm() {
         if (mm.readByte(reg.a6 + Dw.FADEFLAG) == 0) {
             if ((mm.readByte(reg.a5 + W.effect) & 0x20) != 0) return;
@@ -503,24 +497,21 @@ public class DevOpm {
         }
     }
 
-    //─────────────────────────────────────
-    //
+    /** */
     public void _init_opm_hlfo() {
         if ((mm.readByte(reg.a5 + W.lfo) & 1) != 0) {
 
-
-             // /HACK MNDRV:LFO syncの適用
+            // /HACK MNDRV:LFO Applying sync
             reg.setD0_B(mm.readByte(reg.a5 + W.sdetune2));
-             // //////
-             // original Code
-            //if (reg.getD0_B() != 0)
-            //{
+            // ----
+            // original Code
+            //if (reg.getD0_B() != 0) {
             //    Reg.D1_L = 0x01;
             //    MnDrv._OPM_WRITE();
             //    Reg.D0_L = 0;
             //    MnDrv._OPM_WRITE();
             //}
-            //kuma Code
+            // kuma Code
             reg.D1_L = 0x01;
             mndrv._OPM_WRITE();
             reg.D0_L = 0;
@@ -528,7 +519,7 @@ public class DevOpm {
                 reg.D0_L = 2;
             }
             mndrv._OPM_WRITE();
-            ////////
+            // ----
 
             reg.D0_L = 0xc;
             reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.flag2));
@@ -545,423 +536,423 @@ public class DevOpm {
         }
     }
 
-    //─────────────────────────────────────
-    //	MML コマンド処理 ( FM 部 )
-    //
+    /**
+     * Processes MML command (FM part)
+     */
     public void _opm_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
          // _opmc:
         switch (reg.getD0_W() / 2) {
         //case 0x00:0
-        case 0x01:
+        case 0x01: // 81
             comcmds._COM_81();
-            break;// 81
-        case 0x02:
+            break;
+        case 0x02: // 82	key off
             _OPM_82();
-            break;// 82	key off
-        case 0x03:
+            break;
+        case 0x03: // 83	すらー
             comcmds._COM_83();
-            break;// 83	すらー
+            break;
         case 0x04:
             _OPM_NOP();
-            break;// 84
+            break; // 84
         case 0x05:
             _OPM_NOP();
-            break;// 85
+            break; // 85
         case 0x06:
             comcmds._COM_86();
-            break;// 86	同期信号送信
+            break; // 86	同期信号送信
         case 0x07:
             comcmds._COM_87();
-            break;// 87	同期信号待ち
+            break; // 87	同期信号待ち
         case 0x08:
             _OPM_88();
-            break;// 88	ぴっちべんど
+            break; // 88	ぴっちべんど
         case 0x09:
             _OPM_89();
-            break;// 89	ぽるためんと
+            break; // 89	ぽるためんと
         case 0x0a:
             _OPM_8A();
-            break;// 8A	ぽるためんと係数変更
+            break; // 8A	ぽるためんと係数変更
         case 0x0b:
             _OPM_8B();
-            break;// 8B	ぽるためんと2
+            break; // 8B	ぽるためんと2
         case 0x0c:
             _OPM_NOP();
-            break;// 8C
+            break; // 8C
         case 0x0d:
             _OPM_NOP();
-            break;// 8D
+            break; // 8D
         case 0x0e:
             _OPM_NOP();
-            break;// 8E
+            break; // 8E
         case 0x0f:
             _OPM_NOP();
-            break;// 8F
+            break; // 8F
 
         case 0x10:
             comcmds._COM_90();
-            break;// 90	q
+            break; // 90	q
         case 0x11:
             comcmds._COM_91();
-            break;// 91	@q
+            break; // 91	@q
         case 0x12:
             _OPM_92();
-            break;// 92	keyoff rr cut switch
+            break; // 92	keyoff rr cut switch
         case 0x13:
             comcmds._COM_93();
-            break;// 93	neg @q
+            break; // 93	neg @q
         case 0x14:
             comcmds._COM_94();
-            break;// 94	keyoff mode
+            break; // 94	keyoff mode
         case 0x15:
             _OPM_NOP();
-            break;// 95
+            break; // 95
         case 0x16:
             _OPM_NOP();
-            break;// 96
+            break; // 96
         case 0x17:
             _OPM_NOP();
-            break;// 97
+            break; // 97
         case 0x18:
             _OPM_98();
-            break;// 98	擬似リバーブ
+            break; // 98	擬似リバーブ
         case 0x19:
             _OPM_99();
-            break;// 99	擬似エコー
+            break; // 99	擬似エコー
         case 0x1a:
             comcmds._COM_9A();
-            break;// 9A	擬似リバーブタイム
+            break; // 9A	擬似リバーブタイム
         case 0x1b:
             _OPM_NOP();
-            break;// 9B
+            break; // 9B
         case 0x1c:
             _OPM_NOP();
-            break;// 9C
+            break; // 9C
         case 0x1d:
             _OPM_NOP();
-            break;// 9D
+            break; // 9D
         case 0x1e:
             _OPM_NOP();
-            break;// 9E
+            break; // 9E
         case 0x1f:
             _OPM_NOP();
-            break;// 9F
+            break; // 9F
 
         case 0x20:
             _OPM_F0();
-            break;// A0	音色切り替え
+            break; // A0	音色切り替え
         case 0x21:
             _OPM_A1();
-            break;// A1	バンク&音色切り替え
+            break; // A1	バンク&音色切り替え
         case 0x22:
             _OPM_NOP();
-            break;// A2
+            break; // A2
         case 0x23:
             _OPM_A3();
-            break;// A3	音量テーブル切り替え
+            break; // A3	音量テーブル切り替え
         case 0x24:
             _OPM_F2();
-            break;// A4	音量
+            break; // A4	音量
         case 0x25:
             _OPM_F5();
-            break;// A5
+            break; // A5
         case 0x26:
             _OPM_F6();
-            break;// A6
+            break; // A6
         case 0x27:
             _OPM_NOP();
-            break;// A7
+            break; // A7
         case 0x28:
             comcmds._COM_A8();
-            break;// A8	相対音量モード
+            break; // A8	相対音量モード
         case 0x29:
             _OPM_NOP();
-            break;// A9
+            break; // A9
         case 0x2a:
             _OPM_NOP();
-            break;// AA
+            break; // AA
         case 0x2b:
             _OPM_NOP();
-            break;// AB
+            break; // AB
         case 0x2c:
             _OPM_NOP();
-            break;// AC
+            break; // AC
         case 0x2d:
             _OPM_NOP();
-            break;// AD
+            break; // AD
         case 0x2e:
             _OPM_NOP();
-            break;// AE
+            break; // AE
         case 0x2f:
             _OPM_NOP();
-            break;// AF
+            break; // AF
 
         case 0x30:
             comcmds._COM_B0();
-            break;// B0
+            break; // B0
         case 0x31:
             _OPM_NOP();
-            break;// B1
+            break; // B1
         case 0x32:
             _OPM_NOP();
-            break;// B2
+            break; // B2
         case 0x33:
             _OPM_NOP();
-            break;// B3
+            break; // B3
         case 0x34:
             _OPM_NOP();
-            break;// B4
+            break; // B4
         case 0x35:
             _OPM_NOP();
-            break;// B5
+            break; // B5
         case 0x36:
             _OPM_NOP();
-            break;// B6
+            break; // B6
         case 0x37:
             _OPM_NOP();
-            break;// B7
+            break; // B7
         case 0x38:
             _OPM_NOP();
-            break;// B8
+            break; // B8
         case 0x39:
             _OPM_NOP();
-            break;// B9
+            break; // B9
         case 0x3a:
             _OPM_NOP();
-            break;// BA
+            break; // BA
         case 0x3b:
             _OPM_NOP();
-            break;// BB
+            break; // BB
         case 0x3c:
             _OPM_NOP();
-            break;// BC
+            break; // BC
         case 0x3d:
             _OPM_NOP();
-            break;// BD
+            break; // BD
         case 0x3e:
             comcmds._COM_BE();
-            break;// BE	ジャンプ
+            break; // BE	ジャンプ
         case 0x3f:
             comcmds._COM_BF();
-            break;// BF
+            break; // BF
 
         // Psg 系
         case 0x40:
             comcmds._COM_C0();
-            break;// C0	ソフトウェアエンベロープ 1
+            break; // C0	ソフトウェアエンベロープ 1
         case 0x41:
             comcmds._COM_C1();
-            break;// C1	ソフトウェアエンベロープ 2
+            break; // C1	ソフトウェアエンベロープ 2
         case 0x42:
             _OPM_NOP();
-            break;// C2
+            break; // C2
         case 0x43:
             comcmds._COM_C3();
-            break;// C3	switch
+            break; // C3	switch
         case 0x44:
             comcmds._COM_C4();
-            break;// C4	env set
+            break; // C4	env set
         case 0x45:
             comcmds._COM_C5();
-            break;// C5	env set (bank + num)
+            break; // C5	env set (bank + num)
         case 0x46:
             _OPM_NOP();
-            break;// C6
+            break; // C6
         case 0x47:
             _OPM_NOP();
-            break;// C7
+            break; // C7
         case 0x48:
             _OPM_C8();
-            break;// C8	ノイズ周波数
+            break; // C8	Noise Frequency
         case 0x49:
             _OPM_NOP();
-            break;// C9
+            break; // C9
         case 0x4a:
             _OPM_NOP();
-            break;// CA
+            break; // CA
         case 0x4b:
             _OPM_NOP();
-            break;// CB
+            break; // CB
         case 0x4c:
             _OPM_NOP();
-            break;// CC
+            break; // CC
         case 0x4d:
             _OPM_NOP();
-            break;// CD
+            break; // CD
         case 0x4e:
             _OPM_NOP();
-            break;// CE
+            break; // CE
         case 0x4f:
             _OPM_NOP();
-            break;// CF
+            break; // CF
 
         // KEY 系
         case 0x50:
             comcmds._COM_D0();
-            break;// D0	キートランスポーズ
+            break; // D0	キートランスポーズ
         case 0x51:
             comcmds._COM_D1();
-            break;// D1	相対キートランスポーズ
+            break; // D1	相対キートランスポーズ
         case 0x52:
             _OPM_NOP();
-            break;// D2
+            break; // D2
         case 0x53:
             _OPM_NOP();
-            break;// D3
+            break; // D3
         case 0x54:
             _OPM_NOP();
-            break;// D4
+            break; // D4
         case 0x55:
             _OPM_NOP();
-            break;// D5
+            break; // D5
         case 0x56:
             _OPM_NOP();
-            break;// D6
+            break; // D6
         case 0x57:
             _OPM_NOP();
-            break;// D7
+            break; // D7
         case 0x58:
             comcmds._COM_D8();
-            break;// D8	ディチューン
+            break; // D8	ディチューン
         case 0x59:
             comcmds._COM_D9();
-            break;// D9	相対ディチューン
+            break; // D9	相対ディチューン
         case 0x5a:
             _OPM_NOP();
-            break;// DA
+            break; // DA
         case 0x5b:
             _OPM_NOP();
-            break;// DB
+            break; // DB
         case 0x5c:
             _OPM_NOP();
-            break;// DC
+            break; // DC
         case 0x5d:
             _OPM_NOP();
-            break;// DD
+            break; // DD
         case 0x5e:
             _OPM_NOP();
-            break;// DE
+            break; // DE
         case 0x5f:
             _OPM_NOP();
-            break;// DF
+            break; // DF
 
         // LFO 系
         case 0x60:
             _OPM_E0();
-            break;// E0	hardware LFO
+            break; // E0	hardware LFO
         case 0x61:
             _OPM_E1();
-            break;// E1	hardware LFO switch
+            break; // E1	hardware LFO switch
         case 0x62:
             comcmds._COM_E2();
-            break;// E2	pitch LFO
+            break; // E2	pitch LFO
         case 0x63:
             comcmds._COM_E3();
-            break;// E3	pitch LFO switch
+            break; // E3	pitch LFO switch
         case 0x64:
             comcmds._COM_E4();
-            break;// E4	pitch LFO delay
+            break; // E4	pitch LFO delay
         case 0x65:
             _OPM_NOP();
-            break;// E5
+            break; // E5
         case 0x66:
             _OPM_NOP();
-            break;// E6
+            break; // E6
         case 0x67:
             comcmds._COM_E7();
-            break;// E7	amp LFO
+            break; // E7	amp LFO
         case 0x68:
             _OPM_E8();
-            break;// E8	amp LFO switch
+            break; // E8	amp LFO switch
         case 0x69:
             comcmds._COM_E9();
-            break;// E9	amp LFO delay
+            break; // E9	amp LFO delay
         case 0x6a:
             comcmds._COM_EA();
-            break;// EA	amp LFO switch 2
+            break; // EA	amp LFO switch 2
         case 0x6b:
             comcmds._COM_EB();
-            break;// EB
+            break; // EB
         case 0x6c:
             _OPM_NOP();
-            break;// EC
+            break; // EC
         case 0x6d:
             comcmds._COM_ED();
-            break;// ED
+            break; // ED
         case 0x6e:
             _OPM_EE();
-            break;// EE	LW type LFO
+            break; // EE	LW type LFO
         case 0x6f:
             comcmds._COM_EF();
-            break;// EF	hardware LFO delay
+            break; // EF	hardware LFO delay
 
         // システムコントール系
         case 0x70:
             _OPM_F0();
-            break;// F0	@
+            break; // F0	@
         case 0x71:
             comcmds._COM_D8();
-            break;// F1
+            break; // F1
         case 0x72:
             _OPM_F2();
-            break;// F2	volume
+            break; // F2	volume
         case 0x73:
             comcmds._COM_91();
-            break;// F3
+            break; // F3
         case 0x74:
             _OPM_F4();
-            break;// F4	pan
+            break; // F4	pan
         case 0x75:
             _OPM_F5();
-            break;// F5	) volup
+            break; // F5	) volup
         case 0x76:
             _OPM_F6();
-            break;// F6	( voldown
+            break; // F6	( voldown
         case 0x77:
             _OPM_NOP();
-            break;// F7
+            break; // F7
         case 0x78:
             _OPM_F8();
-            break;// F8
+            break; // F8
         case 0x79:
             comcmds._COM_F9();
-            break;// F9	永久ループポイントマーク
+            break; // F9	永久ループポイントマーク
         case 0x7a:
             _OPM_FA();
-            break;// FA	y command
+            break; // FA	y command
         case 0x7b:
             comcmds._COM_FB();
-            break;// FB	リピート抜け出し
+            break; // FB	リピート抜け出し
         case 0x7c:
             comcmds._COM_FC();
-            break;// FC	リピート開始
+            break; // FC	リピート開始
         case 0x7d:
             comcmds._COM_FD();
-            break;// FD	リピート終端
+            break; // FD	リピート終端
         case 0x7e:
             comcmds._COM_FE();
-            break;// FE	tempo
+            break; // FE	tempo
         case 0x7f:
             _OPM_FF();
-            break;// FF	end of data
+            break; // FF	end of data
         }
     }
 
-    //─────────────────────────────────────
+    /** */
     //
     public void _OPM_NOP() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x7f));
         _opm_keyoff2();
     }
 
-    //─────────────────────────────────────
+    /** */
     //
     public void _OPM_82() {
         _opm_keyoff2();
     }
 
-    //─────────────────────────────────────
+    /** */
     //	ピッチベンド
     //		[$88] + [目標音程]b + [delay]b + [speed]b + [rate]W
     //
@@ -1006,7 +997,7 @@ public class DevOpm {
         mm.write(reg.a4 + W_L.henka, (short) reg.getD0_W());
     }
 
-    //─────────────────────────────────────
+    /** */
     //	ポルタメント
     //		[$89] + [switch]b + [先note]b + [元note]b + [step]b
     //
@@ -1682,7 +1673,7 @@ public class DevOpm {
         mndrv._OPM_WRITE4();
     }
 
-    //─────────────────────────────────────
+    /** */
     //	volup
     //			[$F5] + [DATA]b
     //
@@ -1718,7 +1709,7 @@ public class DevOpm {
         _OPM_F2_v();
     }
 
-    //─────────────────────────────────────
+    /** */
     //	voldown
     //			[$F6] + [DATA]b
     //
@@ -1753,7 +1744,7 @@ public class DevOpm {
         _OPM_F2_v();
     }
 
-    //─────────────────────────────────────
+    /** */
     //	スロットマスク設定
     //			[$F8] + [data]b
     public void _OPM_F8() {
@@ -1763,7 +1754,7 @@ public class DevOpm {
         mm.write(reg.a5 + W.smask, (byte) reg.getD0_B());
     }
 
-    //─────────────────────────────────────
+    /** */
     //	y command
     //			[$FA] + [REG] + [DATA]
     public void _OPM_FA() {
@@ -1779,7 +1770,7 @@ public class DevOpm {
         mndrv._OPM_WRITE();
     }
 
-    //─────────────────────────────────────
+    /** */
     //
     public void _OPM_FF() {
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfe));
@@ -1831,7 +1822,7 @@ public class DevOpm {
         reg.a1 = mm.readInt(reg.a5 + W.loop);
     }
 
-    //─────────────────────────────────────
+    /** */
     //
     public void _ch_opm_lfo_job() {
         comwave._ch_effect();
@@ -1996,7 +1987,7 @@ public class DevOpm {
         _ch_opm_p_common();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_opm_alfo_1() {
         reg.a4 = reg.a5 + W.v_pattern1;
         reg.a3 = reg.a5 + W.wv_pattern1;
@@ -2054,7 +2045,7 @@ public class DevOpm {
         _ch_opm_a_common();
     }
 
-    //─────────────────────────────────────
+    /** */
     //	HARD WARE LFO delay & LW type modulation
     //
     public void _ch_opm_HLFO() {
@@ -2129,7 +2120,7 @@ public class DevOpm {
         reg.setD0_W(reg.getD5_W());
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_opm_a_common() {
         reg.D0_L = 1;
         reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern));
@@ -2179,7 +2170,7 @@ public class DevOpm {
         mm.write(reg.a5 + W.addvolume, (short) reg.getD1_W());
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _opm_v_calc() {
         reg.setD3_B(mm.readByte(reg.a3 + W_W.slot));
         if ((byte) reg.getD3_B() < 0) {
@@ -2211,7 +2202,7 @@ public class DevOpm {
         _OPM_F2_lfo();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _OPM_F2_lfo() {
         reg.setD4_B(reg.getD4_B() + mm.readByte(reg.a6 + Dw.MASTER_VOL_FM));
         if ((byte) reg.getD4_B() < 0) {
@@ -2245,7 +2236,7 @@ public class DevOpm {
         } while (reg.decAfterD2_W() != 0);
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _opm_v_calc_slot() {
         reg.setD4_W(reg.getD0_W());
         reg.D0_L = mm.readInt(reg.a5 + W.voiceptr);
@@ -2292,7 +2283,7 @@ public class DevOpm {
         } while (reg.decAfterD2_W() != 0);
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_opm_p_common() {
         reg.D0_L = 1;
         reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern));
@@ -2382,7 +2373,7 @@ public class DevOpm {
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_opm_mml_job() {
         comanalyze._track_analyze();
 
@@ -2397,7 +2388,7 @@ public class DevOpm {
         _ch_opm_bend();
     }
 
-    //─────────────────────────────────────
+    /** */
     //	pitch bend
     //
     public void _ch_opm_bend() {
@@ -2469,7 +2460,7 @@ public class DevOpm {
         _set_kckf();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_opm_mx_bend() {
         mm.write(reg.a4 + W_L.count, (byte) (mm.readByte(reg.a4 + W_L.count) - 1));
         if (mm.readByte(reg.a4 + W_L.count) == 0) {
@@ -2525,7 +2516,7 @@ public class DevOpm {
         _set_kckf();
     }
 
-    //─────────────────────────────────────
+    /** */
     //	portament
     //
     public void _ch_opm_porta() {
@@ -2602,7 +2593,7 @@ public class DevOpm {
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfd));
     }
 
-    //─────────────────────────────────────
+    /** */
     //	わうわう
     //
     public void _ch_opm_ww() {
@@ -2640,13 +2631,13 @@ public class DevOpm {
         mm.write(reg.a4 + W_Ww.rate_work, (byte) (-(byte) mm.readByte(reg.a4 + W_Ww.rate_work)));
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_opm_softenv_job() {
         comlfo.softEnv();
         _OPM_F2_softenv();
     }
 
-    //─────────────────────────────────────
+    /** */
     //	effect execute
     //
     public void _opm_effect_ycommand() {

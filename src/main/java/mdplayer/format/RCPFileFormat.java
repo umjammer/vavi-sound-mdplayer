@@ -45,11 +45,11 @@ public class RCPFileFormat extends BaseFileFormat {
             music.converted = gd3.converted;
             music.notes = gd3.notes;
         } else {
-            music.title = String.format("(%s)", Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.getFileName(file));
         }
 
         if (music.title.isEmpty() && music.titleJ.isEmpty()) {
-            music.title = String.format("(%s)", Path.getFileName(file));
+            music.title = "(%s)".formatted(Path.getFileName(file));
         }
         return Collections.singletonList(music);
     }
@@ -73,11 +73,11 @@ public class RCPFileFormat extends BaseFileFormat {
             music.converted = gd3.converted;
             music.notes = gd3.notes;
         } else {
-            music.title = String.format("(%s)", Path.getFileName(ms.fileName));
+            music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
         }
 
         if (music.title.isEmpty() && music.titleJ.isEmpty()) {
-            music.title = String.format("(%s)", Path.getFileName(ms.fileName));
+            music.title = "(%s)".formatted(Path.getFileName(ms.fileName));
         }
 
         musics.add(music);

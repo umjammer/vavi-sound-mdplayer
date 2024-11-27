@@ -135,12 +135,12 @@ public class frmRegTest extends frmChipBase {
 
         public String getName() {
             ChipData x = chipData.get(select);
-            return String.format("%-10s  ", x.chipName);
+            return "%-10s  ".formatted(x.chipName);
         }
 
         public String getName2() {
             ChipData x = chipData.get(select);
-            return String.format("#%d REGISTER (%d/%d)  ", select - x.baseIndex, select + 1, chipData.size());
+            return "#%d REGISTER (%d/%d)  ".formatted(select - x.baseIndex, select + 1, chipData.size());
         }
 
         public int getRegisterSize() {
@@ -223,7 +223,7 @@ public class frmRegTest extends frmChipBase {
             frameBuffer.clearScreen();
             regMan.needRefresh = false;
         }
-        frameBuffer.Refresh(null);
+        frameBuffer.refresh(null);
     }
 
     @Override
@@ -358,8 +358,8 @@ public class frmRegTest extends frmChipBase {
             */
 
 
-            DrawBuff.drawFont4(frameBuffer, 2, y, 0, String.format("VOICE1 FREQ %4x", voice1f));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, String.format("VOICE1 PWDC %4x", pwdc1));
+            DrawBuff.drawFont4(frameBuffer, 2, y, 0, "VOICE1 FREQ %4x".formatted(voice1f));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, "VOICE1 PWDC %4x".formatted(pwdc1));
 
             DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, "VOICE1 MODE ");
             DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, "" +
@@ -371,12 +371,12 @@ public class frmRegTest extends frmChipBase {
                     ((mode1 & 0b00000100) == 0x04 ? "RING 3" : "------") +
                     ((mode1 & 0b00000010) == 0x02 ? "SYNC 3" : "------") +
                     ((mode1 & 0b00000001) == 0x01 ? "GATE" : "----")); // Parse this
-            DrawBuff.drawFont4(frameBuffer, 2, y + 32, 0, String.format("VOICE1 ADSR %1x %1x %1x %1x", attack1, decay1, sustain1, release1));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 32, 0, "VOICE1 ADSR %1x %1x %1x %1x".formatted(attack1, decay1, sustain1, release1));
 
             y += 48;
 
-            DrawBuff.drawFont4(frameBuffer, 2, y, 0, String.format("VOICE2 FREQ %4x", voice2f));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, String.format("VOICE2 PWDC %4x", pwdc2));
+            DrawBuff.drawFont4(frameBuffer, 2, y, 0, "VOICE2 FREQ %4x".formatted(voice2f));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, "VOICE2 PWDC %4x".formatted(pwdc2));
 
             DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, "VOICE2 MODE ");
             DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, "" +
@@ -388,12 +388,12 @@ public class frmRegTest extends frmChipBase {
                     ((mode2 & 0b00000100) == 0x04 ? "RING 1" : "------") +
                     ((mode2 & 0b00000010) == 0x02 ? "SYNC 1" : "------") +
                     ((mode2 & 0b00000001) == 0x01 ? "GATE" : "----")); // Parse this
-            DrawBuff.drawFont4(frameBuffer, 2, y + 32, 0, String.format("VOICE2 ADSR %1x %1x %1x %1x", attack2, decay2, sustain2, release2));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 32, 0, "VOICE2 ADSR %1x %1x %1x %1x".formatted(attack2, decay2, sustain2, release2));
 
             y += 48;
 
-            DrawBuff.drawFont4(frameBuffer, 2, y, 0, String.format("VOICE3 FREQ %4x", voice3f));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, String.format("VOICE3 PWDC %4x", pwdc3));
+            DrawBuff.drawFont4(frameBuffer, 2, y, 0, "VOICE3 FREQ %4x".formatted(voice3f));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, "VOICE3 PWDC %4x".formatted(pwdc3));
 
             DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, "VOICE3 MODE ");
             DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, "" +
@@ -405,12 +405,12 @@ public class frmRegTest extends frmChipBase {
                     ((mode3 & 0b00000100) == 0x04 ? "RING 2" : "------") +
                     ((mode3 & 0b00000010) == 0x02 ? "SYNC 2" : "------") +
                     ((mode3 & 0b00000001) == 0x01 ? "GATE" : "----")); // Parse this
-            DrawBuff.drawFont4(frameBuffer, 2, y + 32, 0, String.format("VOICE3 ADSR %1x %1x %1x %1x", attack3, decay3, sustain3, release3));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 32, 0, "VOICE3 ADSR %1x %1x %1x %1x".formatted(attack3, decay3, sustain3, release3));
 
             y += 48;
 
-            DrawBuff.drawFont4(frameBuffer, 2, y, 0, String.format("FILTER CUTOFF FREQ %4x", filtercutoff));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, String.format("FILTER RESONANCE %2x", filterreso));
+            DrawBuff.drawFont4(frameBuffer, 2, y, 0, "FILTER CUTOFF FREQ %4x".formatted(filtercutoff));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, "FILTER RESONANCE %2x".formatted(filterreso));
 
             DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, "FILTER ROUTE");
             DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, "" +
@@ -425,7 +425,7 @@ public class frmRegTest extends frmChipBase {
                     ((filtermode & 0b00000100) == 0x04 ? "HIGHPASS" : "--------") +
                     ((filtermode & 0b00000010) == 0x02 ? "BANDPASS" : "--------") +
                     ((filtermode & 0b00000001) == 0x01 ? "LOWPASS" : "-------"));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 48, 0, String.format("MAIN volume %2x", mainvolume));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 48, 0, "MAIN volume %2x".formatted(mainvolume));
 
             y += 56;
 
@@ -434,10 +434,10 @@ public class frmRegTest extends frmChipBase {
             playSidFp curEngine = curSID.GetCurrentEngineContext();
             SidInfo si = curEngine.info();
 
-            DrawBuff.drawFont4(frameBuffer, 2, y, 0, String.format("LOAD ADDR %04xh", sti.getLoadAddr()));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, String.format("INIT ADDR %04xh", sti.getInitAddress()));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, String.format("PLAY ADDR %04xh", sti.getPlayAddress()));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, String.format("%s %s; CUR:%s SPD:%s", sti.sidModel(Integer.parseInt(p)), sti.getClockSpeed(), cfg.defaultSidModel, si.getSpeedString()));
+            DrawBuff.drawFont4(frameBuffer, 2, y, 0, "LOAD ADDR %04xh".formatted(sti.getLoadAddr()));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, "INIT ADDR %04xh".formatted(sti.getInitAddress()));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, "PLAY ADDR %04xh".formatted(sti.getPlayAddress()));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, "%s %s; CUR:%s SPD:%s".formatted(sti.sidModel(Integer.parseInt(p)), sti.getClockSpeed(), cfg.defaultSidModel, si.getSpeedString()));
 
             y += 32;
             //return;
@@ -460,29 +460,29 @@ public class frmRegTest extends frmChipBase {
             for (int i = 0; i < r.length; i++) {
                 if (i % 16 == 0) {
                     y += 8;
-                    DrawBuff.drawFont4(frameBuffer, 2, y - 8, 0, String.format("%3x:", i));
+                    DrawBuff.drawFont4(frameBuffer, 2, y - 8, 0, "%3x:".formatted(i));
                 }
                 byte v = r[i];
-                DrawBuff.drawFont4(frameBuffer, 34 + ((i % 16) * 12), y - 8, 0, String.format("%2x:", v));
+                DrawBuff.drawFont4(frameBuffer, 34 + ((i % 16) * 12), y - 8, 0, "%2x:".formatted(v));
             }
         } else if (reg instanceof short[] r) {
             int ms = regMan.getRegisterSize();
             for (int i = 0; i < Math.min(r.length, ms); i++) {
                 if (i % 16 == 0) {
                     y += 8;
-                    DrawBuff.drawFont4(frameBuffer, 2, y - 8, 0, String.format("%3x:", i));
+                    DrawBuff.drawFont4(frameBuffer, 2, y - 8, 0, "%3x:".formatted(i));
                 }
                 byte v = (byte) r[i];
-                DrawBuff.drawFont4(frameBuffer, 34 + ((i % 16) * 12), y - 8, 0, String.format("%2x:", v));
+                DrawBuff.drawFont4(frameBuffer, 34 + ((i % 16) * 12), y - 8, 0, "%2x:".formatted(v));
             }
         } else if (reg instanceof int[] r) {
             for (int i = 0; i < r.length; i++) {
                 if (i % 16 == 0) {
                     y += 8;
-                    DrawBuff.drawFont4(frameBuffer, 2, y - 8, 0, String.format("%3x:", i));
+                    DrawBuff.drawFont4(frameBuffer, 2, y - 8, 0, "%3x:".formatted(i));
                 }
                 int v = r[i];
-                DrawBuff.drawFont4(frameBuffer, 30 + ((i % 8) * 18), y - 8, 0, String.format("%4x:", v));
+                DrawBuff.drawFont4(frameBuffer, 30 + ((i % 8) * 18), y - 8, 0, "%4x:".formatted(v));
             }
         } else if (reg instanceof int[][] r) {
             for (int j = 0; j < r.length; j++) {
@@ -490,7 +490,7 @@ public class frmRegTest extends frmChipBase {
                     if (i % 16 == 0) {
                         y += 8;
                         int n = i + j * r[j].length;
-                        DrawBuff.drawFont4(frameBuffer, 2, y - 8, 0, String.format("%3x:", n));
+                        DrawBuff.drawFont4(frameBuffer, 2, y - 8, 0, "%3x:".formatted(n));
                     }
                     int m = r[j][i];
                     byte v = (byte) r[j][i];
@@ -500,7 +500,7 @@ public class frmRegTest extends frmChipBase {
                         v = 0;
                         c = 1;
                     }
-                    DrawBuff.drawFont4(frameBuffer, 34 + ((i % 16) * 12), y - 8, c, String.format("%2x:", v));
+                    DrawBuff.drawFont4(frameBuffer, 34 + ((i % 16) * 12), y - 8, c, "%2x:".formatted(v));
                 }
             }
         }
@@ -513,7 +513,7 @@ public class frmRegTest extends frmChipBase {
             /*
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
-            //System.err.println("%d %d", px, py);
+            //logger.log(Level.TRACE, "%d %d".formatted(px, py));
             if (py > 8) return;
             if (px < 210) return;
             int xc = (px-210) / 4;

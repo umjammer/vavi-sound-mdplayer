@@ -380,7 +380,7 @@ public class PSidDrv {
         // Set default processor register Flags on calling init
         mem.writeMemByte((short) pos, (byte) (tuneInfo.compatibility().ordinal() >= SidTuneInfo.Compatibility.R64.ordinal() ? 0 : 1 << Mos6510.SR_INTERRUPT));
 
-        //System.err.println("%d",Mem.readMemByte(0x17e3));
+        //logger.log(Level.TRACE, "%d".formatted(Mem.readMemByte(0x17e3)));
     }
 }
 

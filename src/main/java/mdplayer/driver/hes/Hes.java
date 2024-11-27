@@ -1,5 +1,7 @@
 package mdplayer.driver.hes;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.Arrays;
 
 import mdplayer.ChipRegister;
@@ -10,10 +12,14 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 public class Hes extends BaseDriver {
+
+    private static final Logger logger = getLogger(Hes.class.getName());
+
     @Override
     public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         if (ByteUtil.readLeInt(buf, 0) != FCC_HES) {
@@ -30,7 +36,7 @@ public class Hes extends BaseDriver {
         init_address = (buf[0x06] & 0xff) | ((buf[0x07] & 0xff) << 8);
         play_address = 0;
 
-        // HESの曲情報はほぼ無い?
+        // There is almost no information on HES songs?
         return null;
     }
 
@@ -92,7 +98,7 @@ public class Hes extends BaseDriver {
             }
             //Stopped = !IsPlaying();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -160,7 +166,7 @@ public class Hes extends BaseDriver {
                 else stopped = true;
             }
         } catch (Exception ex) {
-            Debug.printf("Exception message:%s StackTrace:%s", ex.getMessage(), Arrays.toString(ex.getStackTrace()));
+            logger.log(Level.ERROR, "Exception message:%s StackTrace:%s".formatted(ex.getMessage(), Arrays.toString(ex.getStackTrace())));
         }
     }
 
@@ -193,7 +199,7 @@ public class Hes extends BaseDriver {
             if (wspeed != 0)
                 wspeed = (wspeed + bIdx - bLast) / 2;
             else
-                wspeed = bIdx - bLast; // 初回
+                wspeed = bIdx - bLast; // First Time
             bLast = bIdx;
 
             match_size = wspeed * match_second / match_interval;
@@ -202,8 +208,8 @@ public class Hes extends BaseDriver {
             if (match_length < 0)
                 return false;
 
-//            System.err.println("match_length:%d", match_length);
-//            System.err.println("match_size  :%d", match_size);
+//            logger.log(Level.TRACE, "match_length:%d".formatted(match_length));
+//            logger.log(Level.TRACE, "match_size  :%d".formatted(match_size));
             for (i = 0; i < match_length; i++) {
                 for (j = 0; j < match_size; j++) {
                     if (streamBuf[(bIdx + j + match_length) & bufMask] !=
@@ -211,7 +217,7 @@ public class Hes extends BaseDriver {
                         break;
                     }
                 }
-                //System.err.println("j  :%d", j);
+                //logger.log(Level.TRACE, "j  :%d".formatted(j));
                 if (j == match_size) {
                     loopStart = timeBuf[(bIdx + i) & bufMask];
                     loopEnd = timeBuf[(bIdx + match_length) & bufMask];
@@ -233,6 +239,6 @@ public class Hes extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 }

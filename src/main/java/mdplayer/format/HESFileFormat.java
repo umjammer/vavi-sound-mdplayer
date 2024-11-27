@@ -45,8 +45,8 @@ public class HESFileFormat extends BaseFileFormat {
             music.arcType = EnmArcType.unknown;
             if (zipFile != null && zipFile.isEmpty())
                 music.arcType = zipFile.toLowerCase().lastIndexOf(".zip") != -1 ? EnmArcType.ZIP : EnmArcType.LZH;
-            music.title = String.format("%s - Trk %d", Path.getFileName(file), s + 1);
-            music.titleJ = String.format("%s - Trk %d", Path.getFileName(file), s + 1);
+            music.title = "%s - Trk %d".formatted(Path.getFileName(file), s + 1);
+            music.titleJ = "%s - Trk %d".formatted(Path.getFileName(file), s + 1);
             music.game = "";
             music.gameJ = "";
             music.composer = "";

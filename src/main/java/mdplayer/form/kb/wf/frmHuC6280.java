@@ -98,7 +98,7 @@ public class frmHuC6280 extends frmBase {
     }
 
     public void update() {
-        frameBuffer.Refresh(null);
+        frameBuffer.refresh(null);
     }
 
 //    @Override
@@ -151,12 +151,12 @@ public class frmHuC6280 extends frmBase {
         OotakeHuC6280 chip = audio.getHuC6280Register(chipId);
         if (chip == null) return;
 
-        //System.err.println("%d  %d", chips.MainVolumeL,chips.MainVolumeR);
+        //logger.log(Level.TRACE, "%d  %d".formatted(chips.MainVolumeL,chips.MainVolumeR));
         for (int ch = 0; ch < 6; ch++) {
             OotakeHuC6280.Psg psg = chip.getPsg(ch);
             if (psg == null) continue;
             MDChipParams.Channel channel = newParam.channels[ch];
-            //System.err.println("%d  %d",psg.outVolumeL, psg.outVolumeR);
+            //logger.log(Level.TRACE, "%d  %d".formatted(psg.outVolumeL, psg.outVolumeR));
             channel.volumeL = psg.outVolumeL >> 10;
             channel.volumeR = psg.outVolumeR >> 10;
             channel.volumeL = Math.min(channel.volumeL, 19);

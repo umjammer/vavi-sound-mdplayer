@@ -1,5 +1,7 @@
 package mdplayer;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
@@ -7,8 +9,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import static java.lang.System.getLogger;
+
 
 public class MmfControl {
+
+    private static final Logger logger = getLogger(MmfControl.class.getName());
+
     private final Object lockObj = new Object();
     private MappedByteBuffer _map;
     private byte[] mmfBuf;
@@ -32,7 +39,7 @@ public class MmfControl {
                 _map = ((FileChannel) Files.newByteChannel(Paths.get(mmfName))).map(FileChannel.MapMode.READ_ONLY, 0, mmfSize);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -55,7 +62,7 @@ public class MmfControl {
                 _map.put(mmfBuf, 0, mmfBuf.length);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
 
         return msg;
@@ -69,7 +76,7 @@ public class MmfControl {
                     map.get(mmfBuf, 0, mmfBuf.length);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
 
         return mmfBuf;
@@ -83,7 +90,7 @@ public class MmfControl {
             MappedByteBuffer map = ((FileChannel) Files.newByteChannel(Paths.get(mmfName))).map(FileChannel.MapMode.READ_ONLY, 0, mmfSize);
             map.put(ary, 0, ary.length);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 }

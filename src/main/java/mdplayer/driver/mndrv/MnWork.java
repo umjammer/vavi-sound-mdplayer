@@ -264,13 +264,13 @@ interface W {
     //		                * bit0 panpot
 
     //		                * default	volume
-    int reverb_vol = reverb + 1;                                // .ds.b	1			    * 擬似動作用 volume
-    int reverb_tone = 185;                                      // .ds.b	1			    * 擬似動作用 tone
-    int reverb_pan = 186;                                       // .ds.b	1			    * 擬似動作用 panpot
+    int reverb_vol = reverb + 1;                                // .ds.b	1			    * For simulated operation volume
+    int reverb_tone = 185;                                      // .ds.b	1			    * For simulated operation tone
+    int reverb_pan = 186;                                       // .ds.b	1			    * For simulated operation panpot
 
-    int reverb_pan_work = 187;                                  // .ds.b	1			    * 擬似動作用 panpot
-    int reverb_time = 188;                                      // .ds.b	1			    * 擬似動作用 step time
-    int reverb_time_work = 189;                                 // .ds.b	1			    * 擬似動作用 step time
+    int reverb_pan_work = 187;                                  // .ds.b	1			    * For simulated operation panpot
+    int reverb_time = 188;                                      // .ds.b	1			    * For simulated operation step time
+    int reverb_time_work = 189;                                 // .ds.b	1			    * For simulated operation step time
 
     int flag4 = 190;                                            // .ds.b	1			    * ふらぐ
     //                        * bit7 同期待ち

@@ -426,7 +426,7 @@ public class Sid {
      * Write registers.
      */
     protected void write() {
-        //System.err.println("adr:%d val:%d", write_address, bus_value);
+        //logger.log(Level.TRACE, "adr:%d val:%d".formatted(write_address, bus_value));
 
         if (writeAddress < reg.length) reg[writeAddress] = busValue;
 
@@ -909,7 +909,7 @@ public class Sid {
             sampleOffset = (nextSampleOffset & fixPMask) - fixPShiftS15;
             buf[s * interleave + ptrBuf] = extfilt.output();
             //if (gsample < 10000) {
-            //    System.err.println("%d", buf[s * interleave + ptrBuf]);
+            //    logger.log(Level.TRACE, "%d".formatted(buf[s * interleave + ptrBuf]));
             //    lstgsample.add((byte)buf[s * interleave + ptrBuf]);
             //    lstgsample.add((byte)(buf[s * interleave + ptrBuf] >> 8));
             //    gsample++;
@@ -972,7 +972,7 @@ public class Sid {
                 deltaTSample = deltaT;
             }
 
-            //System.err.println("%d", deltaTSample);
+            //logger.log(Level.TRACE, "%d".formatted(deltaTSample));
             for (int i = deltaTSample; i > 0; i--) {
                 clock();
                 if ((i <= 2)) {
@@ -992,8 +992,8 @@ public class Sid {
             //(short)(sample_prev + ((sample_offset * (sample_now - sample_prev)) >> (int)EnmSid.FIXP_SHIFT));
 
             //if (gsample < 10000) {
-            //    //System.err.println("%d", buf[s * interleave + ptrBuf]);
-            //    //System.err.println("   %d", ((sample_offset * (sample_now - sample_prev)) >> (int)EnmSid.FIXP_SHIFT));
+            //    //logger.log(Level.TRACE, "%d".formatted(buf[s * interleave + ptrBuf]));
+            //    //logger.log(Level.TRACE, "   %d".formatted(((sample_offset * (sample_now - sample_prev)) >> (int)EnmSid.FIXP_SHIFT)));
             //    lstgsample.add((byte)buf[s * interleave + ptrBuf]);
             //    lstgsample.add((byte)(buf[s * interleave + ptrBuf] >> 8));
             //    gsample++;

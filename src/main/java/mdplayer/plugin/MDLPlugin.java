@@ -1,8 +1,9 @@
 package mdplayer.plugin;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
@@ -10,7 +11,8 @@ import mdplayer.driver.moonDriver.MoonDriverDotNET;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
 import mdsound.instrument.YmF278bInst;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -20,6 +22,8 @@ import vavi.util.Debug;
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
 public class MDLPlugin extends BasePlugin {
+
+    private static final Logger logger = getLogger(MDLPlugin.class.getName());
 
     @Override
     public boolean play(String playingFileName, FileFormat format) {
@@ -35,7 +39,7 @@ public class MDLPlugin extends BasePlugin {
 
         boolean r = mdlPlay_moonDriverDotNET(MoonDriverDotNET.MoonDriverFileType.MDL);
         if (!r) {
-Debug.println(Level.WARNING, "cannot start: " + this);
+logger.log(Level.WARNING, "cannot start: " + this);
             return false;
         }
         super.play();
@@ -142,7 +146,7 @@ Debug.println(Level.WARNING, "cannot start: " + this);
 
             return true;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return false;
         }
     }

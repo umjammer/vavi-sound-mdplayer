@@ -3,6 +3,8 @@ package mdplayer;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -20,10 +22,15 @@ import mdplayer.Common.EnmChip;
 import mdsound.MDSound;
 import mdsound.instrument.Ym2612Inst;
 
+import static java.lang.System.getLogger;
+
 
 public class YM2612MIDI {
+
+    private static final Logger logger = getLogger(YM2612MIDI.class.getName());
+
     private int latestNoteNumberMONO = -1;
-    private int[] latestNoteNumber = new int[] {-1, -1, -1, -1, -1, -1};
+    private final int[] latestNoteNumber = new int[] {-1, -1, -1, -1, -1, -1};
 
     private Setting setting;
     private MDSound mdsMIDI;
@@ -357,7 +364,7 @@ public class YM2612MIDI {
         String[] tblNote = {"c", "c+", "d", "d+", "e", "f", "f+", "g", "g+", "a", "a+", "b"};
         int ptr = _noteLogPtr[ch];
 
-         // 解析開始位置を調べる
+        // Find the analysis start position
         do {
             ptr--;
             if (ptr < 0) ptr = _noteLog[ch].length - 1;
@@ -371,13 +378,13 @@ public class YM2612MIDI {
         ptr++;
         if (ptr == _noteLog[ch].length) ptr = 0;
 
-         // ログが無い場合は処理終了
+        // If there is no log, the process ends.
         if (_noteLog[ch][ptr] == -1) return;
 
-         // 解析開始
+        // Start analysis
         StringBuilder mml = new StringBuilder("o");
 
-         // オクターブコマンド
+        // Octave Commands
         int oct = _noteLog[ch][ptr] / 12;
         mml.append(oct + 1);
 
@@ -385,7 +392,7 @@ public class YM2612MIDI {
             int o = _noteLog[ch][ptr] / 12;
             int n = _noteLog[ch][ptr] % 12;
 
-             // 相対オクターブコマンドの解析
+            // Parsing relative octave commands
             int s = oct - o;
             if (s < 0) {
                 do {
@@ -399,13 +406,13 @@ public class YM2612MIDI {
                 } while (oct != o);
             }
 
-             // ノートコマンド
+            // Note Commands
             mml.append(tblNote[n]);
 
             ptr++;
         } while (ptr != _noteLogPtr[ch]);
 
-         // クリップボードにMMLをセット
+        // Set MML to clipboard
         Common.setClipboard(mml.toString());
     }
 
@@ -413,7 +420,7 @@ public class YM2612MIDI {
         String[] tblNote = {"c", "c+", "d", "d+", "e", "f", "f+", "g", "g+", "a", "a+", "b"};
         int ptr = _noteLogPtr[ch];
 
-         // 解析開始位置を調べる
+        // Find the analysis start position
         do {
             ptr--;
             if (ptr < 0) ptr = _noteLog[ch].length - 1;
@@ -429,17 +436,17 @@ public class YM2612MIDI {
 
         if (ptr == _noteLogPtr[ch]) return;
 
-         // 解析開始
+        // Start analysis
         StringBuilder mml = new StringBuilder();
 
-         // オクターブのみ取得
+        // Get Octave Only
         int oct = _noteLog[ch][ptr] / 12;
 
         do {
             int o = _noteLog[ch][ptr] / 12;
             int n = _noteLog[ch][ptr] % 12;
 
-             // 相対オクターブコマンドの解析
+            // Parsing relative octave commands
             int s = oct - o;
             if (s < 0) {
                 do {
@@ -453,14 +460,14 @@ public class YM2612MIDI {
                 } while (oct != o);
             }
 
-             // ノートコマンド
+            // Note Commands
             mml.append(tblNote[n]);
 
             ptr++;
             if (ptr == _noteLog[ch].length) ptr = 0;
         } while (ptr != _noteLogPtr[ch]);
 
-         // クリップボードにMMLをセット
+        // Set MML to clipboard
         Common.setClipboard(mml.toString());
         Common.sendKey(KeyEvent.VK_CONTROL, KeyEvent.VK_V);
 
@@ -566,7 +573,7 @@ public class YM2612MIDI {
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null,
-                    String.format("Exception:\n%s\nStackTrace:\n%s\n", ex.getMessage(), Arrays.toString(ex.getStackTrace()))
+                    "Exception:\n%s\nStackTrace:\n%s".formatted(ex.getMessage(), Arrays.toString(ex.getStackTrace()))
                     , "ERROR"
                     , JOptionPane.ERROR_MESSAGE
             );
@@ -637,50 +644,50 @@ public class YM2612MIDI {
         }
     }
 
-    private String[] makeToneTextForMml2vgm(Tone t, int n) {
+    private static String[] makeToneTextForMml2vgm(Tone t, int n) {
         List<String> tt = new ArrayList<>();
-        tt.add(String.format("%s", t.name));
-        tt.add(String.format("'@ N %03d", n));
+        tt.add("%s".formatted(t.name));
+        tt.add("'@ N %03d".formatted(n));
         tt.add("   AR  DR  SR  RR  SL  TL  KS  ML  DT  AM  SSG - EG");
         for (Tone.Op op : t.ops) {
-            tt.add(String.format("'@ %03d %03d %03d %03d %03d %03d %03d %03d %03d %03d %03d"
-                    , op.ar, op.dr, op.sr, op.rr, op.sl, op.tl, op.ks, op.ml, op.dt, op.am, op.sg
+            tt.add("'@ %03d %03d %03d %03d %03d %03d %03d %03d %03d %03d %03d".formatted(
+                    op.ar, op.dr, op.sr, op.rr, op.sl, op.tl, op.ks, op.ml, op.dt, op.am, op.sg
             ));
         }
         tt.add("   AL  FB");
-        tt.add(String.format("'@ %03d %03d", t.al, t.fb));
+        tt.add("'@ %03d %03d".formatted(t.al, t.fb));
         tt.add("");
 
         return tt.toArray(String[]::new);
     }
 
-    private String[] makeToneTextForFMP7(Tone t, int n) {
+    private static String[] makeToneTextForFMP7(Tone t, int n) {
         List<String> tt = new ArrayList<>();
 
-        tt.add(String.format("%s", t.name));
-        tt.add(String.format("'@ FA %03d", n));
+        tt.add("%s".formatted(t.name));
+        tt.add("'@ FA %03d".formatted(n));
         tt.add("   AR  DR  SR  RR  SL  TL  KS  ML  DT  AM");
         for (Tone.Op op : t.ops) {
-            tt.add(String.format("'@ %03d %03d %03d %03d %03d %03d %03d %03d %03d %03d "
-                    , op.ar, op.dr, op.sr, op.rr, op.sl, op.tl, op.ks, op.ml, op.dt, op.am
+            tt.add("'@ %03d %03d %03d %03d %03d %03d %03d %03d %03d %03d ".formatted(
+                    op.ar, op.dr, op.sr, op.rr, op.sl, op.tl, op.ks, op.ml, op.dt, op.am
             ));
         }
         tt.add("   AL  FB");
-        tt.add(String.format("'@ %03d %03d", t.al, t.fb));
+        tt.add("'@ %03d %03d".formatted(t.al, t.fb));
         tt.add("");
 
         return tt.toArray(String[]::new);
     }
 
-    private String[] makeToneTextForNRTDRV(Tone t, int n) {
+    private static String[] makeToneTextForNRTDRV(Tone t, int n) {
         List<String> tt = new ArrayList<>();
-        tt.add(String.format("@%d {{ ;%s", n, t.name));
+        tt.add("@%d {{ ;%s".formatted(n, t.name));
         tt.add(";PAN ALG FB  OP");
-        tt.add(String.format(" 003,%03d,%03d,015", t.al, t.fb));
+        tt.add(" 003,%03d,%03d,015".formatted(t.al, t.fb));
         tt.add("; AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME");
         for (Tone.Op op : t.ops) {
-            tt.add(String.format("  %03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d"
-                    , op.ar, op.dr, op.sr, op.rr, op.sl, op.tl, op.ks, op.ml, op.dt, op.dt2, op.am
+            tt.add("  %03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d".formatted(
+                    op.ar, op.dr, op.sr, op.rr, op.sl, op.tl, op.ks, op.ml, op.dt, op.dt2, op.am
             ));
         }
         tt.add("}");
@@ -689,41 +696,41 @@ public class YM2612MIDI {
         return tt.toArray(String[]::new);
     }
 
-    private String[] makeToneTextForMXDRV(Tone t, int n) {
+    private static String[] makeToneTextForMXDRV(Tone t, int n) {
         List<String> tt = new ArrayList<>();
 
-        tt.add(String.format("/* %s */", t.name));
-        tt.add(String.format("@%d= {{ ", n));
+        tt.add("/* %s */".formatted(t.name));
+        tt.add("@%d= {{ ".formatted(n));
         tt.add("/* AR  D1R D2R RR  D1L TL  KS  MUL DT1 DT2 AME */");
         for (Tone.Op op : t.ops) {
-            tt.add(String.format("   %03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d"
-                    , op.ar, op.dr, op.sr, op.rr, op.sl, op.tl, op.ks, op.ml, op.dt, op.dt2, op.am
+            tt.add("   %03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d".formatted(
+                    op.ar, op.dr, op.sr, op.rr, op.sl, op.tl, op.ks, op.ml, op.dt, op.dt2, op.am
             ));
         }
         tt.add("/* CON FL  OP");
-        tt.add(String.format("   %03d,%03d,015", t.al, t.fb));
+        tt.add("   %03d,%03d,015".formatted(t.al, t.fb));
         tt.add("}");
         tt.add("");
 
         return tt.toArray(String[]::new);
     }
 
-    private String[] makeToneTextForMUSICLALF(Tone t, int n) {
+    private static String[] makeToneTextForMUSICLALF(Tone t, int n) {
         List<String> tt = new ArrayList<>();
 
-        tt.add(String.format("[ROW] ' @%d:{{", n));
-        tt.add(String.format("[ROW] ' %03d,%03d", t.al, t.fb));
+        tt.add("[ROW] ' @%d:{{".formatted(n));
+        tt.add("[ROW] ' %03d,%03d".formatted(t.al, t.fb));
 
         int o = 0;
         for (Tone.Op op : t.ops) {
             o++;
             if (o != 4) {
-                tt.add(String.format("[ROW] ' %03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d"
-                        , op.ar, op.dr, op.sr, op.rr, op.sl, op.tl, op.ks, op.ml, op.dt
+                tt.add("[ROW] ' %03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d".formatted(
+                        op.ar, op.dr, op.sr, op.rr, op.sl, op.tl, op.ks, op.ml, op.dt
                 ));
             } else {
-                tt.add(String.format("[ROW] ' %03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,\"%s\" }}"
-                        , op.ar, op.dr, op.sr, op.rr, op.sl, op.tl, op.ks, op.ml, op.dt, t.name
+                tt.add("[ROW] ' %03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,\"%s\" }}".formatted(
+                        op.ar, op.dr, op.sr, op.rr, op.sl, op.tl, op.ks, op.ml, op.dt, t.name
                 ));
             }
         }
@@ -804,7 +811,7 @@ public class YM2612MIDI {
                 if (stage > 47) {
                     if (stage == 48) {
                         Tone t = new Tone();
-                        t.name = String.format("No.%d(From MML2VGM)", toneBuf.get(0));
+                        t.name = "No.%d(From MML2VGM)".formatted(toneBuf.get(0));
                         t.ops = new Tone.Op[4];
                         for (int i = 0; i < 4; i++) {
                             t.ops[i] = new Tone.Op();
@@ -853,13 +860,13 @@ public class YM2612MIDI {
 
                 line = line.substring(1).trim();
                 c = String.valueOf(line.charAt(0)).toLowerCase();
-                m = 0; // 互換モード
+                m = 0; // Compatibility mode
 
                 if (c.equals("a")) {
-                    m = 1; // OPNAモード
+                    m = 1; // OPNA mode
                     line = line.substring(1).trim();
                 } else if (c.equals("c")) {
-                    m = 2; // OPMモード
+                    m = 2; // OPM mode
                     line = line.substring(1).trim();
                 }
             }
@@ -873,9 +880,9 @@ public class YM2612MIDI {
 
                 if (m == 0 && stage >= 40) {
                     if (stage == 40) {
-                         // 互換
+                        // Compatibility
                         Tone t = new Tone();
-                        t.name = String.format("No.%d(From FMP7 compatible)", toneBuf.get(0));
+                        t.name = "No.%d(From FMP7 compatible)".formatted(toneBuf.get(0));
                         t.ops = new Tone.Op[4];
                         for (int i = 0; i < 4; i++) {
                             t.ops[i] = new Tone.Op();
@@ -904,9 +911,9 @@ public class YM2612MIDI {
 
                 if (m == 1 && stage >= 44) {
                     if (stage == 44) {
-                         // OPNA
+                        // OPNA
                         Tone t = new Tone();
-                        t.name = String.format("No.%d(From FMP7 OPNA)", toneBuf.get(0));
+                        t.name = "No.%d(From FMP7 OPNA)".formatted(toneBuf.get(0));
                         t.ops = new Tone.Op[4];
                         for (int i = 0; i < 4; i++) {
                             t.ops[i] = new Tone.Op();
@@ -935,9 +942,9 @@ public class YM2612MIDI {
 
                 if (m == 2 && stage >= 48) {
                     if (stage == 48) {
-                         // OPM
+                        // OPM
                         Tone t = new Tone();
-                        t.name = String.format("No.%d(From FMP7 OPM)", toneBuf.get(0));
+                        t.name = "No.%d(From FMP7 OPM)".formatted(toneBuf.get(0));
                         t.ops = new Tone.Op[4];
                         for (int i = 0; i < 4; i++) {
                             t.ops[i] = new Tone.Op();
@@ -980,7 +987,7 @@ public class YM2612MIDI {
 
         do {
             if (cm) {
-                // コメント中
+                // In comment
                 ind = line.indexOf("*/");
                 if (ind >= 0) {
                     cm = false;
@@ -1017,7 +1024,7 @@ public class YM2612MIDI {
                 try {
                     voiceMode = Integer.parseInt(cmd.replace("#VOICE_MODE", "").trim());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.log(Level.ERROR, e.getMessage(), e);
                     voiceMode = 0;
                 }
             }
@@ -1038,7 +1045,7 @@ public class YM2612MIDI {
 
         do {
             if (cm) {
-                 // コメント中
+                // In comment
                 ind = line.indexOf("*/");
                 if (ind >= 0) {
                     cm = false;
@@ -1118,7 +1125,7 @@ public class YM2612MIDI {
                     //
                     Tone t;
                     t = new Tone();
-                    t.name = String.format("No.%d(From NRTDRV)", toneBuf.get(0));
+                    t.name = "No.%d(From NRTDRV)".formatted(toneBuf.get(0));
 
                     switch (voiceMode) {
                     case 0:
@@ -1352,7 +1359,7 @@ public class YM2612MIDI {
 
                     if (toneBuf.size() == 48) {
                         Tone t = new Tone();
-                        t.name = String.format("No.%d(From MXDRV)", toneBuf.get(0));
+                        t.name = "No.%d(From MXDRV)".formatted(toneBuf.get(0));
 
                         t.ops = new Tone.Op[4];
                         for (int i = 0; i < 4; i++) {
@@ -1483,7 +1490,7 @@ public class YM2612MIDI {
                         String n = line.substring(line.indexOf('"') + 1);
                         nm = n.substring(0, n.indexOf('"'));
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        logger.log(Level.ERROR, e.getMessage(), e);
                     }
                 }
 
@@ -1491,7 +1498,7 @@ public class YM2612MIDI {
 
                     if (toneBuf.size() == 39) {
                         Tone t = new Tone();
-                        t.name = nm.isEmpty() ? String.format("No.%d(From MusicLALF)", toneBuf.get(0)) : nm;
+                        t.name = nm.isEmpty() ? "No.%d(From MusicLALF)".formatted(toneBuf.get(0)) : nm;
 
                         t.ops = new Tone.Op[4];
                         for (int i = 0; i < 4; i++) {

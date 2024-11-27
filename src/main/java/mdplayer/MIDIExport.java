@@ -1,5 +1,7 @@
 package mdplayer;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,11 +10,14 @@ import dotnet4j.io.Path;
 import mdplayer.Common.EnmChip;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+import static java.lang.System.getLogger;
 
 
 public class MIDIExport {
 
-    private Setting setting;
+    private static final Logger logger = getLogger(MIDIExport.class.getName());
+
+    private final Setting setting;
 
     private MidiChip midi2151 = new MidiChip();
     private MidiChip midi2612 = new MidiChip();
@@ -71,7 +76,7 @@ public class MIDIExport {
                     midi2151.data[ch].add((byte) 0x00); // Delta 0
                 }
 
-                midi2151.data[ch].add((byte) 0xff); // メタイベント
+                midi2151.data[ch].add((byte) 0xff); // Meta Events
                 midi2151.data[ch].add((byte) 0x2f);
                 midi2151.data[ch].add((byte) 0x00);
 
@@ -102,7 +107,7 @@ public class MIDIExport {
                     midi2612.data[ch].add((byte) 0x00); // Delta 0
                 }
 
-                midi2612.data[ch].add((byte) 0xff); // メタイベント
+                midi2612.data[ch].add((byte) 0xff); // Meta Events
                 midi2612.data[ch].add((byte) 0x2f);
                 midi2612.data[ch].add((byte) 0x00);
 
@@ -120,7 +125,7 @@ public class MIDIExport {
             trkNum += midi2612.maxTrk;
         }
 
-        cData.set(0xb, (byte) trkNum); // トラック数
+        cData.set(0xb, (byte) trkNum); // Number of tracks
 
         try {
             String fn = playingFileName.equals("") ? "Temp.mid" : playingFileName;
@@ -132,7 +137,7 @@ public class MIDIExport {
 
             File.writeAllBytes(Path.combine(setting.getMidiExport().getExportPath(), Path.changeExtension(Path.getFileName(fn), ".mid")), toByteArray(buf));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
 
         cData = null;
@@ -229,7 +234,7 @@ public class MIDIExport {
         }
 
         //
-        // VOPMex向け
+        // for VOPMex
         //
         if (!setting.getMidiExport().getUseVOPMex()) return;
 
@@ -393,18 +398,18 @@ public class MIDIExport {
             makeHeader();
         }
 
-        // KeyON時
+        // when KeyON
         if (dPort == 0 && dAddr == 0x28) {
             byte ch = (byte) (dData & 0x7);
             ch = (byte) (ch > 2 ? ch - 1 : ch);
-            byte cmd = (byte) ((dData & 0xf0) != 0 ? 0x90 : 0x80); // オペレータが一つでもonならnoteON(0x90) 全てoffならnoteOFF(0x80)
+            byte cmd = (byte) ((dData & 0xf0) != 0 ? 0x90 : 0x80); // If any operator is on, use noteON(0x90). If all are off, use noteOFF(0x80).
 
-            // 必要なレジスタを読むための情報であるチャンネルとポートを取得
+            // Get the channel and port information to read the required registers
             int p = ch > 2 ? 1 : 0;
             int vch = ch > 2 ? (ch - 3) : ch;
             if (ch > 5) return;
 
-            // キーオンしたチャンネルのFnumを取得
+            // Get fNum of the channel that is keyed on
             midi2612.oldFreq[ch] = fmRegisterYM2612[chipId][p][0xa0 + vch] + (fmRegisterYM2612[chipId][p][0xa4 + vch] & 0x3f) * 0x100;
             int freq = midi2612.oldFreq[ch] & 0x7ff;
             if (freq == 0) return;
@@ -412,16 +417,16 @@ public class MIDIExport {
             int note = searchFMNote(freq);
             byte code = (byte) (octave * 12 + note);
 
-            // オペレータ4のトータルレベルのみ取得(音量として使う)
+            // Get only the total level of operator 4 (used as volume)
             byte vel = (byte) (127 - fmRegisterYM2612[chipId][p][0x4c + vch]);
 
-            // 前回のコードが負で且つ noteOFFなら何もせずに処理終了
+            // If the previous code was negative and noteOFF, the process ends without doing anything.
             if (midi2612.oldCode[ch] < 0 && cmd == (byte) 0x80) return;
 
-            // デルタのセット(前回のデータ送信から経過した時間をセットする)
+            // Set delta (sets the time since the last data transmission)
             SetDelta(ch, midi2612, vgmFrameCounter);
 
-            // 前回のコードが正(発音中である)の時、またはnoteOFFの時　noteOFFのコマンドを発行
+            // If the previous chord was correct (pronounced) or noteOFF, issue a noteOFF command.
             if (midi2612.oldCode[ch] >= 0 || cmd == (byte) 0x80) {
                 midi2612.data[ch].add((byte) (0x80 | ch));
                 midi2612.data[ch].add((byte) midi2612.oldCode[ch]);
@@ -431,7 +436,7 @@ public class MIDIExport {
                 if (cmd != (byte) 0x80) midi2612.data[ch].add((byte) 0); // NextDeltaTime
             }
 
-            // noteONの場合は、noteONコマンドを発行
+            // If noteON, issue the noteON command
             if (cmd == (byte) 0x90) {
                 midi2612.data[ch].add((byte) (0x90 | ch));
                 midi2612.data[ch].add(code);
@@ -448,9 +453,9 @@ public class MIDIExport {
         }
 
         if (!setting.getMidiExport().getKeyOnFnum()) {
-            // fNum を設定したとき
+            // When fNum is set
             if (dAddr >= 0xa0 && dAddr < 0xa8) {
-                // fNum の情報を読み出す
+                // Read the fNum information
                 byte ch = (byte) ((dAddr & 0x3) + dPort * 3);
                 int freq = midi2612.oldFreq[ch];
                 int vch = ch > 2 ? (ch - 3) : ch;
@@ -461,24 +466,24 @@ public class MIDIExport {
                     freq = (freq & 0xff) | ((dData & 0x3f) << 8);
                 }
 
-                // もし前回と異なる値を設定していた場合はもっと詳細に調べる
+                // If the value is different from the previous time, investigate further.
                 if (freq != midi2612.oldFreq[ch]) {
-                    // 今回の音階を調べる
+                    // Check the current scale
                     int freq2nd = freq & 0x07ff;
                     if (freq2nd == 0) return;
                     int octav = (freq & 0x3800) >> 11;
                     int note = searchFMNote(freq2nd);
                     byte code = (byte) (octav * 12 + note);
 
-                    // 現在発音中で、更に前回と音階が異なっているか調べる
+                    // Check if the current note is being pronounced and if the note is different from the previous note
                     if (midi2612.oldCode[ch] != -1 && midi2612.oldCode[ch] != code) {
-                        // 一旦キーオフする
+                        // Turn the key off
                         SetDelta(ch, midi2612, vgmFrameCounter);
                         midi2612.data[ch].add((byte) (0x80 | ch));
                         midi2612.data[ch].add((byte) midi2612.oldCode[ch]);
                         midi2612.data[ch].add((byte) 0x00);
 
-                        // 今回の音階でキーオンしなおす
+                        // Re-keyOn with this scale
                         midi2612.data[ch].add((byte) 0); // delta0
                         midi2612.data[ch].add((byte) (0x90 | ch));
                         midi2612.data[ch].add(code);
@@ -499,7 +504,7 @@ public class MIDIExport {
         }
 
         //
-        // VOPMex向け
+        // for VOPMex
         //
         if (!setting.getMidiExport().getUseVOPMex()) return;
 
@@ -697,42 +702,42 @@ public class MIDIExport {
     private void makeHeader() {
         cData = new ArrayList<>();
 
-        cData.add((byte) 0x4d); // チャンクタイプ'MThd'
+        cData.add((byte) 0x4d); // chunk type 'MThd'
         cData.add((byte) 0x54);
         cData.add((byte) 0x68);
         cData.add((byte) 0x64);
 
-        cData.add((byte) 0x00); // データ長
+        cData.add((byte) 0x00); // data length
         cData.add((byte) 0x00);
         cData.add((byte) 0x00);
         cData.add((byte) 0x06);
 
-        cData.add((byte) 0x00); // フォーマット
+        cData.add((byte) 0x00); // format
         cData.add((byte) 0x01);
 
-        cData.add((byte) 0x00); // トラック数
+        cData.add((byte) 0x00); // number of tracks
         cData.add((byte) 0x01);
 
-        cData.add((byte) 0x01); // 分解能
+        cData.add((byte) 0x01); // resolution
         cData.add((byte) 0xe0);
 
-        cData.add((byte) 0x4d); // チャンクタイプ'MTrk'
+        cData.add((byte) 0x4d); // chunk type 'MTrk'
         cData.add((byte) 0x54);
         cData.add((byte) 0x72);
         cData.add((byte) 0x6b);
 
-        cData.add((byte) 0x00); // データ長 0x17
+        cData.add((byte) 0x00); // data length 0x17
         cData.add((byte) 0x00);
         cData.add((byte) 0x00);
         cData.add((byte) 0x17);
 
         cData.add((byte) 0x00); // Delta 0
-        cData.add((byte) 0xff); // メタイベント
+        cData.add((byte) 0xff); // meta event
         cData.add((byte) 0x03);
         cData.add((byte) 0x00);
 
         cData.add((byte) 0x00); // Delta 0
-        cData.add((byte) 0xff); // メタイベント　拍子 4/4(固定)
+        cData.add((byte) 0xff); // meta event beat 4/4(fixed)
         cData.add((byte) 0x58);
         cData.add((byte) 0x04);
         cData.add((byte) 0x04);
@@ -741,7 +746,7 @@ public class MIDIExport {
         cData.add((byte) 0x08);
 
         cData.add((byte) 0x00); // Delta 0
-        cData.add((byte) 0xff); // メタイベント　テンポ設定 BPM = 120(固定)
+        cData.add((byte) 0xff); // meta event tempo setting BPM = 120(fixed)
         cData.add((byte) 0x51);
         cData.add((byte) 0x03);
         cData.add((byte) 0x07);
@@ -749,11 +754,11 @@ public class MIDIExport {
         cData.add((byte) 0x20);
 
         cData.add((byte) 0x00); // Delta 0
-        cData.add((byte) 0xff); // メタイベント　終端
+        cData.add((byte) 0xff); // meta event Termination
         cData.add((byte) 0x2f);
         cData.add((byte) 0x00);
 
-       // 実 Track
+       // real Track
         if (setting.getMidiExport().getUseYM2151Export()) InitYM2151();
         if (setting.getMidiExport().getUseYM2612Export()) InitYM2612();
     }
@@ -774,34 +779,34 @@ public class MIDIExport {
         }
 
         for (int i = 0; i < midi2151.maxTrk; i++) {
-            midi2151.data[i].add((byte) 0x4d); // チャンクタイプ'MTrk'
+            midi2151.data[i].add((byte) 0x4d); // chunk type 'MTrk'
             midi2151.data[i].add((byte) 0x54);
             midi2151.data[i].add((byte) 0x72);
             midi2151.data[i].add((byte) 0x6b);
 
-            midi2151.data[i].add((byte) 0x00); // データ長 この時点では不明のためとりあえず0
+            midi2151.data[i].add((byte) 0x00); // data length: At this point, it is unknown, so for now it is 0.
             midi2151.data[i].add((byte) 0x00);
             midi2151.data[i].add((byte) 0x00);
             midi2151.data[i].add((byte) 0x00);
 
             midi2151.data[i].add((byte) 0x00); // delta0
-            midi2151.data[i].add((byte) 0xff); // メタイベントポート指定
+            midi2151.data[i].add((byte) 0xff); // meta event Port Designation
             midi2151.data[i].add((byte) 0x21);
             midi2151.data[i].add((byte) 0x01);
             midi2151.data[i].add((byte) 0x00); // Port1
 
             midi2151.data[i].add((byte) 0x00); // delta0
-            midi2151.data[i].add((byte) 0xff); // メタイベント　トラック名
+            midi2151.data[i].add((byte) 0xff); // meta event Track name
             midi2151.data[i].add((byte) 0x03);
             midi2151.data[i].add((byte) 0x00);
         }
 
         if (!setting.getMidiExport().getUseVOPMex()) return;
 
-       // VOPMex向け
+       // for VOPMex
 
         for (int i = 0; i < midi2151.maxTrk; i++) {
-           // 音色コントロールの動作を変更(全MIDIチャンネル)
+            // Changed the behavior of tone control (all MIDI channels)
             midi2151.data[i].add((byte) 0x50); // Delta 0
             midi2151.data[i].add((byte) (0xb0 + i)); // CC 121 127
             midi2151.data[i].add((byte) 121);
@@ -849,24 +854,24 @@ public class MIDIExport {
         }
 
         for (int i = 0; i < midi2612.maxTrk; i++) {
-            midi2612.data[i].add((byte) 0x4d); // チャンクタイプ'MTrk'
+            midi2612.data[i].add((byte) 0x4d); // chunk type 'MTrk'
             midi2612.data[i].add((byte) 0x54);
             midi2612.data[i].add((byte) 0x72);
             midi2612.data[i].add((byte) 0x6b);
 
-            midi2612.data[i].add((byte) 0x00); // データ長 この時点では不明のためとりあえず0
+            midi2612.data[i].add((byte) 0x00); // data length: At this point, it is unknown, so for now it is 0.
             midi2612.data[i].add((byte) 0x00);
             midi2612.data[i].add((byte) 0x00);
             midi2612.data[i].add((byte) 0x00);
 
             midi2612.data[i].add((byte) 0x00); // delta0
-            midi2612.data[i].add((byte) 0xff); // メタイベントポート指定
+            midi2612.data[i].add((byte) 0xff); // meta event Port Designation
             midi2612.data[i].add((byte) 0x21);
             midi2612.data[i].add((byte) 0x01);
             midi2612.data[i].add((byte) 0x00); // Port1
 
             midi2612.data[i].add((byte) 0x00); // delta0
-            midi2612.data[i].add((byte) 0xff); // メタイベント　トラック名
+            midi2612.data[i].add((byte) 0xff); // meta event  Track name
             midi2612.data[i].add((byte) 0x03);
             midi2612.data[i].add((byte) 0x00);
 
@@ -874,10 +879,10 @@ public class MIDIExport {
 
         if (!setting.getMidiExport().getUseVOPMex()) return;
 
-       // VOPMex向け
+        // for VOPMex
 
         for (int i = 0; i < midi2612.maxTrk; i++) {
-           // 音色コントロールの動作を変更(全MIDIチャンネル)
+            // Changed the behavior of tone control (all MIDI channels)
             midi2612.data[i].add((byte) 0x50); // Delta 0
             midi2612.data[i].add((byte) (0xb0 + i)); // CC 121 127
             midi2612.data[i].add((byte) 121);

@@ -2,6 +2,8 @@ package org.eclipse.jdt.internal.jarinjarloader;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -12,8 +14,13 @@ import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import static java.lang.System.getLogger;
+
 
 public class JarRsrcLoader {
+
+   private static final Logger logger = getLogger(JarRsrcLoader.class.getName());
+
    public static void main(String[] args) throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException, IOException {
       ManifestInfo mi = getManifestInfo();
       ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -59,11 +66,11 @@ public class JarRsrcLoader {
                }
             }
          } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
          }
       }
 
-      System.err.println("Missing attributes for JarRsrcLoader in Manifest (Rsrc-Main-Class, Rsrc-Class-Path)");
+      logger.log(Level.TRACE, "Missing attributes for JarRsrcLoader in Manifest (Rsrc-Main-Class, Rsrc-Class-Path)");
       return null;
    }
 

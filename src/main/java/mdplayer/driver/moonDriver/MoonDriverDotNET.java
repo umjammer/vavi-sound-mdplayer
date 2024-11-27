@@ -1,5 +1,7 @@
 package mdplayer.driver.moonDriver;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -34,9 +36,13 @@ import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+import static java.lang.System.getLogger;
 
 
 public class MoonDriverDotNET extends BaseDriver {
+
+    private static final Logger logger = getLogger(MoonDriverDotNET.class.getName());
+
     private ICompiler moonDriverCompiler = null;
     private IDriver moonDriverDriver = null;
     private MoonDriverFileType mtype;
@@ -112,7 +118,7 @@ public class MoonDriverDotNET extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 
     @Override
@@ -147,7 +153,7 @@ public class MoonDriverDotNET extends BaseDriver {
                 stopped = true;
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -156,7 +162,7 @@ public class MoonDriverDotNET extends BaseDriver {
         moonDriverCompiler.init();
         moonDriverCompiler.setCompileSwitch("SRC");
         moonDriverCompiler.setCompileSwitch("MoonDriverOption=-i");
-        moonDriverCompiler.setCompileSwitch(String.format("MoonDriverOption=%s", PlayingFileName));
+        moonDriverCompiler.setCompileSwitch("MoonDriverOption=%s".formatted(PlayingFileName));
 
         MmlDatum[] ret;
         CompilerInfo info;
@@ -168,7 +174,7 @@ public class MoonDriverDotNET extends BaseDriver {
             info = moonDriverCompiler.getCompilerInfo();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             ret = null;
             info = null;
         }
@@ -223,7 +229,7 @@ public class MoonDriverDotNET extends BaseDriver {
             info = moonDriverCompiler.getCompilerInfo();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             ret = null;
             info = null;
         }
@@ -300,38 +306,38 @@ public class MoonDriverDotNET extends BaseDriver {
         try {
             strm = new FileStream(fn, FileMode.Open, FileAccess.Read, FileShare.Read);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             strm = null;
         }
 
         return strm;
     }
 
-    //public void writeRegister(ChipDatum dat) {
-    //    //Debug.printf(LogLevel.FINEST, FM p%d Out:Adr[%02x] val[%02x]", (int)dat.address, (int)dat.data, dat.port));
-    //    //Debug.printf("FM p%d Out:Adr[%02x] val[%02x]", (int)dat.address, (int)dat.data, dat.port);
-    //    outDatum od = null;
-
-    //    if (pcmdata.size() > 0) {
-    //        chipRegister.YMF278BSetRegister(od, count, 0, pcmdata.toArray());
-    //        pcmdata.clear();
-    //    }
-
-    //    if (dat.additionalData != null) {
-    //        if (dat.additionalData instanceof MmlDatum) {
-    //            MmlDatum md = (MmlDatum)dat.additionalData;
-    //            if (md.linePos != null) md.linePos.srcMMLID = filename;
-    //            od = new outDatum(md.type, md.args, md.linePos, (byte)md.dat);
-    //        }
-    //    }
-
-    //    //if (od != null && od.linePos != null) {
-    //    //Debug.println("%d", od.linePos.col);
-    //    //}
-
-    //    //chipRegister.YM2608SetRegister(od, (long)dat.time, 0, dat.port, dat.address, dat.data);
-    //    chipRegister.YMF278BSetRegister(od, count, 0, dat.port, dat.address, dat.data);
-    //}
+//    public void writeRegister(ChipDatum dat) {
+////logger.log(Level.TRACE, "FM p%d Out:Adr[%02x] val[%02x]".formatted((int) dat.address, (int) dat.data, dat.port)));
+////logger.log(Level.TRACE, "FM p%d Out:Adr[%02x] val[%02x]".formatted((int) dat.address, (int) dat.data, dat.port)));
+//        outDatum od = null;
+//
+//        if (pcmdata.size() > 0) {
+//            chipRegister.YMF278BSetRegister(od, count, 0, pcmdata.toArray());
+//            pcmdata.clear();
+//        }
+//
+//        if (dat.additionalData != null) {
+//            if (dat.additionalData instanceof MmlDatum) {
+//                MmlDatum md = (MmlDatum) dat.additionalData;
+//                if (md.linePos != null) md.linePos.srcMMLID = filename;
+//                od = new outDatum(md.type, md.args, md.linePos, (byte) md.dat);
+//            }
+//        }
+//
+////if (od != null && od.linePos != null) {
+//// logger.log(Level.TRACE, "%d".formatted(od.linePos.col));
+////}
+//
+////        chipRegister.YM2608SetRegister(od, (long)dat.time, 0, dat.port, dat.address, dat.data);
+//        chipRegister.YMF278BSetRegister(od, count, 0, dat.port, dat.address, dat.data);
+//    }
 
     private void opl4Write(ChipDatum cd) {
         if (cd == null) return;
@@ -344,14 +350,14 @@ public class MoonDriverDotNET extends BaseDriver {
 
     private void opl4WaitSend(long size, int elapsed) {
         if (model == EnmModel.VirtualModel) {
-            //JOptionPane.showMessageDialog(String.format("elapsed:%d size:%d", elapsed, size));
-            //int n = Math.max((int)(size / 20 - elapsed), 0);//20 閾値(magic number)
-            //Thread.sleep(n);
+//            JOptionPane.showMessageDialog("elapsed:%d size:%d".formatted(elapsed, size));
+//            int n = Math.max((int) (size / 20 - elapsed), 0);//20 閾値(magic number)
+//            Thread.sleep(n);
         }
 
-        ////サイズと経過時間から、追加でウエイトする。
-        //int m = Math.max((int)(size / 20 - elapsed), 0);//20 閾値(magic number)
-        //Thread.sleep(m);
+//        // サイズと経過時間から、追加でウエイトする。
+//        int m = Math.max((int)(size / 20 - elapsed), 0); // 20 閾値(magic number)
+//        Thread.sleep(m);
     }
 
     public static class MoonDriverChipAction implements ChipAction {

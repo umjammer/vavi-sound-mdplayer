@@ -120,7 +120,7 @@ public class Sid extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 
     @Override
@@ -197,7 +197,7 @@ public class Sid extends BaseDriver {
         tune.selectSong(song);
 
         if (!engine.load(tune)) {
-            System.err.println("Error: " + engine.error());
+            logger.log(Level.TRACE, "Error: " + engine.error());
             return;
         }
 
@@ -227,7 +227,7 @@ public class Sid extends BaseDriver {
         cfg.sidEmulation = rs;
 
         if (!engine.config(cfg)) {
-            System.err.println("Error: " + engine.error());
+            logger.log(Level.TRACE, "Error: " + engine.error());
         }
     }
 

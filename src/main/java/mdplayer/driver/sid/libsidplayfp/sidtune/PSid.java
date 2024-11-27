@@ -20,6 +20,8 @@
 
 package mdplayer.driver.sid.libsidplayfp.sidtune;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -29,12 +31,15 @@ import mdplayer.driver.sid.libsidplayfp.SidMd5;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 
+import static java.lang.System.getLogger;
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toBig16;
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toBig32;
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toLittle16;
 
 
 public class PSid extends SidTuneBase {
+
+    private static final Logger logger = getLogger(PSid.class.getName());
 
     private final byte[] md5 = new byte[SidTune.MD5_LENGTH + 1];
 
@@ -422,7 +427,7 @@ public class PSid extends SidTuneBase {
             md5 = myMD5.getDigest().getBytes(StandardCharsets.US_ASCII);
             md5[SidTune.MD5_LENGTH] = (byte) '\0';
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             return null;
         }
 

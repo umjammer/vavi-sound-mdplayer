@@ -1,5 +1,7 @@
 package mdplayer.driver.mndrv;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.nio.charset.Charset;
@@ -20,9 +22,12 @@ import mdsound.chips.MPcm;
 import vavi.util.Debug;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
+import static java.lang.System.getLogger;
 
 
 public class MnDrv extends BaseDriver {
+
+    private static final Logger logger = getLogger(MnDrv.class.getName());
 
     public List<Tuple<String, byte[]>> extendFile = null;
 
@@ -109,7 +114,7 @@ public class MnDrv extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 
     @Override
@@ -142,7 +147,7 @@ public class MnDrv extends BaseDriver {
             }
             vgmCurLoop = mm.readShort(reg.a6 + Dw.LOOP_COUNTER);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
@@ -1081,8 +1086,8 @@ public class MnDrv extends BaseDriver {
             mm.write(reg.a5 + W.dataptr, reg.a3);
 
 //#if DEBUG
-            Debug.printf("TrackWorkAdr:%x", reg.a5);
-            Debug.printf("DataPtr:%x", reg.a3);
+            logger.log(Level.DEBUG, "TrackWorkAdr:%x".formatted(reg.a5));
+            logger.log(Level.DEBUG, "DataPtr:%x".formatted(reg.a3));
 //#endif
 
             reg.D1_L = 0;
@@ -1208,9 +1213,7 @@ public class MnDrv extends BaseDriver {
         case 20:
         case 22:
         case 24:
-//#if DEBUG
-            Debug.printf("Track : OPN %d", reg.getD1_W() / 2);
-//#endif
+            logger.log(Level.DEBUG, "Track : OPN %d".formatted(reg.getD1_W() / 2));
             _track_opn();
             break;
         case 26:
@@ -1243,9 +1246,7 @@ public class MnDrv extends BaseDriver {
         case 72:
         case 74:
         case 76:
-//#if DEBUG
-            Debug.printf("Track : Psg %d", (reg.getD1_W() - 64) / 2);
-//#endif
+            logger.log(Level.DEBUG, "Track : Psg %d".formatted((reg.getD1_W() - 64) / 2));
             _track_psg();
             break;
         case 78:
@@ -1280,9 +1281,7 @@ public class MnDrv extends BaseDriver {
             break;
         case 130:
         case 132:
-//#if DEBUG
-            Debug.printf("Track : RHY %d", (reg.getD1_W() - 128) / 2);
-//#endif
+            logger.log(Level.DEBUG, "Track : RHY %d".formatted( (reg.getD1_W() - 128) / 2));
             _track_rhy();
             break;
         case 134:
@@ -1363,9 +1362,7 @@ public class MnDrv extends BaseDriver {
         case 268:
         case 270:
         case 272:
-//#if DEBUG
-            Debug.printf("Track : OPM %d", (reg.getD1_W() - 256) / 2);
-//#endif
+            logger.log(Level.DEBUG, "Track : OPM %d".formatted((reg.getD1_W() - 256) / 2));
             _track_opm();
             break;
         case 274:
@@ -1412,9 +1409,7 @@ public class MnDrv extends BaseDriver {
         case 348:
         case 350:
         case 352:
-//#if DEBUG
-            Debug.printf("Track : PCM %d", (reg.getD1_W() - 320) / 2);
-//#endif
+            logger.log(Level.DEBUG, "Track : PCM %d".formatted((reg.getD1_W() - 320) / 2));
             _track_pcm();
             break;
         }
@@ -2758,32 +2753,32 @@ public class MnDrv extends BaseDriver {
 
         //while ((byte)mm.readByte(Reg.a0) < 0) ; //OPN wait?
         //mm.Write(Reg.a0, (byte)reg.getD1_B());
-        //Debug.printf(String.format("adr:%x dat:%x", Reg.a0, reg.getD1_B()));
+        //logger.log(Level.TRACE, "adr:%x dat:%x".formatted(Reg.a0, reg.getD1_B())));
         //while ((byte)mm.readByte(Reg.a0) < 0) ; //OPN wait?
         //mm.Write(Reg.a0 + 2, (byte)reg.getD0_B());
-        //Debug.printf(String.format("adr:%x dat:%x", Reg.a0+2, reg.getD0_B()));
+        //logger.log(Level.TRACE, "adr:%x dat:%x".formatted(Reg.a0+2, reg.getD0_B())));
 
         switch (reg.a0) {
         case 0xecc0c1:
             chipRegister.setYM2608Register(0, 0, reg.getD1_B(), reg.getD0_B(), model);
             timerOPN.WriteReg((byte) reg.getD1_B(), (byte) reg.getD0_B());
-            //Debug.printf(String.format("DEV:0 PRT:0 radr:%x rdat:%x", reg.getD1_B(), reg.getD0_B()));
+            //logger.log(Level.TRACE, "DEV:0 PRT:0 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             //if (reg.getD1_B() < 0x10)
             //{
-            //Debug.printf(String.format("SSG : radr:%x rdat:%x", reg.getD1_B(), reg.getD0_B()));
+            //logger.log(Level.TRACE, "SSG : radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             //}
             break;
         case 0xecc0c5:
             chipRegister.setYM2608Register(0, 1, reg.getD1_B(), reg.getD0_B(), model);
-            //Debug.printf(String.format("DEV:0 PRT:1 radr:%x rdat:%x", reg.getD1_B(), reg.getD0_B()));
+            //logger.log(Level.TRACE, "DEV:0 PRT:1 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             break;
         case 0xecc0c9:
             chipRegister.setYM2608Register(1, 0, reg.getD1_B(), reg.getD0_B(), model);
-            //Debug.printf(String.format("DEV:1 PRT:0 radr:%x rdat:%x", reg.getD1_B(), reg.getD0_B()));
+            //logger.log(Level.TRACE, "DEV:1 PRT:0 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             break;
         case 0xecc0cd:
             chipRegister.setYM2608Register(1, 1, reg.getD1_B(), reg.getD0_B(), model);
-            //Debug.printf(String.format("DEV:1 PRT:1 radr:%x rdat:%x", reg.getD1_B(), reg.getD0_B()));
+            //logger.log(Level.TRACE, "DEV:1 PRT:1 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B()));
             break;
         }
     }
@@ -2876,7 +2871,7 @@ public class MnDrv extends BaseDriver {
 
         //while ((byte)mm.readByte(Reg.a0) < 0) ; //wait?
         //mm.Write(Reg.a0 - 2, (byte)reg.getD1_B());
-        //Debug.printf(String.format("adr:%x dat:%x", Reg.a0-2, reg.getD1_B()));
+        //logger.log(Level.TRACE, "adr:%x dat:%x".formatted(Reg.a0-2, reg.getD1_B())));
 
         reg.a3 = reg.a6 + Dw.OPMREGWORK;
         reg.setD1_W(reg.getD1_W() & 0xff);
@@ -2884,7 +2879,7 @@ public class MnDrv extends BaseDriver {
 
         //while ((byte)mm.readByte(Reg.a0) < 0) ; //wait?
         //mm.Write(Reg.a0, (byte)reg.getD0_B());
-        //Debug.printf(String.format("adr:%x dat:%x", Reg.a0, reg.getD0_B()));
+        //logger.log(Level.TRACE, "adr:%x dat:%x".formatted(Reg.a0, reg.getD0_B())));
         chipRegister.setYM2151Register(0, 0, reg.getD1_B(), reg.getD0_B(), model, ym2151Hosei[0], 0);
         timerOPM.WriteReg((byte) reg.getD1_B(), (byte) reg.getD0_B());
     }
@@ -3069,7 +3064,7 @@ public class MnDrv extends BaseDriver {
      * program start
      */
     public void start() {
-        Debug.printf(M_title);
+        logger.log(Level.DEBUG, M_title);
 
         // スーパーバイザ処理　不要
 
@@ -3108,7 +3103,7 @@ public class MnDrv extends BaseDriver {
 
     /** */
     public void putdec() {
-        Debug.printf("{%d}", reg.D0_L);
+        logger.log(Level.DEBUG, "{%d}".formatted(reg.D0_L));
     }
 
     /** */
@@ -3166,7 +3161,7 @@ public class MnDrv extends BaseDriver {
 
                         //スーパーバイザ処理　不要
 
-                        Debug.printf(M_release);
+                        logger.log(Level.DEBUG, M_release);
 
                         return; // 本来はプログラム終了
                     }
@@ -3604,31 +3599,31 @@ public class MnDrv extends BaseDriver {
             mm.write(reg.a6 + Dw.DRV_FLAG, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG) | 0x80));
         }
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 1) == 0) {
-            Debug.printf(M_merc);
+            logger.log(Level.DEBUG, M_merc);
         }
         reg.D1_L = 0;
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x40) != 0) {
-            Debug.printf(M_MPCM);
+            logger.log(Level.DEBUG, M_MPCM);
             reg.setD1_B(0xff);
         }
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x08) != 0) { // break L2;
             if (reg.getD1_B() != 0) { // break L1;
-                Debug.printf(",");
+                logger.log(Level.DEBUG, ",");
             }
 // L1:
-            Debug.printf(M_zdd);
+            logger.log(Level.DEBUG, M_zdd);
             reg.setD1_B(0xff);
         }
 // L2:
         if (reg.getD1_B() != 0) {
-            Debug.printf(M_PCMOUT);
+            logger.log(Level.DEBUG, M_PCMOUT);
         }
 
         reg.D0_L = _data_work_size;
         reg.D0_L /= 1024;
         putdec();
 
-        Debug.printf(M_buf);
+        logger.log(Level.DEBUG, M_buf);
     }
 
     /**
@@ -3920,35 +3915,35 @@ public class MnDrv extends BaseDriver {
      * error exit
      */
     public void _not_remove() {
-        Debug.printf(M_notremove);
+        logger.log(Level.DEBUG, M_notremove);
     }
 
     public void _not_kept() {
-        Debug.printf(M_notkept);
+        logger.log(Level.DEBUG, M_notkept);
     }
 
     public void _help_exit() {
-        Debug.printf(M_help);
+        logger.log(Level.DEBUG, M_help);
     }
 
     public void _mndrv_already() {
-        Debug.printf(M_already);
+        logger.log(Level.DEBUG, M_already);
     }
 
     public void _trap4_already() {
-        Debug.printf(M_trap4err);
+        logger.log(Level.DEBUG, M_trap4err);
     }
 
     public void _opm_used() {
-        Debug.printf(M_opmerr);
+        logger.log(Level.DEBUG, M_opmerr);
     }
 
     public void _numover() {
-        Debug.printf(M_numover);
+        logger.log(Level.DEBUG, M_numover);
     }
 
     public void _memory_err() {
-        Debug.printf(M_memory_msg);
+        logger.log(Level.DEBUG, M_memory_msg);
     }
 
     /**

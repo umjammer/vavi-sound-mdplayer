@@ -203,7 +203,7 @@ public class Vgm extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, Common.EnmModel model, Common.EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 
     @Override
@@ -230,7 +230,7 @@ public class Vgm extends BaseDriver {
             vgmWait--;
             counter++;
             vgmFrameCounter++;
-//Debug.println("ret: wait: " + vgmWait + ", fc: " + vgmFrameCounter);
+//logger.log(Level.TRACE, "ret: wait: " + vgmWait + ".formatted(fc: " + vgmFrameCounter));
             return;
         }
 
@@ -240,7 +240,7 @@ public class Vgm extends BaseDriver {
             //if (model == enmModel.VirtualModel)
             //    oneFrameVGMStream();
             stopped = true;
-Debug.println("ret: not analyze");
+logger.log(Level.DEBUG, "ret: not analyze");
             return;
         }
 
@@ -253,19 +253,19 @@ Debug.println("ret: not analyze");
                     counter = 0;
                 } else {
                     vgmAnalyze = false;
-Debug.println("ret: not analyze 2");
+logger.log(Level.DEBUG, "ret: not analyze 2");
                     return;
                 }
             }
 
             int cmd = vgmBuf[vgmAdr] & 0xff;
-logger.log(Level.DEBUG, String.format("[%s]: adr: %x Dat: %x", model, vgmAdr, vgmBuf[vgmAdr])); // ok
+logger.log(Level.DEBUG, "[%s]: adr: %x Dat: %x".formatted(model, vgmAdr, vgmBuf[vgmAdr])); // ok
             if (vgmCmdTbl[cmd] != null) {
-                //if (model == EnmModel.VirtualModel) System.err.println("%05x : %02x ", vgmAdr, vgmBuf[vgmAdr]);
+                //if (model == EnmModel.VirtualModel) logger.log(Level.DEBUG, "%05x : %02x ".formatted(vgmAdr, vgmBuf[vgmAdr]));
                 vgmCmdTbl[cmd].run();
             } else {
-                 // わからんコマンド
-logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x", model, vgmAdr, vgmBuf[vgmAdr]));
+                // Unknown command
+logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(model, vgmAdr, vgmBuf[vgmAdr]));
                 vgmAdr++;
             }
             countNum++;
@@ -287,13 +287,13 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
 
         if (model == mdplayer.Common.EnmModel.RealModel && isDataBlock) {
             isDataBlock = false;
-            //System.err.println("%s countnum:%d", model, countNum);
+            //logger.log(Level.TRACE, "%s countnum:%d".formatted(model, countNum));
             countNum = 0;
         }
 
         // Send wait
         if (model == mdplayer.Common.EnmModel.RealModel) {
-            if (vgmSpeed == 1) { // 等速の場合のみウェイトをかける
+            if (vgmSpeed == 1) { // Apply weight only when speed is constant
                 if (useChipYM2612Ch6)
                     chipRegister.setYM2612SyncWait(0, vgmWait);
 //                if ((useChip & enmUseChip.SN76489) == enmUseChip.SN76489)
@@ -549,22 +549,22 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
     }
 
     private void vcDummy1Ope() {
-        //System.err.printf("(%02X:%02X)", vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1]);
+        //logger.log(Level.TRACE, "(%02X:%02X)".formatted(vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1]));
         vgmAdr += 2;
     }
 
     private void vcDummy2Ope() {
-        //System.err.printf("(%02X:%02X:%02X)", vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2]);
+        //logger.log(Level.TRACE, "(%02X:%02X:%02X)".formatted(vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2]));
         vgmAdr += 3;
     }
 
     private void vcDummy3Ope() {
-        //System.err.printf("(%02X:%02X:%02X:%02X)", vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3]);
+        //logger.log(Level.TRACE, "(%02X:%02X:%02X:%02X)".formatted(vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3]));
         vgmAdr += 4;
     }
 
     private void vcDummy4Ope() {
-        //System.err.println("unknown command:Adr:%x(%02X:%02X:%02X:%02X:%02X)",vgmAdr, vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3], vgmBuf[vgmAdr + 4]);
+        //logger.log(Level.TRACE, "unknown command:Adr:%x(%02X:%02X:%02X:%02X:%02X)".formatted(vgmAdr, vgmBuf[vgmAdr], vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3], vgmBuf[vgmAdr + 4]));
         vgmAdr += 5;
     }
 
@@ -659,7 +659,7 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
         int adr = vgmBuf[vgmAdr + 1] & 0xff;
         int dat = vgmBuf[vgmAdr + 2] & 0xff;
 //        if (adr >= 0x00 && adr <= 0x10 && model == enmModel.RealModel) {
-//            System.err.println("%2X:%2X", adr, dat);
+//            logger.log(Level.TRACE, "%2X:%2X".formatted(adr, dat));
 //        }
 //        if (adr == 0x01) {
 //            //dat &= 0xfd;
@@ -728,7 +728,7 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
                 , vgmBuf[vgmAdr + 2] & 0xff
                 , vgmBuf[vgmAdr + 3] & 0xff
                 , model);
-//System.err.println("fm:%02x:%02x:%02x:", vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3]);
+//logger.log(Level.TRACE, "fm:%02x:%02x:%02x:".formatted(vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3]));
         vgmAdr += 4;
     }
 
@@ -768,7 +768,7 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
     }
 
     private void vcSEGAPCM() {
-//System.err.println("%4X %4X", vgmBuf[vgmAdr + 0x01], vgmBuf[vgmAdr + 0x02]);
+//logger.log(Level.TRACE, "%4X %4X".formatted(vgmBuf[vgmAdr + 0x01], vgmBuf[vgmAdr + 0x02]));
         chipRegister.writeSEGAPCM(0, (vgmBuf[vgmAdr + 0x01] & 0xff) | ((vgmBuf[vgmAdr + 0x02] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
         vgmAdr += 4;
     }
@@ -851,7 +851,7 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
                 chipRegister.setYM2608Register(chipId, 0x1, 0x0c, 0xff, model);
                 chipRegister.setYM2608Register(chipId, 0x1, 0x0d, 0xff, model);
 
-                // データ転送
+                // Data Transfer
                 for (int cnt = 0; cnt < bLen - 8; cnt++) {
                     chipRegister.setYM2608Register(chipId, 0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt] & 0xff, model);
                 }
@@ -880,12 +880,12 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
 //                chipRegister.setYM2608Register(0x1, 0x10, 0x80, model);
 
                 while ((chipRegister.getYM2608Register(chipId, 0x1, 0x00, model) & 0xbf) != 0) {
-                    try { Thread.sleep(0); } catch (InterruptedException e) {}
+                    try { Thread.sleep(0); } catch (InterruptedException ignore) {}
                 }
                 if (model == mdplayer.Common.EnmModel.RealModel) {
                     if ((chipId == 0 && setting.getYM2608Type()[0].getUseReal()[0])
                             || (chipId == 1 && setting.getYM2608Type()[1].getUseReal()[0])) {
-                        try { Thread.sleep(500); } catch (InterruptedException e) {}
+                        try { Thread.sleep(500); } catch (InterruptedException ignore) {}
                     }
                 }
 
@@ -1034,7 +1034,7 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
                     break;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             }
 
             vgmAdr += bLen + 7;
@@ -1057,13 +1057,13 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
 
         try {
 
-            String fn = Path.combine(setting.getOther().getDumpPath(), String.format("%2$s_%3$s_%1$03d.bin", dumpCounter++, chipName, gd3.trackName.replace("*", "").replace("?", "").replace(" ", "").replace("\"", "").replace("/", "")));
+            String fn = Path.combine(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.bin".formatted(dumpCounter++, chipName, gd3.trackName.replace("*", "").replace("?", "").replace(" ", "").replace("\"", "").replace("/", "")));
             try (FileStream fs = new FileStream(fn, FileMode.OpenOrCreate, FileAccess.Write)) {
                 fs.write(vgmBuf, adr, len);
             }
         } catch (Exception e) {
-            e.printStackTrace();
-             // エラーは無視
+            logger.log(Level.ERROR, e.getMessage(), e);
+            // Ignore the error
         }
     }
 
@@ -1073,7 +1073,7 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
         if (!setting.getOther().getDumpSwitch()) return;
 
         try {
-            String dFn = Path.combine(setting.getOther().getDumpPath(), String.format("%2$s_%3$s_%1$03d.wav", dumpCounter++, chipName, gd3.trackName.replace("*", "").replace("?", "").replace(" ", "").replace("\"", "")));
+            String dFn = Path.combine(setting.getOther().getDumpPath(), "%2$s_%3$s_%1$03d.wav".formatted(dumpCounter++, chipName, gd3.trackName.replace("*", "").replace("?", "").replace(" ", "").replace("\"", "")));
             List<Byte> des = new ArrayList<>();
 
             // 'RIFF'
@@ -1081,7 +1081,7 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
             des.add((byte) 'I');
             des.add((byte) 'F');
             des.add((byte) 'F');
-            // サイズ
+            // Size
             //int fsize = src.length + 36;
             int fsize = len + 36;
             des.add((byte) ((fsize & 0xff) >> 0));
@@ -1098,31 +1098,31 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
             des.add((byte) 'm');
             des.add((byte) 't');
             des.add((byte) ' ');
-            // サイズ(16)
+            // Size(16)
             des.add((byte) 0x10);
             des.add((byte) 0);
             des.add((byte) 0);
             des.add((byte) 0);
-            // フォーマット(1)
+            // Format(1)
             des.add((byte) 0x01);
             des.add((byte) 0x00);
-            // チャンネル数(mono)
+            // Channel Number(mono)
             des.add((byte) 0x01);
             des.add((byte) 0x00);
-             // サンプリング周波数(16KHz)
+            // Sampling Frquency(16KHz)
             des.add((byte) 0x80);
             des.add((byte) 0x3e);
             des.add((byte) 0);
             des.add((byte) 0);
-             // 平均データ割合(16K)
+            // Average Data Percentage(16K)
             des.add((byte) 0x80);
             des.add((byte) 0x3e);
             des.add((byte) 0);
             des.add((byte) 0);
-             // ブロックサイズ(1)
+            // Block size(1)
             des.add((byte) 0x01);
             des.add((byte) 0x00);
-             // ビット数(8bit)
+            // Bit depth(8bit)
             des.add((byte) 0x08);
             des.add((byte) 0x00);
 
@@ -1131,7 +1131,7 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
             des.add((byte) 'a');
             des.add((byte) 't');
             des.add((byte) 'a');
-            // サイズ(データサイズ)
+            // Size(Data Size)
             des.add((byte) ((len & 0xff) >> 0));
             des.add((byte) ((len & 0xff00) >> 8));
             des.add((byte) ((len & 0xff_0000) >> 16));
@@ -1141,11 +1141,11 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
                 des.add(vgmBuf[adr + i]);
             }
 
-             // 出力
+            // output
             File.writeAllBytes(dFn, toByteArray(des));
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -1465,7 +1465,7 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
                 System.arraycopy(tempBnk.data, 0, tempPCM.data, tempBnk.dataStart, bankSize);
             }
         }
-        //if (bankSize != tempBnk.dataSize) System.err.printf("Error reading data Block! data size conflict!\n");
+        //if (bankSize != tempBnk.dataSize) logger.log(Level.TRACE, "Error reading data Block! data size conflict!\n");
         if (retVal)
             tempPCM.dataSize += bankSize;
 
@@ -1719,7 +1719,7 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
         //memcpy(PCMTbl.Entries, &Data[0x06], tblSize);
 
         if (dataSize < 0x06 + tblSize) {
-            //System.err.printf("Warning! Bad PCM Table Length!\n");
+            //logger.log(Level.TRACE, "Warning! Bad PCM Table Length!\n");
             //printf("Warning! Bad PCM Table Length!\n");
         }
     }
@@ -1790,10 +1790,10 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
         x1_010ClockValue = 0;
         wSwanClockValue = 0;
 
-         // ヘッダーを読み込めるサイズをもっているかチェック
+        // Check if the header is large enough to read
         if (vgmBuf.length < 0x40) return false;
 
-         // ヘッダーから情報取得
+        // Get information from the header
 
         int vgm = ByteUtil.readLeInt(vgmBuf, 0x00);
         if (vgm != FCC_VGM) return false;
@@ -1801,10 +1801,10 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
         vgmEof = ByteUtil.readLeInt(vgmBuf, 0x04);
 
         int version = ByteUtil.readLeInt(vgmBuf, 0x08);
-        this.version = String.format("%d.%d%d", (version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
-         // バージョンチェック
+        this.version = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
+        // Version Check
         if (version < 0x0101) {
-            System.err.printf("Warning:This file instanceof older version(%s).", this.version);
+            logger.log(Level.TRACE, "Warning:This file instanceof older version(%s).".formatted(this.version));
             //return false;
         }
 
@@ -2275,7 +2275,7 @@ logger.log(Level.WARNING, String.format("[%s]:unknown command: adr: %x Dat: %x",
     }
 
     /**
-     * OPNAのRAMTypeをデータから調べる
+     * Check the RAMType of OPNA from the data
      * @return true: x8bit, false: x1bit
      */
     private boolean searchOpnaRamType() {

@@ -127,7 +127,7 @@ public class EventScheduler {
      * @param event the event to cancel
      */
     public void cancel(Event event) {
-        //System.err.println("cancel:" + event.GetM_name());
+        //logger.log(Level.TRACE, "cancel:" + event.GetM_name());
 
         IEvent scan = firstEvent;
         IEvent bscan = null;
@@ -151,7 +151,7 @@ public class EventScheduler {
      * Cancel all pending events and reset time.
      */
     public void reset() {
-        //System.err.println("reset:" );
+        //logger.log(Level.TRACE, "reset:" );
         firstEvent = null;
         currentTime = 0;
     }
@@ -161,12 +161,12 @@ public class EventScheduler {
      * イベントをリストの最初からひとつ切り出し、それを実行
      */
     public void clock() {
-        //System.err.println("clock:" );
+        //logger.log(Level.TRACE, "clock:" );
         if (firstEvent == null) return;
         IEvent event_ = firstEvent;
         firstEvent = firstEvent.getNext(); //次のイベントが最初になる
         currentTime = event_.getTriggerTime();
-        //Debug.printf(String.format("%d %d", currentTime, event.getName()));
+        //logger.log(Level.TRACE, "%d %d".formatted(currentTime, event.getName()));
 
         event_.event();
     }
@@ -178,7 +178,7 @@ public class EventScheduler {
      * @return true when pending
      */
     public boolean isPending(Event event) {
-        //System.err.println("isPending:" + event.getName());
+        //logger.log(Level.TRACE, "isPending:" + event.getName());
         IEvent scan = firstEvent;
         while (scan != null) {
             if (event == scan) {

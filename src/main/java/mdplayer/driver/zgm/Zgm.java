@@ -1,5 +1,7 @@
 package mdplayer.driver.zgm;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,10 +16,13 @@ import mdplayer.driver.zgm.zgmChip.ChipFactory;
 import mdplayer.driver.zgm.zgmChip.ZgmChip;
 import mdplayer.driver.Vgm.Gd3;
 import vavi.util.ByteUtil;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 public class Zgm extends BaseDriver {
+
+    private static final Logger logger = getLogger(Zgm.class.getName());
 
     public static final int FCC_ZGM = 0x204D475A;    // "ZGM "
     public static final int FCC_GD3 = 0x20336447;  // "Gd3 "
@@ -63,7 +68,7 @@ public class Zgm extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("このdriverはこのメソッドを必要としない");
+        throw new UnsupportedOperationException("This driver does not require this method");
     }
 
     @Override
@@ -84,7 +89,7 @@ public class Zgm extends BaseDriver {
         int version = ByteUtil.readLeInt(vgmBuf, 0x08);
          // バージョンチェック
         if (version < 10) return false;
-        this.version = String.format("%d.%d%d", (version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
+        this.version = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
         totalCounter = ByteUtil.readLeInt(vgmBuf, 0x0c);
         if (totalCounter < 0) return false;
@@ -143,7 +148,7 @@ public class Zgm extends BaseDriver {
 
             if (!getZGMGD3Info(vgmBuf)) return false;
         } catch (Exception e) {
-            Debug.printf("XGMの情報取得中に例外発生 Message=[%s] StackTrace=[%s]", e.getMessage(), Arrays.toString(e.getStackTrace()));
+            logger.log(Level.ERROR, "XGMの情報取得中に例外発生 Message=[%s]".formatted(e.getMessage()), e);
             return false;
         }
 

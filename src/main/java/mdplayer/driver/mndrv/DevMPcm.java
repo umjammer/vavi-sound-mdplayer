@@ -1,6 +1,7 @@
 package mdplayer.driver.mndrv;
 
 import mdplayer.driver.mxdrv.XMemory;
+import mdsound.chips.MPcm.PCM;
 
 
 public class DevMPcm {
@@ -16,7 +17,7 @@ public class DevMPcm {
     //
     //	part of MPCM
     //
-    //─────────────────────────────────────
+    /** */
     public void _mpcm_note_set() {
         mm.write(reg.a5 + W.key, (byte) reg.getD0_B());
         reg.D2_L = 0;
@@ -43,7 +44,7 @@ public class DevMPcm {
         _mpcm_keyon();
     }
 
-    //─────────────────────────────────────
+    /** */
     //
     public void _init_lfo_mpcm() {
         if (mm.readByte(reg.a6 + Dw.FADEFLAG) == 0) {
@@ -78,7 +79,7 @@ public class DevMPcm {
         }
     }
 
-    //─────────────────────────────────────
+    /** */
     //
     public void _mpcm_freq() {
         mm.write(reg.a5 + W.keycode, (short) reg.getD2_W());
@@ -91,7 +92,7 @@ public class DevMPcm {
         }
     }
 
-    //─────────────────────────────────────
+    /** */
     //	NOTE KEY ON
     //
     public void _mpcm_note_keyon_pdx() {
@@ -163,7 +164,7 @@ public class DevMPcm {
         _mpcm_keyon();
     }
 
-    //─────────────────────────────────────
+    /** */
     //	NOTE KEY ON
     //
     public void _mpcm_note_keyon() {
@@ -224,10 +225,11 @@ public class DevMPcm {
         _mpcm_keyon();
     }
 
-    // key on へ
-    //─────────────────────────────────────
-    //	KEY ON
-    //
+    /**
+     * to key on
+     *
+     * KEY ON
+     */
     public void _mpcm_keyon() {
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x02) != 0) {
             comwave._wave_init_kon();
@@ -263,16 +265,16 @@ public class DevMPcm {
         }
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _mpcm_note_keyon_set_noload() {
         reg.setD2_W(reg.getD2_W() << 6);
         mm.write(reg.a5 + W.keycode2, (short) reg.getD2_W());
         mm.write(reg.a5 + W.keycode, (short) reg.getD2_W());
     }
 
-    //─────────────────────────────────────
-    //	KEY OFF
-    //
+    /**
+     * KEY OFF
+     */
     public void _mpcm_keyoff() {
         comwave._wave_init_kof();
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
@@ -295,8 +297,7 @@ public class DevMPcm {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x98));
     }
 
-    //─────────────────────────────────────
-    //
+    /** */
     public void _mpcm_echo() {
         if ((byte) (mm.readByte(reg.a5 + W.flag) & 0x20) == 0) return;
 
@@ -334,7 +335,7 @@ public class DevMPcm {
         reg.setD4_W(sp);
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _mpcm_echo_volume() {
         if ((byte) (mm.readByte(reg.a5 + W.reverb) & 0x10) != 0) {
             _mpcm_echo_common_atv();
@@ -374,7 +375,7 @@ public class DevMPcm {
         _mpcm_echo_volume_v();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _mpcm_echo_pan() {
         if ((byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x02) == 0) return;
         reg.setD1_B(mm.readByte(reg.a5 + W.reverb_pan));
@@ -383,16 +384,16 @@ public class DevMPcm {
         mndrv.trap(1);
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _mpcm_echo_tone() {
         reg.D5_L = 0;
         reg.setD5_B(mm.readByte(reg.a5 + W.reverb_tone));
         _mpcm_echo_tone_change();
     }
 
-    //─────────────────────────────────────
-    // v通常
-    //
+    /**
+     * v normal
+     */
     public void _mpcm_echo_common_v() {
         if ((byte) (mm.readByte(reg.a5 + W.reverb) & 0x08) != 0) {
             _mpcm_echo_direct_v();
@@ -430,9 +431,9 @@ public class DevMPcm {
         _MPCM_F2_softenv();
     }
 
-    //─────────────────────────────────────
-    // @v通常
-    //
+    /**
+     * "@v" normal
+     */
     public void _mpcm_echo_common_atv() {
         if ((byte) (mm.readByte(reg.a5 + W.reverb) & 0x08) != 0) {
             _mpcm_echo_direct_atv();
@@ -466,9 +467,9 @@ public class DevMPcm {
         _MPCM_F2_softenv();
     }
 
-    //─────────────────────────────────────
-    // v微調整
-    //
+    /**
+     * "v" fine tune
+     */
     public void _mpcm_echo_volume_v() {
         reg.D4_L = 0;
         reg.setD4_B(mm.readByte(reg.a5 + W.volume));
@@ -497,9 +498,9 @@ public class DevMPcm {
         _MPCM_F2_softenv();
     }
 
-    //─────────────────────────────────────
-    // @v微調整
-    //
+    /**
+     * "@v" fine tune
+     */
     public void _mpcm_echo_volume_atv() {
         reg.setD4_B(mm.readByte(reg.a5 + W.vol));
         reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol));
@@ -508,9 +509,9 @@ public class DevMPcm {
         _MPCM_F2_softenv();
     }
 
-    //─────────────────────────────────────
-    // v直接
-    //
+    /**
+     * "v" direct
+     */
     public void _mpcm_echo_direct_v() {
         reg.D4_L = 0;
         reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol));
@@ -519,15 +520,15 @@ public class DevMPcm {
         _MPCM_F2_softenv();
     }
 
-    //─────────────────────────────────────
-    // @v直接
-    //
+    /**
+     * "@v" direct
+     */
     public void _mpcm_echo_direct_atv() {
         reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol));
         _MPCM_F2_softenv();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _mpcm_echo_ret() {
         int sp = reg.getD4_W();
 
@@ -563,437 +564,438 @@ public class DevMPcm {
         reg.setD4_W(sp);
     }
 
-    //─────────────────────────────────────
-    //	MML コマンド処理 ( PCM 部 )
-    //
+    /**
+     * Processes MML command (PCM part)
+     */
     public void _mpcm_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
 
         //_mpcmc:
         switch (reg.getD0_W() / 2) {
-        case 0x00:
-            break;//
-        case 0x01:
+        case 0x00: //
+            break;
+        case 0x01: // 81
             comcmds._COM_81();
-            break;// 81
-        case 0x02:
+            break;
+        case 0x02: // 82	key off
             _MPCM_82();
-            break;// 82	key off
-        case 0x03:
+            break;
+        case 0x03: // 83	Slurs
             comcmds._COM_83();
-            break;// 83	すらー
-        case 0x04:
+            break;
+        case 0x04: // 84
             _MPCM_NOP();
-            break;// 84
-        case 0x05:
+            break;
+        case 0x05: // 85
             _MPCM_NOP();
-            break;// 85
-        case 0x06:
+            break;
+        case 0x06: // 86	Synchronization signal transmission
             comcmds._COM_86();
-            break;// 86	同期信号送信
-        case 0x07:
+            break;
+        case 0x07: // 87	Waiting for sync signal
             comcmds._COM_87();
-            break;// 87	同期信号待ち
-        case 0x08:
+            break;
+        case 0x08: // 88	Pitch Bend
             devopm._OPM_88();
-            break;// 88	ぴっちべんど
-        case 0x09:
+            break;
+        case 0x09: // 89	Portamento
             devopm._OPM_89();
-            break;// 89	ぽるためんと
-        case 0x0a:
+            break;
+        case 0x0a: // 8A	Portamento coefficient change
             devopm._OPM_8A();
-            break;// 8A	ぽるためんと係数変更
-        case 0x0b:
+            break;
+        case 0x0b: // 8B
             _MPCM_NOP();
-            break;// 8B
-        case 0x0c:
+            break;
+        case 0x0c: // 8C
             _MPCM_NOP();
-            break;// 8C
-        case 0x0d:
+            break;
+        case 0x0d: // 8D
             _MPCM_NOP();
-            break;// 8D
-        case 0x0e:
+            break;
+        case 0x0e: // 8E
             _MPCM_NOP();
-            break;// 8E
-        case 0x0f:
+            break;
+        case 0x0f: // 8F
             _MPCM_NOP();
-            break;// 8F
+            break;
 
-        case 0x10:
+        case 0x10: // 90	q
             comcmds._COM_90();
-            break;// 90	q
-        case 0x11:
+            break;
+        case 0x11: // 91	@q
             comcmds._COM_91();
-            break;// 91	@q
-        case 0x12:
+            break;
+        case 0x12: // 92	Note Off Mode
             comcmds._COM_94();
-            break;// 92	ノートオフモード
-        case 0x13:
+            break;
+        case 0x13: // 93	negative @q
             comcmds._COM_93();
-            break;// 93	negative @q
-        case 0x14:
+            break;
+        case 0x14: // 94	keyoff mode
             comcmds._COM_94();
-            break;// 94	keyoff mode
-        case 0x15:
+            break;
+        case 0x15: // 95
             _MPCM_NOP();
-            break;// 95
-        case 0x16:
+            break;
+        case 0x16: // 96
             _MPCM_NOP();
-            break;// 96
-        case 0x17:
+            break;
+        case 0x17: // 97
             _MPCM_NOP();
-            break;// 97
-        case 0x18:
+            break;
+        case 0x18: // 98	Pseudo reverb
             _MPCM_98();
-            break;// 98	擬似リバーブ
-        case 0x19:
+            break;
+        case 0x19: // 99
             _MPCM_99();
-            break;// 99
-        case 0x1a:
+            break;
+        case 0x1a: // 9A	Pseudo-behaviour step time
             comcmds._COM_9A();
-            break;// 9A	擬似動作 step time
-        case 0x1b:
+            break;
+        case 0x1b: // 9B
             _MPCM_NOP();
-            break;// 9B
-        case 0x1c:
+            break;
+        case 0x1c: // 9C
             _MPCM_NOP();
-            break;// 9C
-        case 0x1d:
+            break;
+        case 0x1d: // 9D
             _MPCM_NOP();
-            break;// 9D
-        case 0x1e:
+            break;
+        case 0x1e: // 9E
             _MPCM_NOP();
-            break;// 9E
-        case 0x1f:
+            break;
+        case 0x1f: // 9F
             _MPCM_NOP();
-            break;// 9F
+            break;
 
-        case 0x20:
+        case 0x20: // A0	change voice
             _MPCM_F0();
-            break;// A0	音色切り替え
-        case 0x21:
+            break;
+        case 0x21: // A1	change bank & voice
             _MPCM_A1();
-            break;// A1	バンク&音色切り替え
-        case 0x22:
+            break;
+        case 0x22: // A2	change mode
             _MPCM_A2();
-            break;// A2	モード切り替え
-        case 0x23:
+            break;
+        case 0x23: // A3    volume table
             _MPCM_A3();
-            break;// A3	音量テーブル
-        case 0x24:
+            break;
+        case 0x24: // A4	volume
             _MPCM_F2();
-            break;// A4	音量
-        case 0x25:
+            break;
+        case 0x25: // A5
             _MPCM_F5();
-            break;// A5
-        case 0x26:
+            break;
+        case 0x26: // A6
             _MPCM_F6();
-            break;// A6
-        case 0x27:
+            break;
+        case 0x27: // A7	127-step volume table switching
             _MPCM_A7();
-            break;// A7	127段階音量テーブル切り替え
-        case 0x28:
+            break;
+        case 0x28: // A8	Relative Volume Mode
             comcmds._COM_A8();
-            break;// A8	相対音量モード
-        case 0x29:
+            break;
+        case 0x29: // A9
             _MPCM_NOP();
-            break;// A9
-        case 0x2a:
+            break;
+        case 0x2a: // AA
             _MPCM_NOP();
-            break;// AA
-        case 0x2b:
+            break;
+        case 0x2b: // AB
             _MPCM_NOP();
-            break;// AB
-        case 0x2c:
+            break;
+        case 0x2c: // AC
             _MPCM_NOP();
-            break;// AC
-        case 0x2d:
+            break;
+        case 0x2d: // AD
             _MPCM_NOP();
-            break;// AD
-        case 0x2e:
+            break;
+        case 0x2e: // AE
             _MPCM_NOP();
-            break;// AE
-        case 0x2f:
+            break;
+        case 0x2f: // AF
             _MPCM_NOP();
-            break;// AF
+            break;
 
-        case 0x30:
+        case 0x30: // B0
             comcmds._COM_B0();
-            break;// B0
-        case 0x31:
+            break;
+        case 0x31: // B1
             _MPCM_NOP();
-            break;// B1
-        case 0x32:
+            break;
+        case 0x32: // B2
             _MPCM_NOP();
-            break;// B2
-        case 0x33:
+            break;
+        case 0x33: // B3
             _MPCM_NOP();
-            break;// B3
-        case 0x34:
+            break;
+        case 0x34: // B4
             _MPCM_NOP();
-            break;// B4
-        case 0x35:
+            break;
+        case 0x35: // B5
             _MPCM_NOP();
-            break;// B5
-        case 0x36:
+            break;
+        case 0x36: // B6
             _MPCM_NOP();
-            break;// B6
-        case 0x37:
+            break;
+        case 0x37: // B7
             _MPCM_NOP();
-            break;// B7
-        case 0x38:
+            break;
+        case 0x38: // B8
             _MPCM_NOP();
-            break;// B8
-        case 0x39:
+            break;
+        case 0x39: // B9
             _MPCM_NOP();
-            break;// B9
-        case 0x3a:
+            break;
+        case 0x3a: // BA
             _MPCM_NOP();
-            break;// BA
-        case 0x3b:
+            break;
+        case 0x3b: // BB
             _MPCM_NOP();
-            break;// BB
-        case 0x3c:
+            break;
+        case 0x3c: // BC
             _MPCM_NOP();
-            break;// BC
-        case 0x3d:
+            break;
+        case 0x3d: // BD
             _MPCM_NOP();
-            break;// BD
-        case 0x3e:
+            break;
+        case 0x3e: // BE	jump
             comcmds._COM_BE();
-            break;// BE	ジャンプ
-        case 0x3f:
+            break;
+        case 0x3f: // BF
             comcmds._COM_BF();
-            break;// BF
+            break;
 
-        // Psg 系
-        case 0x40:
+        // Psg series
+        case 0x40: // C0	software envelope 1
             comcmds._COM_C0();
-            break;// C0	ソフトウェアエンベロープ 1
-        case 0x41:
+            break;
+        case 0x41: // C1	software envelope 2
             comcmds._COM_C1();
-            break;// C1	ソフトウェアエンベロープ 2
-        case 0x42:
+            break;
+        case 0x42: // C2
             _MPCM_NOP();
-            break;// C2
-        case 0x43:
+            break;
+        case 0x43: // C3	switch
             comcmds._COM_C3();
-            break;// C3	switch
-        case 0x44:
+            break;
+        case 0x44: // C4	env (num)
             comcmds._COM_C4();
-            break;// C4	env (num)
-        case 0x45:
+            break;
+        case 0x45: // C5	env (bank + num)
             comcmds._COM_C5();
-            break;// C5	env (bank + num)
-        case 0x46:
+            break;
+        case 0x46: // C6
             _MPCM_NOP();
-            break;// C6
-        case 0x47:
+            break;
+        case 0x47: // C7
             _MPCM_NOP();
-            break;// C7
-        case 0x48:
+            break;
+        case 0x48: // C8
             _MPCM_NOP();
-            break;// C8
-        case 0x49:
+            break;
+        case 0x49: // C9
             _MPCM_NOP();
-            break;// C9
-        case 0x4a:
+            break;
+        case 0x4a: // CA
             _MPCM_NOP();
-            break;// CA
-        case 0x4b:
+            break;
+        case 0x4b: // CB
             _MPCM_NOP();
-            break;// CB
-        case 0x4c:
+            break;
+        case 0x4c: // CC
             _MPCM_NOP();
-            break;// CC
-        case 0x4d:
+            break;
+        case 0x4d: // CD
             _MPCM_NOP();
-            break;// CD
-        case 0x4e:
+            break;
+        case 0x4e: // CE
             _MPCM_NOP();
-            break;// CE
-        case 0x4f:
+            break;
+        case 0x4f: // CF
             _MPCM_NOP();
-            break;// CF
+            break;
 
-        // KEY 系
-        case 0x50:
+        // KEY series
+        case 0x50: // D0	Key Transpose
             comcmds._COM_D0();
-            break;// D0	キートランスポーズ
-        case 0x51:
+            break;
+        case 0x51: // D1	Relative Key Transpose
             comcmds._COM_D1();
-            break;// D1	相対キートランスポーズ
-        case 0x52:
+            break;
+        case 0x52: // D2
             _MPCM_NOP();
-            break;// D2
-        case 0x53:
+            break;
+        case 0x53: // D3
             _MPCM_NOP();
-            break;// D3
-        case 0x54:
+            break;
+        case 0x54: // D4
             _MPCM_NOP();
-            break;// D4
-        case 0x55:
+            break;
+        case 0x55: // D5
             _MPCM_NOP();
-            break;// D5
-        case 0x56:
+            break;
+        case 0x56: // D6
             _MPCM_NOP();
-            break;// D6
-        case 0x57:
+            break;
+        case 0x57: // D7
             _MPCM_NOP();
-            break;// D7
-        case 0x58:
+            break;
+        case 0x58: // D8	detune
             comcmds._COM_D8();
-            break;// D8	ディチューン
-        case 0x59:
+            break;
+        case 0x59: // D9	relative detune
             comcmds._COM_D9();
-            break;// D9	相対ディチューン
-        case 0x5a:
+            break;
+        case 0x5a: // DA
             _MPCM_NOP();
-            break;// DA
-        case 0x5b:
+            break;
+        case 0x5b: // DB
             _MPCM_NOP();
-            break;// DB
-        case 0x5c:
+            break;
+        case 0x5c: // DC
             _MPCM_NOP();
-            break;// DC
-        case 0x5d:
+            break;
+        case 0x5d: // DD
             _MPCM_NOP();
-            break;// DD
-        case 0x5e:
+            break;
+        case 0x5e: // DE
             _MPCM_NOP();
-            break;// DE
-        case 0x5f:
+            break;
+        case 0x5f: // DF
             _MPCM_NOP();
-            break;// DF
+            break;
 
-        // LFO 系
-        case 0x60:
+        // LFO series
+        case 0x60: // E0
             _MPCM_NOP();
-            break;// E0
-        case 0x61:
+            break;
+        case 0x61: // E1
             _MPCM_NOP();
-            break;// E1
-        case 0x62:
+            break;
+        case 0x62: // E2	pitch LFO
             comcmds._COM_E2();
-            break;// E2	pitch LFO
-        case 0x63:
+            break;
+        case 0x63: // E3	pitch LFO switch
             comcmds._COM_E3();
-            break;// E3	pitch LFO switch
-        case 0x64:
+            break;
+        case 0x64: // E4	pitch LFO delay
             comcmds._COM_E4();
-            break;// E4	pitch LFO delay
-        case 0x65:
+            break;
+        case 0x65: // E5
             _MPCM_NOP();
-            break;// E5
-        case 0x66:
+            break;
+        case 0x66: // E6
             _MPCM_NOP();
-            break;// E6
-        case 0x67:
+            break;
+        case 0x67: // E7	amp LFO
             comcmds._COM_E7();
-            break;// E7	amp LFO
-        case 0x68:
+            break;
+        case 0x68: // E8	amp LFO switch
             _MPCM_E8();
-            break;// E8	amp LFO switch
-        case 0x69:
+            break;
+        case 0x69: // E9	amp LFO delay
             comcmds._COM_E9();
-            break;// E9	amp LFO delay
-        case 0x6a:
+            break;
+        case 0x6a: // EA
             _MPCM_NOP();
-            break;// EA
-        case 0x6b:
+            break;
+        case 0x6b: // EB
             _MPCM_NOP();
-            break;// EB
-        case 0x6c:
+            break;
+        case 0x6c: // EC
             _MPCM_NOP();
-            break;// EC
-        case 0x6d:
+            break;
+        case 0x6d: // ED
             comcmds._COM_ED();
-            break;// ED
-        case 0x6e:
+            break;
+        case 0x6e: // EE
             _MPCM_NOP();
-            break;// EE
-        case 0x6f:
+            break;
+        case 0x6f: // EF
             _MPCM_NOP();
-            break;// EF
+            break;
 
-        // システムコントール系
-        case 0x70:
+        // System Control
+        case 0x70: // F0	@
             _MPCM_F0();
-            break;// F0	@
-        case 0x71:
+            break;
+        case 0x71: // F1
             _MPCM_NOP();
-            break;// F1
-        case 0x72:
+            break;
+        case 0x72: // F2	volume
             _MPCM_F2();
-            break;// F2	volume
-        case 0x73:
+            break;
+        case 0x73: // F3	F
             _MPCM_F3();
-            break;// F3	F
-        case 0x74:
+            break;
+        case 0x74: // F4	pan
             _MPCM_F4();
-            break;// F4	pan
-        case 0x75:
+            break;
+        case 0x75: // F5	)	crescendo
             _MPCM_F5();
-            break;// F5	)	くれ
-        case 0x76:
+            break;
+        case 0x76: // F6	(	Decrescendo
             _MPCM_F6();
-            break;// F6	(	でくれ
-        case 0x77:
+            break;
+        case 0x77: // F7
             _MPCM_NOP();
-            break;// F7
-        case 0x78:
+            break;
+        case 0x78: // F8
             _MPCM_NOP();
-            break;// F8
-        case 0x79:
+            break;
+        case 0x79: // F9	Permanent loop point mark
             comcmds._COM_F9();
-            break;// F9	永久ループポイントマーク
-        case 0x7a:
+            break;
+        case 0x7a: // FA	y COMMAND
             devopm._OPM_FA();
-            break;// FA	y COMMAND
-        case 0x7b:
+            break;
+        case 0x7b: // FB	Exiting from Repeat
             comcmds._COM_FB();
-            break;// FB	リピート抜け出し
-        case 0x7c:
+            break;
+        case 0x7c: // FC	Repeat Start
             comcmds._COM_FC();
-            break;// FC	リピート開始
-        case 0x7d:
+            break;
+        case 0x7d: // FD	Repeat Termination
             comcmds._COM_FD();
-            break;// FD	リピート終端
-        case 0x7e:
+            break;
+        case 0x7e: // FE	tempo
             comcmds._COM_FE();
-            break;// FE	tempo
-        case 0x7f:
+            break;
+        case 0x7f: // FF	end of data
             _MPCM_FF();
-            break;// FF	end of data
+            break;
         }
     }
 
-    //─────────────────────────────────────
-    //
+    /** */
     public void _MPCM_NOP() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x7f));
         _mpcm_keyoff2();
     }
 
-    //─────────────────────────────────────
-    //	強制キーオフ
-    //
+    /**
+     * Forced Key Off
+     */
     public void _MPCM_82() {
         _mpcm_keyoff2();
     }
 
-    //─────────────────────────────────────
-    //	擬似リバーブ
-    //		switch = $80 = ON
-    //			 $81 = OFF
-    //			 $00 = + [volume]b
-    //			 $01 = + [volume]b + [pan]b
-    //			 $02 = + [volume]b + [tone]b
-    //			 $03 = + [volume]b + [panpot]b + [tone]b
-    //	work
-    //		bit1 1:tone change
-    //		bit0 1:panpot change
-    //
+    /**
+     * Pseudo reverb
+     * <pre>
+     * 	switch = $80 = ON
+     * 		 $81 = OFF
+     * 		 $00 = + [volume]b
+     * 		 $01 = + [volume]b + [pan]b
+     * 		 $02 = + [volume]b + [tone]b
+     * 		 $03 = + [volume]b + [panpot]b + [tone]b
+     * work
+     * 	bit1 1:tone change
+     * 	bit0 1:panpot change
+     * </pre>
+     */
     public void _MPCM_98() {
         comcmds._COM_98();
         if ((mm.readByte(reg.a5 + W.reverb) & 0x80) == 0) {
@@ -1001,24 +1003,26 @@ public class DevMPcm {
         }
     }
 
-    //─────────────────────────────────────
-    //	擬似エコー
-    //
+    /**
+     * Pseudo Echo
+     */
     public void _MPCM_99() {
         comcmds._COM_99();
     }
 
-    //─────────────────────────────────────
-    //	bank & tone set
-    //		[$A1] + [bank]b + [tone]b
+    /**
+     * bank & tone set
+     * [$A1] + [bank]b + [tone]b
+     */
     public void _MPCM_A1() {
         mm.write(reg.a5 + W.bank, mm.readByte(reg.a1++));
         _MPCM_F0();
     }
 
-    //─────────────────────────────────────
-    //	TONE / TIMBRE
-    //		[$A2] + [switch]b
+    /**
+     * TONE / TIMBRE
+     * [$A2] + [switch]b
+     */
     public void _MPCM_A2() {
         mm.write(reg.a5 + W.bank, 0);
         mm.write(reg.a5 + W.program, 0);
@@ -1049,9 +1053,9 @@ public class DevMPcm {
         }
     }
 
-    //─────────────────────────────────────
-    //	音量テーブル
-    //
+    /**
+     * volume table
+     */
     public void _MPCM_A3() {
         comcmds._COM_A3();
 
@@ -1063,9 +1067,9 @@ public class DevMPcm {
         _MPCM_F2_v();
     }
 
-    //─────────────────────────────────────
-    //	127段階音量テーブル切り替え
-    //
+    /**
+     * 127-step volume table switching
+     */
     public void _MPCM_A7() {
         reg.setD1_B(mm.readByte(reg.a1++));
         reg.setD5_B(mm.readByte(reg.a1++));
@@ -1110,10 +1114,10 @@ public class DevMPcm {
         reg.a1 = reg.a2;
     }
 
-    //─────────────────────────────────────
-    //	音量 LFO on /off
-    //
-    //	$E8,num,switch
+    /**
+     * volume LFO on /off
+     * $E8,num,switch
+     */
     public void _MPCM_E8() {
         //	pea	_COM_E8(pc)
         reg.setD4_B(mm.readByte(reg.a5 + W.vol));
@@ -1121,9 +1125,10 @@ public class DevMPcm {
         comcmds._COM_E8();
     }
 
-    //─────────────────────────────────────
-    //	tone set
-    //		[$F0] + [num]b
+    /**
+     * tone set
+     * [$F0] + [num]b
+     */
     public void _MPCM_F0() {
         if (mm.readByte(reg.a5 + W.reverb) < 0) {
             _mpcm_keyoff();
@@ -1184,9 +1189,10 @@ public class DevMPcm {
         reg.a1 = reg.a2;
     }
 
-    //─────────────────────────────────────
-    //	volume
-    //		[$F2] + [volume]b
+    /**
+     * volume
+     * [$F2] + [volume]b
+     */
     public void _MPCM_F2() {
         mm.write(reg.a5 + W.flag3, (byte) (mm.readByte(reg.a5 + W.flag3) & 0xef));
         reg.D4_L = 0;
@@ -1246,9 +1252,10 @@ public class DevMPcm {
         }
     }
 
-    //─────────────────────────────────────
-    //	frequency
-    //		[$F3] + [freq]b
+    /**
+     * frequency
+     * [$F3] + [freq]b
+     */
     public void _MPCM_F3() {
         reg.D1_L = 0;
         reg.setD1_B(mm.readByte(reg.a1++));
@@ -1260,9 +1267,10 @@ public class DevMPcm {
         }
     }
 
-    //─────────────────────────────────────
-    //	panpot
-    //		[$F4] + [pan]b
+    /**
+     * panpot
+     * [$F4] + [pan]b
+     */
     public void _MPCM_F4() {
         reg.setD1_B(mm.readByte(reg.a1++));
         mm.write(reg.a5 + W.pan_ampm, (byte) reg.getD1_B());
@@ -1274,10 +1282,10 @@ public class DevMPcm {
         }
     }
 
-    //─────────────────────────────────────
-    //	volup
-    //			[$F5] + [DATA]b
-    //
+    /**
+     * volup
+     * [$F5] + [DATA]b
+     */
     public void _MPCM_F5() {
         if (mm.readByte(reg.a5 + W.volmode) == 0) {
             _MPCM_F5_normal();
@@ -1313,10 +1321,10 @@ public class DevMPcm {
         _MPCM_F2_v();
     }
 
-    //─────────────────────────────────────
-    //	voldown
-    //			[$F6] + [DATA]b
-    //
+    /**
+     * voldown
+     * [$F6] + [DATA]b
+     */
     public void _MPCM_F6() {
         if (mm.readByte(reg.a5 + W.volmode) == 0) {
             _MPCM_F6_normal();
@@ -1350,8 +1358,7 @@ public class DevMPcm {
         _MPCM_F2_v();
     }
 
-    //─────────────────────────────────────
-    //
+    /** */
     public void _MPCM_FF() {
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfe));
 
@@ -1403,8 +1410,7 @@ public class DevMPcm {
         reg.a1 = mm.readInt(reg.a5 + W.loop);
     }
 
-
-    //─────────────────────────────────────
+    /** */
     public void _ch_mpcm_lfo_job() {
         comwave._ch_effect();
         //_ch_mpcm_lfo:
@@ -1522,7 +1528,7 @@ public class DevMPcm {
         }
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_mpcm_plfo_1() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
@@ -1580,7 +1586,7 @@ public class DevMPcm {
         _ch_mpcm_p_common();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_mpcm_alfo_1() {
         reg.a4 = reg.a5 + W.v_pattern1;
         reg.a3 = reg.a5 + W.wv_pattern1;
@@ -1638,7 +1644,7 @@ public class DevMPcm {
         _ch_mpcm_a_common();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_mpcm_a_common() {
         reg.D0_L = 1;
         reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern));
@@ -1689,7 +1695,7 @@ public class DevMPcm {
         mm.write(reg.a5 + W.addvolume, (short) reg.getD1_W());
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_mpcm_p_common() {
         reg.D0_L = 1;
         reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern));
@@ -1780,7 +1786,7 @@ public class DevMPcm {
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_mpcm_mml_job() {
         comanalyze._track_analyze();
 
@@ -1795,9 +1801,9 @@ public class DevMPcm {
         _ch_mpcm_bend();
     }
 
-    //─────────────────────────────────────
-    //	pitch bend
-    //
+    /**
+     * pitch bend
+     */
     public void _ch_mpcm_bend() {
         reg.a4 = reg.a5 + W.p_pattern4;
         mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
@@ -1855,9 +1861,9 @@ public class DevMPcm {
         _mpcm_freq();
     }
 
-    //─────────────────────────────────────
-    //	portament
-    //
+    /**
+     * portamento
+     */
     public void _ch_mpcm_porta() {
         reg.a4 = reg.a5 + W.p_pattern4;
 
@@ -1935,15 +1941,15 @@ public class DevMPcm {
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfd));
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_mpcm_softenv_job() {
         comlfo.softEnv();
         _MPCM_F2_softenv();
     }
 
-    //─────────────────────────────────────
-    //	effect execute
-    //
+    /**
+     * effect execute
+     */
     public void _mpcm_effect_tone() {
         mm.write(reg.a5 + W.bank, (byte) (reg.getD0_W() >> 8));
         reg.setD5_B(reg.getD0_B());

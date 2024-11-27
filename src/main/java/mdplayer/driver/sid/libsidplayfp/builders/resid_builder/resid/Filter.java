@@ -418,7 +418,7 @@ public class Filter {
      * Sid clocking - 1 cycle.
      */
     public void clock(int voice1, int voice2, int voice3) {
-        //System.err.println("v1:%d v2:%d v3:%d ", voice1, voice2, voice3);
+        //logger.log(Level.TRACE, "v1:%d v2:%d v3:%d ".formatted(voice1, voice2, voice3));
 
         ModelFilter f = modelFilters[sid_model.ordinal()];
 

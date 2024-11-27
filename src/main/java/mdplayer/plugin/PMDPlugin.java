@@ -1,9 +1,10 @@
 package mdplayer.plugin;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.logging.Level;
 
 import dotnet4j.io.Stream;
 import mdplayer.ChipLEDs;
@@ -16,7 +17,8 @@ import mdsound.instrument.PpsDrvInst;
 import mdsound.instrument.Ppz8Inst;
 import mdsound.instrument.Ym2608Inst;
 import mdsound.instrument.P86Inst;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -26,6 +28,8 @@ import vavi.util.Debug;
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
 public class PMDPlugin extends BasePlugin {
+
+    private static final Logger logger = getLogger(PMDPlugin.class.getName());
 
     @Override
     public boolean play(String playingFileName, FileFormat format) {
@@ -40,7 +44,7 @@ public class PMDPlugin extends BasePlugin {
         }
         boolean r = mmlPlay_PMDDotNET(format instanceof MMLFileFormat ? 0 : 1);
         if (!r) {
-Debug.println(Level.WARNING, "cannot start: " + this);
+logger.log(Level.WARNING, "cannot start: " + this);
             return false;
         }
         super.play();
@@ -175,7 +179,7 @@ Debug.println(Level.WARNING, "cannot start: " + this);
 
             return true;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return false;
         }
     }

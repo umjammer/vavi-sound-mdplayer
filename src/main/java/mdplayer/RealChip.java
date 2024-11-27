@@ -2,20 +2,25 @@
 package mdplayer;
 
 import java.io.Closeable;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import mdplayer.Common.EnmRealChipType;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 public class RealChip implements Closeable {
+
+    private static final Logger logger = getLogger(RealChip.class.getName());
+
 //    private NScci.NScci nScci;
 
 //    private Nc86ctl.Nc86ctl nc86ctl;
 
-    // //#region IDisposable Support
+//#region IDisposable Support
 
     private boolean disposedValue = false;
 
@@ -34,16 +39,16 @@ public class RealChip implements Closeable {
         Dispose(true);
     }
 
-    // //#endregion
+//#endregion
 
     public RealChip(boolean sw) {
-        Debug.println(Level.SEVERE, "RealChip:Ctr:STEP 00(Start)");
+        logger.log(Level.ERROR, "RealChip:Ctr:STEP 00(Start)");
         if (!sw) {
-            Debug.println(Level.SEVERE, "RealChip:Not Initialize(user)");
+            logger.log(Level.ERROR, "RealChip:Not Initialize(user)");
             return;
         }
 
-        // SCCIの存在確認
+        // Check for SCCI presence
 //        int n = 0;
 //        try {
 //            nScci = new NScci.NScci();
@@ -54,7 +59,7 @@ public class RealChip implements Closeable {
 //                nScci = null;
 //                Log.forcedWrite("RealChip:Ctr:Not found SCCI.");
 //            } else {
-//                Log.forcedWrite(String.format("RealChip:Ctr:Found SCCI.(Interface count=%d)", n));
+//                Log.forcedWrite("RealChip:Ctr:Found SCCI.(Interface count=%d)".formatted(n));
 //                getScciInstances();
 //                nScci.NSoundInterfaceManager_.setLevelDisp(false);
 //            }
@@ -62,8 +67,8 @@ public class RealChip implements Closeable {
 //            nScci = null;
 //        }
 
-        // GIMICの存在確認
-        Debug.println(Level.SEVERE, "RealChip:Ctr:STEP 01");
+        // Check for the existence of GIMIC
+        logger.log(Level.ERROR, "RealChip:Ctr:STEP 01");
 //        try {
 //            nc86ctl = new Nc86ctl.Nc86ctl();
 //            nc86ctl.initialize();
@@ -73,14 +78,14 @@ public class RealChip implements Closeable {
 //                nc86ctl = null;
 //                Log.forcedWrite("RealChip:Ctr:Not found G.I.M.I.C.");
 //            } else {
-//                Log.forcedWrite(String.format("RealChip:Ctr:Found G.I.M.I.C.(Interface count=%d)", n));
+//                Log.forcedWrite("RealChip:Ctr:Found G.I.M.I.C.(Interface count=%d)".formatted(n));
 //                Nc86ctl.NIRealChip nirc = nc86ctl.getChipInterface(0);
 //                nirc.reset();
 //            }
 //        } catch (Exception e) {
 //            nc86ctl = null;
 //        }
-        Debug.println(Level.SEVERE, "RealChip:Ctr:STEP 02(Success)");
+        logger.log(Level.ERROR, "RealChip:Ctr:STEP 02(Success)");
     }
 
     public void close_() {
@@ -272,7 +277,7 @@ public class RealChip implements Closeable {
 //                        ct.getRealChipInfo()[0].InterfaceName = iInfo.cInterfaceName;
 //                        ret.add(ct);
 //                    } else {
-//                        // 互換指定をチェック
+//                        // Check compatibility specification
 //                        NSCCI_SOUND_CHIP_INFO chipInfo = sc.getSoundChipInfo();
 //                        for (int n = 0; n < chipInfo.iCompatibleSoundChip.length; n++) {
 //                            if ((int) realChipType2.v != chipInfo.iCompatibleSoundChip[n])
@@ -476,7 +481,7 @@ public class RealChip implements Closeable {
 //            realChip = nsc;
 //            dClock = (int) nsc.getSoundChipClock();
 
-            // chipの種類ごとに初期化コマンドを送りたい場合
+            // If you want to send initialization commands for each chip type
 //            switch (nsc.getSoundChipType()) {
 //            case (int) EnmRealChipType.YM2608.v:
                 // setRegister(0x2d, 00);
@@ -508,13 +513,13 @@ public class RealChip implements Closeable {
         }
 
         /**
-         * マスタークロックの設定
-         * @param mClock 設定したい値
-         * @return 実際設定された値
+         * Master Clock Settings
+         * @param mClock The value you want to set
+         * @return The actual value set
          */
         @Override
         public int setMasterClock(int mClock) {
-            // SCCIはクロックの変更不可
+            // SCCI cannot change the clock
 //            if (realChip == null)
 //                return 0;
 
@@ -523,7 +528,7 @@ public class RealChip implements Closeable {
 
         @Override
         public void setSSGVolume(int vol) {
-            // SCCIはSSG音量の変更不可
+            // SCCI cannot change SSG volume
 //            if (realChip == null)
 //                return;
         }
@@ -578,9 +583,9 @@ public class RealChip implements Closeable {
         }
 
         /**
-         * マスタークロックの設定
-         * @param mClock 設定したい値
-         * @return 実際設定された値
+         * Master Clock Settings
+         * @param mClock The value you want to set
+         * @return The actual value set
          */
         @Override
         public int setMasterClock(int mClock) {

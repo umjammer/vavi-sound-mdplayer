@@ -145,7 +145,7 @@ public class Bits {
 	public static String toHexString(byte[] b) {
 		StringBuilder sb = new StringBuilder();
 		for (byte value : b) {
-			sb.append(String.format("%02x", value));
+			sb.append("%02x".formatted(value));
 		}
 		return sb.toString();
 	}
@@ -153,7 +153,7 @@ public class Bits {
     public static Object toHexString(int[] data) {
         StringBuilder sb = new StringBuilder();
 		for (int datum : data) {
-			sb.append(String.format("%08x", datum));
+			sb.append("%08x".formatted(datum));
 		}
         return sb.toString();
     }

@@ -1,17 +1,24 @@
 package mdplayer;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 
+import static java.lang.System.getLogger;
+
 
 /**
- * キーボードの操作をフックし、任意のメソッドを挿入する。
+ * Hook keyboard operations and inject arbitrary methods.
  *
  * @see "https://github.com/kwhat/jnativehook"
  */
 public class KeyboardHook {
+
+    private static final Logger logger = getLogger(KeyboardHook.class.getName());
 
     static class GlobalKeyListenerExample implements NativeKeyListener {
         @Override
@@ -22,7 +29,7 @@ public class KeyboardHook {
                 try {
                     GlobalScreen.unregisterNativeHook();
                 } catch (NativeHookException nativeHookException) {
-                    nativeHookException.printStackTrace();
+                    logger.log(Level.ERROR, nativeHookException.getMessage(), nativeHookException);
                 }
             }
         }
@@ -39,7 +46,7 @@ public class KeyboardHook {
     }
 
     /**
-     * キーボードが操作されたときに発生する。
+     * Occurs when the keyboard is operated.
      */
     public void addKeyboardHooked(NativeKeyListener handler) {
         GlobalScreen.addNativeKeyListener(handler);
@@ -50,7 +57,7 @@ public class KeyboardHook {
     }
 
     /**
-     * 新しいインスタンスを作成する。
+     * Create a new instance.
      */
     public KeyboardHook() {
         try {
@@ -61,9 +68,9 @@ public class KeyboardHook {
     }
 
     /**
-     * キーボードが操作されたときに実行するデリゲートを指定してインスタンスを作成する。
+     * Create an instance by specifying the delegate to execute when the keyboard is operated.
      *
-     * @param handler キーボードが操作されたときに実行するメソッドを表すイベントハンドラ。
+     * @param handler An event handler that represents the method to be executed when the keyboard is operated.
      */
     public KeyboardHook(NativeKeyListener handler) {
         this();

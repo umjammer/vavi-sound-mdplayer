@@ -227,7 +227,7 @@ public class Mixer {
                 break;
             }
 
-            //Debug.printf(".");
+            //logger.log(Level.TRACE, ".");
 
             // This instanceof a crude boxcar low-pass filter to
             // reduce aliasing during fast forward.

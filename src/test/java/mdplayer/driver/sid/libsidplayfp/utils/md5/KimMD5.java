@@ -174,6 +174,6 @@ public class KimMD5 {
         C = encode(C);
         D = encode(D);
 
-        return String.format("%x%x%x%x", A, B, C, D).getBytes();
+        return "%x%x%x%x".formatted(A, B, C, D).getBytes();
     }
 }

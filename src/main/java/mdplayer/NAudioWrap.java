@@ -1,5 +1,7 @@
 package mdplayer;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 import java.util.UUID;
@@ -16,11 +18,13 @@ import javax.sound.sampled.SourceDataLine;
 
 import dotnet4j.threading.SynchronizationContext;
 import dotnet4j.util.compat.TriFunction;
-import vavi.util.Debug;
-import vavi.util.StringUtil;
+
+import static java.lang.System.getLogger;
 
 
 public class NAudioWrap {
+
+    private static final Logger logger = getLogger(NAudioWrap.class.getName());
 
     public interface naudioCallBack extends TriFunction<short[], Integer, Integer, Integer> {
     }
@@ -57,7 +61,7 @@ public class NAudioWrap {
         nullOut = null;
 
         try {
-Debug.println("OutputDeviceType: " + setting.getOutputDevice().getDeviceType());
+logger.log(Level.DEBUG, "OutputDeviceType: " + setting.getOutputDevice().getDeviceType());
             switch (setting.getOutputDevice().getDeviceType()) {
             case 0: // wave out
                 break;
@@ -81,7 +85,7 @@ Debug.println("OutputDeviceType: " + setting.getOutputDevice().getDeviceType());
                 } else {
                     dsOut = AudioSystem.getSourceDataLine(format);
                 }
-Debug.println(format);
+logger.log(Level.DEBUG, format);
                 dsOut.addLineListener(this::DeviceOut_PlaybackStopped);
                 dsOut.open();
                 dsOut.start();
@@ -98,13 +102,13 @@ Debug.println(format);
                 break;
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
     private void DeviceOut_PlaybackStopped(LineEvent e) {
         Consumer<LineEvent> handler = this.playbackStopped;
-Debug.println("line: " + e.getType());
+logger.log(Level.DEBUG, "line: " + e.getType());
         if (e.getType() == Type.STOP) {
             if (handler != null) {
                 if (this.syncContext == null) {
@@ -117,7 +121,7 @@ Debug.println("line: " + e.getType());
     }
 
     /**
-     * コールバックの中から呼び出さないこと(ハングします)
+     * Do not call it from within a callback (it will hang)
      */
     public void stop() {
         if (dsOut != null) {
@@ -126,7 +130,7 @@ Debug.println("line: " + e.getType());
                 dsOut.stop();
                 dsOut.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             }
             dsOut = null;
         }
@@ -139,12 +143,12 @@ Debug.println("line: " + e.getType());
                 }
                 nullOut.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             }
             nullOut = null;
         }
 
-         // 一休み
+         // Take a break
 //        for (int i = 0; i < 10; i++) {
 //            Thread.sleep(1);
 //            JApplication.DoEvents();
@@ -156,7 +160,7 @@ Debug.println("line: " + e.getType());
         ShortBuffer sb = bb.asShortBuffer();
         sb.put(buffer, offset, count);
         sb.rewind();
-//Debug.println("write to line\n" + StringUtil.getDump(bb.array()));
+//logger.log(Level.TRACE, "write to line\n" + StringUtil.getDump(bb.array()));
         return dsOut.write(bb.array(), 0, count * Short.BYTES);
     }
 

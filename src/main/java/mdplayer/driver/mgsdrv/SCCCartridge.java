@@ -27,7 +27,7 @@ public class SCCCartridge implements Cartridge {
     }
 
     private void write(int address, byte data) {
-        //Debug.printf(String.format("SCC Write : adr:%04x Dat:%02x", address, data));
+        //logger.log(Level.TRACE, "SCC Write : adr:%04x Dat:%02x".formatted(address, data)));
         if (address == 0x9000) {
             if (data == 0) readOnly = true;
             else if (data == 0x3f) readOnly = false;
@@ -70,7 +70,7 @@ public class SCCCartridge implements Cartridge {
     }
 
     private byte read(int address) {
-        //System.err.println("SCC Read : adr:%04x Dat:%02x", address, 0);
+        //logger.log(Level.TRACE, "SCC Read : adr:%04x Dat:%02x".formatted(address, 0));
         return mem[address];
     }
 }

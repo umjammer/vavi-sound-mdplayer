@@ -30,7 +30,7 @@ public class WAVFileFormat extends BaseFileFormat implements FileFormat.SampledF
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
         music.format = this;
-        music.title = String.format("(%s)", Path.getFileName(file));
+        music.title = "(%s)".formatted(Path.getFileName(file));
         return Collections.singletonList(music);
     }
 

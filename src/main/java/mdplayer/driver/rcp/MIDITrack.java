@@ -290,7 +290,7 @@ public class MIDITrack implements Serializable {
     private int mCounter = 0;
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void setNowPart(MIDIPart value) {
         nowPart = value;
@@ -301,7 +301,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void setNowTick(int value) {
         nowTick = value;
@@ -312,7 +312,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void setNextEventTick(int value) {
         nextEventTick = value;
@@ -323,7 +323,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void setEndMark(boolean value) {
         endMark = value;
@@ -334,7 +334,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void setLoopTargetEvents(Stack<MIDIEvent> value) {
         loopTargetEvents = value;
@@ -345,7 +345,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void setLoopOrSameTargetEventIndex(Integer value) {
         loopOrSameTargetEventIndex = value;
@@ -356,7 +356,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void setSameMeasure(Integer value) {
         sameMeasure = value;
@@ -367,7 +367,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void setRolandBase_gt(byte value) {
         rolandBaseGt = value;
@@ -378,7 +378,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void setRolandBase_vel(byte value) {
         rolandBaseVel = value;
@@ -389,7 +389,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void setRolandDev_gt(byte value) {
         rolandDevGt = value;
@@ -400,7 +400,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void setRolandDev_vel(byte value) {
         rolandDevVel = value;
@@ -411,7 +411,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void RolandPara_gt(byte value) {
         rolandParaGt = value;
@@ -422,7 +422,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void RolandPara_vel(byte value) {
         rolandParaVel = value;
@@ -433,7 +433,7 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * 演奏時専用なのでそれ以外の用途で使用不可
+     * This is for performance use only and cannot be used for any other purpose.
      */
     public void setNoteGateTime(int[] value) {
         noteGateTime = value;

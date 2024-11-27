@@ -1,15 +1,22 @@
 package mdplayer.driver.mgsdrv;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import konamiman.z80.Z80Processor;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
 import konamiman.z80.utils.Bit;
-import vavi.util.Debug;
+
+import static java.lang.System.getLogger;
 
 
 public class Mapper {
+
+    private static final Logger logger = getLogger(Mapper.class.getName());
+
     private byte freeSegment;
-    public int tableAddress = 0xf200; // Nextor をまねた
-    public int jumpAddress = 0xecb2; // Nextor をまねた
+    public int tableAddress = 0xf200; // Copycat Nextor
+    public int jumpAddress = 0xecb2; // Copycat Nextor
     private MapperRAMCartridge crt;
 
     public Mapper(MapperRAMCartridge crt, MsxMemory memory) {
@@ -22,7 +29,7 @@ public class Mapper {
 
         for (int i = 0; i < 16; i++) {
             memory.set(tableAddress + i * 3 + 0, (byte) 0xc3); // JP
-            memory.set(tableAddress + i * 3 + 1, (byte) (jumpAddress + i)); // 連番で設定
+            memory.set(tableAddress + i * 3 + 1, (byte) (jumpAddress + i)); // Set in sequential order
             memory.set(tableAddress + i * 3 + 2, (byte) ((jumpAddress + i) >> 8)); //
         }
     }
@@ -30,35 +37,35 @@ public class Mapper {
     public void CallMapperProc(BeforeInstructionFetchEvent args, Z80Processor z80, int typ) {
         switch (typ) {
         case 0: // adr
-            //Debug.printf(" MAPPER PROC ALL_SEG Reg.a=%02x Reg.B=%02x", z80.getRegisters().getA(), z80.getRegisters().getB());
+//logger.log(Level.TRACE, " MAPPER PROC ALL_SEG Reg.a=%02x Reg.B=%02x".formatted(z80.getRegisters().getA(), z80.getRegisters().getB()));
             if (z80.getRegisters().getB() != 0) throw new UnsupportedOperationException();
             if (freeSegment == 0) {
                 z80.getRegisters().setCF(Bit.ON);
                 return;
             }
             z80.getRegisters().setA(freeSegment++); // Segment Number 1c 1b
-            //Debug.printf("   Allocate Reg.a=%02x ", z80.getRegisters().getA() );
+//logger.log(Level.TRACE, "   Allocate Reg.a=%02x ".formatted(z80.getRegisters().getA()));
             z80.getRegisters().setB((byte) 0x00); // Slot number
-            z80.getRegisters().setCF(Bit.OFF); // 割り当て失敗時に1
+            z80.getRegisters().setCF(Bit.OFF); // 1 on allocation failure
             break;
         case 10: // adr:0x1e
-            //Debug.printf(" MAPPER PROC PUT_P1 Reg.a=%02x", z80.getRegisters().getA());
+//logger.log(Level.TRACE, " MAPPER PROC PUT_P1 Reg.a=%02x".formatted(z80.getRegisters().getA()));
             crt.setSegmentToPage(z80.getRegisters().getA(), 1);
             break;
         case 11: // adr:0x21
-            //Debug.printf(" MAPPER PROC GET_P1 P1:%02x", crt.GetSegmentNumberFromPageNumber(1));
+//logger.log(Level.TRACE, " MAPPER PROC GET_P1 P1:%02x".formatted(crt.GetSegmentNumberFromPageNumber(1)));
             z80.getRegisters().setA((byte) crt.getSegmentNumberFromPageNumber(1));
             break;
         case 12: // adr:0x24
-            Debug.printf(String.format(" MAPPER PROC PUT_P2 Reg.a=%02x", z80.getRegisters().getA()));
+logger.log(Level.DEBUG, " MAPPER PROC PUT_P2 Reg.a=%02x".formatted(z80.getRegisters().getA()));
             crt.setSegmentToPage(z80.getRegisters().getA(), 2);
             break;
         case 13: // adr:0x27
-            Debug.printf(String.format(" MAPPER PROC GET_P1 P2:%02x", crt.getSegmentNumberFromPageNumber(2)));
+logger.log(Level.DEBUG, " MAPPER PROC GET_P1 P2:%02x".formatted(crt.getSegmentNumberFromPageNumber(2)));
             z80.getRegisters().setA((byte) crt.getSegmentNumberFromPageNumber(2));
             break;
         default:
-            Debug.printf(" MAPPER PROC Unknown type");
+logger.log(Level.DEBUG, " MAPPER PROC Unknown type");
             throw new UnsupportedOperationException();
         }
 

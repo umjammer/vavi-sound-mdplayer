@@ -19,8 +19,11 @@
 
 package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
 
-
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.Scanner;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -32,6 +35,8 @@ import java.util.Scanner;
  * register. This register instanceof clocked by bit 19 of the accumulator.
  */
 public class WaveformGenerator {
+
+    private static final Logger logger = getLogger(WaveformGenerator.class.getName());
 
     protected WaveformGenerator syncSource;
     public WaveformGenerator syncDest;
@@ -542,11 +547,11 @@ public class WaveformGenerator {
                         modelWave[x[i][0]][x[i][1]][c++] = (short) (Integer.parseInt(p, 16) & 0xffff);
                     }
 //if (c - 1 > 4000)
-// Debug.printf("[%d] %04x", c - 1, modelWave[x[i][0]][x[i][1]][c-1]);
+// logger.log(Level.TRACE, "[%d] %04x".formatted(c - 1, modelWave[x[i][0]][x[i][1]][c-1]));
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
     // DAC lookup tables.
@@ -565,7 +570,7 @@ public class WaveformGenerator {
             // Calculate tables for normal waveforms.
             accumulator = 0;
             for (int i = 0; i < (1 << 12); i++) {
-                int msb = accumulator & 0x800000;
+                int msb = accumulator & 0x80_0000;
 
                 // Noise mask, triangle, sawtooth, pulse mask.
                 // The triangle calculation instanceof made branch-free, just for the hell of it.
@@ -592,7 +597,7 @@ public class WaveformGenerator {
         sidModel = SidDefs.ChipModel.MOS6581;
 
         // Accumulator's even bits are high on powerup
-        accumulator = 0x555555;
+        accumulator = 0x55_5555;
 
         triSawPipeline = 0x555;
 
@@ -683,7 +688,7 @@ public class WaveformGenerator {
 
             // bit0 = (bit22 | test) ^ bit17 = 1 ^ bit17 = ~bit17
             int bit0 = (~shiftRegister >> 17) & 0x1;
-            shiftRegister = ((shiftRegister << 1) | bit0) & 0x7fffff;
+            shiftRegister = ((shiftRegister << 1) | bit0) & 0x7f_ffff;
 
             // Set new noise waveform Output.
             setNoiseOutput();

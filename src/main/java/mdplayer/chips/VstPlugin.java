@@ -32,7 +32,7 @@ public class VstPlugin extends Plugin {
 //
 //        Log.forcedWrite("Audio:Init:VST:STEP 02"); // Load VST instrument
 //
-//        // 複数のmidioutの設定から必要なVSTを絞り込む
+//        // Narrow down the VST you need from multiple midiout settings
 //        Map<String, Integer> dicVst = new HashMap<>();
 //        if (setting.getMidiOut().getMidiOutInfos() != null) {
 //            for (MidiOutInfo[] aryMoi : setting.getMidiOut().getMidiOutInfos()) {

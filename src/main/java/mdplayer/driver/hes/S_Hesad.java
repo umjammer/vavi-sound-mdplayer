@@ -53,7 +53,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         pbf[0] = 0;
         pbf[1] = 0;
 
-         // この時既に、内蔵音源のレンダリングが終了している。
+        // At this point, rendering of the built-in sound source has already been completed.
         p[0] = p[0] * PCE_VOLUME;
         p[1] = p[1] * PCE_VOLUME;
 
@@ -75,7 +75,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
             }
 
         }
-        //	if(sndp->common.pt > 500)p[0]+=80000;
+        // if(sndp->common.pt > 500)p[0]+=80000;
         p[0] += (pbf[0] * ADPCM_VOLUME * sndp.volume / 0xff);
         p[1] += (pbf[1] * ADPCM_VOLUME * sndp.volume / 0xff);
     }
@@ -96,8 +96,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         sndp.deltadev.reset.accept(clock, freq);
         sndp.deltadev.write.accept(1, 0);
         sndp.deltadev.write.accept(0xb, 0xff);
-        //	sndp->deltadev->setinst(sndp->deltadev,0,sndp->pcmbuf,0x100);
-
+        //sndp->deltadev->setinst(sndp->deltadev,0,sndp->pcmbuf,0x100);
     }
 
     private void sndwrite(int a, int v) {
@@ -218,8 +217,8 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
             return sndp.port[0xc];
         case 0xd:
             return 0;
-        //		case 0xe:
-        //		  return sndp->volume;
+//        case 0xe:
+//            return sndp -> volume;
         default:
             return 0xff;
         }
@@ -248,14 +247,13 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
 
     //private void setinst(Object ctx, int n, byte[] p, int l) { }
 
-     // ここからレジスタビュアー設定
+    // Register viewer settings from here
     //static Uint8* regdata;
     //extern Uint32 (* ioview_ioread_DEV_ADPCM) (Uint32 a);
-    //static Uint32 ioview_ioread_bf(Uint32 a)
-    //{
+    //static Uint32 ioview_ioread_bf(Uint32 a) {
     //    if (a >= 0x8 && a <= 0x15) return regdata[a]; else return 0x100;
     //}
-     // ここまでレジスタビュアー設定
+    // Register viewer settings up to here
 
     public KMIF_SOUND_DEVICE HESAdPcmAlloc() {
         HESADPCM sndp;
@@ -273,12 +271,12 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         sndp.kmif.read = this::sndread;
         sndp.kmif.setinst = setinst;
 
-         // ここからレジスタビュアー設定
+        // Register viewer settings from here
         //regdata = sndp.regs;
         //ioview_ioread_DEV_ADPCM = ioview_ioread_bf;
-         // ここまでレジスタビュアー設定
+        // Register viewer settings up to here
 
-         // 発声部分
+        // process sound
         sndp.deltadev = YMDELTATPCMSoundAlloc(3, sndp.pcmbuf);
         return sndp.kmif;
     }
@@ -287,13 +285,13 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         int ram_size;
         S_Deltat.YMDELTATPCMSOUND_ sndp;
         switch (ymdeltatpcm_type) {
-        case 0://                    YMDELTATPCM_TYPE_Y8950:
+        case 0: // YMDELTATPCM_TYPE_Y8950:
             ram_size = 32 * 1024;
             break;
-        case 1://                    YMDELTATPCM_TYPE_YM2608:
+        case 1: // YMDELTATPCM_TYPE_YM2608:
             ram_size = 256 * 1024;
             break;
-        case 3://                    MSM5205:
+        case 3: // MSM5205:
             ram_size = 256 * 256;
             break;
         default:
@@ -342,11 +340,11 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
             sndp.releaseSound();
             return null;
         }
-        // ここからレジスタビュアー設定
+        // Register viewer settings from here
 //        sndpr = sndp;
 //        if (ioview_ioread_DEV_ADPCM == NULL) ioview_ioread_DEV_ADPCM = ioview_ioread_bf;
 //        if (ioview_ioread_DEV_ADPCM2 == NULL) ioview_ioread_DEV_ADPCM2 = ioview_ioread_bf2;
-        // ここまでレジスタビュアー設定
+        // Register viewer settings up to here
         return sndp.kmif;
     }
 }

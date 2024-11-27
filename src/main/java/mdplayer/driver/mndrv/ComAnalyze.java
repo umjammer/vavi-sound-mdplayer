@@ -160,7 +160,7 @@ public class ComAnalyze {
         _track_ana_fetch();
     }
 
-    /** HACK: (MNDRV) トラックフェッチ */
+    /** HACK: (MNDRV) Track Fetch */
     public void _track_ana_fetch() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
         reg.a1 = mm.readInt(reg.a5 + W.dataptr);
@@ -276,7 +276,7 @@ public class ComAnalyze {
             if (reg.getD0_B() == 0) continue; // break _track_loop;
             mm.write(reg.a5 + W.len, (byte) reg.getD0_B());
             reg.a0 = mm.readInt(reg.a6 + Dw.TRKANA_RESTADR);
-            ab.hlTRKANA_RESTADR.get(reg.a6).run(); // a6の位置にある Runnable を実行
+            ab.hlTRKANA_RESTADR.get(reg.a6).run(); // Execute the Runnable at position a6
             return;
         }
     }

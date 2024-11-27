@@ -75,7 +75,7 @@ public class SidMd5 {
         StringBuilder ss = new StringBuilder();
 
         for (int di = 0; di < 16; ++di) {
-            ss.append(String.format("%02x", digest[di]));
+            ss.append("%02x".formatted(digest[di]));
         }
 
         return ss.toString();

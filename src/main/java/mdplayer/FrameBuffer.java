@@ -6,11 +6,18 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.function.Consumer;
 import javax.swing.JComponent;
 
+import static java.lang.System.getLogger;
+
 
 public class FrameBuffer {
+
+    private static final Logger logger = getLogger(FrameBuffer.class.getName());
+
     public JComponent pbScreen;
     public BufferedImage bmpPlane;
     public int bmpPlaneW = 0;
@@ -57,7 +64,7 @@ public class FrameBuffer {
 //            if (pbScreen != null)
 //                pbScreen.Graphics2D -= new JPaintEventHandler(p);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
         pbScreen = null;
 
@@ -104,7 +111,7 @@ public class FrameBuffer {
         // Arrays.fill(baPlaneBuffer, 0, baPlaneBuffer.length);
     }
 
-    public void Refresh(Graphics g) {
+    public void refresh(Graphics g) {
         Runnable act;
 
 //        if (pbScreen == null) return;
@@ -120,8 +127,7 @@ public class FrameBuffer {
 //                }
 //                if (bgPlane != null) bgPlane.Render();
 //            });
-//        } catch (Exception e) {
-//             // 握りつぶす
+//        } catch (Exception ignore) {
 //        }
     }
 
@@ -157,8 +163,8 @@ public class FrameBuffer {
                 adr2 += srcWidth * 4;
 
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -201,8 +207,8 @@ public class FrameBuffer {
                 adr2 += srcWidth * 4;
 
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 }

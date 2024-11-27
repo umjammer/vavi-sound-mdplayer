@@ -17,13 +17,14 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
@@ -66,8 +67,12 @@ import mdplayer.chips.RealChipPlugin;
 import mdplayer.properties.Resources;
 import vavi.util.Debug;
 
+import static java.lang.System.getLogger;
+
 
 public class frmSetting extends JDialog {
+
+    private static final Logger logger = getLogger(frmSetting.class.getName());
 
     private boolean asioSupported = true;
     private boolean wasapiSupported = true;
@@ -99,7 +104,7 @@ public class frmSetting extends JDialog {
     public void init() {
 
         this.labelProductName.setText(getAssemblyProduct());
-        this.labelVersion.setText(String.format("バージョン %s", getAssemblyVersion()));
+        this.labelVersion.setText("バージョン %s".formatted(getAssemblyVersion()));
         this.labelCopyright.setText(getAssemblyCopyright());
         this.labelCompanyName.setText(getAssemblyCompany());
         this.textBoxDescription.setText(Resources.getCntDescription());
@@ -124,7 +129,7 @@ public class frmSetting extends JDialog {
                 MidiDevice device = MidiSystem.getMidiDevice(info);
                 ((DefaultComboBoxModel<String>) cmbMIDIIN.getModel()).addElement(device.getDeviceInfo().getName());
             } catch (MidiUnavailableException e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             }
         }
         if (MidiSystem.getMidiDeviceInfo().length > 0)
@@ -532,7 +537,7 @@ public class frmSetting extends JDialog {
 
         cbDispFrameCounter.setSelected(setting.getDebug_DispFrameCounter());
         cbHiyorimiMode.setSelected(setting.getHiyorimiMode());
-        tbSCCbaseAddress.setText(String.format("%04X", setting.getDebug_SCCbaseAddress()));
+        tbSCCbaseAddress.setText("%04X".formatted(setting.getDebug_SCCbaseAddress()));
 
         cbUseLoopTimes.setSelected(setting.getOther().getUseLoopTimes());
         tbLoopTimes.setEnabled(cbUseLoopTimes.isSelected());
@@ -603,7 +608,7 @@ public class frmSetting extends JDialog {
                                     break;
                                 }
                             } catch (MidiUnavailableException e) {
-                                e.printStackTrace();
+                                logger.log(Level.ERROR, e.getMessage(), e);
                             }
                         }
 
@@ -673,7 +678,7 @@ public class frmSetting extends JDialog {
                 }
                 m.addRow(new Object[] { i++, device.getDeviceInfo().getName(), device.getDeviceInfo().getVendor()});
             } catch (MidiUnavailableException e) {
-                e.printStackTrace();
+                logger.log(Level.ERROR, e.getMessage(), e);
             }
         }
 
@@ -861,20 +866,20 @@ public class frmSetting extends JDialog {
         cmbS.setEnabled(false);
 
         List<ChipType2> lstChip = RealChipPlugin.getRealChipList(realType);
-        if (lstChip == null || lstChip.size() < 1) return;
+        if (lstChip == null || lstChip.isEmpty()) return;
 
         for (ChipType2 ct : lstChip) {
             if (ct == null) continue;
 
-            cmbP.addItem(String.format("(%s:%s:%s:%s)%s"
-                    , ct.getRealChipInfo()[0].getInterfaceName()
+            cmbP.addItem("(%s:%s:%s:%s)%s".formatted(
+                    ct.getRealChipInfo()[0].getInterfaceName()
                     , ct.getRealChipInfo()[0].getSoundLocation()
                     , ct.getRealChipInfo()[0].getBusID()
                     , ct.getRealChipInfo()[0].getSoundChip()
                     , ct.getRealChipInfo()[0].getChipName()));
 
-            cmbS.addItem(String.format("(%s:%s:%s:%s)%s"
-                    , ct.getRealChipInfo()[0].getInterfaceName()
+            cmbS.addItem("(%s:%s:%s:%s)%s".formatted(
+                    ct.getRealChipInfo()[0].getInterfaceName()
                     , ct.getRealChipInfo()[0].getSoundLocation()
                     , ct.getRealChipInfo()[0].getBusID()
                     , ct.getRealChipInfo()[0].getSoundChip()
@@ -891,12 +896,12 @@ public class frmSetting extends JDialog {
     }
 
     private void setRealParam(ChipType2 chipType2, JCheckBox rbSilent, JCheckBox rbEmu, JCheckBox rbReal, JComboBox<String> cmbP
-            , JCheckBox rbReal2 /*= null*/, JComboBox<String> cmbP2A /*= null*/, JComboBox<String> cmbP2B /*= null*/, JCheckBox rbEmu2 /*= null*/, JCheckBox rbEmu3/* = null*/) {
+            , JCheckBox rbReal2 /* = null */, JComboBox<String> cmbP2A /* = null */, JComboBox<String> cmbP2B /* = null */, JCheckBox rbEmu2 /* = null */, JCheckBox rbEmu3/* = null */) {
         String n = "";
 
         if (chipType2.getRealChipInfo()[0] != null) {
-            n = String.format("(%s:%s:%s:%s)"
-                    , chipType2.getRealChipInfo()[0].getInterfaceName()
+            n = "(%s:%s:%s:%s)".formatted(
+                    chipType2.getRealChipInfo()[0].getInterfaceName()
                     , chipType2.getRealChipInfo()[0].getSoundLocation()
                     , chipType2.getRealChipInfo()[0].getBusID()
                     , chipType2.getRealChipInfo()[0].getSoundChip());
@@ -913,8 +918,8 @@ public class frmSetting extends JDialog {
 
         if (cmbP2A != null) {
             if (chipType2.getRealChipInfo()[1] != null) {
-                n = String.format("(%s:%s:%s:%s)"
-                        , chipType2.getRealChipInfo()[1].getInterfaceName()
+                n = "(%s:%s:%s:%s)".formatted(
+                        chipType2.getRealChipInfo()[1].getInterfaceName()
                         , chipType2.getRealChipInfo()[1].getSoundLocation()
                         , chipType2.getRealChipInfo()[1].getBusID()
                         , chipType2.getRealChipInfo()[1].getSoundChip());
@@ -932,8 +937,8 @@ public class frmSetting extends JDialog {
 
         if (cmbP2B != null) {
             if (chipType2.getRealChipInfo()[2] != null) {
-                n = String.format("(%s:%s:%s:%s)"
-                        , chipType2.getRealChipInfo()[2].getInterfaceName()
+                n = "(%s:%s:%s:%s)".formatted(
+                        chipType2.getRealChipInfo()[2].getInterfaceName()
                         , chipType2.getRealChipInfo()[2].getSoundLocation()
                         , chipType2.getRealChipInfo()[2].getBusID()
                         , chipType2.getRealChipInfo()[2].getSoundChip());
@@ -1005,7 +1010,7 @@ public class frmSetting extends JDialog {
 //                asio.ShowControlPanel();
 //            }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             JOptionPane.showMessageDialog(null, ex.getMessage());
         }
     }
@@ -1405,89 +1410,89 @@ public class frmSetting extends JDialog {
             i = Integer.parseInt(tbCCCopyLog.getText());
             setting.getMidiKbd().setMidiCtrl_CopySelecttingLogToClipbrd(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             setting.getMidiKbd().setMidiCtrl_CopyToneFromYM2612Ch1(-1);
         }
         try {
             i = Integer.parseInt(tbCCChCopy.getText());
             setting.getMidiKbd().setMidiCtrl_CopyToneFromYM2612Ch1(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             setting.getMidiKbd().setMidiCtrl_DelOneLog(-1);
         }
         try {
             i = Integer.parseInt(tbCCDelLog.getText());
             setting.getMidiKbd().setMidiCtrl_DelOneLog(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             setting.getMidiKbd().setMidiCtrl_Fadeout(-1);
         }
         try {
             i = Integer.parseInt(tbCCFadeout.getText());
             setting.getMidiKbd().setMidiCtrl_Fadeout(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             setting.getMidiKbd().setMidiCtrl_Fast(-1);
         }
         try {
             i = Integer.parseInt(tbCCFast.getText());
             setting.getMidiKbd().setMidiCtrl_Fast(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             setting.getMidiKbd().setMidiCtrl_Next(-1);
         }
         try {
             i = Integer.parseInt(tbCCNext.getText());
             setting.getMidiKbd().setMidiCtrl_Next(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             setting.getMidiKbd().setMidiCtrl_Pause(-1);
         }
         try {
             i = Integer.parseInt(tbCCPause.getText());
             setting.getMidiKbd().setMidiCtrl_Pause(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             setting.getMidiKbd().setMidiCtrl_Play(-1);
         }
         try {
             i = Integer.parseInt(tbCCPlay.getText());
             setting.getMidiKbd().setMidiCtrl_Play(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             setting.getMidiKbd().setMidiCtrl_Previous(-1);
         }
         try {
             i = Integer.parseInt(tbCCPrevious.getText());
             setting.getMidiKbd().setMidiCtrl_Previous(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             setting.getMidiKbd().setMidiCtrlSlow(-1);
         }
         try {
             i = Integer.parseInt(tbCCSlow.getText());
             setting.getMidiKbd().setMidiCtrlSlow(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             setting.getMidiKbd().setMidiCtrl_Stop(-1);
         }
         try {
             i = Integer.parseInt(tbCCStop.getText());
             setting.getMidiKbd().setMidiCtrl_Stop(Math.min(Math.max(i, 0), 127));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
             i = Integer.parseInt(tbLatencyEmu.getText());
             setting.setLatencyEmulation(Math.max(Math.min(i, 999), 0));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
             i = Integer.parseInt(tbLatencySCCI.getText());
             setting.setLatencySCCI(Math.max(Math.min(i, 999), 0));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
 
         setting.getOther().setUseLoopTimes(cbUseLoopTimes.isSelected());
@@ -1495,7 +1500,7 @@ public class frmSetting extends JDialog {
             i = Integer.parseInt(tbLoopTimes.getText());
             setting.getOther().setLoopTimes(Math.max(Math.min(i, 999), 1));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
 
         setting.getOther().setUseGetInst(cbUseGetInst.isSelected());
@@ -1506,7 +1511,7 @@ public class frmSetting extends JDialog {
             i = Integer.parseInt(tbScreenFrameRate.getText());
             setting.getOther().setScreenFrameRate(Math.max(Math.min(i, 120), 10));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
         setting.getOther().setAutoOpen(cbAutoOpen.isSelected());
         setting.getOther().setDumpSwitch(cbDumpSwitch.isSelected());
@@ -1527,7 +1532,7 @@ public class frmSetting extends JDialog {
         try {
             setting.setDebug_SCCbaseAddress(Integer.parseInt(tbSCCbaseAddress.getText(), 16));
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             setting.setDebug_SCCbaseAddress(0x9800);
         }
 
@@ -1597,7 +1602,7 @@ public class frmSetting extends JDialog {
             i = Integer.parseInt(tbNSFFds_LPF.getText());
             setting.getNsf().setFDSLpf(Math.min(Math.max(i, 0), 99999));
         } catch (NumberFormatException e) {
-            Debug.println(Level.WARNING, e);
+            logger.log(Level.WARNING, e);
         }
         setting.getNsf().setFDS4085Reset(cbNFSFds_4085Reset.isSelected());
         setting.getNsf().setFDSWriteDisable8000(cbNSFFDSWriteDisable8000.isSelected());
@@ -1630,7 +1635,7 @@ public class frmSetting extends JDialog {
         try {
             setting.getSid().outputBufferSize = Math.min(Math.max(Integer.parseInt(tbSIDOutputBufferSize.getText()), 100), 999999);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             setting.getSid().outputBufferSize = 5000;
         }
 
@@ -1674,14 +1679,14 @@ public class frmSetting extends JDialog {
         try {
             nn = Integer.parseInt(tbPMDPPSDRVFreq.getText());
         } catch (NumberFormatException e) {
-            Debug.println(Level.WARNING, e);
+            logger.log(Level.WARNING, e);
             nn = 2000;
         }
         setting.getPmdDotNET().ppsDrvManualFreq = nn;
         try {
             nn = Integer.parseInt(tbPMDPPSDRVManualWait.getText());
         } catch (NumberFormatException e) {
-            Debug.println(Level.WARNING, e);
+            logger.log(Level.WARNING, e);
             nn = 1;
         }
         nn = Math.min(Math.max(nn, 0), 100);
@@ -1689,7 +1694,7 @@ public class frmSetting extends JDialog {
         try {
             nn = Integer.parseInt(tbPMDVolumeFM.getText());
         } catch (NumberFormatException e) {
-            Debug.println(Level.WARNING, e);
+            logger.log(Level.WARNING, e);
             nn = 0;
         }
         nn = Math.min(Math.max(nn, -191), 20);
@@ -1697,7 +1702,7 @@ public class frmSetting extends JDialog {
         try {
             nn = Integer.parseInt(tbPMDVolumeSSG.getText());
         } catch (NumberFormatException e) {
-            Debug.println(Level.WARNING, e);
+            logger.log(Level.WARNING, e);
             nn = 0;
         }
         nn = Math.min(Math.max(nn, -191), 20);
@@ -1705,7 +1710,7 @@ public class frmSetting extends JDialog {
         try {
             nn = Integer.parseInt(tbPMDVolumeRhythm.getText());
         } catch (NumberFormatException e) {
-            Debug.println(Level.WARNING, e);
+            logger.log(Level.WARNING, e);
             nn = 0;
         }
         nn = Math.min(Math.max(nn, -191), 20);
@@ -1713,7 +1718,7 @@ public class frmSetting extends JDialog {
         try {
             nn = Integer.parseInt(tbPMDVolumeAdpcm.getText());
         } catch (NumberFormatException e) {
-            Debug.println(Level.WARNING, e);
+            logger.log(Level.WARNING, e);
             nn = 0;
         }
         nn = Math.min(Math.max(nn, -191), 20);
@@ -1721,7 +1726,7 @@ public class frmSetting extends JDialog {
         try {
             nn = Integer.parseInt(tbPMDVolumeGIMICSSG.getText());
         } catch (NumberFormatException e) {
-            Debug.println(Level.WARNING, e);
+            logger.log(Level.WARNING, e);
             nn = 31;
         }
         nn = Math.min(Math.max(nn, 0), 127);
@@ -1808,15 +1813,15 @@ public class frmSetting extends JDialog {
                 rci = ct.getRealChipInfo()[0];
                 rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
                 try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) {
-                    Debug.println(Level.WARNING, e);
+                    logger.log(Level.WARNING, e);
                     v = 0; }
                 rci.setSoundLocation(v);
                 try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) {
-                    Debug.println(Level.WARNING, e);
+                    logger.log(Level.WARNING, e);
                     v = 0; }
                 rci.setBusID(v);
                 try { v = Integer.parseInt(ns[ns.length - 1]); } catch (NumberFormatException e) {
-                    Debug.println(Level.WARNING, e);
+                    logger.log(Level.WARNING, e);
                     v = 0; }
                 rci.setSoundChip(v);
             }
@@ -1838,15 +1843,15 @@ public class frmSetting extends JDialog {
                 rci = ct.getRealChipInfo()[1];
                 rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
                 try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) {
-                    Debug.println(Level.WARNING, e);
+                    logger.log(Level.WARNING, e);
                     v = 0; }
                 rci.setSoundLocation(v);
                 try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) {
-                    Debug.println(Level.WARNING, e);
+                    logger.log(Level.WARNING, e);
                     v = 0; }
                 rci.setBusID(v);
                 try { v = Integer.parseInt(ns[ns.length - 1]); } catch (NumberFormatException e) {
-                    Debug.println(Level.WARNING, e);
+                    logger.log(Level.WARNING, e);
                     v = 0; }
                 rci.setSoundChip(v);
             }
@@ -1857,15 +1862,15 @@ public class frmSetting extends JDialog {
                 rci = ct.getRealChipInfo()[2];
                 rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
                 try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) {
-                    Debug.println(Level.WARNING, e);
+                    logger.log(Level.WARNING, e);
                     v = 0; }
                 rci.setSoundLocation(v);
                 try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) {
-                    Debug.println(Level.WARNING, e);
+                    logger.log(Level.WARNING, e);
                     v = 0; }
                 rci.setBusID(v);
                 try { v = Integer.parseInt(ns[ns.length - 1]); } catch (NumberFormatException e) {
-                    Debug.println(Level.WARNING, e);
+                    logger.log(Level.WARNING, e);
                     v = 0; }
                 rci.setSoundChip(v);
             }
@@ -2214,7 +2219,7 @@ public class frmSetting extends JDialog {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".dll"); }
             @Override public String getDescription() { return "VST Pluginファイル(*.dll)"; }
         });
-        ofd.setDialogTitle("ファイルを選択してください");
+        ofd.setDialogTitle("Select a file");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
         if (!setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(setting.getOther().getDefaultDataPath()) && IsInitialOpenFolder) {
@@ -2324,7 +2329,7 @@ public class frmSetting extends JDialog {
             @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".dll"); }
             @Override public String getDescription() { return "VST Pluginファイル(*.dll)"; }
         });
-        ofd.setDialogTitle("ファイルを選択してください");
+        ofd.setDialogTitle("Select a file");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
 //        if (!setting.getVst().getDefaultPath().isEmpty() && Directory.exists(setting.getVst().getDefaultPath()) && IsInitialOpenFolder) {
@@ -2359,7 +2364,7 @@ public class frmSetting extends JDialog {
     private void btnSIDKernal_Click(ActionEvent ev) {
         JFileChooser ofd = new JFileChooser();
         ofd.setFileFilter(ofd.getAcceptAllFileFilter());
-        ofd.setDialogTitle("ファイルを選択してください");
+        ofd.setDialogTitle("Select a file");
 //        ofd.RestoreDirectory = true;
 //        ofd.CheckPathExists = true;
         ofd.setMultiSelectionEnabled(false);
@@ -2373,7 +2378,7 @@ public class frmSetting extends JDialog {
     private void btnSIDBasic_Click(ActionEvent ev) {
         JFileChooser ofd = new JFileChooser();
         ofd.setFileFilter(ofd.getAcceptAllFileFilter());
-        ofd.setDialogTitle("ファイルを選択してください");
+        ofd.setDialogTitle("Select a file");
 //        ofd.RestoreDirectory = true;
 //        ofd.CheckPathExists = true;
         ofd.setMultiSelectionEnabled(false);
@@ -2387,7 +2392,7 @@ public class frmSetting extends JDialog {
     private void btnSIDCharacter_Click(ActionEvent ev) {
         JFileChooser ofd = new JFileChooser();
         ofd.setFileFilter(ofd.getAcceptAllFileFilter());
-        ofd.setDialogTitle("ファイルを選択してください");
+        ofd.setDialogTitle("Select a file");
 //        ofd.RestoreDirectory = true;
 //        ofd.CheckPathExists = true;
         ofd.setMultiSelectionEnabled(false);

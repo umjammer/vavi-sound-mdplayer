@@ -20,9 +20,9 @@ public class Operation {
 
     private final Object lockObj = new Object();
 
-    private List<Tuple<Ope, Object[]>> cmdBuf = new ArrayList<>();
+    private final List<Tuple<Ope, Object[]>> cmdBuf = new ArrayList<>();
 
-    private frmMain parent;
+    private final frmMain parent;
 
     public void SendCommand(Ope cmd, Object... option) {
         synchronized (lockObj) {
@@ -39,8 +39,8 @@ public class Operation {
 
     private void start() {
         while (true) {
-            try { Thread.sleep(10); } catch (InterruptedException e) {}
-            if (cmdBuf.size() < 1)
+            try { Thread.sleep(10); } catch (InterruptedException ignore) {}
+            if (cmdBuf.isEmpty())
                 continue;
 
             Tuple<Ope, Object[]> cmd;
@@ -65,10 +65,10 @@ public class Operation {
                 }
             }
 
-            // RELEASEを受け取るまで待ち状態
+            // Waiting until "RELEASE" is received
             while (true) {
-                try { Thread.sleep(10); } catch (InterruptedException e) {}
-                if (cmdBuf.size() < 1)
+                try { Thread.sleep(10); } catch (InterruptedException ignore) {}
+                if (cmdBuf.isEmpty())
                     continue;
 
                 synchronized (lockObj) {

@@ -62,7 +62,7 @@ public class frmYM2608 extends frmBase {
     }
 
     public void update() {
-        frameBuffer.Refresh(null);
+        frameBuffer.refresh(null);
     }
 
 //    @Override
@@ -364,13 +364,13 @@ public class frmYM2608 extends frmBase {
             } else {
                 oyc.volumeL = DrawBuff.volume(frameBuffer, 288 + 1, 8 + (c + 3) * 8, 0, oyc.volumeL, nyc.volumeL, tp);
 //                if (c == 7 && oyc.note != nyc.note) {
-//                    System.err.println("note:%d", nyc.note);
+//                    logger.log(Level.TRACE, "note:%d".formatted(nyc.note));
 //                    int[][] ym2608Register = audio.GetYM2608Register(chipId);
 //                    int freq1 = ym2608Register[0][0xa9] + (ym2608Register[0][0xad]) * 0x100;
 //                    int freq2 = ym2608Register[0][0xa8] + (ym2608Register[0][0xac]) * 0x100;
 //                    int freq3 = ym2608Register[0][0xaa] + (ym2608Register[0][0xae]) * 0x100;
 //                    int freq4 = ym2608Register[0][0xa2] + (ym2608Register[0][0xa6]) * 0x100;
-//                    System.err.println("frq:%4x %4x %4x %4x", freq1, freq2, freq3, freq4);
+//                    logger.log(Level.TRACE, "frq:%4x %4x %4x %4x".formatted(freq1, freq2, freq3, freq4));
 //                }
                 DrawBuff.KeyBoardOPNA(frameBuffer, 33, 8 + (c + 3) * 8, oyc.note, nyc.note, tp);
                 DrawBuff.ChYM2608(frameBuffer, c, oyc.mask, nyc.mask, tp);

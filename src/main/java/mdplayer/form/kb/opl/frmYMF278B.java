@@ -61,7 +61,7 @@ public class frmYMF278B extends frmBase {
     }
 
     public void update() {
-        frameBuffer.Refresh(null);
+        frameBuffer.refresh(null);
     }
 
 //    @Override
@@ -388,7 +388,7 @@ public class frmYMF278B extends frmBase {
                 if (pcmKey[c - 23] == 1) {
                     //note
                     nyc.note = ((nyc.inst[13] + 7) & 0xf) * 12 + Common.searchPCMNote(nyc.inst[14], 1) - 5;
-                    //System.err.println("%x %x", nyc.inst[13], nyc.inst[14]);
+                    //logger.log(Level.TRACE, "%x %x".formatted(nyc.inst[13], nyc.inst[14]));
                     nyc.volumeL = (127 - (ymf278bRegister[2][0x50 + (c - 23)] >> 1)) * (nyc.pan & 0xf) / 16 / 6;
                     nyc.volumeR = (127 - (ymf278bRegister[2][0x50 + (c - 23)] >> 1)) * (nyc.pan >> 4) / 16 / 6;
                 } else {
@@ -405,7 +405,7 @@ public class frmYMF278B extends frmBase {
                 if (mdPCMKey[c - 23] > -1) {
                     //note
                     nyc.note = mdPCMKey[c - 23];
-                    //System.err.println("%x %x", nyc.inst[13], nyc.inst[14]);
+                    //logger.log(Level.TRACE, "%x %x".formatted(nyc.inst[13], nyc.inst[14]));
                     nyc.volumeL = (127 - (ymf278bRegister[2][0x50 + (c - 23)] >> 1)) * (nyc.pan & 0xf) / 16 / 6;
                     nyc.volumeR = (127 - (ymf278bRegister[2][0x50 + (c - 23)] >> 1)) * (nyc.pan >> 4) / 16 / 6;
                 } else {

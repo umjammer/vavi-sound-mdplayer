@@ -45,7 +45,7 @@ public abstract class BaseFileFormat implements FileFormat {
 
         music.format = this;
         int version = ByteUtil.readLeInt(buf, 0x08);
-        String _version = String.format("%d.%d%d", (version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
+        String _version = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
         int vgmGd3 = ByteUtil.readLeInt(buf, 0x14);
         Vgm.Gd3 gd3 = new Vgm.Gd3();
@@ -79,7 +79,7 @@ public abstract class BaseFileFormat implements FileFormat {
         int tcSecond = (int) sec;
         sec -= tcSecond;
         int tcMillisecond = (int) (sec * 100.0);
-        music.duration = String.format("%2d:%2d:%2d", tcMminutes, tcSecond, tcMillisecond);
+        music.duration = "%2d:%2d:%2d".formatted(tcMminutes, tcSecond, tcMillisecond);
 
         musics.add(music);
         return musics;

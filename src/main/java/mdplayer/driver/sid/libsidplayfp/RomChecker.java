@@ -20,15 +20,21 @@
 
 package mdplayer.driver.sid.libsidplayfp;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.lang.System.getLogger;
 
 
 /**
  * Utility class to identify known ROM images through their md5 checksum.
  */
 public class RomChecker {
+
+    private static final Logger logger = getLogger(RomChecker.class.getName());
 
     /**
      * Maps checksums to respective ROM description.
@@ -59,11 +65,11 @@ public class RomChecker {
             md5.reset();
             StringBuilder result = new StringBuilder();
             for (byte b : bs) {
-                result.append(String.format("%2x", b));
+                result.append("%2x".formatted(b));
             }
             return result.toString();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             return "";
         }
     }

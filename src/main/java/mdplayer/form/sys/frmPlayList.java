@@ -21,6 +21,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -60,8 +62,13 @@ import mdplayer.format.FileFormat;
 import mdplayer.properties.Resources;
 import vavi.awt.dnd.BasicDTListener;
 
+import static java.lang.System.getLogger;
+
 
 public class frmPlayList extends JFrame {
+
+    private static final Logger logger = getLogger(frmPlayList.class.getName());
+
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
@@ -291,7 +298,7 @@ public class frmPlayList extends JFrame {
         try {
             songNo = (int) dgvList.getValueAt(pi, cols.clmSongNo.ordinal());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             songNo = 0;
         }
         if (dgvList.getValueAt(pi, cols.clmType.ordinal()) != null && !dgvList.getValueAt(pi, cols.clmType.ordinal()).toString().equals("-")) {
@@ -368,7 +375,7 @@ public class frmPlayList extends JFrame {
         try {
             songNo = (int) dgvList.getValueAt(pi, cols.clmSongNo.ordinal());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             songNo = 0;
         }
 
@@ -435,7 +442,7 @@ loopEx:
         try {
             songNo = (int) dgvList.getValueAt(pi, cols.clmSongNo.ordinal());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             songNo = 0;
         }
 
@@ -493,7 +500,7 @@ loopEx:
         try {
             songNo = (int) dgvList.getValueAt(dgvList.getSelectedRows()[0], cols.clmSongNo.ordinal());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.ERROR, e.getMessage(), e);
             songNo = 0;
         }
 
@@ -566,7 +573,7 @@ loopEx:
             refresh();
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             JOptionPane.showMessageDialog(null, "ファイルの読み込みに失敗しました。");
         }
     }
@@ -617,7 +624,7 @@ loopEx:
                 playList.saveM3U(filename);
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             JOptionPane.showMessageDialog(null, "ファイルの保存に失敗しました。");
         }
     }
@@ -632,7 +639,7 @@ loopEx:
                 @Override public String getDescription() { return p[0]; }
             });
         });
-        ofd.setDialogTitle("ファイルを選択してください");
+        ofd.setDialogTitle("Select a file");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
 
         if (!frmMain.setting.getOther().getDefaultDataPath().isEmpty() && Directory.exists(frmMain.setting.getOther().getDefaultDataPath()) && IsInitialOpenFolder) {
@@ -657,7 +664,7 @@ loopEx:
                 playList.addFile(fn.getPath());
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
 
         //Play();
@@ -692,7 +699,7 @@ loopEx:
                 }
             });
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
 
         frmMain.oldParam = new MDChipParams();
@@ -756,7 +763,7 @@ loopEx:
     private KeyListener frmPlayList_KeyDown = new KeyAdapter() {
         @Override
         public void keyPressed(KeyEvent e) {
-            //System.err.println("keycode%d %d %d", e.KeyCode, e.KeyData, e.KeyValue);
+            //logger.log(Level.TRACE, "keycode%d %d %d".formatted(e.KeyCode, e.KeyData, e.KeyValue));
 
             switch (e.getKeyCode()) {
             case 32: // Space
@@ -782,7 +789,7 @@ loopEx:
                 try {
                     songNo = (int) dgvList.getValueAt(index, cols.clmSongNo.ordinal());
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log(Level.ERROR, ex.getMessage(), ex);
                     songNo = 0;
                 }
 

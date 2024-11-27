@@ -1,24 +1,28 @@
 package mdplayer;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.logging.Level;
 
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.StreamReader;
 import mdplayer.format.FileFormat;
-import vavi.util.Debug;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
 
+import static java.lang.System.getLogger;
+
 
 public class M3U {
+
+    private static final Logger logger = getLogger(M3U.class.getName());
 
     public static PlayList loadM3U(String filename, String rootPath) {
         try {
@@ -43,7 +47,7 @@ public class M3U {
             return pl;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return new PlayList();
         }
     }
@@ -70,7 +74,7 @@ public class M3U {
             return pl;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return new PlayList();
         }
     }
@@ -96,7 +100,7 @@ public class M3U {
             return pl;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return new PlayList();
         }
     }
@@ -105,7 +109,7 @@ public class M3U {
         PlayList.Music ms = new PlayList.Music();
 
         try {
-            // ::が無い場合は全てをファイル名として処理終了
+            // If there is no "::", the whole file will be treated as a file name and processing will end.
             if (!line.contains("::")) {
                 ms.fileName = line;
                 if (!Path.isPathRooted(ms.fileName) && rootPath.isEmpty()) {
@@ -162,7 +166,7 @@ public class M3U {
 
             try { ms.loopCount = Integer.parseInt(buf[6].trim()); } catch (NumberFormatException e) { ms.loopCount = -1; }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return null;
         }
 
@@ -176,14 +180,14 @@ public class M3U {
             try {
                 n = Integer.parseInt(s.substring(1), 16);
             } catch (NumberFormatException e) {
-                Debug.println(Level.WARNING, e);
+                logger.log(Level.WARNING, e);
                 return -1;
             }
         } else {
             try {
                 n = Integer.parseInt(s);
             } catch (NumberFormatException e) {
-                Debug.println(Level.WARNING, e);
+                logger.log(Level.WARNING, e);
                 return -1;
             }
         }
