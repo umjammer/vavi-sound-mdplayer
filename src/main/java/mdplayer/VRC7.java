@@ -18,7 +18,7 @@ public class VRC7 extends Ym2413Inst {
         return "VRC7";
     }
 
-    private mdsound.np.chip.NesVrc7 nv;
+    private final mdsound.np.chip.NesVrc7 nv;
 
     private double apu_clock_rest;
 
@@ -39,8 +39,8 @@ public class VRC7 extends Ym2413Inst {
     }
 
     @Override
-    public int start(int chipId, int samplingRate, int ClockValue, Object... option) {
-        nv.setClock(ClockValue / 2.); // masterclock(NES:1789773)
+    public int start(int chipId, int samplingRate, int clock, Object... option) {
+        nv.setClock(clock / 2.); // masterclock(NES:1789773)
         nv.setRate(samplingRate); // samplerate
         nv.reset();
         rate = samplingRate;
@@ -51,7 +51,7 @@ public class VRC7 extends Ym2413Inst {
     public void stop(int chipId) {
     }
 
-    private int[] b = new int[2];
+    private final int[] b = new int[2];
 
     @Override
     public void update(int chipId, int[][] outputs, int samples) {
@@ -80,7 +80,7 @@ public class VRC7 extends Ym2413Inst {
         return 0;
     }
 
-    private Consumer<int[]> listenr = ds -> {
+    private final Consumer<int[]> listenr = ds -> {
         if (ds[7] != -1) IntFNesInst.np_nes_vrc7_volume = ds[7];
     };
 }

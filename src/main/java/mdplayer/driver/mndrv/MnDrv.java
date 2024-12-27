@@ -19,7 +19,6 @@ import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mxdrv.XMemory;
 import mdsound.instrument.X68kMPcmInst;
 import mdsound.chips.MPcm;
-import vavi.util.Debug;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
@@ -66,13 +65,13 @@ public class MnDrv extends BaseDriver {
             mm.write(memPtr + vgmBuf.length + i, vgmBuf[i]);
         }
 
-        // デバッグ向け
+        // For debugging
         //if (model == enmModel.RealModel) return true;
 
-        // mndrvの起動
+        // Starting mndrv
         start();
 
-        reg.setD0_B(0x01); // MND データ転送
+        reg.setD0_B(0x01); // MND Data Transfer
         reg.a1 = memPtr + vgmBuf.length;
         reg.D1_L = vgmBuf.length;
         _trap4_entry();
@@ -82,15 +81,15 @@ public class MnDrv extends BaseDriver {
         }
         memPtr += vgmBuf.length;
 
-        // pcm転送
+        // pcm transfer
         if (extendFile != null && model != EnmModel.RealModel) {
             for (Tuple<String, byte[]> stringTuple : extendFile) {
                 mm.realloc(memPtr + stringTuple.getItem2().length * 2 + 4);
-                // pcmファイルをx68メモリにコピー
+                // Copy pcm file to x68 memory
                 for (int i = 0; i < stringTuple.getItem2().length; i++) {
                     mm.write(memPtr + stringTuple.getItem2().length + i, stringTuple.getItem2()[i]);
                 }
-                reg.setD0_B(0x02); // PCM データ転送
+                reg.setD0_B(0x02); // PCM Data Transfer
                 reg.a1 = memPtr + stringTuple.getItem2().length;
                 reg.D1_L = stringTuple.getItem2().length;
                 _trap4_entry();
@@ -155,7 +154,7 @@ public class MnDrv extends BaseDriver {
     public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         Vgm.Gd3 gd3 = new Vgm.Gd3();
 
-        int i = buf[6] * 0x100 + buf[7];
+        int i = (buf[6] & 0xff) * 0x100 + (buf[7] & 0xff);
         List<Byte> lst = new ArrayList<>();
         while (i < buf.length && buf[i] != 0x0 && i + 1 < buf.length && buf[i + 1] != 0x0) {
             lst.add(buf[i]);
@@ -2047,7 +2046,7 @@ public class MnDrv extends BaseDriver {
     }
 
     /**
-     * 相対音量モード
+     * Relative Volume Mode
      */
     public void _common_volume() {
         reg.setD4_B(mm.readByte(reg.a2++));

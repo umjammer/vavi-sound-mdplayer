@@ -41,34 +41,34 @@ import mdplayer.driver.sid.libsidplayfp.SidMemory;
  */
 public final class MMU implements SidMemory, IPLA {
 
-    private EventScheduler eventScheduler;
+    private final EventScheduler eventScheduler;
 
     /** CPU port signals */
     private boolean loRam, hiRam, charEn;
 
     /** CPU read memory mapping : 4k chunks */
-    private IBank[] cpuReadMap = new IBank[16];
+    private final IBank[] cpuReadMap = new IBank[16];
 
     /** CPU write memory mapping : 4k chunks */
-    private IBank[] cpuWriteMap = new IBank[16];
+    private final IBank[] cpuWriteMap = new IBank[16];
 
     /** IO region handler */
-    private IOBank ioBank;
+    private final IOBank ioBank;
 
     /** Kernal ROM */
-    private RomBank.KernalRomBank kernalRomBank = new RomBank.KernalRomBank();
+    private final RomBank.KernalRomBank kernalRomBank = new RomBank.KernalRomBank();
 
     /** BASIC ROM */
-    private RomBank.BasicRomBank basicRomBank = new RomBank.BasicRomBank();
+    private final RomBank.BasicRomBank basicRomBank = new RomBank.BasicRomBank();
 
     /** Character ROM */
-    private RomBank.CharacterRomBank characterRomBank = new RomBank.CharacterRomBank();
+    private final RomBank.CharacterRomBank characterRomBank = new RomBank.CharacterRomBank();
 
     /** RAM */
-    private SystemRAMBank ramBank = new SystemRAMBank();
+    private final SystemRAMBank ramBank = new SystemRAMBank();
 
     /** RAM bank 0 */
-    private ZeroRAMBank zeroRAMBank;
+    private final ZeroRAMBank zeroRAMBank;
 
     // public void setCpuPort(byte state) { }
     @Override

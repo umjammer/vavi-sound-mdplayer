@@ -31,12 +31,12 @@ public class frmMIDI extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipId;
-    private int zoom;
+    private final int chipId;
+    private final int zoom;
 
-    private MIDIParam newParam;
-    private MIDIParam oldParam = new MIDIParam();
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MIDIParam newParam;
+    private final MIDIParam oldParam = new MIDIParam();
+    private final FrameBuffer frameBuffer = new FrameBuffer();
     private String notes = "";
 
     static Preferences prefs = Preferences.userNodeForPackage(frmMIDI.class);
@@ -63,7 +63,7 @@ public class frmMIDI extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -92,7 +92,7 @@ public class frmMIDI extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -253,7 +253,7 @@ public class frmMIDI extends frmBase {
             oldParam.cc[ch][10] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 0, 64, ch * 16 + 16, oldParam.cc[ch][10], b); // Panpot
             oldParam.cc[ch][7] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 68, ch * 16 + 16, oldParam.cc[ch][7], newParam.cc[ch][7]); // Volume
             oldParam.cc[ch][11] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 72, ch * 16 + 16, oldParam.cc[ch][11], newParam.cc[ch][11]); // Expression
-            oldParam.bend[ch] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 0, 76, ch * 16 + 16, oldParam.bend[ch], newParam.bend[ch]); // PitchBend
+            oldParam.bend[ch] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 0, 76, ch * 16 + 16, oldParam.bend[ch], newParam.bend[ch]); // Pitch Bend
             oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 80, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][1]); // Modulation
             oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 84, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][91]); // Reverb
             oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 88, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][93]); // Chorus
@@ -410,7 +410,7 @@ public class frmMIDI extends frmBase {
     }
 
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override public void mouseClicked(MouseEvent ev) {
             int py = ev.getY() / zoom;
         }

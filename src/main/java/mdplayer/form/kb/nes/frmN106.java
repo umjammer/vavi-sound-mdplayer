@@ -33,11 +33,11 @@ public class frmN106 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipId;
-    private int zoom;
-    private MDChipParams.N106 newParam;
-    private MDChipParams.N106 oldParam;
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final int chipId;
+    private final int zoom;
+    private final MDChipParams.N106 newParam;
+    private final MDChipParams.N106 oldParam;
+    private final FrameBuffer frameBuffer = new FrameBuffer();
     static Preferences prefs = Preferences.userNodeForPackage(frmN106.class);
 
     public frmN106(frmMain frm, int chipId, int zoom, MDChipParams.N106 newParam, MDChipParams.N106 oldParam) {
@@ -64,7 +64,7 @@ public class frmN106 extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -93,7 +93,7 @@ public class frmN106 extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -104,15 +104,15 @@ public class frmN106 extends frmBase {
         }
     };
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
             int ch;
-            //上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
@@ -131,17 +131,17 @@ public class frmN106 extends frmBase {
 
             if (ev.getButton() == MouseEvent.BUTTON2) {
                 for (int i = 0; i < 8; i++) {
-                    //マスク解除
+                    // Unmask.
                     parent.resetChannelMask(EnmChip.N163, chipId, i);
                 }
                 return;
             }
 
             if (m != 0) {
-                //クリップボードに音色をコピーする
+                // Copying a tone to the clipboard
                 parent.getInstCh(EnmChip.N163, ch, chipId);
             } else {
-                //マスク
+                // Mask.
                 parent.setChannelMask(EnmChip.N163, chipId, ch);
             }
         }

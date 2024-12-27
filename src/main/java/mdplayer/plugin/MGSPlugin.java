@@ -9,12 +9,14 @@ import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.driver.mgsdrv.MGSDRV;
 import mdplayer.format.FileFormat;
+import mdsound.Instrument;
 import mdsound.instrument.Ay8910Inst;
 import mdsound.instrument.K051649Inst;
 import mdsound.MDSound;
 import mdsound.instrument.Ym2413Inst;
 
 import static java.lang.System.getLogger;
+import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
@@ -62,7 +64,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             i += 7;
             int[] trkOffsets = new int[18];
             for (int t = 0; t < trkOffsets.length; t++) {
-                trkOffsets[t] = vgmBuf[i + t * 2] + vgmBuf[i + t * 2 + 1] * 0x100;
+                trkOffsets[t] = (vgmBuf[i + t * 2] & 0xff) + (vgmBuf[i + t * 2 + 1] & 0xff) * 0x100;
             }
             boolean useAY = (trkOffsets[0] + trkOffsets[1] + trkOffsets[2] != 0);
             boolean useSCC = (trkOffsets[3] + trkOffsets[4] + trkOffsets[5] + trkOffsets[6] + trkOffsets[7] != 0);
@@ -90,9 +92,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip = new MDSound.Chip();
                 chip.id = 0;
                 audio.chipLED.put("PriAY10", 1);
-                chip.instrument = new Ay8910Inst();
+                chip.instrument = Instrument.getInstrument(Ay8910Inst.class);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("MAIN", Ay8910Inst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class);
                 chip.clock = MGSDRV.baseclockAY8910 / 2;
                 chip.option = null;
                 lstChips.add(chip);
@@ -104,9 +106,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip = new MDSound.Chip();
                 chip.id = 0;
                 audio.chipLED.put("PriOPLL", 1);
-                chip.instrument = new Ym2413Inst();
+                chip.instrument = Instrument.getInstrument(Ym2413Inst.class);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("MAIN", Ym2413Inst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2413Inst.class);
                 chip.clock = MGSDRV.baseclockYM2413;
                 chip.option = null;
                 lstChips.add(chip);
@@ -118,9 +120,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip = new MDSound.Chip();
                 chip.id = 0;
                 audio.chipLED.put("PriK051649", 1);
-                chip.instrument = new K051649Inst();
+                chip.instrument = Instrument.getInstrument(K051649Inst.class);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("MAIN", K051649Inst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, K051649Inst.class);
                 chip.clock = MGSDRV.baseclockK051649;
                 chip.option = null;
                 lstChips.add(chip);

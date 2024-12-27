@@ -2,7 +2,6 @@ package mdplayer.driver.zgm;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -37,7 +36,7 @@ public class Zgm extends BaseDriver {
     public interface RefRunnable<T1, T2> extends BiConsumer<T1, T2> {
     }
 
-    private Map<Integer, RefRunnable<Byte, Integer>> vgmCmdTbl = new HashMap<>();
+    private final Map<Integer, RefRunnable<Byte, Integer>> vgmCmdTbl = new HashMap<>();
 
     @Override
     public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
@@ -87,7 +86,7 @@ public class Zgm extends BaseDriver {
         vgmEof = ByteUtil.readLeInt(vgmBuf, (byte) 0x04);
 
         int version = ByteUtil.readLeInt(vgmBuf, 0x08);
-         // バージョンチェック
+         // Version Check
         if (version < 10) return false;
         this.version = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
@@ -98,7 +97,7 @@ public class Zgm extends BaseDriver {
 
         int defineAddress = ByteUtil.readLeInt(vgmBuf, 0x1c);
         int defineCount = ByteUtil.readLeShort(vgmBuf, 0x24);
-         // 音源定義数チェック
+         // Check number of sound source definitions
         if (defineCount < 1) return false;
 
         chipCommandSize = (defineCount > 128) ? 2 : 1;
@@ -106,7 +105,7 @@ public class Zgm extends BaseDriver {
         int trackAddress = ByteUtil.readLeInt(vgmBuf, 0x20);
         int trackCounter = ByteUtil.readLeShort(vgmBuf, 0x26);
         vgmDataOffset = trackAddress + 11;
-         // トラック数チェック
+        // Track Count Check
         if (trackCounter != 1) return false;
         int fcc = ByteUtil.readLe24(vgmBuf, trackAddress);
         if (fcc != FCC_TRK) return false;
@@ -148,7 +147,7 @@ public class Zgm extends BaseDriver {
 
             if (!getZGMGD3Info(vgmBuf)) return false;
         } catch (Exception e) {
-            logger.log(Level.ERROR, "XGMの情報取得中に例外発生 Message=[%s]".formatted(e.getMessage()), e);
+            logger.log(Level.ERROR, "An exception occurred while getting XGM information. Message=[%s]".formatted(e.getMessage()), e);
             return false;
         }
 

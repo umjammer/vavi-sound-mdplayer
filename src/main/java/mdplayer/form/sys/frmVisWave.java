@@ -33,9 +33,9 @@ public class frmVisWave extends frmBase {
     public int x = -1;
     public int y = -1;
 
-    private short[][] buf = new short[][] {new short[2048], new short[2048]};
+    private final short[][] buf = new short[][] {new short[2048], new short[2048]};
     private Graphics2D g;
-    private BufferedImage bmp;
+    private final BufferedImage bmp;
     private int dispType = 1;
     private double dispHeight = 1.0;
     private boolean fft = false;
@@ -92,7 +92,7 @@ public class frmVisWave extends frmBase {
         pictureBox1 = bmp;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -164,10 +164,10 @@ public class frmVisWave extends frmBase {
         return destS2;
     }
 
-    private float[] destF = new float[2048];
-    private short[] destS = new short[2048];
-    private short[] destS2 = new short[2048];
-    private Tuple<Float, Float>[] fftsample = new Tuple[2048]; // Complex
+    private final float[] destF = new float[2048];
+    private final short[] destS = new short[2048];
+    private final short[] destS2 = new short[2048];
+    private final Tuple<Float, Float>[] fftsample = new Tuple[2048]; // Complex
 
     // @see "https://raptorcafeterrace.hatenablog.com/entry/2017/05/08/191704"
     public void processFFT(float[] sdata) {
@@ -188,9 +188,9 @@ public class frmVisWave extends frmBase {
     static class FFT {
         private static final int M = 15;
 
-        private double[] fact = new double[M + 1];
+        private final double[] fact = new double[M + 1];
 
-        private double aa = 96;
+        private final double aa = 96;
 
         private double iza;
 

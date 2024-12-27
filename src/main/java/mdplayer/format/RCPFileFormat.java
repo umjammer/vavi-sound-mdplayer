@@ -11,6 +11,7 @@ import mdplayer.driver.Vgm;
 import mdplayer.driver.rcp.RCP;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.RCPPlugin;
+import mdplayer.plugin.S98Plugin;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -109,6 +110,6 @@ public class RCPFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return new RCPPlugin();
+        return Plugin.getPlugin(RCPPlugin.class);
     }
 }

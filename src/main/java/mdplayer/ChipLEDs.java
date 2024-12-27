@@ -8,7 +8,7 @@ import java.util.Map;
 public class ChipLEDs {
 
     // TODO this class should be respond realtime, map might be slow.
-    private Map<String, Integer> leds = new HashMap<>();
+    private final Map<String, Integer> leds = new HashMap<>();
 
     public int get(String key) {
         return leds.get(key);

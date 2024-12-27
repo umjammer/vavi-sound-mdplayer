@@ -6,7 +6,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
 public class RsrcURLStreamHandler extends URLStreamHandler {
-   private ClassLoader classLoader;
+   private final ClassLoader classLoader;
 
    public RsrcURLStreamHandler(ClassLoader classLoader) {
       this.classLoader = classLoader;

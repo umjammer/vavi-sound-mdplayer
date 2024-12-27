@@ -95,26 +95,26 @@ public class MucomDotNET extends BaseDriver {
         chips.add(EnmChip.Unuse);
         chips.add(EnmChip.Unuse);
 
-        // 標準的な mub ファイル
+        // Standard mub files
         if (buf[0] == 0x4d
                 && buf[1] == 0x55
                 && buf[2] == 0x43
                 && buf[3] == 0x38) {
             return chips.toArray(EnmChip[]::new);
         }
-        // 標準的な mub ファイル
+        // Standard mub files
         if (buf[0] == 0x4d
                 && buf[1] == 0x55
                 && buf[2] == 0x42
                 && buf[3] == 0x38) {
             return chips.toArray(EnmChip[]::new);
         }
-        // 拡張 mub ファイル？
+        // Extended mub file?
         if (buf[0] != 'm'
                 || buf[1] != 'u'
                 || buf[2] != 'P'
                 || buf[3] != 'b') {
-            // 見知らぬファイル
+            // Unknown files
             return null;
         }
 
@@ -229,7 +229,7 @@ public class MucomDotNET extends BaseDriver {
         vgmSpeed = 1;
 
 //#if DEBUG
-        //実チップスレッドは処理をスキップ(デバッグ向け)
+        // The actual chip thread skips processing (for debugging)
         //if (model == EnmModel.RealModel) return true;
 //#endif
 
@@ -246,7 +246,7 @@ public class MucomDotNET extends BaseDriver {
     public void processOneFrame() {
 
 //#if DEBUG
-//        // 実チップスレッドは処理をスキップ(デバッグ向け)
+//        // The actual chip thread skips processing (for debugging)
 //        if (model == EnmModel.RealModel) {
 //            Stopped = true;
 //            return;
@@ -270,7 +270,7 @@ public class MucomDotNET extends BaseDriver {
 
             if (mucomDriver.getStatus() < 1) {
                 if (mucomDriver.getStatus() == 0) {
-                    Thread.sleep((int) (latency * 2.0));//実際の音声が発音しきるまでlatency*2の分だけ待つ
+                    Thread.sleep((int) (latency * 2.0)); // Wait for latency*2 until the actual voice is fully pronounced
                 }
                 stopped = true;
             }
@@ -305,7 +305,7 @@ public class MucomDotNET extends BaseDriver {
         }
 
         if (ret == null || info == null) return null;
-        if (info.errorList.size() > 0) {
+        if (!info.errorList.isEmpty()) {
             if (model == EnmModel.VirtualModel) {
                 JOptionPane.showMessageDialog(null, "Compile error");
             }
@@ -366,7 +366,7 @@ public class MucomDotNET extends BaseDriver {
         }
 
         if (ret == null || info == null) return false;
-        if (info.errorList.size() > 0) {
+        if (!info.errorList.isEmpty()) {
             if (model == EnmModel.VirtualModel) {
                 JOptionPane.showMessageDialog(null, "Compile error");
             }
@@ -490,21 +490,21 @@ public class MucomDotNET extends BaseDriver {
 
     private void sendOPNAWait(long size, int elapsed) {
         if (model == EnmModel.VirtualModel) {
-            //JOptionPane.showMessageDialog("elapsed:%d size:%d".formatted(elapsed, size));
-            //int n = Math.max((int)(size / 20 - elapsed), 0); // 20: threshold (magic number)
-            //Thread.sleep(n);
+//            JOptionPane.showMessageDialog("elapsed:%d size:%d".formatted(elapsed, size));
+//            int n = Math.max((int) (size / 20 - elapsed), 0); // 20: threshold (magic number)
+//            Thread.sleep(n);
             return;
         }
 
-        // サイズと経過時間から、追加でウエイトする。
+        // Add additional weight based on size and elapsed time.
         int m = Math.max((int) (size / 20 - elapsed), 0); // 20: threshold (magic number)
         try { Thread.sleep(m); } catch (InterruptedException e) {}
     }
 
     public static class mucomChipAction implements ChipAction {
-        private Consumer<ChipDatum> write;
-        private TriConsumer<byte[], Integer, Integer> writePCMData;
-        private BiConsumer<Long, Integer> sendWait;
+        private final Consumer<ChipDatum> write;
+        private final TriConsumer<byte[], Integer, Integer> writePCMData;
+        private final BiConsumer<Long, Integer> sendWait;
 
         public mucomChipAction(Consumer<ChipDatum> write, TriConsumer<byte[], Integer, Integer> writePCMData, BiConsumer<Long, Integer> sendWait) {
             this.write = write;
@@ -533,28 +533,28 @@ public class MucomDotNET extends BaseDriver {
         }
     }
 
-    //private void chipWaitSend(long elapsed, int size) {
-    //    if (model == EnmModel.VirtualModel) {
-    //        //JOptionPane.showMessageDialog("elapsed:%d size:%d".formatted(elapsed, size));
-    //        //int n = Math.max((int)(size / 20 - elapsed), 0); // 20: threshold (magic number)
-    //        //Thread.sleep(n);
-    //        return;
-    //    }
+//    private void chipWaitSend(long elapsed, int size) {
+//        if (model == EnmModel.VirtualModel) {
+//            //JOptionPane.showMessageDialog("elapsed:%d size:%d".formatted(elapsed, size));
+//            //int n = Math.max((int)(size / 20 - elapsed), 0); // 20: threshold (magic number)
+//            //Thread.sleep(n);
+//            return;
+//        }
+//
+//        // Add additional weight based on size and elapsed time.
+//        int m = Math.max((int) (size / 20 - elapsed), 0); // 20: threshold (magic number)
+//        Thread.sleep(m);
+//    }
 
-    //    //サイズと経過時間から、追加でウエイトする。
-    //    int m = Math.max((int)(size / 20 - elapsed), 0); // 20: threshold (magic number)
-    //    Thread.sleep(m);
-    //}
-
-    //private void chipWriteRegister(ChipDatum dat) {
-    //    if (dat == null) return;
-    //    if (dat.address == -1) return;
-    //    if (dat.data == -1) return;
-    //    if (dat.port == -1) return;
-
-    //    chipRegister.setYM2608Register(0, dat.port, dat.address, dat.data, model);
-    //    //logger.log(Level.TRACE, "%d %d".formatted(dat.address, dat.data));
-    //}
+//    private void chipWriteRegister(ChipDatum dat) {
+//        if (dat == null) return;
+//        if (dat.address == -1) return;
+//        if (dat.data == -1) return;
+//        if (dat.port == -1) return;
+//
+//        chipRegister.setYM2608Register(0, dat.port, dat.address, dat.data, model);
+//        //logger.log(Level.TRACE, "%d %d".formatted(dat.address, dat.data));
+//    }
 
     private Stream appendFileReaderCallback(String arg) {
 

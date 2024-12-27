@@ -221,8 +221,8 @@ public class Sid extends BaseDriver {
                                 setting.getSid().c64model == 3 ? SidConfig.C64Model.DREAN : SidConfig.C64Model.PAL)));
         cfg.defaultSidModel = setting.getSid().sidModel == 0 ? SidConfig.SidModel.MOS6581 : (
                 setting.getSid().sidModel == 1 ? SidConfig.SidModel.MOS8580 : SidConfig.SidModel.MOS6581);
-        cfg.forceC64Model = setting.getSid().c64modelForce; // 強制的に defaultC64Model を使用するか
-        cfg.forceSidModel = setting.getSid().sidmodelForce; // 強制的に defaultSidModel を使用するか
+        cfg.forceC64Model = setting.getSid().c64modelForce; // Force use of defaultC64Model
+        cfg.forceSidModel = setting.getSid().sidmodelForce; // Whether to force the use of defaultSidModel
 
         cfg.sidEmulation = rs;
 

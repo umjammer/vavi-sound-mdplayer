@@ -6,7 +6,7 @@ import java.util.List;
 
 public class OpeManager {
 
-    private static List<Request> reqToAudio = new ArrayList<>();
+    private static final List<Request> reqToAudio = new ArrayList<>();
 
     private static final Object reqLock = new Object();
 
@@ -25,7 +25,7 @@ public class OpeManager {
      */
     public static Request getRequestToAudio() {
         synchronized (reqLock) {
-            if (reqToAudio.size() < 1)
+            if (reqToAudio.isEmpty())
                 return null;
 
             Request req = reqToAudio.get(reqToAudio.size() - 1);
@@ -48,7 +48,7 @@ public class OpeManager {
     }
 
     static class TrdCallback {
-        private Request request;
+        private final Request request;
 
         public TrdCallback(Request req) {
             request = req;

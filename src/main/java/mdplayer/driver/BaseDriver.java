@@ -9,6 +9,7 @@ import mdplayer.Setting;
 
 
 public abstract class BaseDriver {
+
     public Setting setting;
 
     public double vgmSpeed = 1;

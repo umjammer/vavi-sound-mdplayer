@@ -262,26 +262,26 @@ class Ab {
 }
 
 class FMTimer {
-    // タイマーAの上位8ビット
+    // Upper 8 bits of Timer A
     private int timerAregH;
-    // タイマーAの下位2ビット
+    // The lower 2 bits of Timer A
     private int timerAregL;
-    // タイマーAのオーバーフロー設定値
+    // Timer A overflow setting
     private int timerA;
-    // タイマーAのカウンター値
+    // Timer A counter value
     private double timerACounter;
-    // タイマーBのオーバーフロー設定値
+    // Timer B overflow setting value
     private int timerB;
-    // タイマーBのカウンター値
+    // Timer B counter value
     private double timerBCounter;
-    // タイマー制御レジスタ (下位4ビット+7ビット)
+    // Timer control register (lower 4 bits + 7 bits)
     private int timerReg;
-    // ステータスレジスタ (下位2ビット)
+    // Status register (lowest 2 bits)
     private int statReg;
-    private boolean isOPM;
-    private Runnable csmKeyOn;
-    private double step;
-    private double masterClock;
+    private final boolean isOPM;
+    private final Runnable csmKeyOn;
+    private final double step;
+    private final double masterClock;
 
     public FMTimer(boolean isOPM, Runnable csmKeyOn, double masterClock) {
         this.isOPM = isOPM;
@@ -297,7 +297,7 @@ class FMTimer {
     public void timer() {
         int flag_set = 0;
 
-        if ((timerReg & 0x01) != 0) { // timerA 動作中
+        if ((timerReg & 0x01) != 0) { // TimerA is running
             timerACounter += step;
             if (timerACounter >= timerA) {
                 flag_set |= ((timerReg >> 2) & 0x01);
@@ -306,7 +306,7 @@ class FMTimer {
             }
         }
 
-        if ((timerReg & 0x02) != 0) { // timerB 動作中
+        if ((timerReg & 0x02) != 0) { // TimerB is running
             timerBCounter += step;
             if (timerBCounter >= timerB) {
                 flag_set |= ((timerReg >> 2) & 0x02);
@@ -338,7 +338,7 @@ class FMTimer {
             break;
 
         case 0x14:
-            // タイマー制御レジスタ
+            // Timer Control Register
             timerReg = data & 0x8F;
             statReg &= 0xff - ((data >> 4) & 3);
             break;
@@ -361,7 +361,7 @@ class FMTimer {
             break;
 
         case 0x27:
-            // タイマー制御レジスタ
+            // Timer Control Register
             timerReg = data & 0x8F;
             statReg &= 0xff - ((data >> 4) & 3);
             break;

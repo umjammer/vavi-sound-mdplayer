@@ -34,11 +34,11 @@ public class frmS5B extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipId;
-    private int zoom;
-    private MDChipParams.S5B newParam;
-    private MDChipParams.S5B oldParam;
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final int chipId;
+    private final int zoom;
+    private final MDChipParams.S5B newParam;
+    private final MDChipParams.S5B oldParam;
+    private final FrameBuffer frameBuffer = new FrameBuffer();
     static Preferences prefs = Preferences.userNodeForPackage(frmS5B.class);
 
     public frmS5B(frmMain frm, int chipId, int zoom, MDChipParams.S5B newParam, MDChipParams.S5B oldParam) {
@@ -65,7 +65,7 @@ public class frmS5B extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -94,7 +94,7 @@ public class frmS5B extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -117,7 +117,7 @@ public class frmS5B extends frmBase {
             //logger.log(Level.TRACE, "r[8]=%x r[9]=%x r[10]=%x".formatted(S5BRegister[0x8], S5BRegister[0x9], S5BRegister[0xa]));
             channel.tn = (t ? 1 : 0) + (n ? 2 : 0);
             newParam.nfrq = S5BRegister[0x06] & 0x1f;
-            newParam.efrq = S5BRegister[0x0c] * 0x100 + S5BRegister[0x0b];
+            newParam.efrq = (S5BRegister[0x0c] & 0xff) * 0x100 + (S5BRegister[0x0b] & 0xff);
             newParam.etype = (S5BRegister[0x0d] & 0xf);
 
             int v = (S5BRegister[0x08 + ch] & 0x1f);
@@ -178,15 +178,15 @@ public class frmS5B extends frmBase {
         newParam.etype = 0;
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
 
-            //上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (int ch = 0; ch < 3; ch++) {
                         if (newParam.channels[ch].mask)
@@ -204,12 +204,12 @@ public class frmS5B extends frmBase {
                 if (ch < 0) return;
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    //マスク
+                    // Mask.
                     parent.setChannelMask(EnmChip.FME7, chipId, ch);
                     return;
                 }
 
-                //マスク解除
+                // Unmask.
                 for (ch = 0; ch < 3; ch++) parent.resetChannelMask(EnmChip.FME7, chipId, ch);
             }
         }

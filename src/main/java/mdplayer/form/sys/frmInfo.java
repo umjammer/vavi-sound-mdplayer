@@ -54,7 +54,7 @@ public class frmInfo extends JFrame {
         update();
     }
 
-    private FocusListener RichTextBox1_GotFocus = new FocusAdapter() {
+    private final FocusListener RichTextBox1_GotFocus = new FocusAdapter() {
         @Override
         public void focusGained(FocusEvent e) {
             lblComposer.requestFocus();
@@ -113,7 +113,7 @@ public class frmInfo extends JFrame {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -141,7 +141,7 @@ public class frmInfo extends JFrame {
 //    }
 
     private void timer_Tick(ActionEvent ev) {
-        if (lyrics == null || lyrics.size() < 1) return;
+        if (lyrics == null || lyrics.isEmpty()) return;
 
         long cnt = Audio.getInstance().getDriverCounter();
 

@@ -14,9 +14,9 @@ public class MsxPort implements Memory {
 
     private static final Logger logger = getLogger(MsxPort.class.getName());
 
-    private MSXSlot slot;
-    private ChipRegister chipRegister;
-    private Common.EnmModel model;
+    private final MSXSlot slot;
+    private final ChipRegister chipRegister;
+    private final Common.EnmModel model;
     private byte opllAdr;
     private byte ay8910Adr;
 

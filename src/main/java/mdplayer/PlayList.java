@@ -11,7 +11,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -20,7 +20,6 @@ import javax.swing.table.DefaultTableModel;
 
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
-import dotnet4j.io.Path;
 import dotnet4j.io.StreamReader;
 import mdplayer.Common.EnmArcType;
 import mdplayer.format.FileFormat;
@@ -84,16 +83,16 @@ public class PlayList implements Serializable {
     }
 
     public void save(String fileName) {
-        String fullPath;
+        Path fullPath;
 
         if (fileName == null || fileName.isEmpty()) {
             fullPath = Common.settingFilePath;
-            fullPath = Path.getFullPath("DefaultPlayList.xml");
+            fullPath = fullPath != null ? fullPath.resolve("DefaultPlayList.xml") : Path.of("DefaultPlayList.xml");
         } else {
-            fullPath = fileName;
+            fullPath = Path.of(fileName);
         }
 
-        try (ObjectOutputStream sw = new ObjectOutputStream(Files.newOutputStream(Paths.get(fullPath)))) {
+        try (ObjectOutputStream sw = new ObjectOutputStream(Files.newOutputStream(fullPath))) {
             sw.writeObject(this);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -101,13 +100,13 @@ public class PlayList implements Serializable {
     }
 
     public void saveM3U(String fileName) {
-        String basePath = Path.getDirectoryName(fileName);
+        Path basePath = Path.of(fileName).getParent();
 
         try (PrintWriter sw = new PrintWriter(new FileWriter(fileName))) {
             for (Music ms : this.musics) {
-                String path = Path.getDirectoryName(ms.fileName);
+                Path path = Path.of(ms.fileName).getParent();
                 if (path.equals(basePath)) {
-                    sw.println(Path.getFileName(ms.fileName));
+                    sw.println(Path.of(ms.fileName).getFileName());
                 } else {
                     sw.println(ms.fileName);
                 }
@@ -119,15 +118,15 @@ public class PlayList implements Serializable {
 
     public static PlayList Load(String fileName) {
         try {
-            String fullPath;
+            Path fullPath;
             if (fileName == null || fileName.isEmpty()) {
                 fullPath = Common.settingFilePath;
-                fullPath = Path.getFullPath("DefaultPlayList.xml");
+                fullPath = fullPath.resolve("DefaultPlayList.xml");
             } else {
-                fullPath = fileName;
+                fullPath = Path.of(fileName);
             }
 
-            try (InputStream sr = Files.newInputStream(java.nio.file.Path.of(fullPath))) {
+            try (InputStream sr = Files.newInputStream(fullPath)) {
                 PlayList pl = new PlayList();
                 Serdes.Util.deserialize(sr, pl);
                 return pl;
@@ -149,8 +148,8 @@ public class PlayList implements Serializable {
                     if (line.isEmpty()) continue;
                     if (line.charAt(0) == '#') continue;
 
-                    if (!Path.isPathRooted(line)) {
-                        line = Path.combine(Path.getDirectoryName(filename), line);
+                    if (Path.of(line).getParent() != null) {
+                        line = Path.of(filename).getParent().resolve(line).toString();
                     }
                     Music ms = new Music();
                     ms.fileName = line;
@@ -174,9 +173,9 @@ public class PlayList implements Serializable {
                 0, // clmKey
                 music.fileName, // clmFileName
                 music.arcFileName, // clmZipFileName
-                Path.getFileName(music.fileName), // clmDispFileName
+                Path.of(music.fileName).getFileName().toString(), // clmDispFileName
                 music.fileName, // clmDispFileName
-                Path.getExtension(music.fileName).toUpperCase(), // clmEXT
+                Path.of(music.fileName).toString().substring(0, music.fileName.lastIndexOf('.') + 1).toUpperCase(), // clmEXT
                 music.type, // clmType
                 music.title, // clmTitle
                 music.titleJ, // clmTitleJ

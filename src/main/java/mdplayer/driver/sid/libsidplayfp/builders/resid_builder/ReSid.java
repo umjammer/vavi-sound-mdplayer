@@ -59,7 +59,7 @@ public class ReSid extends SidEmu {
         return sid;
     }
 
-    private Sid sid;
+    private final Sid sid;
     private byte voiceMask;
 
     public boolean getStatus() {

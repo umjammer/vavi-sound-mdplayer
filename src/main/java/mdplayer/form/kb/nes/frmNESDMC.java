@@ -31,13 +31,13 @@ public class frmNESDMC extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipId;
-    private int zoom;
+    private final int chipId;
+    private final int zoom;
 
     //
-    private MDChipParams.NESDMC newParam;
-    private MDChipParams.NESDMC oldParam = new MDChipParams.NESDMC();
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MDChipParams.NESDMC newParam;
+    private final MDChipParams.NESDMC oldParam = new MDChipParams.NESDMC();
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmNESDMC.class);
 
@@ -64,7 +64,7 @@ public class frmNESDMC extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -93,7 +93,7 @@ public class frmNESDMC extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -267,15 +267,15 @@ public class frmNESDMC extends frmBase {
         newParam.dmcChannel.volume = 0;
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
 
-            //上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (int ch = 0; ch < 2; ch++) {
                         if (newParam.sqrChannels[ch].mask)
@@ -306,7 +306,7 @@ public class frmNESDMC extends frmBase {
             if (py < 7 * 8) {
                 if (ev.getButton() == MouseEvent.BUTTON2) {
                     for (int i = 0; i < 5; i++) {
-                        //マスク解除
+                        // Unmask.
                         if (i < 2) parent.resetChannelMask(EnmChip.NES, chipId, i);
                         else parent.resetChannelMask(EnmChip.DMC, chipId, i - 2);
                     }
@@ -320,7 +320,7 @@ public class frmNESDMC extends frmBase {
                 if (ch < 0) return;
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    //マスク
+                    // Mask.
                     if (ch < 2) parent.setChannelMask(EnmChip.NES, chipId, ch);
                     else parent.setChannelMask(EnmChip.DMC, chipId, ch - 2);
 

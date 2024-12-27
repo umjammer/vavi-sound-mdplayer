@@ -35,9 +35,9 @@ public class frmYM2203 extends frmBase {
     private int chipId = 0;
     private int zoom = 1;
 
-    private MDChipParams.YM2203 newParam;
-    private MDChipParams.YM2203 oldParam;
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MDChipParams.YM2203 newParam;
+    private final MDChipParams.YM2203 oldParam;
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYM2203.class);
 
@@ -70,7 +70,7 @@ public class frmYM2203 extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -99,7 +99,7 @@ public class frmYM2203 extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -374,15 +374,15 @@ public class frmYM2203 extends frmBase {
         DrawBuff.screenInitYM2203(frameBuffer, tp);
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
 
-            //上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (int ch = 0; ch < 6; ch++) {
                         if (newParam.channels[ch].mask)
@@ -400,7 +400,7 @@ public class frmYM2203 extends frmBase {
                 if (ch < 0) return;
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    //マスク
+                    // Mask.
                     if (newParam.channels[ch].mask)
                         parent.resetChannelMask(EnmChip.YM2203, chipId, ch);
                     else
@@ -408,7 +408,7 @@ public class frmYM2203 extends frmBase {
                     return;
                 }
 
-                //マスク解除
+                // Unmask.
                 for (ch = 0; ch < 9; ch++) parent.resetChannelMask(EnmChip.YM2203, chipId, ch);
                 return;
             }
@@ -420,7 +420,7 @@ public class frmYM2203 extends frmBase {
             int instCh = Math.min(px / (13 * 8), 2);
 
             if (instCh < 3) {
-                //クリップボードに音色をコピーする
+                // Copying a tone to the clipboard
                 parent.getInstCh(EnmChip.YM2203, instCh, chipId);
             }
         }

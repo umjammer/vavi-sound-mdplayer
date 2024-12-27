@@ -73,12 +73,12 @@ public class frmK051649 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipId;
-    private int zoom;
+    private final int chipId;
+    private final int zoom;
 
-    private MDChipParams.K051649 newParam;
-    private MDChipParams.K051649 oldParam = new MDChipParams.K051649();
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MDChipParams.K051649 newParam;
+    private final MDChipParams.K051649 oldParam = new MDChipParams.K051649();
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmK051649.class);
 
@@ -105,7 +105,7 @@ public class frmK051649 extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -134,7 +134,7 @@ public class frmK051649 extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentResized(ComponentEvent e) {
         }
@@ -186,15 +186,15 @@ public class frmK051649 extends frmBase {
         }
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
 
-            //上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (int ch = 0; ch < 5; ch++) {
                         if (newParam.channels[ch].mask)
@@ -212,12 +212,12 @@ public class frmK051649 extends frmBase {
                 if (ch < 0) return;
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    //マスク
+                    // Mask.
                     parent.setChannelMask(EnmChip.K051649, chipId, ch);
                     return;
                 }
 
-                //マスク解除
+                // Unmask.
                 for (ch = 0; ch < 5; ch++) parent.resetChannelMask(EnmChip.K051649, chipId, ch);
                 return;
             }
@@ -229,7 +229,7 @@ public class frmK051649 extends frmBase {
             int instCh = ((py < 12 * 8) ? 0 : 3) + px / (8 * 13);
 
             if (instCh < 5) {
-                //クリップボードに音色をコピーする
+                // Copying a tone to the clipboard
                 parent.getInstCh(EnmChip.K051649, instCh, chipId);
             }
         }

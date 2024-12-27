@@ -49,7 +49,7 @@ public class M3UFileFormat extends BaseFileFormat {
         if (entry == null) pl = M3U.loadM3U(mc.fileName, rootPath);
         else pl = M3U.loadM3U(archive, entry, mc.arcFileName);
         if (pl == null) return null;
-        if (pl.getMusics() == null || pl.getMusics().size() < 1) return null;
+        if (pl.getMusics() == null || pl.getMusics().isEmpty()) return null;
 
         List<PlayList.Music> musics = new ArrayList<>();
         for (PlayList.Music m : pl.getMusics()) musics.addAll(addFileLoop(m, archive, entry));
@@ -64,7 +64,7 @@ public class M3UFileFormat extends BaseFileFormat {
         if (entry == null) pl = M3U.loadM3U(mc.fileName, rootPath);
         else pl = M3U.loadM3U(archive, entry, mc.arcFileName);
         if (pl == null) return null;
-        if (pl.getMusics() == null || pl.getMusics().size() < 1) return null;
+        if (pl.getMusics() == null || pl.getMusics().isEmpty()) return null;
 
         List<PlayList.Music> musics = new ArrayList<>();
         for (PlayList.Music m : pl.getMusics()) musics.addAll(addFileLoop(index, m, archive, entry));

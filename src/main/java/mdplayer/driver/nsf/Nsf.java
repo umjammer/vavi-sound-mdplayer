@@ -60,9 +60,9 @@ public class Nsf extends BaseDriver {
         version = buf[0x05] & 0xff;
         songs = buf[0x06] & 0xff;
         start = buf[0x07] & 0xff;
-        load_address = buf[0x08] | (buf[0x09] << 8);
-        initAddress = buf[0x0a] | (buf[0x0B] << 8);
-        playAddress = buf[0x0c] | (buf[0x0D] << 8);
+        load_address = (buf[0x08] & 0xff) | ((buf[0x09] & 0xff) << 8);
+        initAddress = (buf[0x0a] & 0xff) | ((buf[0x0B] & 0xff) << 8);
+        playAddress = (buf[0x0c] & 0xff) | ((buf[0x0D] & 0xff) << 8);
 
         List<Byte> strLst = new ArrayList<>();
         int tagAdr = 0x0e;
@@ -96,10 +96,10 @@ public class Nsf extends BaseDriver {
         ripper = ""; // NSFe only
         text = ""; // NSFe only
         text_len = 0; // NSFe only
-        speedNtsc = buf[0x6e] | (buf[0x6f] << 8);
+        speedNtsc = (buf[0x6e] & 0xff) | ((buf[0x6f] & 0xff) << 8);
         System.arraycopy(buf, 112, bankSwitch, 0, 8);
-        speedPal = buf[0x78] | (buf[0x79] << 8);
-        palNtsc = buf[0x7a];
+        speedPal = (buf[0x78] & 0xff) | ((buf[0x79] & 0xff) << 8);
+        palNtsc = buf[0x7a] & 0xff;
 
         if (speedPal == 0)
             speedPal = 0x4e20;
@@ -268,7 +268,7 @@ public class Nsf extends BaseDriver {
     private LoopDetector.NESDetector ld = null;
 //    private NESDetectorEx ld = null;
 
-    private double rate; // setting.getoutputDevice().SampleRate;
+    private final double rate; // setting.getoutputDevice().SampleRate;
     private double cpu_clock_rest;
     private double apu_clock_rest;
     private int time_in_ms;

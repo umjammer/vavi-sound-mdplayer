@@ -5,6 +5,7 @@ import java.util.List;
 
 import mdplayer.PlayList;
 import mdplayer.plugin.MDLPlugin;
+import mdplayer.plugin.MDRPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
@@ -36,7 +37,7 @@ public class MDLFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return new MDLPlugin();
+        return Plugin.getPlugin(MDLPlugin.class);
     }
 
     @Override

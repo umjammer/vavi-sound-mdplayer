@@ -108,7 +108,7 @@ public class MoonDriverDotNET extends BaseDriver {
         vgmSpeed = 1;
 
 //#if DEBUG
-        //実チップスレッドは処理をスキップ(デバッグ向け)
+        // The actual chip thread skips processing (for debugging)
         if (model == EnmModel.RealModel) return true;
 //#endif
 
@@ -124,7 +124,7 @@ public class MoonDriverDotNET extends BaseDriver {
     @Override
     public void processOneFrame() {
 //#if DEBUG
-        //実チップスレッドは処理をスキップ(デバッグ向け)
+        // The actual chip thread skips processing (for debugging)
         if (model == EnmModel.RealModel) {
             stopped = true;
             return;
@@ -148,7 +148,7 @@ public class MoonDriverDotNET extends BaseDriver {
 
             if (moonDriverDriver.getStatus() < 1) {
                 if (moonDriverDriver.getStatus() == 0) {
-                    Thread.sleep((int) (latency * 2.0)); // 実際の音声が発音しきるまでlatency*2の分だけ待つ
+                    Thread.sleep((int) (latency * 2.0)); // Wait for latency*2 until the actual voice is fully pronounced
                 }
                 stopped = true;
             }
@@ -180,7 +180,7 @@ public class MoonDriverDotNET extends BaseDriver {
         }
 
         if (ret == null || info == null) return null;
-        if (info.errorList.size() > 0) {
+        if (!info.errorList.isEmpty()) {
             if (model == EnmModel.VirtualModel) {
                 JOptionPane.showMessageDialog(null, "Compile error");
             }
@@ -235,7 +235,7 @@ public class MoonDriverDotNET extends BaseDriver {
         }
 
         if (ret == null || info == null) return false;
-        if (info.errorList.size() > 0) {
+        if (!info.errorList.isEmpty()) {
             if (model == EnmModel.VirtualModel) {
                 JOptionPane.showMessageDialog(null, "Compile error");
             }
@@ -351,18 +351,18 @@ public class MoonDriverDotNET extends BaseDriver {
     private void opl4WaitSend(long size, int elapsed) {
         if (model == EnmModel.VirtualModel) {
 //            JOptionPane.showMessageDialog("elapsed:%d size:%d".formatted(elapsed, size));
-//            int n = Math.max((int) (size / 20 - elapsed), 0);//20 閾値(magic number)
+//            int n = Math.max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
 //            Thread.sleep(n);
         }
 
-//        // サイズと経過時間から、追加でウエイトする。
-//        int m = Math.max((int)(size / 20 - elapsed), 0); // 20 閾値(magic number)
+//        // Add additional weight based on size and elapsed time.
+//        int m = Math.max((int)(size / 20 - elapsed), 0); // 20 Threshold (magic number)
 //        Thread.sleep(m);
     }
 
     public static class MoonDriverChipAction implements ChipAction {
-        private Consumer<ChipDatum> opl4Write;
-        private BiConsumer<Long, Integer> opl4WaitSend;
+        private final Consumer<ChipDatum> opl4Write;
+        private final BiConsumer<Long, Integer> opl4WaitSend;
 
         public MoonDriverChipAction(Consumer<ChipDatum> opl4Write, BiConsumer<Long, Integer> opl4WaitSend) {
             this.opl4Write = opl4Write;

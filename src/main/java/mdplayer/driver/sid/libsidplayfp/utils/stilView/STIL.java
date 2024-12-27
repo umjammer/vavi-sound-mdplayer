@@ -142,12 +142,12 @@ public class STIL {
     /**
      * Path to STIL.
      */
-    private String pathToStil;
+    private final String pathToStil;
 
     /**
      * Path to BUGlist.
      */
-    private String pathToBugList;
+    private final String pathToBugList;
 
     /**
      * Version number/copyright String
@@ -190,8 +190,8 @@ public class STIL {
     private String bugbuf;
 
     // Buffers to hold the resulting Strings
-    private String resultEntry = null;
-    private String resultBug = null;
+    private final String resultEntry = null;
+    private final String resultBug = null;
 
     // final ios_base::openmode STILopenFlags = ios::in | ios::binary;
     public FileMode STILopenFlags = FileMode.Open; // | ios::binary;
@@ -1109,7 +1109,7 @@ public class STIL {
         for (; ; ) {
             getStilLine(inFile, line);
 
-            if (line.length() == 0)
+            if (line.isEmpty())
                 break;
 
             bufferBuilder.append(line);

@@ -13,6 +13,7 @@ import mdplayer.driver.Vgm;
 import mdplayer.driver.nsf.Nsf;
 import mdplayer.plugin.NSFPlugin;
 import mdplayer.plugin.Plugin;
+import mdplayer.plugin.RCPPlugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
@@ -141,7 +142,7 @@ public class NSFFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return new NSFPlugin();
+        return Plugin.getPlugin(NSFPlugin.class);
     }
 
     @Override
@@ -161,7 +162,7 @@ public class NSFFileFormat extends BaseFileFormat {
 
         if (mc.songNo != -1) {
             PlayList.Music music;
-            if (musics.size() > 0) {
+            if (!musics.isEmpty()) {
                 music = musics.get(0);
                 music.songNo = mc.songNo;
                 music.title = mc.title;
@@ -194,7 +195,7 @@ public class NSFFileFormat extends BaseFileFormat {
 
         if (mc.songNo != -1) {
             PlayList.Music music;
-            if (musics.size() > 0) {
+            if (!musics.isEmpty()) {
                 music = musics.get(0);
                 music.songNo = mc.songNo;
                 music.title = mc.title;

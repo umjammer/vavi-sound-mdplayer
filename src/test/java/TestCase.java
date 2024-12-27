@@ -12,19 +12,20 @@ import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import vavi.util.Debug;
 import vavi.util.properties.annotation.Property;
 import vavi.util.properties.annotation.PropsEntity;
 
 
 /**
- * Test001.
+ * TestCase.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-06-03 nsano initial version <br>
  */
 @PropsEntity(url = "file:local.properties")
-public class Test001 {
+public class TestCase {
 
     static boolean localPropertiesExists() {
         return Files.exists(Paths.get("local.properties"));
@@ -41,7 +42,9 @@ public class Test001 {
         if (localPropertiesExists()) {
             PropsEntity.Util.bind(this);
         }
-Debug.println("volume: " + volume);
+
+        System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
+Debug.println("volume: " + volume + ", " + System.getProperty("mdplayer.volume") + ", " + System.getProperty("user.dir"));
     }
 
     /**
@@ -60,6 +63,7 @@ Debug.println(plugin.getClass().getName());
     }
 
     @Test
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test1() throws Exception {
         main(new String[] {file});
 

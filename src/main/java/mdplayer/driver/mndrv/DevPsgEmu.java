@@ -3,9 +3,9 @@ package mdplayer.driver.mndrv;
 import mdplayer.driver.mxdrv.XMemory;
 
 
-//
-//	part of YM2608 - Psg emulation
-//
+/**
+ * part of YM2608 - Psg emulation
+ */
 public class DevPsgEmu {
     public Reg reg;
     public XMemory mm;
@@ -17,7 +17,7 @@ public class DevPsgEmu {
     public DevPsg devpsg;
     public DevOpm devopm;
 
-    //─────────────────────────────────────
+    /** */
     public void _psge_note_set() {
         mm.write(reg.a5 + W.key, (byte) reg.getD0_B());
 
@@ -27,7 +27,7 @@ public class DevPsgEmu {
         devopm._opm_keyon();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _emu_psg_freq() {
         reg.D1_L = 0;
         reg.D2_L = 12;
@@ -91,9 +91,9 @@ public class DevPsgEmu {
         mndrv._OPM_WRITE4();
     }
 
-    //─────────────────────────────────────
-    //	MML コマンド処理(Psg 部)
-    //
+    /**
+     * MML command processing (Psg section)
+     */
     public void _psge_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
 
@@ -106,10 +106,10 @@ public class DevPsgEmu {
             break; // 81
         case 0x02:
             devopm._OPM_82();
-            break; // 82	key off
+            break; // 82 key off
         case 0x03:
             comcmds._COM_83();
-            break; // 83	すらー
+            break; // 83 Slurs
         case 0x04:
             _PSGE_NOP();
             break; // 84
@@ -118,16 +118,16 @@ public class DevPsgEmu {
             break; // 85
         case 0x06:
             comcmds._COM_86();
-            break; // 86	同期信号送信
+            break; // 86 Synchronization signal transmission
         case 0x07:
             comcmds._COM_87();
-            break; // 87	同期信号待ち
+            break; // 87 Waiting for sync signal
         case 0x08:
             devpsg._PSG_88();
-            break; // 88	ぴっちべんど
+            break; // 88 Pitch Bend
         case 0x09:
             devpsg._PSG_89();
-            break; // 89	ぽるためんと
+            break; // 89 Portamento
         case 0x0a:
             _PSGE_NOP();
             break; // 8A
@@ -149,19 +149,19 @@ public class DevPsgEmu {
 
         case 0x10:
             comcmds._COM_90();
-            break; // 90	q
+            break; // 90 q
         case 0x11:
             comcmds._COM_91();
-            break; // 91	@q
+            break; // 91 @q
         case 0x12:
             devopm._OPM_92();
-            break; // 92	keyoff rr cut switch
+            break; // 92 keyoff rr cut switch
         case 0x13:
             comcmds._COM_93();
-            break; // 93	neg @q
+            break; // 93 neg @q
         case 0x14:
             comcmds._COM_94();
-            break; // 94	keyoff mode
+            break; // 94 keyoff mode
         case 0x15:
             _PSGE_NOP();
             break; // 95
@@ -173,13 +173,13 @@ public class DevPsgEmu {
             break; // 97
         case 0x18:
             devopm._OPM_98();
-            break; // 98	擬似リバーブ
+            break; // 98 Pseudo reverb
         case 0x19:
             devopm._OPM_99();
-            break; // 99	擬似エコー
+            break; // 99 Pseudo Echo
         case 0x1a:
             comcmds._COM_9A();
-            break; // 9A 擬似step time
+            break; // 9A Pseudo step time
         case 0x1b:
             _PSGE_NOP();
             break; // 9B
@@ -198,16 +198,16 @@ public class DevPsgEmu {
 
         case 0x20:
             devopm._OPM_F0();
-            break; // A0 音色切り替え
+            break; // A0 Tone switching
         case 0x21:
             devopm._OPM_A1();
-            break; // A1 バンク&音色切り替え
+            break; // A1 Bank & Tone switching
         case 0x22:
             devpsg._PSG_A2();
             break; // A2
         case 0x23:
             devopm._OPM_A3();
-            break; // A3 音量テーブル切り替え
+            break; // A3 Volume table switching
         case 0x24:
             devopm._OPM_F2();
             break; // A4 音量
@@ -222,7 +222,7 @@ public class DevPsgEmu {
             break; // A7
         case 0x28:
             comcmds._COM_A8();
-            break; // A8 相対音量モード
+            break; // A8 Relative Volume Mode
         case 0x29:
             _PSGE_NOP();
             break; // A9
@@ -289,7 +289,7 @@ public class DevPsgEmu {
             break; // BD
         case 0x3e:
             comcmds._COM_BE();
-            break; // BE ジャンプ
+            break; // BE Jump
         case 0x3f:
             comcmds._COM_BF();
             break; // BF
@@ -297,16 +297,16 @@ public class DevPsgEmu {
         // Psg 系
         case 0x40:
             comcmds._COM_C0();
-            break; // C0 ソフトウェアエンベロープ 1
+            break; // C0 Software Envelope 1
         case 0x41:
             comcmds._COM_C1();
-            break; // C1 ソフトウェアエンベロープ 2
+            break; // C1 Software Envelope 2
         case 0x42:
             _PSGE_NOP();
             break; // C2
         case 0x43:
             comcmds._COM_C3();
-            break; // C3	switch
+            break; // C3 switch
         case 0x44:
             comcmds._COM_C4();
             break; // C4 env(num)
@@ -347,10 +347,10 @@ public class DevPsgEmu {
         // KEY 系
         case 0x50:
             comcmds._COM_D0();
-            break; // D0 キートランスポーズ
+            break; // D0 Key Transpose
         case 0x51:
             comcmds._COM_D1();
-            break; // D1 相対キートランスポーズ
+            break; // D1 Relative Key Transpose
         case 0x52:
             _PSGE_NOP();
             break; // D2
@@ -371,16 +371,16 @@ public class DevPsgEmu {
             break; // D7
         case 0x58:
             comcmds._COM_D8();
-            break; // D8 ディチューン
+            break; // D8 Detune
         case 0x59:
             comcmds._COM_D9();
-            break; // D9 相対ディチューン
+            break; // D9 Relative Detune
         case 0x5a:
             _PSGE_NOP();
-            break; // DA スロットディチューン
+            break; // DA Slot Detune
         case 0x5b:
             _PSGE_NOP();
-            break; // DB 相対スロットディチューン
+            break; // DB Relative Slot Detune
         case 0x5c:
             _PSGE_NOP();
             break; // DC
@@ -444,10 +444,10 @@ public class DevPsgEmu {
             devpsg._PSG_C9();
             break; // EF hardware LFO delay
 
-        // システコル系
+        // System Call series
         case 0x70:
             devopm._OPM_F0();
-            break; // F0	@
+            break; // F0 @
         case 0x71:
             comcmds._COM_D8();
             break; // F1
@@ -462,31 +462,31 @@ public class DevPsgEmu {
             break; // F4 pan
         case 0x75:
             devopm._OPM_F5();
-            break; // F5	) volup
+            break; // F5 ) volup
         case 0x76:
             devopm._OPM_F6();
             break; // F6(voldown
         case 0x77:
             _PSGE_NOP();
-            break; // F7 効果音モード切り替え
+            break; // F7 Sound effect mode switching
         case 0x78:
             devopm._OPM_F8();
-            break; // F8 スロットマスク変更
+            break; // F8 Slot mask change
         case 0x79:
             comcmds._COM_F9();
-            break; // F9 永久ループポイントマーク
+            break; // F9 Permanent loop point mark
         case 0x7a:
             devopm._OPM_FA();
             break; // FA y command
         case 0x7b:
             comcmds._COM_FB();
-            break; // FB リピート抜け出し
+            break; // FB Exiting from Repeat
         case 0x7c:
             comcmds._COM_FC();
-            break; // FC リピート開始
+            break; // FC Repeat Start
         case 0x7d:
             comcmds._COM_FD();
-            break; // FD リピート終端
+            break; // FD Repeat Termination
         case 0x7e:
             comcmds._COM_FE();
             break; // FE tempo
@@ -496,21 +496,19 @@ public class DevPsgEmu {
         }
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _PSGE_C9() {
         reg.D1_L = 0;
         reg.setD1_B(mm.readByte(reg.a1++));
     }
 
-    //─────────────────────────────────────
-    //
+    /** */
     public void _PSGE_NOP() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x7f));
         devopm._opm_keyoff();
     }
 
-    //─────────────────────────────────────
-    //
+    /** */
     public void _ch_psge_lfo_job() {
         comwave._ch_effect();
         //_ch_psge_lfo:
@@ -573,7 +571,7 @@ public class DevPsgEmu {
         }
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_psge_mml_job() {
         comanalyze._track_analyze();
         //_ch_psge_bend_job:
@@ -586,9 +584,9 @@ public class DevPsgEmu {
         _ch_psge_bend();
     }
 
-    //─────────────────────────────────────
-    //	pitch bend
-    //
+    /**
+     * pitch bend
+     */
     public void _ch_psge_bend() {
         reg.a4 = reg.a5 + W.p_pattern4;
         mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
@@ -630,9 +628,9 @@ public class DevPsgEmu {
         _emu_psg_freq();
     }
 
-    //─────────────────────────────────────
-    //	portament
-    //
+    /**
+     * portamento
+     */
     public void _ch_psge_porta() {
         reg.a4 = reg.a5 + W.p_pattern4;
         mm.write(reg.a4 + W_L.count, (byte) (mm.readByte(reg.a4 + W_L.count) - 1));

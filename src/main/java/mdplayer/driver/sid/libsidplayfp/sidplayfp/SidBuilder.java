@@ -35,7 +35,7 @@ import mdplayer.driver.sid.libsidplayfp.SidEmu;
  */
 public class SidBuilder {
 
-    private String name;
+    private final String name;
 
     protected String errorBuffer;
 

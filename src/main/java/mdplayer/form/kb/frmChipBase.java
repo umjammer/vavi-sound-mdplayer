@@ -62,7 +62,7 @@ public class frmChipBase extends frmBase {
         initializeComponent();
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
         }
@@ -72,7 +72,7 @@ public class frmChipBase extends frmBase {
         }
     };
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
         }

@@ -91,6 +91,6 @@ public class VGMFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return new VGMPlugin();
+        return Plugin.getPlugin(VGMPlugin.class);
     }
 }

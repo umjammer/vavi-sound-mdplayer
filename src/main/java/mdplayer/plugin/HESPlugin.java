@@ -9,10 +9,12 @@ import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.driver.hes.Hes;
 import mdplayer.format.FileFormat;
+import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.HuC6280Inst;
 
 import static java.lang.System.getLogger;
+import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
@@ -82,14 +84,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
             //if (!driverReal.init(vgmBuf, chipRegister, enmModel.RealModel, new enmUseChip[] { enmUseChip.Unuse }, 0)) return false;
 
             MDSound.Chip chip;
-            HuC6280Inst huc = new HuC6280Inst();
+            HuC6280Inst huc = Instrument.getInstrument(HuC6280Inst.class);
 
             chip = new MDSound.Chip();
             chip.id = 0;
             chip.instrument = huc;
             chip.additionalUpdate = ((Hes) audio.driverVirtual)::additionalUpdate;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = setting.getBalance().getVolume("MAIN", HuC6280Inst.class);
+            chip.volume = setting.getBalance().getVolume(MAIN_TAG, HuC6280Inst.class);
             chip.clock = 3579545;
             chip.option = null;
             lstChips.add(chip);

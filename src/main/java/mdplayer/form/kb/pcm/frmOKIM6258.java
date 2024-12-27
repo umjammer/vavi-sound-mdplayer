@@ -36,8 +36,8 @@ public class frmOKIM6258 extends frmBase {
     private int zoom = 1;
 
     private MDChipParams.OKIM6258 newParam = null;
-    private MDChipParams.OKIM6258 oldParam = new MDChipParams.OKIM6258();
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MDChipParams.OKIM6258 oldParam = new MDChipParams.OKIM6258();
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmOKIM6258.class);
 
@@ -64,7 +64,7 @@ public class frmOKIM6258 extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -93,7 +93,7 @@ public class frmOKIM6258 extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -183,9 +183,9 @@ public class frmOKIM6258 extends frmBase {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
 
-            // 上部のラベル行の場合は何もしない
+            //  For top label row, do nothing
             if (py < 1 * 8) {
-                // 但しchをクリックした場合はマスク反転
+                //  However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     if (newParam.mask)
                         parent.resetChannelMask(EnmChip.OKIM6258, chipId, 0);
@@ -206,7 +206,7 @@ public class frmOKIM6258 extends frmBase {
                     return;
                 }
 
-                // マスク解除
+                //  Unmask.
                 parent.resetChannelMask(EnmChip.OKIM6258, chipId, 0);
             }
         }

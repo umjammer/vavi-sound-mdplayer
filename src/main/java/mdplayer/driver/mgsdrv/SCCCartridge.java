@@ -7,9 +7,9 @@ import mdplayer.Common.EnmModel;
 public class SCCCartridge implements Cartridge {
 
     private boolean readOnly = true;
-    private byte[] mem = new byte[65536];
-    private ChipRegister chipRegister;
-    private EnmModel model;
+    private final byte[] mem = new byte[65536];
+    private final ChipRegister chipRegister;
+    private final EnmModel model;
 
     public SCCCartridge(ChipRegister chipRegister, EnmModel model) {
         this.chipRegister = chipRegister;

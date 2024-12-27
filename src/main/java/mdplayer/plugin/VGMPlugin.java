@@ -18,6 +18,7 @@ import mdsound.MDSound;
 import mdsound.chips.Ym3438Const;
 
 import static java.lang.System.getLogger;
+import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
@@ -46,7 +47,7 @@ public class VGMPlugin extends BasePlugin {
 //        }
         boolean r = vgmPlay();
         if (!r) {
- logger.log(Level.WARNING, "cannot start: " + this);
+logger.log(Level.WARNING, "cannot start: " + this);
             return false;
         }
         super.play();
@@ -115,22 +116,22 @@ public class VGMPlugin extends BasePlugin {
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).sn76489DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.option = null;
 
                     if ((i == 0 && setting.getSN76489Type()[0].getUseEmu()[0])
                             || (i == 1 && setting.getSN76489Type()[1].getUseEmu()[0])) {
-                        if (sn76489 == null) sn76489 = new Sn76489Inst();
+                        if (sn76489 == null) sn76489 = Instrument.getInstrument(Sn76489Inst.class);
                         chip.instrument = sn76489;
                     } else if ((i == 0 && setting.getSN76489Type()[0].getUseEmu()[1])
                             || (i == 1 && setting.getSN76489Type()[1].getUseEmu()[1])) {
-                        if (sn76496 == null) sn76496 = new Sn76496Inst();
+                        if (sn76496 == null) sn76496 = Instrument.getInstrument(Sn76496Inst.class);
                         chip.instrument = sn76496;
                         chip.option = ((Vgm) audio.driverVirtual).sn76489Option;
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Sn76489Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Sn76489Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).sn76489ClockValue
                             | (((Vgm) audio.driverVirtual).sn76489NGPFlag ? 0x8000_0000 : 0);
                     audio.clockSN76489 = chip.clock & 0x7fff_ffff;
@@ -153,7 +154,7 @@ public class VGMPlugin extends BasePlugin {
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2612DualChipFlag ? 2 : 1); i++) {
                     //mdsound.ym2612 ym2612 = new mdsound.ym2612();
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.option = null;
 
                     if ((i == 0 && ((setting.getYM2612Type()[0].getUseEmu()[0] ||
@@ -164,13 +165,13 @@ public class VGMPlugin extends BasePlugin {
                                     setting.getYM2612Type()[1].getRealChipInfo()[0].getOnlyPCMEmulation()) ||
                                     setting.getYM2612Type()[1].getUseReal()[0])
                     ) {
-                        if (ym2612 == null) ym2612 = new Ym2612Inst();
+                        if (ym2612 == null) ym2612 = Instrument.getInstrument(Ym2612Inst.class);
                         chip.instrument = ym2612;
                         chip.option = new Object[] {
                                 (setting.getNukedOPN2().gensDACHPF ? 0x01 : 0x00) | (setting.getNukedOPN2().gensSSGEG ? 0x02 : 0x00)
                         };
                     } else if ((i == 0 && setting.getYM2612Type()[0].getUseEmu()[1]) || (i == 1 && setting.getYM2612Type()[1].getUseEmu()[1])) {
-                        if (ym3438 == null) ym3438 = new Ym3438Inst();
+                        if (ym3438 == null) ym3438 = Instrument.getInstrument(Ym3438Inst.class);
                         chip.instrument = ym3438;
                         switch (setting.getNukedOPN2().emuType) {
                         case 0:
@@ -190,12 +191,12 @@ public class VGMPlugin extends BasePlugin {
                             break;
                         }
                     } else if ((i == 0 && setting.getYM2612Type()[0].getUseEmu()[2]) || (i == 1 && setting.getYM2612Type()[0].getUseEmu()[2])) {
-                        if (ym2612mame == null) ym2612mame = new MameYm2612Inst();
+                        if (ym2612mame == null) ym2612mame = Instrument.getInstrument(MameYm2612Inst.class);
                         chip.instrument = ym2612mame;
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym2612Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).ym2612ClockValue;
                     audio.clockYM2612 = ((Vgm) audio.driverVirtual).ym2612ClockValue;
 
@@ -212,14 +213,14 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).rf5C68ClockValue != 0) {
-                Rf5c68Inst rf5c68 = new Rf5c68Inst();
+                Rf5c68Inst rf5c68 = Instrument.getInstrument(Rf5c68Inst.class);
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).rf5C68DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = rf5c68;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Rf5c68Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Rf5c68Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).rf5C68ClockValue;
                     chip.option = null;
 
@@ -234,14 +235,14 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).rf5C164ClockValue != 0) {
-                ScdPcmInst rf5c164 = new ScdPcmInst();
+                ScdPcmInst rf5c164 = Instrument.getInstrument(ScdPcmInst.class);
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).rf5C164DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = rf5c164;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", ScdPcmInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, ScdPcmInst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).rf5C164ClockValue;
                     chip.option = null;
 
@@ -258,10 +259,10 @@ public class VGMPlugin extends BasePlugin {
             if (((Vgm) audio.driverVirtual).pwmClockValue != 0) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                PwmInst pwm = new PwmInst();
+                PwmInst pwm = Instrument.getInstrument(PwmInst.class);
                 chip.instrument = pwm;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("MAIN", PwmInst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, PwmInst.class);
                 chip.clock = ((Vgm) audio.driverVirtual).pwmClockValue;
                 chip.option = null;
 
@@ -274,13 +275,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).c140ClockValue != 0) {
-                C140Inst c140 = new C140Inst();
+                C140Inst c140 = Instrument.getInstrument(C140Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).c140DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = c140;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", C140Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, C140Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).c140ClockValue;
                     chip.option = new Object[] {((Vgm) audio.driverVirtual).C140Type};
 
@@ -295,13 +296,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).multiPCMClockValue != 0) {
-                MultiPcmInst multipcm = new MultiPcmInst();
+                MultiPcmInst multipcm = Instrument.getInstrument(MultiPcmInst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).multiPCMDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = multipcm;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", MultiPcmInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, MultiPcmInst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).multiPCMClockValue;
                     chip.option = null;
 
@@ -318,10 +319,10 @@ public class VGMPlugin extends BasePlugin {
             if (((Vgm) audio.driverVirtual).okiM6258ClockValue != 0) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                OkiM6258Inst okim6258 = new OkiM6258Inst();
+                OkiM6258Inst okim6258 = Instrument.getInstrument(OkiM6258Inst.class);
                 chip.instrument = okim6258;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("MAIN", OkiM6258Inst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, OkiM6258Inst.class);
                 chip.clock = ((Vgm) audio.driverVirtual).okiM6258ClockValue;
                 chip.option = new Object[] {((Vgm) audio.driverVirtual).okiM6258Type};
                 //chips.option = new Object[1] { 6 };
@@ -336,13 +337,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).okiM6295ClockValue != 0) {
-                OkiM6295Inst okim6295 = new OkiM6295Inst();
+                OkiM6295Inst okim6295 = Instrument.getInstrument(OkiM6295Inst.class);
                 for (byte i = 0; i < (((Vgm) audio.driverVirtual).okiM6295DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = okim6295;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", OkiM6295Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, OkiM6295Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).okiM6295ClockValue;
                     chip.option = null;
                     okim6295.okim6295_set_srchg_cb(i, this::changeChipSampleRate, chip);
@@ -360,10 +361,10 @@ public class VGMPlugin extends BasePlugin {
             if (((Vgm) audio.driverVirtual).segaPCMClockValue != 0) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                SegaPcmInst segapcm = new SegaPcmInst();
+                SegaPcmInst segapcm = Instrument.getInstrument(SegaPcmInst.class);
                 chip.instrument = segapcm;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("MAIN", SegaPcmInst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, SegaPcmInst.class);
                 chip.clock = ((Vgm) audio.driverVirtual).segaPCMClockValue;
                 chip.option = new Object[] {((Vgm) audio.driverVirtual).segaPCMInterface};
 
@@ -376,18 +377,25 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).yn2608ClockValue != 0) {
-                Ym2608Inst ym2608 = new Ym2608Inst();
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2608DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
-                    chip.instrument = ym2608;
+                    chip.id = i;
+
+                    if (setting.getYM2608Type()[i].getUseEmu()[0]) {
+                        Ym2608Inst ym2608 = Instrument.getInstrument(Ym2608Inst.class);
+                        chip.instrument = ym2608;
+                        chip.setVolumes.put("FM", ym2608::setFMVolume);
+                        chip.setVolumes.put("PSG", ym2608::setPSGVolume);
+                        chip.setVolumes.put("Rhythm", ym2608::setRhythmVolume);
+                        chip.setVolumes.put("Adpcm", ym2608::setAdpcmVolume);
+                    } else if (setting.getYM2608Type()[i].getUseEmu()[1]) {
+                        YmFmYm2608Inst ym2608 = Instrument.getInstrument(YmFmYm2608Inst.class);
+                        chip.instrument = ym2608;
+                    }
+
                     chip.samplingRate = 55467; // (int)setting.getoutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym2608Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass() /* Ym2608Inst.class */);
                     chip.clock = ((Vgm) audio.driverVirtual).yn2608ClockValue;
-                    chip.setVolumes.put("FM", ym2608::setFMVolume);
-                    chip.setVolumes.put("PSG", ym2608::setPSGVolume);
-                    chip.setVolumes.put("Rhythm", ym2608::setRhythmVolume);
-                    chip.setVolumes.put("Adpcm", ym2608::setAdpcmVolume);
                     Function<String, Stream> fn = Common::getOPNARyhthmStream;
                     chip.option = new Object[] {fn};
                     hiyorimiDeviceFlag |= 0x2;
@@ -407,21 +415,21 @@ public class VGMPlugin extends BasePlugin {
                 X68SoundYm2151Inst ym2151_x68sound = null;
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2151DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
 
                     if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[0]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[0])) {
-                        if (ym2151 == null) ym2151 = new Ym2151Inst();
+                        if (ym2151 == null) ym2151 = Instrument.getInstrument(Ym2151Inst.class);
                         chip.instrument = ym2151;
                     } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[1]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[1])) {
-                        if (ym2151_mame == null) ym2151_mame = new MameYm2151Inst();
+                        if (ym2151_mame == null) ym2151_mame = Instrument.getInstrument(MameYm2151Inst.class);
                         chip.instrument = ym2151_mame;
                     } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[2]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[2])) {
-                        if (ym2151_x68sound == null) ym2151_x68sound = new X68SoundYm2151Inst();
+                        if (ym2151_x68sound == null) ym2151_x68sound = Instrument.getInstrument(X68SoundYm2151Inst.class);
                         chip.instrument = ym2151_x68sound;
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym2151Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass() /* Ym2151Inst.class */);
                     chip.clock = ((Vgm) audio.driverVirtual).yn2151ClockValue;
                     chip.option = null;
 
@@ -438,16 +446,23 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).ym2203ClockValue != 0) {
-                Ym2203Inst ym2203 = new Ym2203Inst();
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2203DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
-                    chip.instrument = ym2203;
+                    chip.id = i;
+                    if (setting.getYM2203Type()[i].getUseEmu()[0]) {
+                        Ym2203Inst ym2203 = Instrument.getInstrument(Ym2203Inst.class);
+                        chip.instrument = ym2203;
+                        chip.setVolumes.put("FM", ym2203::setFMVolume);
+                        chip.setVolumes.put("PSG", ym2203::setPSGVolume);
+                    } else if (setting.getYM2203Type()[i].getUseEmu()[1]) {
+                        YmFmYm2203Inst ym2203 = Instrument.getInstrument(YmFmYm2203Inst.class);
+                        chip.instrument = ym2203;
+                        chip.setVolumes.put("FM", ym2203::setFMVolume);
+                        chip.setVolumes.put("PSG", ym2203::setPSGVolume);
+                    }
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym2203Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass() /* Ym2203Inst.class */);
                     chip.clock = ((Vgm) audio.driverVirtual).ym2203ClockValue;
-                    chip.setVolumes.put("FM", ym2203::setFMVolume);
-                    chip.setVolumes.put("PSG", ym2203::setPSGVolume);
                     chip.option = null;
 
                     audio.clockYM2203 = ((Vgm) audio.driverVirtual).ym2203ClockValue;
@@ -463,18 +478,25 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).ym2610ClockValue != 0) {
-                Ym2610Inst ym2610 = new Ym2610Inst();
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2610DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
-                    chip.instrument = ym2610;
+                    chip.id = i;
+
+                    if (setting.getYM2610Type()[i].getUseEmu()[0]) {
+                        Ym2610Inst ym2610 = Instrument.getInstrument(Ym2610Inst.class);
+                        chip.instrument = ym2610;
+                        chip.setVolumes.put("FM", ym2610::setFMVolume);
+                        chip.setVolumes.put("PSG", ym2610::setPSGVolume);
+                        chip.setVolumes.put("AdpcmA", ym2610::setAdpcmAVolume);
+                        chip.setVolumes.put("AdpcmB", ym2610::setAdpcmBVolume);
+                    } if (setting.getYM2610Type()[i].getUseEmu()[1]) {
+                        YmFmYm2610Inst ym2610 = Instrument.getInstrument(YmFmYm2610Inst.class);
+                        chip.instrument = ym2610;
+                    }
+
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym2610Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass() /* Ym2610Inst.class */);
                     chip.clock = ((Vgm) audio.driverVirtual).ym2610ClockValue & 0x7fffffff;
-                    chip.setVolumes.put("FM", ym2610::setFMVolume);
-                    chip.setVolumes.put("PSG", ym2610::setPSGVolume);
-                    chip.setVolumes.put("AdpcmA", ym2610::setAdpcmAVolume);
-                    chip.setVolumes.put("AdpcmB", ym2610::setAdpcmBVolume);
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
@@ -488,13 +510,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).ym3812ClockValue != 0) {
-                Ym3812Inst ym3812 = new Ym3812Inst();
+                Ym3812Inst ym3812 = Instrument.getInstrument(Ym3812Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym3812DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = ym3812;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym3812Inst.class)
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym3812Inst.class)
                     ;
                     chip.clock = ((Vgm) audio.driverVirtual).ym3812ClockValue & 0x7fffffff;
                     chip.option = null;
@@ -510,13 +532,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).ymF262ClockValue != 0) {
-                YmF262Inst ymf262 = new YmF262Inst();
+                YmF262Inst ymf262 = Instrument.getInstrument(YmF262Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ymF262DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = ymf262;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", YmF262Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF262Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).ymF262ClockValue & 0x7fffffff;
                     chip.option = null;
 
@@ -531,13 +553,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).ymF271ClockValue != 0) {
-                YmF271Inst ymf271 = new YmF271Inst();
+                YmF271Inst ymf271 = Instrument.getInstrument(YmF271Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ymF271DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = ymf271;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", YmF271Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF271Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).ymF271ClockValue & 0x7fffffff;
                     chip.option = null;
 
@@ -552,13 +574,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).ymF278BClockValue != 0) {
-                YmF278bInst ymf278b = new YmF278bInst();
+                YmF278bInst ymf278b = Instrument.getInstrument(YmF278bInst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ymF278BDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = ymf278b;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", YmF278bInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278bInst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).ymF278BClockValue & 0x7fffffff;
                     chip.option = new Object[] {Common.getApplicationFolder()};
 
@@ -573,13 +595,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).ymZ280BClockValue != 0) {
-                YmZ280bInst ymz280b = new YmZ280bInst();
+                YmZ280bInst ymz280b = Instrument.getInstrument(YmZ280bInst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ymZ280BDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = ymz280b;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", YmZ280bInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmZ280bInst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).ymZ280BClockValue & 0x7fffffff;
                     chip.option = null;
 
@@ -599,20 +621,20 @@ public class VGMPlugin extends BasePlugin {
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ay8910DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
 
                     if ((i == 0 && setting.getAY8910Type()[0].getUseEmu()[0])
                             || (i == 1 && setting.getAY8910Type()[1].getUseEmu()[0])) {
-                        if (ay8910 == null) ay8910 = new Ay8910Inst();
+                        if (ay8910 == null) ay8910 = Instrument.getInstrument(Ay8910Inst.class);
                         chip.instrument = ay8910;
                     } else if ((i == 0 && setting.getAY8910Type()[0].getUseEmu()[1])
                             || (i == 1 && setting.getAY8910Type()[1].getUseEmu()[1])) {
-                        if (ay8910mame == null) ay8910mame = new MameAy8910Inst();
+                        if (ay8910mame == null) ay8910mame = Instrument.getInstrument(MameAy8910Inst.class);
                         chip.instrument = ay8910mame;
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ay8910Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class);
                     chip.clock = (((Vgm) audio.driverVirtual).ay8910ClockValue & 0x7fffffff) / 2;
                     audio.clockAY8910 = chip.clock;
                     chip.option = null;
@@ -630,17 +652,17 @@ public class VGMPlugin extends BasePlugin {
             if (((Vgm) audio.driverVirtual).ym2413ClockValue != 0) {
                 Instrument opll;
                 if (!((Vgm) audio.driverVirtual).ym2413VRC7Flag) {
-                    opll = new Ym2413Inst();
+                    opll = Instrument.getInstrument(Ym2413Inst.class);
                 } else {
                     opll = new VRC7();
                 }
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2413DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = opll;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym2413Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2413Inst.class);
                     chip.clock = (((Vgm) audio.driverVirtual).ym2413ClockValue & 0x7fffffff);
                     chip.option = null;
 
@@ -655,13 +677,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).huC6280ClockValue != 0) {
-                HuC6280Inst huc6280 = new HuC6280Inst();
+                HuC6280Inst huc6280 = Instrument.getInstrument(HuC6280Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).huC6280DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = huc6280;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", HuC6280Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, HuC6280Inst.class);
                     chip.clock = (((Vgm) audio.driverVirtual).huC6280ClockValue & 0x7fffffff);
                     chip.option = null;
 
@@ -676,12 +698,12 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).qSoundClockValue != 0) {
-                CtrQSoundInst qsound = new CtrQSoundInst();
+                CtrQSoundInst qsound = Instrument.getInstrument(CtrQSoundInst.class);
                 chip = new MDSound.Chip();
                 chip.id = (byte) 0;
                 chip.instrument = qsound;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("MAIN", QSoundInst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, QSoundInst.class);
                 chip.clock = (((Vgm) audio.driverVirtual).qSoundClockValue);// & 0x7fffffff);
                 chip.option = null;
 
@@ -696,13 +718,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).saa1099ClockValue != 0) {
-                Saa1099Inst saa1099 = new Saa1099Inst();
+                Saa1099Inst saa1099 = Instrument.getInstrument(Saa1099Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).saA1099DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = saa1099;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Saa1099Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Saa1099Inst.class);
                     chip.clock = (((Vgm) audio.driverVirtual).saa1099ClockValue & 0x3fff_ffff);
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -715,13 +737,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).wSwanClockValue != 0) {
-                WsAudioInst WSwan = new WsAudioInst();
+                WsAudioInst WSwan = Instrument.getInstrument(WsAudioInst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).wSwanDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
-                    chip.id = (byte) i;
+                    chip.id = i;
                     chip.instrument = WSwan;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", WsAudioInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, WsAudioInst.class);
                     chip.clock = (((Vgm) audio.driverVirtual).wSwanClockValue & 0x3fff_ffff);
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -734,13 +756,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).pokeyClockValue != 0) {
-                PokeyInst pokey = new PokeyInst();
+                PokeyInst pokey = Instrument.getInstrument(PokeyInst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).pokeyDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = pokey;
                     chip.samplingRate = (((Vgm) audio.driverVirtual).pokeyClockValue & 0x3fff_ffff); // (int)setting.getoutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", PokeyInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, PokeyInst.class);
                     chip.clock = (((Vgm) audio.driverVirtual).pokeyClockValue & 0x3fff_ffff);
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -753,13 +775,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).x1_010ClockValue != 0) {
-                X1_010Inst X1_010 = new X1_010Inst();
+                X1_010Inst X1_010 = Instrument.getInstrument(X1_010Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).x1_010DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = X1_010;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", X1_010Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, X1_010Inst.class);
                     chip.clock = (((Vgm) audio.driverVirtual).x1_010ClockValue & 0x3fff_ffff);
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -772,13 +794,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).c352ClockValue != 0) {
-                C352Inst c352 = new C352Inst();
+                C352Inst c352 = Instrument.getInstrument(C352Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).c352DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = c352;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", C352Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, C352Inst.class);
                     chip.clock = (((Vgm) audio.driverVirtual).c352ClockValue & 0x7fff_ffff);
                     chip.setVolumes.put("Rear", c352::setRearMute);
                     chip.option = new Object[] {(((Vgm) audio.driverVirtual).c352ClockDivider)};
@@ -796,13 +818,13 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).ga20ClockValue != 0) {
-                Ga20Inst ga20 = new Ga20Inst();
+                Ga20Inst ga20 = Instrument.getInstrument(Ga20Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ga20DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = ga20;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ga20Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ga20Inst.class);
                     chip.clock = (((Vgm) audio.driverVirtual).ga20ClockValue & 0x7fff_ffff);
                     chip.option = null;
                     hiyorimiDeviceFlag |= 0x2;
@@ -816,14 +838,14 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).k053260ClockValue != 0) {
-                K053260Inst k053260 = new K053260Inst();
+                K053260Inst k053260 = Instrument.getInstrument(K053260Inst.class);
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).k053260DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = k053260;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", K053260Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, K053260Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).k053260ClockValue;
                     chip.option = null;
                     if (i == 0) audio.chipLED.put("PriK053260", 1);
@@ -837,14 +859,14 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).k054539ClockValue != 0) {
-                K054539Inst k054539 = new K054539Inst();
+                K054539Inst k054539 = Instrument.getInstrument(K054539Inst.class);
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).k054539DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = k054539;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", K054539Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, K054539Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).k054539ClockValue;
                     chip.option = null;
                     if (i == 0) audio.chipLED.put("PriK054539", 1);
@@ -858,14 +880,14 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).k051649ClockValue != 0) {
-                K051649Inst k051649 = new K051649Inst();
+                K051649Inst k051649 = Instrument.getInstrument(K051649Inst.class);
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).k051649DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = k051649;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", K051649Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, K051649Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).k051649ClockValue;
                     audio.clockK051649 = chip.clock;
                     chip.option = null;
@@ -880,14 +902,14 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).ym3526ClockValue != 0) {
-                Ym3526Inst ym3526 = new Ym3526Inst();
+                Ym3526Inst ym3526 = Instrument.getInstrument(Ym3526Inst.class);
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym3526DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = ym3526;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym3526Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym3526Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).ym3526ClockValue;
                     chip.option = null;
                     if (i == 0) audio.chipLED.put("PriOPL", 1);
@@ -901,14 +923,14 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).y8950ClockValue != 0) {
-                Y8950Inst y8950 = new Y8950Inst();
+                Y8950Inst y8950 = Instrument.getInstrument(Y8950Inst.class);
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).y8950DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = y8950;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Y8950Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Y8950Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).y8950ClockValue;
                     chip.option = null;
                     if (i == 0) audio.chipLED.put("PriY8950", 1);
@@ -922,14 +944,14 @@ public class VGMPlugin extends BasePlugin {
             }
 
             if (((Vgm) audio.driverVirtual).dmgClockValue != 0) {
-                DmgInst dmg = new DmgInst();
+                DmgInst dmg = Instrument.getInstrument(DmgInst.class);
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).dmgDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = dmg;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", DmgInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, DmgInst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).dmgClockValue;
                     chip.option = null;
                     if (i == 0) audio.chipLED.put("PriDMG", 1);
@@ -945,12 +967,12 @@ public class VGMPlugin extends BasePlugin {
             if (((Vgm) audio.driverVirtual).nesClockValue != 0) {
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).nesDualChipFlag ? 2 : 1); i++) {
-                    IntFNesInst nes = new IntFNesInst();
+                    IntFNesInst nes = Instrument.getInstrument(IntFNesInst.class);
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = nes;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", IntFNesInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
                     chip.option = null;
                     if (i == 0) audio.chipLED.put("PriNES", 1);
@@ -963,7 +985,7 @@ public class VGMPlugin extends BasePlugin {
                     chip.id = i;
                     chip.instrument = nes;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", IntFNesInst.DMC.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.DMC.class);
                     chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
                     chip.option = null;
                     if (i == 0) audio.chipLED.put("PriDMC", 1);
@@ -977,7 +999,7 @@ public class VGMPlugin extends BasePlugin {
                     chip.id = i;
                     chip.instrument = nes;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", IntFNesInst.FDS.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.FDS.class);
                     chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
                     chip.option = null;
                     if (i == 0) audio.chipLED.put("PriFDS", 1);
@@ -996,7 +1018,7 @@ public class VGMPlugin extends BasePlugin {
             if (audio.mds == null)
                 audio.mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
             else
-                audio.mds.init(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
+                audio.mds.init(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(MDSound.Chip[]::new));
 
             audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 

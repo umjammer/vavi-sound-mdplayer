@@ -32,12 +32,12 @@ public class frmYMF278B extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipId;
-    private int zoom;
+    private final int chipId;
+    private final int zoom;
 
-    private MDChipParams.YMF278B newParam;
-    private MDChipParams.YMF278B oldParam = new MDChipParams.YMF278B();
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MDChipParams.YMF278B newParam;
+    private final MDChipParams.YMF278B oldParam = new MDChipParams.YMF278B();
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYMF278B.class);
 
@@ -69,7 +69,7 @@ public class frmYMF278B extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -98,7 +98,7 @@ public class frmYMF278B extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -549,15 +549,15 @@ public class frmYMF278B extends frmBase {
 
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
             int ch;
-            //上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (ch = 0; ch < 47; ch++) {
                         if (newParam.channels[ch].mask)
@@ -588,12 +588,12 @@ public class frmYMF278B extends frmBase {
                     parent.getInstCh(EnmChip.YMF278B, ch, chipId);
                 }
 
-                //マスク
+                // Mask.
                 parent.setChannelMask(EnmChip.YMF278B, chipId, ch);
                 return;
             }
 
-            //マスク解除
+            // Unmask.
             for (ch = 0; ch < 47; ch++) parent.resetChannelMask(EnmChip.YMF278B, chipId, ch);
         }
     };

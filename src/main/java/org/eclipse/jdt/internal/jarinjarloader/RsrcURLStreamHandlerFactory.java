@@ -4,7 +4,7 @@ import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 
 public class RsrcURLStreamHandlerFactory implements URLStreamHandlerFactory {
-   private ClassLoader classLoader;
+   private final ClassLoader classLoader;
    private URLStreamHandlerFactory chainFac;
 
    public RsrcURLStreamHandlerFactory(ClassLoader cl) {

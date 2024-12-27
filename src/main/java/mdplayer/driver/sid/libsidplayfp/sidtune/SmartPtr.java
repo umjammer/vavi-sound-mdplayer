@@ -143,7 +143,7 @@ class SmartPtrBase<T> {
     protected boolean doFree;
     protected ByteBuffer dummy;
 
-    public static class SmartPtr extends SmartPtrBase {
+    public static class SmartPtr<T> extends SmartPtrBase {
         public SmartPtr(byte[] buffer,
                         long bufferLen,
                         boolean bufOwner /* = false */) {

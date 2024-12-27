@@ -35,7 +35,7 @@ import mdplayer.driver.sid.libsidplayfp.Player;
 public class playSidFp {
 
     // Private Sidplayer
-    private Player sidPlayer;
+    private final Player sidPlayer;
 
     public Integer[][] getSidRegister() {
         return this.sidPlayer.getSidRegister();

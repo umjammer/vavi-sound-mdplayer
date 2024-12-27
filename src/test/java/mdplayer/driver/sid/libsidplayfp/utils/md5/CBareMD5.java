@@ -32,7 +32,7 @@ public class CBareMD5 {
     /**
      * the hash state value
      */
-    private int[] h = new int[4];
+    private final int[] h = new int[4];
 
     /**
      * store partial block left over at end of an update
@@ -54,7 +54,7 @@ public class CBareMD5 {
      * @param block an int array of BLOCK_SIZE elements
      * @return an int array of BLOCK_SIZE elements
      */
-    private int[] decode(int[] block) {
+    private static int[] decode(int[] block) {
         int[] x = new int[BLOCK_SIZE];
         for (int i = 0; i < BLOCK_SIZE; i++) {
             x[i] = Bits.rev(block[i]);
@@ -62,35 +62,35 @@ public class CBareMD5 {
         return x;
     }
 
-    private int f(int x, int y, int z) {
+    private static int f(int x, int y, int z) {
         return (x & y) | ((~x) & z);
     }
 
-    private int g(int x, int y, int z) {
+    private static int g(int x, int y, int z) {
         return (x & z) | (y & (~z));
     }
 
-    private int h(int x, int y, int z) {
+    private static int h(int x, int y, int z) {
         return (x ^ y ^ z);
     }
 
-    private int i(int x, int y, int z) {
+    private static int i(int x, int y, int z) {
         return (y ^ (x | (~z)));
     }
 
-    private int ff(int a, int b, int c, int d, int x, int s, int ac) {
+    private static int ff(int a, int b, int c, int d, int x, int s, int ac) {
         return Bits.leftRotate(a + f(b, c, d) + x + ac, s) + b;
     }
 
-    private int gg(int a, int b, int c, int d, int x, int s, int ac) {
+    private static int gg(int a, int b, int c, int d, int x, int s, int ac) {
         return Bits.leftRotate(a + g(b, c, d) + x + ac, s) + b;
     }
 
-    private int hh(int a, int b, int c, int d, int x, int s, int ac) {
+    private static int hh(int a, int b, int c, int d, int x, int s, int ac) {
         return Bits.leftRotate(a + h(b, c, d) + x + ac, s) + b;
     }
 
-    private int ii(int a, int b, int c, int d, int x, int s, int ac) {
+    private static int ii(int a, int b, int c, int d, int x, int s, int ac) {
         return Bits.leftRotate(a + i(b, c, d) + x + ac, s) + b;
     }
 

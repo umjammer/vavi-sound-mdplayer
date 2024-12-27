@@ -28,7 +28,7 @@ import vavi.util.ByteUtil;
  */
 public class M_Hes {
 
-    private Km6280 km6280 = new Km6280();
+    private final Km6280 km6280 = new Km6280();
 
     public static class NEZ_PLAY {
 
@@ -53,7 +53,7 @@ public class M_Hes {
             public String detail;
         }
 
-        private SongInfoData _songinfodata = new SongInfoData();
+        private final SongInfoData _songinfodata = new SongInfoData();
 
         public int ExecuteHES() {
             return this.heshes != null ? this.heshes.execute() : 0;
@@ -158,7 +158,7 @@ public class M_Hes {
         public int hesvdcCr;
         public int hesvdcAdr;
 
-        private KmEvent kmEvent = new KmEvent();
+        private final KmEvent kmEvent = new KmEvent();
 
         public ChipRegister chipRegister;
         public Hes.HESDetector ld;
@@ -695,7 +695,7 @@ public class M_Hes {
     public interface memview_memread extends Function<Integer, Integer> {
     }
 
-    private HESHES memview_context = null;
+    private final HESHES memview_context = null;
 
     //private int MEM_MAX, MEM_IO, MEM_RAM, MEM_ROM;
     private int memview_memread_hes(int a) {

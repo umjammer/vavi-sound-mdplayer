@@ -2,7 +2,6 @@ package mdplayer.driver;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.Arrays;
 
 import mdplayer.ChipRegister;
 import mdplayer.Common;
@@ -31,7 +30,7 @@ public class Xgm extends BaseDriver {
         public int size = 0;
     }
 
-    private XGMSampleID[] sampleID = new XGMSampleID[63];
+    private final XGMSampleID[] sampleID = new XGMSampleID[63];
     private int sampleDataBlockSize = 0;
     private int sampleDataBlockAddr = 0;
     private int musicDataBlockSize = 0;
@@ -119,11 +118,10 @@ public class Xgm extends BaseDriver {
 
         if (!existGD3) return new Vgm.Gd3();
 
-        Vgm.Gd3 GD3 = Common.getGD3Info(vgmBuf, gd3InfoStartAddr + 12);
-        GD3.usedChips = usedChips;
+        Vgm.Gd3 gd3 = Common.getGD3Info(vgmBuf, gd3InfoStartAddr + 12);
+        gd3.usedChips = usedChips;
 
-        return GD3;
-
+        return gd3;
     }
 
     private boolean getXGMInfo(byte[] vgmBuf) {
@@ -177,7 +175,7 @@ public class Xgm extends BaseDriver {
 
 
     private double musicStep;// setting.getoutputDevice().SampleRate / 60.0;
-    private double pcmStep;// setting.getoutputDevice().SampleRate / 14000.0;
+    private final double pcmStep;// setting.getoutputDevice().SampleRate / 14000.0;
     private double musicDownCounter = 0.0;
     private double pcmDownCounter = 0.0;
     private int musicPtr = 0;
@@ -254,13 +252,13 @@ public class Xgm extends BaseDriver {
                 // Psg register write:
                 writePSG(X);
             } else if (cmd == 0x20) {
-                // Ym2612Inst port 0 register write:
+                // Ym2612 port 0 register write:
                 writeYM2612P0(X);
             } else if (cmd == 0x30) {
-                // Ym2612Inst port 1 register write:
+                // Ym2612 port 1 register write:
                 writeYM2612P1(X);
             } else if (cmd == 0x40) {
-                // Ym2612Inst key off/on ($28) command write:
+                // Ym2612 key off/on ($28) command write:
                 writeYM2612Key(X);
             } else if (cmd == 0x50) {
                 // PCM play command:
@@ -342,7 +340,7 @@ public class Xgm extends BaseDriver {
     private void oneFramePCM() {
         if (DACEnable == 0) return;
 
-        short o = 0;
+        int o = 0;
 
         for (int i = 0; i < 4; i++) {
             if (!xgmpcm[i].isPlaying) continue;

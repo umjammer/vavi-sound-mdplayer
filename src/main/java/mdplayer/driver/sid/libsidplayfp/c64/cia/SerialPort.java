@@ -28,7 +28,7 @@ import mdplayer.driver.sid.libsidplayfp.c64.cia.InterruptSource.INTERRUPT;
 
 public class SerialPort {
 
-    private InterruptSource interruptSource;
+    private final InterruptSource interruptSource;
     private int count;
     private boolean buffered;
     private byte out_;

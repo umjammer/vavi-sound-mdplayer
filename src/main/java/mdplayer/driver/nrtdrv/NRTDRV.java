@@ -184,8 +184,8 @@ public class NRTDRV extends BaseDriver {
             gd3.lyrics = new ArrayList<>();
             int adr = vgmGd3[0];
             while (buf[adr] != (byte) 0xff || buf[adr + 1] != (byte) 0xff) {
-                int cnt = buf[adr] + buf[adr + 1] * 0x100;
-                int[] sAdr = new int[] {buf[adr + 2] + buf[adr + 3] * 0x100};
+                int cnt = (buf[adr] & 0xff) + (buf[adr + 1] & 0xff) * 0x100;
+                int[] sAdr = new int[] {(buf[adr + 2] & 0xff) + (buf[adr + 3] & 0xff) * 0x100};
                 String msg = Common.getNRDString(buf, sAdr);
                 gd3.lyrics.add(new Tuple3<>(cnt, sAdr[0], msg));
                 adr += 4;
@@ -442,8 +442,8 @@ public class NRTDRV extends BaseDriver {
     private float CTC3DownCounter = 0.0f;
     private float CTC3DownCounterMAX = 0.0f;
     // private boolean CTC3Paluse = false;
-    private float ctcStep; // sampleRate;
-    private float ctc1Step; // sampleRate;
+    private final float ctcStep; // sampleRate;
+    private final float ctc1Step; // sampleRate;
 
     @Override
     public void processOneFrame() {
@@ -663,12 +663,12 @@ public class NRTDRV extends BaseDriver {
         work.ctc0 = 3;
     }
 
-    private byte[] psrtbl = new byte[] {(byte) 0xe0, 1, (byte) 0xe0, 1, (byte) 0xe0, 1, 0, 0x38, 0, 0, 0, 0, 0x10, 0};
+    private final byte[] psrtbl = new byte[] {(byte) 0xe0, 1, (byte) 0xe0, 1, (byte) 0xe0, 1, 0, 0x38, 0, 0, 0, 0, 0x10, 0};
 
     private void pinit(int hl) {
         Ch[] wChs = work.psgChs;
         for (byte b = 0; b < 3; b++) {
-            int de = ram[hl] + ram[hl + 1] * 0x100;
+            int de = (ram[hl] & 0xff) + (ram[hl + 1] & 0xff) * 0x100;
             hl += 2;
             wChs[b].ptrData = de + work.bgmAdr;
             wChs[b].wreset();
@@ -701,7 +701,7 @@ public class NRTDRV extends BaseDriver {
         }
         for (byte b = 0; b < 8; b++) {
             opmrst(b);
-            int de = ram[hl] + ram[hl + 1] * 0x100;
+            int de = (ram[hl] & 0xff) + (ram[hl + 1] & 0xff) * 0x100;
             hl += 2;
             wChs[b].ptrData = de + work.bgmAdr;
             wChs[b].wreset();
@@ -924,7 +924,7 @@ public class NRTDRV extends BaseDriver {
     }
 
     public class Ch {
-        public class RepBuf {
+        public static class RepBuf {
             public byte count = 0;
             public int startAdr = 0;
             public int endAdr = 0;
@@ -1242,7 +1242,7 @@ public class NRTDRV extends BaseDriver {
             this.panAlgFb = a;
             wopm(d, a);
             this.ptrData++;
-            int bc = ram[this.ptrData] + ram[this.ptrData + 1] * 0x100;
+            int bc = (ram[this.ptrData] & 0xff) + (ram[this.ptrData + 1] & 0xff) * 0x100;
             this.ptrData += 2;
             int hl = work.bgmAdr + bc;
 
@@ -1271,7 +1271,7 @@ public class NRTDRV extends BaseDriver {
         }
 
         private int VSET(byte e) {
-            int bc = ram[this.ptrData] + ram[this.ptrData + 1] * 0x100;
+            int bc = (ram[this.ptrData] & 0xff) + (ram[this.ptrData + 1] & 0xff) * 0x100;
             this.ptrData += 2;
             int hl = work.bgmAdr + bc;
 
@@ -1301,7 +1301,7 @@ public class NRTDRV extends BaseDriver {
         }
 
         private int VSETMV(byte e) {
-            int bc = ram[this.ptrData] + ram[this.ptrData + 1] * 0x100;
+            int bc = (ram[this.ptrData] & 0xff) + (ram[this.ptrData + 1] & 0xff) * 0x100;
             this.ptrData += 2;
             int hl = work.bgmAdr + bc;
 
@@ -1555,7 +1555,7 @@ public class NRTDRV extends BaseDriver {
         }
 
         private int MMACRO(byte e) {
-            int bc = ram[this.ptrData] + ram[this.ptrData + 1] * 0x100;
+            int bc = (ram[this.ptrData] & 0xff) + (ram[this.ptrData + 1] & 0xff) * 0x100;
             this.ptrData += 2;
             this.macroReturnAdr = this.ptrData;
             int hl = work.bgmAdr;
@@ -1772,7 +1772,7 @@ public class NRTDRV extends BaseDriver {
             this.glideFlg = a;
             this.portaFlg = a;
             this.ptrData++;
-            this.glide = ram[this.ptrData] + ram[this.ptrData + 1] * 0x100;
+            this.glide = (ram[this.ptrData] & 0xff) + (ram[this.ptrData + 1] & 0xff) * 0x100;
             this.ptrData += 2; // CCRET
             return 0;
         }
@@ -1818,7 +1818,7 @@ public class NRTDRV extends BaseDriver {
                 this.ptrData = bc;
                 this.macroReturnAdr = 0;
             } else {
-                bc = ram[this.ptrData] + ram[this.ptrData + 1] * 0x100;
+                bc = (ram[this.ptrData] & 0xff) + (ram[this.ptrData + 1] & 0xff) * 0x100;
                 this.ptrData = work.bgmAdr + bc;
                 this.loopCounter++;
             }
@@ -2563,7 +2563,7 @@ public class NRTDRV extends BaseDriver {
         }
 
         private int PVSET(byte e) {
-            int bc = ram[this.ptrData] + ram[this.ptrData + 1] * 0x100;
+            int bc = (ram[this.ptrData] & 0xff) + (ram[this.ptrData + 1] & 0xff) * 0x100;
             this.ptrData += 2;
             this.psgToneStartAdr = work.bgmAdr + bc;
             this.psgHardEnvelopeType = 16;

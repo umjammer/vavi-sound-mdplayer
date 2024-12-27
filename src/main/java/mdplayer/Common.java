@@ -17,7 +17,7 @@ import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -25,13 +25,10 @@ import java.util.function.Consumer;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
-import dotnet4j.io.Directory;
-import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileShare;
 import dotnet4j.io.FileStream;
-import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
 import dotnet4j.util.compat.Tuple3;
 import mdplayer.driver.Vgm;
@@ -80,8 +77,8 @@ public class Common {
 
     public static final int VGMProcSampleRate = 44100;
     public static final int NsfClock = 1789773;
-    public static String settingFilePath = "";
-    public static String playingFilePath = "";
+    public static Path settingFilePath;
+    public static Path playingFilePath;
 
     public static int getBE16(byte[] buf, int adr) {
         if (buf == null || buf.length - 1 < adr + 1) {
@@ -313,20 +310,15 @@ public class Common {
         return ret;
     }
 
-    public static String getApplicationFolder() {
-        String path = System.getProperty("user.dir");
-        if (path != null && !path.isEmpty()) {
-            path += path.charAt(path.length() - 1) == '\\' ? "" : "\\";
-        }
-        return path;
+    public static Path getApplicationFolder() {
+        return Path.of(System.getProperty("user.dir"));
     }
 
-    public static String getApplicationDataFolder(boolean make/* = false*/) {
+    public static Path getApplicationDataFolder(boolean make/* = false*/) {
         try {
             String appPath = System.getProperty("user.dir");
-            String fullPath;
-            fullPath = Path.combine(appPath, "./config/kuma", "mdplayer");
-            if (!Directory.exists(fullPath)) Directory.createDirectory(fullPath);
+            Path fullPath = Path.of(appPath, "./config/kuma", "mdplayer");
+            if (!Files.exists(fullPath)) Files.createDirectory(fullPath);
 
             return fullPath;
         } catch (Exception e) {
@@ -335,12 +327,12 @@ public class Common {
         }
     }
 
-    public static String getOperationFolder(boolean make/* = false*/) {
+    public static Path getOperationFolder(boolean make/* = false*/) {
         try {
-            String appDataFolder = getApplicationDataFolder(false);
-            if (appDataFolder == null || appDataFolder.isEmpty()) return null;
-            String fullPath = Path.combine(appDataFolder, "operation");
-            if (!Directory.exists(fullPath)) Directory.createDirectory(fullPath);
+            Path appDataFolder = getApplicationDataFolder(false);
+            if (appDataFolder == null) return null;
+            Path fullPath = appDataFolder.resolve("operation");
+            if (!Files.exists(fullPath)) Files.createDirectory(fullPath);
             else
                 // If it exists, clear the contents of that folder.
                 deleteDataUnderDirectory(fullPath);
@@ -354,24 +346,23 @@ public class Common {
     /**
      * Empty the directory
      */
-    public static void deleteDataUnderDirectory(String directory) throws IOException {
-        java.nio.file.Path dir = Paths.get(directory);
-        Files.walk(dir)
+    public static void deleteDataUnderDirectory(Path directory) throws IOException {
+        Files.walk(directory)
                 .sorted(Comparator.reverseOrder())
-                .filter(p -> p != dir)
-                .map(java.nio.file.Path::toFile)
+                .filter(p -> p != directory)
+                .map(Path::toFile)
                 .forEach(java.io.File::delete);
     }
 
     /**
      * Change the attributes of a folder or file
      */
-    public static void removeReadonlyAttribute(java.nio.file.Path dir) {
+    public static void removeReadonlyAttribute(Path dir) {
         try {
             Files.walk(dir)
                     .sorted(Comparator.reverseOrder())
                     .filter(p -> p != dir)
-                    .map(java.nio.file.Path::toFile)
+                    .map(Path::toFile)
                     .filter(not(java.io.File::canWrite))
                     .forEach(f -> f.setWritable(true));
         } catch (IOException e) {
@@ -380,21 +371,21 @@ public class Common {
     }
 
     public static Stream getOPNARyhthmStream(String fn) {
-        String ffn = fn;
-
-        String chk;
-
-        chk = Path.combine(playingFilePath, fn);
-        if (File.exists(chk))
-            ffn = chk;
-        else {
-            chk = Path.combine(getApplicationFolder(), fn);
-            if (File.exists(chk)) ffn = chk;
-        }
-
         try {
-            if (!File.exists(ffn)) return null;
-            FileStream fs = new FileStream(ffn, FileMode.Open, FileAccess.Read, FileShare.Read);
+            Path ffn = Path.of(fn);
+
+            Path chk;
+
+            chk = playingFilePath.resolve(fn);
+            if (Files.exists(chk))
+                ffn = chk;
+            else {
+                chk = getApplicationFolder().resolve(fn);
+                if (Files.exists(chk)) ffn = chk;
+            }
+
+            if (!Files.exists(ffn)) return null;
+            FileStream fs = new FileStream(ffn.toString(), FileMode.Open, FileAccess.Read, FileShare.Read);
             return fs;
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
@@ -515,7 +506,7 @@ public class Common {
      */
     public static class DTListener extends BasicDTListener {
 
-        private Consumer<List<java.io.File>> drop;
+        private final Consumer<List<java.io.File>> drop;
 
         public DTListener(Consumer<List<java.io.File>> drop) {
             this.drop = drop;

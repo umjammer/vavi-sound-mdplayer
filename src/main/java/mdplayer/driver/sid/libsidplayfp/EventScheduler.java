@@ -158,13 +158,13 @@ public class EventScheduler {
 
     /**
      * Fire next event, advance system time to that event.
-     * イベントをリストの最初からひとつ切り出し、それを実行
+     * Extract one event from the top of the list and execute it
      */
     public void clock() {
         //logger.log(Level.TRACE, "clock:" );
         if (firstEvent == null) return;
         IEvent event_ = firstEvent;
-        firstEvent = firstEvent.getNext(); //次のイベントが最初になる
+        firstEvent = firstEvent.getNext(); // Next event will be first
         currentTime = event_.getTriggerTime();
         //logger.log(Level.TRACE, "%d %d".formatted(currentTime, event.getName()));
 

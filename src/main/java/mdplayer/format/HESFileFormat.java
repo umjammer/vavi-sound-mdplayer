@@ -12,6 +12,7 @@ import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.hes.Hes;
 import mdplayer.plugin.HESPlugin;
+import mdplayer.plugin.MDLPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;
@@ -76,7 +77,7 @@ public class HESFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return new HESPlugin();
+        return Plugin.getPlugin(HESPlugin.class);
     }
 
     @Override
@@ -96,7 +97,7 @@ public class HESFileFormat extends BaseFileFormat {
 
         if (mc.songNo != -1) {
             PlayList.Music music;
-            if (musics.size() > 0) {
+            if (!musics.isEmpty()) {
                 music = musics.get(0);
                 music.songNo = mc.songNo;
                 music.title = mc.title;
@@ -129,7 +130,7 @@ public class HESFileFormat extends BaseFileFormat {
 
         if (mc.songNo != -1) {
             PlayList.Music music;
-            if (musics.size() > 0) {
+            if (!musics.isEmpty()) {
                 music = musics.get(0);
                 music.songNo = mc.songNo;
                 music.title = mc.title;

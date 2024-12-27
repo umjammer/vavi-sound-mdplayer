@@ -1,6 +1,7 @@
 
 package mdplayer;
 
+import java.lang.System.Logger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,7 @@ import mdsound.Instrument;
 import mdsound.chips.C140;
 import mdsound.chips.MultiPCM;
 import mdsound.chips.OkiM6295;
-import mdsound.chips.PPZ8Status;
+import mdsound.chips.PPZ8;
 import mdsound.instrument.*;
 import mdsound.np.chip.DeviceInfo;
 import mdsound.np.chip.NesApu;
@@ -32,9 +33,13 @@ import mdsound.np.cpu.Km6502;
 import mdsound.np.memory.NesBank;
 import mdsound.np.memory.NesMem;
 
+import static java.lang.System.getLogger;
+
 
 // TODO oop
 public class ChipRegister {
+
+    private static final Logger logger = getLogger(ChipRegister.class.getName());
 
 //    private final VstMng vstMng;
 
@@ -50,51 +55,51 @@ public class ChipRegister {
 //    private NX68Sound.X68Sound x68Sound = null;
 //    private NX68Sound.sound_iocs sound_iocs = null;
 
-    private Map<Class<? extends Instrument>, mdsound.MDSound.Chip> dicChipsInfo = new HashMap<>();
+    private final Map<Class<? extends Instrument>, mdsound.MDSound.Chip> dicChipsInfo = new HashMap<>();
 
-    private Setting.ChipType2[] ctSN76489;
-    private Setting.ChipType2[] ctYM2612;
-    private Setting.ChipType2[] ctYM2608;
-    private Setting.ChipType2[] ctYM2151;
-    private Setting.ChipType2[] ctYM2203;
-    private Setting.ChipType2[] ctYM2610;
-    private Setting.ChipType2[] ctYM3526;
-    private Setting.ChipType2[] ctYM3812;
-    private Setting.ChipType2[] ctYMF262;
-    private Setting.ChipType2[] ctYMF271;
-    private Setting.ChipType2[] ctYMF278B;
-    private Setting.ChipType2[] ctYMZ280B;
-    private Setting.ChipType2[] ctAY8910;
-    private Setting.ChipType2[] ctK051649;
-    private Setting.ChipType2[] ctYM2413;
-    private Setting.ChipType2[] ctHuC6280;
-    private Setting.ChipType2[] ctY8950;
-    private Setting.ChipType2[] ctSEGAPCM;
-    private Setting.ChipType2[] ctC140;
+    private final Setting.ChipType2[] ctSN76489;
+    private final Setting.ChipType2[] ctYM2612;
+    private final Setting.ChipType2[] ctYM2608;
+    private final Setting.ChipType2[] ctYM2151;
+    private final Setting.ChipType2[] ctYM2203;
+    private final Setting.ChipType2[] ctYM2610;
+    private final Setting.ChipType2[] ctYM3526;
+    private final Setting.ChipType2[] ctYM3812;
+    private final Setting.ChipType2[] ctYMF262;
+    private final Setting.ChipType2[] ctYMF271;
+    private final Setting.ChipType2[] ctYMF278B;
+    private final Setting.ChipType2[] ctYMZ280B;
+    private final Setting.ChipType2[] ctAY8910;
+    private final Setting.ChipType2[] ctK051649;
+    private final Setting.ChipType2[] ctYM2413;
+    private final Setting.ChipType2[] ctHuC6280;
+    private final Setting.ChipType2[] ctY8950;
+    private final Setting.ChipType2[] ctSEGAPCM;
+    private final Setting.ChipType2[] ctC140;
     private RealChip realChip;
-    private RSoundChip[] scSN76489 = new RSoundChip[] {null, null};
-    private RSoundChip[] scYM2612 = new RSoundChip[] {null, null};
-    private RSoundChip[] scYM2608 = new RSoundChip[] {null, null};
-    private RSoundChip[] scYM2151 = new RSoundChip[] {null, null};
-    private RSoundChip[] scYM2203 = new RSoundChip[] {null, null};
-    private RSoundChip[] scAY8910 = new RSoundChip[] {null, null};
-    private RSoundChip[] scK051649 = new RSoundChip[] {null, null};
-    private RSoundChip[] scYM2413 = new RSoundChip[] {null, null};
-    private RSoundChip[] scYM2610 = new RSoundChip[] {null, null};
-    private RSoundChip[] scYM2610EA = new RSoundChip[] {null, null};
-    private RSoundChip[] scYM2610EB = new RSoundChip[] {null, null};
-    private RSoundChip[] scYM3526 = new RSoundChip[] {null, null};
-    private RSoundChip[] scYM3812 = new RSoundChip[] {null, null};
-    private RSoundChip[] scYMF262 = new RSoundChip[] {null, null};
-    private RSoundChip[] scYMF271 = new RSoundChip[] {null, null};
-    private RSoundChip[] scYMF278B = new RSoundChip[] {null, null};
-    private RSoundChip[] scYMZ280B = new RSoundChip[] {null, null};
-    private RSoundChip[] scSEGAPCM = new RSoundChip[] {null, null};
-    private RSoundChip[] scC140 = new RSoundChip[] {null, null};
+    private final RSoundChip[] scSN76489 = {null, null};
+    private final RSoundChip[] scYM2612 = {null, null};
+    private final RSoundChip[] scYM2608 = {null, null};
+    private final RSoundChip[] scYM2151 = {null, null};
+    private final RSoundChip[] scYM2203 = {null, null};
+    private final RSoundChip[] scAY8910 = {null, null};
+    private final RSoundChip[] scK051649 = {null, null};
+    private final RSoundChip[] scYM2413 = {null, null};
+    private final RSoundChip[] scYM2610 = {null, null};
+    private final RSoundChip[] scYM2610EA = {null, null};
+    private final RSoundChip[] scYM2610EB = {null, null};
+    private final RSoundChip[] scYM3526 = {null, null};
+    private final RSoundChip[] scYM3812 = {null, null};
+    private final RSoundChip[] scYMF262 = {null, null};
+    private final RSoundChip[] scYMF271 = {null, null};
+    private final RSoundChip[] scYMF278B = {null, null};
+    private final RSoundChip[] scYMZ280B = {null, null};
+    private final RSoundChip[] scSEGAPCM = {null, null};
+    private final RSoundChip[] scC140 = {null, null};
 
-    private static final byte[] algM = new byte[] {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
+    private static final byte[] algM = {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
 
-    private static final int[] opN = new int[] {0, 2, 1, 3};
+    private static final int[] opN = {0, 2, 1, 3};
 
     public Integer[] getSIDRegister(int chipId) {
         if (SID == null)
@@ -102,9 +107,9 @@ public class ChipRegister {
         return SID.GetRegisterFromSid()[chipId];
     }
 
-    private static final int[] noteTbl = new int[] {2, 4, 5, -1, 6, 8, 9, -1, 10, 12, 13, -1, 14, 0, 1, -1};
+    private static final int[] noteTbl = {2, 4, 5, -1, 6, 8, 9, -1, 10, 12, 13, -1, 14, 0, 1, -1};
 
-    private static final int[] noteTbl2 = new int[] {13, 14, 0, -1, 1, 2, 4, -1, 5, 6, 8, -1, 9, 10, 12, -1};
+    private static final int[] noteTbl2 = {13, 14, 0, -1, 1, 2, 4, -1, 5, 6, 8, -1, 9, 10, 12, -1};
 
     private int nsfAPUmask = 0;
     private int nsfDMCmask = 0;
@@ -116,343 +121,339 @@ public class ChipRegister {
 
     public ChipLEDs chipLED = new ChipLEDs();
 
-    public int[][] fmRegisterYM2151 = new int[][] {null, null};
-    public int[][] fmKeyOnYM2151 = new int[][] {null, null};
-    public int[][] fmVolYM2151 = new int[][] {
-            new int[] {0, 0, 0, 0, 0, 0, 0, 0},
-            new int[] {0, 0, 0, 0, 0, 0, 0, 0}
+    public int[][] fmRegisterYM2151 = {null, null};
+    public int[][] fmKeyOnYM2151 = {null, null};
+    public int[][] fmVolYM2151 = {
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0}
     };
 
-    private int[] nowYM2151FadeoutVol = new int[] {0, 0};
-    private boolean[][] maskFMChYM2151 = new boolean[][] {
-            new boolean[] {false, false, false, false, false, false, false, false},
-            new boolean[] {false, false, false, false, false, false, false, false}
+    private final int[] nowYM2151FadeoutVol = {0, 0};
+    private final boolean[][] maskFMChYM2151 = {
+            {false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false}
     };
-    public int[] fmAMDYM2151 = new int[] {-1, -1};
-    public int[] fmPMDYM2151 = new int[] {-1, -1};
+    public int[] fmAMDYM2151 = {-1, -1};
+    public int[] fmPMDYM2151 = {-1, -1};
 
-    public int[][] fmRegisterYM2203 = new int[][] {null, null};
-    public int[][] fmKeyOnYM2203 = new int[][] {null, null};
-    public int[][] fmCh3SlotVolYM2203 = new int[][] {new int[4], new int[4]};
-    private int[] nowYM2203FadeoutVol = new int[] {0, 0};
-    public int[][] fmVolYM2203 = new int[][] {new int[9], new int[9]};
-    private boolean[][] maskFMChYM2203 = new boolean[][] {
-            new boolean[] {false, false, false, false, false, false, false, false, false},
-            new boolean[] {false, false, false, false, false, false, false, false, false}
-    };
-
-    public int[][] fmRegisterYM2413 = new int[][] {null, null};
-//    private int[] fmRegisterYM2413RyhthmB = new int[] {0, 0};
-//    private int[] fmRegisterYM2413Ryhthm = new int[] {0, 0};
-    private ChipKeyInfo[] kiYM2413 = new ChipKeyInfo[] {new ChipKeyInfo(14), new ChipKeyInfo(14)};
-    private ChipKeyInfo[] kiYM2413ret = new ChipKeyInfo[] {new ChipKeyInfo(14), new ChipKeyInfo(14)};
-    private int[] nowYM2413FadeoutVol = new int[] {0, 0};
-    private boolean[] rmYM2413 = new boolean[] {false, false};
-    private boolean[][] maskFMChYM2413 = new boolean[][] {
-            new boolean[] {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
-            new boolean[] {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
+    public int[][] fmRegisterYM2203 = {null, null};
+    public int[][] fmKeyOnYM2203 = {null, null};
+    public int[][] fmCh3SlotVolYM2203 = {new int[4], new int[4]};
+    private final int[] nowYM2203FadeoutVol = {0, 0};
+    public int[][] fmVolYM2203 = {new int[9], new int[9]};
+    private final boolean[][] maskFMChYM2203 = {
+            {false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false}
     };
 
-    public int[][][] fmRegisterYM2612 = new int[][][] {
-            new int[][] {null, null},
-            new int[][] {null, null}
-    };
-    public int[][] fmKeyOnYM2612 = new int[][] {null, null};
-    public int[][] fmVolYM2612 = new int[][] {
-            new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0},
-            new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0}
-    };
-    public int[][] fmCh3SlotVolYM2612 = new int[][] {new int[4], new int[4]};
-    private int[] nowYM2612FadeoutVol = new int[] {0, 0};
-    private boolean[][] maskFMChYM2612 = new boolean[][] {
-            new boolean[] {false, false, false, false, false, false},
-            new boolean[] {false, false, false, false, false, false}
+    public int[][] fmRegisterYM2413 = {null, null};
+//    private int[] fmRegisterYM2413RyhthmB = {0, 0};
+//    private int[] fmRegisterYM2413Ryhthm = {0, 0};
+    private final ChipKeyInfo[] kiYM2413 = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
+    private final ChipKeyInfo[] kiYM2413ret = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
+    private final int[] nowYM2413FadeoutVol = {0, 0};
+    private final boolean[] rmYM2413 = {false, false};
+    private final boolean[][] maskFMChYM2413 = {
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    public int[][][] fmRegisterYM2608 = new int[][][] {
-            new int[][] {null, null},
-            new int[][] {null, null}
+    public int[][][] fmRegisterYM2612 = {
+            {null, null},
+            {null, null}
+    };
+    public int[][] fmKeyOnYM2612 = {null, null};
+    public int[][] fmVolYM2612 = {
+            {0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0}
+    };
+    public int[][] fmCh3SlotVolYM2612 = {new int[4], new int[4]};
+    private final int[] nowYM2612FadeoutVol = {0, 0};
+    private final boolean[][] maskFMChYM2612 = {
+            {false, false, false, false, false, false},
+            {false, false, false, false, false, false}
     };
 
-    public int[][] fmKeyOnYM2608 = new int[][] {null, null};
-
-    public int[][] fmVolYM2608 = new int[][] {
-            new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0},
-            new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0}
+    public int[][][] fmRegisterYM2608 = {
+            {null, null},
+            {null, null}
     };
 
-    public int[][] fmCh3SlotVolYM2608 = new int[][] {
+    public int[][] fmKeyOnYM2608 = {null, null};
+
+    public int[][] fmVolYM2608 = {
+            {0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0}
+    };
+
+    public int[][] fmCh3SlotVolYM2608 = {
             new int[4], new int[4]
     };
 
-    public int[][][] fmVolYM2608Rhythm = new int[][][] {
-            new int[][] {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]},
-            new int[][] {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]}
+    public int[][][] fmVolYM2608Rhythm = {
+            {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]},
+            {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]}
     };
 
-    public int[][] fmVolYM2608Adpcm = new int[][] {new int[2], new int[2]};
+    public int[][] fmVolYM2608Adpcm = {new int[2], new int[2]};
 
-    public int[] fmVolYM2608AdpcmPan = new int[] {0, 0};
+    public int[] fmVolYM2608AdpcmPan = {0, 0};
 
-    private int[] nowYM2608FadeoutVol = new int[] {0, 0};
+    private final int[] nowYM2608FadeoutVol = {0, 0};
 
-    private boolean[][] maskFMChYM2608 = new boolean[][] {
-            new boolean[] {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
-            new boolean[] {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
+    private final boolean[][] maskFMChYM2608 = {
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    public int[][][] fmRegisterYM2610 = new int[][][] {
-            new int[][] {null, null},
-            new int[][] {null, null}
+    public int[][][] fmRegisterYM2610 = {
+            {null, null},
+            {null, null}
     };
 
-    public int[][] fmKeyOnYM2610 = new int[][] {null, null};
+    public int[][] fmKeyOnYM2610 = {null, null};
 
-    public int[][] fmVolYM2610 = new int[][] {
-            new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0},
-            new int[] {0, 0, 0, 0, 0, 0, 0, 0, 0}
+    public int[][] fmVolYM2610 = {
+            {0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
-    public int[][] fmCh3SlotVolYM2610 = new int[][] {new int[4], new int[4]};
+    public int[][] fmCh3SlotVolYM2610 = {new int[4], new int[4]};
 
-    public int[][][] fmVolYM2610Rhythm = new int[][][] {
-            new int[][] {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]},
-            new int[][] {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]}
+    public int[][][] fmVolYM2610Rhythm = {
+            {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]},
+            {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]}
     };
 
-    public int[][] fmVolYM2610Adpcm = new int[][] {new int[2], new int[2]};
+    public int[][] fmVolYM2610Adpcm = {new int[2], new int[2]};
 
-    public int[] fmVolYM2610AdpcmPan = new int[] {0, 0};
+    public int[] fmVolYM2610AdpcmPan = {0, 0};
 
-    private int[] nowYM2610FadeoutVol = new int[] {0, 0};
+    private final int[] nowYM2610FadeoutVol = {0, 0};
 
-    private boolean[][] maskFMChYM2610 = new boolean[][] {
-            new boolean[] {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
-            new boolean[] {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
+    private final boolean[][] maskFMChYM2610 = {
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    public int[][] fmRegisterYM3526 = new int[][] {null, null};
+    public int[][] fmRegisterYM3526 = {null, null};
 
-    private int[] nowYM3526FadeoutVol = new int[] {0, 0};
+    private final int[] nowYM3526FadeoutVol = {0, 0};
 
-    private ChipKeyInfo[] kiYM3526 = new ChipKeyInfo[] {
+    private final ChipKeyInfo[] kiYM3526 = {
             new ChipKeyInfo(14), new ChipKeyInfo(14)
     };
 
-    private ChipKeyInfo[] kiYM3526ret = new ChipKeyInfo[] {
+    private final ChipKeyInfo[] kiYM3526ret = {
             new ChipKeyInfo(14), new ChipKeyInfo(14)
     };
 
-    private boolean[][] maskFMChYM3526 = new boolean[][] {
-            new boolean[] {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
-            new boolean[] {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
+    private final boolean[][] maskFMChYM3526 = {
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    public int[][] fmRegisterYM3812 = new int[][] {null, null};
+    public int[][] fmRegisterYM3812 = {null, null};
 
-    private int[] nowYM3812FadeoutVol = new int[] {0, 0};
+    private final int[] nowYM3812FadeoutVol = {0, 0};
 
-    private ChipKeyInfo[] kiYM3812 = new ChipKeyInfo[] {new ChipKeyInfo(14), new ChipKeyInfo(14)};
+    private final ChipKeyInfo[] kiYM3812 = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
 
-    private ChipKeyInfo[] kiYM3812ret = new ChipKeyInfo[] {new ChipKeyInfo(14), new ChipKeyInfo(14)};
+    private final ChipKeyInfo[] kiYM3812ret = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
 
-    private boolean[][] maskFMChYM3812 = new boolean[][] {
-            new boolean[] {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
-            new boolean[] {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
+    private final boolean[][] maskFMChYM3812 = {
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    private ChipKeyInfo[] kiVRC7 = new ChipKeyInfo[] {new ChipKeyInfo(14), new ChipKeyInfo(14)};
+    private final ChipKeyInfo[] kiVRC7 = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
 
-    private ChipKeyInfo[] kiVRC7ret = new ChipKeyInfo[] {new ChipKeyInfo(14), new ChipKeyInfo(14)};
+    private final ChipKeyInfo[] kiVRC7ret = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
 
-    public int[][][] fmRegisterYMF262 = new int[][][] {
-            new int[][] {null, null},
-            new int[][] {null, null}
+    public int[][][] fmRegisterYMF262 = {
+            {null, null},
+            {null, null}
     };
 
-    private int[] fmRegisterYMF262FM = new int[] {0, 0};
+    private final int[] fmRegisterYMF262FM = {0, 0};
 
-    private int[] fmRegisterYMF262RyhthmB = new int[] {0, 0};
+    private final int[] fmRegisterYMF262RyhthmB = {0, 0};
 
-    private int[] fmRegisterYMF262Ryhthm = new int[] {0, 0};
+    private final int[] fmRegisterYMF262Ryhthm = {0, 0};
 
-    private boolean[][] maskFMChYMF262 = new boolean[][] {
-            new boolean[] {
+    private final boolean[][] maskFMChYMF262 = {
+            {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false
             },
-            new boolean[] {
+            {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false
             }
     };
 
-    private int[] nowYMF262FadeoutVol = new int[] {0, 0};
+    private final int[] nowYMF262FadeoutVol = {0, 0};
 
-    public int[][][] fmRegisterYMF271 = new int[][][] {
-            new int[][] {null, null},
-            new int[][] {null, null}
+    public int[][][] fmRegisterYMF271 = {
+            {null, null},
+            {null, null}
     };
 
-    public int[][][] fmRegisterYMF278B = new int[][][] {
-            new int[][] {null, null},
-            new int[][] {null, null}
+    public int[][][] fmRegisterYMF278B = {
+            {null, null},
+            {null, null}
     };
 
-    private int[] fmRegisterYMF278BFM = new int[] {0, 0};
+    private final int[] fmRegisterYMF278BFM = {0, 0};
 
-    private int[][] fmRegisterYMF278BPCM = new int[][] {new int[24], new int[24]};
+    private final int[][] fmRegisterYMF278BPCM = {new int[24], new int[24]};
 
-    private int[] fmRegisterYMF278BRyhthmB = new int[] {0, 0};
+    private final int[] fmRegisterYMF278BRhythmB = {0, 0};
 
-    private int[] fmRegisterYMF278BRyhthm = new int[] {
+    private final int[] fmRegisterYMF278BRhythm = {
             0, 0
     };
 
-    private boolean[][] maskFMChYMF278B = new boolean[][] {
-            new boolean[] {
+    private static final boolean[][] maskFMChYMF278B = {
+            {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             },
-            new boolean[] {
+            {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             }
     };
 
-    private byte[] YMF278BCh = new byte[] {
+    private static final byte[] YMF278BCh = {
             0, 3, 1, 4, 2, 5, 6, 7, 8, 9, 12, 10, 13, 11, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
             32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46
     };
 
-    public int[][] YMZ280BRegister = new int[][] {null, null};
+    public int[][] YMZ280BRegister = {null, null};
 
-    public int[][] fmRegisterY8950 = new int[][] {null, null};
+    public int[][] fmRegisterY8950 = {null, null};
 
-    private ChipKeyInfo[] kiY8950 = new ChipKeyInfo[] {new ChipKeyInfo(15), new ChipKeyInfo(15)};
+    private final ChipKeyInfo[] kiY8950 = {new ChipKeyInfo(15), new ChipKeyInfo(15)};
 
-    private ChipKeyInfo[] kiY8950ret = new ChipKeyInfo[] {new ChipKeyInfo(15), new ChipKeyInfo(15)};
+    private final ChipKeyInfo[] kiY8950ret = {new ChipKeyInfo(15), new ChipKeyInfo(15)};
 
-    private boolean[][] maskFMChY8950 = new boolean[][] {
-            new boolean[] {
+    private final boolean[][] maskFMChY8950 = {
+            {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             },
-            new boolean[] {
+            {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             }
     };
 
-    public int[][] sn76489Register = new int[][] {null, null};
+    public int[][] sn76489Register = {null, null};
 
-    public int[] sn76489RegisterGGPan = new int[] {0xff, 0xff};
+    public int[] sn76489RegisterGGPan = {0xff, 0xff};
 
-    public int[][][] sn76489Vol = new int[][][] {
-            new int[][] {new int[2], new int[2], new int[2], new int[2]},
-            new int[][] {new int[2], new int[2], new int[2], new int[2]}
+    public int[][][] sn76489Vol = {
+            {new int[2], new int[2], new int[2], new int[2]},
+            {new int[2], new int[2], new int[2], new int[2]}
     };
 
-    public int[] nowSN76489FadeoutVol = new int[] {0, 0};
+    public int[] nowSN76489FadeoutVol = {0, 0};
 
-    public boolean[][] maskChSN76489 = new boolean[][] {
-            new boolean[] {false, false, false, false},
-            new boolean[] {false, false, false, false}
+    public boolean[][] maskChSN76489 = {
+            {false, false, false, false},
+            {false, false, false, false}
     };
 
-    public int[][] psgRegisterAY8910 = new int[][] {null, null};
+    public int[][] psgRegisterAY8910 = {null, null};
 
-    public int[][] psgKeyOnAY8910 = new int[][] {null, null};
+    public int[][] psgKeyOnAY8910 = {null, null};
 
-    private int[] nowAY8910FadeoutVol = new int[] {0, 0};
+    private final int[] nowAY8910FadeoutVol = {0, 0};
 
-    public int[][] psgVolAY8910 = new int[][] {new int[3], new int[3]};
+    public int[][] psgVolAY8910 = {new int[3], new int[3]};
 
-    private boolean[][] maskPSGChAY8910 = new boolean[][] {
-            new boolean[] {false, false, false},
-            new boolean[] {false, false, false}
+    private final boolean[][] maskPSGChAY8910 = {
+            {false, false, false},
+            {false, false, false}
     };
 
-    private boolean[] maskOKIM6258 = new boolean[] {false, false};
+    private final boolean[] maskOKIM6258 = {false, false};
 
-    public boolean[] okim6258Keyon = new boolean[] {false, false};
+    public boolean[] okim6258Keyon = {false, false};
 
-    private boolean[][] maskOKIM6295 = new boolean[][] {
-            new boolean[] {false, false, false, false},
-            new boolean[] {false, false, false, false}
+    private static final boolean[][] maskOKIM6295 = {
+            {false, false, false, false},
+            {false, false, false, false}
     };
 
-    public byte[][] pcmRegisterC140 = new byte[][] {null, null};
+    public byte[][] pcmRegisterC140 = {null, null};
 
-    public boolean[][] pcmKeyOnC140 = new boolean[][] {null, null};
+    public boolean[][] pcmKeyOnC140 = {null, null};
 
-    private boolean[][] maskChC140 = new boolean[][] {
-            new boolean[] {
+    private static final boolean[][] maskChC140 = {
+            {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false
             },
-            new boolean[] {
+            {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false
             }
     };
 
-    private boolean[][] maskChPPZ8 = new boolean[][] {
-            new boolean[] {false, false, false, false, false, false, false, false},
-            new boolean[] {false, false, false, false, false, false, false, false}
+    private static final boolean[][] maskChPPZ8 = {
+            {false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false}
     };
 
-    public int[][] pcmRegisterC352 = new int[][] {null, null};
+    public int[][] pcmRegisterC352 = {null, null};
 
-    public int[][] pcmKeyOnC352 = new int[][] {null, null};
+    public int[][] pcmKeyOnC352 = {null, null};
 
-    private boolean[][] maskChC352 = new boolean[][] {
-            new boolean[] {
+    private static final boolean[][] maskChC352 = {
+            {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             },
-            new boolean[] {
+            {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             }
     };
 
-    private boolean[][] maskChRF5C164 = new boolean[][] {
-            new boolean[] {false, false, false, false, false, false, false, false},
-            new boolean[] {false, false, false, false, false, false, false, false}
+    private final boolean[][] maskChRF5C164 = {
+            {false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false}
     };
 
-    private boolean[][] maskChRF5C68 = new boolean[][] {
-            new boolean[] {false, false, false, false, false, false, false, false},
-            new boolean[] {false, false, false, false, false, false, false, false}
+    private final boolean[][] maskChRF5C68 = {
+            {false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false}
     };
 
-    private boolean[][] maskChHuC6280 = new boolean[][] {
-            new boolean[] {false, false, false, false, false, false},
-            new boolean[] {false, false, false, false, false, false}
+    private final boolean[][] maskChHuC6280 = {
+            {false, false, false, false, false, false},
+            {false, false, false, false, false, false}
     };
 
-    private boolean[][] maskChSegaPCM = new boolean[][] {
-            new boolean[] {
-                    false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-            },
-            new boolean[] {
-                    false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-            }
+    private final boolean[][] maskChSegaPCM = {
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,},
+            {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,}
     };
 
-    private boolean[][] maskChQSound = new boolean[][] {
-            new boolean[] {
+    private final boolean[][] maskChQSound = {
+            {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false,
             },
-            new boolean[] {
+            {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false,
             }
     };
 
-    public K051649Inst scc_k051649 = new K051649Inst();
+    public K051649Inst scc_k051649 = Instrument.getInstrument(K051649Inst.class);
 
     private int sccR_port;
 
@@ -460,31 +461,28 @@ public class ChipRegister {
 
     private int sccR_dat;
 
-    public byte[] K051649tKeyOnOff = new byte[] {
+    public byte[] K051649tKeyOnOff = {
             0, 0
     };
 
-    public boolean[][] maskChK051649 = new boolean[][] {
-            new boolean[] {
-                    false, false, false, false, false
-            }, new boolean[] {
-            false, false, false, false, false
-    }
+    public boolean[][] maskChK051649 = {
+            {false, false, false, false, false},
+            {false, false, false, false, false}
     };
 
-    public byte[][] pcmRegisterSEGAPCM = new byte[][] {
+    public byte[][] pcmRegisterSEGAPCM = {
             null, null
     };
 
-    public boolean[][] pcmKeyOnSEGAPCM = new boolean[][] {
+    public boolean[][] pcmKeyOnSEGAPCM = {
             null, null
     };
 
-    public MIDIParam[] midiParams = new MIDIParam[] {null, null};
+    public MIDIParam[] midiParams = {null, null};
 
-    public boolean[][] maskChDMG = new boolean[][] {
-            new boolean[] {false, false, false, false},
-            new boolean[] {false, false, false, false}
+    public boolean[][] maskChDMG = {
+            {false, false, false, false},
+            {false, false, false, false}
     };
 
     public NesBank nes_bank = null;
@@ -499,17 +497,17 @@ public class ChipRegister {
     public NesFme7 nes_fme7 = null;
     public NesVrc7 nes_vrc7 = null;
 
-    private int[] LatchedRegister = new int[] {
+    private final int[] LatchedRegister = {
             0, 0
     };
 
-    private int[] NoiseFreq = new int[] {
+    private final int[] NoiseFreq = {
             0, 0
     };
 
     private int volF = 1;
 
-    private MIDIExport midiExport;
+    private final MIDIExport midiExport;
 
     public ChipRegister(mdsound.MDSound mds
 //            ,
@@ -711,10 +709,10 @@ public class ChipRegister {
                 fmRegisterYMF278B[chipId][1][i] = 0;
                 fmRegisterYMF278B[chipId][2][i] = 0;
             }
-            fmRegisterYMF278BRyhthm[0] = 0;
-            fmRegisterYMF278BRyhthm[1] = 0;
-            fmRegisterYMF278BRyhthmB[0] = 0;
-            fmRegisterYMF278BRyhthmB[1] = 0;
+            fmRegisterYMF278BRhythm[0] = 0;
+            fmRegisterYMF278BRhythm[1] = 0;
+            fmRegisterYMF278BRhythmB[0] = 0;
+            fmRegisterYMF278BRhythmB[1] = 0;
 
             fmRegisterY8950[chipId] = new int[0x100];
             for (int i = 0; i < 0x100; i++) {
@@ -878,10 +876,10 @@ public class ChipRegister {
                 fmRegisterYMF278B[chipId][1][i] = 0;
                 fmRegisterYMF278B[chipId][2][i] = 0;
             }
-            fmRegisterYMF278BRyhthm[0] = 0;
-            fmRegisterYMF278BRyhthm[1] = 0;
-            fmRegisterYMF278BRyhthmB[0] = 0;
-            fmRegisterYMF278BRyhthmB[1] = 0;
+            fmRegisterYMF278BRhythm[0] = 0;
+            fmRegisterYMF278BRhythm[1] = 0;
+            fmRegisterYMF278BRhythmB[0] = 0;
+            fmRegisterYMF278BRhythmB[1] = 0;
 
             fmRegisterY8950[chipId] = new int[0x100];
             for (int i = 0; i < 0x100; i++) {
@@ -1052,7 +1050,7 @@ public class ChipRegister {
 //        if (midiOutsType == null && vstMng.vstMidiOutsType == null) return;
 //        if (midiOuts == null && vstMng.vstMidiOuts == null) return;
 
-        if (midiOutsType.size() > 0) midiParams[0].MIDIModule = Math.min(midiOutsType.get(0), 2);
+        if (!midiOutsType.isEmpty()) midiParams[0].MIDIModule = Math.min(midiOutsType.get(0), 2);
         if (midiOutsType.size() > 1) midiParams[1].MIDIModule = Math.min(midiOutsType.get(1), 2);
 
 //        if (vstMng.vstMidiOutsType.size() > 0) {
@@ -1257,7 +1255,6 @@ public class ChipRegister {
                 scYM2151[chipId].setRegister(dAddr, dData);
             }
         }
-
     }
 
     private void writeYm2151(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
@@ -1494,7 +1491,7 @@ public class ChipRegister {
         return mds.ReadMultiPCMRegister(chipId);
     }
 
-    public PPZ8Status.Channel[] getPPZ8Register(int chipId) {
+    public PPZ8.Channel[] getPPZ8Register(int chipId) {
         return mds.readPPZ8Status(chipId);
     }
 
@@ -1524,7 +1521,7 @@ public class ChipRegister {
         }
     }
 
-    private int[][] qSoundRegister = new int[][] {
+    private final int[][] qSoundRegister = {
             new int[256], new int[256]
     };
 
@@ -1672,11 +1669,11 @@ public class ChipRegister {
     //}
 
     public int getYMF278BRyhthmKeyON(int chipId) {
-        return fmRegisterYMF278BRyhthm[chipId];
+        return fmRegisterYMF278BRhythm[chipId];
     }
 
     public void resetYMF278BRyhthmKeyON(int chipId) {
-        fmRegisterYMF278BRyhthm[chipId] = 0;
+        fmRegisterYMF278BRhythm[chipId] = 0;
     }
 
     public int[] getYMF278BPCMKeyON(int chipId) {
@@ -1781,7 +1778,6 @@ public class ChipRegister {
                     }
                 }
             }
-
         }
 
         if ((dAddr & 0xf0) == 0x40) { // TL
@@ -2518,7 +2514,6 @@ public class ChipRegister {
 
             scYM2608[chipId].setRegister(dPort * 0x100 + dAddr, dData);
         }
-
     }
 
     public int getYM2608Register(int chipId, int dPort, int dAddr, EnmModel model) {
@@ -2869,7 +2864,7 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYM2610[chipId] != null) {
-                byte dPort = 2;
+                int dPort = 2;
                 scYM2610[chipId].setRegister((dPort << 8) | 0x00, 0x00);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x01, (startAddr >> 8) & 0xff);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x02, (startAddr >> 16) & 0xff);
@@ -2885,7 +2880,7 @@ public class ChipRegister {
                 realChip.SendData();
             }
             if (scYM2610EB[chipId] != null) {
-                byte dPort = 2;
+                int dPort = 2;
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10000, 0x00);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10001, (startAddr >> 8) & 0xff);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10002, (startAddr >> 16) & 0xff);
@@ -2908,7 +2903,7 @@ public class ChipRegister {
             mds.writeYm2610SetAdpcmB(chipId, ym2610AdpcmB);
         } else {
             if (scYM2610[chipId] != null) {
-                byte dPort = 2;
+                int dPort = 2;
                 int startAddr = 0;
                 scYM2610[chipId].setRegister((dPort << 8) | 0x00, 0x00);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x01, (startAddr >> 8) & 0xff);
@@ -2925,7 +2920,7 @@ public class ChipRegister {
                 realChip.SendData();
             }
             if (scYM2610EB[chipId] != null) {
-                byte dPort = 2;
+                int dPort = 2;
                 int startAddr = 0;
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10000, 0x00);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10001, (startAddr >> 8) & 0xff);
@@ -2948,7 +2943,7 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (scYM2610[chipId] != null) {
-                byte dPort = 2;
+                int dPort = 2;
                 scYM2610[chipId].setRegister((dPort << 8) | 0x00, 0x00);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x01, (startAddr >> 8) & 0xff);
                 scYM2610[chipId].setRegister((dPort << 8) | 0x02, (startAddr >> 16) & 0xff);
@@ -2964,7 +2959,7 @@ public class ChipRegister {
                 realChip.SendData();
             }
             if (scYM2610EB[chipId] != null) {
-                byte dPort = 2;
+                int dPort = 2;
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10000, 0x00);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10001, (startAddr >> 8) & 0xff);
                 scYM2610EB[chipId].setRegister((dPort << 8) | 0x10002, (startAddr >> 16) & 0xff);
@@ -3035,17 +3030,17 @@ public class ChipRegister {
             }
 
             if (dAddr == 0xbd && dPort == 0) {
-                if ((fmRegisterYMF278BRyhthmB[chipId] & 0x10) == 0 && (dData & 0x10) != 0)
-                    fmRegisterYMF278BRyhthm[chipId] |= 0x10;
-                if ((fmRegisterYMF278BRyhthmB[chipId] & 0x08) == 0 && (dData & 0x08) != 0)
-                    fmRegisterYMF278BRyhthm[chipId] |= 0x08;
-                if ((fmRegisterYMF278BRyhthmB[chipId] & 0x04) == 0 && (dData & 0x04) != 0)
-                    fmRegisterYMF278BRyhthm[chipId] |= 0x04;
-                if ((fmRegisterYMF278BRyhthmB[chipId] & 0x02) == 0 && (dData & 0x02) != 0)
-                    fmRegisterYMF278BRyhthm[chipId] |= 0x02;
-                if ((fmRegisterYMF278BRyhthmB[chipId] & 0x01) == 0 && (dData & 0x01) != 0)
-                    fmRegisterYMF278BRyhthm[chipId] |= 0x01;
-                fmRegisterYMF278BRyhthmB[chipId] = dData;
+                if ((fmRegisterYMF278BRhythmB[chipId] & 0x10) == 0 && (dData & 0x10) != 0)
+                    fmRegisterYMF278BRhythm[chipId] |= 0x10;
+                if ((fmRegisterYMF278BRhythmB[chipId] & 0x08) == 0 && (dData & 0x08) != 0)
+                    fmRegisterYMF278BRhythm[chipId] |= 0x08;
+                if ((fmRegisterYMF278BRhythmB[chipId] & 0x04) == 0 && (dData & 0x04) != 0)
+                    fmRegisterYMF278BRhythm[chipId] |= 0x04;
+                if ((fmRegisterYMF278BRhythmB[chipId] & 0x02) == 0 && (dData & 0x02) != 0)
+                    fmRegisterYMF278BRhythm[chipId] |= 0x02;
+                if ((fmRegisterYMF278BRhythmB[chipId] & 0x01) == 0 && (dData & 0x01) != 0)
+                    fmRegisterYMF278BRhythm[chipId] |= 0x01;
+                fmRegisterYMF278BRhythmB[chipId] = dData;
 
                 if (maskFMChYMF278B[chipId][18])
                     dData &= 0xef;
@@ -3198,8 +3193,8 @@ public class ChipRegister {
             //fmRegister[dPort][dAddr] = dData;
             if (dPort == 0 && dAddr == 0x28) {
                 int ch = (dData & 0x3) + ((dData & 0x4) > 0 ? 3 : 0);
-                if (ch >= 0 && ch < 6)// && (dData & 0xf0)>0)
-                {
+                if (ch >= 0 && ch < 6) /* && (dData & 0xf0) > 0) */ {
+
                     if (ch != 2 || (fmRegisterYM2612[chipId][0][0x27] & 0xc0) != 0x40) {
                         if (ch != 5 || (fmRegisterYM2612[chipId][0][0x2b] & 0x80) == 0) {
                             if ((dData & 0xf0) != 0) {
@@ -3219,7 +3214,7 @@ public class ChipRegister {
                 }
             }
 
-             // PCM
+            // PCM
             if ((fmRegisterYM2612[chipId][0][0x2b] & 0x80) > 0) {
                 if (fmRegisterYM2612[chipId][0][0x2a] > 0) {
                     fmVolYM2612[chipId][5] = Math.abs(fmRegisterYM2612[chipId][0][0x2a] - 0x7f) * 20;
@@ -3320,7 +3315,7 @@ public class ChipRegister {
                     return; // Cancel sending data to the TEST register
 
                 // Send data to MDSound only when using the emulator
-//logger.log(Level.TRACE, "%d:%02X:%02X:%02X".formatted(chipId, dPort, dAddr, dData));
+//logger.log(Level.TRACE, "setYM2612: chipId: %d, port: %02X, addr: %02X, data: %02X".formatted(chipId, dPort, dAddr, dData));
                 if (ctYM2612[chipId].getUseEmu()[0])
                     mds.write(Ym2612Inst.class, chipId, dPort, dAddr, dData);
                 if (ctYM2612[chipId].getUseEmu()[1])
@@ -3839,11 +3834,11 @@ public class ChipRegister {
         }
     }
 
-    int[] algVolTbl = new int[] {
+    int[] algVolTbl = {
             8, 8, 8, 8, 0xa, 0xe, 0xe, 0xf
     };
 
-    private int[] HuC6280CurrentCh = new int[] {
+    private final int[] HuC6280CurrentCh = {
             0, 0
     };
 
@@ -4650,7 +4645,7 @@ public class ChipRegister {
             chipLED.put("SecSPCM", 2);
 
         if (model == EnmModel.VirtualModel) {
-            mds.WriteSegaPcmPCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            mds.writeSegaPcmPCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
         } else {
             if (scSEGAPCM != null && scSEGAPCM[chipId] != null) {
                 // Start address setting
@@ -4659,7 +4654,7 @@ public class ChipRegister {
                 scSEGAPCM[chipId].setRegister(0x10002, dataStart >> 16);
                 // Data Transfer
                 for (int cnt = 0; cnt < dataLength; cnt++) {
-                    scSEGAPCM[chipId].setRegister(0x10004, romData[srcStartAdr + cnt]);
+                    scSEGAPCM[chipId].setRegister(0x10004, romData[srcStartAdr + cnt] & 0xff);
                 }
                 scSEGAPCM[chipId].setRegister(0x10006, romSize);
 
@@ -5162,6 +5157,7 @@ public class ChipRegister {
 //#endregion
 
     public static class ChipKeyInfo {
+
         public boolean[] On;
 
         public boolean[] Off;

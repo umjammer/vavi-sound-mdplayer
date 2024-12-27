@@ -29,14 +29,14 @@ public class VstMng {
     // Get an instance from ChipRegister
     public MIDIParam[] midiParams = null;
 
-    private List<VstInfo2> vstPlugins = new ArrayList<>();
-    private List<VstInfo2> vstPluginsInst = new ArrayList<>();
+    private final List<VstInfo2> vstPlugins = new ArrayList<>();
+    private final List<VstInfo2> vstPluginsInst = new ArrayList<>();
     public List<VstInfo2> vstMidiOuts = new ArrayList<>();
     public List<Integer> vstMidiOutsType = new ArrayList<>();
 
 
     public void vstparse() {
-        while (vstPluginsInst.size() > 0) {
+        while (!vstPluginsInst.isEmpty()) {
             if (vstPluginsInst.get(0) != null) {
                 if (vstPluginsInst.get(0).vstPlugins != null)
                     vstPluginsInst.get(0).vstPlugins.editClose();
@@ -53,7 +53,7 @@ public class VstMng {
             vstPluginsInst.remove(0);
         }
 
-        while (vstPlugins.size() > 0) {
+        while (!vstPlugins.isEmpty()) {
             if (vstPlugins.get(0) != null) {
                 if (vstPlugins.get(0).vstPlugins != null)
                     vstPlugins.get(0).vstPlugins.editClose();
@@ -177,7 +177,7 @@ public class VstMng {
     }
 
     public void ReleaseAllMIDIout() {
-        if (vstMidiOuts != null && vstMidiOuts.size() > 0) {
+        if (vstMidiOuts != null && !vstMidiOuts.isEmpty()) {
             vstMidiOuts.clear();
             vstMidiOutsType.clear();
         }
@@ -277,7 +277,7 @@ public class VstMng {
     }
 
     public void VST_Update(short[] buffer, int offset, int sampleCount) {
-        if (vstPlugins.size() < 1 && vstPluginsInst.size() < 1) return;
+        if (vstPlugins.isEmpty() && vstPluginsInst.isEmpty()) return;
         if (buffer == null || buffer.length < 1 || sampleCount == 0) return;
 
         try {
@@ -564,7 +564,7 @@ public class VstMng {
     }
 
     public boolean delVSTeffect(String key) {
-        if (key.equals("")) {
+        if (key.isEmpty()) {
             for (VstInfo2 vstPlugin : vstPlugins) {
                 try {
                     if (vstPlugin.vstPlugins != null) {
@@ -623,7 +623,7 @@ public class VstMng {
      * The HostCommandStub class represents the part of the host that a chips can call.
      */
     public static class HostCommandStub implements IVstHostCommandStub {
-        private Setting setting;
+        private final Setting setting;
 
         public HostCommandStub(Setting setting) {
             this.setting = setting;
@@ -829,7 +829,7 @@ public class VstMng {
             this.message = message;
         }
 
-        private String message;
+        private final String message;
 
         /**
          * Gets the message.

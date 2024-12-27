@@ -32,11 +32,12 @@ import mdplayer.driver.sid.Mem;
 public class Sprites {
 
     public static final int SPRITES = 8;
-    private byte enable, yExpansion;
+    private final byte enable;
+    private final byte yExpansion;
     private byte expFlop;
     private byte dma;
-    private byte[] mcBase = new byte[SPRITES];
-    private byte[] mc = new byte[SPRITES];
+    private final byte[] mcBase = new byte[SPRITES];
+    private final byte[] mc = new byte[SPRITES];
 
     public Sprites(byte[] regs) {
         enable = regs[0x15];

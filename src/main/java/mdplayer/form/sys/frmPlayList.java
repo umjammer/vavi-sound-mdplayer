@@ -81,13 +81,13 @@ public class frmPlayList extends JFrame {
     public int playSongNum = -1;
 
     private PlayList playList;
-    private frmMain frmMain;
+    private final frmMain frmMain;
 
     private boolean playing = false;
     private int playIndex;
     private int oldPlayIndex;
 
-    private Random rand = new Random();
+    private final Random rand = new Random();
     private boolean IsInitialOpenFolder = true;
 
     static Preferences prefs = Preferences.userNodeForPackage(frmPlayList.class);
@@ -168,7 +168,7 @@ public class frmPlayList extends JFrame {
 //        super.WndProc(m);
 //    }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             isClosed = true;
@@ -232,7 +232,7 @@ public class frmPlayList extends JFrame {
         }
     }
 
-    private static Color clrLightBlue = new Color(255, 192, 192, 255);
+    private static final Color clrLightBlue = new Color(255, 192, 192, 255);
 
     private void ResetColor(int rowIndex) {
         dgvList.setValueAt(" ", rowIndex, cols.clmPlayingNow.ordinal());
@@ -243,7 +243,7 @@ public class frmPlayList extends JFrame {
         }
     }
 
-    private MouseListener dgvList_CellMouseClick = new MouseAdapter() {
+    private final MouseListener dgvList_CellMouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
             if (dgvList.getSelectedRowCount() < 0) return;
@@ -403,7 +403,7 @@ public class frmPlayList extends JFrame {
         } else {
             pi = 0;
 loopEx:
-            if (randomStack.size() > 0) {
+            if (!randomStack.isEmpty()) {
                 while (true) {
                     String hfn = randomStack.get(randomStack.size() - 1).getItem1();
                     String hzfn = randomStack.get(randomStack.size() - 1).getItem2();
@@ -417,7 +417,7 @@ loopEx:
                         }
                     }
 
-                    if (randomStack.size() == 0) break;
+                    if (randomStack.isEmpty()) break;
                 }
 
                 if (playIndex < 1) return;
@@ -760,7 +760,7 @@ loopEx:
 //        dgvList.Columns[cols.clmComposerJ.ordinal()].Visible = tsbJapanese.isSelected();
     }
 
-    private KeyListener frmPlayList_KeyDown = new KeyAdapter() {
+    private final KeyListener frmPlayList_KeyDown = new KeyAdapter() {
         @Override
         public void keyPressed(KeyEvent e) {
             //logger.log(Level.TRACE, "keycode%d %d %d".formatted(e.KeyCode, e.KeyData, e.KeyValue));
@@ -806,7 +806,7 @@ loopEx:
         }
     };
 
-    private BasicDTListener dgvList_DragDrop = new BasicDTListener() {
+    private final BasicDTListener dgvList_DragDrop = new BasicDTListener() {
         @Override
         protected boolean isDragFlavorSupported(DropTargetDragEvent ev) {
             return ev.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
@@ -1031,7 +1031,7 @@ loopEx:
     }
 
     private void tsbMMLExt_Click(ActionEvent ev) {
-        if (mml.equals("")) return;
+        if (mml.isEmpty()) return;
         try {
             new ProcessBuilder(mml).start();
         } catch (IOException e) {
@@ -1040,7 +1040,7 @@ loopEx:
     }
 
     private void tsbImgExt_Click(ActionEvent ev) {
-        if (img.equals("")) return;
+        if (img.isEmpty()) return;
         try {
             new ProcessBuilder(img).start();
         } catch (IOException e) {
@@ -1116,7 +1116,7 @@ loopEx:
         this.clmDuration = new JTextArea();
         this.clmSpacer = new JTextArea();
         this.cmsPlayList = new JMenu();
-        this.type設定ToolStripMenuItem = new JMenu();
+        this.typeSettingsToolStripMenuItem = new JMenu();
         this.tsmiA = new JMenuItem();
         this.tsmiB = new JMenuItem();
         this.tsmiC = new JMenuItem();
@@ -1341,7 +1341,7 @@ loopEx:
         //
         // cmsPlayList
         //
-        this.cmsPlayList.add(this.type設定ToolStripMenuItem);
+        this.cmsPlayList.add(this.typeSettingsToolStripMenuItem);
         this.cmsPlayList.add(this.toolStripSeparator5);
         this.cmsPlayList.add(this.tsmiPlayThis);
         this.cmsPlayList.add(this.tsmiDelThis);
@@ -1351,20 +1351,20 @@ loopEx:
         this.cmsPlayList.setName("cmsPlayList");
         //resources.ApplyResources(this.cmsPlayList, "cmsPlayList");
         //
-        // type設定ToolStripMenuItem
+        // typeSettingsToolStripMenuItem
         //
-        this.type設定ToolStripMenuItem.add(this.tsmiA);
-        this.type設定ToolStripMenuItem.add(this.tsmiB);
-        this.type設定ToolStripMenuItem.add(this.tsmiC);
-        this.type設定ToolStripMenuItem.add(this.tsmiD);
-        this.type設定ToolStripMenuItem.add(this.tsmiE);
-        this.type設定ToolStripMenuItem.add(this.tsmiF);
-        this.type設定ToolStripMenuItem.add(this.tsmiG);
-        this.type設定ToolStripMenuItem.add(this.tsmiH);
-        this.type設定ToolStripMenuItem.add(this.tsmiI);
-        this.type設定ToolStripMenuItem.add(this.tsmiJ);
-        this.type設定ToolStripMenuItem.setName("type設定ToolStripMenuItem");
-        //resources.ApplyResources(this.type設定ToolStripMenuItem, "type設定ToolStripMenuItem");
+        this.typeSettingsToolStripMenuItem.add(this.tsmiA);
+        this.typeSettingsToolStripMenuItem.add(this.tsmiB);
+        this.typeSettingsToolStripMenuItem.add(this.tsmiC);
+        this.typeSettingsToolStripMenuItem.add(this.tsmiD);
+        this.typeSettingsToolStripMenuItem.add(this.tsmiE);
+        this.typeSettingsToolStripMenuItem.add(this.tsmiF);
+        this.typeSettingsToolStripMenuItem.add(this.tsmiG);
+        this.typeSettingsToolStripMenuItem.add(this.tsmiH);
+        this.typeSettingsToolStripMenuItem.add(this.tsmiI);
+        this.typeSettingsToolStripMenuItem.add(this.tsmiJ);
+        this.typeSettingsToolStripMenuItem.setName("typeSettingsToolStripMenuItem");
+        //resources.ApplyResources(this.typeSettingsToolStripMenuItem, "typeSettingsToolStripMenuItem");
         //
         // tsmiA
         //
@@ -1627,7 +1627,7 @@ loopEx:
     private JButton tsbAddFolder;
     private JSeparator toolStripSeparator4;
     private JButton tsbJapanese;
-    private JMenu type設定ToolStripMenuItem;
+    private JMenu typeSettingsToolStripMenuItem;
     private JMenuItem tsmiA;
     private JMenuItem tsmiB;
     private JMenuItem tsmiC;

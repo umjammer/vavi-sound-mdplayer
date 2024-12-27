@@ -128,7 +128,7 @@ public class MIDIExport {
         cData.set(0xb, (byte) trkNum); // Number of tracks
 
         try {
-            String fn = playingFileName.equals("") ? "Temp.mid" : playingFileName;
+            String fn = playingFileName.isEmpty() ? "Temp.mid" : playingFileName;
 
             List<Byte> buf = new ArrayList<>(cData);
 

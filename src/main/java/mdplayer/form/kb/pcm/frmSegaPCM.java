@@ -38,7 +38,7 @@ public class frmSegaPCM extends frmBase {
 
     private MDChipParams.SegaPcm newParam = null;
     private MDChipParams.SegaPcm oldParam = null;
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmSegaPCM.class);
 
@@ -66,7 +66,7 @@ public class frmSegaPCM extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -95,7 +95,7 @@ public class frmSegaPCM extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -106,15 +106,15 @@ public class frmSegaPCM extends frmBase {
         }
     };
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
             int ch;
-            //上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (ch = 0; ch < 16; ch++) {
                         if (newParam.channels[ch].mask)
@@ -170,7 +170,7 @@ public class frmSegaPCM extends frmBase {
 //                double ml = dt / 256.0;
 //
 //                int ptrRom = segapcmState.ptrRom + ((segapcmState.ram[ch * 8 + 0x86] & segapcmState.bankmask) << segapcmState.bankshift);
-//                int addr = (int) ((segapcmState.ram[ch * 8 + 0x85] << 16) | (segapcmState.ram[ch * 8 + 0x84] << 8) | segapcmState.low[ch]);
+//                int addr = (int) (((segapcmState.ram[ch * 8 + 0x85] & 0xff) << 16) | ((segapcmState.ram[ch * 8 + 0x84] & 0xff) << 8) | (segapcmState.low[ch] & 0xff));
 //                int vdt = 0;
 //                if (ptrRom + ((addr >> 8) & segapcmState.rgnmask) < segapcmState.rom.length) {
 //                    vdt = Math.abs((byte) (segapcmState.rom[ptrRom + ((addr >> 8) & segapcmState.rgnmask)]) - 0x80);

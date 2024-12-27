@@ -36,7 +36,7 @@ public class IniParser {
 
     private static final Logger logger = getLogger(IniParser.class.getName());
 
-    private List<Tuple<String, List<Tuple<String, String>>>> sections = new ArrayList<>();
+    private final List<Tuple<String, List<Tuple<String, String>>>> sections = new ArrayList<>();
     private Tuple<String, List<Tuple<String, String>>> curSection;
 
     public static class ParseError extends RuntimeException {

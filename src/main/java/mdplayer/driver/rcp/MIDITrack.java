@@ -507,35 +507,35 @@ public class MIDITrack implements Serializable {
         keySigMi = value;
     }
 
-    /** 初めのpartを得る */
+    /** Get the first part */
     public MIDIPart getStartPart() {
         if (getStartPartIndex() == null) return null;
 
         return parts.get(getStartPartIndex());
     }
 
-    /** 最後のpartを得る */
+    /** Get the last part */
     public MIDIPart getEndPart() {
         if (getEndPartIndex() == null) return null;
 
         return parts.get(getEndPartIndex());
     }
 
-    /** 指定したpartの次のpartを得る */
+    /** Get the next part of the specified part */
     public MIDIPart getNextPart(MIDIPart part) {
         if (part == null || part.getAfterIndex() == null) return null;
 
         return parts.get(part.getAfterIndex());
     }
 
-    /** 指定したpartの前の小節を得る */
+    /** Get the measure before the specified part */
     public MIDIPart getPrevPart(MIDIPart prt) {
         if (prt == null || prt.getBeforeIndex() == null) return null;
 
         return parts.get(prt.getBeforeIndex());
     }
 
-    /** インデックスからpartを得る */
+    /** Get a part from an index */
     public MIDIPart searchPart(int index) {
         int stD = Integer.MAX_VALUE;
         int edD = Integer.MAX_VALUE;
@@ -580,7 +580,7 @@ public class MIDITrack implements Serializable {
         return null;
     }
 
-    /** 全てのPartをメモリから消去する */
+    /** Clear all parts from memory*/
     public void clearAllPartMemory() {
         this.parts.clear();
         this.mCounter = 0;
@@ -589,7 +589,7 @@ public class MIDITrack implements Serializable {
         this.setNumberPart(0);
     }
 
-    /** 全てのPartを消去する */
+    /** Erase all parts */
     public void clearEvent() {
         this.mCounter = 0;
         this.setStartPartIndex(null);
@@ -597,9 +597,9 @@ public class MIDITrack implements Serializable {
     }
 
     /**
-     * partを挿入する
-     * (既存partが増えると挿入位置を特定するのに時間がかかるようになるので注意)
-     * @param startTick 絶対値によるTick値
+     * Insert a part
+     * (Note that as the number of existing parts increases, it will take longer to identify the insertion position.)
+     * @param startTick Absolute Tick Value
      * @param part part
      */
     public void insertPart(int startTick, MIDIPart part) {
@@ -609,7 +609,7 @@ public class MIDITrack implements Serializable {
         if (this.parts == null) {
             this.parts = new ArrayList<>();
         }
-        if (this.parts.size() == 0 || this.getStartPartIndex() == null) { // 初めの part
+        if (this.parts.isEmpty() || this.getStartPartIndex() == null) { // First part
             part.setAfterIndex(null);
             part.setBeforeIndex(null);
             part.setNumber(this.getNumber());
@@ -621,7 +621,7 @@ public class MIDITrack implements Serializable {
             return;
         }
 
-        // 遅くなる原因になっているループ
+        // The loop that is causing the slowdown
         MIDIPart pPrt = getStartPart();
         while (true) {
             if (pPrt.getStartTick() > part.getStartTick()) {

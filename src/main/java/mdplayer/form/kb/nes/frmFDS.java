@@ -31,12 +31,12 @@ public class frmFDS extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipId;
-    private int zoom;
+    private final int chipId;
+    private final int zoom;
 
-    private MDChipParams.FDS newParam;
-    private MDChipParams.FDS oldParam = new MDChipParams.FDS();
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MDChipParams.FDS newParam;
+    private final MDChipParams.FDS oldParam = new MDChipParams.FDS();
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmFDS.class);
 
@@ -62,7 +62,7 @@ public class frmFDS extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -91,7 +91,7 @@ public class frmFDS extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -180,15 +180,15 @@ public class frmFDS extends frmBase {
         DrawBuff.ChFDS(frameBuffer, 0, oldParam.channel.mask, newParam.channel.mask, 0);
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
 
-            //上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     if (newParam.channel.mask)
                         parent.resetChannelMask(EnmChip.FDS, chipId, 0);
@@ -201,13 +201,13 @@ public class frmFDS extends frmBase {
             //鍵盤
             if (py < 2 * 8) {
                 if (ev.getButton() == MouseEvent.BUTTON2) {
-                    //マスク解除
+                    // Unmask.
                     parent.resetChannelMask(EnmChip.FDS, chipId, 0);
                     return;
                 }
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    //マスク
+                    // Mask.
                     parent.setChannelMask(EnmChip.FDS, chipId, 0);
                 }
             }

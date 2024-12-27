@@ -73,12 +73,12 @@ public class frmHuC6280 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipId;
-    private int zoom;
+    private final int chipId;
+    private final int zoom;
 
-    private MDChipParams.HuC6280 newParam;
-    private MDChipParams.HuC6280 oldParam;
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MDChipParams.HuC6280 newParam;
+    private final MDChipParams.HuC6280 oldParam;
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmHuC6280.class);
 
@@ -106,7 +106,7 @@ public class frmHuC6280 extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -135,7 +135,7 @@ public class frmHuC6280 extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -219,15 +219,15 @@ public class frmHuC6280 extends frmBase {
         DrawBuff.LfoFrqToHuC6280(frameBuffer, oldParam.LfoFrq, newParam.LfoFrq);
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int py = ev.getY() / zoom;
             int px = ev.getX() / zoom;
 
-            //上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (int ch = 0; ch < 6; ch++) {
                         if (newParam.channels[ch].mask)
@@ -245,12 +245,12 @@ public class frmHuC6280 extends frmBase {
                 if (ch < 0) return;
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    //マスク
+                    // Mask.
                     parent.setChannelMask(EnmChip.HuC6280, chipId, ch);
                     return;
                 }
 
-                //マスク解除
+                // Unmask.
                 for (ch = 0; ch < 6; ch++) parent.resetChannelMask(EnmChip.HuC6280, chipId, ch);
                 return;
             }
@@ -264,7 +264,7 @@ public class frmHuC6280 extends frmBase {
             int instCh = h * 3 + w;
 
             if (instCh < 6) {
-                //クリップボードに音色をコピーする
+                // Copying a tone to the clipboard
                 parent.getInstCh(EnmChip.HuC6280, instCh, chipId);
             }
         }

@@ -540,7 +540,7 @@ public class DevPsg {
             break; // 82
         case 0x03:
             comcmds._COM_83();
-            break; // 83	すらー
+            break; // 83	Slurs
         case 0x04:
             _PSG_NOP();
             break; // 84
@@ -549,16 +549,16 @@ public class DevPsg {
             break; // 85
         case 0x06:
             comcmds._COM_86();
-            break; // 86	同期信号送信
+            break; // 86	Synchronization signal transmission
         case 0x07:
             comcmds._COM_87();
             break; // 87	同期待ち
         case 0x08:
             _PSG_88();
-            break; // 88	ぴっちべんど
+            break; // 88	Pitch Bend
         case 0x09:
             _PSG_89();
-            break; // 89	ぽるためんと
+            break; // 89	Portamento
         case 0x0a:
             _PSG_NOP();
             break; // 8A
@@ -604,7 +604,7 @@ public class DevPsg {
             break; // 97
         case 0x18:
             _PSG_98();
-            break; // 98	擬似リバーブ
+            break; // 98	Pseudo reverb
         case 0x19:
             _PSG_NOP();
             break; // 99
@@ -720,7 +720,7 @@ public class DevPsg {
             break; // BD
         case 0x3e:
             comcmds._COM_BE();
-            break; // BE	ジャンプ
+            break; // BE	Jump
         case 0x3f:
             comcmds._COM_BF();
             break; // BF
@@ -776,10 +776,10 @@ public class DevPsg {
 
         case 0x50:
             comcmds._COM_D0();
-            break; // D0	キートランスポーズ
+            break; // D0	Key Transpose
         case 0x51:
             comcmds._COM_D1();
-            break; // D1	相対キートランスポーズ
+            break; // D1	Relative Key Transpose
         case 0x52:
             _PSG_NOP();
             break; // D2
@@ -800,10 +800,10 @@ public class DevPsg {
             break; // D7
         case 0x58:
             comcmds._COM_D8();
-            break; // D8	ディチューン
+            break; // D8	Detune
         case 0x59:
             comcmds._COM_D9();
-            break; // D9	相対ディチューン
+            break; // D9	Relative Detune
         case 0x5a:
             _PSG_NOP();
             break; // DA
@@ -901,7 +901,7 @@ public class DevPsg {
             break; // F8
         case 0x79:
             comcmds._COM_F9();
-            break; // F9	永久ループポイントマーク
+            break; // F9	Permanent loop point mark
         case 0x7a:
             devopn._FM_FA();
             break; // FA	y command
@@ -1026,7 +1026,7 @@ public class DevPsg {
     }
 
     /**
-     * 擬似リバーブ
+     * Pseudo reverb
      * 	switch = $80 = ON
      * 		 $81 = OFF
      * 		 $00 = + [volume]b

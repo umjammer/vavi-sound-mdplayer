@@ -42,7 +42,7 @@ public class frmTPPut extends JFrame {
         return DialogResult;
     }
 
-    private WindowListener frmTPPut_Load = new WindowAdapter() {
+    private final WindowListener frmTPPut_Load = new WindowAdapter() {
         @Override
         public void windowActivated(WindowEvent e) {
             DefaultTableModel m = (DefaultTableModel) dgvTonePallet.getModel();
@@ -153,9 +153,9 @@ public class frmTPPut extends JFrame {
         this.btCh2 = new JButton();
         this.btCh1 = new JButton();
         this.dgvTonePallet = new JTable();
-        this.clmNo = new JList();
-        this.clmName = new JList();
-        this.clmSpacer = new JList();
+        this.clmNo = new JList<>();
+        this.clmName = new JList<>();
+        this.clmSpacer = new JList<>();
         this.label1 = new JLabel();
         this.btnCancel = new JButton();
         this.btOK = new JButton();
@@ -306,7 +306,7 @@ public class frmTPPut extends JFrame {
         this.btnCancel.setName("btnCancel");
         this.btnCancel.setPreferredSize(new Dimension(75, 23));
         // this.btnCancel.TabIndex = 0
-        this.btnCancel.setText("キャンセル");
+        this.btnCancel.setText("Cancel");
         // this.btnCancel.UseVisualStyl.setBackground(true);
         //
         // btOK
@@ -364,9 +364,9 @@ public class frmTPPut extends JFrame {
     private JLabel label1;
     private JButton btnCancel;
     private JButton btOK;
-    private JList clmNo;
-    private JList clmName;
-    private JList clmSpacer;
+    private JList<String> clmNo;
+    private JList<String> clmName;
+    private JList<String> clmSpacer;
     private JButton btApply;
     private JButton btCh1;
     private JButton btCh6;

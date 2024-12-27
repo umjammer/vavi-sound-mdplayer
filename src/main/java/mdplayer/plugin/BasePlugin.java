@@ -2,9 +2,9 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Path;
 import java.util.List;
 
-import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.Audio;
 import mdplayer.Common;
@@ -68,14 +68,14 @@ public abstract class BasePlugin implements Plugin {
         trd.setPriority(Thread.NORM_PRIORITY);
         trd.start();
 
-        logger.log(Level.DEBUG, "Audio:Init:STEP 02");
+//        logger.log(Level.DEBUG, "Audio:Init:STEP 02");
 
 //        setting = Setting.getInstance();
 //        vstMng.setting = setting;
 
         audio.waveWriter = new WaveWriter(setting);
 
-        logger.log(Level.DEBUG, "Audio:Init:STEP 03");
+//        logger.log(Level.DEBUG, "Audio:Init:STEP 03");
 
         setting.init();
 
@@ -87,22 +87,22 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
         audio._fatalError = false;
         oneTimeReset = false;
 
-        logger.log(Level.DEBUG, "Audio:Init:STEP 06");
+//        logger.log(Level.DEBUG, "Audio:Init:STEP 06");
 
 
-        logger.log(Level.DEBUG, "Audio:Init:STEP 07");
+//        logger.log(Level.DEBUG, "Audio:Init:STEP 07");
 
-        // midi outをリリース
+        // midi out released
         audio.releaseAllMIDIout();
 
-        logger.log(Level.DEBUG, "Audio:Init:STEP 08");
+//        logger.log(Level.DEBUG, "Audio:Init:STEP 08");
 
 
-        logger.log(Level.DEBUG, "Audio:Init:STEP 09");
+//        logger.log(Level.DEBUG, "Audio:Init:STEP 09");
 
-        // 各外部dllの動的読み込み
+        // Dynamic loading of each external dll
 
-        logger.log(Level.DEBUG, "Audio:Init:STEP 10");
+//        logger.log(Level.DEBUG, "Audio:Init:STEP 10");
 
         audio.naudioWrap.start(setting);
 
@@ -118,7 +118,7 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
             }
 
             switch (req.request) {
-            case Die: // 自殺してください
+            case Die: // Please kill yourself
                 seqDie();
                 req.setEnd(true);
                 return;
@@ -133,7 +133,7 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
 
     protected void trdVgmRealFunction() {
 
-        if (audio.driverReal == null) {
+        if (audio.driverReal == null) { // first time, driverReal must be null
             audio.trdClosed = true;
             audio._trdStopped = true;
             return;
@@ -149,7 +149,7 @@ new Exception(audio.driverReal.toString()).printStackTrace();
 
                 double el1 = System.currentTimeMillis() / audio.swFreq;
                 if (el1 - o < step) continue;
-                if (el1 - o >= step * setting.getOutputDevice().getSampleRate() / 100.0) { // 閾値10ms
+                if (el1 - o >= step * setting.getOutputDevice().getSampleRate() / 100.0) { // Threshold 10ms
                     do {
                         o += step;
                     } while (el1 - o >= step);
@@ -182,7 +182,7 @@ new Exception(audio.driverReal.toString()).printStackTrace();
                         if (audio.useChip.contains(Common.EnmChip.YM3526)) audio.chipRegister.setFadeoutVolYM3526(0, audio.vgmRealFadeoutVol);
                         if (audio.useChip.contains(Common.EnmChip.YM3812)) audio.chipRegister.setFadeoutVolYM3812(0, audio.vgmRealFadeoutVol);
                         if (audio.useChip.contains(Common.EnmChip.SN76489))
-                            audio.chipRegister.setFadeoutVolSN76489((byte) 0, audio.vgmRealFadeoutVol);
+                            audio.chipRegister.setFadeoutVolSN76489(0, audio.vgmRealFadeoutVol);
                         if (audio.useChip.contains(Common.EnmChip.YMF262)) audio.chipRegister.setFadeoutVolYMF262(0, audio.vgmRealFadeoutVol);
 
                         if (audio.useChip.contains(Common.EnmChip.S_YM2151)) audio.chipRegister.setFadeoutVolYM2151(1, audio.vgmRealFadeoutVol);
@@ -195,7 +195,7 @@ new Exception(audio.driverReal.toString()).printStackTrace();
                         if (audio.useChip.contains(Common.EnmChip.S_YM3526)) audio.chipRegister.setFadeoutVolYM3526(1, audio.vgmRealFadeoutVol);
                         if (audio.useChip.contains(Common.EnmChip.S_YM3812)) audio.chipRegister.setFadeoutVolYM3812(1, audio.vgmRealFadeoutVol);
                         if (audio.useChip.contains(Common.EnmChip.S_SN76489))
-                            audio.chipRegister.setFadeoutVolSN76489((byte) 1, audio.vgmRealFadeoutVol);
+                            audio.chipRegister.setFadeoutVolSN76489(1, audio.vgmRealFadeoutVol);
                         if (audio.useChip.contains(Common.EnmChip.S_YMF262)) audio.chipRegister.setFadeoutVolYMF262(1, audio.vgmRealFadeoutVol);
 
                         audio.vgmRealFadeoutVol++;
@@ -363,13 +363,13 @@ new Exception(audio.driverReal.toString()).printStackTrace();
         //stop();
         audio.playingFileFormat = format;
         vgmBuf = srcBuf;
-        this.playingFileName = playingFileName; // WaveWriter向け
+        this.playingFileName = playingFileName; // for WaveWriter
         this.playingArcFileName = playingArcFileName;
         this.midiMode = midiMode;
         this.songNo = songNo;
-        audio.chipRegister.setFileName(playingFileName); // ExportMIDI向け
-        extendFile = extFile; // 追加ファイル
-        Common.playingFilePath = Path.getDirectoryName(playingFileName);
+        audio.chipRegister.setFileName(playingFileName); // for ExportMIDI
+        extendFile = extFile; // Additional files
+        Common.playingFilePath = Path.of(playingFileName).getParent();
 
         if (audio.naudioFileReader != null) {
             audio.nAudioStop();

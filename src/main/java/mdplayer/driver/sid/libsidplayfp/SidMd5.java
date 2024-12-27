@@ -30,7 +30,7 @@ import mdplayer.driver.sid.libsidplayfp.utils.Md5Factory;
  */
 public class SidMd5 {
 
-    private IMd5 md5;
+    private final IMd5 md5;
 
     /**
      * @throw md5Error

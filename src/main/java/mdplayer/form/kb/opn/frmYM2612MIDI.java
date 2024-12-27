@@ -54,9 +54,9 @@ public class frmYM2612MIDI extends frmBase {
     private int frameSizeH = 0;
     private int zoom = 1;
 
-    private MDChipParams.YM2612MIDI newParam;
-    private MDChipParams.YM2612MIDI oldParam = new MDChipParams.YM2612MIDI();
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MDChipParams.YM2612MIDI newParam;
+    private final MDChipParams.YM2612MIDI oldParam = new MDChipParams.YM2612MIDI();
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYM2612MIDI.class);
 
@@ -82,7 +82,7 @@ public class frmYM2612MIDI extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -111,7 +111,7 @@ public class frmYM2612MIDI extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -214,7 +214,7 @@ public class frmYM2612MIDI extends frmBase {
         DrawBuff.ToneFormat(frameBuffer, 16, 6, oldParam.useFormat, newParam.useFormat);
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / parent.setting.getOther().getZoom();
@@ -530,7 +530,7 @@ public class frmYM2612MIDI extends frmBase {
         cmsMIDIKBD.setVisible(true);
     }
 
-    private KeyListener frmYM2612MIDI_KeyDown = new KeyAdapter() {
+    private final KeyListener frmYM2612MIDI_KeyDown = new KeyAdapter() {
         @Override
         public void keyPressed(KeyEvent e) {
             if (e.isControlDown()) {

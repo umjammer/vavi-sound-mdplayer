@@ -34,7 +34,7 @@ public class IOBank implements IBank {
     //# include "Bank.h"
     //# include "sidcxx11.h"
 
-    private IBank[] map = new IBank[16];
+    private final IBank[] map = new IBank[16];
 
     public void setBank(int num, IBank bank) {
         map[num] = bank;

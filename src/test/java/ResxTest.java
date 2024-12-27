@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.Reader;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import vavix.util.screenscrape.annotation.InputHandler;
 import vavix.util.screenscrape.annotation.Target;
 import vavix.util.screenscrape.annotation.WebScraper;
@@ -19,7 +20,7 @@ import vavix.util.screenscrape.annotation.WebScraper;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-04 nsano initial version <br>
  */
-public class Test002 {
+public class ResxTest {
 
     @WebScraper(
 //            url = "classpath:mdplayer/properties/Resources.resx",
@@ -55,6 +56,7 @@ public class Test002 {
      * @see "https://youtrack.jetbrains.com/issue/IDEA-90676"
      */
     @Test
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test() throws Exception {
         main(null);
     }

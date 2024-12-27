@@ -534,8 +534,8 @@ public class MXDRV extends BaseDriver {
     private static final String MXWORK_CREDIT
             = "X68k MXDRV Music driver version 2.06+17 Rel.X5-s (c)1988-92 milk.,K.MAEKAWA, Missy.M, Yatsube\nConverted for Win32 [MXDRVg] V2.00a Copyright (C) 2000-2002 GORRY.\nConverted for MDPlayer Vx.xx Copyright (C) 2018-2018 Kumatan.";
 
-    private int[] MXWORK_CHBUF_FM = new int[9];
-    private int[] MXWORK_CHBUF_PCM = new int[7];
+    private final int[] MXWORK_CHBUF_FM = new int[9];
+    private final int[] MXWORK_CHBUF_PCM = new int[7];
 
     //static MXWORK_GLOBAL MXWORK_GLOBALBUF;
     private int G = 0;
@@ -548,11 +548,11 @@ public class MXDRV extends BaseDriver {
 
     //static byte MXWORK_PCM8;
     //private MXWORK_PCM8 PCM8 = null;
-    private int PCM8 = 1;
+    private final int PCM8 = 1;
 
     // 
 
-    private int FAKEA6S0004 = 0;
+    private final int FAKEA6S0004 = 0;
 
     private int D0;
     private int D1;

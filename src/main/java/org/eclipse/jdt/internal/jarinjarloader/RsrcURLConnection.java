@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 
 public class RsrcURLConnection extends URLConnection {
-   private ClassLoader classLoader;
+   private final ClassLoader classLoader;
 
    public RsrcURLConnection(URL url, ClassLoader classLoader) {
       super(url);

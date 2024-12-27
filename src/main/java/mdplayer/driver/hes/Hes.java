@@ -122,7 +122,7 @@ public class Hes extends BaseDriver {
     private double time_in_ms;
     public boolean playtime_detected = false;
 
-    private int[] buf = new int[2];
+    private final int[] buf = new int[2];
     BasePlugin audio; // TODO
 
     public void additionalUpdate(mdsound.MDSound.Chip sender, int chipId, int[][] buffer, int length) {

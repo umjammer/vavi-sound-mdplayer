@@ -41,15 +41,15 @@ public class ExtraSidBank implements IBank {
      * Sid mapping table. Maps a Sid chips base address to a Sid or to the
      * underlying bank.
      */
-    private IBank[] mapper = new IBank[MAPPER_SIZE];
+    private final IBank[] mapper = new IBank[MAPPER_SIZE];
 
-    private List<C64Sid> sids = new ArrayList<>();
+    private final List<C64Sid> sids = new ArrayList<>();
 
     private static void resetSID(C64Sid e) {
         e.reset((byte) 0xf);
     }
 
-    private int mapperIndex(int address) {
+    private static int mapperIndex(int address) {
         return address >> 5 & (MAPPER_SIZE - 1);
     }
 

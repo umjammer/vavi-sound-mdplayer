@@ -48,10 +48,10 @@ public class Timer extends Event {
     protected static final int CIAT_LOAD = 0x10 << 16;
     protected static final int CIAT_OUT = 0x80000000;
 
-    private EventCallback<Timer> m_cycleSkippingEvent;
+    private final EventCallback<Timer> m_cycleSkippingEvent;
 
     // Event context.
-    private EventScheduler eventScheduler;
+    private final EventScheduler eventScheduler;
 
     /**
      * This instanceof a tri-state:

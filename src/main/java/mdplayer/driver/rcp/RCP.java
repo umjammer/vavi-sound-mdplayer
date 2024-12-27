@@ -112,7 +112,7 @@ public class RCP extends BaseDriver {
         public int sabun = 0;
     }
 
-    private Tick tick = new Tick();
+    private final Tick tick = new Tick();
 
     public List<Tuple<String, byte[]>> ExtendFile = null;
 
@@ -197,7 +197,7 @@ public class RCP extends BaseDriver {
         loopCounter = 0;
         vgmCurLoop = 0;
         stopped = false;
-        // コントロールを送信してからウェイトするためここでは 0 をセットする
+        // Set 0 here to wait after sending control.
         //vgmFrameCounter = -latency - waitTime;
         vgmFrameCounter = 0;
         vgmSpeed = 1;
@@ -208,7 +208,7 @@ public class RCP extends BaseDriver {
 
         if (!getInformationHeader()) return false;
 
-        // ポートごとに事前に送信するコマンドを作成する
+        // Create a command to send in advance for each port
         if (!makeBeforeSendCommand()) return false;
 
         if (model == EnmModel.RealModel) {
@@ -268,18 +268,18 @@ public class RCP extends BaseDriver {
     private int meaInd = 0;
     private boolean endTrack = false;
     private Map<Byte, Byte> taiDic = null;
-    private int stDevNum = 0;
+    private final int stDevNum = 0;
     private int pt = 0;
     private int skipPtr = 4;
-    private byte[] msgBuf2 = new byte[2];
-    private byte[] msgBuf3 = new byte[3];
-    private byte[] msgBuf = new byte[256];
+    private final byte[] msgBuf2 = new byte[2];
+    private final byte[] msgBuf3 = new byte[3];
+    private final byte[] msgBuf = new byte[256];
 
     interface EventHandler extends BiConsumer<MIDITrack, MIDIEvent> {
     }
 
-    private EventHandler[] eventFunc = new EventHandler[256];
-    private EventHandler[] specialEventFunc = new EventHandler[256];
+    private final EventHandler[] eventFunc = new EventHandler[256];
+    private final EventHandler[] specialEventFunc = new EventHandler[256];
     private int relativeTempoChangeTargetTempo;
     private double relativeTempoChangeTickSlice;
     private boolean relativeTempoChangeSW = false;
@@ -410,29 +410,29 @@ public class RCP extends BaseDriver {
         ptr += 64;
         // Memo
         ptr += 360;
-        // トラック数
-        trkLen = vgmBuf[ptr++];
+        // Number of tracks
+        trkLen = vgmBuf[ptr++] & 0xff;
         if (trkLen != 18 && trkLen != 36) trkLen = 18;
         // dummy Skip
         ptr++;
         // Timebase
-        timeBase = vgmBuf[ptr] + (vgmBuf[ptr + 1] * 0x100);
+        timeBase = (vgmBuf[ptr] & 0xff) + (vgmBuf[ptr + 1] & 0xff) * 0x100;
         timeBase = timeBase == 0 ? 1 : timeBase;
         ptr += 2;
         // Tempo
-        nowTempo = vgmBuf[ptr++];
+        nowTempo = vgmBuf[ptr++] & 0xff;
         if (nowTempo < 8 || nowTempo > 250) nowTempo = 120;
         tempo = nowTempo;
         // dummy Skip
         ptr++;
-        // 拍子（分子）
-        beatDen = vgmBuf[ptr++];
-        // 拍子（分母）
-        beatMol = vgmBuf[ptr++];
+        // Beat (numerator)
+        beatDen = vgmBuf[ptr++] & 0xff;
+        // Beat (Denominator)
+        beatMol = vgmBuf[ptr++] & 0xff;
         // Key
-        key = vgmBuf[ptr++];
+        key = vgmBuf[ptr++] & 0xff;
         // Play BIAS
-        playBIAS = vgmBuf[ptr++];
+        playBIAS = vgmBuf[ptr++] & 0xff;
         // dummy Skip
         ptr += 6;
         // dummy Skip
@@ -464,19 +464,19 @@ public class RCP extends BaseDriver {
         ptr += 336;
         // dummy Skip
         ptr += 16;
-        // Timebase下位
-        timeBase = vgmBuf[ptr++];
+        // Timebase Lower
+        timeBase = vgmBuf[ptr++] & 0xff;
         // Tempo
-        nowTempo = vgmBuf[ptr++];
+        nowTempo = vgmBuf[ptr++] & 0xff;
         tempo = nowTempo;
-        // 拍子（分子）
-        beatDen = vgmBuf[ptr++];
-        // 拍子（分母）
-        beatMol = vgmBuf[ptr++];
+        // Beat (numerator)
+        beatDen = vgmBuf[ptr++] & 0xff;
+        // Beat (Denominator)
+        beatMol = vgmBuf[ptr++] & 0xff;
         // Key
-        key = vgmBuf[ptr++];
+        key = vgmBuf[ptr++] & 0xff;
         // Play BIAS
-        playBIAS = vgmBuf[ptr++];
+        playBIAS = vgmBuf[ptr++] & 0xff;
         // .CM6
         controlFileCM6 = new String(vgmBuf, ptr, 12, CHARSET).replace("\0", "");
         ptr += 12;
@@ -487,8 +487,8 @@ public class RCP extends BaseDriver {
         ptr += 12;
         // dummy Skip
         ptr += 4;
-        // トラック数
-        trkLen = vgmBuf[ptr++];
+        // Number of tracks
+        trkLen = vgmBuf[ptr++] & 0xff;
         switch (trkLen) {
         case 0:
             trkLen = 36;
@@ -501,14 +501,14 @@ public class RCP extends BaseDriver {
             rcpVer = 2;
             break;
         }
-        // Timebase上位
-        timeBase += vgmBuf[ptr++] * 0x100;
+        // Timebase Upper
+        timeBase += (vgmBuf[ptr++] & 0xff) * 0x100;
         timeBase = timeBase == 0 ? 1 : timeBase;
         // dummy Skip
-        // 無視
+        // ignore
         // TONENAME.TB?
-        // いまのところ無視
-        ptr = 0x206; // リズム定義部まで
+        // Ignored for now
+        ptr = 0x206; // Up to the rhythm definition section
     }
 
     private void rythm() {
@@ -520,8 +520,8 @@ public class RCP extends BaseDriver {
             MIDIRythm r = new MIDIRythm();
             r.setName(new String(vgmBuf, ptr, 14, CHARSET).replace("\0", ""));
             ptr += 14;
-            r.key = vgmBuf[ptr++];
-            r.gt = vgmBuf[ptr++];
+            r.key = vgmBuf[ptr++] & 0xff;
+            r.gt = vgmBuf[ptr++] & 0xff;
             rythms.add(r);
         }
     }
@@ -543,13 +543,13 @@ public class RCP extends BaseDriver {
     }
 
     private void trackData() {
-        initTrkPrt(); // トラックと小節を準備する
+        initTrkPrt(); // Preparing tracks and bars
 
         for (int i = 0; i < trkLen; i++) {
             if (ptr >= vgmBuf.length) continue;
 
             int vgmBufptr = ptr;
-            int trkSize = vgmBuf[ptr++] * 0x100 + vgmBuf[ptr++];
+            int trkSize = (vgmBuf[ptr++] & 0xff) * 0x100 + (vgmBuf[ptr++] & 0xff);
 
             // size dummy(?) skip
             if (isG36) ptr += 2;
@@ -564,8 +564,8 @@ public class RCP extends BaseDriver {
                 if (trkNumber < 0)
                     trkNumber = i;
             }
-            tracks[trkNumber].setRythmMode(vgmBuf[ptr++] == 0x80);
-            int ch = vgmBuf[ptr++];
+            tracks[trkNumber].setRythmMode((vgmBuf[ptr++] & 0xff) == 0x80);
+            int ch = vgmBuf[ptr++] & 0xff;
             if (ch != 255) {
                 int mc = chipRegister.getMIDIoutCount();
                 if (mc == 0) mc = 1;
@@ -589,14 +589,14 @@ public class RCP extends BaseDriver {
             tracks[trkNumber].setInUserDeviceName("Null Device");
             tracks[trkNumber].setInChannel(null);
 
-            tracks[trkNumber].setKey(vgmBuf[ptr++]);
+            tracks[trkNumber].setKey(vgmBuf[ptr++] & 0xff);
 
             if ((tracks[trkNumber].getKey() & 0x80) == 0x80) {
                 tracks[trkNumber].setKey(0);
             } else {
                 tracks[trkNumber].setKey((tracks[trkNumber].getKey() > 63) ? tracks[trkNumber].getKey() - 128 : tracks[trkNumber].getKey());
             }
-            tracks[trkNumber].setSt(vgmBuf[ptr++]);
+            tracks[trkNumber].setSt(vgmBuf[ptr++] & 0xff);
             if (rcpVer > 0) {
                 tracks[trkNumber].setSt((tracks[trkNumber].getSt() > 127) ? tracks[trkNumber].getSt() - 256 : tracks[trkNumber].getSt());
             }
@@ -620,13 +620,13 @@ public class RCP extends BaseDriver {
 
                 int ofsMea;
                 if (isG36) {
-                    ofsMea = evt.getMIDIMessages()[0][0] + evt.getMIDIMessages()[0][2] * 0x100;
+                    ofsMea = (evt.getMIDIMessages()[0][0] & 0xff) + (evt.getMIDIMessages()[0][2] & 0xff) * 0x100;
                     // if (trkLen == 36)
                     // {
                     //    ofsMea = ofsMea * 6 - 242;
                     // }
                 } else {
-                    ofsMea = evt.getMIDIMessages()[0][0] + (evt.getMIDIMessages()[0][1] & 3) * 0x100;
+                    ofsMea = (evt.getMIDIMessages()[0][0] & 0xff) + (evt.getMIDIMessages()[0][1] & 3) * 0x100;
                 }
                 int Mea = 0;
                 int MeaS;
@@ -675,16 +675,16 @@ public class RCP extends BaseDriver {
             MIDIEvent pEvt = trkn.getPart().get(meaInd).getEndEvent();
             int[] pk;
             if (!isG36) {
-                pk = new int[] {ebs[pt], ebs[pt + 1], ebs[pt + 2], ebs[pt + 3]};
+                pk = new int[] {ebs[pt] & 0xff, ebs[pt + 1] & 0xff, ebs[pt + 2] & 0xff, ebs[pt + 3] & 0xff};
             } else {
                 // Note   Step   Gate   Vel
-                pk = new int[] {ebs[pt], ebs[pt + 2] + ebs[pt + 3] * 0x100, ebs[pt + 4] + ebs[pt + 5] * 0x100, ebs[pt + 1]};
+                pk = new int[] {ebs[pt] & 0xff, (ebs[pt + 2] & 0xff) + (ebs[pt + 3] & 0xff) * 0x100, (ebs[pt + 4] & 0xff) + (ebs[pt + 5] & 0xff) * 0x100, ebs[pt + 1] & 0xff};
                 skipPtr = 6;
             }
             if (pk[0] < 0x80) {
-                onpu(trkn, pk, pEvt); // おんぷさんらしい
+                onpu(trkn, pk, pEvt); // Sounds like a note
             } else {
-                command(trkn, pk, ebs, pEvt);// コマンドらしい
+                command(trkn, pk, ebs, pEvt); // It seems to be a command
             }
         }
         ptr = pt;
@@ -988,9 +988,9 @@ public class RCP extends BaseDriver {
         tick.count = 0;
         tick.before = 0;
         tick.sabun = 0;
-        // ps.TimeBase = prj.Information.TimeBase; // 分解能
-        // ps.Tempo = prj.Information.Tempo;// テンポ:4分音符
-        // ps.BaseTempo = prj.Information.Tempo;// テンポ:4分音符
+        // ps.TimeBase = prj.Information.TimeBase; // resolution
+        // ps.Tempo = prj.Information.Tempo;// Tempo: Quarter note
+        // ps.BaseTempo = prj.Information.Tempo;// Tempo: Quarter note
         // ps.BeatDen = prj.Information.BeatDen;
         // ps.BeatMol = prj.Information.BeatMol;
         // ps.Lyric = "";
@@ -1003,7 +1003,7 @@ public class RCP extends BaseDriver {
         }
         minSt = (minSt < 0 ? -minSt : 0);
 
-        // トラック毎の初期化
+        // Per-track initialization
         for (MIDITrack tk : tracks) {
             tk.setNowPart(tk.getStartPart());
             tk.setNowTick(0);
@@ -1024,24 +1024,20 @@ public class RCP extends BaseDriver {
                 prt = tk.getNextPart(prt);
             }
 
-            // for (clsConfig.clsMIDIDeviceList dev : Config.MIDIOutDeviceList)
-            // {
-            //    if (dev.UsrNumber == tk.OutUserDeviceNumber)
-            //    {
-            //        tk.OutDeviceName = dev.DevName;
-            //        tk.OutDeviceNumber = dev.DevNumber;
-            //    }
-            // }
-
+//            for (clsConfig.clsMIDIDeviceList dev : Config.MIDIOutDeviceList) {
+//                if (dev.UsrNumber == tk.OutUserDeviceNumber) {
+//                    tk.OutDeviceName = dev.DevName;
+//                    tk.OutDeviceNumber = dev.DevNumber;
+//                }
+//            }
         }
 
-        // /* MIDIクロックの生成*/
-        // MID.Clock = new MIDIClock();
-        // MIDIClock.Create(0, ps.TimeBase, 60000000 / ps.Tempo);
-        // /* MIDIクロックのリセットとスタート */
-        // MIDIClock.Reset();
-        // MIDIClock.Start();
-
+        //// MIDI Clock Generation
+        //MID.Clock = new MIDIClock();
+        //MIDIClock.Create(0, ps.TimeBase, 60000000 / ps.Tempo);
+        //// Resetting and starting the MIDI clock
+        //MIDIClock.Reset();
+        //MIDIClock.Start();
     }
 
 
@@ -1069,7 +1065,7 @@ public class RCP extends BaseDriver {
     }
 
     private void oneFrameRCP() {
-        // リタルダンド処理
+        // Ritardando processing
         if (relativeTempoChangeSW) {
             nowTempo += relativeTempoChangeTickSlice;
             if (relativeTempoChangeTickSlice <= 0) {
@@ -1097,8 +1093,8 @@ public class RCP extends BaseDriver {
         }
 
         tick.count++;
-        // if (prj.RelativeTempoChangeSW) {
-        // }
+//        if (prj.RelativeTempoChangeSW) {
+//        }
 
         if (endMark) {
             stopped = true;
@@ -1106,7 +1102,7 @@ public class RCP extends BaseDriver {
     }
 
     /**
-     * トラック毎の処理
+     * Per-Track Processing
      */
     private void trackProcess(MIDITrack trk) {
         MIDIPart prt = trk.getNowPart();
@@ -1116,26 +1112,26 @@ public class RCP extends BaseDriver {
                 trk.setEndMark(true);
             }
         }
-        // パートの開始位置に達していないとき
+        // When the start of the part has not been reached
         if (prt.getStartTick() > tick.count) {
             checkNoteOff(trk, 0);
             return;
         }
 
-        // パートの処理を実施
+        // Part processing is performed
         partProcess(trk);
         checkNoteOff(trk, 0);
 
-        // 次のパートに移っていることがあるので
+        // Because it may move to the next part
         prt = trk.getNowPart();
-        // イベント送信が済んだところまでTick更新
+        // Update ticks until event transmission is complete
         trk.setNowTick(tick.count - prt.getStartTick());
 
         if (trk.getEndMark()) return;
 
         if (trk.getNowPart().getENowIndex() != null) return;
 
-        // 次の小節へ処理を移す
+        // Move to next measure
         if (prt.getAfterIndex() != null) {
             trk.setNowPart(trk.getNextPart(prt));
             trk.setNowTick(0);
@@ -1174,7 +1170,7 @@ public class RCP extends BaseDriver {
         return flg;
     }
 
-    private byte[] vv = new byte[1];
+    private final byte[] vv = new byte[1];
 
     private void putMIDIMessage(int n, byte[] pMIDIMessage, int len) {
         List<Byte> dat = new ArrayList<>();
@@ -1186,30 +1182,30 @@ public class RCP extends BaseDriver {
     }
 
     /**
-     * パート毎の処理
+     * Part-by-part processing
      */
     private void partProcess(MIDITrack trk) {
         MIDIPart prt = trk.getNowPart();
 
-        // パートの情報がない場合処理しない
+        // Do not process if no part information is available
         if (prt == null || prt.getENowIndex() == null) return;
-        // パート内にイベントがない場合も処理しない
-        if (prt.getEvents() == null || prt.getEvents().size() == 0) {
+        // Do not process if there are no events in the part
+        if (prt.getEvents() == null || prt.getEvents().isEmpty()) {
             prt.setENowIndex(null);
             return;
         }
 
-        // トラックの次のイベントまで処理をしない
+        // Wait until the next event in the track
         if (trk.getNextEventTick() > trk.getNowTick()) return;
-        // イベントをひとつ取り出す
+        // Extract a single event
         MIDIEvent eve = prt.getEvents().get(prt.getENowIndex());
-        // 誤差の算出
+        // Calculating the error
         eve.setGosa(trk.getNowTick() - trk.getNextEventTick());
 
-        // イベント送信
+        // Event transmission
         sendEvent(trk, eve);
 
-        // 次のイベント発動時間をセット
+        // Set the next event trigger time
         trk.setNextEventTick(trk.getNextEventTick() + eve.getStep());
 
         if (trk.getLoopOrSameTargetEventIndex() != null) {
@@ -1225,7 +1221,7 @@ public class RCP extends BaseDriver {
     }
 
     /**
-     * イベント送信
+     * Event transmission
      */
     private void sendEvent(MIDITrack trk, MIDIEvent eve) {
         if (trk.getOutDeviceNumber() == null) return;
@@ -1316,11 +1312,11 @@ public class RCP extends BaseDriver {
     }
 
     void efMetaTempo(MIDITrack trk, MIDIEvent eve) {
-        // int Tempo = eve.getMIDIMessage()[2] * 0x10000 + eve.getMIDIMessage()[3] * 0x100 + eve.getMIDIMessage()[4];
-        // MIDIClock.Stop();
-        // MIDIClock.SetTempo(Tempo);
-        // MIDIClock.Start();
-        // ps.Tempo = 60000000 / Tempo;
+//        int Tempo = (eve.getMIDIMessage()[2] & 0xff) * 0x1_0000 + (eve.getMIDIMessage()[3] & 0xff) * 0x100 + (eve.getMIDIMessage()[4] & 0xff);
+//        MIDIClock.Stop();
+//        MIDIClock.SetTempo(Tempo);
+//        MIDIClock.Start();
+//        ps.Tempo = 60000000 / Tempo;
     }
 
     void efMetaSMPTEOffset(MIDITrack trk, MIDIEvent eve) {
@@ -1329,7 +1325,7 @@ public class RCP extends BaseDriver {
 
     void efMetaTimeSignature(MIDITrack trk, MIDIEvent eve) {
         beatDen = eve.getMIDIMessage()[2]; // numerator
-        beatMol = (int) Math.pow(2.0, eve.getMIDIMessage()[3]); // denominator
+        beatMol = (int) Math.pow(2.0, eve.getMIDIMessage()[3] & 0xff); // denominator
     }
 
     void efMetaKeySignature(MIDITrack trk, MIDIEvent eve) {
@@ -1471,8 +1467,8 @@ public class RCP extends BaseDriver {
             j++;
             if (n == 0xf7) break;
             if (i >= msgBuf.length) {
-                logger.log(Level.TRACE, "sefChExclusive:バッファをオーバーするエクスクルーシブを検知しスキップ。");
-                return;// バッファをオーバーする時はエクスクルーシブを送らない
+                logger.log(Level.TRACE, "sefChExclusive:Detects and skips exclusives that exceed the buffer.");
+                return; // Do not send exclusive when buffer is over
             }
         }
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, i);
@@ -1616,7 +1612,7 @@ public class RCP extends BaseDriver {
     }
 
     void sefLoopEnd(MIDITrack trk, MIDIEvent eve) {
-        if (trk.getLoopTargetEvents().size() == 0) return;
+        if (trk.getLoopTargetEvents().isEmpty()) return;
         MIDIEvent evt = trk.getLoopTargetEvents().pop();
         if (evt.getMIDIMessages()[0][0] < eve.getMIDIMessages()[0][0] - 1) {
             evt.getMIDIMessages()[0][0]++;
@@ -1817,13 +1813,13 @@ public class RCP extends BaseDriver {
         for (int ch = 0; ch < 16; ch++) {
             dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x65, 0x00})); // RPN Master fine tuning
             dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x64, 0x01}));
-            dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x06, (byte) ((buf[0xa6f] * 0x100 + buf[0xa6e]) >> 7)}));
-            dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x26, (byte) ((buf[0xa6f] * 0x100 + buf[0xa6e]) & 0x7f)}));
+            dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x06, (byte) (((buf[0xa6f] & 0xff) * 0x100 + (buf[0xa6e] & 0xff)) >> 7)}));
+            dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x26, (byte) (((buf[0xa6f] & 0xff) * 0x100 + (buf[0xa6e] & 0xff)) & 0x7f)}));
         }
 
         // Master Volume
         dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte) 0x83, 0x40, 0x00, 0x04, buf[0x24], (byte) 0x84})));
-        dBuf.add(new CtlSysex(4, getSysEx(new byte[] {(byte) 0x7F, (byte) 0x7F, 0x04, 0x01, (byte) ((buf[0x24] * 0x81) & 0x7F), (byte) (((buf[0x24] * 0x81) >> 7) & 0x7f)})));
+        dBuf.add(new CtlSysex(4, getSysEx(new byte[] {(byte) 0x7F, (byte) 0x7F, 0x04, 0x01, (byte) (((buf[0x24] & 0xff) * 0x81) & 0x7F), (byte) ((((buf[0x24] & 0xff) * 0x81) >> 7) & 0x7f)})));
 
         for (int ch = 0; ch < 16; ch++) {
             dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x65, 0x00})); // RPN Master Coarse tuning
@@ -1834,7 +1830,7 @@ public class RCP extends BaseDriver {
         // Master Pan
         dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte)0x83, 0x40, 0x00, 0x06, buf[0x26], (byte)0x84})));
         // Master Balance
-        dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x7f, 0x7f, 0x04, 0x02, (byte) ((buf[0x26] * 0x80) & 0x7F), (byte) (((buf[0x26] * 0x80) >> 7) & 0x7f)})));
+        dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x7f, 0x7f, 0x04, 0x02, (byte) (((buf[0x26] & 0xff) * 0x80) & 0x7F), (byte) ((((buf[0x26] & 0xff) * 0x80) >> 7) & 0x7f)})));
 
         // Voice Reserve Loc:Ch partdata - 1 Len:1
         dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte)0x83
@@ -1945,7 +1941,7 @@ public class RCP extends BaseDriver {
                 , (byte) (buf[adr + 0x28] >> 4), (byte) (buf[adr + 0x28] & 0xf) // TONE MODEFY 6 42,43
                 , (byte) (buf[adr + 0x29] >> 4), (byte) (buf[adr + 0x29] & 0xf) // TONE MODEFY 7 44,45
                 , (byte) (buf[adr + 0x2a] >> 4), (byte) (buf[adr + 0x2a] & 0xf) // TONE MODEFY 8 46,47
-                , 0, 0, 0, 0 // (DATA 48,49,50,51の値は0)
+                , 0, 0, 0, 0 // (The value of DATA 48, 49, 50, 51 is 0)
                 , (byte) (buf[adr + 0x2b] >> 4), (byte) (buf[adr + 0x2b] & 0xf) // SCALE TUNIG C  52,53
                 , (byte) (buf[adr + 0x2c] >> 4), (byte) (buf[adr + 0x2c] & 0xf) // SCALE TUNIG C# 54,55
                 , (byte) (buf[adr + 0x2d] >> 4), (byte) (buf[adr + 0x2d] & 0xf) // SCALE TUNIG D  56,57
@@ -1965,7 +1961,7 @@ public class RCP extends BaseDriver {
                 , (byte) (buf[adr + 0x37] >> 4), (byte) (buf[adr + 0x37] & 0xf) // MOD  PITCH CONTROL      80,81
                 , (byte) (buf[adr + 0x38] >> 4), (byte) (buf[adr + 0x38] & 0xf) // MOD  TVF CUTOFF CONTROL 82,83
                 , (byte) (buf[adr + 0x39] >> 4), (byte) (buf[adr + 0x39] & 0xf) // MOD  AMPLITUDE CONTROL  84,85
-                , 0, 0 // (DATA 86, 87の値は0)
+                , 0, 0 // (The value of DATA 86 and 87 is 0)
                 , (byte) (buf[adr + 0x3a] >> 4), (byte) (buf[adr + 0x3a] & 0xf) // MOD  LFO1 RATE CONTROL  90,91
                 , (byte) (buf[adr + 0x3b] >> 4), (byte) (buf[adr + 0x3b] & 0xf) // MOD  LFO1 PITCH DEPTH   92,93
                 , (byte) (buf[adr + 0x3c] >> 4), (byte) (buf[adr + 0x3c] & 0xf) // MOD  LFO1 TVF DEPTH     94,95
@@ -1977,7 +1973,7 @@ public class RCP extends BaseDriver {
                 , (byte) (buf[adr + 0x42] >> 4), (byte) (buf[adr + 0x42] & 0xf) // BEND PITCH CONTROL      106,107
                 , (byte) (buf[adr + 0x43] >> 4), (byte) (buf[adr + 0x43] & 0xf) // BEND TVF CUTOFF CONTROL 108,109
                 , (byte) (buf[adr + 0x44] >> 4), (byte) (buf[adr + 0x44] & 0xf) // BEND AMPLITUDE CONTROL  110,111
-                , 0, 0 // (DATA 112,113の値は0)
+                , 0, 0 // (The value of DATA 112,113 is 0)
                 , (byte) (buf[adr + 0x45] >> 4), (byte) (buf[adr + 0x45] & 0xf) // BEND LFO1 RATE CONTROL  114,115
                 , (byte) (buf[adr + 0x46] >> 4), (byte) (buf[adr + 0x46] & 0xf) // BEND LFO1 PITCH DEPTH   116,117
                 , (byte) (buf[adr + 0x47] >> 4), (byte) (buf[adr + 0x47] & 0xf) // BEND LFO1 TVF DEPTH     118,119
@@ -2235,7 +2231,7 @@ public class RCP extends BaseDriver {
             for (int i = 0; i < beforeSend.length; i++) {
                 beforeSend[i] = new ArrayList<>();
 
-                // リセットを生成
+                // Generate Reset
                 switch (infos[i].beforeSendType) {
                 case 0:// None
                     break;
@@ -2253,7 +2249,7 @@ public class RCP extends BaseDriver {
                     break;
                 }
 
-                // ファイルパスが設定されている場合はコントロールファイルを読み込む処理を実施
+                // If the file path is set, the process to read the control file is performed.
                 if (ExtendFile != null) {
                     getControlFile(beforeSend[i], infos[i].type);
                 }
@@ -2268,7 +2264,7 @@ public class RCP extends BaseDriver {
     }
 
     private void getCtlSysexFromText(List<CtlSysex> buf, String text) {
-        if (text == null || text.length() < 1) return;
+        if (text == null || text.isEmpty()) return;
 
         String[] cmds = text.split(";");
 
@@ -2291,20 +2287,20 @@ public class RCP extends BaseDriver {
         case 0:// GM
         case 1:// XG
         case 2:// GS
-            // Control なし
+            // no Control
             break;
         case 3:// LA
-            if (!controlFileCM6.equals("")) {
+            if (!controlFileCM6.isEmpty()) {
                 getCM6Buf(buf);
             }
             break;
         case 4:// GS(SC - 55_1)
-            if (!controlFileGSD.equals("")) {
+            if (!controlFileGSD.isEmpty()) {
                 getGSD1Buf(buf);
             }
             break;
         case 5:// GS(SC - 55_2)
-            if (!controlFileGSD2.equals("")) {
+            if (!controlFileGSD2.isEmpty()) {
                 getGSD2Buf(buf);
             }
             break;

@@ -40,7 +40,7 @@ public class RomChecker {
      * Maps checksums to respective ROM description.
      * Must be filled by derived class.
      */
-    private Map<String, String> checksums = new HashMap<>();
+    private final Map<String, String> checksums = new HashMap<>();
 
     /**
      * Pointer to the ROM buffer

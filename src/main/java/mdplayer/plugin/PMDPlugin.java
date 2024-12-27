@@ -12,6 +12,7 @@ import mdplayer.Common;
 import mdplayer.driver.pmd.PMDDotNET;
 import mdplayer.format.FileFormat;
 import mdplayer.format.MMLFileFormat;
+import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.PpsDrvInst;
 import mdsound.instrument.Ppz8Inst;
@@ -19,6 +20,7 @@ import mdsound.instrument.Ym2608Inst;
 import mdsound.instrument.P86Inst;
 
 import static java.lang.System.getLogger;
+import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
@@ -72,13 +74,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipLED = new ChipLEDs();
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
-            Ym2608Inst ym2608 = new Ym2608Inst();
+            Ym2608Inst ym2608 = Instrument.getInstrument(Ym2608Inst.class);
             chip = new MDSound.Chip();
             chip.id = 0;
             audio.chipLED.put("PriOPNA", 1);
             chip.instrument = ym2608;
             chip.samplingRate = 55467;
-            chip.volume = setting.getBalance().getVolume("MAIN", Ym2608Inst.class);
+            chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class);
             chip.clock = PMDDotNET.baseclock;
             chip.setVolumes.put("FM", ym2608::setFMVolume);
             chip.setVolumes.put("PSG", ym2608::setPSGVolume);
@@ -90,12 +92,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.useChip.add(Common.EnmChip.YM2608);
             audio.clockYM2608 = PMDDotNET.baseclock;
 
-            Ppz8Inst ppz8 = new Ppz8Inst();
+            Ppz8Inst ppz8 = Instrument.getInstrument(Ppz8Inst.class);
             chip = new MDSound.Chip();
             chip.id = (byte) 0;
             chip.instrument = ppz8;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = setting.getBalance().getVolume("MAIN", Ppz8Inst.class);
+            chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ppz8Inst.class);
             chip.clock = PMDDotNET.baseclock;
             chip.option = null;
             audio.chipLED.put("PriPPZ8", 1);
@@ -103,7 +105,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.useChip.add(Common.EnmChip.PPZ8);
 
 
-            PpsDrvInst ppsdrv = new PpsDrvInst();
+            PpsDrvInst ppsdrv = Instrument.getInstrument(PpsDrvInst.class);
             chip = new MDSound.Chip();
             chip.id = (byte) 0;
             chip.instrument = ppsdrv;
@@ -116,7 +118,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.useChip.add(Common.EnmChip.PPSDRV);
 
 
-            P86Inst P86 = new P86Inst();
+            P86Inst P86 = Instrument.getInstrument(P86Inst.class);
             chip = new MDSound.Chip();
             chip.id = (byte) 0;
             chip.instrument = P86;
@@ -135,7 +137,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
-            audio.setVolume("MAIN", Ym2608Inst.class, true, setting.getBalance().getVolume("MAIN", Ym2608Inst.class));
+            audio.setVolume(MAIN_TAG, Ym2608Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class));
             audio.setVolume("FM", Ym2608Inst.class, true, setting.getBalance().getVolume("FM", Ym2608Inst.class));
             audio.setVolume("PSG", Ym2608Inst.class, true, setting.getBalance().getVolume("PSG", Ym2608Inst.class));
             audio.setVolume("Rhythm", Ym2608Inst.class, true, setting.getBalance().getVolume("Rhythm", Ym2608Inst.class));

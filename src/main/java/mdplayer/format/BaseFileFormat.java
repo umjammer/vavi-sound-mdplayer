@@ -98,7 +98,7 @@ public abstract class BaseFileFormat implements FileFormat {
     protected byte[] getExtendFileAllBytes(String srcFn, String extFn, Archive archive, Entry entry) {
         try {
             if (entry == null) {
-                return this.getFileSearchPathList(srcFn).stream()
+                return BaseFileFormat.getFileSearchPathList(srcFn).stream()
                         .map(dirPath -> Path.combine(dirPath, extFn).trim())
                         .filter(File::exists).findFirst()
                         .map(File::readAllBytes).orElse(null);
@@ -119,7 +119,7 @@ public abstract class BaseFileFormat implements FileFormat {
         }
     }
 
-    private List<String> getFileSearchPathList(String srcFn) {
+    private static List<String> getFileSearchPathList(String srcFn) {
         List<String> result = new ArrayList<>();
         result.add(getDirectoryName(srcFn));
         String fileSearchPathList = Setting.getInstance().getFileSearchPathList() != null ? Setting.getInstance().getFileSearchPathList() : "";

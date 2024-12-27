@@ -5,7 +5,6 @@ import java.lang.System.Logger.Level;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import mdplayer.ChipRegister;
@@ -206,7 +205,7 @@ public class S98 extends BaseDriver {
 
     private boolean getInformationHeader() {
 
-        s98Info.FormatVersion = vgmBuf[3] - '0';
+        s98Info.FormatVersion = (vgmBuf[3] & 0xff) - '0';
         s98Info.DeviceCount = Integer.MAX_VALUE;
         switch (s98Info.FormatVersion) {
         case 0:

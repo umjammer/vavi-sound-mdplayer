@@ -18,9 +18,7 @@ import mdplayer.DacControl;
 import mdplayer.Setting;
 import mdsound.chips.C140;
 import vavi.util.ByteUtil;
-import vavi.util.Debug;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
 
 
@@ -41,7 +39,7 @@ public class Vgm extends BaseDriver {
     public static final int DefaultRF5C164ClockValue = 12500000;
     public static final int DefaultPWMClockValue = 23011361;
     public static final int DefaultC140ClockValue = 21390;
-    public final C140.Type DefaultC140Type = C140.Type.ASIC219;
+    public static final C140.Type DefaultC140Type = C140.Type.ASIC219;
     public static final int DefaultOKIM6258ClockValue = 4000000;
     public static final int DefaultOKIM6295ClockValue = 4000000;
     public static final int DefaultSEGAPCMClockValue = 4000000;
@@ -130,7 +128,7 @@ public class Vgm extends BaseDriver {
     public boolean useChipYM2612Ch6 = false;
 //    public Setting setting = null;
 
-    private Runnable[] vgmCmdTbl = new Runnable[0x100];
+    private final Runnable[] vgmCmdTbl = new Runnable[0x100];
 
     private List<String> chips = null;
 
@@ -143,11 +141,11 @@ public class Vgm extends BaseDriver {
     private int vgmDataOffset = 0;
 
     private static final int PCM_BANK_COUNT = 0x40;
-    private VgmPcmBank[] pcmBank = new VgmPcmBank[PCM_BANK_COUNT];
-    private PcmBankTbl pcmTbl = new PcmBankTbl();
+    private final VgmPcmBank[] pcmBank = new VgmPcmBank[PCM_BANK_COUNT];
+    private final PcmBankTbl pcmTbl = new PcmBankTbl();
     private int dacCtrlUsed;
-    private byte[] dacCtrlUsg = new byte[0xff];
-    private DacCtrlData[] dacCtrl = new DacCtrlData[0xff];
+    private final byte[] dacCtrlUsg = new byte[0xff];
+    private final DacCtrlData[] dacCtrl = new DacCtrlData[0xff];
 
     private byte[][] ym2610AdpcmA = new byte[][] {null, null};
     private byte[][] ym2610AdpcmB = new byte[][] {null, null};
@@ -259,13 +257,13 @@ logger.log(Level.DEBUG, "ret: not analyze 2");
             }
 
             int cmd = vgmBuf[vgmAdr] & 0xff;
-logger.log(Level.DEBUG, "[%s]: adr: %x Dat: %x".formatted(model, vgmAdr, vgmBuf[vgmAdr])); // ok
+logger.log(Level.DEBUG, "[%s]: adr: 0x%x, cmd: 0x%x".formatted(model, vgmAdr, vgmBuf[vgmAdr])); // ok
             if (vgmCmdTbl[cmd] != null) {
                 //if (model == EnmModel.VirtualModel) logger.log(Level.DEBUG, "%05x : %02x ".formatted(vgmAdr, vgmBuf[vgmAdr]));
                 vgmCmdTbl[cmd].run();
             } else {
                 // Unknown command
-logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(model, vgmAdr, vgmBuf[vgmAdr]));
+logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(model, vgmAdr, vgmBuf[vgmAdr]));
                 vgmAdr++;
             }
             countNum++;
@@ -447,21 +445,9 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
         vgmCmdTbl[0xae] = this::vcYMF262Port0;
         vgmCmdTbl[0xaf] = this::vcYMF262Port1;
 
-//        if ((useChip & enmUseChip.RF5C164) == enmUseChip.RF5C164) {
         vgmCmdTbl[0xb0] = this::vcRf5c68;
-        vgmCmdTbl[0xc1] = this::vcRf5c68MemoryWrite;
         vgmCmdTbl[0xb1] = this::vcRf5c164;
-        vgmCmdTbl[0xc2] = this::vcRf5c164MemoryWrite;
-//        } else {
-//            vgmCmdTbl[0xb1] = this::vcDummy2Ope;
-//            vgmCmdTbl[0xc2] = this::vcDummy3Ope;
-//        }
-
-//        if ((useChip & enmUseChip.PWM) == enmUseChip.PWM) {
         vgmCmdTbl[0xb2] = this::vcPWM;
-//        } else {
-//        vgmCmdTbl[0xb2] = this::vcDummy2Ope;
-//        }
         vgmCmdTbl[0xb3] = this::vcDMG;
         vgmCmdTbl[0xb4] = this::vcNES;
         vgmCmdTbl[0xb5] = this::vcMultiPCM;
@@ -478,6 +464,8 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
         vgmCmdTbl[0xbf] = this::vcGA20;
 
         vgmCmdTbl[0xc0] = this::vcSEGAPCM;
+        vgmCmdTbl[0xc1] = this::vcRf5c68MemoryWrite;
+        vgmCmdTbl[0xc2] = this::vcRf5c164MemoryWrite;
         vgmCmdTbl[0xc3] = this::vcMultiPCMSetBank;
         vgmCmdTbl[0xc4] = this::vcQSound;
         vgmCmdTbl[0xc5] = this::vcDummy3Ope;
@@ -579,29 +567,29 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
     }
 
     private void vcAY8910() {
-        chipRegister.setAY8910Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], model);
-        //chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+        chipRegister.setAY8910Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        //chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcDMG() {
-        chipRegister.setDMGRegister((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], model);
-        //chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1], vgmBuf[vgmAdr + 2], model);
+        chipRegister.setDMGRegister((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        //chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcNES() {
-        chipRegister.setNESRegister((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], model);
+        chipRegister.setNESRegister((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcMultiPCM() {
-        chipRegister.setMultiPCMRegister((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], model);
+        chipRegister.setMultiPCMRegister((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcMultiPCMSetBank() {
-        chipRegister.setMultiPCMSetBank((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] + vgmBuf[vgmAdr + 3] * 0x100, model);
+        chipRegister.setMultiPCMSetBank((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, (vgmBuf[vgmAdr + 2] & 0xff) + (vgmBuf[vgmAdr + 3] & 0xff) * 0x100, model);
         vgmAdr += 4;
     }
 
@@ -738,12 +726,12 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
     }
 
     private void vcOKIM6258() {
-        chipRegister.writeOKIM6258(0, vgmBuf[vgmAdr + 0x01] & 0x7F, vgmBuf[vgmAdr + 0x02] & 0xff, model);
+        chipRegister.writeOKIM6258(0, vgmBuf[vgmAdr + 0x01] & 0x7f, vgmBuf[vgmAdr + 0x02] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcOKIM6295() {
-        chipRegister.writeOKIM6295((vgmBuf[vgmAdr + 0x01] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 0x01] & 0x7F, vgmBuf[vgmAdr + 0x02] & 0xff, model);
+        chipRegister.writeOKIM6295((vgmBuf[vgmAdr + 0x01] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 0x01] & 0x7f, vgmBuf[vgmAdr + 0x02] & 0xff, model);
         vgmAdr += 3;
     }
 
@@ -947,7 +935,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                 break;
 
             case 0x88:
-                // Y8950Inst
+                // Y8950
                 chipRegister.writeY8950PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "Y8950_PCMData", vgmAdr + 15, bLen - 8);
                 break;
@@ -965,25 +953,25 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                 break;
 
             case 0x8c:
-                // K054539Inst
+                // K054539
                 chipRegister.writeK054539PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "K054539_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8d:
-                // C140Inst
+                // C140
                 chipRegister.writeC140PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "C140_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8e:
-                // K053260Inst
+                // K053260
                 chipRegister.writeK053260PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "K053260_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8f:
-                // QSoundInst
+                // QSound
                 chipRegister.writeQSoundPCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "QSound_PCMData", vgmAdr + 15, bLen - 8);
                 break;
@@ -995,7 +983,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                 break;
 
             case 0x92:
-                // C352Inst
+                // C352
                 chipRegister.writeC352PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "C352_PCMData", vgmAdr + 15, bLen - 8);
                 break;
@@ -1142,7 +1130,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
             }
 
             // output
-            File.writeAllBytes(dFn, toByteArray(des));
+            File.writeAllBytes(dFn, ByteUtil.toByteArray(des));
 
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
@@ -1309,7 +1297,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
         VgmPcmBank tempPCM = pcmBank[dacCtrl[curChip].bank];
         int TempSht = ByteUtil.readLeShort(vgmBuf, vgmAdr + 2);
         //Last95Drum = TempSht;
-        //Last95Max = tempPCM->BankCount;
+        //Last95Max = tempPCM.BankCount;
         if (TempSht >= tempPCM.bankCount)
             TempSht = 0x00;
         VgmPcmData tempBnk = tempPCM.bank.get(TempSht);
@@ -1471,7 +1459,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
 
         // realloc may've moved the Bank block, so refresh all DAC Streams
         for (curDAC = 0x00; curDAC < dacCtrlUsed; curDAC++) {
-            if (dacCtrl[dacCtrlUsg[curDAC]].bank == bnkType)
+            if (dacCtrl[dacCtrlUsg[curDAC] & 0xff].bank == bnkType)
                 dacControl.refresh_data(dacCtrlUsg[curDAC] & 0xff, tempPCM.data, tempPCM.dataSize);
         }
     }
@@ -1510,14 +1498,14 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
 //#if defined(_DEBUG) && defined(WIN32)
 //        Time = GetTickCount();
 //#endif
-        comprType = vgmBuf[adr + 0];
+        comprType = vgmBuf[adr + 0] & 0xff;
         bank.dataSize = ByteUtil.readLeInt(vgmBuf, adr + 1);
 
         switch (comprType) {
         case 0x00:  // n-Bit compression
-            bitDec = vgmBuf[adr + 5];
-            bitCmp = vgmBuf[adr + 6];
-            cmpSubType = vgmBuf[adr + 7];
+            bitDec = vgmBuf[adr + 5] & 0xff;
+            bitCmp = vgmBuf[adr + 6] & 0xff;
+            cmpSubType = vgmBuf[adr + 7] & 0xff;
             addVal = ByteUtil.readLeShort(vgmBuf, adr + 8);
 
             if (cmpSubType == 0x02) {
@@ -1558,13 +1546,13 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                     bitMask = (1 << bitReadVal) - 1;
 
                     inShift += bitReadVal;
-                    //inValB = (byte)((vgmBuf[inPos] << inShift >> 8) & bitMask);
-                    inValB = (vgmBuf[inPos] << inShift >> 8) & bitMask;
+                    //inValB = (byte)(((vgmBuf[inPos] & 0xff) << inShift >> 8) & bitMask);
+                    inValB = ((vgmBuf[inPos] & 0xff) << inShift >> 8) & bitMask;
                     if (inShift >= 8) {
                         inShift -= 8;
                         inPos++;
                         if (inShift != 0)
-                            inValB |= (vgmBuf[inPos] << inShift >> 8) & bitMask;
+                            inValB |= ((vgmBuf[inPos] & 0xff) << inShift >> 8) & bitMask;
                     }
 
                     inVal |= inValB << outBit;
@@ -1581,7 +1569,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                 case 0x02:  // Table
                     switch (valSize) {
                     case 0x01:
-                        outVal = pcmTbl.entries[ent1B + inVal];
+                        outVal = pcmTbl.entries[ent1B + inVal] & 0xff;
                         break;
                     case 0x02:
 //#ifndef BIG_ENDIAN
@@ -1650,12 +1638,12 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                     bitMask = (1 << bitReadVal) - 1;
 
                     inShift += bitReadVal;
-                    inValB = (vgmBuf[inPos] << inShift >> 8) & bitMask;
+                    inValB = ((vgmBuf[inPos] & 0xff) << inShift >> 8) & bitMask;
                     if (inShift >= 8) {
                         inShift -= 8;
                         inPos++;
                         if (inShift != 0)
-                            inValB |= (vgmBuf[inPos] << inShift >> 8) & bitMask;
+                            inValB |= ((vgmBuf[inPos] & 0xff) << inShift >> 8) & bitMask;
                     }
 
                     inVal |= inValB << outBit;
@@ -1725,7 +1713,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
     }
 
     private int getDACFromPCMBank() {
-        // for Ym2612Inst DAC data only
+        // for Ym2612 DAC data only
 //        VgmPcmBank* TempPCM;
 //        UINT32 CurBnk;
         int dataPos;
@@ -1804,7 +1792,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
         this.version = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
         // Version Check
         if (version < 0x0101) {
-            logger.log(Level.TRACE, "Warning:This file instanceof older version(%s).".formatted(this.version));
+            logger.log(Level.WARNING, "This file instanceof older version(%s).".formatted(this.version));
             //return false;
         }
 
@@ -1852,7 +1840,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                 ym2612ClockValue = YM2612clock & 0x3fff_ffff;
                 ym2612DualChipFlag = (YM2612clock & 0x4000_0000) != 0;
                 if (ym2612DualChipFlag) chips.add("YM2612x2");
-                else chips.add("Ym2612Inst");
+                else chips.add("Ym2612");
             }
 
             int YM2151clock = ByteUtil.readLeInt(vgmBuf, 0x10);
@@ -1878,7 +1866,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                 ym2612ClockValue = YM2612clock & 0x3fff_ffff;
                 ym2612DualChipFlag = (YM2612clock & 0x4000_0000) != 0;
                 if (ym2612DualChipFlag) chips.add("YM2612x2");
-                else chips.add("Ym2612Inst");
+                else chips.add("Ym2612");
             }
 
             int YM2151clock = ByteUtil.readLeInt(vgmBuf, 0x30);
@@ -1901,11 +1889,11 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
             //if (version >= 0x0151)
             {
                 if (vgmDataOffset > 0x38) {
-                    int SegaPCMclock = ByteUtil.readLeInt(vgmBuf, 0x38);
+                    int segaPCMClock = ByteUtil.readLeInt(vgmBuf, 0x38);
                     int SPCMInterface = ByteUtil.readLeInt(vgmBuf, 0x3c);
-                    if (SegaPCMclock != 0 && SPCMInterface != 0) {
+                    if (segaPCMClock != 0 && SPCMInterface != 0) {
                         chips.add("Sega PCM");
-                        segaPCMClockValue = SegaPCMclock;
+                        segaPCMClockValue = segaPCMClock;
                         segaPCMInterface = SPCMInterface;
                     }
                 }
@@ -1978,7 +1966,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                         y8950ClockValue = Y8950clock & 0x3fff_ffff;
                         y8950DualChipFlag = (Y8950clock & 0x4000_0000) != 0;
                         if (y8950DualChipFlag) chips.add("Y8950x2");
-                        else chips.add("Y8950Inst");
+                        else chips.add("Y8950");
                     }
                 }
 
@@ -2103,7 +2091,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                         k051649ClockValue = K051649clock & 0x3fff_ffff;
                         k051649DualChipFlag = (K051649clock & 0x4000_0000) != 0;
                         if (k051649DualChipFlag) chips.add("K051649x2");
-                        else chips.add("K051649Inst");
+                        else chips.add("K051649");
                     }
                 }
 
@@ -2113,7 +2101,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                         k054539ClockValue = K054539clock & 0x3fff_ffff;
                         k054539DualChipFlag = (K054539clock & 0x4000_0000) != 0;
                         if (k054539DualChipFlag) chips.add("K054539x2");
-                        else chips.add("K054539Inst");
+                        else chips.add("K054539");
                         k054539Flags = vgmBuf[0x95] & 0xff;
                     }
                 }
@@ -2134,7 +2122,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                         c140ClockValue = C140clock & 0x3fff_ffff;
                         c140DualChipFlag = (C140clock & 0x4000_0000) != 0;
                         if (c140DualChipFlag) chips.add("C140x2");
-                        else chips.add("C140Inst");
+                        else chips.add("C140");
 
                         switch (vgmBuf[0x96]) {
                         case 0x00:
@@ -2158,7 +2146,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                         k053260ClockValue = k053260clock & 0x3fff_ffff;
                         k053260DualChipFlag = (k053260clock & 0x4000_0000) != 0;
                         if (k053260DualChipFlag) chips.add("K053260x2");
-                        else chips.add("K053260Inst");
+                        else chips.add("K053260");
                     }
                 }
 
@@ -2177,7 +2165,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
 
                     int qSoundClock = ByteUtil.readLeInt(vgmBuf, 0xb4);
                     if (qSoundClock != 0) {
-                        chips.add("QSoundInst");
+                        chips.add("QSound");
                         qSoundClockValue = qSoundClock;
                     }
                 }
@@ -2194,7 +2182,6 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                         okiM6295ClockValue = okiM6295clock & 0xbfff_ffff;
                     }
                 }
-
             }
             if (version >= 0x0171) {
                 if (vgmDataOffset > 0xc0) {
@@ -2226,7 +2213,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                         x1_010ClockValue = x1_010Clock & 0x3fff_ffff;
                         x1_010DualChipFlag = (x1_010Clock & 0x4000_0000) != 0;
                         if (x1_010DualChipFlag) chips.add("X1_010x2");
-                        else chips.add("X1_010Inst");
+                        else chips.add("X1_010");
                     }
                 }
 
@@ -2237,7 +2224,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
                         c352ClockValue = c352clock & 0x3fff_ffff;
                         c352DualChipFlag = (c352clock & 0x4000_0000) != 0;
                         if (c352DualChipFlag) chips.add("C352x2");
-                        else chips.add("C352Inst");
+                        else chips.add("C352");
 
                         c352ClockDivider = vgmBuf[0xd6] & 0xff;
                     }
@@ -2262,7 +2249,8 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: %x Dat: %x".formatted(mode
             vgmDataOffset = 0x40;
         }
 
-        usedChips = String.join(" , ", chips);
+        usedChips = String.join(", ", chips);
+logger.log(Level.INFO, "usedChips: " + usedChips);
 
         int vgmGd3 = ByteUtil.readLeInt(vgmBuf, 0x14);
         if (vgmGd3 != 0) {

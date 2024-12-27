@@ -22,11 +22,11 @@ public class SoundChip {
     public static RealChip realChip;
 
     // public NScci.NScci nScci;
-    private NScci.NSoundChip nSoundChip = null;
+    private final NScci.NSoundChip nSoundChip = null;
 
-    private NScci.NSoundInterface nSoundInterface = null;
+    private final NScci.NSoundInterface nSoundInterface = null;
 
-    private NScci.NSoundInterfaceManager nSoundInterfaceManager = null;
+    private final NScci.NSoundInterfaceManager nSoundInterfaceManager = null;
 
     public void setRegister(int v1, int v2) {
         nSoundChip.setRegister(v1, v2);

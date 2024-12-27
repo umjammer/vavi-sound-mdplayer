@@ -433,12 +433,12 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
             case 0x02: // Start Address L
             case 0x03: // Start Address H
                 this.common.granuality = (v & 2) != 0 ? 1 : 4;
-                this.common.start = ((this.common.regs[3] << 8) + this.common.regs[2]) << (this.memShift + 1);
+                this.common.start = (((this.common.regs[3] & 0xff) << 8) + (this.common.regs[2] & 0xff)) << (this.memShift + 1);
                 this.common.mem = this.common.start;
                 break;
             case 0x04: // Stop Address L
             case 0x05: // Stop Address H
-                this.common.stop = ((this.common.regs[5] << 8) + this.common.regs[4]) << (this.memShift + 1);
+                this.common.stop = (((this.common.regs[5] & 0xff) << 8) + (this.common.regs[4] & 0xff)) << (this.memShift + 1);
                 break;
             case 0x06: // Prescale L
             case 0x07: // Prescale H
@@ -448,7 +448,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
                 break;
             case 0x09: // Delta-N L
             case 0x0a: // Delta-N H
-                this.common.deltan = (this.common.regs[0xa] << 8) + this.common.regs[0x9];
+                this.common.deltan = ((this.common.regs[0xa] & 0xff) << 8) + (this.common.regs[0x9] & 0xff);
                 if (this.common.deltan < 0x100) this.common.deltan = 0x100;
                 break;
             case 0x0b: // Level Control

@@ -51,10 +51,10 @@ public class Mixer {
      */
     public static final int VOLUME_MAX = 1024;
 
-    private List<SidEmu> chips = new ArrayList<>();
-    private List<short[]> buffers = new ArrayList<>();
+    private final List<SidEmu> chips = new ArrayList<>();
+    private final List<short[]> buffers = new ArrayList<>();
     private List<Integer> samples = new ArrayList<>();
-    private List<Integer> volume = new ArrayList<>();
+    private final List<Integer> volume = new ArrayList<>();
 
     private MixerFunction[] mix = new MixerFunction[1];
 
@@ -173,7 +173,7 @@ public class Mixer {
             s.get(ind).bufferPos(pos);
         }
 
-        private int pos;
+        private final int pos;
     }
 
     public static class BufferMove {
@@ -186,9 +186,9 @@ public class Mixer {
             System.arraycopy(dest.get(i), pos, dest.get(i), 0, samples);
         }
 
-        private int pos;
+        private final int pos;
 
-        private int samples;
+        private final int samples;
     }
 
     public void clockChips() {
@@ -244,8 +244,9 @@ public class Mixer {
             i += fastForwardFactor;
 
             int dither = triangularDithering();
-            // ディザリングの付加なし。
-            // (付加するとノイズが乗るが、割り算後の値を平均した際に、原音により近い波形を保つことができる)
+            // No dithering added.
+            // (Adding this will add noise, but when the divided values are averaged,
+            //  it will be possible to maintain a waveform that is closer to the original sound.)
             //int dither = 0;
 
             //int channels = m_stereo ? 2 : 1;
@@ -374,7 +375,7 @@ public class Mixer {
         volume.add(right);
     }
 
-    private Integer[][] regs = new Integer[5][];
+    private final Integer[][] regs = new Integer[5][];
 
     public Integer[][] getSidRegister() {
         for (int i = 0; i < Math.min(chips.size(), 5); i++) {

@@ -33,7 +33,7 @@ import java.util.Arrays;
  */
 public class ColorRAMBank implements IBank {
 
-    private byte[] ram = new byte[0x400];
+    private final byte[] ram = new byte[0x400];
 
     public void reset() {
         Arrays.fill(ram, (byte) 0);

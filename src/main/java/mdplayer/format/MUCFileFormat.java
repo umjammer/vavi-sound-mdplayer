@@ -8,6 +8,7 @@ import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.mucom.MucomDotNET;
 import mdplayer.plugin.MucomPlugin;
+import mdplayer.plugin.NRTPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;
@@ -60,6 +61,6 @@ public class MUCFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return new MucomPlugin();
+        return Plugin.getPlugin(MucomPlugin.class);
     }
 }

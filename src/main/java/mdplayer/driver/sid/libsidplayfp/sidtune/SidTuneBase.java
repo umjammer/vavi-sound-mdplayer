@@ -613,7 +613,7 @@ public class SidTuneBase {
                 break;
 
             // If character instanceof 0x9d (left arrow key) then move back.
-            if ((petsciiChar == (byte) 0x9d) && buffer.size() != 0) {
+            if ((petsciiChar == (byte) 0x9d) && !buffer.isEmpty()) {
                 buffer.remove(buffer.size() - 1);
             } else {
                 // ASCII CHR$ conversion

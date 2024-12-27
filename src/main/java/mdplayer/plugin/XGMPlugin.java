@@ -9,6 +9,7 @@ import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.driver.Xgm;
 import mdplayer.format.FileFormat;
+import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.MameYm2612Inst;
 import mdsound.instrument.Sn76489Inst;
@@ -17,6 +18,7 @@ import mdsound.instrument.Ym3438Inst;
 import mdsound.chips.Ym3438Const;
 
 import static java.lang.System.getLogger;
+import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
@@ -91,14 +93,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
             MameYm2612Inst ym2612mame;
 
             if (setting.getYM2612Type()[0].getUseEmu()[0]) {
-                ym2612 = new Ym2612Inst();
+                ym2612 = Instrument.getInstrument(Ym2612Inst.class);
                 chip.instrument = ym2612;
                 chip.option = new Object[] {
                         (setting.getNukedOPN2().gensDACHPF ? 0x01 : 0x00)
                                 | (setting.getNukedOPN2().gensSSGEG ? 0x02 : 0x00)
                 };
             } else if (setting.getYM2612Type()[0].getUseEmu()[1]) {
-                ym3438 = new Ym3438Inst();
+                ym3438 = Instrument.getInstrument(Ym3438Inst.class);
                 chip.instrument = ym3438;
                 switch (setting.getNukedOPN2().emuType) {
                 case 0:
@@ -118,24 +120,24 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     break;
                 }
             } else if (setting.getYM2612Type()[0].getUseEmu()[2]) {
-                ym2612mame = new MameYm2612Inst();
+                ym2612mame = Instrument.getInstrument(MameYm2612Inst.class);
                 chip.instrument = ym2612mame;
             }
 
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = setting.getBalance().getVolume("MAIN", Ym2612Inst.class);
+            chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class);
             chip.clock = 7670454;
             audio.clockYM2612 = 7670454;
             audio.chipLED.put("PriOPN2", 1);
             lstChips.add(chip);
             audio.useChip.add(Common.EnmChip.YM2612);
 
-            Sn76489Inst sn76489 = new Sn76489Inst();
+            Sn76489Inst sn76489 = Instrument.getInstrument(Sn76489Inst.class);
             chip = new MDSound.Chip();
             chip.id = 0;
             chip.instrument = sn76489;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = setting.getBalance().getVolume("MAIN", Sn76489Inst.class);
+            chip.volume = setting.getBalance().getVolume(MAIN_TAG, Sn76489Inst.class);
             chip.clock = 3579545;
             chip.option = null;
             audio.chipLED.put("PriDCSG", 1);
@@ -149,8 +151,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
-            audio.setVolume("MAIN", Ym2612Inst.class, true, setting.getBalance().getVolume("MAIN", Ym2612Inst.class));
-            audio.setVolume("MAIN", Sn76489Inst.class, true, setting.getBalance().getVolume("MAIN", Sn76489Inst.class));
+            audio.setVolume(MAIN_TAG, Ym2612Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class));
+            audio.setVolume(MAIN_TAG, Sn76489Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Sn76489Inst.class));
             //chipRegister.setYM2203SSGVolume(0, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
             //chipRegister.setYM2203SSGVolume(1, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
             //chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);

@@ -12,6 +12,7 @@ import mdplayer.driver.Vgm;
 import mdplayer.driver.sid.Sid;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.SIDPlugin;
+import mdplayer.plugin.XGMPlugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
@@ -76,7 +77,7 @@ public class SIDFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return new SIDPlugin();
+        return Plugin.getPlugin(SIDPlugin.class);
     }
 
     @Override
@@ -96,7 +97,7 @@ public class SIDFileFormat extends BaseFileFormat {
 
         if (mc.songNo != -1) {
             PlayList.Music music;
-            if (musics.size() > 0) {
+            if (!musics.isEmpty()) {
                 music = musics.get(0);
                 music.songNo = mc.songNo;
                 music.title = mc.title;
@@ -129,7 +130,7 @@ public class SIDFileFormat extends BaseFileFormat {
 
         if (mc.songNo != -1) {
             PlayList.Music music;
-            if (musics.size() > 0) {
+            if (!musics.isEmpty()) {
                 music = musics.get(0);
                 music.songNo = mc.songNo;
                 music.title = mc.title;

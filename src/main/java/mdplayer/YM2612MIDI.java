@@ -32,10 +32,10 @@ public class YM2612MIDI {
     private int latestNoteNumberMONO = -1;
     private final int[] latestNoteNumber = new int[] {-1, -1, -1, -1, -1, -1};
 
-    private Setting setting;
-    private MDSound mdsMIDI;
+    private final Setting setting;
+    private final MDSound mdsMIDI;
     public MDChipParams newParam;
-    private Audio audio = Audio.getInstance();
+    private final Audio audio = Audio.getInstance();
 
     public Runnable fadeout;
     public Runnable next;

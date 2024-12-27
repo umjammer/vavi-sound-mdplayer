@@ -29,7 +29,7 @@ public class DoubleBuffer implements Closeable {
     @Override
     public void close() {
         if (mainScreen != null)
-            mainScreen.Remove(g -> {});
+            mainScreen.remove(g -> {});
     }
 
     private void paint(Graphics g) {
@@ -43,7 +43,7 @@ public class DoubleBuffer implements Closeable {
                     mainScreen.refresh(g);
                 } catch (Exception ex) {
                     logger.log(Level.ERROR, ex.getMessage(), ex);
-                    mainScreen.Remove(g2 -> {});
+                    mainScreen.remove(g2 -> {});
                     mainScreen = null;
                 }
             }

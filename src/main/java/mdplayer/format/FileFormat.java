@@ -14,7 +14,7 @@ import vavi.util.archive.Entry;
 
 public interface FileFormat {
 
-    FileFormat unknown = null;  // TODO UnknownFileFormat
+    FileFormat unknown = new UnknownFileFormat();
 
     String[] getExtensions();
 
@@ -43,15 +43,18 @@ public interface FileFormat {
         return this instanceof SampledFileFormat;
     }
 
+    /**
+     * @return {@link UnknownFileFormat} when not found
+     */
     static FileFormat getFileFormat(String filename) {
         ServiceLoader<FileFormat> loader = ServiceLoader.load(FileFormat.class);
         for (FileFormat e : loader) {
             if (e.getExtensions() != null) {
-                if (Arrays.stream(e.getExtensions()).anyMatch(ex -> filename.toLowerCase().lastIndexOf(ex) != -1)) {
+                if (Arrays.stream(e.getExtensions()).anyMatch(ex -> filename.toLowerCase().endsWith(ex))) {
                     return e;
                 }
             }
         }
-        return unknown;
+        return unknown; // TODO check
     }
 }

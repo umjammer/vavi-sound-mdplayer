@@ -203,7 +203,7 @@ public class Sid {
     // FIR_RES filter tables (FIR_N*FIR_RES).
     protected short[] fir;
 
-    private Integer[] reg = new Integer[0x19];
+    private final Integer[] reg = new Integer[0x19];
 
     public Integer[] GetRegister() {
         return reg;
@@ -394,7 +394,7 @@ public class Sid {
         }
     }
 
-    private Consumer<Integer>[] funcs = Arrays.<Consumer<Integer>>asList(
+    private final Consumer<Integer>[] funcs = Arrays.<Consumer<Integer>>asList(
             voice[0].wave::writeFREQ_LO,
             voice[0].wave::writeFREQ_HI,
             voice[0].wave::writePW_LO,

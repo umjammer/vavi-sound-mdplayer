@@ -108,7 +108,7 @@ public class DevRhy {
     }
 
     /**
-     * MML コマンド処理(RHYTHM 部)
+     * MML command processing (RHYTHM section)
      */
     public void _rhythm_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
@@ -125,7 +125,7 @@ public class DevRhy {
             break; // 82
         case 0x03:
             comcmds._COM_83();
-            break; // 83 すらー
+            break; // 83 Slurs
         case 0x04:
             _RHY_NOP();
             break; // 84
@@ -134,10 +134,10 @@ public class DevRhy {
             break; // 85
         case 0x06:
             comcmds._COM_86();
-            break; // 86 同期信号送信
+            break; // 86 Synchronization signal transmission
         case 0x07:
             comcmds._COM_87();
-            break; // 87 同期信号待ち
+            break; // 87 Waiting for sync signal
         case 0x08:
             _RHY_NOP();
             break; // 88
@@ -305,7 +305,7 @@ public class DevRhy {
             break; // BD
         case 0x3e:
             comcmds._COM_BE();
-            break; // BE ジャンプ
+            break; // BE Jump
         case 0x3f:
             comcmds._COM_BF();
             break; // BF
@@ -474,10 +474,10 @@ public class DevRhy {
             break; // F4 pan
         case 0x75:
             _RHY_F5();
-            break; // F5	)	くれ
+            break; // F5	)	Give
         case 0x76:
             _RHY_F6();
-            break; // F6(でくれ
+            break; // F6( please
         case 0x77:
             _RHY_NOP();
             break; // F7
@@ -486,19 +486,19 @@ public class DevRhy {
             break; // F8
         case 0x79:
             comcmds._COM_F9();
-            break; // F9 永久ループポイントマーク
+            break; // F9 Permanent loop point mark
         case 0x7a:
             devopn._FM_FA();
             break; // FA y COMMAND
         case 0x7b:
             comcmds._COM_FB();
-            break; // FB リピート抜け出し
+            break; // FB Exiting from Repeat
         case 0x7c:
             comcmds._COM_FC();
-            break; // FC リピート開始
+            break; // FC Repeat Start
         case 0x7d:
             comcmds._COM_FD();
-            break; // FD リピート終端
+            break; // FD Repeat Termination
         case 0x7e:
             comcmds._COM_FE();
             break; // FE tempo
@@ -520,7 +520,7 @@ public class DevRhy {
     }
 
     /**
-     * 強制ダンプ
+     * Forced dump
      */
     public void _RHY_82() {
         reg.setD0_B(mm.readByte(reg.a1++));
@@ -636,7 +636,7 @@ public class DevRhy {
     }
 
     /**
-     * くれしぇんど
+     * Crescendo
      */
     public void _RHY_F5() {
         reg.D1_L = 0;
@@ -663,7 +663,7 @@ public class DevRhy {
     }
 
     /**
-     * でくれしぇんど
+     * Decrescendo
      */
     public void _RHY_F6() {
         reg.D1_L = 0;

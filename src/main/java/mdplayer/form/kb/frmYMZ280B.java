@@ -31,11 +31,11 @@ public class frmYMZ280B extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipId;
-    private int zoom;
-    private MDChipParams.YMZ280B newParam;
+    private final int chipId;
+    private final int zoom;
+    private final MDChipParams.YMZ280B newParam;
     private MDChipParams.YMZ280B oldParam = new MDChipParams.YMZ280B();
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYMZ280B.class);
 
@@ -63,7 +63,7 @@ public class frmYMZ280B extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -92,7 +92,7 @@ public class frmYMZ280B extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -103,16 +103,16 @@ public class frmYMZ280B extends frmBase {
         }
     };
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
             int ch;
 
-             // 上部のラベル行の場合は何もしない
+             // For top label row, do nothing
             if (py < 1 * 8) {
-                 // 但しchをクリックした場合はマスク反転
+                 // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
@@ -146,22 +146,22 @@ public class frmYMZ280B extends frmBase {
         if (reg == null) return;
 
         for (int ch = 0; ch < 8; ch++) {
-            newParam.channels[ch].freq = (byte) reg[0x0 + ch * 4]
+            newParam.channels[ch].freq = (reg[0x0 + ch * 4] & 0xff)
                     + ((reg[0x1 + ch * 4] & 1) << 8);
-            newParam.channels[ch].nfrq = (byte) reg[0x2 + ch * 4];
-            newParam.channels[ch].pan = (byte) (reg[0x3 + ch * 4] & 0xf);
-            newParam.channels[ch].sadr = ((byte) reg[0x20 + ch * 4] << 16)
-                    + ((byte) reg[0x40 + ch * 4] << 8)
-                    + (byte) reg[0x60 + ch * 4];
-            newParam.channels[ch].ladr = ((byte) reg[0x21 + ch * 4] << 16)
-                    + ((byte) reg[0x41 + ch * 4] << 8)
-                    + (byte) reg[0x61 + ch * 4];
-            newParam.channels[ch].leadr = ((byte) reg[0x22 + ch * 4] << 16)
-                    + ((byte) reg[0x42 + ch * 4] << 8)
-                    + (byte) reg[0x62 + ch * 4];
-            newParam.channels[ch].eadr = ((byte) reg[0x23 + ch * 4] << 16)
-                    + ((byte) reg[0x43 + ch * 4] << 8)
-                    + (byte) reg[0x63 + ch * 4];
+            newParam.channels[ch].nfrq = reg[0x2 + ch * 4] & 0xff;
+            newParam.channels[ch].pan = reg[0x3 + ch * 4] & 0xf;
+            newParam.channels[ch].sadr = ((reg[0x20 + ch * 4] & 0xff) << 16)
+                    + ((reg[0x40 + ch * 4] & 0xff) << 8)
+                    + (reg[0x60 + ch * 4] & 0xff);
+            newParam.channels[ch].ladr = ((reg[0x21 + ch * 4] & 0xff) << 16)
+                    + ((reg[0x41 + ch * 4] & 0xff) << 8)
+                    + (reg[0x61 + ch * 4] & 0xff);
+            newParam.channels[ch].leadr = ((reg[0x22 + ch * 4] & 0xff) << 16)
+                    + ((reg[0x42 + ch * 4] & 0xff) << 8)
+                    + (reg[0x62 + ch * 4] & 0xff);
+            newParam.channels[ch].eadr = ((reg[0x23 + ch * 4] & 0xff) << 16)
+                    + ((reg[0x43 + ch * 4] & 0xff) << 8)
+                    + (reg[0x63 + ch * 4] & 0xff);
 
             newParam.channels[ch].dda = (reg[0x1 + ch * 4] & 0x80) != 0;
             newParam.channels[ch].ex = (reg[0x1 + ch * 4] & 0x40) != 0;

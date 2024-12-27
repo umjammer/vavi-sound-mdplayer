@@ -2,7 +2,7 @@ package mdplayer.driver.zgm;
 
 public enum EnmZGMDevice {
         None(0x0000_0000)
-         // VGM Chips(VGMで使用されるエミュレーションチップ定義)
+         // VGM Chips (Emulation chip definition used by VGM)
         , SN76489(0x0000_000C)
         , YM2413(0x0000_0010)
         , YM2612(0x0000_002C)
@@ -48,14 +48,14 @@ public enum EnmZGMDevice {
         , GA20(0x0000_00E0)
         // Chips
         , Conductor(0x0001_0000)
-        // 妄想Chips
+        // Delusion Chips
         , OtherChips(0x0002_0000)
         , AY8910B(0x0002_0000)
         , YM2609(0x0002_0001)
-        // XG音源
+        // XG Sound Source
         , MIDIXG(0x0003_0000)
         , MU50(0x0003_0000)
-        // LA/GS音源
+        // LA/GS sound source
         , MIDIGS(0x0004_0000)
         , MT32(0x0004_0000)
          // GM

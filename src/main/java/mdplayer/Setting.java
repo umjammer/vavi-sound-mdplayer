@@ -10,15 +10,14 @@ import java.io.Serializable;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import dotnet4j.io.File;
-import dotnet4j.io.Path;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.properties.Resources;
+import mdplayer.vst.VstInfo;
 import mdsound.Instrument;
 import vavi.util.serdes.Serdes;
 
@@ -746,36 +745,36 @@ public class Setting implements Serializable {
 
     public static class Vst implements Serializable {
 
-//        private String defaultPath = "";
-//        private String[] vstPluginPath = null;
-//        public String[] getVstPluginPath() {
-//            return vstPluginPath;
-//        }
-//        void setVstPluginPath(String[] value) {
-//            vstPluginPath = value;
-//        }
-//        private VstInfo[] vstInfos = null;
-//        public VstInfo[] getVSTInfo() {
-//            return vstInfos;
-//        }
-//        public void setVSTInfo(VstInfo[] value) {
-//            vstInfos = value;
-//        }
-//        public String getDefaultPath() {
-//            return defaultPath;
-//        }
-//        public void setDefaultPath(String value) {
-//            defaultPath = value;
-//        }
-//
-//        public Vst copy() {
-//            Vst vst = new Vst();
-//
-//            vst.vstInfos = this.vstInfos;
-//            vst.defaultPath = this.defaultPath;
-//
-//            return vst;
-//        }
+        private String defaultPath = "";
+        private String[] vstPluginPath = null;
+        public String[] getVstPluginPath() {
+            return vstPluginPath;
+        }
+        void setVstPluginPath(String[] value) {
+            vstPluginPath = value;
+        }
+        private VstInfo[] vstInfos = null;
+        public VstInfo[] getVSTInfo() {
+            return vstInfos;
+        }
+        public void setVSTInfo(VstInfo[] value) {
+            vstInfos = value;
+        }
+        public String getDefaultPath() {
+            return defaultPath;
+        }
+        public void setDefaultPath(String value) {
+            defaultPath = value;
+        }
+
+        public Vst copy() {
+            Vst vst = new Vst();
+
+            vst.vstInfos = this.vstInfos;
+            vst.defaultPath = this.defaultPath;
+
+            return vst;
+        }
     }
 
     public static class MidiOut implements Serializable {
@@ -1573,12 +1572,11 @@ public class Setting implements Serializable {
             return outputDevice;
         }
     }
+
     // implements Serializable;
-    // public class ChipType2
-    // {
+    // public class ChipType2 {
     // private boolean _UseEmu = true;
-    // public boolean UseEmu
-    // {
+    // public boolean UseEmu {
     // get() {
     // return _UseEmu;
     // }
@@ -1589,8 +1587,7 @@ public class Setting implements Serializable {
     // }
 
     // private boolean _UseEmu2 = false;
-    // public boolean UseEmu2
-    // {
+    // public boolean UseEmu2 {
     // get() {
     // return _UseEmu2;
     // }
@@ -1879,8 +1876,7 @@ public class Setting implements Serializable {
     // }
 
     // private boolean _UseWaitBoost = false;
-    // public boolean UseWaitBoost
-    // {
+    // public boolean UseWaitBoost {
     // get()
     // {
     // return _UseWaitBoost;
@@ -2181,12 +2177,13 @@ public class Setting implements Serializable {
                 masterVolume = 0;
         }
 
-        private Map<String, Integer> volumes = new HashMap<>();
+        private final Map<String, Integer> volumes = new HashMap<>();
 
-        private boolean outRange(int v) {
+        private static boolean outRange(int v) {
             return v > 20 || v < -192;
         }
-        private String getKey(String tag, Class<? extends Instrument> c) {
+
+        private static String getKey(String tag, Class<? extends Instrument> c) {
             return c.getSimpleName().replaceFirst("Inst$", ".") + tag;
         }
 
@@ -3052,19 +3049,18 @@ public class Setting implements Serializable {
             return balance;
         }
 
-        public void save(String fullPath) {
-            try (OutputStream out = Files.newOutputStream(Paths.get(fullPath))) {
+        public void save(Path fullPath) {
+            try (OutputStream out = Files.newOutputStream(fullPath)) {
                 Serdes.Util.serialize(this, out);
             } catch (IOException ex) {
                 logger.log(Level.ERROR, ex.getMessage(), ex);
             }
         }
 
-        public static Balance load(String fullPath) {
-            java.nio.file.Path p = Paths.get(fullPath);
-            if (!Files.exists(p))
+        public static Balance load(Path fullPath) {
+            if (!Files.exists(fullPath))
                 return null;
-            try (InputStream in = Files.newInputStream(p)) {
+            try (InputStream in = Files.newInputStream(fullPath)) {
                 return Serdes.Util.deserialize(in, new Balance());
             } catch (IOException ex) {
                 logger.log(Level.ERROR, ex.getMessage(), ex);
@@ -4580,10 +4576,10 @@ public class Setting implements Serializable {
     }
 
     public void save() {
-        String fullPath = Common.settingFilePath;
-        fullPath = Path.combine(fullPath, Resources.getCntSettingFileName());
+        Path fullPath = Common.settingFilePath;
+        fullPath = fullPath.resolve(Resources.getCntSettingFileName());
 
-        try (OutputStream sw = Files.newOutputStream(Paths.get(fullPath))) {
+        try (OutputStream sw = Files.newOutputStream(fullPath)) {
             Serdes.Util.serialize(sw, this);
         } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
@@ -4593,21 +4589,21 @@ public class Setting implements Serializable {
     public static Setting load() {
         try {
             String fn = Resources.getCntSettingFileName();
-            if (File.exists(Path.getDirectoryName(System.getProperty("user.dir")) + fn)) {
+            if (Files.exists(Path.of(System.getProperty("user.dir"), fn))) {
                 // If there is a configuration file in the same folder as the application, use that.
-                Common.settingFilePath = Path.getDirectoryName(System.getProperty("user.dir"));
+                Common.settingFilePath = Path.of(System.getProperty("user.dir")).getParent();
             } else {
                 // For anything other than the above, use the application data folder.
                 Common.settingFilePath = Common.getApplicationDataFolder(true);
             }
 
-            String fullPath = Common.settingFilePath;
-            fullPath = Path.combine(fullPath, Resources.getCntSettingFileName());
+            Path fullPath = Common.settingFilePath;
+            fullPath = fullPath == null ? Path.of(Resources.getCntSettingFileName()) : fullPath.resolve(Resources.getCntSettingFileName());
 
-            if (!File.exists(fullPath)) {
+            if (!Files.exists(fullPath)) {
                 return new Setting();
             }
-            try (InputStream sr = Files.newInputStream(Paths.get(fullPath))) {
+            try (InputStream sr = Files.newInputStream(fullPath)) {
                 return Serdes.Util.deserialize(sr, new Setting());
             }
         } catch (Exception ex) {

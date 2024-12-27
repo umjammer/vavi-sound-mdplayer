@@ -37,16 +37,14 @@ public class frmRegTest extends frmChipBase {
 
     static class ChipData {
 
-        public interface GetRegisterDelegate extends Function<Integer, Object> {
-        }
-
         public String chipName;
         public int baseIndex;
-        public GetRegisterDelegate register;
+        /** GetRegisterDelegate */
+        public Function<Integer, Object> register;
         public int maxRegisterSize;
         public int regWind;
 
-        public ChipData(String chipName, int baseIndex, int maxRegisterSize, int regWindow, GetRegisterDelegate register) {
+        public ChipData(String chipName, int baseIndex, int maxRegisterSize, int regWindow, Function<Integer, Object> register) {
             this.chipName = chipName;
             this.baseIndex = baseIndex;
             this.register = register;
@@ -108,7 +106,7 @@ public class frmRegTest extends frmChipBase {
             addChip("Sid", 3, 0x19, audio::getSIDRegister);
         }
 
-        private void addChip(String ChipName, int Max, int regSize, ChipData.GetRegisterDelegate p) {
+        private void addChip(String ChipName, int Max, int regSize, Function<Integer, Object> p) {
             int BaseIndex = chipData.size();
             for (int i = 0; i < Max; i++) {
                 chipData.add(new ChipData(ChipName, BaseIndex, regSize, Max, p));
@@ -167,8 +165,8 @@ public class frmRegTest extends frmChipBase {
 
     static Preferences prefs = Preferences.userNodeForPackage(frmRegTest.class);
 
-    private int formWidth;
-    private int formHeight;
+    private final int formWidth;
+    private final int formHeight;
 
     //private FrameBuffer frameBuffer = new FrameBuffer();
 
@@ -231,7 +229,7 @@ public class frmRegTest extends frmChipBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -263,7 +261,7 @@ public class frmRegTest extends frmChipBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -443,16 +441,15 @@ public class frmRegTest extends frmChipBase {
             //return;
         }
 
-            /*
-            var y = 8; // 行 0x10毎に変わる・・・
-            for(var idx = 0; idx < regSize; idx+=0x10) {
-                DrawBuff.drawFont4(frameBuffer, 2, y, 0, "{idx:X3}:");
-                var remainingRegNum = regSize >= 0x10 ? 0x10 : regSize;
-                for (var i = 0; i < remainingRegNum; i++) {
-                    DrawBuff.drawFont4(frameBuffer, 34 + (i * 12), y, 0, "{reg[idx+i]:X2}");
-                }
-                y += 8;
-            }*/
+//        var y = 8; // Line: It changes every 0x10...
+//        for (var idx = 0; idx < regSize; idx += 0x10) {
+//            DrawBuff.drawFont4(frameBuffer, 2, y, 0, "{idx:X3}:");
+//            var remainingRegNum = regSize >= 0x10 ? 0x10 : regSize;
+//            for (var i = 0; i < remainingRegNum; i++) {
+//                DrawBuff.drawFont4(frameBuffer, 34 + (i * 12), y, 0, "{reg[idx+i]:X2}");
+//            }
+//            y += 8;
+//        }
 
         Object reg = regMan.getData();
 
@@ -496,7 +493,7 @@ public class frmRegTest extends frmChipBase {
                     byte v = (byte) r[j][i];
                     int c = 0;
                     if (m < 0) {
-                         // 不明値
+                        // Unknown value
                         v = 0;
                         c = 1;
                     }
@@ -504,44 +501,39 @@ public class frmRegTest extends frmChipBase {
                 }
             }
         }
-
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
-            /*
-            int px = ev.getX() / zoom;
-            int py = ev.getY() / zoom;
-            //logger.log(Level.TRACE, "%d %d".formatted(px, py));
-            if (py > 8) return;
-            if (px < 210) return;
-            int xc = (px-210) / 4;
-            if (xc == 0) {
-                RegMan.Prev();
-            }
-
-            if (xc == 2) {
-                RegMan.nextInt();
-            }*/
+//            int px = ev.getX() / zoom;
+//            int py = ev.getY() / zoom;
+//            //logger.log(Level.TRACE, "%d %d".formatted(px, py));
+//            if (py > 8) return;
+//            if (px < 210) return;
+//            int xc = (px - 210) / 4;
+//            if (xc == 0) {
+//                RegMan.Prev();
+//            }
+//
+//            if (xc == 2) {
+//                RegMan.nextInt();
+//            }
             if (ev.getButton() == MouseEvent.BUTTON1) regMan.prev();
             else if (ev.getButton() == MouseEvent.BUTTON2) regMan.next();
         }
     };
 
     private void initializeComponent() {
-//            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmRegTest));
         this.pbScreen = new JPanel();
         this.panel1 = new JPanel();
-        //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
-//        this.panel1.SuspendLayout();
 
         //
         // pbScreen
         //
-        this.pbScreen.setLocation(new Point(0, 0));
-        this.pbScreen.setName("pbScreen");
-        this.pbScreen.setPreferredSize(new Dimension(181, 73));
+//        this.pbScreen.setLocation(new Point(0, 0));
+//        this.pbScreen.setName("pbScreen");
+//        this.pbScreen.setPreferredSize(new Dimension(181, 73));
         // this.pbScreen.TabIndex = 0
         // this.pbScreen.TabStop = false;
         this.pbScreen.addMouseListener(this.pbScreen_MouseClick);
@@ -551,9 +543,9 @@ public class frmRegTest extends frmChipBase {
 //        this.panel1.AutoScroll = true;
         this.panel1.add(this.pbScreen);
 //        this.panel1.Dock = JDockStyle.Fill;
-        this.panel1.setLocation(new Point(0, 0));
-        this.panel1.setName("panel1");
-        this.panel1.setPreferredSize(new Dimension(320, 151));
+//        this.panel1.setLocation(new Point(0, 0));
+//        this.panel1.setName("panel1");
+//        this.panel1.setPreferredSize(new Dimension(320, 151));
         // this.panel1.TabIndex = 1
         //
         // frmRegTest

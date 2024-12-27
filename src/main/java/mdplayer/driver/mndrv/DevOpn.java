@@ -616,7 +616,7 @@ public class DevOpn {
     }
 
     /**
-     * v通常
+     * v common
      */
     public void _fm_echo_common_v() {
         if ((mm.readByte(reg.a5 + W.reverb) & 0x08) != 0) {
@@ -657,7 +657,7 @@ public class DevOpn {
     }
 
     /**
-     * @v通常
+     * @v common
      */
     public void _fm_echo_common_atv() {
         if ((mm.readByte(reg.a5 + W.reverb) & 0x08) != 0) {
@@ -691,7 +691,7 @@ public class DevOpn {
     }
 
     /**
-     * v微調整
+     * v fine tune
      */
     public void _fm_echo_volume_v() {
         reg.D4_L = 0;
@@ -722,7 +722,7 @@ public class DevOpn {
     }
 
     /**
-     * @v微調整
+     * "@v" fine tune
      */
     public void _fm_echo_volume_atv() {
         reg.setD4_B(mm.readByte(reg.a5 + W.vol));
@@ -737,7 +737,7 @@ public class DevOpn {
     }
 
     /**
-     * v直接
+     * "v" direct
      */
     public void _fm_echo_direct_v() {
         reg.D4_L = 0;
@@ -748,7 +748,7 @@ public class DevOpn {
     }
 
     /**
-     * @v 直接
+     * "@v" direct
      */
     public void _fm_echo_direct_atv() {
         reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol));
@@ -843,10 +843,10 @@ public class DevOpn {
     }
 
     /**
-     * MML コマンド処理 (FM 部)
+     * MML command processing (FM section)
      */
     public void _fm_command() {
-        // HACK: (MNDRV) MML コマンド処理(OPN)
+        // HACK: (MNDRV) MML command processing (OPN)
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         // _fmc:
         switch (reg.getD0_W() / 2) {
@@ -859,7 +859,7 @@ public class DevOpn {
             break; // 82 key off
         case 0x03:
             comcmds._COM_83();
-            break; // 83 すらー
+            break; // 83 Slurs
         case 0x04:
             _FM_NOP();
             break; // 84
@@ -868,16 +868,16 @@ public class DevOpn {
             break; // 85
         case 0x06:
             comcmds._COM_86();
-            break; // 86 同期信号送信
+            break; // 86 Synchronization signal transmission
         case 0x07:
             comcmds._COM_87();
-            break; // 87 同期信号待ち
+            break; // 87 Waiting for sync signal
         case 0x08:
             _FM_88();
-            break; // 88 ぴっちべんど
+            break; // 88 Pitch Bend
         case 0x09:
             _FM_89();
-            break; // 89 ぽるためんと
+            break; // 89 Portamento
         case 0x0a:
             _FM_NOP();
             break; // 8A
@@ -923,13 +923,13 @@ public class DevOpn {
             break; // 97
         case 0x18:
             _FM_98();
-            break; // 98 擬似リバーブ
+            break; // 98 Pseudo reverb
         case 0x19:
             _FM_99();
-            break; // 99 擬似エコー
+            break; // 99 Pseudo Echo
         case 0x1a:
             comcmds._COM_9A();
-            break; // 9A 擬似step time
+            break; // 9A Pseudo step time
         case 0x1b:
             _FM_NOP();
             break; // 9B
@@ -948,16 +948,16 @@ public class DevOpn {
 
         case 0x20:
             _FM_F0();
-            break; // A0 音色切り替え
+            break; // A0 Tone switching
         case 0x21:
             _FM_A1();
-            break; // A1 バンク&音色切り替え
+            break; // A1 Bank & Tone switching
         case 0x22:
             _FM_NOP();
             break; // A2
         case 0x23:
             _FM_A3();
-            break; // A3 音量テーブル切り替え
+            break; // A3 Volume table switching
         case 0x24:
             _FM_F2();
             break; // A4 音量
@@ -972,7 +972,7 @@ public class DevOpn {
             break; // A7
         case 0x28:
             comcmds._COM_A8();
-            break; // A8 相対音量モード
+            break; // A8 Relative Volume Mode
         case 0x29:
             _FM_NOP();
             break; // A9
@@ -1039,7 +1039,7 @@ public class DevOpn {
             break; // BD
         case 0x3e:
             comcmds._COM_BE();
-            break; // BE ジャンプ
+            break; // BE Jump
         case 0x3f:
             comcmds._COM_BF();
             break; // BF
@@ -1047,10 +1047,10 @@ public class DevOpn {
         // Psg 系
         case 0x40:
             comcmds._COM_C0();
-            break; // C0 ソフトウェアエンベロープ 1
+            break; // C0 Software Envelope 1
         case 0x41:
             comcmds._COM_C1();
-            break; // C1 ソフトウェアエンベロープ 2
+            break; // C1 Software Envelope 2
         case 0x42:
             _FM_NOP();
             break; // C2
@@ -1097,10 +1097,10 @@ public class DevOpn {
         // KEY 系
         case 0x50:
             comcmds._COM_D0();
-            break; // D0 キートランスポーズ
+            break; // D0 Key Transpose
         case 0x51:
             comcmds._COM_D1();
-            break; // D1 相対キートランスポーズ
+            break; // D1 Relative Key Transpose
         case 0x52:
             _FM_NOP();
             break; // D2
@@ -1121,16 +1121,16 @@ public class DevOpn {
             break; // D7
         case 0x58:
             comcmds._COM_D8();
-            break; // D8 ディチューン
+            break; // D8 Detune
         case 0x59:
             comcmds._COM_D9();
-            break; // D9 相対ディチューン
+            break; // D9 Relative Detune
         case 0x5a:
             _FM_DA();
-            break; // DA スロットディチューン
+            break; // DA Slot Detune
         case 0x5b:
             _FM_DB();
-            break; // DB 相対スロットディチューン
+            break; // DB Relative Slot Detune
         case 0x5c:
             _FM_NOP();
             break; // DC
@@ -1194,7 +1194,7 @@ public class DevOpn {
             comcmds._COM_EF();
             break; // EF hardware LFO delay
 
-        // システムコントール系
+        // System Control series
         case 0x70:
             _FM_F0();
             break; // F0 @
@@ -1224,7 +1224,7 @@ public class DevOpn {
             break; // F8 スロットマスク変更
         case 0x79:
             comcmds._COM_F9();
-            break; // F9 永久ループポイントマーク
+            break; // F9 Permanent loop point mark
         case 0x7a:
             _FM_FA();
             break; // FA y command
@@ -1392,7 +1392,7 @@ public class DevOpn {
     }
 
     /**
-    // 擬似リバーブ
+    // Pseudo reverb
     //  switch = $80 = ON
     //    $81 = OFF
     //    $00 = + [volume]b
@@ -1407,14 +1407,14 @@ public class DevOpn {
     }
 
     /**
-    // 擬似エコー
+    // Pseudo Echo
      */
     public void _FM_99() {
         comcmds._COM_99();
     }
 
     /**
-    // バンク&音色切り替え
+    // Bank & Tone switching
      */
     public void _FM_A1() {
         mm.write(reg.a5 + W.bank, mm.readByte(reg.a1++));
@@ -3822,7 +3822,7 @@ public class DevOpn {
     }
 
     /**
-    // わうわう
+     * wowwow
      */
     public void _ch_fm_ww() {
         mm.write(reg.a4 + W_Ww.delay_work, (byte) (mm.readByte(reg.a4 + W_Ww.delay_work) - 1));
@@ -3903,7 +3903,7 @@ public class DevOpn {
     }
 
     /**
-    // effect execute
+     * effect execute
      */
     public void _fm_effect_ycommand() {
         reg.setD1_B((byte) (reg.getD0_W() >> 8));

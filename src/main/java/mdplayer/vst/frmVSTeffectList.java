@@ -36,10 +36,11 @@ import mdplayer.properties.Resources;
 
 
 public class frmVSTeffectList extends JFrame {
-    private frmMain parent;
+    private final frmMain parent;
     public boolean isClosed = false;
     public Setting setting;
-    private boolean isInitialOpenFolder = true;
+    private final boolean isInitialOpenFolder = true;
+    Audio audio = Audio.getInstance();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmVSTeffectList.class);
 
@@ -73,10 +74,10 @@ public class frmVSTeffectList extends JFrame {
 
         setting.getVst().setDefaultPath(Path.getDirectoryName(ofd.getSelectedFile().getName()));
         parent.stop();
-        while (!Audio.getTrdStopped()) {
+        while (!audio.getTrdStopped()) {
             Thread.yield();
         }
-        Audio.addVSTeffect(ofd.getSelectedFile().getName());
+        audio.addVSTeffect(ofd.getSelectedFile().getName());
         dispPluginList();
 
     }
@@ -124,23 +125,23 @@ public class frmVSTeffectList extends JFrame {
         if (dgvList.getSelectedRowCount() < 0) return;
 
         parent.stop();
-        while (!Audio.getTrdStopped()) {
+        while (!audio.getTrdStopped()) {
             Thread.yield();
         }
-        Audio.delVSTeffect((String) dgvList.Rows[dgvList.SelectedRows[0].Index].Cells["clmKey"].Value);
+        audio.delVSTeffect((String) dgvList.Rows[dgvList.SelectedRows[0].Index].Cells["clmKey"].Value);
         dispPluginList();
     }
 
     private void tsmiDelAll_Click(ActionEvent ev) {
-        int res = JOptionPane.showConfirmDialog(null, "VSTリストの全てのVSTが除去されます。よろしいですか。", "PlayList", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
+        int res = JOptionPane.showConfirmDialog(null, "All VSTs in the VST list will be removed. Are you sure?", "PlayList", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
         if (res != JFileChooser.APPROVE_OPTION) return;
 
         parent.stop();
         //while (!Audio.trdStopped) { Thread.sleep(1); }
-        while (!Audio.trdClosed) {
+        while (!audio.trdClosed) {
             Thread.yield();
         }
-        Audio.delVSTeffect("");
+        audio.delVSTeffect("");
         dispPluginList();
     }
 
@@ -150,14 +151,13 @@ public class frmVSTeffectList extends JFrame {
 
         if (e.Button == MouseEvent.BUTTON2) {
             if (dgvList.getSelectedRowCount() > 1) {
-                tsmiDelThis.setText("選択したVSTを除去");
+                tsmiDelThis.setText("Remove Selected VST");
             } else {
-                tsmiDelThis.setText("このVSTを除去");
+                tsmiDelThis.setText("Remove this VST");
             }
             cmsVSTEffectList.setVisible(true);
-            Point p = Control.MousePosition;
-            cmsVSTEffectList.Top = p.Y;
-            cmsVSTEffectList.Left = p.X;
+            cmsVSTEffectList.Top = e.getY();
+            cmsVSTEffectList.Left = e.getX();
         } else {
             if (vstInfos == null) return;
 
@@ -186,10 +186,10 @@ public class frmVSTeffectList extends JFrame {
 
     private void initializeComponent() {
 //        this.components = new System.ComponentModel.Container();
-        JList JListCellStyle1 = new JList();
-        JList JListCellStyle3 = new JList();
-        JList JListCellStyle4 = new JList();
-        JList JListCellStyle2 = new JList();
+        JList<String> JListCellStyle1 = new JList<>();
+        JList<String> JListCellStyle3 = new JList<>();
+        JList<String> JListCellStyle4 = new JList<>();
+        JList<String> JListCellStyle2 = new JList<>();
 //        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmVSTeffectList));
         this.dgvList = new JTable();
         this.clmKey = new JTableHeader();
@@ -281,58 +281,58 @@ public class frmVSTeffectList extends JFrame {
         //
         // clmFileName
         //
-        this.clmFileName.HeaderText = "FileName";
-        this.clmFileName.setName("clmFileName");
-        this.clmFileName.SortMode = JListColumnSortMode.NotSortable;
+//        this.clmFileName.HeaderText = "FileName";
+//        this.clmFileName.setName("clmFileName");
+//        this.clmFileName.SortMode = JListColumnSortMode.NotSortable;
         this.clmFileName.setVisible(false);
         //
         // clmPow
         //
-        this.clmPow.AutoSizeMode = JListAutoSizeColumnMode.None;
-        JListCellStyle2.Alignment = JListContentAlignment.MiddleCenter;
-        this.clmPow.DefaultCellStyle = JListCellStyle2;
-        this.clmPow.HeaderText = "Pow";
-        this.clmPow.setName("clmPow");
-        this.clmPow.Resizable = JListTriState.False;
-        this.clmPow.SortMode = JListColumnSortMode.NotSortable;
-        this.clmPow.ToolTipText = "Power";
-        this.clmPow.setWidth(50);
+//        this.clmPow.AutoSizeMode = JListAutoSizeColumnMode.None;
+//        JListCellStyle2.Alignment = JListContentAlignment.MiddleCenter;
+//        this.clmPow.DefaultCellStyle = JListCellStyle2;
+//        this.clmPow.HeaderText = "Pow";
+//        this.clmPow.setName("clmPow");
+//        this.clmPow.Resizable = JListTriState.False;
+//        this.clmPow.SortMode = JListColumnSortMode.NotSortable;
+//        this.clmPow.ToolTipText = "Power";
+//        this.clmPow.setWidth(50);
         //
         // clmEdit
         //
-        this.clmEdit.HeaderText = "Editor";
+//        this.clmEdit.HeaderText = "Editor";
         this.clmEdit.setName("clmEdit");
-        this.clmEdit.Resizable = JListTriState.False;
-        this.clmEdit.SortMode = JListColumnSortMode.NotSortable;
-        this.clmEdit.setWidth(60);
+//        this.clmEdit.Resizable = JListTriState.False;
+//        this.clmEdit.SortMode = JListColumnSortMode.NotSortable;
+//        this.clmEdit.setWidth(60);
         //
         // clmName
         //
-        this.clmName.HeaderText = "Name";
-        this.clmName.setName("clmName");
-        this.clmName.readOnly = true;
-        this.clmName.SortMode = JListColumnSortMode.NotSortable;
+//        this.clmName.HeaderText = "Name";
+//        this.clmName.setName("clmName");
+//        this.clmName.readOnly = true;
+//        this.clmName.SortMode = JListColumnSortMode.NotSortable;
         this.clmName.setWidth(300);
         //
         // clmSpacer
         //
-        this.clmSpacer.AutoSizeMode = JListAutoSizeColumnMode.Fill;
-        this.clmSpacer.HeaderText = "";
+//        this.clmSpacer.AutoSizeMode = JListAutoSizeColumnMode.Fill;
+//        this.clmSpacer.HeaderText = "";
         this.clmSpacer.setName("clmSpacer");
-        this.clmSpacer.readOnly = true;
-        this.clmSpacer.SortMode = JListColumnSortMode.NotSortable;
+//        this.clmSpacer.readOnly = true;
+//        this.clmSpacer.SortMode = JListColumnSortMode.NotSortable;
         //
         // toolStripContainer1
         //
         //
         // toolStripContainer1.ContentPanel
         //
-        this.toolStripContainer1.ContentPanel.add(this.dgvList);
-        this.toolStripContainer1.ContentPanel.setPreferredSize(new Dimension(410, 236));
-        this.toolStripContainer1.Dock = JDockStyle.Fill;
-        this.toolStripContainer1.setLocation(new Point(0, 0));
-        this.toolStripContainer1.setName("toolStripContainer1");
-        this.toolStripContainer1.setPreferredSize(new Dimension(410, 261));
+//        this.toolStripContainer1.ContentPanel.add(this.dgvList);
+//        this.toolStripContainer1.ContentPanel.setPreferredSize(new Dimension(410, 236));
+//        this.toolStripContainer1.Dock = JDockStyle.Fill;
+//        this.toolStripContainer1.setLocation(new Point(0, 0));
+//        this.toolStripContainer1.setName("toolStripContainer1");
+//        this.toolStripContainer1.setPreferredSize(new Dimension(410, 261));
         // this.toolStripContainer1.TabIndex = 2
         this.toolStripContainer1.setToolTipText("toolStripContainer1");
         //
@@ -342,16 +342,16 @@ public class frmVSTeffectList extends JFrame {
         //
         // toolStrip1
         //
-        this.toolStrip1.Dock = JDockStyle.None;
-        this.toolStrip1.GripStyle = JToolStripGripStyle.Hidden;
+//        this.toolStrip1.Dock = JDockStyle.None;
+//        this.toolStrip1.GripStyle = JToolStripGripStyle.Hidden;
         this.toolStrip1.add(this.tsbAddVST);
         this.toolStrip1.add(this.toolStripSeparator1);
         this.toolStrip1.add(this.tsbUp);
         this.toolStrip1.add(this.tsbDown);
         this.toolStrip1.setLocation(new Point(0, 0));
-        this.toolStrip1.setName("toolStrip1");
-        this.toolStrip1.setPreferredSize(new Dimension(410, 25));
-        this.toolStrip1.Stretch = true;
+//        this.toolStrip1.setName("toolStrip1");
+//        this.toolStrip1.setPreferredSize(new Dimension(410, 25));
+//        this.toolStrip1.Stretch = true;
         // this.toolStrip1.TabIndex = 0
         //
         // tsbAddVST
@@ -359,8 +359,8 @@ public class frmVSTeffectList extends JFrame {
 //        this.tsbAddVST.DisplayStyle = JToolStripItemDisplayStyle.Image;
         this.tsbAddVST.setIcon(new ImageIcon(mdplayer.properties.Resources.getAddPL()));
         this.tsbAddVST.ImageTransparentColor = Color.black;
-        this.tsbAddVST.setName("tsbAddVST");
-        this.tsbAddVST.setPreferredSize(new Dimension(23, 22));
+//        this.tsbAddVST.setName("tsbAddVST");
+//        this.tsbAddVST.setPreferredSize(new Dimension(23, 22));
         this.tsbAddVST.setText("Add VST effect.");
         this.tsbAddVST.addActionListener(this::tsbAddVST_Click);
         //
@@ -374,9 +374,9 @@ public class frmVSTeffectList extends JFrame {
 //        this.tsbUp.DisplayStyle = JToolStripItemDisplayStyle.Image;
         this.tsbUp.setEnabled(false);
         this.tsbUp.setIcon(new ImageIcon(mdplayer.properties.Resources.getUpPL()));
-        this.tsbUp.ImageTransparentColor = Color.black;
-        this.tsbUp.setName("tsbUp");
-        this.tsbUp.setPreferredSize(new Dimension(23, 22));
+//        this.tsbUp.ImageTransparentColor = Color.black;
+//        this.tsbUp.setName("tsbUp");
+//        this.tsbUp.setPreferredSize(new Dimension(23, 22));
         this.tsbUp.setText("Up VST effect.");
         //
         // tsbDown
@@ -384,9 +384,9 @@ public class frmVSTeffectList extends JFrame {
 //        this.tsbDown.DisplayStyle = JToolStripItemDisplayStyle.Image;
         this.tsbDown.setEnabled(false);
         this.tsbDown.setIcon(new ImageIcon(mdplayer.properties.Resources.getDownPL()));
-        this.tsbDown.ImageTransparentColor = Color.black;
-        this.tsbDown.setName("tsbDown");
-        this.tsbDown.setPreferredSize(new Dimension(23, 22));
+//        this.tsbDown.ImageTransparentColor = Color.black;
+//        this.tsbDown.setName("tsbDown");
+//        this.tsbDown.setPreferredSize(new Dimension(23, 22));
         this.tsbDown.setText("Down VST effect.");
         //
         // cmsVSTEffectList
@@ -394,25 +394,25 @@ public class frmVSTeffectList extends JFrame {
         this.cmsVSTEffectList.add(this.tsmiDelThis);
         this.cmsVSTEffectList.add(this.toolStripSeparator2);
         this.cmsVSTEffectList.add(this.tsmiDelAll);
-        this.cmsVSTEffectList.setName("cmsVSTEffectList");
-        this.cmsVSTEffectList.setPreferredSize(new Dimension(158, 54));
+//        this.cmsVSTEffectList.setName("cmsVSTEffectList");
+//        this.cmsVSTEffectList.setPreferredSize(new Dimension(158, 54));
         //
         // tsmiDelThis
         //
-        this.tsmiDelThis.setName("tsmiDelThis");
-        this.tsmiDelThis.setPreferredSize(new Dimension(157, 22));
+//        this.tsmiDelThis.setName("tsmiDelThis");
+//        this.tsmiDelThis.setPreferredSize(new Dimension(157, 22));
         this.tsmiDelThis.setText("このVSTを除去");
         this.tsmiDelThis.addActionListener(this::tsmiDelThis_Click);
         //
         // toolStripSeparator2
         //
-        this.toolStripSeparator2.setName("toolStripSeparator2");
-        this.toolStripSeparator2.setPreferredSize(new Dimension(154, 6));
+//        this.toolStripSeparator2.setName("toolStripSeparator2");
+//        this.toolStripSeparator2.setPreferredSize(new Dimension(154, 6));
         //
         // tsmiDelAll
         //
-        this.tsmiDelAll.setName("tsmiDelAll");
-        this.tsmiDelAll.setPreferredSize(new Dimension(157, 22));
+//        this.tsmiDelAll.setName("tsmiDelAll");
+//        this.tsmiDelAll.setPreferredSize(new Dimension(157, 22));
         this.tsmiDelAll.setText("全てのVSTを除去");
         this.tsmiDelAll.addActionListener(this::tsmiDelAll_Click);
         //

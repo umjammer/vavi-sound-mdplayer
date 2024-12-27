@@ -87,7 +87,7 @@ public class SidEndian {
         }
     }
 
-    /** ポインター対策版 */
+    /** Pointer-proof version */
     public static void to16(ByteBuffer buf, short word) {
         if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) {
             buf.put(0, to16hi8(word));
@@ -103,7 +103,7 @@ public class SidEndian {
         return to16(ptr[1], ptr[0]);
     }
 
-    /** ポインター対策版 */
+    /** Pointer-proof version */
     public static short toLittle16(ByteBuffer ptr) {
         return to16(ptr.get(1), ptr.get(0));
     }
@@ -114,7 +114,7 @@ public class SidEndian {
         ptr[1] = to16hi8(word);
     }
 
-    /** ポインター対策版 */
+    /** Pointer-proof version */
     public static void toLittle16(ByteBuffer ptr, short word) {
         ptr.put(0, to16lo8(word));
         ptr.put(1, to16hi8(word));
@@ -125,7 +125,7 @@ public class SidEndian {
         return to16(ptr[0], ptr[1]);
     }
 
-    /** ポインター対策版 */
+    /** Pointer-proof version */
     public static short toBig16(ByteBuffer ptr) {
         return to16(ptr.get(0), ptr.get(1));
     }
@@ -136,7 +136,7 @@ public class SidEndian {
         ptr[1] = to16lo8(word);
     }
 
-    /** ポインター対策版 */
+    /** Pointer-proof version */
     public static void toBig16(ByteBuffer ptr, short word) {
         ptr.put(0, to16hi8(word));
         ptr.put(1, to16lo8(word));
@@ -230,7 +230,7 @@ public class SidEndian {
         return to32(ptr[3], ptr[2], ptr[1], ptr[0]);
     }
 
-    /** ポインター対策版 */
+    /** Pointer-proof version */
     public static int toLittle32(ByteBuffer ptr) {
         return to32(ptr.get(3), ptr.get(2), ptr.get(1), ptr.get(0));
     }
@@ -245,7 +245,7 @@ public class SidEndian {
         ptr[3] = to16hi8(word);
     }
 
-    /** ポインター対策版 */
+    /** Pointer-proof version */
     public static void toLittle32(ByteBuffer ptr, int dword) {
         short word;
         ptr.put(0, to32lo8(dword));
@@ -260,7 +260,7 @@ public class SidEndian {
         return to32(ptr[0], ptr[1], ptr[2], ptr[3]);
     }
 
-    /** ポインター対策版 */
+    /** Pointer-proof version */
     public static int toBig32(ByteBuffer ptr) {
         return to32(ptr.get(0), ptr.get(1), ptr.get(2), ptr.get(3));
     }
@@ -275,7 +275,7 @@ public class SidEndian {
         ptr[3] = to32lo8(dword);
     }
 
-    /** ポインター対策版 */
+    /** Pointer-proof version */
     public static void toBig32(ByteBuffer ptr, int dword) {
         short word;
         word = to32hi16(dword);

@@ -38,7 +38,7 @@ public class frmYM2610 extends frmBase {
 
     private MDChipParams.YM2610 newParam = null;
     private MDChipParams.YM2610 oldParam = null;
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYM2610.class);
 
@@ -64,7 +64,7 @@ public class frmYM2610 extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -93,7 +93,7 @@ public class frmYM2610 extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -104,7 +104,7 @@ public class frmYM2610 extends frmBase {
         }
     };
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
@@ -112,9 +112,9 @@ public class frmYM2610 extends frmBase {
             int ch;
             int c;
 
-            //上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (ch = 0; ch < 14; ch++) {
                         if (ch >= 9 && ch <= 11) continue;
@@ -141,7 +141,7 @@ public class frmYM2610 extends frmBase {
 
             if (ch < 14) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    //マスク
+                    // Mask.
                     if (newParam.channels[c].mask)
                         parent.resetChannelMask(EnmChip.YM2610, chipId, ch);
                     else
@@ -160,7 +160,7 @@ public class frmYM2610 extends frmBase {
             int instCh = h * 3 + w;
 
             if (instCh < 6) {
-                //クリップボードに音色をコピーする
+                // Copying a tone to the clipboard
                 parent.getInstCh(EnmChip.YM2610, instCh, chipId);
             }
         }
@@ -213,7 +213,7 @@ public class frmYM2610 extends frmBase {
         DrawBuff.ChYM2610Rhythm(frameBuffer, 0, f, false, tp);
     }
 
-    private static byte[] md = new byte[]
+    private static final byte[] md = new byte[]
             {
                     (byte) (0x08 << 4),
                     (byte) (0x08 << 4),

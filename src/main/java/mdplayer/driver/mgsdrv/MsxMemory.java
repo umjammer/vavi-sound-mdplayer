@@ -8,8 +8,8 @@ import mdplayer.Common.EnmModel;
 
 public class MsxMemory implements Memory {
 
-    private mdplayer.ChipRegister chipRegister;
-    private EnmModel model;
+    private final mdplayer.ChipRegister chipRegister;
+    private final EnmModel model;
     public MSXSlot slot;
 
     public MsxMemory(ChipRegister chipRegister, EnmModel model) {

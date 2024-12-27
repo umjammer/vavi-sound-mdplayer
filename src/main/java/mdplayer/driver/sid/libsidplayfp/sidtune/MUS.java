@@ -885,10 +885,10 @@ public class MUS extends SidTuneBase {
     private static final short SIDTUNE_SID2_BASE_ADDR = (short) 0xd500;
 
     private static final int o65HeaderSize = 27;
-    private ByteBuffer player1 = ByteBuffer.wrap(sidPlayer1, 0, o65HeaderSize);
-    private ByteBuffer player2 = ByteBuffer.wrap(sidPlayer2, 0, o65HeaderSize);
-    private int player1Size = sidPlayer1.length - o65HeaderSize;
-    private int player2Size = sidPlayer2.length - o65HeaderSize;
+    private final ByteBuffer player1 = ByteBuffer.wrap(sidPlayer1, 0, o65HeaderSize);
+    private final ByteBuffer player2 = ByteBuffer.wrap(sidPlayer2, 0, o65HeaderSize);
+    private final int player1Size = sidPlayer1.length - o65HeaderSize;
+    private final int player2Size = sidPlayer2.length - o65HeaderSize;
 
     private boolean detect(byte[] buffer, int voice3Index) { // TODO OUT
         if (buffer == null) return false;
@@ -1101,7 +1101,7 @@ public class MUS extends SidTuneBase {
         int lines = info.commentString.size();
         {
             for (int line = lines - 1; line >= 0; line--) {
-                if (info.commentString.get(line).length() == 0)
+                if (info.commentString.get(line).isEmpty())
                     info.commentString.remove(info.commentString.size() - 1);
                 else
                     break;

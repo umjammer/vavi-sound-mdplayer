@@ -9,10 +9,12 @@ import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.driver.moonDriver.MoonDriverDotNET;
 import mdplayer.format.FileFormat;
+import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.YmF278bInst;
 
 import static java.lang.System.getLogger;
+import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
@@ -72,7 +74,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipLED = new ChipLEDs();
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
-            YmF278bInst ymf278b = new YmF278bInst();
+            YmF278bInst ymf278b = Instrument.getInstrument(YmF278bInst.class);
             //Func<String, Stream> fn = Common.GetOPNARyhthmStream;
 
             if (useChipFromMdr[0] != Common.EnmChip.Unuse) {
@@ -81,7 +83,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 audio.chipLED.put("PriOPL4", 1);
                 chip.instrument = ymf278b;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("MAIN", YmF278bInst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278bInst.class);
                 chip.clock = 33868800;
                 chip.option = null; // new Object[] { fn };
                 lstChips.add(chip);

@@ -32,12 +32,12 @@ public class frmYM2151 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipId;
-    private int zoom;
+    private final int chipId;
+    private final int zoom;
 
-    private MDChipParams.YM2151 newParam;
-    private MDChipParams.YM2151 oldParam;
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MDChipParams.YM2151 newParam;
+    private final MDChipParams.YM2151 oldParam;
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYM2151.class);
 
@@ -63,7 +63,7 @@ public class frmYM2151 extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -91,7 +91,7 @@ public class frmYM2151 extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -102,7 +102,7 @@ public class frmYM2151 extends frmBase {
         }
     };
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
 
@@ -111,9 +111,9 @@ public class frmYM2151 extends frmBase {
 
             int ch;
 
-             // 上部のラベル行の場合は何もしない
+             // For top label row, do nothing
             if (py < 1 * 8) {
-                 // 但しchをクリックした場合はマスク反転
+                 // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
@@ -139,14 +139,14 @@ public class frmYM2151 extends frmBase {
 
             }
 
-            // 音色表示欄の判定
+            // Judgment of tone display column
 
             int h = (py - 9 * 8) / (6 * 8);
             int w = Math.min(px / (13 * 8), 2);
             int instCh = h * 3 + w;
 
             if (instCh < 8) {
-                 // クリップボードに音色をコピーする
+                 // Copying a tone to the clipboard
                 parent.getInstCh(EnmChip.YM2151, instCh, chipId);
             }
         }
@@ -180,11 +180,11 @@ public class frmYM2151 extends frmBase {
         }
     }
 
-    // CONの接続をOPマスクの並びに変換するテーブル
+    // A table that converts CON connections into an OP mask sequence
     // 7  6   5   4   3   2  1  0
     // x, C2, M2, C1, M1, x, x, x
 
-    private static byte[] md = new byte[]
+    private static final byte[] md = new byte[]
             {
                     0x40,
                     0x40,

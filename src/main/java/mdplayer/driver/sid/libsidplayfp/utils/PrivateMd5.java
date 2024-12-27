@@ -27,7 +27,7 @@ import mdplayer.driver.sid.libsidplayfp.utils.md5.MD5;
 @Deprecated
 public class PrivateMd5 implements IMd5 {
 
-    private MD5 hd = new MD5();
+    private final MD5 hd = new MD5();
 
     @Override
     public void append(byte[] data, int nbytes) {

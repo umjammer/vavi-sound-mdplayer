@@ -61,7 +61,7 @@ public class M3U {
                 while (sr.hasNextLine()) {
                     line = sr.nextLine();
                     line = line.trim();
-                    if (line.equals("")) continue;
+                    if (line.isEmpty()) continue;
                     if (line.charAt(0) == '#') continue;
 
                     PlayList.Music ms = analyzeLine(line, "");
@@ -88,7 +88,7 @@ public class M3U {
 
             for (String txt : text) {
                 String line = txt.trim();
-                if (line.equals("")) continue;
+                if (line.isEmpty()) continue;
                 if (line.charAt(0) == '#') continue;
 
                 PlayList.Music ms = analyzeLine(line, "");
@@ -135,7 +135,7 @@ public class M3U {
                 do {
                     flg = false;
                     s.append(buf[i]);
-                    if (buf[i].length() != 0 && buf[i].lastIndexOf('\\') == buf[i].length() - 1) {
+                    if (!buf[i].isEmpty() && buf[i].lastIndexOf('\\') == buf[i].length() - 1) {
                         s.append(",");
                         flg = true;
                     }

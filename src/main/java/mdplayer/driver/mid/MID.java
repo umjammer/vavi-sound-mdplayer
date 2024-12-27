@@ -54,7 +54,7 @@ public class MID extends BaseDriver {
     List<Byte> midiEventBackup = null;
     int midiEventCh = 0;
     int midiEventChBackup = 0;
-    private List<Byte> eventStr = new ArrayList<>();
+    private final List<Byte> eventStr = new ArrayList<>();
     private String eventText = "";
     private String eventCopyrightNotice = "";
     private String eventSequenceTrackName = "";
@@ -73,8 +73,8 @@ public class MID extends BaseDriver {
 
         try {
             if (ByteUtil.readLeInt(buf, 0) != FCC_MID) return null;
-            int format = buf[8] * 0x100 + buf[9];
-            int trkCount = buf[10] * 0x100 + buf[11];
+            int format = (buf[8] & 0xff) * 0x100 + (buf[9] & 0xff);
+            int trkCount = (buf[10] & 0xff) * 0x100 + (buf[11] & 0xff);
             int adr = 14;
             byte midiEventBackup = 0;
 
@@ -102,7 +102,7 @@ public class MID extends BaseDriver {
                             eventData.add(buf[adr + j]);
                         }
                         adr = adr + eventLen;
-                        if (eventData.size() > 0) {
+                        if (!eventData.isEmpty()) {
                             switch (eventType) {
                             case 0x01:
                                 //case 0x02:
@@ -201,9 +201,9 @@ public class MID extends BaseDriver {
         if (vgmBuf == null) return false;
         if (ByteUtil.readLeInt(vgmBuf, 0) != FCC_MID) return false;
 
-        format = vgmBuf[8] * 0x100 + vgmBuf[9];
-        trkCount = vgmBuf[10] * 0x100 + vgmBuf[11];
-        reso = vgmBuf[12] * 0x100 + vgmBuf[13];
+        format = (vgmBuf[8] & 0xff) * 0x100 + (vgmBuf[9] & 0xff);
+        trkCount = (vgmBuf[10] & 0xff) * 0x100 + (vgmBuf[11] & 0xff);
+        reso = (vgmBuf[12] & 0xff) * 0x100 + (vgmBuf[13] & 0xff);
 
         musicPtr = new ArrayList<>();
         midWaitCounter = new ArrayList<>();
@@ -220,7 +220,7 @@ public class MID extends BaseDriver {
             isDelta.add(true);
 
             if (ByteUtil.readLeInt(vgmBuf, adr) != FCC_TRK) return false;
-            int len = vgmBuf[adr + 4] * 0x1000000 + vgmBuf[adr + 5] * 0x10000 + vgmBuf[adr + 6] * 0x100 + vgmBuf[adr + 7];
+            int len = (vgmBuf[adr + 4] & 0xff) * 0x100_0000 + (vgmBuf[adr + 5] & 0xff) * 0x1_0000 + (vgmBuf[adr + 6] & 0xff) * 0x100 + (vgmBuf[adr + 7] & 0xff);
             adr += 8;
             musicPtr.add(adr);
             adr += len;

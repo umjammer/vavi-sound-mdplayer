@@ -44,19 +44,19 @@ public class MD5 {
     /**
      * message length : bits, lsw first
      */
-    private int[] count = new int[2];
+    private final int[] count = new int[2];
     /**
      * digest buffer
      */
-    private int[] abcd = new int[4];
+    private final int[] abcd = new int[4];
     /**
      * accumulate block
      */
-    private byte[] buf = new byte[64];
+    private final byte[] buf = new byte[64];
 
-    private byte[] digest = new byte[16];
+    private final byte[] digest = new byte[16];
 
-    private int[] tmpBuf = new int[16];
+    private final int[] tmpBuf = new int[16];
     private int[] x;
 
     // TODO eliminate

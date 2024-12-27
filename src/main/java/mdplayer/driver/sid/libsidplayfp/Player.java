@@ -50,16 +50,16 @@ public class Player {
     }
 
     // Commodore 64 emulator
-    private C64 c64 = new C64();
+    private final C64 c64 = new C64();
 
     // Mixer
-    private Mixer mixer = new Mixer();
+    private final Mixer mixer = new Mixer();
 
     // Emulator info
     private SidTune tune;
 
     // User Configuration Settings
-    private SidInfoImpl info = new SidInfoImpl();
+    private final SidInfoImpl info = new SidInfoImpl();
 
     // User Configuration Settings
     private SidConfig config;
@@ -121,7 +121,7 @@ public class Player {
      * Configuration error exception.
      */
     public static class ConfigError extends RuntimeException {
-        private String message;
+        private final String message;
 
         public ConfigError(String message) {
             this.message = message;
@@ -132,7 +132,7 @@ public class Player {
         }
     }
 
-    private Setting setting;
+    private final Setting setting;
 
 //        public Player(MDPlayer.Setting setting) {
 //            this.setting = setting;
@@ -561,7 +561,7 @@ public class Player {
             mixer.addSid(s);
 
             // Setup extra SIDs if needed
-            if (extraSidAddresses.size() != 0) {
+            if (!extraSidAddresses.isEmpty()) {
                 // If bits 6-7 are set to Unknown then the second Sid will be set to the same Sid
                 // model as the first Sid.
                 defaultModel = userModel;

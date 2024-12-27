@@ -82,7 +82,7 @@ public class frmAY8910 extends frmChipBase {
         update();
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -213,15 +213,15 @@ public class frmAY8910 extends frmChipBase {
         update();
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
 
-            // 上部のラベル行の場合は何もしない
+            //  For top label row, do nothing
             if (py < 1 * 8) {
-                // 但しchをクリックした場合はマスク反転
+                //  However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (int ch = 0; ch < 3; ch++) {
                         if (newParam.channels[ch].mask)
@@ -245,7 +245,7 @@ public class frmAY8910 extends frmChipBase {
                     return;
                 }
 
-                // マスク解除
+                //  Unmask.
                 for (ch = 0; ch < 3; ch++)
                     parent.resetChannelMask(EnmChip.AY8910, chipId, ch);
             }

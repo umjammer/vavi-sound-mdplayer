@@ -8,6 +8,7 @@ import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.SampledPlugin;
+import mdplayer.plugin.VGMPlugin;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -26,7 +27,7 @@ public class AIFFFileFormat extends BaseFileFormat implements FileFormat.Sampled
     }
 
     @Override
-    public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
+    public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
         music.format = this;
@@ -35,7 +36,7 @@ public class AIFFFileFormat extends BaseFileFormat implements FileFormat.Sampled
     }
 
     @Override
-    public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
+    public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */) {
         return getMusicCommon(ms, buf, zipFile);
     }
 
@@ -46,6 +47,6 @@ public class AIFFFileFormat extends BaseFileFormat implements FileFormat.Sampled
 
     @Override
     public Plugin getPlugin() {
-        return new SampledPlugin();
+        return Plugin.getPlugin(SampledPlugin.class);
     }
 }

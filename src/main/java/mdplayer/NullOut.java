@@ -11,7 +11,7 @@ import javax.sound.sampled.LineEvent;
 
 
 public class NullOut implements Closeable {
-    private boolean isNoWaitMode;
+    private final boolean isNoWaitMode;
 
     public NullOut(boolean isNoWaitMode) {
         this.isNoWaitMode = isNoWaitMode;
@@ -58,7 +58,7 @@ public class NullOut implements Closeable {
 
     OutputStream os;
     private Thread trdMain;
-    private byte[] buf = new byte[4000];
+    private final byte[] buf = new byte[4000];
     private LineEvent.Type pbState = LineEvent.Type.STOP;
     private boolean reqStop = false;
 

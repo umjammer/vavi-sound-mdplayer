@@ -91,13 +91,13 @@ public class ReSidBuilder extends SidBuilder {
     @Override
     public void filter(boolean enable) {
         for (SidEmu o : sidobjs) {
-            ((ReSid) o).filter(enable); // ようはこういうこと？
+            ((ReSid) o).filter(enable); // So that's what it means?
         }
     }
 
     public void bias(double dac_bias) {
         for (SidEmu o : sidobjs) {
-            ((ReSid) o).bias(dac_bias); // ようはこういうこと？
+            ((ReSid) o).bias(dac_bias); // So that's what it means?
         }
     }
 }

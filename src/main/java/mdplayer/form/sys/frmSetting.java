@@ -20,6 +20,7 @@ import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -65,7 +66,6 @@ import mdplayer.Setting;
 import mdplayer.Setting.ChipType2;
 import mdplayer.chips.RealChipPlugin;
 import mdplayer.properties.Resources;
-import vavi.util.Debug;
 
 import static java.lang.System.getLogger;
 
@@ -74,8 +74,8 @@ public class frmSetting extends JDialog {
 
     private static final Logger logger = getLogger(frmSetting.class.getName());
 
-    private boolean asioSupported = true;
-    private boolean wasapiSupported = true;
+    private final boolean asioSupported = true;
+    private final boolean wasapiSupported = true;
     public Setting setting;
     private boolean IsInitialOpenFolder;
     JTable[] dgv;
@@ -586,7 +586,7 @@ public class frmSetting extends JDialog {
         tbCCStop.setText(setting.getMidiKbd().getMidiCtrl_Stop() == -1 ? "" : String.valueOf(setting.getMidiKbd().getMidiCtrl_Stop()));
 
 
-        if (setting.getMidiOut().getMidiOutInfos() != null && setting.getMidiOut().getMidiOutInfos().size() > 0) {
+        if (setting.getMidiOut().getMidiOutInfos() != null && !setting.getMidiOut().getMidiOutInfos().isEmpty()) {
             for (int i = 0; i < setting.getMidiOut().getMidiOutInfos().size(); i++) {
                 DefaultTableModel m = (DefaultTableModel) dgv[i].getModel();
                 m.setRowCount(0);
@@ -1791,13 +1791,13 @@ public class frmSetting extends JDialog {
     private static void setChipType2FromControls(
             ChipType2 ct
             , JCheckBox rb_SCCI
-            , JComboBox cmb_SCCI
+            , JComboBox<String> cmb_SCCI
             , JCheckBox rb_EMU0
             , JCheckBox rb_EMU1
             , JCheckBox rb_EMU2
             , JCheckBox rb_SCCI_E
-            , JComboBox cmb_SCCI_E1
-            , JComboBox cmb_SCCI_E2
+            , JComboBox<String> cmb_SCCI_E1
+            , JComboBox<String> cmb_SCCI_E2
     ) {
         ct.setUseReal(new boolean[rb_SCCI_E == null ? 1 : 3]);
         ct.getUseReal()[0] = rb_SCCI.isSelected();
@@ -2120,8 +2120,8 @@ public class frmSetting extends JDialog {
 
     private void btnOpenSettingFolder_Click(ActionEvent ev) {
         try {
-            String fullPath = Common.settingFilePath;
-            new ProcessBuilder(fullPath).start();
+            Path fullPath = Common.settingFilePath;
+            new ProcessBuilder(fullPath.toString()).start();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -2411,7 +2411,7 @@ public class frmSetting extends JDialog {
         tbBeforeSend_Custom.setText(mo.getCustom());
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (frmMain.keyHookMeth != null /* this::keyHookMeth */) { // TODO
@@ -2616,7 +2616,7 @@ public class frmSetting extends JDialog {
         btClr.setEnabled(true);
     }
 
-    private MouseListener llOpenGithub_LinkClicked = new MouseAdapter() {
+    private final MouseListener llOpenGithub_LinkClicked = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
             try {
@@ -2656,21 +2656,21 @@ public class frmSetting extends JDialog {
         tbPMDPPSDRVManualWait.setText("1");
     }
 
-    private FocusListener tbPMDPPSDRVFreq_Click = new FocusAdapter() {
+    private final FocusListener tbPMDPPSDRVFreq_Click = new FocusAdapter() {
         @Override
         public void focusGained(FocusEvent e) {
             rbPMDUsePPSDRVManualFreq_CheckedChanged(null);
         }
     };
 
-    private MouseListener tbPMDPPSDRVFreq_MouseClick = new MouseAdapter() {
+    private final MouseListener tbPMDPPSDRVFreq_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
             rbPMDUsePPSDRVManualFreq_CheckedChanged(null);
         }
     };
 
-    private FocusListener groupBox20_Enter = new FocusAdapter() {
+    private final FocusListener groupBox20_Enter = new FocusAdapter() {
         @Override
         public void focusGained(FocusEvent e) {
         }
@@ -2680,18 +2680,18 @@ public class frmSetting extends JDialog {
         this.btnOK = new JButton();
         this.btnCancel = new JButton();
         this.gbWaveOut = new JPanel();
-        this.cmbWaveOutDevice = new JComboBox();
+        this.cmbWaveOutDevice = new JComboBox<>();
         this.rbWaveOut = new JCheckBox();
         this.rbAsioOut = new JCheckBox();
         this.rbWasapiOut = new JCheckBox();
         this.gbAsioOut = new JPanel();
         this.btnASIOControlPanel = new JButton();
-        this.cmbAsioDevice = new JComboBox();
+        this.cmbAsioDevice = new JComboBox<>();
         this.rbDirectSoundOut = new JCheckBox();
         this.gbWasapiOut = new JPanel();
         this.rbExclusive = new JCheckBox();
         this.rbShare = new JCheckBox();
-        this.cmbWasapiDevice = new JComboBox();
+        this.cmbWasapiDevice = new JComboBox<>();
         this.gbDirectSound = new JPanel();
         this.cmbDirectSoundDevice = new JComboBox<>();
         this.tcSetting = new JTabbedPane();
@@ -2705,8 +2705,8 @@ public class frmSetting extends JDialog {
         this.label65 = new JLabel();
         this.lblLatency = new JLabel();
         this.cmbWaitTime = new JComboBox<>();
-        this.cmbSampleRate = new JComboBox();
-        this.cmbLatency = new JComboBox();
+        this.cmbSampleRate = new JComboBox<>();
+        this.cmbLatency = new JComboBox<>();
         this.rbSPPCM = new JCheckBox();
         this.groupBox16 = new JPanel();
         this.cmbSPPCMDevice = new JComboBox<>();
@@ -3093,7 +3093,7 @@ public class frmSetting extends JDialog {
         this.cbWavSwitch = new JCheckBox();
         this.cbUseGetInst = new JCheckBox();
         this.groupBox4 = new JPanel();
-        this.cmbInstFormat = new JComboBox();
+        this.cmbInstFormat = new JComboBox<>();
         this.lblInstFormat = new JLabel();
         this.cbDumpSwitch = new JCheckBox();
         this.gbWav = new JPanel();
@@ -3461,7 +3461,7 @@ public class frmSetting extends JDialog {
         //
 //        this.cmbWaitTime.DropDownStyle = JComboBoxStyle.DropDownList;
 //        this.cmbWaitTime.FormattingEnabled = true;
-        DefaultComboBoxModel m = (DefaultComboBoxModel) this.cmbWaitTime.getModel();
+        DefaultComboBoxModel<String> m = (DefaultComboBoxModel<String>) this.cmbWaitTime.getModel();
         m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items"));
         m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items1"));
         m.addElement(Resources.getResourceManager().getString("cmbWaitTime.Items2"));
@@ -3481,7 +3481,7 @@ public class frmSetting extends JDialog {
         //resources.ApplyResources(this.cmbSampleRate, "cmbSampleRate");
 //        this.cmbSampleRate.DropDownStyle = JComboBoxStyle.DropDownList;
 //        this.cmbSampleRate.FormattingEnabled = true;
-        m = (DefaultComboBoxModel) this.cmbSampleRate.getModel();
+        m = (DefaultComboBoxModel<String>) this.cmbSampleRate.getModel();
         m.addElement(Resources.getResourceManager().getString("cmbSampleRate.Items"));
         m.addElement(Resources.getResourceManager().getString("cmbSampleRate.Items1"));
         m.addElement(Resources.getResourceManager().getString("cmbSampleRate.Items2"));
@@ -3495,7 +3495,7 @@ public class frmSetting extends JDialog {
         //
 //        this.cmbLatency.DropDownStyle = JComboBoxStyle.DropDownList;
 //        this.cmbLatency.FormattingEnabled = true;
-        m = (DefaultComboBoxModel) this.cmbLatency.getModel();
+        m = (DefaultComboBoxModel<String>) this.cmbLatency.getModel();
         m.addElement(Resources.getResourceManager().getString("cmbLatency.Items"));
         m.addElement(Resources.getResourceManager().getString("cmbLatency.Items1"));
         m.addElement(Resources.getResourceManager().getString("cmbLatency.Items2"));
@@ -6361,7 +6361,7 @@ public class frmSetting extends JDialog {
         //
 //        this.cmbInstFormat.DropDownStyle = JComboBoxStyle.DropDownList;
 //        this.cmbInstFormat.FormattingEnabled = true;
-        m = ((DefaultComboBoxModel) this.cmbInstFormat.getModel());
+        m = ((DefaultComboBoxModel<String>) this.cmbInstFormat.getModel());
         m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items"));
         m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items1"));
         m.addElement(Resources.getResourceManager().getString("cmbInstFormat.Items2"));
@@ -6820,10 +6820,10 @@ public class frmSetting extends JDialog {
     private JCheckBox rbDirectSoundOut;
     private JPanel gbWasapiOut;
     private JPanel gbDirectSound;
-    private JComboBox cmbWaveOutDevice;
+    private JComboBox<String> cmbWaveOutDevice;
     private JButton btnASIOControlPanel;
-    private JComboBox cmbAsioDevice;
-    private JComboBox cmbWasapiDevice;
+    private JComboBox<String> cmbAsioDevice;
+    private JComboBox<String> cmbWasapiDevice;
     private JComboBox<String> cmbDirectSoundDevice;
     private JTabbedPane tcSetting;
     private JTabbedPane tpOutput;
@@ -6851,7 +6851,7 @@ public class frmSetting extends JDialog {
     private JCheckBox rbShare;
     private JLabel lblLatencyUnit;
     private JLabel lblLatency;
-    private JComboBox cmbLatency;
+    private JComboBox<String> cmbLatency;
     private JTabbedPane tpModule;
     private JPanel groupBox3;
     private JLabel label13;
@@ -6872,7 +6872,7 @@ public class frmSetting extends JDialog {
     private JTextArea tbDataPath;
     private JLabel label19;
     private JTabbedPane tpMIDIKBD;
-    private JComboBox cmbInstFormat;
+    private JComboBox<String> cmbInstFormat;
     private JLabel lblInstFormat;
     private JLabel label30;
     private JTextArea tbScreenFrameRate;
@@ -7261,7 +7261,7 @@ public class frmSetting extends JDialog {
     private JCheckBox cbAutoOpenText;
     private JLabel label66;
     private JLabel label65;
-    private JComboBox cmbSampleRate;
+    private JComboBox<String> cmbSampleRate;
     private JLabel label67;
     private JTextArea tbSCCbaseAddress;
     private JButton btnSearchPath;

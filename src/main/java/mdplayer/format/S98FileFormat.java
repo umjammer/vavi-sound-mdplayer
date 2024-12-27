@@ -10,6 +10,7 @@ import mdplayer.driver.Vgm;
 import mdplayer.driver.s98.S98;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.S98Plugin;
+import mdplayer.plugin.SIDPlugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
@@ -86,6 +87,6 @@ public class S98FileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return new S98Plugin();
+        return Plugin.getPlugin(S98Plugin.class);
     }
 }

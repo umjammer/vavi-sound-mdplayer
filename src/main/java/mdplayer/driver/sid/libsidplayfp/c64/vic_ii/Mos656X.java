@@ -91,7 +91,7 @@ public class Mos656X extends Event {
     private long rasterClk;
 
     /** System's event scheduler. */
-    private EventScheduler eventScheduler;
+    private final EventScheduler eventScheduler;
 
     /** Number of cycles per line. */
     private int cyclesPerLine;
@@ -130,17 +130,17 @@ public class Mos656X extends Event {
     private byte irqMask;
 
     /** Light pen */
-    private Lightpen lp = new Lightpen();
+    private final Lightpen lp = new Lightpen();
 
     /** the 8 sprites data */
-    private Sprites sprites;
+    private final Sprites sprites;
 
     /** memory for chips registers */
-    private byte[] regs = new byte[0x40];
+    private final byte[] regs = new byte[0x40];
 
-    private EventCallback<Mos656X> badLineStateChangeEvent;
+    private final EventCallback<Mos656X> badLineStateChangeEvent;
 
-    private EventCallback<Mos656X> rasterYIRQEdgeDetectorEvent;
+    private final EventCallback<Mos656X> rasterYIRQEdgeDetectorEvent;
 
     /**
      * AEC state was updated.

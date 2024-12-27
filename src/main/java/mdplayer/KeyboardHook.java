@@ -20,10 +20,10 @@ public class KeyboardHook {
 
     private static final Logger logger = getLogger(KeyboardHook.class.getName());
 
-    static class GlobalKeyListenerExample implements NativeKeyListener {
+    static class GlobalKeyListener implements NativeKeyListener {
         @Override
         public void nativeKeyPressed(NativeKeyEvent e) {
-            System.out.println("Key Pressed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
+            logger.log(Level.TRACE, "Key Pressed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
 
             if (e.getKeyCode() == NativeKeyEvent.VC_ESCAPE) {
                 try {
@@ -36,12 +36,12 @@ public class KeyboardHook {
 
         @Override
         public void nativeKeyReleased(NativeKeyEvent e) {
-            System.out.println("Key Released: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
+            logger.log(Level.TRACE, "Key Released: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
         }
 
         @Override
         public void nativeKeyTyped(NativeKeyEvent e) {
-            System.out.println("Key Typed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
+            logger.log(Level.TRACE, "Key Typed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
         }
     }
 
@@ -63,7 +63,7 @@ public class KeyboardHook {
         try {
             GlobalScreen.registerNativeHook();
         } catch (NativeHookException ex) {
-            throw new IllegalStateException("There was a problem registering the native hook.");
+            throw new IllegalStateException("There was a problem registering the native hook.", ex);
         }
     }
 

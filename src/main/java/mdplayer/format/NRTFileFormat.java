@@ -8,6 +8,7 @@ import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.nrtdrv.NRTDRV;
 import mdplayer.plugin.NRTPlugin;
+import mdplayer.plugin.NSFPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;
@@ -79,6 +80,6 @@ public class NRTFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return new NRTPlugin();
+        return Plugin.getPlugin(NRTPlugin.class);
     }
 }

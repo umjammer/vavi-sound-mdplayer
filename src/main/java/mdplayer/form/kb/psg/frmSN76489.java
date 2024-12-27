@@ -37,9 +37,9 @@ public class frmSN76489 extends frmBase {
     private int chipId = 0;
     private int zoom = 1;
 
-    private MDChipParams.SN76489 newParam;
-    private MDChipParams.SN76489 oldParam;
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MDChipParams.SN76489 newParam;
+    private final MDChipParams.SN76489 oldParam;
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmSN76489.class);
 
@@ -69,7 +69,7 @@ public class frmSN76489 extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -98,7 +98,7 @@ public class frmSN76489 extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -240,15 +240,15 @@ public class frmSN76489 extends frmBase {
         newParam.channels[3].pan = 0;
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int py = ev.getY() / zoom;
             int px = ev.getX() / zoom;
 
-            //上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (int ch = 0; ch < 4; ch++) {
                         if (newParam.channels[ch].mask)
@@ -268,13 +268,13 @@ public class frmSN76489 extends frmBase {
                 boolean NGPFlag = audio.getSn76489NGPFlag();
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    //マスク
+                    // Mask.
                     parent.setChannelMask(EnmChip.SN76489, chipId, ch);
                     if (NGPFlag && chipId == 0) parent.setChannelMask(EnmChip.SN76489, 1, ch);
                     return;
                 }
 
-                //マスク解除
+                // Unmask.
                 for (ch = 0; ch < 4; ch++) {
                     parent.resetChannelMask(EnmChip.SN76489, chipId, ch);
                     if (NGPFlag && chipId == 0) parent.resetChannelMask(EnmChip.SN76489, 1, ch);

@@ -7,17 +7,20 @@ import java.util.List;
 import java.util.function.Function;
 
 import dotnet4j.io.Stream;
+import mdplayer.Audio;
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.Setting;
 import mdplayer.driver.mucom.MucomDotNET;
 import mdplayer.format.FileFormat;
+import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.Ym2151Inst;
 import mdsound.instrument.Ym2608Inst;
 import mdsound.instrument.Ym2610Inst;
 
 import static java.lang.System.getLogger;
+import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
@@ -76,9 +79,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipLED = new ChipLEDs();
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
-            Ym2608Inst ym2608 = new Ym2608Inst();
-            Ym2610Inst ym2610 = new Ym2610Inst();
-            Ym2151Inst ym2151 = new Ym2151Inst();
+            Ym2608Inst ym2608 = Instrument.getInstrument(Ym2608Inst.class);
+            Ym2610Inst ym2610 = Instrument.getInstrument(Ym2610Inst.class);
+            Ym2151Inst ym2151 = Instrument.getInstrument(Ym2151Inst.class);
             Function<String, Stream> fn = Common::getOPNARyhthmStream;
 
             if (useChipFromMub[0] != Common.EnmChip.Unuse) {
@@ -122,7 +125,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 audio.chipLED.put("PriOPNB", 1);
                 chip.instrument = ym2610;
                 chip.samplingRate = 55467;
-                chip.volume = setting.getBalance().getVolume("MAIN", Ym2610Inst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Inst.class);
                 chip.clock = MucomDotNET.opnbBaseClock;
                 chip.setVolumes.put("FM", ym2610::setFMVolume);
                 chip.setVolumes.put("PSG", ym2610::setPSGVolume);
@@ -140,7 +143,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 audio.chipLED.put("SecOPNB", 1);
                 chip.instrument = ym2610;
                 chip.samplingRate = 55467; // (int)setting.getoutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("MAIN", Ym2610Inst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Inst.class);
                 chip.clock = MucomDotNET.opnbBaseClock;
                 chip.setVolumes.put("FM", ym2610::setFMVolume);
                 chip.setVolumes.put("PSG", ym2610::setPSGVolume);
@@ -157,7 +160,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 audio.chipLED.put("PriOPM", 1);
                 chip.instrument = ym2151;
                 chip.samplingRate = 55467; // (int)setting.getoutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume("MAIN", Ym2151Inst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class);
                 chip.clock = MucomDotNET.opmBaseClock;
                 chip.option = null;
                 chips.add(chip);
@@ -165,13 +168,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
             }
 
             if (audio.mds == null)
-                audio.mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, chips.toArray(new MDSound.Chip[0]));
+                audio.mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), Audio.SamplingBuffer, chips.toArray(new MDSound.Chip[0]));
             else
-                audio.mds.init(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, chips.toArray(new MDSound.Chip[0]));
+                audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.SamplingBuffer, chips.toArray(new MDSound.Chip[0]));
 
             audio.chipRegister.initChipRegister(chips.toArray(new MDSound.Chip[0]));
 
-            audio.setVolume("MAIN", Ym2608Inst.class, true, setting.getBalance().getVolume("MAIN", Ym2608Inst.class));
+            audio.setVolume(MAIN_TAG, Ym2608Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class));
             audio.setVolume("FM", Ym2608Inst.class, true, setting.getBalance().getVolume("FM", Ym2608Inst.class));
             audio.setVolume("PSG", Ym2608Inst.class, true, setting.getBalance().getVolume("PSG", Ym2608Inst.class));
             audio.setVolume("Rhythm", Ym2608Inst.class, true, setting.getBalance().getVolume("Rhythm", Ym2608Inst.class));

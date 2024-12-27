@@ -7,8 +7,8 @@ public interface MnWork {
 //wavememory effect work structure
 interface W_We {
     int start = 0;              // .ds.l	1		* 開始点絶対アドレス
-    int loop_start = 4;         // .ds.l	1		* ループ開始点絶対アドレス
-    int loop_end = 8;             // .ds.l	1		* ループ終了点絶対アドレス
+    int loop_start = 4;         // .ds.l	1		* Loop starting point absolute address
+    int loop_end = 8;             // .ds.l	1		* Absolute address of loop end point
     int loop_count = 12;         // .ds.l	1		* ループ回数( == 0 無限ループ)
     int ko_start = 16;             // .ds.l	1		* キーオフ開始点
     int ko_loop_start = 20;     // .ds.l	1		* キーオフループ開始点
@@ -44,8 +44,8 @@ interface W_We {
 //wavememory work structure
 interface W_W {
     int start = 0;                                              // .ds.l	1		* 開始点絶対アドレス
-    int loop_start = start + 4;                                 // .ds.l	1		* ループ開始点絶対アドレス
-    int loop_end = loop_start + 4;                              // .ds.l	1		* ループ終了点絶対アドレス
+    int loop_start = start + 4;                                 // .ds.l	1		* Loop starting point absolute address
+    int loop_end = loop_start + 4;                              // .ds.l	1		* Absolute address of loop end point
     int loop_count = loop_end + 4;                              // .ds.l	1		* ループ回数( == 0 無限ループ)
     int ko_start = loop_count + 4;                              // .ds.l	1		* キーオフ開始点
     int ko_loop_start = ko_start + 4;                           // .ds.l	1		* キーオフループ開始点
@@ -178,7 +178,7 @@ interface W {
 
     int revexec = v_pattern4 + W_L._work_size;                  // .ds.b	1			    * $8C リバーブ実行したか
     int pcmmode = revexec + 1;                                  // .ds.b	1			    * $8D PCMの種類
-    int volmode = pcmmode + 1;                                  // .ds.b	1			    * $8E 相対音量モード
+    int volmode = pcmmode + 1;                                  // .ds.b	1			    * $8E Relative Volume Mode
     int kom = volmode + 1;                                      // .ds.b	1			    * $8F
     int envbank = kom + 1;                                      // .ds.b	1			    * $90
     int envnum = envbank + 1;                                   // .ds.b	1			    * $91
@@ -230,8 +230,8 @@ interface W {
     int effect = dev + 1;                                       // .ds.b	1			    * $B4
     //                      *
     //                      * bit5 わうわう
-    //                      * bit3 擬似エコー
-    //                      * bit2 擬似リバーブ
+    //                      * bit3 Pseudo Echo
+    //                      * bit2 Pseudo reverb
     //                      * bit1 RR cut
     //		                * bit0 RR cut
     //                      *	 00 = normal
@@ -412,7 +412,7 @@ interface Dw {
     //                  * bit 6 pause
     //                  * bit 5 stop
     //                  * bit 4 fadeout & stop
-    //                  * bit 3 ジャンプ中
+    //                  * bit 3 Jump中
     //                  * bit 0 ドライバ処理中
     int CH3KOM = DRV_STATUS + 1;                //.ds.b   1			* $0E 効果音モードkeyon flag
     int CH3KOS = CH3KOM + 1;                   //.ds.b   1			* $0F    〃      keyoff flag

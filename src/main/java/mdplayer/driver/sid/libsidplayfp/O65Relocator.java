@@ -72,7 +72,7 @@ public class O65Relocator {
      * @param idx
      */
     private int getWord(byte[] buffer, int idx) {
-        return buffer[idx] | (buffer[idx + 1] << 8);
+        return (buffer[idx] & 0xff) | ((buffer[idx + 1] & 0xff) << 8);
     }
 
     private int getWord(ByteBuffer buffer, int idx) {

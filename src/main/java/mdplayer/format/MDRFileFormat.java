@@ -10,6 +10,7 @@ import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.moonDriver.MoonDriver;
 import mdplayer.plugin.MDRPlugin;
+import mdplayer.plugin.MDXPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;
@@ -73,6 +74,6 @@ public class MDRFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return new MDRPlugin();
+        return Plugin.getPlugin(MDRPlugin.class);
     }
 }

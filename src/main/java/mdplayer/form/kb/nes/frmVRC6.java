@@ -33,11 +33,11 @@ public class frmVRC6 extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipId;
-    private int zoom;
-    private MDChipParams.VRC6 newParam;
-    private MDChipParams.VRC6 oldParam;
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final int chipId;
+    private final int zoom;
+    private final MDChipParams.VRC6 newParam;
+    private final MDChipParams.VRC6 oldParam;
+    private final FrameBuffer frameBuffer = new FrameBuffer();
     static Preferences prefs = Preferences.userNodeForPackage(frmVRC6.class);
 
     public frmVRC6(frmMain frm, int chipId, int zoom, MDChipParams.VRC6 newParam, MDChipParams.VRC6 oldParam) {
@@ -64,7 +64,7 @@ public class frmVRC6 extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -93,7 +93,7 @@ public class frmVRC6 extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -104,15 +104,15 @@ public class frmVRC6 extends frmBase {
         }
     };
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
             int ch;
-            //上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                //但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (ch = 0; ch < 3; ch++) {
                         if (newParam.channels[ch].mask)
@@ -126,7 +126,7 @@ public class frmVRC6 extends frmBase {
 
             if (ev.getButton() == MouseEvent.BUTTON2) {
                 for (int i = 0; i < 3; i++) {
-                    //マスク解除
+                    // Unmask.
                     parent.resetChannelMask(EnmChip.VRC6, chipId, i);
                 }
 
@@ -137,7 +137,7 @@ public class frmVRC6 extends frmBase {
             if (ch < 0) return;
             ch /= 2;
             if (ev.getButton() == MouseEvent.BUTTON1) {
-                //マスク
+                // Mask.
                 parent.setChannelMask(EnmChip.VRC6, chipId, ch);
             }
         }

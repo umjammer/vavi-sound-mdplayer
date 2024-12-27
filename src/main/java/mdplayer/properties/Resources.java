@@ -18,15 +18,13 @@ import java.util.ResourceBundle;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 
-import vavi.util.Debug;
-
 
 /**
  * ローカライズされた文字列などを検索するための、厳密に型指定されたリソース クラスです。
  */
 public class Resources {
 
-    private static ResourceBundle resourceMan = ResourceBundle.getBundle("mdplayer/properties/resources", Locale.getDefault());
+    private static final ResourceBundle resourceMan = ResourceBundle.getBundle("mdplayer/properties/resources", Locale.getDefault());
 
     private static Locale resourceCulture;
 

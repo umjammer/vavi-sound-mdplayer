@@ -69,7 +69,7 @@ public class Interrupt {
         reg.setD3_W(reg.getD3_W() & reg.getD0_W());
 
         reg.D0_L = 7;
-        reg.D0_L &= 0; // Reg.Arg[0]; // 4 * 15(sp) -> 割り込みレベルの調整(下げている)を行っている(再現不要箇所)
+        reg.D0_L &= 0; // Reg.Arg[0]; // 4 * 15(sp) -> The interrupt level is adjusted (lowered) (no need to reproduce)
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         reg.setD4_W(reg.getSR_W());
         reg.setD4_W(reg.getD4_W() & 0xf8ff);
@@ -208,7 +208,7 @@ _opn_recall:
         reg.setD3_W(reg.getD3_W() & reg.getD0_W());
 
         reg.D0_L = 7;
-        reg.D0_L &= 0; // Reg.Arg[0]; // 4 * 15(sp) -> 割り込みレベルの調整(下げている)を行っている(再現不要箇所)
+        reg.D0_L &= 0; // Reg.Arg[0]; // 4 * 15(sp) -> The interrupt level is adjusted (lowered) (no need to reproduce)
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         reg.setD4_W((short) reg.getSR_W());
         reg.setD4_W(reg.getD4_W() & 0xf8ff);
@@ -670,9 +670,8 @@ _opm_recall:
     }
 
     /**
-     * Mon Aug 14 17:34 JST 2000 (saori)
-     * 各 MASTER_VOLはここでは 127以上にはならない為
-     * エラーチェックを省いた。
+     * Since each MASTER_VOL cannot exceed 127, error checking is omitted.
+     * @since Mon Aug 14 17:34 JST 2000 (saori)
      */
     private void _ch_fadeout_calc() {
         mm.write(reg.a6 + Dw.MASTER_VOL_FM, (byte) (mm.readByte(reg.a6 + Dw.MASTER_VOL_FM) + 1));

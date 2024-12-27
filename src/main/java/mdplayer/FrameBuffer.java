@@ -51,7 +51,7 @@ public class FrameBuffer {
 //        bgPlane.Graphics.DrawImage(initialImage, 0, 0, imageSize.getWidth() * zoom, imageSize.getHeight() * zoom);
     }
 
-    public void Remove(Consumer<Graphics> p) {
+    public void remove(Consumer<Graphics> p) {
         if (bmpPlane != null) {
             bmpPlane.flush();
             bmpPlane = null;

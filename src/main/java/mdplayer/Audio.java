@@ -30,7 +30,7 @@ import mdsound.chips.K051649;
 import mdsound.chips.MultiPCM;
 import mdsound.chips.OkiM6258;
 import mdsound.chips.OkiM6295;
-import mdsound.chips.PPZ8Status;
+import mdsound.chips.PPZ8;
 import mdsound.chips.PcmChip;
 import mdsound.chips.Rf5c68;
 import mdsound.chips.SegaPcm;
@@ -40,6 +40,7 @@ import mdsound.np.chip.DeviceInfo;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
+import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 public class Audio {
@@ -155,8 +156,8 @@ public class Audio {
         return cnt;
     }
 
-    public int limit(int v, int max, int min) {
-        return v > max ? max : Math.max(v, min);
+    public static int limit(int v, int max, int min) {
+        return Math.min(max, Math.max(v, min));
     }
 
 int CC;
@@ -435,9 +436,9 @@ logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
 
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = new Ym2612Inst();
+        chip.instrument = Instrument.getInstrument(Ym2612Inst.class);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
-        chip.volume = setting.getBalance().getVolume("MAIN", Ym2612Inst.class);
+        chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class);
         chip.clock = 7670454;
         chip.option = null;
         chipLED.put("PriOPN2", 1);
@@ -445,9 +446,9 @@ logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
 
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = new Sn76489Inst();
+        chip.instrument = Instrument.getInstrument(Sn76489Inst.class);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
-        chip.volume = setting.getBalance().getVolume("MAIN", Sn76489Inst.class);
+        chip.volume = setting.getBalance().getVolume(MAIN_TAG, Sn76489Inst.class);
         chip.clock = 3579545;
         chip.option = null;
         chipLED.put("PriDCSG", 1);
@@ -477,7 +478,7 @@ logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
     public final List<Integer> midiOutsType = new ArrayList<>();
 
     public void makeMIDIout(Setting setting, int m) {
-        if (setting.getMidiOut().getMidiOutInfos() == null || setting.getMidiOut().getMidiOutInfos().size() < 1)
+        if (setting.getMidiOut().getMidiOutInfos() == null || setting.getMidiOut().getMidiOutInfos().isEmpty())
             return;
         if (setting.getMidiOut().getMidiOutInfos().get(m) == null || setting.getMidiOut().getMidiOutInfos().get(m).length < 1)
             return;
@@ -786,7 +787,7 @@ logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
         return chipRegister.pcmRegisterC140[chipId];
     }
 
-    public PPZ8Status.Channel[] getPPZ8Register(int chipId) {
+    public PPZ8.Channel[] getPPZ8Register(int chipId) {
         return chipRegister.getPPZ8Register(chipId);
     }
 
@@ -1112,7 +1113,7 @@ logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
     protected void sn76489ForcedSendVolume(int chipId, int ch) {
         Setting.ChipType2 ct = setting.getSN76489Type()[chipId];
         chipRegister.setSN76489Register(chipId
-                , (byte) (0x90
+                , (0x90
                         | ((ch & 3) << 5)
                         | (15 - (Math.max(chipRegister.sn76489Vol[chipId][ch][0], chipRegister.sn76489Vol[chipId][ch][1]) & 0xf)))
                 , ct.getUseEmu()[0] ? Common.EnmModel.VirtualModel : Common.EnmModel.RealModel);

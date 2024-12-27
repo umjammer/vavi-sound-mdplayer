@@ -72,7 +72,7 @@ public class ZeroRAMBank implements IBank {
      * bit instanceof 1, the drop-off timer will restart again
      */
     private static class dataBit {
-        private int bit;
+        private final int bit;
 
         public dataBit(int bit) {
             this.bit = bit;
@@ -137,11 +137,11 @@ public class ZeroRAMBank implements IBank {
     public IPLA pla;
 
     // C64 RAM area
-    private SystemRAMBank ramBank;
+    private final SystemRAMBank ramBank;
 
     // Unused bits of the data port.
-    private dataBit dataBit6 = new dataBit(6);
-    private dataBit dataBit7 = new dataBit(7);
+    private final dataBit dataBit6 = new dataBit(6);
+    private final dataBit dataBit7 = new dataBit(7);
 
     // Value written to processor port.
     private byte dir;

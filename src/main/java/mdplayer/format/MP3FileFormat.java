@@ -5,6 +5,7 @@ import java.util.List;
 
 import dotnet4j.io.Path;
 import mdplayer.PlayList;
+import mdplayer.plugin.MucomPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.SampledPlugin;
 import vavi.util.archive.Archive;
@@ -44,6 +45,6 @@ public class MP3FileFormat extends BaseFileFormat implements FileFormat.SampledF
 
     @Override
     public Plugin getPlugin() {
-        return new SampledPlugin();
+        return Plugin.getPlugin(SampledPlugin.class);
     }
 }

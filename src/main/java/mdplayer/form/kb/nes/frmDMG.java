@@ -33,11 +33,11 @@ public class frmDMG extends frmBase {
     public int y = -1;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int chipId;
-    private int zoom;
-    private MDChipParams.DMG newParam;
-    private MDChipParams.DMG oldParam;
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final int chipId;
+    private final int zoom;
+    private final MDChipParams.DMG newParam;
+    private final MDChipParams.DMG oldParam;
+    private final FrameBuffer frameBuffer = new FrameBuffer();
     static Preferences prefs = Preferences.userNodeForPackage(frmDMG.class);
 
     public frmDMG(frmMain frm, int chipId, int zoom, MDChipParams.DMG newParam, MDChipParams.DMG oldParam) {
@@ -64,7 +64,7 @@ public class frmDMG extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -93,7 +93,7 @@ public class frmDMG extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -137,7 +137,7 @@ public class frmDMG extends frmBase {
         // Env.Dir
         newParam.channels[0].bit[2] = dat.sound1.envelopeDirection == 1;
         newParam.channels[1].bit[2] = dat.sound2.envelopeDirection == 1;
-        // newParam.channels[2].bit[2] = ないよ
+        // newParam.channels[2].bit[2] = nothing
         newParam.channels[3].bit[2] = dat.sound4.envelopeDirection == 1;
 
         // Sweep Dec
@@ -146,26 +146,26 @@ public class frmDMG extends frmBase {
         // Env.Spd
         newParam.channels[0].inst[0] = dat.sound1.envelopeTime;
         newParam.channels[1].inst[0] = dat.sound2.envelopeTime;
-        // newParam.channels[2].inst[0] = ないよ
+        // newParam.channels[2].inst[0] = nothing
         newParam.channels[3].inst[0] = dat.sound4.envelopeTime;
 
         // Env.Vol
         newParam.channels[0].inst[1] = dat.sound1.envelopeValue;
         newParam.channels[1].inst[1] = dat.sound2.envelopeValue;
-        // newParam.channels[2].inst[1] = ないよ
+        // newParam.channels[2].inst[1] = nothing
         newParam.channels[3].inst[1] = dat.sound4.envelopeValue;
 
         // Len
         newParam.channels[0].inst[2] = dat.sound1.length;
         newParam.channels[1].inst[2] = dat.sound2.length;
-        // newParam.channels[2].inst[2] = ないよ
+        // newParam.channels[2].inst[2] = nothing
         newParam.channels[3].inst[2] = dat.sound4.length;
 
         // Duty
         newParam.channels[0].inst[3] = dat.sound1.duty;
         newParam.channels[1].inst[3] = dat.sound2.duty;
-        // newParam.channels[2].inst[3] = ないよ
-        // newParam.channels[3].inst[3] = ないよ
+        // newParam.channels[2].inst[3] = nothing
+        // newParam.channels[3].inst[3] = nothing
 
         // Sweep time
         newParam.channels[0].inst[4] = dat.sound1.sweepTime;
@@ -249,7 +249,7 @@ public class frmDMG extends frmBase {
         DrawBuff.VolumeXY(frameBuffer, 68, 7, 1, oyc.volumeR, nyc.volumeR, 0);
         DrawBuff.drawNESSw(frameBuffer, 228, 40, oyc.bit[0], nyc.bit[0]); // CC
         DrawBuff.drawNESSw(frameBuffer, 228, 48, oyc.bit[1], nyc.bit[1]); // Ini
-        // Env.Dirなし
+        // no Env.Dir
         DrawBuff.font4Int2(frameBuffer, 220, 56, 0, 3, oyc.inst[4], nyc.inst[4]); // Len
         DrawBuff.font4Int1(frameBuffer, 228, 64, 0, oyc.inst[5], nyc.inst[5]); // Vol
         DrawBuff.KeyBoardDMG(frameBuffer, 2, oyc.note, nyc.note, 0);
@@ -287,15 +287,15 @@ public class frmDMG extends frmBase {
         }
     }
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / zoom;
             int py = ev.getY() / zoom;
 
-            // 上部のラベル行の場合は何もしない
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                // 但しchをクリックした場合はマスク反転
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (int ch = 0; ch < 4; ch++) {
                         if (newParam.channels[ch].mask)
@@ -307,18 +307,18 @@ public class frmDMG extends frmBase {
                 return;
             }
 
-            // 鍵盤
+            // keyboard
             if (py < 5 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    // マスク
+                    // mask
                     parent.setChannelMask(EnmChip.DMG, chipId, ch);
                     return;
                 }
 
-                // マスク解除
+                // Unmask
                 for (ch = 0; ch < 4; ch++) parent.resetChannelMask(EnmChip.DMG, chipId, ch);
             }
         }
@@ -328,7 +328,7 @@ public class frmDMG extends frmBase {
         float m = Float.MAX_VALUE;
         int n = 0;
         for (int i = 0; i < 12 * 9; i++) {
-            float a = Math.abs((freq / (1 << (6 - 4))) - Tables.freqTbl[i]);// 6:正規の範囲   4:補正
+            float a = Math.abs((freq / (1 << (6 - 4))) - Tables.freqTbl[i]); // 6: Normal range 4: Correction
             if (m > a) {
                 m = a;
                 n = i;
@@ -339,15 +339,14 @@ public class frmDMG extends frmBase {
 
     private void initializeComponent() {
         this.pbScreen = new JPanel();
-        // ((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         // 
         // pbScreen
         // 
 //        this.pbScreen.setBackground(Color.ControlDarkDark);
         this.image = mdplayer.properties.Resources.getPlaneDMG();
-        this.pbScreen.setLocation(new Point(0, 0));
-        this.pbScreen.setName("pbScreen");
+//        this.pbScreen.setLocation(new Point(0, 0));
+//        this.pbScreen.setName("pbScreen");
         this.pbScreen.setPreferredSize(new Dimension(336, 72));
         // this.pbScreen.TabIndex = 2
         // this.pbScreen.TabStop = false;

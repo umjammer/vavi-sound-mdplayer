@@ -25,7 +25,7 @@ import mdplayer.Tables;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.chips.PPZ8Status;
+import mdsound.chips.PPZ8;
 
 
 public class frmPPZ8 extends frmBase {
@@ -38,7 +38,7 @@ public class frmPPZ8 extends frmBase {
     private int zoom = 1;
     private MDChipParams.PPZ8 newParam = null;
     private MDChipParams.PPZ8 oldParam = new MDChipParams.PPZ8();
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final FrameBuffer frameBuffer = new FrameBuffer();
     static Preferences prefs = Preferences.userNodeForPackage(frmPPZ8.class);
 
     public frmPPZ8(frmMain frm, int chipId, int zoom, MDChipParams.PPZ8 newParam, MDChipParams.PPZ8 oldParam) {
@@ -65,7 +65,7 @@ public class frmPPZ8 extends frmBase {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -94,7 +94,7 @@ public class frmPPZ8 extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -105,7 +105,7 @@ public class frmPPZ8 extends frmBase {
         }
     };
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             //int px = ev.getX() / zoom;
@@ -172,7 +172,7 @@ public class frmPPZ8 extends frmBase {
     }
 
     public void screenChangeParams() {
-        PPZ8Status.Channel[] ppz8State = audio.getPPZ8Register(chipId);
+        PPZ8.Channel[] ppz8State = audio.getPPZ8Register(chipId);
         if (ppz8State == null) return;
 
         for (int ch = 0; ch < 8; ch++) {

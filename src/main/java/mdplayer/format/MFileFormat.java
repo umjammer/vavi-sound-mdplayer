@@ -7,6 +7,7 @@ import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.pmd.PMDDotNET;
+import mdplayer.plugin.MGSPlugin;
 import mdplayer.plugin.PMDPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.util.archive.Archive;
@@ -52,6 +53,6 @@ public class MFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return new PMDPlugin();
+        return Plugin.getPlugin(PMDPlugin.class);
     }
 }

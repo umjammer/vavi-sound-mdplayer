@@ -36,9 +36,9 @@ public class frmTPGet extends JDialog {
         this.btCh4 = new JButton();
         this.btCh1 = new JButton();
         this.dgvTonePallet = new JTable();
-        this.clmNo = new JList();
-        this.clmName = new JList();
-        this.clmSpacer = new JList();
+        this.clmNo = new JList<>();
+        this.clmName = new JList<>();
+        this.clmSpacer = new JList<>();
         this.label1 = new JLabel();
         this.btnCancel = new JButton();
         this.btOK = new JButton();
@@ -195,7 +195,7 @@ public class frmTPGet extends JDialog {
         this.btnCancel.setName("btnCancel");
         this.btnCancel.setPreferredSize(new Dimension(75, 23));
         // this.btnCancel.TabIndex = 0
-        this.btnCancel.setText("キャンセル");
+        this.btnCancel.setText("Cancel");
         // this.btnCancel.UseVisualStyl.setBackground(true);
         //
         // btOK
@@ -254,9 +254,9 @@ public class frmTPGet extends JDialog {
     private JLabel label1;
     private JButton btnCancel;
     private JButton btOK;
-    private JList clmNo;
-    private JList clmName;
-    private JList clmSpacer;
+    private JList<String> clmNo;
+    private JList<String> clmName;
+    private JList<String> clmSpacer;
     private JButton btCh6;
     private JButton btCh3;
     private JButton btCh5;
@@ -280,7 +280,7 @@ public class frmTPGet extends JDialog {
         return DialogResult;
     }
 
-    private WindowListener frmTPGet_Load = new WindowAdapter() {
+    private final WindowListener frmTPGet_Load = new WindowAdapter() {
         @Override
         public void windowActivated(WindowEvent e) {
             DefaultTableModel m = new DefaultTableModel();
@@ -327,7 +327,7 @@ public class frmTPGet extends JDialog {
         for (int i = 0; i < 256; i++) {
             Object o = dgvTonePallet.getValueAt(i, 2);
             String n = o == null ? "" : o.toString();
-            if (n.equals("")) continue;
+            if (n.isEmpty()) continue;
 
             int ch = Integer.parseInt(n.replace("to Ch.", "")) - 1;
 

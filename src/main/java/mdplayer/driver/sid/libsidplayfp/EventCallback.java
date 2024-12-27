@@ -26,7 +26,7 @@ public class EventCallback<This> extends Event {
 
     public interface Callback extends Runnable {}
 
-    private This _this;
+    private final This _this;
 
     public Callback callback;
 
@@ -36,7 +36,7 @@ public class EventCallback<This> extends Event {
     }
 
     /**
-     * 注意：Callback は object インスタンスのメソッドをセットすること
+     *Note: Callback should be set to a method on the object instance.
      * @param name
      * @param object
      * @param callback

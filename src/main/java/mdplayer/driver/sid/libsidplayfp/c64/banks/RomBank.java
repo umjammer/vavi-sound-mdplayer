@@ -61,7 +61,7 @@ public class RomBank implements IBank {
      * Return pointer to memory address.
      */
     protected ByteBuffer getPtr(short address) {
-        // TODO: kuma アドレス自体を返しているっぽい
+        // TODO: kuma It seems to return the address itself.
         return rom.slice(); // rom.ptr + (address & (N - 1)));
     }
 
@@ -164,9 +164,9 @@ public class RomBank implements IBank {
             super(0x2000);
         }
 
-        private byte[] trap = new byte[3];
+        private final byte[] trap = new byte[3];
 
-        private byte[] subTune = new byte[11];
+        private final byte[] subTune = new byte[11];
 
         @Override
         public void set(ByteBuffer basic) {

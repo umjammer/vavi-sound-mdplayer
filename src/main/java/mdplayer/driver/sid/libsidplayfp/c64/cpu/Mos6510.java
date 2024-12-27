@@ -82,7 +82,7 @@ public class Mos6510 {
     }
 
     /** Event scheduler */
-    private EventScheduler eventScheduler;
+    private final EventScheduler eventScheduler;
 
     /** Current instruction and subcycle within instruction */
     private int cycleCount;
@@ -111,7 +111,7 @@ public class Mos6510 {
 //#endif
 
     /** Status register */
-    private Flags flags = new Flags();
+    private final Flags flags = new Flags();
 
     // data regarding current instruction
     private @Unsigned short registerProgramCounter;
@@ -140,14 +140,14 @@ public class Mos6510 {
 //#endif
 
     /** Table of CPU opcode implementations */
-    private ProcessorCycle[] instrTable = new ProcessorCycle[0x101 << 3];
+    private final ProcessorCycle[] instrTable = new ProcessorCycle[0x101 << 3];
 
 
     /** Represents an instruction subcycle that writes */
-    private EventCallback<Mos6510> noSteal;
+    private final EventCallback<Mos6510> noSteal;
 
     /** Represents an instruction subcycle that reads */
-    private EventCallback<Mos6510> steal;
+    private final EventCallback<Mos6510> steal;
 
     /**
      * Get data from system environment.

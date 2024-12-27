@@ -39,7 +39,7 @@ public class SidEmu extends C64Sid {
         public static int outputBufferSize = 5000;
     }
 
-    private SidBuilder builder;
+    private final SidBuilder builder;
 
     protected EventScheduler eventScheduler;
 

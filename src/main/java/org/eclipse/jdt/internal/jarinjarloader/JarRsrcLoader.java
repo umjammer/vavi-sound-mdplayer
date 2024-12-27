@@ -15,6 +15,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import static java.lang.System.getLogger;
+import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 public class JarRsrcLoader {
@@ -39,7 +40,7 @@ public class JarRsrcLoader {
       ClassLoader jceClassLoader = new URLClassLoader(rsrcUrls, null);
       Thread.currentThread().setContextClassLoader(jceClassLoader);
       Class<?> c = Class.forName(mi.rsrcMainClass, true, jceClassLoader);
-      Method main = c.getMethod("main", args.getClass());
+      Method main = c.getMethod(MAIN_TAG, args.getClass());
       main.invoke(null, (Object) args);
    }
 
@@ -61,7 +62,7 @@ public class JarRsrcLoader {
                }
 
                result.rsrcClassPath = splitSpaces(rsrcCP);
-               if (result.rsrcMainClass != null && !result.rsrcMainClass.trim().equals("")) {
+               if (result.rsrcMainClass != null && !result.rsrcMainClass.trim().isEmpty()) {
                   return result;
                }
             }

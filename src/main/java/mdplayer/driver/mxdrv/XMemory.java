@@ -39,10 +39,10 @@ public class XMemory {
     }
 
     public short readShort(int v1) {
-        return (short) ((mm[v1] << 8) + (mm[v1 + 1] << 0));
+        return (short) (((mm[v1] & 0xff) << 8) + ((mm[v1 + 1] & 0xff) << 0));
     }
 
     public int readInt(int v1) {
-        return (mm[v1] << 24) + (mm[v1 + 1] << 16) + (mm[v1 + 2] << 8) + (mm[v1 + 3] << 0);
+        return ((mm[v1] & 0xff) << 24) + ((mm[v1 + 1] & 0xff) << 16) + ((mm[v1 + 2] & 0xff) << 8) + ((mm[v1 + 3] & 0xff) << 0);
     }
 }

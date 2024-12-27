@@ -13,7 +13,7 @@ import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 
 
 public class WaveWriter {
-    private Setting setting;
+    private final Setting setting;
     private FileStream dest = null;
     private int len = 0;
 

@@ -11,6 +11,7 @@ import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.driver.s98.S98;
 import mdplayer.format.FileFormat;
+import mdsound.Instrument;
 import mdsound.instrument.Ay8910Inst;
 import mdsound.MDSound;
 import mdsound.instrument.MameYm2612Inst;
@@ -28,6 +29,7 @@ import mdsound.instrument.Ym3812Inst;
 import mdsound.instrument.YmF262Inst;
 
 import static java.lang.System.getLogger;
+import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
@@ -131,7 +133,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 case 1:
                     chip = new MDSound.Chip();
                     if (ym2149 == null) {
-                        ym2149 = new Ay8910Inst();
+                        ym2149 = Instrument.getInstrument(Ay8910Inst.class);
                         chip.id = 0;
                         audio.chipLED.put("PriAY10", 1);
                     } else {
@@ -140,7 +142,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     }
                     chip.instrument = ym2149;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ay8910Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class);
                     chip.clock = dInfo.clock / 4;
                     audio.clockAY8910 = chip.clock;
                     chip.option = null;
@@ -151,7 +153,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 case 2:
                     chip = new MDSound.Chip();
                     if (ym2203 == null) {
-                        ym2203 = new Ym2203Inst();
+                        ym2203 = Instrument.getInstrument(Ym2203Inst.class);
                         chip.id = 0;
                         audio.chipLED.put("PriOPN", 1);
                     } else {
@@ -160,7 +162,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     }
                     chip.instrument = ym2203;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym2203Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2203Inst.class);
                     chip.clock = dInfo.clock;
                     YM2203ClockValue = chip.clock;
                     chip.option = null;
@@ -172,9 +174,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip = new MDSound.Chip();
                     chip.option = null;
                     if (ym2612 == null) {
-                        ym2612 = new Ym2612Inst();
-                        ym3438 = new Ym3438Inst();
-                        ym2612mame = new MameYm2612Inst();
+                        ym2612 = Instrument.getInstrument(Ym2612Inst.class);
+                        ym3438 = Instrument.getInstrument(Ym3438Inst.class);
+                        ym2612mame = Instrument.getInstrument(MameYm2612Inst.class);
                         chip.id = 0;
                         audio.chipLED.put("PriOPN2", 1);
                     } else {
@@ -212,7 +214,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym2612Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class);
                     chip.clock = dInfo.clock;
                     lstChips.add(chip);
                     audio.useChip.add(chip.id == 0 ? Common.EnmChip.YM2612 : Common.EnmChip.S_YM2612);
@@ -221,7 +223,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 case 4:
                     chip = new MDSound.Chip();
                     if (ym2608 == null) {
-                        ym2608 = new Ym2608Inst();
+                        ym2608 = Instrument.getInstrument(Ym2608Inst.class);
                         chip.id = 0;
                         audio.chipLED.put("PriOPNA", 1);
                     } else {
@@ -230,7 +232,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     }
                     chip.instrument = ym2608;
                     chip.samplingRate = 55467;// (int)setting.getoutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym2608Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class);
                     chip.clock = dInfo.clock;
                     YM2608ClockValue = chip.clock;
                     chip.setVolumes.put("FM", ym2608::setFMVolume);
@@ -254,18 +256,18 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     }
 
                     if ((chip.id == 0 && setting.getYM2151Type()[0].getUseEmu()[0]) || (chip.id == 1 && setting.getYM2151Type()[1].getUseEmu()[0])) {
-                        if (ym2151 == null) ym2151 = new Ym2151Inst();
+                        if (ym2151 == null) ym2151 = Instrument.getInstrument(Ym2151Inst.class);
                         chip.instrument = ym2151;
                     } else if ((chip.id == 0 && setting.getYM2151Type()[0].getUseEmu()[1]) || (chip.id == 1 && setting.getYM2151Type()[1].getUseEmu()[1])) {
-                        if (ym2151mame == null) ym2151mame = new MameYm2151Inst();
+                        if (ym2151mame == null) ym2151mame = Instrument.getInstrument(MameYm2151Inst.class);
                         chip.instrument = ym2151mame;
                     } else if ((chip.id == 0 && setting.getYM2151Type()[0].getUseEmu()[2]) || (chip.id == 1 && setting.getYM2151Type()[1].getUseEmu()[2])) {
-                        if (ym2151_x68sound == null) ym2151_x68sound = new X68SoundYm2151Inst();
+                        if (ym2151_x68sound == null) ym2151_x68sound = Instrument.getInstrument(X68SoundYm2151Inst.class);
                         chip.instrument = ym2151_x68sound;
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym2151Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class);
                     chip.clock = dInfo.clock;
                     YM2151ClockValue = chip.clock;
                     chip.option = null;
@@ -278,7 +280,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 case 6:
                     chip = new MDSound.Chip();
                     if (ym2413 == null) {
-                        ym2413 = new Ym2413Inst();
+                        ym2413 = Instrument.getInstrument(Ym2413Inst.class);
                         chip.id = 0;
                         audio.chipLED.put("PriOPLL", 1);
                     } else {
@@ -287,7 +289,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     }
                     chip.instrument = ym2413;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym2413Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2413Inst.class);
                     chip.clock = dInfo.clock;
                     chip.option = null;
                     //hiyorimiDeviceFlag |= 0x2;
@@ -298,7 +300,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 case 7:
                     chip = new MDSound.Chip();
                     if (ym3526 == null) {
-                        ym3526 = new Ym3526Inst();
+                        ym3526 = Instrument.getInstrument(Ym3526Inst.class);
                         chip.id = 0;
                         audio.chipLED.put("PriOPL", 1);
                     } else {
@@ -307,7 +309,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     }
                     chip.instrument = ym3526;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym3526Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym3526Inst.class);
                     chip.clock = dInfo.clock;
                     chip.option = null;
                     //hiyorimiDeviceFlag |= 0x2;
@@ -318,7 +320,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 case 8:
                     chip = new MDSound.Chip();
                     if (ym3812 == null) {
-                        ym3812 = new Ym3812Inst();
+                        ym3812 = Instrument.getInstrument(Ym3812Inst.class);
                         chip.id = 0;
                         audio.chipLED.put("PriOPL2", 1);
                     } else {
@@ -327,7 +329,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     }
                     chip.instrument = ym3812;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ym3812Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym3812Inst.class);
                     chip.clock = dInfo.clock;
                     chip.option = null;
                     //hiyorimiDeviceFlag |= 0x2;
@@ -338,7 +340,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 case 9:
                     chip = new MDSound.Chip();
                     if (ymf262 == null) {
-                        ymf262 = new YmF262Inst();
+                        ymf262 = Instrument.getInstrument(YmF262Inst.class);
                         chip.id = 0;
                         audio.chipLED.put("PriOPL3", 1);
                     } else {
@@ -347,7 +349,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     }
                     chip.instrument = ymf262;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", YmF262Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF262Inst.class);
                     chip.clock = dInfo.clock;
                     YMF262ClockValue = chip.clock;
                     chip.option = null;
@@ -359,7 +361,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 case 15:
                     chip = new MDSound.Chip();
                     if (ay8910 == null) {
-                        ay8910 = new Ay8910Inst();
+                        ay8910 = Instrument.getInstrument(Ay8910Inst.class);
                         chip.id = 0;
                         audio.chipLED.put("PriAY10", 1);
                     } else {
@@ -368,7 +370,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     }
                     chip.instrument = ay8910;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume("MAIN", Ay8910Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class);
                     chip.clock = dInfo.clock;
                     audio.clockAY8910 = chip.clock;
                     chip.option = null;
@@ -388,16 +390,16 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
             if (audio.useChip.contains(Common.EnmChip.YM2203) || audio.useChip.contains(Common.EnmChip.S_YM2203)) {
-                audio.setVolume("MAIN", Ym2203Inst.class, true, setting.getBalance().getVolume("MAIN", Ym2203Inst.class));
+                audio.setVolume(MAIN_TAG, Ym2203Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2203Inst.class));
                 audio.setVolume("FM", Ym2203Inst.class, true, setting.getBalance().getVolume("FM", Ym2203Inst.class));
                 audio.setVolume("PSG", Ym2203Inst.class, true, setting.getBalance().getVolume("PSG", Ym2203Inst.class));
             }
 
             if (audio.useChip.contains(Common.EnmChip.YM2612) || audio.useChip.contains(Common.EnmChip.S_YM2612))
-                audio.setVolume("MAIN", Ym2612Inst.class, true, setting.getBalance().getVolume("MAIN", Ym2612Inst.class));
+                audio.setVolume(MAIN_TAG, Ym2612Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class));
 
             if (audio.useChip.contains(Common.EnmChip.YM2608) || audio.useChip.contains(Common.EnmChip.S_YM2608)) {
-                audio.setVolume("MAIN", Ym2608Inst.class, true, setting.getBalance().getVolume("MAIN", Ym2608Inst.class));
+                audio.setVolume(MAIN_TAG, Ym2608Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class));
                 audio.setVolume("FM", Ym2608Inst.class, true, setting.getBalance().getVolume("FM", Ym2608Inst.class));
                 audio.setVolume("PSG", Ym2608Inst.class, true, setting.getBalance().getVolume("PSG", Ym2608Inst.class));
                 audio.setVolume("Rhythm", Ym2608Inst.class, true, setting.getBalance().getVolume("Rhythm", Ym2608Inst.class));
@@ -413,13 +415,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 audio.chipRegister.setYM2608Register(1, 0, 0x29, 0x82, Common.EnmModel.RealModel);
             }
             if (audio.useChip.contains(Common.EnmChip.YM2151) || audio.useChip.contains(Common.EnmChip.S_YM2151))
-                audio.setVolume("MAIN", Ym2151Inst.class, true, setting.getBalance().getVolume("MAIN", Ym2151Inst.class));
+                audio.setVolume(MAIN_TAG, Ym2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class));
             if (audio.useChip.contains(Common.EnmChip.YM2413) || audio.useChip.contains(Common.EnmChip.S_YM2413))
-                audio.setVolume("MAIN", Ym2413Inst.class, true, setting.getBalance().getVolume("MAIN", Ym2413Inst.class));
+                audio.setVolume(MAIN_TAG, Ym2413Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2413Inst.class));
             if (audio.useChip.contains(Common.EnmChip.YM3526) || audio.useChip.contains(Common.EnmChip.S_YM3526))
-                audio.setVolume("MAIN", Ym3526Inst.class, true, setting.getBalance().getVolume("MAIN", Ym3526Inst.class));
+                audio.setVolume(MAIN_TAG, Ym3526Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym3526Inst.class));
             if (audio.useChip.contains(Common.EnmChip.AY8910) || audio.useChip.contains(Common.EnmChip.S_AY8910))
-                audio.setVolume("MAIN", Ay8910Inst.class, true, setting.getBalance().getVolume("MAIN", Ay8910Inst.class));
+                audio.setVolume(MAIN_TAG, Ay8910Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class));
 
             if (audio.useChip.contains(Common.EnmChip.AY8910))
                 audio.chipRegister.writeAY8910Clock((byte) 0, audio.clockAY8910, Common.EnmModel.RealModel);

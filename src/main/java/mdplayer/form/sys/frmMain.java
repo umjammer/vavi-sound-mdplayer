@@ -2,6 +2,7 @@ package mdplayer.form.sys;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.MouseInfo;
@@ -53,6 +54,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolTip;
 import javax.swing.SwingUtilities;
@@ -138,7 +140,6 @@ import mdplayer.properties.Resources;
 import mdsound.chips.OotakeHuC6280;
 import mdsound.chips.K051649;
 import mdsound.np.chip.NesN106;
-import vavi.util.Debug;
 
 import static dotnet4j.io.Path.getDirectoryName;
 import static java.lang.System.getLogger;
@@ -162,56 +163,56 @@ public class frmMain extends JFrame {
     private frmPlayList frmPlayList = null;
 //    private frmVSTeffectList frmVSTeffectList = null;
 
-    private frmMegaCD[] frmMCD = new frmMegaCD[] {null, null};
-    private frmRf5c68[] frmRf5c68 = new frmRf5c68[] {null, null};
-    private frmC140[] frmC140 = new frmC140[] {null, null};
-    private frmPPZ8[] frmPPZ8 = new frmPPZ8[] {null, null};
-    private frmS5B[] frmS5B = new frmS5B[] {null, null};
-    private frmDMG[] frmDMG = new frmDMG[] {null, null};
-    private frmYMZ280B[] frmYMZ280B = new frmYMZ280B[] {null, null};
-    private frmC352[] frmC352 = new frmC352[] {null, null};
-    private frmMultiPCM[] frmMultiPCM = new frmMultiPCM[] {null, null};
-    private frmQSound[] frmQSound = new frmQSound[] {null, null};
-    private frmYM2608[] frmYM2608 = new frmYM2608[] {null, null};
-    private frmYM2151[] frmYM2151 = new frmYM2151[] {null, null};
-    private frmYM2203[] frmYM2203 = new frmYM2203[] {null, null};
-    private frmYM2610[] frmYM2610 = new frmYM2610[] {null, null};
-    private frmYM2612[] frmYM2612 = new frmYM2612[] {null, null};
-    private frmYM3526[] frmYM3526 = new frmYM3526[] {null, null};
-    private frmY8950[] frmY8950 = new frmY8950[] {null, null};
-    private frmYM3812[] frmYM3812 = new frmYM3812[] {null, null};
-    private frmOKIM6258[] frmOKIM6258 = new frmOKIM6258[] {null, null};
-    private frmOKIM6295[] frmOKIM6295 = new frmOKIM6295[] {null, null};
-    private frmSN76489[] frmSN76489 = new frmSN76489[] {null, null};
-    private frmSegaPCM[] frmSegaPCM = new frmSegaPCM[] {null, null};
-    private frmAY8910[] frmAY8910 = new frmAY8910[] {null, null};
-    private frmHuC6280[] frmHuC6280 = new frmHuC6280[] {null, null};
-    private frmK051649[] frmK051649 = new frmK051649[] {null, null};
-    private frmYM2413[] frmYM2413 = new frmYM2413[] {null, null};
-    private frmYMF262[] frmYMF262 = new frmYMF262[] {null, null};
-    private frmYMF271[] frmYMF271 = new frmYMF271[] {null, null};
-    private frmYMF278B[] frmYMF278B = new frmYMF278B[] {null, null};
-    private frmMIDI[] frmMIDI = new frmMIDI[] {null, null};
+    private final frmMegaCD[] frmMCD = new frmMegaCD[] {null, null};
+    private final frmRf5c68[] frmRf5c68 = new frmRf5c68[] {null, null};
+    private final frmC140[] frmC140 = new frmC140[] {null, null};
+    private final frmPPZ8[] frmPPZ8 = new frmPPZ8[] {null, null};
+    private final frmS5B[] frmS5B = new frmS5B[] {null, null};
+    private final frmDMG[] frmDMG = new frmDMG[] {null, null};
+    private final frmYMZ280B[] frmYMZ280B = new frmYMZ280B[] {null, null};
+    private final frmC352[] frmC352 = new frmC352[] {null, null};
+    private final frmMultiPCM[] frmMultiPCM = new frmMultiPCM[] {null, null};
+    private final frmQSound[] frmQSound = new frmQSound[] {null, null};
+    private final frmYM2608[] frmYM2608 = new frmYM2608[] {null, null};
+    private final frmYM2151[] frmYM2151 = new frmYM2151[] {null, null};
+    private final frmYM2203[] frmYM2203 = new frmYM2203[] {null, null};
+    private final frmYM2610[] frmYM2610 = new frmYM2610[] {null, null};
+    private final frmYM2612[] frmYM2612 = new frmYM2612[] {null, null};
+    private final frmYM3526[] frmYM3526 = new frmYM3526[] {null, null};
+    private final frmY8950[] frmY8950 = new frmY8950[] {null, null};
+    private final frmYM3812[] frmYM3812 = new frmYM3812[] {null, null};
+    private final frmOKIM6258[] frmOKIM6258 = new frmOKIM6258[] {null, null};
+    private final frmOKIM6295[] frmOKIM6295 = new frmOKIM6295[] {null, null};
+    private final frmSN76489[] frmSN76489 = new frmSN76489[] {null, null};
+    private final frmSegaPCM[] frmSegaPCM = new frmSegaPCM[] {null, null};
+    private final frmAY8910[] frmAY8910 = new frmAY8910[] {null, null};
+    private final frmHuC6280[] frmHuC6280 = new frmHuC6280[] {null, null};
+    private final frmK051649[] frmK051649 = new frmK051649[] {null, null};
+    private final frmYM2413[] frmYM2413 = new frmYM2413[] {null, null};
+    private final frmYMF262[] frmYMF262 = new frmYMF262[] {null, null};
+    private final frmYMF271[] frmYMF271 = new frmYMF271[] {null, null};
+    private final frmYMF278B[] frmYMF278B = new frmYMF278B[] {null, null};
+    private final frmMIDI[] frmMIDI = new frmMIDI[] {null, null};
     private frmYM2612MIDI frmYM2612MIDI = null;
     private frmMixer2 frmMixer2 = null;
-    private frmNESDMC[] frmNESDMC = new frmNESDMC[] {null, null};
-    private frmFDS[] frmFDS = new frmFDS[] {null, null};
-    private frmMMC5[] frmMMC5 = new frmMMC5[] {null, null};
-    private frmVRC6[] frmVRC6 = new frmVRC6[] {null, null};
-    private frmVRC7[] frmVRC7 = new frmVRC7[] {null, null};
-    private frmN106[] frmN106 = new frmN106[] {null, null};
+    private final frmNESDMC[] frmNESDMC = new frmNESDMC[] {null, null};
+    private final frmFDS[] frmFDS = new frmFDS[] {null, null};
+    private final frmMMC5[] frmMMC5 = new frmMMC5[] {null, null};
+    private final frmVRC6[] frmVRC6 = new frmVRC6[] {null, null};
+    private final frmVRC7[] frmVRC7 = new frmVRC7[] {null, null};
+    private final frmN106[] frmN106 = new frmN106[] {null, null};
     private frmRegTest frmRegTest;
     private frmVisWave frmVisWave;
 
-    private List<JFrame[]> lstForm = new ArrayList<>();
+    private final List<JFrame[]> lstForm = new ArrayList<>();
 
     public MDChipParams oldParam = new MDChipParams();
-    private MDChipParams newParam = new MDChipParams();
+    private final MDChipParams newParam = new MDChipParams();
 
-    private int[] oldButton = new int[18];
-    private int[] newButton = new int[18];
-    private int[] oldButtonMode = new int[18];
-    private int[] newButtonMode = new int[18];
+    private final int[] oldButton = new int[18];
+    private final int[] newButton = new int[18];
+    private final int[] oldButtonMode = new int[18];
+    private final int[] newButtonMode = new int[18];
 
     private boolean isRunning = false;
     private boolean stopped = false;
@@ -227,8 +228,8 @@ public class frmMain extends JFrame {
     private int frameSizeH = 0;
 
     private Transmitter midiin = null;
-    private boolean forcedExit = false;
-    private YM2612MIDI ym2612MIDI;
+    private final boolean forcedExit = false;
+    private final YM2612MIDI ym2612MIDI;
     private boolean flgReinit = false;
     public boolean reqAllScreenInit = true;
 
@@ -249,10 +250,10 @@ public class frmMain extends JFrame {
     //private FileSystemWatcher watcher = null;
     private MmfControl mmf = null;
     private long now = 0;
-    private String opeFolder = "";
+    private final String opeFolder = "";
     private final Object remoteLockObj = new Object();
     private boolean remoteBusy = false;
-    private List<String[]> remoteReq = new ArrayList<>();
+    private final List<String[]> remoteReq = new ArrayList<>();
 
     public frmMain() {
         logger.log(Level.ERROR, "起動処理開始");
@@ -352,7 +353,7 @@ setVisible(true);
         setting.setLocation(new Setting.Location());
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             frmMain_FormClosed(e);
@@ -364,12 +365,12 @@ setVisible(true);
         }
 
         @Override
-        public void windowOpened(WindowEvent e) {
+        public void windowActivated(WindowEvent e) {
             frmMain_Shown(e);
         }
 
         @Override
-        public void windowActivated(WindowEvent e) {
+        public void windowOpened(WindowEvent e) {
             frmMain_Load(e);
         }
     };
@@ -1041,7 +1042,7 @@ setVisible(true);
             frmPlayList.stop();
 
             PlayList pl = frmPlayList.getPlayList();
-            if (pl.getMusics().size() < 1 || !pl.getMusics().get(pl.getMusics().size() - 1).fileName.equals(args[1])) {
+            if (pl.getMusics().isEmpty() || !pl.getMusics().get(pl.getMusics().size() - 1).fileName.equals(args[1])) {
                 pl.addFile(args[1]);
                 //frmPlayList.AddList(args[1]);
             }
@@ -1067,7 +1068,7 @@ setVisible(true);
         logger.log(Level.ERROR, "起動処理完了");
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentResized(ComponentEvent e) {
             // リサイズ時は再確保
@@ -1355,7 +1356,7 @@ setVisible(true);
         logger.log(Level.ERROR, "終了処理完了");
     }
 
-    private MouseMotionListener pbScreen_MouseMove = new MouseMotionAdapter() {
+    private final MouseMotionListener pbScreen_MouseMove = new MouseMotionAdapter() {
         @Override
         public void mouseMoved(MouseEvent ev) {
             int px = ev.getX() / setting.getOther().getZoom();
@@ -1374,7 +1375,7 @@ setVisible(true);
         }
     };
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseExited(MouseEvent e) {
             Arrays.fill(newButton, 0);
@@ -4926,7 +4927,7 @@ setVisible(true);
             ));
         }
 
-        if (n.length() != 0) Common.setClipboard(n.toString());
+        if (!n.isEmpty()) Common.setClipboard(n.toString());
     }
 
     private void getInstChForMDX(EnmChip chip, int ch, int chipId) {
@@ -7386,18 +7387,18 @@ setVisible(true);
 
         try {
             Setting.Balance balance;
-            String fullPath = mdplayer.Common.settingFilePath;
-            fullPath = Path.combine(fullPath, "MixerBalance");
-            if (!Directory.exists(fullPath)) Directory.createDirectory(fullPath);
+            java.nio.file.Path fullPath = mdplayer.Common.settingFilePath;
+            fullPath = fullPath.resolve("MixerBalance");
+            if (!Files.exists(fullPath)) Files.createDirectory(fullPath);
             String fn = "";
             String defMbc = "";
 
             // 曲ごとのプリセットを読み込むモード
             if (setting.getAutoBalance().getLoadSongBalance()) {
                 if (setting.getAutoBalance().getSamePositionAsSongData()) {
-                    fullPath = getDirectoryName(playingFileName);
+                    fullPath = java.nio.file.Path.of(playingFileName).getParent();
                     if (playingArcFileName != null && playingArcFileName.isEmpty()) {
-                        fullPath = getDirectoryName(playingArcFileName);
+                        fullPath = java.nio.file.Path.of(playingArcFileName).getParent();
                     }
                 }
                 fn = Path.getFileName(playingFileName);
@@ -7405,12 +7406,12 @@ setVisible(true);
                     fn = Path.getFileName(playingArcFileName);
                 }
                 fn += ".mbc";
-                if (!File.exists(Path.combine(fullPath, fn))) {
+                if (!Files.exists(fullPath.resolve(fn))) {
                     fn = "";
                     fullPath = mdplayer.Common.settingFilePath;
-                    fullPath = Path.combine(fullPath, "MixerBalance");
+                    fullPath = fullPath.resolve("MixerBalance");
                 } else {
-                    fullPath = Path.combine(fullPath, fn);
+                    fullPath = fullPath.resolve(fn);
                 }
             }
 
@@ -7421,14 +7422,14 @@ setVisible(true);
                     fn = fns[0];
                     defMbc = fns[1];
 
-                    fullPath = Path.combine(fullPath, fn);
+                    fullPath = fullPath.resolve(fn);
                 }
             }
 
             if (fn == null || fn.isEmpty()) return;
 
             // 存在確認。無い場合は作成。
-            if (!File.exists(fullPath) && !defMbc.equals("")) File.writeAllText(fullPath, defMbc);
+            if (!Files.exists(fullPath) && !defMbc.isEmpty()) Files.write(fullPath, defMbc.getBytes());
             // データフォルダに存在するファイルを読み込む
             balance = Setting.Balance.load(fullPath);
 
@@ -7448,9 +7449,9 @@ setVisible(true);
         if (!setting.getAutoBalance().getUseThis()) return;
 
         try {
-            String fullPath = mdplayer.Common.settingFilePath;
-            fullPath = Path.combine(fullPath, "MixerBalance");
-            if (!Directory.exists(fullPath)) Directory.createDirectory(fullPath);
+            java.nio.file.Path fullPath = mdplayer.Common.settingFilePath;
+            fullPath = fullPath.resolve("MixerBalance");
+            if (!Files.exists(fullPath)) Files.createDirectory(fullPath);
             String fn = "";
 
             if (isDriverBalance) {
@@ -7459,7 +7460,7 @@ setVisible(true);
                     fn = fns[0];
                 }
 
-                fullPath = Path.combine(fullPath, fn);
+                fullPath = fullPath.resolve(fn);
 
             } else {
 
@@ -7493,7 +7494,7 @@ setVisible(true);
     NativeKeyListener keyboardHook1_KeyboardHooked = new NativeKeyListener() {
         @Override
         public void nativeKeyPressed(NativeKeyEvent e) {
-            System.out.println("Key Pressed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
+            logger.log(Level.TRACE, "Key Pressed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
 
             if (e.getKeyCode() == NativeKeyEvent.VC_ESCAPE) {
                 try {
@@ -7563,9 +7564,9 @@ setVisible(true);
         }
     };
 
-    private void checkAndSetForm(JFrame frm) {
+    private static void checkAndSetForm(JFrame frm) {
         Rectangle s = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
-        Rectangle rc = new Rectangle(frmInfo.getLocation(), frmInfo.getSize());
+        Rectangle rc = new Rectangle(frm.getLocation(), frm.getSize());
         if (s.contains(rc)) {
             frm.setLocation(rc.getLocation());
             frm.setPreferredSize(rc.getSize());
@@ -7721,7 +7722,7 @@ setVisible(true);
         else openFormRegTest(0, EnmChip.Unuse, false);
     }
 
-    private BufferedImage[] lstOpeButtonEnterImage = new BufferedImage[] {
+    private final BufferedImage[] lstOpeButtonEnterImage = new BufferedImage[] {
             Resources.getChSetting(),
             Resources.getChStop(),
             Resources.getChPause(),
@@ -7744,7 +7745,7 @@ setVisible(true);
             Resources.getChLoop(),
             Resources.getChLoopOne()
     };
-    private BufferedImage[] lstOpeButtonLeaveImage = new BufferedImage[] {
+    private final BufferedImage[] lstOpeButtonLeaveImage = new BufferedImage[] {
             Resources.getCcSetting(),
             Resources.getCcStop(),
             Resources.getCcPause(),
@@ -7767,7 +7768,7 @@ setVisible(true);
             Resources.getCcLoop(),
             Resources.getCcLoopOne()
     };
-    private BufferedImage[] lstOpeButtonActiveImage = new BufferedImage[] {
+    private final BufferedImage[] lstOpeButtonActiveImage = new BufferedImage[] {
             Resources.getCiSetting(),
             Resources.getCiStop(),
             Resources.getCiPause(),
@@ -7790,12 +7791,12 @@ setVisible(true);
             Resources.getCiLoop(),
             Resources.getCiLoopOne()
     };
-    private boolean[] lstOpeButtonActive = new boolean[] {
+    private final boolean[] lstOpeButtonActive = new boolean[] {
             false, false, false, false, false, false, false, false,
             false, false, false, false, false, false, false, false,
             false, false, false, false, false
     };
-    private boolean[] lstOpeButtonActiveOld = new boolean[] {
+    private final boolean[] lstOpeButtonActiveOld = new boolean[] {
             false, false, false, false, false, false, false, false,
             false, false, false, false, false, false, false, false,
             false, false, false, false, false
@@ -8067,10 +8068,10 @@ setVisible(true);
         this.tsmiSS5B = new JMenuItem();
         this.tsmiSDMG = new JMenuItem();
         this.cmsMenu = new JPopupMenu();
-        this.ファイルToolStripMenuItem = new JMenuItem();
+        this.FileToolStripMenuItem = new JMenuItem();
         this.tsmiOpenFile = new JMenuItem();
         this.tsmiExit = new JMenuItem();
-        this.操作ToolStripMenuItem = new JMenuItem();
+        this.OperationToolStripMenuItem = new JMenuItem();
         this.tsmiPlay = new JMenuItem();
         this.tsmiStop = new JMenuItem();
         this.tsmiPause = new JMenuItem();
@@ -8083,7 +8084,7 @@ setVisible(true);
         this.tsmiPlayList = new JMenuItem();
         this.tsmiOpenInfo = new JMenuItem();
         this.tsmiOpenMixer = new JMenuItem();
-        this.その他ウィンドウ表示ToolStripMenuItem = new JMenuItem();
+        this.AnotherWindowDisplayToolStripMenuItem = new JMenuItem();
         this.tsmiKBrd = new JMenuItem();
         this.tsmiVST = new JMenuItem();
         this.tsmiMIDIkbd = new JMenuItem();
@@ -8092,7 +8093,7 @@ setVisible(true);
         this.tsmiChangeZoomX2 = new JMenuItem();
         this.tsmiChangeZoomX3 = new JMenuItem();
         this.tsmiChangeZoomX4 = new JMenuItem();
-        this.レジスタダンプ表示ToolStripMenuItem = new JMenuItem();
+        this.RegisterDumpDisplayToolStripMenuItem = new JMenuItem();
         this.yM2612ToolStripMenuItem = new JMenuItem();
         this.ym2151ToolStripMenuItem = new JMenuItem();
         this.ym2203ToolStripMenuItem = new JMenuItem();
@@ -8760,26 +8761,26 @@ setVisible(true);
         // cmsMenu
         //
 //        this.cmsMenu.ImageScalingSize(new Dimension(20, 20));
-        this.cmsMenu.add(this.ファイルToolStripMenuItem);
-        this.cmsMenu.add(this.操作ToolStripMenuItem);
+        this.cmsMenu.add(this.FileToolStripMenuItem);
+        this.cmsMenu.add(this.OperationToolStripMenuItem);
         this.cmsMenu.add(this.tsmiOption);
         this.cmsMenu.add(this.tsmiPlayList);
         this.cmsMenu.add(this.tsmiOpenInfo);
         this.cmsMenu.add(this.tsmiOpenMixer);
-        this.cmsMenu.add(this.その他ウィンドウ表示ToolStripMenuItem);
+        this.cmsMenu.add(this.AnotherWindowDisplayToolStripMenuItem);
         this.cmsMenu.add(this.tsmiChangeZoom);
-        this.cmsMenu.add(this.レジスタダンプ表示ToolStripMenuItem);
+        this.cmsMenu.add(this.RegisterDumpDisplayToolStripMenuItem);
         this.cmsMenu.add(this.tsmiVisualizer);
         this.cmsMenu.setName("contextMenuStrip1");
         //resources.ApplyResources(this.cmsMenu, "cmsMenu");
         //
-        // ファイルToolStripMenuItem
+        // FileToolStripMenuItem
         //
-        this.ファイルToolStripMenuItem.add(this.tsmiOpenFile);
-        this.ファイルToolStripMenuItem.add(this.tsmiExit);
-        this.ファイルToolStripMenuItem.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcOpenFolder()));
-        this.ファイルToolStripMenuItem.setName("ファイルToolStripMenuItem");
-        //resources.ApplyResources(this.ファイルToolStripMenuItem, "ファイルToolStripMenuItem");
+        this.FileToolStripMenuItem.add(this.tsmiOpenFile);
+        this.FileToolStripMenuItem.add(this.tsmiExit);
+        this.FileToolStripMenuItem.setIcon(new ImageIcon(mdplayer.properties.Resources.getCcOpenFolder()));
+        this.FileToolStripMenuItem.setName("FileToolStripMenuItem");
+        //resources.ApplyResources(this.FileToolStripMenuItem, "FileToolStripMenuItem");
         //
         // tsmiOpenFile
         //
@@ -8793,18 +8794,18 @@ setVisible(true);
         //resources.ApplyResources(this.tsmiExit, "tsmiExit");
         this.tsmiExit.addActionListener(this::tsmiExit_Click);
         //
-        // 操作ToolStripMenuItem
+        // OperationToolStripMenuItem
         //
-        this.操作ToolStripMenuItem.add(this.tsmiPlay);
-        this.操作ToolStripMenuItem.add(this.tsmiStop);
-        this.操作ToolStripMenuItem.add(this.tsmiPause);
-        this.操作ToolStripMenuItem.add(this.tsmiFadeOut);
-        this.操作ToolStripMenuItem.add(this.tsmiSlow);
-        this.操作ToolStripMenuItem.add(this.tsmiFf);
-        this.操作ToolStripMenuItem.add(this.tsmiNext);
-        this.操作ToolStripMenuItem.add(this.tsmiPlayMode);
-        this.操作ToolStripMenuItem.setName("操作ToolStripMenuItem");
-        //resources.ApplyResources(this.操作ToolStripMenuItem, "操作ToolStripMenuItem");
+        this.OperationToolStripMenuItem.add(this.tsmiPlay);
+        this.OperationToolStripMenuItem.add(this.tsmiStop);
+        this.OperationToolStripMenuItem.add(this.tsmiPause);
+        this.OperationToolStripMenuItem.add(this.tsmiFadeOut);
+        this.OperationToolStripMenuItem.add(this.tsmiSlow);
+        this.OperationToolStripMenuItem.add(this.tsmiFf);
+        this.OperationToolStripMenuItem.add(this.tsmiNext);
+        this.OperationToolStripMenuItem.add(this.tsmiPlayMode);
+        this.OperationToolStripMenuItem.setName("OperationToolStripMenuItem");
+        //resources.ApplyResources(this.OperationToolStripMenuItem, "OperationToolStripMenuItem");
         //
         // tsmiPlay
         //
@@ -8890,13 +8891,13 @@ setVisible(true);
         //resources.ApplyResources(this.tsmiOpenMixer, "tsmiOpenMixer");
         this.tsmiOpenMixer.addActionListener(this::tsmiOpenMixer_Click);
         //
-        // その他ウィンドウ表示ToolStripMenuItem
+        // AnotherWindowDisplayToolStripMenuItem
         //
-        this.その他ウィンドウ表示ToolStripMenuItem.add(this.tsmiKBrd);
-        this.その他ウィンドウ表示ToolStripMenuItem.add(this.tsmiVST);
-        this.その他ウィンドウ表示ToolStripMenuItem.add(this.tsmiMIDIkbd);
-        this.その他ウィンドウ表示ToolStripMenuItem.setName("その他ウィンドウ表示ToolStripMenuItem");
-        //resources.ApplyResources(this.その他ウィンドウ表示ToolStripMenuItem, "その他ウィンドウ表示ToolStripMenuItem");
+        this.AnotherWindowDisplayToolStripMenuItem.add(this.tsmiKBrd);
+        this.AnotherWindowDisplayToolStripMenuItem.add(this.tsmiVST);
+        this.AnotherWindowDisplayToolStripMenuItem.add(this.tsmiMIDIkbd);
+        this.AnotherWindowDisplayToolStripMenuItem.setName("AnotherWindowDisplayToolStripMenuItem");
+        //resources.ApplyResources(this.AnotherWindowDisplayToolStripMenuItem, "AnotherWindowDisplayToolStripMenuItem");
         //
         // tsmiKBrd
         //
@@ -8954,27 +8955,27 @@ setVisible(true);
         //resources.ApplyResources(this.tsmiChangeZoomX4, "tsmiChangeZoomX4");
         this.tsmiChangeZoomX4.addActionListener(this::tsmiChangeZoom_Click);
         //
-        // レジスタダンプ表示ToolStripMenuItem
+        // RegisterDumpDisplayToolStripMenuItem
         //
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.yM2612ToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.ym2151ToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.ym2203ToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.ym2413ToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.ym2608ToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.yM2610ToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.yM3812ToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.yMF262ToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.yMF278BToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.yMZ280BToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.c140ToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.c352ToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.qSoundToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.segaPCMToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.sN76489ToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.aY8910ToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.add(this.sIDToolStripMenuItem);
-        this.レジスタダンプ表示ToolStripMenuItem.setName("レジスタダンプ表示ToolStripMenuItem");
-//        //resources.ApplyResources(this.レジスタダンプ表示ToolStripMenuItem, "レジスタダンプ表示ToolStripMenuItem");
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.yM2612ToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.ym2151ToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.ym2203ToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.ym2413ToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.ym2608ToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.yM2610ToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.yM3812ToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.yMF262ToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.yMF278BToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.yMZ280BToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.c140ToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.c352ToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.qSoundToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.segaPCMToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.sN76489ToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.aY8910ToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.add(this.sIDToolStripMenuItem);
+        this.RegisterDumpDisplayToolStripMenuItem.setName("RegisterDumpDisplayToolStripMenuItem");
+//        //resources.ApplyResources(this.RegisterDumpDisplayToolStripMenuItem, "RegisterDumpDisplayToolStripMenuItem");
         //
         // yM2612ToolStripMenuItem
         //
@@ -9453,30 +9454,36 @@ setVisible(true);
         //resources.ApplyResources(this, "$this");
 //            this.AutoScaleMode = JAutoScaleMode.Font;
         //this.setBackground(Color.ControlDarkDark);
-        this.getContentPane().add(this.opeButtonZoom);
-        this.getContentPane().add(this.opeButtonMIDIKBD);
-        this.getContentPane().add(this.opeButtonVST);
-        this.getContentPane().add(this.opeButtonKBD);
-        this.getContentPane().add(this.opeButtonMixer);
-        this.getContentPane().add(this.opeButtonInformation);
-        this.getContentPane().add(this.opeButtonPlayList);
-        this.getContentPane().add(this.opeButtonOpen);
-        this.getContentPane().add(this.opeButtonMode);
-        this.getContentPane().add(this.opeButtonNext);
-        this.getContentPane().add(this.opeButtonFast);
-        this.getContentPane().add(this.opeButtonPlay);
-        this.getContentPane().add(this.opeButtonSlow);
-        this.getContentPane().add(this.opeButtonPrevious);
-        this.getContentPane().add(this.opeButtonFadeout);
-        this.getContentPane().add(this.opeButtonPause);
-        this.getContentPane().add(this.opeButtonStop);
-        this.getContentPane().add(this.opeButtonSetting);
-        this.getContentPane().add(this.pbScreen);
+        JPanel main = new JPanel();
+        main.setLayout(new FlowLayout());
+        main.add(this.opeButtonZoom);
+        main.add(this.opeButtonMIDIKBD);
+        main.add(this.opeButtonVST);
+        main.add(this.opeButtonKBD);
+        main.add(this.opeButtonMixer);
+        main.add(this.opeButtonInformation);
+        main.add(this.opeButtonPlayList);
+        main.add(this.opeButtonOpen);
+        main.add(this.opeButtonMode);
+        main.add(this.opeButtonNext);
+        main.add(this.opeButtonFast);
+        main.add(this.opeButtonPlay);
+        main.add(this.opeButtonSlow);
+        main.add(this.opeButtonPrevious);
+        main.add(this.opeButtonFadeout);
+        main.add(this.opeButtonPause);
+        main.add(this.opeButtonStop);
+        main.add(this.opeButtonSetting);
+        main.add(this.pbScreen);
+        this.setContentPane(main);
 //        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
 //        this.MaximizeBox = false;
         this.setName("frmMain");
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
+        this.setPreferredSize(new Dimension(640, 80));
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.pack();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
         // this.cmsOpenOtherPanel.ResumeLayout(false);
         // this.cmsMenu.ResumeLayout(false);
@@ -9543,10 +9550,10 @@ setVisible(true);
     private JMenuItem tsmiPK051649;
     private JMenuItem tsmiSK051649;
     private JPopupMenu cmsMenu;
-    private JMenuItem ファイルToolStripMenuItem;
+    private JMenuItem FileToolStripMenuItem;
     private JMenuItem tsmiOpenFile;
     private JMenuItem tsmiExit;
-    private JMenuItem 操作ToolStripMenuItem;
+    private JMenuItem OperationToolStripMenuItem;
     private JMenuItem tsmiPlay;
     private JMenuItem tsmiStop;
     private JMenuItem tsmiPause;
@@ -9559,12 +9566,12 @@ setVisible(true);
     private JMenuItem tsmiPlayList;
     private JMenuItem tsmiOpenInfo;
     private JMenuItem tsmiOpenMixer;
-    private JMenuItem その他ウィンドウ表示ToolStripMenuItem;
+    private JMenuItem AnotherWindowDisplayToolStripMenuItem;
     private JMenuItem tsmiKBrd;
     private JMenuItem tsmiVST;
     private JMenuItem tsmiMIDIkbd;
     private JMenuItem tsmiChangeZoom;
-    private JMenuItem レジスタダンプ表示ToolStripMenuItem;
+    private JMenuItem RegisterDumpDisplayToolStripMenuItem;
     private JMenuItem tsmiPQSound;
     private JMenuItem tsmiChangeZoomX1;
     private JMenuItem tsmiChangeZoomX2;

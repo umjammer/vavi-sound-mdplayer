@@ -48,6 +48,7 @@ import mdsound.Instrument;
 import mdsound.instrument.*;
 
 import static java.lang.System.getLogger;
+import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 public class frmMixer2 extends JFrame {
@@ -60,12 +61,12 @@ public class frmMixer2 extends JFrame {
     public frmMain parent;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
-    private int zoom;
+    private final int zoom;
     private int chipn = -1;
 
-    private MDChipParams.Mixer newParam;
-    private MDChipParams.Mixer oldParam = new MDChipParams.Mixer();
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MDChipParams.Mixer newParam;
+    private final MDChipParams.Mixer oldParam = new MDChipParams.Mixer();
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmHuC6280.class);
     Audio audio = Audio.getInstance();
@@ -83,7 +84,7 @@ public class frmMixer2 extends JFrame {
         update();
     }
 
-    private MouseWheelListener pbScreen_MouseWheel = new MouseAdapter() {
+    private final MouseWheelListener pbScreen_MouseWheel = new MouseAdapter() {
         @Override
         public void mouseWheelMoved(MouseWheelEvent ev) {
             int px = ev.getX() / parent.setting.getOther().getZoom();
@@ -116,7 +117,7 @@ public class frmMixer2 extends JFrame {
         return true;
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -145,7 +146,7 @@ public class frmMixer2 extends JFrame {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -172,60 +173,60 @@ public class frmMixer2 extends JFrame {
     public void screenChangeParams() {
 
         newParam.Master.Volume = parent.setting.getBalance().getMasterVolume();
-        newParam.YM2151.Volume = parent.setting.getBalance().getVolume("MAIN", Ym2151Inst.class);
-        newParam.YM2203.Volume = parent.setting.getBalance().getVolume("MAIN", Ym2203Inst.class);
+        newParam.YM2151.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class);
+        newParam.YM2203.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2203Inst.class);
         newParam.YM2203FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2203Inst.class);
         newParam.YM2203PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2203Inst.class);
-        newParam.YM2612.Volume = parent.setting.getBalance().getVolume("MAIN", Ym2612Inst.class);
-        newParam.YM2608.Volume = parent.setting.getBalance().getVolume("MAIN", Ym2608Inst.class);
+        newParam.YM2612.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class);
+        newParam.YM2608.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class);
         newParam.YM2608FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2608Inst.class);
         newParam.YM2608PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2608Inst.class);
         newParam.YM2608Rhythm.Volume = parent.setting.getBalance().getVolume("Rhythm", Ym2608Inst.class);
         newParam.YM2608Adpcm.Volume = parent.setting.getBalance().getVolume("Adpcm", Ym2608Inst.class);
-        newParam.YM2610.Volume = parent.setting.getBalance().getVolume("MAIN", Ym2610Inst.class);
+        newParam.YM2610.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2610Inst.class);
         newParam.YM2610FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2610Inst.class);
         newParam.YM2610PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2610Inst.class);
         newParam.YM2610AdpcmA.Volume = parent.setting.getBalance().getVolume("AdpcmA", Ym2610Inst.class);
         newParam.YM2610AdpcmB.Volume = parent.setting.getBalance().getVolume("AdpcmB", Ym2610Inst.class);
 
-        newParam.YM2413.Volume = parent.setting.getBalance().getVolume("MAIN", Ym2413Inst.class);
-        newParam.YM3526.Volume = parent.setting.getBalance().getVolume("MAIN", Ym3526Inst.class);
-        newParam.Y8950.Volume = parent.setting.getBalance().getVolume("MAIN", Y8950Inst.class);
-        newParam.YM3812.Volume = parent.setting.getBalance().getVolume("MAIN", Ym3812Inst.class);
-        newParam.YMF262.Volume = parent.setting.getBalance().getVolume("MAIN", YmF262Inst.class);
-        newParam.YMF278B.Volume = parent.setting.getBalance().getVolume("MAIN", YmF278bInst.class);
-        newParam.YMZ280B.Volume = parent.setting.getBalance().getVolume("MAIN", YmZ280bInst.class);
-        newParam.YMF271.Volume = parent.setting.getBalance().getVolume("MAIN", YmF271Inst.class);
-        newParam.AY8910.Volume = parent.setting.getBalance().getVolume("MAIN", Ay8910Inst.class);
-        newParam.SN76489.Volume = parent.setting.getBalance().getVolume("MAIN", Sn76489Inst.class);
-        newParam.HuC6280.Volume = parent.setting.getBalance().getVolume("MAIN", HuC6280Inst.class);
+        newParam.YM2413.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2413Inst.class);
+        newParam.YM3526.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym3526Inst.class);
+        newParam.Y8950.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Y8950Inst.class);
+        newParam.YM3812.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym3812Inst.class);
+        newParam.YMF262.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF262Inst.class);
+        newParam.YMF278B.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF278bInst.class);
+        newParam.YMZ280B.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmZ280bInst.class);
+        newParam.YMF271.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF271Inst.class);
+        newParam.AY8910.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class);
+        newParam.SN76489.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Sn76489Inst.class);
+        newParam.HuC6280.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, HuC6280Inst.class);
 
-        newParam.RF5C164.Volume = parent.setting.getBalance().getVolume("MAIN", ScdPcmInst.class);
-        newParam.RF5C68.Volume = parent.setting.getBalance().getVolume("MAIN", Rf5c68Inst.class);
-        newParam.PWM.Volume = parent.setting.getBalance().getVolume("MAIN", PwmInst.class);
-        newParam.OKIM6258.Volume = parent.setting.getBalance().getVolume("MAIN", OkiM6258Inst.class);
-        newParam.OKIM6295.Volume = parent.setting.getBalance().getVolume("MAIN", OkiM6295Inst.class);
-        newParam.C140.Volume = parent.setting.getBalance().getVolume("MAIN", C140Inst.class);
-        newParam.C352.Volume = parent.setting.getBalance().getVolume("MAIN", C352Inst.class);
-        newParam.SAA1099.Volume = parent.setting.getBalance().getVolume("MAIN", Saa1099Inst.class);
-        newParam.PPZ8.Volume = parent.setting.getBalance().getVolume("MAIN", Ppz8Inst.class);
-        newParam.SEGAPCM.Volume = parent.setting.getBalance().getVolume("MAIN", SegaPcmInst.class);
-        newParam.MultiPCM.Volume = parent.setting.getBalance().getVolume("MAIN", MultiPcmInst.class);
-        newParam.K051649.Volume = parent.setting.getBalance().getVolume("MAIN", K051649Inst.class);
-        newParam.K053260.Volume = parent.setting.getBalance().getVolume("MAIN", K053260Inst.class);
-        newParam.K054539.Volume = parent.setting.getBalance().getVolume("MAIN", K054539Inst.class);
-        newParam.QSound.Volume = parent.setting.getBalance().getVolume("MAIN", QSoundInst.class);
-        newParam.GA20.Volume = parent.setting.getBalance().getVolume("MAIN", Ga20Inst.class);
+        newParam.RF5C164.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, ScdPcmInst.class);
+        newParam.RF5C68.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Rf5c68Inst.class);
+        newParam.PWM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, PwmInst.class);
+        newParam.OKIM6258.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, OkiM6258Inst.class);
+        newParam.OKIM6295.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, OkiM6295Inst.class);
+        newParam.C140.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, C140Inst.class);
+        newParam.C352.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, C352Inst.class);
+        newParam.SAA1099.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Saa1099Inst.class);
+        newParam.PPZ8.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ppz8Inst.class);
+        newParam.SEGAPCM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, SegaPcmInst.class);
+        newParam.MultiPCM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, MultiPcmInst.class);
+        newParam.K051649.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, K051649Inst.class);
+        newParam.K053260.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, K053260Inst.class);
+        newParam.K054539.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, K054539Inst.class);
+        newParam.QSound.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, QSoundInst.class);
+        newParam.GA20.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ga20Inst.class);
 
-        newParam.APU.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.class);
-        newParam.DMC.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.DMC.class);
-        newParam.FDS.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.FDS.class);
-        newParam.MMC5.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.MMC5.class);
-        newParam.N160.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.N160.class);
-        newParam.VRC6.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.VRC6.class);
-        newParam.VRC7.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.VRC7.class);
-        newParam.FME7.Volume = parent.setting.getBalance().getVolume("MAIN", IntFNesInst.FME7.class);
-        newParam.DMG.Volume = parent.setting.getBalance().getVolume("MAIN", DmgInst.class);
+        newParam.APU.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.class);
+        newParam.DMC.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.DMC.class);
+        newParam.FDS.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.FDS.class);
+        newParam.MMC5.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.MMC5.class);
+        newParam.N160.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.N160.class);
+        newParam.VRC6.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.VRC6.class);
+        newParam.VRC7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.VRC7.class);
+        newParam.FME7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.FME7.class);
+        newParam.DMG.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, DmgInst.class);
 
         newParam.GimicOPN.Volume = parent.setting.getBalance().getGimicOPNVolume();
         newParam.GimicOPNA.Volume = parent.setting.getBalance().getGimicOPNAVolume();
@@ -884,13 +885,13 @@ public class frmMixer2 extends JFrame {
         audio.visVolume.put("DMG", -1);
     }
 
-    private KeyListener frmMixer2_KeyDown = new KeyAdapter() {
+    private final KeyListener frmMixer2_KeyDown = new KeyAdapter() {
         @Override
         public void keyPressed(KeyEvent e) {
         }
     };
 
-    private MouseListener frmMixer2_MouseClick = new MouseAdapter() {
+    private final MouseListener frmMixer2_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / parent.setting.getOther().getZoom();
@@ -900,7 +901,7 @@ public class frmMixer2 extends JFrame {
         }
     };
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
             int px = ev.getX() / parent.setting.getOther().getZoom();
@@ -956,7 +957,7 @@ public class frmMixer2 extends JFrame {
     private void tsmiSaveDriverBalance_Click(ActionEvent ev) {
         try {
             String retMsg = parent.SaveDriverBalance(parent.setting.getBalance().copy());
-            if (!retMsg.equals("")) {
+            if (!retMsg.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "ドライバーの Mixerーバランス[%s]を設定フォルダーに保存しました。".formatted(retMsg), "保存", JOptionPane.INFORMATION_MESSAGE);
             }
 
@@ -984,7 +985,7 @@ public class frmMixer2 extends JFrame {
             sfd.setDialogTitle(" Mixerーバランスを保存");
             sfd.setCurrentDirectory(new File(Path.getDirectoryName(ms.arcFileName == null || ms.arcFileName.isEmpty() ? ms.fileName : ms.arcFileName)));
             if (!parent.setting.getAutoBalance().getSamePositionAsSongData())
-                sfd.setCurrentDirectory(new File(Common.settingFilePath = "MixerBalance"));
+                sfd.setCurrentDirectory(new File((Common.settingFilePath = java.nio.file.Path.of("MixerBalance")).toString()));
 
 //            sfd.RestoreDirectory = false;
             sfd.setSelectedFile(new File(Path.getFileName(ms.arcFileName == null || ms.arcFileName.isEmpty() ? ms.fileName : ms.arcFileName) + ".mbc"));
@@ -994,7 +995,7 @@ public class frmMixer2 extends JFrame {
                 return;
             }
 
-            bln.save(sfd.getSelectedFile().getPath());
+            bln.save(java.nio.file.Path.of(sfd.getSelectedFile().getPath()));
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
             JOptionPane.showMessageDialog(null, "%s".formatted(ex.getMessage()), "保存失敗", JOptionPane.ERROR_MESSAGE);
@@ -1104,68 +1105,68 @@ public class frmMixer2 extends JFrame {
     private JSeparator toolStripSeparator1;
 
     @SuppressWarnings("unchecked")
-    private Tuple<String, Class<? extends Instrument>>[] setVolume = Arrays.<Tuple<String, Class<? extends Instrument>>>asList(
+    private final Tuple<String, Class<? extends Instrument>>[] setVolume = Arrays.<Tuple<String, Class<? extends Instrument>>>asList(
             null, // master
-            new Tuple<>("MAIN", Ym2151Inst.class),
-            new Tuple<>("MAIN", Ym2203Inst.class),
+            new Tuple<>(MAIN_TAG, Ym2151Inst.class),
+            new Tuple<>(MAIN_TAG, Ym2203Inst.class),
             new Tuple<>("FM", Ym2203Inst.class),
             new Tuple<>("PSG", Ym2203Inst.class),
-            new Tuple<>("MAIN", Ym2612Inst.class),
-            new Tuple<>("MAIN", Ym2608Inst.class),
+            new Tuple<>(MAIN_TAG, Ym2612Inst.class),
+            new Tuple<>(MAIN_TAG, Ym2608Inst.class),
             new Tuple<>("FM", Ym2608Inst.class),
             new Tuple<>("PSG", Ym2608Inst.class),
             new Tuple<>("Rhythm", Ym2608Inst.class),
             new Tuple<>("Adpcm", Ym2608Inst.class),
-            new Tuple<>("MAIN", Ym2610Inst.class),
+            new Tuple<>(MAIN_TAG, Ym2610Inst.class),
             new Tuple<>("FM", Ym2610Inst.class),
             new Tuple<>("PSG", Ym2610Inst.class),
             new Tuple<>("AdpcmA", Ym2610Inst.class),
             new Tuple<>("AdpcmB", Ym2610Inst.class),
-            new Tuple<>("MAIN", Ym2413Inst.class),
-            new Tuple<>("MAIN", Ym3526Inst.class),
-            new Tuple<>("MAIN", Y8950Inst.class),
-            new Tuple<>("MAIN", Ym3812Inst.class),
-            new Tuple<>("MAIN", YmF262Inst.class),
-            new Tuple<>("MAIN", YmF278bInst.class),
-            new Tuple<>("MAIN", YmZ280bInst.class),
-            new Tuple<>("MAIN", YmF271Inst.class),
+            new Tuple<>(MAIN_TAG, Ym2413Inst.class),
+            new Tuple<>(MAIN_TAG, Ym3526Inst.class),
+            new Tuple<>(MAIN_TAG, Y8950Inst.class),
+            new Tuple<>(MAIN_TAG, Ym3812Inst.class),
+            new Tuple<>(MAIN_TAG, YmF262Inst.class),
+            new Tuple<>(MAIN_TAG, YmF278bInst.class),
+            new Tuple<>(MAIN_TAG, YmZ280bInst.class),
+            new Tuple<>(MAIN_TAG, YmF271Inst.class),
             null,
-            new Tuple<>("MAIN", Ay8910Inst.class),
-            new Tuple<>("MAIN", Sn76489Inst.class),
-            new Tuple<>("MAIN", HuC6280Inst.class),
-            new Tuple<>("MAIN", Saa1099Inst.class),
-            null,
-            null,
-            null,
-            null,
-            null,
-            new Tuple<>("MAIN", ScdPcmInst.class),
-            new Tuple<>("MAIN", Rf5c68Inst.class),
-            new Tuple<>("MAIN", PwmInst.class),
-            new Tuple<>("MAIN", OkiM6258Inst.class),
-            new Tuple<>("MAIN", OkiM6295Inst.class),
-            new Tuple<>("MAIN", C140Inst.class),
-            new Tuple<>("MAIN", C352Inst.class),
-            new Tuple<>("MAIN", SegaPcmInst.class),
-            new Tuple<>("MAIN", MultiPcmInst.class),
-            new Tuple<>("MAIN", K051649Inst.class),
-            new Tuple<>("MAIN", K053260Inst.class),
-            new Tuple<>("MAIN", K054539Inst.class),
-            new Tuple<>("MAIN", QSoundInst.class),
-            new Tuple<>("MAIN", Ga20Inst.class),
-            new Tuple<>("MAIN", IntFNesInst.class),
-            new Tuple<>("MAIN", IntFNesInst.DMC.class),
-            new Tuple<>("MAIN", IntFNesInst.FDS.class),
-            new Tuple<>("MAIN", IntFNesInst.MMC5.class),
-            new Tuple<>("MAIN", IntFNesInst.N160.class),
-            new Tuple<>("MAIN", IntFNesInst.VRC6.class),
-            new Tuple<>("MAIN", IntFNesInst.VRC7.class),
-            new Tuple<>("MAIN", IntFNesInst.FME7.class),
-            new Tuple<>("MAIN", DmgInst.class),
+            new Tuple<>(MAIN_TAG, Ay8910Inst.class),
+            new Tuple<>(MAIN_TAG, Sn76489Inst.class),
+            new Tuple<>(MAIN_TAG, HuC6280Inst.class),
+            new Tuple<>(MAIN_TAG, Saa1099Inst.class),
             null,
             null,
             null,
             null,
-            new Tuple<>("MAIN", Ppz8Inst.class)
+            null,
+            new Tuple<>(MAIN_TAG, ScdPcmInst.class),
+            new Tuple<>(MAIN_TAG, Rf5c68Inst.class),
+            new Tuple<>(MAIN_TAG, PwmInst.class),
+            new Tuple<>(MAIN_TAG, OkiM6258Inst.class),
+            new Tuple<>(MAIN_TAG, OkiM6295Inst.class),
+            new Tuple<>(MAIN_TAG, C140Inst.class),
+            new Tuple<>(MAIN_TAG, C352Inst.class),
+            new Tuple<>(MAIN_TAG, SegaPcmInst.class),
+            new Tuple<>(MAIN_TAG, MultiPcmInst.class),
+            new Tuple<>(MAIN_TAG, K051649Inst.class),
+            new Tuple<>(MAIN_TAG, K053260Inst.class),
+            new Tuple<>(MAIN_TAG, K054539Inst.class),
+            new Tuple<>(MAIN_TAG, QSoundInst.class),
+            new Tuple<>(MAIN_TAG, Ga20Inst.class),
+            new Tuple<>(MAIN_TAG, IntFNesInst.class),
+            new Tuple<>(MAIN_TAG, IntFNesInst.DMC.class),
+            new Tuple<>(MAIN_TAG, IntFNesInst.FDS.class),
+            new Tuple<>(MAIN_TAG, IntFNesInst.MMC5.class),
+            new Tuple<>(MAIN_TAG, IntFNesInst.N160.class),
+            new Tuple<>(MAIN_TAG, IntFNesInst.VRC6.class),
+            new Tuple<>(MAIN_TAG, IntFNesInst.VRC7.class),
+            new Tuple<>(MAIN_TAG, IntFNesInst.FME7.class),
+            new Tuple<>(MAIN_TAG, DmgInst.class),
+            null,
+            null,
+            null,
+            null,
+            new Tuple<>(MAIN_TAG, Ppz8Inst.class)
     ).toArray(Tuple[]::new);
 }

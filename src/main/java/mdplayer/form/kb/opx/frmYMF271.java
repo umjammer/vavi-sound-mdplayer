@@ -36,9 +36,9 @@ public class frmYMF271 extends frmBase {
     private int chipId = 0;
     private int zoom = 1;
 
-    private MDChipParams.YMF271 newParam;
-    private MDChipParams.YMF271 oldParam;
-    private FrameBuffer frameBuffer = new FrameBuffer();
+    private final MDChipParams.YMF271 newParam;
+    private final MDChipParams.YMF271 oldParam;
+    private final FrameBuffer frameBuffer = new FrameBuffer();
 
     static Preferences prefs = Preferences.userNodeForPackage(frmYMF271.class);
 
@@ -74,7 +74,7 @@ public class frmYMF271 extends frmBase {
         update();
     }
 
-    private WindowListener windowListener = new WindowAdapter() {
+    private final WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosed(WindowEvent e) {
             if (e.getNewState() == WindowEvent.WINDOW_OPENED) {
@@ -112,7 +112,7 @@ public class frmYMF271 extends frmBase {
         componentListener.componentResized(null);
     }
 
-    private ComponentListener componentListener = new ComponentAdapter() {
+    private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentMoved(ComponentEvent e) {
             prefs.putInt("x", e.getComponent().getX());
@@ -123,7 +123,7 @@ public class frmYMF271 extends frmBase {
         }
     };
 
-    private MouseListener pbScreen_MouseClick = new MouseAdapter() {
+    private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent ev) {
         }

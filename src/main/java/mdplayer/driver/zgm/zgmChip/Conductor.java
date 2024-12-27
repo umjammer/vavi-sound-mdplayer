@@ -32,10 +32,10 @@ public class Conductor extends ZgmChip {
         super.setUp(chipIndex, dataPos, cmdTable);
 
         cmdTable.remove(defineInfo.commandNo);
-        cmdTable.put(defineInfo.commandNo, this::sendPort0);
+        cmdTable.put(defineInfo.commandNo, Conductor::sendPort0);
     }
 
-    private void sendPort0(byte od, int vgmAdr) {
+    private static void sendPort0(byte od, int vgmAdr) {
         vgmAdr += 3;
     }
 }

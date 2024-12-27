@@ -16,12 +16,12 @@ public class DevOpnEmu {
 
 
     //
-    //	part of YM2608 - FM emulation
+    // part of YM2608 - FM emulation
     //
 
-    //─────────────────────────────────────
+    /** */
     public void _fmemu_exit() {
-        //	rts
+        // rts
     }
 
     public void _fme_note_set() {
@@ -46,9 +46,9 @@ public class DevOpnEmu {
         devopm._opm_keyon();
     }
 
-    //─────────────────────────────────────
-    //	SET F-Number
-    //
+    /**
+     * SET F-Number
+     */
     public void _emu_set_fnum() {
         reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.detune));
         if ((short) reg.getD2_W() < 0) {
@@ -60,15 +60,15 @@ public class DevOpnEmu {
         _get_kckf();
     }
 
-    //─────────────────────────────────────
-    //	SET F-Number
-    //
+    /**
+     * SET F-Number
+     */
     public void _emu_set_fnum2() {
         mm.write(reg.a5 + W.keycode, (short) reg.getD2_W());
         _get_kckf();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _get_kckf() {
         reg.setD1_W(reg.getD2_W());
         reg.setD1_W(reg.getD1_W() & 0x3800);
@@ -87,9 +87,9 @@ public class DevOpnEmu {
         mndrv._OPM_WRITE4();
     }
 
-    //─────────────────────────────────────
-    //	MML コマンド処理(FM 部)
-    //
+    /**
+     * MML command processing (FM section)
+     */
     public void _fme_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         //_fmec:
@@ -101,10 +101,10 @@ public class DevOpnEmu {
             break;// 81
         case 0x02:
             devopm._OPM_82();
-            break;// 82	key off
+            break;// 82 key off
         case 0x03:
             comcmds._COM_83();
-            break;// 83	すらー
+            break;// 83 Slurs
         case 0x04:
             _FME_NOP();
             break;// 84
@@ -113,16 +113,16 @@ public class DevOpnEmu {
             break;// 85
         case 0x06:
             comcmds._COM_86();
-            break;// 86	同期信号送信
+            break;// 86 Synchronization signal transmission
         case 0x07:
             comcmds._COM_87();
-            break;// 87	同期信号待ち
+            break;// 87 Waiting for sync signal
         case 0x08:
             devopn._FM_88();
-            break;// 88	ぴっちべんど
+            break;// 88 Pitch Bend
         case 0x09:
             devopn._FM_89();
-            break;// 89	ぽるためんと
+            break;// 89 Portamento
         case 0x0a:
             _FME_NOP();
             break;// 8A
@@ -144,19 +144,19 @@ public class DevOpnEmu {
 
         case 0x10:
             comcmds._COM_90();
-            break;// 90	q
+            break;// 90 q
         case 0x11:
             comcmds._COM_91();
-            break;// 91	@q
+            break;// 91 @q
         case 0x12:
             devopm._OPM_92();
-            break;// 92	keyoff rr cut switch
+            break;// 92 keyoff rr cut switch
         case 0x13:
             comcmds._COM_93();
-            break;// 93	neg @q
+            break;// 93 neg @q
         case 0x14:
             comcmds._COM_94();
-            break;// 94	keyoff mode
+            break;// 94 keyoff mode
         case 0x15:
             _FME_NOP();
             break;// 95
@@ -168,13 +168,13 @@ public class DevOpnEmu {
             break;// 97
         case 0x18:
             devopm._OPM_98();
-            break;// 98	擬似リバーブ
+            break;// 98 Pseudo reverb
         case 0x19:
             devopm._OPM_99();
-            break;// 99	擬似エコー
+            break;// 99 Pseudo Echo
         case 0x1a:
             comcmds._COM_9A();
-            break;// 9A 擬似step time
+            break;// 9A Pseudo step time
         case 0x1b:
             _FME_NOP();
             break;// 9B
@@ -193,16 +193,16 @@ public class DevOpnEmu {
 
         case 0x20:
             devopm._OPM_F0();
-            break;// A0 音色切り替え
+            break;// A0 Tone switching
         case 0x21:
             devopm._OPM_A1();
-            break;// A1 バンク&音色切り替え
+            break;// A1 Bank & Tone switching
         case 0x22:
             _FME_NOP();
             break;// A2
         case 0x23:
             devopm._OPM_A3();
-            break;// A3 音量テーブル切り替え
+            break;// A3 Volume table switching
         case 0x24:
             devopm._OPM_F2();
             break;// A4 音量
@@ -217,7 +217,7 @@ public class DevOpnEmu {
             break;// A7
         case 0x28:
             comcmds._COM_A8();
-            break;// A8 相対音量モード
+            break;// A8 Relative Volume Mode
         case 0x29:
             _FME_NOP();
             break;// A9
@@ -284,24 +284,24 @@ public class DevOpnEmu {
             break;// BD
         case 0x3e:
             comcmds._COM_BE();
-            break;// BE ジャンプ
+            break;// BE Jump
         case 0x3f:
             comcmds._COM_BF();
             break;// BF
 
-        // Psg 系
+        // Psg series
         case 0x40:
             comcmds._COM_C0();
-            break;// C0 ソフトウェアエンベロープ 1
+            break;// C0 Software Envelope 1
         case 0x41:
             comcmds._COM_C1();
-            break;// C1 ソフトウェアエンベロープ 2
+            break;// C1 Software Envelope 2
         case 0x42:
             _FME_NOP();
             break;// C2
         case 0x43:
             comcmds._COM_C3();
-            break;// C3	switch
+            break;// C3 switch
         case 0x44:
             comcmds._COM_C4();
             break;// C4 env(num)
@@ -339,13 +339,13 @@ public class DevOpnEmu {
             _FME_NOP();
             break;// CF
 
-        // KEY 系
+        // KEY series
         case 0x50:
             comcmds._COM_D0();
-            break;// D0 キートランスポーズ
+            break;// D0 Key Transpose
         case 0x51:
             comcmds._COM_D1();
-            break;// D1 相対キートランスポーズ
+            break;// D1 Relative Key Transpose
         case 0x52:
             _FME_NOP();
             break;// D2
@@ -366,16 +366,16 @@ public class DevOpnEmu {
             break;// D7
         case 0x58:
             comcmds._COM_D8();
-            break;// D8 ディチューン
+            break;// D8 Detune
         case 0x59:
             comcmds._COM_D9();
-            break;// D9 相対ディチューン
+            break;// D9 Relative Detune
         case 0x5a:
             _FME_NOP();
-            break;// DA スロットディチューン
+            break;// DA Slot Detune
         case 0x5b:
             _FME_NOP();
-            break;// DB 相対スロットディチューン
+            break;// DB Relative Slot Detune
         case 0x5c:
             _FME_NOP();
             break;// DC
@@ -389,7 +389,7 @@ public class DevOpnEmu {
             _FME_NOP();
             break;// DF
 
-        // LFO 系
+        // LFO series
         case 0x60:
             devopm._OPM_E0();
             break;// E0 hardware LFO
@@ -439,10 +439,10 @@ public class DevOpnEmu {
             comcmds._COM_EF();
             break;// EF hardware LFO delay
 
-        // システムコントール系
+        // System Control series
         case 0x70:
             devopm._OPM_F0();
-            break;// F0	@
+            break;// F0 @
         case 0x71:
             comcmds._COM_D8();
             break;// F1
@@ -457,31 +457,31 @@ public class DevOpnEmu {
             break;// F4 pan
         case 0x75:
             devopm._OPM_F5();
-            break;// F5	) volup
+            break;// F5 ) volup
         case 0x76:
             devopm._OPM_F6();
             break;// F6(voldown
         case 0x77:
             _FME_NOP();
-            break;// F7 効果音モード切り替え
+            break;// F7 Sound effect mode switching
         case 0x78:
             devopm._OPM_F8();
-            break;// F8 スロットマスク変更
+            break;// F8 Slot mask change
         case 0x79:
             comcmds._COM_F9();
-            break;// F9 永久ループポイントマーク
+            break;// F9 Permanent loop point mark
         case 0x7a:
             devopm._OPM_FA();
             break;// FA y command
         case 0x7b:
             comcmds._COM_FB();
-            break;// FB リピート抜け出し
+            break;// FB Exiting from Repeat
         case 0x7c:
             comcmds._COM_FC();
-            break;// FC リピート開始
+            break;// FC Repeat Start
         case 0x7d:
             comcmds._COM_FD();
-            break;// FD リピート終端
+            break;// FD Repeat Termination
         case 0x7e:
             comcmds._COM_FE();
             break;// FE tempo
@@ -491,15 +491,13 @@ public class DevOpnEmu {
         }
     }
 
-    //─────────────────────────────────────
-    //
+    /** */
     public void _FME_NOP() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x7f));
         devopm._opm_keyoff();
     }
 
-    //─────────────────────────────────────
-    //
+    /** */
     public void _ch_fme_lfo_job() {
         comwave._ch_effect();
         _ch_fme_lfo();
@@ -585,7 +583,7 @@ public class DevOpnEmu {
         }
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_fme_plfo_1() {
         reg.a4 = reg.a5 + W.p_pattern1;
         reg.a3 = reg.a5 + W.wp_pattern1;
@@ -643,7 +641,7 @@ public class DevOpnEmu {
         _ch_fme_p_common();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_fme_p_common() {
         reg.D0_L = 1;
         reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern));
@@ -707,9 +705,9 @@ public class DevOpnEmu {
         }
     }
 
-    //─────────────────────────────────────
-    //	extended LFO
-    //
+    /**
+     * extended LFO
+     */
     public void _ch_fme_lfo_extend() {
         reg.D1_L = 7;
         reg.setD1_B(reg.getD1_B() & reg.getD0_B());
@@ -769,13 +767,13 @@ public class DevOpnEmu {
                 break;
             }
         }
-        //	pea	_emu_set_fnum2(pc)
+        // pea _emu_set_fnum2(pc)
         reg.setD2_W(mm.readShort(reg.a5 + W.keycode3));
         devopn._ex_slot_calc();
         _emu_set_fnum2();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_fme_mml_job() {
         comanalyze._track_analyze();
         _ch_fme_bend_job();
@@ -791,9 +789,9 @@ public class DevOpnEmu {
         _ch_fme_bend();
     }
 
-    //─────────────────────────────────────
-    //	pitch bend
-    //
+    /**
+     * pitch bend
+     */
     public void _ch_fme_bend() {
         reg.a4 = reg.a5 + W.p_pattern4;
         mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
@@ -847,9 +845,9 @@ public class DevOpnEmu {
 
     }
 
-    //─────────────────────────────────────
-    //	portament
-    //
+    /**
+     * portament
+     */
     public void _ch_fme_porta() {
         reg.a4 = reg.a5 + W.p_pattern4;
 
@@ -884,54 +882,54 @@ public class DevOpnEmu {
         _emu_set_fnum2();
     }
 
-    //─────────────────────────────────────
-    //	pitch LFO 鋸波
-    //
+    /**
+     * pitch LFO Sawtooth
+     */
     public void _ch_fme_p_0() {
         comlfo.comLfoSaw();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc3();
     }
 
-    //─────────────────────────────────────
-    //	pitch LFO portament
-    //
+    /**
+     * pitch LFO portamento
+     */
     public void _ch_fme_p_1() {
         comlfo.comLfoPortament();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc3();
     }
 
-    //─────────────────────────────────────
-    //	pitch LFO delta
-    //
+    /**
+     * pitch LFO delta
+     */
     public void _ch_fme_p_2() {
         comlfo.comLfoTriangle();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc3();
     }
 
-    //─────────────────────────────────────
-    //	pitch LFO portament2
-    //
+    /**
+     * pitch LFO portamento2
+     */
     public void _ch_fme_p_3() {
         comlfo.comLfoPortament();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc2();
     }
 
-    //─────────────────────────────────────
-    //	pitch LFO delta2
-    //
+    /**
+     * pitch LFO delta2
+     */
     public void _ch_fme_p_4() {
         comlfo.comLfoTriangle();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc2();
     }
 
-    //─────────────────────────────────────
-    //	pitch LFO delta 3
-    //
+    /**
+     * pitch LFO delta 3
+     */
     public void _ch_fme_p_5() {
         mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) {
@@ -973,31 +971,31 @@ public class DevOpnEmu {
         mm.write(reg.a4 + W_L.count_work, (byte) (mm.readByte(reg.a4 + W_L.count_work) - 1));
         if (mm.readByte(reg.a4 + W_L.count_work) != 0) return;
         mm.write(reg.a4 + W_L.count_work, mm.readByte(reg.a4 + W_L.count));
-        //	neg.W	w_l_henka_work(a4)
+        // neg.W w_l_henka_work(a4)
         mm.write(reg.a4 + W_L.henka_work, (short) (-(short) mm.readShort(reg.a4 + W_L.henka_work)));
     }
 
-    //─────────────────────────────────────
-    //	pitch LFO 1shot
-    //
+    /**
+     * pitch LFO 1shot
+     */
     public void _ch_fme_p_6() {
         comlfo.comLfoOneshot();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc3();
     }
 
-    //─────────────────────────────────────
-    //	pitch LFO 1shot 2
-    //
+    /**
+     * pitch LFO 1shot 2
+     */
     public void _ch_fme_p_7() {
         comlfo.comLfoOneshot();
         mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
         _ch_fme_p_calc2();
     }
 
-    //─────────────────────────────────────
-    //	wavememory pitch
-    //
+    /**
+     * wavememory pitch
+     */
     public void _ch_fme_p_wavememory() {
         reg.setD4_W(mm.readShort(reg.a4 + W_L.flag));
         if ((short) reg.getD4_W() >= 0) {
@@ -1022,32 +1020,31 @@ public class DevOpnEmu {
         _ch_fme_p_calc();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_fme_p_calc() {
-        //	pea	_emu_set_fnum2(pc)
+        // pea _emu_set_fnum2(pc)
         reg.setD2_W(mm.readShort(reg.a5 + W.keycode3));
         devopn._ex_slot_calc();
         _emu_set_fnum2();
     }
 
     public void _ch_fme_p_calc2() {
-        //	pea	_emu_set_fnum2(pc)
+        // pea _emu_set_fnum2(pc)
         reg.setD2_W(mm.readShort(reg.a5 + W.keycode3));
         devopn._ex_slot_calc2();
         _emu_set_fnum2();
     }
 
-    //─────────────────────────────────────
+    /** */
     public void _ch_fme_p_calc3() {
         reg.setD2_W(mm.readShort(reg.a5 + W.keycode3));
         reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.addkeycode));
         _emu_set_fnum2();
     }
 
-    //─────────────────────────────────────
-    //─────────────────────────────────────
-    //	effect execute
-    //
+    /**
+     * effect execute
+     */
     public void _fme_effect_ycommand() {
         reg.setD1_B((byte) (reg.getD0_W() >> 8));
         mndrv._OPN_WRITE2();

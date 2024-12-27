@@ -66,7 +66,7 @@ public class MIDIParam {
     public int EFXType_MSB = 0;
     public int EFXType_LSB = 0;
 
-    private byte[] msg;
+    private final byte[] msg;
     private int msgInd;
     private boolean NowSystemMsg;
 
@@ -287,7 +287,7 @@ public class MIDIParam {
                 cPress[ch] = msg[1];
                 break;
             case 0xe0: // Pitch Bend
-                bend[ch] = (short) (msg[2] * 0x80 + msg[1]);
+                bend[ch] = (short) ((msg[2] & 0xff) * 0x80 + (msg[1] & 0xff));
                 break;
             }
         }
@@ -363,12 +363,12 @@ public class MIDIParam {
         if (manufactureID == 0x43) { // YAMAHA ID?
             if ((msg[2] & 0xf0) != 0x10) return;
             if (msg[3] != 0x4c) return;
-            adr = msg[4] * 0x10000 + msg[5] * 0x100 + msg[6];
+            adr = (msg[4] & 0xff) * 0x1_0000 + (msg[5] & 0xff) * 0x100 + (msg[6] & 0xff);
             ptr = 7;
         } else if (manufactureID == 0x41) {  // Roland ID
             //if (msg[3] != 0x42) return;
             //if (msg[4] != 0x12) return;
-            adr = msg[5] * 0x10000 + msg[6] * 0x100 + msg[7];
+            adr = (msg[5] & 0xff) * 0x1_0000 + (msg[6] & 0xff) * 0x100 + (msg[7] & 0xff);
             ptr = 8;
         } else if (manufactureID == 0x7f) { // universal realtime message
             if ((msg[2] & 0xff) == 0x7f && (msg[3] & 0xff) == 0x04 && (msg[4] & 0xff) == 0x01 && (msg[7] & 0xff) == 0xf7) {

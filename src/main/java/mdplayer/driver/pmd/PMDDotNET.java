@@ -93,8 +93,7 @@ public class PMDDotNET extends BaseDriver {
             gt = pmdCompiler.getGD3TagInfo(buf);
         } else {
             pmdDriver = im.getDriver("PMDDotNET.Driver.Driver");
-            // pmdDriver.SetDriverSwitch((Func<String,
-            // Stream>)appendFileReaderCallback);
+            // pmdDriver.SetDriverSwitch((Func<String, Stream>)appendFileReaderCallback);
             gt = pmdDriver.getGD3TagInfo(buf);
         }
 
@@ -136,7 +135,7 @@ public class PMDDotNET extends BaseDriver {
         vgmSpeed = 1;
 
 //#if DEBUG
-        // 実チップスレッドは処理をスキップ(デバッグ向け)
+        // The actual chip thread skips processing (for debugging)
         if (model == EnmModel.RealModel)
             return true;
 //#endif
@@ -151,7 +150,7 @@ public class PMDDotNET extends BaseDriver {
     public void processOneFrame() {
 
 //#if DEBUG
-        // 実チップスレッドは処理をスキップ(デバッグ向け)
+        // The actual chip thread skips processing (for debugging)
         if (model == EnmModel.RealModel) {
             stopped = true;
             return;
@@ -175,7 +174,7 @@ public class PMDDotNET extends BaseDriver {
 
             if (pmdDriver.getStatus() < 1) {
                 if (pmdDriver.getStatus() == 0) {
-                    Thread.sleep((int) (latency * 2.0));// 実際の音声が発音しきるまでlatency*2の分だけ待つ
+                    Thread.sleep((int) (latency * 2.0)); // Wait for latency*2 until the actual voice is fully pronounced
                 }
                 stopped = true;
             }
@@ -260,10 +259,10 @@ public class PMDDotNET extends BaseDriver {
                 usePPS, // bool
                 usePPZ, // bool
                 isSPB, // bool
-                envPmd, // String[] 環境変数PMD
-                envPmdOpt, // String[] 環境変数PMDOpt
+                envPmd, // String[] Environment variable PMD
+                envPmdOpt, // String[] Environment variable PMDOpt
                 playingFileName, // String srcFile;
-                "", // String PPCFileHeader無視されます(設定不要)
+                "", // String PPCFileHeader is ignored (no setting required)
                 (Function<String, Stream>) this::appendFileReaderCallback
         };
 
@@ -279,8 +278,8 @@ public class PMDDotNET extends BaseDriver {
                 //, oPNAWrite
                 //, oPNAWaitSend
                 , ret
-                , null//ここのコールバックは未使用
-                , additionalPDDDotNETOption //PMDDotNET option
+                , null // This callback is unused
+                , additionalPDDDotNETOption // PMDDotNET option
                 , additionalPMOption // PMD option
                 , (Function<ChipDatum, Integer>) this::writePPZ8
                 , (Function<ChipDatum, Integer>) this::writePPSDRV
@@ -308,20 +307,20 @@ public class PMDDotNET extends BaseDriver {
     private void sendOPNAWait(long size, int elapsed) {
         if (model == EnmModel.VirtualModel) {
 //            JOptionPane.showMessageDialog("elapsed:%d size:%d".formatted(elapsed, size));
-//            int n = Math.max((int) (size / 20 - elapsed), 0); // 20 閾値(magic number)
+//            int n = Math.max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
 //            Thread.sleep(n);
             return;
         }
 
-        // サイズと経過時間から、追加でウエイトする。
-        int m = Math.max((int) (size / 20 - elapsed), 0);// 20 閾値(magic number)
+        // Add additional weight based on size and elapsed time.
+        int m = Math.max((int) (size / 20 - elapsed), 0);// 20 Threshold (magic number)
         try { Thread.sleep(m); } catch (InterruptedException e) {}
     }
 
     public static class PMDChipAction implements ChipAction {
-        private Consumer<ChipDatum> oPNAWrite;
+        private final Consumer<ChipDatum> oPNAWrite;
 
-        private BiConsumer<Long, Integer> oPNAWaitSend;
+        private final BiConsumer<Long, Integer> oPNAWaitSend;
 
         public PMDChipAction(Consumer<ChipDatum> oPNAWrite, BiConsumer<Long, Integer> oPNAWaitSend) {
             this.oPNAWrite = oPNAWrite;
@@ -381,10 +380,10 @@ public class PMDDotNET extends BaseDriver {
             usePPS, // bool
             usePPZ, // bool
             isSPB, // bool
-            envPmd, // String[] 環境変数PMD
-            envPmdOpt, // String[] 環境変数PMDOpt
+            envPmd, // String[] Environment variable PMD
+            envPmdOpt, // String[] Environment variable PMDOpt
                 playingFileName, // String srcFile;
-            "", // String PPCFileHeader無視されます(設定不要)
+            "", // String PPCFileHeader is ignored (no setting required)
             (Function<String, Stream>) this::appendFileReaderCallback
         };
 
@@ -396,7 +395,7 @@ public class PMDDotNET extends BaseDriver {
 
         pmdDriver.init(lca,
                 buf.toArray(MmlDatum[]::new),
-                null, // ここのコールバックは未使用
+                null, // This callback is unused
                 additionalPDDDotNETOption, // PMDDotNET option
                 additionalPMDOption, // PMD option
                 (Function<ChipDatum, Integer>) this::writePPZ8,
@@ -412,13 +411,13 @@ public class PMDDotNET extends BaseDriver {
     private void chipWaitSend(long elapsed, int size) {
         if (model == EnmModel.VirtualModel) {
             //JOptionPane.showMessageDialog(null, "elapsed:%d size:%d".formatted(elapsed, size));
-            //int n = Math.max((int)(size / 20 - elapsed), 0);//20 閾値(magic number)
+            //int n = Math.max((int)(size / 20 - elapsed), 0);//20 Threshold (magic number)
             //Thread.sleep(n);
             return;
         }
 
-        // サイズと経過時間から、追加でウエイトする。
-        int m = Math.max((int) (size / 20 - elapsed), 0);// 20 閾値 (magic number)
+        // Add additional weight based on size and elapsed time.
+        int m = Math.max((int) (size / 20 - elapsed), 0);// 20 Threshold (magic number)
         try { Thread.sleep(m); } catch (InterruptedException e) {}
     }
 
@@ -516,7 +515,7 @@ public class PMDDotNET extends BaseDriver {
     }
 
     public static class EnvironmentE {
-        private List<String> envs;
+        private final List<String> envs;
 
         public EnvironmentE() {
             envs = new ArrayList<>();
@@ -561,7 +560,7 @@ public class PMDDotNET extends BaseDriver {
         if (envPmdOpt != null && envPmdOpt.length > 0)
             op.addAll(Arrays.asList(envPmdOpt));
 
-        // 引数(IDEではオプション設定)
+        // Arguments (optional in the IDE)
         String[] drvArgs = setting.getPmdDotNET().driverArguments.split(" ");
         if (drvArgs != null && drvArgs.length > 0)
             op.addAll(Arrays.asList(drvArgs));

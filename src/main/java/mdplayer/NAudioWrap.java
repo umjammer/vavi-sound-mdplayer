@@ -3,10 +3,10 @@ package mdplayer;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.util.UUID;
 import java.util.function.Consumer;
-
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
@@ -20,6 +20,7 @@ import dotnet4j.threading.SynchronizationContext;
 import dotnet4j.util.compat.TriFunction;
 
 import static java.lang.System.getLogger;
+import static vavi.sound.SoundUtil.volume;
 
 
 public class NAudioWrap {
@@ -35,9 +36,10 @@ public class NAudioWrap {
     private NullOut nullOut;
 
     int sampleRate;
+    // no need
     private static naudioCallBack callBack = null;
     private Setting setting = null;
-    private SynchronizationContext syncContext = SynchronizationContext.getCurrent();
+    private final SynchronizationContext syncContext = SynchronizationContext.getCurrent();
 
     static final UUID Empty = new UUID(0, 0);
 
@@ -45,6 +47,7 @@ public class NAudioWrap {
         init(sampleRate, nCallBack);
     }
 
+    /** @param nCallBack no need */
     public void init(int sampleRate, naudioCallBack nCallBack) {
 
         stop();
@@ -88,6 +91,7 @@ logger.log(Level.DEBUG, "OutputDeviceType: " + setting.getOutputDevice().getDevi
 logger.log(Level.DEBUG, format);
                 dsOut.addLineListener(this::DeviceOut_PlaybackStopped);
                 dsOut.open();
+                volume(dsOut, Double.parseDouble(System.getProperty("mdplayer.volume", "0.2")));
                 dsOut.start();
                 break;
             case 2: // mmdevice???
@@ -155,13 +159,23 @@ logger.log(Level.DEBUG, "line: " + e.getType());
 //        }
     }
 
+//OutputStream os;
+
     public int write(short[] buffer, int offset, int count) {
-        ByteBuffer bb = ByteBuffer.allocate(count * Short.BYTES - offset);
+//try {
+// if (os == null) { os = Files.newOutputStream(Paths.get("tmp", "out.pcm")); }
+
+        ByteBuffer bb = ByteBuffer.allocate(count * Short.BYTES).order(ByteOrder.LITTLE_ENDIAN);
         ShortBuffer sb = bb.asShortBuffer();
         sb.put(buffer, offset, count);
         sb.rewind();
+// os.write(bb.array());
 //logger.log(Level.TRACE, "write to line\n" + StringUtil.getDump(bb.array()));
         return dsOut.write(bb.array(), 0, count * Short.BYTES);
+//        return count * Short.BYTES;
+//} catch (IOException e) {
+//    throw new UncheckedIOException(e);
+//}
     }
 
     public LineEvent.Type getPlaybackState() {

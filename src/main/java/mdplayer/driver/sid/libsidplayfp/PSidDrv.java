@@ -32,7 +32,7 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
  */
 public class PSidDrv {
 
-    private SidTuneInfo tuneInfo;
+    private final SidTuneInfo tuneInfo;
     private String errorString;
 
     private byte[] relocationDriver;

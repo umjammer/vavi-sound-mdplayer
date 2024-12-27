@@ -2,7 +2,6 @@ package mdplayer.driver.moonDriver;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.Set;
 
 import dotnet4j.util.compat.Tuple;
 import mdplayer.ChipRegister;
@@ -11,9 +10,7 @@ import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
-import net.sf.saxon.functions.Count;
 import vavi.util.ByteUtil;
-import vavi.util.win32.WAVE.data;
 
 import static java.lang.System.getLogger;
 
@@ -78,7 +75,7 @@ public class MoonDriver extends BaseDriver {
                 writeMemory((short) (0x8000 + (i % 0x4000)), vgmBuf[i]);
             }
         } catch (Exception ex) {
-            throw new IllegalStateException("Driverの初期化に失敗しました。", ex);
+            throw new IllegalStateException("Driver initialization failed.", ex);
         }
 
         a = 0;
@@ -119,7 +116,7 @@ public class MoonDriver extends BaseDriver {
             entryPoints(0x4013);
         }
 
-        // Driverの初期化
+        // Initializing the Driver
         entryPoints( 0x4000);
 
         if (model == EnmModel.RealModel) {
@@ -201,13 +198,13 @@ public class MoonDriver extends BaseDriver {
     private double ntscCounter = 0.0;
     private boolean nextFlg = false;
     public Tuple<String, byte[]> extendFile = null;
-    private int[] pcmKeyon = new int[] {
+    private final int[] pcmKeyon = new int[] {
             -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1
     };
-    private int[] pcmKeyonB = new int[24];
+    private final int[] pcmKeyonB = new int[24];
     public boolean isOPL3 = false;
 
     public int[] getPCMKeyOn() {
@@ -763,7 +760,7 @@ public class MoonDriver extends BaseDriver {
 //#if MOON_HOOT
 //        private int MDB_BASE=0x2F0;
 //#else
-    private byte[] MDB_BASE = new byte[0x008];
+    private final byte[] MDB_BASE = new byte[0x008];
 //#endif
 
     /**
@@ -1855,7 +1852,7 @@ public class MoonDriver extends BaseDriver {
         d = 0xbd;
         moon_fm1_out();
 
-        // set fnum
+        // set fNum
         int hlb = hl;
         a = readMemory(hl);
         a &= 0x1f;
@@ -1924,7 +1921,7 @@ public class MoonDriver extends BaseDriver {
      * dest : almost all
      */
     private void drumbit_set_fnum() {
-        // fnum
+        // fNum
         hl = 0; // fm_drum_fnum
         b = 0;
         work.seq_tmp_fnum = fm_drum_fnum[c];
@@ -1949,7 +1946,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void seq_drumnote() {
-        // set fnum
+        // set fNum
         a = readMemory(hl);
         a &= 0x1f;
 
@@ -2013,7 +2010,7 @@ public class MoonDriver extends BaseDriver {
         a = work.seq_tmp_oct;
         fm_drum_oct[hl] = a;
 
-        // fnum
+        // fNum
         hl = 0; // fm_drum_fnum
         hl += c;
         fm_drum_fnum[hl] = work.seq_tmp_fnum;
@@ -3557,27 +3554,26 @@ public class MoonDriver extends BaseDriver {
         // check loop
         //moon_check_rom_lp:
 
-        //スキップ
-        //do
-        //{
-        //    a = (byte)str_romchk[hl];
-        //    e = a;
-
-        //    // a<- (SRAM)
-        //    d = 0x06;
-        //    moon_wave_in();
-
-        //    MDB_BASE[MDB_ROM] = a;
-        //    if (a - e != 0) return;
-        //    hl++;
-        //    b--;
-        //} while (b > 0);// djnz moon_check_rom_lp
+        // skip
+//        do {
+//            a = (byte) str_romchk[hl];
+//            e = a;
+//
+//            // a<- (SRAM)
+//            d = 0x06;
+//            moon_wave_in();
+//
+//            MDB_BASE[MDB_ROM] = a;
+//            if (a - e != 0) return;
+//            hl++;
+//            b--;
+//        } while (b > 0);// djnz moon_check_rom_lp
         a = 0;
     }
 
     // check SRAM
     private boolean moon_check_sram() {
-        //スキップ
+        // skip
         return false;
         // $77-> ($200000)
         //moon_reset_sram_adrs();
@@ -3818,12 +3814,12 @@ public class MoonDriver extends BaseDriver {
         }
     }
 
-    private byte[] mem = new byte[1024 * 64];
-    private byte[][] extMem = new byte[256][];
-    private Byte seg0x0000 = null;
-    private Byte seg0x4000 = null;
+    private final byte[] mem = new byte[1024 * 64];
+    private final byte[][] extMem = new byte[256][];
+    private final Byte seg0x0000 = null;
+    private final Byte seg0x4000 = null;
     private Byte seg0x8000 = null;
-    private Byte seg0xc000 = null;
+    private final Byte seg0xc000 = null;
     private int a = 0;
     private int b = 0;
     private int c = 0;

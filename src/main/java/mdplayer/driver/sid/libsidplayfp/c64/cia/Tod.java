@@ -55,13 +55,13 @@ enum timeUnit
 
 
         // Event scheduler.
-        private EventScheduler eventScheduler;
+        private final EventScheduler eventScheduler;
 
         // Pointer to the Mos6526 which this Timer belongs to.
-        private Mos6526 parent;
+        private final Mos6526 parent;
 
-        private byte cra;
-        private byte crb;
+        private final byte cra;
+        private final byte crb;
 
         private long cycles;
         private long period;
@@ -69,9 +69,9 @@ enum timeUnit
         private boolean isLatched;
         private boolean isStopped;
 
-        private byte[] clock = new byte[4];
-        private byte[] latch = new byte[4];
-        private byte[] alarm = new byte[4];
+        private final byte[] clock = new byte[4];
+        private final byte[] latch = new byte[4];
+        private final byte[] alarm = new byte[4];
 
         //private void checkAlarm() { }
 
