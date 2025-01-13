@@ -240,3 +240,4 @@ lib
 tmp/
 *.resx
 src/main/resources/mdplayer/resources/
+local.properties
