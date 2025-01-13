@@ -147,7 +147,7 @@ public class ChipRegister {
     };
 
     public int[][] fmRegisterYM2413 = {null, null};
-//    private int[] fmRegisterYM2413RyhthmB = {0, 0};
+    //    private int[] fmRegisterYM2413RyhthmB = {0, 0};
 //    private int[] fmRegisterYM2413Ryhthm = {0, 0};
     private final ChipKeyInfo[] kiYM2413 = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
     private final ChipKeyInfo[] kiYM2413ret = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
@@ -1829,7 +1829,11 @@ public class ChipRegister {
 
         if (model == EnmModel.VirtualModel) {
             if (!ctYM2203[chipId].getUseReal()[0]) {
-                mds.write(Ym2203Inst.class, chipId, 0, dAddr, dData);
+                if (setting.getYM2203Type()[0].getUseEmu()[0]) {
+                    mds.write(Ym2203Inst.class, chipId, 0, dAddr, dData);
+                } else if (setting.getYM2203Type()[0].getUseEmu()[1]) {
+                    mds.write(YmFmYm2203Inst.class, chipId, 0, dAddr, dData);
+                }
             }
         } else {
             if (scYM2203[chipId] == null)
@@ -1842,7 +1846,11 @@ public class ChipRegister {
     private void writeYm2203(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!ctYM2203[chipId].getUseReal()[0]) {
-                mds.write(Ym2203Inst.class, chipId, 0, dAddr, dData);
+                if (setting.getYM2203Type()[chipId].getUseEmu()[0]) {
+                    mds.write(Ym2203Inst.class, chipId, 0, dAddr, dData);
+                } else if (setting.getYM2203Type()[chipId].getUseEmu()[1]) {
+                    mds.write(YmFmYm2203Inst.class, chipId, 0, dAddr, dData);
+                }
             }
         } else {
             if (scYM2203[chipId] == null)
@@ -2506,7 +2514,11 @@ public class ChipRegister {
         if (model == EnmModel.VirtualModel) {
             if (!ctYM2608[chipId].getUseReal()[0] && ctYM2608[chipId].getUseEmu()[0]) {
 //if (dAddr == 0x29) logger.log(Level.TRACE, "%2x:%2x:%2x ".formatted(dPort, dAddr, dData));
-                mds.write(Ym2608Inst.class, chipId, dPort, dAddr, dData);
+                if (setting.getYM2608Type()[chipId].getUseEmu()[0]) {
+                    mds.write(Ym2608Inst.class, chipId, dPort, dAddr, dData);
+                } else if (setting.getYM2608Type()[chipId].getUseEmu()[1]) {
+                    mds.write(YmFmYm2608Inst.class, chipId, dPort, dAddr, dData);
+                }
             }
         } else {
             if (scYM2608[chipId] == null)
@@ -2534,7 +2546,11 @@ public class ChipRegister {
     private void writeYm2608(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!ctYM2608[chipId].getUseReal()[0] && ctYM2608[chipId].getUseEmu()[0]) {
-                mds.write(Ym2608Inst.class, chipId, dPort, dAddr, dData);
+                if (setting.getYM2608Type()[chipId].getUseEmu()[0]) {
+                    mds.write(Ym2608Inst.class, chipId, dPort, dAddr, dData);
+                } else if (setting.getYM2608Type()[chipId].getUseEmu()[1]) {
+                    mds.write(YmFmYm2608Inst.class, chipId, dPort, dAddr, dData);
+                }
             }
         } else {
             if (scYM2608[chipId] == null)
@@ -2743,7 +2759,7 @@ public class ChipRegister {
             }
         }
 
-         // ssg mixer
+        // ssg mixer
         if (dPort == 0 && dAddr == 0x07) {
             int maskData = 0;
             if (maskFMChYM2610[chipId][6]) maskData |= 0x9 << 0;
@@ -2752,35 +2768,35 @@ public class ChipRegister {
             dData |= maskData;
         }
 
-         // ssg level
+        // ssg level
         if (dPort == 0 && (dAddr == 0x08 || dAddr == 0x09 || dAddr == 0x0a)) {
             int d = nowYM2610FadeoutVol[chipId] >> 3;
             dData = Math.max(dData - d, 0);
             dData = maskFMChYM2610[chipId][dAddr - 0x08 + 6] ? 0 : dData;
         }
 
-         // rhythm level
+        // rhythm level
         if (dPort == 1 && dAddr == 0x01) {
             int d = nowYM2610FadeoutVol[chipId] >> 1;
             dData = Math.max(dData - d, 0);
             //dData = maskFMChYM2610[chipId][12] ? 0 : dData;
         }
 
-         // Rhythm
+        // Rhythm
         if (dPort == 1 && dAddr == 0x00) {
             if (maskFMChYM2610[chipId][12]) {
                 dData = 0xbf;
             }
         }
 
-         // adpcm level
+        // adpcm level
         if (dPort == 0 && dAddr == 0x1b) {
             int d = nowYM2610FadeoutVol[chipId] * 2;
             dData = Math.max(dData - d, 0);
             dData = maskFMChYM2610[chipId][13] ? 0 : dData;
         }
 
-         // adpcm start
+        // adpcm start
         if (dPort == 0 && dAddr == 0x10) {
             if ((dData & 0x80) != 0 && maskFMChYM2610[chipId][13]) {
                 dData &= 0x7f;
@@ -3241,7 +3257,7 @@ public class ChipRegister {
             int al = dData & 0x07; // AL
 
             if (ch != 3 && maskFMChYM2612[chipId][dPort * 3 + ch]) {
-                 // Reconfigure the carrier's TL
+                // Reconfigure the carrier's TL
                 for (int slot = 0; slot < 4; slot++) {
                     if ((algM[al] & (1 << slot)) != 0) {
                         int tslot = (slot == 1 ? 2 : (slot == 2 ? 1 : slot)) * 4;
@@ -3258,14 +3274,14 @@ public class ChipRegister {
         }
 
         if (dAddr == 0x2a) {
-             // Masking PCM data
+            // Masking PCM data
             if (maskFMChYM2612[chipId][5]) dData = 0x00;
 //logger.log(Level.TRACE, "%02x".formatted(dData));
         }
 
         if (model == EnmModel.VirtualModel) {
 
-             // Virtual Sound Source Processing
+            // Virtual Sound Source Processing
 
             if (ctYM2612[chipId].getUseReal()[0]) {
                 // When using Scci,
@@ -3325,13 +3341,13 @@ public class ChipRegister {
             }
         } else {
 
-             // Real sound source (Scci)
+            // Real sound source (Scci)
 
             if (scYM2612[chipId] == null) return;
 
-             // When playing only PCM (6Ch) with an emulator
+            // When playing only PCM (6Ch) with an emulator
             if (ctYM2612[chipId].getRealChipInfo()[0].getOnlyPCMEmulation()) {
-                 // Check the address and do not send data to the PCM
+                // Check the address and do not send data to the PCM
                 if (dPort == 0 && dAddr == 0x2b) {
                     scYM2612[chipId].setRegister(dPort * 0x100 + dAddr, dData);
                 } else if (dPort == 0 && dAddr == 0x2a) {
@@ -3339,7 +3355,7 @@ public class ChipRegister {
                     scYM2612[chipId].setRegister(dPort * 0x100 + dAddr, dData);
                 }
             } else {
-                 // Send data to Scci
+                // Send data to Scci
                 scYM2612[chipId].setRegister(dPort * 0x100 + dAddr, dData);
             }
         }
@@ -3691,19 +3707,19 @@ public class ChipRegister {
     public void setNESMask(int chipId, int ch) {
         if (chipId == 0) {
             switch (ch) {
-            case 0:
-            case 1:
-                nsfAPUmask |= 1 << ch;
-                if (nes_apu != null)
-                    nes_apu.setMask(nsfAPUmask);
-                break;
-            case 2:
-            case 3:
-            case 4:
-                nsfDMCmask |= 1 << (ch - 2);
-                if (nes_dmc != null)
-                    nes_dmc.setMask(nsfDMCmask);
-                break;
+                case 0:
+                case 1:
+                    nsfAPUmask |= 1 << ch;
+                    if (nes_apu != null)
+                        nes_apu.setMask(nsfAPUmask);
+                    break;
+                case 2:
+                case 3:
+                case 4:
+                    nsfDMCmask |= 1 << (ch - 2);
+                    if (nes_dmc != null)
+                        nes_dmc.setMask(nsfDMCmask);
+                    break;
             }
         }
         mds.setNESMask(chipId, ch);
@@ -3712,19 +3728,19 @@ public class ChipRegister {
     public void resetNESMask(int chipId, int ch) {
         if (chipId == 0) {
             switch (ch) {
-            case 0:
-            case 1:
-                nsfAPUmask &= ~(1 << ch);
-                if (nes_apu != null)
-                    nes_apu.setMask(nsfAPUmask);
-                break;
-            case 2:
-            case 3:
-            case 4:
-                nsfDMCmask &= ~(1 << (ch - 2));
-                if (nes_dmc != null)
-                    nes_dmc.setMask(nsfDMCmask);
-                break;
+                case 0:
+                case 1:
+                    nsfAPUmask &= ~(1 << ch);
+                    if (nes_apu != null)
+                        nes_apu.setMask(nsfAPUmask);
+                    break;
+                case 2:
+                case 3:
+                case 4:
+                    nsfDMCmask &= ~(1 << (ch - 2));
+                    if (nes_dmc != null)
+                        nes_dmc.setMask(nsfDMCmask);
+                    break;
             }
         }
         mds.resetNESMask(chipId, ch);
@@ -4116,15 +4132,15 @@ public class ChipRegister {
                 sn76489Register[chipId][LatchedRegister[chipId]] = data & 0x0f; // Replace with data
         }
         switch (LatchedRegister[chipId]) {
-        case 0:
-        case 2:
-        case 4: // Tone channels
-            //if (sn76489Register[chipId][LatchedRegister[chipId]] == 0)
-            // sn76489Register[chipId][LatchedRegister[chipId]] = 1; // Zero frequency changed to 1 to avoid div/0
-            break;
-        case 6: // Noise
-            NoiseFreq[chipId] = 0x10 << (sn76489Register[chipId][6] & 0x3); // set noise signal generator frequency
-            break;
+            case 0:
+            case 2:
+            case 4: // Tone channels
+                //if (sn76489Register[chipId][LatchedRegister[chipId]] == 0)
+                // sn76489Register[chipId][LatchedRegister[chipId]] = 1; // Zero frequency changed to 1 to avoid div/0
+                break;
+            case 6: // Noise
+                NoiseFreq[chipId] = 0x10 << (sn76489Register[chipId][6] & 0x3); // set noise signal generator frequency
+                break;
         }
     }
 
@@ -4248,18 +4264,18 @@ public class ChipRegister {
                 sccR_dat = data;
 
                 switch (sccR_port) {
-                case 0x00:
-                    sccR_offset += 0x00;
-                    break;
-                case 0x01:
-                    sccR_offset += 0x80;
-                    break;
-                case 0x02:
-                    sccR_offset += 0x8a;
-                    break;
-                case 0x03:
-                    sccR_offset += 0x8f;
-                    break;
+                    case 0x00:
+                        sccR_offset += 0x00;
+                        break;
+                    case 0x01:
+                        sccR_offset += 0x80;
+                        break;
+                    case 0x02:
+                        sccR_offset += 0x8a;
+                        break;
+                    case 0x03:
+                        sccR_offset += 0x8f;
+                        break;
                 }
 
                 scK051649[chipId].setRegister(setting.getDebug_SCCbaseAddress() | sccR_offset, sccR_dat);
@@ -4780,12 +4796,12 @@ public class ChipRegister {
             pcmRegisterC140[chipId][adr] = (byte) data;
             int ch = adr >> 4;
             switch (adr & 0xf) {
-            case 0x05:
-                if ((data & 0x80) != 0) {
-                    pcmKeyOnC140[chipId][ch] = true;
-                    data = maskChC140[chipId][ch] ? data & 0x7f : data;
-                }
-                break;
+                case 0x05:
+                    if ((data & 0x80) != 0) {
+                        pcmKeyOnC140[chipId][ch] = true;
+                        data = maskChC140[chipId][ch] ? data & 0x7f : data;
+                    }
+                    break;
             }
         }
 
@@ -4834,15 +4850,15 @@ public class ChipRegister {
         } else {
             if (scC140 != null && scC140[chipId] != null) {
                 switch (type) {
-                case SYSTEM2:
-                    scC140[chipId].setRegister(0x10008, 0);
-                    break;
-                case SYSTEM21:
-                    scC140[chipId].setRegister(0x10008, 1);
-                    break;
-                case ASIC219:
-                    scC140[chipId].setRegister(0x10008, 2);
-                    break;
+                    case SYSTEM2:
+                        scC140[chipId].setRegister(0x10008, 0);
+                        break;
+                    case SYSTEM21:
+                        scC140[chipId].setRegister(0x10008, 1);
+                        break;
+                    case ASIC219:
+                        scC140[chipId].setRegister(0x10008, 2);
+                        break;
                 }
             }
         }

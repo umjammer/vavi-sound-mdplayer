@@ -906,7 +906,7 @@ public class Setting implements Serializable {
             this.setYM2151Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2151Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2151Type()[i].setUseEmu(new boolean[3]);
+                this.getYM2151Type()[i].setUseEmu(new boolean[3]); // 3 means {0: fmgen, 1: mame, 2: 68k}
                 this.getYM2151Type()[i].getUseEmu()[0] = true;
                 this.getYM2151Type()[i].setUseReal(new boolean[1]);
             }
@@ -915,8 +915,8 @@ public class Setting implements Serializable {
             this.setYM2203Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2203Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2203Type()[i].setUseEmu(new boolean[1]);
-                this.getYM2203Type()[i].getUseEmu()[0] = true;
+                this.getYM2203Type()[i].setUseEmu(new boolean[2]); // 2 means {0: fmgen, 1: ymfm}
+                this.getYM2203Type()[i].getUseEmu()[1] = true;
                 this.getYM2203Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -933,7 +933,7 @@ public class Setting implements Serializable {
             this.setYM2608Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2608Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2608Type()[i].setUseEmu(new boolean[1]);
+                this.getYM2608Type()[i].setUseEmu(new boolean[2]); // 2 means {0: fmgen, 1: ymfm}
                 this.getYM2608Type()[i].getUseEmu()[0] = true;
                 this.getYM2608Type()[i].setUseReal(new boolean[1]);
             }
@@ -949,8 +949,8 @@ public class Setting implements Serializable {
             this.setYM2610Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2610Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo()});
-                this.getYM2610Type()[i].setUseEmu(new boolean[1]);
-                this.getYM2610Type()[i].getUseEmu()[0] = true;
+                this.getYM2610Type()[i].setUseEmu(new boolean[2]); // 2 means {0: fmgen, 1: ymfm}
+                this.getYM2610Type()[i].getUseEmu()[1] = true;
                 this.getYM2610Type()[i].setUseReal(new boolean[3]);
             }
         }
@@ -959,7 +959,7 @@ public class Setting implements Serializable {
             this._YM2612Type = new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()};
             for (int i = 0; i < 2; i++) {
                 this.getYM2612Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2612Type()[i].setUseEmu(new boolean[3]);
+                this.getYM2612Type()[i].setUseEmu(new boolean[3]); // 3 means {0: nuke-A, 1: nuke-B, 2: mame}
                 this.getYM2612Type()[i].getUseEmu()[0] = true;
                 this.getYM2612Type()[i].setUseReal(new boolean[1]);
             }
@@ -2188,7 +2188,7 @@ public class Setting implements Serializable {
         }
 
         public int getVolume(String tag, Class<? extends Instrument> c) {
-            return volumes.getOrDefault(getKey(tag, c), 100);
+            return volumes.getOrDefault(getKey(tag, c), 0);
         }
 
         public void setVolume(String tag, Class<? extends Instrument> c, int v) {

@@ -115,6 +115,7 @@ public class MucomDotNET extends BaseDriver {
                 || buf[2] != 'P'
                 || buf[3] != 'b') {
             // Unknown files
+logger.log(Level.WARNING, "Extended mub file?");
             return null;
         }
 
