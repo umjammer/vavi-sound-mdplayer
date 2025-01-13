@@ -1,4 +1,63 @@
-﻿# MDPlayer
+[![Release](https://jitpack.io/v/umjammer/vavi-apps-mdp.svg)](https://jitpack.io/#umjammer/vavi-apps-mdp)
+[![Java CI](https://github.com/umjammer/vavi-apps-mdp/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-apps-mdp/actions/workflows/maven.yml)
+[![CodeQL](https://github.com/umjammer/vavi-apps-mdp/actions/workflows/codeql.yml/badge.svg)](https://github.com/umjammer/vavi-apps-mdp/actions/workflows/codeql.yml)
+![Java](https://img.shields.io/badge/Java-17-b07219)
+
+# vavi-sound-mdp
+
+Video Game Music Player for Java
+
+this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
+
+### Status
+
+| type     | description    | status | alternative             | comment |
+|----------|----------------|:------:|-------------------------|---------|
+| VGM/VGZ  | mega drive     |  ✅️ ️  | vavi-sound-emu          |         |
+| NRD      | x1             |        |                         |         |
+| XGM      | mega drive     |        |                         |         |
+| S98      | jp retro pc    |        |                         |         |
+| MID      | midi           |  ✅️→   | javax.sound.midi.spi    |         |
+| RCP      | recopon        |        |                         |         |
+| NSF/NSFE | NES            |  ✅️→   | vavi-sound-emu          | nsfe    |
+| HES      | PC Engine      |        | (gme)                   |         |
+| SID      | commodore      |  ✅️→   | javamod                 |         |
+| MGS      | MGSDRV         |        |                         |         |
+| MDR      | MoonDriver MSX |        |                         |         |
+| MND      | MNDRV X68000   |        |                         |         |
+| MDX      | MXDRV          |        |                         |         |
+| MUC/MUB  | MUCOM88        |   ✅️   |                         |         |
+| MDR      | MSX            |        |                         |         |
+| M/M2/MZ  | PMD            |        |                         |         |
+| WAV      |                |  ✅️→   | javax.sound.sampled.spi |         |
+| MP3      |                |  ✅️→   | mp3spi                  |         |
+| AIF      |                |  ✅️→   | javax.sound.sampled.spi |         |
+| AY       | ZX             |        |                         |         |
+| GBS      | Game Boy       |  ✅️→   | vavi-sound-emu          |         |
+| GYM      | Sega Genesis   |        |                         |         |
+| KSS      | MSX            |        |                         |         |
+| SAP      | Atari          |        |                         |         |
+| SPC      | SNES           |  ✅️→   | vavi-sound-emu          |         |
+
+## Install
+
+ * [maven](https://jitpack.io/#umjammer/vavi-apps-mdp)
+
+## Usage
+
+## References
+
+* https://github.com/GhostSonic21/Java_VGMPlayer
+* https://github.com/kwhat/jnativehook
+* https://github.com/waynetam/JavaSSRC/tree/master
+
+## TODO
+
+ * spi
+
+---
+
+# [Original](https://github.com/kuma4649/MDPlayer)
 
 Player such as VGM file (performance tool by emulation such as mega drive sound source chip)
 
@@ -77,7 +136,7 @@ We will do our best to accommodate you, but there are many cases where we cannot
      You can automatically open the keyboard to be used from the information of the file to be played.
      (You can display up to two of the same keyboard, but only one MIDI keyboard will open.)
 
- - It is created in C #.
+ - It is created in C#.
  - Refer to the source of VGMPlay, MAME, DOSBOX and port it.
  - Refer to the source of FMGen and port it.
  - Refer to the source of NSFPlay and port it.
@@ -228,7 +287,7 @@ In the case of PMDDotNET, the path specified by the environment variable PMD is 
 
 Set the module frequency (chip master clock) for each file format.
 
-The setting values ​​are as follows.
+The setting values are as follows.
 
      .vgm-> use the value set in the file
      .s98-> use the value set in the file
