@@ -1,9 +1,9 @@
-[![Release](https://jitpack.io/v/umjammer/vavi-sound-mdplayer.svg)](https://jitpack.io/#umjammer/vavi-sound-mdplayer)
-[![Java CI](https://github.com/umjammer/vavi-sound-mdplayer/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-sound-mdplayer/actions/workflows/maven.yml)
-[![CodeQL](https://github.com/umjammer/vavi-sound-mdplayer/actions/workflows/codeql.yml/badge.svg)](https://github.com/umjammer/vavi-sound-mdplayer/actions/workflows/codeql.yml)
+[![Release](https://jitpack.io/v/umjammer/vavi-apps-mdplayer.svg)](https://jitpack.io/#umjammer/vavi-apps-mdplayer)
+[![Java CI](https://github.com/umjammer/vavi-apps-mdplayer/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-apps-mdplayer/actions/workflows/maven.yml)
+[![CodeQL](https://github.com/umjammer/vavi-apps-mdplayer/actions/workflows/codeql.yml/badge.svg)](https://github.com/umjammer/vavi-apps-mdplayer/actions/workflows/codeql.yml)
 ![Java](https://img.shields.io/badge/Java-17-b07219)
 
-# vavi-sound-mdplayer
+# vavi-apps-mdplayer
 
 Video Game Music Player for Java
 
