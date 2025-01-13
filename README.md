@@ -1,9 +1,9 @@
-[![Release](https://jitpack.io/v/umjammer/vavi-apps-mdp.svg)](https://jitpack.io/#umjammer/vavi-apps-mdp)
-[![Java CI](https://github.com/umjammer/vavi-apps-mdp/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-apps-mdp/actions/workflows/maven.yml)
-[![CodeQL](https://github.com/umjammer/vavi-apps-mdp/actions/workflows/codeql.yml/badge.svg)](https://github.com/umjammer/vavi-apps-mdp/actions/workflows/codeql.yml)
+[![Release](https://jitpack.io/v/umjammer/vavi-apps-mdplayer.svg)](https://jitpack.io/#umjammer/vavi-apps-mdplayer)
+[![Java CI](https://github.com/umjammer/vavi-apps-mdplayer/actions/workflows/maven.yml/badge.svg)](https://github.com/umjammer/vavi-apps-mdplayer/actions/workflows/maven.yml)
+[![CodeQL](https://github.com/umjammer/vavi-apps-mdplayer/actions/workflows/codeql.yml/badge.svg)](https://github.com/umjammer/vavi-apps-mdplayer/actions/workflows/codeql.yml)
 ![Java](https://img.shields.io/badge/Java-17-b07219)
 
-# vavi-sound-mdp
+# vavi-sound-mdplayer
 
 Video Game Music Player for Java
 
@@ -41,7 +41,7 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 
 ## Install
 
- * [maven](https://jitpack.io/#umjammer/vavi-apps-mdp)
+ * [maven](https://jitpack.io/#umjammer/vavi-apps-mdplayer)
 
 ## Usage
 

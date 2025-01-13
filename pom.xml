@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>vavi</groupId>
-  <artifactId>vavi-apps-mdp</artifactId>
+  <artifactId>vavi-apps-mdplayer</artifactId>
   <version>0.0.1</version>
 
   <profiles>
