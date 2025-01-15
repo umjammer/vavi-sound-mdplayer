@@ -9,7 +9,7 @@ import java.util.function.Function;
 import dotnet4j.io.Stream;
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
-import mdplayer.driver.pmd.PMDDotNET;
+import mdplayer.driver.pmd.PMDJava;
 import mdplayer.format.FileFormat;
 import mdplayer.format.MMLFileFormat;
 import mdsound.Instrument;
@@ -35,14 +35,14 @@ public class PMDPlugin extends BasePlugin {
 
     @Override
     public boolean play(String playingFileName, FileFormat format) {
-        audio.driverVirtual = new PMDDotNET();
+        audio.driverVirtual = new PMDJava();
         audio.driverVirtual.setting = setting;
-        ((PMDDotNET) audio.driverVirtual).setPlayingFileName(playingFileName);
+        ((PMDJava) audio.driverVirtual).setPlayingFileName(playingFileName);
         audio.driverReal = null;
-        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
-            audio.driverReal = new PMDDotNET();
+        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0] && !setting.getYM2608Type()[0].getUseEmu()[1]) {
+            audio.driverReal = new PMDJava();
             audio.driverReal.setting = setting;
-            ((PMDDotNET) audio.driverReal).setPlayingFileName(playingFileName);
+            ((PMDJava) audio.driverReal).setPlayingFileName(playingFileName);
         }
         boolean r = mmlPlay_PMDDotNET(format instanceof MMLFileFormat ? 0 : 1);
         if (!r) {
@@ -81,7 +81,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.instrument = ym2608;
             chip.samplingRate = 55467;
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class);
-            chip.clock = PMDDotNET.baseclock;
+            chip.clock = PMDJava.baseclock;
             chip.setVolumes.put("FM", ym2608::setFMVolume);
             chip.setVolumes.put("PSG", ym2608::setPSGVolume);
             chip.setVolumes.put("Rhythm", ym2608::setRhythmVolume);
@@ -90,7 +90,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.option = new Object[] {fn};
             lstChips.add(chip);
             audio.useChip.add(Common.EnmChip.YM2608);
-            audio.clockYM2608 = PMDDotNET.baseclock;
+            audio.clockYM2608 = PMDJava.baseclock;
 
             Ppz8Inst ppz8 = Instrument.getInstrument(Ppz8Inst.class);
             chip = new MDSound.Chip();
@@ -98,7 +98,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.instrument = ppz8;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ppz8Inst.class);
-            chip.clock = PMDDotNET.baseclock;
+            chip.clock = PMDJava.baseclock;
             chip.option = null;
             audio.chipLED.put("PriPPZ8", 1);
             lstChips.add(chip);
@@ -111,7 +111,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.instrument = ppsdrv;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = 0;
-            chip.clock = PMDDotNET.baseclock;
+            chip.clock = PMDJava.baseclock;
             chip.option = null;
             audio.chipLED.put("PriPPSDRV", 1);
             lstChips.add(chip);
@@ -124,7 +124,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.instrument = P86;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = 0;
-            chip.clock = PMDDotNET.baseclock;
+            chip.clock = PMDJava.baseclock;
             chip.option = null;
             audio.chipLED.put("PriP86", 1);
             lstChips.add(chip);
@@ -152,8 +152,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.setYM2608Register(0, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Psg TONE でリセット
             audio.chipRegister.setYM2608Register(0, 0, 0x07, 0x38, Common.EnmModel.RealModel);
 
-            audio.chipRegister.writeYm2608Clock((byte) 0, PMDDotNET.baseclock, Common.EnmModel.RealModel);
-            audio.chipRegister.writeYm2608Clock((byte) 1, PMDDotNET.baseclock, Common.EnmModel.RealModel);
+            audio.chipRegister.writeYm2608Clock((byte) 0, PMDJava.baseclock, Common.EnmModel.RealModel);
+            audio.chipRegister.writeYm2608Clock((byte) 1, PMDJava.baseclock, Common.EnmModel.RealModel);
             audio.chipRegister.setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
             audio.chipRegister.setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
 

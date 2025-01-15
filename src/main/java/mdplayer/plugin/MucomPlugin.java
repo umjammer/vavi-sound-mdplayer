@@ -11,11 +11,10 @@ import mdplayer.Audio;
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.Setting;
-import mdplayer.driver.mucom.MucomDotNET;
+import mdplayer.driver.mucom.MucomJava;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.MDSound.Chip;
 import mdsound.instrument.Ym2151Inst;
 import mdsound.instrument.Ym2608Inst;
 import mdsound.instrument.Ym2610Inst;
@@ -37,16 +36,16 @@ public class MucomPlugin extends BasePlugin {
 
     @Override
     public boolean play(String playingFileName, FileFormat format) {
-        audio.driverVirtual = new MucomDotNET();
+        audio.driverVirtual = new MucomJava();
         audio.driverVirtual.setting = setting;
-        ((MucomDotNET) audio.driverVirtual).setPlayingFileName(playingFileName);
+        ((MucomJava) audio.driverVirtual).setPlayingFileName(playingFileName);
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0] && !setting.getYM2608Type()[0].getUseEmu()[1]) {
-            audio.driverReal = new MucomDotNET();
+            audio.driverReal = new MucomJava();
             audio.driverReal.setting = setting;
-            ((MucomDotNET) audio.driverReal).setPlayingFileName(playingFileName);
+            ((MucomJava) audio.driverReal).setPlayingFileName(playingFileName);
         }
-        boolean r = mucPlay_mucomDotNET(setting, MucomDotNET.MUCOMFileType.MUB); // MucomDotNET.MUCOMFileType.MUC
+        boolean r = mucPlay_mucomDotNET(setting, MucomJava.MUCOMFileType.MUB); // MucomDotNET.MUCOMFileType.MUC
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
             return false;
@@ -55,16 +54,15 @@ logger.log(Level.WARNING, "cannot start: " + this);
         return true;
     }
 
-    private boolean mucPlay_mucomDotNET(Setting setting, MucomDotNET.MUCOMFileType fileType) {
+    private boolean mucPlay_mucomDotNET(Setting setting, MucomJava.MUCOMFileType fileType) {
 
         try {
-
             if (vgmBuf == null || setting == null) return false;
 
-            if (fileType == MucomDotNET.MUCOMFileType.MUC) {
-                vgmBuf = ((MucomDotNET) audio.driverVirtual).compile(vgmBuf);
+            if (fileType == MucomJava.MUCOMFileType.MUC) {
+                vgmBuf = ((MucomJava) audio.driverVirtual).compile(vgmBuf);
             }
-            Common.EnmChip[] useChipFromMub = ((MucomDotNET) audio.driverVirtual).useChipsFromMub(vgmBuf);
+            Common.EnmChip[] useChipFromMub = ((MucomJava) audio.driverVirtual).useChipsFromMub(vgmBuf);
 
             //stop();
             audio.chipRegister.resetChips();
@@ -104,11 +102,11 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 chip.samplingRate = 55467;
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass() /* Ym2608Inst.class */);
-                chip.clock = MucomDotNET.opnaBaseClock;
+                chip.clock = MucomJava.opnaBaseClock;
                 chip.option = new Object[] {fn};
                 chips.add(chip);
                 audio.useChip.add(Common.EnmChip.YM2608);
-                audio.clockYM2608 = MucomDotNET.opnaBaseClock;
+                audio.clockYM2608 = MucomJava.opnaBaseClock;
             }
 
             if (useChipFromMub[1] != Common.EnmChip.Unuse) {
@@ -131,7 +129,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 chip.samplingRate = 55467;
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class);
-                chip.clock = MucomDotNET.opnaBaseClock;
+                chip.clock = MucomJava.opnaBaseClock;
                 chip.option = new Object[] {fn};
                 chips.add(chip);
                 audio.useChip.add(Common.EnmChip.S_YM2608);
@@ -144,7 +142,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.instrument = ym2610;
                 chip.samplingRate = 55467;
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Inst.class);
-                chip.clock = MucomDotNET.opnbBaseClock;
+                chip.clock = MucomJava.opnbBaseClock;
                 chip.setVolumes.put("FM", ym2610::setFMVolume);
                 chip.setVolumes.put("PSG", ym2610::setPSGVolume);
                 chip.setVolumes.put("AdpcmA", ym2610::setAdpcmAVolume);
@@ -152,7 +150,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.option = null;
                 chips.add(chip);
                 audio.useChip.add(Common.EnmChip.YM2610);
-                audio.clockYM2610 = MucomDotNET.opnbBaseClock;
+                audio.clockYM2610 = MucomJava.opnbBaseClock;
             }
 
             if (useChipFromMub[3] != Common.EnmChip.Unuse) {
@@ -162,7 +160,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.instrument = ym2610;
                 chip.samplingRate = 55467; // (int)setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Inst.class);
-                chip.clock = MucomDotNET.opnbBaseClock;
+                chip.clock = MucomJava.opnbBaseClock;
                 chip.setVolumes.put("FM", ym2610::setFMVolume);
                 chip.setVolumes.put("PSG", ym2610::setPSGVolume);
                 chip.setVolumes.put("AdpcmA", ym2610::setAdpcmAVolume);
@@ -179,7 +177,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.instrument = ym2151;
                 chip.samplingRate = 55467; // (int)setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class);
-                chip.clock = MucomDotNET.opmBaseClock;
+                chip.clock = MucomJava.opmBaseClock;
                 chip.option = null;
                 chips.add(chip);
                 audio.useChip.add(Common.EnmChip.YM2151);
@@ -213,8 +211,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, Common.EnmModel.VirtualModel);
             audio.chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, Common.EnmModel.RealModel);
 
-            audio.chipRegister.writeYm2608Clock((byte) 0, MucomDotNET.opnaBaseClock, Common.EnmModel.RealModel);
-            audio.chipRegister.writeYm2608Clock((byte) 1, MucomDotNET.opnaBaseClock, Common.EnmModel.RealModel);
+            audio.chipRegister.writeYm2608Clock((byte) 0, MucomJava.opnaBaseClock, Common.EnmModel.RealModel);
+            audio.chipRegister.writeYm2608Clock((byte) 1, MucomJava.opnaBaseClock, Common.EnmModel.RealModel);
             audio.chipRegister.setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
             audio.chipRegister.setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
 

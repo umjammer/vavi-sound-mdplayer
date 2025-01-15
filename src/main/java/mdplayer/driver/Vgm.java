@@ -257,7 +257,9 @@ logger.log(Level.DEBUG, "ret: not analyze 2");
             }
 
             int cmd = vgmBuf[vgmAdr] & 0xff;
-logger.log(Level.DEBUG, "[%s]: adr: 0x%x, cmd: 0x%x".formatted(model, vgmAdr, vgmBuf[vgmAdr])); // ok
+//if (!List.of(0xc0).contains(cmd)) {
+ logger.log(Level.DEBUG, "[%s]: adr: 0x%x, cmd: 0x%x".formatted(model, vgmAdr, cmd)); // ok
+//}
             if (vgmCmdTbl[cmd] != null) {
                 //if (model == EnmModel.VirtualModel) logger.log(Level.DEBUG, "%05x : %02x ".formatted(vgmAdr, vgmBuf[vgmAdr]));
                 vgmCmdTbl[cmd].run();
@@ -285,7 +287,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
         if (model == mdplayer.Common.EnmModel.RealModel && isDataBlock) {
             isDataBlock = false;
-            //logger.log(Level.TRACE, "%s countnum:%d".formatted(model, countNum));
+            //logger.log(Level.TRACE, "%s countNum:%d".formatted(model, countNum));
             countNum = 0;
         }
 
@@ -1163,6 +1165,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private void vcWaitN1Samples() {
+//logger.log(Level.DEBUG, vgmAdr + ": " + (vgmBuf[vgmAdr] & 0xff) + ", " + ((vgmBuf[vgmAdr] & 0xff) - 0x6f));
         vgmWait += (vgmBuf[vgmAdr] & 0xff) - 0x6f;
         vgmAdr++;
     }
@@ -1669,7 +1672,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 //#ifndef BIG_ENDIAN
 //                    *((UINT16*)outPos) = (UINT16)outVal;
 //#else
-                    bank.data[outPos + 0x00] = (byte) ((outVal & 0x00FF) >> 0);
+                    bank.data[outPos + 0x00] = (byte) ((outVal & 0x00ff) >> 0);
                     bank.data[outPos + 0x01] = (byte) ((outVal & 0xff00) >> 8);
 //#endif
                     break;

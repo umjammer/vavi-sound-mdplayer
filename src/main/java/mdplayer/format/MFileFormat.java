@@ -6,8 +6,7 @@ import java.util.List;
 import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.pmd.PMDDotNET;
-import mdplayer.plugin.MGSPlugin;
+import mdplayer.driver.pmd.PMDJava;
 import mdplayer.plugin.PMDPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.util.archive.Archive;
@@ -28,11 +27,11 @@ public class MFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
+    public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
         int index = 0;
-        Vgm.Gd3 gd3 = new PMDDotNET().getGD3Info(buf, index, PMDDotNET.PMDFileType.M);
+        Vgm.Gd3 gd3 = new PMDJava().getGD3Info(buf, index, PMDJava.PMDFileType.M);
         music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
         music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
         music.game = gd3.gameName;
@@ -47,7 +46,7 @@ public class MFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
+    public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */) {
         return getMusicCommon(ms, buf, zipFile);
     }
 

@@ -413,6 +413,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 Ym2151Inst ym2151 = null;
                 MameYm2151Inst ym2151_mame = null;
                 X68SoundYm2151Inst ym2151_x68sound = null;
+                YmFmYm2151Inst ym2151_ymfm = null;
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2151DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
@@ -426,6 +427,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[2]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[2])) {
                         if (ym2151_x68sound == null) ym2151_x68sound = Instrument.getInstrument(X68SoundYm2151Inst.class);
                         chip.instrument = ym2151_x68sound;
+                    } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[3]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[3])) {
+                        if (ym2151_ymfm == null) ym2151_ymfm = Instrument.getInstrument(YmFmYm2151Inst.class);
+                        chip.instrument = ym2151_ymfm;
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();

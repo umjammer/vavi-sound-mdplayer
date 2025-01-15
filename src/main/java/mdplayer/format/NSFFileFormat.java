@@ -33,7 +33,7 @@ public class NSFFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/) {
+    public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
         Nsf nsf = new Nsf();
@@ -75,7 +75,7 @@ public class NSFFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
+    public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
         Nsf nsf = new Nsf();

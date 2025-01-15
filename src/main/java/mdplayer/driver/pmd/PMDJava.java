@@ -34,16 +34,15 @@ import musicDriverInterface.CompilerInfo;
 import musicDriverInterface.GD3Tag;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
-import musicDriverInterface.InstanceMarker;
 import musicDriverInterface.MmlDatum;
 import musicDriverInterface.Tag;
 
 import static java.lang.System.getLogger;
 
 
-public class PMDDotNET extends BaseDriver {
+public class PMDJava extends BaseDriver {
 
-    private static final Logger logger = getLogger(PMDDotNET.class.getName());
+    private static final Logger logger = getLogger(PMDJava.class.getName());
 
     private ICompiler pmdCompiler = null;
 
@@ -71,12 +70,8 @@ public class PMDDotNET extends BaseDriver {
 
     private PMDFileType mtype;
 
-    public PMDDotNET() {
-        // "chips\\driver\\PMDDotNETCompiler.dll"
-        // "chips\\driver\\PMDDotNETdll"
+    public PMDJava() {
     }
-
-    InstanceMarker im;
 
     public Gd3 getGD3Info(byte[] buf, int vgmGd3, PMDFileType mtype) {
         GD3Tag gt;
@@ -88,11 +83,11 @@ public class PMDDotNET extends BaseDriver {
             envPmd = env.getEnvVal("pmd");
             envPmdOpt = env.getEnvVal("pmdopt");
 
-            pmdCompiler = im.getCompiler("PMDDotNET.Compiler.Compiler");
+            pmdCompiler = ICompiler.factory("pmd.compiler.Compiler");
             pmdCompiler.setCompileSwitch((Function<String, Stream>) this::appendFileReaderCallback);
             gt = pmdCompiler.getGD3TagInfo(buf);
         } else {
-            pmdDriver = im.getDriver("PMDDotNET.Driver.Driver");
+            pmdDriver = IDriver.factory("pmd.driver.Driver");
             // pmdDriver.SetDriverSwitch((Func<String, Stream>)appendFileReaderCallback);
             gt = pmdDriver.getGD3TagInfo(buf);
         }
@@ -232,7 +227,7 @@ public class PMDDotNET extends BaseDriver {
             return false;
         }
 
-        if (pmdDriver == null) pmdDriver = im.getDriver("PMDDotNET.Driver.Driver");
+        if (pmdDriver == null) pmdDriver = IDriver.factory("pmd.driver.Driver");
 
 //        boolean notSoundBoard2 = false;
         boolean isLoadADPCM = true;
@@ -350,7 +345,7 @@ public class PMDDotNET extends BaseDriver {
 
     private boolean initM() {
         if (pmdDriver == null)
-            pmdDriver = im.getDriver("PMDDotNET.Driver.Driver");
+            pmdDriver = IDriver.factory("pmd.driver.Driver");
 
         // boolean notSoundBoard2 = false;
         boolean isLoadADPCM = true;

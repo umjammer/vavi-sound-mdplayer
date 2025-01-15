@@ -6,10 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
 import javax.swing.JOptionPane;
 
-import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
@@ -19,6 +17,7 @@ import dotnet4j.io.IOException;
 import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
+import dotnet4j.util.compat.Tuple;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
@@ -29,19 +28,18 @@ import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
 import musicDriverInterface.GD3Tag;
-import musicDriverInterface.InstanceMarker;
-import musicDriverInterface.MmlDatum;
-import musicDriverInterface.Tag;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
+import musicDriverInterface.MmlDatum;
+import musicDriverInterface.Tag;
+import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
 
 
-public class MoonDriverDotNET extends BaseDriver {
+public class MoonDriverJava extends BaseDriver {
 
-    private static final Logger logger = getLogger(MoonDriverDotNET.class.getName());
+    private static final Logger logger = getLogger(MoonDriverJava.class.getName());
 
     private ICompiler moonDriverCompiler = null;
     private IDriver moonDriverDriver = null;
@@ -57,23 +55,19 @@ public class MoonDriverDotNET extends BaseDriver {
         PlayingFileName = value;
     }
 
-    public MoonDriverDotNET() {
-        // "chips\\driver\\moonDriverDotNETCompiler.dll"
-        // "chips\\driver\\moonDriverDotNETdll"
+    public MoonDriverJava() {
     }
-
-    InstanceMarker im;
 
     @Override
     public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        mtype = CheckFileType(buf);
+        mtype = checkFileType(buf);
         GD3Tag gt;
 
         if (mtype == MoonDriverFileType.MDL) {
-            moonDriverCompiler = im.getCompiler("MoonDriverDotNET.Compiler.Compiler");
+            moonDriverCompiler = ICompiler.factory("moonDriver.compiler.Compiler");
             gt = moonDriverCompiler.getGD3TagInfo(buf);
         } else {
-            moonDriverDriver = im.getDriver("MoonDriverDotNET.Driver.Driver");
+            moonDriverDriver = IDriver.factory("moonDriver.driver.Driver");
             gt = moonDriverDriver.getGD3TagInfo(buf);
         }
 
@@ -157,8 +151,8 @@ public class MoonDriverDotNET extends BaseDriver {
         }
     }
 
-    public byte[] Compile(byte[] vgmBuf) {
-        if (moonDriverCompiler == null) moonDriverCompiler = im.getCompiler("MoonDriverDotNET.Compiler.Compiler");
+    public byte[] compile(byte[] vgmBuf) {
+        if (moonDriverCompiler == null) moonDriverCompiler = ICompiler.factory("moonDriver.compiler.Compiler");
         moonDriverCompiler.init();
         moonDriverCompiler.setCompileSwitch("SRC");
         moonDriverCompiler.setCompileSwitch("MoonDriverOption=-i");
@@ -182,7 +176,8 @@ public class MoonDriverDotNET extends BaseDriver {
         if (ret == null || info == null) return null;
         if (!info.errorList.isEmpty()) {
             if (model == EnmModel.VirtualModel) {
-                JOptionPane.showMessageDialog(null, "Compile error");
+//                JOptionPane.showMessageDialog(null, "Compile error");
+                throw new IllegalStateException("Compile error");
             }
             return null;
         }
@@ -192,7 +187,7 @@ public class MoonDriverDotNET extends BaseDriver {
             dest.add(md != null ? (byte) (md.dat & 0xff) : (byte) 0);
         }
 
-        return toByteArray(dest);
+        return ByteUtil.toByteArray(dest);
     }
 
     public enum MoonDriverFileType {
@@ -201,7 +196,7 @@ public class MoonDriverDotNET extends BaseDriver {
         MDL
     }
 
-    private MoonDriverFileType CheckFileType(byte[] buf) {
+    private MoonDriverFileType checkFileType(byte[] buf) {
         if (buf == null || buf.length < 4) {
             return MoonDriverFileType.unknown;
         }
@@ -242,7 +237,7 @@ public class MoonDriverDotNET extends BaseDriver {
             return false;
         }
 
-        if (moonDriverDriver == null) moonDriverDriver = im.getDriver("MoonDriverDotNET.Driver.Driver");
+        if (moonDriverDriver == null) moonDriverDriver = IDriver.factory("moonDriver.driver.Driver");
 
         //boolean notSoundBoard2 = false;
         //boolean isLoadADPCM = true;
@@ -279,7 +274,7 @@ public class MoonDriverDotNET extends BaseDriver {
     }
 
     private boolean initMDR() {
-        if (moonDriverDriver == null) moonDriverDriver = im.getDriver("MoonDriverDotNET.Driver.Driver");
+        if (moonDriverDriver == null) moonDriverDriver = IDriver.factory("moonDriver.driver.Driver");
 
         List<MmlDatum> buf = new ArrayList<>();
         for (byte b : vgmBuf) buf.add(new MmlDatum(b));

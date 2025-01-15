@@ -109,7 +109,7 @@ public class Audio {
         return buffer;
     }
 
-    protected void convert2ByteToShort(short[] destBuffer, int offset, byte[] source, int shortCount) {
+    protected static void convert2ByteToShort(short[] destBuffer, int offset, byte[] source, int shortCount) {
         int samplesRead = shortCount;
         for (int n = 0; n < samplesRead; n++) {
             destBuffer[n] = ByteUtil.readLeShort(source, offset + n * Short.BYTES); // volume;
@@ -160,7 +160,7 @@ public class Audio {
         return Math.min(max, Math.max(v, min));
     }
 
-int CC;
+//int CC;
     protected int trdVgmVirtualMainFunction(short[] buffer, int offset, int sampleCount) {
         if (buffer == null || buffer.length < 1 || sampleCount == 0) return 0;
         if (driverVirtual == null) return sampleCount;

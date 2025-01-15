@@ -234,7 +234,7 @@ public class Common {
         return n;
     }
 
-   public static int getOPENAIRRhythmStream(float freq) {
+    public static int getOPENAIRRhythmStream(float freq) {
         float m = Float.MAX_VALUE;
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
@@ -347,6 +347,7 @@ public class Common {
      * Empty the directory
      */
     public static void deleteDataUnderDirectory(Path directory) throws IOException {
+logger.log(Level.DEBUG, "delete: " + directory);
         Files.walk(directory)
                 .sorted(Comparator.reverseOrder())
                 .filter(p -> p != directory)
@@ -358,6 +359,7 @@ public class Common {
      * Change the attributes of a folder or file
      */
     public static void removeReadonlyAttribute(Path dir) {
+logger.log(Level.DEBUG, "delete attributes: " + dir);
         try {
             Files.walk(dir)
                     .sorted(Comparator.reverseOrder())
@@ -382,8 +384,14 @@ public class Common {
             else {
                 chk = getApplicationFolder().resolve(fn);
                 if (Files.exists(chk)) ffn = chk;
+                else {
+                    // TODO mdsound in mdplayer
+                    chk = Path.of(System.getProperty("mdsound.pcm.path", "")).resolve(fn);
+                    if (Files.exists(chk)) ffn = chk;
+                }
             }
 
+logger.log(Level.DEBUG, "rhythm file: " + ffn);
             if (!Files.exists(ffn)) return null;
             FileStream fs = new FileStream(ffn.toString(), FileMode.Open, FileAccess.Read, FileShare.Read);
             return fs;

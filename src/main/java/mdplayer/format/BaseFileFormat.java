@@ -30,7 +30,7 @@ public abstract class BaseFileFormat implements FileFormat {
 
     private static final Logger logger = getLogger(BaseFileFormat.class.getName());
 
-    protected List<PlayList.Music> getMusicCommon(PlayList.Music ms, byte[] buf, String zipFile/* = null*/) {
+    protected List<PlayList.Music> getMusicCommon(PlayList.Music ms, byte[] buf, String zipFile /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
 

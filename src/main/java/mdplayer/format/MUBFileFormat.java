@@ -6,7 +6,7 @@ import java.util.List;
 import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.mucom.MucomDotNET;
+import mdplayer.driver.mucom.MucomJava;
 import mdplayer.plugin.MucomPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
@@ -28,10 +28,10 @@ public class MUBFileFormat extends BaseFileFormat {
     }
 
     @Override
-    public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry/* = null*/) {
+    public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
-        Vgm.Gd3 gd3 = new MucomDotNET().getGD3Info(buf);
+        Vgm.Gd3 gd3 = new MucomJava().getGD3Info(buf);
         music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
         music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
         music.game = gd3.gameName;
