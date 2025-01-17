@@ -72,9 +72,10 @@ public class MoonDriver extends BaseDriver {
                     a = af;
                     a += 2;
                 }
-                writeMemory((short) (0x8000 + (i % 0x4000)), vgmBuf[i]);
+                writeMemory((0x8000 + (i % 0x4000)) & 0xffff, vgmBuf[i] & 0xff);
             }
         } catch (Exception ex) {
+logger.log(Level.DEBUG, ex.getMessage(), ex);
             throw new IllegalStateException("Driver initialization failed.", ex);
         }
 
@@ -854,16 +855,16 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void get_table_hl_2de() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         hl++;
-        hl = readMemory(hl) * 0x100 + a;
+        hl = (readMemory(hl) & 0xff) * 0x100 + a;
 
         hl += e;
         hl += e;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         hl++;
-        hl =readMemory(hl) * 0x100 + a;
+        hl =(readMemory(hl) & 0xff) * 0x100 + a;
     }
 
     /**
@@ -876,13 +877,13 @@ public class MoonDriver extends BaseDriver {
         a = work.seq_cur_ch;
         e = a;
         d = 0x00;
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         hl++;
 
-        hl = readMemory(hl) * 0x100 + a;
+        hl = (readMemory(hl) & 0xff) * 0x100 + a;
         hl += e;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
     }
 
     /**
@@ -896,7 +897,7 @@ public class MoonDriver extends BaseDriver {
         work.seq_cur_ch = a;
         changePage3(); // Page to Top
 
-        a = readMemory(S_DEVICE_FLAGS);
+        a = (readMemory(S_DEVICE_FLAGS) & 0xff);
         if (a == 0) a = 1; // OPL4 by default
         b = a;
         iy = 0; // fm_opbtbl;
@@ -1168,7 +1169,7 @@ public class MoonDriver extends BaseDriver {
             do {
                 // Read command from memory
                 set_page3_ch();
-                a = readMemory(hl);
+                a = (readMemory(hl) & 0xff);
                 hl++;
 
                 if (CP_CF(0xe0)) {
@@ -1227,7 +1228,7 @@ public class MoonDriver extends BaseDriver {
             return;
         }
         if (a == 0) {
-            a = readMemory(hl); // read repeat counter
+            a = (readMemory(hl) & 0xff); // read repeat counter
         }
 
         // seq_skip_set_repcnt_end:
@@ -1244,7 +1245,7 @@ public class MoonDriver extends BaseDriver {
         }
 
         if (a == 0) {
-            a = readMemory(hl); // read repeat counter
+            a = (readMemory(hl) & 0xff); // read repeat counter
         }
 
         // seq_skip_set_repcnt_esc:
@@ -1319,7 +1320,7 @@ public class MoonDriver extends BaseDriver {
 
         // note length
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
 
         work.ch[ix].cnt = a;
         hl++;
@@ -1328,7 +1329,7 @@ public class MoonDriver extends BaseDriver {
 
     private void read_cmd_length() {
         // pop af
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].cnt = a;
         hl++;
         seq_next();
@@ -1669,7 +1670,7 @@ public class MoonDriver extends BaseDriver {
     /** cmd $FD : volume */
     private void seq_volume() {
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].venv = a;
 
         if ((0x80 & a) == 0) {
@@ -1699,9 +1700,9 @@ public class MoonDriver extends BaseDriver {
         read_cmd_length();
 
         if (work.ch[ix].cnt == 255) {
-            int vee = readMemory(hl);
-            int v00 = readMemory(hl + 1);
-            int adr = (readMemory(hl + 2) + readMemory(hl + 3) * 0x100);
+            int vee = (readMemory(hl) & 0xff);
+            int v00 = (readMemory(hl + 1) & 0xff);
+            int adr = ((readMemory(hl + 2) & 0xff) + (readMemory(hl + 3) & 0xff) * 0x100);
             if (vee == 0xee && v00 == 0x00 && hl - 2 == adr) {
                 work.ch[ix].endFlg = true;
             }
@@ -1709,14 +1710,14 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void seq_detune() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
 
         work.ch[ix].detune = a;
         hl++;
     }
 
     private void seq_penv() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
 
         hl++;
         work.ch[ix].penv = a;
@@ -1726,7 +1727,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void seq_nenv() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
 
         hl++;
         work.ch[ix].nenv = a;
@@ -1736,11 +1737,11 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void seq_data_write() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         d = a; // Address Low
         hl++;
 
-        a = readMemory(hl); // Address High
+        a = (readMemory(hl) & 0xff); // Address High
         if (a == 0) {
             write_data_cur_fm(); // (a >> 8) == 0
             return;
@@ -1770,7 +1771,7 @@ public class MoonDriver extends BaseDriver {
     private void write_data_cur_fm() {
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
 
         e = a;// data
         hl++;
@@ -1785,7 +1786,7 @@ public class MoonDriver extends BaseDriver {
     private void write_data_fm1() {
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
 
         e = a;// data
         hl++;
@@ -1795,7 +1796,7 @@ public class MoonDriver extends BaseDriver {
     private void write_data_fm2() {
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
 
         e = a;// data
         hl++;
@@ -1805,7 +1806,7 @@ public class MoonDriver extends BaseDriver {
     private void write_data_wave() {
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
 
         e = a;// data
         hl++;
@@ -1817,7 +1818,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void seq_drum() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
 
         a &= 0x1f;
 
@@ -1838,7 +1839,7 @@ public class MoonDriver extends BaseDriver {
     private void seq_drumbit() {
         // drums key-off
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         a &= 0x1f;
         a ^= 0xff;
 
@@ -1854,7 +1855,7 @@ public class MoonDriver extends BaseDriver {
 
         // set fNum
         int hlb = hl;
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         a &= 0x1f;
 
         c = 0;
@@ -1889,7 +1890,7 @@ public class MoonDriver extends BaseDriver {
         a = work.seq_jump_flag;
         if (a == 0) {
             // drums key-on
-            a = readMemory(hl);
+            a = (readMemory(hl) & 0xff);
             a &= 0x1f;
             e = a;
             a = work.seq_reg_bd;
@@ -1903,7 +1904,7 @@ public class MoonDriver extends BaseDriver {
 
         // drumbit_skip_keyon:
         //  length check
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         a &= 0x80; // Lxxxxxxx L = the command has length
         if (a != 0) {
             //  drumbit with length
@@ -1947,12 +1948,12 @@ public class MoonDriver extends BaseDriver {
 
     private void seq_drumnote() {
         // set fNum
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         a &= 0x1f;
 
         int af = a;
         hl++;
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.seq_tmp_note = a;
         hl++;
         a = af;
@@ -2018,7 +2019,7 @@ public class MoonDriver extends BaseDriver {
 
     private void seq_inst() {
         // pop hl
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         int af = a;
         int hlb;
         a = 0;
@@ -2062,11 +2063,11 @@ public class MoonDriver extends BaseDriver {
 
         if (a == 0) {
             //seq_pan_opl4:
-            a = readMemory(hl);
+            a = (readMemory(hl) & 0xff);
             work.ch[ix].pan = a;
         } else {
             // seq_pan_fm:
-            a = readMemory(hl);
+            a = (readMemory(hl) & 0xff);
             a &= 0xf;
             a = (a << 1) + (((a & 0x80) != 0) ? 1 : 0); // rlca
             a = (a << 1) + (((a & 0x80) != 0) ? 1 : 0); // rlca
@@ -2082,25 +2083,25 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void seq_lfosw() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].lfo = a;
         hl++;
     }
 
     private void seq_bank() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         hl++;
 
         int af = a;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         hl++;
-        hl = (readMemory(hl) * 0x100 + a);
+        hl = ((readMemory(hl) & 0xff) * 0x100 + a);
 
         a = 0;
         changePage3();
-        int ltbl = readMemory(S_LOOP_TABLE) + readMemory((S_LOOP_TABLE + 1)) * 0x100 + ix * 2;
-        ltbl = readMemory(ltbl) + readMemory((ltbl + 1)) * 0x100;
+        int ltbl = (readMemory(S_LOOP_TABLE) & 0xff) + (readMemory((S_LOOP_TABLE + 1) & 0xff)) * 0x100 + ix * 2;
+        ltbl = (readMemory(ltbl) & 0xff) + (readMemory((ltbl + 1) & 0xff)) * 0x100;
         if (hl == ltbl) {
             work.ch[ix].loopCnt += (work.ch[ix].loopCnt == Integer.MAX_VALUE) ? 0 : 1;
         }
@@ -2116,10 +2117,10 @@ public class MoonDriver extends BaseDriver {
         a = work.ch[ix].dsel;
         if (a == 0) {
             // seq_damp_opl4:
-            a = readMemory(hl);
+            a = (readMemory(hl) & 0xff);
             work.ch[ix].damp = a;
         } else {
-            a = readMemory(hl);
+            a = (readMemory(hl) & 0xff);
             a &= 0x3f;
             e = a;
             d = 0x4;
@@ -2131,7 +2132,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void seq_revbsw() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].reverb = a;
         hl++;
     }
@@ -2141,7 +2142,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void seq_setop() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].opsel = a;
         hl++;
     }
@@ -2154,7 +2155,7 @@ public class MoonDriver extends BaseDriver {
         }
 
         // seq_ld2ops_fm:
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         int af = a;
         a = 0;
         changePage3();
@@ -2177,7 +2178,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void seq_tvp() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         a &= 0x7;
 
         a = (a >> 1) + ((a & 1) != 0 ? 0x80 : 0); // rrca
@@ -2196,7 +2197,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void seq_fbs() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         a &= 0x7;
 
         a = (a << 1) + ((a & 0x80) != 0 ? 1 : 0); // rlca
@@ -2212,7 +2213,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void seq_jump() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.seq_jump_flag = a;
         hl++;
     }
@@ -2350,7 +2351,7 @@ public class MoonDriver extends BaseDriver {
         a = 0;
         changePage3();
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         int af = a;
         set_page3_ch();
         a = af;
@@ -2487,11 +2488,11 @@ public class MoonDriver extends BaseDriver {
         work.seq_opsel = a;
 
         // FBS store to IDX_SYNTH(OxxFFFSS )
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         a &= 0x0e;
         a = (a << 1) + (((a & 0x80) != 0) ? 1 : 0); //rlca
         e = a;
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         a &= 0x01;
         a |= e;
         e = a;
@@ -2511,7 +2512,7 @@ public class MoonDriver extends BaseDriver {
             hl++;
         } else {
             // FBS-2  Store SynthType for 4OP
-            a = readMemory(hl);
+            a = (readMemory(hl) & 0xff);
             a &= 0x01;
             a = (a << 1) + (((a & 0x80) != 0) ? 1 : 0); // rlca
             a |= 0x80;// 4OP flag
@@ -2559,7 +2560,7 @@ public class MoonDriver extends BaseDriver {
         // moon_load_fmvol_lp:
         int i = 0;
         do {
-            a = readMemory(hl);
+            a = (readMemory(hl) & 0xff);
             work.ch[ix].ol[i] = (byte) a; // .ar_d1r = a;
             i++; // ix++;
             hl += (d << 8) + e;
@@ -2573,31 +2574,31 @@ public class MoonDriver extends BaseDriver {
     }
 
     private void moon_set_fmop() {
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         e = a;
         d = 0x20;
         moon_write_fmop();
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         e = a;
         d = 0x40;
         moon_write_fmop(); // OL
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         e = a;
         d = 0x60;
         moon_write_fmop();
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         e = a;
         d = (byte) 0x80;
         moon_write_fmop();
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         e = a;
         d = (byte) 0xe0;
         moon_write_fmop();
@@ -2618,9 +2619,9 @@ public class MoonDriver extends BaseDriver {
             af = a;
             int hlb = hl;
 
-            a = readMemory(hl);
+            a = (readMemory(hl) & 0xff);
             hl++;
-            a |= readMemory(hl);
+            a |= (readMemory(hl) & 0xff);
 
             if (a == 0) {
                 // tonesel_fin();//; if min == 0 && max == 0
@@ -2632,13 +2633,13 @@ public class MoonDriver extends BaseDriver {
             hl = hlb;
             a = af;
 
-            if (a - readMemory(hl) < 0) {
+            if (a - (readMemory(hl) & 0xff) < 0) {
                 // tonesel_skip01();// if a<(hl)
                 hl++;
                 hl += 0x000a;
             } else {
                 hl++;
-                if (a - readMemory(hl) <= 0) {
+                if (a - (readMemory(hl) & 0xff) <= 0) {
                     // tonesel_loadtone();// if a<(hl)
                     break;
                 } else {
@@ -2651,37 +2652,37 @@ public class MoonDriver extends BaseDriver {
         // tonesel_loadtone:
         af = a;
         hl++;
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].tone = a;
         hl++;
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].tone += a << 8;
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].p_ofs = a;
         hl++;
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].p_ofs += a << 8;
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].lfo_vib = a;
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].ol[0] = (byte) a; // .ar_d1r = a;
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].ol[1] = (byte) a; // .dl_d2r = a;
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].ol[2] = (byte) a; // .rc_rr = a;
         hl++;
 
-        a = readMemory(hl);
+        a = (readMemory(hl) & 0xff);
         work.ch[ix].ol[3] = (byte) a; // .am = a;
         hl++;
 
@@ -3487,7 +3488,7 @@ public class MoonDriver extends BaseDriver {
     // reset R/W address pointer
     private void moon_reset_sram_adrs() {
 
-        a = readMemory(MDR_DSTPCM);
+        a = (readMemory(MDR_DSTPCM) & 0xff);
 
         MDB_BASE[MDB_ADRHI] = (byte) a;
         a = 0;
@@ -3643,7 +3644,7 @@ public class MoonDriver extends BaseDriver {
         changePage3();
 
         // instanceof PCM packed song file?
-        a = readMemory(MDR_PACKED);
+        a = (readMemory(MDR_PACKED) & 0xff);
         // Output status for debug
         MDB_BASE[MDB_LDFLAG] = (byte) a;
 
@@ -3707,17 +3708,17 @@ public class MoonDriver extends BaseDriver {
         moon_reset_sram_adrs();
 
         // PCM number of banks
-        a = readMemory(MDR_PCMBANKS);
+        a = (readMemory(MDR_PCMBANKS) & 0xff);
 
         moon_pcm_numbanks = a;
         moon_pcm_bank_count = a;
 
         // size of lastbank
-        a = readMemory(MDR_LASTS);
+        a = (readMemory(MDR_LASTS) & 0xff);
         moon_pcm_lastsize = a;
 
         // size of start page
-        a = readMemory(MDR_STPCM);
+        a = (readMemory(MDR_STPCM) & 0xff);
         moon_pcm_bank = a;
 
         // start of source address
@@ -3765,7 +3766,7 @@ public class MoonDriver extends BaseDriver {
 
             //pcm_copy_lp:
             do {
-                a = readMemory(hl);
+                a = (readMemory(hl) & 0xff);
                 e = a;
                 d = 0x06;
 

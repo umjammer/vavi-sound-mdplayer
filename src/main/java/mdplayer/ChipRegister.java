@@ -1186,7 +1186,7 @@ public class ChipRegister {
 
         if ((dAddr & 0xf8) == 0x20) {
             int al = dData & 0x07; // AL
-            int ch = (dAddr & 0x7);
+            int ch = dAddr & 0x7;
 
             for (int i = 0; i < 4; i++) {
                 int slot = (i == 0) ? 0 : ((i == 1) ? 2 : ((i == 2) ? 1 : 3));
@@ -1200,6 +1200,8 @@ public class ChipRegister {
                                     mds.write(MameYm2151Inst.class, chipId, 0, 0x60 + i * 8 + ch, 127);
                                 if (ctYM2151[chipId].getUseEmu()[2])
                                     mds.write(X68SoundYm2151Inst.class, chipId, 0, 0x60 + i * 8 + ch, 127);
+                                if (ctYM2151[chipId].getUseEmu()[2])
+                                    mds.write(YmFmYm2151Inst.class, chipId, 0, 0x60 + i * 8 + ch, 127);
                             }
                         } else {
                             if (scYM2151 != null && scYM2151[chipId] != null)
@@ -1211,7 +1213,7 @@ public class ChipRegister {
         }
 
         if ((dAddr & 0xf0) == 0x60 || (dAddr & 0xf0) == 0x70) { // TL
-            int ch = (dAddr & 0x7);
+            int ch = dAddr & 0x7;
             dData &= 0x7f;
 
             dData = Math.min(dData + nowYM2151FadeoutVol[chipId], 127);
@@ -1226,6 +1228,8 @@ public class ChipRegister {
                     mds.write(MameYm2151Inst.class, chipId, 0, dAddr, dData);
                 if (ctYM2151[chipId].getUseEmu()[2])
                     mds.write(X68SoundYm2151Inst.class, chipId, 0, dAddr, dData);
+                if (ctYM2151[chipId].getUseEmu()[3])
+                    mds.write(YmFmYm2151Inst.class, chipId, 0, dAddr, dData);
             }
         } else {
             if (scYM2151[chipId] == null)
@@ -1266,6 +1270,8 @@ public class ChipRegister {
                     mds.write(MameYm2151Inst.class, chipId, 0, dAddr, dData);
                 if (ctYM2151[chipId].getUseEmu()[2])
                     mds.write(X68SoundYm2151Inst.class, chipId, 0, dAddr, dData);
+                if (ctYM2151[chipId].getUseEmu()[3])
+                    mds.write(YmFmYm2151Inst.class, chipId, 0, dAddr, dData);
             }
         } else {
             if (scYM2151[chipId] != null)
@@ -2384,8 +2390,7 @@ public class ChipRegister {
                 (model == EnmModel.VirtualModel && !ctYM2608[chipId].getUseReal()[0])) {
             if (dPort == 0 && dAddr == 0x28) {
                 int ch = (dData & 0x3) + ((dData & 0x4) > 0 ? 3 : 0);
-                if (ch >= 0 && ch < 6)// && (dData & 0xf0) > 0)
-                {
+                if (ch >= 0 && ch < 6) /* && (dData & 0xf0) > 0) */  {
                     if (ch != 2 || (fmRegisterYM2608[chipId][0][0x27] & 0xc0) != 0x40) {
                         if ((dData & 0xf0) != 0) {
                             fmKeyOnYM2608[chipId][ch] = (dData & 0xf0) | 1;
@@ -2428,7 +2433,6 @@ public class ChipRegister {
                     }
                 }
             }
-
         }
 
         if ((dAddr & 0xf0) == 0x40)// TL
@@ -2540,7 +2544,6 @@ public class ChipRegister {
 
             return scYM2608[chipId].getRegister(dPort * 0x100 + dAddr);
         }
-
     }
 
     private void writeYm2608(int chipId, int dPort, int dAddr, int dData, EnmModel model) {

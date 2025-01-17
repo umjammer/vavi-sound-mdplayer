@@ -25,8 +25,6 @@ import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
-import mucom88.compiler.Compiler;
-import mucom88.driver.Driver;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
@@ -41,9 +39,9 @@ import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
 
 
-public class MucomDotNET extends BaseDriver {
+public class MucomJava extends BaseDriver {
 
-    private static final Logger logger = getLogger(MucomDotNET.class.getName());
+    private static final Logger logger = getLogger(MucomJava.class.getName());
 
     private ICompiler mucomCompiler = null;
     private IDriver mucomDriver = null;
@@ -69,10 +67,10 @@ public class MucomDotNET extends BaseDriver {
         GD3Tag tag;
 
         if (mType == MUCOMFileType.MUC) {
-            mucomCompiler = new Compiler();
+            mucomCompiler = ICompiler.factory("mucom88.compiler.Compiler");
             tag = mucomCompiler.getGD3TagInfo(buf);
         } else {
-            mucomDriver = new Driver();
+            mucomDriver = IDriver.factory("mucom88.driver.Driver");
             tag = mucomDriver.getGD3TagInfo(buf);
         }
 
@@ -287,7 +285,7 @@ logger.log(Level.WARNING, "Extended mub file?");
     }
 
     public byte[] compile(byte[] vgmBuf) {
-        if (mucomCompiler == null) mucomCompiler = new mucom88.compiler.Compiler();
+        if (mucomCompiler == null) mucomCompiler = ICompiler.factory("mucom88.compiler.Compiler");
         mucomCompiler.init();
 
         MmlDatum[] ret;
@@ -374,7 +372,7 @@ logger.log(Level.WARNING, "Extended mub file?");
             return false;
         }
 
-        if (mucomDriver == null) mucomDriver = new mucom88.driver.Driver();
+        if (mucomDriver == null) mucomDriver = IDriver.factory("mucom88.driver.Driver");
 
         boolean notSoundBoard2 = false;
         boolean isLoadADPCM = true;

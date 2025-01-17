@@ -906,7 +906,7 @@ public class Setting implements Serializable {
             this.setYM2151Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2151Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2151Type()[i].setUseEmu(new boolean[3]); // 3 means {0: fmgen, 1: mame, 2: 68k}
+                this.getYM2151Type()[i].setUseEmu(new boolean[4]); // 4 means {0: fmgen, 1: mame, 2: 68k, 3: ymfm}
                 this.getYM2151Type()[i].getUseEmu()[0] = true;
                 this.getYM2151Type()[i].setUseReal(new boolean[1]);
             }
@@ -916,7 +916,7 @@ public class Setting implements Serializable {
             for (int i = 0; i < 2; i++) {
                 this.getYM2203Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 this.getYM2203Type()[i].setUseEmu(new boolean[2]); // 2 means {0: fmgen, 1: ymfm}
-                this.getYM2203Type()[i].getUseEmu()[1] = true;
+                this.getYM2203Type()[i].getUseEmu()[0] = true;
                 this.getYM2203Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -950,7 +950,7 @@ public class Setting implements Serializable {
             for (int i = 0; i < 2; i++) {
                 this.getYM2610Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo()});
                 this.getYM2610Type()[i].setUseEmu(new boolean[2]); // 2 means {0: fmgen, 1: ymfm}
-                this.getYM2610Type()[i].getUseEmu()[1] = true;
+                this.getYM2610Type()[i].getUseEmu()[0] = true;
                 this.getYM2610Type()[i].setUseReal(new boolean[3]);
             }
         }
@@ -2196,763 +2196,763 @@ public class Setting implements Serializable {
         }
 
 //#range Volume
-/*
-        private int ym2612Volume = 0;
 
-        public int getYM2612Volume() {
-            if (ym2612Volume > 20 || ym2612Volume < -192)
-                ym2612Volume = 0;
-            return ym2612Volume;
-        }
+//        private int ym2612Volume = 0;
+//
+//        public int getYM2612Volume() {
+//            if (ym2612Volume > 20 || ym2612Volume < -192)
+//                ym2612Volume = 0;
+//            return ym2612Volume;
+//        }
+//
+//        public void setYM2612Volume(int value) {
+//            ym2612Volume = value;
+//            if (ym2612Volume > 20 || ym2612Volume < -192)
+//                ym2612Volume = 0;
+//        }
+//
+//        private int sn76489Volume = 0;
+//
+//        public int getSN76489Volume() {
+//            if (sn76489Volume > 20 || sn76489Volume < -192)
+//                sn76489Volume = 0;
+//            return sn76489Volume;
+//        }
+//
+//        public void setSN76489Volume(int value) {
+//            sn76489Volume = value;
+//            if (sn76489Volume > 20 || sn76489Volume < -192)
+//                sn76489Volume = 0;
+//        }
+//
+//        private int rf5C68Volume = 0;
+//
+//        public int getRF5C68Volume() {
+//            if (rf5C68Volume > 20 || rf5C68Volume < -192)
+//                rf5C68Volume = 0;
+//            return rf5C68Volume;
+//        }
+//
+//        public void setRF5C68Volume(int value) {
+//            rf5C68Volume = value;
+//            if (rf5C68Volume > 20 || rf5C68Volume < -192)
+//                rf5C68Volume = 0;
+//        }
+//
+//        private int rf5C164Volume = 0;
+//
+//        public int getRF5C164Volume() {
+//            if (rf5C164Volume > 20 || rf5C164Volume < -192)
+//                rf5C164Volume = 0;
+//            return rf5C164Volume;
+//        }
+//
+//        public void setRF5C164Volume(int value) {
+//            rf5C164Volume = value;
+//            if (rf5C164Volume > 20 || rf5C164Volume < -192)
+//                rf5C164Volume = 0;
+//        }
+//
+//        private int pwmVolume = 0;
+//
+//        public int getPWMVolume() {
+//            if (pwmVolume > 20 || pwmVolume < -192)
+//                pwmVolume = 0;
+//            return pwmVolume;
+//        }
+//
+//        public void setPWMVolume(int value) {
+//            pwmVolume = value;
+//            if (pwmVolume > 20 || pwmVolume < -192)
+//                pwmVolume = 0;
+//        }
+//
+//        private int c140Volume = 0;
+//
+//        public int getC140Volume() {
+//            if (c140Volume > 20 || c140Volume < -192)
+//                c140Volume = 0;
+//            return c140Volume;
+//        }
+//
+//        public void setC140Volume(int value) {
+//            c140Volume = value;
+//            if (c140Volume > 20 || c140Volume < -192)
+//                c140Volume = 0;
+//        }
+//
+//        private int OkiM6258Volume = 0;
+//
+//        public int getOKIM6258Volume() {
+//            if (OkiM6258Volume > 20 || OkiM6258Volume < -192)
+//                OkiM6258Volume = 0;
+//            return OkiM6258Volume;
+//        }
+//
+//        public void setOKIM6258Volume(int value) {
+//            OkiM6258Volume = value;
+//            if (OkiM6258Volume > 20 || OkiM6258Volume < -192)
+//                OkiM6258Volume = 0;
+//        }
+//
+//        private int _OKIM6295Volume = 0;
+//
+//        public int getOKIM6295Volume() {
+//            if (_OKIM6295Volume > 20 || _OKIM6295Volume < -192)
+//                _OKIM6295Volume = 0;
+//            return _OKIM6295Volume;
+//        }
+//
+//        public void setOKIM6295Volume(int value) {
+//            _OKIM6295Volume = value;
+//            if (_OKIM6295Volume > 20 || _OKIM6295Volume < -192)
+//                _OKIM6295Volume = 0;
+//        }
+//
+//        private int _SEGAPCMVolume = 0;
+//
+//        public int getSEGAPCMVolume() {
+//            if (_SEGAPCMVolume > 20 || _SEGAPCMVolume < -192)
+//                _SEGAPCMVolume = 0;
+//            return _SEGAPCMVolume;
+//        }
+//
+//        public void setSEGAPCMVolume(int value) {
+//            _SEGAPCMVolume = value;
+//            if (_SEGAPCMVolume > 20 || _SEGAPCMVolume < -192)
+//                _SEGAPCMVolume = 0;
+//        }
+//
+//        private int _AY8910Volume = 0;
+//
+//        public int getAY8910Volume() {
+//            if (_AY8910Volume > 20 || _AY8910Volume < -192)
+//                _AY8910Volume = 0;
+//            return _AY8910Volume;
+//        }
+//
+//        public void setAY8910Volume(int value) {
+//            _AY8910Volume = value;
+//            if (_AY8910Volume > 20 || _AY8910Volume < -192)
+//                _AY8910Volume = 0;
+//        }
+//
+//        private int ym2413Volume = 0;
+//
+//        public int getYM2413Volume() {
+//            if (ym2413Volume > 20 || ym2413Volume < -192)
+//                ym2413Volume = 0;
+//            return ym2413Volume;
+//        }
+//
+//        public void setYM2413Volume(int value) {
+//            ym2413Volume = value;
+//            if (ym2413Volume > 20 || ym2413Volume < -192)
+//                ym2413Volume = 0;
+//        }
+//
+//        private int _YM3526Volume = 0;
+//
+//        public int getYM3526Volume() {
+//            if (_YM3526Volume > 20 || _YM3526Volume < -192)
+//                _YM3526Volume = 0;
+//            return _YM3526Volume;
+//        }
+//
+//        public void setYM3526Volume(int value) {
+//            _YM3526Volume = value;
+//            if (_YM3526Volume > 20 || _YM3526Volume < -192)
+//                _YM3526Volume = 0;
+//        }
+//
+//        private int _Y8950Volume = 0;
+//
+//        public int getY8950Volume() {
+//            if (_Y8950Volume > 20 || _Y8950Volume < -192)
+//                _Y8950Volume = 0;
+//            return _Y8950Volume;
+//        }
+//
+//        public void setY8950Volume(int value) {
+//            _Y8950Volume = value;
+//            if (_Y8950Volume > 20 || _Y8950Volume < -192)
+//                _Y8950Volume = 0;
+//        }
+//
+//        private int _HuC6280Volume = 0;
+//
+//        public int getHuC6280Volume() {
+//            if (_HuC6280Volume > 20 || _HuC6280Volume < -192)
+//                _HuC6280Volume = 0;
+//            return _HuC6280Volume;
+//        }
+//
+//        public void setHuC6280Volume(int value) {
+//            _HuC6280Volume = value;
+//            if (_HuC6280Volume > 20 || _HuC6280Volume < -192)
+//                _HuC6280Volume = 0;
+//        }
+//
+//        private int ym2151Volume = 0;
+//
+//        public int getYM2151Volume() {
+//            if (ym2151Volume > 20 || ym2151Volume < -192)
+//                ym2151Volume = 0;
+//            return ym2151Volume;
+//        }
+//
+//        public void setYM2151Volume(int value) {
+//            ym2151Volume = value;
+//            if (ym2151Volume > 20 || ym2151Volume < -192)
+//                ym2151Volume = 0;
+//        }
+//
+//        private int ym2608Volume = 0;
+//
+//        public int getYM2608Volume() {
+//            if (ym2608Volume > 20 || ym2608Volume < -192)
+//                ym2608Volume = 0;
+//            return ym2608Volume;
+//        }
+//
+//        public void setYM2608Volume(int value) {
+//            ym2608Volume = value;
+//            if (ym2608Volume > 20 || ym2608Volume < -192)
+//                ym2608Volume = 0;
+//        }
+//
+//        private int _YM2608FMVolume = 0;
+//
+//        public int getYM2608FMVolume() {
+//            if (_YM2608FMVolume > 20 || _YM2608FMVolume < -192)
+//                _YM2608FMVolume = 0;
+//            return _YM2608FMVolume;
+//        }
+//
+//        public void setYM2608FMVolume(int value) {
+//            _YM2608FMVolume = value;
+//            if (_YM2608FMVolume > 20 || _YM2608FMVolume < -192)
+//                _YM2608FMVolume = 0;
+//        }
+//
+//        private int _YM2608PSGVolume = 0;
+//
+//        public int getYM2608PSGVolume() {
+//            if (_YM2608PSGVolume > 20 || _YM2608PSGVolume < -192)
+//                _YM2608PSGVolume = 0;
+//            return _YM2608PSGVolume;
+//        }
+//
+//        public void setYM2608PSGVolume(int value) {
+//            _YM2608PSGVolume = value;
+//            if (_YM2608PSGVolume > 20 || _YM2608PSGVolume < -192)
+//                _YM2608PSGVolume = 0;
+//        }
+//
+//        private int _YM2608RhythmVolume = 0;
+//
+//        public int getYM2608RhythmVolume() {
+//            if (_YM2608RhythmVolume > 20 || _YM2608RhythmVolume < -192)
+//                _YM2608RhythmVolume = 0;
+//            return _YM2608RhythmVolume;
+//        }
+//
+//        public void setYM2608RhythmVolume(int value) {
+//            _YM2608RhythmVolume = value;
+//            if (_YM2608RhythmVolume > 20 || _YM2608RhythmVolume < -192)
+//                _YM2608RhythmVolume = 0;
+//        }
+//
+//        private int _YM2608AdpcmVolume = 0;
+//
+//        public int getYM2608AdpcmVolume() {
+//            if (_YM2608AdpcmVolume > 20 || _YM2608AdpcmVolume < -192)
+//                _YM2608AdpcmVolume = 0;
+//            return _YM2608AdpcmVolume;
+//        }
+//
+//        public void setYM2608AdpcmVolume(int value) {
+//            _YM2608AdpcmVolume = value;
+//            if (_YM2608AdpcmVolume > 20 || _YM2608AdpcmVolume < -192)
+//                _YM2608AdpcmVolume = 0;
+//        }
+//
+//        private int ym2203Volume = 0;
+//
+//        public int getYM2203Volume() {
+//            if (ym2203Volume > 20 || ym2203Volume < -192)
+//                ym2203Volume = 0;
+//            return ym2203Volume;
+//        }
+//
+//        public void setYM2203Volume(int value) {
+//            ym2203Volume = value;
+//            if (ym2203Volume > 20 || ym2203Volume < -192)
+//                ym2203Volume = 0;
+//        }
+//
+//        private int ym2203Fmvolume = 0;
+//
+//        public int getYM2203FMVolume() {
+//            if (ym2203Fmvolume > 20 || ym2203Fmvolume < -192)
+//                ym2203Fmvolume = 0;
+//            return ym2203Fmvolume;
+//        }
+//
+//        public void setYM2203FMVolume(int value) {
+//            ym2203Fmvolume = value;
+//            if (ym2203Fmvolume > 20 || ym2203Fmvolume < -192)
+//                ym2203Fmvolume = 0;
+//        }
+//
+//        private int ym2203Psgvolume = 0;
+//
+//        public int getYM2203PSGVolume() {
+//            if (ym2203Psgvolume > 20 || ym2203Psgvolume < -192)
+//                ym2203Psgvolume = 0;
+//            return ym2203Psgvolume;
+//        }
+//
+//        public void setYM2203PSGVolume(int value) {
+//            ym2203Psgvolume = value;
+//            if (ym2203Psgvolume > 20 || ym2203Psgvolume < -192)
+//                ym2203Psgvolume = 0;
+//        }
+//
+//        private int _YM2610Volume = 0;
+//
+//        public int getYM2610Volume() {
+//            if (_YM2610Volume > 20 || _YM2610Volume < -192)
+//                _YM2610Volume = 0;
+//            return _YM2610Volume;
+//        }
+//
+//        public void setYM2610Volume(int value) {
+//            _YM2610Volume = value;
+//            if (_YM2610Volume > 20 || _YM2610Volume < -192)
+//                _YM2610Volume = 0;
+//        }
+//
+//        private int _YM2610FMVolume = 0;
+//
+//        public int getYM2610FMVolume() {
+//            if (_YM2610FMVolume > 20 || _YM2610FMVolume < -192)
+//                _YM2610FMVolume = 0;
+//            return _YM2610FMVolume;
+//        }
+//
+//        public void setYM2610FMVolume(int value) {
+//            _YM2610FMVolume = value;
+//            if (_YM2610FMVolume > 20 || _YM2610FMVolume < -192)
+//                _YM2610FMVolume = 0;
+//        }
+//
+//        private int _YM2610PSGVolume = 0;
+//
+//        public int getYM2610PSGVolume() {
+//            if (_YM2610PSGVolume > 20 || _YM2610PSGVolume < -192)
+//                _YM2610PSGVolume = 0;
+//            return _YM2610PSGVolume;
+//        }
+//
+//        public void setYM2610PSGVolume(int value) {
+//            _YM2610PSGVolume = value;
+//            if (_YM2610PSGVolume > 20 || _YM2610PSGVolume < -192)
+//                _YM2610PSGVolume = 0;
+//        }
+//
+//        private int _YM2610AdpcmAVolume = 0;
+//
+//        public int getYM2610AdpcmAVolume() {
+//            if (_YM2610AdpcmAVolume > 20 || _YM2610AdpcmAVolume < -192)
+//                _YM2610AdpcmAVolume = 0;
+//            return _YM2610AdpcmAVolume;
+//        }
+//
+//        public void setYM2610AdpcmAVolume(int value) {
+//            _YM2610AdpcmAVolume = value;
+//            if (_YM2610AdpcmAVolume > 20 || _YM2610AdpcmAVolume < -192)
+//                _YM2610AdpcmAVolume = 0;
+//        }
+//
+//        private int _YM2610AdpcmBVolume = 0;
+//
+//        public int getYM2610AdpcmBVolume() {
+//            if (_YM2610AdpcmBVolume > 20 || _YM2610AdpcmBVolume < -192)
+//                _YM2610AdpcmBVolume = 0;
+//            return _YM2610AdpcmBVolume;
+//        }
+//
+//        public void setYM2610AdpcmBVolume(int value) {
+//            _YM2610AdpcmBVolume = value;
+//            if (_YM2610AdpcmBVolume > 20 || _YM2610AdpcmBVolume < -192)
+//                _YM2610AdpcmBVolume = 0;
+//        }
+//
+//        private int _YM3812Volume = 0;
+//
+//        public int getYM3812Volume() {
+//            if (_YM3812Volume > 20 || _YM3812Volume < -192)
+//                _YM3812Volume = 0;
+//            return _YM3812Volume;
+//        }
+//
+//        public void setYM3812Volume(int value) {
+//            _YM3812Volume = value;
+//            if (_YM3812Volume > 20 || _YM3812Volume < -192)
+//                _YM3812Volume = 0;
+//        }
+//
+//        private int _C352Volume = 0;
+//
+//        public int getC352Volume() {
+//            if (_C352Volume > 20 || _C352Volume < -192)
+//                _C352Volume = 0;
+//            return _C352Volume;
+//        }
+//
+//        public void setC352Volume(int value) {
+//            _C352Volume = value;
+//            if (_C352Volume > 20 || _C352Volume < -192)
+//                _C352Volume = 0;
+//        }
+//
+//        private int _SAA1099Volume = 0;
+//
+//        public int getSAA1099Volume() {
+//            if (_SAA1099Volume > 20 || _SAA1099Volume < -192)
+//                _SAA1099Volume = 0;
+//            return _SAA1099Volume;
+//        }
+//
+//        public void setSAA1099Volume(int value) {
+//            _SAA1099Volume = value;
+//            if (_SAA1099Volume > 20 || _SAA1099Volume < -192)
+//                _SAA1099Volume = 0;
+//        }
+//
+//        private int _WSwanVolume = 0;
+//
+//        public int getWSwanVolume() {
+//            if (_WSwanVolume > 20 || _WSwanVolume < -192)
+//                _WSwanVolume = 0;
+//            return _WSwanVolume;
+//        }
+//
+//        void setWSwanVolume(int value) {
+//            _WSwanVolume = value;
+//            if (_WSwanVolume > 20 || _WSwanVolume < -192)
+//                _WSwanVolume = 0;
+//        }
+//
+//        private int _POKEYVolume = 0;
+//
+//        public int getPOKEYVolume() {
+//            if (_POKEYVolume > 20 || _POKEYVolume < -192)
+//                _POKEYVolume = 0;
+//            return _POKEYVolume;
+//        }
+//
+//        void setPOKEYVolume(int value) {
+//            _POKEYVolume = value;
+//            if (_POKEYVolume > 20 || _POKEYVolume < -192)
+//                _POKEYVolume = 0;
+//        }
+//
+//        private int _PPZ8Volume = 0;
+//
+//        public int getPPZ8Volume() {
+//            if (_PPZ8Volume > 20 || _PPZ8Volume < -192)
+//                _PPZ8Volume = 0;
+//            return _PPZ8Volume;
+//        }
+//
+//        public void setPPZ8Volume(int value) {
+//            _PPZ8Volume = value;
+//            if (_PPZ8Volume > 20 || _PPZ8Volume < -192)
+//                _PPZ8Volume = 0;
+//        }
+//
+//        private int _X1_010Volume = 0;
+//
+//        public int getX1_010Volume() {
+//            if (_X1_010Volume > 20 || _X1_010Volume < -192)
+//                _X1_010Volume = 0;
+//            return _X1_010Volume;
+//        }
+//
+//        void setX1_010Volume(int value) {
+//            _X1_010Volume = value;
+//            if (_X1_010Volume > 20 || _X1_010Volume < -192)
+//                _X1_010Volume = 0;
+//        }
+//
+//        private int _K054539Volume = 0;
+//
+//        public int getK054539Volume() {
+//            if (_K054539Volume > 20 || _K054539Volume < -192)
+//                _K054539Volume = 0;
+//            return _K054539Volume;
+//        }
+//
+//        public void setK054539Volume(int value) {
+//            _K054539Volume = value;
+//            if (_K054539Volume > 20 || _K054539Volume < -192)
+//                _K054539Volume = 0;
+//        }
+//
+//        private int _APUVolume = 0;
+//
+//        public int getAPUVolume() {
+//            if (_APUVolume > 20 || _APUVolume < -192)
+//                _APUVolume = 0;
+//            return _APUVolume;
+//        }
+//
+//        public void setAPUVolume(int value) {
+//            _APUVolume = value;
+//            if (_APUVolume > 20 || _APUVolume < -192)
+//                _APUVolume = 0;
+//        }
+//
+//        private int _DMCVolume = 0;
+//
+//        public int getDMCVolume() {
+//            if (_DMCVolume > 20 || _DMCVolume < -192)
+//                _DMCVolume = 0;
+//            return _DMCVolume;
+//        }
+//
+//        public void setDMCVolume(int value) {
+//            _DMCVolume = value;
+//            if (_DMCVolume > 20 || _DMCVolume < -192)
+//                _DMCVolume = 0;
+//        }
+//
+//        private int _FDSVolume = 0;
+//
+//        public int getFDSVolume() {
+//            if (_FDSVolume > 20 || _FDSVolume < -192)
+//                _FDSVolume = 0;
+//            return _FDSVolume;
+//        }
+//
+//        public void setFDSVolume(int value) {
+//            _FDSVolume = value;
+//            if (_FDSVolume > 20 || _FDSVolume < -192)
+//                _FDSVolume = 0;
+//        }
+//
+//        private int _MMC5Volume = 0;
+//
+//        public int getMMC5Volume() {
+//            if (_MMC5Volume > 20 || _MMC5Volume < -192)
+//                _MMC5Volume = 0;
+//            return _MMC5Volume;
+//        }
+//
+//        public void setMMC5Volume(int value) {
+//            _MMC5Volume = value;
+//            if (_MMC5Volume > 20 || _MMC5Volume < -192)
+//                _MMC5Volume = 0;
+//        }
+//
+//        private int _N160Volume = 0;
+//
+//        public int getN160Volume() {
+//            if (_N160Volume > 20 || _N160Volume < -192)
+//                _N160Volume = 0;
+//            return _N160Volume;
+//        }
+//
+//        public void setN160Volume(int value) {
+//            _N160Volume = value;
+//            if (_N160Volume > 20 || _N160Volume < -192)
+//                _N160Volume = 0;
+//        }
+//
+//        private int _VRC6Volume = 0;
+//
+//        public int getVRC6Volume() {
+//            if (_VRC6Volume > 20 || _VRC6Volume < -192)
+//                _VRC6Volume = 0;
+//            return _VRC6Volume;
+//        }
+//
+//        public void setVRC6Volume(int value) {
+//            _VRC6Volume = value;
+//            if (_VRC6Volume > 20 || _VRC6Volume < -192)
+//                _VRC6Volume = 0;
+//        }
+//
+//        private int _VRC7Volume = 0;
+//
+//        public int getVRC7Volume() {
+//            if (_VRC7Volume > 20 || _VRC7Volume < -192)
+//                _VRC7Volume = 0;
+//            return _VRC7Volume;
+//        }
+//
+//        public void setVRC7Volume(int value) {
+//            _VRC7Volume = value;
+//            if (_VRC7Volume > 20 || _VRC7Volume < -192)
+//                _VRC7Volume = 0;
+//        }
+//
+//        private int _FME7Volume = 0;
+//
+//        public int getFME7Volume() {
+//            if (_FME7Volume > 20 || _FME7Volume < -192)
+//                _FME7Volume = 0;
+//            return _FME7Volume;
+//        }
+//
+//        public void setFME7Volume(int value) {
+//            _FME7Volume = value;
+//            if (_FME7Volume > 20 || _FME7Volume < -192)
+//                _FME7Volume = 0;
+//        }
+//
+//        private int _DMGVolume = 0;
+//
+//        public int getDMGVolume() {
+//            if (_DMGVolume > 20 || _DMGVolume < -192)
+//                _DMGVolume = 0;
+//            return _DMGVolume;
+//        }
+//
+//        public void setDMGVolume(int value) {
+//            _DMGVolume = value;
+//            if (_DMGVolume > 20 || _DMGVolume < -192)
+//                _DMGVolume = 0;
+//        }
+//
+//        private int _GA20Volume = 0;
+//
+//        public int getGA20Volume() {
+//            if (_GA20Volume > 20 || _GA20Volume < -192)
+//                _GA20Volume = 0;
+//            return _GA20Volume;
+//        }
+//
+//        public void setGA20Volume(int value) {
+//            _GA20Volume = value;
+//            if (_GA20Volume > 20 || _GA20Volume < -192)
+//                _GA20Volume = 0;
+//        }
+//
+//        private int _YMZ280BVolume = 0;
+//
+//        public int getYMZ280BVolume() {
+//            if (_YMZ280BVolume > 20 || _YMZ280BVolume < -192)
+//                _YMZ280BVolume = 0;
+//            return _YMZ280BVolume;
+//        }
+//
+//        public void setYMZ280BVolume(int value) {
+//            _YMZ280BVolume = value;
+//            if (_YMZ280BVolume > 20 || _YMZ280BVolume < -192)
+//                _YMZ280BVolume = 0;
+//        }
+//
+//        private int _YMF271Volume = 0;
+//
+//        public int getYMF271Volume() {
+//            if (_YMF271Volume > 20 || _YMF271Volume < -192)
+//                _YMF271Volume = 0;
+//            return _YMF271Volume;
+//        }
+//
+//        public void setYMF271Volume(int value) {
+//            _YMF271Volume = value;
+//            if (_YMF271Volume > 20 || _YMF271Volume < -192)
+//                _YMF271Volume = 0;
+//        }
+//
+//        private int _YMF262Volume = 0;
+//
+//        public int getYMF262Volume() {
+//            if (_YMF262Volume > 20 || _YMF262Volume < -192)
+//                _YMF262Volume = 0;
+//            return _YMF262Volume;
+//        }
+//
+//        public void setYMF262Volume(int value) {
+//            _YMF262Volume = value;
+//            if (_YMF262Volume > 20 || _YMF262Volume < -192)
+//                _YMF262Volume = 0;
+//        }
+//
+//        private int _YMF278BVolume = 0;
+//
+//        public int getYMF278BVolume() {
+//            if (_YMF278BVolume > 20 || _YMF278BVolume < -192)
+//                _YMF278BVolume = 0;
+//            return _YMF278BVolume;
+//        }
+//
+//        public void setYMF278BVolume(int value) {
+//            _YMF278BVolume = value;
+//            if (_YMF278BVolume > 20 || _YMF278BVolume < -192)
+//                _YMF278BVolume = 0;
+//        }
+//
+//        private int _MultiPCMVolume = 0;
+//
+//        public int getMultiPCMVolume() {
+//            if (_MultiPCMVolume > 20 || _MultiPCMVolume < -192)
+//                _MultiPCMVolume = 0;
+//            return _MultiPCMVolume;
+//        }
+//
+//        public void setMultiPCMVolume(int value) {
+//            _MultiPCMVolume = value;
+//            if (_MultiPCMVolume > 20 || _MultiPCMVolume < -192)
+//                _MultiPCMVolume = 0;
+//        }
+//
+//        private int _QSoundVolume = 0;
+//
+//        public int getQSoundVolume() {
+//            if (_QSoundVolume > 20 || _QSoundVolume < -192)
+//                _QSoundVolume = 0;
+//            return _QSoundVolume;
+//        }
+//
+//        public void setQSoundVolume(int value) {
+//            _QSoundVolume = value;
+//            if (_QSoundVolume > 20 || _QSoundVolume < -192)
+//                _QSoundVolume = 0;
+//        }
+//
+//        private int _K051649Volume = 0;
+//
+//        public int getK051649Volume() {
+//            if (_K051649Volume > 20 || _K051649Volume < -192)
+//                _K051649Volume = 0;
+//            return _K051649Volume;
+//        }
+//
+//        public void setK051649Volume(int value) {
+//            _K051649Volume = value;
+//            if (_K051649Volume > 20 || _K051649Volume < -192)
+//                _K051649Volume = 0;
+//        }
+//
+//        private int _K053260Volume = 0;
+//
+//        public int getK053260Volume() {
+//            if (_K053260Volume > 20 || _K053260Volume < -192)
+//                _K053260Volume = 0;
+//            return _K053260Volume;
+//        }
+//
+//        public void setK053260Volume(int value) {
+//            _K053260Volume = value;
+//            if (_K053260Volume > 20 || _K053260Volume < -192)
+//                _K053260Volume = 0;
+//        }
 
-        public void setYM2612Volume(int value) {
-            ym2612Volume = value;
-            if (ym2612Volume > 20 || ym2612Volume < -192)
-                ym2612Volume = 0;
-        }
-
-        private int sn76489Volume = 0;
-
-        public int getSN76489Volume() {
-            if (sn76489Volume > 20 || sn76489Volume < -192)
-                sn76489Volume = 0;
-            return sn76489Volume;
-        }
-
-        public void setSN76489Volume(int value) {
-            sn76489Volume = value;
-            if (sn76489Volume > 20 || sn76489Volume < -192)
-                sn76489Volume = 0;
-        }
-
-        private int rf5C68Volume = 0;
-
-        public int getRF5C68Volume() {
-            if (rf5C68Volume > 20 || rf5C68Volume < -192)
-                rf5C68Volume = 0;
-            return rf5C68Volume;
-        }
-
-        public void setRF5C68Volume(int value) {
-            rf5C68Volume = value;
-            if (rf5C68Volume > 20 || rf5C68Volume < -192)
-                rf5C68Volume = 0;
-        }
-
-        private int rf5C164Volume = 0;
-
-        public int getRF5C164Volume() {
-            if (rf5C164Volume > 20 || rf5C164Volume < -192)
-                rf5C164Volume = 0;
-            return rf5C164Volume;
-        }
-
-        public void setRF5C164Volume(int value) {
-            rf5C164Volume = value;
-            if (rf5C164Volume > 20 || rf5C164Volume < -192)
-                rf5C164Volume = 0;
-        }
-
-        private int pwmVolume = 0;
-
-        public int getPWMVolume() {
-            if (pwmVolume > 20 || pwmVolume < -192)
-                pwmVolume = 0;
-            return pwmVolume;
-        }
-
-        public void setPWMVolume(int value) {
-            pwmVolume = value;
-            if (pwmVolume > 20 || pwmVolume < -192)
-                pwmVolume = 0;
-        }
-
-        private int c140Volume = 0;
-
-        public int getC140Volume() {
-            if (c140Volume > 20 || c140Volume < -192)
-                c140Volume = 0;
-            return c140Volume;
-        }
-
-        public void setC140Volume(int value) {
-            c140Volume = value;
-            if (c140Volume > 20 || c140Volume < -192)
-                c140Volume = 0;
-        }
-
-        private int OkiM6258Volume = 0;
-
-        public int getOKIM6258Volume() {
-            if (OkiM6258Volume > 20 || OkiM6258Volume < -192)
-                OkiM6258Volume = 0;
-            return OkiM6258Volume;
-        }
-
-        public void setOKIM6258Volume(int value) {
-            OkiM6258Volume = value;
-            if (OkiM6258Volume > 20 || OkiM6258Volume < -192)
-                OkiM6258Volume = 0;
-        }
-
-        private int _OKIM6295Volume = 0;
-
-        public int getOKIM6295Volume() {
-            if (_OKIM6295Volume > 20 || _OKIM6295Volume < -192)
-                _OKIM6295Volume = 0;
-            return _OKIM6295Volume;
-        }
-
-        public void setOKIM6295Volume(int value) {
-            _OKIM6295Volume = value;
-            if (_OKIM6295Volume > 20 || _OKIM6295Volume < -192)
-                _OKIM6295Volume = 0;
-        }
-
-        private int _SEGAPCMVolume = 0;
-
-        public int getSEGAPCMVolume() {
-            if (_SEGAPCMVolume > 20 || _SEGAPCMVolume < -192)
-                _SEGAPCMVolume = 0;
-            return _SEGAPCMVolume;
-        }
-
-        public void setSEGAPCMVolume(int value) {
-            _SEGAPCMVolume = value;
-            if (_SEGAPCMVolume > 20 || _SEGAPCMVolume < -192)
-                _SEGAPCMVolume = 0;
-        }
-
-        private int _AY8910Volume = 0;
-
-        public int getAY8910Volume() {
-            if (_AY8910Volume > 20 || _AY8910Volume < -192)
-                _AY8910Volume = 0;
-            return _AY8910Volume;
-        }
-
-        public void setAY8910Volume(int value) {
-            _AY8910Volume = value;
-            if (_AY8910Volume > 20 || _AY8910Volume < -192)
-                _AY8910Volume = 0;
-        }
-
-        private int ym2413Volume = 0;
-
-        public int getYM2413Volume() {
-            if (ym2413Volume > 20 || ym2413Volume < -192)
-                ym2413Volume = 0;
-            return ym2413Volume;
-        }
-
-        public void setYM2413Volume(int value) {
-            ym2413Volume = value;
-            if (ym2413Volume > 20 || ym2413Volume < -192)
-                ym2413Volume = 0;
-        }
-
-        private int _YM3526Volume = 0;
-
-        public int getYM3526Volume() {
-            if (_YM3526Volume > 20 || _YM3526Volume < -192)
-                _YM3526Volume = 0;
-            return _YM3526Volume;
-        }
-
-        public void setYM3526Volume(int value) {
-            _YM3526Volume = value;
-            if (_YM3526Volume > 20 || _YM3526Volume < -192)
-                _YM3526Volume = 0;
-        }
-
-        private int _Y8950Volume = 0;
-
-        public int getY8950Volume() {
-            if (_Y8950Volume > 20 || _Y8950Volume < -192)
-                _Y8950Volume = 0;
-            return _Y8950Volume;
-        }
-
-        public void setY8950Volume(int value) {
-            _Y8950Volume = value;
-            if (_Y8950Volume > 20 || _Y8950Volume < -192)
-                _Y8950Volume = 0;
-        }
-
-        private int _HuC6280Volume = 0;
-
-        public int getHuC6280Volume() {
-            if (_HuC6280Volume > 20 || _HuC6280Volume < -192)
-                _HuC6280Volume = 0;
-            return _HuC6280Volume;
-        }
-
-        public void setHuC6280Volume(int value) {
-            _HuC6280Volume = value;
-            if (_HuC6280Volume > 20 || _HuC6280Volume < -192)
-                _HuC6280Volume = 0;
-        }
-
-        private int ym2151Volume = 0;
-
-        public int getYM2151Volume() {
-            if (ym2151Volume > 20 || ym2151Volume < -192)
-                ym2151Volume = 0;
-            return ym2151Volume;
-        }
-
-        public void setYM2151Volume(int value) {
-            ym2151Volume = value;
-            if (ym2151Volume > 20 || ym2151Volume < -192)
-                ym2151Volume = 0;
-        }
-
-        private int ym2608Volume = 0;
-
-        public int getYM2608Volume() {
-            if (ym2608Volume > 20 || ym2608Volume < -192)
-                ym2608Volume = 0;
-            return ym2608Volume;
-        }
-
-        public void setYM2608Volume(int value) {
-            ym2608Volume = value;
-            if (ym2608Volume > 20 || ym2608Volume < -192)
-                ym2608Volume = 0;
-        }
-
-        private int _YM2608FMVolume = 0;
-
-        public int getYM2608FMVolume() {
-            if (_YM2608FMVolume > 20 || _YM2608FMVolume < -192)
-                _YM2608FMVolume = 0;
-            return _YM2608FMVolume;
-        }
-
-        public void setYM2608FMVolume(int value) {
-            _YM2608FMVolume = value;
-            if (_YM2608FMVolume > 20 || _YM2608FMVolume < -192)
-                _YM2608FMVolume = 0;
-        }
-
-        private int _YM2608PSGVolume = 0;
-
-        public int getYM2608PSGVolume() {
-            if (_YM2608PSGVolume > 20 || _YM2608PSGVolume < -192)
-                _YM2608PSGVolume = 0;
-            return _YM2608PSGVolume;
-        }
-
-        public void setYM2608PSGVolume(int value) {
-            _YM2608PSGVolume = value;
-            if (_YM2608PSGVolume > 20 || _YM2608PSGVolume < -192)
-                _YM2608PSGVolume = 0;
-        }
-
-        private int _YM2608RhythmVolume = 0;
-
-        public int getYM2608RhythmVolume() {
-            if (_YM2608RhythmVolume > 20 || _YM2608RhythmVolume < -192)
-                _YM2608RhythmVolume = 0;
-            return _YM2608RhythmVolume;
-        }
-
-        public void setYM2608RhythmVolume(int value) {
-            _YM2608RhythmVolume = value;
-            if (_YM2608RhythmVolume > 20 || _YM2608RhythmVolume < -192)
-                _YM2608RhythmVolume = 0;
-        }
-
-        private int _YM2608AdpcmVolume = 0;
-
-        public int getYM2608AdpcmVolume() {
-            if (_YM2608AdpcmVolume > 20 || _YM2608AdpcmVolume < -192)
-                _YM2608AdpcmVolume = 0;
-            return _YM2608AdpcmVolume;
-        }
-
-        public void setYM2608AdpcmVolume(int value) {
-            _YM2608AdpcmVolume = value;
-            if (_YM2608AdpcmVolume > 20 || _YM2608AdpcmVolume < -192)
-                _YM2608AdpcmVolume = 0;
-        }
-
-        private int ym2203Volume = 0;
-
-        public int getYM2203Volume() {
-            if (ym2203Volume > 20 || ym2203Volume < -192)
-                ym2203Volume = 0;
-            return ym2203Volume;
-        }
-
-        public void setYM2203Volume(int value) {
-            ym2203Volume = value;
-            if (ym2203Volume > 20 || ym2203Volume < -192)
-                ym2203Volume = 0;
-        }
-
-        private int ym2203Fmvolume = 0;
-
-        public int getYM2203FMVolume() {
-            if (ym2203Fmvolume > 20 || ym2203Fmvolume < -192)
-                ym2203Fmvolume = 0;
-            return ym2203Fmvolume;
-        }
-
-        public void setYM2203FMVolume(int value) {
-            ym2203Fmvolume = value;
-            if (ym2203Fmvolume > 20 || ym2203Fmvolume < -192)
-                ym2203Fmvolume = 0;
-        }
-
-        private int ym2203Psgvolume = 0;
-
-        public int getYM2203PSGVolume() {
-            if (ym2203Psgvolume > 20 || ym2203Psgvolume < -192)
-                ym2203Psgvolume = 0;
-            return ym2203Psgvolume;
-        }
-
-        public void setYM2203PSGVolume(int value) {
-            ym2203Psgvolume = value;
-            if (ym2203Psgvolume > 20 || ym2203Psgvolume < -192)
-                ym2203Psgvolume = 0;
-        }
-
-        private int _YM2610Volume = 0;
-
-        public int getYM2610Volume() {
-            if (_YM2610Volume > 20 || _YM2610Volume < -192)
-                _YM2610Volume = 0;
-            return _YM2610Volume;
-        }
-
-        public void setYM2610Volume(int value) {
-            _YM2610Volume = value;
-            if (_YM2610Volume > 20 || _YM2610Volume < -192)
-                _YM2610Volume = 0;
-        }
-
-        private int _YM2610FMVolume = 0;
-
-        public int getYM2610FMVolume() {
-            if (_YM2610FMVolume > 20 || _YM2610FMVolume < -192)
-                _YM2610FMVolume = 0;
-            return _YM2610FMVolume;
-        }
-
-        public void setYM2610FMVolume(int value) {
-            _YM2610FMVolume = value;
-            if (_YM2610FMVolume > 20 || _YM2610FMVolume < -192)
-                _YM2610FMVolume = 0;
-        }
-
-        private int _YM2610PSGVolume = 0;
-
-        public int getYM2610PSGVolume() {
-            if (_YM2610PSGVolume > 20 || _YM2610PSGVolume < -192)
-                _YM2610PSGVolume = 0;
-            return _YM2610PSGVolume;
-        }
-
-        public void setYM2610PSGVolume(int value) {
-            _YM2610PSGVolume = value;
-            if (_YM2610PSGVolume > 20 || _YM2610PSGVolume < -192)
-                _YM2610PSGVolume = 0;
-        }
-
-        private int _YM2610AdpcmAVolume = 0;
-
-        public int getYM2610AdpcmAVolume() {
-            if (_YM2610AdpcmAVolume > 20 || _YM2610AdpcmAVolume < -192)
-                _YM2610AdpcmAVolume = 0;
-            return _YM2610AdpcmAVolume;
-        }
-
-        public void setYM2610AdpcmAVolume(int value) {
-            _YM2610AdpcmAVolume = value;
-            if (_YM2610AdpcmAVolume > 20 || _YM2610AdpcmAVolume < -192)
-                _YM2610AdpcmAVolume = 0;
-        }
-
-        private int _YM2610AdpcmBVolume = 0;
-
-        public int getYM2610AdpcmBVolume() {
-            if (_YM2610AdpcmBVolume > 20 || _YM2610AdpcmBVolume < -192)
-                _YM2610AdpcmBVolume = 0;
-            return _YM2610AdpcmBVolume;
-        }
-
-        public void setYM2610AdpcmBVolume(int value) {
-            _YM2610AdpcmBVolume = value;
-            if (_YM2610AdpcmBVolume > 20 || _YM2610AdpcmBVolume < -192)
-                _YM2610AdpcmBVolume = 0;
-        }
-
-        private int _YM3812Volume = 0;
-
-        public int getYM3812Volume() {
-            if (_YM3812Volume > 20 || _YM3812Volume < -192)
-                _YM3812Volume = 0;
-            return _YM3812Volume;
-        }
-
-        public void setYM3812Volume(int value) {
-            _YM3812Volume = value;
-            if (_YM3812Volume > 20 || _YM3812Volume < -192)
-                _YM3812Volume = 0;
-        }
-
-        private int _C352Volume = 0;
-
-        public int getC352Volume() {
-            if (_C352Volume > 20 || _C352Volume < -192)
-                _C352Volume = 0;
-            return _C352Volume;
-        }
-
-        public void setC352Volume(int value) {
-            _C352Volume = value;
-            if (_C352Volume > 20 || _C352Volume < -192)
-                _C352Volume = 0;
-        }
-
-        private int _SAA1099Volume = 0;
-
-        public int getSAA1099Volume() {
-            if (_SAA1099Volume > 20 || _SAA1099Volume < -192)
-                _SAA1099Volume = 0;
-            return _SAA1099Volume;
-        }
-
-        public void setSAA1099Volume(int value) {
-            _SAA1099Volume = value;
-            if (_SAA1099Volume > 20 || _SAA1099Volume < -192)
-                _SAA1099Volume = 0;
-        }
-
-        private int _WSwanVolume = 0;
-
-        public int getWSwanVolume() {
-            if (_WSwanVolume > 20 || _WSwanVolume < -192)
-                _WSwanVolume = 0;
-            return _WSwanVolume;
-        }
-
-        void setWSwanVolume(int value) {
-            _WSwanVolume = value;
-            if (_WSwanVolume > 20 || _WSwanVolume < -192)
-                _WSwanVolume = 0;
-        }
-
-        private int _POKEYVolume = 0;
-
-        public int getPOKEYVolume() {
-            if (_POKEYVolume > 20 || _POKEYVolume < -192)
-                _POKEYVolume = 0;
-            return _POKEYVolume;
-        }
-
-        void setPOKEYVolume(int value) {
-            _POKEYVolume = value;
-            if (_POKEYVolume > 20 || _POKEYVolume < -192)
-                _POKEYVolume = 0;
-        }
-
-        private int _PPZ8Volume = 0;
-
-        public int getPPZ8Volume() {
-            if (_PPZ8Volume > 20 || _PPZ8Volume < -192)
-                _PPZ8Volume = 0;
-            return _PPZ8Volume;
-        }
-
-        public void setPPZ8Volume(int value) {
-            _PPZ8Volume = value;
-            if (_PPZ8Volume > 20 || _PPZ8Volume < -192)
-                _PPZ8Volume = 0;
-        }
-
-        private int _X1_010Volume = 0;
-
-        public int getX1_010Volume() {
-            if (_X1_010Volume > 20 || _X1_010Volume < -192)
-                _X1_010Volume = 0;
-            return _X1_010Volume;
-        }
-
-        void setX1_010Volume(int value) {
-            _X1_010Volume = value;
-            if (_X1_010Volume > 20 || _X1_010Volume < -192)
-                _X1_010Volume = 0;
-        }
-
-        private int _K054539Volume = 0;
-
-        public int getK054539Volume() {
-            if (_K054539Volume > 20 || _K054539Volume < -192)
-                _K054539Volume = 0;
-            return _K054539Volume;
-        }
-
-        public void setK054539Volume(int value) {
-            _K054539Volume = value;
-            if (_K054539Volume > 20 || _K054539Volume < -192)
-                _K054539Volume = 0;
-        }
-
-        private int _APUVolume = 0;
-
-        public int getAPUVolume() {
-            if (_APUVolume > 20 || _APUVolume < -192)
-                _APUVolume = 0;
-            return _APUVolume;
-        }
-
-        public void setAPUVolume(int value) {
-            _APUVolume = value;
-            if (_APUVolume > 20 || _APUVolume < -192)
-                _APUVolume = 0;
-        }
-
-        private int _DMCVolume = 0;
-
-        public int getDMCVolume() {
-            if (_DMCVolume > 20 || _DMCVolume < -192)
-                _DMCVolume = 0;
-            return _DMCVolume;
-        }
-
-        public void setDMCVolume(int value) {
-            _DMCVolume = value;
-            if (_DMCVolume > 20 || _DMCVolume < -192)
-                _DMCVolume = 0;
-        }
-
-        private int _FDSVolume = 0;
-
-        public int getFDSVolume() {
-            if (_FDSVolume > 20 || _FDSVolume < -192)
-                _FDSVolume = 0;
-            return _FDSVolume;
-        }
-
-        public void setFDSVolume(int value) {
-            _FDSVolume = value;
-            if (_FDSVolume > 20 || _FDSVolume < -192)
-                _FDSVolume = 0;
-        }
-
-        private int _MMC5Volume = 0;
-
-        public int getMMC5Volume() {
-            if (_MMC5Volume > 20 || _MMC5Volume < -192)
-                _MMC5Volume = 0;
-            return _MMC5Volume;
-        }
-
-        public void setMMC5Volume(int value) {
-            _MMC5Volume = value;
-            if (_MMC5Volume > 20 || _MMC5Volume < -192)
-                _MMC5Volume = 0;
-        }
-
-        private int _N160Volume = 0;
-
-        public int getN160Volume() {
-            if (_N160Volume > 20 || _N160Volume < -192)
-                _N160Volume = 0;
-            return _N160Volume;
-        }
-
-        public void setN160Volume(int value) {
-            _N160Volume = value;
-            if (_N160Volume > 20 || _N160Volume < -192)
-                _N160Volume = 0;
-        }
-
-        private int _VRC6Volume = 0;
-
-        public int getVRC6Volume() {
-            if (_VRC6Volume > 20 || _VRC6Volume < -192)
-                _VRC6Volume = 0;
-            return _VRC6Volume;
-        }
-
-        public void setVRC6Volume(int value) {
-            _VRC6Volume = value;
-            if (_VRC6Volume > 20 || _VRC6Volume < -192)
-                _VRC6Volume = 0;
-        }
-
-        private int _VRC7Volume = 0;
-
-        public int getVRC7Volume() {
-            if (_VRC7Volume > 20 || _VRC7Volume < -192)
-                _VRC7Volume = 0;
-            return _VRC7Volume;
-        }
-
-        public void setVRC7Volume(int value) {
-            _VRC7Volume = value;
-            if (_VRC7Volume > 20 || _VRC7Volume < -192)
-                _VRC7Volume = 0;
-        }
-
-        private int _FME7Volume = 0;
-
-        public int getFME7Volume() {
-            if (_FME7Volume > 20 || _FME7Volume < -192)
-                _FME7Volume = 0;
-            return _FME7Volume;
-        }
-
-        public void setFME7Volume(int value) {
-            _FME7Volume = value;
-            if (_FME7Volume > 20 || _FME7Volume < -192)
-                _FME7Volume = 0;
-        }
-
-        private int _DMGVolume = 0;
-
-        public int getDMGVolume() {
-            if (_DMGVolume > 20 || _DMGVolume < -192)
-                _DMGVolume = 0;
-            return _DMGVolume;
-        }
-
-        public void setDMGVolume(int value) {
-            _DMGVolume = value;
-            if (_DMGVolume > 20 || _DMGVolume < -192)
-                _DMGVolume = 0;
-        }
-
-        private int _GA20Volume = 0;
-
-        public int getGA20Volume() {
-            if (_GA20Volume > 20 || _GA20Volume < -192)
-                _GA20Volume = 0;
-            return _GA20Volume;
-        }
-
-        public void setGA20Volume(int value) {
-            _GA20Volume = value;
-            if (_GA20Volume > 20 || _GA20Volume < -192)
-                _GA20Volume = 0;
-        }
-
-        private int _YMZ280BVolume = 0;
-
-        public int getYMZ280BVolume() {
-            if (_YMZ280BVolume > 20 || _YMZ280BVolume < -192)
-                _YMZ280BVolume = 0;
-            return _YMZ280BVolume;
-        }
-
-        public void setYMZ280BVolume(int value) {
-            _YMZ280BVolume = value;
-            if (_YMZ280BVolume > 20 || _YMZ280BVolume < -192)
-                _YMZ280BVolume = 0;
-        }
-
-        private int _YMF271Volume = 0;
-
-        public int getYMF271Volume() {
-            if (_YMF271Volume > 20 || _YMF271Volume < -192)
-                _YMF271Volume = 0;
-            return _YMF271Volume;
-        }
-
-        public void setYMF271Volume(int value) {
-            _YMF271Volume = value;
-            if (_YMF271Volume > 20 || _YMF271Volume < -192)
-                _YMF271Volume = 0;
-        }
-
-        private int _YMF262Volume = 0;
-
-        public int getYMF262Volume() {
-            if (_YMF262Volume > 20 || _YMF262Volume < -192)
-                _YMF262Volume = 0;
-            return _YMF262Volume;
-        }
-
-        public void setYMF262Volume(int value) {
-            _YMF262Volume = value;
-            if (_YMF262Volume > 20 || _YMF262Volume < -192)
-                _YMF262Volume = 0;
-        }
-
-        private int _YMF278BVolume = 0;
-
-        public int getYMF278BVolume() {
-            if (_YMF278BVolume > 20 || _YMF278BVolume < -192)
-                _YMF278BVolume = 0;
-            return _YMF278BVolume;
-        }
-
-        public void setYMF278BVolume(int value) {
-            _YMF278BVolume = value;
-            if (_YMF278BVolume > 20 || _YMF278BVolume < -192)
-                _YMF278BVolume = 0;
-        }
-
-        private int _MultiPCMVolume = 0;
-
-        public int getMultiPCMVolume() {
-            if (_MultiPCMVolume > 20 || _MultiPCMVolume < -192)
-                _MultiPCMVolume = 0;
-            return _MultiPCMVolume;
-        }
-
-        public void setMultiPCMVolume(int value) {
-            _MultiPCMVolume = value;
-            if (_MultiPCMVolume > 20 || _MultiPCMVolume < -192)
-                _MultiPCMVolume = 0;
-        }
-
-        private int _QSoundVolume = 0;
-
-        public int getQSoundVolume() {
-            if (_QSoundVolume > 20 || _QSoundVolume < -192)
-                _QSoundVolume = 0;
-            return _QSoundVolume;
-        }
-
-        public void setQSoundVolume(int value) {
-            _QSoundVolume = value;
-            if (_QSoundVolume > 20 || _QSoundVolume < -192)
-                _QSoundVolume = 0;
-        }
-
-        private int _K051649Volume = 0;
-
-        public int getK051649Volume() {
-            if (_K051649Volume > 20 || _K051649Volume < -192)
-                _K051649Volume = 0;
-            return _K051649Volume;
-        }
-
-        public void setK051649Volume(int value) {
-            _K051649Volume = value;
-            if (_K051649Volume > 20 || _K051649Volume < -192)
-                _K051649Volume = 0;
-        }
-
-        private int _K053260Volume = 0;
-
-        public int getK053260Volume() {
-            if (_K053260Volume > 20 || _K053260Volume < -192)
-                _K053260Volume = 0;
-            return _K053260Volume;
-        }
-
-        public void setK053260Volume(int value) {
-            _K053260Volume = value;
-            if (_K053260Volume > 20 || _K053260Volume < -192)
-                _K053260Volume = 0;
-        }
-*/
 //#endrange
 
         private int _GimicOPNVolume = 0;

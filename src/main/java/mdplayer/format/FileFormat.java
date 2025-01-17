@@ -18,11 +18,11 @@ public interface FileFormat {
 
     String[] getExtensions();
 
-    List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile/* = null*/, Archive archive, Entry entry/* = null*/);
+    List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */);
 
-    List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile/* = null*/);
+    List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */);
 
-    List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive/* = null*/, Entry entry/* = null*/);
+    List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive /* = null */, Entry entry /* = null */);
 
     String[] getPresetMixerBalance();
 

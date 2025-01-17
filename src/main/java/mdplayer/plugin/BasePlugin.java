@@ -52,6 +52,8 @@ public abstract class BasePlugin implements Plugin {
 
     public boolean flgReinit = false;
 
+    private Thread trd;
+
     public boolean getEmuOnly() {
         return false;
     }
@@ -63,10 +65,6 @@ public abstract class BasePlugin implements Plugin {
     @Override
     public void init() {
         logger.log(Level.DEBUG, "Audio:Init:Begin");
-
-        Thread trd = new Thread(this::trdIF);
-        trd.setPriority(Thread.NORM_PRIORITY);
-        trd.start();
 
 //        logger.log(Level.DEBUG, "Audio:Init:STEP 02");
 
@@ -113,7 +111,7 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
         while (true) {
             Request req = OpeManager.getRequestToAudio();
             if (req == null) {
-                Thread.yield();
+                Thread.yield(); // TODO this should not be a thread, use event system or blocking queue
                 continue;
             }
 
@@ -214,18 +212,18 @@ new Exception(audio.driverReal.toString()).printStackTrace();
                 }
 
                 if (audio.hiyorimiNecessary) {
-                    //long v = driverReal.vgmFrameCounter - audio.driverVirtual.vgmFrameCounter;
-                    //long d = setting.getoutputDevice().getSampleRate() * (setting.LatencySCCI - setting.getoutputDevice().getSampleRate() * setting.LatencyEmulation) / 1000;
-                    //long l = getLatency() / 4;
-                    //int m = 0;
-                    //if (d >= 0) {
-                    //    if (v >= d - l && v <= d + l) m = 0;
-                    //    else m = (v + d > l) ? 1 : 2;
-                    //} else {
-                    //    d = Math.abs(setting.getoutputDevice().getSampleRate() * ((int)setting.LatencyEmulation - (int)setting.LatencySCCI) / 1000);
-                    //    if (v >= d - l && v <= d + l) m = 0;
-                    //    else m = (v - d > l) ? 1 : 2;
-                    //}
+//                    long v = driverReal.vgmFrameCounter - audio.driverVirtual.vgmFrameCounter;
+//                    long d = setting.getoutputDevice().getSampleRate() * (setting.LatencySCCI - setting.getoutputDevice().getSampleRate() * setting.LatencyEmulation) / 1000;
+//                    long l = getLatency() / 4;
+//                    int m = 0;
+//                    if (d >= 0) {
+//                        if (v >= d - l && v <= d + l) m = 0;
+//                        else m = (v + d > l) ? 1 : 2;
+//                    } else {
+//                        d = Math.abs(setting.getoutputDevice().getSampleRate() * ((int) setting.LatencyEmulation - (int) setting.LatencySCCI) / 1000);
+//                        if (v >= d - l && v <= d + l) m = 0;
+//                        else m = (v - d > l) ? 1 : 2;
+//                    }
 
                     double dEMU = setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000.0;
                     double dSCCI = setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000.0;
@@ -270,8 +268,14 @@ new Exception(audio.driverReal.toString()).printStackTrace();
     }
 
     public boolean play() {
-//logger.log(Level.TRACE, "@@@@@@@@@@@@@@@ HERE: " + audio.stopped + ", " + audio.hashCode());
+//logger.log(Level.TRACE, "play: " + audio.stopped + ", " + audio.hashCode());
         audio.errMsg = "";
+
+        if (trd == null) {
+            trd = new Thread(this::trdIF);
+            trd.setPriority(Thread.NORM_PRIORITY);
+            trd.start();
+        }
 
         stop();
 
