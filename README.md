@@ -11,33 +11,33 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 
 ### Status
 
-| type     | description    | status | alternative             | comment |
-|----------|----------------|:------:|-------------------------|---------|
-| VGM/VGZ  | mega drive     |  ✅️ ️  | vavi-sound-emu          |         |
-| NRD      | x1             |        |                         |         |
-| XGM      | mega drive     |        |                         |         |
-| S98      | jp retro pc    |        |                         |         |
-| MID      | midi           |  ✅️→   | javax.sound.midi.spi    |         |
-| RCP      | recopon        |        |                         |         |
-| NSF/NSFE | NES            |  ✅️→   | vavi-sound-emu          | nsfe    |
-| HES      | PC Engine      |        | (gme)                   |         |
-| SID      | commodore      |  ✅️→   | javamod                 |         |
-| MGS      | MGSDRV         |        |                         |         |
-| MDR      | MoonDriver MSX |        |                         |         |
-| MND      | MNDRV X68000   |        |                         |         |
-| MDX      | MXDRV          |        |                         |         |
-| MUC/MUB  | MUCOM88        |   ✅️   |                         |         |
-| MDR      | MSX            |        |                         |         |
-| M/M2/MZ  | PMD            |        |                         |         |
-| WAV      |                |  ✅️→   | javax.sound.sampled.spi |         |
-| MP3      |                |  ✅️→   | mp3spi                  |         |
-| AIF      |                |  ✅️→   | javax.sound.sampled.spi |         |
-| AY       | ZX             |        |                         |         |
-| GBS      | Game Boy       |  ✅️→   | vavi-sound-emu          |         |
-| GYM      | Sega Genesis   |        |                         |         |
-| KSS      | MSX            |        |                         |         |
-| SAP      | Atari          |        |                         |         |
-| SPC      | SNES           |  ✅️→   | vavi-sound-emu          |         |
+| type     | description    | status | comment      | alternative             |
+|----------|----------------|:------:|--------------|-------------------------|
+| VGM/VGZ  | mega drive     |  ✅️ ️  | 🐛           | vavi-sound-emu          |
+| NRD      | x1             |        |              |                         |
+| XGM      | mega drive     |        |              |                         |
+| S98      | jp retro pc    |        |              |                         |
+| MID      | midi           |   ️→   |              | javax.sound.midi.spi    |
+| RCP      | recopon        |        |              |                         |
+| NSF/NSFE | NES            |  ❌️️→  | nsfe         | vavi-sound-emu          |
+| HES      | PC Engine      |        |              | (gme)                   |
+| SID      | commodore      |   ️→   |              | javamod                 |
+| MGS      | MGSDRV         |        |              |                         |
+| MDR      | MoonDriver MSX |   ❌    |              |                         |
+| MND      | MNDRV X68000   |        |              |                         |
+| MDX      | MXDRV          |        |              |                         |
+| MUC/MUB  | MUCOM88        |   ✅️   | compiler wip |                         |
+| MDR      | MSX            |        |              |                         |
+| M/M2/MZ  | PMD            |   ❌    |              |                         |
+| WAV      |                |   ️→   |              | javax.sound.sampled.spi |
+| MP3      |                |   ️→   |              | mp3spi                  |
+| AIF      |                |   ️→   |              | javax.sound.sampled.spi |
+| AY       | ZX             |        |              |                         |
+| GBS      | Game Boy       |   ️→   |              | vavi-sound-emu          |
+| GYM      | Sega Genesis   |        |              |                         |
+| KSS      | MSX            |        |              |                         |
+| SAP      | Atari          |        |              |                         |
+| SPC      | SNES           |   ️→   |              | vavi-sound-emu          |
 
 ## Install
 
@@ -54,6 +54,9 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 ## TODO
 
  * spi
+ * vgm using YM2151
+    * some timing is wrong for "Out_Run_(Arcade)/01 Magical Sound Shower.vgz"
+        * 3 alter chips reproduce same glitch, so vgm driver is wrong?
 
 ---
 
