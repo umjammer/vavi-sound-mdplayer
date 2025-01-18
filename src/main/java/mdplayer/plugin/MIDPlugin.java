@@ -27,11 +27,9 @@ public class MIDPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MID();
-        audio.driverVirtual.setting = setting;
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new MID();
-            audio.driverReal.setting = setting;
         }
         boolean r = midPlay();
         if (!r) {

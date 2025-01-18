@@ -30,12 +30,10 @@ public class MDLPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MoonDriverJava();
-        audio.driverVirtual.setting = setting;
         ((MoonDriverJava) audio.driverVirtual).setPlayingFileName(playingFileName);
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0] && !setting.getYM2608Type()[0].getUseEmu()[1]) {
             audio.driverReal = new MoonDriverJava();
-            audio.driverReal.setting = setting;
             ((MoonDriverJava) audio.driverReal).setPlayingFileName(playingFileName);
         }
 

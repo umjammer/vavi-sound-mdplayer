@@ -66,11 +66,11 @@ public class M_Hes {
         public int HESSoundRenderMono() {
             int[] d = new int[] {0, 0};
             this.heshes.synth(d);
-            //#if (((-1) >> 1) == -1)
-            //	return (d[0] + d[1]) >> 1;
-            //#else
+//#if (((-1) >> 1) == -1)
+//	          return (d[0] + d[1]) >> 1;
+//#else
             return (d[0] + d[1]) / 2;
-            //#endif
+//#endif
         }
 
         private void HESHESVolume(int v) {

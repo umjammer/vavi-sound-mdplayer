@@ -34,14 +34,12 @@ public class VGMPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new Vgm();
-        audio.driverVirtual.setting = setting;
         ((Vgm) audio.driverVirtual).dacControl.chipRegister = audio.chipRegister;
         ((Vgm) audio.driverVirtual).dacControl.model = Common.EnmModel.VirtualModel;
 
         audio.driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
 //            audio.driverReal = new Vgm();
-//            audio.driverReal.setting = setting;
 //            ((Vgm) audio.driverReal).dacControl.chipRegister = audio.chipRegister;
 //            ((Vgm) audio.driverReal).dacControl.model = Common.EnmModel.RealModel;
 //        }

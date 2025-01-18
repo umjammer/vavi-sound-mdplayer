@@ -30,12 +30,10 @@ public class HESPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new Hes();
-        audio.driverVirtual.setting = setting;
 
         audio.driverReal = null;
         //if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
         //    driverReal = new Hes();
-        //    driverReal.setting = setting;
         //}
         boolean r = hesPlay();
         if (!r) {

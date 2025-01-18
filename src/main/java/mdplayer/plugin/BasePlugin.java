@@ -302,7 +302,6 @@ new Exception(audio.driverReal.toString()).printStackTrace();
         }
     }
 
-
     public void startTrdVgmReal() {
         if (setting.getOutputDevice().getDeviceType() == Common.DEV_Null) {
             return;

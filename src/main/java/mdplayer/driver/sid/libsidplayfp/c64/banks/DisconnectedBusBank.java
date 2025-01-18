@@ -18,41 +18,33 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+
 package mdplayer.driver.sid.libsidplayfp.c64.banks;
 
 /**
-     //IO1/IO2
-     *
-     //memory mapped registers or machine code routines of optional external devices.
-     *
-     //I/O Area //#1 located at $DE00-$DEFF
-     *
-     //I/O Area //#2 located at $DF00-$DFFF
+ * IO1/IO2
+ * <p>
+ * memory mapped registers or machine code routines of optional external devices.
+ * <p>
+ * I/O Area //#1 located at $DE00-$DEFF
+ * I/O Area //#2 located at $DF00-$DFFF
+ */
+public class DisconnectedBusBank implements IBank {
+
+    /**
+     * No device instanceof connected so this instanceof a no-op.
      */
-    public class DisconnectedBusBank implements IBank
-    {
-
-
-
-
-        //# include "Bank.h"
-        //# include "sidcxx11.h"
-
-        /**
-         //No device instanceof connected so this instanceof a no-op.
-         */
-        @Override
-        public  void poke(int a, byte b) { }
-
-        /**
-         //This should actually return last byte read from VIC
-         //but since the VIC emulation currently does not fetch
-         //any value from memory we return zero.
-         */
-        @Override
-        public  byte peek(int a) { return 0; }
-
-
-
-
+    @Override
+    public void poke(int a, byte b) {
     }
+
+    /**
+     * This should actually return last byte read from VIC
+     * but since the VIC emulation currently does not fetch
+     * any value from memory we return zero.
+     */
+    @Override
+    public byte peek(int a) {
+        return 0;
+    }
+}

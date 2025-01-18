@@ -29,76 +29,74 @@ import java.nio.ByteBuffer;
  */
 public interface SidMemory {
 
-    //# include <stdint.h>
-
     /**
-     //Read one byte from memory.
+     * Read one byte from memory.
      *
-     //@param addr the memory location from which to read from
+     * @param addr the memory location from which to read from
      */
     byte readMemByte(short addr);
 
     /**
-     //Read two contiguous bytes from memory.
+     * Read two contiguous bytes from memory.
      *
-     //@param addr the memory location from which to read from
+     * @param addr the memory location from which to read from
      */
     short readMemWord(short addr);
 
     /**
-     //Write one byte to memory.
+     * Write one byte to memory.
      *
-     //@param addr the memory location where to write
-     //@param value the value to write
+     * @param addr  the memory location where to write
+     * @param value the value to write
      */
     void writeMemByte(int addr, byte value);
 
     /**
-     //Write two contiguous bytes to memory.
+     * Write two contiguous bytes to memory.
      *
-     //@param addr the memory location where to write
-     //@param value the value to write
+     * @param addr  the memory location where to write
+     * @param value the value to write
      */
     void writeMemWord(short addr, short value);
 
     /**
-     //Fill ram area with a constant value.
+     * Fill ram area with a constant value.
      *
-     //@param start the start of memory location where to write
-     //@param value the value to write
-     //@param size the number of bytes to fill
+     * @param start the start of memory location where to write
+     * @param value the value to write
+     * @param size  the number of bytes to fill
      */
     void fillRam(short start, byte value, int size);
 
     void fillRam(short start, ByteBuffer value, int size);
 
     /**
-     //Copy a buffer into a ram area.
+     * Copy a buffer into a ram area.
      *
-     //@param start the start of memory location where to write
-     //@param source the source buffer
-     //@param size the number of bytes to copy
+     * @param start  the start of memory location where to write
+     * @param source the source buffer
+     * @param size   the number of bytes to copy
      */
     void fillRam(short start, byte[] source, int size);
 
     /**
-     //Change the RESET vector.
+     * Change the RESET vector.
      *
-     //@param addr the new addres to point to
+     * @param addr the new addres to point to
      */
     void installResetHook(short addr);
 
     /**
-     //Set BASIC Warm Start address.
+     * Set BASIC Warm Start address.
      *
-     //@param addr the new addres to point to
+     * @param addr the new addres to point to
      */
     void installBasicTrap(short addr);
 
     /**
-     //Set the start tune.
+     * Set the start tune.
      *
-     //@param tune the tune number
+     * @param tune the tune number
      */
     void setBasicSubtune(byte tune);
 }

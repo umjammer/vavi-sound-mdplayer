@@ -34,11 +34,9 @@ public class XGMPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new Xgm();
-        audio.driverVirtual.setting = setting;
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new Xgm();
-            audio.driverReal.setting = setting;
         }
 
         boolean r = xgmPlay();

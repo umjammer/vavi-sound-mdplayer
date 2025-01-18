@@ -33,11 +33,9 @@ public class NRTPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new NRTDRV();
-        audio.driverVirtual.setting = setting;
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new NRTDRV();
-            audio.driverReal.setting = setting;
         }
         boolean r = nrdPlay();
         if (!r) {

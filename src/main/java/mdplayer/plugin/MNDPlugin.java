@@ -37,13 +37,11 @@ public class MNDPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MnDrv();
-        audio.driverVirtual.setting = setting;
 
         ((MnDrv) audio.driverVirtual).extendFile = extendFile;
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new MnDrv();
-            audio.driverReal.setting = setting;
             ((MnDrv) audio.driverReal).extendFile = extendFile;
         }
         boolean r = mndPlay();

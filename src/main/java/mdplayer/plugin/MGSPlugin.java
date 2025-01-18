@@ -32,12 +32,10 @@ public class MGSPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MGSDRV();
-        audio.driverVirtual.setting = setting;
         ((MGSDRV) audio.driverVirtual).setPlayingFileName(playingFileName);
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new MGSDRV();
-            audio.driverReal.setting = setting;
             ((MGSDRV) audio.driverReal).setPlayingFileName(playingFileName);
         }
         boolean r = mgsPlay_mgsdrv();

@@ -45,11 +45,9 @@ public class S98Plugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new S98();
-        audio.driverVirtual.setting = setting;
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new S98();
-            audio.driverReal.setting = setting;
         }
 
         boolean r = s98Play();

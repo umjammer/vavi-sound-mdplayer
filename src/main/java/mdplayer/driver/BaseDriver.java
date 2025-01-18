@@ -10,7 +10,7 @@ import mdplayer.Setting;
 
 public abstract class BaseDriver {
 
-    public Setting setting;
+    protected static Setting setting = Setting.getInstance();
 
     public double vgmSpeed = 1;
 

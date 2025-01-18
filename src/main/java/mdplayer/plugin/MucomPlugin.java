@@ -37,12 +37,10 @@ public class MucomPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MucomJava();
-        audio.driverVirtual.setting = setting;
         ((MucomJava) audio.driverVirtual).setPlayingFileName(playingFileName);
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0] && !setting.getYM2608Type()[0].getUseEmu()[1]) {
             audio.driverReal = new MucomJava();
-            audio.driverReal.setting = setting;
             ((MucomJava) audio.driverReal).setPlayingFileName(playingFileName);
         }
         boolean r = mucPlay_mucomDotNET(setting, MucomJava.MUCOMFileType.MUB); // MucomDotNET.MUCOMFileType.MUC

@@ -39,11 +39,9 @@ public class NSFPlugin extends BasePlugin {
         IntFNesInst.np_nes_vrc7_volume = 0;
 
         audio.driverVirtual = new Nsf();
-        audio.driverVirtual.setting = setting;
         audio.driverReal = null;
 //        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
 //            driverReal = new Nsf();
-//            driverReal.setting = setting;
 //        }
         boolean r = nsfPlay();
         if (!r) {

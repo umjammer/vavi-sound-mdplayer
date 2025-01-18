@@ -31,12 +31,10 @@ public class MDRPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MoonDriver();
-        audio.driverVirtual.setting = setting;
         ((MoonDriver) audio.driverVirtual).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new MoonDriver();
-            audio.driverReal.setting = setting;
             ((MoonDriver) audio.driverReal).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
         }
         boolean r = mdrPlay();
