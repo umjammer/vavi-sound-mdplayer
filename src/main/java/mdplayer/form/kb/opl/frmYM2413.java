@@ -16,6 +16,7 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
+import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -116,7 +117,7 @@ public class frmYM2413 extends frmBase {
     public void screenChangeParams() {
         int[] ym2413Register = audio.getYM2413Register(chipId);
         MDChipParams.Channel nyc;
-        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getYM2413KeyInfo(chipId);
+        ChipKeyInfo ki = audio.getYM2413KeyInfo(chipId);
 
         for (int ch = 0; ch < 9; ch++) {
             nyc = newParam.channels[ch];
@@ -131,7 +132,7 @@ public class frmYM2413 extends frmBase {
 
             nyc.note = Common.searchSegaPCMNote(freq / 172.0) + (oct - 4) * 12;
 
-            if (ki.On[ch]) {
+            if (ki.on[ch]) {
                 nyc.volumeL = (19 - nyc.inst[3]);
             } else {
                 if (nyc.inst[2] == 0) nyc.note = -1;
@@ -144,7 +145,7 @@ public class frmYM2413 extends frmBase {
         //int r = audio.getYM2413RyhthmKeyON(chipId);
 
         //BD
-        if (ki.On[9]) {
+        if (ki.on[9]) {
             newParam.channels[9].volume = (19 - (ym2413Register[0x36] & 0x0f));
         } else {
             newParam.channels[9].volume--;
@@ -152,7 +153,7 @@ public class frmYM2413 extends frmBase {
         }
 
         //SD
-        if (ki.On[10]) {
+        if (ki.on[10]) {
             newParam.channels[10].volume = (19 - (ym2413Register[0x37] & 0x0f));
         } else {
             newParam.channels[10].volume--;
@@ -160,7 +161,7 @@ public class frmYM2413 extends frmBase {
         }
 
         //TOM
-        if (ki.On[11]) {
+        if (ki.on[11]) {
             newParam.channels[11].volume = 19 - ((ym2413Register[0x38] & 0xf0) >> 4);
         } else {
             newParam.channels[11].volume--;
@@ -168,7 +169,7 @@ public class frmYM2413 extends frmBase {
         }
 
         //CYM
-        if (ki.On[12]) {
+        if (ki.on[12]) {
             newParam.channels[12].volume = 19 - (ym2413Register[0x38] & 0x0f);
         } else {
             newParam.channels[12].volume--;
@@ -176,7 +177,7 @@ public class frmYM2413 extends frmBase {
         }
 
         //HH
-        if (ki.On[13]) {
+        if (ki.on[13]) {
             newParam.channels[13].volume = 19 - ((ym2413Register[0x37] & 0xf0) >> 4);
         } else {
             newParam.channels[13].volume--;

@@ -1,0 +1,65 @@
+/*
+ * Copyright (c) 2025 by Naohide Sano, All rights reserved.
+ *
+ * Programmed by Naohide Sano
+ */
+
+package mdplayer.chips;
+
+import mdplayer.ChipRegister;
+import mdplayer.Chip;
+import mdplayer.Common.EnmModel;
+import mdsound.instrument.Ga20Inst;
+
+
+/**
+ * Ga20Chip.
+ *
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
+ * @version 0.00 2025-01-19 nsano initial version <br>
+ */
+public class Ga20Chip implements Chip {
+
+    private ChipRegister context;
+
+    @Override
+    public void init(ChipRegister context) {
+        this.context = context;
+    }
+
+    @Override
+    public void reset() {
+    }
+
+    @Override
+    public void updateVol() {
+    }
+
+    public void setGA20Register(int chipId, int adr, int dat, EnmModel model) {
+        if (chipId == 0)
+            context.chipLED.put("PriGA20", 2);
+        else
+            context.chipLED.put("SecGA20", 2);
+
+        if (model == EnmModel.VirtualModel) {
+            context.mds.write(Ga20Inst.class, chipId, 0, adr, dat);
+        } else {
+        }
+    }
+
+    public void writeGA20PCMData(int chipId,
+                                 int romSize,
+                                 int dataStart,
+                                 int dataLength,
+                                 byte[] romData,
+                                 int srcStartAdr,
+                                 EnmModel model) {
+        if (chipId == 0)
+            context.chipLED.put("PriGA20", 2);
+        else
+            context.chipLED.put("SecGA20", 2);
+
+        if (model == EnmModel.VirtualModel)
+            context.mds.WriteIremga20PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+    }
+}

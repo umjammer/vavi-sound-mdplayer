@@ -13,6 +13,8 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.Ym2151Chip;
+import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
@@ -52,7 +54,7 @@ public class MnDrv extends BaseDriver {
             ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
-                int clock = chipRegister.getYM2151Clock(chipId);
+                int clock = chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
                 if (clock != -1) {
                     ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
@@ -2759,7 +2761,7 @@ public class MnDrv extends BaseDriver {
 
         switch (reg.a0) {
         case 0xecc0c1:
-            chipRegister.setYM2608Register(0, 0, reg.getD1_B(), reg.getD0_B(), model);
+            chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, reg.getD1_B(), reg.getD0_B(), model);
             timerOPN.WriteReg((byte) reg.getD1_B(), (byte) reg.getD0_B());
             //logger.log(Level.TRACE, "DEV:0 PRT:0 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             //if (reg.getD1_B() < 0x10)
@@ -2768,15 +2770,15 @@ public class MnDrv extends BaseDriver {
             //}
             break;
         case 0xecc0c5:
-            chipRegister.setYM2608Register(0, 1, reg.getD1_B(), reg.getD0_B(), model);
+            chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 1, reg.getD1_B(), reg.getD0_B(), model);
             //logger.log(Level.TRACE, "DEV:0 PRT:1 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             break;
         case 0xecc0c9:
-            chipRegister.setYM2608Register(1, 0, reg.getD1_B(), reg.getD0_B(), model);
+            chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 0, reg.getD1_B(), reg.getD0_B(), model);
             //logger.log(Level.TRACE, "DEV:1 PRT:0 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             break;
         case 0xecc0cd:
-            chipRegister.setYM2608Register(1, 1, reg.getD1_B(), reg.getD0_B(), model);
+            chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 1, reg.getD1_B(), reg.getD0_B(), model);
             //logger.log(Level.TRACE, "DEV:1 PRT:1 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B()));
             break;
         }
@@ -2879,7 +2881,7 @@ public class MnDrv extends BaseDriver {
         //while ((byte)mm.readByte(Reg.a0) < 0) ; //wait?
         //mm.Write(Reg.a0, (byte)reg.getD0_B());
         //logger.log(Level.TRACE, "adr:%x dat:%x".formatted(Reg.a0, reg.getD0_B())));
-        chipRegister.setYM2151Register(0, 0, reg.getD1_B(), reg.getD0_B(), model, ym2151Hosei[0], 0);
+        chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, 0, reg.getD1_B(), reg.getD0_B(), model, ym2151Hosei[0], 0);
         timerOPM.WriteReg((byte) reg.getD1_B(), (byte) reg.getD0_B());
     }
 

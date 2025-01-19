@@ -22,6 +22,7 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import musicDriverInterface.ChipAction;
@@ -340,7 +341,7 @@ public class MoonDriverJava extends BaseDriver {
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        chipRegister.setYMF278BRegister(0, cd.port, cd.address, cd.data, model);
+        chipRegister.chip(YmF278BChip.class).setYMF278BRegister(0, cd.port, cd.address, cd.data, model);
     }
 
     private void opl4WaitSend(long size, int elapsed) {

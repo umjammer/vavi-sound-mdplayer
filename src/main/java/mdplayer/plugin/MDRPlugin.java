@@ -7,6 +7,7 @@ import java.util.List;
 
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
+import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.moonDriver.MoonDriver;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
@@ -33,10 +34,10 @@ public class MDRPlugin extends BasePlugin {
         audio.driverVirtual = new MoonDriver();
         ((MoonDriver) audio.driverVirtual).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
         audio.driverReal = null;
-        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new MoonDriver();
-            ((MoonDriver) audio.driverReal).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
-        }
+//        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
+//            audio.driverReal = new MoonDriver();
+//            ((MoonDriver) audio.driverReal).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
+//        }
         boolean r = mdrPlay();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
@@ -56,8 +57,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             //int r = ((NRTDRV) driverVirtual).checkUseChip(vgmBuf);
 
-            audio.chipRegister.setFadeoutVolYM2151(0, 0);
-            audio.chipRegister.setFadeoutVolYM2151(1, 0);
+            audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(0, 0);
+            audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(1, 0);
 
             audio.chipRegister.resetChips();
             audio.useChip.clear();
@@ -139,7 +140,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             //chipRegister.setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
 
             ((MoonDriver) audio.driverVirtual).isOPL3 = isOPL3;
-            ((MoonDriver) audio.driverReal).isOPL3 = isOPL3;
+            if (audio.driverReal != null) ((MoonDriver) audio.driverReal).isOPL3 = isOPL3;
 
             audio.driverVirtual.init(vgmBuf, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000

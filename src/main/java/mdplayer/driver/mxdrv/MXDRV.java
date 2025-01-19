@@ -17,10 +17,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import dotnet4j.util.compat.Tuple;
+import mdplayer.Audio;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
@@ -275,7 +277,7 @@ public class MXDRV extends BaseDriver {
             ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
-                int clock = chipRegister.getYM2151Clock(chipId);
+                int clock = chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
                 if (clock != -1) {
                     ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
@@ -307,7 +309,7 @@ public class MXDRV extends BaseDriver {
             ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
-                int clock = chipRegister.getYM2151Clock(chipId);
+                int clock = chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
                 if (clock != -1) {
                     ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
@@ -1028,7 +1030,7 @@ public class MXDRV extends BaseDriver {
         //logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
 
         mdxPCM.sound_Iocs[0].opmSet((byte) D1, (byte) D2);
-        chipRegister.setYM2151Register(0, 0, D1, D2, model, ym2151Hosei[0], 0);
+        chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, 0, D1, D2, model, ym2151Hosei[0], 0);
 
         if (D1 == 0x10) {
             timerA = ((byte) D2 << 2) + (timerA & 0x3);
@@ -3797,5 +3799,19 @@ exit:   {
         }
 
         return 0;
+    }
+
+    @Override
+    public int render(Audio audio, short[] buffer, int offset, int sampleCount) {
+        audio.mds.setIncFlag();
+//        vstDelta = 0;
+        int cnt;
+        for (int i = 0; i < sampleCount; i += 2) {
+            cnt = render(buffer, offset + i, 2);
+            audio.mds.update(buffer, offset + i, 2, null);
+        }
+        //cnt = (int)((MXDRV.MXDRV)driverVirtual).Render(buffer, offset , sampleCount);
+        //mds.Update(buffer, offset , sampleCount, null);
+        return sampleCount;
     }
 }

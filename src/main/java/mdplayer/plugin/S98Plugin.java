@@ -9,6 +9,11 @@ import java.util.function.Function;
 import dotnet4j.io.Stream;
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
+import mdplayer.chips.Ay8910Chip;
+import mdplayer.chips.Ym2151Chip;
+import mdplayer.chips.Ym2203Chip;
+import mdplayer.chips.Ym2608Chip;
+import mdplayer.chips.YmF262Chip;
 import mdplayer.driver.s98.S98;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
@@ -46,9 +51,9 @@ public class S98Plugin extends BasePlugin {
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new S98();
         audio.driverReal = null;
-        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new S98();
-        }
+//        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
+//            audio.driverReal = new S98();
+//        }
 
         boolean r = s98Play();
         if (!r) {
@@ -405,12 +410,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
             }
 
             if (audio.useChip.contains(Common.EnmChip.YM2608)) {
-                audio.chipRegister.setYM2608Register(0, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
-                audio.chipRegister.setYM2608Register(0, 0, 0x29, 0x82, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
+                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x29, 0x82, Common.EnmModel.RealModel);
             }
             if (audio.useChip.contains(Common.EnmChip.S_YM2608)) {
-                audio.chipRegister.setYM2608Register(1, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
-                audio.chipRegister.setYM2608Register(1, 0, 0x29, 0x82, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
+                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 0, 0x29, 0x82, Common.EnmModel.RealModel);
             }
             if (audio.useChip.contains(Common.EnmChip.YM2151) || audio.useChip.contains(Common.EnmChip.S_YM2151))
                 audio.setVolume(MAIN_TAG, Ym2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class));
@@ -422,29 +427,29 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 audio.setVolume(MAIN_TAG, Ay8910Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class));
 
             if (audio.useChip.contains(Common.EnmChip.AY8910))
-                audio.chipRegister.writeAY8910Clock((byte) 0, audio.clockAY8910, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ay8910Chip.class).writeAY8910Clock((byte) 0, audio.clockAY8910, Common.EnmModel.RealModel);
             if (audio.useChip.contains(Common.EnmChip.S_AY8910))
-                audio.chipRegister.writeAY8910Clock((byte) 1, audio.clockAY8910, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ay8910Chip.class).writeAY8910Clock((byte) 1, audio.clockAY8910, Common.EnmModel.RealModel);
             if (audio.useChip.contains(Common.EnmChip.YM2151))
-                audio.chipRegister.writeYm2151Clock((byte) 0, YM2151ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 0, YM2151ClockValue, Common.EnmModel.RealModel);
             if (audio.useChip.contains(Common.EnmChip.S_YM2151))
-                audio.chipRegister.writeYm2151Clock((byte) 1, YM2151ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 1, YM2151ClockValue, Common.EnmModel.RealModel);
             if (audio.useChip.contains(Common.EnmChip.YM2203))
-                audio.chipRegister.writeYm2203Clock((byte) 0, YM2203ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).writeYm2203Clock((byte) 0, YM2203ClockValue, Common.EnmModel.RealModel);
             if (audio.useChip.contains(Common.EnmChip.S_YM2203))
-                audio.chipRegister.writeYm2203Clock((byte) 1, YM2203ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).writeYm2203Clock((byte) 1, YM2203ClockValue, Common.EnmModel.RealModel);
             if (audio.useChip.contains(Common.EnmChip.YM2608))
-                audio.chipRegister.writeYm2608Clock((byte) 0, YM2608ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).writeYm2608Clock((byte) 0, YM2608ClockValue, Common.EnmModel.RealModel);
             if (audio.useChip.contains(Common.EnmChip.S_YM2608))
-                audio.chipRegister.writeYm2608Clock((byte) 1, YM2608ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).writeYm2608Clock((byte) 1, YM2608ClockValue, Common.EnmModel.RealModel);
 
             if (audio.useChip.contains(Common.EnmChip.YMF262)) {
-                audio.chipRegister.setYMF262Register(0, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
-                audio.chipRegister.writeYmF262Clock((byte) 0, YMF262ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(YmF262Chip.class).setYMF262Register(0, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
+                audio.chipRegister.chip(YmF262Chip.class).writeYmF262Clock((byte) 0, YMF262ClockValue, Common.EnmModel.RealModel);
             }
             if (audio.useChip.contains(Common.EnmChip.S_YMF262)) {
-                audio.chipRegister.setYMF262Register(1, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
-                audio.chipRegister.writeYmF262Clock((byte) 1, YMF262ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(YmF262Chip.class).setYMF262Register(1, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
+                audio.chipRegister.chip(YmF262Chip.class).writeYmF262Clock((byte) 1, YMF262ClockValue, Common.EnmModel.RealModel);
             }
 
             audio.driverVirtual.setYm2151Hosei(YM2151ClockValue);
@@ -452,22 +457,22 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             if (audio.driverReal == null || ((S98) audio.driverReal).SSGVolumeFromTAG == -1) {
                 if (audio.useChip.contains(Common.EnmChip.YM2203))
-                    audio.chipRegister.setYM2203SSGVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2203Chip.class).setYM2203SSGVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
                 if (audio.useChip.contains(Common.EnmChip.S_YM2203))
-                    audio.chipRegister.setYM2203SSGVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2203Chip.class).setYM2203SSGVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
                 if (audio.useChip.contains(Common.EnmChip.YM2608))
-                    audio.chipRegister.setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
                 if (audio.useChip.contains(Common.EnmChip.S_YM2608))
-                    audio.chipRegister.setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
             } else {
                 if (audio.useChip.contains(Common.EnmChip.YM2203))
-                    audio.chipRegister.setYM2203SSGVolume((byte) 0, ((S98) audio.driverReal).SSGVolumeFromTAG, Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2203Chip.class).setYM2203SSGVolume((byte) 0, ((S98) audio.driverReal).SSGVolumeFromTAG, Common.EnmModel.RealModel);
                 if (audio.useChip.contains(Common.EnmChip.S_YM2203))
-                    audio.chipRegister.setYM2203SSGVolume((byte) 1, ((S98) audio.driverReal).SSGVolumeFromTAG, Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2203Chip.class).setYM2203SSGVolume((byte) 1, ((S98) audio.driverReal).SSGVolumeFromTAG, Common.EnmModel.RealModel);
                 if (audio.useChip.contains(Common.EnmChip.YM2608))
-                    audio.chipRegister.setYM2608SSGVolume((byte) 0, ((S98) audio.driverReal).SSGVolumeFromTAG, Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 0, ((S98) audio.driverReal).SSGVolumeFromTAG, Common.EnmModel.RealModel);
                 if (audio.useChip.contains(Common.EnmChip.S_YM2608))
-                    audio.chipRegister.setYM2608SSGVolume((byte) 1, ((S98) audio.driverReal).SSGVolumeFromTAG, Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 1, ((S98) audio.driverReal).SSGVolumeFromTAG, Common.EnmModel.RealModel);
             }
             // play
 

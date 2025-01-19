@@ -2,6 +2,7 @@ package mdplayer.chips;
 
 import java.util.List;
 
+import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Setting;
 
@@ -12,7 +13,7 @@ import mdplayer.Setting;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-07 nsano initial version <br>
  */
-public class RealChipPlugin extends Plugin {
+public class RealChipPlugin implements Plugin {
 
     public static void realChipClose() {
 //        if (SoundChip.realChip != null) {
@@ -27,7 +28,7 @@ public class RealChipPlugin extends Plugin {
     }
 
     @Override
-    void init() {
+    public void init(ChipRegister context) {
 //        if (SoundChip.realChip == null && !getemuOnly()) {
 //            Log.forcedWrite("Audio:Init:STEP 04");
 //            SoundChip.realChip = new RealChip(!setting.getUnuseRealChip());
@@ -69,5 +70,10 @@ public class RealChipPlugin extends Plugin {
 //                if (SoundChip.scC140[i] != null) SoundChip.scC140[i].init();
 //            }
 //        }
+    }
+
+    @Override
+    public void close() {
+
     }
 }

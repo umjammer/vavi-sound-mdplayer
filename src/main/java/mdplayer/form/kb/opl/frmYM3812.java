@@ -16,6 +16,7 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
+import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
@@ -127,7 +128,7 @@ public class frmYM3812 extends frmBase {
         int[] ym3812Register = audio.getYM3812Register(chipId);
         MDChipParams.Channel nyc;
         int slot;
-        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getYM3812KeyInfo(chipId);
+        ChipKeyInfo ki = audio.getYM3812KeyInfo(chipId);
 
         mdsound.MDSound.Chip chipInfo = audio.getMDSChipInfo(Ym3812Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock; //3579545 -> Default master clock
@@ -187,7 +188,7 @@ public class frmYM3812 extends frmBase {
 
             //詳細はfrmVRC7の該当箇所を参照
 
-            if (ki.On[c]) {
+            if (ki.on[c]) {
                 int tl1 = nyc.inst[5 + 0 * 17];
                 int tl2 = nyc.inst[5 + 1 * 17];
                 int tl = tl2;
@@ -215,7 +216,7 @@ public class frmYM3812 extends frmBase {
         //slot18 TL 0x55 CYM
 
         for (int i = 0; i < 5; i++) {
-            if (ki.On[i + 9]) {
+            if (ki.on[i + 9]) {
                 newParam.channels[i + 9].volume = 19 - ((ym3812Register[rhythmAdr[i]] & 0x3f) >> 2);
             } else {
                 newParam.channels[i + 9].volume--;

@@ -9,6 +9,7 @@ import java.util.function.Function;
 import dotnet4j.io.Stream;
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
+import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.pmd.PMDJava;
 import mdplayer.format.FileFormat;
 import mdplayer.format.MMLFileFormat;
@@ -141,19 +142,19 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.setVolume("Rhythm", Ym2608Inst.class, true, setting.getBalance().getVolume("Rhythm", Ym2608Inst.class));
             audio.setVolume("Adpcm", Ym2608Inst.class, true, setting.getBalance().getVolume("Adpcm", Ym2608Inst.class));
 
-            audio.chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, Common.EnmModel.VirtualModel);
-            audio.chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, Common.EnmModel.RealModel);
-            audio.chipRegister.setYM2608Register(0, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
-            audio.chipRegister.setYM2608Register(0, 0, 0x29, 0x82, Common.EnmModel.RealModel);
-            audio.chipRegister.setYM2608Register(1, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
-            audio.chipRegister.setYM2608Register(1, 0, 0x29, 0x82, Common.EnmModel.RealModel);
-            audio.chipRegister.setYM2608Register(0, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Psg TONE でリセット
-            audio.chipRegister.setYM2608Register(0, 0, 0x07, 0x38, Common.EnmModel.RealModel);
+            audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x2d, 0x00, Common.EnmModel.VirtualModel);
+            audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x2d, 0x00, Common.EnmModel.RealModel);
+            audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
+            audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x29, 0x82, Common.EnmModel.RealModel);
+            audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
+            audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 0, 0x29, 0x82, Common.EnmModel.RealModel);
+            audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Psg TONE でリセット
+            audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x07, 0x38, Common.EnmModel.RealModel);
 
-            audio.chipRegister.writeYm2608Clock((byte) 0, PMDJava.baseclock, Common.EnmModel.RealModel);
-            audio.chipRegister.writeYm2608Clock((byte) 1, PMDJava.baseclock, Common.EnmModel.RealModel);
-            audio.chipRegister.setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
-            audio.chipRegister.setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
+            audio.chipRegister.chip(Ym2608Chip.class).writeYm2608Clock((byte) 0, PMDJava.baseclock, Common.EnmModel.RealModel);
+            audio.chipRegister.chip(Ym2608Chip.class).writeYm2608Clock((byte) 1, PMDJava.baseclock, Common.EnmModel.RealModel);
+            audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
+            audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
 
 
             if (!audio.driverVirtual.init(vgmBuf, fileType, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.YM2608}

@@ -7,6 +7,7 @@ import java.util.List;
 
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
+import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.nrtdrv.NRTDRV;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
@@ -56,8 +57,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             int r = ((NRTDRV) audio.driverVirtual).checkUseChip(vgmBuf);
 
-            audio.chipRegister.setFadeoutVolYM2151(0, 0);
-            audio.chipRegister.setFadeoutVolYM2151(1, 0);
+            audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(0, 0);
+            audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(1, 0);
 
             audio.chipRegister.resetChips();
 
@@ -156,16 +157,16 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 audio.setVolume(MAIN_TAG, Ay8910Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class));
 
             if (audio.useChip.contains(Common.EnmChip.YM2151))
-                audio.chipRegister.writeYm2151Clock((byte) 0, 4000000, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 0, 4000000, Common.EnmModel.RealModel);
             if (audio.useChip.contains(Common.EnmChip.S_YM2151))
-                audio.chipRegister.writeYm2151Clock((byte) 1, 4000000, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 1, 4000000, Common.EnmModel.RealModel);
 
             if (audio.driverVirtual != null) audio.driverVirtual.setYm2151Hosei(4000000);
             if (audio.driverReal != null) audio.driverReal.setYm2151Hosei(4000000);
-            //chipRegister.setYM2203SSGVolume(0, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
-            //chipRegister.setYM2203SSGVolume(1, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
-            //chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
-            //chipRegister.setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
+            //chipRegister.getChip(Ym2203Chip.class).setYM2203SSGVolume(0, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
+            //chipRegister.getChip(Ym2203Chip.class).setYM2203SSGVolume(1, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
+            //chipRegister.getChip(Ym2608Chip.class).setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
+            //chipRegister.getChip(Ym2608Chip.class).setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
 
             if (audio.driverVirtual != null) {
                 audio.driverVirtual.init(vgmBuf, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.YM2151, Common.EnmChip.AY8910}

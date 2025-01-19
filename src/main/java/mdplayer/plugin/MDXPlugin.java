@@ -8,6 +8,7 @@ import java.util.List;
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.Setting;
+import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.mxdrv.MXDRV;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
@@ -138,7 +139,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.setVolume(MAIN_TAG, Ym2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class));
 
             if (audio.useChip.contains(Common.EnmChip.YM2151))
-                audio.chipRegister.writeYm2151Clock((byte) 0, 4000000, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 0, 4000000, Common.EnmModel.RealModel);
             //chipRegister.writeYM2151Clock(1, 4000000, enmModel.RealModel);
 
             audio.driverVirtual.setYm2151Hosei(4000000);

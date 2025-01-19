@@ -10,6 +10,7 @@ import mdplayer.Common;
 import mdplayer.driver.sid.Sid;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
+import mdsound.MDSound.Chip;
 
 import static java.lang.System.getLogger;
 

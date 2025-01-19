@@ -1,11 +1,13 @@
 
 package mdplayer.driver;
 
+import mdplayer.Audio;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdplayer.chips.Ym2151Chip;
 
 
 public abstract class BaseDriver {
@@ -94,11 +96,33 @@ public abstract class BaseDriver {
             ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
-                int clock = chipRegister.getYM2151Clock(chipId);
+                int clock = chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
                 if (clock != -1) {
                     ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, clock);
                 }
             }
         }
+    }
+
+    public int render(Audio audio, short[] buffer, int offset, int sampleCount) {
+        if (audio.hiyorimiNecessary && audio.driverReal != null && audio.driverReal.isDataBlock)
+            return audio.mds.update(buffer, offset, sampleCount, null);
+
+        if (audio.stepCounter > 0) {
+            audio.stepCounter -= sampleCount;
+            if (audio.stepCounter <= 0) {
+                audio.paused = true;
+                audio.stepCounter = 0;
+                return audio.mds.update(buffer, offset, sampleCount, null);
+            }
+        }
+
+//                driverVirtual.vstDelta = 0;
+//                stwh.reset();
+//                stwh.start();
+//logger.log(Level.TRACE, "driver: " + driverVirtual.getClass().getSimpleName());
+        int cnt = audio.mds.update(buffer, offset, sampleCount, audio.driverVirtual::processOneFrame);
+        audio.procTimePer1Frame = (int) ((double) System.currentTimeMillis() / (sampleCount + 1) * 1000000.0);
+        return cnt;
     }
 }

@@ -8,10 +8,12 @@ import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
+import mdplayer.Audio;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.SidChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.sid.libsidplayfp.SidEmu;
@@ -151,7 +153,7 @@ public class Sid extends BaseDriver {
             return length;
         }
 
-        chipRegister.SID = this;
+        chipRegister.chip(SidChip.class).SID = this;
         engine.fastForward(100);
         engine.play(b, length);
         for (int i = 0; i < length / 2; i++) {
@@ -245,5 +247,11 @@ public class Sid extends BaseDriver {
     public playSidFp GetCurrentEngineContext() {
         if (engine == null) return null;
         return engine;
+    }
+
+    @Override
+    public int render(Audio audio, short[] buffer, int offset, int sampleCount) {
+//        vstDelta = 0;
+        return render(buffer, sampleCount);
     }
 }

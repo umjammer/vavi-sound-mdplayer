@@ -6,11 +6,13 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import mdplayer.Audio;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdplayer.chips.NesChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
@@ -34,7 +36,6 @@ import mdsound.np.memory.NesBank;
 import mdsound.np.memory.NesMem;
 import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
 
 
@@ -50,7 +51,7 @@ public class Nsf extends BaseDriver {
     @Override
     public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         if (ByteUtil.readLeInt(buf, 0) != FCC_NSF) {
-             // NSFeはとりあえず未サポート
+            // NSFeはとりあえず未サポート
             return null;
         }
 
@@ -70,7 +71,7 @@ public class Nsf extends BaseDriver {
             if (buf[tagAdr] == 0) break;
             strLst.add(buf[tagAdr++]);
         }
-        title_nsf = new String(toByteArray(strLst), Charset.forName("MS932"));
+        title_nsf = new String(ByteUtil.toByteArray(strLst), Charset.forName("MS932"));
         title = title_nsf;
 
         strLst.clear();
@@ -79,7 +80,7 @@ public class Nsf extends BaseDriver {
             if (buf[tagAdr] == 0) break;
             strLst.add(buf[tagAdr++]);
         }
-        artist_nsf = new String(toByteArray(strLst), Charset.forName("MS932"));
+        artist_nsf = new String(ByteUtil.toByteArray(strLst), Charset.forName("MS932"));
         artist = artist_nsf;
 
         //memcpy(copyright_nsf, image + 0x4e, 32);
@@ -90,7 +91,7 @@ public class Nsf extends BaseDriver {
             if (buf[tagAdr] == 0) break;
             strLst.add(buf[tagAdr++]);
         }
-        copyrightNsf = new String(toByteArray(strLst), Charset.forName("MS932"));
+        copyrightNsf = new String(ByteUtil.toByteArray(strLst), Charset.forName("MS932"));
         copyright = copyrightNsf;
 
         ripper = ""; // NSFe only
@@ -234,6 +235,7 @@ public class Nsf extends BaseDriver {
     static final int NSFE_ENTRIES = 256;
 
     public static class NsfeEntry {
+
         public byte[] tlbl;
         public int time;
         public int fade;
@@ -276,43 +278,43 @@ public class Nsf extends BaseDriver {
     private int last_out = 0;
 
     private void nsfInit() {
-        chipRegister.nes_bank = new NesBank();
-        chipRegister.nes_mem = new NesMem();
-        chipRegister.nes_cpu = new Km6502(0);
-        chipRegister.nes_apu = new NesApu();
-        chipRegister.nes_dmc = new NesDmc();
-        chipRegister.nes_fds = new NesFds();
-        chipRegister.nes_n106 = new NesN106();
-        chipRegister.nes_vrc6 = new NesVrc6();
-        chipRegister.nes_mmc5 = new NesMmc5();
-        chipRegister.nes_fme7 = new NesFme7();
-        chipRegister.nes_vrc7 = new NesVrc7();
+        chipRegister.chip(NesChip.class).nes_bank = new NesBank();
+        chipRegister.chip(NesChip.class).nes_mem = new NesMem();
+        chipRegister.chip(NesChip.class).nes_cpu = new Km6502(0);
+        chipRegister.chip(NesChip.class).nes_apu = new NesApu();
+        chipRegister.chip(NesChip.class).nes_dmc = new NesDmc();
+        chipRegister.chip(NesChip.class).nes_fds = new NesFds();
+        chipRegister.chip(NesChip.class).nes_n106 = new NesN106();
+        chipRegister.chip(NesChip.class).nes_vrc6 = new NesVrc6();
+        chipRegister.chip(NesChip.class).nes_mmc5 = new NesMmc5();
+        chipRegister.chip(NesChip.class).nes_fme7 = new NesFme7();
+        chipRegister.chip(NesChip.class).nes_vrc7 = new NesVrc7();
 
-        chipRegister.nes_apu.apu = new NpNesApu(Common.NsfClock, setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_apu.reset();
-        chipRegister.nes_dmc.dmc = new NpNesDmc(Common.NsfClock, setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_dmc.reset();
-        chipRegister.nes_fds.fds = new NpNesFds(Common.NsfClock, setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_fds.reset();
-        chipRegister.nes_n106.setClock(Common.NsfClock);
-        chipRegister.nes_n106.setRate(setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_n106.reset();
-        chipRegister.nes_vrc6.setClock(Common.NsfClock);
-        chipRegister.nes_vrc6.setRate(setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_vrc6.reset();
-        chipRegister.nes_mmc5.setClock(Common.NsfClock);
-        chipRegister.nes_mmc5.setRate(setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_mmc5.reset();
-        chipRegister.nes_mmc5.setCPU(chipRegister.nes_cpu);
-        chipRegister.nes_fme7.setClock(Common.NsfClock);
-        chipRegister.nes_fme7.setRate(setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_fme7.reset();
-        chipRegister.nes_vrc7.setClock(Common.NsfClock);
-        chipRegister.nes_vrc7.setRate(setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_vrc7.reset();
+        chipRegister.chip(NesChip.class).nes_apu.apu = new NpNesApu(Common.NsfClock, setting.getOutputDevice().getSampleRate());
+        chipRegister.chip(NesChip.class).nes_apu.reset();
+        chipRegister.chip(NesChip.class).nes_dmc.dmc = new NpNesDmc(Common.NsfClock, setting.getOutputDevice().getSampleRate());
+        chipRegister.chip(NesChip.class).nes_dmc.reset();
+        chipRegister.chip(NesChip.class).nes_fds.fds = new NpNesFds(Common.NsfClock, setting.getOutputDevice().getSampleRate());
+        chipRegister.chip(NesChip.class).nes_fds.reset();
+        chipRegister.chip(NesChip.class).nes_n106.setClock(Common.NsfClock);
+        chipRegister.chip(NesChip.class).nes_n106.setRate(setting.getOutputDevice().getSampleRate());
+        chipRegister.chip(NesChip.class).nes_n106.reset();
+        chipRegister.chip(NesChip.class).nes_vrc6.setClock(Common.NsfClock);
+        chipRegister.chip(NesChip.class).nes_vrc6.setRate(setting.getOutputDevice().getSampleRate());
+        chipRegister.chip(NesChip.class).nes_vrc6.reset();
+        chipRegister.chip(NesChip.class).nes_mmc5.setClock(Common.NsfClock);
+        chipRegister.chip(NesChip.class).nes_mmc5.setRate(setting.getOutputDevice().getSampleRate());
+        chipRegister.chip(NesChip.class).nes_mmc5.reset();
+        chipRegister.chip(NesChip.class).nes_mmc5.setCPU(chipRegister.chip(NesChip.class).nes_cpu);
+        chipRegister.chip(NesChip.class).nes_fme7.setClock(Common.NsfClock);
+        chipRegister.chip(NesChip.class).nes_fme7.setRate(setting.getOutputDevice().getSampleRate());
+        chipRegister.chip(NesChip.class).nes_fme7.reset();
+        chipRegister.chip(NesChip.class).nes_vrc7.setClock(Common.NsfClock);
+        chipRegister.chip(NesChip.class).nes_vrc7.setRate(setting.getOutputDevice().getSampleRate());
+        chipRegister.chip(NesChip.class).nes_vrc7.reset();
 
-        chipRegister.nes_dmc.dmc.nes_apu = chipRegister.nes_apu.apu;
-        chipRegister.nes_dmc.dmc.setAPU(chipRegister.nes_apu.apu);
+        chipRegister.chip(NesChip.class).nes_dmc.dmc.nes_apu = chipRegister.chip(NesChip.class).nes_apu.apu;
+        chipRegister.chip(NesChip.class).nes_dmc.dmc.setAPU(chipRegister.chip(NesChip.class).nes_apu.apu);
 
         stack = new Device.Bus();
         layer = new Device.Layer();
@@ -335,12 +337,12 @@ public class Nsf extends BaseDriver {
             if (bmax < bankSwitch[i])
                 bmax = bankSwitch[i];
 
-        chipRegister.nes_mem.setImage(body, load_address & 0xffff, bodySize);
+        chipRegister.chip(NesChip.class).nes_mem.setImage(body, load_address & 0xffff, bodySize);
 
         if (bmax != 0) {
-            chipRegister.nes_bank.setImage(body, load_address & 0xffff, bodySize);
+            chipRegister.chip(NesChip.class).nes_bank.setImage(body, load_address & 0xffff, bodySize);
             for (i = 0; i < 8; i++)
-                chipRegister.nes_bank.setBankDefault((byte) (i + 8), bankSwitch[i]);
+                chipRegister.chip(NesChip.class).nes_bank.setBankDefault((byte) (i + 8), bankSwitch[i]);
         }
 
         stack.detachAll();
@@ -351,72 +353,72 @@ public class Nsf extends BaseDriver {
         ld.reset();
         stack.attach(ld);
 
-        apuBus.attach(chipRegister.nes_apu);
-        apuBus.attach(chipRegister.nes_dmc);
+        apuBus.attach(chipRegister.chip(NesChip.class).nes_apu);
+        apuBus.attach(chipRegister.chip(NesChip.class).nes_dmc);
 
-        chipRegister.nes_apu.setOption(NpNesApu.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getNESUnmuteOnReset() ? 1 : 0);
-        chipRegister.nes_apu.setOption(NpNesApu.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getNESNonLinearMixer() ? 1 : 0);
-        chipRegister.nes_apu.setOption(NpNesApu.OPT.PHASE_REFRESH.ordinal(), setting.getNsf().getNESPhaseRefresh() ? 1 : 0);
-        chipRegister.nes_apu.setOption(NpNesApu.OPT.DUTY_SWAP.ordinal(), setting.getNsf().getNESDutySwap() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_apu.setOption(NpNesApu.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getNESUnmuteOnReset() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_apu.setOption(NpNesApu.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getNESNonLinearMixer() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_apu.setOption(NpNesApu.OPT.PHASE_REFRESH.ordinal(), setting.getNsf().getNESPhaseRefresh() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_apu.setOption(NpNesApu.OPT.DUTY_SWAP.ordinal(), setting.getNsf().getNESDutySwap() ? 1 : 0);
 
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.ENABLE_4011.ordinal(), setting.getNsf().getDMCEnable4011() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.ENABLE_PNOISE.ordinal(), setting.getNsf().getDMCEnablePnoise() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getDMCUnmuteOnReset() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.DPCM_ANTI_CLICK.ordinal(), setting.getNsf().getDMCDPCMAntiClick() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getDMCNonLinearMixer() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.RANDOMIZE_NOISE.ordinal(), setting.getNsf().getDMCRandomizeNoise() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.TRI_MUTE.ordinal(), setting.getNsf().getDMCTRImute() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.RANDOMIZE_TRI.ordinal(), setting.getNsf().getDMCRandomizeTRI() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.DPCM_REVERSE.ordinal(), setting.getNsf().getDMCDPCMReverse() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_dmc.setOption(NpNesDmc.OPT.ENABLE_4011.ordinal(), setting.getNsf().getDMCEnable4011() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_dmc.setOption(NpNesDmc.OPT.ENABLE_PNOISE.ordinal(), setting.getNsf().getDMCEnablePnoise() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_dmc.setOption(NpNesDmc.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getDMCUnmuteOnReset() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_dmc.setOption(NpNesDmc.OPT.DPCM_ANTI_CLICK.ordinal(), setting.getNsf().getDMCDPCMAntiClick() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_dmc.setOption(NpNesDmc.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getDMCNonLinearMixer() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_dmc.setOption(NpNesDmc.OPT.RANDOMIZE_NOISE.ordinal(), setting.getNsf().getDMCRandomizeNoise() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_dmc.setOption(NpNesDmc.OPT.TRI_MUTE.ordinal(), setting.getNsf().getDMCTRImute() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_dmc.setOption(NpNesDmc.OPT.RANDOMIZE_TRI.ordinal(), setting.getNsf().getDMCRandomizeTRI() ? 1 : 0);
+        chipRegister.chip(NesChip.class).nes_dmc.setOption(NpNesDmc.OPT.DPCM_REVERSE.ordinal(), setting.getNsf().getDMCDPCMReverse() ? 1 : 0);
 
         if (useFds) {
             boolean write_enable = !setting.getNsf().getFDSWriteDisable8000();
-            chipRegister.nes_fds.setOption(0, setting.getNsf().getFDSLpf());
-            chipRegister.nes_fds.setOption(1, setting.getNsf().getFDS4085Reset() ? 1 : 0);
-            chipRegister.nes_mem.setFDSMode(write_enable);
-            chipRegister.nes_bank.setFDSMode(write_enable);
-            chipRegister.nes_bank.setBankDefault((byte) 6, bankSwitch[6]);
-            chipRegister.nes_bank.setBankDefault((byte) 7, bankSwitch[7]);
-            apuBus.attach(chipRegister.nes_fds);
+            chipRegister.chip(NesChip.class).nes_fds.setOption(0, setting.getNsf().getFDSLpf());
+            chipRegister.chip(NesChip.class).nes_fds.setOption(1, setting.getNsf().getFDS4085Reset() ? 1 : 0);
+            chipRegister.chip(NesChip.class).nes_mem.setFDSMode(write_enable);
+            chipRegister.chip(NesChip.class).nes_bank.setFDSMode(write_enable);
+            chipRegister.chip(NesChip.class).nes_bank.setBankDefault((byte) 6, bankSwitch[6]);
+            chipRegister.chip(NesChip.class).nes_bank.setBankDefault((byte) 7, bankSwitch[7]);
+            apuBus.attach(chipRegister.chip(NesChip.class).nes_fds);
         } else {
-            chipRegister.nes_mem.setFDSMode(false);
-            chipRegister.nes_bank.setFDSMode(false);
+            chipRegister.chip(NesChip.class).nes_mem.setFDSMode(false);
+            chipRegister.chip(NesChip.class).nes_bank.setFDSMode(false);
         }
         if (useN106) {
-            chipRegister.nes_n106.setOption(0, setting.getNsf().getN160Serial() ? 1 : 0);
-            apuBus.attach(chipRegister.nes_n106);
+            chipRegister.chip(NesChip.class).nes_n106.setOption(0, setting.getNsf().getN160Serial() ? 1 : 0);
+            apuBus.attach(chipRegister.chip(NesChip.class).nes_n106);
         }
         if (useVrc6) {
-            apuBus.attach(chipRegister.nes_vrc6);
+            apuBus.attach(chipRegister.chip(NesChip.class).nes_vrc6);
         }
         if (useMmc5) {
-            chipRegister.nes_mmc5.setOption(0, setting.getNsf().getMMC5NonLinearMixer() ? 1 : 0);
-            chipRegister.nes_mmc5.setOption(1, setting.getNsf().getMMC5PhaseRefresh() ? 1 : 0);
-            apuBus.attach(chipRegister.nes_mmc5);
+            chipRegister.chip(NesChip.class).nes_mmc5.setOption(0, setting.getNsf().getMMC5NonLinearMixer() ? 1 : 0);
+            chipRegister.chip(NesChip.class).nes_mmc5.setOption(1, setting.getNsf().getMMC5PhaseRefresh() ? 1 : 0);
+            apuBus.attach(chipRegister.chip(NesChip.class).nes_mmc5);
         }
         if (useFme7) {
-            apuBus.attach(chipRegister.nes_fme7);
+            apuBus.attach(chipRegister.chip(NesChip.class).nes_fme7);
         }
         if (useVrc7) {
-            apuBus.attach(chipRegister.nes_vrc7);
+            apuBus.attach(chipRegister.chip(NesChip.class).nes_vrc7);
         }
 
-        if (bmax > 0) layer.attach(chipRegister.nes_bank);
-        layer.attach(chipRegister.nes_mem);
+        if (bmax > 0) layer.attach(chipRegister.chip(NesChip.class).nes_bank);
+        layer.attach(chipRegister.chip(NesChip.class).nes_mem);
 
         stack.attach(apuBus);
         stack.attach(layer);
 
-        chipRegister.nes_cpu.setMemory(stack);
-        chipRegister.nes_dmc.setMemory(stack);
+        chipRegister.chip(NesChip.class).nes_cpu.setMemory(stack);
+        chipRegister.chip(NesChip.class).nes_dmc.setMemory(stack);
 
-        chipRegister.nes_apu.apu.squareTable[0] = 0;
+        chipRegister.chip(NesChip.class).nes_apu.apu.squareTable[0] = 0;
         for (i = 1; i < 32; i++)
-            chipRegister.nes_apu.apu.squareTable[i] = (int) ((8192.0 * 95.88) / (8128.0 / i + 100));
+            chipRegister.chip(NesChip.class).nes_apu.apu.squareTable[i] = (int) ((8192.0 * 95.88) / (8128.0 / i + 100));
 
         for (int c = 0; c < 2; ++c)
             for (int t = 0; t < 2; ++t)
-                chipRegister.nes_apu.apu.sm[c][t] = 128;
+                chipRegister.chip(NesChip.class).nes_apu.apu.sm[c][t] = 128;
 
         reset();
     }
@@ -437,9 +439,9 @@ public class Nsf extends BaseDriver {
         speed = 1000000.0 / ((region == Region.NTSC) ? speedNtsc : speedPal);
 
         layer.reset();
-        chipRegister.nes_cpu.reset();
+        chipRegister.chip(NesChip.class).nes_cpu.reset();
 
-        chipRegister.nes_cpu.start(initAddress, playAddress, speed, song, (region == Region.PAL) ? 1 : 0, 0);
+        chipRegister.chip(NesChip.class).nes_cpu.start(initAddress, playAddress, speed, song, (region == Region.PAL) ? 1 : 0, 0);
     }
 
     private Region getRegion(int flags) {
@@ -486,8 +488,8 @@ public class Nsf extends BaseDriver {
         master_volume = 0x80;
 
         double apu_clock_per_sample = 0;
-        if (chipRegister.nes_cpu != null) {
-            apu_clock_per_sample = chipRegister.nes_cpu.NES_BASECYCLES / rate;
+        if (chipRegister.chip(NesChip.class).nes_cpu != null) {
+            apu_clock_per_sample = chipRegister.chip(NesChip.class).nes_cpu.NES_BASECYCLES / rate;
         }
         double cpu_clock_per_sample = apu_clock_per_sample * vgmSpeed;
 
@@ -502,13 +504,13 @@ public class Nsf extends BaseDriver {
             cpu_clock_rest += cpu_clock_per_sample;
             int cpu_clocks = (int) cpu_clock_rest;
             if (cpu_clocks > 0) {
-                int real_cpu_clocks = chipRegister.nes_cpu.exec(cpu_clocks);
+                int real_cpu_clocks = chipRegister.chip(NesChip.class).nes_cpu.exec(cpu_clocks);
                 cpu_clock_rest -= real_cpu_clocks;
 
                 // tick APU frame sequencer
-                chipRegister.nes_dmc.dmc.tickFrameSequence(real_cpu_clocks);
+                chipRegister.chip(NesChip.class).nes_dmc.dmc.tickFrameSequence(real_cpu_clocks);
                 if (useMmc5)
-                    chipRegister.nes_mmc5.tickFrameSequence(real_cpu_clocks);
+                    chipRegister.chip(NesChip.class).nes_mmc5.tickFrameSequence(real_cpu_clocks);
             }
 
 //            updateInfo();
@@ -521,62 +523,62 @@ public class Nsf extends BaseDriver {
             }
 
             // render Output
-            chipRegister.nes_apu.tick(apu_clocks);
-            chipRegister.nes_apu.render(buf);
+            chipRegister.chip(NesChip.class).nes_apu.tick(apu_clocks);
+            chipRegister.chip(NesChip.class).nes_apu.render(buf);
 
             int mul = (int) (16384.0 * Math.pow(10.0, cAPU.getTVolume() / 40.0));
             out[0] = (buf[0] * mul) >> 13;
             out[1] = (buf[1] * mul) >> 13;
 
-            chipRegister.nes_dmc.tick(apu_clocks);
-            chipRegister.nes_dmc.render(buf);
+            chipRegister.chip(NesChip.class).nes_dmc.tick(apu_clocks);
+            chipRegister.chip(NesChip.class).nes_dmc.render(buf);
             mul = (int) (16384.0 * Math.pow(10.0, cDMC.getTVolume() / 40.0));
             out[0] += (buf[0] * mul) >> 13;
             out[1] += (buf[1] * mul) >> 13;
 
             if (useFds) {
-                chipRegister.nes_fds.tick(apu_clocks);
-                chipRegister.nes_fds.render(buf);
+                chipRegister.chip(NesChip.class).nes_fds.tick(apu_clocks);
+                chipRegister.chip(NesChip.class).nes_fds.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cFDS.getTVolume() / 40.0));
                 out[0] += (buf[0] * mul) >> 13;
                 out[1] += (buf[1] * mul) >> 13;
             }
 
             if (useN106) {
-                chipRegister.nes_n106.tick(apu_clocks);
-                chipRegister.nes_n106.render(buf);
+                chipRegister.chip(NesChip.class).nes_n106.tick(apu_clocks);
+                chipRegister.chip(NesChip.class).nes_n106.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cN160.getTVolume() / 40.0));
                 out[0] += (buf[0] * mul) >> 10;
                 out[1] += (buf[1] * mul) >> 10;
             }
 
             if (useVrc6) {
-                chipRegister.nes_vrc6.tick(apu_clocks);
-                chipRegister.nes_vrc6.render(buf);
+                chipRegister.chip(NesChip.class).nes_vrc6.tick(apu_clocks);
+                chipRegister.chip(NesChip.class).nes_vrc6.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cVRC6.getTVolume() / 40.0));
                 out[0] += (buf[0] * mul) >> 10;
                 out[1] += (buf[1] * mul) >> 10;
             }
 
             if (useMmc5) {
-                chipRegister.nes_mmc5.tick(apu_clocks);
-                chipRegister.nes_mmc5.render(buf);
+                chipRegister.chip(NesChip.class).nes_mmc5.tick(apu_clocks);
+                chipRegister.chip(NesChip.class).nes_mmc5.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cMMC5.getTVolume() / 40.0));
                 out[0] += (buf[0] * mul) >> 10;
                 out[1] += (buf[1] * mul) >> 10;
             }
 
             if (useFme7) {
-                chipRegister.nes_fme7.tick(apu_clocks);
-                chipRegister.nes_fme7.render(buf);
+                chipRegister.chip(NesChip.class).nes_fme7.tick(apu_clocks);
+                chipRegister.chip(NesChip.class).nes_fme7.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cFME7.getTVolume() / 40.0));
                 out[0] += (buf[0] * mul) >> 9;
                 out[1] += (buf[1] * mul) >> 9;
             }
 
             if (useVrc7) {
-                chipRegister.nes_vrc7.tick(apu_clocks);
-                chipRegister.nes_vrc7.render(buf);
+                chipRegister.chip(NesChip.class).nes_vrc7.tick(apu_clocks);
+                chipRegister.chip(NesChip.class).nes_vrc7.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cVRC7.getTVolume() / 40.0));
                 out[0] += (buf[0] * mul) >> 10;
                 out[1] += (buf[1] * mul) >> 10;
@@ -660,5 +662,11 @@ public class Nsf extends BaseDriver {
     @Override
     public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
+    }
+
+    @Override
+    public int render(Audio audio, short[] buffer, int offset, int sampleCount) {
+//        vstDelta = 0;
+        return render(buffer, sampleCount / 2, offset) * 2;
     }
 }

@@ -17,6 +17,8 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.MidiPlugin;
+import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
@@ -212,8 +214,8 @@ public class RCP extends BaseDriver {
         if (!makeBeforeSendCommand()) return false;
 
         if (model == EnmModel.RealModel) {
-            chipRegister.setYM2612SyncWait((byte) 0, 1);
-            chipRegister.setYM2612SyncWait((byte) 1, 1);
+            chipRegister.chip(Ym2612Chip.class).setYM2612SyncWait((byte) 0, 1);
+            chipRegister.chip(Ym2612Chip.class).setYM2612SyncWait((byte) 1, 1);
         }
 
         return true;
@@ -567,7 +569,7 @@ public class RCP extends BaseDriver {
             tracks[trkNumber].setRythmMode((vgmBuf[ptr++] & 0xff) == 0x80);
             int ch = vgmBuf[ptr++] & 0xff;
             if (ch != 255) {
-                int mc = chipRegister.getMIDIoutCount();
+                int mc = chipRegister.plugin(MidiPlugin.class).getMIDIoutCount();
                 if (mc == 0) mc = 1;
                 int n = (stDevNum + (ch / 16)) % mc;
                 tracks[trkNumber].setOutDeviceName("dummy");
@@ -1178,7 +1180,7 @@ public class RCP extends BaseDriver {
             dat.add(pMIDIMessage[i]);
 //            chipRegister.sendMIDIout(model, n, vv, vstDelta);
         }
-        chipRegister.sendMIDIout(model, n, toByteArray(dat), vstDelta);
+        chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, n, toByteArray(dat), vstDelta);
     }
 
     /**
@@ -1608,7 +1610,7 @@ public class RCP extends BaseDriver {
 
     void sefCommentStart(MIDITrack trk, MIDIEvent eve) {
         trk.setComment(new String(eve.getMIDIMessages()[0], CHARSET).replace("\0", ""));
-        chipRegister.midiParams[0].Lyric = trk.getComment();
+        chipRegister.plugin(MidiPlugin.class).midiParams[0].Lyric = trk.getComment();
     }
 
     void sefLoopEnd(MIDITrack trk, MIDIEvent eve) {
@@ -2205,7 +2207,7 @@ public class RCP extends BaseDriver {
 
                 CtlSysex csx = beforeSend[i].get(sendControlIndex[i]);
                 sendControlDelta[i] = csx.delta;
-                chipRegister.sendMIDIout(model, 0, csx.data, vstDelta);
+                chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, 0, csx.data, vstDelta);
 
                 sendControlIndex[i]++;
             } else {
@@ -2222,7 +2224,7 @@ public class RCP extends BaseDriver {
 
     private boolean makeBeforeSendCommand() {
         try {
-            MidiOutInfo[] infos = chipRegister.getMIDIoutInfo();
+            MidiOutInfo[] infos = chipRegister.plugin(MidiPlugin.class).getMIDIoutInfo();
             if (infos == null || infos.length < 1) return true;
 
             beforeSend = new List[infos.length];

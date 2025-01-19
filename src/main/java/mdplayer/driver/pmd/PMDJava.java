@@ -25,6 +25,10 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.P86Chip;
+import mdplayer.chips.PpsChip;
+import mdplayer.chips.Ppz8Chip;
+import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
@@ -296,7 +300,7 @@ public class PMDJava extends BaseDriver {
         if (cd.port == -1)
             return;
 
-        chipRegister.setYM2608Register(0, cd.port, cd.address, cd.data, model);
+        chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, cd.port, cd.address, cd.data, model);
     }
 
     private void sendOPNAWait(long size, int elapsed) {
@@ -426,7 +430,7 @@ public class PMDJava extends BaseDriver {
         if (dat.port == -1)
             return;
 
-        chipRegister.setYM2608Register(0, dat.port, dat.address, dat.data, model);
+        chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, dat.port, dat.address, dat.data, model);
         //logger.log(Level.TRACE, "%d %d".formatted(dat.address, dat.data));
     }
 
@@ -435,9 +439,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x05) {
-            chipRegister.loadPPSDRV(0, (byte[]) arg.additionalData, model);
+            chipRegister.chip(PpsChip.class).loadPPSDRV(0, (byte[]) arg.additionalData, model);
         } else {
-            chipRegister.writePPSDRV(0, arg.port, arg.address, arg.data, model);
+            chipRegister.chip(PpsChip.class).writePPSDRV(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -448,9 +452,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x00) {
-            chipRegister.loadPcmP86(0, arg.address, arg.data, (byte[]) arg.additionalData, model);
+            chipRegister.chip(P86Chip.class).loadPcmP86(0, arg.address, arg.data, (byte[]) arg.additionalData, model);
         } else {
-            chipRegister.writeP86(0, arg.port, arg.address, arg.data, model);
+            chipRegister.chip(P86Chip.class).writeP86(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -461,9 +465,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x03) {
-            chipRegister.loadPcmPPZ8(0, arg.address, arg.data, (byte[][]) arg.additionalData, model);
+            chipRegister.chip(Ppz8Chip.class).loadPcmPPZ8(0, arg.address, arg.data, (byte[][]) arg.additionalData, model);
         } else {
-            chipRegister.writePPZ8(0, arg.port, arg.address, arg.data, model);
+            chipRegister.chip(Ppz8Chip.class).writePPZ8(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;

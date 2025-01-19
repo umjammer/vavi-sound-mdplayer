@@ -8,6 +8,8 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.YmF262Chip;
+import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
 import vavi.util.ByteUtil;
@@ -1831,7 +1833,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
         work.seq_reg_bd = a;
         e = a;
-        d = (byte) 0xbd;
+        d = 0xbd;
         moon_fm1_out();
         hl++;
     }
@@ -2594,13 +2596,13 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
         a = (readMemory(hl) & 0xff);
         e = a;
-        d = (byte) 0x80;
+        d = 0x80;
         moon_write_fmop();
         hl++;
 
         a = (readMemory(hl) & 0xff);
         e = a;
-        d = (byte) 0xe0;
+        d = 0xe0;
         moon_write_fmop();
         hl++;
     }
@@ -2962,9 +2964,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // out	(MOON_DAT1), a
         // ret
         if (isOPL3) {
-            chipRegister.setYMF262Register(0, 0, d, e, model);
+            chipRegister.chip(YmF262Chip.class).setYMF262Register(0, 0, d, e, model);
         } else {
-            chipRegister.setYMF278BRegister(0, 0, d, e, model);
+            chipRegister.chip(YmF278BChip.class).setYMF278BRegister(0, 0, d, e, model);
             //logger.log(Level.TRACE, "fm1out:%02x:%02x:".formatted(d, e));
         }
     }
@@ -2978,9 +2980,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // out	(MOON_DAT2), a
         // ret
         if (isOPL3) {
-            chipRegister.setYMF262Register(0, 1, d, e, model);
+            chipRegister.chip(YmF262Chip.class).setYMF262Register(0, 1, d, e, model);
         } else {
-            chipRegister.setYMF278BRegister(0, 1, d, e, model);
+            chipRegister.chip(YmF278BChip.class).setYMF278BRegister(0, 1, d, e, model);
         }
         //logger.log(Level.TRACE, "fm2out:%02x:%02x:".formatted(d, e));
     }
@@ -2994,9 +2996,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // out	(MOON_WDAT),a
         // ret
         if (isOPL3) {
-            //chipRegister.setYMF262Register(0, 2, d, e, model);
+            //chipRegister.getChip(YmF262Chip.class).setYMF262Register(0, 2, d, e, model);
         } else {
-            chipRegister.setYMF278BRegister(0, 2, d, e, model);
+            chipRegister.chip(YmF278BChip.class).setYMF278BRegister(0, 2, d, e, model);
         }
 
         backDat = e;

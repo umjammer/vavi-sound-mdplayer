@@ -11,6 +11,16 @@ import mdplayer.ChipRegister;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdplayer.chips.Ay8910Chip;
+import mdplayer.chips.Sn76489Chip;
+import mdplayer.chips.Ym2151Chip;
+import mdplayer.chips.Ym2203Chip;
+import mdplayer.chips.Ym2413Chip;
+import mdplayer.chips.Ym2608Chip;
+import mdplayer.chips.Ym2612Chip;
+import mdplayer.chips.Ym3526Chip;
+import mdplayer.chips.Ym3812Chip;
+import mdplayer.chips.YmF262Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
@@ -173,8 +183,8 @@ public class S98 extends BaseDriver {
         if (!getInformationHeader()) return false;
 
         if (model == EnmModel.RealModel) {
-            chipRegister.setYM2612SyncWait((byte) 0, 1);
-            chipRegister.setYM2612SyncWait((byte) 1, 1);
+            chipRegister.chip(Ym2612Chip.class).setYM2612SyncWait((byte) 0, 1);
+            chipRegister.chip(Ym2612Chip.class).setYM2612SyncWait((byte) 1, 1);
         }
 
         return true;
@@ -499,43 +509,43 @@ public class S98 extends BaseDriver {
     }
 
     private void writeYM2203(int chipId, int adr, int data) {
-        chipRegister.setYM2203Register(chipId, adr, data, model);
+        chipRegister.chip(Ym2203Chip.class).setYM2203Register(chipId, adr, data, model);
     }
 
     private void writeYM2612(int chipId, int port, int adr, int data) {
-        chipRegister.setYM2612Register(chipId, port, adr, data, model, 0);
+        chipRegister.chip(Ym2612Chip.class).setYM2612Register(chipId, port, adr, data, model, 0);
     }
 
     private void writeYM2608(int chipId, int port, int adr, int data) {
-        chipRegister.setYM2608Register(chipId, port, adr, data, model);
+        chipRegister.chip(Ym2608Chip.class).setYM2608Register(chipId, port, adr, data, model);
     }
 
     private void writeYM2151(int chipId, int port, int adr, int data) {
-        chipRegister.setYM2151Register(chipId, port, adr, data, model, ym2151Hosei[chipId], 0);
+        chipRegister.chip(Ym2151Chip.class).setYM2151Register(chipId, port, adr, data, model, ym2151Hosei[chipId], 0);
     }
 
     private void writeYM2413(int chipId, int adr, int data) {
-        chipRegister.setYM2413Register(chipId, adr, data, model);
+        chipRegister.chip(Ym2413Chip.class).setYM2413Register(chipId, adr, data, model);
     }
 
     private void writeYM3526(int chipId, int adr, int data) {
-        chipRegister.setYM3526Register(chipId, adr, data, model);
+        chipRegister.chip(Ym3526Chip.class).setYM3526Register(chipId, adr, data, model);
     }
 
     private void writeYM3812(int chipId, int adr, int data) {
-        chipRegister.setYM3812Register(chipId, adr, data, model);
+        chipRegister.chip(Ym3812Chip.class).setYM3812Register(chipId, adr, data, model);
     }
 
     private void writeAY8910(int chipId, int adr, int data) {
-        chipRegister.setAY8910Register(chipId, adr, data, model);
+        chipRegister.chip(Ay8910Chip.class).setAY8910Register(chipId, adr, data, model);
     }
 
     private void writeSN76489(int chipId, int data) {
-        chipRegister.setSN76489Register(chipId, data, model);
+        chipRegister.chip(Sn76489Chip.class).setSN76489Register(chipId, data, model);
     }
 
     private void writeYMF262(int chipId, int port, int adr, int data) {
-        chipRegister.setYMF262Register(chipId, port, adr, data, model);
+        chipRegister.chip(YmF262Chip.class).setYMF262Register(chipId, port, adr, data, model);
     }
 
     static int getVv(byte[] buf, int musicPtr) {

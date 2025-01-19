@@ -7,9 +7,11 @@ import java.util.List;
 
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
+import mdplayer.chips.MidiPlugin;
 import mdplayer.driver.mid.MID;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
+import mdsound.MDSound.Chip;
 
 import static java.lang.System.getLogger;
 
@@ -78,7 +80,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.initChipRegister(null);
             audio.releaseAllMIDIout();
             audio.makeMIDIout(setting, midiMode);
-            audio.chipRegister.setMIDIout(setting.getMidiOut().getMidiOutInfos().get(midiMode), audio.midiOuts, audio.midiOutsType);
+            audio.chipRegister.plugin(MidiPlugin.class).setMIDIout(setting.getMidiOut().getMidiOutInfos().get(midiMode), audio.midiOuts, audio.midiOutsType);
 
             if (!audio.driverVirtual.init(vgmBuf, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000

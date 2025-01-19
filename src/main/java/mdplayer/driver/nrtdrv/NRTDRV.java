@@ -11,6 +11,8 @@ import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdplayer.chips.Ay8910Chip;
+import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 
@@ -145,7 +147,7 @@ public class NRTDRV extends BaseDriver {
             ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
-                int clock = chipRegister.getYM2151Clock(chipId);
+                int clock = chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
                 if (clock != -1) {
                     ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
@@ -156,10 +158,10 @@ public class NRTDRV extends BaseDriver {
         call(0);
 
         if (model == EnmModel.RealModel) {
-            chipRegister.sendDataYM2151((byte) 0, model);
-            chipRegister.setYM2151SyncWait((byte) 0, 1);
-            chipRegister.sendDataYM2151((byte) 1, model);
-            chipRegister.setYM2151SyncWait((byte) 1, 1);
+            chipRegister.chip(Ym2151Chip.class).sendDataYM2151((byte) 0, model);
+            chipRegister.chip(Ym2151Chip.class).setYM2151SyncWait((byte) 0, 1);
+            chipRegister.chip(Ym2151Chip.class).sendDataYM2151((byte) 1, model);
+            chipRegister.chip(Ym2151Chip.class).setYM2151SyncWait((byte) 1, 1);
         }
 
         return true;
@@ -756,13 +758,13 @@ public class NRTDRV extends BaseDriver {
                 // 仮想レジスタに書き込み
                 work.opm1VReg[d] = a;
                 // 実レジスタに書き込み
-                chipRegister.setYM2151Register(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
                 // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
                 // 仮想レジスタに書き込み
                 work.opm2VReg[d] = a;
                 // 実レジスタに書き込み
-                chipRegister.setYM2151Register(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                chipRegister.chip(Ym2151Chip.class).setYM2151Register(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
                 // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         } else {
@@ -770,13 +772,13 @@ public class NRTDRV extends BaseDriver {
                 // 仮想レジスタに書き込み
                 work.opm1VReg[d] = a;
                 // 実レジスタに書き込み
-                chipRegister.setYM2151Register(0, 0, d, a, EnmModel.RealModel, ym2151Hosei[0], 0);
+                chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, 0, d, a, EnmModel.RealModel, ym2151Hosei[0], 0);
                 // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
                 // 仮想レジスタに書き込み
                 work.opm2VReg[d] = a;
                 // 実レジスタに書き込み
-                chipRegister.setYM2151Register(1, 0, d, a, EnmModel.RealModel, ym2151Hosei[1], 0);
+                chipRegister.chip(Ym2151Chip.class).setYM2151Register(1, 0, d, a, EnmModel.RealModel, ym2151Hosei[1], 0);
                 // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         }
@@ -786,7 +788,7 @@ public class NRTDRV extends BaseDriver {
         if (model == EnmModel.VirtualModel) {
             // Out(0x1c00, d); // Psg register
             // Out(0x1b00, a); // Psg data
-            chipRegister.setAY8910Register(0, d, a, EnmModel.VirtualModel);
+            chipRegister.chip(Ay8910Chip.class).setAY8910Register(0, d, a, EnmModel.VirtualModel);
         }
         // else {
         // }
@@ -1536,14 +1538,14 @@ public class NRTDRV extends BaseDriver {
                 if (work.opmFlg != 0) {
                     // ウエイト
                 }
-                chipRegister.setYM2151Register(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
             } else {
                 // OPM2
                 work.opm2VReg[d] = a;
                 if (work.opmFlg != 0) {
                     // ウエイト
                 }
-                chipRegister.setYM2151Register(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                chipRegister.chip(Ym2151Chip.class).setYM2151Register(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
             }
         }
 

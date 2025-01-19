@@ -1,6 +1,27 @@
 package mdplayer;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.Ay8910Chip;
+import mdplayer.chips.DmgChip;
+import mdplayer.chips.HuC6280Chip;
+import mdplayer.chips.NesChip;
+import mdplayer.chips.OkiM6258Chip;
+import mdplayer.chips.PwmChip;
+import mdplayer.chips.Rf5C164Chip;
+import mdplayer.chips.Sn76489Chip;
+import mdplayer.chips.Y8950Chip;
+import mdplayer.chips.Ym2151Chip;
+import mdplayer.chips.Ym2203Chip;
+import mdplayer.chips.Ym2413Chip;
+import mdplayer.chips.Ym2608Chip;
+import mdplayer.chips.Ym2610Chip;
+import mdplayer.chips.Ym2612Chip;
+import mdplayer.chips.Ym3526Chip;
+import mdplayer.chips.Ym3812Chip;
+import mdplayer.chips.YmF262Chip;
+import mdplayer.chips.YmF271Chip;
+import mdplayer.chips.YmF278BChip;
+import mdplayer.chips.YmZ280BChip;
 
 
 public class DacControl {
@@ -82,68 +103,68 @@ public class DacControl {
     private void writeChipReg(int chipType2, int chipId, int port, int offset, int data) {
         switch (chipType2) {
         case 0x00: // SN76489
-            chipRegister.setSN76489Register(chipId, data, model);
+            chipRegister.chip(Sn76489Chip.class).setSN76489Register(chipId, data, model);
             break;
         case 0x01: // YM2413+
-            chipRegister.setYM2413Register(chipId, offset, data, model);
+            chipRegister.chip(Ym2413Chip.class).setYM2413Register(chipId, offset, data, model);
             break;
         case 0x02: // Ym2612
-            chipRegister.setYM2612Register(chipId, port, offset, data, model, -1);
+            chipRegister.chip(Ym2612Chip.class).setYM2612Register(chipId, port, offset, data, model, -1);
             break;
         case 0x03: // YM2151+
-            chipRegister.setYM2151Register(chipId, port, offset, data, model, 0, 0);
+            chipRegister.chip(Ym2151Chip.class).setYM2151Register(chipId, port, offset, data, model, 0, 0);
             break;
         case 0x06: // YM2203+
-            chipRegister.setYM2203Register(chipId, offset, data, model);
+            chipRegister.chip(Ym2203Chip.class).setYM2203Register(chipId, offset, data, model);
             break;
         case 0x07: // YM2608+
-            chipRegister.setYM2608Register(chipId, port, offset, data, model);
+            chipRegister.chip(Ym2608Chip.class).setYM2608Register(chipId, port, offset, data, model);
             break;
         case 0x08: // YM2610+
-            chipRegister.setYM2610Register(chipId, port, offset, data, model);
+            chipRegister.chip(Ym2610Chip.class).setYM2610Register(chipId, port, offset, data, model);
             break;
         case 0x09: // YM3812+
-            chipRegister.setYM3812Register(chipId, offset, data, model);
+            chipRegister.chip(Ym3812Chip.class).setYM3812Register(chipId, offset, data, model);
             break;
         case 0x0A: // YM3526+
-            chipRegister.setYM3526Register(chipId, offset, data, model);
+            chipRegister.chip(Ym3526Chip.class).setYM3526Register(chipId, offset, data, model);
             break;
         case 0x0B: // Y8950+
-            chipRegister.setY8950Register(chipId, offset, data, model);
+            chipRegister.chip(Y8950Chip.class).setY8950Register(chipId, offset, data, model);
             break;
         case 0x0C: // YMF262+
-            chipRegister.setYMF262Register(chipId, port, offset, data, model);
+            chipRegister.chip(YmF262Chip.class).setYMF262Register(chipId, port, offset, data, model);
             break;
         case 0x0D: // YMF278B+
-            chipRegister.setYMF278BRegister(chipId, port, offset, data, model);
+            chipRegister.chip(YmF278BChip.class).setYMF278BRegister(chipId, port, offset, data, model);
             break;
         case 0x0E: // YMF271+
-            chipRegister.setYMF271Register(chipId, port, offset, data, model);
+            chipRegister.chip(YmF271Chip.class).setYMF271Register(chipId, port, offset, data, model);
             break;
         case 0x0F: // YMZ280B+
-            chipRegister.setYMZ280BRegister(chipId, offset, data, model);
+            chipRegister.chip(YmZ280BChip.class).setYMZ280BRegister(chipId, offset, data, model);
             break;
         case 0x10:
-            chipRegister.writeRF5C164(chipId, offset, data, model);
+            chipRegister.chip(Rf5C164Chip.class).writeRF5C164(chipId, offset, data, model);
             break;
         case 0x11: // PWM
-            chipRegister.writePWM(chipId, port, (offset << 8) | (data << 0), model);
+            chipRegister.chip(PwmChip.class).writePWM(chipId, port, (offset << 8) | (data << 0), model);
             break;
         case 0x12: // AY8910+
-            chipRegister.setAY8910Register(chipId, offset, data, model);
+            chipRegister.chip(Ay8910Chip.class).setAY8910Register(chipId, offset, data, model);
             break;
         case 0x13: // DMG+
-            chipRegister.setDMGRegister(chipId, offset, data, model);
+            chipRegister.chip(DmgChip.class).setDMGRegister(chipId, offset, data, model);
             break;
         case 0x14: // NES+
-            chipRegister.setNESRegister(chipId, offset, data, model);
+            chipRegister.chip(NesChip.class).setNESRegister(chipId, offset, data, model);
             break;
         case 0x17: // OKIM6258
             if (model == EnmModel.VirtualModel)  // logger.log(Level.TRACE, "[DAC]");
-                chipRegister.writeOKIM6258(chipId, offset, data, model);
+                chipRegister.chip(OkiM6258Chip.class).writeOKIM6258(chipId, offset, data, model);
             break;
         case 0x1b: // OotakeHuC6280
-            chipRegister.setHuC6280Register(chipId, offset, data, model);
+            chipRegister.chip(HuC6280Chip.class).setHuC6280Register(chipId, offset, data, model);
             break;
         }
     }
@@ -316,7 +337,7 @@ public class DacControl {
                     else if (dstChipType2 == 0x05) {
                     } // TODO
                     else if (dstChipType2 == 0x1B)
-                        prevChn = chipRegister.readHuC6280Register(dstChipID, 0x00, model);
+                        prevChn = chipRegister.chip(HuC6280Chip.class).readHuC6280Register(dstChipID, 0x00, model);
 
                     // Send Channel Select
                     writeChipReg(dstChipType2, dstChipID, 0x00, command >> 4, port);

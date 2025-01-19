@@ -7,6 +7,8 @@ import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdplayer.chips.Sn76489Chip;
+import mdplayer.chips.Ym2612Chip;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -65,8 +67,8 @@ public class Xgm extends BaseDriver {
         if (!getXGMInfo(vgmBuf)) return false;
 
         if (model == EnmModel.RealModel) {
-            chipRegister.setYM2612SyncWait((byte) 0, 1);
-            chipRegister.setYM2612SyncWait((byte) 1, 1);
+            chipRegister.chip(Ym2612Chip.class).setYM2612SyncWait((byte) 0, 1);
+            chipRegister.chip(Ym2612Chip.class).setYM2612SyncWait((byte) 1, 1);
         }
 
         // Initializing the Driver
@@ -270,7 +272,7 @@ public class Xgm extends BaseDriver {
     private void writePSG(int X) {
         for (int i = 0; i < X + 1; i++) {
             int data = vgmBuf[musicPtr++] & 0xff;
-            chipRegister.setSN76489Register(0, data, model);
+            chipRegister.chip(Sn76489Chip.class).setSN76489Register(0, data, model);
         }
     }
 
@@ -279,7 +281,7 @@ public class Xgm extends BaseDriver {
             int adr = vgmBuf[musicPtr++] & 0xff;
             int val = vgmBuf[musicPtr++] & 0xff;
             if (adr == 0x2b) DACEnable = val & 0x80;
-            chipRegister.setYM2612Register(0, 0, adr, val, model, vgmFrameCounter);
+            chipRegister.chip(Ym2612Chip.class).setYM2612Register(0, 0, adr, val, model, vgmFrameCounter);
         }
     }
 
@@ -287,14 +289,14 @@ public class Xgm extends BaseDriver {
         for (int i = 0; i < X + 1; i++) {
             int adr = vgmBuf[musicPtr++] & 0xff;
             int val = vgmBuf[musicPtr++] & 0xff;
-            chipRegister.setYM2612Register(0, 1, adr, val, model, vgmFrameCounter);
+            chipRegister.chip(Ym2612Chip.class).setYM2612Register(0, 1, adr, val, model, vgmFrameCounter);
         }
     }
 
     private void writeYM2612Key(int X) {
         for (int i = 0; i < X + 1; i++) {
             int val = vgmBuf[musicPtr++] & 0xff;
-            chipRegister.setYM2612Register(0, 0, 0x28, val, model, vgmFrameCounter);
+            chipRegister.chip(Ym2612Chip.class).setYM2612Register(0, 0, 0x28, val, model, vgmFrameCounter);
         }
     }
 
@@ -355,6 +357,6 @@ public class Xgm extends BaseDriver {
         o = (short) Math.min(Math.max(o, Byte.MIN_VALUE + 1), Byte.MAX_VALUE);
         o += 0x80;
 
-        chipRegister.setYM2612Register(0, 0, 0x2a, o, model, vgmFrameCounter);
+        chipRegister.chip(Ym2612Chip.class).setYM2612Register(0, 0, 0x2a, o, model, vgmFrameCounter);
     }
 }
