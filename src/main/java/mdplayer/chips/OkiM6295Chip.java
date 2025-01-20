@@ -80,4 +80,12 @@ public class OkiM6295Chip implements Chip {
 //logger.log(Level.TRACE, "chipId=%d Port=%x data=%x".formatted(chipId, port, data));
         }
     }
+
+    public void setOKIM6295Mask(int chipId, int ch) {
+        setMaskOKIM6295(chipId, ch, true);
+    }
+
+    public void resetOKIM6295Mask(int chipId, int ch) {
+        setMaskOKIM6295(chipId, ch, false);
+    }
 }

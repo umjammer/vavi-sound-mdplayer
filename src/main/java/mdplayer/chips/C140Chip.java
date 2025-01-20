@@ -6,6 +6,9 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
@@ -13,6 +16,8 @@ import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.chips.C140;
 import mdsound.instrument.C140Inst;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -22,6 +27,8 @@ import mdsound.instrument.C140Inst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class C140Chip implements Chip {
+
+    private static final Logger logger = getLogger(C140Chip.class.getName());
 
     private final Setting.ChipType2[] ctC140 = new Setting.ChipType2[] {
             setting.getC140Type()[0], setting.getC140Type()[1]
@@ -119,7 +126,7 @@ public class C140Chip implements Chip {
                 }
                 // scC140[chipId].setRegister(0x10006, (int)ROMSize);
 
-                context.realChip.SendData();
+                context.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }
@@ -140,6 +147,26 @@ public class C140Chip implements Chip {
                         break;
                 }
             }
+        }
+    }
+
+    public byte[] getC140Register(int chipId) {
+        return pcmRegisterC140[chipId];
+    }
+
+    public boolean[] getC140KeyOn(int chipId) {
+        return pcmKeyOnC140[chipId];
+    }
+
+    public void setC140Mask(int chipId, int ch) {
+        setMaskC140(chipId, ch, true);
+    }
+
+    public void resetC140Mask(int chipId, int ch) {
+        try {
+            setMaskC140(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 }

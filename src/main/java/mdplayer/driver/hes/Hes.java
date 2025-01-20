@@ -4,7 +4,6 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.Arrays;
 
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
@@ -41,10 +40,10 @@ public class Hes extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
 
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
+        this.plugin = plugin;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -75,7 +74,7 @@ public class Hes extends BaseDriver {
         hes = new Hes();
         nez_play = new M_Hes.NEZ_PLAY();
         if (nez_play.HESLoad(vgmBuf, vgmBuf.length) != 0) return false;
-        nez_play.heshes.chipRegister = chipRegister;
+        nez_play.heshes.chipRegister = plugin.audio.chipRegister;
         nez_play.heshes.ld = ld;
         nez_play.song.songno = this.song + 1;
         nez_play.HESHESReset();
@@ -238,7 +237,7 @@ public class Hes extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 }

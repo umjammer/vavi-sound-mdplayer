@@ -3,11 +3,14 @@ package mdplayer.plugin;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import dotnet4j.util.compat.Tuple;
 import mdplayer.Audio;
 import mdplayer.Common;
+import mdplayer.Common.EnmChip;
 import mdplayer.OpeManager;
 import mdplayer.Request;
 import mdplayer.Setting;
@@ -66,6 +69,15 @@ public abstract class BasePlugin implements Plugin {
 
     private Thread trd;
 
+    protected int vgmRealFadeoutVol = 0;
+    protected int vgmRealFadeoutVolWait = 4;
+
+    protected int hiyorimiEven = 0;
+    public boolean hiyorimiNecessary = false;
+
+    // TODO eliminate
+    protected Set<EnmChip> useChip = new HashSet<>();
+
     public boolean getEmuOnly() {
         return false;
     }
@@ -94,7 +106,7 @@ public abstract class BasePlugin implements Plugin {
         audio.paused = false;
         audio.stopped = true;
 logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
-        audio._fatalError = false;
+//        audio._fatalError = false;
         oneTimeReset = false;
 
 //        logger.log(Level.DEBUG, "Audio:Init:STEP 06");
@@ -103,7 +115,7 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
 //        logger.log(Level.DEBUG, "Audio:Init:STEP 07");
 
         // midi out released
-        audio.releaseAllMIDIout();
+        audio.chipRegister.plugin(MidiPlugin.class).releaseAllMIDIout();
 
 //        logger.log(Level.DEBUG, "Audio:Init:STEP 08");
 
@@ -174,53 +186,53 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
 //                    }
                     continue;
                 }
-                if (audio.hiyorimiNecessary && audio.driverVirtual.isDataBlock) {
+                if (hiyorimiNecessary && audio.driverVirtual.isDataBlock) {
                     continue;
                 }
 
                 if (audio.vgmFadeout) {
-                    if (audio.vgmRealFadeoutVol != 1000) audio.vgmRealFadeoutVolWait--;
-                    if (audio.vgmRealFadeoutVolWait == 0) {
-                        if (audio.useChip.contains(Common.EnmChip.YM2151)) audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(0, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.YM2203)) audio.chipRegister.chip(Ym2203Chip.class).setFadeoutVolYM2203(0, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.AY8910)) audio.chipRegister.chip(Ay8910Chip.class).setFadeoutVolAY8910(0, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.YM2413)) audio.chipRegister.chip(Ym2413Chip.class).setFadeoutVolYM2413(0, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.YM2608)) audio.chipRegister.chip(Ym2608Chip.class).setFadeoutVolYM2608(0, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.YM2610)) audio.chipRegister.chip(Ym2610Chip.class).setFadeoutVolYM2610(0, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.YM2612)) audio.chipRegister.chip(Ym2612Chip.class).setFadeoutVolYM2612(0, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.YM3526)) audio.chipRegister.chip(Ym3526Chip.class).setFadeoutVolYM3526(0, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.YM3812)) audio.chipRegister.chip(Ym3812Chip.class).setFadeoutVolYM3812(0, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.SN76489)) audio.chipRegister.chip(Sn76489Chip.class).setFadeoutVolSN76489(0, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.YMF262)) audio.chipRegister.chip(YmF262Chip.class).setFadeoutVolYMF262(0, audio.vgmRealFadeoutVol);
+                    if (vgmRealFadeoutVol != 1000) vgmRealFadeoutVolWait--;
+                    if (vgmRealFadeoutVolWait == 0) {
+                        if (useChip.contains(Common.EnmChip.YM2151)) audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(0, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.YM2203)) audio.chipRegister.chip(Ym2203Chip.class).setFadeoutVolYM2203(0, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.AY8910)) audio.chipRegister.chip(Ay8910Chip.class).setFadeoutVolAY8910(0, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.YM2413)) audio.chipRegister.chip(Ym2413Chip.class).setFadeoutVolYM2413(0, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.YM2608)) audio.chipRegister.chip(Ym2608Chip.class).setFadeoutVolYM2608(0, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.YM2610)) audio.chipRegister.chip(Ym2610Chip.class).setFadeoutVolYM2610(0, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.YM2612)) audio.chipRegister.chip(Ym2612Chip.class).setFadeoutVolYM2612(0, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.YM3526)) audio.chipRegister.chip(Ym3526Chip.class).setFadeoutVolYM3526(0, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.YM3812)) audio.chipRegister.chip(Ym3812Chip.class).setFadeoutVolYM3812(0, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.SN76489)) audio.chipRegister.chip(Sn76489Chip.class).setFadeoutVolSN76489(0, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.YMF262)) audio.chipRegister.chip(YmF262Chip.class).setFadeoutVolYMF262(0, vgmRealFadeoutVol);
 
-                        if (audio.useChip.contains(Common.EnmChip.S_YM2151)) audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(1, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.S_YM2203)) audio.chipRegister.chip(Ym2203Chip.class).setFadeoutVolYM2203(1, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.S_AY8910)) audio.chipRegister.chip(Ay8910Chip.class).setFadeoutVolAY8910(1, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.S_YM2413)) audio.chipRegister.chip(Ym2413Chip.class).setFadeoutVolYM2413(1, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.S_YM2608)) audio.chipRegister.chip(Ym2608Chip.class).setFadeoutVolYM2608(1, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.S_YM2610)) audio.chipRegister.chip(Ym2610Chip.class).setFadeoutVolYM2610(1, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.S_YM2612)) audio.chipRegister.chip(Ym2612Chip.class).setFadeoutVolYM2612(1, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.S_YM3526)) audio.chipRegister.chip(Ym3526Chip.class).setFadeoutVolYM3526(1, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.S_YM3812)) audio.chipRegister.chip(Ym3812Chip.class).setFadeoutVolYM3812(1, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.S_SN76489)) audio.chipRegister.chip(Sn76489Chip.class).setFadeoutVolSN76489(1, audio.vgmRealFadeoutVol);
-                        if (audio.useChip.contains(Common.EnmChip.S_YMF262)) audio.chipRegister.chip(YmF262Chip.class).setFadeoutVolYMF262(1, audio.vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.S_YM2151)) audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(1, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.S_YM2203)) audio.chipRegister.chip(Ym2203Chip.class).setFadeoutVolYM2203(1, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.S_AY8910)) audio.chipRegister.chip(Ay8910Chip.class).setFadeoutVolAY8910(1, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.S_YM2413)) audio.chipRegister.chip(Ym2413Chip.class).setFadeoutVolYM2413(1, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.S_YM2608)) audio.chipRegister.chip(Ym2608Chip.class).setFadeoutVolYM2608(1, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.S_YM2610)) audio.chipRegister.chip(Ym2610Chip.class).setFadeoutVolYM2610(1, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.S_YM2612)) audio.chipRegister.chip(Ym2612Chip.class).setFadeoutVolYM2612(1, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.S_YM3526)) audio.chipRegister.chip(Ym3526Chip.class).setFadeoutVolYM3526(1, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.S_YM3812)) audio.chipRegister.chip(Ym3812Chip.class).setFadeoutVolYM3812(1, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.S_SN76489)) audio.chipRegister.chip(Sn76489Chip.class).setFadeoutVolSN76489(1, vgmRealFadeoutVol);
+                        if (useChip.contains(Common.EnmChip.S_YMF262)) audio.chipRegister.chip(YmF262Chip.class).setFadeoutVolYMF262(1, vgmRealFadeoutVol);
 
-                        audio.vgmRealFadeoutVol++;
+                        vgmRealFadeoutVol++;
 
-                        audio.vgmRealFadeoutVol = Math.min(127, audio.vgmRealFadeoutVol);
-                        if (audio.vgmRealFadeoutVol == 127) {
+                        vgmRealFadeoutVol = Math.min(127, vgmRealFadeoutVol);
+                        if (vgmRealFadeoutVol == 127) {
 //                            if (SoundChip.realChip != null) {
 //                                softReset(EnmModel.RealModel);
 //                            }
-                            audio.vgmRealFadeoutVolWait = 1000;
+                            vgmRealFadeoutVolWait = 1000;
                             audio.chipRegister.plugin(MidiPlugin.class).resetAllMIDIout();
                         } else {
-                            audio.vgmRealFadeoutVolWait = 700 - audio.vgmRealFadeoutVol * 2;
+                            vgmRealFadeoutVolWait = 700 - vgmRealFadeoutVol * 2;
                         }
                     }
                 }
 
-                if (audio.hiyorimiNecessary) {
+                if (hiyorimiNecessary) {
 //                    long v = driverReal.vgmFrameCounter - audio.driverVirtual.vgmFrameCounter;
 //                    long d = setting.getoutputDevice().getSampleRate() * (setting.LatencySCCI - setting.getoutputDevice().getSampleRate() * setting.LatencyEmulation) / 1000;
 //                    long l = getLatency() / 4;
@@ -248,10 +260,10 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
                         audio.driverReal.processOneFrame();
                         break;
                     case 1: // x1/2
-                        audio.hiyorimiEven++;
-                        if (audio.hiyorimiEven > 1) {
+                        hiyorimiEven++;
+                        if (hiyorimiEven > 1) {
                             audio.driverReal.processOneFrame();
-                            audio.hiyorimiEven = 0;
+                            hiyorimiEven = 0;
                         }
                         break;
                     case 2: // x2
@@ -359,10 +371,10 @@ logger.log(Level.INFO, "dev null:" + getClass().getName());
         audio.vgmFadeoutCounter = 1.0;
         audio.vgmFadeoutCounterV = 0.00001;
         vgmSpeed = 1;
-        audio.vgmRealFadeoutVol = 0;
-        audio.vgmRealFadeoutVolWait = 4;
+        vgmRealFadeoutVol = 0;
+        vgmRealFadeoutVolWait = 4;
 
-        audio.clearFadeoutVolume();
+        audio.chipRegister.clearFadeoutVolume();
 
         audio.chipRegister.resetChips();
     }

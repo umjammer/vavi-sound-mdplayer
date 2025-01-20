@@ -78,7 +78,8 @@ public class frmInfo extends JFrame {
         lblUsedChips.setText("");
         rtbLyrics.setText(null);
 
-        Vgm.Gd3 gd3 = Audio.getInstance().getGd3();
+        Audio audio = Audio.getInstance();
+        Vgm.Gd3 gd3 = (audio.driverVirtual != null) ? audio.driverVirtual.gd3 : null;
         if (gd3 == null) return;
 
         lblTitle.setText(gd3.trackName);

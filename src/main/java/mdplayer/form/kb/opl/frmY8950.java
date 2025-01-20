@@ -22,6 +22,7 @@ import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.Y8950Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -162,11 +163,11 @@ public class frmY8950 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] Y8950Register = audio.getY8950Register(chipId);
+        int[] Y8950Register = audio.chipRegister.chip(Y8950Chip.class).getY8950Register(chipId);
         MDChipParams.Channel nyc;
         int slot;
-        ChipKeyInfo ki = audio.getY8950KeyInfo(chipId);
-        mdsound.MDSound.Chip chipInfo = audio.getMDSChipInfo(Y8950Inst.class);
+        ChipKeyInfo ki = audio.chipRegister.chip(Y8950Chip.class).getY8950KeyInfo(chipId);
+        mdsound.MDSound.Chip chipInfo = audio.chipRegister.getChipInfo(Y8950Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock;
 
         //FM

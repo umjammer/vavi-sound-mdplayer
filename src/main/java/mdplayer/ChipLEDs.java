@@ -17,6 +17,11 @@ public class ChipLEDs {
     public void put(String key, int value) {
         leds.put(key, value);
     }
+
+    public void clear() {
+        leds.clear();
+    }
+
 /*
     public byte PriOPN = 0;
     public byte PriOPN2 = 0;

@@ -5,6 +5,7 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
+import mdplayer.Audio;
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.Setting;
@@ -62,24 +63,24 @@ logger.log(Level.WARNING, "cannot start: " + this);
             //Stop();
 
             audio.chipRegister.resetChips();
-            audio.useChip.clear();
+            useChip.clear();
             audio.vgmFadeout = false;
             audio.vgmFadeoutCounter = 1.0;
             audio.vgmFadeoutCounterV = 0.00001;
             vgmSpeed = 1;
-            audio.vgmRealFadeoutVol = 0;
-            audio.vgmRealFadeoutVolWait = 4;
+            vgmRealFadeoutVol = 0;
+            vgmRealFadeoutVolWait = 4;
 
-            audio.clearFadeoutVolume();
+            audio.chipRegister.clearFadeoutVolume();
 
             audio.chipRegister.resetChips();
 
             startTrdVgmReal();
 
-            audio.hiyorimiNecessary = setting.getHiyorimiMode();
+            hiyorimiNecessary = setting.getHiyorimiMode();
             int hiyorimiDeviceFlag = 3;
 
-            audio.chipLED = new ChipLEDs();
+            audio.chipRegister.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -114,7 +115,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             if (chip != null) {
                 lstChips.add(chip);
             }
-            audio.useChip.add(Common.EnmChip.YM2151);
+            useChip.add(Common.EnmChip.YM2151);
 
             X68SoundYm2151Inst mdxPCM_V = Instrument.getInstrument(X68SoundYm2151Inst.class);
             mdxPCM_V.x68sound[0] = new X68Sound();
@@ -122,23 +123,20 @@ logger.log(Level.WARNING, "cannot start: " + this);
             X68SoundYm2151Inst mdxPCM_R = Instrument.getInstrument(X68SoundYm2151Inst.class);
             mdxPCM_R.x68sound[0] = new X68Sound();
             mdxPCM_R.sound_Iocs[0] = new SoundIocs(mdxPCM_R.x68sound[0]);
-            audio.useChip.add(Common.EnmChip.OKIM6258);
+            useChip.add(Common.EnmChip.OKIM6258);
 
-            audio.chipLED.put("PriOPM", 1);
-            audio.chipLED.put("PriOKI5", 1);
+            audio.chipRegister.chipLED.put("PriOPM", 1);
+            audio.chipRegister.chipLED.put("PriOKI5", 1);
 
-            audio.hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && audio.hiyorimiNecessary;
+            hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
-            if (audio.mds == null)
-                audio.mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
-            else
-                audio.mds.init(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
 
             audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
             audio.setVolume(MAIN_TAG, Ym2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class));
 
-            if (audio.useChip.contains(Common.EnmChip.YM2151))
+            if (useChip.contains(Common.EnmChip.YM2151))
                 audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 0, 4000000, Common.EnmModel.RealModel);
             //chipRegister.writeYM2151Clock(1, 4000000, enmModel.RealModel);
 

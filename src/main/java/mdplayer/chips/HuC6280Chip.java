@@ -10,6 +10,7 @@ import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdsound.chips.OotakeHuC6280;
 import mdsound.instrument.HuC6280Inst;
 
 
@@ -86,5 +87,17 @@ public class HuC6280Chip implements Chip {
 
     public void setMaskHuC6280(int chipId, int ch, boolean mask) {
         maskChHuC6280[chipId][ch] = mask;
+    }
+
+    public OotakeHuC6280 getHuC6280Register(int chipId) {
+        return context.mds.ReadOotakePsgStatus(chipId);
+    }
+
+    public void setHuC6280Mask(int chipId, int ch) {
+        setMaskHuC6280(chipId, ch, true);
+    }
+
+    public void resetHuC6280Mask(int chipId, int ch) {
+        setMaskHuC6280(chipId, ch, false);
     }
 }

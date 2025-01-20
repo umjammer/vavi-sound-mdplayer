@@ -22,6 +22,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.SegaPcmChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -192,8 +193,8 @@ public class frmSegaPCM extends frmBase {
 //            }
 //        }
 
-        byte[] segapcmReg = audio.getSEGAPCMRegister(chipId);
-        boolean[] segapcmKeyOn = audio.getSEGAPCMKeyOn(chipId);
+        byte[] segapcmReg = audio.chipRegister.chip(SegaPcmChip.class).getSEGAPCMRegister(chipId);
+        boolean[] segapcmKeyOn = audio.chipRegister.chip(SegaPcmChip.class).getSEGAPCMKeyOn(chipId);
         if (segapcmReg != null) {
             for (int ch = 0; ch < 16; ch++) {
                 int l = segapcmReg[ch * 8 + 2] & 0x7f;

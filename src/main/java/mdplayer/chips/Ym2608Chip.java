@@ -6,6 +6,9 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
@@ -13,6 +16,8 @@ import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.instrument.Ym2608Inst;
 import mdsound.instrument.YmFmYm2608Inst;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -22,6 +27,8 @@ import mdsound.instrument.YmFmYm2608Inst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Ym2608Chip implements Chip {
+
+    private static final Logger logger = getLogger(Ym2608Chip.class.getName());
 
     private final Setting.ChipType2[] ctYM2608 = new Setting.ChipType2[] {
             setting.getYM2608Type()[0], setting.getYM2608Type()[1]
@@ -480,7 +487,7 @@ public class Ym2608Chip implements Chip {
             return;
 
         if (scYM2608[chipId] != null && ctYM2608[chipId].getRealChipInfo()[0].getUseWait()) {
-            context.realChip.SendData();
+            context.plugin(RealChipPlugin.class).realChip.SendData();
             while (!scYM2608[chipId].isBufferEmpty()) {
             }
         }
@@ -546,5 +553,53 @@ public class Ym2608Chip implements Chip {
 
     public int[] getYM2608AdpcmVolume(int chipId) {
         return fmVolYM2608Adpcm[chipId];
+    }
+
+    public int[][] getYM2608Register(int chipId) {
+        return fmRegisterYM2608[chipId];
+    }
+
+    public int[] getYM2608KeyOn(int chipId) {
+        return fmKeyOnYM2608[chipId];
+    }
+
+//    public int[] getYM2608Volume(int chipId) {
+//        return getYM2608Volume(chipId);
+//    }
+//
+//    public int[][] getYM2608RhythmVolume(int chipId) {
+//        return getYM2608RhythmVolume(chipId);
+//    }
+//
+//    public int[] getYM2608AdpcmVolume(int chipId) {
+//        return getYM2608AdpcmVolume(chipId);
+//    }
+
+    public void setYM2608Mask(int chipId, int ch) {
+        setMaskYM2608(chipId, ch, true, false);
+    }
+
+    public void resetYM2608Mask(int chipId, int ch, boolean stopped) {
+        try {
+            setMaskYM2608(chipId, ch, false, stopped);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+
+//    public int[] getYM2608Ch3SlotVolume(int chipId) {
+//        return getYM2608Ch3SlotVolume(chipId);
+//    }
+
+    @Override
+    public void softReset(EnmModel model) {
+        softResetYM2608(0, model);
+        softResetYM2608(1, model);
+    }
+
+    @Override
+    public void clearFadeoutVolume() {
+        setFadeoutVolYM2608(0, 0);
+        setFadeoutVolYM2608(1, 0);
     }
 }

@@ -10,7 +10,6 @@ import mdplayer.Common;
 import mdplayer.driver.sid.Sid;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
-import mdsound.MDSound.Chip;
 
 import static java.lang.System.getLogger;
 
@@ -56,36 +55,34 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.vgmFadeoutCounter = 1.0;
             audio.vgmFadeoutCounterV = 0.00001;
             vgmSpeed = 1;
-            audio.vgmRealFadeoutVol = 0;
-            audio.vgmRealFadeoutVolWait = 4;
+            vgmRealFadeoutVol = 0;
+            vgmRealFadeoutVolWait = 4;
 
-            audio.clearFadeoutVolume();
+            audio.chipRegister.clearFadeoutVolume();
 
             audio.chipRegister.resetChips();
 
             audio.chipRegister.initChipRegister(null);
 
-            audio.useChip.clear();
+            useChip.clear();
 
             startTrdVgmReal();
 
-            List<MDSound.Chip> lstChips = new ArrayList<>();
+            hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.hiyorimiNecessary = setting.getHiyorimiMode();
-
-            audio.chipLED = new ChipLEDs();
-            audio.chipLED.put("priSID", 1);
+            audio.chipRegister.chipLED.clear();
+            audio.chipRegister.chipLED.put("priSID", 1);
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
-            ((Sid) audio.driverVirtual).song = (byte) songNo + 1;
-            if (!audio.driverVirtual.init(vgmBuf, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
+            ((Sid) audio.driverVirtual).song = songNo + 1;
+            if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
                     , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
             if (audio.driverReal != null) {
-                ((Sid) audio.driverReal).song = (byte) songNo + 1;
-                if (!audio.driverReal.init(vgmBuf, audio.chipRegister, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
+                ((Sid) audio.driverReal).song = songNo + 1;
+                if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
                         , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
                         , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                     return false;

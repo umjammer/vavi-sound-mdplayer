@@ -156,4 +156,28 @@ public class Ay8910Chip implements Chip {
             }
         }
     }
+
+    public int[] getAY8910Register(int chipId) {
+        return psgRegisterAY8910[chipId];
+    }
+
+    public void setAY8910Mask(int chipId, int ch) {
+        setMaskAY8910(chipId, ch, true);
+    }
+
+    public void resetAY8910Mask(int chipId, int ch) {
+        setMaskAY8910(chipId, ch, false);
+    }
+
+    @Override
+    public void softReset(EnmModel model) {
+        softResetAY8910(0, model);
+        softResetAY8910(1, model);
+    }
+
+    @Override
+    public void clearFadeoutVolume() {
+        setFadeoutVolAY8910(0, 0);
+        setFadeoutVolAY8910(1, 0);
+    }
 }

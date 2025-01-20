@@ -12,6 +12,7 @@ import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.Instrument;
+import mdsound.chips.K051649;
 import mdsound.instrument.K051649Inst;
 
 
@@ -140,5 +141,23 @@ public class K051649Chip implements Chip {
             writeK051649(chipId, (0x00 << 1) + 0, i, model);
             writeK051649(chipId, (0x03 << 1) + 1, 0x00, model);
         }
+    }
+
+    public K051649 getK051649Register(int chipId) {
+        return scc_k051649.GetK051649_State(chipId);
+    }
+
+//    public void setK051649Mask(int chipId, int ch) {
+//        setK051649Mask(chipId, ch);
+//    }
+//
+//    public void resetK051649Mask(int chipId, int ch) {
+//        resetK051649Mask(chipId, ch);
+//    }
+
+    @Override
+    public void softReset(EnmModel model) {
+        softResetK051649(0, model);
+        softResetK051649(1, model);
     }
 }

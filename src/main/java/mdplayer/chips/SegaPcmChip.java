@@ -11,6 +11,7 @@ import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdsound.chips.SegaPcm;
 import mdsound.instrument.SegaPcmInst;
 
 
@@ -118,7 +119,7 @@ public class SegaPcmChip implements Chip {
                 }
                 scSEGAPCM[chipId].setRegister(0x10006, romSize);
 
-                context.realChip.SendData();
+                context.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }
@@ -130,5 +131,25 @@ public class SegaPcmChip implements Chip {
                 scSEGAPCM[chipId].setRegister(0x10005, clock);
             }
         }
+    }
+
+    public byte[] getSEGAPCMRegister(int chipId) {
+        return pcmRegisterSEGAPCM[chipId];
+    }
+
+    public boolean[] getSEGAPCMKeyOn(int chipId) {
+        return pcmKeyOnSEGAPCM[chipId];
+    }
+
+    public SegaPcm getSegaPCMRegister(int chipId) {
+        return context.mds.ReadSegaPCMStatus(chipId);
+    }
+
+    public void setSegaPCMMask(int chipId, int ch) {
+        setMaskSegaPCM(chipId, ch, true);
+    }
+
+    public void resetSegaPCMMask(int chipId, int ch) {
+        setMaskSegaPCM(chipId, ch, false);
     }
 }

@@ -21,6 +21,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.Rf5C164Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -107,7 +108,7 @@ public class frmMegaCD extends frmBase {
     };
 
     public void screenChangeParams() {
-        PcmChip rf5c164Register = audio.getRf5c164Register(chipId);
+        PcmChip rf5c164Register = audio.chipRegister.chip(Rf5C164Chip.class).getRf5c164Register(chipId);
         if (rf5c164Register != null) {
             for (int ch = 0; ch < 8; ch++) {
                 if (rf5c164Register.getChannel(ch).enable != 0) {

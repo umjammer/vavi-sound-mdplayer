@@ -4,6 +4,8 @@ import java.util.List;
 
 import mdplayer.ChipRegister;
 import mdplayer.Common;
+import mdplayer.Common.EnmModel;
+import mdplayer.RealChip;
 import mdplayer.Setting;
 
 
@@ -14,6 +16,29 @@ import mdplayer.Setting;
  * @version 0.00 2022-07-07 nsano initial version <br>
  */
 public class RealChipPlugin implements Plugin {
+
+    public RealChip realChip;
+
+    public RealChipPlugin() {
+//                , SoundChip.realChip
+//                , vstMng
+//                , SoundChip.scYM2612
+//                , SoundChip.scSN76489
+//                , SoundChip.scYM2608
+//                , SoundChip.scYM2151
+//                , SoundChip.scYM2203
+//                , SoundChip.scYM2413
+//                , SoundChip.scYM2610
+//                , SoundChip.scYM2610EA
+//                , SoundChip.scYM2610EB
+//                , SoundChip.scYM3526
+//                , SoundChip.scYM3812
+//                , SoundChip.scYMF262
+//                , SoundChip.scC140
+//                , SoundChip.scSEGAPCM
+//                , SoundChip.scAY8910
+//                , SoundChip.scK051649
+    }
 
     public static void realChipClose() {
 //        if (SoundChip.realChip != null) {
@@ -74,6 +99,20 @@ public class RealChipPlugin implements Plugin {
 
     @Override
     public void close() {
+//        SoundChip.realChip = null;
+    }
 
+    public void setGimicOPNVolume(boolean isAbs, int volume) {
+        setting.getBalance().setGimicOPNVolume(Common.range((isAbs ? 0 : setting.getBalance().getGimicOPNVolume()) + volume, 0, 127));
+    }
+
+    public void setGimicOPNAVolume(boolean isAbs, int volume) {
+        setting.getBalance().setGimicOPNAVolume(Common.range((isAbs ? 0 : setting.getBalance().getGimicOPNAVolume()) + volume, 0, 127));
+    }
+
+    public void softReset(EnmModel model) {
+//        if (model == EnmModel.RealModel && SoundChip.realChip != null) {
+//            SoundChip.realChip.SendData();
+//        }
     }
 }

@@ -19,6 +19,12 @@ import dotnet4j.io.FileStream;
 import dotnet4j.io.StreamReader;
 import dotnet4j.io.StreamWriter;
 import mdplayer.Common.EnmChip;
+import mdplayer.chips.MidiPlugin;
+import mdplayer.chips.Ym2151Chip;
+import mdplayer.chips.Ym2203Chip;
+import mdplayer.chips.Ym2608Chip;
+import mdplayer.chips.Ym2610Chip;
+import mdplayer.chips.Ym2612Chip;
 import mdsound.MDSound;
 import mdsound.instrument.Ym2612Inst;
 
@@ -158,7 +164,7 @@ public class YM2612MIDI {
     }
 
     private void voiceCopy() {
-        int[][] reg = audio.getFMRegister(0); // chipRegister.fmRegisterYM2612[0];
+        int[][] reg = audio.chipRegister.chip(Ym2612Chip.class).getFMRegister(0); // chipRegister.fmRegisterYM2612[0];
         if (reg == null) return;
 
         for (int i = 0; i < 6; i++) {
@@ -305,13 +311,13 @@ public class YM2612MIDI {
         if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2610 || chip == EnmChip.YM2203) {
             int[][] srcRegs = null;
             if (chip == EnmChip.YM2612) {
-                srcRegs = audio.getFMRegister(chipId);
+                srcRegs = audio.chipRegister.chip(Ym2612Chip.class).getFMRegister(chipId);
             } else if (chip == EnmChip.YM2608) {
-                srcRegs = audio.getYM2608Register(chipId);
+                srcRegs = audio.chipRegister.chip(Ym2608Chip.class).getYM2608Register(chipId);
             } else if (chip == EnmChip.YM2610) {
-                srcRegs = audio.getYM2610Register(chipId);
+                srcRegs = audio.chipRegister.chip(Ym2610Chip.class).getYM2610Register(chipId);
             } else if (chip == EnmChip.YM2203) {
-                int[] sReg = audio.getYm2203Register(chipId);
+                int[] sReg = audio.chipRegister.chip(Ym2203Chip.class).getYm2203Register(chipId);
                 srcRegs = new int[][] {sReg, null};
             }
             for (int i = 0; i < 6; i++) {
@@ -320,7 +326,7 @@ public class YM2612MIDI {
                 }
             }
         } else if (chip == EnmChip.YM2151) {
-            int[] reg = audio.getYM2151Register(chipId);
+            int[] reg = audio.chipRegister.chip(Ym2151Chip.class).getYM2151Register(chipId);
             for (int i = 0; i < 6; i++) {
                 if (setting.getMidiKbd().getUseChannel()[i]) {
                     voiceCopyChFromOPM(ch, i, reg);

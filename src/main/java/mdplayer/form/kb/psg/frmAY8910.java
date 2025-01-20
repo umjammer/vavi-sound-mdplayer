@@ -18,9 +18,11 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.Ay8910Chip;
 import mdplayer.form.kb.frmChipBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
+import mdsound.instrument.Ay8910Inst;
 
 import static mdplayer.Common.searchSSGNote;
 
@@ -115,7 +117,7 @@ public class frmAY8910 extends frmChipBase {
 
     @Override
     public void screenChangeParams() {
-        int[] AY8910Register = audio.getAY8910Register(chipId);
+        int[] AY8910Register = audio.chipRegister.chip(Ay8910Chip.class).getAY8910Register(chipId);
 
         for (int ch = 0; ch < 3; ch++) { // SSG
 
@@ -144,8 +146,8 @@ public class frmAY8910 extends frmChipBase {
                 int tp = (ct << 8) | ft;
                 if (tp == 0)
                     tp = 1;
-                float ftone = audio.clockAY8910 / (8.0f * (float) tp);
-                channel.note = searchSSGNote(ftone);
+                float fTone = audio.chipRegister.getChipInfo(Ay8910Inst.class).clock / (8.0f * (float) tp);
+                channel.note = searchSSGNote(fTone);
             }
         }
     }

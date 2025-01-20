@@ -66,16 +66,16 @@ logger.log(Level.WARNING, "cannot start: " + this);
             //stop();
             audio.chipRegister.resetChips();
             resetFadeOutParam();
-            audio.useChip.clear();
+            useChip.clear();
 
             startTrdVgmReal();
 
             List<MDSound.Chip> chips = new ArrayList<>();
             MDSound.Chip chip;
 
-            audio.hiyorimiNecessary = setting.getHiyorimiMode();
+            hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipLED = new ChipLEDs();
+            audio.chipRegister.chipLED.clear();
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
             Ym2610Inst ym2610 = Instrument.getInstrument(Ym2610Inst.class);
@@ -85,7 +85,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             if (useChipFromMub[0] != Common.EnmChip.Unuse) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                audio.chipLED.put("PriOPNA", 1);
+                audio.chipRegister.chipLED.put("PriOPNA", 1);
 
                 if (setting.getYM2608Type()[0].getUseEmu()[0]) {
                     Ym2608Inst ym2608 = Instrument.getInstrument(Ym2608Inst.class);
@@ -104,14 +104,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.clock = MucomJava.opnaBaseClock;
                 chip.option = new Object[] {fn};
                 chips.add(chip);
-                audio.useChip.add(Common.EnmChip.YM2608);
-                audio.clockYM2608 = MucomJava.opnaBaseClock;
+                useChip.add(Common.EnmChip.YM2608);
+//                audio.clockYM2608 = MucomJava.opnaBaseClock;
             }
 
             if (useChipFromMub[1] != Common.EnmChip.Unuse) {
                 chip = new MDSound.Chip();
                 chip.id = 1;
-                audio.chipLED.put("SecOPNA", 1);
+                audio.chipRegister.chipLED.put("SecOPNA", 1);
 
 
                 if (setting.getYM2608Type()[1].getUseEmu()[0]) {
@@ -131,13 +131,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.clock = MucomJava.opnaBaseClock;
                 chip.option = new Object[] {fn};
                 chips.add(chip);
-                audio.useChip.add(Common.EnmChip.S_YM2608);
+                useChip.add(Common.EnmChip.S_YM2608);
             }
 
             if (useChipFromMub[2] != Common.EnmChip.Unuse) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                audio.chipLED.put("PriOPNB", 1);
+                audio.chipRegister.chipLED.put("PriOPNB", 1);
                 chip.instrument = ym2610;
                 chip.samplingRate = 55467;
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Inst.class);
@@ -148,14 +148,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.setVolumes.put("AdpcmB", ym2610::setAdpcmBVolume);
                 chip.option = null;
                 chips.add(chip);
-                audio.useChip.add(Common.EnmChip.YM2610);
-                audio.clockYM2610 = MucomJava.opnbBaseClock;
+                useChip.add(Common.EnmChip.YM2610);
+//                audio.clockYM2610 = MucomJava.opnbBaseClock;
             }
 
             if (useChipFromMub[3] != Common.EnmChip.Unuse) {
                 chip = new MDSound.Chip();
                 chip.id = 1;
-                audio.chipLED.put("SecOPNB", 1);
+                audio.chipRegister.chipLED.put("SecOPNB", 1);
                 chip.instrument = ym2610;
                 chip.samplingRate = 55467; // (int)setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Inst.class);
@@ -166,26 +166,23 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.setVolumes.put("AdpcmB", ym2610::setAdpcmBVolume);
                 chip.option = null;
                 chips.add(chip);
-                audio.useChip.add(Common.EnmChip.S_YM2610);
+                useChip.add(Common.EnmChip.S_YM2610);
             }
 
             if (useChipFromMub[4] != Common.EnmChip.Unuse) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                audio.chipLED.put("PriOPM", 1);
+                audio.chipRegister.chipLED.put("PriOPM", 1);
                 chip.instrument = ym2151;
                 chip.samplingRate = 55467; // (int)setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class);
                 chip.clock = MucomJava.opmBaseClock;
                 chip.option = null;
                 chips.add(chip);
-                audio.useChip.add(Common.EnmChip.YM2151);
+                useChip.add(Common.EnmChip.YM2151);
             }
 
-            if (audio.mds == null)
-                audio.mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), Audio.SamplingBuffer, chips.toArray(new MDSound.Chip[0]));
-            else
-                audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.SamplingBuffer, chips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, chips.toArray(MDSound.Chip[]::new));
 
             audio.chipRegister.initChipRegister(chips.toArray(new MDSound.Chip[0]));
 
@@ -216,12 +213,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
 
 
-            if (!audio.driverVirtual.init(vgmBuf, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.YM2608}
+            if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.YM2608}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
                     , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
             if (audio.driverReal != null) {
-                if (!audio.driverReal.init(vgmBuf, audio.chipRegister, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.YM2608}
+                if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.YM2608}
                         , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
                         , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                     return false;

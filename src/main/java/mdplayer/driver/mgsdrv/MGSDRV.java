@@ -10,13 +10,13 @@ import dotnet4j.io.File;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
+import mdplayer.plugin.BasePlugin;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
@@ -39,8 +39,8 @@ public class MGSDRV extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-        this.chipRegister = chipRegister;
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+        this.plugin = plugin;
         loopCounter = 0;
         vgmCurLoop = 0;
         this.model = model;
@@ -57,7 +57,7 @@ public class MGSDRV extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException();
     }
 
@@ -118,8 +118,8 @@ public class MGSDRV extends BaseDriver {
         z80 = new Z80ProcessorImpl();
         z80.setClockSynchronizer(null);
         z80.setAutoStopOnRetWithStackEmpty(true);
-        z80.setMemory(new MsxMemory(chipRegister, model));
-        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, chipRegister, model));
+        z80.setMemory(new MsxMemory(plugin.audio.chipRegister, model));
+        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, plugin.audio.chipRegister, model));
         z80.beforeInstructionFetch().addListener(this::Z80OnBeforeInstructionFetch);
 
         mapper = new Mapper((MapperRAMCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1], (MsxMemory) z80.getMemory());

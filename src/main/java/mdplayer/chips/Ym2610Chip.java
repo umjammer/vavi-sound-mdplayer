@@ -6,12 +6,17 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.instrument.Ym2610Inst;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -21,6 +26,8 @@ import mdsound.instrument.Ym2610Inst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Ym2610Chip implements Chip {
+
+    private static final Logger logger = getLogger(Ym2610Chip.class.getName());
 
     private final Setting.ChipType2[] ctYM2610 = new Setting.ChipType2[] {
             setting.getYM2610Type()[0], setting.getYM2610Type()[1]
@@ -354,7 +361,7 @@ public class Ym2610Chip implements Chip {
                     scYM2610[chipId].setRegister((dPort << 8) | 0x04, b & 0xff);
                 }
 
-                context.realChip.SendData();
+                context.plugin(RealChipPlugin.class).realChip.SendData();
             }
             if (scYM2610EB[chipId] != null) {
                 int dPort = 2;
@@ -371,7 +378,7 @@ public class Ym2610Chip implements Chip {
                     scYM2610EB[chipId].setRegister((dPort << 8) | 0x10004, b & 0xff);
                 }
 
-                context.realChip.SendData();
+                context.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }
@@ -393,7 +400,7 @@ public class Ym2610Chip implements Chip {
                     scYM2610[chipId].setRegister((dPort << 8) | 0x04, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.realChip.SendData();
+                context.plugin(RealChipPlugin.class).realChip.SendData();
             }
             if (scYM2610EB[chipId] != null) {
                 int dPort = 2;
@@ -409,7 +416,7 @@ public class Ym2610Chip implements Chip {
                     scYM2610EB[chipId].setRegister((dPort << 8) | 0x10004, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.realChip.SendData();
+                context.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }
@@ -433,7 +440,7 @@ public class Ym2610Chip implements Chip {
                     scYM2610[chipId].setRegister((dPort << 8) | 0x04, b & 0xff);
                 }
 
-                context.realChip.SendData();
+                context.plugin(RealChipPlugin.class).realChip.SendData();
             }
             if (scYM2610EB[chipId] != null) {
                 int dPort = 2;
@@ -450,7 +457,7 @@ public class Ym2610Chip implements Chip {
                     scYM2610EB[chipId].setRegister((dPort << 8) | 0x10004, b & 0xff);
                 }
 
-                context.realChip.SendData();
+                context.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }
@@ -472,7 +479,7 @@ public class Ym2610Chip implements Chip {
                     scYM2610[chipId].setRegister((dPort << 8) | 0x04, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.realChip.SendData();
+                context.plugin(RealChipPlugin.class).realChip.SendData();
             }
             if (scYM2610EB[chipId] != null) {
                 int dPort = 2;
@@ -488,7 +495,7 @@ public class Ym2610Chip implements Chip {
                     scYM2610EB[chipId].setRegister((dPort << 8) | 0x10004, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.realChip.SendData();
+                context.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }
@@ -581,4 +588,40 @@ public class Ym2610Chip implements Chip {
         // }
         // return mds.readFMCh3SlotVolume();
     }
+
+    public int[][] getYM2610Register(int chipId) {
+        return fmRegisterYM2610[chipId];
+    }
+
+    public int[] getYM2610KeyOn(int chipId) {
+        return fmKeyOnYM2610[chipId];
+    }
+
+//    public int[] getYM2610Volume(int chipId) {
+//        return getYM2610Volume(chipId);
+//    }
+//
+//    public int[][] getYM2610RhythmVolume(int chipId) {
+//        return getYM2610RhythmVolume(chipId);
+//    }
+//
+//    public int[] getYM2610AdpcmVolume(int chipId) {
+//        return getYM2610AdpcmVolume(chipId);
+//    }
+
+    public void setYM2610Mask(int chipId, int ch) {
+        setMaskYM2610(chipId, ch, true);
+    }
+
+    public void resetYM2610Mask(int chipId, int ch) {
+        try {
+            setMaskYM2610(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+
+//    public int[] getYM2610Ch3SlotVolume(int chipId) {
+//        return getYM2610Ch3SlotVolume(chipId);
+//    }
 }

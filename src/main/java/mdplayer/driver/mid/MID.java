@@ -6,7 +6,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
@@ -17,6 +16,7 @@ import mdplayer.driver.rcp.RCP;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.MidiOutInfo;
+import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
@@ -164,9 +164,9 @@ public class MID extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
+        this.plugin = plugin;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -192,8 +192,8 @@ public class MID extends BaseDriver {
         if (!makeBeforeSendCommand()) return false;
 
         if (model == EnmModel.RealModel) {
-            chipRegister.chip(Ym2612Chip.class).setYM2612SyncWait(0, 1);
-            chipRegister.chip(Ym2612Chip.class).setYM2612SyncWait(1, 1);
+            plugin.audio.chipRegister.chip(Ym2612Chip.class).setYM2612SyncWait(0, 1);
+            plugin.audio.chipRegister.chip(Ym2612Chip.class).setYM2612SyncWait(1, 1);
         }
 
         return true;
@@ -316,7 +316,7 @@ public class MID extends BaseDriver {
                             logger.log(Level.TRACE, "%2x ".formatted(vgmBuf[ptr + j]));
                         }
 
-                        chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, trkPort.get(trk), toByteArray(eventData), vstDelta);
+                        plugin.audio.chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, trkPort.get(trk), toByteArray(eventData), vstDelta);
 
                         ptr = ptr + eventLen;
 
@@ -362,7 +362,7 @@ public class MID extends BaseDriver {
                             case 0x05:
                                 eventLyric = new String(toByteArray(eventData), Charset.forName("MS932"));
                                 logger.log(Level.TRACE, "eventLyric:%s".formatted(eventLyric));
-                                chipRegister.plugin(MidiPlugin.class).midiParams[trkPort.get(trk)].Lyric = eventLyric;
+                                plugin.audio.chipRegister.plugin(MidiPlugin.class).midiParams[trkPort.get(trk)].Lyric = eventLyric;
                                 break;
                             case 0x06:
                                 eventMarker = new String(toByteArray(eventData), Charset.forName("MS932"));
@@ -412,12 +412,12 @@ public class MID extends BaseDriver {
                             midiEventCh = midiEventChBackup;
 
                             if ((cmd & 0xf0) != 0xC0 && (cmd & 0xf0) != 0xD0) {
-                                chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, trkPort.get(trk), cmd, vgmBuf[ptr], vgmBuf[ptr + 1], vstDelta);
+                                plugin.audio.chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, trkPort.get(trk), cmd, vgmBuf[ptr], vgmBuf[ptr + 1], vstDelta);
                                 //logger.log(Level.TRACE, "V1:%2x V2:%2X ".formatted(vgmBuf[ptr], vgmBuf[ptr + 1]));
                                 logger.log(Level.TRACE, "%2x %2x %2x".formatted(cmd, vgmBuf[ptr], vgmBuf[ptr + 1]));
                                 ptr += 2;
                             } else {
-                                chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, trkPort.get(trk), cmd, vgmBuf[ptr], vstDelta);
+                                plugin.audio.chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, trkPort.get(trk), cmd, vgmBuf[ptr], vstDelta);
                                 //logger.log(Level.TRACE, "V1:%2X V2:-- ".formatted(vgmBuf[ptr]));
                                 logger.log(Level.TRACE, "%2x %2x".formatted(cmd, vgmBuf[ptr]));
                                 ptr++;
@@ -428,12 +428,12 @@ public class MID extends BaseDriver {
                             midiEventCh = midiEventChBackup;
 
                             if ((midiEvent & 0xf0) != 0xC0 && (midiEvent & 0xf0) != 0xD0) {
-                                chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, trkPort.get(trk), midiEvent, cmd, vgmBuf[ptr], vstDelta);
+                                plugin.audio.chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, trkPort.get(trk), midiEvent, cmd, vgmBuf[ptr], vstDelta);
                                 //logger.log(Level.TRACE, "RunSta V1:%2X V2:%2X ".formatted(cmd, vgmBuf[ptr]));
                                 logger.log(Level.TRACE, "%2x %2x %2x".formatted(midiEvent, cmd, vgmBuf[ptr]));
                                 ptr++;
                             } else {
-                                chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, trkPort.get(trk), midiEvent, cmd, vstDelta);
+                                plugin.audio.chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, trkPort.get(trk), midiEvent, cmd, vstDelta);
                                 //logger.log(Level.TRACE, "RunSta V1:%2X V2:-- ".formatted(cmd));
                                 logger.log(Level.TRACE, "%2x %2x ".formatted(midiEvent, cmd));
                             }
@@ -476,7 +476,7 @@ public class MID extends BaseDriver {
 
                 RCP.CtlSysex csx = beforeSend[i].get(sendControlIndex[i]);
                 sendControlDelta[i] = csx.delta;
-                chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, 0, csx.data, vstDelta);
+                plugin.audio.chipRegister.plugin(MidiPlugin.class).sendMIDIout(model, 0, csx.data, vstDelta);
 
                 sendControlIndex[i]++;
             } else {
@@ -493,7 +493,7 @@ public class MID extends BaseDriver {
 
     private boolean makeBeforeSendCommand() {
         try {
-            MidiOutInfo[] infos = chipRegister.plugin(MidiPlugin.class).getMIDIoutInfo();
+            MidiOutInfo[] infos = plugin.audio.chipRegister.plugin(MidiPlugin.class).getMIDIoutInfo();
             if (infos == null || infos.length < 1) return true;
 
             beforeSend = new List[infos.length];
@@ -548,7 +548,7 @@ public class MID extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 }

@@ -6,6 +6,9 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmChip;
@@ -17,6 +20,8 @@ import mdsound.instrument.X68SoundYm2151Inst;
 import mdsound.instrument.Ym2151Inst;
 import mdsound.instrument.YmFmYm2151Inst;
 
+import static java.lang.System.getLogger;
+
 
 /**
  * Ym2151Chip.
@@ -25,6 +30,8 @@ import mdsound.instrument.YmFmYm2151Inst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Ym2151Chip implements Chip {
+
+    private static final Logger logger = getLogger(Ym2151Chip.class.getName());
 
     private final Setting.ChipType2[] ctYM2151 = new Setting.ChipType2[] {
             setting.getYM2151Type()[0], setting.getYM2151Type()[1]
@@ -305,7 +312,7 @@ public class Ym2151Chip implements Chip {
             return;
 
         if (scYM2151[chipId] != null && ctYM2151[chipId].getRealChipInfo()[0].getUseWait()) {
-            context.realChip.SendData();
+            context.plugin(RealChipPlugin.class).realChip.SendData();
             while (!scYM2151[chipId].isBufferEmpty()) {
             }
         }
@@ -339,5 +346,49 @@ public class Ym2151Chip implements Chip {
 
     public int[] getYM2151Volume(int chipId) {
         return fmVolYM2151[chipId];
+    }
+
+    public int[] getYM2151Register(int chipId) {
+        return fmRegisterYM2151[chipId];
+    }
+
+    public int[] getYM2151KeyOn(int chipId) {
+        return fmKeyOnYM2151[chipId];
+    }
+
+    public int getYM2151PMD(int chipId) {
+        return fmPMDYM2151[chipId];
+    }
+
+    public int getYM2151AMD(int chipId) {
+        return fmAMDYM2151[chipId];
+    }
+
+//    public int[] getYM2151Volume(int chipId) {
+//        return getYM2151Volume(chipId);
+//    }
+
+    public void setYM2151Mask(int chipId, int ch) {
+        setMaskYM2151(chipId, ch, true, false);
+    }
+
+    public void resetYM2151Mask(int chipId, int ch, boolean stopped) {
+        try {
+            setMaskYM2151(chipId, ch, false, stopped);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void softReset(EnmModel model) {
+        softResetYM2151(0, model);
+        softResetYM2151(1, model);
+    }
+
+    @Override
+    public void clearFadeoutVolume() {
+        setFadeoutVolYM2151(0, 0);
+        setFadeoutVolYM2151(1, 0);
     }
 }

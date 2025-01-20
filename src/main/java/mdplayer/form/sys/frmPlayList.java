@@ -962,21 +962,21 @@ loopEx:
         if (!playing) return;
         if (setting == null) return;
 
-        String fn = "";
-        String arcFn = "";
+        String[] fn = {""};
+        String[] arcFn = {""};
 
         Audio.getInstance().getPlayingFileName(fn, arcFn);
 
         if (fn.equals(ofn) && arcFn.equals(oafn)) return;
-        ofn = fn;
-        oafn = arcFn;
+        ofn = fn[0];
+        oafn = arcFn[0];
 
         exts[0] = setting.getOther().getTextExt().split(";");
         exts[1] = setting.getOther().getMMLExt().split(";");
         exts[2] = setting.getOther().getImageExt().split(";");
 
-        String bfn = Path.combine(Path.getDirectoryName(fn), Path.getFileNameWithoutExtension(fn));
-        String bfnFld = Path.combine(Path.getDirectoryName(fn), Path.getFileName(Path.getDirectoryName(fn)));
+        String bfn = Path.combine(Path.getDirectoryName(fn[0]), Path.getFileNameWithoutExtension(fn[0]));
+        String bfnFld = Path.combine(Path.getDirectoryName(fn[0]), Path.getFileName(Path.getDirectoryName(fn[0])));
 
         text = "";
         for (String ext : exts[0]) {

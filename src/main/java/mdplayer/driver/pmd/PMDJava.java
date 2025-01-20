@@ -21,7 +21,6 @@ import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
@@ -32,6 +31,7 @@ import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
+import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
@@ -110,7 +110,7 @@ public class PMDJava extends BaseDriver {
     @Override
     public boolean init(byte[] vgmBuf,
                         int fileType,
-                        ChipRegister chipRegister,
+                        BasePlugin plugin,
                         EnmModel model,
                         EnmChip[] useChip,
                         int latency,
@@ -119,7 +119,7 @@ public class PMDJava extends BaseDriver {
         gd3 = getGD3Info(vgmBuf, 0, mtype);
 
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
+        this.plugin = plugin;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -300,7 +300,7 @@ public class PMDJava extends BaseDriver {
         if (cd.port == -1)
             return;
 
-        chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, cd.port, cd.address, cd.data, model);
+        plugin.audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, cd.port, cd.address, cd.data, model);
     }
 
     private void sendOPNAWait(long size, int elapsed) {
@@ -430,7 +430,7 @@ public class PMDJava extends BaseDriver {
         if (dat.port == -1)
             return;
 
-        chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, dat.port, dat.address, dat.data, model);
+        plugin.audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, dat.port, dat.address, dat.data, model);
         //logger.log(Level.TRACE, "%d %d".formatted(dat.address, dat.data));
     }
 
@@ -439,9 +439,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x05) {
-            chipRegister.chip(PpsChip.class).loadPPSDRV(0, (byte[]) arg.additionalData, model);
+            plugin.audio.chipRegister.chip(PpsChip.class).loadPPSDRV(0, (byte[]) arg.additionalData, model);
         } else {
-            chipRegister.chip(PpsChip.class).writePPSDRV(0, arg.port, arg.address, arg.data, model);
+            plugin.audio.chipRegister.chip(PpsChip.class).writePPSDRV(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -452,9 +452,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x00) {
-            chipRegister.chip(P86Chip.class).loadPcmP86(0, arg.address, arg.data, (byte[]) arg.additionalData, model);
+            plugin.audio.chipRegister.chip(P86Chip.class).loadPcmP86(0, arg.address, arg.data, (byte[]) arg.additionalData, model);
         } else {
-            chipRegister.chip(P86Chip.class).writeP86(0, arg.port, arg.address, arg.data, model);
+            plugin.audio.chipRegister.chip(P86Chip.class).writeP86(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -465,9 +465,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x03) {
-            chipRegister.chip(Ppz8Chip.class).loadPcmPPZ8(0, arg.address, arg.data, (byte[][]) arg.additionalData, model);
+            plugin.audio.chipRegister.chip(Ppz8Chip.class).loadPcmPPZ8(0, arg.address, arg.data, (byte[][]) arg.additionalData, model);
         } else {
-            chipRegister.chip(Ppz8Chip.class).writePPZ8(0, arg.port, arg.address, arg.data, model);
+            plugin.audio.chipRegister.chip(Ppz8Chip.class).writePPZ8(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -505,7 +505,7 @@ public class PMDJava extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf,
-                        ChipRegister chipRegister,
+                        BasePlugin plugin,
                         EnmModel model,
                         EnmChip[] useChip,
                         int latency,

@@ -1,13 +1,12 @@
 
 package mdplayer.driver;
 
-import mdplayer.Audio;
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdplayer.chips.Ym2151Chip;
+import mdplayer.plugin.BasePlugin;
 
 
 public abstract class BaseDriver {
@@ -30,13 +29,14 @@ public abstract class BaseDriver {
 
     public int vgmFrameCounter;
 
+    // TODO generalize, e.g. MusicTag
     public Vgm.Gd3 gd3 = new Vgm.Gd3();
 
-    public String version = "";
+    protected String version = "";
 
-    public String usedChips = "";
+    protected String usedChips = "";
 
-    public int vstDelta = 0;
+    protected int vstDelta = 0;
 
     public boolean isDataBlock = false;
 
@@ -46,7 +46,7 @@ public abstract class BaseDriver {
 
     protected byte[] vgmBuf = null;
 
-    protected ChipRegister chipRegister = null;
+    protected BasePlugin plugin;
 
     protected EnmModel model = EnmModel.VirtualModel;
 
@@ -65,7 +65,7 @@ public abstract class BaseDriver {
     public String errMsg;
 
     public abstract boolean init(byte[] vgmBuf,
-                                 ChipRegister chipRegister,
+                                 BasePlugin plugin,
                                  EnmModel model,
                                  EnmChip[] useChip,
                                  int latency,
@@ -73,7 +73,7 @@ public abstract class BaseDriver {
 
     public abstract boolean init(byte[] vgmBuf,
                                  int fileType,
-                                 ChipRegister chipRegister,
+                                 BasePlugin plugin,
                                  EnmModel model,
                                  EnmChip[] useChip,
                                  int latency,
@@ -96,7 +96,7 @@ public abstract class BaseDriver {
             ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
-                int clock = chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
+                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
                 if (clock != -1) {
                     ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, clock);
                 }
@@ -104,16 +104,16 @@ public abstract class BaseDriver {
         }
     }
 
-    public int render(Audio audio, short[] buffer, int offset, int sampleCount) {
-        if (audio.hiyorimiNecessary && audio.driverReal != null && audio.driverReal.isDataBlock)
-            return audio.mds.update(buffer, offset, sampleCount, null);
+    public int render(short[] buffer, int offset, int sampleCount) {
+        if (plugin.hiyorimiNecessary && plugin.audio.driverReal != null && plugin.audio.driverReal.isDataBlock)
+            return plugin.audio.mds.update(buffer, offset, sampleCount, null);
 
-        if (audio.stepCounter > 0) {
-            audio.stepCounter -= sampleCount;
-            if (audio.stepCounter <= 0) {
-                audio.paused = true;
-                audio.stepCounter = 0;
-                return audio.mds.update(buffer, offset, sampleCount, null);
+        if (plugin.audio.stepCounter > 0) {
+            plugin.audio.stepCounter -= sampleCount;
+            if (plugin.audio.stepCounter <= 0) {
+                plugin.audio.paused = true;
+                plugin.audio.stepCounter = 0;
+                return plugin.audio.mds.update(buffer, offset, sampleCount, null);
             }
         }
 
@@ -121,8 +121,20 @@ public abstract class BaseDriver {
 //                stwh.reset();
 //                stwh.start();
 //logger.log(Level.TRACE, "driver: " + driverVirtual.getClass().getSimpleName());
-        int cnt = audio.mds.update(buffer, offset, sampleCount, audio.driverVirtual::processOneFrame);
-        audio.procTimePer1Frame = (int) ((double) System.currentTimeMillis() / (sampleCount + 1) * 1000000.0);
+        int cnt = plugin.audio.mds.update(buffer, offset, sampleCount, plugin.audio.driverVirtual::processOneFrame);
+        plugin.audio.procTimePer1Frame = (int) ((double) System.currentTimeMillis() / (sampleCount + 1) * 1000000.0);
         return cnt;
+    }
+
+    public long getDriverCounter() {
+        return 0;
+    }
+
+    public void copyWaveBuffer(short[][] dest) {
+        plugin.audio.chipRegister.mds.visWaveBuffer.copy(dest);
+    }
+
+    public long whichCounter(long real, long virtual) {
+        return 0;
     }
 }

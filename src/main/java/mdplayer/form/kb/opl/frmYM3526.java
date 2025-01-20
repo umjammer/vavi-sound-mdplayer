@@ -22,6 +22,7 @@ import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.Ym3526Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -124,12 +125,12 @@ public class frmYM3526 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] ym3526Register = audio.getYM3526Register(chipId);
+        int[] ym3526Register = audio.chipRegister.chip(Ym3526Chip.class).getYM3526Register(chipId);
         MDChipParams.Channel nyc;
         int slot = 0;
-        ChipKeyInfo ki = audio.getYM3526KeyInfo(chipId);
+        ChipKeyInfo ki = audio.chipRegister.chip(Ym3526Chip.class).getYM3526KeyInfo(chipId);
 
-        mdsound.MDSound.Chip chipInfo = audio.getMDSChipInfo(Ym3526Inst.class);
+        mdsound.MDSound.Chip chipInfo = audio.chipRegister.getChipInfo(Ym3526Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock; //3579545 -> Default master clock
 
         //FM

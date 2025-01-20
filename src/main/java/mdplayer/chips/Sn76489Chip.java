@@ -6,13 +6,19 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
+import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.instrument.Sn76489Inst;
 import mdsound.instrument.Sn76496Inst;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -22,6 +28,8 @@ import mdsound.instrument.Sn76496Inst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Sn76489Chip implements Chip {
+
+    private static final Logger logger = getLogger(Sn76489Chip.class.getName());
 
     private final Setting.ChipType2[] ctSN76489 = new Setting.ChipType2[] {
             setting.getSN76489Type()[0], setting.getSN76489Type()[1]
@@ -191,5 +199,52 @@ public class Sn76489Chip implements Chip {
 
     public int[][] getPSGVolume(int chipId) {
         return sn76489Vol[chipId];
+    }
+
+    public int[] getPSGRegister(int chipId) {
+        return sn76489Register[chipId];
+    }
+
+    public int getPSGRegisterGGPanning(int chipId) {
+        return sn76489RegisterGGPan[chipId];
+    }
+
+    public void setSN76489Mask(int chipId, int ch) {
+        setMaskSN76489(chipId, ch, true);
+        sn76489ForcedSendVolume(chipId, ch);
+    }
+
+    public void resetSN76489Mask(int chipId, int ch) {
+        try {
+            setMaskSN76489(chipId, ch, false);
+            sn76489ForcedSendVolume(chipId, ch);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+
+    protected void sn76489ForcedSendVolume(int chipId, int ch) {
+        Setting.ChipType2 ct = setting.getSN76489Type()[chipId];
+        setSN76489Register(chipId
+                , (0x90
+                        | ((ch & 3) << 5)
+                        | (15 - (Math.max(sn76489Vol[chipId][ch][0], sn76489Vol[chipId][ch][1]) & 0xf)))
+                , ct.getUseEmu()[0] ? Common.EnmModel.VirtualModel : Common.EnmModel.RealModel);
+    }
+
+//    public int[][] getPSGVolume(int chipId) {
+//        return getPSGVolume(chipId);
+//    }
+
+    public boolean sn76489NGPFlag = false;
+
+    public boolean getSn76489NGPFlag() {
+        return sn76489NGPFlag;
+    }
+
+    @Override
+    public void clearFadeoutVolume() {
+        setFadeoutVolSN76489( 0, 0);
+        setFadeoutVolSN76489( 1, 0);
     }
 }

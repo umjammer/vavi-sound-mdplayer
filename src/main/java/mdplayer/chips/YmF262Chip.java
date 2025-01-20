@@ -6,6 +6,9 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
@@ -13,6 +16,7 @@ import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.instrument.YmF262Inst;
 
+import static java.lang.System.getLogger;
 import static mdplayer.chips.YmF278BChip.YMF278BCh;
 
 
@@ -23,6 +27,8 @@ import static mdplayer.chips.YmF278BChip.YMF278BCh;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class YmF262Chip implements Chip {
+
+    private static final Logger logger = getLogger(YmF262Chip.class.getName());
 
     private final Setting.ChipType2[] ctYMF262 = new Setting.ChipType2[] {
             setting.getYMF262Type()[0], setting.getYMF262Type()[1]
@@ -249,5 +255,41 @@ public class YmF262Chip implements Chip {
                 scYMF262[chipId].dClock = scYMF262[chipId].setMasterClock(clock);
             }
         }
+    }
+
+    public int[][] getYMF262Register(int chipId) {
+        return fmRegisterYMF262[chipId];
+    }
+
+//    public int getYMF262FMKeyON(int chipId) {
+//        return getYMF262FMKeyON(chipId);
+//    }
+//
+//    public int getYMF262RyhthmKeyON(int chipId) {
+//        return getYMF262RyhthmKeyON(chipId);
+//    }
+
+    public void setYMF262Mask(int chipId, int ch) {
+        setMaskYMF262(chipId, ch, true);
+    }
+
+    public void resetYMF262Mask(int chipId, int ch) {
+        try {
+            setMaskYMF262(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void softReset(EnmModel model) {
+        softResetYMF262(0, model);
+        softResetYMF262(1, model);
+    }
+
+    @Override
+    public void clearFadeoutVolume() {
+        setFadeoutVolYMF262(0, 0);
+        setFadeoutVolYMF262(1, 0);
     }
 }

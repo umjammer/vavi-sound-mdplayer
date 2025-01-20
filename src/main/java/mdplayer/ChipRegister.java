@@ -7,27 +7,32 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+import mdplayer.Common.EnmModel;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.Plugin;
+import mdplayer.chips.RealChipPlugin;
 import mdsound.Instrument;
 
 import static java.lang.System.getLogger;
 
 
+// TODO could be merged into Audio
 public class ChipRegister {
 
     private static final Logger logger = getLogger(ChipRegister.class.getName());
 
     public final mdsound.MDSound mds;
 
-    public final Map<Class<? extends Instrument>, mdsound.MDSound.Chip> dicChipsInfo = new HashMap<>();
+    // selected instruments
+    public final Map<Class<? extends Instrument>, mdsound.MDSound.Chip> usedInstruments = new HashMap<>();
 
-    public RealChip realChip;
-
+    // view
     public final ChipLEDs chipLED = new ChipLEDs();
 
+    // instruments wrapper
     private final Map<Class<? extends Chip>, Chip> chips = new HashMap<>();
 
+    // plugins
     private final Map<Class<? extends Plugin>, Plugin> plugins = new HashMap<>();
 
     public <T extends Chip> T chip(Class<T> clazz) {
@@ -38,10 +43,9 @@ public class ChipRegister {
         return clazz.cast(plugins.get(clazz));
     }
 
+    /** */
     public ChipRegister(mdsound.MDSound mds) {
         this.mds = mds;
-
-        dicChipsInfo.clear();
 
         for (Chip chip : ServiceLoader.load(Chip.class)) {
             chips.put(chip.getClass(), chip);
@@ -60,41 +64,51 @@ logger.log(Level.INFO, "plugins: " + plugins.size());
 
     public void initChipRegister(mdsound.MDSound.Chip[] chipInfos) {
 
-        dicChipsInfo.clear();
+        usedInstruments.clear();
         if (chipInfos != null) {
             for (mdsound.MDSound.Chip c : chipInfos) {
-                if (!dicChipsInfo.containsKey(c.instrument.getClass())) {
-                    dicChipsInfo.put(c.instrument.getClass(), c);
+                if (!usedInstruments.containsKey(c.instrument.getClass())) {
+                    usedInstruments.put(c.instrument.getClass(), c);
                 }
             }
         }
     }
 
+    // ???
     public void initChipRegisterNSF(mdsound.MDSound.Chip[] chipInfos) {
 
-        dicChipsInfo.clear();
+        usedInstruments.clear();
         if (chipInfos != null) {
             for (mdsound.MDSound.Chip c : chipInfos) {
-                dicChipsInfo.put(c.instrument.getClass(), c);
+                usedInstruments.put(c.instrument.getClass(), c);
             }
         }
 
         plugin(MidiPlugin.class).initChipRegisterNSF();
-
-        chips.values().forEach(c -> c.init(this));
     }
 
     public mdsound.MDSound.Chip getChipInfo(Class<? extends Instrument> typ) {
-        if (dicChipsInfo.containsKey(typ))
-            return dicChipsInfo.get(typ);
+        if (usedInstruments.containsKey(typ))
+            return usedInstruments.get(typ);
         return null;
+    }
+
+    public void resetChips() {
+        chips.values().forEach(Chip::reset);
+    }
+
+    public void softReset(EnmModel model) {
+        chips.values().forEach(c -> c.softReset(model));
+        plugin((MidiPlugin.class)).softReset(model);
+        plugin((RealChipPlugin.class)).softReset(model);
+    }
+
+    public void clearFadeoutVolume() {
+        chips.values().forEach(Chip::clearFadeoutVolume);
     }
 
     public void close() {
         plugins.values().forEach(Plugin::close);
-    }
-
-    public void resetChips() {
     }
 
     //

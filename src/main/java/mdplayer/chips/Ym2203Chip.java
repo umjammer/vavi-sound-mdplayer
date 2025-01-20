@@ -6,6 +6,9 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
@@ -15,6 +18,8 @@ import mdplayer.Setting;
 import mdsound.instrument.Ym2203Inst;
 import mdsound.instrument.YmFmYm2203Inst;
 
+import static java.lang.System.getLogger;
+
 
 /**
  * Ym2203Chip.
@@ -23,6 +28,8 @@ import mdsound.instrument.YmFmYm2203Inst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Ym2203Chip implements Chip {
+
+    private static final Logger logger = getLogger(Ym2203Chip.class.getName());
 
     private final Setting.ChipType2[] ctYM2203 = new Setting.ChipType2[] {
             setting.getYM2203Type()[0], setting.getYM2203Type()[1]
@@ -333,5 +340,45 @@ public class Ym2203Chip implements Chip {
         return fmCh3SlotVolYM2203[chipId];
         // }
         // return mds.readFMCh3SlotVolume();
+    }
+
+    public int[] getYm2203Register(int chipId) {
+        return fmRegisterYM2203[chipId];
+    }
+
+    public int[] getYM2203KeyOn(int chipId) {
+        return fmKeyOnYM2203[chipId];
+    }
+
+    public void setYM2203Mask(int chipId, int ch) {
+        setMaskYM2203(chipId, ch, true, false);
+    }
+
+    public void resetYM2203Mask(int chipId, int ch, boolean stopped) {
+        try {
+            setMaskYM2203(chipId, ch, false, stopped);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+
+//    public int[] getYM2203Volume(int chipId) {
+//        return getYM2203Volume(chipId);
+//    }
+
+//    public int[] getYM2203Ch3SlotVolume(int chipId) {
+//        return getYM2203Ch3SlotVolume(chipId);
+//    }
+
+    @Override
+    public void softReset(EnmModel model) {
+        softResetYM2203(0, model);
+        softResetYM2203(1, model);
+    }
+
+    @Override
+    public void clearFadeoutVolume() {
+        setFadeoutVolYM2203(0, 0);
+        setFadeoutVolYM2203(1, 0);
     }
 }

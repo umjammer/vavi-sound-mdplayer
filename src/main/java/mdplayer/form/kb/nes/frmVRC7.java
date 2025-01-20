@@ -21,6 +21,7 @@ import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.NesChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -106,11 +107,11 @@ public class frmVRC7 extends frmBase {
     };
 
     public void screenChangeParams() {
-        byte[] vrc7Register = audio.getVRC7Register(chipId);
+        byte[] vrc7Register = audio.chipRegister.chip(NesChip.class).getVRC7Register(chipId);
         if (vrc7Register == null) return;
 
         //キーオン(ワンショット)があったかを取得する
-        ChipKeyInfo ki = audio.getVRC7KeyInfo(chipId);
+        ChipKeyInfo ki = audio.chipRegister.chip(NesChip.class).getVRC7KeyInfo(chipId);
 
         for (int ch = 0; ch < 6; ch++) {
             MDChipParams.Channel nyc = newParam.channels[ch];

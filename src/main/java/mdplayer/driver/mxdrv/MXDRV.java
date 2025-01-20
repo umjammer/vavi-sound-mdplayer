@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Audio;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
@@ -26,8 +25,10 @@ import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
+import mdplayer.plugin.BasePlugin;
 import mdsound.instrument.X68SoundYm2151Inst;
 import mdsound.x68sound.X68Sound;
+import vavi.util.ByteUtil;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
@@ -244,7 +245,7 @@ public class MXDRV extends BaseDriver {
             lst.add(buf[i]);
             i++;
         }
-        String n = new String(toByteArray(lst), Charset.forName("MS932"));
+        String n = new String(ByteUtil.toByteArray(lst), Charset.forName("MS932"));
         gd3.trackName = n;
         gd3.trackNameJ = n;
         byte[][] mdx = new byte[1][];
@@ -256,9 +257,9 @@ public class MXDRV extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
+        this.plugin = plugin;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -277,7 +278,7 @@ public class MXDRV extends BaseDriver {
             ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
-                int clock = chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
+                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
                 if (clock != -1) {
                     ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
@@ -289,7 +290,6 @@ public class MXDRV extends BaseDriver {
 
     public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime, X68SoundYm2151Inst mdxPCM) {
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -359,7 +359,7 @@ public class MXDRV extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 
@@ -398,7 +398,7 @@ public class MXDRV extends BaseDriver {
         }
     }
 
-    public int render(short[] buffer, int offset, int sampleCount) {
+    public int render_(short[] buffer, int offset, int sampleCount) {
         if (mdxPCM == null) {
             return 0;
         }
@@ -1030,7 +1030,7 @@ public class MXDRV extends BaseDriver {
         //logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
 
         mdxPCM.sound_Iocs[0].opmSet((byte) D1, (byte) D2);
-        chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, 0, D1, D2, model, ym2151Hosei[0], 0);
+        plugin.audio.chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, 0, D1, D2, model, ym2151Hosei[0], 0);
 
         if (D1 == 0x10) {
             timerA = ((byte) D2 << 2) + (timerA & 0x3);
@@ -3801,14 +3801,16 @@ exit:   {
         return 0;
     }
 
+    // TODO separate from implementation
+
     @Override
-    public int render(Audio audio, short[] buffer, int offset, int sampleCount) {
-        audio.mds.setIncFlag();
+    public int render(short[] buffer, int offset, int sampleCount) {
+        plugin.audio.mds.setIncFlag();
 //        vstDelta = 0;
         int cnt;
         for (int i = 0; i < sampleCount; i += 2) {
-            cnt = render(buffer, offset + i, 2);
-            audio.mds.update(buffer, offset + i, 2, null);
+            cnt = render_(buffer, offset + i, 2);
+            plugin.audio.mds.update(buffer, offset + i, 2, null);
         }
         //cnt = (int)((MXDRV.MXDRV)driverVirtual).Render(buffer, offset , sampleCount);
         //mds.Update(buffer, offset , sampleCount, null);

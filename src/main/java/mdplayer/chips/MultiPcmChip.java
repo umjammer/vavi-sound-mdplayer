@@ -84,4 +84,8 @@ public class MultiPcmChip implements Chip {
         if (model == EnmModel.VirtualModel)
             context.mds.WriteMultiPCMPCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
+
+//    public MultiPCM getMultiPCMRegister(int chipId) {
+//        return getMultiPCMRegister(chipId);
+//    }
 }

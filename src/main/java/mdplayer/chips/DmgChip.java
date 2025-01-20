@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.chips.GbSound;
 import mdsound.instrument.DmgInst;
 
 
@@ -66,4 +67,18 @@ public class DmgChip implements Chip {
         maskChDMG[chipId][ch] = false;
         context.mds.resetGbMask(chipId, ch);
     }
+
+    public GbSound getDMGRegister(int chipId) {
+        if (chipId == 1) return null;
+
+        return context.mds.ReadGb(chipId);
+    }
+
+//    public void setDMGMask(int chipId, int ch) {
+//        setDMGMask(chipId, ch);
+//    }
+//
+//    public void resetDMGMask(int chipId, int ch) {
+//        resetDMGMask(chipId, ch);
+//    }
 }

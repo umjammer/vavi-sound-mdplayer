@@ -8,8 +8,6 @@ import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
-import mdplayer.Audio;
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
@@ -22,6 +20,7 @@ import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
+import mdplayer.plugin.BasePlugin;
 import mdsound.VisWaveBuffer;
 import vavi.util.ByteUtil;
 
@@ -89,9 +88,9 @@ public class Sid extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
+        this.plugin = plugin;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -121,7 +120,7 @@ public class Sid extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 
@@ -153,7 +152,7 @@ public class Sid extends BaseDriver {
             return length;
         }
 
-        chipRegister.chip(SidChip.class).SID = this;
+        plugin.audio.chipRegister.chip(SidChip.class).SID = this;
         engine.fastForward(100);
         engine.play(b, length);
         for (int i = 0; i < length / 2; i++) {
@@ -250,8 +249,13 @@ public class Sid extends BaseDriver {
     }
 
     @Override
-    public int render(Audio audio, short[] buffer, int offset, int sampleCount) {
+    public int render(short[] buffer, int offset, int sampleCount) {
 //        vstDelta = 0;
         return render(buffer, sampleCount);
+    }
+
+    @Override
+    public void copyWaveBuffer(short[][] dest) {
+        visWaveBufferCopy(dest);
     }
 }

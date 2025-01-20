@@ -5,6 +5,7 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
+import mdplayer.Audio;
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.chips.Ym2151Chip;
@@ -61,16 +62,16 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(1, 0);
 
             audio.chipRegister.resetChips();
-            audio.useChip.clear();
+            useChip.clear();
 
             audio.vgmFadeout = false;
             audio.vgmFadeoutCounter = 1.0;
             audio.vgmFadeoutCounterV = 0.00001;
             vgmSpeed = 1;
-            audio.vgmRealFadeoutVol = 0;
-            audio.vgmRealFadeoutVolWait = 4;
+            vgmRealFadeoutVol = 0;
+            vgmRealFadeoutVolWait = 4;
 
-            audio.clearFadeoutVolume();
+            audio.chipRegister.clearFadeoutVolume();
 
             audio.chipRegister.resetChips();
 
@@ -80,10 +81,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             MDSound.Chip chip;
 
-            audio.hiyorimiNecessary = setting.getHiyorimiMode();
+            hiyorimiNecessary = setting.getHiyorimiMode();
             int hiyorimiDeviceFlag = 0;
 
-            audio.chipLED = new ChipLEDs();
+            audio.chipRegister.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -102,10 +103,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                audio.chipLED.put("PriOPL3", 1);
+                audio.chipRegister.chipLED.put("PriOPL3", 1);
 
                 lstChips.add(chip);
-                audio.useChip.add(Common.EnmChip.YMF262);
+                useChip.add(Common.EnmChip.YMF262);
             } else {
                 chip = new MDSound.Chip();
                 chip.id = 0;
@@ -117,18 +118,15 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                audio.chipLED.put("PriOPL4", 1);
+                audio.chipRegister.chipLED.put("PriOPL4", 1);
 
                 lstChips.add(chip);
-                audio.useChip.add(Common.EnmChip.YMF278B);
+                useChip.add(Common.EnmChip.YMF278B);
             }
 
-            audio.hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && audio.hiyorimiNecessary;
+            hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
-            if (audio.mds == null)
-                audio.mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
-            else
-                audio.mds.init(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
 
             audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
@@ -142,11 +140,11 @@ logger.log(Level.WARNING, "cannot start: " + this);
             ((MoonDriver) audio.driverVirtual).isOPL3 = isOPL3;
             if (audio.driverReal != null) ((MoonDriver) audio.driverReal).isOPL3 = isOPL3;
 
-            audio.driverVirtual.init(vgmBuf, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
+            audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
                     , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
             if (audio.driverReal != null) {
-                audio.driverReal.init(vgmBuf, audio.chipRegister, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
+                audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
                         , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
                         , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
             }

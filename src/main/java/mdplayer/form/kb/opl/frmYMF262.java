@@ -21,6 +21,7 @@ import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.YmF262Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -129,12 +130,12 @@ public class frmYMF262 extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[][] ymf262Register = audio.getYMF262Register(chipId);
+        int[][] ymf262Register = audio.chipRegister.chip(YmF262Chip.class).getYMF262Register(chipId);
         MDChipParams.Channel nyc;
         int slot;
         int slotP;
 
-        //FM
+        // FM
         for (int c = 0; c < 18; c++) {
             nyc = newParam.channels[c];
             for (int i = 0; i < 2; i++) {
@@ -218,7 +219,7 @@ public class frmYMF262 extends frmBase {
             }
         }
 
-        int ko = audio.getYMF262FMKeyON(chipId);
+        int ko = audio.chipRegister.chip(YmF262Chip.class).getYMF262FMKeyON(chipId);
 
         for (int c = 0; c < 18; c++) {
             nyc = newParam.channels[c];
@@ -283,9 +284,9 @@ public class frmYMF262 extends frmBase {
 
         }
 
-        // //#region リズム情報の取得
+//#region リズム情報の取得
 
-        int r = audio.getYMF262RyhthmKeyON(chipId);
+        int r = audio.chipRegister.chip(YmF262Chip.class).getYMF262RyhthmKeyON(chipId);
 
         //slot14 TL 0x51 HH
         //slot15 TL 0x52 TOM
@@ -335,8 +336,7 @@ public class frmYMF262 extends frmBase {
 
         //Audio.resetYMF278BRyhthmKeyON(chipId);
 
-        // //#endregion
-
+//#endregion
     }
 
     public void screenDrawParams() {

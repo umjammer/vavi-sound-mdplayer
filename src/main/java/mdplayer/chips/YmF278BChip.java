@@ -6,12 +6,17 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.instrument.YmF278bInst;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -21,6 +26,8 @@ import mdsound.instrument.YmF278bInst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class YmF278BChip implements Chip {
+
+    private static final Logger logger = getLogger(YmF278BChip.class.getName());
 
     private final Setting.ChipType2[] ctYMF278B = new Setting.ChipType2[] {
             setting.getYMF278BType()[0], setting.getYMF278BType()[1]
@@ -217,5 +224,45 @@ public class YmF278BChip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.WriteYmF278bPCMramData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+    }
+
+    public int[][] getYMF278BRegister(int chipId) {
+        return fmRegisterYMF278B[chipId];
+    }
+
+//    public int getYMF278BFMKeyON(int chipId) {
+//        return getYMF278BFMKeyON(chipId);
+//    }
+//
+//    public void resetYMF278BFMKeyON(int chipId) {
+//        resetYMF278BFMKeyON(chipId);
+//    }
+//
+//    public int getYMF278BRyhthmKeyON(int chipId) {
+//        return getYMF278BRyhthmKeyON(chipId);
+//    }
+//
+//    public void resetYMF278BRyhthmKeyON(int chipId) {
+//        resetYMF278BRyhthmKeyON(chipId);
+//    }
+//
+//    public int[] getYMF278BPCMKeyON(int chipId) {
+//        return getYMF278BPCMKeyON(chipId);
+//    }
+//
+//    public void resetYMF278BPCMKeyON(int chipId) {
+//        resetYMF278BPCMKeyON(chipId);
+//    }
+
+    public void setYMF278BMask(int chipId, int ch) {
+        setMaskYMF278B(chipId, ch, true);
+    }
+
+    public void resetYMF278BMask(int chipId, int ch) {
+        try {
+            setMaskYMF278B(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
     }
 }

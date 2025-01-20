@@ -6,12 +6,17 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.instrument.Ym2413Inst;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -21,6 +26,8 @@ import mdsound.instrument.Ym2413Inst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Ym2413Chip implements Chip {
+
+    private static final Logger logger = getLogger(Ym2413Chip.class.getName());
 
     private final Setting.ChipType2[] ctYM2413 = new Setting.ChipType2[] {
             setting.getYM2413Type()[0], setting.getYM2413Type()[1]
@@ -186,5 +193,37 @@ public class Ym2413Chip implements Chip {
         for (int c = 0; c < 9; c++) {
             setYM2413Register(chipId, 0x30 + c, fmRegisterYM2413[chipId][0x30 + c], EnmModel.RealModel);
         }
+    }
+
+    public int[] getYM2413Register(int chipId) {
+        return fmRegisterYM2413[chipId];
+    }
+
+//    public Chip.ChipKeyInfo getYM2413KeyInfo(int chipId) {
+//        return getYM2413KeyInfo(chipId);
+//    }
+
+    public void setYM2413Mask(int chipId, int ch) {
+        setMaskYM2413(chipId, ch, true);
+    }
+
+    public void resetYM2413Mask(int chipId, int ch) {
+        try {
+            setMaskYM2413(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void softReset(EnmModel model) {
+        softResetYM2413(0, model);
+        softResetYM2413(1, model);
+    }
+
+    @Override
+    public void clearFadeoutVolume() {
+        setFadeoutVolYM2413(0, 0);
+        setFadeoutVolYM2413(1, 0);
     }
 }

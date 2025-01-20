@@ -21,6 +21,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.NesChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -106,7 +107,7 @@ public class frmS5B extends frmBase {
     };
 
     public void screenChangeParams() {
-        byte[] S5BRegister = audio.getS5BRegister(chipId);
+        byte[] S5BRegister = audio.chipRegister.chip(NesChip.class).getS5BRegister(chipId);
         if (S5BRegister == null) return;
 
         for (int ch = 0; ch < 3; ch++) { //SSG
@@ -134,7 +135,7 @@ public class frmS5B extends frmBase {
                 int ct = S5BRegister[0x01 + ch * 2];
                 int tp = (ct << 8) | ft;
                 if (tp == 0) tp = 1;
-                float ftone = audio.clockS5B / (8.0f * (float) tp);
+                float ftone = 1789772 / (8.0f * (float) tp);
                 channel.note = searchSSGNote(ftone);
             }
         }

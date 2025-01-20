@@ -21,9 +21,13 @@ import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.Ym2608Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
+import mdsound.instrument.Ym2608Inst;
+import mdsound.instrument.YmFmYm2203Inst;
+import mdsound.instrument.YmFmYm2608Inst;
 
 
 public class frmYM2608 extends frmBase {
@@ -140,12 +144,12 @@ public class frmYM2608 extends frmBase {
 
     public void screenChangeParams() {
         boolean isFmEx;
-        int[][] ym2608Register = audio.getYM2608Register(chipId);
-        int[] fmKeyYM2608 = audio.getYM2608KeyOn(chipId);
-        int[] ym2608Vol = audio.getYM2608Volume(chipId);
-        int[] ym2608Ch3SlotVol = audio.getYM2608Ch3SlotVolume(chipId);
-        int[][] ym2608Rhythm = audio.getYM2608RhythmVolume(chipId);
-        int[] ym2608AdpcmVol = audio.getYM2608AdpcmVolume(chipId);
+        int[][] ym2608Register = audio.chipRegister.chip(Ym2608Chip.class).getYM2608Register(chipId);
+        int[] fmKeyYM2608 = audio.chipRegister.chip(Ym2608Chip.class).getYM2608KeyOn(chipId);
+        int[] ym2608Vol = audio.chipRegister.chip(Ym2608Chip.class).getYM2608Volume(chipId);
+        int[] ym2608Ch3SlotVol = audio.chipRegister.chip(Ym2608Chip.class).getYM2608Ch3SlotVolume(chipId);
+        int[][] ym2608Rhythm = audio.chipRegister.chip(Ym2608Chip.class).getYM2608RhythmVolume(chipId);
+        int[] ym2608AdpcmVol = audio.chipRegister.chip(Ym2608Chip.class).getYM2608AdpcmVolume(chipId);
 
         newParam.timerA = ym2608Register[0][0x24] | ((ym2608Register[0][0x25] & 0x3) << 8);
         newParam.timerB = ym2608Register[0][0x26];
@@ -158,9 +162,10 @@ public class frmYM2608 extends frmBase {
         int defaultMasterClock = 7987200;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        if (audio.clockYM2608 != 0) {
-            ssgMul = audio.clockYM2608 / (float) defaultMasterClock;
-            masterClock = audio.clockYM2608;
+        int clock = audio.chipRegister.getChipInfo(Ym2608Inst.class).clock;
+        if (clock != 0) {
+            ssgMul = clock / (float) defaultMasterClock;
+            masterClock = clock;
         }
 
         int divInd = ym2608Register[0][0x2d];

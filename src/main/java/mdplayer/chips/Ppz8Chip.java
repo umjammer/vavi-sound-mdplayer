@@ -6,10 +6,15 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdsound.chips.PPZ8;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -19,6 +24,8 @@ import mdsound.chips.PPZ8;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Ppz8Chip implements Chip {
+
+    private static final Logger logger = getLogger(Ppz8Chip.class.getName());
 
     private static final boolean[][] maskChPPZ8 = {
             {false, false, false, false, false, false, false, false},
@@ -72,5 +79,21 @@ public class Ppz8Chip implements Chip {
 
     public void setMaskPPZ8(int chipId, int ch, boolean mask) {
         maskChPPZ8[chipId][ch] = mask;
+    }
+
+//    public PPZ8.Channel[] getPPZ8Register(int chipId) {
+//        return getPPZ8Register(chipId);
+//    }
+
+    public void setPPZ8Mask(int chipId, int ch) {
+        setMaskPPZ8(chipId, ch, true);
+    }
+
+    public void resetPPZ8Mask(int chipId, int ch) {
+        try {
+            setMaskPPZ8(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
     }
 }

@@ -6,6 +6,9 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmChip;
@@ -16,6 +19,8 @@ import mdsound.instrument.MameYm2612Inst;
 import mdsound.instrument.Ym2612Inst;
 import mdsound.instrument.Ym3438Inst;
 
+import static java.lang.System.getLogger;
+
 
 /**
  * Ym2612Chip.
@@ -24,6 +29,8 @@ import mdsound.instrument.Ym3438Inst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Ym2612Chip implements Chip {
+
+    private static final Logger logger = getLogger(Ym2612Chip.class.getName());
 
     private final Setting.ChipType2[] ctYM2612 = new Setting.ChipType2[] {
             setting.getYM2612Type()[0], setting.getYM2612Type()[1]
@@ -315,5 +322,39 @@ public class Ym2612Chip implements Chip {
 
     public int[] getYM2612Ch3SlotVolume(int chipId) {
         return fmCh3SlotVolYM2612[chipId];
+    }
+
+    public int[][] getFMRegister(int chipId) {
+        return fmRegisterYM2612[chipId];
+    }
+
+    public int[] getFMKeyOn(int chipId) {
+        return fmKeyOnYM2612[chipId];
+    }
+
+    public int[] getFMVolume(int chipId) {
+        return getYM2612Volume(chipId);
+    }
+
+    public int[] getFMCh3SlotVolume(int chipId) {
+        return getYM2612Ch3SlotVolume(chipId);
+    }
+
+    public void setYM2612Mask(int chipId, int ch) {
+        setMaskYM2612(chipId, ch, true);
+    }
+
+    public void resetYM2612Mask(int chipId, int ch) {
+        try {
+            setMaskYM2612(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void clearFadeoutVolume() {
+        setFadeoutVolYM2612(0, 0);
+        setFadeoutVolYM2612(1, 0);
     }
 }

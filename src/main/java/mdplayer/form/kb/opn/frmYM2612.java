@@ -21,11 +21,13 @@ import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.Xgm;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.format.XGMFileFormat;
 import mdplayer.properties.Resources;
+import mdsound.instrument.Ym2610Inst;
 
 
 public class frmYM2612 extends frmBase {
@@ -127,10 +129,10 @@ public class frmYM2612 extends frmBase {
             };
 
     public void screenChangeParams() {
-        int[][] fmRegister = audio.getFMRegister(chipId);
-        int[] fmVol = audio.getFMVolume(chipId);
-        int[] fmCh3SlotVol = audio.getFMCh3SlotVolume(chipId);
-        int[] fmKey = audio.getFMKeyOn(chipId);
+        int[][] fmRegister = audio.chipRegister.chip(Ym2612Chip.class).getFMRegister(chipId);
+        int[] fmVol = audio.chipRegister.chip(Ym2612Chip.class).getFMVolume(chipId);
+        int[] fmCh3SlotVol = audio.chipRegister.chip(Ym2612Chip.class).getFMCh3SlotVolume(chipId);
+        int[] fmKey = audio.chipRegister.chip(Ym2612Chip.class).getFMKeyOn(chipId);
 
         boolean isFmEx = (fmRegister[0][0x27] & 0x40) != 0;
         newParam.channels[2].ex = isFmEx;
@@ -140,7 +142,7 @@ public class frmYM2612 extends frmBase {
         newParam.timerA = fmRegister[0][0x24] | ((fmRegister[0][0x25] & 0x3) << 8);
         newParam.timerB = fmRegister[0][0x26];
 
-        //int masterClock = audio.clockYM2612;
+        //int masterClock = audio.chipRegister.getChipInfo(Ym2610Inst.class).clock;
         //int defaultMasterClock = 8000000;
         //float mul = 1.0f;
         //if (masterClock != 0)
@@ -149,9 +151,10 @@ public class frmYM2612 extends frmBase {
         int defaultMasterClock = 8000000;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        if (audio.clockYM2612 != 0) {
-            ssgMul = audio.clockYM2612 / (float) defaultMasterClock;
-            masterClock = audio.clockYM2612;
+        int clock = audio.chipRegister.getChipInfo(Ym2610Inst.class).clock;
+        if (clock != 0) {
+            ssgMul = clock / (float) defaultMasterClock;
+            masterClock = clock;
         }
 
         float fmDiv = 6;

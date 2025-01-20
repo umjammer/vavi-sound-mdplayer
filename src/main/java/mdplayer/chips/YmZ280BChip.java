@@ -87,4 +87,8 @@ public class YmZ280BChip implements Chip {
         if (model == EnmModel.VirtualModel)
             context.mds.WriteYmZ280bPCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
+
+    public int[] getYMZ280BRegister(int chipId) {
+        return YMZ280BRegister[chipId];
+    }
 }

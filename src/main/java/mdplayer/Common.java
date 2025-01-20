@@ -434,28 +434,23 @@ logger.log(Level.DEBUG, "rhythm file: " + ffn);
     }
 
     public enum EnmInstFormat {
-        FMP7(0),
-        MDX(1),
-        TFI(2),
-        MUSICLALF(3),
-        MUSICLALF2(4),
-        MML2VGM(5),
-        NRTDRV(6),
-        HUSIC(7),
-        VOPM(8),
-        PMD(9),
-        MUCOM88(10),
-        DMP(11),
-        OPNI(12),
-        OPLI(13),
-        MGSCSCC_PLAIN(14),
-        RYM2612(15),
-        SendMML2VGM(16);
-        final int v;
-
-        EnmInstFormat(int v) {
-            this.v = v;
-        }
+        FMP7,
+        MDX,
+        TFI,
+        MUSICLALF,
+        MUSICLALF2,
+        MML2VGM,
+        NRTDRV,
+        HUSIC,
+        VOPM,
+        PMD,
+        MUCOM88,
+        DMP,
+        OPNI,
+        OPLI,
+        MGSCSCC_PLAIN,
+        RYM2612,
+        SendMML2VGM;
     }
 
     public enum EnmArcType {

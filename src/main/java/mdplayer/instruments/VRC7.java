@@ -1,5 +1,5 @@
 
-package mdplayer;
+package mdplayer.instruments;
 
 import java.util.function.Consumer;
 
@@ -8,15 +8,6 @@ import mdsound.instrument.Ym2413Inst;
 
 
 public class VRC7 extends Ym2413Inst {
-    @Override
-    public String getName() {
-        return "VRC7";
-    }
-
-    @Override
-    public String getShortName() {
-        return "VRC7";
-    }
 
     private final mdsound.np.chip.NesVrc7 nv;
 
@@ -27,6 +18,16 @@ public class VRC7 extends Ym2413Inst {
     public VRC7() {
         nv = new mdsound.np.chip.NesVrc7();
         nv.setListener(listenr);
+    }
+
+    @Override
+    public String getName() {
+        return "VRC7";
+    }
+
+    @Override
+    public String getShortName() {
+        return "VRC7";
     }
 
     @Override

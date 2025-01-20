@@ -21,6 +21,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.Ym2151Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -197,9 +198,9 @@ public class frmYM2151 extends frmBase {
             };
 
     public void screenChangeParams() {
-        int[] ym2151Register = audio.getYM2151Register(chipId);
-        int[] fmKeyYM2151 = audio.getYM2151KeyOn(chipId);
-        int[] fmYM2151Vol = audio.getYM2151Volume(chipId);
+        int[] ym2151Register = audio.chipRegister.chip(Ym2151Chip.class).getYM2151Register(chipId);
+        int[] fmKeyYM2151 = audio.chipRegister.chip(Ym2151Chip.class).getYM2151KeyOn(chipId);
+        int[] fmYM2151Vol = audio.chipRegister.chip(Ym2151Chip.class).getYM2151Volume(chipId);
 
         for (int ch = 0; ch < 8; ch++) {
             for (int i = 0; i < 4; i++) {
@@ -257,8 +258,8 @@ public class frmYM2151 extends frmBase {
         newParam.ne = ((ym2151Register[0x0f] & 0x80) >> 7);
         newParam.nfrq = ((ym2151Register[0x0f] & 0x1f) >> 0);
         newParam.lfrq = ((ym2151Register[0x18] & 0xff) >> 0);
-        newParam.pmd = audio.getYM2151PMD(chipId);
-        newParam.amd = audio.getYM2151AMD(chipId);
+        newParam.pmd = audio.chipRegister.chip(Ym2151Chip.class).getYM2151PMD(chipId);
+        newParam.amd = audio.chipRegister.chip(Ym2151Chip.class).getYM2151AMD(chipId);
         newParam.waveform = ((ym2151Register[0x1b] & 0x3) >> 0);
         newParam.lfosync = ((ym2151Register[0x01] & 0x02) >> 1);
 

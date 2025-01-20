@@ -6,12 +6,17 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.instrument.Ym3812Inst;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -21,6 +26,8 @@ import mdsound.instrument.Ym3812Inst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Ym3812Chip implements Chip {
+
+    private static final Logger logger = getLogger(Ym3812Chip.class.getName());
 
     private final Setting.ChipType2[] ctYM3812 = new Setting.ChipType2[] {
             setting.getYM3812Type()[0], setting.getYM3812Type()[1]
@@ -202,5 +209,37 @@ public class Ym3812Chip implements Chip {
                 scYM3812[chipId].dClock = scYM3812[chipId].setMasterClock(clock);
             }
         }
+    }
+
+    public int[] getYM3812Register(int chipId) {
+        return fmRegisterYM3812[chipId];
+    }
+
+//    public Chip.ChipKeyInfo getYM3812KeyInfo(int chipId) {
+//        return getYM3812KeyInfo(chipId);
+//    }
+
+    public void setYM3812Mask(int chipId, int ch) {
+        setMaskYM3812(chipId, ch, true);
+    }
+
+    public void resetYM3812Mask(int chipId, int ch) {
+        try {
+            setMaskYM3812(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void softReset(EnmModel model) {
+        softResetYM3812(0, model);
+        softResetYM3812(1, model);
+    }
+
+    @Override
+    public void clearFadeoutVolume() {
+        setFadeoutVolYM3812(0, 0);
+        setFadeoutVolYM3812(1, 0);
     }
 }

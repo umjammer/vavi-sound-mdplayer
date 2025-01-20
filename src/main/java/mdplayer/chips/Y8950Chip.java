@@ -6,11 +6,16 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdsound.instrument.Y8950Inst;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -20,6 +25,8 @@ import mdsound.instrument.Y8950Inst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Y8950Chip implements Chip {
+
+    private static final Logger logger = getLogger(Y8950Chip.class.getName());
 
     private final Setting.ChipType2[] ctY8950 = new Setting.ChipType2[] {
             setting.getY8950Type()[0], setting.getY8950Type()[1]
@@ -154,5 +161,25 @@ public class Y8950Chip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.WriteY8950PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+    }
+
+    public int[] getY8950Register(int chipId) {
+        return fmRegisterY8950[chipId];
+    }
+
+//    public Chip.ChipKeyInfo getY8950KeyInfo(int chipId) {
+//        return getY8950KeyInfo(chipId);
+//    }
+
+    public void setY8950Mask(int chipId, int ch) {
+        setMaskY8950(chipId, ch, true);
+    }
+
+    public void resetY8950Mask(int chipId, int ch) {
+        try {
+            setMaskY8950(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
     }
 }

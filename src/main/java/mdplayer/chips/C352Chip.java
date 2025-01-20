@@ -6,10 +6,15 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdsound.instrument.C352Inst;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -19,6 +24,8 @@ import mdsound.instrument.C352Inst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class C352Chip implements Chip {
+
+    private static final Logger logger = getLogger(C352Chip.class.getName());
 
     public int[][] pcmRegisterC352 = {null, null};
 
@@ -89,5 +96,25 @@ public class C352Chip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.WriteC352PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+    }
+
+    public int[] getC352Register(int chipId) {
+        return pcmRegisterC352[chipId];
+    }
+
+    public int[] getC352KeyOn(int chipId) {
+        return readC352(chipId);
+    }
+
+    public void setC352Mask(int chipId, int ch) {
+        setMaskC352(chipId, ch, true);
+    }
+
+    public void resetC352Mask(int chipId, int ch) {
+        try {
+            setMaskC352(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
     }
 }

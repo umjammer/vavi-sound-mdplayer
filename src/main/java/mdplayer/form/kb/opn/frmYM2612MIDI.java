@@ -34,6 +34,8 @@ import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.MidiPlugin;
+import mdplayer.chips.Ym2612Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.form.sys.frmTPGet;
@@ -123,7 +125,7 @@ public class frmYM2612MIDI extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[][] fmRegister = audio.getYM2612MIDIRegister();
+        int[][] fmRegister = audio.chipRegister.plugin(MidiPlugin.class).getYM2612MIDIRegister();
         //int[] fmKey = audio.GetFMKeyOn();
 
         newParam.IsMONO = parent.setting.getMidiKbd().isMono();

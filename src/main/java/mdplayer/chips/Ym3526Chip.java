@@ -6,12 +6,17 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.instrument.Ym3526Inst;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -21,6 +26,8 @@ import mdsound.instrument.Ym3526Inst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Ym3526Chip implements Chip {
+
+    private static final Logger logger = getLogger(Ym3526Chip.class.getName());
 
     private final Setting.ChipType2[] ctYM3526 = new Setting.ChipType2[] {
             setting.getYM3526Type()[0], setting.getYM3526Type()[1]
@@ -207,5 +214,37 @@ public class Ym3526Chip implements Chip {
 //                scYM3526[chipId].dClock = scYM3526[chipId].SetMasterClock((int) clock);
             }
         }
+    }
+
+    public int[] getYM3526Register(int chipId) {
+        return fmRegisterYM3526[chipId];
+    }
+
+//    public Chip.ChipKeyInfo getYM3526KeyInfo(int chipId) {
+//        return getYM3526KeyInfo(chipId);
+//    }
+
+    public void setYM3526Mask(int chipId, int ch) {
+        setMaskYM3526(chipId, ch, true);
+    }
+
+    public void resetYM3526Mask(int chipId, int ch) {
+        try {
+            setMaskYM3526(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void softReset(EnmModel model) {
+        softResetYM3526(0, model);
+        softResetYM3526(1, model);
+    }
+
+    @Override
+    public void clearFadeoutVolume() {
+        setFadeoutVolYM3526(0, 0);
+        setFadeoutVolYM3526(1, 0);
     }
 }

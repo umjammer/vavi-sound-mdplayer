@@ -42,6 +42,7 @@ import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.PlayList;
 import mdplayer.Setting;
+import mdplayer.chips.RealChipPlugin;
 import mdplayer.form.kb.wf.frmHuC6280;
 import mdplayer.properties.Resources;
 import mdsound.Instrument;
@@ -99,9 +100,9 @@ public class frmMixer2 extends JFrame {
         if (i == 0) {
             audio.setMasterVolume(isAbs, delta);
         } else if (i == setVolume.length) {
-            audio.setGimicOPNVolume(false, delta);
+            audio.chipRegister.plugin(RealChipPlugin.class).setGimicOPNVolume(false, delta);
         } else if (i == setVolume.length + 1) {
-            audio.setGimicOPNAVolume(false, delta);
+            audio.chipRegister.plugin(RealChipPlugin.class).setGimicOPNAVolume(false, delta);
         } else if (i > 0 && i < setVolume.length) {
             var t = setVolume[chipn];
             audio.setVolume(t.getItem1(), t.getItem2(), isAbs, delta);

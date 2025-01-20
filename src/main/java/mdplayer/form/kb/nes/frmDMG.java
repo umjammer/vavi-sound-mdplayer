@@ -21,6 +21,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.DmgChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -105,7 +106,7 @@ public class frmDMG extends frmBase {
     };
 
     public void screenChangeParams() {
-        GbSound dat = audio.getDMGRegister(chipId);
+        GbSound dat = audio.chipRegister.chip(DmgChip.class).getDMGRegister(chipId);
         if (dat == null) return;
 
         // pan

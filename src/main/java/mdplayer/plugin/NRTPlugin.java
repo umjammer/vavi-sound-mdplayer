@@ -5,6 +5,7 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
+import mdplayer.Audio;
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.chips.Ym2151Chip;
@@ -62,15 +63,15 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.resetChips();
 
-            audio.useChip.clear();
+            useChip.clear();
 
             audio.vgmFadeout = false;
             audio.vgmFadeoutCounter = 1.0;
             audio.vgmFadeoutCounterV = 0.00001;
             vgmSpeed = 1;
-            audio.vgmRealFadeoutVol = 0;
-            audio.vgmRealFadeoutVolWait = 4;
-            audio.clearFadeoutVolume();
+            vgmRealFadeoutVol = 0;
+            vgmRealFadeoutVolWait = 4;
+            audio.chipRegister.clearFadeoutVolume();
             audio.chipRegister.resetChips();
 
             startTrdVgmReal();
@@ -79,10 +80,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             MDSound.Chip chip;
 
-            audio.hiyorimiNecessary = setting.getHiyorimiMode();
+            hiyorimiNecessary = setting.getHiyorimiMode();
             int hiyorimiDeviceFlag = 0;
 
-            audio.chipLED = new ChipLEDs();
+            audio.chipRegister.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -112,12 +113,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipLED.put("PriOPM", 1);
-                    else audio.chipLED.put("SecOPM", 1);
+                    if (i == 0) audio.chipRegister.chipLED.put("PriOPM", 1);
+                    else audio.chipRegister.chipLED.put("SecOPM", 1);
 
                     if (chip.instrument != null) {
                         lstChips.add(chip);
-                        audio.useChip.add(i == 0 ? Common.EnmChip.YM2151 : Common.EnmChip.S_YM2151);
+                        useChip.add(i == 0 ? Common.EnmChip.YM2151 : Common.EnmChip.S_YM2151);
                     }
                 }
             }
@@ -129,36 +130,33 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class);
                 chip.clock = 2000000 / 2;
-                audio.clockAY8910 = chip.clock;
+//                audio.clockAY8910 = chip.clock;
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x1;
-                audio.chipLED.put("PriAY10", 1);
+                audio.chipRegister.chipLED.put("PriAY10", 1);
 
                 lstChips.add(chip);
-                audio.useChip.add(Common.EnmChip.AY8910);
+                useChip.add(Common.EnmChip.AY8910);
             }
 
-            audio.hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && audio.hiyorimiNecessary;
+            hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
-            if (audio.mds == null)
-                audio.mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
-            else
-                audio.mds.init(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
 
             audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
-            if (audio.useChip.contains(Common.EnmChip.YM2151) || audio.useChip.contains(Common.EnmChip.S_YM2151)) {
+            if (useChip.contains(Common.EnmChip.YM2151) || useChip.contains(Common.EnmChip.S_YM2151)) {
                 audio.setVolume(MAIN_TAG, Ym2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class));
                 audio.setVolume(MAIN_TAG, MameYm2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, MameYm2151Inst.class));
                 audio.setVolume(MAIN_TAG, X68SoundYm2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, X68SoundYm2151Inst.class));
             }
-            if (audio.useChip.contains(Common.EnmChip.AY8910))
+            if (useChip.contains(Common.EnmChip.AY8910))
                 audio.setVolume(MAIN_TAG, Ay8910Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class));
 
-            if (audio.useChip.contains(Common.EnmChip.YM2151))
+            if (useChip.contains(Common.EnmChip.YM2151))
                 audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 0, 4000000, Common.EnmModel.RealModel);
-            if (audio.useChip.contains(Common.EnmChip.S_YM2151))
+            if (useChip.contains(Common.EnmChip.S_YM2151))
                 audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 1, 4000000, Common.EnmModel.RealModel);
 
             if (audio.driverVirtual != null) audio.driverVirtual.setYm2151Hosei(4000000);
@@ -169,14 +167,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
             //chipRegister.getChip(Ym2608Chip.class).setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
 
             if (audio.driverVirtual != null) {
-                audio.driverVirtual.init(vgmBuf, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.YM2151, Common.EnmChip.AY8910}
+                audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.YM2151, Common.EnmChip.AY8910}
                         , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
                         , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
                 ((NRTDRV) audio.driverVirtual).call(0);//
             }
 
             if (audio.driverReal != null) {
-                audio.driverReal.init(vgmBuf, audio.chipRegister, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.YM2151, Common.EnmChip.AY8910}
+                audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.YM2151, Common.EnmChip.AY8910}
                         , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
                         , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
                 ((NRTDRV) audio.driverReal).call(0);//

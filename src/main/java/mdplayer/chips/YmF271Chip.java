@@ -11,6 +11,7 @@ import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdsound.chips.YmF271;
 import mdsound.instrument.YmF271Inst;
 
 
@@ -95,5 +96,9 @@ public class YmF271Chip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.WriteYmf271PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+    }
+
+    public YmF271 getYMF271Register(int chipId) {
+        return context.mds.ReadYmf271Register(chipId);
     }
 }

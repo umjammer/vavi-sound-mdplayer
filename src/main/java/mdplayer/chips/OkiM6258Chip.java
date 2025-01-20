@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.chips.OkiM6258;
 import mdsound.instrument.OkiM6258Inst;
 
 
@@ -69,5 +70,25 @@ public class OkiM6258Chip implements Chip {
         if (model == EnmModel.VirtualModel) {
             context.mds.write(OkiM6258Inst.class, chipId, 0, port, data);
         }
+    }
+
+    public OkiM6258 getOKIM6258Register(int chipId) {
+        return context.mds.ReadOkiM6258Status(chipId);
+    }
+
+    public boolean getOKIM6258KeyOn(int chipId) {
+        return okim6258Keyon[chipId];
+    }
+
+    public void resetOKIM6258KeyOn(int chipId) {
+        okim6258Keyon[chipId] = false;
+    }
+
+    public void setOKIM6258Mask(int chipId) {
+        setMaskOKIM6258(chipId, true);
+    }
+
+    public void resetOKIM6258Mask(int chipId) {
+        setMaskOKIM6258(chipId, false);
     }
 }

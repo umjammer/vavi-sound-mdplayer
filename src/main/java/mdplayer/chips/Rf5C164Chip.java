@@ -6,10 +6,16 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.chips.PcmChip;
 import mdsound.instrument.ScdPcmInst;
+
+import static java.lang.System.getLogger;
 
 
 /**
@@ -19,6 +25,8 @@ import mdsound.instrument.ScdPcmInst;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Rf5C164Chip implements Chip {
+
+    private static final Logger logger = getLogger(Rf5C164Chip.class.getName());
 
     private final boolean[][] maskChRF5C164 = {
             {false, false, false, false, false, false, false, false},
@@ -78,4 +86,21 @@ public class Rf5C164Chip implements Chip {
         if (model == EnmModel.VirtualModel)
             context.mds.writeScdPcmMemW(chipId, offset, data);
     }
+
+    public PcmChip getRf5c164Register(int chipId) {
+        return context.mds.ReadRf5c164Register(chipId);
+    }
+
+    public void setRF5C164Mask(int chipId, int ch) {
+        setMaskRF5C164(chipId, ch, true);
+    }
+
+    public void resetRF5C164Mask(int chipId, int ch) {
+        try {
+            setMaskRF5C164(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+
 }

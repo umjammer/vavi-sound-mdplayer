@@ -67,13 +67,13 @@ public class QSoundChip implements Chip {
 
     public void setMaskQSound(int chipId, int ch, boolean mask) {
         maskChQSound[chipId][ch] = mask;
-        if (context.dicChipsInfo.containsKey(QSoundInst.class)) {
+        if (context.usedInstruments.containsKey(QSoundInst.class)) {
             if (mask)
                 context.mds.setQSoundMask(chipId, ch);
             else
                 context.mds.resetQSoundMask(chipId, ch);
         }
-        if (context.dicChipsInfo.containsKey(CtrQSoundInst.class)) {
+        if (context.usedInstruments.containsKey(CtrQSoundInst.class)) {
             if (mask)
                 context.mds.setQSoundCtrMask(chipId, ch);
             else
@@ -93,5 +93,17 @@ public class QSoundChip implements Chip {
 
         if (model == EnmModel.VirtualModel)
             context.mds.WriteQSoundCtrPCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+    }
+
+//    public int[] getQSoundRegister(int chipId) {
+//        return getQSoundRegister(chipId);
+//    }
+
+    public void setQSoundMask(int chipId, int ch) {
+        setMaskQSound(chipId, ch, true);
+    }
+
+    public void resetQSoundMask(int chipId, int ch) {
+        setMaskQSound(chipId, ch, false);
     }
 }

@@ -23,6 +23,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.Ym2413Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -115,9 +116,9 @@ public class frmYM2413 extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[] ym2413Register = audio.getYM2413Register(chipId);
+        int[] ym2413Register = audio.chipRegister.chip(Ym2413Chip.class).getYM2413Register(chipId);
         MDChipParams.Channel nyc;
-        ChipKeyInfo ki = audio.getYM2413KeyInfo(chipId);
+        ChipKeyInfo ki = audio.chipRegister.chip(Ym2413Chip.class).getYM2413KeyInfo(chipId);
 
         for (int ch = 0; ch < 9; ch++) {
             nyc = newParam.channels[ch];
