@@ -107,7 +107,7 @@ public class frmVRC7 extends frmBase {
     };
 
     public void screenChangeParams() {
-        byte[] vrc7Register = audio.chipRegister.chip(NesChip.class).readVrc7(chipId);
+        int[] vrc7Register = audio.chipRegister.chip(NesChip.class).readVrc7(chipId);
         if (vrc7Register == null) return;
 
         //キーオン(ワンショット)があったかを取得する

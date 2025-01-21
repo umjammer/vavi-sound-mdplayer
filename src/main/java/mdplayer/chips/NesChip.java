@@ -95,7 +95,7 @@ public class NesChip implements Chip {
         }
     }
 
-    public byte[] readApu(int chipId, EnmModel model) {
+    public int[] readApu(int chipId, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriNES", 2);
         else
@@ -113,7 +113,7 @@ public class NesChip implements Chip {
         }
     }
 
-    public byte[] readDmc(int chipId, EnmModel model) {
+    public int[] readDmc(int chipId, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriNES", 2);
         else
@@ -309,7 +309,7 @@ public class NesChip implements Chip {
         return vrc6.getTracksInfo();
     }
 
-    public byte[] readVrc7(int chipId) {
+    public int[] readVrc7(int chipId) {
         if (vrc7 == null) return null;
         if (chipId != 0) return null;
 
@@ -325,8 +325,8 @@ public class NesChip implements Chip {
         return n106.getTracksInfo();
     }
 
-    public byte[] readApu(int chipId) {
-        byte[] reg;
+    public int[] readApu(int chipId) {
+        int[] reg;
 
         // for nsf
         if (apu == null) reg = null;
@@ -340,8 +340,8 @@ public class NesChip implements Chip {
         return reg;
     }
 
-    public byte[] readDmc(int chipId) {
-        byte[] reg;
+    public int[] readDmc(int chipId) {
+        int[] reg;
         try {
             // for nsf
             if (apu == null) reg = null;

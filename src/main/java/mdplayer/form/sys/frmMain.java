@@ -5498,7 +5498,7 @@ setVisible(true);
         if (chip == EnmChip.YM2413) {
             register = plugin.audio.chipRegister.chip(Ym2413Chip.class).read(chipId);
         } else if (chip == EnmChip.VRC7) {
-            byte[] r = plugin.audio.chipRegister.chip(NesChip.class).readVrc7(chipId);
+            int[] r = plugin.audio.chipRegister.chip(NesChip.class).readVrc7(chipId);
             if (r == null) return;
             register = new int[r.length];
             for (int i = 0; i < r.length; i++) {
