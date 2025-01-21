@@ -35,7 +35,7 @@ public class WSwanChip implements Chip {
     public void updateVol() {
     }
 
-    public void writeWSwan(int chipId, int port, int data, EnmModel model) {
+    public void write(int chipId, int port, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriWSW", 2);
         else
@@ -46,14 +46,14 @@ public class WSwanChip implements Chip {
         }
     }
 
-    public void writeWSwanMem(int chipId, int port, int data, EnmModel model) {
+    public void writeMemory(int chipId, int port, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriWSW", 2);
         else
             context.chipLED.put("SecWSW", 2);
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.writeWsAudioMem(chipId, port, data);
+            context.mds.inst(WSwanInst.class).writeMemory(chipId, port, data);
         }
     }
 }

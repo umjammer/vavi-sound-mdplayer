@@ -13,7 +13,8 @@ import mdplayer.Chip;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdsound.instrument.IntFNesInst;
+import mdsound.instrument.NesInst;
+import mdsound.np.NpNesFds;
 import mdsound.np.chip.DeviceInfo;
 import mdsound.np.chip.NesApu;
 import mdsound.np.chip.NesDmc;
@@ -40,29 +41,27 @@ public class NesChip implements Chip {
 
     private static final Logger logger = getLogger(NesChip.class.getName());
 
-    private int nsfAPUmask = 0;
-    private int nsfDMCmask = 0;
-    private int nsfFDSmask = 0;
-    private int nsfMMC5mask = 0;
-    private int nsfVRC6mask = 0;
-    private int nsfVRC7mask = 0;
-    private int nsfN163mask = 0;
+    private int apuMask = 0;
+    private int dmcMask = 0;
+    private int fdsMask = 0;
+    private int mmc5Mask = 0;
+    private int vrc6Mask = 0;
+    private int vrc7Mask = 0;
+    private int n163Mask = 0;
 
-    public NesBank nes_bank = null;
-    public NesMem nes_mem = null;
-    public Km6502 nes_cpu = null;
-    public NesApu nes_apu = null;
-    public NesDmc nes_dmc = null;
-    public NesFds nes_fds = null;
-    public NesN106 nes_n106 = null;
-    public NesVrc6 nes_vrc6 = null;
-    public NesMmc5 nes_mmc5 = null;
-    public NesFme7 nes_fme7 = null;
-    public NesVrc7 nes_vrc7 = null;
+    public NesBank bank = null;
+    public NesMem mem = null;
+    public Km6502 cpu = null;
+    public NesApu apu = null;
+    public NesDmc dmc = null;
+    public NesFds fds = null;
+    public NesN106 n106 = null;
+    public NesVrc6 vrc6 = null;
+    public NesMmc5 mmc5 = null;
+    public NesFme7 fme7 = null;
+    public NesVrc7 vrc7 = null;
 
-    private final ChipKeyInfo[] kiVRC7 = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
-
-    private final ChipKeyInfo[] kiVRC7ret = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
+    private final ChipKeyInfo[] vrc7KeyOn = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
 
     private ChipRegister context;
 
@@ -79,278 +78,279 @@ public class NesChip implements Chip {
     public void updateVol() {
     }
 
-    public void setNESRegister(int chipId, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriNES", 2);
         else
             context.chipLED.put("SecNES", 2);
 
         if (model == EnmModel.VirtualModel) {
-            // if (!ctNES[chipId].UseScci) {
-            context.mds.write(IntFNesInst.class, chipId, 0, dAddr, dData);
-            // }
+//            if (!ctNES[chipId].UseScci) {
+                context.mds.write(NesInst.class, chipId, 0, addr, data);
+//            }
         } else {
-            // if (scNES[chipId] == null) return;
-
-            // scNES[chipId].setRegister(dAddr, dData);
+//            if (scNES[chipId] == null) return;
+//
+//            scNES[chipId].setRegister(addr, data);
         }
     }
 
-    public byte[] getNESRegisterAPU(int chipId, EnmModel model) {
+    public byte[] readApu(int chipId, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriNES", 2);
         else
             context.chipLED.put("SecNES", 2);
 
         if (model == EnmModel.VirtualModel) {
-            // if (!ctNES[chipId].UseScci) {
-            return context.mds.ReadNESapu(chipId);
-            // }
-        } else {
-            return null;
-            // if (scNES[chipId] == null) return;
-
-            // scNES[chipId].setRegister(dAddr, dData);
-        }
-    }
-
-    public byte[] getNESRegisterDMC(int chipId, EnmModel model) {
-        if (chipId == 0)
-            context.chipLED.put("PriNES", 2);
-        else
-            context.chipLED.put("SecNES", 2);
-
-        if (model == EnmModel.VirtualModel) {
-            // if (!ctNES[chipId].UseScci) {
-            return context.mds.ReadNESdmc(chipId);
-            // }
+//            if (!ctNES[chipId].UseScci) {
+                return context.mds.inst(NesInst.class).readApu(chipId);
+//            }
         } else {
             return null;
-            // if (scNES[chipId] == null) return;
-
-            // scNES[chipId].setRegister(dAddr, dData);
+//            if (scNES[chipId] == null) return;
+//
+//            scNES[chipId].setRegister(dAddr, dData);
         }
     }
 
-    public mdsound.np.NpNesFds getFDSRegister(int chipId, EnmModel model) {
+    public byte[] readDmc(int chipId, EnmModel model) {
+        if (chipId == 0)
+            context.chipLED.put("PriNES", 2);
+        else
+            context.chipLED.put("SecNES", 2);
+
+        if (model == EnmModel.VirtualModel) {
+//            if (!ctNES[chipId].UseScci) {
+                return context.mds.inst(NesInst.class).readDmc(chipId);
+//            }
+        } else {
+            return null;
+//            if (scNES[chipId] == null) return;
+//
+//            scNES[chipId].setRegister(dAddr, dData);
+        }
+    }
+
+    public NpNesFds readFds(int chipId, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriFDS", 2);
         else
             context.chipLED.put("SecFDS", 2);
 
         if (model == EnmModel.VirtualModel) {
-            // if (!ctNES[chipId].UseScci) {
-            return context.mds.readFDS(chipId);
-            // }
+//            if (!ctNES[chipId].UseScci) {
+                return context.mds.inst(NesInst.class).readFds(chipId);
+//            }
         } else {
             return null;
-            // if (scFDS[chipId] == null) return;
-
-            // scFDS[chipId].setRegister(dAddr, dData);
+//            if (scFDS[chipId] == null) return;
+//
+//            scFDS[chipId].setRegister(dAddr, dData);
         }
     }
 
-    public NesMmc5 getMMC5Register(int chipId, EnmModel model) {
+    public NesMmc5 readMmc5(int chipId, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriMMC5", 2);
         else
             context.chipLED.put("SecMMC5", 2);
 
         if (model == EnmModel.VirtualModel) {
-            return null;// mds.readMMC5((byte)chipId);
+            return null; // mds.readMMC5(chipId);
         } else {
             return null;
         }
     }
 
     public ChipKeyInfo getVRC7KeyInfo(int chipId) {
-        if (nes_vrc7 == null)
+        if (vrc7 == null)
             return null;
         if (chipId != 0)
             return null;
 
-        NesVrc7.ChipKeyInfo ki = nes_vrc7.getKeyInfo(chipId);
+        NesVrc7.ChipKeyInfo ki = vrc7.getKeyInfo(chipId);
 
+        ChipKeyInfo[] vrc7KeyOnRet = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
         for (int ch = 0; ch < 6; ch++) {
-            kiVRC7ret[chipId].on[ch] = ki.on[ch];
-            kiVRC7ret[chipId].off[ch] = ki.off[ch];
+            vrc7KeyOnRet[chipId].on[ch] = ki.on[ch];
+            vrc7KeyOnRet[chipId].off[ch] = ki.off[ch];
         }
-        return kiVRC7ret[chipId];
+        return vrc7KeyOnRet[chipId];
     }
 
-    public void setNESMask(int chipId, int ch) {
+    public void setMask(int chipId, int ch) {
         if (chipId == 0) {
             switch (ch) {
                 case 0:
                 case 1:
-                    nsfAPUmask |= 1 << ch;
-                    if (nes_apu != null)
-                        nes_apu.setMask(nsfAPUmask);
+                    apuMask |= 1 << ch;
+                    if (apu != null)
+                        apu.setMask(apuMask);
                     break;
                 case 2:
                 case 3:
                 case 4:
-                    nsfDMCmask |= 1 << (ch - 2);
-                    if (nes_dmc != null)
-                        nes_dmc.setMask(nsfDMCmask);
+                    dmcMask |= 1 << (ch - 2);
+                    if (dmc != null)
+                        dmc.setMask(dmcMask);
                     break;
             }
         }
-        context.mds.setNESMask(chipId, ch);
+        context.mds.inst(NesInst.class).setNESMask(chipId, ch);
     }
 
-    public void resetNESMask(int chipId, int ch) {
+    public void resetMask(int chipId, int ch) {
         if (chipId == 0) {
             switch (ch) {
                 case 0:
                 case 1:
-                    nsfAPUmask &= ~(1 << ch);
-                    if (nes_apu != null)
-                        nes_apu.setMask(nsfAPUmask);
+                    apuMask &= ~(1 << ch);
+                    if (apu != null)
+                        apu.setMask(apuMask);
                     break;
                 case 2:
                 case 3:
                 case 4:
-                    nsfDMCmask &= ~(1 << (ch - 2));
-                    if (nes_dmc != null)
-                        nes_dmc.setMask(nsfDMCmask);
+                    dmcMask &= ~(1 << (ch - 2));
+                    if (dmc != null)
+                        dmc.setMask(dmcMask);
                     break;
             }
         }
-        context.mds.resetNESMask(chipId, ch);
+        context.mds.inst(NesInst.class).resetMask(chipId, ch);
     }
 
-    public void setFDSMask(int chipId) {
-        nsfFDSmask |= 1;
-        if (nes_fds != null)
-            nes_fds.setMask(nsfFDSmask);
-        context.mds.setFDSMask(chipId);
+    public void setFdsMask(int chipId) {
+        fdsMask |= 1;
+        if (fds != null)
+            fds.setMask(fdsMask);
+        context.mds.inst(NesInst.class).setFDSMask(chipId);
     }
 
-    public void resetFDSMask(int chipId) {
-        nsfFDSmask &= ~1;
-        if (nes_fds != null)
-            nes_fds.setMask(nsfFDSmask);
-        context.mds.resetFDSMask(chipId);
+    public void resetFdsMask(int chipId) {
+        fdsMask &= ~1;
+        if (fds != null)
+            fds.setMask(fdsMask);
+        context.mds.inst(NesInst.class).resetFDSMask(chipId);
     }
 
-    public void setMMC5Mask(int chipId, int ch) {
-        nsfMMC5mask |= 1 << ch;
-        if (nes_mmc5 != null)
-            nes_mmc5.setMask(nsfMMC5mask);
+    public void setMmc5Mask(int chipId, int ch) {
+        mmc5Mask |= 1 << ch;
+        if (mmc5 != null)
+            mmc5.setMask(mmc5Mask);
     }
 
-    public void resetMMC5Mask(int chipId, int ch) {
-        nsfMMC5mask &= ~(1 << ch);
-        if (nes_mmc5 != null)
-            nes_mmc5.setMask(nsfMMC5mask);
+    public void resetMmc5Mask(int chipId, int ch) {
+        mmc5Mask &= ~(1 << ch);
+        if (mmc5 != null)
+            mmc5.setMask(mmc5Mask);
     }
 
-    public void setVRC7Mask(int chipId, int ch) {
-        nsfVRC7mask |= 1 << ch;
-        if (nes_vrc7 != null)
-            nes_vrc7.setMask(nsfVRC7mask);
+    public void setVrc7Mask(int chipId, int ch) {
+        vrc7Mask |= 1 << ch;
+        if (vrc7 != null)
+            vrc7.setMask(vrc7Mask);
     }
 
-    public void resetVRC7Mask(int chipId, int ch) {
-        nsfVRC7mask &= ~(1 << ch);
-        if (nes_vrc7 != null)
-            nes_vrc7.setMask(nsfVRC7mask);
+    public void resetVrc7Mask(int chipId, int ch) {
+        vrc7Mask &= ~(1 << ch);
+        if (vrc7 != null)
+            vrc7.setMask(vrc7Mask);
     }
 
-    public void setVRC6Mask(int chipId, int ch) {
+    public void setVrc6Mask(int chipId, int ch) {
         if (chipId != 0)
             return;
-        nsfVRC6mask |= 1 << ch;
-        if (nes_vrc6 != null)
-            nes_vrc6.setMask(nsfVRC6mask);
+        vrc6Mask |= 1 << ch;
+        if (vrc6 != null)
+            vrc6.setMask(vrc6Mask);
     }
 
-    public void resetVRC6Mask(int chipId, int ch) {
+    public void resetVrc6Mask(int chipId, int ch) {
         if (chipId != 0)
             return;
-        nsfVRC6mask &= ~(1 << ch);
-        if (nes_vrc6 != null)
-            nes_vrc6.setMask(nsfVRC6mask);
+        vrc6Mask &= ~(1 << ch);
+        if (vrc6 != null)
+            vrc6.setMask(vrc6Mask);
     }
 
     public void setN163Mask(int chipId, int ch) {
         if (chipId != 0)
             return;
-        nsfN163mask |= 1 << ch;
-        if (nes_n106 != null)
-            nes_n106.setMask(nsfN163mask);
+        n163Mask |= 1 << ch;
+        if (n106 != null)
+            n106.setMask(n163Mask);
     }
 
     public void resetN163Mask(int chipId, int ch) {
         if (chipId != 0)
             return;
-        nsfN163mask &= ~(1 << ch);
-        if (nes_n106 != null)
-            nes_n106.setMask(nsfN163mask);
+        n163Mask &= ~(1 << ch);
+        if (n106 != null)
+            n106.setMask(n163Mask);
     }
 
-    public void writeNESPCMData(int chipId, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
+    public void writePcm(int chipId, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriNES", 2);
         else
             context.chipLED.put("SecNES", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.WriteNESRam(chipId, stAdr, dataSize, vgmBuf, vgmAdr);
+            context.mds.inst(NesInst.class).writeRam(chipId, stAdr, dataSize, vgmBuf, vgmAdr);
     }
 
-    public DeviceInfo.TrackInfo[] getVRC6Register(int chipId) {
-        if (nes_vrc6 == null)
+    public DeviceInfo.TrackInfo[] readVrc6(int chipId) {
+        if (vrc6 == null)
             return null;
         if (chipId != 0)
             return null;
 
-        return nes_vrc6.getTracksInfo();
+        return vrc6.getTracksInfo();
     }
 
-    public byte[] getVRC7Register(int chipId) {
-        if (nes_vrc7 == null) return null;
+    public byte[] readVrc7(int chipId) {
+        if (vrc7 == null) return null;
         if (chipId != 0) return null;
 
-        return nes_vrc7.getRegs();
+        return vrc7.getRegs();
     }
 
-    public DeviceInfo.TrackInfo[] getN106Register(int chipId) {
-        if (nes_n106 == null)
+    public DeviceInfo.TrackInfo[] readN106(int chipId) {
+        if (n106 == null)
             return null;
         if (chipId != 0)
             return null;
 
-        return nes_n106.getTracksInfo();
+        return n106.getTracksInfo();
     }
 
-    public byte[] getAPURegister(int chipId) {
+    public byte[] readApu(int chipId) {
         byte[] reg;
 
         // for nsf
-        if (nes_apu == null) reg = null;
-        else if (nes_apu.apu == null) reg = null;
+        if (apu == null) reg = null;
+        else if (apu.apu == null) reg = null;
         else if (chipId == 1) reg = null;
-        else reg = nes_apu.apu.reg;
+        else reg = apu.apu.reg;
 
         // for vgm
-        if (reg == null) reg = getNESRegisterAPU(chipId, Common.EnmModel.VirtualModel);
+        if (reg == null) reg = readApu(chipId, Common.EnmModel.VirtualModel);
 
         return reg;
     }
 
-    public byte[] getDMCRegister(int chipId) {
+    public byte[] readDmc(int chipId) {
         byte[] reg;
         try {
             // for nsf
-            if (nes_apu == null) reg = null;
-            else if (nes_apu.apu == null) reg = null;
+            if (apu == null) reg = null;
+            else if (apu.apu == null) reg = null;
             else if (chipId == 1) reg = null;
-            else reg = nes_dmc.dmc.reg;
+            else reg = dmc.dmc.reg;
 
             // for vgm
-            if (reg == null) reg = getNESRegisterDMC(chipId, Common.EnmModel.VirtualModel);
+            if (reg == null) reg = readDmc(chipId, Common.EnmModel.VirtualModel);
 
             return reg;
         } catch (Exception e) {
@@ -359,126 +359,62 @@ public class NesChip implements Chip {
         }
     }
 
-    public mdsound.np.NpNesFds getFDSRegister(int chipId) {
-        mdsound.np.NpNesFds reg;
+    public NpNesFds readFds(int chipId) {
+        NpNesFds reg;
 
         // for nsf
-        if (nes_apu == null) reg = null;
-        else if (nes_apu.apu == null) reg = null;
+        if (apu == null) reg = null;
+        else if (apu.apu == null) reg = null;
         else if (chipId == 1) reg = null;
-        else reg = nes_fds.fds;
+        else reg = fds.fds;
 
         // for vgm
-        if (reg == null) reg = getFDSRegister(chipId, Common.EnmModel.VirtualModel);
+        if (reg == null) reg = readFds(chipId, Common.EnmModel.VirtualModel);
 
         return reg;
     }
 
-    protected final byte[] s5bregs = new byte[0x20];
+    private final byte[] s5bRegs = new byte[0x20];
 
-    public byte[] getS5BRegister(int chipId) {
+    public byte[] readS5B(int chipId) {
         // for nsf
-        if (nes_fme7 == null) return null;
+        if (fme7 == null) return null;
         else if (chipId == 1) return null;
 
         int[] dat = new int[] { 0 };
         for (int adr = 0x00; adr < 0x20; adr++) {
-            nes_fme7.read(adr, dat);
-            s5bregs[adr] = (byte) dat[0];
+            fme7.read(adr, dat);
+            s5bRegs[adr] = (byte) dat[0];
         }
 
-        return s5bregs;
+        return s5bRegs;
     }
 
-    protected final byte[] mmc5regs = new byte[10];
+    private final byte[] mmc5Regs = new byte[10];
 
-    public byte[] getMMC5Register(int chipId) {
+    public byte[] readMmc5(int chipId) {
         // for nsf
-        if (nes_mmc5 == null) return null;
+        if (mmc5 == null) return null;
         else if (chipId == 1) return null;
 
         int[] dat = new int[] { 0 };
         for (int adr = 0x5000; adr < 0x5008; adr++) {
-            nes_mmc5.read(adr, dat);
-            mmc5regs[adr & 0x7] = (byte) dat[0];
+            mmc5.read(adr, dat);
+            mmc5Regs[adr & 0x7] = (byte) dat[0];
         }
 
-        nes_mmc5.read(0x5010, dat);
-        mmc5regs[8] = (byte) (nes_mmc5.pcmMode ? 1 : 0);
-        mmc5regs[9] = nes_mmc5.pcm;
+        mmc5.read(0x5010, dat);
+        mmc5Regs[8] = (byte) (mmc5.pcmMode ? 1 : 0);
+        mmc5Regs[9] = mmc5.pcm;
 
-        return mmc5regs;
+        return mmc5Regs;
     }
 
-//    public DeviceInfo.TrackInfo[] getVRC6Register(int chipId) {
-//        return getVRC6Register(chipId);
-//    }
-//
-//    public byte[] getVRC7Register(int chipId) {
-//        return getVRC7Register(chipId);
-//    }
-//
-//    public DeviceInfo.TrackInfo[] getN106Register(int chipId) {
-//        return getN106Register(chipId);
-//    }
-
-//    public Chip.ChipKeyInfo getVRC7KeyInfo(int chipId) {
-//        return getVRC7KeyInfo(chipId);
-//    }
-
-//    public void setNESMask(int chipId, int ch) {
-//        setNESMask(chipId, ch);
-//    }
-
-    public void setDMCMask(int chipId, int ch) {
-        setNESMask(chipId, ch + 2);
+    public void setDmcMask(int chipId, int ch) {
+        setMask(chipId, ch + 2);
     }
 
-//    public void setFDSMask(int chipId) {
-//        setFDSMask(chipId);
-//    }
-//
-//    public void setMMC5Mask(int chipId, int ch) {
-//        setMMC5Mask(chipId, ch);
-//    }
-//
-//    public void setVRC7Mask(int chipId, int ch) {
-//        setVRC7Mask(chipId, ch);
-//    }
-//
-//    public void setVRC6Mask(int chipId, int ch) {
-//        setVRC6Mask(chipId, ch);
-//    }
-//
-//    public void setN163Mask(int chipId, int ch) {
-//        setN163Mask(chipId, ch);
-//    }
-//
-//    public void resetNESMask(int chipId, int ch) {
-//        resetNESMask(chipId, ch);
-//    }
-
-    public void resetDMCMask(int chipId, int ch) {
-        resetNESMask(chipId, ch + 2);
+    public void resetDmcMask(int chipId, int ch) {
+        resetMask(chipId, ch + 2);
     }
-
-//    public void resetFDSMask(int chipId) {
-//        resetFDSMask(chipId);
-//    }
-//
-//    public void resetMMC5Mask(int chipId, int ch) {
-//        resetMMC5Mask(chipId, ch);
-//    }
-//
-//    public void resetVRC7Mask(int chipId, int ch) {
-//        resetVRC7Mask(chipId, ch);
-//    }
-//
-//    public void resetVRC6Mask(int chipId, int ch) {
-//        resetVRC6Mask(chipId, ch);
-//    }
-//
-//    public void resetN163Mask(int chipId, int ch) {
-//        resetN163Mask(chipId, ch);
-//    }
 }

@@ -35,7 +35,7 @@ public class K053260Chip implements Chip {
     public void updateVol() {
     }
 
-    public void writeK053260(int chipId, int adr, int data, EnmModel model) {
+    public void write(int chipId, int adr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriK053260", 2);
         else
@@ -45,19 +45,19 @@ public class K053260Chip implements Chip {
             context.mds.write(K053260Inst.class, chipId, 0, adr, data);
     }
 
-    public void writeK053260PCMData(int chipId,
-                                    int romSize,
-                                    int dataStart,
-                                    int dataLength,
-                                    byte[] romData,
-                                    int srcStartAdr,
-                                    EnmModel model) {
+    public void writePcm(int chipId,
+                         int romSize,
+                         int dataStart,
+                         int dataLength,
+                         byte[] romData,
+                         int srcStartAdr,
+                         EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriK053260", 2);
         else
             context.chipLED.put("SecK053260", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.WriteK053260PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(K053260Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
 }

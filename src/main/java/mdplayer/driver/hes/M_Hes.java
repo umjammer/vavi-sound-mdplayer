@@ -338,7 +338,7 @@ public class M_Hes {
             case 2: // Psg
                 //logger.log(Level.TRACE, "Adr:%2X Dat:%2X".formatted((int) (a & 0xf), (int) v));
                 if (!disableSendChip)
-                    chipRegister.chip(HuC6280Chip.class).setHuC6280Register(0, a & 0xf, v, EnmModel.VirtualModel);
+                    chipRegister.chip(HuC6280Chip.class).write(0, a & 0xf, v, EnmModel.VirtualModel);
                 ld.write(a & 0xf, v, 0);
                 break;
             case 3: // TIMER
@@ -583,7 +583,7 @@ public class M_Hes {
                 this.km6280_exec(this.ctx, HES_BASECYCLES >> 8);
 
             this.disableSendChip = false;
-            this.chipRegister.chip(HuC6280Chip.class).setHuC6280Register(0, 1, 0xff, EnmModel.VirtualModel);
+            this.chipRegister.chip(HuC6280Chip.class).write(0, 1, 0xff, EnmModel.VirtualModel);
 
             if (this.breaked != 0) {
                 this.breaked = 0;

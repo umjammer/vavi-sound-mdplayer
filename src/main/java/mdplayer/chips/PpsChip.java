@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.instrument.PpsDrvInst;
 
 
 /**
@@ -34,7 +35,7 @@ public class PpsChip implements Chip {
     public void updateVol() {
     }
 
-    public void loadPPSDRV(int chipId, byte[] additionalData, EnmModel model) {
+    public void writePcm(int chipId, byte[] additionalData, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -43,10 +44,10 @@ public class PpsChip implements Chip {
         else
             context.chipLED.put("SecPPSDRV", 2);
 
-        context.mds.writePPSDRVPCMData(chipId, additionalData);
+        context.mds.inst(PpsDrvInst.class).writePcm(chipId, additionalData);
     }
 
-    public void writePPSDRV(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -57,6 +58,6 @@ public class PpsChip implements Chip {
 
         if (dPort == -1 && dAddr == -1 && dData == -1)
             return;
-        context.mds.writePPSDRV(chipId, dPort, dAddr, dData, null);
+        context.mds.inst(PpsDrvInst.class).write(chipId, dPort, dAddr, dData);
     }
 }

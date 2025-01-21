@@ -21,9 +21,9 @@ import mdsound.instrument.OkiM6258Inst;
  */
 public class OkiM6258Chip implements Chip {
 
-    private final boolean[] maskOKIM6258 = {false, false};
+    private final boolean[] mask = {false, false};
 
-    public boolean[] okim6258Keyon = {false, false};
+    public boolean[] keyOn = {false, false};
 
     private ChipRegister context;
 
@@ -40,14 +40,14 @@ public class OkiM6258Chip implements Chip {
     public void updateVol() {
     }
 
-    public void setMaskOKIM6258(int chipId, boolean mask) {
-        maskOKIM6258[chipId] = mask;
+    public void setMask(int chipId, boolean mask) {
+        this.mask[chipId] = mask;
 
-        writeOKIM6258(chipId, 0, 1, EnmModel.VirtualModel);
-        writeOKIM6258(chipId, 0, 1, EnmModel.RealModel);
+        write(chipId, 0, 1, EnmModel.VirtualModel);
+        write(chipId, 0, 1, EnmModel.RealModel);
     }
 
-    public void writeOKIM6258(int chipId, int port, int data, EnmModel model) {
+    public void write(int chipId, int port, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOKI5", 2);
         else
@@ -55,15 +55,15 @@ public class OkiM6258Chip implements Chip {
 
         if (port == 0x00) {
             if ((data & 0x2) != 0)
-                okim6258Keyon[chipId] = true;
+                keyOn[chipId] = true;
 
-            if (maskOKIM6258[chipId]) {
+            if (mask[chipId]) {
                 if ((data & 0x2) != 0)
                     return;
             }
         }
         if (port == 0x1) {
-            if (maskOKIM6258[chipId])
+            if (mask[chipId])
                 return;
         }
 
@@ -72,23 +72,23 @@ public class OkiM6258Chip implements Chip {
         }
     }
 
-    public OkiM6258 getOKIM6258Register(int chipId) {
-        return context.mds.ReadOkiM6258Status(chipId);
+    public OkiM6258 read(int chipId) {
+        return context.mds.inst(OkiM6258Inst.class).getChip(chipId);
     }
 
-    public boolean getOKIM6258KeyOn(int chipId) {
-        return okim6258Keyon[chipId];
+    public boolean getKeyOn(int chipId) {
+        return keyOn[chipId];
     }
 
-    public void resetOKIM6258KeyOn(int chipId) {
-        okim6258Keyon[chipId] = false;
+    public void resetKeyOn(int chipId) {
+        keyOn[chipId] = false;
     }
 
-    public void setOKIM6258Mask(int chipId) {
-        setMaskOKIM6258(chipId, true);
+    public void setMask(int chipId) {
+        setMask(chipId, true);
     }
 
-    public void resetOKIM6258Mask(int chipId) {
-        setMaskOKIM6258(chipId, false);
+    public void resetMask(int chipId) {
+        setMask(chipId, false);
     }
 }

@@ -21,7 +21,7 @@ import mdsound.instrument.OkiM6295Inst;
  */
 public class OkiM6295Chip implements Chip {
 
-    private static final boolean[][] maskOKIM6295 = {
+    private final boolean[][] mask = {
             {false, false, false, false},
             {false, false, false, false}
     };
@@ -41,35 +41,35 @@ public class OkiM6295Chip implements Chip {
     public void updateVol() {
     }
 
-    public void setMaskOKIM6295(int chipId, int ch, boolean mask) {
-        maskOKIM6295[chipId][ch] = mask;
+    public void setMask(int chipId, int ch, boolean mask) {
+        this.mask[chipId][ch] = mask;
         if (mask)
-            context.mds.setOkiM6295Mask(0, chipId, 1 << ch);
+            context.mds.inst(OkiM6295Inst.class, 0).setMask(chipId, 1 << ch);
         else
-            context.mds.resetOkiM6295Mask(0, chipId, 1 << ch);
+            context.mds.inst(OkiM6295Inst.class, 0).resetMask(chipId, 1 << ch);
     }
 
-    public OkiM6295.ChannelInfo getOKIM6295Info(int chipId) {
-        return context.mds.getOkiM6295Info(0, chipId);
+    public OkiM6295.ChannelInfo read(int chipId) {
+        return context.mds.inst(OkiM6295Inst.class, 0).getChInfo(chipId);
     }
 
-    public void writeOKIM6295PCMData(int chipId,
-                                     int romSize,
-                                     int dataStart,
-                                     int dataLength,
-                                     byte[] romData,
-                                     int srcStartAdr,
-                                     EnmModel model) {
+    public void writePcm(int chipId,
+                         int romSize,
+                         int dataStart,
+                         int dataLength,
+                         byte[] romData,
+                         int srcStartAdr,
+                         EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOKI9", 2);
         else
             context.chipLED.put("SecOKI9", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.WriteOkiM6295PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(OkiM6295Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
 
-    public void writeOKIM6295(int chipId, int port, int data, EnmModel model) {
+    public void write(int chipId, int port, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOKI9", 2);
         else
@@ -81,11 +81,11 @@ public class OkiM6295Chip implements Chip {
         }
     }
 
-    public void setOKIM6295Mask(int chipId, int ch) {
-        setMaskOKIM6295(chipId, ch, true);
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
     }
 
-    public void resetOKIM6295Mask(int chipId, int ch) {
-        setMaskOKIM6295(chipId, ch, false);
+    public void resetMask(int chipId, int ch) {
+        setMask(chipId, ch, false);
     }
 }

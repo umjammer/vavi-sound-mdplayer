@@ -11,7 +11,7 @@ import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdsound.instrument.YmZ280bInst;
+import mdsound.instrument.YmZ280BInst;
 
 
 /**
@@ -22,13 +22,13 @@ import mdsound.instrument.YmZ280bInst;
  */
 public class YmZ280BChip implements Chip {
 
-    private final Setting.ChipType2[] ctYMZ280B = new Setting.ChipType2[] {
+    private final Setting.ChipType2[] chipTypes = {
             setting.getYMZ280BType()[0], setting.getYMZ280BType()[1]
     };
 
-    private final RSoundChip[] scYMZ280B = {null, null};
+    private final RSoundChip[] realChips = {null, null};
 
-    public int[][] YMZ280BRegister = {null, null};
+    public int[][] register = {null, null};
 
     private ChipRegister context;
 
@@ -37,9 +37,9 @@ public class YmZ280BChip implements Chip {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
-            YMZ280BRegister[chipId] = new int[0x100];
+            register[chipId] = new int[0x100];
             for (int i = 0; i < 0x100; i++) {
-                YMZ280BRegister[chipId][i] = 0;
+                register[chipId][i] = 0;
             }
         }
     }
@@ -52,43 +52,43 @@ public class YmZ280BChip implements Chip {
     public void updateVol() {
     }
 
-    public void setYMZ280BRegister(int chipId, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriYMZ", 2);
         else
             context.chipLED.put("SecYMZ", 2);
 
         if (model == EnmModel.VirtualModel)
-            YMZ280BRegister[chipId][dAddr] = dData;
+            register[chipId][addr] = data;
 
         if (model == EnmModel.VirtualModel) {
-            if (!ctYMZ280B[chipId].getUseReal()[0]) {
-                context.mds.write(YmZ280bInst.class, chipId, 0, dAddr, dData);
+            if (!chipTypes[chipId].getUseReal()[0]) {
+                context.mds.write(YmZ280BInst.class, chipId, 0, addr, data);
             }
         } else {
-            if (scYMZ280B[chipId] == null)
+            if (realChips[chipId] == null)
                 return;
-            scYMZ280B[chipId].setRegister(dAddr, dData);
+            realChips[chipId].setRegister(addr, data);
         }
     }
 
-    public void writeYmZ280BPCMData(int chipId,
-                                    int romSize,
-                                    int dataStart,
-                                    int dataLength,
-                                    byte[] romData,
-                                    int srcStartAdr,
-                                    EnmModel model) {
+    public void writePcm(int chipId,
+                         int romSize,
+                         int dataStart,
+                         int dataLength,
+                         byte[] romData,
+                         int srcStartAdr,
+                         EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriYMZ", 2);
         else
             context.chipLED.put("SecYMZ", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.WriteYmZ280bPCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(YmZ280BInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
 
-    public int[] getYMZ280BRegister(int chipId) {
-        return YMZ280BRegister[chipId];
+    public int[] read(int chipId) {
+        return register[chipId];
     }
 }

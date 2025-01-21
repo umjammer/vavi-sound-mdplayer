@@ -163,10 +163,10 @@ public class frmY8950 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] Y8950Register = audio.chipRegister.chip(Y8950Chip.class).getY8950Register(chipId);
+        int[] Y8950Register = audio.chipRegister.chip(Y8950Chip.class).read(chipId);
         MDChipParams.Channel nyc;
         int slot;
-        ChipKeyInfo ki = audio.chipRegister.chip(Y8950Chip.class).getY8950KeyInfo(chipId);
+        ChipKeyInfo ki = audio.chipRegister.chip(Y8950Chip.class).getKeyInfo(chipId);
         mdsound.MDSound.Chip chipInfo = audio.chipRegister.getChipInfo(Y8950Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock;
 

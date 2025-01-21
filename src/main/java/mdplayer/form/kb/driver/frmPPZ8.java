@@ -174,7 +174,7 @@ public class frmPPZ8 extends frmBase {
     }
 
     public void screenChangeParams() {
-        PPZ8.Channel[] ppz8State = audio.chipRegister.chip(Ppz8Chip.class).getPPZ8Register(chipId);
+        PPZ8.Channel[] ppz8State = audio.chipRegister.chip(Ppz8Chip.class).read(chipId);
         if (ppz8State == null) return;
 
         for (int ch = 0; ch < 8; ch++) {

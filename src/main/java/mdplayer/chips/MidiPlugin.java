@@ -43,147 +43,147 @@ public class MidiPlugin implements Plugin {
 
     private static final Logger logger = getLogger(MidiPlugin.class.getName());
 
-    public MIDIParam[] midiParams = {null, null};
+    public MIDIParam[] params = {null, null};
 
-    public MIDIExport midiExport;
+    public MIDIExport export;
 
-    private MidiOutInfo[] midiOutInfos = null;
+    private MidiOutInfo[] outInfos = null;
 
-    public final mdsound.MDSound mdsMIDI;
+    public final MDSound mds;
 
-    private List<Receiver> midiOuts = new ArrayList<>();
-    private List<Integer> midiOutsType = new ArrayList<>();
+    private final List<Receiver> outs = new ArrayList<>();
+    private final List<Integer> outsType = new ArrayList<>();
 
     protected short[] bufVirtualFunction_MIDIKeyboard = null;
 
     private ChipRegister context;
 
     public MidiPlugin() {
-        mdsMIDI = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
+        mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
     }
 
     @Override
     public void init(ChipRegister context) {
         this.context = context;
 
-        midiExport = new MIDIExport();
-        midiExport.fmRegisterYM2612 = context.chip(Ym2612Chip.class).fmRegisterYM2612;
-        midiExport.fmRegisterYM2151 = context.chip(Ym2151Chip.class).fmRegisterYM2151;
+        export = new MIDIExport();
+        export.registerYM2612 = context.chip(Ym2612Chip.class).register;
+        export.registerYM2151 = context.chip(Ym2151Chip.class).register;
 
         for (int chipId = 0; chipId < 2; chipId++) {
-            midiParams[chipId] = new MIDIParam();
+            params[chipId] = new MIDIParam();
         }
     }
 
     @Override
     public void close() {
-        midiExport.close();
+        export.close();
     }
 
     public void initChipRegisterNSF() {
         for (int chipId = 0; chipId < 2; chipId++) {
-            midiParams[chipId] = new MIDIParam();
+            params[chipId] = new MIDIParam();
         }
     }
 
-    public MidiOutInfo[] getMIDIoutInfo() {
-        return midiOutInfos;
+    public MidiOutInfo[] get() {
+        return outInfos;
     }
 
-    public void setMIDIout(MidiOutInfo[] midiOutInfos) {
-        this.midiOutInfos = null;
+    public void set(MidiOutInfo[] midiOutInfos) {
+        this.outInfos = null;
         if (midiOutInfos != null && midiOutInfos.length > 0) {
-            this.midiOutInfos = new MidiOutInfo[midiOutInfos.length];
+            this.outInfos = new MidiOutInfo[midiOutInfos.length];
             for (int i = 0; i < midiOutInfos.length; i++) {
-                this.midiOutInfos[i] = new MidiOutInfo();
-                this.midiOutInfos[i].beforeSendType = midiOutInfos[i].beforeSendType;
-                this.midiOutInfos[i].fileName = midiOutInfos[i].fileName;
-                this.midiOutInfos[i].id = midiOutInfos[i].id;
-                this.midiOutInfos[i].isVST = midiOutInfos[i].isVST;
-                this.midiOutInfos[i].manufacturer = midiOutInfos[i].manufacturer;
-                this.midiOutInfos[i].name = midiOutInfos[i].name;
-                this.midiOutInfos[i].type = midiOutInfos[i].type;
-                this.midiOutInfos[i].vendor = midiOutInfos[i].vendor;
+                this.outInfos[i] = new MidiOutInfo();
+                this.outInfos[i].beforeSendType = midiOutInfos[i].beforeSendType;
+                this.outInfos[i].fileName = midiOutInfos[i].fileName;
+                this.outInfos[i].id = midiOutInfos[i].id;
+                this.outInfos[i].isVST = midiOutInfos[i].isVST;
+                this.outInfos[i].manufacturer = midiOutInfos[i].manufacturer;
+                this.outInfos[i].name = midiOutInfos[i].name;
+                this.outInfos[i].type = midiOutInfos[i].type;
+                this.outInfos[i].vendor = midiOutInfos[i].vendor;
             }
         }
-        //VstMng.vstMidiOuts = vstMidiOuts;
-        //this.vstMidiOutsType = vstMidiOutsType;
+//        VstMng.vstMidiOuts = vstMidiOuts;
+//        this.vstMidiOutsType = vstMidiOutsType;
 
-        if (midiParams == null && midiParams.length < 1) return;
-//        if (midiOutsType == null && vstMng.vstMidiOutsType == null) return;
-//        if (midiOuts == null && vstMng.vstMidiOuts == null) return;
+        if (params == null && params.length < 1) return;
+//        if (outsType == null && vstMng.vstMidiOutsType == null) return;
+//        if (outs == null && vstMng.vstMidiOuts == null) return;
 
-        if (!midiOutsType.isEmpty()) midiParams[0].MIDIModule = Math.min(midiOutsType.get(0), 2);
-        if (midiOutsType.size() > 1) midiParams[1].MIDIModule = Math.min(midiOutsType.get(1), 2);
+        if (!outsType.isEmpty()) params[0].MIDIModule = Math.min(outsType.get(0), 2);
+        if (outsType.size() > 1) params[1].MIDIModule = Math.min(outsType.get(1), 2);
 
 //        if (vstMng.vstMidiOutsType.size() > 0) {
-//            if (midiOutsType.size() < 1 || (midiOutsType.size() > 0 && midiOuts.get(0) == null))
-//                midiParams[0].MIDIModule = Math.min(vstMng.vstMidiOutsType.get(0), 2);
+//            if (outsType.size() < 1 || (outsType.size() > 0 && outs.get(0) == null))
+//                params[0].MIDIModule = Math.min(vstMng.vstMidiOutsType.get(0), 2);
 //        }
 //        if (vstMng.vstMidiOutsType.size() > 1) {
-//            if (midiOutsType.size() < 2 || (midiOutsType.size() > 1 && midiOuts.get(1) == null))
-//                midiParams[1].MIDIModule = Math.min(vstMng.vstMidiOutsType.get(1), 2);
+//            if (outsType.size() < 2 || (outsType.size() > 1 && outs.get(1) == null))
+//                params[1].MIDIModule = Math.min(vstMng.vstMidiOutsType.get(1), 2);
 //        }
     }
 
     public void setFileName(String fn) {
-        midiExport.playingFileName = fn;
+        export.playingFileName = fn;
     }
 
-    public int getMIDIoutCount() {
-        if (midiOuts == null)
+    public int getCount() {
+        if (outs == null)
             return 0;
-        return midiOuts.size();
+        return outs.size();
     }
 
-    public void sendMIDIout(EnmModel model, int num, byte cmd, byte prm1, byte prm2, int deltaFrames /* = 0 */) {
+    public void send(EnmModel model, int num, byte cmd, byte prm1, byte prm2, int deltaFrames /* = 0 */) {
         if (model == EnmModel.RealModel) {
-            if (midiOuts == null) return;
-            if (num >= midiOuts.size()) return;
-            if (midiOuts.get(num) == null) return;
+            if (outs == null) return;
+            if (num >= outs.size()) return;
+            if (outs.get(num) == null) return;
 
             MidiMessage mm = new ShortMessage(); // TODO cmd, prm1, prm2
-            midiOuts.get(num).send(mm, -1);
-            if (num < midiParams.length) midiParams[num].sendBuffer(new byte[] {cmd, prm1, prm2});
+            outs.get(num).send(mm, -1);
+            if (num < params.length) params[num].sendBuffer(new byte[] {cmd, prm1, prm2});
             return;
         }
 
 //        vstMng.sendMIDIout(model, num, cmd, prm1, prm2, deltaFrames);
     }
 
-    public void sendMIDIout(EnmModel model, int num, byte cmd, byte prm1, int deltaFrames /* = 0 */) {
+    public void send(EnmModel model, int num, byte cmd, byte prm1, int deltaFrames /* = 0 */) {
         if (model == EnmModel.RealModel) {
-            if (midiOuts == null) return;
-            if (num >= midiOuts.size()) return;
-            if (midiOuts.get(num) == null) return;
+            if (outs == null) return;
+            if (num >= outs.size()) return;
+            if (outs.get(num) == null) return;
 
             MidiMessage mm = new ShortMessage(); // TODO cmd, prm1
-            midiOuts.get(num).send(mm, -1);
-            if (num < midiParams.length) midiParams[num].sendBuffer(new byte[] {cmd, prm1});
+            outs.get(num).send(mm, -1);
+            if (num < params.length) params[num].sendBuffer(new byte[] {cmd, prm1});
             return;
         }
 
 //        vstMng.sendMIDIout(model, num, cmd, prm1, deltaFrames);
     }
 
-    public void sendMIDIout(EnmModel model, int num, byte[] data, int deltaFrames/* = 0*/) {
+    public void send(EnmModel model, int num, byte[] data, int deltaFrames/* = 0*/) {
         if (model == EnmModel.RealModel) {
-            if (midiOuts == null) return;
-            if (num >= midiOuts.size()) return;
-            if (midiOuts.get(num) == null) return;
+            if (outs == null) return;
+            if (num >= outs.size()) return;
+            if (outs.get(num) == null) return;
 
             MidiMessage mm = new ShortMessage(); // TODO
-            midiOuts.get(num).send(mm, -1);
-            if (num < midiParams.length) midiParams[num].sendBuffer(data);
+            outs.get(num).send(mm, -1);
+            if (num < params.length) params[num].sendBuffer(data);
             return;
         }
 
 //        vstMng.sendMIDIout(model, num, data, deltaFrames);
     }
 
-    public void resetAllMIDIout() {
-        if (midiOuts != null) {
-            for (Receiver midiOut : midiOuts) {
+    public void resetAll() {
+        if (outs != null) {
+            for (Receiver midiOut : outs) {
                 if (midiOut == null)
                     continue;
                 midiOut.close(); // TODO
@@ -193,8 +193,8 @@ public class MidiPlugin implements Plugin {
 //        vstMng.resetAllMIDIout(EnmModel.VirtualModel);
     }
 
-    public void softResetMIDI(int chipId, EnmModel model) {
-        resetAllMIDIout();
+    public void softReset(int chipId, EnmModel model) {
+        resetAll();
     }
 
     public void mdsInit() {
@@ -222,13 +222,13 @@ public class MidiPlugin implements Plugin {
         context.chipLED.put("PriDCSG", 1);
         lstChips.add(chip);
 
-        mdsMIDI.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
+        mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
 
         // Creates a midi instance.
-        makeMIDIout(setting, 1);
+        make(setting, 1);
     }
 
-    public void makeMIDIout(Setting setting, int m) {
+    public void make(Setting setting, int m) {
         if (setting.getMidiOut().getMidiOutInfos() == null || setting.getMidiOut().getMidiOutInfos().isEmpty())
             return;
         if (setting.getMidiOut().getMidiOutInfos().get(m) == null || setting.getMidiOut().getMidiOutInfos().get(m).length < 1)
@@ -273,24 +273,24 @@ public class MidiPlugin implements Plugin {
 //            }
 
             if (mo != null) {
-                midiOuts.add(mo);
-                midiOutsType.add(t);
+                outs.add(mo);
+                outsType.add(t);
             }
         }
     }
 
 //    public static final VstMng vstMng = new VstMng();
 
-    public void releaseAllMIDIout() {
-        if (!midiOuts.isEmpty()) {
-            for (int i = 0; i < midiOuts.size(); i++) {
-                if (midiOuts.get(i) != null) {
-                    midiOuts.get(i).close();
-                    midiOuts.set(i, null);
+    public void releaseAll() {
+        if (!outs.isEmpty()) {
+            for (int i = 0; i < outs.size(); i++) {
+                if (outs.get(i) != null) {
+                    outs.get(i).close();
+                    outs.set(i, null);
                 }
             }
-            midiOuts.clear();
-            midiOutsType.clear();
+            outs.clear();
+            outsType.clear();
         }
 
 //        vstMng.ReleaseAllMIDIout();
@@ -298,39 +298,39 @@ public class MidiPlugin implements Plugin {
 
     public void midiClose() {
         // release the midi out
-        if (!midiOuts.isEmpty()) {
-            for (int i = 0; i < midiOuts.size(); i++) {
-                if (midiOuts.get(i) != null) {
-                    midiOuts.get(i).close();
-                    midiOuts.set(i, null);
+        if (!outs.isEmpty()) {
+            for (int i = 0; i < outs.size(); i++) {
+                if (outs.get(i) != null) {
+                    outs.get(i).close();
+                    outs.set(i, null);
                 }
             }
-            midiOuts.clear();
-            midiOutsType.clear();
+            outs.clear();
+            outsType.clear();
         }
 
 //        vstMng.ReleaseAllMIDIout();
 //        vstMng.Close();
     }
 
-    public int[][] getYM2612MIDIRegister() {
-        return mdsMIDI.ReadYm2612Register(0, 0);
+    public int[][] readYM2612() {
+        return mds.inst(Ym2612Inst.class, 0).readRegister(0);
     }
 
-    public MIDIParam getMIDIInfos(int chipId) {
-        return midiParams[chipId];
+    public MIDIParam get(int chipId) {
+        return params[chipId];
     }
 
     public void softReset(EnmModel model) {
-        softResetMIDI(0, model);
-        softResetMIDI(1, model);
+        softReset(0, model);
+        softReset(1, model);
     }
 
-    public void midiKeyboard(short[] buffer, int offset, int sampleCount) {
+    public void keyboard(short[] buffer, int offset, int sampleCount) {
         if (bufVirtualFunction_MIDIKeyboard == null || bufVirtualFunction_MIDIKeyboard.length < sampleCount) {
             bufVirtualFunction_MIDIKeyboard = new short[sampleCount];
         }
-        mdsMIDI.update(bufVirtualFunction_MIDIKeyboard, 0, sampleCount, null);
+        mds.update(bufVirtualFunction_MIDIKeyboard, 0, sampleCount, null);
         for (int i = 0; i < sampleCount; i++) {
             buffer[i + offset] += bufVirtualFunction_MIDIKeyboard[i];
         }

@@ -184,7 +184,7 @@ public class frmMultiPCM extends frmBase {
     }
 
     public void screenChangeParams() {
-        MultiPCM multiPCMRegister = audio.chipRegister.chip(MultiPcmChip.class).getMultiPCMRegister(chipId);
+        MultiPCM multiPCMRegister = audio.chipRegister.chip(MultiPcmChip.class).getChip(chipId);
         if (multiPCMRegister == null) return;
 
         for (int ch = 0; ch < 28; ch++) {

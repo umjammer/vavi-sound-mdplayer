@@ -36,56 +36,52 @@ public class MultiPcmChip implements Chip {
     public void updateVol() {
     }
 
-    public void setMultiPCMRegister(int chipId, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriMPCM", 2);
         else
             context.chipLED.put("SecMPCM", 2);
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.write(MultiPcmInst.class, chipId, 0, dAddr, dData);
+            context.mds.write(MultiPcmInst.class, chipId, 0, addr, data);
         } else {
         }
     }
 
-    public MultiPCM getMultiPCMRegister(int chipId) {
+    public MultiPCM getChip(int chipId) {
         if (chipId == 0)
             context.chipLED.put("PriMPCM", 2);
         else
             context.chipLED.put("SecMPCM", 2);
 
-        return context.mds.ReadMultiPCMRegister(chipId);
+        return context.mds.inst(MultiPcmInst.class).getChip(chipId);
     }
 
-    public void setMultiPCMSetBank(int chipId, int dCh, int dAddr, EnmModel model) {
+    public void setBank(int chipId, int ch, int addr, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriMPCM", 2);
         else
             context.chipLED.put("SecMPCM", 2);
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.WriteMultiPCMSetBank(chipId, dCh, dAddr);
+            context.mds.inst(MultiPcmInst.class).writeBank(chipId, ch, addr);
         } else {
         }
     }
 
-    public void writeMultiPCMPCMData(int chipId,
-                                     int romSize,
-                                     int dataStart,
-                                     int dataLength,
-                                     byte[] romData,
-                                     int srcStartAdr,
-                                     EnmModel model) {
+    public void writePcm(int chipId,
+                         int romSize,
+                         int dataStart,
+                         int dataLength,
+                         byte[] romData,
+                         int srcStartAdr,
+                         EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriMPCM", 2);
         else
             context.chipLED.put("SecMPCM", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.WriteMultiPCMPCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(MultiPcmInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
-
-//    public MultiPCM getMultiPCMRegister(int chipId) {
-//        return getMultiPCMRegister(chipId);
-//    }
 }

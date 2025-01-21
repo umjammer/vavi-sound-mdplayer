@@ -146,7 +146,7 @@ public class NRTDRV extends BaseDriver {
             ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
-                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
+                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getClock(chipId);
                 if (clock != -1) {
                     ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
@@ -157,10 +157,10 @@ public class NRTDRV extends BaseDriver {
         call(0);
 
         if (model == EnmModel.RealModel) {
-            plugin.audio.chipRegister.chip(Ym2151Chip.class).sendDataYM2151((byte) 0, model);
-            plugin.audio.chipRegister.chip(Ym2151Chip.class).setYM2151SyncWait((byte) 0, 1);
-            plugin.audio.chipRegister.chip(Ym2151Chip.class).sendDataYM2151((byte) 1, model);
-            plugin.audio.chipRegister.chip(Ym2151Chip.class).setYM2151SyncWait((byte) 1, 1);
+            plugin.audio.chipRegister.chip(Ym2151Chip.class).sendData((byte) 0, model);
+            plugin.audio.chipRegister.chip(Ym2151Chip.class).setSyncWait((byte) 0, 1);
+            plugin.audio.chipRegister.chip(Ym2151Chip.class).sendData((byte) 1, model);
+            plugin.audio.chipRegister.chip(Ym2151Chip.class).setSyncWait((byte) 1, 1);
         }
 
         return true;
@@ -757,13 +757,13 @@ public class NRTDRV extends BaseDriver {
                 // 仮想レジスタに書き込み
                 work.opm1VReg[d] = a;
                 // 実レジスタに書き込み
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
                 // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
                 // 仮想レジスタに書き込み
                 work.opm2VReg[d] = a;
                 // 実レジスタに書き込み
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).setYM2151Register(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
                 // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         } else {
@@ -771,13 +771,13 @@ public class NRTDRV extends BaseDriver {
                 // 仮想レジスタに書き込み
                 work.opm1VReg[d] = a;
                 // 実レジスタに書き込み
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, 0, d, a, EnmModel.RealModel, ym2151Hosei[0], 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d, a, EnmModel.RealModel, ym2151Hosei[0], 0);
                 // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
                 // 仮想レジスタに書き込み
                 work.opm2VReg[d] = a;
                 // 実レジスタに書き込み
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).setYM2151Register(1, 0, d, a, EnmModel.RealModel, ym2151Hosei[1], 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d, a, EnmModel.RealModel, ym2151Hosei[1], 0);
                 // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         }
@@ -787,7 +787,7 @@ public class NRTDRV extends BaseDriver {
         if (model == EnmModel.VirtualModel) {
             // Out(0x1c00, d); // Psg register
             // Out(0x1b00, a); // Psg data
-            plugin.audio.chipRegister.chip(Ay8910Chip.class).setAY8910Register(0, d, a, EnmModel.VirtualModel);
+            plugin.audio.chipRegister.chip(Ay8910Chip.class).write(0, d, a, EnmModel.VirtualModel);
         }
         // else {
         // }
@@ -1537,14 +1537,14 @@ public class NRTDRV extends BaseDriver {
                 if (work.opmFlg != 0) {
                     // ウエイト
                 }
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
             } else {
                 // OPM2
                 work.opm2VReg[d] = a;
                 if (work.opmFlg != 0) {
                     // ウエイト
                 }
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).setYM2151Register(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
             }
         }
 

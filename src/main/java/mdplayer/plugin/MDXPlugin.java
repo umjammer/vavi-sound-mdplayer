@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mdplayer.Audio;
-import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.Setting;
 import mdplayer.chips.Ym2151Chip;
@@ -118,11 +117,11 @@ logger.log(Level.WARNING, "cannot start: " + this);
             useChip.add(Common.EnmChip.YM2151);
 
             X68SoundYm2151Inst mdxPCM_V = Instrument.getInstrument(X68SoundYm2151Inst.class);
-            mdxPCM_V.x68sound[0] = new X68Sound();
-            mdxPCM_V.sound_Iocs[0] = new SoundIocs(mdxPCM_V.x68sound[0]);
+            mdxPCM_V.chips[0] = new X68Sound();
+            mdxPCM_V.soundIocs[0] = new SoundIocs(mdxPCM_V.chips[0]);
             X68SoundYm2151Inst mdxPCM_R = Instrument.getInstrument(X68SoundYm2151Inst.class);
-            mdxPCM_R.x68sound[0] = new X68Sound();
-            mdxPCM_R.sound_Iocs[0] = new SoundIocs(mdxPCM_R.x68sound[0]);
+            mdxPCM_R.chips[0] = new X68Sound();
+            mdxPCM_R.soundIocs[0] = new SoundIocs(mdxPCM_R.chips[0]);
             useChip.add(Common.EnmChip.OKIM6258);
 
             audio.chipRegister.chipLED.put("PriOPM", 1);
@@ -137,15 +136,15 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.setVolume(MAIN_TAG, Ym2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class));
 
             if (useChip.contains(Common.EnmChip.YM2151))
-                audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 0, 4000000, Common.EnmModel.RealModel);
-            //chipRegister.writeYM2151Clock(1, 4000000, enmModel.RealModel);
+                audio.chipRegister.chip(Ym2151Chip.class).writeClock((byte) 0, 4000000, Common.EnmModel.RealModel);
+//            audio.chipRegister.writeYM2151Clock(1, 4000000, enmModel.RealModel);
 
             audio.driverVirtual.setYm2151Hosei(4000000);
             if (audio.driverReal != null) audio.driverReal.setYm2151Hosei(4000000);
-            //chipRegister.setYM2203SSGVolume(0, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
-            //chipRegister.setYM2203SSGVolume(1, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
-            //chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
-            //chipRegister.setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
+//            audio.chipRegister.setYM2203SSGVolume(0, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
+//            audio.chipRegister.setYM2203SSGVolume(1, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
+//            audio.chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
+//            audio.chipRegister.setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
 
             boolean retV = ((mdplayer.driver.mxdrv.MXDRV) audio.driverVirtual).init(vgmBuf, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000

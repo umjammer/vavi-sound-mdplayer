@@ -278,7 +278,7 @@ public class MXDRV extends BaseDriver {
             ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
-                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
+                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getClock(chipId);
                 if (clock != -1) {
                     ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
@@ -309,7 +309,7 @@ public class MXDRV extends BaseDriver {
             ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
-                int clock = chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
+                int clock = chipRegister.chip(Ym2151Chip.class).getClock(chipId);
                 if (clock != -1) {
                     ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
@@ -345,7 +345,7 @@ public class MXDRV extends BaseDriver {
         for (int i = 0; i < mdxSize[0]; i++) mm.write(mdxPtr + i, mdx[0][i]);
         for (int i = 0; i < pdxSize[0]; i++) mm.write(pdxPtr + i, pdx[0][i]);
 
-        mdxPCM.x68sound[0].MountMemory(mm.mm);
+        mdxPCM.chips[0].MountMemory(mm.mm);
 
         int playtime = MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr, 1, Depend.TRUE);
         // logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
@@ -402,7 +402,7 @@ public class MXDRV extends BaseDriver {
         if (mdxPCM == null) {
             return 0;
         }
-        int ret = mdxPCM.x68sound[0].getPcm(buffer, offset, sampleCount, this::oneFrameProc2);
+        int ret = mdxPCM.chips[0].getPcm(buffer, offset, sampleCount, this::oneFrameProc2);
 
         //logger.log(Level.TRACE, "0:%08x".formatted(mm.Readint(MXWORK_CHBUF_FM[8] + MXWORK_CH.S0012)));
         //logger.log(Level.TRACE, "1:%04x".formatted(mm.Readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0012) >> 6));
@@ -775,9 +775,9 @@ public class MXDRV extends BaseDriver {
         if (opmmode < 0) opmmode = 0;
 
         if (betw != 0) {
-            ret = mdxPCM.x68sound[0].start(samprate, opmmode + 1, 1, betw, pcmbuf, late, 1.0);
+            ret = mdxPCM.chips[0].start(samprate, opmmode + 1, 1, betw, pcmbuf, late, 1.0);
         } else {
-            ret = mdxPCM.x68sound[0].startPcm(samprate, opmflag, adpcmflag, pcmbuf);
+            ret = mdxPCM.chips[0].startPcm(samprate, opmflag, adpcmflag, pcmbuf);
         }
         if (ret != 0) {
             switch (ret) {
@@ -788,7 +788,7 @@ public class MXDRV extends BaseDriver {
             }
         }
 
-        mdxPCM.sound_Iocs[0].init();
+        mdxPCM.soundIocs[0].init();
         ret = initialize(mdxbuf, pdxbuf, memInd);
         if (ret != 0) {
             return MXDRV_ERR.MEMORY.ordinal();
@@ -798,21 +798,21 @@ public class MXDRV extends BaseDriver {
     }
 
     private void MXDRV_End() {
-        mdxPCM.x68sound[0].opmInt(null);
+        mdxPCM.chips[0].opmInt(null);
         MXCALLBACK_OPMINT = null;
         OPMINT_FUNC = null;
 
         DisposeStack_L00122e = null;
 
-        mdxPCM.x68sound[0].free();
+        mdxPCM.chips[0].free();
     }
 
     private int MXDRV_GetPCM(short[] buf, int len) {
-        return mdxPCM.x68sound[0].getPcm(buf, 0, len);
+        return mdxPCM.chips[0].getPcm(buf, 0, len);
     }
 
     private int MXDRV_TotalVolume(int vol) {
-        return mdxPCM.x68sound[0].totalVolume(vol);
+        return mdxPCM.chips[0].totalVolume(vol);
     }
 
     private void MXDRV_Play(
@@ -911,7 +911,7 @@ public class MXDRV extends BaseDriver {
         X68Reg reg = new X68Reg();
         Runnable opmintback;
 
-        mdxPCM.x68sound[0].opmInt(null);
+        mdxPCM.chips[0].opmInt(null);
 
         measurePlayTime = true;
         terminatePlay = false;
@@ -947,7 +947,7 @@ public class MXDRV extends BaseDriver {
 
         MXCALLBACK_OPMINT = opmintback;
         measurePlayTime = false;
-        mdxPCM.x68sound[0].opmInt(this::OPMINTFUNC);
+        mdxPCM.chips[0].opmInt(this::OPMINTFUNC);
 
         return ((int) (mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) * (long) 1024 / 4000. + (1 - Math.ulp(1.0))) + 2000);
     }
@@ -963,7 +963,7 @@ public class MXDRV extends BaseDriver {
         short chmaskback;
         int opmwaitback;
 
-        mdxPCM.x68sound[0].opmInt(null);
+        mdxPCM.chips[0].opmInt(null);
 
         terminatePlay = false;
         loopCount = 0;
@@ -981,17 +981,17 @@ public class MXDRV extends BaseDriver {
         reg.d1 = 0xffffffff;
         MXDRV_(reg);
 
-        opmwaitback = mdxPCM.x68sound[0].opmWait(-1);
-        mdxPCM.x68sound[0].opmWait(1);
+        opmwaitback = mdxPCM.chips[0].opmWait(-1);
+        mdxPCM.chips[0].opmWait(1);
         while (mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) < playat) {
             if (terminatePlay) break;
             OPMINTFUNC();
         }
-        mdxPCM.x68sound[0].opmWait(opmwaitback);
+        mdxPCM.chips[0].opmWait(opmwaitback);
 
         mm.write(G + MXWORK_GLOBAL.L001e1c, chmaskback);
         MXCALLBACK_OPMINT = opmintback;
-        mdxPCM.x68sound[0].opmInt(this::OPMINTFUNC);
+        mdxPCM.chips[0].opmInt(this::OPMINTFUNC);
     }
 
     // 
@@ -1001,15 +1001,15 @@ public class MXDRV extends BaseDriver {
 
         switch (D0 & 0xfff0) {
         case 0x0000:
-            mdxPCM.x68sound[0].pcm8Out(D0 & 0xff, null, A1, D1, D2);
+            mdxPCM.chips[0].pcm8Out(D0 & 0xff, null, A1, D1, D2);
             break;
         case 0x0100:
             switch (D0 & 0xffff) {
             case 0x0100:
-                mdxPCM.x68sound[0].pcm8Out(D0 & 0xff, null, 0, 0, 0);
+                mdxPCM.chips[0].pcm8Out(D0 & 0xff, null, 0, 0, 0);
                 break;
             case 0x0101:
-                mdxPCM.x68sound[0].pcm8Abort();
+                mdxPCM.chips[0].pcm8Abort();
                 break;
             }
             break;
@@ -1029,8 +1029,8 @@ public class MXDRV extends BaseDriver {
 
         //logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
 
-        mdxPCM.sound_Iocs[0].opmSet((byte) D1, (byte) D2);
-        plugin.audio.chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, 0, D1, D2, model, ym2151Hosei[0], 0);
+        mdxPCM.soundIocs[0].opmSet((byte) D1, (byte) D2);
+        plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, D1, D2, model, ym2151Hosei[0], 0);
 
         if (D1 == 0x10) {
             timerA = ((byte) D2 << 2) + (timerA & 0x3);
@@ -1045,15 +1045,15 @@ public class MXDRV extends BaseDriver {
 
     // 
     private void ADPCMOUT() {
-        mdxPCM.sound_Iocs[0].adpcmOut(A1, D1, D2);
+        mdxPCM.soundIocs[0].adpcmOut(A1, D1, D2);
     }
 
     private void ADPCMMOD_STOP() {
-        mdxPCM.sound_Iocs[0].adpcmMod(1);
+        mdxPCM.soundIocs[0].adpcmMod(1);
     }
 
     private void ADPCMMOD_END() {
-        mdxPCM.sound_Iocs[0].adpcmMod(0);
+        mdxPCM.soundIocs[0].adpcmMod(0);
     }
 
     // 
@@ -1073,7 +1073,7 @@ public class MXDRV extends BaseDriver {
 
     private void SETOPMINT(Runnable func) {
         OPMINT_FUNC = func;
-        mdxPCM.x68sound[0].opmInt(this::OPMINTFUNC);
+        mdxPCM.chips[0].opmInt(this::OPMINTFUNC);
     }
 
     // 

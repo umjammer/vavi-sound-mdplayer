@@ -28,17 +28,15 @@ public class Y8950Chip implements Chip {
 
     private static final Logger logger = getLogger(Y8950Chip.class.getName());
 
-    private final Setting.ChipType2[] ctY8950 = new Setting.ChipType2[] {
+    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
             setting.getY8950Type()[0], setting.getY8950Type()[1]
     };
 
-    public int[][] fmRegisterY8950 = {null, null};
+    public int[][] register = {null, null};
 
-    private final ChipKeyInfo[] kiY8950 = {new ChipKeyInfo(15), new ChipKeyInfo(15)};
+    private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(15), new ChipKeyInfo(15)};
 
-    private final ChipKeyInfo[] kiY8950ret = {new ChipKeyInfo(15), new ChipKeyInfo(15)};
-
-    private final boolean[][] maskFMChY8950 = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
@@ -50,9 +48,9 @@ public class Y8950Chip implements Chip {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
-            fmRegisterY8950[chipId] = new int[0x100];
+            register[chipId] = new int[0x100];
             for (int i = 0; i < 0x100; i++) {
-                fmRegisterY8950[chipId][i] = 0;
+                register[chipId][i] = 0;
             }
         }
     }
@@ -65,119 +63,116 @@ public class Y8950Chip implements Chip {
     public void updateVol() {
     }
 
-    public ChipKeyInfo getY8950KeyInfo(int chipId) {
-        for (int ch = 0; ch < kiY8950[chipId].off.length; ch++) {
-            kiY8950ret[chipId].off[ch] = kiY8950[chipId].off[ch];
-            kiY8950ret[chipId].on[ch] = kiY8950[chipId].on[ch];
-            kiY8950[chipId].on[ch] = false;
+    public ChipKeyInfo getKeyInfo(int chipId) {
+        ChipKeyInfo[] keyInfoRet = {new ChipKeyInfo(15), new ChipKeyInfo(15)}; // TODO out for memory usage?
+        for (int ch = 0; ch < keyInfo[chipId].off.length; ch++) {
+            keyInfoRet[chipId].off[ch] = keyInfo[chipId].off[ch];
+            keyInfoRet[chipId].on[ch] = keyInfo[chipId].on[ch];
+            keyInfo[chipId].on[ch] = false;
         }
-        return kiY8950ret[chipId];
+        return keyInfoRet[chipId];
     }
 
-    public void setY8950Register(int chipId, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriY8950", 2);
         else
             context.chipLED.put("SecY8950", 2);
 
         if (model == EnmModel.VirtualModel) {
-            fmRegisterY8950[chipId][dAddr] = dData;
-            if (dAddr >= 0xb0 && dAddr <= 0xb8) {
-                int ch = dAddr - 0xb0;
-                int k = (dData >> 5) & 1;
+            register[chipId][addr] = data;
+            if (addr >= 0xb0 && addr <= 0xb8) {
+                int ch = addr - 0xb0;
+                int k = (data >> 5) & 1;
                 if (k == 0) {
-                    kiY8950[chipId].on[ch] = false;
-                    kiY8950[chipId].off[ch] = true;
+                    keyInfo[chipId].on[ch] = false;
+                    keyInfo[chipId].off[ch] = true;
                 } else {
-                    kiY8950[chipId].on[ch] = true;
+                    keyInfo[chipId].on[ch] = true;
                 }
-                if (maskFMChY8950[chipId][ch])
-                    dData &= 0x1f;
+                if (mask[chipId][ch])
+                    data &= 0x1f;
             }
 
-            if (dAddr == 0xbd) {
+            if (addr == 0xbd) {
 
                 for (int c = 0; c < 5; c++) {
-                    if ((dData & (0x10 >> c)) == 0) {
-                        kiY8950[chipId].off[c + 9] = true;
+                    if ((data & (0x10 >> c)) == 0) {
+                        keyInfo[chipId].off[c + 9] = true;
                     } else {
-                        if (kiY8950[chipId].off[c + 9])
-                            kiY8950[chipId].on[c + 9] = true;
-                        kiY8950[chipId].off[c + 9] = false;
+                        if (keyInfo[chipId].off[c + 9])
+                            keyInfo[chipId].on[c + 9] = true;
+                        keyInfo[chipId].off[c + 9] = false;
                     }
                 }
 
-                if (maskFMChY8950[chipId][9])
-                    dData &= 0xef;
-                if (maskFMChY8950[chipId][10])
-                    dData &= 0xf7;
-                if (maskFMChY8950[chipId][11])
-                    dData &= 0xfb;
-                if (maskFMChY8950[chipId][12])
-                    dData &= 0xfd;
-                if (maskFMChY8950[chipId][13])
-                    dData &= 0xfe;
+                if (mask[chipId][9])
+                    data &= 0xef;
+                if (mask[chipId][10])
+                    data &= 0xf7;
+                if (mask[chipId][11])
+                    data &= 0xfb;
+                if (mask[chipId][12])
+                    data &= 0xfd;
+                if (mask[chipId][13])
+                    data &= 0xfe;
             }
 
             // ADPCM
-            if (dAddr == 0x07) {
-                int k = (dData & 0x80);
+            if (addr == 0x07) {
+                int k = (data & 0x80);
                 if (k == 0) {
-                    kiY8950[chipId].on[14] = false;
-                    kiY8950[chipId].off[14] = true;
+                    keyInfo[chipId].on[14] = false;
+                    keyInfo[chipId].off[14] = true;
                 } else {
-                    kiY8950[chipId].on[14] = true;
-                    kiY8950[chipId].off[14] = false;
+                    keyInfo[chipId].on[14] = true;
+                    keyInfo[chipId].off[14] = false;
                 }
-                if (maskFMChY8950[chipId][14])
-                    dData &= 0x7f;
+                if (mask[chipId][14])
+                    data &= 0x7f;
             }
         }
 
         if (model == EnmModel.VirtualModel) {
-            // if (!ctY8950[chipId].UseScci)
+            // if (!chipTypes[chipId].UseScci)
             {
-                context.mds.write(Y8950Inst.class, chipId, 0, dAddr, dData);
+                context.mds.write(Y8950Inst.class, chipId, 0, addr, data);
             }
         } else {
         }
     }
 
-    public void setMaskY8950(int chipId, int ch, boolean mask) {
-        maskFMChY8950[chipId][ch] = mask;
+    public void setMask(int chipId, int ch, boolean mask) {
+        this.mask[chipId][ch] = mask;
     }
 
-    public void writeY8950PCMData(int chipId,
-                                  int romSize,
-                                  int dataStart,
-                                  int dataLength,
-                                  byte[] romData,
-                                  int srcStartAdr,
-                                  EnmModel model) {
+    public void writePcm(int chipId,
+                         int romSize,
+                         int dataStart,
+                         int dataLength,
+                         byte[] romData,
+                         int srcStartAdr,
+                         EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriY8950", 2);
         else
             context.chipLED.put("SecY8950", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.WriteY8950PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(Y8950Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
 
-    public int[] getY8950Register(int chipId) {
-        return fmRegisterY8950[chipId];
+    public int[] read(int chipId) {
+        return register[chipId];
     }
 
-//    public Chip.ChipKeyInfo getY8950KeyInfo(int chipId) {
-//        return getY8950KeyInfo(chipId);
-//    }
-
-    public void setY8950Mask(int chipId, int ch) {
-        setMaskY8950(chipId, ch, true);
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
     }
 
-    public void resetY8950Mask(int chipId, int ch) {
+    public void resetMask(int chipId, int ch) {
         try {
-            setMaskY8950(chipId, ch, false);
+            setMask(chipId, ch, false);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }

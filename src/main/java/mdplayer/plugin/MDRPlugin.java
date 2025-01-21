@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mdplayer.Audio;
-import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.moonDriver.MoonDriver;
@@ -14,7 +13,7 @@ import mdplayer.format.FileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.YmF262Inst;
-import mdsound.instrument.YmF278bInst;
+import mdsound.instrument.YmF278BInst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -58,8 +57,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             //int r = ((NRTDRV) driverVirtual).checkUseChip(vgmBuf);
 
-            audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(0, 0);
-            audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(1, 0);
+            audio.chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
+            audio.chipRegister.chip(Ym2151Chip.class).setFadeout(1, 0);
 
             audio.chipRegister.resetChips();
             useChip.clear();
@@ -110,9 +109,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
             } else {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                chip.instrument = Instrument.getInstrument(YmF278bInst.class);
+                chip.instrument = Instrument.getInstrument(YmF278BInst.class);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278bInst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278BInst.class);
                 chip.clock = 33868800;
                 chip.option = new Object[] {Common.getApplicationFolder()};
 
@@ -131,7 +130,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
             if (isOPL3) audio.setVolume(MAIN_TAG, YmF262Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, YmF262Inst.class));
-            else audio.setVolume(MAIN_TAG, YmF278bInst.class, true, setting.getBalance().getVolume(MAIN_TAG, YmF278bInst.class));
+            else audio.setVolume(MAIN_TAG, YmF278BInst.class, true, setting.getBalance().getVolume(MAIN_TAG, YmF278BInst.class));
             //chipRegister.setYM2203SSGVolume(0, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
             //chipRegister.setYM2203SSGVolume(1, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
             //chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);

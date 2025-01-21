@@ -182,8 +182,8 @@ public class frmC352 extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] c352Register = audio.chipRegister.chip(C352Chip.class).getC352Register(chipId);
-        int[] c352key = audio.chipRegister.chip(C352Chip.class).getC352KeyOn(chipId);
+        int[] c352Register = audio.chipRegister.chip(C352Chip.class).getChip(chipId);
+        int[] c352key = audio.chipRegister.chip(C352Chip.class).getKeyOn(chipId);
 
         for (int ch = 0; ch < 32; ch++) {
             newParam.channels[ch].note = searchC352Note(c352Register[ch * 8 + 2]);

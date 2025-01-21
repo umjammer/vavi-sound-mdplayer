@@ -29,21 +29,19 @@ public class Ym3812Chip implements Chip {
 
     private static final Logger logger = getLogger(Ym3812Chip.class.getName());
 
-    private final Setting.ChipType2[] ctYM3812 = new Setting.ChipType2[] {
+    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
             setting.getYM3812Type()[0], setting.getYM3812Type()[1]
     };
 
-    private final RSoundChip[] scYM3812 = {null, null};
+    private final RSoundChip[] realChips = {null, null};
 
-    public int[][] fmRegisterYM3812 = {null, null};
+    public int[][] register = {null, null};
 
-    private final int[] nowYM3812FadeoutVol = {0, 0};
+    private final int[] fadeout = {0, 0};
 
-    private final ChipKeyInfo[] kiYM3812 = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
+    private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
 
-    private final ChipKeyInfo[] kiYM3812ret = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
-
-    private final boolean[][] maskFMChYM3812 = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
@@ -54,13 +52,13 @@ public class Ym3812Chip implements Chip {
     public void init(ChipRegister context) {
         this.context = context;
         for (int chipId = 0; chipId < 2; chipId++) {
-            fmRegisterYM3812[chipId] = new int[0x100];
+            register[chipId] = new int[0x100];
             for (int i = 0; i < 0x100; i++) {
-                fmRegisterYM3812[chipId][i] = 0;
-                fmRegisterYM3812[chipId][i] = 0;
+                register[chipId][i] = 0;
+                register[chipId][i] = 0;
             }
 
-            nowYM3812FadeoutVol[chipId] = 0;
+            fadeout[chipId] = 0;
         }
     }
 
@@ -72,20 +70,18 @@ public class Ym3812Chip implements Chip {
     public void updateVol() {
     }
 
-    public void setYM3812Register(int chipId, int dAddr, int dData, EnmModel model) {
-        // if (ctYM3812 == null) return;
-
+    public void write(int chipId, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOPL2", 2);
         else
             context.chipLED.put("SecOPL2", 2);
 
-        fmRegisterYM3812[chipId][dAddr] = dData;
+        register[chipId][addr] = data;
 
-        if (dAddr >= 0x40 && dAddr <= 0x55) { // TL
-            int ksl = dData & 0xc0;
-            int tl = dData & 0x3f;
-            int ch = dAddr - 0x40;
+        if (addr >= 0x40 && addr <= 0x55) { // TL
+            int ksl = data & 0xc0;
+            int tl = data & 0x3f;
+            int ch = addr - 0x40;
             boolean cr = false;
             int twoOpChannel = (ch / 8) * 3 + ((ch % 8) % 3);
 
@@ -93,139 +89,136 @@ public class Ym3812Chip implements Chip {
             if (ch % 8 > 2)
                 cr = true;
             else {
-                int cnt = fmRegisterYM3812[chipId][0xc0 + (ch / 8) * 3 + (ch % 8)] & 1;
+                int cnt = register[chipId][0xc0 + (ch / 8) * 3 + (ch % 8)] & 1;
                 if (cnt == 1)
                     cr = true;
             }
 
-            if (ch >= 0x10 && (fmRegisterYM3812[chipId][0xbd] & 0x20) != 0) {
+            if (ch >= 0x10 && (register[chipId][0xbd] & 0x20) != 0) {
                 cr = true;
             }
 
             if (cr) {
-                dData = Math.min(tl + nowYM3812FadeoutVol[chipId], 0x3f);
-                dData = ksl + (maskFMChYM3812[chipId][twoOpChannel] ? 0x3f : dData);
+                data = Math.min(tl + fadeout[chipId], 0x3f);
+                data = ksl + (mask[chipId][twoOpChannel] ? 0x3f : data);
             }
         }
 
         // if (model == EnmModel.VirtualModel)
         {
-            if (dAddr >= 0xb0 && dAddr <= 0xb8) {
-                int ch = dAddr - 0xb0;
-                int k = (dData >> 5) & 1;
+            if (addr >= 0xb0 && addr <= 0xb8) {
+                int ch = addr - 0xb0;
+                int k = (data >> 5) & 1;
                 if (k == 0) {
-                    kiYM3812[chipId].off[ch] = true;
+                    keyInfo[chipId].off[ch] = true;
                 } else {
-                    if (kiYM3812[chipId].off[ch])
-                        kiYM3812[chipId].on[ch] = true;
-                    kiYM3812[chipId].off[ch] = false;
+                    if (keyInfo[chipId].off[ch])
+                        keyInfo[chipId].on[ch] = true;
+                    keyInfo[chipId].off[ch] = false;
                 }
-                if (maskFMChYM3812[chipId][ch])
-                    dData &= 0x1f;
+                if (mask[chipId][ch])
+                    data &= 0x1f;
             }
 
-            if (dAddr == 0xbd) {
+            if (addr == 0xbd) {
 
                 for (int c = 0; c < 5; c++) {
-                    if ((dData & (0x10 >> c)) == 0) {
-                        kiYM3812[chipId].off[c + 9] = true;
+                    if ((data & (0x10 >> c)) == 0) {
+                        keyInfo[chipId].off[c + 9] = true;
                     } else {
-                        if (kiYM3812[chipId].off[c + 9])
-                            kiYM3812[chipId].on[c + 9] = true;
-                        kiYM3812[chipId].off[c + 9] = false;
+                        if (keyInfo[chipId].off[c + 9])
+                            keyInfo[chipId].on[c + 9] = true;
+                        keyInfo[chipId].off[c + 9] = false;
                     }
                 }
 
-                if (maskFMChYM3812[chipId][9])
-                    dData &= 0xef;
-                if (maskFMChYM3812[chipId][10])
-                    dData &= 0xf7;
-                if (maskFMChYM3812[chipId][11])
-                    dData &= 0xfb;
-                if (maskFMChYM3812[chipId][12])
-                    dData &= 0xfd;
-                if (maskFMChYM3812[chipId][13])
-                    dData &= 0xfe;
+                if (mask[chipId][9])
+                    data &= 0xef;
+                if (mask[chipId][10])
+                    data &= 0xf7;
+                if (mask[chipId][11])
+                    data &= 0xfb;
+                if (mask[chipId][12])
+                    data &= 0xfd;
+                if (mask[chipId][13])
+                    data &= 0xfe;
             }
         }
 
-        writeYm3812(chipId, dAddr, dData, model);
+        _write(chipId, addr, data, model);
     }
 
-    public ChipKeyInfo getYM3812KeyInfo(int chipId) {
-        for (int ch = 0; ch < kiYM3812[chipId].off.length; ch++) {
-            kiYM3812ret[chipId].off[ch] = kiYM3812[chipId].off[ch];
-            kiYM3812ret[chipId].on[ch] = kiYM3812[chipId].on[ch];
-            kiYM3812[chipId].on[ch] = false;
+    public ChipKeyInfo getKeyInfo(int chipId) {
+        ChipKeyInfo[] keyInfoRet = {new ChipKeyInfo(14), new ChipKeyInfo(14)}; // TODO out for memory usage?
+        for (int ch = 0; ch < keyInfo[chipId].off.length; ch++) {
+            keyInfoRet[chipId].off[ch] = keyInfo[chipId].off[ch];
+            keyInfoRet[chipId].on[ch] = keyInfo[chipId].on[ch];
+            keyInfo[chipId].on[ch] = false;
         }
-        return kiYM3812ret[chipId];
+        return keyInfoRet[chipId];
     }
 
-    private void writeYm3812(int chipId, int dAddr, int dData, EnmModel model) {
+    private void _write(int chipId, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
-            if (!ctYM3812[chipId].getUseReal()[0]) {
-                context.mds.write(Ym3812Inst.class, chipId, 0, dAddr, dData);
+            if (!chipTypes[chipId].getUseReal()[0]) {
+                context.mds.write(Ym3812Inst.class, chipId, 0, addr, data);
             }
         } else {
-            if (scYM3812[chipId] == null)
+            if (realChips[chipId] == null)
                 return;
 
-            scYM3812[chipId].setRegister(dAddr, dData);
+            realChips[chipId].setRegister(addr, data);
         }
     }
 
-    public void softResetYM3812(int chipId, EnmModel model) {
+    public void softReset(int chipId, EnmModel model) {
         // FM All Channel Key Off
         for (int i = 0; i < 9; i++) {
-            writeYm3812(chipId, 0xb0 + i, 0x00, model);
+            _write(chipId, 0xb0 + i, 0x00, model);
         }
 
         // FM TL=127
         for (int i = 0; i < 22; i++) {
-            writeYm3812(chipId, 0x40 + i, 0x3f, model);
+            _write(chipId, 0x40 + i, 0x3f, model);
         }
 
         // SL=15 RR=15
         for (int i = 0; i < 22; i++) {
-            writeYm3812(chipId, 0x80 + i, 0xff, model);
+            _write(chipId, 0x80 + i, 0xff, model);
         }
     }
 
-    public void setMaskYM3812(int chipId, int ch, boolean mask) {
-        maskFMChYM3812[chipId][ch] = mask;
+    public void setMask(int chipId, int ch, boolean mask) {
+        this.mask[chipId][ch] = mask;
     }
 
-    public void setFadeoutVolYM3812(int chipId, int v) {
-        nowYM3812FadeoutVol[chipId] = v >> 1;// 0-63 (v range: 0-127)
+    public void setFadeout(int chipId, int v) {
+        fadeout[chipId] = v >> 1;// 0-63 (v range: 0-127)
         for (int c = 0; c < 22; c++) {
-            setYM3812Register(chipId, 0x40 + c, fmRegisterYM3812[chipId][0x40 + c], EnmModel.RealModel);
+            write(chipId, 0x40 + c, register[chipId][0x40 + c], EnmModel.RealModel);
         }
     }
 
-    public void writeYm3812Clock(int chipId, int clock, EnmModel model) {
+    public void writeClock(int chipId, int clock, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
-            if (scYM3812 != null && scYM3812[chipId] != null) {
-                scYM3812[chipId].dClock = scYM3812[chipId].setMasterClock(clock);
+            if (realChips != null && realChips[chipId] != null) {
+                realChips[chipId].dClock = realChips[chipId].setMasterClock(clock);
             }
         }
     }
 
-    public int[] getYM3812Register(int chipId) {
-        return fmRegisterYM3812[chipId];
+    public int[] read(int chipId) {
+        return register[chipId];
     }
 
-//    public Chip.ChipKeyInfo getYM3812KeyInfo(int chipId) {
-//        return getYM3812KeyInfo(chipId);
-//    }
-
-    public void setYM3812Mask(int chipId, int ch) {
-        setMaskYM3812(chipId, ch, true);
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
     }
 
-    public void resetYM3812Mask(int chipId, int ch) {
+    public void resetMask(int chipId, int ch) {
         try {
-            setMaskYM3812(chipId, ch, false);
+            setMask(chipId, ch, false);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -233,13 +226,13 @@ public class Ym3812Chip implements Chip {
 
     @Override
     public void softReset(EnmModel model) {
-        softResetYM3812(0, model);
-        softResetYM3812(1, model);
+        softReset(0, model);
+        softReset(1, model);
     }
 
     @Override
-    public void clearFadeoutVolume() {
-        setFadeoutVolYM3812(0, 0);
-        setFadeoutVolYM3812(1, 0);
+    public void clearFadeout() {
+        setFadeout(0, 0);
+        setFadeout(1, 0);
     }
 }

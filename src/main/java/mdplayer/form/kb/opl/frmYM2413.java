@@ -116,9 +116,9 @@ public class frmYM2413 extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[] ym2413Register = audio.chipRegister.chip(Ym2413Chip.class).getYM2413Register(chipId);
+        int[] ym2413Register = audio.chipRegister.chip(Ym2413Chip.class).read(chipId);
         MDChipParams.Channel nyc;
-        ChipKeyInfo ki = audio.chipRegister.chip(Ym2413Chip.class).getYM2413KeyInfo(chipId);
+        ChipKeyInfo ki = audio.chipRegister.chip(Ym2413Chip.class).getKeyInfo(chipId);
 
         for (int ch = 0; ch < 9; ch++) {
             nyc = newParam.channels[ch];

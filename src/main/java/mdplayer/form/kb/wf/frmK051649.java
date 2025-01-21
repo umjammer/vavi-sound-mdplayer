@@ -143,7 +143,7 @@ public class frmK051649 extends frmBase {
     };
 
     public void screenChangeParams() {
-        K051649 chip = audio.chipRegister.chip(K051649Chip.class).getK051649Register(chipId);
+        K051649 chip = audio.chipRegister.chip(K051649Chip.class).getChip(chipId);
         if (chip == null) return;
 
         for (int ch = 0; ch < 5; ch++) {

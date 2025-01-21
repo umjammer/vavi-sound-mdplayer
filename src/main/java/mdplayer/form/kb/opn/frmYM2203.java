@@ -128,10 +128,10 @@ public class frmYM2203 extends frmBase {
 
     public void screenChangeParams() {
         boolean isFmEx;
-        int[] ym2203Register = audio.chipRegister.chip(Ym2203Chip.class).getYm2203Register(chipId);
-        int[] fmKeyYM2203 = audio.chipRegister.chip(Ym2203Chip.class).getYM2203KeyOn(chipId);
-        int[] ym2203Vol = audio.chipRegister.chip(Ym2203Chip.class).getYM2203Volume(chipId);
-        int[] ym2203Ch3SlotVol = audio.chipRegister.chip(Ym2203Chip.class).getYM2203Ch3SlotVolume(chipId);
+        int[] ym2203Register = audio.chipRegister.chip(Ym2203Chip.class).read(chipId);
+        int[] fmKeyYM2203 = audio.chipRegister.chip(Ym2203Chip.class).getKeyOn(chipId);
+        int[] ym2203Vol = audio.chipRegister.chip(Ym2203Chip.class).getVolume(chipId);
+        int[] ym2203Ch3SlotVol = audio.chipRegister.chip(Ym2203Chip.class).getCh3SlotVolume(chipId);
 
         isFmEx = (ym2203Register[0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;

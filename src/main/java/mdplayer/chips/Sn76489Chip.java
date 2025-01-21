@@ -31,33 +31,33 @@ public class Sn76489Chip implements Chip {
 
     private static final Logger logger = getLogger(Sn76489Chip.class.getName());
 
-    private final Setting.ChipType2[] ctSN76489 = new Setting.ChipType2[] {
+    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
             setting.getSN76489Type()[0], setting.getSN76489Type()[1]
     };
 
-    private final RSoundChip[] scSN76489 = {null, null};
+    private final RSoundChip[] realChips = {null, null};
 
-    public int[][] sn76489Register = {null, null};
+    public int[][] register = {null, null};
 
-    public int[] sn76489RegisterGGPan = {0xff, 0xff};
+    public int[] pan = {0xff, 0xff};
 
-    public int[][][] sn76489Vol = {
+    public int[][][] volumes = {
             {new int[2], new int[2], new int[2], new int[2]},
             {new int[2], new int[2], new int[2], new int[2]}
     };
 
-    public int[] nowSN76489FadeoutVol = {0, 0};
+    public int[] fadeout = {0, 0};
 
-    public boolean[][] maskChSN76489 = {
+    public boolean[][] mask = {
             {false, false, false, false},
             {false, false, false, false}
     };
 
-    private final int[] LatchedRegister = {
+    private final int[] latchedRegister = {
             0, 0
     };
 
-    private final int[] NoiseFreq = {
+    private final int[] noiseFreq = {
             0, 0
     };
 
@@ -68,9 +68,9 @@ public class Sn76489Chip implements Chip {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
-            sn76489Register[chipId] = new int[] {0, 15, 0, 15, 0, 15, 0, 15};
+            register[chipId] = new int[] {0, 15, 0, 15, 0, 15, 0, 15};
 
-            nowSN76489FadeoutVol[chipId] = 0;
+            fadeout[chipId] = 0;
         }
     }
 
@@ -78,7 +78,7 @@ public class Sn76489Chip implements Chip {
     public void reset() {
         for (int chipId = 0; chipId < 2; chipId++) {
             for (int c = 0; c < 4; c++) {
-                setSN76489Register(chipId, 0x90 + (c << 5) + 0xf, EnmModel.RealModel);
+                write(chipId, 0x90 + (c << 5) + 0xf, EnmModel.RealModel);
             }
         }
     }
@@ -87,164 +87,157 @@ public class Sn76489Chip implements Chip {
     public void updateVol() {
     }
 
-    public void setSN76489Register(int chipId, int dData, EnmModel model) {
+    public void write(int chipId, int data, EnmModel model) {
 
         if (chipId == 0)
             context.chipLED.put("PriDCSG", 2);
         else
             context.chipLED.put("SecDCSG", 2);
 
-        writeSN76489(chipId, dData);
+        write(chipId, data);
 
-        if ((dData & 0x10) != 0) {
-            if (LatchedRegister[chipId] != 0 && LatchedRegister[chipId] != 2 && LatchedRegister[chipId] != 4 &&
-                    LatchedRegister[chipId] != 6) {
-                sn76489Vol[chipId][(dData & 0x60) >> 5][0] = (15 - (dData & 0xf)) *
-                        ((sn76489RegisterGGPan[chipId] >> (((dData & 0x60) >> 5) + 4)) &
+        if ((data & 0x10) != 0) {
+            if (latchedRegister[chipId] != 0 && latchedRegister[chipId] != 2 && latchedRegister[chipId] != 4 &&
+                    latchedRegister[chipId] != 6) {
+                volumes[chipId][(data & 0x60) >> 5][0] = (15 - (data & 0xf)) *
+                        ((pan[chipId] >> (((data & 0x60) >> 5) + 4)) &
                                 0x1);
-                sn76489Vol[chipId][(dData & 0x60) >> 5][1] = (15 - (dData & 0xf)) *
-                        ((sn76489RegisterGGPan[chipId] >> ((dData & 0x60) >> 5)) & 0x1);
+                volumes[chipId][(data & 0x60) >> 5][1] = (15 - (data & 0xf)) *
+                        ((pan[chipId] >> ((data & 0x60) >> 5)) & 0x1);
 
-                int v = dData & 0xf;
-                v = v + nowSN76489FadeoutVol[chipId];
-                v = maskChSN76489[chipId][(dData & 0x60) >> 5] ? 15 : v;
+                int v = data & 0xf;
+                v = v + fadeout[chipId];
+                v = mask[chipId][(data & 0x60) >> 5] ? 15 : v;
                 v = Math.min(v, 15);
-                dData = (dData & 0xf0) | v;
+                data = (data & 0xf0) | v;
             }
         }
 
         if (model == EnmModel.RealModel) {
-            if (ctSN76489[chipId].getUseReal()[0]) {
-                if (scSN76489[chipId] == null)
+            if (chipTypes[chipId].getUseReal()[0]) {
+                if (realChips[chipId] == null)
                     return;
-                scSN76489[chipId].setRegister(0, dData);
+                realChips[chipId].setRegister(0, data);
             }
         } else {
-            if (!ctSN76489[chipId].getUseReal()[0]) {
-                if (ctSN76489[chipId].getUseEmu()[0])
-                    context.mds.write(Sn76489Inst.class, chipId, 0, 0, dData);
-                else if (ctSN76489[chipId].getUseEmu()[1])
-                    context.mds.write(Sn76496Inst.class, chipId, 0, 0, dData);
+            if (!chipTypes[chipId].getUseReal()[0]) {
+                if (chipTypes[chipId].getUseEmu()[0])
+                    context.mds.write(Sn76489Inst.class, chipId, 0, 0, data);
+                else if (chipTypes[chipId].getUseEmu()[1])
+                    context.mds.write(Sn76496Inst.class, chipId, 0, 0, data);
             }
         }
     }
 
-    public void setSN76489RegisterGGpanning(int chipId, int dData, EnmModel model) {
-        if (ctSN76489 == null)
-            return;
-
+    public void setPan(int chipId, int dData, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriDCSG", 2);
         else
             context.chipLED.put("SecDCSG", 2);
 
         if (model == EnmModel.RealModel) {
-            if (ctSN76489[chipId].getUseReal()[0]) {
-                if (scSN76489[chipId] == null) {
+            if (chipTypes[chipId].getUseReal()[0]) {
+                if (realChips[chipId] == null) {
                 }
             }
         } else {
-            if (!ctSN76489[chipId].getUseReal()[0]) {
-                if (ctSN76489[chipId].getUseEmu()[0])
-                    context.mds.writeSn76489GGPanning(chipId, dData);
-                else if (ctSN76489[chipId].getUseEmu()[1])
-                    context.mds.writeSn76496GGPanning(chipId, dData);
-                sn76489RegisterGGPan[chipId] = dData;
+            if (!chipTypes[chipId].getUseReal()[0]) {
+                if (chipTypes[chipId].getUseEmu()[0])
+                    context.mds.inst(Sn76489Inst.class).setPan(chipId, dData);
+                else if (chipTypes[chipId].getUseEmu()[1])
+                    context.mds.inst(Sn76496Inst.class).setPan(chipId, dData);
+                pan[chipId] = dData;
             }
         }
     }
 
-    public void setMaskSN76489(int chipId, int ch, boolean mask) {
-        maskChSN76489[chipId][ch] = mask;
+    public void setMask(int chipId, int ch, boolean mask) {
+        this.mask[chipId][ch] = mask;
     }
 
-    private void writeSN76489(int chipId, int data) {
+    private void write(int chipId, int data) {
         if ((data & 0x80) != 0) {
             // Latch/data byte %1 cc t dddd
-            LatchedRegister[chipId] = (data >> 4) & 0x07;
-            sn76489Register[chipId][LatchedRegister[chipId]] = (sn76489Register[chipId][LatchedRegister[chipId]] &
+            latchedRegister[chipId] = (data >> 4) & 0x07;
+            register[chipId][latchedRegister[chipId]] = (register[chipId][latchedRegister[chipId]] &
                     0x3f0) // zero low 4 bits
                     | (data & 0xf); // and replace with data
         } else {
             // data byte %0 - dddddd
-            if ((LatchedRegister[chipId] % 2) == 0 && (LatchedRegister[chipId] < 5))
+            if ((latchedRegister[chipId] % 2) == 0 && (latchedRegister[chipId] < 5))
                 // Tone register
-                sn76489Register[chipId][LatchedRegister[chipId]] = (sn76489Register[chipId][LatchedRegister[chipId]] &
+                register[chipId][latchedRegister[chipId]] = (register[chipId][latchedRegister[chipId]] &
                         0x00f) // zero high 6 bits
                         | ((data & 0x3f) << 4); // and replace with data
             else
                 // Other register
-                sn76489Register[chipId][LatchedRegister[chipId]] = data & 0x0f; // Replace with data
+                register[chipId][latchedRegister[chipId]] = data & 0x0f; // Replace with data
         }
-        switch (LatchedRegister[chipId]) {
+        switch (latchedRegister[chipId]) {
             case 0:
             case 2:
             case 4: // Tone channels
-                //if (sn76489Register[chipId][LatchedRegister[chipId]] == 0)
-                // sn76489Register[chipId][LatchedRegister[chipId]] = 1; // Zero frequency changed to 1 to avoid div/0
+//                if (register[chipId][latchedRegister[chipId]] == 0)
+//                    register[chipId][latchedRegister[chipId]] = 1; // Zero frequency changed to 1 to avoid div/0
                 break;
             case 6: // Noise
-                NoiseFreq[chipId] = 0x10 << (sn76489Register[chipId][6] & 0x3); // set noise signal generator frequency
+                noiseFreq[chipId] = 0x10 << (register[chipId][6] & 0x3); // set noise signal generator frequency
                 break;
         }
     }
 
-    public void setFadeoutVolSN76489(int chipId, int v) {
-        nowSN76489FadeoutVol[chipId] = (v & 0x78) >> 3;
+    public void setFadeout(int chipId, int v) {
+        fadeout[chipId] = (v & 0x78) >> 3;
         for (int c = 0; c < 4; c++) {
 
-            setSN76489Register(chipId, 0x90 + (c << 5) + sn76489Register[chipId][1 + (c << 1)], EnmModel.RealModel);
+            write(chipId, 0x90 + (c << 5) + register[chipId][1 + (c << 1)], EnmModel.RealModel);
         }
     }
 
-    public int[][] getPSGVolume(int chipId) {
-        return sn76489Vol[chipId];
+    public int[][] getVolumes(int chipId) {
+        return volumes[chipId];
     }
 
-    public int[] getPSGRegister(int chipId) {
-        return sn76489Register[chipId];
+    public int[] read(int chipId) {
+        return register[chipId];
     }
 
-    public int getPSGRegisterGGPanning(int chipId) {
-        return sn76489RegisterGGPan[chipId];
+    public int getPan(int chipId) {
+        return pan[chipId];
     }
 
-    public void setSN76489Mask(int chipId, int ch) {
-        setMaskSN76489(chipId, ch, true);
-        sn76489ForcedSendVolume(chipId, ch);
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
+        sendVolumeForced(chipId, ch);
     }
 
-    public void resetSN76489Mask(int chipId, int ch) {
+    public void resetMask(int chipId, int ch) {
         try {
-            setMaskSN76489(chipId, ch, false);
-            sn76489ForcedSendVolume(chipId, ch);
+            setMask(chipId, ch, false);
+            sendVolumeForced(chipId, ch);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
-    protected void sn76489ForcedSendVolume(int chipId, int ch) {
+    protected void sendVolumeForced(int chipId, int ch) {
         Setting.ChipType2 ct = setting.getSN76489Type()[chipId];
-        setSN76489Register(chipId
+        write(chipId
                 , (0x90
                         | ((ch & 3) << 5)
-                        | (15 - (Math.max(sn76489Vol[chipId][ch][0], sn76489Vol[chipId][ch][1]) & 0xf)))
+                        | (15 - (Math.max(volumes[chipId][ch][0], volumes[chipId][ch][1]) & 0xf)))
                 , ct.getUseEmu()[0] ? Common.EnmModel.VirtualModel : Common.EnmModel.RealModel);
     }
 
-//    public int[][] getPSGVolume(int chipId) {
-//        return getPSGVolume(chipId);
-//    }
+    public boolean ngpFlag = false;
 
-    public boolean sn76489NGPFlag = false;
-
-    public boolean getSn76489NGPFlag() {
-        return sn76489NGPFlag;
+    public boolean getFlag() {
+        return ngpFlag;
     }
 
     @Override
-    public void clearFadeoutVolume() {
-        setFadeoutVolSN76489( 0, 0);
-        setFadeoutVolSN76489( 1, 0);
+    public void clearFadeout() {
+        setFadeout( 0, 0);
+        setFadeout( 1, 0);
     }
 }

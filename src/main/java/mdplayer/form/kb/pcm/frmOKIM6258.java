@@ -106,7 +106,7 @@ public class frmOKIM6258 extends frmBase {
     };
 
     public void screenChangeParams() {
-        OkiM6258 okim6258State = audio.chipRegister.chip(OkiM6258Chip.class).getOKIM6258Register(chipId);
+        OkiM6258 okim6258State = audio.chipRegister.chip(OkiM6258Chip.class).read(chipId);
         if (okim6258State == null) return;
 
         switch (okim6258State.getPan() & 0x3) {

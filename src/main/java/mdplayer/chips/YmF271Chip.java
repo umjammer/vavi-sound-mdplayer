@@ -23,13 +23,13 @@ import mdsound.instrument.YmF271Inst;
  */
 public class YmF271Chip implements Chip {
 
-    private final Setting.ChipType2[] ctYMF271 = new Setting.ChipType2[] {
+    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
             setting.getYMF271Type()[0], setting.getYMF271Type()[1]
     };
 
-    private final RSoundChip[] scYMF271 = {null, null};
+    private final RSoundChip[] realChips = {null, null};
 
-    public int[][][] fmRegisterYMF271 = {
+    public int[][][] register = {
             {null, null},
             {null, null}
     };
@@ -39,17 +39,17 @@ public class YmF271Chip implements Chip {
     @Override
     public void init(ChipRegister context) {
         this.context = context;
-        for (int chipId = 0; chipId < 2; chipId++) {
 
-            fmRegisterYMF271[chipId] = new int[][] {new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100]};
+        for (int chipId = 0; chipId < 2; chipId++) {
+            register[chipId] = new int[][] {new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100], new int[0x100]};
             for (int i = 0; i < 0x100; i++) {
-                fmRegisterYMF271[chipId][0][i] = 0;
-                fmRegisterYMF271[chipId][1][i] = 0;
-                fmRegisterYMF271[chipId][2][i] = 0;
-                fmRegisterYMF271[chipId][3][i] = 0;
-                fmRegisterYMF271[chipId][4][i] = 0;
-                fmRegisterYMF271[chipId][5][i] = 0;
-                fmRegisterYMF271[chipId][6][i] = 0;
+                register[chipId][0][i] = 0;
+                register[chipId][1][i] = 0;
+                register[chipId][2][i] = 0;
+                register[chipId][3][i] = 0;
+                register[chipId][4][i] = 0;
+                register[chipId][5][i] = 0;
+                register[chipId][6][i] = 0;
             }
         }
     }
@@ -62,43 +62,43 @@ public class YmF271Chip implements Chip {
     public void updateVol() {
     }
 
-    public void setYMF271Register(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOPX", 2);
         else
             context.chipLED.put("SecOPX", 2);
 
         if (model == EnmModel.VirtualModel)
-            fmRegisterYMF271[chipId][dPort][dAddr] = dData;
+            register[chipId][port][addr] = data;
 
         if (model == EnmModel.VirtualModel) {
-            if (!ctYMF271[chipId].getUseReal()[0]) {
-                context.mds.write(YmF271Inst.class, chipId, dPort, dAddr, dData);
+            if (!chipTypes[chipId].getUseReal()[0]) {
+                context.mds.write(YmF271Inst.class, chipId, port, addr, data);
             }
         } else {
-            if (scYMF271[chipId] == null)
+            if (realChips[chipId] == null)
                 return;
-            scYMF271[chipId].setRegister(dPort * 0x100 + dAddr, dData);
+            realChips[chipId].setRegister(port * 0x100 + addr, data);
         }
     }
 
-    public void writeYmF271PCMData(int chipId,
-                                   int romSize,
-                                   int dataStart,
-                                   int dataLength,
-                                   byte[] romData,
-                                   int srcStartAdr,
-                                   EnmModel model) {
+    public void writePcm(int chipId,
+                         int romSize,
+                         int dataStart,
+                         int dataLength,
+                         byte[] romData,
+                         int srcStartAdr,
+                         EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOPX", 2);
         else
             context.chipLED.put("SecOPX", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.WriteYmf271PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(YmF271Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
 
-    public YmF271 getYMF271Register(int chipId) {
-        return context.mds.ReadYmf271Register(chipId);
+    public YmF271 read(int chipId) {
+        return context.mds.inst(YmF271Inst.class).getChip(chipId);
     }
 }

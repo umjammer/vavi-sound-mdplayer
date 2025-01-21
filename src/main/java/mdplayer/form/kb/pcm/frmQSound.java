@@ -151,7 +151,7 @@ public class frmQSound extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] QSoundRegister = audio.chipRegister.chip(QSoundChip.class).getQSoundRegister(chipId);
+        int[] QSoundRegister = audio.chipRegister.chip(QSoundChip.class).read(chipId);
 
         //PCM 16ch
         for (int ch = 0; ch < 16; ch++) {

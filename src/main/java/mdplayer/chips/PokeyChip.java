@@ -35,7 +35,7 @@ public class PokeyChip implements Chip {
     public void updateVol() {
     }
 
-    public void writePOKEY(int chipId, int port, int data, EnmModel model) {
+    public void write(int chipId, int port, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriPOK", 2);
         else

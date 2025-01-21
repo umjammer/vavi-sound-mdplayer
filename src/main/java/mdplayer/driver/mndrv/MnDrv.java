@@ -54,7 +54,7 @@ public class MnDrv extends BaseDriver {
             ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
-                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
+                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getClock(chipId);
                 if (clock != -1) {
                     ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
                 }
@@ -315,7 +315,7 @@ public class MnDrv extends BaseDriver {
             tbl.start = mm.readInt(0x0c + reg.a1);
             tbl.end = mm.readInt(0x10 + reg.a1);
             tbl.count = mm.readInt(0x14 + reg.a1);
-            mpcm.setPcm(0, ch, tbl);
+            mpcm.writePcm(0, ch, tbl);
             break;
         case 0x04:
             mpcm.setPitch(0, ch, reg.D1_L);
@@ -2761,7 +2761,7 @@ public class MnDrv extends BaseDriver {
 
         switch (reg.a0) {
         case 0xecc0c1:
-            plugin.audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, reg.getD1_B(), reg.getD0_B(), model);
+            plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, reg.getD1_B(), reg.getD0_B(), model);
             timerOPN.WriteReg((byte) reg.getD1_B(), (byte) reg.getD0_B());
             //logger.log(Level.TRACE, "DEV:0 PRT:0 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             //if (reg.getD1_B() < 0x10)
@@ -2770,15 +2770,15 @@ public class MnDrv extends BaseDriver {
             //}
             break;
         case 0xecc0c5:
-            plugin.audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 1, reg.getD1_B(), reg.getD0_B(), model);
+            plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, 1, reg.getD1_B(), reg.getD0_B(), model);
             //logger.log(Level.TRACE, "DEV:0 PRT:1 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             break;
         case 0xecc0c9:
-            plugin.audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 0, reg.getD1_B(), reg.getD0_B(), model);
+            plugin.audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, reg.getD1_B(), reg.getD0_B(), model);
             //logger.log(Level.TRACE, "DEV:1 PRT:0 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             break;
         case 0xecc0cd:
-            plugin.audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 1, reg.getD1_B(), reg.getD0_B(), model);
+            plugin.audio.chipRegister.chip(Ym2608Chip.class).write(1, 1, reg.getD1_B(), reg.getD0_B(), model);
             //logger.log(Level.TRACE, "DEV:1 PRT:1 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B()));
             break;
         }
@@ -2881,7 +2881,7 @@ public class MnDrv extends BaseDriver {
         //while ((byte)mm.readByte(Reg.a0) < 0) ; //wait?
         //mm.Write(Reg.a0, (byte)reg.getD0_B());
         //logger.log(Level.TRACE, "adr:%x dat:%x".formatted(Reg.a0, reg.getD0_B())));
-        plugin.audio.chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, 0, reg.getD1_B(), reg.getD0_B(), model, ym2151Hosei[0], 0);
+        plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, reg.getD1_B(), reg.getD0_B(), model, ym2151Hosei[0], 0);
         timerOPM.WriteReg((byte) reg.getD1_B(), (byte) reg.getD0_B());
     }
 

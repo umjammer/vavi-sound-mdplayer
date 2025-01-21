@@ -438,7 +438,7 @@ logger.log(Level.WARNING, "Extended mub file?");
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        plugin.audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, cd.port, cd.address, cd.data, model);
+        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, cd.port, cd.address, cd.data, model);
     }
 
     private void writeOPNA2(ChipDatum cd) {
@@ -447,7 +447,7 @@ logger.log(Level.WARNING, "Extended mub file?");
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        plugin.audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, cd.port, cd.address, cd.data, model);
+        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(1, cd.port, cd.address, cd.data, model);
     }
 
     private void writeOPNB1(ChipDatum cd) {
@@ -456,7 +456,7 @@ logger.log(Level.WARNING, "Extended mub file?");
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        plugin.audio.chipRegister.chip(Ym2610Chip.class).setYM2610Register(0, cd.port, cd.address, cd.data, model);
+        plugin.audio.chipRegister.chip(Ym2610Chip.class).write(0, cd.port, cd.address, cd.data, model);
     }
 
     private void writeOPNB2(ChipDatum cd) {
@@ -465,7 +465,7 @@ logger.log(Level.WARNING, "Extended mub file?");
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        plugin.audio.chipRegister.chip(Ym2610Chip.class).setYM2610Register(1, cd.port, cd.address, cd.data, model);
+        plugin.audio.chipRegister.chip(Ym2610Chip.class).write(1, cd.port, cd.address, cd.data, model);
     }
 
     private void writeOPM1(ChipDatum cd) {
@@ -473,21 +473,21 @@ logger.log(Level.WARNING, "Extended mub file?");
         if (cd.address == -1) return;
         if (cd.data == -1) return;
 
-        plugin.audio.chipRegister.chip(Ym2151Chip.class).setYM2151Register(0, cd.port, cd.address, cd.data, model, 0, 0);
+        plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, cd.port, cd.address, cd.data, model, 0, 0);
     }
 
     private void writeOPNB1PCMData(byte[] dat, int v, int v2) {
         if (v == 0)
-            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeYm2610_SetAdpcmA(0, dat, EnmModel.VirtualModel);
+            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmA(0, dat, EnmModel.VirtualModel);
         else
-            plugin.audio.chipRegister.chip(Ym2610Chip.class).WriteYM2610_SetAdpcmB(0, dat, EnmModel.VirtualModel);
+            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmB(0, dat, EnmModel.VirtualModel);
     }
 
     private void writeOPNB2PCMData(byte[] dat, int v, int v2) {
         if (v == 0)
-            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeYm2610_SetAdpcmA(1, dat, EnmModel.VirtualModel);
+            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmA(1, dat, EnmModel.VirtualModel);
         else
-            plugin.audio.chipRegister.chip(Ym2610Chip.class).WriteYM2610_SetAdpcmB(1, dat, EnmModel.VirtualModel);
+            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmB(1, dat, EnmModel.VirtualModel);
     }
 
     private void sendOPNAWait(long size, int elapsed) {

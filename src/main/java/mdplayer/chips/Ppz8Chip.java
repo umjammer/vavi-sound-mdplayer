@@ -13,6 +13,7 @@ import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdsound.chips.PPZ8;
+import mdsound.instrument.Ppz8Inst;
 
 import static java.lang.System.getLogger;
 
@@ -27,7 +28,7 @@ public class Ppz8Chip implements Chip {
 
     private static final Logger logger = getLogger(Ppz8Chip.class.getName());
 
-    private static final boolean[][] maskChPPZ8 = {
+    private static final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
@@ -47,11 +48,11 @@ public class Ppz8Chip implements Chip {
     public void updateVol() {
     }
 
-    public PPZ8.Channel[] getPPZ8Register(int chipId) {
-        return context.mds.readPPZ8Status(chipId);
+    public PPZ8.Channel[] read(int chipId) {
+        return context.mds.inst(Ppz8Inst.class).readStatus(chipId);
     }
 
-    public void loadPcmPPZ8(int chipId, int bank, int mode, byte[][] pcmData, EnmModel model) {
+    public void writePcm(int chipId, int bank, int mode, byte[][] pcmData, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -60,10 +61,10 @@ public class Ppz8Chip implements Chip {
         else
             context.chipLED.put("SecPPZ8", 2);
 
-        context.mds.WritePPZ8PCMData(chipId, bank, mode, pcmData);
+        context.mds.inst(Ppz8Inst.class).writePcm(chipId, bank, mode, pcmData);
     }
 
-    public void writePPZ8(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -74,24 +75,20 @@ public class Ppz8Chip implements Chip {
 
         if (dPort == -1 && dAddr == -1 && dData == -1)
             return;
-        context.mds.WritePPZ8(chipId, dPort, dAddr, dData, null);
+        context.mds.inst(Ppz8Inst.class).write(chipId, dPort, dAddr, dData);
     }
 
-    public void setMaskPPZ8(int chipId, int ch, boolean mask) {
-        maskChPPZ8[chipId][ch] = mask;
+    public void setMask(int chipId, int ch, boolean mask) {
+        Ppz8Chip.mask[chipId][ch] = mask;
     }
 
-//    public PPZ8.Channel[] getPPZ8Register(int chipId) {
-//        return getPPZ8Register(chipId);
-//    }
-
-    public void setPPZ8Mask(int chipId, int ch) {
-        setMaskPPZ8(chipId, ch, true);
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
     }
 
-    public void resetPPZ8Mask(int chipId, int ch) {
+    public void resetMask(int chipId, int ch) {
         try {
-            setMaskPPZ8(chipId, ch, false);
+            setMask(chipId, ch, false);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }

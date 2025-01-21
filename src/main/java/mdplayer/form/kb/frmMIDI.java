@@ -105,7 +105,7 @@ public class frmMIDI extends frmBase {
     };
 
     public void screenChangeParams() {
-        MIDIParam prm = audio.chipRegister.plugin(MidiPlugin.class).getMIDIInfos(chipId);
+        MIDIParam prm = audio.chipRegister.plugin(MidiPlugin.class).get(chipId);
 
         for (int ch = 0; ch < 16; ch++) {
             System.arraycopy(prm.cc[ch], 0, newParam.cc[ch], 0, 256);

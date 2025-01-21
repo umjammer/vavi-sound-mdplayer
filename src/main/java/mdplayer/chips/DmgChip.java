@@ -21,7 +21,7 @@ import mdsound.instrument.DmgInst;
  */
 public class DmgChip implements Chip {
 
-    public boolean[][] maskChDMG = {
+    public boolean[][] mask = {
             {false, false, false, false},
             {false, false, false, false}
     };
@@ -41,44 +41,36 @@ public class DmgChip implements Chip {
     public void updateVol() {
     }
 
-    public void setDMGRegister(int chipId, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriDMG", 2);
         else
             context.chipLED.put("SecDMG", 2);
 
         if (model == EnmModel.VirtualModel) {
-            // if (!ctNES[chipId].UseScci) {
-            context.mds.write(DmgInst.class, chipId, 0, dAddr, dData);
-            // }
+//            if (!ctNES[chipId].UseScci) {
+                context.mds.write(DmgInst.class, chipId, 0, addr, data);
+//            }
         } else {
 //            if (scNES[chipId] == null) return;
 //
-//            scNES[chipId].setRegister(dAddr, dData);
+//            scNES[chipId].setRegister(addr, data);
         }
     }
 
-    public void setDMGMask(int chipId, int ch) {
-        maskChDMG[chipId][ch] = true;
-        context.mds.setGbMask(chipId, ch);
+    public void setMask(int chipId, int ch) {
+        mask[chipId][ch] = true;
+        context.mds.inst(DmgInst.class).setMask(chipId, ch);
     }
 
-    public void resetDMGMask(int chipId, int ch) {
-        maskChDMG[chipId][ch] = false;
-        context.mds.resetGbMask(chipId, ch);
+    public void resetMask(int chipId, int ch) {
+        mask[chipId][ch] = false;
+        context.mds.inst(DmgInst.class).resetMask(chipId, ch);
     }
 
-    public GbSound getDMGRegister(int chipId) {
+    public GbSound read(int chipId) {
         if (chipId == 1) return null;
 
-        return context.mds.ReadGb(chipId);
+        return context.mds.inst(DmgInst.class).getChip(chipId);
     }
-
-//    public void setDMGMask(int chipId, int ch) {
-//        setDMGMask(chipId, ch);
-//    }
-//
-//    public void resetDMGMask(int chipId, int ch) {
-//        resetDMGMask(chipId, ch);
-//    }
 }

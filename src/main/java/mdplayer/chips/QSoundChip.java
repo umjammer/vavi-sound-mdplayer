@@ -21,7 +21,7 @@ import mdsound.instrument.QSoundInst;
  */
 public class QSoundChip implements Chip {
 
-    private final boolean[][] maskChQSound = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false,},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
@@ -43,7 +43,7 @@ public class QSoundChip implements Chip {
     public void updateVol() {
     }
 
-    public void setQSoundRegister(int chipId, int mm, int ll, int rr, EnmModel model) {
+    public void write(int chipId, int mm, int ll, int rr, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriQsnd", 2);
 
@@ -52,58 +52,54 @@ public class QSoundChip implements Chip {
             context.mds.write(CtrQSoundInst.class, chipId, 0, 1, ll);
             context.mds.write(CtrQSoundInst.class, chipId, 0, 2, rr);
 
-            qSoundRegister[chipId][rr] = mm * 0x100 + ll;
+            register[chipId][rr] = mm * 0x100 + ll;
         } else {
         }
     }
 
-    private final int[][] qSoundRegister = {
+    private final int[][] register = {
             new int[256], new int[256]
     };
 
-    public int[] getQSoundRegister(int chipId) {
-        return qSoundRegister[chipId];
+    public int[] read(int chipId) {
+        return register[chipId];
     }
 
-    public void setMaskQSound(int chipId, int ch, boolean mask) {
-        maskChQSound[chipId][ch] = mask;
+    public void setMask(int chipId, int ch, boolean mask) {
+        this.mask[chipId][ch] = mask;
         if (context.usedInstruments.containsKey(QSoundInst.class)) {
             if (mask)
-                context.mds.setQSoundMask(chipId, ch);
+                context.mds.inst(QSoundInst.class).setMask(chipId, ch);
             else
-                context.mds.resetQSoundMask(chipId, ch);
+                context.mds.inst(QSoundInst.class).resetMask(chipId, ch);
         }
         if (context.usedInstruments.containsKey(CtrQSoundInst.class)) {
             if (mask)
-                context.mds.setQSoundCtrMask(chipId, ch);
+                context.mds.inst(CtrQSoundInst.class).setMask(chipId, ch);
             else
-                context.mds.resetQSoundCtrMask(chipId, ch);
+                context.mds.inst(CtrQSoundInst.class).resetMask(chipId, ch);
         }
     }
 
-    public void writeQSoundPCMData(int chipId,
-                                   int romSize,
-                                   int dataStart,
-                                   int dataLength,
-                                   byte[] romData,
-                                   int srcStartAdr,
-                                   EnmModel model) {
+    public void writePcm(int chipId,
+                         int romSize,
+                         int dataStart,
+                         int dataLength,
+                         byte[] romData,
+                         int srcStartAdr,
+                         EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriQsnd", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.WriteQSoundCtrPCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(QSoundInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
 
-//    public int[] getQSoundRegister(int chipId) {
-//        return getQSoundRegister(chipId);
-//    }
-
-    public void setQSoundMask(int chipId, int ch) {
-        setMaskQSound(chipId, ch, true);
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
     }
 
-    public void resetQSoundMask(int chipId, int ch) {
-        setMaskQSound(chipId, ch, false);
+    public void resetMask(int chipId, int ch) {
+        setMask(chipId, ch, false);
     }
 }

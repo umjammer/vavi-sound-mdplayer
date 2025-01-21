@@ -29,20 +29,19 @@ public class Ym2413Chip implements Chip {
 
     private static final Logger logger = getLogger(Ym2413Chip.class.getName());
 
-    private final Setting.ChipType2[] ctYM2413 = new Setting.ChipType2[] {
+    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
             setting.getYM2413Type()[0], setting.getYM2413Type()[1]
     };
 
-    private final RSoundChip[] scYM2413 = {null, null};
+    private final RSoundChip[] realChips = {null, null};
 
-    public int[][] fmRegisterYM2413 = {null, null};
-//    private int[] fmRegisterYM2413RyhthmB = {0, 0};
-//    private int[] fmRegisterYM2413Ryhthm = {0, 0};
-    private final ChipKeyInfo[] kiYM2413 = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
-    private final ChipKeyInfo[] kiYM2413ret = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
-    private final int[] nowYM2413FadeoutVol = {0, 0};
-    private final boolean[] rmYM2413 = {false, false};
-    private final boolean[][] maskFMChYM2413 = {
+    public int[][] register = {null, null};
+//    private int[] registerRyhthmB = {0, 0};
+//    private int[] registerRyhthm = {0, 0};
+    private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
+    private final int[] fadeout = {0, 0};
+    private final boolean[] rm = {false, false};
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
@@ -52,17 +51,18 @@ public class Ym2413Chip implements Chip {
     @Override
     public void init(ChipRegister context) {
         this.context = context;
-        for (int chipId = 0; chipId < 2; chipId++) {
-            fmRegisterYM2413[chipId] = new int[0x39];
-            for (int i = 0; i < 0x39; i++) {
-                fmRegisterYM2413[chipId][i] = 0;
-            }
-//                fmRegisterYM2413Ryhthm[0] = 0;
-//                fmRegisterYM2413Ryhthm[1] = 0;
-//                fmRegisterYM2413RyhthmB[0] = 0;
-//                fmRegisterYM2413RyhthmB[1] = 0;
 
-            nowYM2413FadeoutVol[chipId] = 0;
+        for (int chipId = 0; chipId < 2; chipId++) {
+            register[chipId] = new int[0x39];
+            for (int i = 0; i < 0x39; i++) {
+                register[chipId][i] = 0;
+            }
+//            registerRhythm[0] = 0;
+//            registerRhythm[1] = 0;
+//            registerRhythmB[0] = 0;
+//            registerRhythmB[1] = 0;
+
+            fadeout[chipId] = 0;
         }
     }
 
@@ -74,142 +74,133 @@ public class Ym2413Chip implements Chip {
     public void updateVol() {
     }
 
-    public void setYM2413Register(int chipId, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOPLL", 2);
         else
             context.chipLED.put("SecOPLL", 2);
 
         if (model == EnmModel.VirtualModel)
-            fmRegisterYM2413[chipId][dAddr] = dData;
+            register[chipId][addr] = data;
 
-        if (dAddr == 0x0e) {
-            rmYM2413[chipId] = (dData & 0x20) != 0;
+        if (addr == 0x0e) {
+            rm[chipId] = (data & 0x20) != 0;
         }
 
-        if (dAddr >= 0x20 && dAddr <= 0x28) {
-            int ch = dAddr - 0x20;
-            int k = dData & 0x10;
+        if (addr >= 0x20 && addr <= 0x28) {
+            int ch = addr - 0x20;
+            int k = data & 0x10;
             if (k == 0) {
-                kiYM2413[chipId].off[ch] = true;
+                keyInfo[chipId].off[ch] = true;
             } else {
-                if (kiYM2413[chipId].off[ch])
-                    kiYM2413[chipId].on[ch] = true;
-                kiYM2413[chipId].off[ch] = false;
+                if (keyInfo[chipId].off[ch])
+                    keyInfo[chipId].on[ch] = true;
+                keyInfo[chipId].off[ch] = false;
             }
 
             // mask適用
-            if (maskFMChYM2413[chipId][ch])
-                dData &= 0xef;
+            if (mask[chipId][ch])
+                data &= 0xef;
         }
 
-        if (dAddr >= 0x30 && dAddr < 0x39) { // TL
-            int inst = dData & 0xf0;
-            int tl = dData & 0x0f;
-            int ch = dAddr - 0x30;
+        if (addr >= 0x30 && addr < 0x39) { // TL
+            int inst = data & 0xf0;
+            int tl = data & 0x0f;
+            int ch = addr - 0x30;
 
-            if (dAddr < 0x36 || !rmYM2413[chipId]) {
-                dData = Math.min(tl + nowYM2413FadeoutVol[chipId], 0x0f);
-                dData = inst | dData;
+            if (addr < 0x36 || !rm[chipId]) {
+                data = Math.min(tl + fadeout[chipId], 0x0f);
+                data = inst | data;
             } else {
-                dData = Math.min(tl + nowYM2413FadeoutVol[chipId], 0x0f);
-                if (dAddr > 0x36)
-                    dData = (dData << 4) | dData;
+                data = Math.min(tl + fadeout[chipId], 0x0f);
+                if (addr > 0x36)
+                    data = (data << 4) | data;
             }
         }
 
-        if (dAddr == 0x0e) {
+        if (addr == 0x0e) {
             for (int c = 0; c < 5; c++) {
-                if ((dData & (0x10 >> c)) == 0) {
-                    kiYM2413[chipId].off[c + 9] = true;
+                if ((data & (0x10 >> c)) == 0) {
+                    keyInfo[chipId].off[c + 9] = true;
                 } else {
-                    if (kiYM2413[chipId].off[c + 9])
-                        kiYM2413[chipId].on[c + 9] = true;
-                    kiYM2413[chipId].off[c + 9] = false;
+                    if (keyInfo[chipId].off[c + 9])
+                        keyInfo[chipId].on[c + 9] = true;
+                    keyInfo[chipId].off[c + 9] = false;
                 }
             }
 
-            dData = (dData & 0x20) | (maskFMChYM2413[chipId][9] ? 0 : (dData & 0x10)) |
-                    (maskFMChYM2413[chipId][10] ? 0 : (dData & 0x08)) | (maskFMChYM2413[chipId][11] ? 0 : (dData & 0x04)) |
-                    (maskFMChYM2413[chipId][12] ? 0 : (dData & 0x02)) | (maskFMChYM2413[chipId][13] ? 0 : (dData & 0x01));
+            data = (data & 0x20) | (mask[chipId][9] ? 0 : (data & 0x10)) |
+                    (mask[chipId][10] ? 0 : (data & 0x08)) | (mask[chipId][11] ? 0 : (data & 0x04)) |
+                    (mask[chipId][12] ? 0 : (data & 0x02)) | (mask[chipId][13] ? 0 : (data & 0x01));
         }
 
         if (model == EnmModel.VirtualModel) {
-            if (!ctYM2413[chipId].getUseReal()[0]) {
-                context.mds.write(Ym2413Inst.class, chipId, 0, dAddr, dData);
+            if (!chipTypes[chipId].getUseReal()[0]) {
+                context.mds.write(Ym2413Inst.class, chipId, 0, addr, data);
             }
         } else {
-            if (scYM2413[chipId] == null)
+            if (realChips[chipId] == null)
                 return;
-            scYM2413[chipId].setRegister(dAddr, dData);
+            realChips[chipId].setRegister(addr, data);
         }
     }
 
-    public ChipKeyInfo getYM2413KeyInfo(int chipId) {
-        for (int ch = 0; ch < kiYM2413[chipId].off.length; ch++) {
-            kiYM2413ret[chipId].off[ch] = kiYM2413[chipId].off[ch];
-            kiYM2413ret[chipId].on[ch] = kiYM2413[chipId].on[ch];
-            kiYM2413[chipId].on[ch] = false;
+    public ChipKeyInfo getKeyInfo(int chipId) {
+        ChipKeyInfo[] keyInfoRet = {new ChipKeyInfo(14), new ChipKeyInfo(14)}; // TODO out for memory usage?
+        for (int ch = 0; ch < keyInfo[chipId].off.length; ch++) {
+            keyInfoRet[chipId].off[ch] = keyInfo[chipId].off[ch];
+            keyInfoRet[chipId].on[ch] = keyInfo[chipId].on[ch];
+            keyInfo[chipId].on[ch] = false;
         }
-        return kiYM2413ret[chipId];
+        return keyInfoRet[chipId];
     }
 
-//    public int getYM2413RyhthmKeyON(int chipId) {
-//        int r = fmRegisterYM2413Ryhthm[chipId];
-//        fmRegisterYM2413Ryhthm[chipId] = 0;
-//        return r;
-//    }
-
-    public void softResetYM2413(int chipId, EnmModel model) {
+    public void softReset(int chipId, EnmModel model) {
         // FM All Channel Key Off
         for (int ch = 0; ch < 9; ch++) {
-            setYM2413Register(chipId, 0x20 + ch, 0x00, model);
+            write(chipId, 0x20 + ch, 0x00, model);
         }
-        setYM2413Register(chipId, 0x0e, 0x00, model);
+        write(chipId, 0x0e, 0x00, model);
 
         // FM TL=15
         for (int ch = 0; ch < 9; ch++) {
-            setYM2413Register(chipId, 0x30 + ch, 0x0f, model);
+            write(chipId, 0x30 + ch, 0x0f, model);
         }
-        setYM2413Register(chipId, 0x36, 0x0f, model);
-        setYM2413Register(chipId, 0x37, 0xff, model);
-        setYM2413Register(chipId, 0x38, 0xff, model);
+        write(chipId, 0x36, 0x0f, model);
+        write(chipId, 0x37, 0xff, model);
+        write(chipId, 0x38, 0xff, model);
     }
 
-    public void setMaskYM2413(int chipId, int ch, boolean mask) {
-        maskFMChYM2413[chipId][ch] = mask;
+    public void setMask(int chipId, int ch, boolean mask) {
+        this.mask[chipId][ch] = mask;
 
         if (ch < 9) {
-            setYM2413Register(chipId, 0x20 + ch, fmRegisterYM2413[chipId][0x20 + ch], EnmModel.VirtualModel);
-            setYM2413Register(chipId, 0x20 + ch, fmRegisterYM2413[chipId][0x20 + ch], EnmModel.RealModel);
+            write(chipId, 0x20 + ch, register[chipId][0x20 + ch], EnmModel.VirtualModel);
+            write(chipId, 0x20 + ch, register[chipId][0x20 + ch], EnmModel.RealModel);
         } else if (ch < 14) {
-            setYM2413Register(chipId, 0x0e, fmRegisterYM2413[chipId][0x0e], EnmModel.VirtualModel);
-            setYM2413Register(chipId, 0x0e, fmRegisterYM2413[chipId][0x0e], EnmModel.RealModel);
+            write(chipId, 0x0e, register[chipId][0x0e], EnmModel.VirtualModel);
+            write(chipId, 0x0e, register[chipId][0x0e], EnmModel.RealModel);
         }
     }
 
-    public void setFadeoutVolYM2413(int chipId, int v) {
-        nowYM2413FadeoutVol[chipId] = v / (128 / 16);
+    public void setFadeout(int chipId, int v) {
+        fadeout[chipId] = v / (128 / 16);
         for (int c = 0; c < 9; c++) {
-            setYM2413Register(chipId, 0x30 + c, fmRegisterYM2413[chipId][0x30 + c], EnmModel.RealModel);
+            write(chipId, 0x30 + c, register[chipId][0x30 + c], EnmModel.RealModel);
         }
     }
 
-    public int[] getYM2413Register(int chipId) {
-        return fmRegisterYM2413[chipId];
+    public int[] read(int chipId) {
+        return register[chipId];
     }
 
-//    public Chip.ChipKeyInfo getYM2413KeyInfo(int chipId) {
-//        return getYM2413KeyInfo(chipId);
-//    }
-
-    public void setYM2413Mask(int chipId, int ch) {
-        setMaskYM2413(chipId, ch, true);
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
     }
 
-    public void resetYM2413Mask(int chipId, int ch) {
+    public void resetMask(int chipId, int ch) {
         try {
-            setMaskYM2413(chipId, ch, false);
+            setMask(chipId, ch, false);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -217,13 +208,13 @@ public class Ym2413Chip implements Chip {
 
     @Override
     public void softReset(EnmModel model) {
-        softResetYM2413(0, model);
-        softResetYM2413(1, model);
+        softReset(0, model);
+        softReset(1, model);
     }
 
     @Override
-    public void clearFadeoutVolume() {
-        setFadeoutVolYM2413(0, 0);
-        setFadeoutVolYM2413(1, 0);
+    public void clearFadeout() {
+        setFadeout(0, 0);
+        setFadeout(1, 0);
     }
 }

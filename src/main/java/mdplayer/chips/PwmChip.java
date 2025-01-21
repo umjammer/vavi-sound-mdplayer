@@ -35,7 +35,7 @@ public class PwmChip implements Chip {
     public void updateVol() {
     }
 
-    public void writePWM(int chipId, int adr, int data, EnmModel model) {
+    public void write(int chipId, int adr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriPWM", 2);
         else

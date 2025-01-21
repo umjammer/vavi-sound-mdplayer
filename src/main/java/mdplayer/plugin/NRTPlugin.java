@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mdplayer.Audio;
-import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.nrtdrv.NRTDRV;
@@ -58,8 +57,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             int r = ((NRTDRV) audio.driverVirtual).checkUseChip(vgmBuf);
 
-            audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(0, 0);
-            audio.chipRegister.chip(Ym2151Chip.class).setFadeoutVolYM2151(1, 0);
+            audio.chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
+            audio.chipRegister.chip(Ym2151Chip.class).setFadeout(1, 0);
 
             audio.chipRegister.resetChips();
 
@@ -155,9 +154,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 audio.setVolume(MAIN_TAG, Ay8910Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class));
 
             if (useChip.contains(Common.EnmChip.YM2151))
-                audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 0, 4000000, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2151Chip.class).writeClock((byte) 0, 4000000, Common.EnmModel.RealModel);
             if (useChip.contains(Common.EnmChip.S_YM2151))
-                audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 1, 4000000, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2151Chip.class).writeClock((byte) 1, 4000000, Common.EnmModel.RealModel);
 
             if (audio.driverVirtual != null) audio.driverVirtual.setYm2151Hosei(4000000);
             if (audio.driverReal != null) audio.driverReal.setYm2151Hosei(4000000);

@@ -22,16 +22,16 @@ import mdsound.instrument.HuC6280Inst;
  */
 public class HuC6280Chip implements Chip {
 
-    private final Setting.ChipType2[] ctHuC6280 = new Setting.ChipType2[] {
+    private final Setting.ChipType2[] chipTypes = {
             setting.getHuC6280Type()[0], setting.getHuC6280Type()[1]
     };
 
-    private final boolean[][] maskChHuC6280 = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false},
             {false, false, false, false, false, false}
     };
 
-    private final int[] HuC6280CurrentCh = {
+    private final int[] currentCh = {
             0, 0
     };
 
@@ -50,54 +50,54 @@ public class HuC6280Chip implements Chip {
     public void updateVol() {
     }
 
-    public void setHuC6280Register(int chipId, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriHuC", 2);
         else
             context.chipLED.put("SecHuC", 2);
 
         if (model == EnmModel.VirtualModel) {
-            if (!ctHuC6280[chipId].getUseReal()[0]) {
-                if (dAddr == 0) {
-                    HuC6280CurrentCh[chipId] = dData & 7;
+            if (!chipTypes[chipId].getUseReal()[0]) {
+                if (addr == 0) {
+                    currentCh[chipId] = data & 7;
                 }
-                if (dAddr == 4) {
-                    dData = maskChHuC6280[chipId][HuC6280CurrentCh[chipId]] ? 0 : dData;
+                if (addr == 4) {
+                    data = mask[chipId][currentCh[chipId]] ? 0 : data;
                 }
-//logger.log(Level.TRACE, "chipId:%d adr:%d Dat:%d".formatted(chipId, dAddr, dData));
-                context.mds.write(HuC6280Inst.class, chipId, 0, dAddr, dData);
+//logger.log(Level.TRACE, "chipId:%d adr:%d Dat:%d".formatted(chipId, addr, data));
+                context.mds.write(HuC6280Inst.class, chipId, 0, addr, data);
             }
         } else {
 //            if (scHuC6280[chipId] == null) return;
         }
     }
 
-    public int readHuC6280Register(int chipId, int adr, EnmModel model) {
+    public int read(int chipId, int adr, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriHuC", 2);
         else
             context.chipLED.put("SecHuC", 2);
 
         if (model == EnmModel.VirtualModel) {
-            return context.mds.readOotakePsg(chipId, adr);
+            return context.mds.inst(HuC6280Inst.class).read(chipId, adr);
         }
 
         return 0;
     }
 
-    public void setMaskHuC6280(int chipId, int ch, boolean mask) {
-        maskChHuC6280[chipId][ch] = mask;
+    public void setMask(int chipId, int ch, boolean mask) {
+        this.mask[chipId][ch] = mask;
     }
 
-    public OotakeHuC6280 getHuC6280Register(int chipId) {
-        return context.mds.ReadOotakePsgStatus(chipId);
+    public OotakeHuC6280 getChip(int chipId) {
+        return context.mds.inst(HuC6280Inst.class).getChip(chipId);
     }
 
-    public void setHuC6280Mask(int chipId, int ch) {
-        setMaskHuC6280(chipId, ch, true);
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
     }
 
-    public void resetHuC6280Mask(int chipId, int ch) {
-        setMaskHuC6280(chipId, ch, false);
+    public void resetMask(int chipId, int ch) {
+        setMask(chipId, ch, false);
     }
 }

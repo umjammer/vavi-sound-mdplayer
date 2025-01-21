@@ -12,6 +12,7 @@ import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.Plugin;
 import mdplayer.chips.RealChipPlugin;
 import mdsound.Instrument;
+import mdsound.MDSound;
 
 import static java.lang.System.getLogger;
 
@@ -21,10 +22,10 @@ public class ChipRegister {
 
     private static final Logger logger = getLogger(ChipRegister.class.getName());
 
-    public final mdsound.MDSound mds;
+    public final MDSound mds;
 
     // selected instruments
-    public final Map<Class<? extends Instrument>, mdsound.MDSound.Chip> usedInstruments = new HashMap<>();
+    public final Map<Class<? extends Instrument>, MDSound.Chip> usedInstruments = new HashMap<>();
 
     // view
     public final ChipLEDs chipLED = new ChipLEDs();
@@ -44,7 +45,7 @@ public class ChipRegister {
     }
 
     /** */
-    public ChipRegister(mdsound.MDSound mds) {
+    public ChipRegister(MDSound mds) {
         this.mds = mds;
 
         for (Chip chip : ServiceLoader.load(Chip.class)) {
@@ -66,7 +67,7 @@ logger.log(Level.INFO, "plugins: " + plugins.size());
 
         usedInstruments.clear();
         if (chipInfos != null) {
-            for (mdsound.MDSound.Chip c : chipInfos) {
+            for (MDSound.Chip c : chipInfos) {
                 if (!usedInstruments.containsKey(c.instrument.getClass())) {
                     usedInstruments.put(c.instrument.getClass(), c);
                 }
@@ -75,11 +76,11 @@ logger.log(Level.INFO, "plugins: " + plugins.size());
     }
 
     // ???
-    public void initChipRegisterNSF(mdsound.MDSound.Chip[] chipInfos) {
+    public void initChipRegisterNSF(MDSound.Chip[] chipInfos) {
 
         usedInstruments.clear();
         if (chipInfos != null) {
-            for (mdsound.MDSound.Chip c : chipInfos) {
+            for (MDSound.Chip c : chipInfos) {
                 usedInstruments.put(c.instrument.getClass(), c);
             }
         }
@@ -87,7 +88,7 @@ logger.log(Level.INFO, "plugins: " + plugins.size());
         plugin(MidiPlugin.class).initChipRegisterNSF();
     }
 
-    public mdsound.MDSound.Chip getChipInfo(Class<? extends Instrument> typ) {
+    public MDSound.Chip getChipInfo(Class<? extends Instrument> typ) {
         if (usedInstruments.containsKey(typ))
             return usedInstruments.get(typ);
         return null;
@@ -104,7 +105,7 @@ logger.log(Level.INFO, "plugins: " + plugins.size());
     }
 
     public void clearFadeoutVolume() {
-        chips.values().forEach(Chip::clearFadeoutVolume);
+        chips.values().forEach(Chip::clearFadeout);
     }
 
     public void close() {

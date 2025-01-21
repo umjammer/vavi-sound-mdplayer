@@ -43,7 +43,7 @@ public interface Chip {
 
     void updateVol();
 
-    default void clearFadeoutVolume() {}
+    default void clearFadeout() {}
 
     default void softReset(EnmModel model) {}
 }

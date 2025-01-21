@@ -300,7 +300,7 @@ public class PMDJava extends BaseDriver {
         if (cd.port == -1)
             return;
 
-        plugin.audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, cd.port, cd.address, cd.data, model);
+        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, cd.port, cd.address, cd.data, model);
     }
 
     private void sendOPNAWait(long size, int elapsed) {
@@ -430,7 +430,7 @@ public class PMDJava extends BaseDriver {
         if (dat.port == -1)
             return;
 
-        plugin.audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, dat.port, dat.address, dat.data, model);
+        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, dat.port, dat.address, dat.data, model);
         //logger.log(Level.TRACE, "%d %d".formatted(dat.address, dat.data));
     }
 
@@ -439,9 +439,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x05) {
-            plugin.audio.chipRegister.chip(PpsChip.class).loadPPSDRV(0, (byte[]) arg.additionalData, model);
+            plugin.audio.chipRegister.chip(PpsChip.class).writePcm(0, (byte[]) arg.additionalData, model);
         } else {
-            plugin.audio.chipRegister.chip(PpsChip.class).writePPSDRV(0, arg.port, arg.address, arg.data, model);
+            plugin.audio.chipRegister.chip(PpsChip.class).write(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -452,9 +452,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x00) {
-            plugin.audio.chipRegister.chip(P86Chip.class).loadPcmP86(0, arg.address, arg.data, (byte[]) arg.additionalData, model);
+            plugin.audio.chipRegister.chip(P86Chip.class).writePcm(0, arg.address, arg.data, (byte[]) arg.additionalData, model);
         } else {
-            plugin.audio.chipRegister.chip(P86Chip.class).writeP86(0, arg.port, arg.address, arg.data, model);
+            plugin.audio.chipRegister.chip(P86Chip.class).write(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -465,9 +465,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x03) {
-            plugin.audio.chipRegister.chip(Ppz8Chip.class).loadPcmPPZ8(0, arg.address, arg.data, (byte[][]) arg.additionalData, model);
+            plugin.audio.chipRegister.chip(Ppz8Chip.class).writePcm(0, arg.address, arg.data, (byte[][]) arg.additionalData, model);
         } else {
-            plugin.audio.chipRegister.chip(Ppz8Chip.class).writePPZ8(0, arg.port, arg.address, arg.data, model);
+            plugin.audio.chipRegister.chip(Ppz8Chip.class).write(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;

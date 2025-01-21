@@ -6,13 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mdplayer.Audio;
-import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.driver.moonDriver.MoonDriverJava;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.YmF278bInst;
+import mdsound.instrument.YmF278BInst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -73,7 +72,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.chipLED.clear();
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
-            YmF278bInst ymf278b = Instrument.getInstrument(YmF278bInst.class);
+            YmF278BInst ymf278b = Instrument.getInstrument(YmF278BInst.class);
             //Func<String, Stream> fn = Common.GetOPNARyhthmStream;
 
             if (useChipFromMdr[0] != Common.EnmChip.Unuse) {
@@ -82,7 +81,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 audio.chipRegister.chipLED.put("PriOPL4", 1);
                 chip.instrument = ymf278b;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278bInst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278BInst.class);
                 chip.clock = 33868800;
                 chip.option = null; // new Object[] { fn };
                 lstChips.add(chip);
@@ -100,26 +99,25 @@ logger.log(Level.WARNING, "cannot start: " + this);
 //            SetYM2608RhythmVolume(true, setting.getbalance().getYM2608RhythmVolume);
 //            SetYM2608AdpcmVolume(true, setting.getbalance().getYM2608AdpcmVolume);
 //
-//            chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel);
-//            chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel);
-//            chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel);
-//            chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
-//            chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
-//            chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-//            chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); // Psg TONE でリセット
-//            chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
-//            chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.VirtualModel);
-//            chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.RealModel);
-//            chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.VirtualModel);
-//            chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.RealModel);
-//            chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.VirtualModel);
-//            chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
+//            audio.chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); // Psg TONE でリセット
+//            audio.chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.VirtualModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.VirtualModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.VirtualModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.RealModel);
 //
-//            chipRegister.writeYM2608Clock(0, MucomDotNET.opnaBaseClock, EnmModel.RealModel);
-//            chipRegister.writeYM2608Clock(1, MucomDotNET.opnaBaseClock, EnmModel.RealModel);
-//            chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, EnmModel.RealModel);
-//            chipRegister.setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, EnmModel.RealModel);
-
+//            audio.chipRegister.writeYM2608Clock(0, MucomDotNET.opnaBaseClock, EnmModel.RealModel);
+//            audio.chipRegister.writeYM2608Clock(1, MucomDotNET.opnaBaseClock, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, EnmModel.RealModel);
 
             if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.YMF278B}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000

@@ -341,7 +341,7 @@ public class MoonDriverJava extends BaseDriver {
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        plugin.audio.chipRegister.chip(YmF278BChip.class).setYMF278BRegister(0, cd.port, cd.address, cd.data, model);
+        plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, cd.port, cd.address, cd.data, model);
     }
 
     private void opl4WaitSend(long size, int elapsed) {

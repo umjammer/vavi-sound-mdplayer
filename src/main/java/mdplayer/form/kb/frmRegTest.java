@@ -78,50 +78,50 @@ public class frmRegTest extends frmChipBase {
 
         public RegisterManager() {
             addChip("YMF278B", 3, 0x100, select -> { // 0
-                return audio.chipRegister.chip(YmF278BChip.class).getYMF278BRegister(0)[select];
+                return audio.chipRegister.chip(YmF278BChip.class).read(0)[select];
             });
 
             addChip("YMF262", 2, 0x100, select -> { // 3
-                return audio.chipRegister.chip(YmF262Chip.class).getYMF262Register(0)[select];
+                return audio.chipRegister.chip(YmF262Chip.class).read(0)[select];
             });
 
             addChip("YM2151", 1, 0x100, select -> { // 5
-                return audio.chipRegister.chip(Ym2151Chip.class).getYM2151Register(0);
+                return audio.chipRegister.chip(Ym2151Chip.class).read(0);
             });
 
             addChip("YM2610", 1, 0x200, select -> { // 6
-                return audio.chipRegister.chip(Ym2610Chip.class).getYM2610Register(0);
+                return audio.chipRegister.chip(Ym2610Chip.class).read(0);
             });
 
             addChip("YM2608", 1, 0x200, select -> { // 7
-                return audio.chipRegister.chip(Ym2608Chip.class).getYM2608Register(0);
+                return audio.chipRegister.chip(Ym2608Chip.class).read(0);
             });
 
-            addChip("Ym2612Inst", 1, 0x200, select -> audio.chipRegister.chip(Ym2612Chip.class).getFMRegister(0));
+            addChip("Ym2612Inst", 1, 0x200, select -> audio.chipRegister.chip(Ym2612Chip.class).read(0));
 
-            addChip("C140Inst", 1, 0x200, select -> audio.chipRegister.chip(C140Chip.class).getC140Register(0));
+            addChip("C140Inst", 1, 0x200, select -> audio.chipRegister.chip(C140Chip.class).read(0));
 
-            addChip("QSOUND", 1, 0x200, select -> audio.chipRegister.chip(QSoundChip.class).getQSoundRegister(0));
+            addChip("QSOUND", 1, 0x200, select -> audio.chipRegister.chip(QSoundChip.class).read(0));
 
-            addChip("SEGAPCM", 1, 0x200, select -> audio.chipRegister.chip(SegaPcmChip.class).getSEGAPCMRegister(0));
+            addChip("SEGAPCM", 1, 0x200, select -> audio.chipRegister.chip(SegaPcmChip.class).read(0));
 
-            addChip("YMZ280B", 1, 0x100, select -> audio.chipRegister.chip(YmZ280BChip.class).getYMZ280BRegister(0));
+            addChip("YMZ280B", 1, 0x100, select -> audio.chipRegister.chip(YmZ280BChip.class).read(0));
 
-            addChip("SN76489", 1, 8, select -> audio.chipRegister.chip(Sn76489Chip.class).getPSGRegister(0));
+            addChip("SN76489", 1, 8, select -> audio.chipRegister.chip(Sn76489Chip.class).read(0));
 
-            addChip("AY", 1, 16, select -> audio.chipRegister.chip(Ay8910Chip.class).getAY8910Register(0));
+            addChip("AY", 1, 16, select -> audio.chipRegister.chip(Ay8910Chip.class).read(0));
 
-            addChip("C352Inst", 1, 0x400, select -> audio.chipRegister.chip(C352Chip.class).getC352Register(0));
+            addChip("C352Inst", 1, 0x400, select -> audio.chipRegister.chip(C352Chip.class).getChip(0));
 
-            addChip("YM2203", 1, 0x200, select -> audio.chipRegister.chip(Ym2203Chip.class).getYm2203Register(0));
+            addChip("YM2203", 1, 0x200, select -> audio.chipRegister.chip(Ym2203Chip.class).read(0));
 
-            addChip("YM2413", 1, 0x100, select -> audio.chipRegister.chip(Ym2413Chip.class).getYM2413Register(0));
+            addChip("YM2413", 1, 0x100, select -> audio.chipRegister.chip(Ym2413Chip.class).read(0));
 
-            addChip("YM3812", 1, 0x100, select -> audio.chipRegister.chip(Ym3812Chip.class).getYM3812Register(0));
+            addChip("YM3812", 1, 0x100, select -> audio.chipRegister.chip(Ym3812Chip.class).read(0));
 
-            addChip("NES", 1, 0x30, select -> audio.chipRegister.chip(NesChip.class).getAPURegister(0));
+            addChip("NES", 1, 0x30, select -> audio.chipRegister.chip(NesChip.class).readApu(0));
 
-            addChip("Sid", 3, 0x19, chipId1 -> audio.chipRegister.chip(SidChip.class).getSIDRegister(chipId1));
+            addChip("Sid", 3, 0x19, chipId1 -> audio.chipRegister.chip(SidChip.class).read(chipId1));
         }
 
         private void addChip(String ChipName, int Max, int regSize, Function<Integer, Object> p) {

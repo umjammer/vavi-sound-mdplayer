@@ -27,11 +27,11 @@ public class C352Chip implements Chip {
 
     private static final Logger logger = getLogger(C352Chip.class.getName());
 
-    public int[][] pcmRegisterC352 = {null, null};
+    public int[][] register = {null, null};
 
-    public int[][] pcmKeyOnC352 = {null, null};
+    public int[][] keyOn = {null, null};
 
-    private static final boolean[][] maskChC352 = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
@@ -45,8 +45,8 @@ public class C352Chip implements Chip {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
-            pcmRegisterC352[chipId] = new int[0x203];
-            pcmKeyOnC352[chipId] = new int[32];
+            register[chipId] = new int[0x203];
+            keyOn[chipId] = new int[32];
         }
     }
 
@@ -58,61 +58,61 @@ public class C352Chip implements Chip {
     public void updateVol() {
     }
 
-    public void setMaskC352(int chipId, int ch, boolean mask) {
-        maskChC352[chipId][ch] = mask;
+    public void setMask(int chipId, int ch, boolean mask) {
+        this.mask[chipId][ch] = mask;
     }
 
-    public void writeC352(int chipId, int adr, int data, EnmModel model) {
+    public void write(int chipId, int adr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriC352", 2);
         else
             context.chipLED.put("SecC352", 2);
 
-        if (adr < pcmRegisterC352[chipId].length)
-            pcmRegisterC352[chipId][adr] = data;
+        if (adr < register[chipId].length)
+            register[chipId][adr] = data;
         int c = adr / 8;
-        if (adr < 0x100 && (adr % 8) == 3 && maskChC352[chipId][adr / 8]) {
+        if (adr < 0x100 && (adr % 8) == 3 && mask[chipId][adr / 8]) {
             data &= 0xbfff;
         }
         if (model == EnmModel.VirtualModel)
             context.mds.write(C352Inst.class, chipId, 0, adr, data);
     }
 
-    public int[] readC352(int chipId) {
-        return context.mds.ReadC352Flag(chipId);
+    public int[] read(int chipId) {
+        return context.mds.inst(C352Inst.class).readFlags(chipId);
     }
 
-    public void writeC352PCMData(int chipId,
-                                 int romSize,
-                                 int dataStart,
-                                 int dataLength,
-                                 byte[] romData,
-                                 int srcStartAdr,
-                                 EnmModel model) {
+    public void writePcm(int chipId,
+                         int romSize,
+                         int dataStart,
+                         int dataLength,
+                         byte[] romData,
+                         int srcStartAdr,
+                         EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriC352", 2);
         else
             context.chipLED.put("SecC352", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.WriteC352PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(C352Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
 
-    public int[] getC352Register(int chipId) {
-        return pcmRegisterC352[chipId];
+    public int[] getChip(int chipId) {
+        return register[chipId];
     }
 
-    public int[] getC352KeyOn(int chipId) {
-        return readC352(chipId);
+    public int[] getKeyOn(int chipId) {
+        return read(chipId);
     }
 
-    public void setC352Mask(int chipId, int ch) {
-        setMaskC352(chipId, ch, true);
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
     }
 
-    public void resetC352Mask(int chipId, int ch) {
+    public void resetMask(int chipId, int ch) {
         try {
-            setMaskC352(chipId, ch, false);
+            setMask(chipId, ch, false);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }

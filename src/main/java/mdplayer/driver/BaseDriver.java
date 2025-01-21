@@ -96,7 +96,7 @@ public abstract class BaseDriver {
             ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, 3579545);
             if (model == EnmModel.RealModel) {
                 ym2151Hosei[chipId] = 0;
-                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getYM2151Clock(chipId);
+                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getClock(chipId);
                 if (clock != -1) {
                     ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, clock);
                 }
@@ -136,5 +136,9 @@ public abstract class BaseDriver {
 
     public long whichCounter(long real, long virtual) {
         return 0;
+    }
+
+    public boolean isNotRenderingOnPause() {
+        return setting.getOther().getNonRenderingForPause();
     }
 }

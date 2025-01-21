@@ -234,12 +234,12 @@ public class frmYM2610 extends frmBase {
         int delta;
         float frq;
 
-        int[][] YM2610Register = audio.chipRegister.chip(Ym2610Chip.class).getYM2610Register(chipId);
-        int[] fmKeyYM2610 = audio.chipRegister.chip(Ym2610Chip.class).getYM2610KeyOn(chipId);
-        int[] YM2610Vol = audio.chipRegister.chip(Ym2610Chip.class).getYM2610Volume(chipId);
-        int[] YM2610Ch3SlotVol = audio.chipRegister.chip(Ym2610Chip.class).getYM2610Ch3SlotVolume(chipId);
-        int[][] YM2610Rhythm = audio.chipRegister.chip(Ym2610Chip.class).getYM2610RhythmVolume(chipId);
-        int[] YM2610AdpcmVol = audio.chipRegister.chip(Ym2610Chip.class).getYM2610AdpcmVolume(chipId);
+        int[][] YM2610Register = audio.chipRegister.chip(Ym2610Chip.class).read(chipId);
+        int[] fmKeyYM2610 = audio.chipRegister.chip(Ym2610Chip.class).getKeyOn(chipId);
+        int[] YM2610Vol = audio.chipRegister.chip(Ym2610Chip.class).getVolume(chipId);
+        int[] YM2610Ch3SlotVol = audio.chipRegister.chip(Ym2610Chip.class).getCh3SlotVolume(chipId);
+        int[][] YM2610Rhythm = audio.chipRegister.chip(Ym2610Chip.class).getRhythmVolume(chipId);
+        int[] YM2610AdpcmVol = audio.chipRegister.chip(Ym2610Chip.class).getAdpcmVolume(chipId);
 
         boolean isFmEx = (YM2610Register[chipId][0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;

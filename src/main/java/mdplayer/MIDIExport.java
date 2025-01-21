@@ -25,8 +25,8 @@ public class MIDIExport {
     private List<Byte> cData = null;
 
     public String playingFileName = "";
-    public int[][][] fmRegisterYM2612 = null;
-    public int[][] fmRegisterYM2151 = null;
+    public int[][][] registerYM2612 = null;
+    public int[][] registerYM2151 = null;
 
     public MIDIExport() {
         this.setting = Setting.getInstance();
@@ -154,13 +154,13 @@ public class MIDIExport {
             int ch = dData & 0x7;
             int cmd = (dData & 0x78) != 0 ? 0x90 : 0x80;
 
-            int freq = (fmRegisterYM2151[chipId][0x28 + ch] & 0x7f) + (fmRegisterYM2151[chipId][0x30 + ch] & 0xfc) * 0x100;
-            int octNote = fmRegisterYM2151[chipId][0x28 + ch] & 0x7f;
+            int freq = (registerYM2151[chipId][0x28 + ch] & 0x7f) + (registerYM2151[chipId][0x30 + ch] & 0xfc) * 0x100;
+            int octNote = registerYM2151[chipId][0x28 + ch] & 0x7f;
             if (octNote == 0) return;
             int octav = (octNote & 0x70) >> 4;
             int note = searchOPMNote(octNote) + hosei;
             int code = octav * 12 + note;
-            int vel = 127 - fmRegisterYM2151[chipId][0x78 + ch];
+            int vel = 127 - registerYM2151[chipId][0x78 + ch];
 
             if (midi2151.oldFreq[ch] < 0 && cmd == 0x80) return;
 
@@ -220,7 +220,7 @@ public class MIDIExport {
                         if (setting.getMidiExport().getUseVOPMex()) {
                             midi2151.data[ch].add((byte) 127);
                         } else {
-                            int vel = 127 - fmRegisterYM2151[chipId][0x78 + ch];
+                            int vel = 127 - registerYM2151[chipId][0x78 + ch];
                             midi2151.data[ch].add((byte) vel);
                         }
 
@@ -410,7 +410,7 @@ public class MIDIExport {
             if (ch > 5) return;
 
             // Get fNum of the channel that is keyed on
-            midi2612.oldFreq[ch] = fmRegisterYM2612[chipId][p][0xa0 + vch] + (fmRegisterYM2612[chipId][p][0xa4 + vch] & 0x3f) * 0x100;
+            midi2612.oldFreq[ch] = registerYM2612[chipId][p][0xa0 + vch] + (registerYM2612[chipId][p][0xa4 + vch] & 0x3f) * 0x100;
             int freq = midi2612.oldFreq[ch] & 0x7ff;
             if (freq == 0) return;
             int octave = (midi2612.oldFreq[ch] & 0x3800) >> 11;
@@ -418,7 +418,7 @@ public class MIDIExport {
             byte code = (byte) (octave * 12 + note);
 
             // Get only the total level of operator 4 (used as volume)
-            byte vel = (byte) (127 - fmRegisterYM2612[chipId][p][0x4c + vch]);
+            byte vel = (byte) (127 - registerYM2612[chipId][p][0x4c + vch]);
 
             // If the previous code was negative and noteOFF, the process ends without doing anything.
             if (midi2612.oldCode[ch] < 0 && cmd == (byte) 0x80) return;
@@ -490,7 +490,7 @@ public class MIDIExport {
                         if (setting.getMidiExport().getUseVOPMex()) {
                             midi2612.data[ch].add((byte) 127);
                         } else {
-                            byte vel = (byte) (127 - fmRegisterYM2612[chipId][dPort][0x4c + vch]);
+                            byte vel = (byte) (127 - registerYM2612[chipId][dPort][0x4c + vch]);
                             midi2612.data[ch].add(vel);
                         }
 

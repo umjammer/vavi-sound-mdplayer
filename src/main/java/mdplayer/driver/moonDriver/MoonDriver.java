@@ -2964,9 +2964,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // out	(MOON_DAT1), a
         // ret
         if (isOPL3) {
-            plugin.audio.chipRegister.chip(YmF262Chip.class).setYMF262Register(0, 0, d, e, model);
+            plugin.audio.chipRegister.chip(YmF262Chip.class).setRegister(0, 0, d, e, model);
         } else {
-            plugin.audio.chipRegister.chip(YmF278BChip.class).setYMF278BRegister(0, 0, d, e, model);
+            plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, 0, d, e, model);
             //logger.log(Level.TRACE, "fm1out:%02x:%02x:".formatted(d, e));
         }
     }
@@ -2980,9 +2980,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // out	(MOON_DAT2), a
         // ret
         if (isOPL3) {
-            plugin.audio.chipRegister.chip(YmF262Chip.class).setYMF262Register(0, 1, d, e, model);
+            plugin.audio.chipRegister.chip(YmF262Chip.class).setRegister(0, 1, d, e, model);
         } else {
-            plugin.audio.chipRegister.chip(YmF278BChip.class).setYMF278BRegister(0, 1, d, e, model);
+            plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, 1, d, e, model);
         }
         //logger.log(Level.TRACE, "fm2out:%02x:%02x:".formatted(d, e));
     }
@@ -2998,7 +2998,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         if (isOPL3) {
             //plugin.audio.chipRegister.getChip(YmF262Chip.class).setYMF262Register(0, 2, d, e, model);
         } else {
-            plugin.audio.chipRegister.chip(YmF278BChip.class).setYMF278BRegister(0, 2, d, e, model);
+            plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, 2, d, e, model);
         }
 
         backDat = e;

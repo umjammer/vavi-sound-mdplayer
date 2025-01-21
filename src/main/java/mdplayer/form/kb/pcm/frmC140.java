@@ -187,8 +187,8 @@ public class frmC140 extends frmBase {
     }
 
     public void screenChangeParams() {
-        byte[] c140State = audio.chipRegister.chip(C140Chip.class).getC140Register(chipId);
-        boolean[] c140KeyOn = audio.chipRegister.chip(C140Chip.class).getC140KeyOn(chipId);
+        byte[] c140State = audio.chipRegister.chip(C140Chip.class).read(chipId);
+        boolean[] c140KeyOn = audio.chipRegister.chip(C140Chip.class).getKeyOn(chipId);
         if (c140State != null) {
             for (int ch = 0; ch < 24; ch++) {
                 int frequency = c140State[ch * 16 + 2] * 256 + c140State[ch * 16 + 3];

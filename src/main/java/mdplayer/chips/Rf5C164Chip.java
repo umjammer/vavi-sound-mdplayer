@@ -12,7 +12,7 @@ import java.lang.System.Logger.Level;
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
-import mdsound.chips.PcmChip;
+import mdsound.chips.ScdPcm;
 import mdsound.instrument.ScdPcmInst;
 
 import static java.lang.System.getLogger;
@@ -28,7 +28,7 @@ public class Rf5C164Chip implements Chip {
 
     private static final Logger logger = getLogger(Rf5C164Chip.class.getName());
 
-    private final boolean[][] maskChRF5C164 = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
@@ -48,25 +48,25 @@ public class Rf5C164Chip implements Chip {
     public void updateVol() {
     }
 
-    public void setMaskRF5C164(int chipId, int ch, boolean mask) {
-        maskChRF5C164[chipId][ch] = mask;
+    public void setMask(int chipId, int ch, boolean mask) {
+        this.mask[chipId][ch] = mask;
         if (mask)
-            context.mds.setRf5c164Mask(chipId, ch);
+            context.mds.inst(ScdPcmInst.class).setMask(chipId, ch);
         else
-            context.mds.resetRf5c164Mask(chipId, ch);
+            context.mds.inst(ScdPcmInst.class).resetMask(chipId, ch);
     }
 
-    public void writeRF5C164PCMData(int chipId, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
+    public void writePcm(int chipId, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriRF5C", 2);
         else
             context.chipLED.put("SecRF5C", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.writeScdPcmPCMData(chipId, stAdr, dataSize, vgmBuf, vgmAdr);
+            context.mds.inst(ScdPcmInst.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr);
     }
 
-    public void writeRF5C164(int chipId, int adr, int data, EnmModel model) {
+    public void write(int chipId, int adr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriRF5C", 2);
         else
@@ -77,30 +77,29 @@ public class Rf5C164Chip implements Chip {
         }
     }
 
-    public void writeRF5C164MemW(int chipId, int offset, int data, EnmModel model) {
+    public void writeMemory(int chipId, int offset, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriRF5C", 2);
         else
             context.chipLED.put("SecRF5C", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.writeScdPcmMemW(chipId, offset, data);
+            context.mds.inst(ScdPcmInst.class).writeMemory(chipId, offset, data);
     }
 
-    public PcmChip getRf5c164Register(int chipId) {
-        return context.mds.ReadRf5c164Register(chipId);
+    public ScdPcm read(int chipId) {
+        return context.mds.inst(ScdPcmInst.class).getChip(chipId);
     }
 
-    public void setRF5C164Mask(int chipId, int ch) {
-        setMaskRF5C164(chipId, ch, true);
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
     }
 
-    public void resetRF5C164Mask(int chipId, int ch) {
+    public void resetMask(int chipId, int ch) {
         try {
-            setMaskRF5C164(chipId, ch, false);
+            setMask(chipId, ch, false);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
-
 }

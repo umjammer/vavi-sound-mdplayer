@@ -29,25 +29,21 @@ public class Ym3526Chip implements Chip {
 
     private static final Logger logger = getLogger(Ym3526Chip.class.getName());
 
-    private final Setting.ChipType2[] ctYM3526 = new Setting.ChipType2[] {
+    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
             setting.getYM3526Type()[0], setting.getYM3526Type()[1]
     };
 
-    private final RSoundChip[] scYM3526 = {null, null};
+    private final RSoundChip[] realChips = {null, null};
 
-    public int[][] fmRegisterYM3526 = {null, null};
+    public int[][] register = {null, null};
 
-    private final int[] nowYM3526FadeoutVol = {0, 0};
+    private final int[] fadeout = {0, 0};
 
-    private final ChipKeyInfo[] kiYM3526 = {
+    private final ChipKeyInfo[] keyInfo = {
             new ChipKeyInfo(14), new ChipKeyInfo(14)
     };
 
-    private final ChipKeyInfo[] kiYM3526ret = {
-            new ChipKeyInfo(14), new ChipKeyInfo(14)
-    };
-
-    private final boolean[][] maskFMChYM3526 = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
@@ -57,14 +53,15 @@ public class Ym3526Chip implements Chip {
     @Override
     public void init(ChipRegister context) {
         this.context = context;
+
         for (int chipId = 0; chipId < 2; chipId++) {
-            fmRegisterYM3526[chipId] = new int[0x100];
+            register[chipId] = new int[0x100];
             for (int i = 0; i < 0x100; i++) {
-                fmRegisterYM3526[chipId][i] = 0;
-                fmRegisterYM3526[chipId][i] = 0;
+                register[chipId][i] = 0;
+                register[chipId][i] = 0;
             }
 
-            nowYM3526FadeoutVol[chipId] = 0;
+            fadeout[chipId] = 0;
         }
     }
 
@@ -76,20 +73,20 @@ public class Ym3526Chip implements Chip {
     public void updateVol() {
     }
 
-    public void setYM3526Register(int chipId, int dAddr, int dData, EnmModel model) {
-        // if (ctYM3526 == null) return;
+    public void write(int chipId, int addr, int data, EnmModel model) {
+        // if (chipTypes == null) return;
 
         if (chipId == 0)
             context.chipLED.put("PriOPL", 2);
         else
             context.chipLED.put("SecOPL", 2);
 
-        fmRegisterYM3526[chipId][dAddr] = dData;
+        register[chipId][addr] = data;
 
-        if (dAddr >= 0x40 && dAddr <= 0x55) { // TL
-            int ksl = dData & 0xc0;
-            int tl = dData & 0x3f;
-            int ch = dAddr - 0x40;
+        if (addr >= 0x40 && addr <= 0x55) { // TL
+            int ksl = data & 0xc0;
+            int tl = data & 0x3f;
+            int ch = addr - 0x40;
             boolean cr = false;
             int twoOpChannel = (ch / 8) * 3 + ((ch % 8) % 3);
 
@@ -97,140 +94,136 @@ public class Ym3526Chip implements Chip {
             if (ch % 8 > 2)
                 cr = true;
             else {
-                int cnt = fmRegisterYM3526[chipId][0xc0 + (ch / 8) * 3 + (ch % 8)] & 1;
+                int cnt = register[chipId][0xc0 + (ch / 8) * 3 + (ch % 8)] & 1;
                 if (cnt == 1)
                     cr = true;
             }
 
-            if (ch >= 0x10 && (fmRegisterYM3526[chipId][0xbd] & 0x20) != 0) {
+            if (ch >= 0x10 && (register[chipId][0xbd] & 0x20) != 0) {
                 cr = true;
             }
 
             if (cr) {
-                dData = Math.min(tl + nowYM3526FadeoutVol[chipId], 0x3f);
-                dData = ksl + (maskFMChYM3526[chipId][twoOpChannel] ? 0x3f : dData);
+                data = Math.min(tl + fadeout[chipId], 0x3f);
+                data = ksl + (mask[chipId][twoOpChannel] ? 0x3f : data);
             }
         }
 
-        // if (model == EnmModel.VirtualModel)
-        {
-            if (dAddr >= 0xb0 && dAddr <= 0xb8) {
-                int ch = dAddr - 0xb0;
-                int k = (dData >> 5) & 1;
+        /* if (model == EnmModel.VirtualModel) */ {
+            if (addr >= 0xb0 && addr <= 0xb8) {
+                int ch = addr - 0xb0;
+                int k = (data >> 5) & 1;
                 if (k == 0) {
-                    kiYM3526[chipId].on[ch] = false;
-                    kiYM3526[chipId].off[ch] = true;
+                    keyInfo[chipId].on[ch] = false;
+                    keyInfo[chipId].off[ch] = true;
                 } else {
-                    kiYM3526[chipId].on[ch] = true;
+                    keyInfo[chipId].on[ch] = true;
                 }
-                if (maskFMChYM3526[chipId][ch])
-                    dData &= 0x1f;
+                if (mask[chipId][ch])
+                    data &= 0x1f;
             }
 
-            if (dAddr == 0xbd) {
+            if (addr == 0xbd) {
 
                 for (int c = 0; c < 5; c++) {
-                    if ((dData & (0x10 >> c)) == 0) {
-                        kiYM3526[chipId].off[c + 9] = true;
+                    if ((data & (0x10 >> c)) == 0) {
+                        keyInfo[chipId].off[c + 9] = true;
                     } else {
-                        if (kiYM3526[chipId].off[c + 9])
-                            kiYM3526[chipId].on[c + 9] = true;
-                        kiYM3526[chipId].off[c + 9] = false;
+                        if (keyInfo[chipId].off[c + 9])
+                            keyInfo[chipId].on[c + 9] = true;
+                        keyInfo[chipId].off[c + 9] = false;
                     }
                 }
 
-                if (maskFMChYM3526[chipId][9])
-                    dData &= 0xef;
-                if (maskFMChYM3526[chipId][10])
-                    dData &= 0xf7;
-                if (maskFMChYM3526[chipId][11])
-                    dData &= 0xfb;
-                if (maskFMChYM3526[chipId][12])
-                    dData &= 0xfd;
-                if (maskFMChYM3526[chipId][13])
-                    dData &= 0xfe;
+                if (mask[chipId][9])
+                    data &= 0xef;
+                if (mask[chipId][10])
+                    data &= 0xf7;
+                if (mask[chipId][11])
+                    data &= 0xfb;
+                if (mask[chipId][12])
+                    data &= 0xfd;
+                if (mask[chipId][13])
+                    data &= 0xfe;
             }
         }
 
-        writeYm3526(chipId, dAddr, dData, model);
+        _write(chipId, addr, data, model);
     }
 
-    public ChipKeyInfo getYM3526KeyInfo(int chipId) {
-        for (int ch = 0; ch < kiYM3526[chipId].off.length; ch++) {
-            kiYM3526ret[chipId].off[ch] = kiYM3526[chipId].off[ch];
-            kiYM3526ret[chipId].on[ch] = kiYM3526[chipId].on[ch];
-            kiYM3526[chipId].on[ch] = false;
+    public ChipKeyInfo getKeyInfo(int chipId) {
+        ChipKeyInfo[] keyInfoRet = {new ChipKeyInfo(14), new ChipKeyInfo(14)}; // TODO out for memory usage?
+        for (int ch = 0; ch < keyInfo[chipId].off.length; ch++) {
+            keyInfoRet[chipId].off[ch] = keyInfo[chipId].off[ch];
+            keyInfoRet[chipId].on[ch] = keyInfo[chipId].on[ch];
+            keyInfo[chipId].on[ch] = false;
         }
-        return kiYM3526ret[chipId];
+        return keyInfoRet[chipId];
     }
 
-    private void writeYm3526(int chipId, int dAddr, int dData, EnmModel model) {
+    private void _write(int chipId, int dAddr, int dData, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
-            if (!ctYM3526[chipId].getUseReal()[0]) {
+            if (!chipTypes[chipId].getUseReal()[0]) {
                 context.mds.write(Ym3526Inst.class, chipId, 0, dAddr, dData);
             }
         } else {
-            if (scYM3526[chipId] == null)
+            if (realChips[chipId] == null)
                 return;
 
-            scYM3526[chipId].setRegister(dAddr, dData);
+            realChips[chipId].setRegister(dAddr, dData);
         }
     }
 
-    public void softResetYM3526(int chipId, EnmModel model) {
+    public void softReset(int chipId, EnmModel model) {
         // FM All Channel Key Off
         for (int i = 0; i < 9; i++) {
-            writeYm3526(chipId, 0xb0 + i, 0x00, model);
+            _write(chipId, 0xb0 + i, 0x00, model);
         }
 
         // FM TL=127
         for (int i = 0; i < 22; i++) {
-            writeYm3526(chipId, 0x40 + i, 0x3f, model);
+            _write(chipId, 0x40 + i, 0x3f, model);
         }
 
         // SL=15 RR=15
         for (int i = 0; i < 22; i++) {
-            writeYm3526(chipId, 0x80 + i, 0xff, model);
+            _write(chipId, 0x80 + i, 0xff, model);
         }
     }
 
-    public void setMaskYM3526(int chipId, int ch, boolean mask) {
-        maskFMChYM3526[chipId][ch] = mask;
+    public void setMask(int chipId, int ch, boolean mask) {
+        this.mask[chipId][ch] = mask;
     }
 
-    public void setFadeoutVolYM3526(int chipId, int v) {
-        nowYM3526FadeoutVol[chipId] = v >> 1;// 0-63 (v range: 0-127)
+    public void setFadeout(int chipId, int v) {
+        fadeout[chipId] = v >> 1;// 0-63 (v range: 0-127)
         for (int c = 0; c < 22; c++) {
-            setYM3526Register(chipId, 0x40 + c, fmRegisterYM3526[chipId][0x40 + c], EnmModel.RealModel);
+            write(chipId, 0x40 + c, register[chipId][0x40 + c], EnmModel.RealModel);
         }
     }
 
-    public void writeYm3526Clock(int chipId, int clock, EnmModel model) {
+    public void writeClock(int chipId, int clock, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
-            if (scYM3526 != null && scYM3526[chipId] != null) {
-//                if (scYM3526[chipId] instanceof RC86ctlSoundChip
-//                        && ((RC86ctlSoundChip) scYM3526[chipId]).ChipType == Nc86ctl.ChipType.CHIP_OPL3) clock *= 4;
-//                scYM3526[chipId].dClock = scYM3526[chipId].SetMasterClock((int) clock);
+            if (realChips != null && realChips[chipId] != null) {
+//                if (realChips[chipId] instanceof RC86ctlSoundChip
+//                        && ((RC86ctlSoundChip) realChips[chipId]).ChipType == Nc86ctl.ChipType.CHIP_OPL3) clock *= 4;
+//                realChips[chipId].dClock = realChips[chipId].SetMasterClock((int) clock);
             }
         }
     }
 
-    public int[] getYM3526Register(int chipId) {
-        return fmRegisterYM3526[chipId];
+    public int[] read(int chipId) {
+        return register[chipId];
     }
 
-//    public Chip.ChipKeyInfo getYM3526KeyInfo(int chipId) {
-//        return getYM3526KeyInfo(chipId);
-//    }
-
-    public void setYM3526Mask(int chipId, int ch) {
-        setMaskYM3526(chipId, ch, true);
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
     }
 
-    public void resetYM3526Mask(int chipId, int ch) {
+    public void resetMask(int chipId, int ch) {
         try {
-            setMaskYM3526(chipId, ch, false);
+            setMask(chipId, ch, false);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -238,13 +231,13 @@ public class Ym3526Chip implements Chip {
 
     @Override
     public void softReset(EnmModel model) {
-        softResetYM3526(0, model);
-        softResetYM3526(1, model);
+        softReset(0, model);
+        softReset(1, model);
     }
 
     @Override
-    public void clearFadeoutVolume() {
-        setFadeoutVolYM3526(0, 0);
-        setFadeoutVolYM3526(1, 0);
+    public void clearFadeout() {
+        setFadeout(0, 0);
+        setFadeout(1, 0);
     }
 }

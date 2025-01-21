@@ -33,7 +33,7 @@ public class SidChip implements Chip {
     public void updateVol() {
     }
 
-    public Integer[] getSIDRegister(int chipId) {
+    public Integer[] read(int chipId) {
         if (SID == null)
             return null;
         return SID.GetRegisterFromSid()[chipId];

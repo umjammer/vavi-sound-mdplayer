@@ -107,7 +107,7 @@ public class frmOKIM6295 extends frmBase {
     };
 
     public void screenChangeParams() {
-        OkiM6295.ChannelInfo info = audio.chipRegister.chip(OkiM6295Chip.class).getOKIM6295Info(chipId);
+        OkiM6295.ChannelInfo info = audio.chipRegister.chip(OkiM6295Chip.class).read(chipId);
         if (info == null) return;
 
         for (int c = 0; c < 4; c++) {

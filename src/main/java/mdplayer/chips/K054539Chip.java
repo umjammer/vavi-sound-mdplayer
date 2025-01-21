@@ -35,7 +35,7 @@ public class K054539Chip implements Chip {
     public void updateVol() {
     }
 
-    public void writeK054539(int chipId, int adr, int data, EnmModel model) {
+    public void write(int chipId, int adr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriK054539", 2);
         else
@@ -45,19 +45,19 @@ public class K054539Chip implements Chip {
             context.mds.write(K054539Inst.class, chipId, 0, adr, data);
     }
 
-    public void writeK054539PCMData(int chipId,
-                                    int romSize,
-                                    int dataStart,
-                                    int dataLength,
-                                    byte[] romData,
-                                    int srcStartAdr,
-                                    EnmModel model) {
+    public void writePcm(int chipId,
+                         int romSize,
+                         int dataStart,
+                         int dataLength,
+                         byte[] romData,
+                         int srcStartAdr,
+                         EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriK054539", 2);
         else
             context.chipLED.put("SecK054539", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.writeK054539PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(K054539Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
 }

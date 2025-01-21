@@ -35,7 +35,7 @@ public class Ga20Chip implements Chip {
     public void updateVol() {
     }
 
-    public void setGA20Register(int chipId, int adr, int dat, EnmModel model) {
+    public void write(int chipId, int adr, int dat, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriGA20", 2);
         else
@@ -47,19 +47,19 @@ public class Ga20Chip implements Chip {
         }
     }
 
-    public void writeGA20PCMData(int chipId,
-                                 int romSize,
-                                 int dataStart,
-                                 int dataLength,
-                                 byte[] romData,
-                                 int srcStartAdr,
-                                 EnmModel model) {
+    public void writePcm(int chipId,
+                         int romSize,
+                         int dataStart,
+                         int dataLength,
+                         byte[] romData,
+                         int srcStartAdr,
+                         EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriGA20", 2);
         else
             context.chipLED.put("SecGA20", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.WriteIremga20PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(Ga20Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
 }

@@ -26,8 +26,6 @@ import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.instrument.Ym2608Inst;
-import mdsound.instrument.YmFmYm2203Inst;
-import mdsound.instrument.YmFmYm2608Inst;
 
 
 public class frmYM2608 extends frmBase {
@@ -144,12 +142,12 @@ public class frmYM2608 extends frmBase {
 
     public void screenChangeParams() {
         boolean isFmEx;
-        int[][] ym2608Register = audio.chipRegister.chip(Ym2608Chip.class).getYM2608Register(chipId);
-        int[] fmKeyYM2608 = audio.chipRegister.chip(Ym2608Chip.class).getYM2608KeyOn(chipId);
-        int[] ym2608Vol = audio.chipRegister.chip(Ym2608Chip.class).getYM2608Volume(chipId);
-        int[] ym2608Ch3SlotVol = audio.chipRegister.chip(Ym2608Chip.class).getYM2608Ch3SlotVolume(chipId);
-        int[][] ym2608Rhythm = audio.chipRegister.chip(Ym2608Chip.class).getYM2608RhythmVolume(chipId);
-        int[] ym2608AdpcmVol = audio.chipRegister.chip(Ym2608Chip.class).getYM2608AdpcmVolume(chipId);
+        int[][] ym2608Register = audio.chipRegister.chip(Ym2608Chip.class).read(chipId);
+        int[] fmKeyYM2608 = audio.chipRegister.chip(Ym2608Chip.class).getKeyOn(chipId);
+        int[] ym2608Vol = audio.chipRegister.chip(Ym2608Chip.class).getVolume(chipId);
+        int[] ym2608Ch3SlotVol = audio.chipRegister.chip(Ym2608Chip.class).getCh3SlotVolume(chipId);
+        int[][] ym2608Rhythm = audio.chipRegister.chip(Ym2608Chip.class).getRhythmVolume(chipId);
+        int[] ym2608AdpcmVol = audio.chipRegister.chip(Ym2608Chip.class).getAdpcmVolume(chipId);
 
         newParam.timerA = ym2608Register[0][0x24] | ((ym2608Register[0][0x25] & 0x3) << 8);
         newParam.timerB = ym2608Register[0][0x26];

@@ -129,10 +129,10 @@ public class frmYM2612 extends frmBase {
             };
 
     public void screenChangeParams() {
-        int[][] fmRegister = audio.chipRegister.chip(Ym2612Chip.class).getFMRegister(chipId);
-        int[] fmVol = audio.chipRegister.chip(Ym2612Chip.class).getFMVolume(chipId);
-        int[] fmCh3SlotVol = audio.chipRegister.chip(Ym2612Chip.class).getFMCh3SlotVolume(chipId);
-        int[] fmKey = audio.chipRegister.chip(Ym2612Chip.class).getFMKeyOn(chipId);
+        int[][] fmRegister = audio.chipRegister.chip(Ym2612Chip.class).read(chipId);
+        int[] fmVol = audio.chipRegister.chip(Ym2612Chip.class).getVolume(chipId);
+        int[] fmCh3SlotVol = audio.chipRegister.chip(Ym2612Chip.class).getCh3SlotVolume(chipId);
+        int[] fmKey = audio.chipRegister.chip(Ym2612Chip.class).getKeyOn(chipId);
 
         boolean isFmEx = (fmRegister[0][0x27] & 0x40) != 0;
         newParam.channels[2].ex = isFmEx;

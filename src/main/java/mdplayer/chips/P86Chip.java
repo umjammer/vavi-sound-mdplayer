@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.instrument.P86Inst;
 
 
 /**
@@ -34,7 +35,7 @@ public class P86Chip implements Chip {
     public void updateVol() {
     }
 
-    public void loadPcmP86(int chipId, int bank, int mode, byte[] pcmData, EnmModel model) {
+    public void writePcm(int chipId, int bank, int mode, byte[] pcmData, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -43,10 +44,10 @@ public class P86Chip implements Chip {
         else
             context.chipLED.put("SecP86", 2);
 
-        context.mds.writeP86PCMData(chipId, bank, mode, pcmData);
+        context.mds.inst(P86Inst.class).writePcm(chipId, bank, mode, pcmData);
     }
 
-    public void writeP86(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -57,6 +58,6 @@ public class P86Chip implements Chip {
 
         if (dPort == -1 && dAddr == -1 && dData == -1)
             return;
-        context.mds.writeP86(chipId, dPort, dAddr, dData, null);
+        context.mds.inst(P86Inst.class).write(chipId, dPort, dAddr, dData);
     }
 }

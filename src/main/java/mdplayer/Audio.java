@@ -2,15 +2,14 @@ package mdplayer;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.HashSet;
-import java.util.Set;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.LineEvent;
 
 import mdplayer.Common.EnmModel;
-import mdplayer.chips.*;
+import mdplayer.chips.MidiPlugin;
+import mdplayer.chips.RealChipPlugin;
+import mdplayer.chips.VstPlugin;
 import mdplayer.driver.BaseDriver;
-import mdplayer.driver.nsf.Nsf;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
@@ -94,7 +93,7 @@ public class Audio {
         int cnt = trdVgmVirtualMainFunction(buffer, offset, sampleCount);
 
         if (setting.getMidiKbd().getUseMIDIKeyboard()) {
-            chipRegister.plugin(MidiPlugin.class).midiKeyboard(buffer, offset, sampleCount);
+            chipRegister.plugin(MidiPlugin.class).keyboard(buffer, offset, sampleCount);
         }
 
         return cnt;
@@ -115,22 +114,20 @@ public class Audio {
 //if (CC++ > 100) { System.exit(1); }
 //logger.log(Level.TRACE, "stop: " + stopped + ", " + hashCode());
             if (stopped || paused) {
-                if (setting.getOther().getNonRenderingForPause()
-                        || driverVirtual instanceof Nsf
-                ) {
+                if (driverVirtual.isNotRenderingOnPause()) {
                     for (int d = offset; d < offset + sampleCount; d++) buffer[d] = 0;
                     return sampleCount;
+                } else {
+                    int ret = mds.update(buffer, offset, sampleCount, null);
+                    return ret;
                 }
-
-                int ret = mds.update(buffer, offset, sampleCount, null);
-                return ret;
             }
 
             int cnt = driverVirtual.render(buffer, offset, sampleCount);
 //logger.log(Level.TRACE, "sampleCount: " + sampleCount);
 
             // VST
-//            vstMng.VST_Update(buffer, offset, sampleCount);
+            chipRegister.plugin(VstPlugin.class).update(buffer, offset, sampleCount);
 
             for (int i = 0; i < sampleCount; i++) {
                 int mul = (int) (16384.0 * Math.pow(10.0, masterVolume / 40.0));
@@ -310,7 +307,7 @@ logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
         chipRegister = new ChipRegister(mds);
 
         chipRegister.plugin(MidiPlugin.class).mdsInit();
-        chipRegister.plugin(MidiPlugin.class).resetAllMIDIout();
+        chipRegister.plugin(MidiPlugin.class).resetAll();
     }
 
     public static Audio getInstance() {
@@ -334,23 +331,17 @@ logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
         }
     }
 
-    protected final Object lockObj = new Object();
-
     public Thread trdMain = null;
     public boolean trdClosed = false;
     private boolean _trdStopped = true;
 
-    public boolean getTrdStopped() {
-        synchronized (lockObj) {
-            return _trdStopped;
-        }
+    public synchronized boolean getTrdStopped() {
+        return _trdStopped;
     }
 
-    public void setTrdStopped(boolean value) {
+    public synchronized void setTrdStopped(boolean value) {
 new Exception("value: " + value).printStackTrace(System.err);
-        synchronized (lockObj) {
-            _trdStopped = value;
-        }
+        _trdStopped = value;
     }
 
     private void updateVisualVolume(short[] buffer, int offset) {

@@ -77,4 +77,8 @@ public class VstPlugin implements Plugin {
     public void close() {
 
     }
+
+    public void update(short[] buffer, int offset, int sampleCount) {
+//        vstMng.VST_Update(buffer, offset, sampleCount);
+    }
 }

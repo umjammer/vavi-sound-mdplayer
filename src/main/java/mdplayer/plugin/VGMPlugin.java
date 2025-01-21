@@ -8,7 +8,6 @@ import java.util.function.Function;
 
 import dotnet4j.io.Stream;
 import mdplayer.Audio;
-import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.instruments.VRC7;
 import mdplayer.chips.Ay8910Chip;
@@ -149,7 +148,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     else audio.chipRegister.chipLED.put("SecDCSG", 1);
 
                     hiyorimiDeviceFlag |= (setting.getSN76489Type()[0].getUseReal()[0]) ? 0x1 : 0x2;
-                    audio.chipRegister.chip(Sn76489Chip.class).sn76489NGPFlag = ((Vgm) audio.driverVirtual).sn76489NGPFlag;
+                    audio.chipRegister.chip(Sn76489Chip.class).ngpFlag = ((Vgm) audio.driverVirtual).sn76489NGPFlag;
 
                     if (chip.instrument != null) lstChips.add(chip);
                     useChip.add(i == 0 ? Common.EnmChip.SN76489 : Common.EnmChip.S_SN76489);
@@ -223,14 +222,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
             }
 
             if (((Vgm) audio.driverVirtual).rf5C68ClockValue != 0) {
-                Rf5c68Inst rf5c68 = Instrument.getInstrument(Rf5c68Inst.class);
+                Rf5C68Inst rf5c68 = Instrument.getInstrument(Rf5C68Inst.class);
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).rf5C68DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = rf5c68;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Rf5c68Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Rf5C68Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).rf5C68ClockValue;
                     chip.option = null;
 
@@ -336,7 +335,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.clock = ((Vgm) audio.driverVirtual).okiM6258ClockValue;
                 chip.option = new Object[] {((Vgm) audio.driverVirtual).okiM6258Type};
                 //chips.option = new Object[1] { 6 };
-                okim6258.okim6258_set_srchg_cb((byte) 0, this::changeChipSampleRate, chip);
+                okim6258.setCallback((byte) 0, this::changeChipSampleRate, chip);
 
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -356,7 +355,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.volume = setting.getBalance().getVolume(MAIN_TAG, OkiM6295Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).okiM6295ClockValue;
                     chip.option = null;
-                    okim6295.okim6295_set_srchg_cb(i, this::changeChipSampleRate, chip);
+                    okim6295.setCallback(i, this::changeChipSampleRate, chip);
 
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -588,13 +587,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
             }
 
             if (((Vgm) audio.driverVirtual).ymF278BClockValue != 0) {
-                YmF278bInst ymf278b = Instrument.getInstrument(YmF278bInst.class);
+                YmF278BInst ymf278b = Instrument.getInstrument(YmF278BInst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ymF278BDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = ymf278b;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278bInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278BInst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).ymF278BClockValue & 0x7fffffff;
                     chip.option = new Object[] {Common.getApplicationFolder()};
 
@@ -609,13 +608,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
             }
 
             if (((Vgm) audio.driverVirtual).ymZ280BClockValue != 0) {
-                YmZ280bInst ymz280b = Instrument.getInstrument(YmZ280bInst.class);
+                YmZ280BInst ymz280b = Instrument.getInstrument(YmZ280BInst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ymZ280BDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = ymz280b;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmZ280bInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmZ280BInst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).ymZ280BClockValue & 0x7fffffff;
                     chip.option = null;
 
@@ -820,7 +819,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.option = new Object[] {(((Vgm) audio.driverVirtual).c352ClockDivider)};
                     int divider = (((Vgm) audio.driverVirtual).c352ClockDivider) != 0 ? (((Vgm) audio.driverVirtual).c352ClockDivider) : 288;
 //                    audio.clockC352 = chip.clock / divider;
-                    c352.c352_set_options((byte) (((Vgm) audio.driverVirtual).c352ClockValue >> 31));
+                    C352Inst.setOptions((byte) (((Vgm) audio.driverVirtual).c352ClockValue >> 31));
                     hiyorimiDeviceFlag |= 0x2;
 
                     if (i == 0) audio.chipRegister.chipLED.put("PriC352", 1);
@@ -981,12 +980,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
             if (((Vgm) audio.driverVirtual).nesClockValue != 0) {
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).nesDualChipFlag ? 2 : 1); i++) {
-                    IntFNesInst nes = Instrument.getInstrument(IntFNesInst.class);
+                    NesInst nes = Instrument.getInstrument(NesInst.class);
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.instrument = nes;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, NesInst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
                     chip.option = null;
                     if (i == 0) audio.chipRegister.chipLED.put("PriNES", 1);
@@ -999,7 +998,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.id = i;
                     chip.instrument = nes;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.DMC.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, NesInst.DMC.class);
                     chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
                     chip.option = null;
                     if (i == 0) audio.chipRegister.chipLED.put("PriDMC", 1);
@@ -1013,7 +1012,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.id = i;
                     chip.instrument = nes;
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.FDS.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, NesInst.FDS.class);
                     chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
                     chip.option = null;
                     if (i == 0) audio.chipRegister.chipLED.put("PriFDS", 1);
@@ -1035,14 +1034,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
 
             if (useChip.contains(Common.EnmChip.YM2203) || useChip.contains(Common.EnmChip.S_YM2203)) {
-                audio.chipRegister.chip(Ym2203Chip.class).setYM2203Register(0, 0x7, 0x3f, Common.EnmModel.RealModel); // 出力オフ
-                audio.chipRegister.chip(Ym2203Chip.class).setYM2203Register(1, 0x7, 0x3f, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2203Chip.class).setYM2203Register(0, 0x8, 0x0, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2203Chip.class).setYM2203Register(1, 0x8, 0x0, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2203Chip.class).setYM2203Register(0, 0x9, 0x0, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2203Chip.class).setYM2203Register(1, 0x9, 0x0, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2203Chip.class).setYM2203Register(0, 0xa, 0x0, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2203Chip.class).setYM2203Register(1, 0xa, 0x0, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).write(0, 0x7, 0x3f, Common.EnmModel.RealModel); // 出力オフ
+                audio.chipRegister.chip(Ym2203Chip.class).write(1, 0x7, 0x3f, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).write(0, 0x8, 0x0, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).write(1, 0x8, 0x0, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).write(0, 0x9, 0x0, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).write(1, 0x9, 0x0, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).write(0, 0xa, 0x0, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).write(1, 0xa, 0x0, Common.EnmModel.RealModel);
                 audio.setVolume("FM", Ym2203Inst.class, true, setting.getBalance().getVolume("FM", Ym2203Inst.class));
                 audio.setVolume("PSG", Ym2203Inst.class, true, setting.getBalance().getVolume("PSG", Ym2203Inst.class));
             }
@@ -1063,67 +1062,67 @@ logger.log(Level.WARNING, "cannot start: " + this);
             }
 
             if (useChip.contains(Common.EnmChip.AY8910))
-                audio.chipRegister.chip(Ay8910Chip.class).writeAY8910Clock((byte) 0, ((Vgm) audio.driverVirtual).ay8910ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ay8910Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).ay8910ClockValue, Common.EnmModel.RealModel);
             if (useChip.contains(Common.EnmChip.S_AY8910))
-                audio.chipRegister.chip(Ay8910Chip.class).writeAY8910Clock((byte) 1, ((Vgm) audio.driverVirtual).ay8910ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ay8910Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).ay8910ClockValue, Common.EnmModel.RealModel);
             if (useChip.contains(Common.EnmChip.YM2151))
-                audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 0, ((Vgm) audio.driverVirtual).yn2151ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2151Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).yn2151ClockValue, Common.EnmModel.RealModel);
             if (useChip.contains(Common.EnmChip.S_YM2151))
-                audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 1, ((Vgm) audio.driverVirtual).yn2151ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2151Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).yn2151ClockValue, Common.EnmModel.RealModel);
             if (useChip.contains(Common.EnmChip.YM2203))
-                audio.chipRegister.chip(Ym2203Chip.class).writeYm2203Clock((byte) 0, ((Vgm) audio.driverVirtual).ym2203ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).ym2203ClockValue, Common.EnmModel.RealModel);
             if (useChip.contains(Common.EnmChip.S_YM2203))
-                audio.chipRegister.chip(Ym2203Chip.class).writeYm2203Clock((byte) 1, ((Vgm) audio.driverVirtual).ym2203ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).ym2203ClockValue, Common.EnmModel.RealModel);
             if (useChip.contains(Common.EnmChip.YM2608))
-                audio.chipRegister.chip(Ym2608Chip.class).writeYm2608Clock((byte) 0, ((Vgm) audio.driverVirtual).yn2608ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).yn2608ClockValue, Common.EnmModel.RealModel);
             if (useChip.contains(Common.EnmChip.S_YM2608))
-                audio.chipRegister.chip(Ym2608Chip.class).writeYm2608Clock((byte) 1, ((Vgm) audio.driverVirtual).yn2608ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).yn2608ClockValue, Common.EnmModel.RealModel);
             if (useChip.contains(Common.EnmChip.YM3526)) {
-                audio.chipRegister.chip(Ym3526Chip.class).setYM3526Register(0, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
-                audio.chipRegister.chip(Ym3526Chip.class).writeYm3526Clock((byte) 0, ((Vgm) audio.driverVirtual).ym3526ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym3526Chip.class).write(0, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
+                audio.chipRegister.chip(Ym3526Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).ym3526ClockValue, Common.EnmModel.RealModel);
             }
             if (useChip.contains(Common.EnmChip.S_YM3526)) {
-                audio.chipRegister.chip(Ym3526Chip.class).setYM3526Register(1, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
-                audio.chipRegister.chip(Ym3526Chip.class).writeYm3526Clock((byte) 1, ((Vgm) audio.driverVirtual).ym3526ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym3526Chip.class).write(1, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
+                audio.chipRegister.chip(Ym3526Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).ym3526ClockValue, Common.EnmModel.RealModel);
             }
             if (useChip.contains(Common.EnmChip.YM3812)) {
-                audio.chipRegister.chip(Ym3812Chip.class).setYM3812Register(0, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
-                audio.chipRegister.chip(Ym3812Chip.class).writeYm3812Clock((byte) 0, ((Vgm) audio.driverVirtual).ym3812ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym3812Chip.class).write(0, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
+                audio.chipRegister.chip(Ym3812Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).ym3812ClockValue, Common.EnmModel.RealModel);
             }
             if (useChip.contains(Common.EnmChip.S_YM3812)) {
-                audio.chipRegister.chip(Ym3812Chip.class).setYM3812Register(1, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
-                audio.chipRegister.chip(Ym3812Chip.class).writeYm3812Clock((byte) 1, ((Vgm) audio.driverVirtual).ym3812ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym3812Chip.class).write(1, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
+                audio.chipRegister.chip(Ym3812Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).ym3812ClockValue, Common.EnmModel.RealModel);
             }
             if (useChip.contains(Common.EnmChip.YMF262)) {
-                audio.chipRegister.chip(YmF262Chip.class).setYMF262Register(0, 0, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
-                audio.chipRegister.chip(YmF262Chip.class).setYMF262Register(0, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
-                audio.chipRegister.chip(YmF262Chip.class).writeYmF262Clock((byte) 0, ((Vgm) audio.driverVirtual).ymF262ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(YmF262Chip.class).setRegister(0, 0, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
+                audio.chipRegister.chip(YmF262Chip.class).setRegister(0, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
+                audio.chipRegister.chip(YmF262Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).ymF262ClockValue, Common.EnmModel.RealModel);
             }
             if (useChip.contains(Common.EnmChip.S_YMF262)) {
-                audio.chipRegister.chip(YmF262Chip.class).setYMF262Register(1, 0, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
-                audio.chipRegister.chip(YmF262Chip.class).setYMF262Register(1, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
-                audio.chipRegister.chip(YmF262Chip.class).writeYmF262Clock((byte) 1, ((Vgm) audio.driverVirtual).ymF262ClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(YmF262Chip.class).setRegister(1, 0, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
+                audio.chipRegister.chip(YmF262Chip.class).setRegister(1, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
+                audio.chipRegister.chip(YmF262Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).ymF262ClockValue, Common.EnmModel.RealModel);
             }
-            if (audio.chipRegister.chip(Sn76489Chip.class).sn76489NGPFlag) {
-                audio.chipRegister.chip(Sn76489Chip.class).setSN76489Register(0, 0xe5, Common.EnmModel.RealModel); // white noise mode
-                audio.chipRegister.chip(Sn76489Chip.class).setSN76489Register(1, 0xe5, Common.EnmModel.RealModel); // white noise mode
-                audio.chipRegister.chip(Sn76489Chip.class).setSN76489Register(0, 0xe5, Common.EnmModel.VirtualModel); // white noise mode
-                audio.chipRegister.chip(Sn76489Chip.class).setSN76489Register(1, 0xe5, Common.EnmModel.VirtualModel); // white noise mode
+            if (audio.chipRegister.chip(Sn76489Chip.class).ngpFlag) {
+                audio.chipRegister.chip(Sn76489Chip.class).write(0, 0xe5, Common.EnmModel.RealModel); // white noise mode
+                audio.chipRegister.chip(Sn76489Chip.class).write(1, 0xe5, Common.EnmModel.RealModel); // white noise mode
+                audio.chipRegister.chip(Sn76489Chip.class).write(0, 0xe5, Common.EnmModel.VirtualModel); // white noise mode
+                audio.chipRegister.chip(Sn76489Chip.class).write(1, 0xe5, Common.EnmModel.VirtualModel); // white noise mode
             }
             if (useChip.contains(Common.EnmChip.YM2610)) {
                 // control2 レジスタのパンをセンターに予め設定
-                audio.chipRegister.chip(Ym2610Chip.class).setYM2610Register(0, 0, 0x11, 0xc0, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2610Chip.class).setYM2610Register(0, 0, 0x11, 0xc0, Common.EnmModel.VirtualModel);
+                audio.chipRegister.chip(Ym2610Chip.class).write(0, 0, 0x11, 0xc0, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2610Chip.class).write(0, 0, 0x11, 0xc0, Common.EnmModel.VirtualModel);
             }
             if (useChip.contains(Common.EnmChip.S_YM2610)) {
                 // control2 レジスタのパンをセンターに予め設定
-                audio.chipRegister.chip(Ym2610Chip.class).setYM2610Register(1, 0, 0x11, 0xc0, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2610Chip.class).setYM2610Register(1, 0, 0x11, 0xc0, Common.EnmModel.VirtualModel);
+                audio.chipRegister.chip(Ym2610Chip.class).write(1, 0, 0x11, 0xc0, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2610Chip.class).write(1, 0, 0x11, 0xc0, Common.EnmModel.VirtualModel);
             }
             if (useChip.contains(Common.EnmChip.C140))
-                audio.chipRegister.chip(C140Chip.class).writeC140Type((byte) 0, ((Vgm) audio.driverVirtual).C140Type, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(C140Chip.class).writeType((byte) 0, ((Vgm) audio.driverVirtual).C140Type, Common.EnmModel.RealModel);
             if (useChip.contains(Common.EnmChip.SEGAPCM))
-                audio.chipRegister.chip(SegaPcmChip.class).writeSEGAPCMClock((byte) 0, ((Vgm) audio.driverVirtual).segaPCMClockValue, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(SegaPcmChip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).segaPCMClockValue, Common.EnmModel.RealModel);
 
             int SSGVolumeFromTAG = -1;
             if (audio.driverReal != null) {
@@ -1143,22 +1142,22 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             if (SSGVolumeFromTAG == -1) {
                 if (useChip.contains(Common.EnmChip.YM2203))
-                    audio.chipRegister.chip(Ym2203Chip.class).setYM2203SSGVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2203Chip.class).setVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
                 if (useChip.contains(Common.EnmChip.S_YM2203))
-                    audio.chipRegister.chip(Ym2203Chip.class).setYM2203SSGVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2203Chip.class).setVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
                 if (useChip.contains(Common.EnmChip.YM2608))
-                    audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2608Chip.class).setVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
                 if (useChip.contains(Common.EnmChip.S_YM2608))
-                    audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2608Chip.class).setVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
             } else {
                 if (useChip.contains(Common.EnmChip.YM2203))
-                    audio.chipRegister.chip(Ym2203Chip.class).setYM2203SSGVolume((byte) 0, SSGVolumeFromTAG, Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2203Chip.class).setVolume((byte) 0, SSGVolumeFromTAG, Common.EnmModel.RealModel);
                 if (useChip.contains(Common.EnmChip.S_YM2203))
-                    audio.chipRegister.chip(Ym2203Chip.class).setYM2203SSGVolume((byte) 1, SSGVolumeFromTAG, Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2203Chip.class).setVolume((byte) 1, SSGVolumeFromTAG, Common.EnmModel.RealModel);
                 if (useChip.contains(Common.EnmChip.YM2608))
-                    audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 0, SSGVolumeFromTAG, Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2608Chip.class).setVolume((byte) 0, SSGVolumeFromTAG, Common.EnmModel.RealModel);
                 if (useChip.contains(Common.EnmChip.S_YM2608))
-                    audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 1, SSGVolumeFromTAG, Common.EnmModel.RealModel);
+                    audio.chipRegister.chip(Ym2608Chip.class).setVolume((byte) 1, SSGVolumeFromTAG, Common.EnmModel.RealModel);
             }
 
             audio.driverVirtual.setYm2151Hosei(((Vgm) audio.driverVirtual).yn2151ClockValue);

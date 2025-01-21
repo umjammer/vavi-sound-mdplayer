@@ -17,7 +17,7 @@ import mdplayer.Setting;
 import mdsound.instrument.YmF262Inst;
 
 import static java.lang.System.getLogger;
-import static mdplayer.chips.YmF278BChip.YMF278BCh;
+import static mdplayer.chips.YmF278BChip.channel;
 
 
 /**
@@ -30,45 +30,46 @@ public class YmF262Chip implements Chip {
 
     private static final Logger logger = getLogger(YmF262Chip.class.getName());
 
-    private final Setting.ChipType2[] ctYMF262 = new Setting.ChipType2[] {
+    private final Setting.ChipType2[] chipTypes = {
             setting.getYMF262Type()[0], setting.getYMF262Type()[1]
     };
 
-    private final RSoundChip[] scYMF262 = {null, null};
+    private final RSoundChip[] realChips = {null, null};
 
-    public int[][][] fmRegisterYMF262 = {
+    public int[][][] register = {
             {null, null},
             {null, null}
     };
 
-    private final int[] fmRegisterYMF262FM = {0, 0};
+    private final int[] registerFm = {0, 0};
 
-    private final int[] fmRegisterYMF262RyhthmB = {0, 0};
+    private final int[] registerRhythmB = {0, 0};
 
-    private final int[] fmRegisterYMF262Ryhthm = {0, 0};
+    private final int[] registerRhythm = {0, 0};
 
-    private final boolean[][] maskFMChYMF262 = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false}
     };
 
-    private final int[] nowYMF262FadeoutVol = {0, 0};
+    private final int[] fadeout = {0, 0};
 
     private ChipRegister context;
 
     @Override
     public void init(ChipRegister context) {
         this.context = context;
+
         for (int chipId = 0; chipId < 2; chipId++) {
-            fmRegisterYMF262[chipId] = new int[][] {new int[0x100], new int[0x100]};
+            register[chipId] = new int[][] {new int[0x100], new int[0x100]};
             for (int i = 0; i < 0x100; i++) {
-                fmRegisterYMF262[chipId][0][i] = 0;
-                fmRegisterYMF262[chipId][1][i] = 0;
+                register[chipId][0][i] = 0;
+                register[chipId][1][i] = 0;
             }
 
-            nowYMF262FadeoutVol[chipId] = 0;
+            fadeout[chipId] = 0;
         }
     }
 
@@ -80,43 +81,43 @@ public class YmF262Chip implements Chip {
     public void updateVol() {
     }
 
-    public int getYMF262RyhthmKeyON(int chipId) {
-        int r = fmRegisterYMF262Ryhthm[chipId];
-        fmRegisterYMF262Ryhthm[chipId] = 0;
+    public int getRhythmKeyON(int chipId) {
+        int r = registerRhythm[chipId];
+        registerRhythm[chipId] = 0;
         return r;
     }
 
-    public int getYMF262FMKeyON(int chipId) {
-        return fmRegisterYMF262FM[chipId];
+    public int getFmKeyON(int chipId) {
+        return registerFm[chipId];
     }
 
-    public void setYMF262Register(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
+    public void setRegister(int chipId, int port, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOPL3", 2);
         else
             context.chipLED.put("SecOPL3", 2);
 
-        fmRegisterYMF262[chipId][dPort][dAddr] = dData;
+        register[chipId][port][addr] = data;
 
-        if (dAddr >= 0x40 && dAddr <= 0x55) { // TL
-            int ksl = (dData & 0xc0);
-            int tl = (dData & 0x3f);
-            int ch = dAddr - 0x40;
-            int conSel = fmRegisterYMF262[chipId][1][4] & 0x3f;
+        if (addr >= 0x40 && addr <= 0x55) { // TL
+            int ksl = (data & 0xc0);
+            int tl = (data & 0x3f);
+            int ch = addr - 0x40;
+            int conSel = register[chipId][1][4] & 0x3f;
             boolean cr = false;
 
             int twoOpChannel = (ch / 8) * 3 + ((ch % 8) % 3);
-            int fourOpChannel = twoOpChannel > 5 ? -1 : ((twoOpChannel % 3) + dPort * 3);
+            int fourOpChannel = twoOpChannel > 5 ? -1 : ((twoOpChannel % 3) + port * 3);
             boolean fourOpMode = fourOpChannel != -1 && ((conSel & (1 << fourOpChannel)) != 0);
             int slotNumber = ((ch % 8) / 3) + (twoOpChannel > 2 ? 2 : 0);
-            twoOpChannel += dPort * 9;
+            twoOpChannel += port * 9;
 
             if (!fourOpMode) {
                 // Career determination during 2op
                 if (ch % 8 > 2)
                     cr = true;
                 else {
-                    int cnt = fmRegisterYMF262[chipId][dPort][0xc0 + (ch / 8) * 3 + (ch % 8)] & 1;
+                    int cnt = register[chipId][port][0xc0 + (ch / 8) * 3 + (ch % 8)] & 1;
                     if (cnt == 1)
                         cr = true;
                 }
@@ -124,8 +125,8 @@ public class YmF262Chip implements Chip {
                 if (slotNumber == 3)
                     cr = true;
                 else {
-                    int cnt0 = fmRegisterYMF262[chipId][dPort][0xc0 + (fourOpChannel % 3)] & 1;
-                    int cnt1 = fmRegisterYMF262[chipId][dPort][0xc3 + (fourOpChannel % 3)] & 1;
+                    int cnt0 = register[chipId][port][0xc0 + (fourOpChannel % 3)] & 1;
+                    int cnt1 = register[chipId][port][0xc3 + (fourOpChannel % 3)] & 1;
                     if (cnt0 == 0) {
                         if (cnt1 == 1 && slotNumber == 1)
                             cr = true;
@@ -141,141 +142,133 @@ public class YmF262Chip implements Chip {
                 }
             }
 
-            if (ch >= 0x10 && dPort == 0 && (fmRegisterYMF262[chipId][dPort][0xbd] & 0x20) != 0) {
+            if (ch >= 0x10 && port == 0 && (register[chipId][port][0xbd] & 0x20) != 0) {
                 cr = true;
             }
 
             if (cr) {
-                dData = Math.min(tl + nowYMF262FadeoutVol[chipId], 0x3f);
-                dData = ksl + (maskFMChYMF262[chipId][twoOpChannel] ? 0x3f : dData);
+                data = Math.min(tl + fadeout[chipId], 0x3f);
+                data = ksl + (mask[chipId][twoOpChannel] ? 0x3f : data);
             }
         }
 
-        if (dAddr >= 0xb0 && dAddr <= 0xb8) {
-            int ch = dAddr - 0xb0 + dPort * 9;
-            int k = (dData >> 5) & 1;
+        if (addr >= 0xb0 && addr <= 0xb8) {
+            int ch = addr - 0xb0 + port * 9;
+            int k = (data >> 5) & 1;
             if (k == 0) {
-                fmRegisterYMF262FM[chipId] &= ~(1 << ch);
+                registerFm[chipId] &= ~(1 << ch);
             } else {
-                fmRegisterYMF262FM[chipId] |= (1 << ch);
+                registerFm[chipId] |= (1 << ch);
             }
-            fmRegisterYMF262FM[chipId] &= 0x3ffff;
-            if (maskFMChYMF262[chipId][ch])
-                dData &= 0x1f;
+            registerFm[chipId] &= 0x3ffff;
+            if (mask[chipId][ch])
+                data &= 0x1f;
         }
 
-        if (dAddr == 0xbd && dPort == 0) {
-            if ((fmRegisterYMF262RyhthmB[chipId] & 0x10) == 0 && (dData & 0x10) != 0)
-                fmRegisterYMF262Ryhthm[chipId] |= 0x10;
-            if ((fmRegisterYMF262RyhthmB[chipId] & 0x08) == 0 && (dData & 0x08) != 0)
-                fmRegisterYMF262Ryhthm[chipId] |= 0x08;
-            if ((fmRegisterYMF262RyhthmB[chipId] & 0x04) == 0 && (dData & 0x04) != 0)
-                fmRegisterYMF262Ryhthm[chipId] |= 0x04;
-            if ((fmRegisterYMF262RyhthmB[chipId] & 0x02) == 0 && (dData & 0x02) != 0)
-                fmRegisterYMF262Ryhthm[chipId] |= 0x02;
-            if ((fmRegisterYMF262RyhthmB[chipId] & 0x01) == 0 && (dData & 0x01) != 0)
-                fmRegisterYMF262Ryhthm[chipId] |= 0x01;
-            fmRegisterYMF262RyhthmB[chipId] = dData;
+        if (addr == 0xbd && port == 0) {
+            if ((registerRhythmB[chipId] & 0x10) == 0 && (data & 0x10) != 0)
+                registerRhythm[chipId] |= 0x10;
+            if ((registerRhythmB[chipId] & 0x08) == 0 && (data & 0x08) != 0)
+                registerRhythm[chipId] |= 0x08;
+            if ((registerRhythmB[chipId] & 0x04) == 0 && (data & 0x04) != 0)
+                registerRhythm[chipId] |= 0x04;
+            if ((registerRhythmB[chipId] & 0x02) == 0 && (data & 0x02) != 0)
+                registerRhythm[chipId] |= 0x02;
+            if ((registerRhythmB[chipId] & 0x01) == 0 && (data & 0x01) != 0)
+                registerRhythm[chipId] |= 0x01;
+            registerRhythmB[chipId] = data;
 
-            if (maskFMChYMF262[chipId][18])
-                dData &= 0xef;
-            if (maskFMChYMF262[chipId][19])
-                dData &= 0xf7;
-            if (maskFMChYMF262[chipId][20])
-                dData &= 0xfb;
-            if (maskFMChYMF262[chipId][21])
-                dData &= 0xfd;
-            if (maskFMChYMF262[chipId][22])
-                dData &= 0xfe;
+            if (mask[chipId][18])
+                data &= 0xef;
+            if (mask[chipId][19])
+                data &= 0xf7;
+            if (mask[chipId][20])
+                data &= 0xfb;
+            if (mask[chipId][21])
+                data &= 0xfd;
+            if (mask[chipId][22])
+                data &= 0xfe;
 
         }
 
         if (model == EnmModel.VirtualModel) {
-            if (!ctYMF262[chipId].getUseReal()[0]) {
-                context.mds.write(YmF262Inst.class, chipId, dPort, dAddr, dData);
+            if (!chipTypes[chipId].getUseReal()[0]) {
+                context.mds.write(YmF262Inst.class, chipId, port, addr, data);
             }
         } else {
-            if (scYMF262[chipId] == null)
+            if (realChips[chipId] == null)
                 return;
-            scYMF262[chipId].setRegister(dPort * 0x100 + dAddr, dData);
+            realChips[chipId].setRegister(port * 0x100 + addr, data);
         }
     }
 
-    private void writeYmF262(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
+    private void _write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
-            if (!ctYMF262[chipId].getUseReal()[0]) {
-                context.mds.write(YmF262Inst.class, chipId, dPort, dAddr, dData);
+            if (!chipTypes[chipId].getUseReal()[0]) {
+                context.mds.write(YmF262Inst.class, chipId, port, addr, data);
             }
         } else {
-            if (scYMF262[chipId] == null)
+            if (realChips[chipId] == null)
                 return;
 
-            scYMF262[chipId].setRegister(dPort * 0x100 + dAddr, dData);
+            realChips[chipId].setRegister(port * 0x100 + addr, data);
         }
     }
 
-    public void softResetYMF262(int chipId, EnmModel model) {
+    public void softReset(int chipId, EnmModel model) {
         int i;
 
         // FM All Channel Key Off
         for (i = 0; i < 9; i++) {
-            writeYmF262(chipId, 0, 0xb0 + i, 0x00, model);
-            writeYmF262(chipId, 1, 0xb0 + i, 0x00, model);
+            _write(chipId, 0, 0xb0 + i, 0x00, model);
+            _write(chipId, 1, 0xb0 + i, 0x00, model);
         }
 
         // FM TL=127
         for (i = 0; i < 22; i++) {
-            writeYmF262(chipId, 0, 0x40 + i, 0x3f, model);
-            writeYmF262(chipId, 1, 0x40 + i, 0x3f, model);
+            _write(chipId, 0, 0x40 + i, 0x3f, model);
+            _write(chipId, 1, 0x40 + i, 0x3f, model);
         }
 
         // SL=15 RR=15
         for (i = 0; i < 22; i++) {
-            writeYmF262(chipId, 0, 0x80 + i, 0xff, model);
-            writeYmF262(chipId, 1, 0x80 + i, 0xff, model);
+            _write(chipId, 0, 0x80 + i, 0xff, model);
+            _write(chipId, 1, 0x80 + i, 0xff, model);
         }
     }
 
-    public void setMaskYMF262(int chipId, int ch, boolean mask) {
-        maskFMChYMF262[chipId][YMF278BCh[ch]] = mask;
+    public void setMask(int chipId, int ch, boolean mask) {
+        this.mask[chipId][channel[ch]] = mask;
     }
 
-    public void setFadeoutVolYMF262(int chipId, int v) {
-        nowYMF262FadeoutVol[chipId] = v >> 1;// 0-63 (v range: 0-127)
+    public void setFadeout(int chipId, int v) {
+        fadeout[chipId] = v >> 1;// 0-63 (v range: 0-127)
         for (int c = 0; c < 22; c++) {
-            setYMF262Register(chipId, 0, 0x40 + c, fmRegisterYMF262[chipId][0][0x40 + c], EnmModel.RealModel);
-            setYMF262Register(chipId, 1, 0x40 + c, fmRegisterYMF262[chipId][1][0x40 + c], EnmModel.RealModel);
+            setRegister(chipId, 0, 0x40 + c, register[chipId][0][0x40 + c], EnmModel.RealModel);
+            setRegister(chipId, 1, 0x40 + c, register[chipId][1][0x40 + c], EnmModel.RealModel);
         }
     }
 
-    public void writeYmF262Clock(int chipId, int clock, EnmModel model) {
+    public void writeClock(int chipId, int clock, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
-            if (scYMF262 != null && scYMF262[chipId] != null) {
-                scYMF262[chipId].dClock = scYMF262[chipId].setMasterClock(clock);
+            if (realChips != null && realChips[chipId] != null) {
+                realChips[chipId].dClock = realChips[chipId].setMasterClock(clock);
             }
         }
     }
 
-    public int[][] getYMF262Register(int chipId) {
-        return fmRegisterYMF262[chipId];
+    public int[][] read(int chipId) {
+        return register[chipId];
     }
 
-//    public int getYMF262FMKeyON(int chipId) {
-//        return getYMF262FMKeyON(chipId);
-//    }
-//
-//    public int getYMF262RyhthmKeyON(int chipId) {
-//        return getYMF262RyhthmKeyON(chipId);
-//    }
-
-    public void setYMF262Mask(int chipId, int ch) {
-        setMaskYMF262(chipId, ch, true);
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
     }
 
-    public void resetYMF262Mask(int chipId, int ch) {
+    public void resetMask(int chipId, int ch) {
         try {
-            setMaskYMF262(chipId, ch, false);
+            setMask(chipId, ch, false);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -283,13 +276,13 @@ public class YmF262Chip implements Chip {
 
     @Override
     public void softReset(EnmModel model) {
-        softResetYMF262(0, model);
-        softResetYMF262(1, model);
+        softReset(0, model);
+        softReset(1, model);
     }
 
     @Override
-    public void clearFadeoutVolume() {
-        setFadeoutVolYMF262(0, 0);
-        setFadeoutVolYMF262(1, 0);
+    public void clearFadeout() {
+        setFadeout(0, 0);
+        setFadeout(1, 0);
     }
 }

@@ -157,7 +157,7 @@ public class frmVRC6 extends frmBase {
     }
 
     public void screenChangeParams() {
-        BasicTrackInfo[] info = (BasicTrackInfo[]) audio.chipRegister.chip(NesChip.class).getVRC6Register(0);
+        BasicTrackInfo[] info = (BasicTrackInfo[]) audio.chipRegister.chip(NesChip.class).readVrc6(0);
         if (info == null) return;
 
         MDChipParams.Channel nyc;

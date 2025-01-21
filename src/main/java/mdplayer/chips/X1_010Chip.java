@@ -35,7 +35,7 @@ public class X1_010Chip implements Chip {
     public void updateVol() {
     }
 
-    public void setX1_010Register(int chipId, int mm, int ll, int rr, EnmModel model) {
+    public void write(int chipId, int mm, int ll, int rr, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriX1010", 2);
         else
@@ -47,19 +47,19 @@ public class X1_010Chip implements Chip {
         }
     }
 
-    public void writeX1_010PCMData(int chipId,
-                                   int romSize,
-                                   int dataStart,
-                                   int dataLength,
-                                   byte[] romData,
-                                   int srcStartAdr,
-                                   EnmModel model) {
+    public void writePcm(int chipId,
+                         int romSize,
+                         int dataStart,
+                         int dataLength,
+                         byte[] romData,
+                         int srcStartAdr,
+                         EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriX1010", 2);
         else
             context.chipLED.put("SecX1010", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.writeX1_010PCMData(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(X1_010Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
     }
 }

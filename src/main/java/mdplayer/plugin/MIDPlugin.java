@@ -3,7 +3,6 @@ package mdplayer.plugin;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.driver.mid.MID;
@@ -72,9 +71,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
             audio.chipRegister.initChipRegister(null);
-            audio.chipRegister.plugin(MidiPlugin.class).releaseAllMIDIout();
-            audio.chipRegister.plugin(MidiPlugin.class).makeMIDIout(setting, midiMode);
-            audio.chipRegister.plugin(MidiPlugin.class).setMIDIout(setting.getMidiOut().getMidiOutInfos().get(midiMode));
+            audio.chipRegister.plugin(MidiPlugin.class).releaseAll();
+            audio.chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
+            audio.chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
 
             if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000

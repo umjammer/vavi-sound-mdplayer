@@ -195,15 +195,15 @@ public class frmMixer2 extends JFrame {
         newParam.Y8950.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Y8950Inst.class);
         newParam.YM3812.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym3812Inst.class);
         newParam.YMF262.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF262Inst.class);
-        newParam.YMF278B.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF278bInst.class);
-        newParam.YMZ280B.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmZ280bInst.class);
+        newParam.YMF278B.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF278BInst.class);
+        newParam.YMZ280B.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmZ280BInst.class);
         newParam.YMF271.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF271Inst.class);
         newParam.AY8910.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class);
         newParam.SN76489.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Sn76489Inst.class);
         newParam.HuC6280.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, HuC6280Inst.class);
 
         newParam.RF5C164.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, ScdPcmInst.class);
-        newParam.RF5C68.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Rf5c68Inst.class);
+        newParam.RF5C68.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Rf5C68Inst.class);
         newParam.PWM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, PwmInst.class);
         newParam.OKIM6258.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, OkiM6258Inst.class);
         newParam.OKIM6295.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, OkiM6295Inst.class);
@@ -219,14 +219,14 @@ public class frmMixer2 extends JFrame {
         newParam.QSound.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, QSoundInst.class);
         newParam.GA20.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ga20Inst.class);
 
-        newParam.APU.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.class);
-        newParam.DMC.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.DMC.class);
-        newParam.FDS.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.FDS.class);
-        newParam.MMC5.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.MMC5.class);
-        newParam.N160.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.N160.class);
-        newParam.VRC6.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.VRC6.class);
-        newParam.VRC7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.VRC7.class);
-        newParam.FME7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, IntFNesInst.FME7.class);
+        newParam.APU.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.class);
+        newParam.DMC.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.DMC.class);
+        newParam.FDS.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.FDS.class);
+        newParam.MMC5.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.MMC5.class);
+        newParam.N160.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.N160.class);
+        newParam.VRC6.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.VRC6.class);
+        newParam.VRC7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.VRC7.class);
+        newParam.FME7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.FME7.class);
         newParam.DMG.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, DmgInst.class);
 
         newParam.GimicOPN.Volume = parent.setting.getBalance().getGimicOPNVolume();
@@ -1128,8 +1128,8 @@ public class frmMixer2 extends JFrame {
             new Tuple<>(MAIN_TAG, Y8950Inst.class),
             new Tuple<>(MAIN_TAG, Ym3812Inst.class),
             new Tuple<>(MAIN_TAG, YmF262Inst.class),
-            new Tuple<>(MAIN_TAG, YmF278bInst.class),
-            new Tuple<>(MAIN_TAG, YmZ280bInst.class),
+            new Tuple<>(MAIN_TAG, YmF278BInst.class),
+            new Tuple<>(MAIN_TAG, YmZ280BInst.class),
             new Tuple<>(MAIN_TAG, YmF271Inst.class),
             null,
             new Tuple<>(MAIN_TAG, Ay8910Inst.class),
@@ -1142,7 +1142,7 @@ public class frmMixer2 extends JFrame {
             null,
             null,
             new Tuple<>(MAIN_TAG, ScdPcmInst.class),
-            new Tuple<>(MAIN_TAG, Rf5c68Inst.class),
+            new Tuple<>(MAIN_TAG, Rf5C68Inst.class),
             new Tuple<>(MAIN_TAG, PwmInst.class),
             new Tuple<>(MAIN_TAG, OkiM6258Inst.class),
             new Tuple<>(MAIN_TAG, OkiM6295Inst.class),
@@ -1155,14 +1155,14 @@ public class frmMixer2 extends JFrame {
             new Tuple<>(MAIN_TAG, K054539Inst.class),
             new Tuple<>(MAIN_TAG, QSoundInst.class),
             new Tuple<>(MAIN_TAG, Ga20Inst.class),
-            new Tuple<>(MAIN_TAG, IntFNesInst.class),
-            new Tuple<>(MAIN_TAG, IntFNesInst.DMC.class),
-            new Tuple<>(MAIN_TAG, IntFNesInst.FDS.class),
-            new Tuple<>(MAIN_TAG, IntFNesInst.MMC5.class),
-            new Tuple<>(MAIN_TAG, IntFNesInst.N160.class),
-            new Tuple<>(MAIN_TAG, IntFNesInst.VRC6.class),
-            new Tuple<>(MAIN_TAG, IntFNesInst.VRC7.class),
-            new Tuple<>(MAIN_TAG, IntFNesInst.FME7.class),
+            new Tuple<>(MAIN_TAG, NesInst.class),
+            new Tuple<>(MAIN_TAG, NesInst.DMC.class),
+            new Tuple<>(MAIN_TAG, NesInst.FDS.class),
+            new Tuple<>(MAIN_TAG, NesInst.MMC5.class),
+            new Tuple<>(MAIN_TAG, NesInst.N160.class),
+            new Tuple<>(MAIN_TAG, NesInst.VRC6.class),
+            new Tuple<>(MAIN_TAG, NesInst.VRC7.class),
+            new Tuple<>(MAIN_TAG, NesInst.FME7.class),
             new Tuple<>(MAIN_TAG, DmgInst.class),
             null,
             null,

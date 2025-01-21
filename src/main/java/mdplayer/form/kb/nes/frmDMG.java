@@ -106,7 +106,7 @@ public class frmDMG extends frmBase {
     };
 
     public void screenChangeParams() {
-        GbSound dat = audio.chipRegister.chip(DmgChip.class).getDMGRegister(chipId);
+        GbSound dat = audio.chipRegister.chip(DmgChip.class).read(chipId);
         if (dat == null) return;
 
         // pan

@@ -8,7 +8,6 @@ import java.util.function.Function;
 
 import dotnet4j.io.Stream;
 import mdplayer.Audio;
-import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
@@ -193,39 +192,39 @@ logger.log(Level.WARNING, "cannot start: " + this);
             Thread.sleep(500);
 
             if (useChip.contains(Common.EnmChip.YM2608)) {
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x2d, 0x00, Common.EnmModel.VirtualModel);
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x2d, 0x00, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x29, 0x82, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Psg TONE でリセット
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(0, 0, 0x07, 0x38, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2608Chip.class).writeYm2608Clock((byte) 0, 8000000, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x2d, 0x00, Common.EnmModel.VirtualModel);
+                audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x2d, 0x00, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
+                audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x29, 0x82, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Psg TONE でリセット
+                audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 0, 8000000, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).setVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
             }
 
             if (useChip.contains(Common.EnmChip.S_YM2608)) {
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 0, 0x2d, 0x00, Common.EnmModel.VirtualModel);
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 0, 0x2d, 0x00, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 0, 0x29, 0x82, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Psg TONE でリセット
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608Register(1, 0, 0x07, 0x38, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2608Chip.class).writeYm2608Clock((byte) 1, 8000000, Common.EnmModel.RealModel);
-                audio.chipRegister.chip(Ym2608Chip.class).setYM2608SSGVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x2d, 0x00, Common.EnmModel.VirtualModel);
+                audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x2d, 0x00, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
+                audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x29, 0x82, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Psg TONE でリセット
+                audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x07, 0x38, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 1, 8000000, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2608Chip.class).setVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
             }
 
             if (useChip.contains(Common.EnmChip.YM2151))
-                audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 0, 4000000, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2151Chip.class).writeClock((byte) 0, 4000000, Common.EnmModel.RealModel);
             if (useChip.contains(Common.EnmChip.S_YM2151))
-                audio.chipRegister.chip(Ym2151Chip.class).writeYm2151Clock((byte) 1, 4000000, Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2151Chip.class).writeClock((byte) 1, 4000000, Common.EnmModel.RealModel);
 
             audio.driverVirtual.setYm2151Hosei(4000000);
             if (audio.driverReal != null) audio.driverReal.setYm2151Hosei(4000000);
 
             if (useChip.contains(Common.EnmChip.YM2203))
-                audio.chipRegister.chip(Ym2203Chip.class).setYM2203SSGVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).setVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
             if (useChip.contains(Common.EnmChip.S_YM2203))
-                audio.chipRegister.chip(Ym2203Chip.class).setYM2203SSGVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
+                audio.chipRegister.chip(Ym2203Chip.class).setVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
 
             boolean retV = audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.YM2151, Common.EnmChip.YM2608}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000

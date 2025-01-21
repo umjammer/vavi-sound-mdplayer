@@ -117,7 +117,7 @@ public class frmAY8910 extends frmChipBase {
 
     @Override
     public void screenChangeParams() {
-        int[] AY8910Register = audio.chipRegister.chip(Ay8910Chip.class).getAY8910Register(chipId);
+        int[] AY8910Register = audio.chipRegister.chip(Ay8910Chip.class).read(chipId);
 
         for (int ch = 0; ch < 3; ch++) { // SSG
 
