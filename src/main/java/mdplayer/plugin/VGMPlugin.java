@@ -23,6 +23,7 @@ import mdplayer.chips.Ym3812Chip;
 import mdplayer.chips.YmF262Chip;
 import mdplayer.driver.Vgm;
 import mdplayer.format.FileFormat;
+import mdsound.chips.C352;
 import mdsound.instrument.*;
 import mdsound.Instrument;
 import mdsound.MDSound;
@@ -819,7 +820,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.option = new Object[] {(((Vgm) audio.driverVirtual).c352ClockDivider)};
                     int divider = (((Vgm) audio.driverVirtual).c352ClockDivider) != 0 ? (((Vgm) audio.driverVirtual).c352ClockDivider) : 288;
 //                    audio.clockC352 = chip.clock / divider;
-                    C352Inst.setOptions((byte) (((Vgm) audio.driverVirtual).c352ClockValue >> 31));
+                    C352.setOptions((((Vgm) audio.driverVirtual).c352ClockValue >> 31));
                     hiyorimiDeviceFlag |= 0x2;
 
                     if (i == 0) audio.chipRegister.chipLED.put("PriC352", 1);
