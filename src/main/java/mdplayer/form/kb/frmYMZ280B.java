@@ -20,6 +20,7 @@ import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.YmZ280BChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -142,7 +143,7 @@ public class frmYMZ280B extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] reg = audio.getYMZ280BRegister(chipId);
+        int[] reg = audio.chipRegister.chip(YmZ280BChip.class).read(chipId);
         if (reg == null) return;
 
         for (int ch = 0; ch < 8; ch++) {

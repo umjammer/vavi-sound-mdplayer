@@ -888,7 +888,7 @@ public class Setting implements Serializable {
             this.setSN76489Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getSN76489Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getSN76489Type()[i].setUseEmu(new boolean[2]);
+                this.getSN76489Type()[i].setUseEmu(new boolean[2]); // 2 means {0: sn76489, 1: sn76496}
                 this.getSN76489Type()[i].getUseEmu()[0] = true;
                 this.getSN76489Type()[i].setUseReal(new boolean[1]);
             }
@@ -959,7 +959,7 @@ public class Setting implements Serializable {
             this._YM2612Type = new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()};
             for (int i = 0; i < 2; i++) {
                 this.getYM2612Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2612Type()[i].setUseEmu(new boolean[3]); // 3 means {0: nuke-A, 1: nuke-B, 2: mame}
+                this.getYM2612Type()[i].setUseEmu(new boolean[3]); // 3 means {0: mame-A, 1: nuke, 2: mame-B}
                 this.getYM2612Type()[i].getUseEmu()[0] = true;
                 this.getYM2612Type()[i].setUseReal(new boolean[1]);
             }

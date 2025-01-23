@@ -21,6 +21,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.MultiPcmChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -183,7 +184,7 @@ public class frmMultiPCM extends frmBase {
     }
 
     public void screenChangeParams() {
-        MultiPCM multiPCMRegister = audio.getMultiPCMRegister(chipId);
+        MultiPCM multiPCMRegister = audio.chipRegister.chip(MultiPcmChip.class).getChip(chipId);
         if (multiPCMRegister == null) return;
 
         for (int ch = 0; ch < 28; ch++) {

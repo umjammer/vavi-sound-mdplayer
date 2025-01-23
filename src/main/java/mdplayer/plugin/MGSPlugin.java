@@ -5,6 +5,7 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
+import mdplayer.Audio;
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.driver.mgsdrv.MGSDRV;
@@ -32,12 +33,10 @@ public class MGSPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MGSDRV();
-        audio.driverVirtual.setting = setting;
         ((MGSDRV) audio.driverVirtual).setPlayingFileName(playingFileName);
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new MGSDRV();
-            audio.driverReal.setting = setting;
             ((MGSDRV) audio.driverReal).setPlayingFileName(playingFileName);
         }
         boolean r = mgsPlay_mgsdrv();
@@ -76,73 +75,70 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.resetChips();
             resetFadeOutParam();
-            audio.useChip.clear();
+            useChip.clear();
 
             startTrdVgmReal();
 
             List<MDSound.Chip> lstChips = new ArrayList<>();
             MDSound.Chip chip;
 
-            audio.hiyorimiNecessary = setting.getHiyorimiMode();
+            hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipLED = new ChipLEDs();
+            audio.chipRegister.chipLED.clear();
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
             if (useAY) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                audio.chipLED.put("PriAY10", 1);
+                audio.chipRegister.chipLED.put("PriAY10", 1);
                 chip.instrument = Instrument.getInstrument(Ay8910Inst.class);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class);
                 chip.clock = MGSDRV.baseclockAY8910 / 2;
                 chip.option = null;
                 lstChips.add(chip);
-                audio.useChip.add(Common.EnmChip.AY8910);
-                audio.clockAY8910 = MGSDRV.baseclockAY8910;
+                useChip.add(Common.EnmChip.AY8910);
+//                audio.clockAY8910 = MGSDRV.baseclockAY8910;
             }
 
             if (useOPLL) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                audio.chipLED.put("PriOPLL", 1);
+                audio.chipRegister.chipLED.put("PriOPLL", 1);
                 chip.instrument = Instrument.getInstrument(Ym2413Inst.class);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2413Inst.class);
                 chip.clock = MGSDRV.baseclockYM2413;
                 chip.option = null;
                 lstChips.add(chip);
-                audio.useChip.add(Common.EnmChip.YM2413);
-                audio.clockYM2413 = MGSDRV.baseclockYM2413;
+                useChip.add(Common.EnmChip.YM2413);
+//                audio.clockYM2413 = MGSDRV.baseclockYM2413;
             }
 
             if (useSCC) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                audio.chipLED.put("PriK051649", 1);
+                audio.chipRegister.chipLED.put("PriK051649", 1);
                 chip.instrument = Instrument.getInstrument(K051649Inst.class);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, K051649Inst.class);
                 chip.clock = MGSDRV.baseclockK051649;
                 chip.option = null;
                 lstChips.add(chip);
-                audio.useChip.add(Common.EnmChip.K051649);
-                audio.clockK051649 = MGSDRV.baseclockK051649;
+                useChip.add(Common.EnmChip.K051649);
+//                audio.clockK051649 = MGSDRV.baseclockK051649;
             }
 
-            if (audio.mds == null)
-                audio.mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
-            else
-                audio.mds.init(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
 
             audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
-            if (!audio.driverVirtual.init(vgmBuf, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.AY8910, Common.EnmChip.YM2413, Common.EnmChip.K051649}
+            if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.AY8910, Common.EnmChip.YM2413, Common.EnmChip.K051649}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
                     , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
             if (audio.driverReal != null) {
-                if (!audio.driverReal.init(vgmBuf, audio.chipRegister, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.AY8910}
+                if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.AY8910}
                         , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
                         , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                     return false;

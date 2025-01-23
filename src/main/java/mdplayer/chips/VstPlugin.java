@@ -1,12 +1,15 @@
 package mdplayer.chips;
 
+import mdplayer.ChipRegister;
+
+
 /**
  * VstPlugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-07 nsano initial version <br>
  */
-public class VstPlugin extends Plugin {
+public class VstPlugin implements Plugin {
 
 //    public static List<VstMng.VstInfo2> getVSTInfos() {
 //        return vstMng.getVSTInfos();
@@ -25,7 +28,7 @@ public class VstPlugin extends Plugin {
 //    }
 
     @Override
-    void init() {
+    public void init(ChipRegister context) {
 //        Log.forcedWrite("Audio:Init:VST:STEP 01");
 //
 //        vstMng.vstparse();
@@ -68,5 +71,14 @@ public class VstPlugin extends Plugin {
 //            Log.forcedWrite("Audio:Init:VST:STEP 03"); // Load VST Effect
 //            vstMng.SetUpVstEffect();
 //        }
+    }
+
+    @Override
+    public void close() {
+
+    }
+
+    public void update(short[] buffer, int offset, int sampleCount) {
+//        vstMng.VST_Update(buffer, offset, sampleCount);
     }
 }

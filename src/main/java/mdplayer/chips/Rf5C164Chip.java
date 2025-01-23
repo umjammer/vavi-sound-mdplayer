@@ -1,0 +1,105 @@
+/*
+ * Copyright (c) 2025 by Naohide Sano, All rights reserved.
+ *
+ * Programmed by Naohide Sano
+ */
+
+package mdplayer.chips;
+
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
+import mdplayer.ChipRegister;
+import mdplayer.Chip;
+import mdplayer.Common.EnmModel;
+import mdsound.chips.ScdPcm;
+import mdsound.instrument.ScdPcmInst;
+
+import static java.lang.System.getLogger;
+
+
+/**
+ * Rf5C164Chip.
+ *
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
+ * @version 0.00 2025-01-19 nsano initial version <br>
+ */
+public class Rf5C164Chip implements Chip {
+
+    private static final Logger logger = getLogger(Rf5C164Chip.class.getName());
+
+    private final boolean[][] mask = {
+            {false, false, false, false, false, false, false, false},
+            {false, false, false, false, false, false, false, false}
+    };
+
+    private ChipRegister context;
+
+    @Override
+    public void init(ChipRegister context) {
+        this.context = context;
+    }
+
+    @Override
+    public void reset() {
+    }
+
+    @Override
+    public void updateVol() {
+    }
+
+    public void setMask(int chipId, int ch, boolean mask) {
+        this.mask[chipId][ch] = mask;
+        if (mask)
+            context.mds.inst(ScdPcmInst.class).setMask(chipId, ch);
+        else
+            context.mds.inst(ScdPcmInst.class).resetMask(chipId, ch);
+    }
+
+    public void writePcm(int chipId, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
+        if (chipId == 0)
+            context.chipLED.put("PriRF5C", 2);
+        else
+            context.chipLED.put("SecRF5C", 2);
+
+        if (model == EnmModel.VirtualModel)
+            context.mds.inst(ScdPcmInst.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr);
+    }
+
+    public void write(int chipId, int adr, int data, EnmModel model) {
+        if (chipId == 0)
+            context.chipLED.put("PriRF5C", 2);
+        else
+            context.chipLED.put("SecRF5C", 2);
+
+        if (model == EnmModel.VirtualModel) {
+            context.mds.write(ScdPcmInst.class, chipId, 0, adr, data);
+        }
+    }
+
+    public void writeMemory(int chipId, int offset, int data, EnmModel model) {
+        if (chipId == 0)
+            context.chipLED.put("PriRF5C", 2);
+        else
+            context.chipLED.put("SecRF5C", 2);
+
+        if (model == EnmModel.VirtualModel)
+            context.mds.inst(ScdPcmInst.class).writeMemory(chipId, offset, data);
+    }
+
+    public ScdPcm read(int chipId) {
+        return context.mds.inst(ScdPcmInst.class).getChip(chipId);
+    }
+
+    public void setMask(int chipId, int ch) {
+        setMask(chipId, ch, true);
+    }
+
+    public void resetMask(int chipId, int ch) {
+        try {
+            setMask(chipId, ch, false);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+}

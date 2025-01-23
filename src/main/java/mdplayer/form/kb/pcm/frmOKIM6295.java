@@ -20,6 +20,7 @@ import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.OkiM6295Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -106,7 +107,7 @@ public class frmOKIM6295 extends frmBase {
     };
 
     public void screenChangeParams() {
-        OkiM6295.ChannelInfo info = audio.getOKIM6295Info(chipId);
+        OkiM6295.ChannelInfo info = audio.chipRegister.chip(OkiM6295Chip.class).read(chipId);
         if (info == null) return;
 
         for (int c = 0; c < 4; c++) {

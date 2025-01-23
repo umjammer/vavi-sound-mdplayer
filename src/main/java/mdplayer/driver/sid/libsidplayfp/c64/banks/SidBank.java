@@ -31,10 +31,6 @@ import mdplayer.driver.sid.libsidplayfp.c64.C64Sid;
  */
 public class SidBank implements IBank {
 
-    //# include "Bank.h"
-    //# include "C64/C64Sid.h"
-    //# include "sidcxx11.h"
-    //# include "NullSid.h"
     // Sid chips
     private C64Sid sid;
 
@@ -58,12 +54,11 @@ public class SidBank implements IBank {
     }
 
     /**
-     //Set Sid emulation.
+     * Set Sid emulation.
      *
-     //@param s the emulation, nullptr to remove current Sid
+     * @param s the emulation, nullptr to remove current Sid
      */
     public void setSID(C64Sid s) {
         sid = (s != null) ? s : NullSid.getInstance();
     }
-
 }

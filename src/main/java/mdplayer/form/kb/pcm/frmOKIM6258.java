@@ -20,6 +20,7 @@ import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.OkiM6258Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -105,7 +106,7 @@ public class frmOKIM6258 extends frmBase {
     };
 
     public void screenChangeParams() {
-        OkiM6258 okim6258State = audio.getOKIM6258Register(chipId);
+        OkiM6258 okim6258State = audio.chipRegister.chip(OkiM6258Chip.class).read(chipId);
         if (okim6258State == null) return;
 
         switch (okim6258State.getPan() & 0x3) {

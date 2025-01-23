@@ -5,8 +5,8 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-import mdplayer.ChipLEDs;
 import mdplayer.Common;
+import mdplayer.chips.MidiPlugin;
 import mdplayer.driver.rcp.RCP;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
@@ -27,12 +27,10 @@ public class RCPPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new RCP();
-        audio.driverVirtual.setting = setting;
         ((RCP) audio.driverVirtual).ExtendFile = extendFile;
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new RCP();
-            audio.driverReal.setting = setting;
             ((RCP) audio.driverReal).ExtendFile = extendFile;
         }
         boolean r = rcpPlay();
@@ -56,38 +54,38 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.vgmFadeoutCounter = 1.0;
             audio.vgmFadeoutCounterV = 0.00001;
             vgmSpeed = 1;
-            audio.vgmRealFadeoutVol = 0;
-            audio.vgmRealFadeoutVolWait = 4;
+            vgmRealFadeoutVol = 0;
+            vgmRealFadeoutVolWait = 4;
 
-            audio.clearFadeoutVolume();
+            audio.chipRegister.clearFadeoutVolume();
 
             audio.chipRegister.resetChips();
 
-            audio.useChip.clear();
+            useChip.clear();
 
             startTrdVgmReal();
 
             List<MDSound.Chip> lstChips = new ArrayList<>();
 
-            audio.hiyorimiNecessary = setting.getHiyorimiMode();
+            hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipLED = new ChipLEDs();
-            audio.chipLED.put("PriMID", 1);
-            audio.chipLED.put("SecMID", 1);
+            audio.chipRegister.chipLED.clear();
+            audio.chipRegister.chipLED.put("PriMID", 1);
+            audio.chipRegister.chipLED.put("SecMID", 1);
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
             audio.chipRegister.initChipRegister(null);
-            audio.releaseAllMIDIout();
-            audio.makeMIDIout(setting, midiMode);
-            audio.chipRegister.setMIDIout(setting.getMidiOut().getMidiOutInfos().get(midiMode), audio.midiOuts, audio.midiOutsType);
+            audio.chipRegister.plugin(MidiPlugin.class).releaseAll();
+            audio.chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
+            audio.chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
 
-            if (!audio.driverVirtual.init(vgmBuf, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
+            if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
                     , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
             if (audio.driverReal != null) {
-                if (!audio.driverReal.init(vgmBuf, audio.chipRegister, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
+                if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
                         , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
                         , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                     return false;

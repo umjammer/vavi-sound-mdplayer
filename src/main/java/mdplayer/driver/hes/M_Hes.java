@@ -7,6 +7,7 @@ import dotnet4j.util.compat.TriConsumer;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.HuC6280Chip;
 import mdplayer.driver.hes.KmEvent.Event;
 import vavi.util.ByteUtil;
 
@@ -66,11 +67,11 @@ public class M_Hes {
         public int HESSoundRenderMono() {
             int[] d = new int[] {0, 0};
             this.heshes.synth(d);
-            //#if (((-1) >> 1) == -1)
-            //	return (d[0] + d[1]) >> 1;
-            //#else
+//#if (((-1) >> 1) == -1)
+//	          return (d[0] + d[1]) >> 1;
+//#else
             return (d[0] + d[1]) / 2;
-            //#endif
+//#endif
         }
 
         private void HESHESVolume(int v) {
@@ -337,7 +338,7 @@ public class M_Hes {
             case 2: // Psg
                 //logger.log(Level.TRACE, "Adr:%2X Dat:%2X".formatted((int) (a & 0xf), (int) v));
                 if (!disableSendChip)
-                    chipRegister.setHuC6280Register(0, a & 0xf, v, EnmModel.VirtualModel);
+                    chipRegister.chip(HuC6280Chip.class).write(0, a & 0xf, v, EnmModel.VirtualModel);
                 ld.write(a & 0xf, v, 0);
                 break;
             case 3: // TIMER
@@ -582,7 +583,7 @@ public class M_Hes {
                 this.km6280_exec(this.ctx, HES_BASECYCLES >> 8);
 
             this.disableSendChip = false;
-            this.chipRegister.setHuC6280Register(0, 1, 0xff, EnmModel.VirtualModel);
+            this.chipRegister.chip(HuC6280Chip.class).write(0, 1, 0xff, EnmModel.VirtualModel);
 
             if (this.breaked != 0) {
                 this.breaked = 0;

@@ -2,7 +2,10 @@ package mdplayer.chips;
 
 import java.util.List;
 
+import mdplayer.ChipRegister;
 import mdplayer.Common;
+import mdplayer.Common.EnmModel;
+import mdplayer.RealChip;
 import mdplayer.Setting;
 
 
@@ -12,7 +15,30 @@ import mdplayer.Setting;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-07 nsano initial version <br>
  */
-public class RealChipPlugin extends Plugin {
+public class RealChipPlugin implements Plugin {
+
+    public RealChip realChip;
+
+    public RealChipPlugin() {
+//                , SoundChip.realChip
+//                , vstMng
+//                , SoundChip.scYM2612
+//                , SoundChip.scSN76489
+//                , SoundChip.scYM2608
+//                , SoundChip.scYM2151
+//                , SoundChip.scYM2203
+//                , SoundChip.scYM2413
+//                , SoundChip.scYM2610
+//                , SoundChip.scYM2610EA
+//                , SoundChip.scYM2610EB
+//                , SoundChip.scYM3526
+//                , SoundChip.scYM3812
+//                , SoundChip.scYMF262
+//                , SoundChip.scC140
+//                , SoundChip.scSEGAPCM
+//                , SoundChip.scAY8910
+//                , SoundChip.scK051649
+    }
 
     public static void realChipClose() {
 //        if (SoundChip.realChip != null) {
@@ -27,7 +53,7 @@ public class RealChipPlugin extends Plugin {
     }
 
     @Override
-    void init() {
+    public void init(ChipRegister context) {
 //        if (SoundChip.realChip == null && !getemuOnly()) {
 //            Log.forcedWrite("Audio:Init:STEP 04");
 //            SoundChip.realChip = new RealChip(!setting.getUnuseRealChip());
@@ -68,6 +94,25 @@ public class RealChipPlugin extends Plugin {
 //                SoundChip.scC140[i] = SoundChip.realChip.GetRealChip(Audio.setting.getC140Type()[i], 0);
 //                if (SoundChip.scC140[i] != null) SoundChip.scC140[i].init();
 //            }
+//        }
+    }
+
+    @Override
+    public void close() {
+//        SoundChip.realChip = null;
+    }
+
+    public void setGimicOPNVolume(boolean isAbs, int volume) {
+        setting.getBalance().setGimicOPNVolume(Common.range((isAbs ? 0 : setting.getBalance().getGimicOPNVolume()) + volume, 0, 127));
+    }
+
+    public void setGimicOPNAVolume(boolean isAbs, int volume) {
+        setting.getBalance().setGimicOPNAVolume(Common.range((isAbs ? 0 : setting.getBalance().getGimicOPNAVolume()) + volume, 0, 127));
+    }
+
+    public void softReset(EnmModel model) {
+//        if (model == EnmModel.RealModel && SoundChip.realChip != null) {
+//            SoundChip.realChip.SendData();
 //        }
     }
 }

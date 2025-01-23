@@ -4,12 +4,14 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
 import dotnet4j.util.compat.Tuple;
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.YmF262Chip;
+import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
+import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -45,10 +47,10 @@ public class MoonDriver extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
 
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
+        this.plugin = plugin;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -121,17 +123,17 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         entryPoints( 0x4000);
 
         if (model == EnmModel.RealModel) {
-            //chipRegister.sendDataYM2151(0, model);
-            //chipRegister.setYM2151SyncWait(0, 1);
-            //chipRegister.sendDataYM2151(1, model);
-            //chipRegister.setYM2151SyncWait(1, 1);
+            //plugin.audio.chipRegister.sendDataYM2151(0, model);
+            //plugin.audio.chipRegister.setYM2151SyncWait(0, 1);
+            //plugin.audio.chipRegister.sendDataYM2151(1, model);
+            //plugin.audio.chipRegister.setYM2151SyncWait(1, 1);
         }
 
         return true;
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 
@@ -1831,7 +1833,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
         work.seq_reg_bd = a;
         e = a;
-        d = (byte) 0xbd;
+        d = 0xbd;
         moon_fm1_out();
         hl++;
     }
@@ -2594,13 +2596,13 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
         a = (readMemory(hl) & 0xff);
         e = a;
-        d = (byte) 0x80;
+        d = 0x80;
         moon_write_fmop();
         hl++;
 
         a = (readMemory(hl) & 0xff);
         e = a;
-        d = (byte) 0xe0;
+        d = 0xe0;
         moon_write_fmop();
         hl++;
     }
@@ -2962,9 +2964,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // out	(MOON_DAT1), a
         // ret
         if (isOPL3) {
-            chipRegister.setYMF262Register(0, 0, d, e, model);
+            plugin.audio.chipRegister.chip(YmF262Chip.class).setRegister(0, 0, d, e, model);
         } else {
-            chipRegister.setYMF278BRegister(0, 0, d, e, model);
+            plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, 0, d, e, model);
             //logger.log(Level.TRACE, "fm1out:%02x:%02x:".formatted(d, e));
         }
     }
@@ -2978,9 +2980,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // out	(MOON_DAT2), a
         // ret
         if (isOPL3) {
-            chipRegister.setYMF262Register(0, 1, d, e, model);
+            plugin.audio.chipRegister.chip(YmF262Chip.class).setRegister(0, 1, d, e, model);
         } else {
-            chipRegister.setYMF278BRegister(0, 1, d, e, model);
+            plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, 1, d, e, model);
         }
         //logger.log(Level.TRACE, "fm2out:%02x:%02x:".formatted(d, e));
     }
@@ -2994,9 +2996,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // out	(MOON_WDAT),a
         // ret
         if (isOPL3) {
-            //chipRegister.setYMF262Register(0, 2, d, e, model);
+            //plugin.audio.chipRegister.getChip(YmF262Chip.class).setYMF262Register(0, 2, d, e, model);
         } else {
-            chipRegister.setYMF278BRegister(0, 2, d, e, model);
+            plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, 2, d, e, model);
         }
 
         backDat = e;

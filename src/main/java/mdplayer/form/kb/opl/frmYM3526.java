@@ -16,11 +16,13 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
+import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.Ym3526Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -123,12 +125,12 @@ public class frmYM3526 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] ym3526Register = audio.getYM3526Register(chipId);
+        int[] ym3526Register = audio.chipRegister.chip(Ym3526Chip.class).read(chipId);
         MDChipParams.Channel nyc;
         int slot = 0;
-        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getYM3526KeyInfo(chipId);
+        ChipKeyInfo ki = audio.chipRegister.chip(Ym3526Chip.class).getKeyInfo(chipId);
 
-        mdsound.MDSound.Chip chipInfo = audio.getMDSChipInfo(Ym3526Inst.class);
+        mdsound.MDSound.Chip chipInfo = audio.chipRegister.getChipInfo(Ym3526Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock; //3579545 -> Default master clock
 
         //FM
@@ -182,7 +184,7 @@ public class frmYM3526 extends frmBase {
             double fmus = (double) nyc.inst[12] / (1 << 19) * (masterClock / 72.0) * (1 << nyc.inst[11]);
             nyc.note = Common.searchSegaPCMNote(fmus / 523.3);//523.3 -> c4
 
-            if (ki.On[c]) {
+            if (ki.on[c]) {
                 int tl1 = nyc.inst[5 + 0 * 17];
                 int tl2 = nyc.inst[5 + 1 * 17];
                 int tl = tl2;
@@ -210,7 +212,7 @@ public class frmYM3526 extends frmBase {
         //slot18 TL 0x55 CYM
 
         for (int i = 0; i < 5; i++) {
-            if (ki.On[i + 9]) {
+            if (ki.on[i + 9]) {
                 newParam.channels[i + 9].volume = 19 - ((ym3526Register[rhythmAdr[i]] & 0x3f) >> 2);
             } else {
                 newParam.channels[i + 9].volume--;

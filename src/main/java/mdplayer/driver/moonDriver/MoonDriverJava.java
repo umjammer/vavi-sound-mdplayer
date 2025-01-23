@@ -18,12 +18,13 @@ import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
+import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
@@ -83,11 +84,11 @@ public class MoonDriverJava extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         gd3 = getGD3Info(vgmBuf);
 
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
+        this.plugin = plugin;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -111,7 +112,7 @@ public class MoonDriverJava extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 
@@ -314,7 +315,7 @@ public class MoonDriverJava extends BaseDriver {
 //        outDatum od = null;
 //
 //        if (pcmdata.size() > 0) {
-//            chipRegister.YMF278BSetRegister(od, count, 0, pcmdata.toArray());
+//            plugin.audio.chipRegister.YMF278BSetRegister(od, count, 0, pcmdata.toArray());
 //            pcmdata.clear();
 //        }
 //
@@ -330,8 +331,8 @@ public class MoonDriverJava extends BaseDriver {
 //// logger.log(Level.TRACE, "%d".formatted(od.linePos.col));
 ////}
 //
-////        chipRegister.YM2608SetRegister(od, (long)dat.time, 0, dat.port, dat.address, dat.data);
-//        chipRegister.YMF278BSetRegister(od, count, 0, dat.port, dat.address, dat.data);
+////        plugin.audio.chipRegister.YM2608SetRegister(od, (long)dat.time, 0, dat.port, dat.address, dat.data);
+//        plugin.audio.chipRegister.YMF278BSetRegister(od, count, 0, dat.port, dat.address, dat.data);
 //    }
 
     private void opl4Write(ChipDatum cd) {
@@ -340,7 +341,7 @@ public class MoonDriverJava extends BaseDriver {
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        chipRegister.setYMF278BRegister(0, cd.port, cd.address, cd.data, model);
+        plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, cd.port, cd.address, cd.data, model);
     }
 
     private void opl4WaitSend(long size, int elapsed) {

@@ -2906,9 +2906,9 @@ public class Km6280 {
         public void K_EXEC() {
             if (this.iRequest != 0) {
                 if ((this.iRequest & IRQ_INIT) != 0) {
-                    //#if BUILD_HUC6280
+//#if BUILD_HUC6280
                     this.lowClockMode = 1;
-                    //#endif
+//#endif
                     this.a = 0;
                     this.x = 0;
                     this.y = 0;

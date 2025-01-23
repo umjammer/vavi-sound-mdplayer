@@ -16,11 +16,13 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
+import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.Y8950Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -161,11 +163,11 @@ public class frmY8950 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] Y8950Register = audio.getY8950Register(chipId);
+        int[] Y8950Register = audio.chipRegister.chip(Y8950Chip.class).read(chipId);
         MDChipParams.Channel nyc;
         int slot;
-        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getY8950KeyInfo(chipId);
-        mdsound.MDSound.Chip chipInfo = audio.getMDSChipInfo(Y8950Inst.class);
+        ChipKeyInfo ki = audio.chipRegister.chip(Y8950Chip.class).getKeyInfo(chipId);
+        mdsound.MDSound.Chip chipInfo = audio.chipRegister.getChipInfo(Y8950Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock;
 
         //FM
@@ -219,7 +221,7 @@ public class frmY8950 extends frmBase {
             double fmus = (double) nyc.inst[12] / (1 << 19) * (masterClock / 72.0) * (1 << nyc.inst[11]);
             nyc.note = Common.searchSegaPCMNote(fmus / 523.3);//523.3 -> c4
 
-            if (ki.On[c]) {
+            if (ki.on[c]) {
                 int tl1 = nyc.inst[5 + 0 * 17];
                 int tl2 = nyc.inst[5 + 1 * 17];
                 int tl = tl2;
@@ -247,7 +249,7 @@ public class frmY8950 extends frmBase {
         //slot18 TL 0x55 CYM
 
         for (int i = 0; i < 5; i++) {
-            if (ki.On[i + 9]) {
+            if (ki.on[i + 9]) {
                 newParam.channels[i + 9].volume = 19 - ((Y8950Register[rhythmAdr[i]] & 0x3f) >> 2);
             } else {
                 newParam.channels[i + 9].volume--;
@@ -263,7 +265,7 @@ public class frmY8950 extends frmBase {
         newParam.channels[14].inst[12] = Y8950Register[0x10]
                 + (Y8950Register[0x11] << 8);
 
-        if (ki.On[14]) {
+        if (ki.on[14]) {
             //fSample = deltaN * 50KHz / (2^16)
             double fSample = newParam.channels[14].inst[12] * 50000.0 / (double) (1 << 16);
             //int pnt = ki.Off[14] ? -1 : Common.searchSegaPCMNote(fSample / 8000.0);

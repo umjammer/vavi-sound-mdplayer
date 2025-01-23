@@ -50,7 +50,7 @@ public class Mos6510 {
      * This will slow down the emulation a bit with no real benefit
      * for Sid playing so we keep it disabled.
      */
-    //#define CORRECT_SH_INSTRUCTIONS
+//#define CORRECT_SH_INSTRUCTIONS
 
     public static class haltInstruction extends RuntimeException {
     }
@@ -105,7 +105,7 @@ public class Mos6510 {
     /** Address Low summer carry */
     private boolean adlCarry;
 
-    //#if CORRECT_SH_INSTRUCTIONS
+//#if CORRECT_SH_INSTRUCTIONS
     /** The RDY pin state during last throw away read. */
     private boolean rdyOnThrowAwayRead;
 //#endif

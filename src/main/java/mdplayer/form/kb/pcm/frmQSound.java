@@ -22,6 +22,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.QSoundChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -150,7 +151,7 @@ public class frmQSound extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] QSoundRegister = audio.getQSoundRegister(chipId);
+        int[] QSoundRegister = audio.chipRegister.chip(QSoundChip.class).read(chipId);
 
         //PCM 16ch
         for (int ch = 0; ch < 16; ch++) {

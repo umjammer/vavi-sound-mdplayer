@@ -34,6 +34,7 @@ import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.MidiPlugin;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.form.sys.frmTPGet;
@@ -123,7 +124,7 @@ public class frmYM2612MIDI extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[][] fmRegister = audio.getYM2612MIDIRegister();
+        int[][] fmRegister = audio.chipRegister.plugin(MidiPlugin.class).readYM2612();
         //int[] fmKey = audio.GetFMKeyOn();
 
         newParam.IsMONO = parent.setting.getMidiKbd().isMono();
@@ -175,8 +176,8 @@ public class frmYM2612MIDI extends frmBase {
             //int freq = 0;
             //int octav = 0;
             //int n = -1;
-            //freq = fmRegister[p][0xa0 + c] + (fmRegister[p][0xa4 + c] & 0x07) * 0x100;
-            //octav = (fmRegister[p][0xa4 + c] & 0x38) >> 3;
+            //freq = register[p][0xa0 + c] + (register[p][0xa4 + c] & 0x07) * 0x100;
+            //octav = (register[p][0xa4 + c] & 0x38) >> 3;
 
             //if (fmKey[ch] > 0) n = Math.min(Math.max(octav * 12 + searchFMNote(freq), 0), 95);
 

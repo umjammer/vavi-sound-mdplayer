@@ -240,7 +240,7 @@ public class EnvelopeGenerator {
      * The following functions are defined inline because they are called every
      * time a sample instanceof calculated.
      */
-    //#if RESID_INLINING || defined(RESID_ENVELOPE_CC)
+//#if RESID_INLINING || defined(RESID_ENVELOPE_CC)
 
     /**
      * Sid clocking - 1 cycle.

@@ -534,7 +534,7 @@ public class RealChip implements Closeable {
         }
     }
 
-    static class RC86ctlSoundChip extends RSoundChip {
+    public static class RC86ctlSoundChip extends RSoundChip {
 //        public Nc86ctl.Nc86ctl c86ctl = null;
 
 //        public Nc86ctl.NIRealChip realChip = null;

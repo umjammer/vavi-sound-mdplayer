@@ -5,6 +5,7 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
+import mdplayer.Audio;
 import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.driver.hes.Hes;
@@ -30,12 +31,10 @@ public class HESPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new Hes();
-        audio.driverVirtual.setting = setting;
 
         audio.driverReal = null;
         //if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
         //    driverReal = new Hes();
-        //    driverReal.setting = setting;
         //}
         boolean r = hesPlay();
         if (!r) {
@@ -58,23 +57,23 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.vgmFadeoutCounter = 1.0;
             audio.vgmFadeoutCounterV = 0.00001;
             vgmSpeed = 1;
-            audio.vgmRealFadeoutVol = 0;
-            audio.vgmRealFadeoutVolWait = 4;
+            vgmRealFadeoutVol = 0;
+            vgmRealFadeoutVolWait = 4;
 
-            audio.clearFadeoutVolume();
+            audio.chipRegister.clearFadeoutVolume();
 
             audio.chipRegister.resetChips();
 
-            audio.useChip.clear();
+            useChip.clear();
 
             startTrdVgmReal();
 
             List<MDSound.Chip> lstChips = new ArrayList<>();
 
-            audio.hiyorimiNecessary = setting.getHiyorimiMode();
+            hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipLED = new ChipLEDs();
-            audio.chipLED.put("PriHuC", 1);
+            audio.chipRegister.chipLED.clear();
+            audio.chipRegister.chipLED.put("PriHuC", 1);
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -96,23 +95,20 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.option = null;
             lstChips.add(chip);
             ((Hes) audio.driverVirtual).c6280 = chip;
-            audio.useChip.add(Common.EnmChip.HuC6280);
+            useChip.add(Common.EnmChip.HuC6280);
 
-            if (audio.mds == null)
-                audio.mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
-            else
-                audio.mds.init(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
 
             audio.chipRegister.initChipRegister(lstChips.toArray(MDSound.Chip[]::new));
 
             ((Hes) audio.driverVirtual).song = songNo;
-            if (!audio.driverVirtual.init(vgmBuf, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
+            if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
                     , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
             if (audio.driverReal != null) {
                 ((Hes) audio.driverReal).song = songNo;
-                if (!audio.driverReal.init(vgmBuf, audio.chipRegister, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
+                if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
                         , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
                         , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                     return false;

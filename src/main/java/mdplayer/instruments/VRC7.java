@@ -1,22 +1,13 @@
 
-package mdplayer;
+package mdplayer.instruments;
 
 import java.util.function.Consumer;
 
-import mdsound.instrument.IntFNesInst;
+import mdsound.instrument.NesInst;
 import mdsound.instrument.Ym2413Inst;
 
 
 public class VRC7 extends Ym2413Inst {
-    @Override
-    public String getName() {
-        return "VRC7";
-    }
-
-    @Override
-    public String getShortName() {
-        return "VRC7";
-    }
 
     private final mdsound.np.chip.NesVrc7 nv;
 
@@ -30,12 +21,17 @@ public class VRC7 extends Ym2413Inst {
     }
 
     @Override
-    public void reset(int chipId) {
+    public String getName() {
+        return "VRC7";
     }
 
     @Override
-    public int start(int chipId, int samplingRate) {
-        return start(chipId, samplingRate, 0);
+    public String getShortName() {
+        return "VRC7";
+    }
+
+    @Override
+    public void reset(int chipId) {
     }
 
     @Override
@@ -81,6 +77,6 @@ public class VRC7 extends Ym2413Inst {
     }
 
     private final Consumer<int[]> listenr = ds -> {
-        if (ds[7] != -1) IntFNesInst.np_nes_vrc7_volume = ds[7];
+        if (ds[7] != -1) NesInst.np_nes_vrc7_volume = ds[7];
     };
 }

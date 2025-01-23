@@ -5,13 +5,13 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
 
-import mdplayer.ChipLEDs;
+import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.driver.moonDriver.MoonDriverJava;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.YmF278bInst;
+import mdsound.instrument.YmF278BInst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -30,12 +30,10 @@ public class MDLPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MoonDriverJava();
-        audio.driverVirtual.setting = setting;
         ((MoonDriverJava) audio.driverVirtual).setPlayingFileName(playingFileName);
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0] && !setting.getYM2608Type()[0].getUseEmu()[1]) {
             audio.driverReal = new MoonDriverJava();
-            audio.driverReal.setting = setting;
             ((MoonDriverJava) audio.driverReal).setPlayingFileName(playingFileName);
         }
 
@@ -62,39 +60,36 @@ logger.log(Level.WARNING, "cannot start: " + this);
             //stop();
             audio.chipRegister.resetChips();
             resetFadeOutParam();
-            audio.useChip.clear();
+            useChip.clear();
 
             startTrdVgmReal();
 
             List<MDSound.Chip> lstChips = new ArrayList<>();
             MDSound.Chip chip;
 
-            audio.hiyorimiNecessary = setting.getHiyorimiMode();
+            hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipLED = new ChipLEDs();
+            audio.chipRegister.chipLED.clear();
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
-            YmF278bInst ymf278b = Instrument.getInstrument(YmF278bInst.class);
+            YmF278BInst ymf278b = Instrument.getInstrument(YmF278BInst.class);
             //Func<String, Stream> fn = Common.GetOPNARyhthmStream;
 
             if (useChipFromMdr[0] != Common.EnmChip.Unuse) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                audio.chipLED.put("PriOPL4", 1);
+                audio.chipRegister.chipLED.put("PriOPL4", 1);
                 chip.instrument = ymf278b;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278bInst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278BInst.class);
                 chip.clock = 33868800;
                 chip.option = null; // new Object[] { fn };
                 lstChips.add(chip);
-                audio.useChip.add(Common.EnmChip.YMF278B);
+                useChip.add(Common.EnmChip.YMF278B);
                 //clockYM2608 = MucomDotNET.opnaBaseClock;
             }
 
-            if (audio.mds == null)
-                audio.mds = new mdsound.MDSound(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
-            else
-                audio.mds.init(setting.getOutputDevice().getSampleRate(), audio.SamplingBuffer, lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
 
             audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
 
@@ -104,33 +99,32 @@ logger.log(Level.WARNING, "cannot start: " + this);
 //            SetYM2608RhythmVolume(true, setting.getbalance().getYM2608RhythmVolume);
 //            SetYM2608AdpcmVolume(true, setting.getbalance().getYM2608AdpcmVolume);
 //
-//            chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel);
-//            chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel);
-//            chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel);
-//            chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
-//            chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
-//            chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-//            chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); // Psg TONE でリセット
-//            chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
-//            chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.VirtualModel);
-//            chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.RealModel);
-//            chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.VirtualModel);
-//            chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.RealModel);
-//            chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.VirtualModel);
-//            chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.VirtualModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x2d, 0x00, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.VirtualModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
+//            audio.chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); // Psg TONE でリセット
+//            audio.chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.VirtualModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.VirtualModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x09, 0x00, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.VirtualModel);
+//            audio.chipRegister.setYM2608Register(0, 0, 0x0a, 0x00, EnmModel.RealModel);
 //
-//            chipRegister.writeYM2608Clock(0, MucomDotNET.opnaBaseClock, EnmModel.RealModel);
-//            chipRegister.writeYM2608Clock(1, MucomDotNET.opnaBaseClock, EnmModel.RealModel);
-//            chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, EnmModel.RealModel);
-//            chipRegister.setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, EnmModel.RealModel);
+//            audio.chipRegister.writeYM2608Clock(0, MucomDotNET.opnaBaseClock, EnmModel.RealModel);
+//            audio.chipRegister.writeYM2608Clock(1, MucomDotNET.opnaBaseClock, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, EnmModel.RealModel);
+//            audio.chipRegister.setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, EnmModel.RealModel);
 
-
-            if (!audio.driverVirtual.init(vgmBuf, audio.chipRegister, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.YMF278B}
+            if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.YMF278B}
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
                     , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
             if (audio.driverReal != null) {
-                if (!audio.driverReal.init(vgmBuf, audio.chipRegister, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.YMF278B}
+                if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.YMF278B}
                         , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
                         , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                     return false;

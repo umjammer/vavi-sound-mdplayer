@@ -12,10 +12,13 @@ import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple3;
-import mdplayer.ChipRegister;
 import mdplayer.Common;
+import mdplayer.Common.EnmChip;
+import mdplayer.Common.EnmModel;
 import mdplayer.DacControl;
 import mdplayer.Setting;
+import mdplayer.chips.*;
+import mdplayer.plugin.BasePlugin;
 import mdsound.chips.C140;
 import vavi.util.ByteUtil;
 
@@ -126,7 +129,6 @@ public class Vgm extends BaseDriver {
     public DacControl dacControl;
     public boolean isPcmRAMWrite = false;
     public boolean useChipYM2612Ch6 = false;
-//    public Setting setting = null;
 
     private final Runnable[] vgmCmdTbl = new Runnable[0x100];
 
@@ -151,9 +153,9 @@ public class Vgm extends BaseDriver {
     private byte[][] ym2610AdpcmB = new byte[][] {null, null};
 
     @Override
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, Common.EnmModel model, Common.EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
+        this.plugin = plugin;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -200,7 +202,7 @@ public class Vgm extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, Common.EnmModel model, Common.EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 
@@ -272,15 +274,15 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             if (countNum > 100) {
                 if (model == mdplayer.Common.EnmModel.RealModel && countNum % 100 == 0) {
                     isDataBlock = true;
-                    chipRegister.sendDataYM2608(0, model);
-                    chipRegister.setYM2608SyncWait(0, 1);
-                    chipRegister.sendDataYM2151(0, model);
-                    chipRegister.setYM2151SyncWait(0, 1);
+                    plugin.audio.chipRegister.chip(Ym2608Chip.class).sendData(0, model);
+                    plugin.audio.chipRegister.chip(Ym2608Chip.class).setSyncWait(0, 1);
+                    plugin.audio.chipRegister.chip(Ym2151Chip.class).sendData(0, model);
+                    plugin.audio.chipRegister.chip(Ym2151Chip.class).setSyncWait(0, 1);
 
-                    chipRegister.sendDataYM2608(1, model);
-                    chipRegister.setYM2608SyncWait(1, 1);
-                    chipRegister.sendDataYM2151(1, model);
-                    chipRegister.setYM2151SyncWait(1, 1);
+                    plugin.audio.chipRegister.chip(Ym2608Chip.class).sendData(1, model);
+                    plugin.audio.chipRegister.chip(Ym2608Chip.class).setSyncWait(1, 1);
+                    plugin.audio.chipRegister.chip(Ym2151Chip.class).sendData(1, model);
+                    plugin.audio.chipRegister.chip(Ym2151Chip.class).setSyncWait(1, 1);
                 }
             }
         }
@@ -295,11 +297,11 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         if (model == mdplayer.Common.EnmModel.RealModel) {
             if (vgmSpeed == 1) { // Apply weight only when speed is constant
                 if (useChipYM2612Ch6)
-                    chipRegister.setYM2612SyncWait(0, vgmWait);
+                    plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait(0, vgmWait);
 //                if ((useChip & enmUseChip.SN76489) == enmUseChip.SN76489)
-//                    chipRegister.setSN76489SyncWait(vgmWait);
-//                chipRegister.setYM2608SyncWait(vgmWait);
-//                chipRegister.setYM2151SyncWait(vgmWait);
+//                    plugin.audio.chipRegister.setSN76489SyncWait(vgmWait);
+//                plugin.audio.chipRegister.setYM2608SyncWait(vgmWait);
+//                plugin.audio.chipRegister.setYM2151SyncWait(vgmWait);
             }
         }
 
@@ -559,89 +561,89 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private void vcGGPSGPort06() {
-        chipRegister.setSN76489RegisterGGpanning(vgmBuf[vgmAdr] == 0x4f ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, model);
+        plugin.audio.chipRegister.chip(Sn76489Chip.class).setPan(vgmBuf[vgmAdr] == 0x4f ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, model);
         vgmAdr += 2;
     }
 
     private void vcPSG() {
-        chipRegister.setSN76489Register(vgmBuf[vgmAdr] == 0x50 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, model);
+        plugin.audio.chipRegister.chip(Sn76489Chip.class).write(vgmBuf[vgmAdr] == 0x50 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, model);
         vgmAdr += 2;
     }
 
     private void vcAY8910() {
-        chipRegister.setAY8910Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
-        //chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(Ay8910Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        //plugin.audio.chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcDMG() {
-        chipRegister.setDMGRegister((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
-        //chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(DmgChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        //plugin.audio.chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcNES() {
-        chipRegister.setNESRegister((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(NesChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcMultiPCM() {
-        chipRegister.setMultiPCMRegister((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(MultiPcmChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcMultiPCMSetBank() {
-        chipRegister.setMultiPCMSetBank((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, (vgmBuf[vgmAdr + 2] & 0xff) + (vgmBuf[vgmAdr + 3] & 0xff) * 0x100, model);
+        plugin.audio.chipRegister.chip(MultiPcmChip.class).setBank((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, (vgmBuf[vgmAdr + 2] & 0xff) + (vgmBuf[vgmAdr + 3] & 0xff) * 0x100, model);
         vgmAdr += 4;
     }
 
     private void vcQSound() {
-        chipRegister.setQSoundRegister(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr + 3] & 0xff, model);
+        plugin.audio.chipRegister.chip(QSoundChip.class).write(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr + 3] & 0xff, model);
         vgmAdr += 4;
     }
 
     private void vcX1_010() {
-        chipRegister.setX1_010Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr + 3] & 0xff, model);
+        plugin.audio.chipRegister.chip(X1_010Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, vgmBuf[vgmAdr + 3] & 0xff, model);
         vgmAdr += 4;
     }
 
     private void vcYM2413() {
-        chipRegister.setYM2413Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(Ym2413Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYM3812() {
-        chipRegister.setYM3812Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(Ym3812Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcHuC6280() {
-        chipRegister.setHuC6280Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(HuC6280Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcGA20() {
-        chipRegister.setGA20Register((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(Ga20Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYM2612Port0() {
-        chipRegister.setYM2612Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, vgmFrameCounter);
+        plugin.audio.chipRegister.chip(Ym2612Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, vgmFrameCounter);
         vgmAdr += 3;
     }
 
     private void vcYM2612Port1() {
-        chipRegister.setYM2612Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, vgmFrameCounter);
+        plugin.audio.chipRegister.chip(Ym2612Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, vgmFrameCounter);
         vgmAdr += 3;
     }
 
     private void vcYM2203() {
-        chipRegister.setYM2203Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(Ym2203Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYM2608Port0() {
-        chipRegister.setYM2608Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(Ym2608Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
@@ -658,51 +660,51 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 //        if (adr == 0x00 && (dat & 0x20) != 0) {
 //            //dat &= 0xdf;
 //        }
-        chipRegister.setYM2608Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
+        plugin.audio.chipRegister.chip(Ym2608Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
         vgmAdr += 3;
     }
 
     private void vcYM2610Port0() {
-        chipRegister.setYM2610Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(Ym2610Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYM2610Port1() {
         int adr = vgmBuf[vgmAdr + 1] & 0xff;
         int dat = vgmBuf[vgmAdr + 2] & 0xff;
-        chipRegister.setYM2610Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
+        plugin.audio.chipRegister.chip(Ym2610Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
         vgmAdr += 3;
     }
 
     private void vcYMF262Port0() {
-        chipRegister.setYMF262Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(YmF262Chip.class).setRegister((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYMF262Port1() {
         int adr = vgmBuf[vgmAdr + 1] & 0xff;
         int dat = vgmBuf[vgmAdr + 2] & 0xff;
-        chipRegister.setYMF262Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
+        plugin.audio.chipRegister.chip(YmF262Chip.class).setRegister((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
         vgmAdr += 3;
     }
 
     private void vcYM3526() {
-        chipRegister.setYM3526Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(Ym3526Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcY8950() {
-        chipRegister.setY8950Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(Y8950Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYMZ280B() {
-        chipRegister.setYMZ280BRegister((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(YmZ280BChip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYMF271() {
-        chipRegister.setYMF271Register(
+        plugin.audio.chipRegister.chip(YmF271Chip.class).write(
                 (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1
                 , vgmBuf[vgmAdr + 1] & 0x7f
                 , vgmBuf[vgmAdr + 2] & 0xff
@@ -712,7 +714,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private void vcYMF278B() {
-        chipRegister.setYMF278BRegister(
+        plugin.audio.chipRegister.chip(YmF278BChip.class).write(
                 (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1
                 , vgmBuf[vgmAdr + 1] & 0x7f
                 , vgmBuf[vgmAdr + 2] & 0xff
@@ -723,48 +725,48 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private void vcYM2151() {
-        chipRegister.setYM2151Register((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, (vgmBuf[vgmAdr] & 0x80) == 0 ? ym2151Hosei[0] : ym2151Hosei[1], vgmFrameCounter);
+        plugin.audio.chipRegister.chip(Ym2151Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model, (vgmBuf[vgmAdr] & 0x80) == 0 ? ym2151Hosei[0] : ym2151Hosei[1], vgmFrameCounter);
         vgmAdr += 3;
     }
 
     private void vcOKIM6258() {
-        chipRegister.writeOKIM6258(0, vgmBuf[vgmAdr + 0x01] & 0x7f, vgmBuf[vgmAdr + 0x02] & 0xff, model);
+        plugin.audio.chipRegister.chip(OkiM6258Chip.class).write(0, vgmBuf[vgmAdr + 0x01] & 0x7f, vgmBuf[vgmAdr + 0x02] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcOKIM6295() {
-        chipRegister.writeOKIM6295((vgmBuf[vgmAdr + 0x01] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 0x01] & 0x7f, vgmBuf[vgmAdr + 0x02] & 0xff, model);
+        plugin.audio.chipRegister.chip(OkiM6295Chip.class).write((vgmBuf[vgmAdr + 0x01] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 0x01] & 0x7f, vgmBuf[vgmAdr + 0x02] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcSAA1099() {
-        chipRegister.writeSAA1099((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(Saa1099Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcWSwan() {
-        chipRegister.writeWSwan((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(WSwanChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcWSwanMem() {
-        chipRegister.writeWSwanMem(0, (vgmBuf[vgmAdr + 0x01] & 0xff) | ((vgmBuf[vgmAdr + 0x02] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
+        plugin.audio.chipRegister.chip(WSwanChip.class).writeMemory(0, (vgmBuf[vgmAdr + 0x01] & 0xff) | ((vgmBuf[vgmAdr + 0x02] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
         vgmAdr += 4;
     }
 
     private void vcPOKEY() {
-        chipRegister.writePOKEY((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(PokeyChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcSEGAPCM() {
 //logger.log(Level.TRACE, "%4X %4X".formatted(vgmBuf[vgmAdr + 0x01], vgmBuf[vgmAdr + 0x02]));
-        chipRegister.writeSEGAPCM(0, (vgmBuf[vgmAdr + 0x01] & 0xff) | ((vgmBuf[vgmAdr + 0x02] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
+        plugin.audio.chipRegister.chip(SegaPcmChip.class).write(0, (vgmBuf[vgmAdr + 0x01] & 0xff) | ((vgmBuf[vgmAdr + 0x02] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
         vgmAdr += 4;
     }
 
     private void vcWaitNSamples() {
-        vgmWait += ByteUtil.readLeShort(vgmBuf, vgmAdr + 1);
+        vgmWait += ByteUtil.readLeShort(vgmBuf, vgmAdr + 1) & 0xffff;
         vgmAdr += 3;
     }
 
@@ -811,65 +813,65 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             switch (bType & 0xff) {
             case 0x80:
                  // SEGA PCM
-                chipRegister.writeSEGAPCMPCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(SegaPcmChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpDataForSegaPCM(model, "SEGAPCM_PCMData", vgmAdr + 15, bLen - 8);
                 break;
             case 0x81:
 
                 // YM2608
 
-                chipRegister.setYM2608Register(chipId, 0x1, 0x00, 0x20, model);
-                chipRegister.setYM2608Register(chipId, 0x1, 0x00, 0x21, model);
-                chipRegister.setYM2608Register(chipId, 0x1, 0x00, 0x00, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x00, 0x20, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x00, 0x21, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x00, 0x00, model);
 
-                chipRegister.setYM2608Register(chipId, 0x1, 0x10, 0x00, model);
-                chipRegister.setYM2608Register(chipId, 0x1, 0x10, 0x80, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x10, 0x00, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x10, 0x80, model);
 
-                chipRegister.setYM2608Register(chipId, 0x1, 0x00, 0x61, model);
-                chipRegister.setYM2608Register(chipId, 0x1, 0x00, 0x68, model);
-                chipRegister.setYM2608Register(chipId, 0x1, 0x01, opnaRamType, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x00, 0x61, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x00, 0x68, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x01, opnaRamType, model);
 
                 if (opnaRamType != 2) {
-                    chipRegister.setYM2608Register(chipId, 0x1, 0x02, (startAddress >> 2) & 0xff, model);
-                    chipRegister.setYM2608Register(chipId, 0x1, 0x03, (startAddress >> 10) & 0xff, model);
+                    plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x02, (startAddress >> 2) & 0xff, model);
+                    plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x03, (startAddress >> 10) & 0xff, model);
                 } else {
-                    chipRegister.setYM2608Register(chipId, 0x1, 0x02, (startAddress >> 5) & 0xff, model);
-                    chipRegister.setYM2608Register(chipId, 0x1, 0x03, (startAddress >> 13) & 0xff, model);
+                    plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x02, (startAddress >> 5) & 0xff, model);
+                    plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x03, (startAddress >> 13) & 0xff, model);
                 }
-                chipRegister.setYM2608Register(chipId, 0x1, 0x04, 0xff, model);
-                chipRegister.setYM2608Register(chipId, 0x1, 0x05, 0xff, model);
-                chipRegister.setYM2608Register(chipId, 0x1, 0x0c, 0xff, model);
-                chipRegister.setYM2608Register(chipId, 0x1, 0x0d, 0xff, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x04, 0xff, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x05, 0xff, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x0c, 0xff, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x0d, 0xff, model);
 
                 // Data Transfer
                 for (int cnt = 0; cnt < bLen - 8; cnt++) {
-                    chipRegister.setYM2608Register(chipId, 0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt] & 0xff, model);
+                    plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt] & 0xff, model);
                 }
-                chipRegister.setYM2608Register(chipId, 0x1, 0x00, 0x00, model);
-                chipRegister.setYM2608Register(chipId, 0x1, 0x10, 0x80, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x00, 0x00, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).write(chipId, 0x1, 0x10, 0x80, model);
 
-//                chipRegister.setYM2608Register(0x1, 0x10, 0x13, model);
-//                chipRegister.setYM2608Register(0x1, 0x10, 0x80, model);
-//                chipRegister.setYM2608Register(0x1, 0x00, 0x60, model);
-//                chipRegister.setYM2608Register(0x1, 0x01, 0x00, model);
+//                plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x10, 0x13, model);
+//                plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x10, 0x80, model);
+//                plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x00, 0x60, model);
+//                plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x01, 0x00, model);
 
-//                chipRegister.setYM2608Register(0x1, 0x02, (int)((startAddress >> 2) & 0xff), model);
-//                chipRegister.setYM2608Register(0x1, 0x03, (int)((startAddress >> 10) & 0xff), model);
-//                chipRegister.setYM2608Register(0x1, 0x04, (int)(((startAddress + bLen - 8) >> 2) & 0xff), model);
-//                chipRegister.setYM2608Register(0x1, 0x05, (int)(((startAddress + bLen - 8) >> 10) & 0xff), model);
-//                chipRegister.setYM2608Register(0x1, 0x0c, 0xff, model);
-//                chipRegister.setYM2608Register(0x1, 0x0d, 0xff, model);
+//                plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x02, (int)((startAddress >> 2) & 0xff), model);
+//                plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x03, (int)((startAddress >> 10) & 0xff), model);
+//                plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x04, (int)(((startAddress + bLen - 8) >> 2) & 0xff), model);
+//                plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x05, (int)(((startAddress + bLen - 8) >> 10) & 0xff), model);
+//                plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x0c, 0xff, model);
+//                plugin.audio.chipRegister.setYM2608Register(0x1, 0x0d, 0xff, model);
 
 //                for (int cnt = 0; cnt < bLen - 8; cnt++) {
-//                    chipRegister.setYM2608Register(0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt], model);
-//                    chipRegister.setYM2608Register(0x1, 0x10, 0x1b, model);
-//                    chipRegister.setYM2608Register(0x1, 0x10, 0x13, model);
+//                    plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x08, vgmBuf[vgmAdr + 15 + cnt], model);
+//                    plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x10, 0x1b, model);
+//                    plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x10, 0x13, model);
 //                }
 
-//                chipRegister.setYM2608Register(0x1, 0x00, 0x00, model);
-//                chipRegister.setYM2608Register(0x1, 0x10, 0x80, model);
+//                plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x00, 0x00, model);
+//                plugin.audio.chipRegister.getChip(Ym2608Chip.class).setYM2608Register(0x1, 0x10, 0x80, model);
 
-                while ((chipRegister.getYM2608Register(chipId, 0x1, 0x00, model) & 0xbf) != 0) {
+                while ((plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId, 0x1, 0x00, model) & 0xbf) != 0) {
                     try { Thread.sleep(0); } catch (InterruptedException ignore) {}
                 }
                 if (model == mdplayer.Common.EnmModel.RealModel) {
@@ -879,7 +881,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                     }
                 }
 
-                chipRegister.sendDataYM2608(chipId, model);
+                plugin.audio.chipRegister.chip(Ym2608Chip.class).sendData(chipId, model);
                 dumpData(model, "YM2608_ADPCM", vgmAdr + 15, bLen - 8);
                 break;
 
@@ -891,9 +893,9 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                         ym2610AdpcmA[chipId][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
                     }
                     if (model == mdplayer.Common.EnmModel.VirtualModel)
-                        chipRegister.writeYm2610_SetAdpcmA(chipId, ym2610AdpcmA[chipId], model);
+                        plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmA(chipId, ym2610AdpcmA[chipId], model);
                     else
-                        chipRegister.writeYm2610_SetAdpcmA(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
+                        plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmA(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                     dumpData(model, "YM2610_ADPCMA", vgmAdr + 15, bLen - 8);
                 }
                 break;
@@ -905,101 +907,101 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                         ym2610AdpcmB[chipId][startAddress + cnt] = vgmBuf[vgmAdr + 15 + cnt];
                     }
                     if (model == mdplayer.Common.EnmModel.VirtualModel)
-                        chipRegister.WriteYM2610_SetAdpcmB(chipId, ym2610AdpcmB[chipId], model);
+                        plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmB(chipId, ym2610AdpcmB[chipId], model);
                     else
-                        chipRegister.WriteYM2610_SetAdpcmB(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
+                        plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmB(chipId, model, startAddress, bLen - 8, vgmBuf, vgmAdr + 15);
                     dumpData(model, "YM2610_ADPCMB", vgmAdr + 15, bLen - 8);
                 }
                 break;
 
             case 0x84:
                 // YMF278B
-                chipRegister.writeYmF278BPCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(YmF278BChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "YMF278B_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x85:
                 // YMF271
-                chipRegister.writeYmF271PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(YmF271Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "YMF271_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x86:
                 // YMZ280B
-                chipRegister.writeYmZ280BPCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(YmZ280BChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "YMZ280B_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x87:
                 // YMF278B
-                chipRegister.writeYmF278BPCMRAMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(YmF278BChip.class).writeRam(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "YMF278B_PCMRAMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x88:
                 // Y8950
-                chipRegister.writeY8950PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(Y8950Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "Y8950_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x89:
                 // MultiPCM
-                chipRegister.writeMultiPCMPCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(MultiPcmChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "MultiPCM_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8b:
                 // OKIM6295
-                chipRegister.writeOKIM6295PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(OkiM6295Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "OKIM6295_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8c:
                 // K054539
-                chipRegister.writeK054539PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(K054539Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "K054539_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8d:
                 // C140
-                chipRegister.writeC140PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(C140Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "C140_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8e:
                 // K053260
-                chipRegister.writeK053260PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(K053260Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "K053260_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8f:
                 // QSound
-                chipRegister.writeQSoundPCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(QSoundChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "QSound_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x91:
                 // X1-010
-                chipRegister.writeX1_010PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(X1_010Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "X1-010_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x92:
                 // C352
-                chipRegister.writeC352PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(C352Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "C352_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x93:
                 // GA20
-                chipRegister.writeGA20PCMData(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                plugin.audio.chipRegister.chip(Ga20Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "GA20_PCMData", vgmAdr + 15, bLen - 8);
                 break;
             }
             vgmAdr += bLen + 7;
             break;
         case 0xc0:
-            int stAdr = ByteUtil.readLeShort(vgmBuf, vgmAdr + 7);
+            int stAdr = ByteUtil.readLeShort(vgmBuf, vgmAdr + 7) & 0xffff;
             int dataSize = bLen - 2;
             int romData = vgmAdr + 9;
             if ((bType & 0x20) != 0) {
@@ -1011,15 +1013,15 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             try {
                 switch (bType & 0xff) {
                 case 0xc0:
-                    chipRegister.writeRF5C68PCMData(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
+                    plugin.audio.chipRegister.chip(Rf5C68Chip.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
                     dumpData(model, "RF5C68_PCMData(8BitMonoSigned)", vgmAdr + 9, dataSize);
                     break;
                 case 0xc1:
-                    chipRegister.writeRF5C164PCMData(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
+                    plugin.audio.chipRegister.chip(Rf5C164Chip.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
                     dumpData(model, "RF5C164_PCMData(8BitMonoSigned)", vgmAdr + 9, dataSize);
                     break;
                 case 0xc2:
-                    chipRegister.writeNESPCMData(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
+                    plugin.audio.chipRegister.chip(NesChip.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr + 9, model);
                     dumpData(model, "NES_PCMData", vgmAdr + 9, dataSize);
                     break;
                 }
@@ -1152,10 +1154,10 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         Integer pcmAdr = getPCMAddressFromPCMBank(bType, bReadOffset);
         if (pcmAdr != null) {
             if (bType == 0x01) {
-                chipRegister.writeRF5C68PCMData(0, bWriteOffset, bSize, pcmBank[bType].data, pcmAdr, model);
+                plugin.audio.chipRegister.chip(Rf5C68Chip.class).writePcm(0, bWriteOffset, bSize, pcmBank[bType].data, pcmAdr, model);
             }
             if (bType == 0x02) {
-                chipRegister.writeRF5C164PCMData(0, bWriteOffset, bSize, pcmBank[bType].data, pcmAdr, model);
+                plugin.audio.chipRegister.chip(Rf5C164Chip.class).writePcm(0, bWriteOffset, bSize, pcmBank[bType].data, pcmAdr, model);
             }
         }
 
@@ -1175,7 +1177,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
         vgmWait += (vgmBuf[vgmAdr] & 0xff) - 0x80;
 
-        chipRegister.setYM2612Register(0, 0, 0x2a, dat, model, vgmFrameCounter);
+        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, 0, 0x2a, dat, model, vgmFrameCounter);
 
         vgmAdr++;
     }
@@ -1298,7 +1300,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             return;
         }
         VgmPcmBank tempPCM = pcmBank[dacCtrl[curChip].bank];
-        int TempSht = ByteUtil.readLeShort(vgmBuf, vgmAdr + 2);
+        int TempSht = ByteUtil.readLeShort(vgmBuf, vgmAdr + 2) & 0xffff;
         //Last95Drum = TempSht;
         //Last95Max = tempPCM.BankCount;
         if (TempSht >= tempPCM.bankCount)
@@ -1320,33 +1322,33 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     private void vcRf5c68() {
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int cmd = vgmBuf[vgmAdr + 1] & 0x7f;
-        chipRegister.writeRF5C68(id, cmd, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(Rf5C68Chip.class).write(id, cmd, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcRf5c68MemoryWrite() {
-        int offset = ByteUtil.readLeShort(vgmBuf, vgmAdr + 1);
-        chipRegister.writeRF5C68MemW(0, offset, vgmBuf[vgmAdr + 3] & 0xff, model);
+        int offset = ByteUtil.readLeShort(vgmBuf, vgmAdr + 1) & 0xffff;
+        plugin.audio.chipRegister.chip(Rf5C68Chip.class).writeMemory(0, offset, vgmBuf[vgmAdr + 3] & 0xff, model);
         vgmAdr += 4;
     }
 
     private void vcRf5c164() {
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int cmd = vgmBuf[vgmAdr + 1] & 0x7f;
-        chipRegister.writeRF5C164(id, cmd, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(Rf5C164Chip.class).write(id, cmd, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcRf5c164MemoryWrite() {
-        int offset = ByteUtil.readLeShort(vgmBuf, vgmAdr + 1);
-        chipRegister.writeRF5C164MemW(0, offset, vgmBuf[vgmAdr + 3] & 0xff, model);
+        int offset = ByteUtil.readLeShort(vgmBuf, vgmAdr + 1) & 0xffff;
+        plugin.audio.chipRegister.chip(Rf5C164Chip.class).writeMemory(0, offset, vgmBuf[vgmAdr + 3] & 0xff, model);
         vgmAdr += 4;
     }
 
     private void vcPWM() {
         int cmd = (vgmBuf[vgmAdr + 1] & 0xf0) >> 4;
         int data = (vgmBuf[vgmAdr + 1] & 0xf) * 0x100 + vgmBuf[vgmAdr + 2] & 0xff;
-        chipRegister.writePWM(0, cmd, data, model);
+        plugin.audio.chipRegister.chip(PwmChip.class).write(0, cmd, data, model);
         vgmAdr += 3;
     }
 
@@ -1356,8 +1358,8 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         int rDat = vgmBuf[vgmAdr + 3] & 0xff;
         int scc1_chipId = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         vgmAdr += 4;
-        chipRegister.writeK051649(scc1_chipId, (scc1_port << 1) | 0x00, scc1_offset, model);
-        chipRegister.writeK051649(scc1_chipId, (scc1_port << 1) | 0x01, rDat, model);
+        plugin.audio.chipRegister.chip(K051649Chip.class).write(scc1_chipId, (scc1_port << 1) | 0x00, scc1_offset, model);
+        plugin.audio.chipRegister.chip(K051649Chip.class).write(scc1_chipId, (scc1_port << 1) | 0x01, rDat, model);
 
     }
 
@@ -1365,7 +1367,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = vgmBuf[vgmAdr + 1] & 0x7f;
         int data = vgmBuf[vgmAdr + 2] & 0xff;
-        chipRegister.writeK053260(id, adr, data, model);
+        plugin.audio.chipRegister.chip(K053260Chip.class).write(id, adr, data, model);
         vgmAdr += 3;
     }
 
@@ -1373,7 +1375,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         int data = vgmBuf[vgmAdr + 3] & 0xff;
-        chipRegister.writeK054539(id, adr, data, model);
+        plugin.audio.chipRegister.chip(K054539Chip.class).write(id, adr, data, model);
         vgmAdr += 4;
     }
 
@@ -1381,7 +1383,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         int data = vgmBuf[vgmAdr + 3] & 0xff;
-        chipRegister.writeC140(id, adr, data, model);
+        plugin.audio.chipRegister.chip(C140Chip.class).write(id, adr, data, model);
         vgmAdr += 4;
     }
 
@@ -1390,7 +1392,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         int data = (vgmBuf[vgmAdr + 3] & 0xff) * 0x100 + (vgmBuf[vgmAdr + 4] & 0xff);
 
-        chipRegister.writeC352(id, adr, data, model);
+        plugin.audio.chipRegister.chip(C352Chip.class).write(id, adr, data, model);
         vgmAdr += 5;
     }
 
@@ -1509,7 +1511,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             bitDec = vgmBuf[adr + 5] & 0xff;
             bitCmp = vgmBuf[adr + 6] & 0xff;
             cmpSubType = vgmBuf[adr + 7] & 0xff;
-            addVal = ByteUtil.readLeShort(vgmBuf, adr + 8);
+            addVal = ByteUtil.readLeShort(vgmBuf, adr + 8) & 0xffff;
 
             if (cmpSubType == 0x02) {
                 //bank.dataSize = 0x00;
@@ -1605,7 +1607,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         case 0x01:  // Delta-PCM
             bitDec = vgmBuf[adr + 5] & 0xff; // data[0x05];
             bitCmp = vgmBuf[adr + 6] & 0xff; // data[0x06];
-            outVal = ByteUtil.readLeShort(vgmBuf, adr + 8);// ReadLE16(&Data[0x08]);
+            outVal = ByteUtil.readLeShort(vgmBuf, adr + 8) & 0xffff; // ReadLE16(&Data[0x08]);
 
             ent1B = 0; // (UINT8*)PCMTbl.Entries;
             ent2B = 0; // (UINT16*)PCMTbl.Entries;
@@ -1700,7 +1702,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         pcmTbl.cmpSubType = vgmBuf[adr + 1] & 0xff; // data[0x01];
         pcmTbl.bitDec = vgmBuf[adr + 2] & 0xff; // data[0x02];
         pcmTbl.bitCmp = vgmBuf[adr + 3] & 0xff; // data[0x03];
-        pcmTbl.entryCount = ByteUtil.readLeShort(vgmBuf, adr + 4);// ReadLE16(&Data[0x04]);
+        pcmTbl.entryCount = ByteUtil.readLeShort(vgmBuf, adr + 4) & 0xffff; // ReadLE16(&Data[0x04]);
 
         valSize = (pcmTbl.bitDec + 7) / 8;
         tblSize = pcmTbl.entryCount * valSize;
@@ -1806,17 +1808,17 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             sn76489NGPFlag = (SN76489clock & 0x8000_0000) != 0;
             if (version < 0x0150) {
                 sn76489Option = new Object[] {
-                        (byte) 9,
-                        (byte) 0,
-                        (byte) 16,
-                        (byte) 0
+                        9,
+                        0,
+                        16,
+                        0
                 };
             } else {
                 sn76489Option = new Object[] {
-                        vgmBuf[0x28],
-                        vgmBuf[0x29],
-                        vgmBuf[0x2a],
-                        vgmBuf[0x2b]
+                        vgmBuf[0x28] & 0xff,
+                        vgmBuf[0x29] & 0xff,
+                        vgmBuf[0x2a] & 0xff,
+                        vgmBuf[0x2b] & 0xff
                 };
             }
             if (sn76489DualChipFlag) chips.add("SN76489x2");
@@ -2370,5 +2372,15 @@ logger.log(Level.INFO, "usedChips: " + usedChips);
         public String usedChips = "";
 
         public List<Tuple3<Integer, Integer, String>> lyrics = null;
+    }
+
+    @Override
+    public long getDriverCounter() {
+        return vgmFrameCounter;
+    }
+
+    @Override
+    public long whichCounter(long real, long virtual) {
+        return Math.min(real, virtual);
     }
 }

@@ -21,6 +21,8 @@ import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.YmF278BChip;
+import mdplayer.driver.moonDriver.MoonDriver;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -120,7 +122,7 @@ public class frmYMF278B extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[][] ymf278bRegister = audio.getYMF278BRegister(chipId);
+        int[][] ymf278bRegister = audio.chipRegister.chip(YmF278BChip.class).read(chipId);
         MDChipParams.Channel nyc;
         int slot;
         int slotP;
@@ -213,7 +215,7 @@ public class frmYMF278B extends frmBase {
             }
         }
 
-        int ko = audio.getYMF278BFMKeyON(chipId);
+        int ko = audio.chipRegister.chip(YmF278BChip.class).getFmKeyOn(chipId);
 
         for (int c = 0; c < 18; c++) {
             nyc = newParam.channels[c];
@@ -316,7 +318,7 @@ public class frmYMF278B extends frmBase {
 
         //Audio.resetYMF278BFMKeyON(chipId);
 
-        int r = audio.getYMF278BRyhthmKeyON(chipId);
+        int r = audio.chipRegister.chip(YmF278BChip.class).getRhythmKeyOn(chipId);
 
         //slot14 TL 0x51 HH
         //slot15 TL 0x52 TOM
@@ -364,11 +366,11 @@ public class frmYMF278B extends frmBase {
             if (newParam.channels[22].volume < 0) newParam.channels[22].volume = 0;
         }
 
-        audio.resetYMF278BRyhthmKeyON(chipId);
+        audio.chipRegister.chip(YmF278BChip.class).resetRhythmKeyOn(chipId);
 
         //PCM
-        int[] pcmKey = audio.getYMF278BPCMKeyON(chipId);
-        int[] mdPCMKey = audio.getMoonDriverPCMKeyOn();
+        int[] pcmKey = audio.chipRegister.chip(YmF278BChip.class).getPcmKeyOn(chipId);
+        int[] mdPCMKey = (audio.driverVirtual instanceof MoonDriver moonDriver) ? moonDriver.getPCMKeyOn() : null;
         for (int c = 23; c < 23 + 24; c++) {
             nyc = newParam.channels[c];
             //Pan
@@ -443,7 +445,7 @@ public class frmYMF278B extends frmBase {
             //Wav
             nyc.inst[12] = (ymf278bRegister[2][0x08 + (c - 23)]) + ((ymf278bRegister[2][0x20 + (c - 23)] & 0x1) << 8);
         }
-        audio.resetYMF278BPCMKeyON(chipId);
+        audio.chipRegister.chip(YmF278BChip.class).resetPcmKeyOn(chipId);
     }
 
     public void screenDrawParams() {

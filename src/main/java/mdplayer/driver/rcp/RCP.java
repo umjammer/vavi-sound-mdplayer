@@ -13,15 +13,17 @@ import java.util.function.BiConsumer;
 
 import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.Path;
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.MidiPlugin;
+import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.MidiOutInfo;
+import mdplayer.plugin.BasePlugin;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
@@ -184,9 +186,9 @@ public class RCP extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
+        this.plugin = plugin;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -212,15 +214,15 @@ public class RCP extends BaseDriver {
         if (!makeBeforeSendCommand()) return false;
 
         if (model == EnmModel.RealModel) {
-            chipRegister.setYM2612SyncWait((byte) 0, 1);
-            chipRegister.setYM2612SyncWait((byte) 1, 1);
+            plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 0, 1);
+            plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 1, 1);
         }
 
         return true;
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 
@@ -567,7 +569,7 @@ public class RCP extends BaseDriver {
             tracks[trkNumber].setRythmMode((vgmBuf[ptr++] & 0xff) == 0x80);
             int ch = vgmBuf[ptr++] & 0xff;
             if (ch != 255) {
-                int mc = chipRegister.getMIDIoutCount();
+                int mc = plugin.audio.chipRegister.plugin(MidiPlugin.class).getCount();
                 if (mc == 0) mc = 1;
                 int n = (stDevNum + (ch / 16)) % mc;
                 tracks[trkNumber].setOutDeviceName("dummy");
@@ -1176,9 +1178,9 @@ public class RCP extends BaseDriver {
         List<Byte> dat = new ArrayList<>();
         for (int i = 0; i < len; i++) {
             dat.add(pMIDIMessage[i]);
-//            chipRegister.sendMIDIout(model, n, vv, vstDelta);
+//            plugin.audio.chipRegister.sendMIDIout(model, n, vv, vstDelta);
         }
-        chipRegister.sendMIDIout(model, n, toByteArray(dat), vstDelta);
+        plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, n, toByteArray(dat), vstDelta);
     }
 
     /**
@@ -1608,7 +1610,7 @@ public class RCP extends BaseDriver {
 
     void sefCommentStart(MIDITrack trk, MIDIEvent eve) {
         trk.setComment(new String(eve.getMIDIMessages()[0], CHARSET).replace("\0", ""));
-        chipRegister.midiParams[0].Lyric = trk.getComment();
+        plugin.audio.chipRegister.plugin(MidiPlugin.class).params[0].Lyric = trk.getComment();
     }
 
     void sefLoopEnd(MIDITrack trk, MIDIEvent eve) {
@@ -2205,7 +2207,7 @@ public class RCP extends BaseDriver {
 
                 CtlSysex csx = beforeSend[i].get(sendControlIndex[i]);
                 sendControlDelta[i] = csx.delta;
-                chipRegister.sendMIDIout(model, 0, csx.data, vstDelta);
+                plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, 0, csx.data, vstDelta);
 
                 sendControlIndex[i]++;
             } else {
@@ -2222,7 +2224,7 @@ public class RCP extends BaseDriver {
 
     private boolean makeBeforeSendCommand() {
         try {
-            MidiOutInfo[] infos = chipRegister.getMIDIoutInfo();
+            MidiOutInfo[] infos = plugin.audio.chipRegister.plugin(MidiPlugin.class).get();
             if (infos == null || infos.length < 1) return true;
 
             beforeSend = new List[infos.length];

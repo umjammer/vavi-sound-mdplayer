@@ -22,10 +22,12 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.Ppz8Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 import mdsound.chips.PPZ8;
+import mdsound.instrument.Ppz8Inst;
 
 
 public class frmPPZ8 extends frmBase {
@@ -128,7 +130,7 @@ public class frmPPZ8 extends frmBase {
     private int searchPPZ8Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = audio.clockPPZ8;
+        int clock = audio.chipRegister.getChipInfo(Ppz8Inst.class).clock;
         if (clock >= 1000000)
             clock = clock / 384;
 
@@ -172,7 +174,7 @@ public class frmPPZ8 extends frmBase {
     }
 
     public void screenChangeParams() {
-        PPZ8.Channel[] ppz8State = audio.getPPZ8Register(chipId);
+        PPZ8.Channel[] ppz8State = audio.chipRegister.chip(Ppz8Chip.class).read(chipId);
         if (ppz8State == null) return;
 
         for (int ch = 0; ch < 8; ch++) {

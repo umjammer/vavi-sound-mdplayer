@@ -19,12 +19,15 @@ import dotnet4j.io.IOException;
 import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.Ym2151Chip;
+import mdplayer.chips.Ym2608Chip;
+import mdplayer.chips.Ym2610Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
+import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
@@ -209,11 +212,11 @@ logger.log(Level.WARNING, "Extended mub file?");
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         gd3 = getGD3Info(vgmBuf);
 
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
+        this.plugin = plugin;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -237,7 +240,7 @@ logger.log(Level.WARNING, "Extended mub file?");
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 
@@ -435,7 +438,7 @@ logger.log(Level.WARNING, "Extended mub file?");
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        chipRegister.setYM2608Register(0, cd.port, cd.address, cd.data, model);
+        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, cd.port, cd.address, cd.data, model);
     }
 
     private void writeOPNA2(ChipDatum cd) {
@@ -444,7 +447,7 @@ logger.log(Level.WARNING, "Extended mub file?");
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        chipRegister.setYM2608Register(1, cd.port, cd.address, cd.data, model);
+        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(1, cd.port, cd.address, cd.data, model);
     }
 
     private void writeOPNB1(ChipDatum cd) {
@@ -453,7 +456,7 @@ logger.log(Level.WARNING, "Extended mub file?");
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        chipRegister.setYM2610Register(0, cd.port, cd.address, cd.data, model);
+        plugin.audio.chipRegister.chip(Ym2610Chip.class).write(0, cd.port, cd.address, cd.data, model);
     }
 
     private void writeOPNB2(ChipDatum cd) {
@@ -462,7 +465,7 @@ logger.log(Level.WARNING, "Extended mub file?");
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        chipRegister.setYM2610Register(1, cd.port, cd.address, cd.data, model);
+        plugin.audio.chipRegister.chip(Ym2610Chip.class).write(1, cd.port, cd.address, cd.data, model);
     }
 
     private void writeOPM1(ChipDatum cd) {
@@ -470,21 +473,21 @@ logger.log(Level.WARNING, "Extended mub file?");
         if (cd.address == -1) return;
         if (cd.data == -1) return;
 
-        chipRegister.setYM2151Register(0, cd.port, cd.address, cd.data, model, 0, 0);
+        plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, cd.port, cd.address, cd.data, model, 0, 0);
     }
 
     private void writeOPNB1PCMData(byte[] dat, int v, int v2) {
         if (v == 0)
-            chipRegister.writeYm2610_SetAdpcmA(0, dat, EnmModel.VirtualModel);
+            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmA(0, dat, EnmModel.VirtualModel);
         else
-            chipRegister.WriteYM2610_SetAdpcmB(0, dat, EnmModel.VirtualModel);
+            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmB(0, dat, EnmModel.VirtualModel);
     }
 
     private void writeOPNB2PCMData(byte[] dat, int v, int v2) {
         if (v == 0)
-            chipRegister.writeYm2610_SetAdpcmA(1, dat, EnmModel.VirtualModel);
+            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmA(1, dat, EnmModel.VirtualModel);
         else
-            chipRegister.WriteYM2610_SetAdpcmB(1, dat, EnmModel.VirtualModel);
+            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmB(1, dat, EnmModel.VirtualModel);
     }
 
     private void sendOPNAWait(long size, int elapsed) {
@@ -551,7 +554,7 @@ logger.log(Level.WARNING, "Extended mub file?");
 //        if (dat.data == -1) return;
 //        if (dat.port == -1) return;
 //
-//        chipRegister.setYM2608Register(0, dat.port, dat.address, dat.data, model);
+//        plugin.audio.chipRegister.setYM2608Register(0, dat.port, dat.address, dat.data, model);
 //        //logger.log(Level.TRACE, "%d %d".formatted(dat.address, dat.data));
 //    }
 

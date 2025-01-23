@@ -6,6 +6,8 @@ import java.lang.System.Logger.Level;
 import konamiman.z80.interfaces.Memory;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
+import mdplayer.chips.Ay8910Chip;
+import mdplayer.chips.Ym2413Chip;
 
 import static java.lang.System.getLogger;
 
@@ -58,7 +60,7 @@ public class MsxPort implements Memory {
             ay8910Adr = value;
             break;
         case 0xa1:
-            chipRegister.setAY8910Register(0, ay8910Adr & 0xff, value, model);
+            chipRegister.chip(Ay8910Chip.class).write(0, ay8910Adr & 0xff, value, model);
             break;
         case 0xa2:
             //logger.log(Level.TRACE, "Psg Port adr:%04x Dat:%02x".formatted(address, value));
@@ -67,7 +69,7 @@ public class MsxPort implements Memory {
             opllAdr = value;
             break;
         case 0x7d:
-            chipRegister.setYM2413Register(0, opllAdr & 0xff, value, model);
+            chipRegister.chip(Ym2413Chip.class).write(0, opllAdr & 0xff, value, model);
             //logger.log(Level.TRACE, "Ym2413 Port adr:%04x Dat:%02x".formatted(address, value));
             break;
         case 0xa8:

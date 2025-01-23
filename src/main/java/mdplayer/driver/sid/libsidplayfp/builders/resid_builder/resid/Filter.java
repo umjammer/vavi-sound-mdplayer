@@ -1657,7 +1657,7 @@ public class Filter {
     public short[] vcr_kVg = new short[1 << 16];
     public short[] vcr_n_Ids_term = new short[1 << 16];
 
-    //# ifndef HAS_LOG1P
+//# ifndef HAS_LOG1P
     public static double log1p(double x) {
         return Math.log(1 + x) - (((1 + x) - 1) - x) / (1 + x);
     }

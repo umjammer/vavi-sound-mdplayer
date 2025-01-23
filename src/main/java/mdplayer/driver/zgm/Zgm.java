@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
@@ -14,6 +13,7 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.zgm.zgmChip.ChipFactory;
 import mdplayer.driver.zgm.zgmChip.ZgmChip;
 import mdplayer.driver.Vgm.Gd3;
+import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -45,9 +45,9 @@ public class Zgm extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
+        this.plugin = plugin;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -66,7 +66,7 @@ public class Zgm extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 
@@ -120,7 +120,7 @@ public class Zgm extends BaseDriver {
         for (int i = 0; i < defineCount; i++) {
             fcc = ByteUtil.readLe24(vgmBuf, pos);
             if (fcc != FCC_DEF) return false;
-            ZgmChip chip = (new ChipFactory()).Create(ByteUtil.readLeInt(vgmBuf, pos + 0x4), chipRegister, setting, vgmBuf);
+            ZgmChip chip = (new ChipFactory()).Create(ByteUtil.readLeInt(vgmBuf, pos + 0x4), plugin.audio.chipRegister, setting, vgmBuf);
             if (chip == null) return false;//non support
 
             if (!chipCount.containsKey(chip.name)) chipCount.put(chip.name, -1);

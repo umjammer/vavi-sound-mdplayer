@@ -21,6 +21,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.YmF271Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -144,7 +145,7 @@ public class frmYMF271 extends frmBase {
     }
 
     public void screenChangeParams() {
-        YmF271 reg = audio.getYMF271Register(chipId);
+        YmF271 reg = audio.chipRegister.chip(YmF271Chip.class).read(chipId);
         if (reg != null) {
             for (int i = 0; i < 48; i++) {
                 int slot = slotTbl[i];

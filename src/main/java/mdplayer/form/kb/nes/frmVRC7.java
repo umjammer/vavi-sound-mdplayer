@@ -16,10 +16,12 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
+import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.NesChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -105,11 +107,11 @@ public class frmVRC7 extends frmBase {
     };
 
     public void screenChangeParams() {
-        byte[] vrc7Register = audio.getVRC7Register(chipId);
+        int[] vrc7Register = audio.chipRegister.chip(NesChip.class).readVrc7(chipId);
         if (vrc7Register == null) return;
 
         //キーオン(ワンショット)があったかを取得する
-        mdplayer.ChipRegister.ChipKeyInfo ki = audio.getVRC7KeyInfo(chipId);
+        ChipKeyInfo ki = audio.chipRegister.chip(NesChip.class).getVRC7KeyInfo(chipId);
 
         for (int ch = 0; ch < 6; ch++) {
             MDChipParams.Channel nyc = newParam.channels[ch];
@@ -132,7 +134,7 @@ public class frmVRC7 extends frmBase {
 
 
             //ワンショット(前回の処理から比較してキーオンが1度以上発生している状態)の場合
-            if (ki.On[ch]) {
+            if (ki.on[ch]) {
                 //ボリュームメーターを振る
                 nyc.volumeL = (19 - nyc.inst[3]);
             } else {

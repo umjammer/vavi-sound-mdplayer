@@ -6,14 +6,14 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
-import mdplayer.Setting;
+import mdplayer.chips.NesChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
+import mdplayer.plugin.BasePlugin;
 import mdsound.np.DCFilter;
 import mdsound.np.Device;
 import mdsound.np.Filter;
@@ -34,7 +34,6 @@ import mdsound.np.memory.NesBank;
 import mdsound.np.memory.NesMem;
 import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
 
 
@@ -43,19 +42,21 @@ public class Nsf extends BaseDriver {
     private static final Logger logger = getLogger(Nsf.class.getName());
 
     public Nsf() {
-        this.setting = Setting.getInstance();
         rate = setting.getOutputDevice().getSampleRate();
     }
 
     @Override
     public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         if (ByteUtil.readLeInt(buf, 0) != FCC_NSF) {
-             // NSFeはとりあえず未サポート
+            // NSFeはとりあえず未サポート
+logger.log(Level.WARNING, "NSFe not supported.");
             return null;
         }
 
-        if (buf.length < 0x80) // no header?
+        if (buf.length < 0x80) { // no header?
+logger.log(Level.WARNING, "no header?");
             return null;
+        }
 
         version = buf[0x05] & 0xff;
         songs = buf[0x06] & 0xff;
@@ -70,7 +71,7 @@ public class Nsf extends BaseDriver {
             if (buf[tagAdr] == 0) break;
             strLst.add(buf[tagAdr++]);
         }
-        title_nsf = new String(toByteArray(strLst), Charset.forName("MS932"));
+        title_nsf = new String(ByteUtil.toByteArray(strLst), Charset.forName("MS932"));
         title = title_nsf;
 
         strLst.clear();
@@ -79,7 +80,7 @@ public class Nsf extends BaseDriver {
             if (buf[tagAdr] == 0) break;
             strLst.add(buf[tagAdr++]);
         }
-        artist_nsf = new String(toByteArray(strLst), Charset.forName("MS932"));
+        artist_nsf = new String(ByteUtil.toByteArray(strLst), Charset.forName("MS932"));
         artist = artist_nsf;
 
         //memcpy(copyright_nsf, image + 0x4e, 32);
@@ -90,7 +91,7 @@ public class Nsf extends BaseDriver {
             if (buf[tagAdr] == 0) break;
             strLst.add(buf[tagAdr++]);
         }
-        copyrightNsf = new String(toByteArray(strLst), Charset.forName("MS932"));
+        copyrightNsf = new String(ByteUtil.toByteArray(strLst), Charset.forName("MS932"));
         copyright = copyrightNsf;
 
         ripper = ""; // NSFe only
@@ -114,6 +115,7 @@ public class Nsf extends BaseDriver {
         useMmc5 = (soundChip & 8) != 0;
         useN106 = (soundChip & 16) != 0;
         useFme7 = (soundChip & 32) != 0;
+logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "7" : "_", useFds ? "F" : "_", useMmc5 ? "M" : "_", useN106 ? "N" : "_", useFme7 ? "F" : "_"));
 
         System.arraycopy(buf, 124, extra, 0, 4);
 
@@ -140,10 +142,9 @@ public class Nsf extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
-
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
-        this.chipRegister = chipRegister;
+        this.plugin = plugin;
         this.model = model;
         this.useChip = useChip;
         this.latency = latency;
@@ -191,49 +192,50 @@ public class Nsf extends BaseDriver {
         }
     }
 
-    public static final int FCC_NSF = 0x4d53454e; // "NESM"
+    private static final int FCC_NSF = 0x4d53454e; // "NESM"
 
-    public int version;
+    private int version;
     public int songs;
-    public int start;
-    public int load_address;
-    public int initAddress;
-    public int playAddress;
-    public String filename;
+    private int start;
+    private int load_address;
+    private int initAddress;
+    private int playAddress;
+    private String filename;
     // margin 64 chars.
-    public String printTitle;
-    public String title_nsf;
-    public String artist_nsf;
-    public String copyrightNsf;
-    public String title;
-    public String artist;
-    public String copyright;
+    private String printTitle;
+    private String title_nsf;
+    private String artist_nsf;
+    private String copyrightNsf;
+    private String title;
+    private String artist;
+    private String copyright;
     // NSFe only
-    public String ripper;
+    private String ripper;
     // NSFe only
-    public String text;
+    private String text;
     // NSFe only
-    public int text_len;
-    public int speedNtsc;
-    public byte[] bankSwitch = new byte[8];
-    public int speedPal;
-    public int palNtsc;
-    public int soundChip;
+    private int text_len;
+    private int speedNtsc;
+    private byte[] bankSwitch = new byte[8];
+    private int speedPal;
+    private int palNtsc;
+    private int soundChip;
     public boolean useVrc7;
     public boolean useVrc6;
     public boolean useFds;
     public boolean useFme7;
     public boolean useMmc5;
     public boolean useN106;
-    public byte[] extra = new byte[4];
-    public byte[] body;
-    public int bodySize;
-    public byte[] nsfeImage;
+    private byte[] extra = new byte[4];
+    private byte[] body;
+    private int bodySize;
+    private byte[] nsfeImage;
     public byte[] nsfePlst;
     public int nsfePlstSize;
-    static final int NSFE_ENTRIES = 256;
+    private static final int NSFE_ENTRIES = 256;
 
     public static class NsfeEntry {
+
         public byte[] tlbl;
         public int time;
         public int fade;
@@ -247,7 +249,6 @@ public class Nsf extends BaseDriver {
     public int song;
 
     private Device.Bus apuBus;
-
 
     private Device.Bus stack;
     private Device.Layer layer;
@@ -276,43 +277,43 @@ public class Nsf extends BaseDriver {
     private int last_out = 0;
 
     private void nsfInit() {
-        chipRegister.nes_bank = new NesBank();
-        chipRegister.nes_mem = new NesMem();
-        chipRegister.nes_cpu = new Km6502(0);
-        chipRegister.nes_apu = new NesApu();
-        chipRegister.nes_dmc = new NesDmc();
-        chipRegister.nes_fds = new NesFds();
-        chipRegister.nes_n106 = new NesN106();
-        chipRegister.nes_vrc6 = new NesVrc6();
-        chipRegister.nes_mmc5 = new NesMmc5();
-        chipRegister.nes_fme7 = new NesFme7();
-        chipRegister.nes_vrc7 = new NesVrc7();
+        plugin.audio.chipRegister.chip(NesChip.class).bank = new NesBank();
+        plugin.audio.chipRegister.chip(NesChip.class).mem = new NesMem();
+        plugin.audio.chipRegister.chip(NesChip.class).cpu = new Km6502(0);
+        plugin.audio.chipRegister.chip(NesChip.class).apu = new NesApu();
+        plugin.audio.chipRegister.chip(NesChip.class).dmc = new NesDmc();
+        plugin.audio.chipRegister.chip(NesChip.class).fds = new NesFds();
+        plugin.audio.chipRegister.chip(NesChip.class).n106 = new NesN106();
+        plugin.audio.chipRegister.chip(NesChip.class).vrc6 = new NesVrc6();
+        plugin.audio.chipRegister.chip(NesChip.class).mmc5 = new NesMmc5();
+        plugin.audio.chipRegister.chip(NesChip.class).fme7 = new NesFme7();
+        plugin.audio.chipRegister.chip(NesChip.class).vrc7 = new NesVrc7();
 
-        chipRegister.nes_apu.apu = new NpNesApu(Common.NsfClock, setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_apu.reset();
-        chipRegister.nes_dmc.dmc = new NpNesDmc(Common.NsfClock, setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_dmc.reset();
-        chipRegister.nes_fds.fds = new NpNesFds(Common.NsfClock, setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_fds.reset();
-        chipRegister.nes_n106.setClock(Common.NsfClock);
-        chipRegister.nes_n106.setRate(setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_n106.reset();
-        chipRegister.nes_vrc6.setClock(Common.NsfClock);
-        chipRegister.nes_vrc6.setRate(setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_vrc6.reset();
-        chipRegister.nes_mmc5.setClock(Common.NsfClock);
-        chipRegister.nes_mmc5.setRate(setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_mmc5.reset();
-        chipRegister.nes_mmc5.setCPU(chipRegister.nes_cpu);
-        chipRegister.nes_fme7.setClock(Common.NsfClock);
-        chipRegister.nes_fme7.setRate(setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_fme7.reset();
-        chipRegister.nes_vrc7.setClock(Common.NsfClock);
-        chipRegister.nes_vrc7.setRate(setting.getOutputDevice().getSampleRate());
-        chipRegister.nes_vrc7.reset();
+        plugin.audio.chipRegister.chip(NesChip.class).apu.apu = new NpNesApu(Common.NsfClock, setting.getOutputDevice().getSampleRate());
+        plugin.audio.chipRegister.chip(NesChip.class).apu.reset();
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.dmc = new NpNesDmc(Common.NsfClock, setting.getOutputDevice().getSampleRate());
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.reset();
+        plugin.audio.chipRegister.chip(NesChip.class).fds.fds = new NpNesFds(Common.NsfClock, setting.getOutputDevice().getSampleRate());
+        plugin.audio.chipRegister.chip(NesChip.class).fds.reset();
+        plugin.audio.chipRegister.chip(NesChip.class).n106.setClock(Common.NsfClock);
+        plugin.audio.chipRegister.chip(NesChip.class).n106.setRate(setting.getOutputDevice().getSampleRate());
+        plugin.audio.chipRegister.chip(NesChip.class).n106.reset();
+        plugin.audio.chipRegister.chip(NesChip.class).vrc6.setClock(Common.NsfClock);
+        plugin.audio.chipRegister.chip(NesChip.class).vrc6.setRate(setting.getOutputDevice().getSampleRate());
+        plugin.audio.chipRegister.chip(NesChip.class).vrc6.reset();
+        plugin.audio.chipRegister.chip(NesChip.class).mmc5.setClock(Common.NsfClock);
+        plugin.audio.chipRegister.chip(NesChip.class).mmc5.setRate(setting.getOutputDevice().getSampleRate());
+        plugin.audio.chipRegister.chip(NesChip.class).mmc5.reset();
+        plugin.audio.chipRegister.chip(NesChip.class).mmc5.setCPU(plugin.audio.chipRegister.chip(NesChip.class).cpu);
+        plugin.audio.chipRegister.chip(NesChip.class).fme7.setClock(Common.NsfClock);
+        plugin.audio.chipRegister.chip(NesChip.class).fme7.setRate(setting.getOutputDevice().getSampleRate());
+        plugin.audio.chipRegister.chip(NesChip.class).fme7.reset();
+        plugin.audio.chipRegister.chip(NesChip.class).vrc7.setClock(Common.NsfClock);
+        plugin.audio.chipRegister.chip(NesChip.class).vrc7.setRate(setting.getOutputDevice().getSampleRate());
+        plugin.audio.chipRegister.chip(NesChip.class).vrc7.reset();
 
-        chipRegister.nes_dmc.dmc.nes_apu = chipRegister.nes_apu.apu;
-        chipRegister.nes_dmc.dmc.setAPU(chipRegister.nes_apu.apu);
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.dmc.nes_apu = plugin.audio.chipRegister.chip(NesChip.class).apu.apu;
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.dmc.setAPU(plugin.audio.chipRegister.chip(NesChip.class).apu.apu);
 
         stack = new Device.Bus();
         layer = new Device.Layer();
@@ -335,12 +336,12 @@ public class Nsf extends BaseDriver {
             if (bmax < bankSwitch[i])
                 bmax = bankSwitch[i];
 
-        chipRegister.nes_mem.setImage(body, load_address & 0xffff, bodySize);
+        plugin.audio.chipRegister.chip(NesChip.class).mem.setImage(body, load_address & 0xffff, bodySize);
 
         if (bmax != 0) {
-            chipRegister.nes_bank.setImage(body, load_address & 0xffff, bodySize);
+            plugin.audio.chipRegister.chip(NesChip.class).bank.setImage(body, load_address & 0xffff, bodySize);
             for (i = 0; i < 8; i++)
-                chipRegister.nes_bank.setBankDefault((byte) (i + 8), bankSwitch[i]);
+                plugin.audio.chipRegister.chip(NesChip.class).bank.setBankDefault(i + 8, bankSwitch[i]);
         }
 
         stack.detachAll();
@@ -351,72 +352,72 @@ public class Nsf extends BaseDriver {
         ld.reset();
         stack.attach(ld);
 
-        apuBus.attach(chipRegister.nes_apu);
-        apuBus.attach(chipRegister.nes_dmc);
+        apuBus.attach(plugin.audio.chipRegister.chip(NesChip.class).apu);
+        apuBus.attach(plugin.audio.chipRegister.chip(NesChip.class).dmc);
 
-        chipRegister.nes_apu.setOption(NpNesApu.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getNESUnmuteOnReset() ? 1 : 0);
-        chipRegister.nes_apu.setOption(NpNesApu.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getNESNonLinearMixer() ? 1 : 0);
-        chipRegister.nes_apu.setOption(NpNesApu.OPT.PHASE_REFRESH.ordinal(), setting.getNsf().getNESPhaseRefresh() ? 1 : 0);
-        chipRegister.nes_apu.setOption(NpNesApu.OPT.DUTY_SWAP.ordinal(), setting.getNsf().getNESDutySwap() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).apu.setOption(NpNesApu.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getNESUnmuteOnReset() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).apu.setOption(NpNesApu.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getNESNonLinearMixer() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).apu.setOption(NpNesApu.OPT.PHASE_REFRESH.ordinal(), setting.getNsf().getNESPhaseRefresh() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).apu.setOption(NpNesApu.OPT.DUTY_SWAP.ordinal(), setting.getNsf().getNESDutySwap() ? 1 : 0);
 
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.ENABLE_4011.ordinal(), setting.getNsf().getDMCEnable4011() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.ENABLE_PNOISE.ordinal(), setting.getNsf().getDMCEnablePnoise() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getDMCUnmuteOnReset() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.DPCM_ANTI_CLICK.ordinal(), setting.getNsf().getDMCDPCMAntiClick() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getDMCNonLinearMixer() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.RANDOMIZE_NOISE.ordinal(), setting.getNsf().getDMCRandomizeNoise() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.TRI_MUTE.ordinal(), setting.getNsf().getDMCTRImute() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.RANDOMIZE_TRI.ordinal(), setting.getNsf().getDMCRandomizeTRI() ? 1 : 0);
-        chipRegister.nes_dmc.setOption(NpNesDmc.OPT.DPCM_REVERSE.ordinal(), setting.getNsf().getDMCDPCMReverse() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.setOption(NpNesDmc.OPT.ENABLE_4011.ordinal(), setting.getNsf().getDMCEnable4011() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.setOption(NpNesDmc.OPT.ENABLE_PNOISE.ordinal(), setting.getNsf().getDMCEnablePnoise() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.setOption(NpNesDmc.OPT.UNMUTE_ON_RESET.ordinal(), setting.getNsf().getDMCUnmuteOnReset() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.setOption(NpNesDmc.OPT.DPCM_ANTI_CLICK.ordinal(), setting.getNsf().getDMCDPCMAntiClick() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.setOption(NpNesDmc.OPT.NONLINEAR_MIXER.ordinal(), setting.getNsf().getDMCNonLinearMixer() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.setOption(NpNesDmc.OPT.RANDOMIZE_NOISE.ordinal(), setting.getNsf().getDMCRandomizeNoise() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.setOption(NpNesDmc.OPT.TRI_MUTE.ordinal(), setting.getNsf().getDMCTRImute() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.setOption(NpNesDmc.OPT.RANDOMIZE_TRI.ordinal(), setting.getNsf().getDMCRandomizeTRI() ? 1 : 0);
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.setOption(NpNesDmc.OPT.DPCM_REVERSE.ordinal(), setting.getNsf().getDMCDPCMReverse() ? 1 : 0);
 
         if (useFds) {
             boolean write_enable = !setting.getNsf().getFDSWriteDisable8000();
-            chipRegister.nes_fds.setOption(0, setting.getNsf().getFDSLpf());
-            chipRegister.nes_fds.setOption(1, setting.getNsf().getFDS4085Reset() ? 1 : 0);
-            chipRegister.nes_mem.setFDSMode(write_enable);
-            chipRegister.nes_bank.setFDSMode(write_enable);
-            chipRegister.nes_bank.setBankDefault((byte) 6, bankSwitch[6]);
-            chipRegister.nes_bank.setBankDefault((byte) 7, bankSwitch[7]);
-            apuBus.attach(chipRegister.nes_fds);
+            plugin.audio.chipRegister.chip(NesChip.class).fds.setOption(0, setting.getNsf().getFDSLpf());
+            plugin.audio.chipRegister.chip(NesChip.class).fds.setOption(1, setting.getNsf().getFDS4085Reset() ? 1 : 0);
+            plugin.audio.chipRegister.chip(NesChip.class).mem.setFDSMode(write_enable);
+            plugin.audio.chipRegister.chip(NesChip.class).bank.setFDSMode(write_enable);
+            plugin.audio.chipRegister.chip(NesChip.class).bank.setBankDefault((byte) 6, bankSwitch[6]);
+            plugin.audio.chipRegister.chip(NesChip.class).bank.setBankDefault((byte) 7, bankSwitch[7]);
+            apuBus.attach(plugin.audio.chipRegister.chip(NesChip.class).fds);
         } else {
-            chipRegister.nes_mem.setFDSMode(false);
-            chipRegister.nes_bank.setFDSMode(false);
+            plugin.audio.chipRegister.chip(NesChip.class).mem.setFDSMode(false);
+            plugin.audio.chipRegister.chip(NesChip.class).bank.setFDSMode(false);
         }
         if (useN106) {
-            chipRegister.nes_n106.setOption(0, setting.getNsf().getN160Serial() ? 1 : 0);
-            apuBus.attach(chipRegister.nes_n106);
+            plugin.audio.chipRegister.chip(NesChip.class).n106.setOption(0, setting.getNsf().getN160Serial() ? 1 : 0);
+            apuBus.attach(plugin.audio.chipRegister.chip(NesChip.class).n106);
         }
         if (useVrc6) {
-            apuBus.attach(chipRegister.nes_vrc6);
+            apuBus.attach(plugin.audio.chipRegister.chip(NesChip.class).vrc6);
         }
         if (useMmc5) {
-            chipRegister.nes_mmc5.setOption(0, setting.getNsf().getMMC5NonLinearMixer() ? 1 : 0);
-            chipRegister.nes_mmc5.setOption(1, setting.getNsf().getMMC5PhaseRefresh() ? 1 : 0);
-            apuBus.attach(chipRegister.nes_mmc5);
+            plugin.audio.chipRegister.chip(NesChip.class).mmc5.setOption(0, setting.getNsf().getMMC5NonLinearMixer() ? 1 : 0);
+            plugin.audio.chipRegister.chip(NesChip.class).mmc5.setOption(1, setting.getNsf().getMMC5PhaseRefresh() ? 1 : 0);
+            apuBus.attach(plugin.audio.chipRegister.chip(NesChip.class).mmc5);
         }
         if (useFme7) {
-            apuBus.attach(chipRegister.nes_fme7);
+            apuBus.attach(plugin.audio.chipRegister.chip(NesChip.class).fme7);
         }
         if (useVrc7) {
-            apuBus.attach(chipRegister.nes_vrc7);
+            apuBus.attach(plugin.audio.chipRegister.chip(NesChip.class).vrc7);
         }
 
-        if (bmax > 0) layer.attach(chipRegister.nes_bank);
-        layer.attach(chipRegister.nes_mem);
+        if (bmax > 0) layer.attach(plugin.audio.chipRegister.chip(NesChip.class).bank);
+        layer.attach(plugin.audio.chipRegister.chip(NesChip.class).mem);
 
         stack.attach(apuBus);
         stack.attach(layer);
 
-        chipRegister.nes_cpu.setMemory(stack);
-        chipRegister.nes_dmc.setMemory(stack);
+        plugin.audio.chipRegister.chip(NesChip.class).cpu.setMemory(stack);
+        plugin.audio.chipRegister.chip(NesChip.class).dmc.setMemory(stack);
 
-        chipRegister.nes_apu.apu.squareTable[0] = 0;
+        plugin.audio.chipRegister.chip(NesChip.class).apu.apu.squareTable[0] = 0;
         for (i = 1; i < 32; i++)
-            chipRegister.nes_apu.apu.squareTable[i] = (int) ((8192.0 * 95.88) / (8128.0 / i + 100));
+            plugin.audio.chipRegister.chip(NesChip.class).apu.apu.squareTable[i] = (int) ((8192.0 * 95.88) / (8128.0 / i + 100));
 
         for (int c = 0; c < 2; ++c)
             for (int t = 0; t < 2; ++t)
-                chipRegister.nes_apu.apu.sm[c][t] = 128;
+                plugin.audio.chipRegister.chip(NesChip.class).apu.apu.sm[c][t] = 128;
 
         reset();
     }
@@ -437,12 +438,12 @@ public class Nsf extends BaseDriver {
         speed = 1000000.0 / ((region == Region.NTSC) ? speedNtsc : speedPal);
 
         layer.reset();
-        chipRegister.nes_cpu.reset();
+        plugin.audio.chipRegister.chip(NesChip.class).cpu.reset();
 
-        chipRegister.nes_cpu.start(initAddress, playAddress, speed, song, (region == Region.PAL) ? 1 : 0, 0);
+        plugin.audio.chipRegister.chip(NesChip.class).cpu.start(initAddress, playAddress, speed, song, (region == Region.PAL) ? 1 : 0, 0);
     }
 
-    private Region getRegion(int flags) {
+    private static Region getRegion(int flags) {
         int pref = 0;
 
         // user forced region
@@ -464,16 +465,17 @@ public class Nsf extends BaseDriver {
         return Region.NTSC; // fallback for invalid Flags
     }
 
-    public int render(short[] b, int length) {
-        return render(b, length, 0);
+    public int render_(short[] b, int length) {
+        return render_(b, length, 0);
     }
 
-    public int render(short[] b, int length, int offset) {
-        if (model == EnmModel.RealModel) return length;
-        if (chipRegister == null) return length;
+    public int render_(short[] b, int length, int offset) {
+        assert model != EnmModel.RealModel;
+        assert plugin.audio.chipRegister != null;
 
         if (vgmFrameCounter < 0) {
             vgmFrameCounter += length;
+//logger.log(Level.DEBUG, "vgmFrameCounter: " + vgmFrameCounter);
             return length;
         }
 
@@ -486,11 +488,11 @@ public class Nsf extends BaseDriver {
         master_volume = 0x80;
 
         double apu_clock_per_sample = 0;
-        if (chipRegister.nes_cpu != null) {
-            apu_clock_per_sample = chipRegister.nes_cpu.NES_BASECYCLES / rate;
+        NesChip nesChip = plugin.audio.chipRegister.chip(NesChip.class);
+        if (nesChip.cpu != null) {
+            apu_clock_per_sample = nesChip.cpu.NES_BASECYCLES / rate;
         }
         double cpu_clock_per_sample = apu_clock_per_sample * vgmSpeed;
-
 
         for (i = 0; i < length; i++) {
             //total_render++;
@@ -502,13 +504,13 @@ public class Nsf extends BaseDriver {
             cpu_clock_rest += cpu_clock_per_sample;
             int cpu_clocks = (int) cpu_clock_rest;
             if (cpu_clocks > 0) {
-                int real_cpu_clocks = chipRegister.nes_cpu.exec(cpu_clocks);
+                int real_cpu_clocks = nesChip.cpu.exec(cpu_clocks);
                 cpu_clock_rest -= real_cpu_clocks;
 
                 // tick APU frame sequencer
-                chipRegister.nes_dmc.dmc.tickFrameSequence(real_cpu_clocks);
+                nesChip.dmc.dmc.tickFrameSequence(real_cpu_clocks);
                 if (useMmc5)
-                    chipRegister.nes_mmc5.tickFrameSequence(real_cpu_clocks);
+                    nesChip.mmc5.tickFrameSequence(real_cpu_clocks);
             }
 
 //            updateInfo();
@@ -521,62 +523,62 @@ public class Nsf extends BaseDriver {
             }
 
             // render Output
-            chipRegister.nes_apu.tick(apu_clocks);
-            chipRegister.nes_apu.render(buf);
+            nesChip.apu.tick(apu_clocks);
+            nesChip.apu.render(buf);
 
             int mul = (int) (16384.0 * Math.pow(10.0, cAPU.getTVolume() / 40.0));
             out[0] = (buf[0] * mul) >> 13;
             out[1] = (buf[1] * mul) >> 13;
 
-            chipRegister.nes_dmc.tick(apu_clocks);
-            chipRegister.nes_dmc.render(buf);
+            nesChip.dmc.tick(apu_clocks);
+            nesChip.dmc.render(buf);
             mul = (int) (16384.0 * Math.pow(10.0, cDMC.getTVolume() / 40.0));
             out[0] += (buf[0] * mul) >> 13;
             out[1] += (buf[1] * mul) >> 13;
 
             if (useFds) {
-                chipRegister.nes_fds.tick(apu_clocks);
-                chipRegister.nes_fds.render(buf);
+                nesChip.fds.tick(apu_clocks);
+                nesChip.fds.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cFDS.getTVolume() / 40.0));
                 out[0] += (buf[0] * mul) >> 13;
                 out[1] += (buf[1] * mul) >> 13;
             }
 
             if (useN106) {
-                chipRegister.nes_n106.tick(apu_clocks);
-                chipRegister.nes_n106.render(buf);
+                nesChip.n106.tick(apu_clocks);
+                nesChip.n106.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cN160.getTVolume() / 40.0));
                 out[0] += (buf[0] * mul) >> 10;
                 out[1] += (buf[1] * mul) >> 10;
             }
 
             if (useVrc6) {
-                chipRegister.nes_vrc6.tick(apu_clocks);
-                chipRegister.nes_vrc6.render(buf);
+                nesChip.vrc6.tick(apu_clocks);
+                nesChip.vrc6.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cVRC6.getTVolume() / 40.0));
                 out[0] += (buf[0] * mul) >> 10;
                 out[1] += (buf[1] * mul) >> 10;
             }
 
             if (useMmc5) {
-                chipRegister.nes_mmc5.tick(apu_clocks);
-                chipRegister.nes_mmc5.render(buf);
+                nesChip.mmc5.tick(apu_clocks);
+                nesChip.mmc5.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cMMC5.getTVolume() / 40.0));
                 out[0] += (buf[0] * mul) >> 10;
                 out[1] += (buf[1] * mul) >> 10;
             }
 
             if (useFme7) {
-                chipRegister.nes_fme7.tick(apu_clocks);
-                chipRegister.nes_fme7.render(buf);
+                nesChip.fme7.tick(apu_clocks);
+                nesChip.fme7.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cFME7.getTVolume() / 40.0));
                 out[0] += (buf[0] * mul) >> 9;
                 out[1] += (buf[1] * mul) >> 9;
             }
 
             if (useVrc7) {
-                chipRegister.nes_vrc7.tick(apu_clocks);
-                chipRegister.nes_vrc7.render(buf);
+                nesChip.vrc7.tick(apu_clocks);
+                nesChip.vrc7.render(buf);
                 mul = (int) (16384.0 * Math.pow(10.0, cVRC7.getTVolume() / 40.0));
                 out[0] += (buf[0] * mul) >> 10;
                 out[1] += (buf[1] * mul) >> 10;
@@ -619,26 +621,28 @@ public class Nsf extends BaseDriver {
         time_in_ms += (int) (1000 * length / rate * vgmSpeed);
 
         //checkTerminal();
-        DetectLoop();
-        DetectSilent();
+        detectLoop();
+        detectSilent();
         if (!playtime_detected) vgmCurLoop = 0;
         else {
             if (totalCounter != 0) vgmCurLoop = (int) (counter / totalCounter);
             else stopped = true;
         }
 
+if (CC++ % 300 == 0) { logger.log(Level.DEBUG, "render: " + out[0] + ", " + out[1]); }
         return length;
     }
+int CC = 0;
 
     public void visWaveBufferCopy(short[][] dest) {
         visWB.copy(dest);
     }
 
-    mdsound.VisWaveBuffer visWB = new mdsound.VisWaveBuffer();
+    private mdsound.VisWaveBuffer visWB = new mdsound.VisWaveBuffer();
 
-    public boolean playtime_detected = false;
+    private boolean playtime_detected = false;
 
-    public void DetectLoop() {
+    public void detectLoop() {
         if (ld.isLooped(time_in_ms, 30000, 5000) && !playtime_detected) {
             playtime_detected = true;
             totalCounter = (long) ld.getLoopEnd() * setting.getOutputDevice().getSampleRate() / 1000L;
@@ -647,7 +651,7 @@ public class Nsf extends BaseDriver {
         }
     }
 
-    public void DetectSilent() {
+    public void detectSilent() {
         if (silent_length > setting.getOutputDevice().getSampleRate() * 3L && !playtime_detected) {
             playtime_detected = true;
             totalCounter = (long) ld.getLoopEnd() * setting.getOutputDevice().getSampleRate() / 1000L;
@@ -657,8 +661,26 @@ public class Nsf extends BaseDriver {
         }
     }
 
+    // TODO separate from implementation
+
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
+    }
+
+    @Override
+    public int render(short[] buffer, int offset, int sampleCount) {
+//        vstDelta = 0;
+        return render_(buffer, sampleCount / 2, offset) * 2;
+    }
+
+    @Override
+    public void copyWaveBuffer(short[][] dest) {
+        visWaveBufferCopy(dest);
+    }
+
+    @Override
+    public boolean isNotRenderingOnPause() {
+        return true;
     }
 }

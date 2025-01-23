@@ -20,6 +20,7 @@ import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
+import mdplayer.chips.NesChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -107,7 +108,7 @@ public class frmFDS extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        mdsound.np.NpNesFds reg = audio.getFDSRegister(chipId);
+        mdsound.np.NpNesFds reg = audio.chipRegister.chip(NesChip.class).readFds(chipId);
         int freq;
         int vol;
         int note;

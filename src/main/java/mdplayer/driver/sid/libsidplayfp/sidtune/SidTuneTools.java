@@ -29,20 +29,20 @@ public class SidTuneTools {
         long lastSlashPos = -1;
         long length = s.length();
         for (int pos = 0; pos < length; pos++) {
-            //#if defined(SID_FS_IS_COLON_AND_BACKSLASH_AND_SLASH)
+//#if defined(SID_FS_IS_COLON_AND_BACKSLASH_AND_SLASH)
             if (s.charAt(pos) == ':' || s.charAt(pos) == '\\'
                     || s.charAt(pos) == '/')
-            //#elif defined(SID_FS_IS_COLON_AND_SLASH)
-            //        if (s[pos] == ':' || s[pos] == '/')
-            //#elif defined(SID_FS_IS_SLASH)
-            //        if (s[pos] == '/')
-            //#elif defined(SID_FS_IS_BACKSLASH)
-            //        if (s[pos] == '\\')
-            //#elif defined(SID_FS_IS_COLON)
-            //        if (s[pos] == ':')
-            //#else
-            //#error Missing file/path separator definition.
-            //#endif
+//#elif defined(SID_FS_IS_COLON_AND_SLASH)
+//            if (s[pos] == ':' || s[pos] == '/')
+//#elif defined(SID_FS_IS_SLASH)
+//            if (s[pos] == '/')
+//#elif defined(SID_FS_IS_BACKSLASH)
+//            if (s[pos] == '\\')
+//#elif defined(SID_FS_IS_COLON)
+//            if (s[pos] == ':')
+//#else
+//#error Missing file/path separator definition.
+//#endif
             {
                 lastSlashPos = pos;
             }

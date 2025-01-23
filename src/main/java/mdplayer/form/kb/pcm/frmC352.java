@@ -22,9 +22,11 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
+import mdplayer.chips.C352Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
+import mdsound.instrument.C352Inst;
 
 
 public class frmC352 extends frmBase {
@@ -161,7 +163,7 @@ public class frmC352 extends frmBase {
     private int searchC352Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = audio.clockC352;
+        int clock = audio.chipRegister.getChipInfo(C352Inst.class).clock;
 
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
@@ -180,8 +182,8 @@ public class frmC352 extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] c352Register = audio.getC352Register(chipId);
-        int[] c352key = audio.getC352KeyOn(chipId);
+        int[] c352Register = audio.chipRegister.chip(C352Chip.class).getChip(chipId);
+        int[] c352key = audio.chipRegister.chip(C352Chip.class).getKeyOn(chipId);
 
         for (int ch = 0; ch < 32; ch++) {
             newParam.channels[ch].note = searchC352Note(c352Register[ch * 8 + 2]);
