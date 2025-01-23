@@ -888,8 +888,8 @@ public class Setting implements Serializable {
             this.setSN76489Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getSN76489Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getSN76489Type()[i].setUseEmu(new boolean[2]);
                 this.getSN76489Type()[i].getUseEmu()[0] = true;
+                this.getSN76489Type()[i].setUseEmu(new boolean[2]); // 2 means {0: sn76489, 1: sn76496}
                 this.getSN76489Type()[i].setUseReal(new boolean[1]);
             }
         }

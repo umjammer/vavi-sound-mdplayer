@@ -1808,17 +1808,17 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             sn76489NGPFlag = (SN76489clock & 0x8000_0000) != 0;
             if (version < 0x0150) {
                 sn76489Option = new Object[] {
-                        (byte) 9,
-                        (byte) 0,
-                        (byte) 16,
-                        (byte) 0
+                        9,
+                        0,
+                        16,
+                        0
                 };
             } else {
                 sn76489Option = new Object[] {
-                        vgmBuf[0x28],
-                        vgmBuf[0x29],
-                        vgmBuf[0x2a],
-                        vgmBuf[0x2b]
+                        vgmBuf[0x28] & 0xff,
+                        vgmBuf[0x29] & 0xff,
+                        vgmBuf[0x2a] & 0xff,
+                        vgmBuf[0x2b] & 0xff
                 };
             }
             if (sn76489DualChipFlag) chips.add("SN76489x2");
