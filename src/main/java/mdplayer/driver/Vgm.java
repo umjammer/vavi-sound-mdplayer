@@ -766,7 +766,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private void vcWaitNSamples() {
-        vgmWait += ByteUtil.readLeShort(vgmBuf, vgmAdr + 1);
+        vgmWait += ByteUtil.readLeShort(vgmBuf, vgmAdr + 1) & 0xffff;
         vgmAdr += 3;
     }
 
@@ -1001,7 +1001,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             vgmAdr += bLen + 7;
             break;
         case 0xc0:
-            int stAdr = ByteUtil.readLeShort(vgmBuf, vgmAdr + 7);
+            int stAdr = ByteUtil.readLeShort(vgmBuf, vgmAdr + 7) & 0xffff;
             int dataSize = bLen - 2;
             int romData = vgmAdr + 9;
             if ((bType & 0x20) != 0) {
@@ -1300,7 +1300,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             return;
         }
         VgmPcmBank tempPCM = pcmBank[dacCtrl[curChip].bank];
-        int TempSht = ByteUtil.readLeShort(vgmBuf, vgmAdr + 2);
+        int TempSht = ByteUtil.readLeShort(vgmBuf, vgmAdr + 2) & 0xffff;
         //Last95Drum = TempSht;
         //Last95Max = tempPCM.BankCount;
         if (TempSht >= tempPCM.bankCount)
@@ -1327,7 +1327,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private void vcRf5c68MemoryWrite() {
-        int offset = ByteUtil.readLeShort(vgmBuf, vgmAdr + 1);
+        int offset = ByteUtil.readLeShort(vgmBuf, vgmAdr + 1) & 0xffff;
         plugin.audio.chipRegister.chip(Rf5C68Chip.class).writeMemory(0, offset, vgmBuf[vgmAdr + 3] & 0xff, model);
         vgmAdr += 4;
     }
@@ -1340,7 +1340,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private void vcRf5c164MemoryWrite() {
-        int offset = ByteUtil.readLeShort(vgmBuf, vgmAdr + 1);
+        int offset = ByteUtil.readLeShort(vgmBuf, vgmAdr + 1) & 0xffff;
         plugin.audio.chipRegister.chip(Rf5C164Chip.class).writeMemory(0, offset, vgmBuf[vgmAdr + 3] & 0xff, model);
         vgmAdr += 4;
     }
@@ -1511,7 +1511,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             bitDec = vgmBuf[adr + 5] & 0xff;
             bitCmp = vgmBuf[adr + 6] & 0xff;
             cmpSubType = vgmBuf[adr + 7] & 0xff;
-            addVal = ByteUtil.readLeShort(vgmBuf, adr + 8);
+            addVal = ByteUtil.readLeShort(vgmBuf, adr + 8) & 0xffff;
 
             if (cmpSubType == 0x02) {
                 //bank.dataSize = 0x00;
@@ -1607,7 +1607,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         case 0x01:  // Delta-PCM
             bitDec = vgmBuf[adr + 5] & 0xff; // data[0x05];
             bitCmp = vgmBuf[adr + 6] & 0xff; // data[0x06];
-            outVal = ByteUtil.readLeShort(vgmBuf, adr + 8);// ReadLE16(&Data[0x08]);
+            outVal = ByteUtil.readLeShort(vgmBuf, adr + 8) & 0xffff; // ReadLE16(&Data[0x08]);
 
             ent1B = 0; // (UINT8*)PCMTbl.Entries;
             ent2B = 0; // (UINT16*)PCMTbl.Entries;
@@ -1702,7 +1702,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         pcmTbl.cmpSubType = vgmBuf[adr + 1] & 0xff; // data[0x01];
         pcmTbl.bitDec = vgmBuf[adr + 2] & 0xff; // data[0x02];
         pcmTbl.bitCmp = vgmBuf[adr + 3] & 0xff; // data[0x03];
-        pcmTbl.entryCount = ByteUtil.readLeShort(vgmBuf, adr + 4);// ReadLE16(&Data[0x04]);
+        pcmTbl.entryCount = ByteUtil.readLeShort(vgmBuf, adr + 4) & 0xffff; // ReadLE16(&Data[0x04]);
 
         valSize = (pcmTbl.bitDec + 7) / 8;
         tblSize = pcmTbl.entryCount * valSize;
