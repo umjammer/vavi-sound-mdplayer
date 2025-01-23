@@ -48,9 +48,16 @@ public class QSoundChip implements Chip {
             context.chipLED.put("PriQsnd", 2);
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.write(CtrQSoundInst.class, chipId, 0, 0, mm);
-            context.mds.write(CtrQSoundInst.class, chipId, 0, 1, ll);
-            context.mds.write(CtrQSoundInst.class, chipId, 0, 2, rr);
+            if (context.usedInstruments.containsKey(QSoundInst.class)) {
+                context.mds.write(QSoundInst.class, chipId, 0, 0, mm);
+                context.mds.write(QSoundInst.class, chipId, 0, 1, ll);
+                context.mds.write(QSoundInst.class, chipId, 0, 2, rr);
+            }
+            if (context.usedInstruments.containsKey(CtrQSoundInst.class)) {
+                context.mds.write(CtrQSoundInst.class, chipId, 0, 0, mm);
+                context.mds.write(CtrQSoundInst.class, chipId, 0, 1, ll);
+                context.mds.write(CtrQSoundInst.class, chipId, 0, 2, rr);
+            }
 
             register[chipId][rr] = mm * 0x100 + ll;
         } else {
@@ -91,8 +98,14 @@ public class QSoundChip implements Chip {
         if (chipId == 0)
             context.chipLED.put("PriQsnd", 2);
 
-        if (model == EnmModel.VirtualModel)
-            context.mds.inst(QSoundInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+        if (model == EnmModel.VirtualModel) {
+            if (context.usedInstruments.containsKey(QSoundInst.class)) {
+                context.mds.inst(QSoundInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            }
+            if (context.usedInstruments.containsKey(CtrQSoundInst.class)) {
+                context.mds.inst(CtrQSoundInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            }
+        }
     }
 
     public void setMask(int chipId, int ch) {

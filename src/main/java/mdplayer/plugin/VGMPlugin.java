@@ -713,12 +713,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             if (((Vgm) audio.driverVirtual).qSoundClockValue != 0) {
                 CtrQSoundInst qsound = Instrument.getInstrument(CtrQSoundInst.class);
+//                QSoundInst qsound = Instrument.getInstrument(QSoundInst.class);
                 chip = new MDSound.Chip();
                 chip.id = (byte) 0;
                 chip.instrument = qsound;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume(MAIN_TAG, QSoundInst.class);
                 chip.clock = (((Vgm) audio.driverVirtual).qSoundClockValue);// & 0x7fffffff);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, qsound.getClass());
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;
