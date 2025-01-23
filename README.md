@@ -13,22 +13,22 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 
 | type     | description    | status | comment      | alternative             |
 |----------|----------------|:------:|--------------|-------------------------|
-| VGM/VGZ  | mega drive     |  ✅️ ️  | 🐛           | vavi-sound-emu          |
+| VGM/VGZ  | mega drive     |  ✅️ ️  |              | vavi-sound-emu          |
 | NRD      | x1             |        |              |                         |
 | XGM      | mega drive     |        |              |                         |
-| S98      | jp retro pc    |        |              |                         |
+| S98      | jp retro pc    |   ✅️   |              |                         |
 | MID      | midi           |   ️→   |              | javax.sound.midi.spi    |
 | RCP      | recopon        |        |              |                         |
-| NSF/NSFE | NES            |  ❌️️→  | nsfe         | vavi-sound-emu          |
+| NSF/NSFE | NES            | 🚫️️→  | no nsfe →    | vavi-sound-emu          |
 | HES      | PC Engine      |        |              | (gme)                   |
 | SID      | commodore      |   ️→   |              | javamod                 |
 | MGS      | MGSDRV         |        |              |                         |
-| MDR      | MoonDriver MSX |   ❌    |              |                         |
+| MDR      | MoonDriver MSX | 🚫️ ️  | driver       |                         |
 | MND      | MNDRV X68000   |        |              |                         |
 | MDX      | MXDRV          |        |              |                         |
 | MUC/MUB  | MUCOM88        |   ✅️   | compiler wip |                         |
 | MDR      | MSX            |        |              |                         |
-| M/M2/MZ  | PMD            |   ❌    |              |                         |
+| M/M2/MZ  | PMD            |   🚫   | driver       |                         |
 | WAV      |                |   ️→   |              | javax.sound.sampled.spi |
 | MP3      |                |   ️→   |              | mp3spi                  |
 | AIF      |                |   ️→   |              | javax.sound.sampled.spi |
@@ -50,13 +50,15 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 * https://github.com/GhostSonic21/Java_VGMPlayer
 * https://github.com/kwhat/jnativehook
 * https://github.com/waynetam/JavaSSRC/tree/master
+* https://gimic.jp/index.php?%E3%83%86%E3%82%B9%E3%83%88%E3%83%87%E3%83%BC%E3%82%BF (test data)
 
 ## TODO
 
  * spi
- * vgm using YM2151
-    * some timing is wrong for "Out_Run_(Arcade)/01 Magical Sound Shower.vgz"
-        * 3 alter chips reproduce same glitch, so vgm driver is wrong?
+ * debug
+    * ~~vgm using YM2151~~
+      * ~~some timing is wrong for "Out_Run_(Arcade)/01 Magical Sound Shower.vgz"~~
+        * ~~3 alter chips reproduce same glitch, so vgm driver is wrong?~~ ... yes it's unsigned short problem
 
 ---
 
