@@ -718,8 +718,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.id = (byte) 0;
                 chip.instrument = qsound;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.clock = (((Vgm) audio.driverVirtual).qSoundClockValue);// & 0x7fffffff);
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, qsound.getClass());
+                chip.clock = (((Vgm) audio.driverVirtual).qSoundClockValue);// & 0x7fff_ffff);
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;

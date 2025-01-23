@@ -340,7 +340,7 @@ logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
     }
 
     public synchronized void setTrdStopped(boolean value) {
-new Exception("value: " + value).printStackTrace(System.err);
+//new Exception("value: " + value).printStackTrace(System.err);
         _trdStopped = value;
     }
 

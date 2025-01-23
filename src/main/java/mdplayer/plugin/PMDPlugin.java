@@ -15,7 +15,7 @@ import mdplayer.format.FileFormat;
 import mdplayer.format.MMLFileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.PpsDrvInst;
+import mdsound.instrument.PpsInst;
 import mdsound.instrument.Ppz8Inst;
 import mdsound.instrument.Ym2608Inst;
 import mdsound.instrument.P86Inst;
@@ -104,7 +104,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             useChip.add(Common.EnmChip.PPZ8);
 
 
-            PpsDrvInst ppsdrv = Instrument.getInstrument(PpsDrvInst.class);
+            PpsInst ppsdrv = Instrument.getInstrument(PpsInst.class);
             chip = new MDSound.Chip();
             chip.id = (byte) 0;
             chip.instrument = ppsdrv;

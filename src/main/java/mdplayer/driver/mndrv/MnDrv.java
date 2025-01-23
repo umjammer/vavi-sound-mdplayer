@@ -26,6 +26,7 @@ import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
 
 
+// MnDrv is MXDRV (SHARP X68000 series) port for Windows
 public class MnDrv extends BaseDriver {
 
     private static final Logger logger = getLogger(MnDrv.class.getName());
