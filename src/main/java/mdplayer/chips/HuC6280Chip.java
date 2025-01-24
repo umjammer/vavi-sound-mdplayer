@@ -85,7 +85,7 @@ public class HuC6280Chip implements Chip {
         return 0;
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    private void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
     }
 

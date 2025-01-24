@@ -6,9 +6,6 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmChip;
@@ -20,8 +17,6 @@ import mdsound.instrument.X68SoundYm2151Inst;
 import mdsound.instrument.Ym2151Inst;
 import mdsound.instrument.YmFmYm2151Inst;
 
-import static java.lang.System.getLogger;
-
 
 /**
  * Ym2151Chip.
@@ -30,8 +25,6 @@ import static java.lang.System.getLogger;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Ym2151Chip implements Chip {
-
-    private static final Logger logger = getLogger(Ym2151Chip.class.getName());
 
     private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
             setting.getYM2151Type()[0], setting.getYM2151Type()[1]
@@ -283,7 +276,7 @@ public class Ym2151Chip implements Chip {
         }
     }
 
-    public void setMask(int chipId, int ch, boolean mask, boolean noSend /* = false */) {
+    private void setMask(int chipId, int ch, boolean mask, boolean noSend /* = false */) {
         this.mask[chipId][ch] = mask;
 
         if (noSend) return;
@@ -367,11 +360,7 @@ public class Ym2151Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch, boolean stopped) {
-        try {
             setMask(chipId, ch, false, stopped);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
     }
 
     @Override

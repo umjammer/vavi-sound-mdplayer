@@ -6,19 +6,14 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
 import mdplayer.Chip;
+import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.instrument.Sn76489Inst;
 import mdsound.instrument.Sn76496Inst;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -28,8 +23,6 @@ import static java.lang.System.getLogger;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Sn76489Chip implements Chip {
-
-    private static final Logger logger = getLogger(Sn76489Chip.class.getName());
 
     private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
             setting.getSN76489Type()[0], setting.getSN76489Type()[1]
@@ -212,12 +205,8 @@ public class Sn76489Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-            sendVolumeForced(chipId, ch);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
+        sendVolumeForced(chipId, ch);
     }
 
     protected void sendVolumeForced(int chipId, int ch) {

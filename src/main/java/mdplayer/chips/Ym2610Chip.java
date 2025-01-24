@@ -6,17 +6,12 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
 import mdplayer.Chip;
+import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.instrument.Ym2610Inst;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -26,8 +21,6 @@ import static java.lang.System.getLogger;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class Ym2610Chip implements Chip {
-
-    private static final Logger logger = getLogger(Ym2610Chip.class.getName());
 
     private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
             setting.getYM2610Type()[0], setting.getYM2610Type()[1]
@@ -602,10 +595,6 @@ public class Ym2610Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
     }
 }

@@ -196,7 +196,7 @@ public class NesChip implements Chip {
                     break;
             }
         }
-        context.mds.inst(NesInst.class).setNESMask(chipId, ch);
+        context.mds.inst(NesInst.class).setMask(chipId, ch);
     }
 
     public void resetMask(int chipId, int ch) {

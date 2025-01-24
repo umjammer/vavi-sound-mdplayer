@@ -6,9 +6,6 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
 import mdplayer.Chip;
 import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
@@ -16,8 +13,6 @@ import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.chips.C140;
 import mdsound.instrument.C140Inst;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -27,8 +22,6 @@ import static java.lang.System.getLogger;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class C140Chip implements Chip {
-
-    private static final Logger logger = getLogger(C140Chip.class.getName());
 
     private final Setting.ChipType2[] chipTypes = {
             setting.getC140Type()[0], setting.getC140Type()[1]
@@ -163,10 +156,6 @@ public class C140Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
     }
 }
