@@ -44,20 +44,22 @@ public class ChipRegister {
         return clazz.cast(plugins.get(clazz));
     }
 
-    private static final ServiceLoader<Chip> serviceLoader = ServiceLoader.load(Chip.class);
+    private static final ServiceLoader<Chip> chipServiceLoader = ServiceLoader.load(Chip.class);
+    private static final ServiceLoader<Plugin> pluginServiceLoader = ServiceLoader.load(Plugin.class);
 
-    /** @return reused instance */
     public ChipRegister(MDSound mds) {
         this.mds = mds;
 
-        for (Chip chip : serviceLoader) {
+        // reused instance
+        for (Chip chip : chipServiceLoader) {
             chips.put(chip.getClass(), chip);
         }
 logger.log(Level.INFO, "chips: " + chips.size());
 
         chips.values().forEach(c -> c.init(this));
 
-        for (Plugin plugin : ServiceLoader.load(Plugin.class)) {
+        // reused instance
+        for (Plugin plugin : pluginServiceLoader) {
             plugins.put(plugin.getClass(), plugin);
         }
 logger.log(Level.INFO, "plugins: " + plugins.size());
