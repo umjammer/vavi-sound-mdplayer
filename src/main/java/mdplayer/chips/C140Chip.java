@@ -91,29 +91,23 @@ public class C140Chip implements Chip {
         }
     }
 
-    public void writePcm(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriC140", 2);
         else
             context.chipLED.put("SecC140", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(C140Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(C140Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
         else {
             if (realChips != null && realChips[chipId] != null) {
                 // Start address setting
-                realChips[chipId].setRegister(0x10000, dataStart);
-                realChips[chipId].setRegister(0x10001, dataStart >> 8);
-                realChips[chipId].setRegister(0x10002, dataStart >> 16);
+                realChips[chipId].setRegister(0x1_0000, offset);
+                realChips[chipId].setRegister(0x1_0001, offset >> 8);
+                realChips[chipId].setRegister(0x1_0002, offset >> 16);
                 // Data Transfer
-                for (int cnt = 0; cnt < dataLength; cnt++) {
-                    realChips[chipId].setRegister(0x10004, romData[srcStartAdr + cnt]);
+                for (int i = 0; i < length; i++) {
+                    realChips[chipId].setRegister(0x1_0004, buf[srcOffset + i]);
                 }
 //                realChips[chipId].setRegister(0x10006, romSize);
 
@@ -128,13 +122,13 @@ public class C140Chip implements Chip {
             if (realChips != null && realChips[chipId] != null) {
                 switch (type) {
                     case SYSTEM2:
-                        realChips[chipId].setRegister(0x10008, 0);
+                        realChips[chipId].setRegister(0x1_0008, 0);
                         break;
                     case SYSTEM21:
-                        realChips[chipId].setRegister(0x10008, 1);
+                        realChips[chipId].setRegister(0x1_0008, 1);
                         break;
                     case ASIC219:
-                        realChips[chipId].setRegister(0x10008, 2);
+                        realChips[chipId].setRegister(0x1_0008, 2);
                         break;
                 }
             }

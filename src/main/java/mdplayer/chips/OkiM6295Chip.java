@@ -53,20 +53,14 @@ public class OkiM6295Chip implements Chip {
         return context.mds.inst(OkiM6295Inst.class, 0).getChInfo(chipId);
     }
 
-    public void writePcm(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOKI9", 2);
         else
             context.chipLED.put("SecOKI9", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(OkiM6295Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(OkiM6295Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
     }
 
     public void write(int chipId, int port, int data, EnmModel model) {

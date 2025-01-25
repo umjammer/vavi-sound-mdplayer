@@ -75,20 +75,14 @@ public class C352Chip implements Chip {
         return context.mds.inst(C352Inst.class).readFlags(chipId);
     }
 
-    public void writePcm(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriC352", 2);
         else
             context.chipLED.put("SecC352", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(C352Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(C352Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
     }
 
     public int[] getChip(int chipId) {

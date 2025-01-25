@@ -21,7 +21,7 @@ import mdsound.instrument.X68kMPcmInst;
 import mdsound.instrument.Ym2151Inst;
 import mdsound.instrument.Ym2608Inst;
 import mdsound.instrument.MameYm2151Inst;
-import mdsound.instrument.X68SoundYm2151Inst;
+import mdsound.instrument.X68kYm2151Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -110,9 +110,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
             } else if (setting.getYM2151Type()[0].getUseEmu()[2]) {
                 chip = new MDSound.Chip();
                 chip.id = (byte) 0;
-                chip.instrument = Instrument.getInstrument(X68SoundYm2151Inst.class);
+                chip.instrument = Instrument.getInstrument(X68kYm2151Inst.class);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume(MAIN_TAG, X68SoundYm2151Inst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, X68kYm2151Inst.class);
                 chip.clock = 4000000;
                 chip.option = new Object[] {1, 0, 0};
             }
@@ -176,7 +176,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             if (useChip.contains(Common.EnmChip.YM2151) || useChip.contains(Common.EnmChip.S_YM2151)) {
                 audio.setVolume(MAIN_TAG, Ym2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class));
                 audio.setVolume(MAIN_TAG, MameYm2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, MameYm2151Inst.class));
-                audio.setVolume(MAIN_TAG, X68SoundYm2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, X68SoundYm2151Inst.class));
+                audio.setVolume(MAIN_TAG, X68kYm2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, X68kYm2151Inst.class));
             }
 
             if (useChip.contains(Common.EnmChip.YM2608) || useChip.contains(Common.EnmChip.S_YM2608)) {

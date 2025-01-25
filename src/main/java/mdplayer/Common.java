@@ -419,7 +419,7 @@ logger.log(Level.DEBUG, "rhythm file: " + ffn);
         OKIM6258(OkiM6258Inst.class),
         OKIM6295(OkiM6295Inst.class),
         SEGAPCM(SegaPcmInst.class),
-        YM2151(Ym2151Inst.class, MameYm2151Inst.class, X68SoundYm2151Inst.class, YmFmYm2151Inst.class),
+        YM2151(Ym2151Inst.class, MameYm2151Inst.class, X68kYm2151Inst.class, YmFmYm2151Inst.class),
         YM2608(Ym2608Inst.class, YmFmYm2608Inst.class),
         YM2203(Ym2203Inst.class, YmFmYm2203Inst.class),
         YM2610(Ym2610Inst.class, YmFmYm2610Inst.class),

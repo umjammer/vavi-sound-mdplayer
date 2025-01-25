@@ -9,7 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
-import mdsound.chips.Rf5c68;
+import mdsound.chips.Rf5C68;
 import mdsound.instrument.Rf5C68Inst;
 
 
@@ -49,14 +49,14 @@ public class Rf5C68Chip implements Chip {
             context.mds.inst(Rf5C68Inst.class).resetMask(chipId, ch);
     }
 
-    public void writePcm(int chipId, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
+    public void writePcm(int chipId, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriRF5C68", 2);
         else
             context.chipLED.put("SecRF5C68", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(Rf5C68Inst.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr);
+            context.mds.inst(Rf5C68Inst.class).writePcm(chipId, buf, offset, length, srcOffset);
     }
 
     public void write(int chipId, int adr, int data, EnmModel model) {
@@ -80,7 +80,7 @@ public class Rf5C68Chip implements Chip {
             context.mds.inst(Rf5C68Inst.class).writeMemory(chipId, offset, data);
     }
 
-    public Rf5c68 read(int chipId) {
+    public Rf5C68 read(int chipId) {
         return context.mds.inst(Rf5C68Inst.class).getChip(chipId);
     }
 

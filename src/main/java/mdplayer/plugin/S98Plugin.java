@@ -22,7 +22,7 @@ import mdsound.MDSound;
 import mdsound.instrument.MameYm2612Inst;
 import mdsound.instrument.Ym2151Inst;
 import mdsound.instrument.MameYm2151Inst;
-import mdsound.instrument.X68SoundYm2151Inst;
+import mdsound.instrument.X68kYm2151Inst;
 import mdsound.instrument.Ym2203Inst;
 import mdsound.instrument.Ym2413Inst;
 import mdsound.instrument.Ym2608Inst;
@@ -118,7 +118,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             Ym2608Inst ym2608 = null;
             Ym2151Inst ym2151 = null;
             MameYm2151Inst ym2151mame = null;
-            X68SoundYm2151Inst ym2151_x68sound = null;
+            X68kYm2151Inst ym2151_x68sound = null;
             Ym2413Inst ym2413 = null;
             Ym3526Inst ym3526 = null;
             Ym3812Inst ym3812 = null;
@@ -265,7 +265,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                         if (ym2151mame == null) ym2151mame = Instrument.getInstrument(MameYm2151Inst.class);
                         chip.instrument = ym2151mame;
                     } else if ((chip.id == 0 && setting.getYM2151Type()[0].getUseEmu()[2]) || (chip.id == 1 && setting.getYM2151Type()[1].getUseEmu()[2])) {
-                        if (ym2151_x68sound == null) ym2151_x68sound = Instrument.getInstrument(X68SoundYm2151Inst.class);
+                        if (ym2151_x68sound == null) ym2151_x68sound = Instrument.getInstrument(X68kYm2151Inst.class);
                         chip.instrument = ym2151_x68sound;
                     }
 

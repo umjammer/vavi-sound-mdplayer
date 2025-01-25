@@ -136,20 +136,14 @@ public class Y8950Chip implements Chip {
         this.mask[chipId][ch] = mask;
     }
 
-    public void writePcm(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriY8950", 2);
         else
             context.chipLED.put("SecY8950", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(Y8950Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(Y8950Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
     }
 
     public int[] read(int chipId) {

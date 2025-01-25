@@ -25,7 +25,7 @@ import mdplayer.chips.Rf5C68Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
-import mdsound.chips.Rf5c68;
+import mdsound.chips.Rf5C68;
 
 
 public class frmRf5c68 extends frmBase {
@@ -107,7 +107,7 @@ public class frmRf5c68 extends frmBase {
     };
 
     public void screenChangeParams() {
-        Rf5c68 rf5c68Register = audio.chipRegister.chip(Rf5C68Chip.class).read(chipId);
+        Rf5C68 rf5c68Register = audio.chipRegister.chip(Rf5C68Chip.class).read(chipId);
         if (rf5c68Register != null) {
             //int[][] rf5c164Vol = audio.GetRf5c164Volume(chipId);
             for (int ch = 0; ch < 8; ch++) {

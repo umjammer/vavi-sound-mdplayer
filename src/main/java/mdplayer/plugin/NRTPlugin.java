@@ -15,7 +15,7 @@ import mdsound.MDSound;
 import mdsound.instrument.Ay8910Inst;
 import mdsound.instrument.Ym2151Inst;
 import mdsound.instrument.MameYm2151Inst;
-import mdsound.instrument.X68SoundYm2151Inst;
+import mdsound.instrument.X68kYm2151Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -88,7 +88,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             Ym2151Inst ym2151 = null;
             MameYm2151Inst ym2151_mame = null;
-            X68SoundYm2151Inst ym2151_x68sound = null;
+            X68kYm2151Inst ym2151_x68sound = null;
             for (int i = 0; i < 2; i++) {
                 if ((i == 0 && (r & 0x3) != 0) || (i == 1 && (r & 0x2) != 0)) {
                     chip = new MDSound.Chip();
@@ -101,7 +101,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                         if (ym2151_mame == null) ym2151_mame = Instrument.getInstrument(MameYm2151Inst.class);
                         chip.instrument = ym2151_mame;
                     } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[2]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[2])) {
-                        if (ym2151_x68sound == null) ym2151_x68sound = Instrument.getInstrument(X68SoundYm2151Inst.class);
+                        if (ym2151_x68sound == null) ym2151_x68sound = Instrument.getInstrument(X68kYm2151Inst.class);
                         chip.instrument = ym2151_x68sound;
                     }
 
@@ -146,7 +146,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             if (useChip.contains(Common.EnmChip.YM2151) || useChip.contains(Common.EnmChip.S_YM2151)) {
                 audio.setVolume(MAIN_TAG, Ym2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class));
                 audio.setVolume(MAIN_TAG, MameYm2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, MameYm2151Inst.class));
-                audio.setVolume(MAIN_TAG, X68SoundYm2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, X68SoundYm2151Inst.class));
+                audio.setVolume(MAIN_TAG, X68kYm2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, X68kYm2151Inst.class));
             }
             if (useChip.contains(Common.EnmChip.AY8910))
                 audio.setVolume(MAIN_TAG, Ay8910Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class));

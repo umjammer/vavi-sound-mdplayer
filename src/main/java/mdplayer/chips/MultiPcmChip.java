@@ -69,19 +69,13 @@ public class MultiPcmChip implements Chip {
         }
     }
 
-    public void writePcm(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriMPCM", 2);
         else
             context.chipLED.put("SecMPCM", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(MultiPcmInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(MultiPcmInst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
     }
 }

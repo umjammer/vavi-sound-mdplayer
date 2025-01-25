@@ -64,26 +64,20 @@ public class YmZ280BChip implements Chip {
                 context.mds.write(YmZ280BInst.class, chipId, 0, addr, data);
             }
         } else {
-            if (realChips[chipId] == null)
-                return;
-            realChips[chipId].setRegister(addr, data);
+            if (realChips[chipId] != null) {
+                realChips[chipId].setRegister(addr, data);
+            }
         }
     }
 
-    public void writePcm(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriYMZ", 2);
         else
             context.chipLED.put("SecYMZ", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(YmZ280BInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(YmZ280BInst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
     }
 
     public int[] read(int chipId) {

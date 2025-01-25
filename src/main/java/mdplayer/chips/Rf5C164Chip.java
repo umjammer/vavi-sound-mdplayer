@@ -49,14 +49,14 @@ public class Rf5C164Chip implements Chip {
             context.mds.inst(ScdPcmInst.class).resetMask(chipId, ch);
     }
 
-    public void writePcm(int chipId, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
+    public void writePcm(int chipId, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriRF5C", 2);
         else
             context.chipLED.put("SecRF5C", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(ScdPcmInst.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr);
+            context.mds.inst(ScdPcmInst.class).writePcm(chipId, buf, offset, length, srcOffset);
     }
 
     public void write(int chipId, int adr, int data, EnmModel model) {

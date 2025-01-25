@@ -186,36 +186,24 @@ public class YmF278BChip implements Chip {
         this.mask[chipId][channel[ch]] = mask;
     }
 
-    public void writePcm(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOPL4", 2);
         else
             context.chipLED.put("SecOPL4", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(YmF278BInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(YmF278BInst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
     }
 
-    public void writeRam(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writeRam(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOPL4", 2);
         else
             context.chipLED.put("SecOPL4", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(YmF278BInst.class).writeRam(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(YmF278BInst.class).writeRam(chipId, romSize, offset, length, buf, srcOffset);
     }
 
     public int[][] read(int chipId) {
