@@ -44,11 +44,13 @@ public class ChipRegister {
         return clazz.cast(plugins.get(clazz));
     }
 
-    /** */
+    private static final ServiceLoader<Chip> serviceLoader = ServiceLoader.load(Chip.class);
+
+    /** @return reused instance */
     public ChipRegister(MDSound mds) {
         this.mds = mds;
 
-        for (Chip chip : ServiceLoader.load(Chip.class)) {
+        for (Chip chip : serviceLoader) {
             chips.put(chip.getClass(), chip);
         }
 logger.log(Level.INFO, "chips: " + chips.size());
