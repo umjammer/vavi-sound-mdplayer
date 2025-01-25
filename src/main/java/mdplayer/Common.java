@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
@@ -31,8 +32,13 @@ import dotnet4j.io.FileShare;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Stream;
 import dotnet4j.util.compat.Tuple3;
+import mdplayer.Setting.ChipType2;
+import mdplayer.chips.Ay8910Chip;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
+import mdplayer.instruments.VRC7;
+import mdsound.Instrument;
+import mdsound.instrument.*;
 import vavi.awt.dnd.BasicDTListener;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
@@ -406,19 +412,62 @@ logger.log(Level.DEBUG, "rhythm file: " + ffn);
     }
 
     public enum EnmChip {
-        Unuse, SN76489, YM2612, YM2612Ch6, RF5C164, PWM, C140, OKIM6258,
-        OKIM6295, SEGAPCM, YM2151, YM2608, YM2203, YM2610, AY8910, HuC6280,
-        YM2413, NES, DMC, FDS, MMC5, YMF262, YMF278B, VRC7,
-        C352, YM3526, Y8950, YM3812, K051649, N163, VRC6, FME7,
-        RF5C68, MultiPCM, YMF271, YMZ280B, QSound, GA20, K053260, K054539,
-        DMG, SAA1099, X1_010, PPZ8, PPSDRV, SID, P86, POKEY,
-        WSwan, S_SN76489, S_YM2612, S_YM2612Ch6, S_RF5C164, S_PWM,
-        S_C140, S_OKIM6258, S_OKIM6295, S_SEGAPCM, S_YM2151, S_YM2608, S_YM2203, S_YM2610,
-        S_AY8910, S_HuC6280, S_YM2413, S_NES, S_DMC, S_FDS, S_MMC5, S_YMF262,
-        S_YMF278B, S_VRC7, S_C352, S_YM3526, S_Y8950, S_YM3812, S_K051649, S_N163,
-        S_VRC6, S_FME7, S_RF5C68, S_MultiPCM, S_YMF271, S_YMZ280B, S_QSound, S_GA20,
-        S_K053260, S_K054539, S_DMG, S_SAA1099, S_X1_010, S_PPZ8, S_PPSDRV, S_SID,
-        S_P86, S_POKEY, S_WSwan
+        Unuse(),
+        SN76489(Sn76489Inst.class, Sn76489Inst.class),
+        YM2612(Ym2612Inst.class, Ym3438Inst.class, MameYm2612Inst.class, SimpleYm3438Inst.class),
+        YM2612Ch6(),
+        RF5C164(ScdPcmInst.class),
+        PWM(PwmInst.class),
+        C140(C140Inst.class),
+        OKIM6258(OkiM6258Inst.class),
+        OKIM6295(OkiM6295Inst.class),
+        SEGAPCM(SegaPcmInst.class),
+        YM2151(Ym2151Inst.class, MameYm2151Inst.class, X68SoundYm2151Inst.class, YmFmYm2151Inst.class),
+        YM2608(Ym2608Inst.class, YmFmYm2608Inst.class),
+        YM2203(Ym2203Inst.class, YmFmYm2203Inst.class),
+        YM2610(Ym2610Inst.class, YmFmYm2610Inst.class),
+        AY8910(Ay8910Inst.class, MameAy8910Inst.class),
+        HuC6280(HuC6280Inst.class),
+        YM2413(Ym2413Inst.class, VRC7.class),
+        NES(NesInst.class), DMC(), FDS(), MMC5(),
+        YMF262(YmF262Inst.class),
+        YMF278B(YmF278BInst.class),
+        VRC7(),
+        C352(C352Inst.class),
+        YM3526(Ym3526Inst.class),
+        Y8950(Y8950Inst.class),
+        YM3812(Ym3812Inst.class),
+        K051649(K051649Inst.class),
+        N163(), VRC6(), FME7(),
+        RF5C68(Rf5C68Inst.class),
+        MultiPCM(MultiPcmInst.class),
+        YMF271(YmF271Inst.class),
+        YMZ280B(YmZ280BInst.class),
+        QSound(CtrQSoundInst.class, QSoundInst.class),
+        GA20(Ga20Inst.class),
+        K053260(K053260Inst.class),
+        K054539(K054539Inst.class),
+        DMG(DmgInst.class),
+        SAA1099(Saa1099Inst.class),
+        X1_010(X1_010Inst.class),
+        PPZ8(), PPSDRV(), SID(), P86(),
+        POKEY(PokeyInst.class),
+        WSwan(WSwanInst.class),
+        S_SN76489(), S_YM2612(), S_YM2612Ch6(), S_RF5C164(), S_PWM(),
+        S_C140(), S_OKIM6258(), S_OKIM6295(), S_SEGAPCM(), S_YM2151(), S_YM2608(), S_YM2203(), S_YM2610(),
+        S_AY8910(), S_HuC6280(), S_YM2413(), S_NES(), S_DMC(), S_FDS(), S_MMC5(), S_YMF262(),
+        S_YMF278B(), S_VRC7(), S_C352(), S_YM3526(), S_Y8950(), S_YM3812(), S_K051649(), S_N163(),
+        S_VRC6(), S_FME7(), S_RF5C68(), S_MultiPCM(), S_YMF271(), S_YMZ280B(), S_QSound(), S_GA20(),
+        S_K053260(), S_K054539(), S_DMG(), S_SAA1099(), S_X1_010(), S_PPZ8(), S_PPSDRV(), S_SID(),
+        S_P86(), S_POKEY(), S_WSwan();
+        final Class<? extends Instrument>[] variants;
+        @SafeVarargs EnmChip(Class<? extends Instrument>... variants) {
+            this.variants = variants;
+        }
+
+        public Class<? extends Instrument> getInstClass(int i) {
+            return variants[i];
+        }
     }
 
     public enum EnmRealChipType {

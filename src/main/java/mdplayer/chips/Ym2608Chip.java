@@ -8,11 +8,11 @@ package mdplayer.chips;
 
 import mdplayer.Chip;
 import mdplayer.ChipRegister;
+import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdsound.instrument.Ym2608Inst;
-import mdsound.instrument.YmFmYm2608Inst;
+import mdsound.Instrument;
 
 
 /**
@@ -26,6 +26,8 @@ public class Ym2608Chip implements Chip {
     private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
             setting.getYM2608Type()[0], setting.getYM2608Type()[1]
     };
+
+    private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
@@ -82,6 +84,9 @@ public class Ym2608Chip implements Chip {
             keyOn[chipId] = new int[] {0, 0, 0, 0, 0, 0};
 
             fadeout[chipId] = 0;
+
+            //
+            inst[chipId] = EnmChip.YM2608.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -304,11 +309,7 @@ public class Ym2608Chip implements Chip {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0] && chipTypes[chipId].getUseEmu()[0]) {
 //if (addr == 0x29) logger.log(Level.TRACE, "%2x:%2x:%2x ".formatted(port, addr, data));
-                if (setting.getYM2608Type()[chipId].getUseEmu()[0]) {
-                    context.mds.write(Ym2608Inst.class, chipId, port, addr, data);
-                } else if (setting.getYM2608Type()[chipId].getUseEmu()[1]) {
-                    context.mds.write(YmFmYm2608Inst.class, chipId, port, addr, data);
-                }
+                context.mds.write(inst[chipId], chipId, port, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
@@ -335,11 +336,7 @@ public class Ym2608Chip implements Chip {
     private void _write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0] && chipTypes[chipId].getUseEmu()[0]) {
-                if (setting.getYM2608Type()[chipId].getUseEmu()[0]) {
-                    context.mds.write(Ym2608Inst.class, chipId, port, addr, data);
-                } else if (setting.getYM2608Type()[chipId].getUseEmu()[1]) {
-                    context.mds.write(YmFmYm2608Inst.class, chipId, port, addr, data);
-                }
+                context.mds.write(inst[chipId], chipId, port, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
@@ -538,7 +535,7 @@ public class Ym2608Chip implements Chip {
 //        if (ctYM2612.UseScci) {
             return ch3SlotVolume[chipId];
 //        }
-//        return context.mds.inst(Ym2608Inst.class).readFMCh3SlotVolume();
+//        return context.mds.inst(inst[chipId]).readFMCh3SlotVolume();
     }
 
     public int[] getAdpcmVolume(int chipId) {

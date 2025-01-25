@@ -12,9 +12,7 @@ import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdsound.instrument.MameYm2612Inst;
-import mdsound.instrument.Ym2612Inst;
-import mdsound.instrument.Ym3438Inst;
+import mdsound.Instrument;
 
 
 /**
@@ -28,6 +26,8 @@ public class Ym2612Chip implements Chip {
     private final Setting.ChipType2[] chipTypes = {
             setting.getYM2612Type()[0], setting.getYM2612Type()[1]
     };
+    private final Class<? extends Instrument>[] inst = new Class[2];
+
     private final RSoundChip[] realChips = {null, null};
 
     public int[][][] register = {
@@ -67,6 +67,9 @@ public class Ym2612Chip implements Chip {
             keyOn[chipId] = new int[] {0, 0, 0, 0, 0, 0};
 
             fadeout[chipId] = 0;
+
+            //
+            inst[chipId] = EnmChip.YM2612.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -198,20 +201,11 @@ public class Ym2612Chip implements Chip {
                 // only PCM (6Ch) is played by emulator
                 if (chipTypes[chipId].getRealChipInfo()[0].getOnlyPCMEmulation()) {
                     if (port == 0 && addr == 0x2b) {
-                        //if (chipTypes[chipId].getUseEmu()[0])
-                        context.mds.write(Ym2612Inst.class, chipId, port, addr, data);
-                        //if (chipTypes[chipId].getUseEmu()[1]) mds.write(YM3438Inst.class, chipId, port, addr, data);
-                        //if (chipTypes[chipId].getUseEmu()[2]) mds.write(YM2612mameInst.class, chipId, port, addr, data);
+                        context.mds.write(inst[chipId], chipId, port, addr, data);
                     } else if (port == 0 && addr == 0x2a) {
-                        //if (chipTypes[chipId].getUseEmu()[0])
-                        context.mds.write(Ym2612Inst.class, chipId, port, addr, data);
-                        //if (chipTypes[chipId].getUseEmu()[1]) mds.write(YM3438Inst.class, chipId, port, addr, data);
-                        //if (chipTypes[chipId].getUseEmu()[2]) mds.write(YM2612mameInst.class, chipId, port, addr, data);
+                        context.mds.write(inst[chipId], chipId, port, addr, data);
                     } else if (port == 1 && addr == 0xb6) {
-                        //if (chipTypes[chipId].getUseEmu()[0])
-                        context.mds.write(Ym2612Inst.class, chipId, port, addr, data);
-                        //if (chipTypes[chipId].getUseEmu()[1]) mds.write(YM3438Inst.class, chipId, port, addr, data);
-                        //if (chipTypes[chipId].getUseEmu()[2]) mds.write(YM2612mameInst.class, chipId, port, addr, data);
+                        context.mds.write(inst[chipId], chipId, port, addr, data);
                     }
                 }
             } else {
@@ -241,12 +235,7 @@ public class Ym2612Chip implements Chip {
 
                 // Send data to MDSound only when using the emulator
 //logger.log(Level.TRACE, "setYM2612: chipId: %d, port: %02X, addr: %02X, data: %02X".formatted(chipId, port, addr, data));
-                if (chipTypes[chipId].getUseEmu()[0])
-                    context.mds.write(Ym2612Inst.class, chipId, port, addr, data);
-                if (chipTypes[chipId].getUseEmu()[1])
-                    context.mds.write(Ym3438Inst.class, chipId, port, addr, data);
-                if (chipTypes[chipId].getUseEmu()[2])
-                    context.mds.write(MameYm2612Inst.class, chipId, port, addr, data);
+                context.mds.write(inst[chipId], chipId, port, addr, data);
             }
         } else {
 
@@ -287,9 +276,9 @@ public class Ym2612Chip implements Chip {
         write(chipId, p, 0x4c + c, register[chipId][p][0x4c + c], EnmModel.RealModel, -1);
 
         if (mask)
-            context.mds.inst(Ym2612Inst.class).setMask(chipId, ch);
+            context.mds.inst(inst[chipId]).setMask(chipId, ch);
         else
-            context.mds.inst(Ym2612Inst.class).resetMask(chipId, ch);
+            context.mds.inst(inst[chipId]).resetMask(chipId, ch);
     }
 
     public void setSyncWait(int chipId, int wait) {

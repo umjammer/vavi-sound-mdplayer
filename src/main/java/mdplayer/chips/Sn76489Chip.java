@@ -9,11 +9,11 @@ package mdplayer.chips;
 import mdplayer.Chip;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
+import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdsound.instrument.Sn76489Inst;
-import mdsound.instrument.Sn76496Inst;
+import mdsound.Instrument.PannableInstrument;
 
 
 /**
@@ -27,6 +27,8 @@ public class Sn76489Chip implements Chip {
     private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
             setting.getSN76489Type()[0], setting.getSN76489Type()[1]
     };
+
+    private final Class<? extends PannableInstrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
@@ -57,6 +59,7 @@ public class Sn76489Chip implements Chip {
     private ChipRegister context;
 
     @Override
+    @SuppressWarnings("unchecked")
     public void init(ChipRegister context) {
         this.context = context;
 
@@ -64,6 +67,9 @@ public class Sn76489Chip implements Chip {
             register[chipId] = new int[] {0, 15, 0, 15, 0, 15, 0, 15};
 
             fadeout[chipId] = 0;
+
+            //
+            inst[chipId] = (Class<? extends PannableInstrument>) EnmChip.SN76489.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -114,10 +120,7 @@ public class Sn76489Chip implements Chip {
             }
         } else {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                if (chipTypes[chipId].getUseEmu()[0])
-                    context.mds.write(Sn76489Inst.class, chipId, 0, 0, data);
-                else if (chipTypes[chipId].getUseEmu()[1])
-                    context.mds.write(Sn76496Inst.class, chipId, 0, 0, data);
+                context.mds.write(inst[chipId], chipId, 0, 0, data);
             }
         }
     }
@@ -135,10 +138,7 @@ public class Sn76489Chip implements Chip {
             }
         } else {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                if (chipTypes[chipId].getUseEmu()[0])
-                    context.mds.inst(Sn76489Inst.class).setPan(chipId, dData);
-                else if (chipTypes[chipId].getUseEmu()[1])
-                    context.mds.inst(Sn76496Inst.class).setPan(chipId, dData);
+                context.mds.inst(inst[chipId]).setPan(chipId, dData);
                 pan[chipId] = dData;
             }
         }

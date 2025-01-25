@@ -8,10 +8,11 @@ package mdplayer.chips;
 
 import mdplayer.Chip;
 import mdplayer.ChipRegister;
+import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdsound.instrument.Ym2610Inst;
+import mdsound.Instrument.AdpcmEnabledInstrument;
 
 
 /**
@@ -25,6 +26,8 @@ public class Ym2610Chip implements Chip {
     private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
             setting.getYM2610Type()[0], setting.getYM2610Type()[1]
     };
+
+    private final Class<? extends AdpcmEnabledInstrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
     private final RSoundChip[] realChipsEA = {null, null};
@@ -63,6 +66,7 @@ public class Ym2610Chip implements Chip {
     private ChipRegister context;
 
     @Override
+    @SuppressWarnings("unchecked")
     public void init(ChipRegister context) {
         this.context = context;
 
@@ -81,6 +85,9 @@ public class Ym2610Chip implements Chip {
             keyOn[chipId] = new int[] {0, 0, 0, 0, 0, 0};
 
             nowFadeoutVol[chipId] = 0;
+
+            //
+            inst[chipId] = (Class<? extends AdpcmEnabledInstrument>) EnmChip.YM2610.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -310,7 +317,7 @@ public class Ym2610Chip implements Chip {
             if ((chipTypes[chipId].getUseReal().length > 0 && !chipTypes[chipId].getUseReal()[0])
                     && (chipTypes[chipId].getUseReal().length < 2 || (chipTypes[chipId].getUseReal().length > 1 && !chipTypes[chipId].getUseReal()[1]))
             ) {
-                context.mds.write(Ym2610Inst.class, chipId, dPort, dAddr, dData);
+                context.mds.write(inst[chipId], chipId, dPort, dAddr, dData);
             }
         } else {
             if (realChips[chipId] != null) realChips[chipId].setRegister(dPort * 0x100 + dAddr, dData);
@@ -337,7 +344,7 @@ public class Ym2610Chip implements Chip {
 
     public void writeAdpcmA(int chipId, byte[] adpcmA, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
-            context.mds.inst(Ym2610Inst.class).writeAdpcmA(chipId, adpcmA);
+            context.mds.inst(inst[chipId]).writeAdpcmA(chipId, adpcmA);
         } else {
             if (realChips[chipId] != null) {
                 int dPort = 2;
@@ -416,7 +423,7 @@ public class Ym2610Chip implements Chip {
 
     public void writeAdpcmB(int chipId, byte[] adpcmB, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
-            context.mds.inst(Ym2610Inst.class).writeAdpcmB(chipId, adpcmB);
+            context.mds.inst(inst[chipId]).writeAdpcmB(chipId, adpcmB);
         } else {
             if (realChips[chipId] != null) {
                 int dPort = 2;
@@ -579,7 +586,7 @@ public class Ym2610Chip implements Chip {
 //        if (ctYM2612.UseScci) {
             return ch3SlotVolume[chipId];
 //        }
-//        return context.mds.inst(Ym2610Inst.class).readFMCh3SlotVolume();
+//        return context.mds.inst(inst[chipId]).readFMCh3SlotVolume();
     }
 
     public int[][] read(int chipId) {
