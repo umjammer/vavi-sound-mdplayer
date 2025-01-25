@@ -58,7 +58,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             Common.EnmChip[] useChipFromMdr = new Common.EnmChip[] {Common.EnmChip.YMF278B};
 
             //stop();
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
             resetFadeOutParam();
             useChip.clear();
 
@@ -69,7 +69,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
             YmF278BInst ymf278b = Instrument.getInstrument(YmF278BInst.class);
@@ -78,7 +78,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             if (useChipFromMdr[0] != Common.EnmChip.Unuse) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                audio.chipRegister.chipLED.put("PriOPL4", 1);
+                audio.chipLED.put("PriOPL4", 1);
                 chip.instrument = ymf278b;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278BInst.class);
@@ -89,9 +89,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 //clockYM2608 = MucomDotNET.opnaBaseClock;
             }
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
-
-            audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
 
 //            SetYM2608Volume(true, setting.getbalance().getYM2608Volume);
 //            SetYM2608FMVolume(true, setting.getbalance().getYM2608FMVolume);

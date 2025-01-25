@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.ChipRegister;
 import mdplayer.Common.EnmChip;
@@ -44,10 +45,10 @@ public class Ym2151Chip implements Chip {
     public final int[] amd = {-1, -1};
     public final int[] pmd = {-1, -1};
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -104,7 +105,7 @@ public class Ym2151Chip implements Chip {
         if ((model == EnmModel.VirtualModel && (chipTypes[chipId] == null || !chipTypes[chipId].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (realChips != null && realChips[chipId] != null))) {
             register[chipId][addr] = data;
-            context.plugin(MidiPlugin.class).export.outMIDIData(EnmChip.YM2151, chipId, port, addr, data, correction, frameCounter);
+            context.chipRegister.plugin(MidiPlugin.class).export.outMIDIData(EnmChip.YM2151, chipId, port, addr, data, correction, frameCounter);
         }
 
         if ((model == EnmModel.RealModel && chipTypes[chipId].getUseReal()[0]) ||
@@ -282,7 +283,7 @@ public class Ym2151Chip implements Chip {
             return;
 
         if (realChips[chipId] != null && chipTypes[chipId].getRealChipInfo()[0].getUseWait()) {
-            context.plugin(RealChipPlugin.class).realChip.SendData();
+            context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             while (!realChips[chipId].isBufferEmpty()) {
             }
         }

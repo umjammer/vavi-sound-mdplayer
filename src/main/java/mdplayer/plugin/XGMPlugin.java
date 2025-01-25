@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mdplayer.Audio;
-import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.driver.Xgm;
 import mdplayer.format.FileFormat;
@@ -57,7 +56,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             //stop();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             audio.vgmFadeout = false;
             audio.vgmFadeoutCounter = 1.0;
@@ -68,7 +67,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.clearFadeoutVolume();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             useChip.clear();
 
@@ -80,7 +79,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -127,7 +126,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class);
             chip.clock = 7670454;
 //            audio.clockYM2612 = 7670454;
-            audio.chipRegister.chipLED.put("PriOPN2", 1);
+            audio.chipLED.put("PriOPN2", 1);
             lstChips.add(chip);
             useChip.add(Common.EnmChip.YM2612);
 
@@ -139,13 +138,11 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Sn76489Inst.class);
             chip.clock = 3579545;
             chip.option = null;
-            audio.chipRegister.chipLED.put("PriDCSG", 1);
+            audio.chipLED.put("PriDCSG", 1);
             lstChips.add(chip);
             useChip.add(Common.EnmChip.SN76489);
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
-
-            audio.chipRegister.initChipRegister(lstChips.toArray(MDSound.Chip[]::new));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
 
             audio.setVolume(MAIN_TAG, Ym2612Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class));
             audio.setVolume(MAIN_TAG, Sn76489Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Sn76489Inst.class));

@@ -146,7 +146,7 @@ public class frmAY8910 extends frmChipBase {
                 int tp = (ct << 8) | ft;
                 if (tp == 0)
                     tp = 1;
-                float fTone = audio.chipRegister.getChipInfo(Ay8910Inst.class).clock / (8.0f * (float) tp);
+                float fTone = audio.mds.getChipInfo(Ay8910Inst.class).clock / (8.0f * (float) tp);
                 channel.note = searchSSGNote(fTone);
             }
         }

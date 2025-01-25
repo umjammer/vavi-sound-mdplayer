@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.ChipRegister;
 import mdplayer.Common.EnmChip;
@@ -45,10 +46,10 @@ public class Ym2612Chip implements Chip {
             {false, false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -114,7 +115,7 @@ public class Ym2612Chip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
             register[chipId][port][addr] = data;
-            context.plugin(MidiPlugin.class).export.outMIDIData(EnmChip.YM2612, chipId, port, addr, data, 0, frameCounter);
+            context.chipRegister.plugin(MidiPlugin.class).export.outMIDIData(EnmChip.YM2612, chipId, port, addr, data, 0, frameCounter);
         }
 
         if ((model == EnmModel.RealModel && chipTypes[chipId].getUseReal()[0]) || (model == EnmModel.VirtualModel && !chipTypes[chipId].getUseReal()[0])) {

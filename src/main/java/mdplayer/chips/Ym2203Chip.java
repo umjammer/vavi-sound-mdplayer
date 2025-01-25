@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.ChipRegister;
 import mdplayer.Common.EnmChip;
@@ -40,10 +41,10 @@ public class Ym2203Chip implements Chip {
             {false, false, false, false, false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {

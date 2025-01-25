@@ -6,7 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.driver.sid.Sid;
 
@@ -22,7 +22,7 @@ public class SidChip implements Chip {
     public Sid SID;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
     }
 
     @Override

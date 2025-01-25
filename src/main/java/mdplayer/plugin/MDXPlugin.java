@@ -61,7 +61,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             }
             //Stop();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
             useChip.clear();
             audio.vgmFadeout = false;
             audio.vgmFadeoutCounter = 1.0;
@@ -72,14 +72,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.clearFadeoutVolume();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             startTrdVgmReal();
 
             hiyorimiNecessary = setting.getHiyorimiMode();
             int hiyorimiDeviceFlag = 3;
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -124,14 +124,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
             mdxPCM_R.soundIocs[0] = new SoundIocs(mdxPCM_R.chips[0]);
             useChip.add(Common.EnmChip.OKIM6258);
 
-            audio.chipRegister.chipLED.put("PriOPM", 1);
-            audio.chipRegister.chipLED.put("PriOKI5", 1);
+            audio.chipLED.put("PriOPM", 1);
+            audio.chipLED.put("PriOKI5", 1);
 
             hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
-
-            audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
 
             audio.setVolume(MAIN_TAG, Ym2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class));
 

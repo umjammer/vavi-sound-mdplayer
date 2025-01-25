@@ -2,14 +2,10 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.ArrayList;
-import java.util.List;
 
-import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.driver.sid.Sid;
 import mdplayer.format.FileFormat;
-import mdsound.MDSound;
 
 import static java.lang.System.getLogger;
 
@@ -49,7 +45,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             stop();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             audio.vgmFadeout = false;
             audio.vgmFadeoutCounter = 1.0;
@@ -60,9 +56,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.clearFadeoutVolume();
 
-            audio.chipRegister.resetChips();
-
-            audio.chipRegister.initChipRegister(null);
+            audio.chipRegister.reset();
 
             useChip.clear();
 
@@ -70,8 +64,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipRegister.chipLED.clear();
-            audio.chipRegister.chipLED.put("priSID", 1);
+            audio.chipLED.clear();
+            audio.chipLED.put("priSID", 1);
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 

@@ -64,7 +64,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             //Stop();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             audio.vgmFadeout = false;
             audio.vgmFadeoutCounter = 1.0;
@@ -75,7 +75,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.clearFadeoutVolume();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             useChip.clear();
 
@@ -84,7 +84,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             hiyorimiNecessary = setting.getHiyorimiMode();
             int hiyorimiDeviceFlag = 3;
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -164,16 +164,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
             lstChips.add(chip);
             useChip.add(Common.EnmChip.OKIM6258);
 
-            audio.chipRegister.chipLED.put("PriOPM", 1);
-            audio.chipRegister.chipLED.put("PriOPNA", 1);
-            audio.chipRegister.chipLED.put("SecOPNA", 1);
-            audio.chipRegister.chipLED.put("PriOKI5", 1);
+            audio.chipLED.put("PriOPM", 1);
+            audio.chipLED.put("PriOPNA", 1);
+            audio.chipLED.put("SecOPNA", 1);
+            audio.chipLED.put("PriOKI5", 1);
 
             hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
-
-            audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
 
             if (useChip.contains(Common.EnmChip.YM2151) || useChip.contains(Common.EnmChip.S_YM2151)) {
                 audio.setVolume(MAIN_TAG, Ym2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class));

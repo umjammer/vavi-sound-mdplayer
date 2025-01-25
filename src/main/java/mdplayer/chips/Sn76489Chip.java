@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
@@ -54,11 +55,11 @@ public class Sn76489Chip implements Chip {
             0, 0
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
     @SuppressWarnings("unchecked")
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {

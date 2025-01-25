@@ -6,7 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Setting;
 
 
@@ -20,7 +20,7 @@ public interface Plugin {
 
     Setting setting = Setting.getInstance();
 
-    void init(ChipRegister context);
+    void init(Audio context);
 
     void close();
 }

@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.ChipRegister;
 import mdplayer.Common.EnmChip;
@@ -61,10 +62,10 @@ public class Ym2608Chip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -469,7 +470,7 @@ public class Ym2608Chip implements Chip {
             return;
 
         if (realChips[chipId] != null && chipTypes[chipId].getRealChipInfo()[0].getUseWait()) {
-            context.plugin(RealChipPlugin.class).realChip.SendData();
+            context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             while (!realChips[chipId].isBufferEmpty()) {
             }
         }

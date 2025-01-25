@@ -45,7 +45,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             //Stop();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             audio.vgmFadeout = false;
             audio.vgmFadeoutCounter = 1.0;
@@ -56,7 +56,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.clearFadeoutVolume();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             useChip.clear();
 
@@ -64,13 +64,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipRegister.chipLED.clear();
-            audio.chipRegister.chipLED.put("PriMID", 1);
-            audio.chipRegister.chipLED.put("SecMID", 1);
+            audio.chipLED.clear();
+            audio.chipLED.put("PriMID", 1);
+            audio.chipLED.put("SecMID", 1);
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
-            audio.chipRegister.initChipRegister(null);
             audio.chipRegister.plugin(MidiPlugin.class).releaseAll();
             audio.chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
             audio.chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));

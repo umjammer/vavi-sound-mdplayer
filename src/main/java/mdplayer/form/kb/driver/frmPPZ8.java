@@ -130,7 +130,7 @@ public class frmPPZ8 extends frmBase {
     private int searchPPZ8Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = audio.chipRegister.getChipInfo(Ppz8Inst.class).clock;
+        int clock = audio.mds.getChipInfo(Ppz8Inst.class).clock;
         if (clock >= 1000000)
             clock = clock / 384;
 

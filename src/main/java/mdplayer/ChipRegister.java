@@ -11,8 +11,6 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.Plugin;
 import mdplayer.chips.RealChipPlugin;
-import mdsound.Instrument;
-import mdsound.MDSound;
 
 import static java.lang.System.getLogger;
 
@@ -21,14 +19,6 @@ import static java.lang.System.getLogger;
 public class ChipRegister {
 
     private static final Logger logger = getLogger(ChipRegister.class.getName());
-
-    public final MDSound mds;
-
-    // selected instruments
-    public final Map<Class<? extends Instrument>, MDSound.Chip> usedInstruments = new HashMap<>();
-
-    // view
-    public final ChipLEDs chipLED = new ChipLEDs();
 
     // instruments wrapper
     private final Map<Class<? extends Chip>, Chip> chips = new HashMap<>();
@@ -47,53 +37,26 @@ public class ChipRegister {
     private static final ServiceLoader<Chip> chipServiceLoader = ServiceLoader.load(Chip.class);
     private static final ServiceLoader<Plugin> pluginServiceLoader = ServiceLoader.load(Plugin.class);
 
-    public ChipRegister(MDSound mds) {
-        this.mds = mds;
-
+    public ChipRegister() {
         // reused instance
         for (Chip chip : chipServiceLoader) {
             chips.put(chip.getClass(), chip);
         }
 logger.log(Level.INFO, "chips: " + chips.size());
 
-        chips.values().forEach(c -> c.init(this));
-
         // reused instance
         for (Plugin plugin : pluginServiceLoader) {
             plugins.put(plugin.getClass(), plugin);
         }
 logger.log(Level.INFO, "plugins: " + plugins.size());
-
-        plugins.values().forEach(c -> c.init(this));
     }
 
-    /** fill {@link #usedInstruments} */
-    public void initChipRegister(mdsound.MDSound.Chip[] chipInfos) {
-
-        usedInstruments.clear();
-        if (chipInfos != null) {
-            for (MDSound.Chip c : chipInfos) {
-                if (!usedInstruments.containsKey(c.instrument.getClass())) {
-                    usedInstruments.put(c.instrument.getClass(), c);
-                }
-            }
-        }
+    public void init(Audio context) {
+        chips.values().forEach(c -> c.init(context));
+        plugins.values().forEach(c -> c.init(context));
     }
 
-    // ???
-    /** fill {@link #usedInstruments} */
-    public void initChipRegisterNSF(MDSound.Chip[] chipInfos) {
-
-        initChipRegister(chipInfos);
-
-        plugin(MidiPlugin.class).initChipRegisterNSF();
-    }
-
-    public MDSound.Chip getChipInfo(Class<? extends Instrument> typ) {
-        return usedInstruments.getOrDefault(typ, null);
-    }
-
-    public void resetChips() {
+    public void reset() {
         chips.values().forEach(Chip::reset);
     }
 

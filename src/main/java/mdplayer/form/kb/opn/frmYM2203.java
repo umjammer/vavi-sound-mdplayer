@@ -139,9 +139,9 @@ public class frmYM2203 extends frmBase {
         int defaultMasterClock = 7987200 / 2;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        if (audio.chipRegister.getChipInfo(YmFmYm2203Inst.class).clock != 0) {
-            ssgMul = audio.chipRegister.getChipInfo(YmFmYm2203Inst.class).clock / (float) defaultMasterClock;
-            masterClock = audio.chipRegister.getChipInfo(YmFmYm2203Inst.class).clock;
+        if (audio.mds.getChipInfo(YmFmYm2203Inst.class).clock != 0) {
+            ssgMul = audio.mds.getChipInfo(YmFmYm2203Inst.class).clock / (float) defaultMasterClock;
+            masterClock = audio.mds.getChipInfo(YmFmYm2203Inst.class).clock;
         }
 
         int divInd = ym2203Register[0x2d];

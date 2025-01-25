@@ -1,6 +1,7 @@
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
+
+import mdplayer.Audio;
 
 
 /**
@@ -28,7 +29,7 @@ public class VstPlugin implements Plugin {
 //    }
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
 //        Log.forcedWrite("Audio:Init:VST:STEP 01");
 //
 //        vstMng.vstparse();

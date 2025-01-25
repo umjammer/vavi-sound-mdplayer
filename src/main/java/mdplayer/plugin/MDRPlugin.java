@@ -60,7 +60,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
             audio.chipRegister.chip(Ym2151Chip.class).setFadeout(1, 0);
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
             useChip.clear();
 
             audio.vgmFadeout = false;
@@ -72,7 +72,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.clearFadeoutVolume();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             startTrdVgmReal();
 
@@ -83,7 +83,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             hiyorimiNecessary = setting.getHiyorimiMode();
             int hiyorimiDeviceFlag = 0;
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -102,7 +102,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                audio.chipRegister.chipLED.put("PriOPL3", 1);
+                audio.chipLED.put("PriOPL3", 1);
 
                 lstChips.add(chip);
                 useChip.add(Common.EnmChip.YMF262);
@@ -117,7 +117,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                audio.chipRegister.chipLED.put("PriOPL4", 1);
+                audio.chipLED.put("PriOPL4", 1);
 
                 lstChips.add(chip);
                 useChip.add(Common.EnmChip.YMF278B);
@@ -125,9 +125,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
-
-            audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
 
             if (isOPL3) audio.setVolume(MAIN_TAG, YmF262Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, YmF262Inst.class));
             else audio.setVolume(MAIN_TAG, YmF278BInst.class, true, setting.getBalance().getVolume(MAIN_TAG, YmF278BInst.class));

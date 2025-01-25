@@ -130,7 +130,7 @@ public class frmYM3526 extends frmBase {
         int slot = 0;
         ChipKeyInfo ki = audio.chipRegister.chip(Ym3526Chip.class).getKeyInfo(chipId);
 
-        mdsound.MDSound.Chip chipInfo = audio.chipRegister.getChipInfo(Ym3526Inst.class);
+        mdsound.MDSound.Chip chipInfo = audio.mds.getChipInfo(Ym3526Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock; //3579545 -> Default master clock
 
         //FM

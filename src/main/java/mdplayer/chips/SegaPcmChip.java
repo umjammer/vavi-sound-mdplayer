@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import mdplayer.Audio;
 import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
@@ -40,10 +41,10 @@ public class SegaPcmChip implements Chip {
             null, null
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -118,7 +119,7 @@ public class SegaPcmChip implements Chip {
                 }
                 realChips[chipId].setRegister(0x10006, romSize);
 
-                context.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }

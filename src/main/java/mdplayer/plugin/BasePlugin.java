@@ -376,7 +376,7 @@ logger.log(Level.INFO, "dev null:" + getClass().getName());
 
         audio.chipRegister.clearFadeoutVolume();
 
-        audio.chipRegister.resetChips();
+        audio.chipRegister.reset();
     }
 
     protected void seqDie() {

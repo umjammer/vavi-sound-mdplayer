@@ -131,7 +131,7 @@ public abstract class BaseDriver {
     }
 
     public void copyWaveBuffer(short[][] dest) {
-        plugin.audio.chipRegister.mds.visWaveBuffer.copy(dest);
+        plugin.audio.mds.visWaveBuffer.copy(dest);
     }
 
     public long whichCounter(long real, long virtual) {

@@ -29,9 +29,12 @@ public class Audio {
     // TODO driver should be one, instruments should be separated virtual and real
     public BaseDriver driverVirtual = null;
 
-    public final mdsound.MDSound mds;
+    public final MDSound mds;
 
     public ChipRegister chipRegister;
+
+    // view
+    public final ChipLEDs chipLED = new ChipLEDs();
 
     public final VisVolume visVolume = new VisVolume();
 
@@ -304,10 +307,8 @@ logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
 
         mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
 
-        chipRegister = new ChipRegister(mds);
-
-        chipRegister.plugin(MidiPlugin.class).mdsInit();
-        chipRegister.plugin(MidiPlugin.class).resetAll();
+        chipRegister = new ChipRegister();
+        chipRegister.init(this);
     }
 
     public static Audio getInstance() {

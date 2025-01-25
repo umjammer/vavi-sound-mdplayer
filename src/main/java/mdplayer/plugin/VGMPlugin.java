@@ -23,7 +23,6 @@ import mdplayer.chips.Ym3812Chip;
 import mdplayer.chips.YmF262Chip;
 import mdplayer.driver.Vgm;
 import mdplayer.format.FileFormat;
-import mdplayer.instruments.VRC7;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.chips.C352;
@@ -82,7 +81,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.clearFadeoutVolume();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             useChip.clear();
 
@@ -94,7 +93,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -117,7 +116,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             hiyorimiNecessary = setting.getHiyorimiMode();
             int hiyorimiDeviceFlag = 0;
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -135,8 +134,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.clock = ((Vgm) audio.driverVirtual).sn76489ClockValue
                             | (((Vgm) audio.driverVirtual).sn76489NGPFlag ? 0x8000_0000 : 0);
 //                    audio.clockSN76489 = chip.clock & 0x7fff_ffff;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriDCSG", 1);
-                    else audio.chipRegister.chipLED.put("SecDCSG", 1);
+                    if (i == 0) audio.chipLED.put("PriDCSG", 1);
+                    else audio.chipLED.put("SecDCSG", 1);
 
                     hiyorimiDeviceFlag |= (setting.getSN76489Type()[0].getUseReal()[0]) ? 0x1 : 0x2;
                     audio.chipRegister.chip(Sn76489Chip.class).ngpFlag = ((Vgm) audio.driverVirtual).sn76489NGPFlag;
@@ -179,8 +178,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     hiyorimiDeviceFlag |= (setting.getYM2612Type()[0].getUseReal()[0]
                             && setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation()) ? 0x2 : 0x0;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPN2", 1);
-                    else audio.chipRegister.chipLED.put("SecOPN2", 1);
+                    if (i == 0) audio.chipLED.put("PriOPN2", 1);
+                    else audio.chipLED.put("SecOPN2", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.YM2612 : EnmChip.S_YM2612);
@@ -200,8 +199,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriRF5C68", 1);
-                    else audio.chipRegister.chipLED.put("SecRF5C68", 1);
+                    if (i == 0) audio.chipLED.put("PriRF5C68", 1);
+                    else audio.chipLED.put("SecRF5C68", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.RF5C68 : EnmChip.S_RF5C68);
@@ -220,8 +219,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriRF5C", 1);
-                    else audio.chipRegister.chipLED.put("SecRF5C", 1);
+                    if (i == 0) audio.chipLED.put("PriRF5C", 1);
+                    else audio.chipLED.put("SecRF5C", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.RF5C164 : EnmChip.S_RF5C164);
@@ -239,7 +238,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                audio.chipRegister.chipLED.put("PriPWM", 1);
+                audio.chipLED.put("PriPWM", 1);
 
                 lstChips.add(chip);
                 useChip.add(EnmChip.PWM);
@@ -257,8 +256,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriC140", 1);
-                    else audio.chipRegister.chipLED.put("SecC140", 1);
+                    if (i == 0) audio.chipLED.put("PriC140", 1);
+                    else audio.chipLED.put("SecC140", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.C140 : EnmChip.S_C140);
@@ -277,8 +276,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriMPCM", 1);
-                    else audio.chipRegister.chipLED.put("SecMPCM", 1);
+                    if (i == 0) audio.chipLED.put("PriMPCM", 1);
+                    else audio.chipLED.put("SecMPCM", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.MultiPCM : EnmChip.S_MultiPCM);
@@ -299,7 +298,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                audio.chipRegister.chipLED.put("PriOKI5", 1);
+                audio.chipLED.put("PriOKI5", 1);
 
                 lstChips.add(chip);
                 useChip.add(EnmChip.OKIM6258);
@@ -319,8 +318,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOKI9", 1);
-                    else audio.chipRegister.chipLED.put("SecOKI9", 1);
+                    if (i == 0) audio.chipLED.put("PriOKI9", 1);
+                    else audio.chipLED.put("SecOKI9", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.OKIM6295 : EnmChip.S_OKIM6295);
@@ -338,7 +337,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                audio.chipRegister.chipLED.put("PriSPCM", 1);
+                audio.chipLED.put("PriSPCM", 1);
 
                 lstChips.add(chip);
                 useChip.add(EnmChip.SEGAPCM);
@@ -364,8 +363,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     hiyorimiDeviceFlag |= 0x2;
 //                    audio.clockYM2608 = ((Vgm) audio.driverVirtual).yn2608ClockValue;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPNA", 1);
-                    else audio.chipRegister.chipLED.put("SecOPNA", 1);
+                    if (i == 0) audio.chipLED.put("PriOPNA", 1);
+                    else audio.chipLED.put("SecOPNA", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.YM2608 : EnmChip.S_YM2608);
@@ -384,8 +383,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPM", 1);
-                    else audio.chipRegister.chipLED.put("SecOPM", 1);
+                    if (i == 0) audio.chipLED.put("PriOPM", 1);
+                    else audio.chipLED.put("SecOPM", 1);
 
                     if (chip.instrument != null)
                         lstChips.add(chip);
@@ -415,8 +414,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPN", 1);
-                    else audio.chipRegister.chipLED.put("SecOPN", 1);
+                    if (i == 0) audio.chipLED.put("PriOPN", 1);
+                    else audio.chipLED.put("SecOPN", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.YM2203 : EnmChip.S_YM2203);
@@ -442,8 +441,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPNB", 1);
-                    else audio.chipRegister.chipLED.put("SecOPNB", 1);
+                    if (i == 0) audio.chipLED.put("PriOPNB", 1);
+                    else audio.chipLED.put("SecOPNB", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.YM2610 : EnmChip.S_YM2610);
@@ -462,8 +461,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPL2", 1);
-                    else audio.chipRegister.chipLED.put("SecOPL2", 1);
+                    if (i == 0) audio.chipLED.put("PriOPL2", 1);
+                    else audio.chipLED.put("SecOPL2", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.YM3812 : EnmChip.S_YM3812);
@@ -482,8 +481,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPL3", 1);
-                    else audio.chipRegister.chipLED.put("SecOPL3", 1);
+                    if (i == 0) audio.chipLED.put("PriOPL3", 1);
+                    else audio.chipLED.put("SecOPL3", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.YMF262 : EnmChip.S_YMF262);
@@ -502,8 +501,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPX", 1);
-                    else audio.chipRegister.chipLED.put("SecOPX", 1);
+                    if (i == 0) audio.chipLED.put("PriOPX", 1);
+                    else audio.chipLED.put("SecOPX", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.YMF271 : EnmChip.S_YMF271);
@@ -522,8 +521,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPL4", 1);
-                    else audio.chipRegister.chipLED.put("SecOPL4", 1);
+                    if (i == 0) audio.chipLED.put("PriOPL4", 1);
+                    else audio.chipLED.put("SecOPL4", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.YMF278B : EnmChip.S_YMF278B);
@@ -542,8 +541,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriYMZ", 1);
-                    else audio.chipRegister.chipLED.put("SecYMZ", 1);
+                    if (i == 0) audio.chipLED.put("PriYMZ", 1);
+                    else audio.chipLED.put("SecYMZ", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.YMZ280B : EnmChip.S_YMZ280B);
@@ -563,8 +562,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriAY10", 1);
-                    else audio.chipRegister.chipLED.put("SecAY10", 1);
+                    if (i == 0) audio.chipLED.put("PriAY10", 1);
+                    else audio.chipLED.put("SecAY10", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.AY8910 : EnmChip.S_AY8910);
@@ -583,8 +582,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPLL", 1);
-                    else audio.chipRegister.chipLED.put("SecOPLL", 1);
+                    if (i == 0) audio.chipLED.put("PriOPLL", 1);
+                    else audio.chipLED.put("SecOPLL", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.YM2413 : EnmChip.S_YM2413);
@@ -603,8 +602,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriHuC", 1);
-                    else audio.chipRegister.chipLED.put("SecHuC", 1);
+                    if (i == 0) audio.chipLED.put("PriHuC", 1);
+                    else audio.chipLED.put("SecHuC", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.HuC6280 : EnmChip.S_HuC6280);
@@ -622,7 +621,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                audio.chipRegister.chipLED.put("PriQsnd", 1);
+                audio.chipLED.put("PriQsnd", 1);
 
                 lstChips.add(chip);
                 useChip.add(EnmChip.QSound);
@@ -638,8 +637,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.clock = (((Vgm) audio.driverVirtual).saa1099ClockValue & 0x3fff_ffff);
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriSAA", 1);
-                    else audio.chipRegister.chipLED.put("SecSAA", 1);
+                    if (i == 0) audio.chipLED.put("PriSAA", 1);
+                    else audio.chipLED.put("SecSAA", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.SAA1099 : EnmChip.S_SAA1099);
@@ -656,8 +655,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.clock = (((Vgm) audio.driverVirtual).wSwanClockValue & 0x3fff_ffff);
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriWSW", 1);
-                    else audio.chipRegister.chipLED.put("SecWSW", 1);
+                    if (i == 0) audio.chipLED.put("PriWSW", 1);
+                    else audio.chipLED.put("SecWSW", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.WSwan : EnmChip.S_WSwan);
@@ -674,8 +673,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.clock = (((Vgm) audio.driverVirtual).pokeyClockValue & 0x3fff_ffff);
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriPOK", 1);
-                    else audio.chipRegister.chipLED.put("SecPOK", 1);
+                    if (i == 0) audio.chipLED.put("PriPOK", 1);
+                    else audio.chipLED.put("SecPOK", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.POKEY : EnmChip.S_POKEY);
@@ -692,8 +691,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.clock = (((Vgm) audio.driverVirtual).x1_010ClockValue & 0x3fff_ffff);
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriX1010", 1);
-                    else audio.chipRegister.chipLED.put("SecX1010", 1);
+                    if (i == 0) audio.chipLED.put("PriX1010", 1);
+                    else audio.chipLED.put("SecX1010", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.X1_010 : EnmChip.S_X1_010);
@@ -716,8 +715,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     C352.setOptions((((Vgm) audio.driverVirtual).c352ClockValue >> 31));
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriC352", 1);
-                    else audio.chipRegister.chipLED.put("SecC352", 1);
+                    if (i == 0) audio.chipLED.put("PriC352", 1);
+                    else audio.chipLED.put("SecC352", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.C352 : EnmChip.S_C352);
@@ -735,8 +734,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.option = null;
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriGA20", 1);
-                    else audio.chipRegister.chipLED.put("SecGA20", 1);
+                    if (i == 0) audio.chipLED.put("PriGA20", 1);
+                    else audio.chipLED.put("SecGA20", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.GA20 : EnmChip.S_GA20);
@@ -752,8 +751,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).k053260ClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriK053260", 1);
-                    else audio.chipRegister.chipLED.put("SecK053260", 1);
+                    if (i == 0) audio.chipLED.put("PriK053260", 1);
+                    else audio.chipLED.put("SecK053260", 1);
 
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -771,8 +770,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).k054539ClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriK054539", 1);
-                    else audio.chipRegister.chipLED.put("SecK054539", 1);
+                    if (i == 0) audio.chipLED.put("PriK054539", 1);
+                    else audio.chipLED.put("SecK054539", 1);
 
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -791,8 +790,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.clock = ((Vgm) audio.driverVirtual).k051649ClockValue;
 //                    audio.clockK051649 = chip.clock;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriK051649", 1);
-                    else audio.chipRegister.chipLED.put("SecK051649", 1);
+                    if (i == 0) audio.chipLED.put("PriK051649", 1);
+                    else audio.chipLED.put("SecK051649", 1);
 
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -810,8 +809,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).ym3526ClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPL", 1);
-                    else audio.chipRegister.chipLED.put("SecOPL", 1);
+                    if (i == 0) audio.chipLED.put("PriOPL", 1);
+                    else audio.chipLED.put("SecOPL", 1);
 
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -829,8 +828,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).y8950ClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriY8950", 1);
-                    else audio.chipRegister.chipLED.put("SecY8950", 1);
+                    if (i == 0) audio.chipLED.put("PriY8950", 1);
+                    else audio.chipLED.put("SecY8950", 1);
 
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -848,8 +847,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).dmgClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriDMG", 1);
-                    else audio.chipRegister.chipLED.put("SecDMG", 1);
+                    if (i == 0) audio.chipLED.put("PriDMG", 1);
+                    else audio.chipLED.put("SecDMG", 1);
 
                     hiyorimiDeviceFlag |= 0x2;
 
@@ -868,8 +867,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriNES", 1);
-                    else audio.chipRegister.chipLED.put("SecNES", 1);
+                    if (i == 0) audio.chipLED.put("PriNES", 1);
+                    else audio.chipLED.put("SecNES", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.NES : EnmChip.S_NES);
@@ -881,8 +880,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriDMC", 1);
-                    else audio.chipRegister.chipLED.put("SecDMC", 1);
+                    if (i == 0) audio.chipLED.put("PriDMC", 1);
+                    else audio.chipLED.put("SecDMC", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.DMC : EnmChip.S_DMC);
@@ -895,8 +894,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriFDS", 1);
-                    else audio.chipRegister.chipLED.put("SecFDS", 1);
+                    if (i == 0) audio.chipLED.put("PriFDS", 1);
+                    else audio.chipLED.put("SecFDS", 1);
 
                     lstChips.add(chip);
                     useChip.add(i == 0 ? EnmChip.FDS : EnmChip.S_FDS);
@@ -908,10 +907,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
-
-            audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
-
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
 
             if (useChip.contains(EnmChip.YM2203) || useChip.contains(EnmChip.S_YM2203)) {
                 audio.chipRegister.chip(Ym2203Chip.class).write(0, 0x7, 0x3f, Common.EnmModel.RealModel); // Output off

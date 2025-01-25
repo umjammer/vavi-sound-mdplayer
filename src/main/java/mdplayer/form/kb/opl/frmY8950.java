@@ -167,7 +167,7 @@ public class frmY8950 extends frmBase {
         MDChipParams.Channel nyc;
         int slot;
         ChipKeyInfo ki = audio.chipRegister.chip(Y8950Chip.class).getKeyInfo(chipId);
-        mdsound.MDSound.Chip chipInfo = audio.chipRegister.getChipInfo(Y8950Inst.class);
+        mdsound.MDSound.Chip chipInfo = audio.mds.getChipInfo(Y8950Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock;
 
         //FM

@@ -17,6 +17,7 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.ShortMessage;
 
+import mdplayer.Audio;
 import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 import mdplayer.MIDIExport;
@@ -56,19 +57,22 @@ public class MidiPlugin implements Plugin {
 
     protected short[] bufVirtualFunction_MIDIKeyboard = null;
 
-    private ChipRegister context;
+    private Audio context;
 
     public MidiPlugin() {
         mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
     }
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
+        mdsInit();
+        resetAll();
+
         export = new MIDIExport();
-        export.registerYM2612 = context.chip(Ym2612Chip.class).register;
-        export.registerYM2151 = context.chip(Ym2151Chip.class).register;
+        export.registerYM2612 = context.chipRegister.chip(Ym2612Chip.class).register;
+        export.registerYM2151 = context.chipRegister.chip(Ym2151Chip.class).register;
 
         for (int chipId = 0; chipId < 2; chipId++) {
             params[chipId] = new MIDIParam();
@@ -80,6 +84,7 @@ public class MidiPlugin implements Plugin {
         export.close();
     }
 
+    // ???
     public void initChipRegisterNSF() {
         for (int chipId = 0; chipId < 2; chipId++) {
             params[chipId] = new MIDIParam();
@@ -222,7 +227,7 @@ public class MidiPlugin implements Plugin {
         context.chipLED.put("PriDCSG", 1);
         lstChips.add(chip);
 
-        mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
+        mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, lstChips);
 
         // Creates a midi instance.
         make(setting, 1);

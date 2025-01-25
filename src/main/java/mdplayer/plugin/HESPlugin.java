@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mdplayer.Audio;
-import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.driver.hes.Hes;
 import mdplayer.format.FileFormat;
@@ -51,7 +50,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             //Stop();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             audio.vgmFadeout = false;
             audio.vgmFadeoutCounter = 1.0;
@@ -62,7 +61,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.clearFadeoutVolume();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             useChip.clear();
 
@@ -72,8 +71,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipRegister.chipLED.clear();
-            audio.chipRegister.chipLED.put("PriHuC", 1);
+            audio.chipLED.clear();
+            audio.chipLED.put("PriHuC", 1);
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -97,9 +96,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             ((Hes) audio.driverVirtual).c6280 = chip;
             useChip.add(Common.EnmChip.HuC6280);
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
-
-            audio.chipRegister.initChipRegister(lstChips.toArray(MDSound.Chip[]::new));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
 
             ((Hes) audio.driverVirtual).song = songNo;
             if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}

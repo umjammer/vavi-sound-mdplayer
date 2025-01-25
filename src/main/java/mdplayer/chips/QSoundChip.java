@@ -6,6 +6,7 @@
 
 package mdplayer.chips;
 
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.ChipRegister;
 import mdplayer.Common.EnmChip;
@@ -33,11 +34,11 @@ public class QSoundChip implements Chip {
                     false, false, false,}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
     @SuppressWarnings("unchecked")
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < inst.length; chipId++) {

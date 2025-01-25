@@ -160,7 +160,7 @@ public class frmYM2608 extends frmBase {
         int defaultMasterClock = 7987200;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        int clock = audio.chipRegister.getChipInfo(Ym2608Inst.class).clock;
+        int clock = audio.mds.getChipInfo(Ym2608Inst.class).clock;
         if (clock != 0) {
             ssgMul = clock / (float) defaultMasterClock;
             masterClock = clock;

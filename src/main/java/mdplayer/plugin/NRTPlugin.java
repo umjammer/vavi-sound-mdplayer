@@ -60,7 +60,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
             audio.chipRegister.chip(Ym2151Chip.class).setFadeout(1, 0);
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             useChip.clear();
 
@@ -71,7 +71,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             vgmRealFadeoutVol = 0;
             vgmRealFadeoutVolWait = 4;
             audio.chipRegister.clearFadeoutVolume();
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             startTrdVgmReal();
 
@@ -82,7 +82,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             hiyorimiNecessary = setting.getHiyorimiMode();
             int hiyorimiDeviceFlag = 0;
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -112,8 +112,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPM", 1);
-                    else audio.chipRegister.chipLED.put("SecOPM", 1);
+                    if (i == 0) audio.chipLED.put("PriOPM", 1);
+                    else audio.chipLED.put("SecOPM", 1);
 
                     if (chip.instrument != null) {
                         lstChips.add(chip);
@@ -133,7 +133,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x1;
-                audio.chipRegister.chipLED.put("PriAY10", 1);
+                audio.chipLED.put("PriAY10", 1);
 
                 lstChips.add(chip);
                 useChip.add(Common.EnmChip.AY8910);
@@ -141,9 +141,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
-
-            audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
 
             if (useChip.contains(Common.EnmChip.YM2151) || useChip.contains(Common.EnmChip.S_YM2151)) {
                 audio.setVolume(MAIN_TAG, Ym2151Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class));
