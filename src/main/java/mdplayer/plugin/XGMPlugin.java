@@ -145,7 +145,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
 
-            audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
+            audio.chipRegister.initChipRegister(lstChips.toArray(MDSound.Chip[]::new));
 
             audio.setVolume(MAIN_TAG, Ym2612Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class));
             audio.setVolume(MAIN_TAG, Sn76489Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Sn76489Inst.class));

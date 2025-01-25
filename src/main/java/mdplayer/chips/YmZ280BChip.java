@@ -22,13 +22,11 @@ import mdsound.instrument.YmZ280BInst;
  */
 public class YmZ280BChip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = {
-            setting.getYMZ280BType()[0], setting.getYMZ280BType()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYMZ280BType();
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][] register = {null, null};
+    public final int[][] register = {null, null};
 
     private ChipRegister context;
 

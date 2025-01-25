@@ -23,9 +23,7 @@ import mdsound.Instrument.AdpcmEnabledInstrument;
  */
 public class Ym2610Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYM2610Type()[0], setting.getYM2610Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYM2610Type();
 
     private final Class<? extends AdpcmEnabledInstrument>[] inst = new Class[2];
 
@@ -33,28 +31,28 @@ public class Ym2610Chip implements Chip {
     private final RSoundChip[] realChipsEA = {null, null};
     private final RSoundChip[] realChipsEB = {null, null};
 
-    public int[][][] register = {
+    public final int[][][] register = {
             {null, null},
             {null, null}
     };
 
-    public int[][] keyOn = {null, null};
+    public final int[][] keyOn = {null, null};
 
-    public int[][] volume = {
+    public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
-    public int[][] ch3SlotVolume = {new int[4], new int[4]};
+    public final int[][] ch3SlotVolume = {new int[4], new int[4]};
 
-    public int[][][] rhythmVolume = {
+    public final int[][][] rhythmVolume = {
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]},
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]}
     };
 
-    public int[][] adpcmVolume = {new int[2], new int[2]};
+    public final  int[][] adpcmVolume = {new int[2], new int[2]};
 
-    public int[] adpcmPan = {0, 0};
+    public final int[] adpcmPan = {0, 0};
 
     private final int[] nowFadeoutVol = {0, 0};
 

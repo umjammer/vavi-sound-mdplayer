@@ -6,8 +6,8 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
 import mdplayer.Chip;
+import mdplayer.ChipRegister;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
@@ -23,17 +23,15 @@ import mdsound.Instrument;
  */
 public class Ym2151Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYM2151Type()[0], setting.getYM2151Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYM2151Type();
 
     private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][] register = {null, null};
-    public int[][] keyOn = {null, null};
-    public int[][] volume = {
+    public final int[][] register = {null, null};
+    public final int[][] keyOn = {null, null};
+    public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0}
     };
@@ -43,8 +41,8 @@ public class Ym2151Chip implements Chip {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
-    public int[] amd = {-1, -1};
-    public int[] pmd = {-1, -1};
+    public final int[] amd = {-1, -1};
+    public final int[] pmd = {-1, -1};
 
     private ChipRegister context;
 
@@ -341,7 +339,7 @@ public class Ym2151Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch, boolean stopped) {
-            setMask(chipId, ch, false, stopped);
+        setMask(chipId, ch, false, stopped);
     }
 
     @Override

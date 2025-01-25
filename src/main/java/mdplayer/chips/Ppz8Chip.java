@@ -21,7 +21,7 @@ import mdsound.instrument.Ppz8Inst;
  */
 public class Ppz8Chip implements Chip {
 
-    private static final boolean[][] mask = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
@@ -72,7 +72,7 @@ public class Ppz8Chip implements Chip {
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
-        Ppz8Chip.mask[chipId][ch] = mask;
+        this.mask[chipId][ch] = mask;
     }
 
     public void setMask(int chipId, int ch) {

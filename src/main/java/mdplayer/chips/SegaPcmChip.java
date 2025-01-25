@@ -23,9 +23,8 @@ import mdsound.instrument.SegaPcmInst;
  */
 public class SegaPcmChip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getSEGAPCMType()[0], setting.getSEGAPCMType()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getSEGAPCMType();
+
     private final RSoundChip[] realChips = {null, null};
 
     private final boolean[][] mask = {
@@ -33,11 +32,11 @@ public class SegaPcmChip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,}
     };
 
-    public byte[][] register = {
+    public final byte[][] register = {
             null, null
     };
 
-    public boolean[][] keyOn = {
+    public final boolean[][] keyOn = {
             null, null
     };
 

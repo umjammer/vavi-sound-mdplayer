@@ -22,13 +22,11 @@ import mdsound.instrument.Ym3526Inst;
  */
 public class Ym3526Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYM3526Type()[0], setting.getYM3526Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYM3526Type();
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][] register = {null, null};
+    public final int[][] register = {null, null};
 
     private final int[] fadeout = {0, 0};
 

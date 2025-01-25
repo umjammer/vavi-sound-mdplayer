@@ -21,11 +21,9 @@ import mdsound.instrument.Y8950Inst;
  */
 public class Y8950Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getY8950Type()[0], setting.getY8950Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getY8950Type();
 
-    public int[][] register = {null, null};
+    public final int[][] register = {null, null};
 
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(15), new ChipKeyInfo(15)};
 
@@ -39,17 +37,16 @@ public class Y8950Chip implements Chip {
     @Override
     public void init(ChipRegister context) {
         this.context = context;
+    }
 
+    @Override
+    public void reset() {
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[0x100];
             for (int i = 0; i < 0x100; i++) {
                 register[chipId][i] = 0;
             }
         }
-    }
-
-    @Override
-    public void reset() {
     }
 
     @Override

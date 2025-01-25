@@ -24,13 +24,11 @@ import static mdplayer.chips.YmF278BChip.channel;
  */
 public class YmF262Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = {
-            setting.getYMF262Type()[0], setting.getYMF262Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYMF262Type();
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][][] register = {
+    public final int[][][] register = {
             {null, null},
             {null, null}
     };

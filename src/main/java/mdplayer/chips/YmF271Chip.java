@@ -23,9 +23,7 @@ import mdsound.instrument.YmF271Inst;
  */
 public class YmF271Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYMF271Type()[0], setting.getYMF271Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYMF271Type();
 
     private final RSoundChip[] realChips = {null, null};
 

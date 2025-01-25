@@ -1184,8 +1184,7 @@ public class Setting implements Serializable {
     // setYMF262SType(ChipType2 { _YMF262SType = value; }
 
     // private ChipType2 _YMF271SType = new ChipType2();
-    // public ChipType2 YMF271SType
-    // {
+    // public ChipType2 YMF271SType    // {
     // get()
     // {
     // return _YMF271SType;

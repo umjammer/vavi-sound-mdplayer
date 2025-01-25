@@ -24,18 +24,17 @@ import mdsound.Instrument;
  */
 public class Ym2203Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYM2203Type()[0], setting.getYM2203Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYM2203Type();
+
     private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][] fmRegister = {null, null};
-    public int[][] fmKeyOn = {null, null};
-    public int[][] fmCh3SlotVolume = {new int[4], new int[4]};
+    public final int[][] fmRegister = {null, null};
+    public final int[][] fmKeyOn = {null, null};
+    public final int[][] fmCh3SlotVolume = {new int[4], new int[4]};
     private final int[] nowFadeoutVol = {0, 0};
-    public int[][] fmVolume = {new int[9], new int[9]};
+    public final int[][] fmVolume = {new int[9], new int[9]};
     private final boolean[][] maskFM = {
             {false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false}

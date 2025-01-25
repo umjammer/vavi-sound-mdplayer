@@ -22,9 +22,8 @@ import mdsound.instrument.YmF278BInst;
  */
 public class YmF278BChip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYMF278BType()[0], setting.getYMF278BType()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYMF278BType();
+
     private final RSoundChip[] realChips = {null, null};
 
     public int[][][] register = {
@@ -42,7 +41,7 @@ public class YmF278BChip implements Chip {
             0, 0
     };
 
-    private static final boolean[][] mask = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
@@ -184,7 +183,7 @@ public class YmF278BChip implements Chip {
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
-        YmF278BChip.mask[chipId][channel[ch]] = mask;
+        this.mask[chipId][channel[ch]] = mask;
     }
 
     public void writePcm(int chipId,

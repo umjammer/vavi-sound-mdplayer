@@ -22,9 +22,7 @@ import mdsound.instrument.HuC6280Inst;
  */
 public class HuC6280Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = {
-            setting.getHuC6280Type()[0], setting.getHuC6280Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getHuC6280Type();
 
     private final boolean[][] mask = {
             {false, false, false, false, false, false},

@@ -6,8 +6,8 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
 import mdplayer.Chip;
+import mdplayer.ChipRegister;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
@@ -78,9 +78,9 @@ public class QSoundChip implements Chip {
 
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
-            if (mask)
+        if (mask)
             context.mds.inst(inst[chipId]).setMask(chipId, ch);
-            else
+        else
             context.mds.inst(inst[chipId]).resetMask(chipId, ch);
     }
 

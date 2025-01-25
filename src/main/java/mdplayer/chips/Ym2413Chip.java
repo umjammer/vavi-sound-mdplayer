@@ -22,15 +22,13 @@ import mdsound.instrument.Ym2413Inst;
  */
 public class Ym2413Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYM2413Type()[0], setting.getYM2413Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYM2413Type();
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][] register = {null, null};
-//    private int[] registerRyhthmB = {0, 0};
-//    private int[] registerRyhthm = {0, 0};
+    public final int[][] register = {null, null};
+//    private final int[] registerRyhthmB = {0, 0};
+//    private final int[] registerRyhthm = {0, 0};
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
     private final int[] fadeout = {0, 0};
     private final boolean[] rm = {false, false};

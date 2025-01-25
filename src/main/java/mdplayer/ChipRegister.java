@@ -67,6 +67,7 @@ logger.log(Level.INFO, "plugins: " + plugins.size());
         plugins.values().forEach(c -> c.init(this));
     }
 
+    /** fill {@link #usedInstruments} */
     public void initChipRegister(mdsound.MDSound.Chip[] chipInfos) {
 
         usedInstruments.clear();
@@ -80,22 +81,16 @@ logger.log(Level.INFO, "plugins: " + plugins.size());
     }
 
     // ???
+    /** fill {@link #usedInstruments} */
     public void initChipRegisterNSF(MDSound.Chip[] chipInfos) {
 
-        usedInstruments.clear();
-        if (chipInfos != null) {
-            for (MDSound.Chip c : chipInfos) {
-                usedInstruments.put(c.instrument.getClass(), c);
-            }
-        }
+        initChipRegister(chipInfos);
 
         plugin(MidiPlugin.class).initChipRegisterNSF();
     }
 
     public MDSound.Chip getChipInfo(Class<? extends Instrument> typ) {
-        if (usedInstruments.containsKey(typ))
-            return usedInstruments.get(typ);
-        return null;
+        return usedInstruments.getOrDefault(typ, null);
     }
 
     public void resetChips() {

@@ -23,38 +23,36 @@ import mdsound.Instrument;
  */
 public class Ym2608Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYM2608Type()[0], setting.getYM2608Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYM2608Type();
 
     private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][][] register = {
+    public final int[][][] register = {
             {null, null},
             {null, null}
     };
 
-    public int[][] keyOn = {null, null};
+    public final int[][] keyOn = {null, null};
 
-    public int[][] volume = {
+    public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
-    public int[][] ch3SlotVolume = {
+    public final int[][] ch3SlotVolume = {
             new int[4], new int[4]
     };
 
-    public int[][][] rhythmVolume = {
+    public final int[][][] rhythmVolume = {
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]},
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]}
     };
 
-    public int[][] adpcmVolume = {new int[2], new int[2]};
+    public final int[][] adpcmVolume = {new int[2], new int[2]};
 
-    public int[] adpcmPan = {0, 0};
+    public final int[] adpcmPan = {0, 0};
 
     private final int[] fadeout = {0, 0};
 
@@ -320,9 +318,6 @@ public class Ym2608Chip implements Chip {
     }
 
     public int read(int chipId, int port, int addr, EnmModel model) {
-        if (chipTypes == null)
-            return 0;
-
         if (model == EnmModel.VirtualModel) {
             return 0;
         } else {

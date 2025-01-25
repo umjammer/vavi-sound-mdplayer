@@ -24,24 +24,22 @@ import mdsound.Instrument.PannableInstrument;
  */
 public class Sn76489Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getSN76489Type()[0], setting.getSN76489Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getSN76489Type();
 
     private final Class<? extends PannableInstrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][] register = {null, null};
+    public final int[][] register = {null, null};
 
-    public int[] pan = {0xff, 0xff};
+    public final int[] pan = {0xff, 0xff};
 
-    public int[][][] volumes = {
+    public final int[][][] volumes = {
             {new int[2], new int[2], new int[2], new int[2]},
             {new int[2], new int[2], new int[2], new int[2]}
     };
 
-    public int[] fadeout = {0, 0};
+    public final int[] fadeout = {0, 0};
 
     public boolean[][] mask = {
             {false, false, false, false},

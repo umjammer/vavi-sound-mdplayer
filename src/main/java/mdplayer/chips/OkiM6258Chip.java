@@ -23,7 +23,7 @@ public class OkiM6258Chip implements Chip {
 
     private final boolean[] mask = {false, false};
 
-    public boolean[] keyOn = {false, false};
+    public final boolean[] keyOn = {false, false};
 
     private ChipRegister context;
 

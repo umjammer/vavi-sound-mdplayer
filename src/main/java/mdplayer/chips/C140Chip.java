@@ -23,9 +23,7 @@ import mdsound.instrument.C140Inst;
  */
 public class C140Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = {
-            setting.getC140Type()[0], setting.getC140Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getC140Type();
 
     private final RSoundChip[] realChips = {null, null};
 

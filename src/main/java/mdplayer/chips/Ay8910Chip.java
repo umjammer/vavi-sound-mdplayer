@@ -6,8 +6,8 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
 import mdplayer.Chip;
+import mdplayer.ChipRegister;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RC86ctlSoundChip;
@@ -24,21 +24,19 @@ import mdsound.Instrument;
  */
 public class Ay8910Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = {
-            setting.getAY8910Type()[0], setting.getAY8910Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getAY8910Type();
 
     private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][] psgRegister = {null, null};
+    public final int[][] psgRegister = {null, null};
 
-    public int[][] psgKeyOn = {null, null};
+    public final int[][] psgKeyOn = {null, null};
 
     private final int[] fadeoutVolume = {0, 0};
 
-    public int[][] psgVolume = {new int[3], new int[3]};
+    public final int[][] psgVolume = {new int[3], new int[3]};
 
     private final boolean[][] mask = {
             {false, false, false},

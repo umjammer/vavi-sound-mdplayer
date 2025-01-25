@@ -6,8 +6,8 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
 import mdplayer.Chip;
+import mdplayer.ChipRegister;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
@@ -23,23 +23,22 @@ import mdsound.Instrument;
  */
 public class Ym2612Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = {
-            setting.getYM2612Type()[0], setting.getYM2612Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYM2612Type();
+
     private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][][] register = {
+    public final int[][][] register = {
             {null, null},
             {null, null}
     };
-    public int[][] keyOn = {null, null};
-    public int[][] volume = {
+    public final int[][] keyOn = {null, null};
+    public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
-    public int[][] ch3SlotVolume = {new int[4], new int[4]};
+    public final int[][] ch3SlotVolume = {new int[4], new int[4]};
     private final int[] fadeout = {0, 0};
     private final boolean[][] mask = {
             {false, false, false, false, false, false},
@@ -320,7 +319,7 @@ public class Ym2612Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-            setMask(chipId, ch, false);
+        setMask(chipId, ch, false);
     }
 
     @Override

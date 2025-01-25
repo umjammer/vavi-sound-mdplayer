@@ -30,8 +30,8 @@ public class Vgm extends BaseDriver {
     private static final Logger logger = getLogger(Vgm.class.getName());
 
     public Vgm() {
-        this.setting = Setting.getInstance();
-        dacControl = new DacControl(setting);
+        setting = Setting.getInstance();
+        dacControl = new DacControl();
     }
 
     public static final int FCC_VGM = 0x206D6756; // "Vgm "
