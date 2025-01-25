@@ -12,7 +12,6 @@ import java.awt.event.WindowListener;
 import java.io.File;
 import java.util.List;
 import java.util.prefs.Preferences;
-import javax.sound.sampled.Control;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;

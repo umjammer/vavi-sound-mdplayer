@@ -18,7 +18,6 @@ import javax.sound.midi.Receiver;
 import javax.sound.midi.ShortMessage;
 
 import mdplayer.Audio;
-import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 import mdplayer.MIDIExport;
 import mdplayer.MIDIParam;

@@ -9,7 +9,6 @@ import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Xgm;
 import mdplayer.plugin.Plugin;
-import mdplayer.plugin.SampledPlugin;
 import mdplayer.plugin.XGMPlugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;

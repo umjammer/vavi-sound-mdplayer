@@ -550,11 +550,11 @@ public class MXDRV extends BaseDriver {
 
     //static byte MXWORK_PCM8;
     //private MXWORK_PCM8 PCM8 = null;
-    private final int PCM8 = 1;
+    private static final int PCM8 = 1;
 
     // 
 
-    private final int FAKEA6S0004 = 0;
+    private static final int FAKEA6S0004 = 0;
 
     private int D0;
     private int D1;

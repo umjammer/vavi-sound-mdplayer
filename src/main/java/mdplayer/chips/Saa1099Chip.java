@@ -7,7 +7,6 @@
 package mdplayer.chips;
 
 import mdplayer.Audio;
-import mdplayer.ChipRegister;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdsound.instrument.Saa1099Inst;

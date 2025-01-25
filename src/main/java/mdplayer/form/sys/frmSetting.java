@@ -507,7 +507,7 @@ public class frmSetting extends JDialog {
         }
 
         for (int i = 0; i < cmbSampleRate.getItemCount(); i++) {
-            if (cmbSampleRate.getItemAt(i).toString().equals(String.valueOf(setting.getOutputDevice().getSampleRate()))) {
+            if (cmbSampleRate.getItemAt(i).equals(String.valueOf(setting.getOutputDevice().getSampleRate()))) {
                 cmbSampleRate.setSelectedIndex(i);
                 break;
             }

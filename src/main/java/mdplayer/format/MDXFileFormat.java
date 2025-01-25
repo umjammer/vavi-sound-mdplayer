@@ -12,7 +12,6 @@ import mdplayer.Setting;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.mxdrv.MXDRV;
 import mdplayer.plugin.MDXPlugin;
-import mdplayer.plugin.PMDPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;

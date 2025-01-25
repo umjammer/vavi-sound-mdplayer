@@ -11,7 +11,6 @@ import java.lang.System.Logger.Level;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdsound.instrument.NesInst;

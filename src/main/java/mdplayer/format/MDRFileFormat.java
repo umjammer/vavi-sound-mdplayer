@@ -10,7 +10,6 @@ import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.moonDriver.MoonDriver;
 import mdplayer.plugin.MDRPlugin;
-import mdplayer.plugin.MDXPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;

@@ -8,7 +8,6 @@ package mdplayer.chips;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdsound.instrument.Y8950Inst;

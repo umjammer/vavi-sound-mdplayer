@@ -8,7 +8,6 @@ package mdplayer.chips;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 import mdsound.chips.Rf5c68;
 import mdsound.instrument.Rf5C68Inst;

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.IntStream;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
@@ -32,8 +31,6 @@ import dotnet4j.io.FileShare;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Stream;
 import dotnet4j.util.compat.Tuple3;
-import mdplayer.Setting.ChipType2;
-import mdplayer.chips.Ay8910Chip;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.instruments.VRC7;
@@ -499,7 +496,7 @@ logger.log(Level.DEBUG, "rhythm file: " + ffn);
         OPLI,
         MGSCSCC_PLAIN,
         RYM2612,
-        SendMML2VGM;
+        SendMML2VGM
     }
 
     public enum EnmArcType {
