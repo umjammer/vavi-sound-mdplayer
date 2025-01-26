@@ -433,7 +433,7 @@ logger.log(Level.DEBUG, "rhythm file: " + ffn);
         C352(C352Inst.class),
         YM3526(Ym3526Inst.class),
         Y8950(Y8950Inst.class),
-        YM3812(Ym3812Inst.class),
+        YM3812(Ym3812Inst.class, MameYm3812Inst.class),
         K051649(K051649Inst.class),
         N163(), VRC6(), FME7(),
         RF5C68(Rf5C68Inst.class),

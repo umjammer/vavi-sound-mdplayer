@@ -453,7 +453,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym3812DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = Instrument.getInstrument(EnmChip.YM3812.getInstClass(0));
+                    chip.instrument = Instrument.getInstrument(EnmChip.YM3812.getInstClass(setting.getYM3812Type()[i].getEnabledId()));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
                     chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).ym3812ClockValue & 0x7fff_ffff;
