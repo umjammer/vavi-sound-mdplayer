@@ -1347,7 +1347,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
     private void vcPWM() {
         int cmd = (vgmBuf[vgmAdr + 1] & 0xf0) >> 4;
-        int data = (vgmBuf[vgmAdr + 1] & 0xf) * 0x100 + vgmBuf[vgmAdr + 2] & 0xff;
+        int data = (vgmBuf[vgmAdr + 1] & 0xf) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         plugin.audio.chipRegister.chip(PwmChip.class).write(0, cmd, data, model);
         vgmAdr += 3;
     }
