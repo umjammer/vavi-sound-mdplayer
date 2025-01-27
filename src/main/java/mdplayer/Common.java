@@ -411,7 +411,7 @@ logger.log(Level.DEBUG, "rhythm file: " + ffn);
     public enum EnmChip {
         Unuse(),
         SN76489(Sn76489Inst.class, Sn76489Inst.class),
-        YM2612(Ym2612Inst.class, Ym3438Inst.class, MameYm2612Inst.class, SimpleYm3438Inst.class),
+        YM2612(Ym2612Inst.class, Ym3438Inst.class, MameYm2612Inst.class),
         YM2612Ch6(),
         RF5C164(ScdPcmInst.class),
         PWM(PwmInst.class),

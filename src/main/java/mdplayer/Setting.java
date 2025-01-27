@@ -984,7 +984,7 @@ public class Setting implements Serializable {
             for (int i = 0; i < 2; i++) {
                 this.getYM3812Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 this.getYM3812Type()[i].setUseEmu(new boolean[EnmChip.YM3812.variants.length]); // 2 means {0: dosbox, 1: mame}
-                this.getYM3812Type()[i].getUseEmu()[1] = true;
+                this.getYM3812Type()[i].getUseEmu()[0] = true;
                 this.getYM3812Type()[i].setUseReal(new boolean[1]);
             }
         }
