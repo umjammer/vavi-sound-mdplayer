@@ -63,7 +63,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             Common.EnmChip[] useChipFromMub = ((MucomJava) audio.driverVirtual).useChipsFromMub(vgmBuf);
 
             //stop();
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
             resetFadeOutParam();
             useChip.clear();
 
@@ -74,7 +74,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
             Ym2610Inst ym2610 = Instrument.getInstrument(Ym2610Inst.class);
@@ -84,7 +84,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             if (useChipFromMub[0] != Common.EnmChip.Unuse) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                audio.chipRegister.chipLED.put("PriOPNA", 1);
+                audio.chipLED.put("PriOPNA", 1);
 
                 if (setting.getYM2608Type()[0].getUseEmu()[0]) {
                     Ym2608Inst ym2608 = Instrument.getInstrument(Ym2608Inst.class);
@@ -110,7 +110,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             if (useChipFromMub[1] != Common.EnmChip.Unuse) {
                 chip = new MDSound.Chip();
                 chip.id = 1;
-                audio.chipRegister.chipLED.put("SecOPNA", 1);
+                audio.chipLED.put("SecOPNA", 1);
 
 
                 if (setting.getYM2608Type()[1].getUseEmu()[0]) {
@@ -136,7 +136,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             if (useChipFromMub[2] != Common.EnmChip.Unuse) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                audio.chipRegister.chipLED.put("PriOPNB", 1);
+                audio.chipLED.put("PriOPNB", 1);
                 chip.instrument = ym2610;
                 chip.samplingRate = 55467;
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Inst.class);
@@ -154,7 +154,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             if (useChipFromMub[3] != Common.EnmChip.Unuse) {
                 chip = new MDSound.Chip();
                 chip.id = 1;
-                audio.chipRegister.chipLED.put("SecOPNB", 1);
+                audio.chipLED.put("SecOPNB", 1);
                 chip.instrument = ym2610;
                 chip.samplingRate = 55467; // (int)setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Inst.class);
@@ -171,7 +171,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             if (useChipFromMub[4] != Common.EnmChip.Unuse) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                audio.chipRegister.chipLED.put("PriOPM", 1);
+                audio.chipLED.put("PriOPM", 1);
                 chip.instrument = ym2151;
                 chip.samplingRate = 55467; // (int)setting.getoutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class);
@@ -181,9 +181,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 useChip.add(Common.EnmChip.YM2151);
             }
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, chips.toArray(MDSound.Chip[]::new));
-
-            audio.chipRegister.initChipRegister(chips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, chips);
 
             audio.setVolume(MAIN_TAG, Ym2608Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class));
             audio.setVolume("FM", Ym2608Inst.class, true, setting.getBalance().getVolume("FM", Ym2608Inst.class));

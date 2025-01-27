@@ -6,7 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
@@ -24,9 +24,7 @@ import mdsound.instrument.K051649Inst;
  */
 public class K051649Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = {
-            setting.getK051649Type()[0], setting.getK051649Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getK051649Type();
 
     private final RSoundChip[] realChips = {null, null};
 
@@ -36,19 +34,19 @@ public class K051649Chip implements Chip {
 
     private int sccR_dat;
 
-    public byte[] keyOnOff = {
+    public final byte[] keyOnOff = {
             0, 0
     };
 
-    public boolean[][] mask = {
+    public final boolean[][] mask = {
             {false, false, false, false, false},
             {false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         K051649Inst chip = Instrument.getInstrument(K051649Inst.class); // ugly

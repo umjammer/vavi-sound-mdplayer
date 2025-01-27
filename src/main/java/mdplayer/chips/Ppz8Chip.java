@@ -6,16 +6,11 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdsound.chips.PPZ8;
 import mdsound.instrument.Ppz8Inst;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -26,17 +21,15 @@ import static java.lang.System.getLogger;
  */
 public class Ppz8Chip implements Chip {
 
-    private static final Logger logger = getLogger(Ppz8Chip.class.getName());
-
-    private static final boolean[][] mask = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
     }
 
@@ -79,7 +72,7 @@ public class Ppz8Chip implements Chip {
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
-        Ppz8Chip.mask[chipId][ch] = mask;
+        this.mask[chipId][ch] = mask;
     }
 
     public void setMask(int chipId, int ch) {
@@ -87,10 +80,6 @@ public class Ppz8Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
     }
 }

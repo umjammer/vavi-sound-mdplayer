@@ -6,19 +6,14 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common;
+import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdsound.instrument.Sn76489Inst;
-import mdsound.instrument.Sn76496Inst;
-
-import static java.lang.System.getLogger;
+import mdsound.Instrument.PannableInstrument;
 
 
 /**
@@ -29,24 +24,22 @@ import static java.lang.System.getLogger;
  */
 public class Sn76489Chip implements Chip {
 
-    private static final Logger logger = getLogger(Sn76489Chip.class.getName());
+    private final Setting.ChipType2[] chipTypes = setting.getSN76489Type();
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getSN76489Type()[0], setting.getSN76489Type()[1]
-    };
+    private final Class<? extends PannableInstrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][] register = {null, null};
+    public final int[][] register = {null, null};
 
-    public int[] pan = {0xff, 0xff};
+    public final int[] pan = {0xff, 0xff};
 
-    public int[][][] volumes = {
+    public final int[][][] volumes = {
             {new int[2], new int[2], new int[2], new int[2]},
             {new int[2], new int[2], new int[2], new int[2]}
     };
 
-    public int[] fadeout = {0, 0};
+    public final int[] fadeout = {0, 0};
 
     public boolean[][] mask = {
             {false, false, false, false},
@@ -61,16 +54,20 @@ public class Sn76489Chip implements Chip {
             0, 0
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    @SuppressWarnings("unchecked")
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[] {0, 15, 0, 15, 0, 15, 0, 15};
 
             fadeout[chipId] = 0;
+
+            //
+            inst[chipId] = (Class<? extends PannableInstrument>) EnmChip.SN76489.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -121,10 +118,7 @@ public class Sn76489Chip implements Chip {
             }
         } else {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                if (chipTypes[chipId].getUseEmu()[0])
-                    context.mds.write(Sn76489Inst.class, chipId, 0, 0, data);
-                else if (chipTypes[chipId].getUseEmu()[1])
-                    context.mds.write(Sn76496Inst.class, chipId, 0, 0, data);
+                context.mds.write(inst[chipId], chipId, 0, 0, data);
             }
         }
     }
@@ -142,10 +136,7 @@ public class Sn76489Chip implements Chip {
             }
         } else {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                if (chipTypes[chipId].getUseEmu()[0])
-                    context.mds.inst(Sn76489Inst.class).setPan(chipId, dData);
-                else if (chipTypes[chipId].getUseEmu()[1])
-                    context.mds.inst(Sn76496Inst.class).setPan(chipId, dData);
+                context.mds.inst(inst[chipId]).setPan(chipId, dData);
                 pan[chipId] = dData;
             }
         }
@@ -212,12 +203,8 @@ public class Sn76489Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-            sendVolumeForced(chipId, ch);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
+        sendVolumeForced(chipId, ch);
     }
 
     protected void sendVolumeForced(int chipId, int ch) {

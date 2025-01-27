@@ -6,17 +6,13 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.instrument.YmF262Inst;
 
-import static java.lang.System.getLogger;
 import static mdplayer.chips.YmF278BChip.channel;
 
 
@@ -28,15 +24,11 @@ import static mdplayer.chips.YmF278BChip.channel;
  */
 public class YmF262Chip implements Chip {
 
-    private static final Logger logger = getLogger(YmF262Chip.class.getName());
-
-    private final Setting.ChipType2[] chipTypes = {
-            setting.getYMF262Type()[0], setting.getYMF262Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYMF262Type();
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][][] register = {
+    public final int[][][] register = {
             {null, null},
             {null, null}
     };
@@ -56,10 +48,10 @@ public class YmF262Chip implements Chip {
 
     private final int[] fadeout = {0, 0};
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -267,11 +259,7 @@ public class YmF262Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
     }
 
     @Override

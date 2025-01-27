@@ -6,7 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdsound.instrument.PpsInst;
@@ -20,10 +20,10 @@ import mdsound.instrument.PpsInst;
  */
 public class PpsChip implements Chip {
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
     }
 
@@ -35,7 +35,7 @@ public class PpsChip implements Chip {
     public void updateVol() {
     }
 
-    public void writePcm(int chipId, byte[] additionalData, EnmModel model) {
+    public void writePcm(int chipId, byte[] buf, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -44,10 +44,10 @@ public class PpsChip implements Chip {
         else
             context.chipLED.put("SecPPSDRV", 2);
 
-        context.mds.inst(PpsInst.class).writePcm(chipId, additionalData);
+        context.mds.inst(PpsInst.class).writePcm(chipId, buf, 0, buf.length);
     }
 
-    public void write(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -56,8 +56,8 @@ public class PpsChip implements Chip {
         else
             context.chipLED.put("SecPPSDRV", 2);
 
-        if (dPort == -1 && dAddr == -1 && dData == -1)
+        if (port == -1 && addr == -1 && data == -1)
             return;
-        context.mds.inst(PpsInst.class).write(chipId, dPort, dAddr, dData);
+        context.mds.inst(PpsInst.class).write(chipId, port, addr, data);
     }
 }

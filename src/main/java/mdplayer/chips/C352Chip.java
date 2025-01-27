@@ -6,15 +6,10 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdsound.instrument.C352Inst;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -24,8 +19,6 @@ import static java.lang.System.getLogger;
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
 public class C352Chip implements Chip {
-
-    private static final Logger logger = getLogger(C352Chip.class.getName());
 
     public int[][] register = {null, null};
 
@@ -38,10 +31,10 @@ public class C352Chip implements Chip {
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -82,20 +75,14 @@ public class C352Chip implements Chip {
         return context.mds.inst(C352Inst.class).readFlags(chipId);
     }
 
-    public void writePcm(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriC352", 2);
         else
             context.chipLED.put("SecC352", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(C352Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(C352Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
     }
 
     public int[] getChip(int chipId) {
@@ -111,10 +98,6 @@ public class C352Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
     }
 }

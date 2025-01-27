@@ -30,8 +30,8 @@ public class Vgm extends BaseDriver {
     private static final Logger logger = getLogger(Vgm.class.getName());
 
     public Vgm() {
-        this.setting = Setting.getInstance();
-        dacControl = new DacControl(setting);
+        setting = Setting.getInstance();
+        dacControl = new DacControl();
     }
 
     public static final int FCC_VGM = 0x206D6756; // "Vgm "
@@ -750,7 +750,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private void vcWSwanMem() {
-        plugin.audio.chipRegister.chip(WSwanChip.class).writeMemory(0, (vgmBuf[vgmAdr + 0x01] & 0xff) | ((vgmBuf[vgmAdr + 0x02] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
+        plugin.audio.chipRegister.chip(WSwanChip.class).writeMemory(0, (vgmBuf[vgmAdr + 0x02] & 0xff) | ((vgmBuf[vgmAdr + 0x01] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
         vgmAdr += 4;
     }
 
@@ -1347,7 +1347,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
     private void vcPWM() {
         int cmd = (vgmBuf[vgmAdr + 1] & 0xf0) >> 4;
-        int data = (vgmBuf[vgmAdr + 1] & 0xf) * 0x100 + vgmBuf[vgmAdr + 2] & 0xff;
+        int data = (vgmBuf[vgmAdr + 1] & 0xf) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         plugin.audio.chipRegister.chip(PwmChip.class).write(0, cmd, data, model);
         vgmAdr += 3;
     }

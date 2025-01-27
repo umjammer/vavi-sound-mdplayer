@@ -6,18 +6,13 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
+import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.chips.C140;
 import mdsound.instrument.C140Inst;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -28,11 +23,7 @@ import static java.lang.System.getLogger;
  */
 public class C140Chip implements Chip {
 
-    private static final Logger logger = getLogger(C140Chip.class.getName());
-
-    private final Setting.ChipType2[] chipTypes = {
-            setting.getC140Type()[0], setting.getC140Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getC140Type();
 
     private final RSoundChip[] realChips = {null, null};
 
@@ -47,10 +38,10 @@ public class C140Chip implements Chip {
                     false, false, false, false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -100,33 +91,27 @@ public class C140Chip implements Chip {
         }
     }
 
-    public void writePcm(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriC140", 2);
         else
             context.chipLED.put("SecC140", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(C140Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(C140Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
         else {
             if (realChips != null && realChips[chipId] != null) {
                 // Start address setting
-                realChips[chipId].setRegister(0x10000, dataStart);
-                realChips[chipId].setRegister(0x10001, dataStart >> 8);
-                realChips[chipId].setRegister(0x10002, dataStart >> 16);
+                realChips[chipId].setRegister(0x1_0000, offset);
+                realChips[chipId].setRegister(0x1_0001, offset >> 8);
+                realChips[chipId].setRegister(0x1_0002, offset >> 16);
                 // Data Transfer
-                for (int cnt = 0; cnt < dataLength; cnt++) {
-                    realChips[chipId].setRegister(0x10004, romData[srcStartAdr + cnt]);
+                for (int i = 0; i < length; i++) {
+                    realChips[chipId].setRegister(0x1_0004, buf[srcOffset + i]);
                 }
 //                realChips[chipId].setRegister(0x10006, romSize);
 
-                context.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }
@@ -137,13 +122,13 @@ public class C140Chip implements Chip {
             if (realChips != null && realChips[chipId] != null) {
                 switch (type) {
                     case SYSTEM2:
-                        realChips[chipId].setRegister(0x10008, 0);
+                        realChips[chipId].setRegister(0x1_0008, 0);
                         break;
                     case SYSTEM21:
-                        realChips[chipId].setRegister(0x10008, 1);
+                        realChips[chipId].setRegister(0x1_0008, 1);
                         break;
                     case ASIC219:
-                        realChips[chipId].setRegister(0x10008, 2);
+                        realChips[chipId].setRegister(0x1_0008, 2);
                         break;
                 }
             }
@@ -163,10 +148,6 @@ public class C140Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
     }
 }

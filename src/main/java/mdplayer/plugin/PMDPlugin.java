@@ -59,7 +59,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             //Stop();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
             resetFadeOutParam();
             useChip.clear();
 
@@ -70,13 +70,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
             Ym2608Inst ym2608 = Instrument.getInstrument(Ym2608Inst.class);
             chip = new MDSound.Chip();
             chip.id = 0;
-            audio.chipRegister.chipLED.put("PriOPNA", 1);
+            audio.chipLED.put("PriOPNA", 1);
             chip.instrument = ym2608;
             chip.samplingRate = 55467;
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class);
@@ -99,7 +99,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ppz8Inst.class);
             chip.clock = PMDJava.baseclock;
             chip.option = null;
-            audio.chipRegister.chipLED.put("PriPPZ8", 1);
+            audio.chipLED.put("PriPPZ8", 1);
             lstChips.add(chip);
             useChip.add(Common.EnmChip.PPZ8);
 
@@ -112,7 +112,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.volume = 0;
             chip.clock = PMDJava.baseclock;
             chip.option = null;
-            audio.chipRegister.chipLED.put("PriPPSDRV", 1);
+            audio.chipLED.put("PriPPSDRV", 1);
             lstChips.add(chip);
             useChip.add(Common.EnmChip.PPSDRV);
 
@@ -125,13 +125,11 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.volume = 0;
             chip.clock = PMDJava.baseclock;
             chip.option = null;
-            audio.chipRegister.chipLED.put("PriP86", 1);
+            audio.chipLED.put("PriP86", 1);
             lstChips.add(chip);
             useChip.add(Common.EnmChip.P86);
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
-
-            audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
 
             audio.setVolume(MAIN_TAG, Ym2608Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class));
             audio.setVolume("FM", Ym2608Inst.class, true, setting.getBalance().getVolume("FM", Ym2608Inst.class));

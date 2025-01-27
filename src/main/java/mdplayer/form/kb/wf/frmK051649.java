@@ -152,7 +152,7 @@ public class frmK051649 extends frmBase {
 
             MDChipParams.Channel channel = newParam.channels[ch];
             for (int i = 0; i < 32; i++) channel.inst[i] = chip.getWaveRam(ch, i);
-            float fTone = audio.chipRegister.getChipInfo(K051649Inst.class).clock / (8.0f * (float) psg.frequency);
+            float fTone = audio.mds.getChipInfo(K051649Inst.class).clock / (8.0f * (float) psg.frequency);
             channel.freq = psg.frequency;
             channel.volume = psg.key != 0 ? (int) (psg.volume * 1.33) : 0;
             channel.volumeL = psg.volume;

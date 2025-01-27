@@ -13,7 +13,6 @@ import mdplayer.driver.Vgm;
 import mdplayer.driver.nsf.Nsf;
 import mdplayer.plugin.NSFPlugin;
 import mdplayer.plugin.Plugin;
-import mdplayer.plugin.RCPPlugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mdplayer.Audio;
-import mdplayer.ChipLEDs;
 import mdplayer.Common;
 import mdplayer.Setting;
 import mdplayer.driver.zgm.Zgm;
@@ -47,7 +46,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
         if (vgmBuf == null || setting == null) return false;
 
         try {
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             audio.vgmFadeout = false;
             audio.vgmFadeoutCounter = 1.0;
@@ -58,7 +57,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.clearFadeoutVolume();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             useChip.clear();
 
@@ -69,7 +68,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -93,7 +92,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             hiyorimiNecessary = setting.getHiyorimiMode();
             int hiyorimiDeviceFlag = 0;
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -103,9 +102,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
-
-            audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
 
             audio.paused = false;
             oneTimeReset = false;

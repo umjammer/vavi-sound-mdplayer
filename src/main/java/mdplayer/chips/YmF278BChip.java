@@ -6,17 +6,12 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.instrument.YmF278BInst;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -27,11 +22,8 @@ import static java.lang.System.getLogger;
  */
 public class YmF278BChip implements Chip {
 
-    private static final Logger logger = getLogger(YmF278BChip.class.getName());
+    private final Setting.ChipType2[] chipTypes = setting.getYMF278BType();
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYMF278BType()[0], setting.getYMF278BType()[1]
-    };
     private final RSoundChip[] realChips = {null, null};
 
     public int[][][] register = {
@@ -49,7 +41,7 @@ public class YmF278BChip implements Chip {
             0, 0
     };
 
-    private static final boolean[][] mask = {
+    private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false, false, false, false, false, false, false, false},
@@ -63,10 +55,10 @@ public class YmF278BChip implements Chip {
             32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -191,39 +183,27 @@ public class YmF278BChip implements Chip {
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
-        YmF278BChip.mask[chipId][channel[ch]] = mask;
+        this.mask[chipId][channel[ch]] = mask;
     }
 
-    public void writePcm(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOPL4", 2);
         else
             context.chipLED.put("SecOPL4", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(YmF278BInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(YmF278BInst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
     }
 
-    public void writeRam(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writeRam(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOPL4", 2);
         else
             context.chipLED.put("SecOPL4", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(YmF278BInst.class).writeRam(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(YmF278BInst.class).writeRam(chipId, romSize, offset, length, buf, srcOffset);
     }
 
     public int[][] read(int chipId) {
@@ -235,10 +215,6 @@ public class YmF278BChip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
     }
 }

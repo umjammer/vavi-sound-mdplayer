@@ -6,7 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
@@ -23,9 +23,7 @@ import mdsound.instrument.YmF271Inst;
  */
 public class YmF271Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYMF271Type()[0], setting.getYMF271Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getYMF271Type();
 
     private final RSoundChip[] realChips = {null, null};
 
@@ -34,10 +32,10 @@ public class YmF271Chip implements Chip {
             {null, null}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -82,20 +80,14 @@ public class YmF271Chip implements Chip {
         }
     }
 
-    public void writePcm(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOPX", 2);
         else
             context.chipLED.put("SecOPX", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(YmF271Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(YmF271Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
     }
 
     public YmF271 read(int chipId) {

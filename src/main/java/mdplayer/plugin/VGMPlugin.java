@@ -9,7 +9,7 @@ import java.util.function.Function;
 import dotnet4j.io.Stream;
 import mdplayer.Audio;
 import mdplayer.Common;
-import mdplayer.instruments.VRC7;
+import mdplayer.Common.EnmChip;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.C140Chip;
 import mdplayer.chips.SegaPcmChip;
@@ -23,11 +23,11 @@ import mdplayer.chips.Ym3812Chip;
 import mdplayer.chips.YmF262Chip;
 import mdplayer.driver.Vgm;
 import mdplayer.format.FileFormat;
-import mdsound.chips.C352;
-import mdsound.instrument.*;
 import mdsound.Instrument;
 import mdsound.MDSound;
+import mdsound.chips.C352;
 import mdsound.chips.Ym3438Const;
+import mdsound.instrument.*;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -70,7 +70,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             //stop();
 
-            audio.chipRegister.resetChips();
+//            audio.chipRegister.resetChips();
 
             audio.vgmFadeout = false;
             audio.vgmFadeoutCounter = 1.0;
@@ -81,7 +81,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.clearFadeoutVolume();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             useChip.clear();
 
@@ -93,14 +93,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
             if (!audio.driverVirtual.init(vgmBuf
                     , this
                     , Common.EnmModel.VirtualModel
-                    , new Common.EnmChip[] {Common.EnmChip.YM2203} // usechip.toArray(new MDSound.Chip[0])
+                    , new EnmChip[] {EnmChip.YM2203} // usechip.toArray(new MDSound.Chip[0])
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
                     , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
@@ -108,7 +108,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             if (audio.driverReal != null && !audio.driverReal.init(vgmBuf
                     , this
                     , Common.EnmModel.RealModel
-                    , new Common.EnmChip[] {Common.EnmChip.YM2203} // usechip.toArray(new MDSound.Chip[0])
+                    , new EnmChip[] {EnmChip.YM2203} // usechip.toArray(new MDSound.Chip[0])
                     , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
                     , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
@@ -116,97 +116,61 @@ logger.log(Level.WARNING, "cannot start: " + this);
             hiyorimiNecessary = setting.getHiyorimiMode();
             int hiyorimiDeviceFlag = 0;
 
-            audio.chipRegister.chipLED.clear();
+            audio.chipLED.clear();
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
             if (((Vgm) audio.driverVirtual).sn76489ClockValue != 0) {
-                Sn76489Inst sn76489 = null;
-                Sn76496Inst sn76496 = null;
-
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).sn76489DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.option = null;
-
-                    if ((i == 0 && setting.getSN76489Type()[0].getUseEmu()[0])
-                            || (i == 1 && setting.getSN76489Type()[1].getUseEmu()[0])) {
-                        if (sn76489 == null) sn76489 = Instrument.getInstrument(Sn76489Inst.class);
-                        chip.instrument = sn76489;
-                    } else if ((i == 0 && setting.getSN76489Type()[0].getUseEmu()[1])
-                            || (i == 1 && setting.getSN76489Type()[1].getUseEmu()[1])) {
-                        if (sn76496 == null) sn76496 = Instrument.getInstrument(Sn76496Inst.class);
-                        chip.instrument = sn76496;
+                    chip.instrument = Instrument.getInstrument(EnmChip.SN76489.getInstClass(setting.getSN76489Type()[i].getEnabledId()));
+                    if (chip.instrument instanceof Sn76496Inst) {
                         chip.option = ((Vgm) audio.driverVirtual).sn76489Option;
                     }
-
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Sn76489Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).sn76489ClockValue
                             | (((Vgm) audio.driverVirtual).sn76489NGPFlag ? 0x8000_0000 : 0);
 //                    audio.clockSN76489 = chip.clock & 0x7fff_ffff;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriDCSG", 1);
-                    else audio.chipRegister.chipLED.put("SecDCSG", 1);
+                    if (i == 0) audio.chipLED.put("PriDCSG", 1);
+                    else audio.chipLED.put("SecDCSG", 1);
 
                     hiyorimiDeviceFlag |= (setting.getSN76489Type()[0].getUseReal()[0]) ? 0x1 : 0x2;
                     audio.chipRegister.chip(Sn76489Chip.class).ngpFlag = ((Vgm) audio.driverVirtual).sn76489NGPFlag;
 
                     if (chip.instrument != null) lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.SN76489 : Common.EnmChip.S_SN76489);
+                    useChip.add(i == 0 ? EnmChip.SN76489 : EnmChip.S_SN76489);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).ym2612ClockValue != 0) {
-                Ym2612Inst ym2612 = null;
-                Ym3438Inst ym3438 = null;
-                MameYm2612Inst ym2612mame = null;
-
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2612DualChipFlag ? 2 : 1); i++) {
                     //mdsound.ym2612 ym2612 = new mdsound.ym2612();
                     chip = new MDSound.Chip();
                     chip.id = i;
                     chip.option = null;
-
-                    if ((i == 0 && ((setting.getYM2612Type()[0].getUseEmu()[0] ||
-                            setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation()) ||
-                            setting.getYM2612Type()[0].getUseReal()[0])
-                    ) ||
-                            (i == 1 && (setting.getYM2612Type()[1].getUseEmu()[0] ||
-                                    setting.getYM2612Type()[1].getRealChipInfo()[0].getOnlyPCMEmulation()) ||
-                                    setting.getYM2612Type()[1].getUseReal()[0])
+                    chip.instrument = Instrument.getInstrument(EnmChip.YM2612.getInstClass(setting.getYM2612Type()[i].getEnabledId()));
+                    if (chip.instrument instanceof Ym2612Inst ||
+                            setting.getYM2612Type()[i].getRealChipInfo()[0].getOnlyPCMEmulation() ||
+                            setting.getYM2612Type()[i].getUseReal()[0]
                     ) {
-                        if (ym2612 == null) ym2612 = Instrument.getInstrument(Ym2612Inst.class);
-                        chip.instrument = ym2612;
                         chip.option = new Object[] {
                                 (setting.getNukedOPN2().gensDACHPF ? 0x01 : 0x00) | (setting.getNukedOPN2().gensSSGEG ? 0x02 : 0x00)
                         };
-                    } else if ((i == 0 && setting.getYM2612Type()[0].getUseEmu()[1]) || (i == 1 && setting.getYM2612Type()[1].getUseEmu()[1])) {
-                        if (ym3438 == null) ym3438 = Instrument.getInstrument(Ym3438Inst.class);
-                        chip.instrument = ym3438;
+                    } else if (chip.instrument instanceof Ym3438Inst ym3438) {
                         switch (setting.getNukedOPN2().emuType) {
-                        case 0:
-                            ym3438.setChipType(Ym3438Const.Type.discrete);
-                            break;
-                        case 1:
-                            ym3438.setChipType(Ym3438Const.Type.asic);
-                            break;
-                        case 2:
-                            ym3438.setChipType(Ym3438Const.Type.ym2612);
-                            break;
-                        case 3:
-                            ym3438.setChipType(Ym3438Const.Type.ym2612_u);
-                            break;
-                        case 4:
-                            ym3438.setChipType(Ym3438Const.Type.asic_lp);
-                            break;
+                            case 0 -> ym3438.setChipType(Ym3438Const.Type.discrete);
+                            case 1 -> ym3438.setChipType(Ym3438Const.Type.asic);
+                            case 2 -> ym3438.setChipType(Ym3438Const.Type.ym2612);
+                            case 3 -> ym3438.setChipType(Ym3438Const.Type.ym2612_u);
+                            case 4 -> ym3438.setChipType(Ym3438Const.Type.asic_lp);
                         }
-                    } else if ((i == 0 && setting.getYM2612Type()[0].getUseEmu()[2]) || (i == 1 && setting.getYM2612Type()[0].getUseEmu()[2])) {
-                        if (ym2612mame == null) ym2612mame = Instrument.getInstrument(MameYm2612Inst.class);
-                        chip.instrument = ym2612mame;
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).ym2612ClockValue;
 //                    audio.clockYM2612 = ((Vgm) audio.driverVirtual).ym2612ClockValue;
 
@@ -214,165 +178,158 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     hiyorimiDeviceFlag |= (setting.getYM2612Type()[0].getUseReal()[0]
                             && setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation()) ? 0x2 : 0x0;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPN2", 1);
-                    else audio.chipRegister.chipLED.put("SecOPN2", 1);
+                    if (i == 0) audio.chipLED.put("PriOPN2", 1);
+                    else audio.chipLED.put("SecOPN2", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.YM2612 : Common.EnmChip.S_YM2612);
+                    useChip.add(i == 0 ? EnmChip.YM2612 : EnmChip.S_YM2612);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).rf5C68ClockValue != 0) {
-                Rf5C68Inst rf5c68 = Instrument.getInstrument(Rf5C68Inst.class);
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).rf5C68DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = rf5c68;
+                    chip.instrument = Instrument.getInstrument(EnmChip.RF5C68.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Rf5C68Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).rf5C68ClockValue;
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriRF5C68", 1);
-                    else audio.chipRegister.chipLED.put("SecRF5C68", 1);
+                    if (i == 0) audio.chipLED.put("PriRF5C68", 1);
+                    else audio.chipLED.put("SecRF5C68", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.RF5C68 : Common.EnmChip.S_RF5C68);
+                    useChip.add(i == 0 ? EnmChip.RF5C68 : EnmChip.S_RF5C68);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).rf5C164ClockValue != 0) {
-                ScdPcmInst rf5c164 = Instrument.getInstrument(ScdPcmInst.class);
-
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).rf5C164DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = rf5c164;
+                    chip.instrument = Instrument.getInstrument(EnmChip.RF5C164.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, ScdPcmInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).rf5C164ClockValue;
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriRF5C", 1);
-                    else audio.chipRegister.chipLED.put("SecRF5C", 1);
+                    if (i == 0) audio.chipLED.put("PriRF5C", 1);
+                    else audio.chipLED.put("SecRF5C", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.RF5C164 : Common.EnmChip.S_RF5C164);
+                    useChip.add(i == 0 ? EnmChip.RF5C164 : EnmChip.S_RF5C164);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).pwmClockValue != 0) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                PwmInst pwm = Instrument.getInstrument(PwmInst.class);
-                chip.instrument = pwm;
+                chip.instrument = Instrument.getInstrument(EnmChip.PWM.getInstClass(0));
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume(MAIN_TAG, PwmInst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                 chip.clock = ((Vgm) audio.driverVirtual).pwmClockValue;
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                audio.chipRegister.chipLED.put("PriPWM", 1);
+                audio.chipLED.put("PriPWM", 1);
 
                 lstChips.add(chip);
-                useChip.add(Common.EnmChip.PWM);
+                useChip.add(EnmChip.PWM);
             }
 
             if (((Vgm) audio.driverVirtual).c140ClockValue != 0) {
-                C140Inst c140 = Instrument.getInstrument(C140Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).c140DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = c140;
+                    chip.instrument = Instrument.getInstrument(EnmChip.C140.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, C140Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).c140ClockValue;
                     chip.option = new Object[] {((Vgm) audio.driverVirtual).C140Type};
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriC140", 1);
-                    else audio.chipRegister.chipLED.put("SecC140", 1);
+                    if (i == 0) audio.chipLED.put("PriC140", 1);
+                    else audio.chipLED.put("SecC140", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.C140 : Common.EnmChip.S_C140);
+                    useChip.add(i == 0 ? EnmChip.C140 : EnmChip.S_C140);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).multiPCMClockValue != 0) {
-                MultiPcmInst multipcm = Instrument.getInstrument(MultiPcmInst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).multiPCMDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = multipcm;
+                    chip.instrument = Instrument.getInstrument(EnmChip.MultiPCM.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, MultiPcmInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).multiPCMClockValue;
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriMPCM", 1);
-                    else audio.chipRegister.chipLED.put("SecMPCM", 1);
+                    if (i == 0) audio.chipLED.put("PriMPCM", 1);
+                    else audio.chipLED.put("SecMPCM", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.MultiPCM : Common.EnmChip.S_MultiPCM);
+                    useChip.add(i == 0 ? EnmChip.MultiPCM : EnmChip.S_MultiPCM);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).okiM6258ClockValue != 0) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                OkiM6258Inst okim6258 = Instrument.getInstrument(OkiM6258Inst.class);
-                chip.instrument = okim6258;
+                chip.instrument = Instrument.getInstrument(EnmChip.OKIM6258.getInstClass(0));
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume(MAIN_TAG, OkiM6258Inst.class);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                 chip.clock = ((Vgm) audio.driverVirtual).okiM6258ClockValue;
                 chip.option = new Object[] {((Vgm) audio.driverVirtual).okiM6258Type};
                 //chips.option = new Object[1] { 6 };
-                okim6258.setCallback((byte) 0, this::changeChipSampleRate, chip);
+                if (chip.instrument instanceof OkiM6258Inst okim6258)
+                    okim6258.setCallback(0, this::changeChipSampleRate, chip);
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                audio.chipRegister.chipLED.put("PriOKI5", 1);
+                audio.chipLED.put("PriOKI5", 1);
 
                 lstChips.add(chip);
-                useChip.add(Common.EnmChip.OKIM6258);
+                useChip.add(EnmChip.OKIM6258);
             }
 
             if (((Vgm) audio.driverVirtual).okiM6295ClockValue != 0) {
-                OkiM6295Inst okim6295 = Instrument.getInstrument(OkiM6295Inst.class);
                 for (byte i = 0; i < (((Vgm) audio.driverVirtual).okiM6295DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = okim6295;
+                    chip.instrument = Instrument.getInstrument(EnmChip.OKIM6295.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
                     chip.volume = setting.getBalance().getVolume(MAIN_TAG, OkiM6295Inst.class);
                     chip.clock = ((Vgm) audio.driverVirtual).okiM6295ClockValue;
                     chip.option = null;
-                    okim6295.setCallback(i, this::changeChipSampleRate, chip);
+                    if (chip.instrument instanceof OkiM6295Inst okim6295)
+                        okim6295.setCallback(i, this::changeChipSampleRate, chip);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOKI9", 1);
-                    else audio.chipRegister.chipLED.put("SecOKI9", 1);
+                    if (i == 0) audio.chipLED.put("PriOKI9", 1);
+                    else audio.chipLED.put("SecOKI9", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.OKIM6295 : Common.EnmChip.S_OKIM6295);
+                    useChip.add(i == 0 ? EnmChip.OKIM6295 : EnmChip.S_OKIM6295);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).segaPCMClockValue != 0) {
                 chip = new MDSound.Chip();
                 chip.id = 0;
-                SegaPcmInst segapcm = Instrument.getInstrument(SegaPcmInst.class);
-                chip.instrument = segapcm;
+                chip.instrument = Instrument.getInstrument(EnmChip.SEGAPCM.getInstClass(0));
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, SegaPcmInst.class);
                 chip.clock = ((Vgm) audio.driverVirtual).segaPCMClockValue;
@@ -380,82 +337,59 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                audio.chipRegister.chipLED.put("PriSPCM", 1);
+                audio.chipLED.put("PriSPCM", 1);
 
                 lstChips.add(chip);
-                useChip.add(Common.EnmChip.SEGAPCM);
+                useChip.add(EnmChip.SEGAPCM);
             }
 
             if (((Vgm) audio.driverVirtual).yn2608ClockValue != 0) {
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2608DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-
-                    if (setting.getYM2608Type()[i].getUseEmu()[0]) {
-                        Ym2608Inst ym2608 = Instrument.getInstrument(Ym2608Inst.class);
-                        chip.instrument = ym2608;
+                    chip.instrument = Instrument.getInstrument(EnmChip.YM2608.getInstClass(setting.getYM2608Type()[i].getEnabledId()));
+                    if (chip.instrument instanceof Ym2608Inst ym2608) {
                         chip.setVolumes.put("FM", ym2608::setFMVolume);
                         chip.setVolumes.put("PSG", ym2608::setPSGVolume);
                         chip.setVolumes.put("Rhythm", ym2608::setRhythmVolume);
                         chip.setVolumes.put("Adpcm", ym2608::setAdpcmVolume);
-                    } else if (setting.getYM2608Type()[i].getUseEmu()[1]) {
-                        YmFmYm2608Inst ym2608 = Instrument.getInstrument(YmFmYm2608Inst.class);
-                        chip.instrument = ym2608;
                     }
 
-                    chip.samplingRate = 55467; // (int)setting.getoutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass() /* Ym2608Inst.class */);
+                    chip.samplingRate = 55467; // (int) setting.getoutputDevice().getSampleRate();
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).yn2608ClockValue;
                     Function<String, Stream> fn = Common::getOPNARyhthmStream;
                     chip.option = new Object[] {fn};
                     hiyorimiDeviceFlag |= 0x2;
 //                    audio.clockYM2608 = ((Vgm) audio.driverVirtual).yn2608ClockValue;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPNA", 1);
-                    else audio.chipRegister.chipLED.put("SecOPNA", 1);
+                    if (i == 0) audio.chipLED.put("PriOPNA", 1);
+                    else audio.chipLED.put("SecOPNA", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.YM2608 : Common.EnmChip.S_YM2608);
+                    useChip.add(i == 0 ? EnmChip.YM2608 : EnmChip.S_YM2608);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).yn2151ClockValue != 0) {
-                Ym2151Inst ym2151 = null;
-                MameYm2151Inst ym2151_mame = null;
-                X68SoundYm2151Inst ym2151_x68sound = null;
-                YmFmYm2151Inst ym2151_ymfm = null;
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2151DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-
-                    if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[0]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[0])) {
-                        if (ym2151 == null) ym2151 = Instrument.getInstrument(Ym2151Inst.class);
-                        chip.instrument = ym2151;
-                    } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[1]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[1])) {
-                        if (ym2151_mame == null) ym2151_mame = Instrument.getInstrument(MameYm2151Inst.class);
-                        chip.instrument = ym2151_mame;
-                    } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[2]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[2])) {
-                        if (ym2151_x68sound == null) ym2151_x68sound = Instrument.getInstrument(X68SoundYm2151Inst.class);
-                        chip.instrument = ym2151_x68sound;
-                    } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[3]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[3])) {
-                        if (ym2151_ymfm == null) ym2151_ymfm = Instrument.getInstrument(YmFmYm2151Inst.class);
-                        chip.instrument = ym2151_ymfm;
-                    }
-
+                    chip.instrument = Instrument.getInstrument(EnmChip.YM2151.getInstClass(setting.getYM2151Type()[i].getEnabledId()));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass() /* Ym2151Inst.class */);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).yn2151ClockValue;
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPM", 1);
-                    else audio.chipRegister.chipLED.put("SecOPM", 1);
+                    if (i == 0) audio.chipLED.put("PriOPM", 1);
+                    else audio.chipLED.put("SecOPM", 1);
 
                     if (chip.instrument != null)
                         lstChips.add(chip);
 
-                    useChip.add(i == 0 ? Common.EnmChip.YM2151 : Common.EnmChip.S_YM2151);
+                    useChip.add(i == 0 ? EnmChip.YM2151 : EnmChip.S_YM2151);
                 }
             }
 
@@ -463,19 +397,16 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2203DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    if (setting.getYM2203Type()[i].getUseEmu()[0]) {
-                        Ym2203Inst ym2203 = Instrument.getInstrument(Ym2203Inst.class);
-                        chip.instrument = ym2203;
+                    chip.instrument = Instrument.getInstrument(EnmChip.YM2203.getInstClass(setting.getYM2203Type()[i].getEnabledId()));
+                    if (chip.instrument instanceof Ym2203Inst ym2203) {
                         chip.setVolumes.put("FM", ym2203::setFMVolume);
                         chip.setVolumes.put("PSG", ym2203::setPSGVolume);
-                    } else if (setting.getYM2203Type()[i].getUseEmu()[1]) {
-                        YmFmYm2203Inst ym2203 = Instrument.getInstrument(YmFmYm2203Inst.class);
-                        chip.instrument = ym2203;
+                    } else if (chip.instrument instanceof YmFmYm2203Inst ym2203) {
                         chip.setVolumes.put("FM", ym2203::setFMVolume);
                         chip.setVolumes.put("PSG", ym2203::setPSGVolume);
                     }
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass() /* Ym2203Inst.class */);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).ym2203ClockValue;
                     chip.option = null;
 
@@ -483,11 +414,11 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPN", 1);
-                    else audio.chipRegister.chipLED.put("SecOPN", 1);
+                    if (i == 0) audio.chipLED.put("PriOPN", 1);
+                    else audio.chipLED.put("SecOPN", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.YM2203 : Common.EnmChip.S_YM2203);
+                    useChip.add(i == 0 ? EnmChip.YM2203 : EnmChip.S_YM2203);
                 }
             }
 
@@ -495,533 +426,479 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2610DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-
-                    if (setting.getYM2610Type()[i].getUseEmu()[0]) {
-                        Ym2610Inst ym2610 = Instrument.getInstrument(Ym2610Inst.class);
-                        chip.instrument = ym2610;
+                    chip.instrument = Instrument.getInstrument(EnmChip.YM2610.getInstClass(setting.getYM2610Type()[i].getEnabledId()));
+                    if (chip.instrument instanceof Ym2610Inst ym2610) {
                         chip.setVolumes.put("FM", ym2610::setFMVolume);
                         chip.setVolumes.put("PSG", ym2610::setPSGVolume);
                         chip.setVolumes.put("AdpcmA", ym2610::setAdpcmAVolume);
                         chip.setVolumes.put("AdpcmB", ym2610::setAdpcmBVolume);
-                    } if (setting.getYM2610Type()[i].getUseEmu()[1]) {
-                        YmFmYm2610Inst ym2610 = Instrument.getInstrument(YmFmYm2610Inst.class);
-                        chip.instrument = ym2610;
                     }
 
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass() /* Ym2610Inst.class */);
-                    chip.clock = ((Vgm) audio.driverVirtual).ym2610ClockValue & 0x7fffffff;
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
+                    chip.clock = ((Vgm) audio.driverVirtual).ym2610ClockValue & 0x7fff_ffff;
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPNB", 1);
-                    else audio.chipRegister.chipLED.put("SecOPNB", 1);
+                    if (i == 0) audio.chipLED.put("PriOPNB", 1);
+                    else audio.chipLED.put("SecOPNB", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.YM2610 : Common.EnmChip.S_YM2610);
+                    useChip.add(i == 0 ? EnmChip.YM2610 : EnmChip.S_YM2610);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).ym3812ClockValue != 0) {
-                Ym3812Inst ym3812 = Instrument.getInstrument(Ym3812Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym3812DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = ym3812;
+                    chip.instrument = Instrument.getInstrument(EnmChip.YM3812.getInstClass(setting.getYM3812Type()[i].getEnabledId()));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym3812Inst.class)
-                    ;
-                    chip.clock = ((Vgm) audio.driverVirtual).ym3812ClockValue & 0x7fffffff;
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
+                    chip.clock = ((Vgm) audio.driverVirtual).ym3812ClockValue & 0x7fff_ffff;
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPL2", 1);
-                    else audio.chipRegister.chipLED.put("SecOPL2", 1);
+                    if (i == 0) audio.chipLED.put("PriOPL2", 1);
+                    else audio.chipLED.put("SecOPL2", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.YM3812 : Common.EnmChip.S_YM3812);
+                    useChip.add(i == 0 ? EnmChip.YM3812 : EnmChip.S_YM3812);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).ymF262ClockValue != 0) {
-                YmF262Inst ymf262 = Instrument.getInstrument(YmF262Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ymF262DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = ymf262;
+                    chip.instrument = Instrument.getInstrument(EnmChip.YMF262.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF262Inst.class);
-                    chip.clock = ((Vgm) audio.driverVirtual).ymF262ClockValue & 0x7fffffff;
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
+                    chip.clock = ((Vgm) audio.driverVirtual).ymF262ClockValue & 0x7fff_ffff;
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPL3", 1);
-                    else audio.chipRegister.chipLED.put("SecOPL3", 1);
+                    if (i == 0) audio.chipLED.put("PriOPL3", 1);
+                    else audio.chipLED.put("SecOPL3", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.YMF262 : Common.EnmChip.S_YMF262);
+                    useChip.add(i == 0 ? EnmChip.YMF262 : EnmChip.S_YMF262);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).ymF271ClockValue != 0) {
-                YmF271Inst ymf271 = Instrument.getInstrument(YmF271Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ymF271DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = ymf271;
+                    chip.instrument = Instrument.getInstrument(EnmChip.YMF271.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF271Inst.class);
-                    chip.clock = ((Vgm) audio.driverVirtual).ymF271ClockValue & 0x7fffffff;
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
+                    chip.clock = ((Vgm) audio.driverVirtual).ymF271ClockValue & 0x7fff_ffff;
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPX", 1);
-                    else audio.chipRegister.chipLED.put("SecOPX", 1);
+                    if (i == 0) audio.chipLED.put("PriOPX", 1);
+                    else audio.chipLED.put("SecOPX", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.YMF271 : Common.EnmChip.S_YMF271);
+                    useChip.add(i == 0 ? EnmChip.YMF271 : EnmChip.S_YMF271);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).ymF278BClockValue != 0) {
-                YmF278BInst ymf278b = Instrument.getInstrument(YmF278BInst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ymF278BDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = ymf278b;
+                    chip.instrument = Instrument.getInstrument(EnmChip.YMF278B.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278BInst.class);
-                    chip.clock = ((Vgm) audio.driverVirtual).ymF278BClockValue & 0x7fffffff;
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
+                    chip.clock = ((Vgm) audio.driverVirtual).ymF278BClockValue & 0x7fff_ffff;
                     chip.option = new Object[] {Common.getApplicationFolder()};
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPL4", 1);
-                    else audio.chipRegister.chipLED.put("SecOPL4", 1);
+                    if (i == 0) audio.chipLED.put("PriOPL4", 1);
+                    else audio.chipLED.put("SecOPL4", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.YMF278B : Common.EnmChip.S_YMF278B);
+                    useChip.add(i == 0 ? EnmChip.YMF278B : EnmChip.S_YMF278B);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).ymZ280BClockValue != 0) {
-                YmZ280BInst ymz280b = Instrument.getInstrument(YmZ280BInst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ymZ280BDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = ymz280b;
+                    chip.instrument = Instrument.getInstrument(EnmChip.YMZ280B.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmZ280BInst.class);
-                    chip.clock = ((Vgm) audio.driverVirtual).ymZ280BClockValue & 0x7fffffff;
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
+                    chip.clock = ((Vgm) audio.driverVirtual).ymZ280BClockValue & 0x7fff_ffff;
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriYMZ", 1);
-                    else audio.chipRegister.chipLED.put("SecYMZ", 1);
+                    if (i == 0) audio.chipLED.put("PriYMZ", 1);
+                    else audio.chipLED.put("SecYMZ", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.YMZ280B : Common.EnmChip.S_YMZ280B);
+                    useChip.add(i == 0 ? EnmChip.YMZ280B : EnmChip.S_YMZ280B);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).ay8910ClockValue != 0) {
-                Ay8910Inst ay8910 = null;
-                MameAy8910Inst ay8910mame = null;
-
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ay8910DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-
-                    if ((i == 0 && setting.getAY8910Type()[0].getUseEmu()[0])
-                            || (i == 1 && setting.getAY8910Type()[1].getUseEmu()[0])) {
-                        if (ay8910 == null) ay8910 = Instrument.getInstrument(Ay8910Inst.class);
-                        chip.instrument = ay8910;
-                    } else if ((i == 0 && setting.getAY8910Type()[0].getUseEmu()[1])
-                            || (i == 1 && setting.getAY8910Type()[1].getUseEmu()[1])) {
-                        if (ay8910mame == null) ay8910mame = Instrument.getInstrument(MameAy8910Inst.class);
-                        chip.instrument = ay8910mame;
-                    }
-
+                    chip.instrument = Instrument.getInstrument(EnmChip.AY8910.getInstClass(setting.getAY8910Type()[i].getEnabledId()));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class);
-                    chip.clock = (((Vgm) audio.driverVirtual).ay8910ClockValue & 0x7fffffff) / 2;
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
+                    chip.clock = (((Vgm) audio.driverVirtual).ay8910ClockValue & 0x7fff_ffff) / 2;
 //                    audio.clockAY8910 = chip.clock;
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriAY10", 1);
-                    else audio.chipRegister.chipLED.put("SecAY10", 1);
+                    if (i == 0) audio.chipLED.put("PriAY10", 1);
+                    else audio.chipLED.put("SecAY10", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.AY8910 : Common.EnmChip.S_AY8910);
+                    useChip.add(i == 0 ? EnmChip.AY8910 : EnmChip.S_AY8910);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).ym2413ClockValue != 0) {
-                Instrument opll;
-                if (!((Vgm) audio.driverVirtual).ym2413VRC7Flag) {
-                    opll = Instrument.getInstrument(Ym2413Inst.class);
-                } else {
-                    opll = new VRC7();
-                }
-
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym2413DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = opll;
+                    chip.instrument = Instrument.getInstrument(EnmChip.YM2413.getInstClass(!((Vgm) audio.driverVirtual).ym2413VRC7Flag ? 0 : 1));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2413Inst.class);
-                    chip.clock = (((Vgm) audio.driverVirtual).ym2413ClockValue & 0x7fffffff);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
+                    chip.clock = (((Vgm) audio.driverVirtual).ym2413ClockValue & 0x7fff_ffff);
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPLL", 1);
-                    else audio.chipRegister.chipLED.put("SecOPLL", 1);
+                    if (i == 0) audio.chipLED.put("PriOPLL", 1);
+                    else audio.chipLED.put("SecOPLL", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.YM2413 : Common.EnmChip.S_YM2413);
+                    useChip.add(i == 0 ? EnmChip.YM2413 : EnmChip.S_YM2413);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).huC6280ClockValue != 0) {
-                HuC6280Inst huc6280 = Instrument.getInstrument(HuC6280Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).huC6280DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = huc6280;
+                    chip.instrument = Instrument.getInstrument(EnmChip.HuC6280.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, HuC6280Inst.class);
-                    chip.clock = (((Vgm) audio.driverVirtual).huC6280ClockValue & 0x7fffffff);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
+                    chip.clock = (((Vgm) audio.driverVirtual).huC6280ClockValue & 0x7fff_ffff);
                     chip.option = null;
 
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriHuC", 1);
-                    else audio.chipRegister.chipLED.put("SecHuC", 1);
+                    if (i == 0) audio.chipLED.put("PriHuC", 1);
+                    else audio.chipLED.put("SecHuC", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.HuC6280 : Common.EnmChip.S_HuC6280);
+                    useChip.add(i == 0 ? EnmChip.HuC6280 : EnmChip.S_HuC6280);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).qSoundClockValue != 0) {
-                CtrQSoundInst qsound = Instrument.getInstrument(CtrQSoundInst.class);
-//                QSoundInst qsound = Instrument.getInstrument(QSoundInst.class);
                 chip = new MDSound.Chip();
-                chip.id = (byte) 0;
-                chip.instrument = qsound;
+                chip.id = 0;
+                chip.instrument = Instrument.getInstrument(EnmChip.QSound.getInstClass(setting.getQSoundType()[0].getEnabledId()));
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume(MAIN_TAG, qsound.getClass());
-                chip.clock = (((Vgm) audio.driverVirtual).qSoundClockValue);// & 0x7fff_ffff);
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
+                chip.clock = (((Vgm) audio.driverVirtual).qSoundClockValue); // & 0x7fff_ffff);
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;
 
-                //if (i == 0) audio.chipRegister.chipLED.put("PriHuC", 1);
-                //else audio.chipRegister.chipLED.put("SecHuC", 1);
-                audio.chipRegister.chipLED.put("PriQsnd", 1);
+                audio.chipLED.put("PriQsnd", 1);
 
                 lstChips.add(chip);
-                useChip.add(Common.EnmChip.QSound);
+                useChip.add(EnmChip.QSound);
             }
 
             if (((Vgm) audio.driverVirtual).saa1099ClockValue != 0) {
-                Saa1099Inst saa1099 = Instrument.getInstrument(Saa1099Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).saA1099DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = saa1099;
+                    chip.instrument = Instrument.getInstrument(EnmChip.SAA1099.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Saa1099Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = (((Vgm) audio.driverVirtual).saa1099ClockValue & 0x3fff_ffff);
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriSAA", 1);
-                    else audio.chipRegister.chipLED.put("SecSAA", 1);
+                    if (i == 0) audio.chipLED.put("PriSAA", 1);
+                    else audio.chipLED.put("SecSAA", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.SAA1099 : Common.EnmChip.S_SAA1099);
+                    useChip.add(i == 0 ? EnmChip.SAA1099 : EnmChip.S_SAA1099);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).wSwanClockValue != 0) {
-                WSwanInst WSwan = Instrument.getInstrument(WSwanInst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).wSwanDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = WSwan;
+                    chip.instrument = Instrument.getInstrument(EnmChip.WSwan.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, WSwanInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = (((Vgm) audio.driverVirtual).wSwanClockValue & 0x3fff_ffff);
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriWSW", 1);
-                    else audio.chipRegister.chipLED.put("SecWSW", 1);
+                    if (i == 0) audio.chipLED.put("PriWSW", 1);
+                    else audio.chipLED.put("SecWSW", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.WSwan : Common.EnmChip.S_WSwan);
+                    useChip.add(i == 0 ? EnmChip.WSwan : EnmChip.S_WSwan);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).pokeyClockValue != 0) {
-                PokeyInst pokey = Instrument.getInstrument(PokeyInst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).pokeyDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = pokey;
+                    chip.instrument = Instrument.getInstrument(EnmChip.POKEY.getInstClass(0));
                     chip.samplingRate = (((Vgm) audio.driverVirtual).pokeyClockValue & 0x3fff_ffff); // (int)setting.getoutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, PokeyInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = (((Vgm) audio.driverVirtual).pokeyClockValue & 0x3fff_ffff);
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriPOK", 1);
-                    else audio.chipRegister.chipLED.put("SecPOK", 1);
+                    if (i == 0) audio.chipLED.put("PriPOK", 1);
+                    else audio.chipLED.put("SecPOK", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.POKEY : Common.EnmChip.S_POKEY);
+                    useChip.add(i == 0 ? EnmChip.POKEY : EnmChip.S_POKEY);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).x1_010ClockValue != 0) {
-                X1_010Inst X1_010 = Instrument.getInstrument(X1_010Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).x1_010DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = X1_010;
+                    chip.instrument = Instrument.getInstrument(EnmChip.X1_010.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, X1_010Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = (((Vgm) audio.driverVirtual).x1_010ClockValue & 0x3fff_ffff);
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriX1010", 1);
-                    else audio.chipRegister.chipLED.put("SecX1010", 1);
+                    if (i == 0) audio.chipLED.put("PriX1010", 1);
+                    else audio.chipLED.put("SecX1010", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.X1_010 : Common.EnmChip.S_X1_010);
+                    useChip.add(i == 0 ? EnmChip.X1_010 : EnmChip.S_X1_010);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).c352ClockValue != 0) {
-                C352Inst c352 = Instrument.getInstrument(C352Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).c352DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = c352;
+                    chip.instrument = Instrument.getInstrument(EnmChip.C352.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, C352Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = (((Vgm) audio.driverVirtual).c352ClockValue & 0x7fff_ffff);
-                    chip.setVolumes.put("Rear", c352::setRearMute);
+                    if (chip.instrument instanceof C352Inst c352)
+                        chip.setVolumes.put("Rear", c352::setRearMute);
                     chip.option = new Object[] {(((Vgm) audio.driverVirtual).c352ClockDivider)};
                     int divider = (((Vgm) audio.driverVirtual).c352ClockDivider) != 0 ? (((Vgm) audio.driverVirtual).c352ClockDivider) : 288;
 //                    audio.clockC352 = chip.clock / divider;
                     C352.setOptions((((Vgm) audio.driverVirtual).c352ClockValue >> 31));
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriC352", 1);
-                    else audio.chipRegister.chipLED.put("SecC352", 1);
+                    if (i == 0) audio.chipLED.put("PriC352", 1);
+                    else audio.chipLED.put("SecC352", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.C352 : Common.EnmChip.S_C352);
+                    useChip.add(i == 0 ? EnmChip.C352 : EnmChip.S_C352);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).ga20ClockValue != 0) {
-                Ga20Inst ga20 = Instrument.getInstrument(Ga20Inst.class);
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ga20DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = ga20;
+                    chip.instrument = Instrument.getInstrument(EnmChip.GA20.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ga20Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = (((Vgm) audio.driverVirtual).ga20ClockValue & 0x7fff_ffff);
                     chip.option = null;
                     hiyorimiDeviceFlag |= 0x2;
 
-                    if (i == 0) audio.chipRegister.chipLED.put("PriGA20", 1);
-                    else audio.chipRegister.chipLED.put("SecGA20", 1);
+                    if (i == 0) audio.chipLED.put("PriGA20", 1);
+                    else audio.chipLED.put("SecGA20", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.GA20 : Common.EnmChip.S_GA20);
+                    useChip.add(i == 0 ? EnmChip.GA20 : EnmChip.S_GA20);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).k053260ClockValue != 0) {
-                K053260Inst k053260 = Instrument.getInstrument(K053260Inst.class);
-
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).k053260DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = k053260;
+                    chip.instrument = Instrument.getInstrument(EnmChip.K053260.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, K053260Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).k053260ClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriK053260", 1);
-                    else audio.chipRegister.chipLED.put("SecK053260", 1);
+                    if (i == 0) audio.chipLED.put("PriK053260", 1);
+                    else audio.chipLED.put("SecK053260", 1);
 
                     hiyorimiDeviceFlag |= 0x2;
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.K053260 : Common.EnmChip.S_K053260);
+                    useChip.add(i == 0 ? EnmChip.K053260 : EnmChip.S_K053260);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).k054539ClockValue != 0) {
-                K054539Inst k054539 = Instrument.getInstrument(K054539Inst.class);
-
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).k054539DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = k054539;
+                    chip.instrument = Instrument.getInstrument(EnmChip.K054539.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, K054539Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).k054539ClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriK054539", 1);
-                    else audio.chipRegister.chipLED.put("SecK054539", 1);
+                    if (i == 0) audio.chipLED.put("PriK054539", 1);
+                    else audio.chipLED.put("SecK054539", 1);
 
                     hiyorimiDeviceFlag |= 0x2;
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.K054539 : Common.EnmChip.S_K054539);
+                    useChip.add(i == 0 ? EnmChip.K054539 : EnmChip.S_K054539);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).k051649ClockValue != 0) {
-                K051649Inst k051649 = Instrument.getInstrument(K051649Inst.class);
-
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).k051649DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = k051649;
+                    chip.instrument = Instrument.getInstrument(EnmChip.K051649.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, K051649Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).k051649ClockValue;
 //                    audio.clockK051649 = chip.clock;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriK051649", 1);
-                    else audio.chipRegister.chipLED.put("SecK051649", 1);
+                    if (i == 0) audio.chipLED.put("PriK051649", 1);
+                    else audio.chipLED.put("SecK051649", 1);
 
                     hiyorimiDeviceFlag |= 0x2;
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.K051649 : Common.EnmChip.S_K051649);
+                    useChip.add(i == 0 ? EnmChip.K051649 : EnmChip.S_K051649);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).ym3526ClockValue != 0) {
-                Ym3526Inst ym3526 = Instrument.getInstrument(Ym3526Inst.class);
-
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).ym3526DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = ym3526;
+                    chip.instrument = Instrument.getInstrument(EnmChip.YM3526.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym3526Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).ym3526ClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriOPL", 1);
-                    else audio.chipRegister.chipLED.put("SecOPL", 1);
+                    if (i == 0) audio.chipLED.put("PriOPL", 1);
+                    else audio.chipLED.put("SecOPL", 1);
 
                     hiyorimiDeviceFlag |= 0x2;
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.YM3526 : Common.EnmChip.S_YM3526);
+                    useChip.add(i == 0 ? EnmChip.YM3526 : EnmChip.S_YM3526);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).y8950ClockValue != 0) {
-                Y8950Inst y8950 = Instrument.getInstrument(Y8950Inst.class);
-
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).y8950DualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = y8950;
+                    chip.instrument = Instrument.getInstrument(EnmChip.Y8950.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, Y8950Inst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).y8950ClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriY8950", 1);
-                    else audio.chipRegister.chipLED.put("SecY8950", 1);
+                    if (i == 0) audio.chipLED.put("PriY8950", 1);
+                    else audio.chipLED.put("SecY8950", 1);
 
                     hiyorimiDeviceFlag |= 0x2;
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.Y8950 : Common.EnmChip.S_Y8950);
+                    useChip.add(i == 0 ? EnmChip.Y8950 : EnmChip.S_Y8950);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).dmgClockValue != 0) {
-                DmgInst dmg = Instrument.getInstrument(DmgInst.class);
-
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).dmgDualChipFlag ? 2 : 1); i++) {
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = dmg;
+                    chip.instrument = Instrument.getInstrument(EnmChip.DMG.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, DmgInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).dmgClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriDMG", 1);
-                    else audio.chipRegister.chipLED.put("SecDMG", 1);
+                    if (i == 0) audio.chipLED.put("PriDMG", 1);
+                    else audio.chipLED.put("SecDMG", 1);
 
                     hiyorimiDeviceFlag |= 0x2;
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.DMG : Common.EnmChip.S_DMG);
+                    useChip.add(i == 0 ? EnmChip.DMG : EnmChip.S_DMG);
                 }
             }
 
             if (((Vgm) audio.driverVirtual).nesClockValue != 0) {
 
                 for (int i = 0; i < (((Vgm) audio.driverVirtual).nesDualChipFlag ? 2 : 1); i++) {
-                    NesInst nes = Instrument.getInstrument(NesInst.class);
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = nes;
+                    chip.instrument = Instrument.getInstrument(EnmChip.NES.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, NesInst.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriNES", 1);
-                    else audio.chipRegister.chipLED.put("SecNES", 1);
+                    if (i == 0) audio.chipLED.put("PriNES", 1);
+                    else audio.chipLED.put("SecNES", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.NES : Common.EnmChip.S_NES);
-
-                    chip = new MDSound.Chip();
-                    chip.id = i;
-                    chip.instrument = nes;
-                    chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, NesInst.DMC.class);
-                    chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
-                    chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriDMC", 1);
-                    else audio.chipRegister.chipLED.put("SecDMC", 1);
-
-                    lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.DMC : Common.EnmChip.S_DMC);
-
+                    useChip.add(i == 0 ? EnmChip.NES : EnmChip.S_NES);
 
                     chip = new MDSound.Chip();
                     chip.id = i;
-                    chip.instrument = nes;
+                    chip.instrument = Instrument.getInstrument(EnmChip.NES.getInstClass(0));
                     chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, NesInst.FDS.class);
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
                     chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
                     chip.option = null;
-                    if (i == 0) audio.chipRegister.chipLED.put("PriFDS", 1);
-                    else audio.chipRegister.chipLED.put("SecFDS", 1);
+                    if (i == 0) audio.chipLED.put("PriDMC", 1);
+                    else audio.chipLED.put("SecDMC", 1);
 
                     lstChips.add(chip);
-                    useChip.add(i == 0 ? Common.EnmChip.FDS : Common.EnmChip.S_FDS);
+                    useChip.add(i == 0 ? EnmChip.DMC : EnmChip.S_DMC);
+
+
+                    chip = new MDSound.Chip();
+                    chip.id = i;
+                    chip.instrument = Instrument.getInstrument(EnmChip.NES.getInstClass(0));
+                    chip.samplingRate = setting.getOutputDevice().getSampleRate();
+                    chip.volume = setting.getBalance().getVolume(MAIN_TAG, chip.instrument.getClass());
+                    chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
+                    chip.option = null;
+                    if (i == 0) audio.chipLED.put("PriFDS", 1);
+                    else audio.chipLED.put("SecFDS", 1);
+
+                    lstChips.add(chip);
+                    useChip.add(i == 0 ? EnmChip.FDS : EnmChip.S_FDS);
 
 
                     hiyorimiDeviceFlag |= 0x2;
@@ -1030,13 +907,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
 
-            audio.chipRegister.initChipRegister(lstChips.toArray(new MDSound.Chip[0]));
-
-
-            if (useChip.contains(Common.EnmChip.YM2203) || useChip.contains(Common.EnmChip.S_YM2203)) {
-                audio.chipRegister.chip(Ym2203Chip.class).write(0, 0x7, 0x3f, Common.EnmModel.RealModel); // 出力オフ
+            if (useChip.contains(EnmChip.YM2203) || useChip.contains(EnmChip.S_YM2203)) {
+                audio.chipRegister.chip(Ym2203Chip.class).write(0, 0x7, 0x3f, Common.EnmModel.RealModel); // Output off
                 audio.chipRegister.chip(Ym2203Chip.class).write(1, 0x7, 0x3f, Common.EnmModel.RealModel);
                 audio.chipRegister.chip(Ym2203Chip.class).write(0, 0x8, 0x0, Common.EnmModel.RealModel);
                 audio.chipRegister.chip(Ym2203Chip.class).write(1, 0x8, 0x0, Common.EnmModel.RealModel);
@@ -1048,14 +922,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 audio.setVolume("PSG", Ym2203Inst.class, true, setting.getBalance().getVolume("PSG", Ym2203Inst.class));
             }
 
-            if (useChip.contains(Common.EnmChip.YM2608) || useChip.contains(Common.EnmChip.S_YM2608)) {
+            if (useChip.contains(EnmChip.YM2608) || useChip.contains(EnmChip.S_YM2608)) {
                 audio.setVolume("FM", Ym2608Inst.class, true, setting.getBalance().getVolume("FM", Ym2608Inst.class));
                 audio.setVolume("PSG", Ym2608Inst.class, true, setting.getBalance().getVolume("PSG", Ym2608Inst.class));
                 audio.setVolume("Rhythm", Ym2608Inst.class, true, setting.getBalance().getVolume("Rhythm", Ym2608Inst.class));
                 audio.setVolume("Adpcm", Ym2608Inst.class, true, setting.getBalance().getVolume("Adpcm", Ym2608Inst.class));
             }
 
-            if (useChip.contains(Common.EnmChip.YM2610) || useChip.contains(Common.EnmChip.S_YM2610)) {
+            if (useChip.contains(EnmChip.YM2610) || useChip.contains(EnmChip.S_YM2610)) {
 
                 audio.setVolume("FM", Ym2610Inst.class, true, setting.getBalance().getVolume("FM", Ym2610Inst.class));
                 audio.setVolume("PSG", Ym2610Inst.class, true, setting.getBalance().getVolume("PSG", Ym2610Inst.class));
@@ -1063,45 +937,45 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 audio.setVolume("AdpcmB", Ym2610Inst.class, true, setting.getBalance().getVolume("AdpcmB", Ym2610Inst.class));
             }
 
-            if (useChip.contains(Common.EnmChip.AY8910))
+            if (useChip.contains(EnmChip.AY8910))
                 audio.chipRegister.chip(Ay8910Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).ay8910ClockValue, Common.EnmModel.RealModel);
-            if (useChip.contains(Common.EnmChip.S_AY8910))
+            if (useChip.contains(EnmChip.S_AY8910))
                 audio.chipRegister.chip(Ay8910Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).ay8910ClockValue, Common.EnmModel.RealModel);
-            if (useChip.contains(Common.EnmChip.YM2151))
+            if (useChip.contains(EnmChip.YM2151))
                 audio.chipRegister.chip(Ym2151Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).yn2151ClockValue, Common.EnmModel.RealModel);
-            if (useChip.contains(Common.EnmChip.S_YM2151))
+            if (useChip.contains(EnmChip.S_YM2151))
                 audio.chipRegister.chip(Ym2151Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).yn2151ClockValue, Common.EnmModel.RealModel);
-            if (useChip.contains(Common.EnmChip.YM2203))
+            if (useChip.contains(EnmChip.YM2203))
                 audio.chipRegister.chip(Ym2203Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).ym2203ClockValue, Common.EnmModel.RealModel);
-            if (useChip.contains(Common.EnmChip.S_YM2203))
+            if (useChip.contains(EnmChip.S_YM2203))
                 audio.chipRegister.chip(Ym2203Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).ym2203ClockValue, Common.EnmModel.RealModel);
-            if (useChip.contains(Common.EnmChip.YM2608))
+            if (useChip.contains(EnmChip.YM2608))
                 audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).yn2608ClockValue, Common.EnmModel.RealModel);
-            if (useChip.contains(Common.EnmChip.S_YM2608))
+            if (useChip.contains(EnmChip.S_YM2608))
                 audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).yn2608ClockValue, Common.EnmModel.RealModel);
-            if (useChip.contains(Common.EnmChip.YM3526)) {
-                audio.chipRegister.chip(Ym3526Chip.class).write(0, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
+            if (useChip.contains(EnmChip.YM3526)) {
+                audio.chipRegister.chip(Ym3526Chip.class).write(0, 0xbd, 0, Common.EnmModel.RealModel); // Rhythm mode off
                 audio.chipRegister.chip(Ym3526Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).ym3526ClockValue, Common.EnmModel.RealModel);
             }
-            if (useChip.contains(Common.EnmChip.S_YM3526)) {
-                audio.chipRegister.chip(Ym3526Chip.class).write(1, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
+            if (useChip.contains(EnmChip.S_YM3526)) {
+                audio.chipRegister.chip(Ym3526Chip.class).write(1, 0xbd, 0, Common.EnmModel.RealModel); // Rhythm mode off
                 audio.chipRegister.chip(Ym3526Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).ym3526ClockValue, Common.EnmModel.RealModel);
             }
-            if (useChip.contains(Common.EnmChip.YM3812)) {
-                audio.chipRegister.chip(Ym3812Chip.class).write(0, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
+            if (useChip.contains(EnmChip.YM3812)) {
+                audio.chipRegister.chip(Ym3812Chip.class).write(0, 0xbd, 0, Common.EnmModel.RealModel); // Rhythm mode off
                 audio.chipRegister.chip(Ym3812Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).ym3812ClockValue, Common.EnmModel.RealModel);
             }
-            if (useChip.contains(Common.EnmChip.S_YM3812)) {
-                audio.chipRegister.chip(Ym3812Chip.class).write(1, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
+            if (useChip.contains(EnmChip.S_YM3812)) {
+                audio.chipRegister.chip(Ym3812Chip.class).write(1, 0xbd, 0, Common.EnmModel.RealModel); // Rhythm mode off
                 audio.chipRegister.chip(Ym3812Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).ym3812ClockValue, Common.EnmModel.RealModel);
             }
-            if (useChip.contains(Common.EnmChip.YMF262)) {
-                audio.chipRegister.chip(YmF262Chip.class).setRegister(0, 0, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
+            if (useChip.contains(EnmChip.YMF262)) {
+                audio.chipRegister.chip(YmF262Chip.class).setRegister(0, 0, 0xbd, 0, Common.EnmModel.RealModel); // Rhythm mode off
                 audio.chipRegister.chip(YmF262Chip.class).setRegister(0, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
                 audio.chipRegister.chip(YmF262Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).ymF262ClockValue, Common.EnmModel.RealModel);
             }
-            if (useChip.contains(Common.EnmChip.S_YMF262)) {
-                audio.chipRegister.chip(YmF262Chip.class).setRegister(1, 0, 0xbd, 0, Common.EnmModel.RealModel); // リズムモードオフ
+            if (useChip.contains(EnmChip.S_YMF262)) {
+                audio.chipRegister.chip(YmF262Chip.class).setRegister(1, 0, 0xbd, 0, Common.EnmModel.RealModel); // Rhythm mode off
                 audio.chipRegister.chip(YmF262Chip.class).setRegister(1, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
                 audio.chipRegister.chip(YmF262Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).ymF262ClockValue, Common.EnmModel.RealModel);
             }
@@ -1111,19 +985,19 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 audio.chipRegister.chip(Sn76489Chip.class).write(0, 0xe5, Common.EnmModel.VirtualModel); // white noise mode
                 audio.chipRegister.chip(Sn76489Chip.class).write(1, 0xe5, Common.EnmModel.VirtualModel); // white noise mode
             }
-            if (useChip.contains(Common.EnmChip.YM2610)) {
-                // control2 レジスタのパンをセンターに予め設定
+            if (useChip.contains(EnmChip.YM2610)) {
+                // control2 Presets register pan to center
                 audio.chipRegister.chip(Ym2610Chip.class).write(0, 0, 0x11, 0xc0, Common.EnmModel.RealModel);
                 audio.chipRegister.chip(Ym2610Chip.class).write(0, 0, 0x11, 0xc0, Common.EnmModel.VirtualModel);
             }
-            if (useChip.contains(Common.EnmChip.S_YM2610)) {
-                // control2 レジスタのパンをセンターに予め設定
+            if (useChip.contains(EnmChip.S_YM2610)) {
+                // control2 Presets register pan to center
                 audio.chipRegister.chip(Ym2610Chip.class).write(1, 0, 0x11, 0xc0, Common.EnmModel.RealModel);
                 audio.chipRegister.chip(Ym2610Chip.class).write(1, 0, 0x11, 0xc0, Common.EnmModel.VirtualModel);
             }
-            if (useChip.contains(Common.EnmChip.C140))
+            if (useChip.contains(EnmChip.C140))
                 audio.chipRegister.chip(C140Chip.class).writeType((byte) 0, ((Vgm) audio.driverVirtual).C140Type, Common.EnmModel.RealModel);
-            if (useChip.contains(Common.EnmChip.SEGAPCM))
+            if (useChip.contains(EnmChip.SEGAPCM))
                 audio.chipRegister.chip(SegaPcmChip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).segaPCMClockValue, Common.EnmModel.RealModel);
 
             int SSGVolumeFromTAG = -1;
@@ -1143,22 +1017,22 @@ logger.log(Level.WARNING, "cannot start: " + this);
             }
 
             if (SSGVolumeFromTAG == -1) {
-                if (useChip.contains(Common.EnmChip.YM2203))
+                if (useChip.contains(EnmChip.YM2203))
                     audio.chipRegister.chip(Ym2203Chip.class).setVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
-                if (useChip.contains(Common.EnmChip.S_YM2203))
+                if (useChip.contains(EnmChip.S_YM2203))
                     audio.chipRegister.chip(Ym2203Chip.class).setVolume((byte) 1, setting.getBalance().getGimicOPNVolume(), Common.EnmModel.RealModel);
-                if (useChip.contains(Common.EnmChip.YM2608))
+                if (useChip.contains(EnmChip.YM2608))
                     audio.chipRegister.chip(Ym2608Chip.class).setVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
-                if (useChip.contains(Common.EnmChip.S_YM2608))
+                if (useChip.contains(EnmChip.S_YM2608))
                     audio.chipRegister.chip(Ym2608Chip.class).setVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
             } else {
-                if (useChip.contains(Common.EnmChip.YM2203))
+                if (useChip.contains(EnmChip.YM2203))
                     audio.chipRegister.chip(Ym2203Chip.class).setVolume((byte) 0, SSGVolumeFromTAG, Common.EnmModel.RealModel);
-                if (useChip.contains(Common.EnmChip.S_YM2203))
+                if (useChip.contains(EnmChip.S_YM2203))
                     audio.chipRegister.chip(Ym2203Chip.class).setVolume((byte) 1, SSGVolumeFromTAG, Common.EnmModel.RealModel);
-                if (useChip.contains(Common.EnmChip.YM2608))
+                if (useChip.contains(EnmChip.YM2608))
                     audio.chipRegister.chip(Ym2608Chip.class).setVolume((byte) 0, SSGVolumeFromTAG, Common.EnmModel.RealModel);
-                if (useChip.contains(Common.EnmChip.S_YM2608))
+                if (useChip.contains(EnmChip.S_YM2608))
                     audio.chipRegister.chip(Ym2608Chip.class).setVolume((byte) 1, SSGVolumeFromTAG, Common.EnmModel.RealModel);
             }
 

@@ -6,16 +6,11 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdsound.instrument.Y8950Inst;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -26,13 +21,9 @@ import static java.lang.System.getLogger;
  */
 public class Y8950Chip implements Chip {
 
-    private static final Logger logger = getLogger(Y8950Chip.class.getName());
+    private final Setting.ChipType2[] chipTypes = setting.getY8950Type();
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getY8950Type()[0], setting.getY8950Type()[1]
-    };
-
-    public int[][] register = {null, null};
+    public final int[][] register = {null, null};
 
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(15), new ChipKeyInfo(15)};
 
@@ -41,22 +32,21 @@ public class Y8950Chip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
+    }
 
+    @Override
+    public void reset() {
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[0x100];
             for (int i = 0; i < 0x100; i++) {
                 register[chipId][i] = 0;
             }
         }
-    }
-
-    @Override
-    public void reset() {
     }
 
     @Override
@@ -146,20 +136,14 @@ public class Y8950Chip implements Chip {
         this.mask[chipId][ch] = mask;
     }
 
-    public void writePcm(int chipId,
-                         int romSize,
-                         int dataStart,
-                         int dataLength,
-                         byte[] romData,
-                         int srcStartAdr,
-                         EnmModel model) {
+    public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriY8950", 2);
         else
             context.chipLED.put("SecY8950", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(Y8950Inst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
+            context.mds.inst(Y8950Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
     }
 
     public int[] read(int chipId) {
@@ -171,10 +155,6 @@ public class Y8950Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
     }
 }

@@ -168,7 +168,6 @@ import mdsound.chips.OotakeHuC6280;
 import mdsound.chips.K051649;
 import mdsound.np.chip.NesN106;
 
-import static dotnet4j.io.Path.getDirectoryName;
 import static java.lang.System.getLogger;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
@@ -4510,184 +4509,184 @@ setVisible(true);
 
             if (setting.getOther().getAutoOpen()) {
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOPM") != 0) OpenFormYM2151(0, true);
+                if (plugin.audio.chipLED.get("PriOPM") != 0) OpenFormYM2151(0, true);
                 else CloseFormYM2151(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOPM") != 0) OpenFormYM2151(1, true);
+                if (plugin.audio.chipLED.get("SecOPM") != 0) OpenFormYM2151(1, true);
                 else CloseFormYM2151(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOPN") != 0) OpenFormYM2203(0, true);
+                if (plugin.audio.chipLED.get("PriOPN") != 0) OpenFormYM2203(0, true);
                 else CloseFormYM2203(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOPN") != 0) OpenFormYM2203(1, true);
+                if (plugin.audio.chipLED.get("SecOPN") != 0) OpenFormYM2203(1, true);
                 else CloseFormYM2203(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOPLL") != 0) OpenFormYM2413(0, true);
+                if (plugin.audio.chipLED.get("PriOPLL") != 0) OpenFormYM2413(0, true);
                 else CloseFormYM2413(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOPLL") != 0) OpenFormYM2413(1, true);
+                if (plugin.audio.chipLED.get("SecOPLL") != 0) OpenFormYM2413(1, true);
                 else CloseFormYM2413(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOPNA") != 0) OpenFormYM2608(0, true);
+                if (plugin.audio.chipLED.get("PriOPNA") != 0) OpenFormYM2608(0, true);
                 else CloseFormYM2608(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOPNA") != 0) OpenFormYM2608(1, true);
+                if (plugin.audio.chipLED.get("SecOPNA") != 0) OpenFormYM2608(1, true);
                 else CloseFormYM2608(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOPNB") != 0) OpenFormYM2610(0, true);
+                if (plugin.audio.chipLED.get("PriOPNB") != 0) OpenFormYM2610(0, true);
                 else CloseFormYM2610(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOPNB") != 0) OpenFormYM2610(1, true);
+                if (plugin.audio.chipLED.get("SecOPNB") != 0) OpenFormYM2610(1, true);
                 else CloseFormYM2610(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOPN2") != 0) openFormYM2612(0, true);
+                if (plugin.audio.chipLED.get("PriOPN2") != 0) openFormYM2612(0, true);
                 else closeFormYM2612(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOPN2") != 0) openFormYM2612(1, true);
+                if (plugin.audio.chipLED.get("SecOPN2") != 0) openFormYM2612(1, true);
                 else closeFormYM2612(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriDCSG") != 0) OpenFormSN76489(0, true);
+                if (plugin.audio.chipLED.get("PriDCSG") != 0) OpenFormSN76489(0, true);
                 else CloseFormSN76489(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecDCSG") != 0) {
+                if (plugin.audio.chipLED.get("SecDCSG") != 0) {
                     if (!plugin.audio.chipRegister.chip(Sn76489Chip.class).getFlag()) OpenFormSN76489(1, true);
                 } else CloseFormSN76489(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriPPZ8") != 0) OpenFormPPZ8(0, true);
+                if (plugin.audio.chipLED.get("PriPPZ8") != 0) OpenFormPPZ8(0, true);
                 else CloseFormPPZ8(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecPPZ8") != 0) OpenFormPPZ8(1, true);
+                if (plugin.audio.chipLED.get("SecPPZ8") != 0) OpenFormPPZ8(1, true);
                 else CloseFormPPZ8(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriFME7") != 0) OpenFormS5B(0, true);
+                if (plugin.audio.chipLED.get("PriFME7") != 0) OpenFormS5B(0, true);
                 else CloseFormS5B(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecFME7") != 0) OpenFormS5B(1, true);
+                if (plugin.audio.chipLED.get("SecFME7") != 0) OpenFormS5B(1, true);
                 else CloseFormS5B(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriDMG") != 0) OpenFormDMG(0, true);
+                if (plugin.audio.chipLED.get("PriDMG") != 0) OpenFormDMG(0, true);
                 else CloseFormDMG(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecDMG") != 0) OpenFormDMG(1, true);
+                if (plugin.audio.chipLED.get("SecDMG") != 0) OpenFormDMG(1, true);
                 else CloseFormDMG(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriRF5C") != 0) OpenFormMegaCD(0, true);
+                if (plugin.audio.chipLED.get("PriRF5C") != 0) OpenFormMegaCD(0, true);
                 else CloseFormMegaCD(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecRF5C") != 0) OpenFormMegaCD(1, true);
+                if (plugin.audio.chipLED.get("SecRF5C") != 0) OpenFormMegaCD(1, true);
                 else CloseFormMegaCD(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriRF5C68") != 0) OpenFormRf5c68(0, true);
+                if (plugin.audio.chipLED.get("PriRF5C68") != 0) OpenFormRf5c68(0, true);
                 else CloseFormRf5c68(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecRF5C68") != 0) OpenFormRf5c68(1, true);
+                if (plugin.audio.chipLED.get("SecRF5C68") != 0) OpenFormRf5c68(1, true);
                 else CloseFormRf5c68(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOKI5") != 0) OpenFormOKIM6258(0, true);
+                if (plugin.audio.chipLED.get("PriOKI5") != 0) OpenFormOKIM6258(0, true);
                 else CloseFormOKIM6258(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOKI5") != 0) OpenFormOKIM6258(1, true);
+                if (plugin.audio.chipLED.get("SecOKI5") != 0) OpenFormOKIM6258(1, true);
                 else CloseFormOKIM6258(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOKI9") != 0) OpenFormOKIM6295(0, true);
+                if (plugin.audio.chipLED.get("PriOKI9") != 0) OpenFormOKIM6295(0, true);
                 else CloseFormOKIM6295(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOKI9") != 0) OpenFormOKIM6295(1, true);
+                if (plugin.audio.chipLED.get("SecOKI9") != 0) OpenFormOKIM6295(1, true);
                 else CloseFormOKIM6295(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriC140") != 0) OpenFormC140(0, true);
+                if (plugin.audio.chipLED.get("PriC140") != 0) OpenFormC140(0, true);
                 else CloseFormC140(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecC140") != 0) OpenFormC140(1, true);
+                if (plugin.audio.chipLED.get("SecC140") != 0) OpenFormC140(1, true);
                 else CloseFormC140(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriYMZ") != 0) OpenFormYMZ280B(0, true);
+                if (plugin.audio.chipLED.get("PriYMZ") != 0) OpenFormYMZ280B(0, true);
                 else CloseFormYMZ280B(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecYMZ") != 0) OpenFormYMZ280B(1, true);
+                if (plugin.audio.chipLED.get("SecYMZ") != 0) OpenFormYMZ280B(1, true);
                 else CloseFormYMZ280B(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriC352") != 0) OpenFormC352(0, true);
+                if (plugin.audio.chipLED.get("PriC352") != 0) OpenFormC352(0, true);
                 else CloseFormC352(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecC352") != 0) OpenFormC352(1, true);
+                if (plugin.audio.chipLED.get("SecC352") != 0) OpenFormC352(1, true);
                 else CloseFormC352(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriMPCM") != 0) OpenFormMultiPCM(0, true);
+                if (plugin.audio.chipLED.get("PriMPCM") != 0) OpenFormMultiPCM(0, true);
                 else CloseFormMultiPCM(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecMPCM") != 0) OpenFormMultiPCM(1, true);
+                if (plugin.audio.chipLED.get("SecMPCM") != 0) OpenFormMultiPCM(1, true);
                 else CloseFormMultiPCM(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriQsnd") != 0) OpenFormQSound(0, true);
+                if (plugin.audio.chipLED.get("PriQsnd") != 0) OpenFormQSound(0, true);
                 else CloseFormQSound(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecQsnd") != 0) OpenFormQSound(1, true);
+                if (plugin.audio.chipLED.get("SecQsnd") != 0) OpenFormQSound(1, true);
                 else CloseFormQSound(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriSPCM") != 0) OpenFormSegaPCM(0, true);
+                if (plugin.audio.chipLED.get("PriSPCM") != 0) OpenFormSegaPCM(0, true);
                 else CloseFormSegaPCM(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecSPCM") != 0) OpenFormSegaPCM(1, true);
+                if (plugin.audio.chipLED.get("SecSPCM") != 0) OpenFormSegaPCM(1, true);
                 else CloseFormSegaPCM(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriAY10") != 0) OpenFormAY8910(0, true);
+                if (plugin.audio.chipLED.get("PriAY10") != 0) OpenFormAY8910(0, true);
                 else CloseFormAY8910(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecAY10") != 0) OpenFormAY8910(1, true);
+                if (plugin.audio.chipLED.get("SecAY10") != 0) OpenFormAY8910(1, true);
                 else CloseFormAY8910(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriHuC") != 0) OpenFormHuC6280(0, true);
+                if (plugin.audio.chipLED.get("PriHuC") != 0) OpenFormHuC6280(0, true);
                 else CloseFormHuC6280(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecHuC") != 0) OpenFormHuC6280(1, true);
+                if (plugin.audio.chipLED.get("SecHuC") != 0) OpenFormHuC6280(1, true);
                 else CloseFormHuC6280(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriK051649") != 0) OpenFormK051649(0, true);
+                if (plugin.audio.chipLED.get("PriK051649") != 0) OpenFormK051649(0, true);
                 else CloseFormK051649(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecK051649") != 0) OpenFormK051649(1, true);
+                if (plugin.audio.chipLED.get("SecK051649") != 0) OpenFormK051649(1, true);
                 else CloseFormK051649(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriMID") != 0) OpenFormMIDI(0, true);
+                if (plugin.audio.chipLED.get("PriMID") != 0) OpenFormMIDI(0, true);
                 else closeFormMIDI(0);
                 //if (audio.audio.chipLED.get("SecMID") != 0) OpenFormMIDI(1, true); else CloseFormMIDI(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriNES") != 0 || plugin.audio.chipRegister.chipLED.get("PriDMC") != 0) openFormNESDMC(0, true);
+                if (plugin.audio.chipLED.get("PriNES") != 0 || plugin.audio.chipLED.get("PriDMC") != 0) openFormNESDMC(0, true);
                 else closeFormNESDMC(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecNES") != 0 || plugin.audio.chipRegister.chipLED.get("SecDMC") != 0) openFormNESDMC(1, true);
+                if (plugin.audio.chipLED.get("SecNES") != 0 || plugin.audio.chipLED.get("SecDMC") != 0) openFormNESDMC(1, true);
                 else closeFormNESDMC(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriFDS") != 0) openFormFDS(0, true);
+                if (plugin.audio.chipLED.get("PriFDS") != 0) openFormFDS(0, true);
                 else closeFormFDS(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecFDS") != 0) openFormFDS(1, true);
+                if (plugin.audio.chipLED.get("SecFDS") != 0) openFormFDS(1, true);
                 else closeFormFDS(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriVRC6") != 0) openFormVRC6(0, true);
+                if (plugin.audio.chipLED.get("PriVRC6") != 0) openFormVRC6(0, true);
                 else closeFormVRC6(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecVRC6") != 0) openFormVRC6(1, true);
+                if (plugin.audio.chipLED.get("SecVRC6") != 0) openFormVRC6(1, true);
                 else closeFormVRC6(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriVRC7") != 0) openFormVRC7(0, true);
+                if (plugin.audio.chipLED.get("PriVRC7") != 0) openFormVRC7(0, true);
                 else closeFormVRC7(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecVRC7") != 0) openFormVRC7(1, true);
+                if (plugin.audio.chipLED.get("SecVRC7") != 0) openFormVRC7(1, true);
                 else closeFormVRC7(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriMMC5") != 0) openFormMMC5(0, true);
+                if (plugin.audio.chipLED.get("PriMMC5") != 0) openFormMMC5(0, true);
                 else closeFormMMC5(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecMMC5") != 0) openFormMMC5(1, true);
+                if (plugin.audio.chipLED.get("SecMMC5") != 0) openFormMMC5(1, true);
                 else closeFormMMC5(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriN106") != 0) openFormN106(0, true);
+                if (plugin.audio.chipLED.get("PriN106") != 0) openFormN106(0, true);
                 else closeFormN106(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecN106") != 0) openFormN106(1, true);
+                if (plugin.audio.chipLED.get("SecN106") != 0) openFormN106(1, true);
                 else closeFormN106(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOPL") != 0) OpenFormYM3526(0, true);
+                if (plugin.audio.chipLED.get("PriOPL") != 0) OpenFormYM3526(0, true);
                 else CloseFormYM3526(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOPL") != 0) OpenFormYM3526(1, true);
+                if (plugin.audio.chipLED.get("SecOPL") != 0) OpenFormYM3526(1, true);
                 else CloseFormYM3526(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriY8950") != 0) OpenFormY8950(0, true);
+                if (plugin.audio.chipLED.get("PriY8950") != 0) OpenFormY8950(0, true);
                 else CloseFormY8950(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecY8950") != 0) OpenFormY8950(1, true);
+                if (plugin.audio.chipLED.get("SecY8950") != 0) OpenFormY8950(1, true);
                 else CloseFormY8950(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOPL2") != 0) OpenFormYM3812(0, true);
+                if (plugin.audio.chipLED.get("PriOPL2") != 0) OpenFormYM3812(0, true);
                 else CloseFormYM3812(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOPL2") != 0) OpenFormYM3812(1, true);
+                if (plugin.audio.chipLED.get("SecOPL2") != 0) OpenFormYM3812(1, true);
                 else CloseFormYM3812(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOPL3") != 0) OpenFormYMF262(0, true);
+                if (plugin.audio.chipLED.get("PriOPL3") != 0) OpenFormYMF262(0, true);
                 else CloseFormYMF262(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOPL3") != 0) OpenFormYMF262(1, true);
+                if (plugin.audio.chipLED.get("SecOPL3") != 0) OpenFormYMF262(1, true);
                 else CloseFormYMF262(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOPL4") != 0) OpenFormYMF278B(0, true);
+                if (plugin.audio.chipLED.get("PriOPL4") != 0) OpenFormYMF278B(0, true);
                 else CloseFormYMF278B(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOPL4") != 0) OpenFormYMF278B(1, true);
+                if (plugin.audio.chipLED.get("SecOPL4") != 0) OpenFormYMF278B(1, true);
                 else CloseFormYMF278B(1);
 
-                if (plugin.audio.chipRegister.chipLED.get("PriOPX") != 0) OpenFormYMF271(0, true);
+                if (plugin.audio.chipLED.get("PriOPX") != 0) OpenFormYMF271(0, true);
                 else CloseFormYMF271(0);
-                if (plugin.audio.chipRegister.chipLED.get("SecOPX") != 0) OpenFormYMF271(1, true);
+                if (plugin.audio.chipLED.get("SecOPX") != 0) OpenFormYMF271(1, true);
                 else CloseFormYMF271(1);
             }
         } catch (Exception e) {
@@ -9751,86 +9750,86 @@ setVisible(true);
     private int[] getChipStatus() {
         int[] chips = new int[256];
 
-        chips[0] = plugin.audio.chipRegister.chipLED.get("PriOPN");
-        plugin.audio.chipRegister.chipLED.put("PriOPN", plugin.audio.chipRegister.chipLED.get("PriOPN"));
-        chips[1] = plugin.audio.chipRegister.chipLED.get("PriOPN2");
-        plugin.audio.chipRegister.chipLED.put("PriOPN2", plugin.audio.chipRegister.chipLED.get("PriOPN2"));
-        chips[2] = plugin.audio.chipRegister.chipLED.get("PriOPNA");
-        plugin.audio.chipRegister.chipLED.put("PriOPNA", plugin.audio.chipRegister.chipLED.get("PriOPNA"));
-        chips[3] = plugin.audio.chipRegister.chipLED.get("PriOPNB");
-        plugin.audio.chipRegister.chipLED.put("PriOPNB", plugin.audio.chipRegister.chipLED.get("PriOPNB"));
+        chips[0] = plugin.audio.chipLED.get("PriOPN");
+        plugin.audio.chipLED.put("PriOPN", plugin.audio.chipLED.get("PriOPN"));
+        chips[1] = plugin.audio.chipLED.get("PriOPN2");
+        plugin.audio.chipLED.put("PriOPN2", plugin.audio.chipLED.get("PriOPN2"));
+        chips[2] = plugin.audio.chipLED.get("PriOPNA");
+        plugin.audio.chipLED.put("PriOPNA", plugin.audio.chipLED.get("PriOPNA"));
+        chips[3] = plugin.audio.chipLED.get("PriOPNB");
+        plugin.audio.chipLED.put("PriOPNB", plugin.audio.chipLED.get("PriOPNB"));
 
-        chips[4] = plugin.audio.chipRegister.chipLED.get("PriOPM");
-        plugin.audio.chipRegister.chipLED.put("PriOPM", plugin.audio.chipRegister.chipLED.get("PriOPM"));
-        chips[5] = plugin.audio.chipRegister.chipLED.get("PriDCSG");
-        plugin.audio.chipRegister.chipLED.put("PriDCSG", plugin.audio.chipRegister.chipLED.get("PriDCSG"));
-        chips[6] = plugin.audio.chipRegister.chipLED.get("PriRF5C");
-        plugin.audio.chipRegister.chipLED.put("PriRF5C", plugin.audio.chipRegister.chipLED.get("PriRF5C"));
-        chips[7] = plugin.audio.chipRegister.chipLED.get("PriPWM");
-        plugin.audio.chipRegister.chipLED.put("PriPWM", plugin.audio.chipRegister.chipLED.get("PriPWM"));
+        chips[4] = plugin.audio.chipLED.get("PriOPM");
+        plugin.audio.chipLED.put("PriOPM", plugin.audio.chipLED.get("PriOPM"));
+        chips[5] = plugin.audio.chipLED.get("PriDCSG");
+        plugin.audio.chipLED.put("PriDCSG", plugin.audio.chipLED.get("PriDCSG"));
+        chips[6] = plugin.audio.chipLED.get("PriRF5C");
+        plugin.audio.chipLED.put("PriRF5C", plugin.audio.chipLED.get("PriRF5C"));
+        chips[7] = plugin.audio.chipLED.get("PriPWM");
+        plugin.audio.chipLED.put("PriPWM", plugin.audio.chipLED.get("PriPWM"));
 
-        chips[8] = plugin.audio.chipRegister.chipLED.get("PriOKI5");
-        plugin.audio.chipRegister.chipLED.put("PriOKI5", plugin.audio.chipRegister.chipLED.get("PriOKI5"));
-        chips[9] = plugin.audio.chipRegister.chipLED.get("PriOKI9");
-        plugin.audio.chipRegister.chipLED.put("PriOKI9", plugin.audio.chipRegister.chipLED.get("PriOKI9"));
-        chips[10] = plugin.audio.chipRegister.chipLED.get("PriC140");
-        plugin.audio.chipRegister.chipLED.put("PriC140", plugin.audio.chipRegister.chipLED.get("PriC140"));
-        chips[11] = plugin.audio.chipRegister.chipLED.get("PriSPCM");
-        plugin.audio.chipRegister.chipLED.put("PriSPCM", plugin.audio.chipRegister.chipLED.get("PriSPCM"));
+        chips[8] = plugin.audio.chipLED.get("PriOKI5");
+        plugin.audio.chipLED.put("PriOKI5", plugin.audio.chipLED.get("PriOKI5"));
+        chips[9] = plugin.audio.chipLED.get("PriOKI9");
+        plugin.audio.chipLED.put("PriOKI9", plugin.audio.chipLED.get("PriOKI9"));
+        chips[10] = plugin.audio.chipLED.get("PriC140");
+        plugin.audio.chipLED.put("PriC140", plugin.audio.chipLED.get("PriC140"));
+        chips[11] = plugin.audio.chipLED.get("PriSPCM");
+        plugin.audio.chipLED.put("PriSPCM", plugin.audio.chipLED.get("PriSPCM"));
 
-        chips[12] = plugin.audio.chipRegister.chipLED.get("PriAY10");
-        plugin.audio.chipRegister.chipLED.put("PriAY10", plugin.audio.chipRegister.chipLED.get("PriAY10"));
-        chips[13] = plugin.audio.chipRegister.chipLED.get("PriOPLL");
-        plugin.audio.chipRegister.chipLED.put("PriOPLL", plugin.audio.chipRegister.chipLED.get("PriOPLL"));
-        chips[14] = plugin.audio.chipRegister.chipLED.get("PriHuC");
-        plugin.audio.chipRegister.chipLED.put("PriHuC", plugin.audio.chipRegister.chipLED.get("PriHuC"));
-        chips[15] = plugin.audio.chipRegister.chipLED.get("PriC352");
-        plugin.audio.chipRegister.chipLED.put("PriC352", plugin.audio.chipRegister.chipLED.get("PriC352"));
-        chips[16] = plugin.audio.chipRegister.chipLED.get("PriK054539");
-        plugin.audio.chipRegister.chipLED.put("PriK054539", plugin.audio.chipRegister.chipLED.get("PriK054539"));
-        chips[17] = plugin.audio.chipRegister.chipLED.get("PriRF5C68");
-        plugin.audio.chipRegister.chipLED.put("PriRF5C68", plugin.audio.chipRegister.chipLED.get("PriRF5C68"));
+        chips[12] = plugin.audio.chipLED.get("PriAY10");
+        plugin.audio.chipLED.put("PriAY10", plugin.audio.chipLED.get("PriAY10"));
+        chips[13] = plugin.audio.chipLED.get("PriOPLL");
+        plugin.audio.chipLED.put("PriOPLL", plugin.audio.chipLED.get("PriOPLL"));
+        chips[14] = plugin.audio.chipLED.get("PriHuC");
+        plugin.audio.chipLED.put("PriHuC", plugin.audio.chipLED.get("PriHuC"));
+        chips[15] = plugin.audio.chipLED.get("PriC352");
+        plugin.audio.chipLED.put("PriC352", plugin.audio.chipLED.get("PriC352"));
+        chips[16] = plugin.audio.chipLED.get("PriK054539");
+        plugin.audio.chipLED.put("PriK054539", plugin.audio.chipLED.get("PriK054539"));
+        chips[17] = plugin.audio.chipLED.get("PriRF5C68");
+        plugin.audio.chipLED.put("PriRF5C68", plugin.audio.chipLED.get("PriRF5C68"));
 
 
-        chips[128 + 0] = plugin.audio.chipRegister.chipLED.get("SecOPN");
-        plugin.audio.chipRegister.chipLED.put("SecOPN", plugin.audio.chipRegister.chipLED.get("SecOPN"));
-        chips[128 + 1] = plugin.audio.chipRegister.chipLED.get("SecOPN2");
-        plugin.audio.chipRegister.chipLED.put("SecOPN2", plugin.audio.chipRegister.chipLED.get("SecOPN2"));
-        chips[128 + 2] = plugin.audio.chipRegister.chipLED.get("SecOPNA");
-        plugin.audio.chipRegister.chipLED.put("SecOPNA", plugin.audio.chipRegister.chipLED.get("SecOPNA"));
-        chips[128 + 3] = plugin.audio.chipRegister.chipLED.get("SecOPNB");
-        plugin.audio.chipRegister.chipLED.put("SecOPNB", plugin.audio.chipRegister.chipLED.get("SecOPNB"));
+        chips[128 + 0] = plugin.audio.chipLED.get("SecOPN");
+        plugin.audio.chipLED.put("SecOPN", plugin.audio.chipLED.get("SecOPN"));
+        chips[128 + 1] = plugin.audio.chipLED.get("SecOPN2");
+        plugin.audio.chipLED.put("SecOPN2", plugin.audio.chipLED.get("SecOPN2"));
+        chips[128 + 2] = plugin.audio.chipLED.get("SecOPNA");
+        plugin.audio.chipLED.put("SecOPNA", plugin.audio.chipLED.get("SecOPNA"));
+        chips[128 + 3] = plugin.audio.chipLED.get("SecOPNB");
+        plugin.audio.chipLED.put("SecOPNB", plugin.audio.chipLED.get("SecOPNB"));
 
-        chips[128 + 4] = plugin.audio.chipRegister.chipLED.get("SecOPM");
-        plugin.audio.chipRegister.chipLED.put("SecOPM", plugin.audio.chipRegister.chipLED.get("SecOPM"));
-        chips[128 + 5] = plugin.audio.chipRegister.chipLED.get("SecDCSG");
-        plugin.audio.chipRegister.chipLED.put("SecDCSG", plugin.audio.chipRegister.chipLED.get("SecDCSG"));
-        chips[128 + 6] = plugin.audio.chipRegister.chipLED.get("SecRF5C");
-        plugin.audio.chipRegister.chipLED.put("SecRF5C", plugin.audio.chipRegister.chipLED.get("SecRF5C"));
-        chips[128 + 7] = plugin.audio.chipRegister.chipLED.get("SecPWM");
-        plugin.audio.chipRegister.chipLED.put("SecPWM", plugin.audio.chipRegister.chipLED.get("SecPWM"));
+        chips[128 + 4] = plugin.audio.chipLED.get("SecOPM");
+        plugin.audio.chipLED.put("SecOPM", plugin.audio.chipLED.get("SecOPM"));
+        chips[128 + 5] = plugin.audio.chipLED.get("SecDCSG");
+        plugin.audio.chipLED.put("SecDCSG", plugin.audio.chipLED.get("SecDCSG"));
+        chips[128 + 6] = plugin.audio.chipLED.get("SecRF5C");
+        plugin.audio.chipLED.put("SecRF5C", plugin.audio.chipLED.get("SecRF5C"));
+        chips[128 + 7] = plugin.audio.chipLED.get("SecPWM");
+        plugin.audio.chipLED.put("SecPWM", plugin.audio.chipLED.get("SecPWM"));
 
-        chips[128 + 8] = plugin.audio.chipRegister.chipLED.get("SecOKI5");
-        plugin.audio.chipRegister.chipLED.put("SecOKI5", plugin.audio.chipRegister.chipLED.get("SecOKI5"));
-        chips[128 + 9] = plugin.audio.chipRegister.chipLED.get("SecOKI9");
-        plugin.audio.chipRegister.chipLED.put("SecOKI9", plugin.audio.chipRegister.chipLED.get("SecOKI9"));
-        chips[128 + 10] = plugin.audio.chipRegister.chipLED.get("SecC140");
-        plugin.audio.chipRegister.chipLED.put("SecC140", plugin.audio.chipRegister.chipLED.get("SecC140"));
-        chips[128 + 11] = plugin.audio.chipRegister.chipLED.get("SecSPCM");
-        plugin.audio.chipRegister.chipLED.put("SecSPCM", plugin.audio.chipRegister.chipLED.get("SecSPCM"));
+        chips[128 + 8] = plugin.audio.chipLED.get("SecOKI5");
+        plugin.audio.chipLED.put("SecOKI5", plugin.audio.chipLED.get("SecOKI5"));
+        chips[128 + 9] = plugin.audio.chipLED.get("SecOKI9");
+        plugin.audio.chipLED.put("SecOKI9", plugin.audio.chipLED.get("SecOKI9"));
+        chips[128 + 10] = plugin.audio.chipLED.get("SecC140");
+        plugin.audio.chipLED.put("SecC140", plugin.audio.chipLED.get("SecC140"));
+        chips[128 + 11] = plugin.audio.chipLED.get("SecSPCM");
+        plugin.audio.chipLED.put("SecSPCM", plugin.audio.chipLED.get("SecSPCM"));
 
-        chips[128 + 12] = plugin.audio.chipRegister.chipLED.get("SecAY10");
-        plugin.audio.chipRegister.chipLED.put("SecAY10", plugin.audio.chipRegister.chipLED.get("SecAY10"));
-        chips[128 + 13] = plugin.audio.chipRegister.chipLED.get("SecOPLL");
-        plugin.audio.chipRegister.chipLED.put("SecOPLL", plugin.audio.chipRegister.chipLED.get("SecOPLL"));
-        chips[128 + 14] = plugin.audio.chipRegister.chipLED.get("SecHuC");
-        plugin.audio.chipRegister.chipLED.put("SecHuC", plugin.audio.chipRegister.chipLED.get("SecHuC"));
-        chips[128 + 15] = plugin.audio.chipRegister.chipLED.get("SecC352");
-        plugin.audio.chipRegister.chipLED.put("SecC352", plugin.audio.chipRegister.chipLED.get("SecC352"));
-        chips[128 + 16] = plugin.audio.chipRegister.chipLED.get("SecK054539");
-        plugin.audio.chipRegister.chipLED.put("SecK054539", plugin.audio.chipRegister.chipLED.get("SecK054539"));
-        chips[128 + 17] = plugin.audio.chipRegister.chipLED.get("SecRF5C68");
-        plugin.audio.chipRegister.chipLED.put("SecRF5C68", plugin.audio.chipRegister.chipLED.get("SecRF5C68"));
+        chips[128 + 12] = plugin.audio.chipLED.get("SecAY10");
+        plugin.audio.chipLED.put("SecAY10", plugin.audio.chipLED.get("SecAY10"));
+        chips[128 + 13] = plugin.audio.chipLED.get("SecOPLL");
+        plugin.audio.chipLED.put("SecOPLL", plugin.audio.chipLED.get("SecOPLL"));
+        chips[128 + 14] = plugin.audio.chipLED.get("SecHuC");
+        plugin.audio.chipLED.put("SecHuC", plugin.audio.chipLED.get("SecHuC"));
+        chips[128 + 15] = plugin.audio.chipLED.get("SecC352");
+        plugin.audio.chipLED.put("SecC352", plugin.audio.chipLED.get("SecC352"));
+        chips[128 + 16] = plugin.audio.chipLED.get("SecK054539");
+        plugin.audio.chipLED.put("SecK054539", plugin.audio.chipLED.get("SecK054539"));
+        chips[128 + 17] = plugin.audio.chipLED.get("SecRF5C68");
+        plugin.audio.chipLED.put("SecRF5C68", plugin.audio.chipLED.get("SecRF5C68"));
 
         return chips;
     }

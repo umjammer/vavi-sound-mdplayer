@@ -143,7 +143,7 @@ public class frmC140 extends frmBase {
     private int searchC140Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = audio.chipRegister.getChipInfo(C140Inst.class).clock;
+        int clock = audio.mds.getChipInfo(C140Inst.class).clock;
         if (clock >= 1000000)
             clock = clock / 384;
 

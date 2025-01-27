@@ -12,7 +12,6 @@ import mdplayer.driver.Vgm;
 import mdplayer.driver.sid.Sid;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.SIDPlugin;
-import mdplayer.plugin.XGMPlugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;

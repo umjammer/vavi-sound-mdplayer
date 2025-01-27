@@ -5,7 +5,6 @@ import java.util.List;
 
 import mdplayer.PlayList;
 import mdplayer.plugin.MDLPlugin;
-import mdplayer.plugin.MDRPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;

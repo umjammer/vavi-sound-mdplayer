@@ -6,7 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdsound.instrument.PwmInst;
@@ -20,10 +20,10 @@ import mdsound.instrument.PwmInst;
  */
 public class PwmChip implements Chip {
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
     }
 

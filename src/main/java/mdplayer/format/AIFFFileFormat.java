@@ -8,7 +8,6 @@ import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.SampledPlugin;
-import mdplayer.plugin.VGMPlugin;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 

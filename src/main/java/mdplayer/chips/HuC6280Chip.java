@@ -6,7 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
@@ -22,9 +22,7 @@ import mdsound.instrument.HuC6280Inst;
  */
 public class HuC6280Chip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = {
-            setting.getHuC6280Type()[0], setting.getHuC6280Type()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getHuC6280Type();
 
     private final boolean[][] mask = {
             {false, false, false, false, false, false},
@@ -35,10 +33,10 @@ public class HuC6280Chip implements Chip {
             0, 0
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
     }
 
@@ -85,7 +83,7 @@ public class HuC6280Chip implements Chip {
         return 0;
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    private void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
     }
 

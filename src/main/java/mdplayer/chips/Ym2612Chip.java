@@ -6,20 +6,13 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdsound.instrument.MameYm2612Inst;
-import mdsound.instrument.Ym2612Inst;
-import mdsound.instrument.Ym3438Inst;
-
-import static java.lang.System.getLogger;
+import mdsound.Instrument;
 
 
 /**
@@ -30,33 +23,32 @@ import static java.lang.System.getLogger;
  */
 public class Ym2612Chip implements Chip {
 
-    private static final Logger logger = getLogger(Ym2612Chip.class.getName());
+    private final Setting.ChipType2[] chipTypes = setting.getYM2612Type();
 
-    private final Setting.ChipType2[] chipTypes = {
-            setting.getYM2612Type()[0], setting.getYM2612Type()[1]
-    };
+    private final Class<? extends Instrument>[] inst = new Class[2];
+
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][][] register = {
+    public final int[][][] register = {
             {null, null},
             {null, null}
     };
-    public int[][] keyOn = {null, null};
-    public int[][] volume = {
+    public final int[][] keyOn = {null, null};
+    public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
-    public int[][] ch3SlotVolume = {new int[4], new int[4]};
+    public final int[][] ch3SlotVolume = {new int[4], new int[4]};
     private final int[] fadeout = {0, 0};
     private final boolean[][] mask = {
             {false, false, false, false, false, false},
             {false, false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -74,6 +66,9 @@ public class Ym2612Chip implements Chip {
             keyOn[chipId] = new int[] {0, 0, 0, 0, 0, 0};
 
             fadeout[chipId] = 0;
+
+            //
+            inst[chipId] = EnmChip.YM2612.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -119,7 +114,7 @@ public class Ym2612Chip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
             register[chipId][port][addr] = data;
-            context.plugin(MidiPlugin.class).export.outMIDIData(EnmChip.YM2612, chipId, port, addr, data, 0, frameCounter);
+            context.chipRegister.plugin(MidiPlugin.class).export.outMIDIData(EnmChip.YM2612, chipId, port, addr, data, 0, frameCounter);
         }
 
         if ((model == EnmModel.RealModel && chipTypes[chipId].getUseReal()[0]) || (model == EnmModel.VirtualModel && !chipTypes[chipId].getUseReal()[0])) {
@@ -205,20 +200,11 @@ public class Ym2612Chip implements Chip {
                 // only PCM (6Ch) is played by emulator
                 if (chipTypes[chipId].getRealChipInfo()[0].getOnlyPCMEmulation()) {
                     if (port == 0 && addr == 0x2b) {
-                        //if (chipTypes[chipId].getUseEmu()[0])
-                        context.mds.write(Ym2612Inst.class, chipId, port, addr, data);
-                        //if (chipTypes[chipId].getUseEmu()[1]) mds.write(YM3438Inst.class, chipId, port, addr, data);
-                        //if (chipTypes[chipId].getUseEmu()[2]) mds.write(YM2612mameInst.class, chipId, port, addr, data);
+                        context.mds.write(inst[chipId], chipId, port, addr, data);
                     } else if (port == 0 && addr == 0x2a) {
-                        //if (chipTypes[chipId].getUseEmu()[0])
-                        context.mds.write(Ym2612Inst.class, chipId, port, addr, data);
-                        //if (chipTypes[chipId].getUseEmu()[1]) mds.write(YM3438Inst.class, chipId, port, addr, data);
-                        //if (chipTypes[chipId].getUseEmu()[2]) mds.write(YM2612mameInst.class, chipId, port, addr, data);
+                        context.mds.write(inst[chipId], chipId, port, addr, data);
                     } else if (port == 1 && addr == 0xb6) {
-                        //if (chipTypes[chipId].getUseEmu()[0])
-                        context.mds.write(Ym2612Inst.class, chipId, port, addr, data);
-                        //if (chipTypes[chipId].getUseEmu()[1]) mds.write(YM3438Inst.class, chipId, port, addr, data);
-                        //if (chipTypes[chipId].getUseEmu()[2]) mds.write(YM2612mameInst.class, chipId, port, addr, data);
+                        context.mds.write(inst[chipId], chipId, port, addr, data);
                     }
                 }
             } else {
@@ -248,12 +234,7 @@ public class Ym2612Chip implements Chip {
 
                 // Send data to MDSound only when using the emulator
 //logger.log(Level.TRACE, "setYM2612: chipId: %d, port: %02X, addr: %02X, data: %02X".formatted(chipId, port, addr, data));
-                if (chipTypes[chipId].getUseEmu()[0])
-                    context.mds.write(Ym2612Inst.class, chipId, port, addr, data);
-                if (chipTypes[chipId].getUseEmu()[1])
-                    context.mds.write(Ym3438Inst.class, chipId, port, addr, data);
-                if (chipTypes[chipId].getUseEmu()[2])
-                    context.mds.write(MameYm2612Inst.class, chipId, port, addr, data);
+                context.mds.write(inst[chipId], chipId, port, addr, data);
             }
         } else {
 
@@ -277,7 +258,7 @@ public class Ym2612Chip implements Chip {
         }
     }
 
-    public void setMask(int chipId, int ch, boolean mask) {
+    private void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
 
         int c = (ch < 3) ? ch : (ch - 3);
@@ -294,9 +275,9 @@ public class Ym2612Chip implements Chip {
         write(chipId, p, 0x4c + c, register[chipId][p][0x4c + c], EnmModel.RealModel, -1);
 
         if (mask)
-            context.mds.inst(Ym2612Inst.class).setMask(chipId, ch);
+            context.mds.inst(inst[chipId]).setMask(chipId, ch);
         else
-            context.mds.inst(Ym2612Inst.class).resetMask(chipId, ch);
+            context.mds.inst(inst[chipId]).resetMask(chipId, ch);
     }
 
     public void setSyncWait(int chipId, int wait) {
@@ -338,11 +319,7 @@ public class Ym2612Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
     }
 
     @Override

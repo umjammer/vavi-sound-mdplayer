@@ -6,17 +6,14 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
+import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdsound.Instrument;
 import mdsound.instrument.Ym3812Inst;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -27,15 +24,13 @@ import static java.lang.System.getLogger;
  */
 public class Ym3812Chip implements Chip {
 
-    private static final Logger logger = getLogger(Ym3812Chip.class.getName());
+    private final Setting.ChipType2[] chipTypes = setting.getYM3812Type();
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYM3812Type()[0], setting.getYM3812Type()[1]
-    };
+    private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][] register = {null, null};
+    public final int[][] register = {null, null};
 
     private final int[] fadeout = {0, 0};
 
@@ -46,10 +41,10 @@ public class Ym3812Chip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
         for (int chipId = 0; chipId < 2; chipId++) {
             register[chipId] = new int[0x100];
@@ -59,6 +54,9 @@ public class Ym3812Chip implements Chip {
             }
 
             fadeout[chipId] = 0;
+
+            //
+            inst[chipId] = EnmChip.YM3812.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -161,7 +159,7 @@ public class Ym3812Chip implements Chip {
     private void _write(int chipId, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(Ym3812Inst.class, chipId, 0, addr, data);
+                context.mds.write(inst[chipId], chipId, 0, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
@@ -217,11 +215,7 @@ public class Ym3812Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
     }
 
     @Override

@@ -6,17 +6,13 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
+import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdsound.instrument.Ym2610Inst;
-
-import static java.lang.System.getLogger;
+import mdsound.Instrument.AdpcmEnabledInstrument;
 
 
 /**
@@ -27,38 +23,36 @@ import static java.lang.System.getLogger;
  */
 public class Ym2610Chip implements Chip {
 
-    private static final Logger logger = getLogger(Ym2610Chip.class.getName());
+    private final Setting.ChipType2[] chipTypes = setting.getYM2610Type();
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYM2610Type()[0], setting.getYM2610Type()[1]
-    };
+    private final Class<? extends AdpcmEnabledInstrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
     private final RSoundChip[] realChipsEA = {null, null};
     private final RSoundChip[] realChipsEB = {null, null};
 
-    public int[][][] register = {
+    public final int[][][] register = {
             {null, null},
             {null, null}
     };
 
-    public int[][] keyOn = {null, null};
+    public final int[][] keyOn = {null, null};
 
-    public int[][] volume = {
+    public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
 
-    public int[][] ch3SlotVolume = {new int[4], new int[4]};
+    public final int[][] ch3SlotVolume = {new int[4], new int[4]};
 
-    public int[][][] rhythmVolume = {
+    public final int[][][] rhythmVolume = {
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]},
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]}
     };
 
-    public int[][] adpcmVolume = {new int[2], new int[2]};
+    public final  int[][] adpcmVolume = {new int[2], new int[2]};
 
-    public int[] adpcmPan = {0, 0};
+    public final int[] adpcmPan = {0, 0};
 
     private final int[] nowFadeoutVol = {0, 0};
 
@@ -67,10 +61,11 @@ public class Ym2610Chip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    @SuppressWarnings("unchecked")
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -88,6 +83,9 @@ public class Ym2610Chip implements Chip {
             keyOn[chipId] = new int[] {0, 0, 0, 0, 0, 0};
 
             nowFadeoutVol[chipId] = 0;
+
+            //
+            inst[chipId] = (Class<? extends AdpcmEnabledInstrument>) EnmChip.YM2610.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -317,7 +315,7 @@ public class Ym2610Chip implements Chip {
             if ((chipTypes[chipId].getUseReal().length > 0 && !chipTypes[chipId].getUseReal()[0])
                     && (chipTypes[chipId].getUseReal().length < 2 || (chipTypes[chipId].getUseReal().length > 1 && !chipTypes[chipId].getUseReal()[1]))
             ) {
-                context.mds.write(Ym2610Inst.class, chipId, dPort, dAddr, dData);
+                context.mds.write(inst[chipId], chipId, dPort, dAddr, dData);
             }
         } else {
             if (realChips[chipId] != null) realChips[chipId].setRegister(dPort * 0x100 + dAddr, dData);
@@ -344,7 +342,7 @@ public class Ym2610Chip implements Chip {
 
     public void writeAdpcmA(int chipId, byte[] adpcmA, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
-            context.mds.inst(Ym2610Inst.class).writeAdpcmA(chipId, adpcmA);
+            context.mds.inst(inst[chipId]).writeAdpcmA(chipId, adpcmA);
         } else {
             if (realChips[chipId] != null) {
                 int dPort = 2;
@@ -361,7 +359,7 @@ public class Ym2610Chip implements Chip {
                     realChips[chipId].setRegister((dPort << 8) | 0x04, b & 0xff);
                 }
 
-                context.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
             if (realChipsEB[chipId] != null) {
                 int dPort = 2;
@@ -378,7 +376,7 @@ public class Ym2610Chip implements Chip {
                     realChipsEB[chipId].setRegister((dPort << 8) | 0x10004, b & 0xff);
                 }
 
-                context.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }
@@ -400,7 +398,7 @@ public class Ym2610Chip implements Chip {
                     realChips[chipId].setRegister((dPort << 8) | 0x04, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
             if (realChipsEB[chipId] != null) {
                 int dPort = 2;
@@ -416,14 +414,14 @@ public class Ym2610Chip implements Chip {
                     realChipsEB[chipId].setRegister((dPort << 8) | 0x10004, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }
 
     public void writeAdpcmB(int chipId, byte[] adpcmB, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
-            context.mds.inst(Ym2610Inst.class).writeAdpcmB(chipId, adpcmB);
+            context.mds.inst(inst[chipId]).writeAdpcmB(chipId, adpcmB);
         } else {
             if (realChips[chipId] != null) {
                 int dPort = 2;
@@ -440,7 +438,7 @@ public class Ym2610Chip implements Chip {
                     realChips[chipId].setRegister((dPort << 8) | 0x04, b & 0xff);
                 }
 
-                context.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
             if (realChipsEB[chipId] != null) {
                 int dPort = 2;
@@ -457,7 +455,7 @@ public class Ym2610Chip implements Chip {
                     realChipsEB[chipId].setRegister((dPort << 8) | 0x10004, b & 0xff);
                 }
 
-                context.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }
@@ -479,7 +477,7 @@ public class Ym2610Chip implements Chip {
                     realChips[chipId].setRegister((dPort << 8) | 0x04, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
             if (realChipsEB[chipId] != null) {
                 int dPort = 2;
@@ -495,7 +493,7 @@ public class Ym2610Chip implements Chip {
                     realChipsEB[chipId].setRegister((dPort << 8) | 0x10004, buf[srcStartAddr + cnt] & 0xff);
                 }
 
-                context.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }
@@ -586,7 +584,7 @@ public class Ym2610Chip implements Chip {
 //        if (ctYM2612.UseScci) {
             return ch3SlotVolume[chipId];
 //        }
-//        return context.mds.inst(Ym2610Inst.class).readFMCh3SlotVolume();
+//        return context.mds.inst(inst[chipId]).readFMCh3SlotVolume();
     }
 
     public int[][] read(int chipId) {
@@ -602,10 +600,6 @@ public class Ym2610Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
     }
 }

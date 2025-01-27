@@ -163,7 +163,7 @@ public class frmC352 extends frmBase {
     private int searchC352Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = audio.chipRegister.getChipInfo(C352Inst.class).clock;
+        int clock = audio.mds.getChipInfo(C352Inst.class).clock;
 
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {

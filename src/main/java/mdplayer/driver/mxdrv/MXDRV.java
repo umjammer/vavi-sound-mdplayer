@@ -26,7 +26,7 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
-import mdsound.instrument.X68SoundYm2151Inst;
+import mdsound.instrument.X68kYm2151Inst;
 import mdsound.x68sound.X68Sound;
 import vavi.util.ByteUtil;
 
@@ -288,7 +288,7 @@ public class MXDRV extends BaseDriver {
         return true;
     }
 
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime, X68SoundYm2151Inst mdxPCM) {
+    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime, X68kYm2151Inst mdxPCM) {
         this.vgmBuf = vgmBuf;
         this.model = model;
         this.useChip = useChip;
@@ -528,7 +528,7 @@ public class MXDRV extends BaseDriver {
     public String playingFileName = "";
     public Tuple<String, byte[]> extendFile = null;
     public int timerA = 0, timerB = 0;
-    X68SoundYm2151Inst mdxPCM = null;
+    X68kYm2151Inst mdxPCM = null;
 
     // OPM レジスタ $1B の内容
     private byte opmReg1B;
@@ -550,11 +550,11 @@ public class MXDRV extends BaseDriver {
 
     //static byte MXWORK_PCM8;
     //private MXWORK_PCM8 PCM8 = null;
-    private final int PCM8 = 1;
+    private static final int PCM8 = 1;
 
     // 
 
-    private final int FAKEA6S0004 = 0;
+    private static final int FAKEA6S0004 = 0;
 
     private int D0;
     private int D1;

@@ -7,10 +7,12 @@ import java.util.List;
 
 import mdplayer.Audio;
 import mdplayer.Common;
+import mdplayer.chips.MidiPlugin;
 import mdplayer.driver.nsf.Nsf;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
+import mdsound.MDSound.Chip;
 import mdsound.instrument.NesInst;
 
 import static java.lang.System.getLogger;
@@ -58,7 +60,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             //stop();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             audio.vgmFadeout = false;
             audio.vgmFadeoutCounter = 1.0;
@@ -69,7 +71,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             audio.chipRegister.clearFadeoutVolume();
 
-            audio.chipRegister.resetChips();
+            audio.chipRegister.reset();
 
             useChip.clear();
 
@@ -79,9 +81,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
             hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipRegister.chipLED.clear();
-            audio.chipRegister.chipLED.put("PriNES", 1);
-            audio.chipRegister.chipLED.put("PriDMC", 1);
+            audio.chipLED.clear();
+            audio.chipLED.put("PriNES", 1);
+            audio.chipLED.put("PriDMC", 1);
 
             audio.masterVolume = setting.getBalance().getMasterVolume();
 
@@ -98,12 +100,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     return false;
             }
 
-            if (((Nsf) audio.driverVirtual).useFds) audio.chipRegister.chipLED.put("PriFDS", 1);
-            if (((Nsf) audio.driverVirtual).useFme7) audio.chipRegister.chipLED.put("PriFME7", 1);
-            if (((Nsf) audio.driverVirtual).useMmc5) audio.chipRegister.chipLED.put("PriMMC5", 1);
-            if (((Nsf) audio.driverVirtual).useN106) audio.chipRegister.chipLED.put("PriN106", 1);
-            if (((Nsf) audio.driverVirtual).useVrc6) audio.chipRegister.chipLED.put("PriVRC6", 1);
-            if (((Nsf) audio.driverVirtual).useVrc7) audio.chipRegister.chipLED.put("PriVRC7", 1);
+            if (((Nsf) audio.driverVirtual).useFds) audio.chipLED.put("PriFDS", 1);
+            if (((Nsf) audio.driverVirtual).useFme7) audio.chipLED.put("PriFME7", 1);
+            if (((Nsf) audio.driverVirtual).useMmc5) audio.chipLED.put("PriMMC5", 1);
+            if (((Nsf) audio.driverVirtual).useN106) audio.chipLED.put("PriN106", 1);
+            if (((Nsf) audio.driverVirtual).useVrc6) audio.chipLED.put("PriVRC6", 1);
+            if (((Nsf) audio.driverVirtual).useVrc7) audio.chipLED.put("PriVRC7", 1);
 
             MDSound.Chip chip;
 
@@ -201,9 +203,11 @@ logger.log(Level.WARNING, "cannot start: " + this);
             ((Nsf) audio.driverVirtual).cFME7 = chip;
             useChip.add(Common.EnmChip.FME7);
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips.toArray(MDSound.Chip[]::new));
+            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
 
-            audio.chipRegister.initChipRegisterNSF(lstChips.toArray(new MDSound.Chip[0]));
+            lstChips.toArray(new Chip[0]);
+
+            audio.chipRegister.plugin(MidiPlugin.class).initChipRegisterNSF();
 
             //Play
 

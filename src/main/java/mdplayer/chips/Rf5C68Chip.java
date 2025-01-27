@@ -6,16 +6,11 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
-import mdsound.chips.Rf5c68;
+import mdsound.chips.Rf5C68;
 import mdsound.instrument.Rf5C68Inst;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -26,17 +21,15 @@ import static java.lang.System.getLogger;
  */
 public class Rf5C68Chip implements Chip {
 
-    private static final Logger logger = getLogger(Rf5C68Chip.class.getName());
-
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
     }
 
@@ -56,14 +49,14 @@ public class Rf5C68Chip implements Chip {
             context.mds.inst(Rf5C68Inst.class).resetMask(chipId, ch);
     }
 
-    public void writePcm(int chipId, int stAdr, int dataSize, byte[] vgmBuf, int vgmAdr, EnmModel model) {
+    public void writePcm(int chipId, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriRF5C68", 2);
         else
             context.chipLED.put("SecRF5C68", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(Rf5C68Inst.class).writePcm(chipId, stAdr, dataSize, vgmBuf, vgmAdr);
+            context.mds.inst(Rf5C68Inst.class).writePcm(chipId, buf, offset, length, srcOffset);
     }
 
     public void write(int chipId, int adr, int data, EnmModel model) {
@@ -87,7 +80,7 @@ public class Rf5C68Chip implements Chip {
             context.mds.inst(Rf5C68Inst.class).writeMemory(chipId, offset, data);
     }
 
-    public Rf5c68 read(int chipId) {
+    public Rf5C68 read(int chipId) {
         return context.mds.inst(Rf5C68Inst.class).getChip(chipId);
     }
 
@@ -96,10 +89,6 @@ public class Rf5C68Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch) {
-        try {
-            setMask(chipId, ch, false);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false);
     }
 }

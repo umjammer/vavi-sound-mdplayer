@@ -139,7 +139,7 @@ public class frmSN76489 extends frmBase {
                     //Tone Ch
                     for (int ch = 0; ch < 3; ch++) {
                         if (psgRegister[ch * 2 + 1] != 15) {
-                            float fTone = audio.chipRegister.getChipInfo(Sn76489Inst.class).clock / (2.0f * psgRegister[ch * 2] * 16.0f);
+                            float fTone = audio.mds.getChipInfo(Sn76489Inst.class).clock / (2.0f * psgRegister[ch * 2] * 16.0f);
 
                             newParam.channels[ch].note = searchSSGNote(fTone);
                         } else {

@@ -6,7 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdsound.chips.OkiM6258;
@@ -23,12 +23,12 @@ public class OkiM6258Chip implements Chip {
 
     private final boolean[] mask = {false, false};
 
-    public boolean[] keyOn = {false, false};
+    public final boolean[] keyOn = {false, false};
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
     }
 

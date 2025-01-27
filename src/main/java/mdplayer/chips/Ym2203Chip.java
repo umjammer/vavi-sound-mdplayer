@@ -6,19 +6,14 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
+import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RC86ctlSoundChip;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdsound.instrument.Ym2203Inst;
-import mdsound.instrument.YmFmYm2203Inst;
-
-import static java.lang.System.getLogger;
+import mdsound.Instrument;
 
 
 /**
@@ -29,27 +24,26 @@ import static java.lang.System.getLogger;
  */
 public class Ym2203Chip implements Chip {
 
-    private static final Logger logger = getLogger(Ym2203Chip.class.getName());
+    private final Setting.ChipType2[] chipTypes = setting.getYM2203Type();
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYM2203Type()[0], setting.getYM2203Type()[1]
-    };
+    private final Class<? extends Instrument>[] inst = new Class[2];
+
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][] fmRegister = {null, null};
-    public int[][] fmKeyOn = {null, null};
-    public int[][] fmCh3SlotVolume = {new int[4], new int[4]};
+    public final int[][] fmRegister = {null, null};
+    public final int[][] fmKeyOn = {null, null};
+    public final int[][] fmCh3SlotVolume = {new int[4], new int[4]};
     private final int[] nowFadeoutVol = {0, 0};
-    public int[][] fmVolume = {new int[9], new int[9]};
+    public final int[][] fmVolume = {new int[9], new int[9]};
     private final boolean[][] maskFM = {
             {false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -60,6 +54,9 @@ public class Ym2203Chip implements Chip {
             fmKeyOn[chipId] = new int[] {0, 0, 0, 0, 0, 0};
 
             nowFadeoutVol[chipId] = 0;
+
+            //
+            inst[chipId] = EnmChip.YM2203.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -181,11 +178,7 @@ public class Ym2203Chip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                if (setting.getYM2203Type()[0].getUseEmu()[0]) {
-                    context.mds.write(Ym2203Inst.class, chipId, 0, addr, data);
-                } else if (setting.getYM2203Type()[0].getUseEmu()[1]) {
-                    context.mds.write(YmFmYm2203Inst.class, chipId, 0, addr, data);
-                }
+                context.mds.write(inst[chipId], chipId, 0, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
@@ -198,11 +191,7 @@ public class Ym2203Chip implements Chip {
     private void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                if (setting.getYM2203Type()[chipId].getUseEmu()[0]) {
-                    context.mds.write(Ym2203Inst.class, chipId, 0, addr, data);
-                } else if (setting.getYM2203Type()[chipId].getUseEmu()[1]) {
-                    context.mds.write(YmFmYm2203Inst.class, chipId, 0, addr, data);
-                }
+                context.mds.write(inst[chipId], chipId, 0, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
@@ -338,7 +327,7 @@ public class Ym2203Chip implements Chip {
 //        if (ctYM2612.UseScci) {
             return fmCh3SlotVolume[chipId];
 //        }
-//        return context.mds.inst(Ym2203Inst.class).readFMCh3SlotVolume();
+//        return context.mds.inst(inst[chipId]).readFMCh3SlotVolume();
     }
 
     public int[] read(int chipId) {
@@ -354,11 +343,7 @@ public class Ym2203Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch, boolean stopped) {
-        try {
-            setMask(chipId, ch, false, stopped);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false, stopped);
     }
 
     @Override

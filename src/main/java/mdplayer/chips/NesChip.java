@@ -9,8 +9,8 @@ package mdplayer.chips;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
+import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.ChipRegister;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdsound.instrument.NesInst;
@@ -63,10 +63,10 @@ public class NesChip implements Chip {
 
     private final ChipKeyInfo[] vrc7KeyOn = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
     }
 
@@ -196,7 +196,7 @@ public class NesChip implements Chip {
                     break;
             }
         }
-        context.mds.inst(NesInst.class).setNESMask(chipId, ch);
+        context.mds.inst(NesInst.class).setMask(chipId, ch);
     }
 
     public void resetMask(int chipId, int ch) {

@@ -6,21 +6,13 @@
 
 package mdplayer.chips;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdsound.instrument.MameYm2151Inst;
-import mdsound.instrument.X68SoundYm2151Inst;
-import mdsound.instrument.Ym2151Inst;
-import mdsound.instrument.YmFmYm2151Inst;
-
-import static java.lang.System.getLogger;
+import mdsound.Instrument;
 
 
 /**
@@ -31,17 +23,15 @@ import static java.lang.System.getLogger;
  */
 public class Ym2151Chip implements Chip {
 
-    private static final Logger logger = getLogger(Ym2151Chip.class.getName());
+    private final Setting.ChipType2[] chipTypes = setting.getYM2151Type();
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getYM2151Type()[0], setting.getYM2151Type()[1]
-    };
+    private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][] register = {null, null};
-    public int[][] keyOn = {null, null};
-    public int[][] volume = {
+    public final int[][] register = {null, null};
+    public final int[][] keyOn = {null, null};
+    public final int[][] volume = {
             {0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0}
     };
@@ -51,13 +41,13 @@ public class Ym2151Chip implements Chip {
             {false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false}
     };
-    public int[] amd = {-1, -1};
-    public int[] pmd = {-1, -1};
+    public final int[] amd = {-1, -1};
+    public final int[] pmd = {-1, -1};
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -68,6 +58,9 @@ public class Ym2151Chip implements Chip {
             keyOn[chipId] = new int[] {0, 0, 0, 0, 0, 0, 0, 0};
 
             fadeout[chipId] = 0;
+
+            //
+            inst[chipId] = EnmChip.YM2151.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -111,7 +104,7 @@ public class Ym2151Chip implements Chip {
         if ((model == EnmModel.VirtualModel && (chipTypes[chipId] == null || !chipTypes[chipId].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (realChips != null && realChips[chipId] != null))) {
             register[chipId][addr] = data;
-            context.plugin(MidiPlugin.class).export.outMIDIData(EnmChip.YM2151, chipId, port, addr, data, correction, frameCounter);
+            context.chipRegister.plugin(MidiPlugin.class).export.outMIDIData(EnmChip.YM2151, chipId, port, addr, data, correction, frameCounter);
         }
 
         if ((model == EnmModel.RealModel && chipTypes[chipId].getUseReal()[0]) ||
@@ -149,14 +142,7 @@ public class Ym2151Chip implements Chip {
                     if (mask[chipId][ch]) {
                         if (model == EnmModel.VirtualModel) {
                             if (!chipTypes[chipId].getUseReal()[0]) {
-                                if (chipTypes[chipId].getUseEmu()[0])
-                                    context.mds.write(Ym2151Inst.class, chipId, 0, 0x60 + i * 8 + ch, 127);
-                                if (chipTypes[chipId].getUseEmu()[1])
-                                    context.mds.write(MameYm2151Inst.class, chipId, 0, 0x60 + i * 8 + ch, 127);
-                                if (chipTypes[chipId].getUseEmu()[2])
-                                    context.mds.write(X68SoundYm2151Inst.class, chipId, 0, 0x60 + i * 8 + ch, 127);
-                                if (chipTypes[chipId].getUseEmu()[2])
-                                    context.mds.write(YmFmYm2151Inst.class, chipId, 0, 0x60 + i * 8 + ch, 127);
+                                context.mds.write(inst[chipId], chipId, 0, 0x60 + i * 8 + ch, 127);
                             }
                         } else {
                             if (realChips != null && realChips[chipId] != null)
@@ -177,14 +163,7 @@ public class Ym2151Chip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                if (chipTypes[chipId].getUseEmu()[0])
-                    context.mds.write(Ym2151Inst.class, chipId, 0, addr, data);
-                if (chipTypes[chipId].getUseEmu()[1])
-                    context.mds.write(MameYm2151Inst.class, chipId, 0, addr, data);
-                if (chipTypes[chipId].getUseEmu()[2])
-                    context.mds.write(X68SoundYm2151Inst.class, chipId, 0, addr, data);
-                if (chipTypes[chipId].getUseEmu()[3])
-                    context.mds.write(YmFmYm2151Inst.class, chipId, 0, addr, data);
+                context.mds.write(inst[chipId], chipId, 0, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
@@ -219,14 +198,7 @@ public class Ym2151Chip implements Chip {
     private void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                if (chipTypes[chipId].getUseEmu()[0])
-                    context.mds.write(Ym2151Inst.class, chipId, 0, addr, data);
-                if (chipTypes[chipId].getUseEmu()[1])
-                    context.mds.write(MameYm2151Inst.class, chipId, 0, addr, data);
-                if (chipTypes[chipId].getUseEmu()[2])
-                    context.mds.write(X68SoundYm2151Inst.class, chipId, 0, addr, data);
-                if (chipTypes[chipId].getUseEmu()[3])
-                    context.mds.write(YmFmYm2151Inst.class, chipId, 0, addr, data);
+                context.mds.write(inst[chipId], chipId, 0, addr, data);
             }
         } else {
             if (realChips[chipId] != null)
@@ -283,7 +255,7 @@ public class Ym2151Chip implements Chip {
         }
     }
 
-    public void setMask(int chipId, int ch, boolean mask, boolean noSend /* = false */) {
+    private void setMask(int chipId, int ch, boolean mask, boolean noSend /* = false */) {
         this.mask[chipId][ch] = mask;
 
         if (noSend) return;
@@ -310,7 +282,7 @@ public class Ym2151Chip implements Chip {
             return;
 
         if (realChips[chipId] != null && chipTypes[chipId].getRealChipInfo()[0].getUseWait()) {
-            context.plugin(RealChipPlugin.class).realChip.SendData();
+            context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             while (!realChips[chipId].isBufferEmpty()) {
             }
         }
@@ -367,11 +339,7 @@ public class Ym2151Chip implements Chip {
     }
 
     public void resetMask(int chipId, int ch, boolean stopped) {
-        try {
-            setMask(chipId, ch, false, stopped);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-        }
+        setMask(chipId, ch, false, stopped);
     }
 
     @Override

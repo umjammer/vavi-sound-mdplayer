@@ -28,12 +28,10 @@ public class DacControl {
 
     private static final int MAX_CHIPS = 0xff;
     private final DacControl_[] DACData = new DacControl_[MAX_CHIPS];
-    private final Setting setting;
     public EnmModel model = EnmModel.VirtualModel;
     public ChipRegister chipRegister = null;
 
-    public DacControl(Setting setting) {
-        this.setting = setting;
+    public DacControl() {
     }
 
     public void update(int chipId, int samples) {

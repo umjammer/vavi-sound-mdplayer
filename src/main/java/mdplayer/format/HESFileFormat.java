@@ -12,7 +12,6 @@ import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.hes.Hes;
 import mdplayer.plugin.HESPlugin;
-import mdplayer.plugin.MDLPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;

@@ -6,7 +6,7 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
@@ -23,9 +23,8 @@ import mdsound.instrument.SegaPcmInst;
  */
 public class SegaPcmChip implements Chip {
 
-    private final Setting.ChipType2[] chipTypes = new Setting.ChipType2[] {
-            setting.getSEGAPCMType()[0], setting.getSEGAPCMType()[1]
-    };
+    private final Setting.ChipType2[] chipTypes = setting.getSEGAPCMType();
+
     private final RSoundChip[] realChips = {null, null};
 
     private final boolean[][] mask = {
@@ -33,18 +32,18 @@ public class SegaPcmChip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,}
     };
 
-    public byte[][] register = {
+    public final byte[][] register = {
             null, null
     };
 
-    public boolean[][] keyOn = {
+    public final boolean[][] keyOn = {
             null, null
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    public void init(Audio context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -119,7 +118,7 @@ public class SegaPcmChip implements Chip {
                 }
                 realChips[chipId].setRegister(0x10006, romSize);
 
-                context.plugin(RealChipPlugin.class).realChip.SendData();
+                context.chipRegister.plugin(RealChipPlugin.class).realChip.SendData();
             }
         }
     }

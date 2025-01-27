@@ -9,7 +9,6 @@ import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.mid.MID;
 import mdplayer.plugin.MIDPlugin;
-import mdplayer.plugin.PMDPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;

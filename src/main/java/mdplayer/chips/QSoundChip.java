@@ -6,11 +6,12 @@
 
 package mdplayer.chips;
 
-import mdplayer.ChipRegister;
+import mdplayer.Audio;
 import mdplayer.Chip;
+import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
-import mdsound.instrument.CtrQSoundInst;
-import mdsound.instrument.QSoundInst;
+import mdplayer.Setting;
+import mdsound.Instrument.PcmEnabledInstrument;
 
 
 /**
@@ -21,6 +22,10 @@ import mdsound.instrument.QSoundInst;
  */
 public class QSoundChip implements Chip {
 
+    private final Setting.ChipType2[] chipTypes = setting.getQSoundType();
+
+    private final Class<? extends PcmEnabledInstrument>[] inst = new Class[2];
+
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false,},
@@ -28,11 +33,17 @@ public class QSoundChip implements Chip {
                     false, false, false,}
     };
 
-    private ChipRegister context;
+    private Audio context;
 
     @Override
-    public void init(ChipRegister context) {
+    @SuppressWarnings("unchecked")
+    public void init(Audio context) {
         this.context = context;
+
+        for (int chipId = 0; chipId < inst.length; chipId++) {
+            //
+            inst[chipId] = (Class<? extends PcmEnabledInstrument>) EnmChip.QSound.getInstClass(chipTypes[chipId].getEnabledId());
+        }
     }
 
     @Override
@@ -48,16 +59,9 @@ public class QSoundChip implements Chip {
             context.chipLED.put("PriQsnd", 2);
 
         if (model == EnmModel.VirtualModel) {
-            if (context.usedInstruments.containsKey(QSoundInst.class)) {
-                context.mds.write(QSoundInst.class, chipId, 0, 0, mm);
-                context.mds.write(QSoundInst.class, chipId, 0, 1, ll);
-                context.mds.write(QSoundInst.class, chipId, 0, 2, rr);
-            }
-            if (context.usedInstruments.containsKey(CtrQSoundInst.class)) {
-                context.mds.write(CtrQSoundInst.class, chipId, 0, 0, mm);
-                context.mds.write(CtrQSoundInst.class, chipId, 0, 1, ll);
-                context.mds.write(CtrQSoundInst.class, chipId, 0, 2, rr);
-            }
+            context.mds.write(inst[chipId], chipId, 0, 0, mm);
+            context.mds.write(inst[chipId], chipId, 0, 1, ll);
+            context.mds.write(inst[chipId], chipId, 0, 2, rr);
 
             register[chipId][rr] = mm * 0x100 + ll;
         } else {
@@ -74,18 +78,10 @@ public class QSoundChip implements Chip {
 
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
-        if (context.usedInstruments.containsKey(QSoundInst.class)) {
-            if (mask)
-                context.mds.inst(QSoundInst.class).setMask(chipId, ch);
-            else
-                context.mds.inst(QSoundInst.class).resetMask(chipId, ch);
-        }
-        if (context.usedInstruments.containsKey(CtrQSoundInst.class)) {
-            if (mask)
-                context.mds.inst(CtrQSoundInst.class).setMask(chipId, ch);
-            else
-                context.mds.inst(CtrQSoundInst.class).resetMask(chipId, ch);
-        }
+        if (mask)
+            context.mds.inst(inst[chipId]).setMask(chipId, ch);
+        else
+            context.mds.inst(inst[chipId]).resetMask(chipId, ch);
     }
 
     public void writePcm(int chipId,
@@ -99,12 +95,7 @@ public class QSoundChip implements Chip {
             context.chipLED.put("PriQsnd", 2);
 
         if (model == EnmModel.VirtualModel) {
-            if (context.usedInstruments.containsKey(QSoundInst.class)) {
-                context.mds.inst(QSoundInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
-            }
-            if (context.usedInstruments.containsKey(CtrQSoundInst.class)) {
-                context.mds.inst(CtrQSoundInst.class).writePcm(chipId, romSize, dataStart, dataLength, romData, srcStartAdr);
-            }
+            context.mds.inst(inst[chipId]).writePcm(chipId, romData, dataStart, dataLength, srcStartAdr, romSize);
         }
     }
 

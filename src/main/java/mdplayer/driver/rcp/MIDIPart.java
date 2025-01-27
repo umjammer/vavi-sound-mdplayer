@@ -6,7 +6,6 @@ import java.util.List;
 
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
-import org.apache.tools.ant.taskdefs.Get;
 
 
 public class MIDIPart implements Serializable {
