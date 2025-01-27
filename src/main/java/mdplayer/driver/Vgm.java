@@ -750,7 +750,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private void vcWSwanMem() {
-        plugin.audio.chipRegister.chip(WSwanChip.class).writeMemory(0, (vgmBuf[vgmAdr + 0x01] & 0xff) | ((vgmBuf[vgmAdr + 0x02] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
+        plugin.audio.chipRegister.chip(WSwanChip.class).writeMemory(0, (vgmBuf[vgmAdr + 0x02] & 0xff) | ((vgmBuf[vgmAdr + 0x01] & 0xff) << 8), vgmBuf[vgmAdr + 0x03] & 0xff, model);
         vgmAdr += 4;
     }
 
