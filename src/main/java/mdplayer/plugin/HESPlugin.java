@@ -3,15 +3,15 @@ package mdplayer.plugin;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
+import javax.annotation.RegEx;
+
 import mdplayer.Audio;
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.chips.HuC6280Chip;
 import mdplayer.driver.hes.Hes;
 import mdplayer.format.FileFormat;
-import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.HuC6280Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -32,9 +32,10 @@ public class HESPlugin extends BasePlugin {
         audio.driverVirtual = new Hes();
 
         audio.driverReal = null;
-        //if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
-        //    driverReal = new Hes();
-        //}
+//        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
+//            driverReal = new Hes();
+//        }
+        prepare();
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
@@ -46,37 +47,18 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
     /** */
     private boolean _play() {
-        audio.vgmFadeout = false;
-        audio.vgmFadeoutCounter = 1.0;
-        audio.vgmFadeoutCounterV = 0.00001;
-        vgmSpeed = 1;
-        vgmRealFadeoutVol = 0;
-        vgmRealFadeoutVolWait = 4;
-
-        audio.chipRegister.clearFadeoutVolume();
-
-        audio.chipRegister.reset();
-
         startTrdVgmReal();
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
-
-        audio.chipLED.clear();
         audio.chipLED.put("PriHuC", 1);
-
-        audio.masterVolume = setting.getBalance().getMasterVolume();
 
         //((Hes)driverVirtual).song = (byte)SongNo;
         //((Hes)driverReal).song = (byte)SongNo;
         //if (!driverVirtual.init(vgmBuf, chipRegister, enmModel.VirtualModel, new enmUseChip[] { enmUseChip.Unuse }, 0)) return false;
         //if (!driverReal.init(vgmBuf, chipRegister, enmModel.RealModel, new enmUseChip[] { enmUseChip.Unuse }, 0)) return false;
 
-        MDSound.Chip chip;
-        HuC6280Inst huc = Instrument.getInstrument(HuC6280Inst.class);
-
-        chip = new MDSound.Chip();
+        MDSound.Chip chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = huc;
+        chip.instrument = audio.chipRegister.chip(HuC6280Chip.class).instrument(0);
         chip.additionalUpdate = ((Hes) audio.driverVirtual)::additionalUpdate;
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, HuC6280Chip.class);
@@ -99,13 +81,6 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
         }
-
-        // Play
-
-        audio.paused = false;
-        oneTimeReset = false;
-
-        sleep(500);
 
         return true;
     }

@@ -61,7 +61,13 @@ public interface Chip {
     /** */
     default void softReset(EnmModel model) {}
 
+    /** */
     default Class<? extends Instrument> inst(int chipId) {
         return implementations()[activeIndex(chipId)];
+    }
+
+    /** */
+    default Instrument instrument(int chipId) {
+        return Instrument.getInstrument(inst(chipId));
     }
 }

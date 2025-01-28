@@ -55,29 +55,13 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
             return false;
         }
 
-        audio.vgmFadeout = false;
-        audio.vgmFadeoutCounter = 1.0;
-        audio.vgmFadeoutCounterV = 0.00001;
-        vgmSpeed = 1;
-        vgmRealFadeoutVol = 0;
-        vgmRealFadeoutVolWait = 4;
-
-        audio.chipRegister.clearFadeoutVolume();
-
-        audio.chipRegister.reset();
-
         startTrdVgmReal();
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
         int hiyorimiDeviceFlag = 3;
-
-        audio.chipLED.clear();
-
-        audio.masterVolume = setting.getBalance().getMasterVolume();
 
         Chip chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = Instrument.getInstrument(audio.chipRegister.chip(Ym2151Chip.class).inst(0));
+        chip.instrument = audio.chipRegister.chip(Ym2151Chip.class).instrument(0);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
         chip.clock = 4000000;
@@ -137,11 +121,6 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
             audio.errMsg = !audio.driverVirtual.errMsg.isEmpty() ? audio.driverVirtual.errMsg : (audio.driverReal != null ? audio.driverReal.errMsg : "");
             return false;
         }
-
-        audio.paused = false;
-        oneTimeReset = false;
-
-        sleep(500);
 
         return true;
     }

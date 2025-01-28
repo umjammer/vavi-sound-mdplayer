@@ -81,8 +81,10 @@ public abstract class BasePlugin implements Plugin {
         try { Thread.sleep(i); } catch (InterruptedException ignore) {}
     }
 
+    /** used chips */
     protected Map<Class<? extends mdplayer.Chip>, List<Chip>> chips = new HashMap<>();
 
+    /** put used chips */
     protected void put(Class<? extends mdplayer.Chip> chip, Chip info) {
         if (chips.containsKey(chip)) {
             chips.get(chip).add(info);
@@ -91,11 +93,13 @@ public abstract class BasePlugin implements Plugin {
         }
     }
 
+    /** check a chip existence */
     protected boolean contains(Class<? extends mdplayer.Chip> chip, int index) {
         var infos = chips.get(chip);
         return infos != null && index < infos.size();
     }
 
+    /** list for MDSound */
     protected List<Chip> flatten() {
         return chips.values().stream().flatMap(Collection::stream).toList();
     }
@@ -159,15 +163,15 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
             }
 
             switch (req.request) {
-            case Die: // Please kill yourself
-                seqDie();
-                req.setEnd(true);
-                return;
-            case Stop:
-                stop();
-                req.setEnd(true);
-                OpeManager.completeRequestToAudio(req);
-                break;
+                case Die: // Please kill yourself
+                    seqDie();
+                    req.setEnd(true);
+                    return;
+                case Stop:
+                    stop();
+                    req.setEnd(true);
+                    OpeManager.completeRequestToAudio(req);
+                    break;
             }
         }
     }
@@ -307,19 +311,44 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
         return 0; // naudioWrap.getAsioLatency(); TODO
     }
 
+    /** prepare to play */
+    protected void prepare() {
+        audio.vgmFadeout = false;
+        audio.vgmFadeoutCounter = 1.0;
+        audio.vgmFadeoutCounterV = 0.00001;
+        vgmSpeed = 1;
+        vgmRealFadeoutVol = 0;
+        vgmRealFadeoutVolWait = 4;
+
+        chips.clear();
+        hiyorimiNecessary = setting.getHiyorimiMode();
+        resetFadeOutParam();
+
+        audio.chipRegister.reset();
+        audio.chipRegister.clearFadeoutVolume();
+        audio.chipLED.clear();
+        audio.masterVolume = setting.getBalance().getMasterVolume();
+    }
+
+    /** */
     public boolean play() {
 //logger.log(Level.TRACE, "play: " + audio.stopped + ", " + audio.hashCode());
         audio.errMsg = "";
+
+        stop();
+
+        sleep(500);
+
+        audio.paused = false;
+        audio.stopped = false;
+
+        oneTimeReset = false;
 
         if (trd == null) {
             trd = new Thread(this::trdIF);
             trd.setPriority(Thread.NORM_PRIORITY);
             trd.start();
         }
-
-        stop();
-
-        chips.clear();
 
         go();
 
@@ -384,7 +413,8 @@ logger.log(Level.INFO, "dev null:" + getClass().getName());
 
     @Override
     public void stop() {
-        audio.stop();
+        if (!audio.stopped)
+            audio.stop();
     }
 
     protected void resetFadeOutParam() {

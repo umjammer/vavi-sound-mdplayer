@@ -28,6 +28,8 @@ public class K051649Chip implements Chip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    private K051649 scc_k051649 = new K051649();
+
     private int sccR_port;
 
     private int sccR_offset;
@@ -102,7 +104,7 @@ public class K051649Chip implements Chip {
                 context.mds.write(inst(chipId), chipId, 0, adr, data);
 
                 // Save register data
-                context.mds.inst(inst(chipId)).write(chipId, 0, adr, data);
+                scc_k051649.write(adr, data);
             }
         } else {
             if (realChips[chipId] == null)

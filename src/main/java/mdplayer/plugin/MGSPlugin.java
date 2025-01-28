@@ -67,22 +67,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 + trkOffsets[17]
                 != 0);
 
-        resetFadeOutParam();
-
         startTrdVgmReal();
 
-        MDSound.Chip chip;
-
-        hiyorimiNecessary = setting.getHiyorimiMode();
-
-        audio.chipLED.clear();
-        audio.masterVolume = setting.getBalance().getMasterVolume();
-
         if (useAY) {
-            chip = new MDSound.Chip();
+            MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
             audio.chipLED.put("PriAY10", 1);
-            chip.instrument = Instrument.getInstrument(Ay8910Inst.class);
+            chip.instrument = audio.chipRegister.chip(Ay8910Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
             chip.clock = MGSDRV.baseclockAY8910 / 2;
@@ -92,10 +83,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
         }
 
         if (useOPLL) {
-            chip = new MDSound.Chip();
+            MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
             audio.chipLED.put("PriOPLL", 1);
-            chip.instrument = Instrument.getInstrument(Ym2413Inst.class);
+            chip.instrument = audio.chipRegister.chip(Ym2413Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2413Chip.class);
             chip.clock = MGSDRV.baseclockYM2413;
@@ -105,10 +96,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
         }
 
         if (useSCC) {
-            chip = new MDSound.Chip();
+            MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
             audio.chipLED.put("PriK051649", 1);
-            chip.instrument = Instrument.getInstrument(K051649Inst.class);
+            chip.instrument = audio.chipRegister.chip(K051649Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, K051649Chip.class);
             chip.clock = MGSDRV.baseclockK051649;
@@ -131,11 +122,6 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
         }
-
-        //Play
-
-        audio.paused = false;
-        oneTimeReset = false;
 
         return true;
     }

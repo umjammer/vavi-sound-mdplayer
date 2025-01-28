@@ -62,24 +62,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
     /** */
     private boolean _play() {
-        audio.vgmFadeout = false;
-        audio.vgmFadeoutCounter = 1.0;
-        audio.vgmFadeoutCounterV = 0.00001;
-        vgmSpeed = 1;
-        vgmRealFadeoutVol = 0;
-        vgmRealFadeoutVolWait = 4;
-
-        audio.chipRegister.clearFadeoutVolume();
-
         startTrdVgmReal();
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
-
-        audio.chipLED.clear();
         audio.chipLED.put("PriNES", 1);
         audio.chipLED.put("PriDMC", 1);
-
-        audio.masterVolume = setting.getBalance().getMasterVolume();
 
         ((Nsf) audio.driverVirtual).song = songNo;
         if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
@@ -190,13 +176,6 @@ logger.log(Level.WARNING, "cannot start: " + this);
         audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, flatten());
 
         audio.chipRegister.plugin(MidiPlugin.class).initChipRegisterNSF();
-
-        //Play
-
-        audio.paused = false;
-        oneTimeReset = false;
-
-        sleep(500);
 
         return true;
     }

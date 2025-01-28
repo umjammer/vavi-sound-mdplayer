@@ -11,10 +11,7 @@ import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.moonDriver.MoonDriver;
 import mdplayer.format.FileFormat;
-import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.YmF262Inst;
-import mdsound.instrument.YmF278BInst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -55,25 +52,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
         audio.chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
         audio.chipRegister.chip(Ym2151Chip.class).setFadeout(1, 0);
 
-        audio.vgmFadeout = false;
-        audio.vgmFadeoutCounter = 1.0;
-        audio.vgmFadeoutCounterV = 0.00001;
-        vgmSpeed = 1;
-        vgmRealFadeoutVol = 0;
-        vgmRealFadeoutVolWait = 4;
-
-        audio.chipRegister.clearFadeoutVolume();
-
-        audio.chipRegister.reset();
-
         startTrdVgmReal();
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
         int hiyorimiDeviceFlag = 0;
-
-        audio.chipLED.clear();
-
-        audio.masterVolume = setting.getBalance().getMasterVolume();
 
         byte sg = vgmBuf[7];
 
@@ -82,7 +63,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
         if (isOPL3) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
-            chip.instrument = Instrument.getInstrument(YmF262Inst.class);
+            chip.instrument = audio.chipRegister.chip(YmF262Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF262Chip.class);
             chip.clock = 14318180;
@@ -96,7 +77,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
         } else {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
-            chip.instrument = Instrument.getInstrument(YmF278BInst.class);
+            chip.instrument = audio.chipRegister.chip(YmF278BChip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278BChip.class);
             chip.clock = 33868800;
@@ -115,10 +96,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
         if (isOPL3) audio.setVolume(MAIN_TAG, YmF262Chip.class, true, setting.getBalance().getVolume(MAIN_TAG, YmF262Chip.class));
         else audio.setVolume(MAIN_TAG, YmF278BChip.class, true, setting.getBalance().getVolume(MAIN_TAG, YmF278BChip.class));
-//            audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
-//            audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
-//            audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), RnmModel.RealModel);
-//            audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
+//        audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
+//        audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
+//        audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), RnmModel.RealModel);
+//        audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
         ((MoonDriver) audio.driverVirtual).isOPL3 = isOPL3;
         if (audio.driverReal != null) ((MoonDriver) audio.driverReal).isOPL3 = isOPL3;
@@ -131,11 +112,6 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }
-
-        audio.paused = false;
-        oneTimeReset = false;
-
-        sleep(500);
 
         return true;
     }

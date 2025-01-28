@@ -62,80 +62,63 @@ logger.log(Level.WARNING, "cannot start: " + this);
         }
         Class<? extends Chip>[] useChipFromMub = ((MucomJava) audio.driverVirtual).useChipsFromMub(vgmBuf);
 
-        resetFadeOutParam();
-
         startTrdVgmReal();
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
-
-        audio.chipLED.clear();
-        audio.masterVolume = setting.getBalance().getMasterVolume();
-
-        Ym2610Inst ym2610 = Instrument.getInstrument(Ym2610Inst.class);
-        Ym2151Inst ym2151 = Instrument.getInstrument(Ym2151Inst.class);
         Function<String, Stream> fn = Common::getOPNARyhthmStream;
 
         if (useChipFromMub[0] != Unused.class) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
-            audio.chipLED.put("PriOPNA", 1);
-
-            if (setting.getYM2608Type()[0].getUseEmu()[0]) {
-                Ym2608Inst ym2608 = Instrument.getInstrument(Ym2608Inst.class);
-                chip.instrument = ym2608;
+            chip.instrument = audio.chipRegister.chip(Ym2608Chip.class).instrument(0);
+            if (chip.instrument instanceof Ym2608Inst ym2608) {
                 chip.setVolumes.put("FM", ym2608::setFMVolume);
                 chip.setVolumes.put("PSG", ym2608::setPSGVolume);
                 chip.setVolumes.put("Rhythm", ym2608::setRhythmVolume);
                 chip.setVolumes.put("Adpcm", ym2608::setAdpcmVolume);
-            } else if (setting.getYM2608Type()[0].getUseEmu()[1]) {
-                YmFmYm2608Inst ym2608 = Instrument.getInstrument(YmFmYm2608Inst.class);
-                chip.instrument = ym2608;
             }
-
             chip.samplingRate = 55467;
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
             chip.clock = MucomJava.opnaBaseClock;
             chip.option = new Object[] {fn};
             put(Ym2608Chip.class, chip);
+
+            audio.chipLED.put("PriOPNA", 1);
 //            audio.clockYM2608 = MucomJava.opnaBaseClock;
         }
 
         if (useChipFromMub[1] != Unused.class) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 1;
-            audio.chipLED.put("SecOPNA", 1);
-
-            if (setting.getYM2608Type()[1].getUseEmu()[0]) {
-                Ym2608Inst ym2608 = Instrument.getInstrument(Ym2608Inst.class);
-                chip.instrument = ym2608;
+            chip.instrument = audio.chipRegister.chip(Ym2608Chip.class).instrument(0);
+            if (chip.instrument instanceof Ym2608Inst ym2608) {
                 chip.setVolumes.put("FM", ym2608::setFMVolume);
                 chip.setVolumes.put("PSG", ym2608::setPSGVolume);
                 chip.setVolumes.put("Rhythm", ym2608::setRhythmVolume);
                 chip.setVolumes.put("Adpcm", ym2608::setAdpcmVolume);
-            } else if (setting.getYM2608Type()[1].getUseEmu()[1]) {
-                YmFmYm2608Inst ym2608 = Instrument.getInstrument(YmFmYm2608Inst.class);
-                chip.instrument = ym2608;
             }
-
             chip.samplingRate = 55467;
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
             chip.clock = MucomJava.opnaBaseClock;
             chip.option = new Object[] {fn};
             put(Ym2608Chip.class, chip);
+
+            audio.chipLED.put("SecOPNA", 1);
         }
 
         if (useChipFromMub[2] != Unused.class) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
             audio.chipLED.put("PriOPNB", 1);
-            chip.instrument = ym2610;
+            chip.instrument = audio.chipRegister.chip(Ym2610Chip.class).instrument(0);
             chip.samplingRate = 55467;
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Chip.class);
             chip.clock = MucomJava.opnbBaseClock;
-            chip.setVolumes.put("FM", ym2610::setFMVolume);
-            chip.setVolumes.put("PSG", ym2610::setPSGVolume);
-            chip.setVolumes.put("AdpcmA", ym2610::setAdpcmAVolume);
-            chip.setVolumes.put("AdpcmB", ym2610::setAdpcmBVolume);
+            if (chip.instrument instanceof Ym2610Inst ym2610) {
+                chip.setVolumes.put("FM", ym2610::setFMVolume);
+                chip.setVolumes.put("PSG", ym2610::setPSGVolume);
+                chip.setVolumes.put("AdpcmA", ym2610::setAdpcmAVolume);
+                chip.setVolumes.put("AdpcmB", ym2610::setAdpcmBVolume);
+            }
             chip.option = null;
             put(Ym2610Chip.class, chip);
 //            audio.clockYM2610 = MucomJava.opnbBaseClock;
@@ -145,14 +128,16 @@ logger.log(Level.WARNING, "cannot start: " + this);
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 1;
             audio.chipLED.put("SecOPNB", 1);
-            chip.instrument = ym2610;
+            chip.instrument = audio.chipRegister.chip(Ym2610Chip.class).instrument(1);
             chip.samplingRate = 55467; // (int) setting.getoutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Chip.class);
             chip.clock = MucomJava.opnbBaseClock;
-            chip.setVolumes.put("FM", ym2610::setFMVolume);
-            chip.setVolumes.put("PSG", ym2610::setPSGVolume);
-            chip.setVolumes.put("AdpcmA", ym2610::setAdpcmAVolume);
-            chip.setVolumes.put("AdpcmB", ym2610::setAdpcmBVolume);
+            if (chip.instrument instanceof Ym2610Inst ym2610) {
+                chip.setVolumes.put("FM", ym2610::setFMVolume);
+                chip.setVolumes.put("PSG", ym2610::setPSGVolume);
+                chip.setVolumes.put("AdpcmA", ym2610::setAdpcmAVolume);
+                chip.setVolumes.put("AdpcmB", ym2610::setAdpcmBVolume);
+            }
             chip.option = null;
             put(Ym2610Chip.class, chip);
         }
@@ -161,7 +146,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
             audio.chipLED.put("PriOPM", 1);
-            chip.instrument = ym2151;
+            chip.instrument = audio.chipRegister.chip(Ym2151Chip.class).instrument(0);
             chip.samplingRate = 55467; // (int) setting.getoutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
             chip.clock = MucomJava.opmBaseClock;
@@ -211,17 +196,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 return false;
         }
 
-        //Play
-
-        audio.paused = false;
-
         if (audio.driverReal != null && setting.getYM2608Type()[0].getUseReal()[0]) {
 //            SoundChip.realChip.WaitOPNADPCMData(setting.getYM2608Type()[0].getRealChipInfo()[0].getSoundLocation() == -1);
         }
-
-        oneTimeReset = false;
-
-        sleep(500);
 
         return true;
     }

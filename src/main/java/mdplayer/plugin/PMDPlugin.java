@@ -55,19 +55,11 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
     /** */
     private boolean _play(int fileType) {
-        resetFadeOutParam();
-
         startTrdVgmReal();
-
-        hiyorimiNecessary = setting.getHiyorimiMode();
-
-        audio.chipLED.clear();
-        audio.masterVolume = setting.getBalance().getMasterVolume();
 
         MDSound.Chip chip = new MDSound.Chip();
         chip.id = 0;
-        audio.chipLED.put("PriOPNA", 1);
-        chip.instrument = Instrument.getInstrument(Ym2608Inst.class);
+        chip.instrument = audio.chipRegister.chip(Ym2608Chip.class).instrument(0);
         chip.samplingRate = 55467;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
         chip.clock = PMDJava.baseclock;
@@ -80,11 +72,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
         Function<String, Stream> fn = Common::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         put(Ym2608Chip.class, chip);
-//            audio.clockYM2608 = PMDJava.baseclock;
+//        audio.clockYM2608 = PMDJava.baseclock;
+        audio.chipLED.put("PriOPNA", 1);
 
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = Instrument.getInstrument(Ppz8Inst.class);
+        chip.instrument = audio.chipRegister.chip(Ppz8Chip.class).instrument(0);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ppz8Chip.class);
         chip.clock = PMDJava.baseclock;
@@ -94,7 +87,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = Instrument.getInstrument(PpsInst.class);
+        chip.instrument = audio.chipRegister.chip(PpsChip.class).instrument(0);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = 0;
         chip.clock = PMDJava.baseclock;
@@ -102,10 +95,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
         audio.chipLED.put("PriPPSDRV", 1);
         put(PpsChip.class, chip);
 
-        P86Inst P86 = Instrument.getInstrument(P86Inst.class);
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = P86;
+        chip.instrument = audio.chipRegister.chip(P86Chip.class).instrument(0);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = 0;
         chip.clock = PMDJava.baseclock;
@@ -146,15 +138,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 return false;
         }
 
-        // Play
-
-        audio.paused = false;
-
         if (audio.driverReal != null && setting.getYM2608Type()[0].getUseReal()[0]) {
-//                SoundChip.realChip.WaitOPNADPCMData(setting.getYM2608Type()[0].getRealChipInfo()[0].getSoundLocation() == -1);
+//             SoundChip.realChip.WaitOPNADPCMData(setting.getYM2608Type()[0].getRealChipInfo()[0].getSoundLocation() == -1);
         }
-
-        oneTimeReset = false;
 
         return true;
     }

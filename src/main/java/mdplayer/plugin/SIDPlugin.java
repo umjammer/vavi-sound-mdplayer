@@ -40,27 +40,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
     /** */
     private boolean sidPlay() {
-        stop();
-
-        audio.vgmFadeout = false;
-        audio.vgmFadeoutCounter = 1.0;
-        audio.vgmFadeoutCounterV = 0.00001;
-        vgmSpeed = 1;
-        vgmRealFadeoutVol = 0;
-        vgmRealFadeoutVolWait = 4;
-
-        audio.chipRegister.clearFadeoutVolume();
-
-        audio.chipRegister.reset();
-
         startTrdVgmReal();
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
-
-        audio.chipLED.clear();
         audio.chipLED.put("priSID", 1);
-
-        audio.masterVolume = setting.getBalance().getMasterVolume();
 
         ((Sid) audio.driverVirtual).song = songNo + 1;
         if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
@@ -74,11 +56,6 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
         }
-
-        audio.paused = false;
-        oneTimeReset = false;
-
-        sleep(500);
 
         return true;
     }

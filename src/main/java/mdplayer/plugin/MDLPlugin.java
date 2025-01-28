@@ -11,9 +11,7 @@ import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.moonDriver.MoonDriverJava;
 import mdplayer.driver.moonDriver.MoonDriverJava.MoonDriverFileType;
 import mdplayer.format.FileFormat;
-import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.YmF278BInst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -56,23 +54,15 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
         Class<? extends Chip>[] useChipFromMdr = new Class[] {YmF278BChip.class};
 
-        resetFadeOutParam();
-
         startTrdVgmReal();
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
-
-        audio.chipLED.clear();
-        audio.masterVolume = setting.getBalance().getMasterVolume();
-
-        YmF278BInst ymf278b = Instrument.getInstrument(YmF278BInst.class);
 //        Function<String, Stream> fn = Common.GetOPNARyhthmStream;
 
         if (useChipFromMdr[0] != Unused.class) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
             audio.chipLED.put("PriOPL4", 1);
-            chip.instrument = ymf278b;
+            chip.instrument = audio.chipRegister.chip(YmF278BChip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278BChip.class);
             chip.clock = 33868800;
@@ -128,15 +118,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 return false;
         }
 
-        // Play
-
-        audio.paused = false;
-
 //        if (driverReal != null && setting.getYMF278BType()[0].getUseReal()[0]) {
 //            realChip.WaitOPL4PCMData(setting.getYMF278BType()[0].getrealChipInfo()[0].getSoundLocation() == -1);
 //        }
-
-        oneTimeReset = false;
 
         return true;
     }

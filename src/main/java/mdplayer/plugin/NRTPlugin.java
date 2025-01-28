@@ -53,43 +53,15 @@ logger.log(Level.WARNING, "cannot start: " + this);
         audio.chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
         audio.chipRegister.chip(Ym2151Chip.class).setFadeout(1, 0);
 
-        audio.vgmFadeout = false;
-        audio.vgmFadeoutCounter = 1.0;
-        audio.vgmFadeoutCounterV = 0.00001;
-        vgmSpeed = 1;
-        vgmRealFadeoutVol = 0;
-        vgmRealFadeoutVolWait = 4;
-        audio.chipRegister.clearFadeoutVolume();
-        audio.chipRegister.reset();
-
         startTrdVgmReal();
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
         int hiyorimiDeviceFlag = 0;
 
-        audio.chipLED.clear();
-
-        audio.masterVolume = setting.getBalance().getMasterVolume();
-
-        Ym2151Inst ym2151 = null;
-        MameYm2151Inst ym2151_mame = null;
-        X68kYm2151Inst ym2151_x68sound = null;
         for (int i = 0; i < 2; i++) {
             if ((i == 0 && (r & 0x3) != 0) || (i == 1 && (r & 0x2) != 0)) {
                 MDSound.Chip chip = new MDSound.Chip();
-                chip.id = (byte) i;
-
-                if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[0]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[0])) {
-                    if (ym2151 == null) ym2151 = Instrument.getInstrument(Ym2151Inst.class);
-                    chip.instrument = ym2151;
-                } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[1]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[1])) {
-                    if (ym2151_mame == null) ym2151_mame = Instrument.getInstrument(MameYm2151Inst.class);
-                    chip.instrument = ym2151_mame;
-                } else if ((i == 0 && setting.getYM2151Type()[0].getUseEmu()[2]) || (i == 1 && setting.getYM2151Type()[1].getUseEmu()[2])) {
-                    if (ym2151_x68sound == null) ym2151_x68sound = Instrument.getInstrument(X68kYm2151Inst.class);
-                    chip.instrument = ym2151_x68sound;
-                }
-
+                chip.id = i;
+                chip.instrument = audio.chipRegister.chip(Ym2151Chip.class).instrument(i);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
                 chip.clock = 4000000;
@@ -106,12 +78,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
         if ((r & 0x4) != 0) {
             MDSound.Chip chip = new MDSound.Chip();
-            chip.id = (byte) 0;
-            chip.instrument = Instrument.getInstrument(Ay8910Inst.class);
+            chip.id = 0;
+            chip.instrument = audio.chipRegister.chip(Ay8910Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
             chip.clock = 2000000 / 2;
-//                audio.clockAY8910 = chip.clock;
+//            audio.clockAY8910 = chip.clock;
             chip.option = null;
 
             hiyorimiDeviceFlag |= 0x1;
@@ -157,11 +129,6 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
             ((NRTDRV) audio.driverReal).call(0); //
         }
-
-        audio.paused = false;
-        oneTimeReset = false;
-
-        sleep(500);
 
         ((NRTDRV) audio.driverVirtual).call(1); // MPLAY
 

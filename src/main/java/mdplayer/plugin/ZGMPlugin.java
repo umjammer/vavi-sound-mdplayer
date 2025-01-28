@@ -41,25 +41,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
     /** */
     private boolean _play() {
-        audio.vgmFadeout = false;
-        audio.vgmFadeoutCounter = 1.0;
-        audio.vgmFadeoutCounterV = 0.00001;
-        vgmSpeed = 1;
-        vgmRealFadeoutVol = 0;
-        vgmRealFadeoutVolWait = 4;
-
-        audio.chipRegister.clearFadeoutVolume();
-
-        audio.chipRegister.reset();
-
         // Sealed until MIDI is supported
 //        startTrdVgmReal();
-
-        hiyorimiNecessary = setting.getHiyorimiMode();
-
-        audio.chipLED.clear();
-
-        audio.masterVolume = setting.getBalance().getMasterVolume();
 
         if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
                 new Class[] {Ym2203Chip.class},
@@ -74,12 +57,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 //                    (int) (setting.getoutputDevice().getSampleRate() * setting.getoutputDevice().getWaitTime() / 1000)))
 //                return false;
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
         int hiyorimiDeviceFlag = 0;
-
-        audio.chipLED.clear();
-
-        audio.masterVolume = setting.getBalance().getMasterVolume();
 
         //
         // chips initialization
@@ -88,11 +66,6 @@ logger.log(Level.WARNING, "cannot start: " + this);
         hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
 
         audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, flatten());
-
-        audio.paused = false;
-        oneTimeReset = false;
-
-        sleep(500);
 
         return true;
     }

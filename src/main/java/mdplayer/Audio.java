@@ -11,7 +11,6 @@ import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
 import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
-import mdsound.Instrument;
 import mdsound.MDSound;
 import vavi.util.ByteUtil;
 
@@ -270,8 +269,8 @@ logger.log(Level.DEBUG, "stop: " + stopped);
                 if (timeout < 1) break;
             }
             stopped = true;
-new Exception().printStackTrace();
-logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
+//new Exception().printStackTrace();
+//logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
 
             chipRegister.softReset(EnmModel.VirtualModel);
             chipRegister.softReset(EnmModel.RealModel);

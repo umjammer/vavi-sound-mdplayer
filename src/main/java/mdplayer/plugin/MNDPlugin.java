@@ -16,7 +16,6 @@ import mdplayer.format.FileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.X68kMPcmInst;
-import mdsound.instrument.Ym2151Inst;
 import mdsound.instrument.Ym2608Inst;
 
 import static java.lang.System.getLogger;
@@ -54,29 +53,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
     /** */
     private boolean _play() {
-        audio.vgmFadeout = false;
-        audio.vgmFadeoutCounter = 1.0;
-        audio.vgmFadeoutCounterV = 0.00001;
-        vgmSpeed = 1;
-        vgmRealFadeoutVol = 0;
-        vgmRealFadeoutVolWait = 4;
-
-        audio.chipRegister.clearFadeoutVolume();
-
-        audio.chipRegister.reset();
-
         startTrdVgmReal();
 
-        hiyorimiNecessary = setting.getHiyorimiMode();
         int hiyorimiDeviceFlag = 3;
 
-        audio.chipLED.clear();
-
-        audio.masterVolume = setting.getBalance().getMasterVolume();
-
         MDSound.Chip chip = new MDSound.Chip();
-        chip.id = (byte) 0;
-        chip.instrument = Instrument.getInstrument(Ym2151Inst.class);
+        chip.id = 0;
+        chip.instrument = audio.chipRegister.chip(Ym2151Chip.class).instrument(0);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
         chip.clock = 4000000;
@@ -86,7 +69,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
         if (setting.getYM2608Type()[0].getUseEmu()[0]) {
             chip = new MDSound.Chip();
             chip.id = 0;
-            chip.instrument = Instrument.getInstrument(Ym2608Inst.class);
+            chip.instrument = audio.chipRegister.chip(Ym2608Chip.class).instrument(0);
             chip.samplingRate = 55467; // (int) setting.getoutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
             chip.clock = 8000000; // 7987200;
@@ -105,7 +88,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
         if (setting.getYM2608Type()[1].getUseEmu()[0]) {
             chip = new MDSound.Chip();
             chip.id = 1;
-            chip.instrument = Instrument.getInstrument(Ym2608Inst.class);
+            chip.instrument = audio.chipRegister.chip(Ym2608Chip.class).instrument(1);
             chip.samplingRate = 55467; // (int) setting.getoutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
             chip.clock = 8000000; // 7987200;
@@ -116,7 +99,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
         X68kMPcmInst mpcm = Instrument.getInstrument(X68kMPcmInst.class);
         chip = new MDSound.Chip();
-        chip.id = (byte) 0;
+        chip.id = 0;
         chip.instrument = mpcm;
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, OkiM6258Chip.class);
@@ -201,9 +184,6 @@ logger.log(Level.WARNING, "cannot start: " + this);
         }
 
         ((MnDrv) audio.driverVirtual).mpcm = mpcm;
-
-        audio.paused = false;
-        oneTimeReset = false;
 
         return true;
     }
