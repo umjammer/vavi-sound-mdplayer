@@ -20,23 +20,29 @@ public class ChipRegister {
 
     private static final Logger logger = getLogger(ChipRegister.class.getName());
 
-    // instruments wrapper
+    /** instruments wrappers */
     private final Map<Class<? extends Chip>, Chip> chips = new HashMap<>();
 
-    // plugins
+    /** plugins */
     private final Map<Class<? extends Plugin>, Plugin> plugins = new HashMap<>();
 
+    /** @return nullable */
     public <T extends Chip> T chip(Class<T> clazz) {
-        return clazz.cast(chips.get(clazz));
+        return clazz.cast(chips.getOrDefault(clazz, null));
     }
 
+    /** @return nullable */
     public <T extends Plugin> T plugin(Class<T> clazz) {
-        return clazz.cast(plugins.get(clazz));
+        return clazz.cast(plugins.getOrDefault(clazz, null));
     }
 
+    /** for reuse instances */
     private static final ServiceLoader<Chip> chipServiceLoader = ServiceLoader.load(Chip.class);
+
+    /** for reuse instances */
     private static final ServiceLoader<Plugin> pluginServiceLoader = ServiceLoader.load(Plugin.class);
 
+    /** */
     public ChipRegister() {
         // reused instance
         for (Chip chip : chipServiceLoader) {
@@ -51,25 +57,30 @@ logger.log(Level.INFO, "chips: " + chips.size());
 logger.log(Level.INFO, "plugins: " + plugins.size());
     }
 
+    /** for all chips and plugins */
     public void init(Audio context) {
         chips.values().forEach(c -> c.init(context));
         plugins.values().forEach(c -> c.init(context));
     }
 
+    /** for all chips */
     public void reset() {
         chips.values().forEach(Chip::reset);
     }
 
+    /** for all chips and plugins */
     public void softReset(EnmModel model) {
         chips.values().forEach(c -> c.softReset(model));
         plugin((MidiPlugin.class)).softReset(model);
         plugin((RealChipPlugin.class)).softReset(model);
     }
 
+    /** for all chips */
     public void clearFadeoutVolume() {
         chips.values().forEach(Chip::clearFadeout);
     }
 
+    /** for all chips */
     public void close() {
         plugins.values().forEach(Plugin::close);
     }
@@ -82,6 +93,7 @@ logger.log(Level.INFO, "plugins: " + plugins.size());
 
     /**
      * Update volume information
+     * for all chips
      */
     public void updateVol() {
         volF--;

@@ -2,12 +2,13 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.ArrayList;
-import java.util.List;
 
 import mdplayer.Audio;
+import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.chips.Ym2151Chip;
+import mdplayer.chips.YmF262Chip;
+import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.moonDriver.MoonDriver;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
@@ -38,7 +39,7 @@ public class MDRPlugin extends BasePlugin {
 //            audio.driverReal = new MoonDriver();
 //            ((MoonDriver) audio.driverReal).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
 //        }
-        boolean r = mdrPlay();
+        boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
             return false;
@@ -47,114 +48,95 @@ logger.log(Level.WARNING, "cannot start: " + this);
         return true;
     }
 
-    boolean mdrPlay() {
+    /** */
+    private boolean _play() {
+        //int r = ((NRTDRV) driverVirtual).checkUseChip(vgmBuf);
 
-        try {
+        audio.chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
+        audio.chipRegister.chip(Ym2151Chip.class).setFadeout(1, 0);
 
-            if (vgmBuf == null || setting == null) return false;
+        audio.vgmFadeout = false;
+        audio.vgmFadeoutCounter = 1.0;
+        audio.vgmFadeoutCounterV = 0.00001;
+        vgmSpeed = 1;
+        vgmRealFadeoutVol = 0;
+        vgmRealFadeoutVolWait = 4;
 
-            //stop();
+        audio.chipRegister.clearFadeoutVolume();
 
-            //int r = ((NRTDRV) driverVirtual).checkUseChip(vgmBuf);
+        audio.chipRegister.reset();
 
-            audio.chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
-            audio.chipRegister.chip(Ym2151Chip.class).setFadeout(1, 0);
+        startTrdVgmReal();
 
-            audio.chipRegister.reset();
-            useChip.clear();
+        hiyorimiNecessary = setting.getHiyorimiMode();
+        int hiyorimiDeviceFlag = 0;
 
-            audio.vgmFadeout = false;
-            audio.vgmFadeoutCounter = 1.0;
-            audio.vgmFadeoutCounterV = 0.00001;
-            vgmSpeed = 1;
-            vgmRealFadeoutVol = 0;
-            vgmRealFadeoutVolWait = 4;
+        audio.chipLED.clear();
 
-            audio.chipRegister.clearFadeoutVolume();
+        audio.masterVolume = setting.getBalance().getMasterVolume();
 
-            audio.chipRegister.reset();
+        byte sg = vgmBuf[7];
 
-            startTrdVgmReal();
+        boolean isOPL3 = (sg & 2) != 0;
 
-            List<MDSound.Chip> lstChips = new ArrayList<>();
+        if (isOPL3) {
+            MDSound.Chip chip = new MDSound.Chip();
+            chip.id = 0;
+            chip.instrument = Instrument.getInstrument(YmF262Inst.class);
+            chip.samplingRate = setting.getOutputDevice().getSampleRate();
+            chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF262Chip.class);
+            chip.clock = 14318180;
+            chip.option = new Object[] {Common.getApplicationFolder()};
 
-            MDSound.Chip chip;
+            hiyorimiDeviceFlag |= 0x2;
 
-            hiyorimiNecessary = setting.getHiyorimiMode();
-            int hiyorimiDeviceFlag = 0;
+            audio.chipLED.put("PriOPL3", 1);
 
-            audio.chipLED.clear();
+            put(YmF262Chip.class, chip);
+        } else {
+            MDSound.Chip chip = new MDSound.Chip();
+            chip.id = 0;
+            chip.instrument = Instrument.getInstrument(YmF278BInst.class);
+            chip.samplingRate = setting.getOutputDevice().getSampleRate();
+            chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278BChip.class);
+            chip.clock = 33868800;
+            chip.option = new Object[] {Common.getApplicationFolder()};
 
-            audio.masterVolume = setting.getBalance().getMasterVolume();
+            hiyorimiDeviceFlag |= 0x2;
 
-            byte sg = vgmBuf[7];
+            audio.chipLED.put("PriOPL4", 1);
 
-            boolean isOPL3 = (sg & 2) != 0;
-
-            if (isOPL3) {
-                chip = new MDSound.Chip();
-                chip.id = 0;
-                chip.instrument = Instrument.getInstrument(YmF262Inst.class);
-                chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF262Inst.class);
-                chip.clock = 14318180;
-                chip.option = new Object[] {Common.getApplicationFolder()};
-
-                hiyorimiDeviceFlag |= 0x2;
-
-                audio.chipLED.put("PriOPL3", 1);
-
-                lstChips.add(chip);
-                useChip.add(Common.EnmChip.YMF262);
-            } else {
-                chip = new MDSound.Chip();
-                chip.id = 0;
-                chip.instrument = Instrument.getInstrument(YmF278BInst.class);
-                chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF278BInst.class);
-                chip.clock = 33868800;
-                chip.option = new Object[] {Common.getApplicationFolder()};
-
-                hiyorimiDeviceFlag |= 0x2;
-
-                audio.chipLED.put("PriOPL4", 1);
-
-                lstChips.add(chip);
-                useChip.add(Common.EnmChip.YMF278B);
-            }
-
-            hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
-
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
-
-            if (isOPL3) audio.setVolume(MAIN_TAG, YmF262Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, YmF262Inst.class));
-            else audio.setVolume(MAIN_TAG, YmF278BInst.class, true, setting.getBalance().getVolume(MAIN_TAG, YmF278BInst.class));
-            //chipRegister.setYM2203SSGVolume(0, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
-            //chipRegister.setYM2203SSGVolume(1, setting.getbalance().getGimicOPNVolume, enmModel.RealModel);
-            //chipRegister.setYM2608SSGVolume(0, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
-            //chipRegister.setYM2608SSGVolume(1, setting.getbalance().getGimicOPNAVolume, enmModel.RealModel);
-
-            ((MoonDriver) audio.driverVirtual).isOPL3 = isOPL3;
-            if (audio.driverReal != null) ((MoonDriver) audio.driverReal).isOPL3 = isOPL3;
-
-            audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
-                    , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
-                    , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
-            if (audio.driverReal != null) {
-                audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
-                        , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
-                        , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
-            }
-
-            audio.paused = false;
-            oneTimeReset = false;
-
-            Thread.sleep(500);
-
-            return true;
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-            return false;
+            put(YmF278BChip.class, chip);
         }
+
+        hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
+
+        audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, flatten());
+
+        if (isOPL3) audio.setVolume(MAIN_TAG, YmF262Chip.class, true, setting.getBalance().getVolume(MAIN_TAG, YmF262Chip.class));
+        else audio.setVolume(MAIN_TAG, YmF278BChip.class, true, setting.getBalance().getVolume(MAIN_TAG, YmF278BChip.class));
+//            audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
+//            audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
+//            audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), RnmModel.RealModel);
+//            audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
+
+        ((MoonDriver) audio.driverVirtual).isOPL3 = isOPL3;
+        if (audio.driverReal != null) ((MoonDriver) audio.driverReal).isOPL3 = isOPL3;
+
+        audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
+                setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
+                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
+        if (audio.driverReal != null) {
+            audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
+                    setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
+                    setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
+        }
+
+        audio.paused = false;
+        oneTimeReset = false;
+
+        sleep(500);
+
+        return true;
     }
 }

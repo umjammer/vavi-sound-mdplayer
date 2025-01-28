@@ -1,5 +1,6 @@
 package mdplayer.plugin;
 
+import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import javax.sound.sampled.AudioSystem;
@@ -25,7 +26,7 @@ public class SampledPlugin extends BasePlugin {
         try {
             audio.naudioFileReader = AudioSystem.getAudioInputStream(new java.io.File(audio.naudioFileName));
             return true;
-        } catch (UnsupportedAudioFileException | java.io.IOException e) {
+        } catch (UnsupportedAudioFileException | IOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             return false;
         }

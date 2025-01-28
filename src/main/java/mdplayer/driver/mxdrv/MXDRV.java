@@ -17,9 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import dotnet4j.util.compat.Tuple;
+import mdplayer.Chip;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
@@ -257,7 +257,7 @@ public class MXDRV extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
@@ -288,7 +288,7 @@ public class MXDRV extends BaseDriver {
         return true;
     }
 
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime, X68kYm2151Inst mdxPCM) {
+    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, X68kYm2151Inst mdxPCM) {
         this.vgmBuf = vgmBuf;
         this.model = model;
         this.useChip = useChip;
@@ -359,7 +359,7 @@ public class MXDRV extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 

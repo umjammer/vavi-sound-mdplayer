@@ -4,21 +4,27 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import javax.swing.JDialog;
 import javax.swing.Timer;
 
 import mdplayer.properties.Resources;
+import org.urish.jnavst.ERect;
 import org.urish.jnavst.VstPlugin;
+
+import static java.lang.System.getLogger;
 
 
 public class frmVST extends JDialog {
 
+    private static final Logger logger = getLogger(frmVST.class.getName());
+
     int dialogResult;
 
-    Rectangle wndRect = new Rectangle();
+    ERect wndRect;
 
     public frmVST(Frame owner) {
         super(owner, true);
@@ -44,9 +50,9 @@ public class frmVST extends JDialog {
 
         this.setTitle(PluginCommandStub.getName());
 
-        if (PluginCommandStub.EditorGetRect(wndRect)) {
-            this.setPreferredSize(this.SizeFromClientSize(new Dimension(wndRect.width, wndRect.height)));
-            PluginCommandStub.EditorOpen(this.Handle);
+        if ((wndRect = PluginCommandStub.getEditRect()) != null) {
+            this.setPreferredSize(new Dimension(wndRect.right - wndRect.left, wndRect.bottom - wndRect.top));
+            PluginCommandStub.editOpen("");
         }
 
         super.setVisible(true);
@@ -57,9 +63,9 @@ public class frmVST extends JDialog {
 
         this.setTitle(PluginCommandStub.getName());
 
-        if (PluginCommandStub.EditorGetRect(wndRect)) {
-            this.setPreferredSize(this.SizeFromClientSize(new Dimension(wndRect.width, wndRect.height)));
-            PluginCommandStub.EditorOpen(this.Handle);
+        if ((wndRect = PluginCommandStub.getEditRect()) != null) {
+            this.setPreferredSize(new Dimension(wndRect.right - wndRect.left, wndRect.bottom - wndRect.top));
+            PluginCommandStub.editOpen("");
         }
         this.setLocation(new Point(vi.location.x, vi.location.y));
         super.setVisible(true);
@@ -67,18 +73,14 @@ public class frmVST extends JDialog {
 
 //    @Override
     protected void OnClosing(WindowEvent ev) {
-        super.OnClosing(e);
-
-        if (e.Cancel == false) {
-            PluginCommandStub.editClose();
-        }
+        PluginCommandStub.editClose();
     }
 
     private void timer1_Tick(ActionEvent ev) {
         try {
-            PluginCommandStub.EditorIdle();
-            if (PluginCommandStub.EditorGetRect(wndRect)) {
-                this.setPreferredSize(this.SizeFromClientSize(new Dimension(wndRect.width, wndRect.height)));
+            PluginCommandStub.editIdle();
+            if ((wndRect = PluginCommandStub.getEditRect()) != null) {
+                this.setPreferredSize(new Dimension(wndRect.right - wndRect.left, wndRect.bottom - wndRect.top));
             }
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
@@ -86,30 +88,20 @@ public class frmVST extends JDialog {
     }
 
     private void initializeComponent() {
-//            this.components = new System.ComponentModel.Container();
-//            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmVST));
         this.timer1 = new Timer(20, this::timer1_Tick);
 
         //
         // timer1
         //
-//        this.timer1.setEnabled(true);
-//        this.timer1.Interval = 20;
-//        this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
         this.timer1.start();
         //
         // frmVST
         //
-//            this.AutoScaleDimensions = new DimensionF(6F, 12F);
-//            this.AutoScaleMode = JAutoScaleMode.Font;
         this.setPreferredSize(new Dimension(284, 261));
-//        this.FormBorderStyle = JFormBorderStyle.FixedSingle;
         this.setIconImage((Image) Resources.getResourceManager().getObject("$this.Icon"));
-//        this.MaximizeBox = false;
         this.setName("frmVST");
-//        this.ShowIcon = false;
         this.setTitle("frmVST");
-//            this.ResumeLayout(false);
+        this.pack();
     }
 
     public Timer timer1;

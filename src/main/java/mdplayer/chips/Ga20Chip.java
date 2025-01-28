@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.instrument.Ga20Inst;
 
 
@@ -21,6 +22,12 @@ import mdsound.instrument.Ga20Inst;
 public class Ga20Chip implements Chip {
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {Ga20Inst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -42,7 +49,7 @@ public class Ga20Chip implements Chip {
             context.chipLED.put("SecGA20", 2);
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.write(Ga20Inst.class, chipId, 0, adr, dat);
+            context.mds.write(inst(chipId), chipId, 0, adr, dat);
         } else {
         }
     }

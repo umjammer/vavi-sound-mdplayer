@@ -5,19 +5,20 @@ import java.util.function.Consumer;
 
 import mdsound.instrument.NesInst;
 import mdsound.instrument.Ym2413Inst;
+import mdsound.np.chip.NesVrc7;
 
 
-public class VRC7 extends Ym2413Inst {
+public class Vrc7Inst extends Ym2413Inst {
 
-    private final mdsound.np.chip.NesVrc7 nv;
+    private final NesVrc7 chip;
 
     private double apu_clock_rest;
 
     private double rate;
 
-    public VRC7() {
-        nv = new mdsound.np.chip.NesVrc7();
-        nv.setListener(listenr);
+    public Vrc7Inst() {
+        chip = new NesVrc7();
+        chip.setListener(listener);
     }
 
     @Override
@@ -36,9 +37,9 @@ public class VRC7 extends Ym2413Inst {
 
     @Override
     public int start(int chipId, int samplingRate, int clock, Object... option) {
-        nv.setClock(clock / 2.); // masterclock(NES:1789773)
-        nv.setRate(samplingRate); // samplerate
-        nv.reset();
+        chip.setClock(clock / 2.); // masterclock(NES:1789773)
+        chip.setRate(samplingRate); // samplerate
+        chip.reset();
         rate = samplingRate;
         return samplingRate;
     }
@@ -61,8 +62,8 @@ public class VRC7 extends Ym2413Inst {
                 apu_clock_rest -= apu_clocks;
             }
 
-            nv.tick(apu_clocks);
-            nv.render(b);
+            chip.tick(apu_clocks);
+            chip.render(b);
 //            if (b[0] != 0) logger.log(Level.DEBUG, "%d".formatted(b[0]));
             outputs[0][i] += b[0] << 2;
             outputs[1][i] += b[1] << 2;
@@ -71,12 +72,12 @@ public class VRC7 extends Ym2413Inst {
 
     @Override
     public int write(int chipId, int port, int adr, int data) {
-        nv.write(0x9010, adr);
-        nv.write(0x9030, data);
+        chip.write(0x9010, adr);
+        chip.write(0x9030, data);
         return 0;
     }
 
-    private final Consumer<int[]> listenr = ds -> {
+    private final Consumer<int[]> listener = ds -> {
         if (ds[7] != -1) NesInst.np_nes_vrc7_volume = ds[7];
     };
 }

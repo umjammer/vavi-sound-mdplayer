@@ -16,11 +16,11 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.NesChip;
+import mdplayer.chips.NesChip.FdsChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -192,9 +192,9 @@ public class frmFDS extends frmBase {
                 // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     if (newParam.channel.mask)
-                        parent.resetChannelMask(EnmChip.FDS, chipId, 0);
+                        parent.resetChannelMask(FdsChip.class, chipId, 0);
                     else
-                        parent.setChannelMask(EnmChip.FDS, chipId, 0);
+                        parent.setChannelMask(FdsChip.class, chipId, 0);
                 }
                 return;
             }
@@ -203,13 +203,13 @@ public class frmFDS extends frmBase {
             if (py < 2 * 8) {
                 if (ev.getButton() == MouseEvent.BUTTON2) {
                     // Unmask.
-                    parent.resetChannelMask(EnmChip.FDS, chipId, 0);
+                    parent.resetChannelMask(FdsChip.class, chipId, 0);
                     return;
                 }
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // Mask.
-                    parent.setChannelMask(EnmChip.FDS, chipId, 0);
+                    parent.setChannelMask(FdsChip.class, chipId, 0);
                 }
             }
         }

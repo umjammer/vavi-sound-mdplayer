@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -254,9 +253,9 @@ public class frmSN76489 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 4; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.SN76489, chipId, ch);
+                            parent.resetChannelMask(Sn76489Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.SN76489, chipId, ch);
+                            parent.setChannelMask(Sn76489Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -271,15 +270,15 @@ public class frmSN76489 extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // Mask.
-                    parent.setChannelMask(EnmChip.SN76489, chipId, ch);
-                    if (NGPFlag && chipId == 0) parent.setChannelMask(EnmChip.SN76489, 1, ch);
+                    parent.setChannelMask(Sn76489Chip.class, chipId, ch);
+                    if (NGPFlag && chipId == 0) parent.setChannelMask(Sn76489Chip.class, 1, ch);
                     return;
                 }
 
                 // Unmask.
                 for (ch = 0; ch < 4; ch++) {
-                    parent.resetChannelMask(EnmChip.SN76489, chipId, ch);
-                    if (NGPFlag && chipId == 0) parent.resetChannelMask(EnmChip.SN76489, 1, ch);
+                    parent.resetChannelMask(Sn76489Chip.class, chipId, ch);
+                    if (NGPFlag && chipId == 0) parent.resetChannelMask(Sn76489Chip.class, 1, ch);
                 }
             }
         }

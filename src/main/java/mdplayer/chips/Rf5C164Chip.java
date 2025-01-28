@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.chips.ScdPcm;
 import mdsound.instrument.ScdPcmInst;
 
@@ -29,6 +30,12 @@ public class Rf5C164Chip implements Chip {
     private Audio context;
 
     @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {ScdPcmInst.class};
+    }
+
+    @Override
     public void init(Audio context) {
         this.context = context;
     }
@@ -44,9 +51,9 @@ public class Rf5C164Chip implements Chip {
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
         if (mask)
-            context.mds.inst(ScdPcmInst.class).setMask(chipId, ch);
+            context.mds.inst(inst(chipId)).setMask(chipId, ch);
         else
-            context.mds.inst(ScdPcmInst.class).resetMask(chipId, ch);
+            context.mds.inst(inst(chipId)).resetMask(chipId, ch);
     }
 
     public void writePcm(int chipId, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
@@ -66,7 +73,7 @@ public class Rf5C164Chip implements Chip {
             context.chipLED.put("SecRF5C", 2);
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.write(ScdPcmInst.class, chipId, 0, adr, data);
+            context.mds.write(inst(chipId), chipId, 0, adr, data);
         }
     }
 

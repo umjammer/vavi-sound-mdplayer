@@ -36,17 +36,23 @@ import javax.swing.filechooser.FileFilter;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.Audio;
+import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.PlayList;
 import mdplayer.Setting;
-import mdplayer.chips.RealChipPlugin;
+import mdplayer.chips.*;
+import mdplayer.chips.NesChip.DmcChip;
+import mdplayer.chips.NesChip.FdsChip;
+import mdplayer.chips.NesChip.Fme7Chip;
+import mdplayer.chips.NesChip.Mmc5Chip;
+import mdplayer.chips.NesChip.N160Chip;
+import mdplayer.chips.NesChip.Vrc6Chip;
+import mdplayer.chips.NesChip.Vrc7Chip;
 import mdplayer.form.kb.wf.frmHuC6280;
 import mdplayer.properties.Resources;
-import mdsound.Instrument;
-import mdsound.instrument.*;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -174,60 +180,60 @@ public class frmMixer2 extends JFrame {
     public void screenChangeParams() {
 
         newParam.Master.Volume = parent.setting.getBalance().getMasterVolume();
-        newParam.YM2151.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2151Inst.class);
-        newParam.YM2203.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2203Inst.class);
-        newParam.YM2203FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2203Inst.class);
-        newParam.YM2203PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2203Inst.class);
-        newParam.YM2612.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class);
-        newParam.YM2608.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class);
-        newParam.YM2608FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2608Inst.class);
-        newParam.YM2608PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2608Inst.class);
-        newParam.YM2608Rhythm.Volume = parent.setting.getBalance().getVolume("Rhythm", Ym2608Inst.class);
-        newParam.YM2608Adpcm.Volume = parent.setting.getBalance().getVolume("Adpcm", Ym2608Inst.class);
-        newParam.YM2610.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2610Inst.class);
-        newParam.YM2610FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2610Inst.class);
-        newParam.YM2610PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2610Inst.class);
-        newParam.YM2610AdpcmA.Volume = parent.setting.getBalance().getVolume("AdpcmA", Ym2610Inst.class);
-        newParam.YM2610AdpcmB.Volume = parent.setting.getBalance().getVolume("AdpcmB", Ym2610Inst.class);
+        newParam.YM2151.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
+        newParam.YM2203.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2203Chip.class);
+        newParam.YM2203FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2203Chip.class);
+        newParam.YM2203PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2203Chip.class);
+        newParam.YM2612.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2612Chip.class);
+        newParam.YM2608.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
+        newParam.YM2608FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2608Chip.class);
+        newParam.YM2608PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2608Chip.class);
+        newParam.YM2608Rhythm.Volume = parent.setting.getBalance().getVolume("Rhythm", Ym2608Chip.class);
+        newParam.YM2608Adpcm.Volume = parent.setting.getBalance().getVolume("Adpcm", Ym2608Chip.class);
+        newParam.YM2610.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2610Chip.class);
+        newParam.YM2610FM.Volume = parent.setting.getBalance().getVolume("FM", Ym2610Chip.class);
+        newParam.YM2610PSG.Volume = parent.setting.getBalance().getVolume("PSG", Ym2610Chip.class);
+        newParam.YM2610AdpcmA.Volume = parent.setting.getBalance().getVolume("AdpcmA", Ym2610Chip.class);
+        newParam.YM2610AdpcmB.Volume = parent.setting.getBalance().getVolume("AdpcmB", Ym2610Chip.class);
 
-        newParam.YM2413.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2413Inst.class);
-        newParam.YM3526.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym3526Inst.class);
-        newParam.Y8950.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Y8950Inst.class);
-        newParam.YM3812.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym3812Inst.class);
-        newParam.YMF262.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF262Inst.class);
-        newParam.YMF278B.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF278BInst.class);
-        newParam.YMZ280B.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmZ280BInst.class);
-        newParam.YMF271.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF271Inst.class);
-        newParam.AY8910.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ay8910Inst.class);
-        newParam.SN76489.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Sn76489Inst.class);
-        newParam.HuC6280.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, HuC6280Inst.class);
+        newParam.YM2413.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym2413Chip.class);
+        newParam.YM3526.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym3526Chip.class);
+        newParam.Y8950.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Y8950Chip.class);
+        newParam.YM3812.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ym3812Chip.class);
+        newParam.YMF262.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF262Chip.class);
+        newParam.YMF278B.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF278BChip.class);
+        newParam.YMZ280B.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmZ280BChip.class);
+        newParam.YMF271.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, YmF271Chip.class);
+        newParam.AY8910.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
+        newParam.SN76489.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Sn76489Chip.class);
+        newParam.HuC6280.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, HuC6280Chip.class);
 
-        newParam.RF5C164.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, ScdPcmInst.class);
-        newParam.RF5C68.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Rf5C68Inst.class);
-        newParam.PWM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, PwmInst.class);
-        newParam.OKIM6258.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, OkiM6258Inst.class);
-        newParam.OKIM6295.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, OkiM6295Inst.class);
-        newParam.C140.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, C140Inst.class);
-        newParam.C352.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, C352Inst.class);
-        newParam.SAA1099.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Saa1099Inst.class);
-        newParam.PPZ8.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ppz8Inst.class);
-        newParam.SEGAPCM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, SegaPcmInst.class);
-        newParam.MultiPCM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, MultiPcmInst.class);
-        newParam.K051649.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, K051649Inst.class);
-        newParam.K053260.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, K053260Inst.class);
-        newParam.K054539.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, K054539Inst.class);
-        newParam.QSound.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, QSoundInst.class);
-        newParam.GA20.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ga20Inst.class);
+        newParam.RF5C164.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Rf5C164Chip.class);
+        newParam.RF5C68.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Rf5C68Chip.class);
+        newParam.PWM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, PwmChip.class);
+        newParam.OKIM6258.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, OkiM6258Chip.class);
+        newParam.OKIM6295.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, OkiM6295Chip.class);
+        newParam.C140.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, C140Chip.class);
+        newParam.C352.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, C352Chip.class);
+        newParam.SAA1099.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Saa1099Chip.class);
+        newParam.PPZ8.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ppz8Chip.class);
+        newParam.SEGAPCM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, SegaPcmChip.class);
+        newParam.MultiPCM.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, MultiPcmChip.class);
+        newParam.K051649.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, K051649Chip.class);
+        newParam.K053260.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, K053260Chip.class);
+        newParam.K054539.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, K054539Chip.class);
+        newParam.QSound.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, QSoundChip.class);
+        newParam.GA20.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Ga20Chip.class);
 
-        newParam.APU.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.class);
-        newParam.DMC.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.DMC.class);
-        newParam.FDS.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.FDS.class);
-        newParam.MMC5.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.MMC5.class);
-        newParam.N160.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.N160.class);
-        newParam.VRC6.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.VRC6.class);
-        newParam.VRC7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.VRC7.class);
-        newParam.FME7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesInst.FME7.class);
-        newParam.DMG.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, DmgInst.class);
+        newParam.APU.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, NesChip.class);
+        newParam.DMC.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, DmcChip.class);
+        newParam.FDS.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, FdsChip.class);
+        newParam.MMC5.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Mmc5Chip.class);
+        newParam.N160.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, N160Chip.class);
+        newParam.VRC6.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Vrc6Chip.class);
+        newParam.VRC7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Vrc7Chip.class);
+        newParam.FME7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Fme7Chip.class);
+        newParam.DMG.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, DmgChip.class);
 
         newParam.GimicOPN.Volume = parent.setting.getBalance().getGimicOPNVolume();
         newParam.GimicOPNA.Volume = parent.setting.getBalance().getGimicOPNAVolume();
@@ -1106,68 +1112,68 @@ public class frmMixer2 extends JFrame {
     private JSeparator toolStripSeparator1;
 
     @SuppressWarnings("unchecked")
-    private final Tuple<String, Class<? extends Instrument>>[] setVolume = Arrays.<Tuple<String, Class<? extends Instrument>>>asList(
+    private final Tuple<String, Class<? extends Chip>>[] setVolume = Arrays.<Tuple<String, Class<? extends Chip>>>asList(
             null, // master
-            new Tuple<>(MAIN_TAG, Ym2151Inst.class),
-            new Tuple<>(MAIN_TAG, Ym2203Inst.class),
-            new Tuple<>("FM", Ym2203Inst.class),
-            new Tuple<>("PSG", Ym2203Inst.class),
-            new Tuple<>(MAIN_TAG, Ym2612Inst.class),
-            new Tuple<>(MAIN_TAG, Ym2608Inst.class),
-            new Tuple<>("FM", Ym2608Inst.class),
-            new Tuple<>("PSG", Ym2608Inst.class),
-            new Tuple<>("Rhythm", Ym2608Inst.class),
-            new Tuple<>("Adpcm", Ym2608Inst.class),
-            new Tuple<>(MAIN_TAG, Ym2610Inst.class),
-            new Tuple<>("FM", Ym2610Inst.class),
-            new Tuple<>("PSG", Ym2610Inst.class),
-            new Tuple<>("AdpcmA", Ym2610Inst.class),
-            new Tuple<>("AdpcmB", Ym2610Inst.class),
-            new Tuple<>(MAIN_TAG, Ym2413Inst.class),
-            new Tuple<>(MAIN_TAG, Ym3526Inst.class),
-            new Tuple<>(MAIN_TAG, Y8950Inst.class),
-            new Tuple<>(MAIN_TAG, Ym3812Inst.class),
-            new Tuple<>(MAIN_TAG, YmF262Inst.class),
-            new Tuple<>(MAIN_TAG, YmF278BInst.class),
-            new Tuple<>(MAIN_TAG, YmZ280BInst.class),
-            new Tuple<>(MAIN_TAG, YmF271Inst.class),
+            new Tuple<>(MAIN_TAG, Ym2151Chip.class),
+            new Tuple<>(MAIN_TAG, Ym2203Chip.class),
+            new Tuple<>("FM", Ym2203Chip.class),
+            new Tuple<>("PSG", Ym2203Chip.class),
+            new Tuple<>(MAIN_TAG, Ym2612Chip.class),
+            new Tuple<>(MAIN_TAG, Ym2608Chip.class),
+            new Tuple<>("FM", Ym2608Chip.class),
+            new Tuple<>("PSG", Ym2608Chip.class),
+            new Tuple<>("Rhythm", Ym2608Chip.class),
+            new Tuple<>("Adpcm", Ym2608Chip.class),
+            new Tuple<>(MAIN_TAG, Ym2610Chip.class),
+            new Tuple<>("FM", Ym2610Chip.class),
+            new Tuple<>("PSG", Ym2610Chip.class),
+            new Tuple<>("AdpcmA", Ym2610Chip.class),
+            new Tuple<>("AdpcmB", Ym2610Chip.class),
+            new Tuple<>(MAIN_TAG, Ym2413Chip.class),
+            new Tuple<>(MAIN_TAG, Ym3526Chip.class),
+            new Tuple<>(MAIN_TAG, Y8950Chip.class),
+            new Tuple<>(MAIN_TAG, Ym3812Chip.class),
+            new Tuple<>(MAIN_TAG, YmF262Chip.class),
+            new Tuple<>(MAIN_TAG, YmF278BChip.class),
+            new Tuple<>(MAIN_TAG, YmZ280BChip.class),
+            new Tuple<>(MAIN_TAG, YmF271Chip.class),
             null,
-            new Tuple<>(MAIN_TAG, Ay8910Inst.class),
-            new Tuple<>(MAIN_TAG, Sn76489Inst.class),
-            new Tuple<>(MAIN_TAG, HuC6280Inst.class),
-            new Tuple<>(MAIN_TAG, Saa1099Inst.class),
-            null,
-            null,
-            null,
-            null,
-            null,
-            new Tuple<>(MAIN_TAG, ScdPcmInst.class),
-            new Tuple<>(MAIN_TAG, Rf5C68Inst.class),
-            new Tuple<>(MAIN_TAG, PwmInst.class),
-            new Tuple<>(MAIN_TAG, OkiM6258Inst.class),
-            new Tuple<>(MAIN_TAG, OkiM6295Inst.class),
-            new Tuple<>(MAIN_TAG, C140Inst.class),
-            new Tuple<>(MAIN_TAG, C352Inst.class),
-            new Tuple<>(MAIN_TAG, SegaPcmInst.class),
-            new Tuple<>(MAIN_TAG, MultiPcmInst.class),
-            new Tuple<>(MAIN_TAG, K051649Inst.class),
-            new Tuple<>(MAIN_TAG, K053260Inst.class),
-            new Tuple<>(MAIN_TAG, K054539Inst.class),
-            new Tuple<>(MAIN_TAG, QSoundInst.class),
-            new Tuple<>(MAIN_TAG, Ga20Inst.class),
-            new Tuple<>(MAIN_TAG, NesInst.class),
-            new Tuple<>(MAIN_TAG, NesInst.DMC.class),
-            new Tuple<>(MAIN_TAG, NesInst.FDS.class),
-            new Tuple<>(MAIN_TAG, NesInst.MMC5.class),
-            new Tuple<>(MAIN_TAG, NesInst.N160.class),
-            new Tuple<>(MAIN_TAG, NesInst.VRC6.class),
-            new Tuple<>(MAIN_TAG, NesInst.VRC7.class),
-            new Tuple<>(MAIN_TAG, NesInst.FME7.class),
-            new Tuple<>(MAIN_TAG, DmgInst.class),
+            new Tuple<>(MAIN_TAG, Ay8910Chip.class),
+            new Tuple<>(MAIN_TAG, Sn76489Chip.class),
+            new Tuple<>(MAIN_TAG, HuC6280Chip.class),
+            new Tuple<>(MAIN_TAG, Saa1099Chip.class),
             null,
             null,
             null,
             null,
-            new Tuple<>(MAIN_TAG, Ppz8Inst.class)
+            null,
+            new Tuple<>(MAIN_TAG, Rf5C164Chip.class),
+            new Tuple<>(MAIN_TAG, Rf5C68Chip.class),
+            new Tuple<>(MAIN_TAG, PwmChip.class),
+            new Tuple<>(MAIN_TAG, OkiM6258Chip.class),
+            new Tuple<>(MAIN_TAG, OkiM6295Chip.class),
+            new Tuple<>(MAIN_TAG, C140Chip.class),
+            new Tuple<>(MAIN_TAG, C352Chip.class),
+            new Tuple<>(MAIN_TAG, SegaPcmChip.class),
+            new Tuple<>(MAIN_TAG, MultiPcmChip.class),
+            new Tuple<>(MAIN_TAG, K051649Chip.class),
+            new Tuple<>(MAIN_TAG, K053260Chip.class),
+            new Tuple<>(MAIN_TAG, K054539Chip.class),
+            new Tuple<>(MAIN_TAG, QSoundChip.class),
+            new Tuple<>(MAIN_TAG, Ga20Chip.class),
+            new Tuple<>(MAIN_TAG, NesChip.class),
+            new Tuple<>(MAIN_TAG, DmcChip.class),
+            new Tuple<>(MAIN_TAG, FdsChip.class),
+            new Tuple<>(MAIN_TAG, Mmc5Chip.class),
+            new Tuple<>(MAIN_TAG, N160Chip.class),
+            new Tuple<>(MAIN_TAG, Vrc6Chip.class),
+            new Tuple<>(MAIN_TAG, Vrc7Chip.class),
+            new Tuple<>(MAIN_TAG, Fme7Chip.class),
+            new Tuple<>(MAIN_TAG, DmgChip.class),
+            null,
+            null,
+            null,
+            null,
+            new Tuple<>(MAIN_TAG, Ppz8Chip.class)
     ).toArray(Tuple[]::new);
 }

@@ -9,11 +9,13 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdsound.Instrument;
 import mdsound.Instrument.PannableInstrument;
+import mdsound.instrument.Sn76489Inst;
+import mdsound.instrument.Sn76496Inst;
 
 
 /**
@@ -25,8 +27,6 @@ import mdsound.Instrument.PannableInstrument;
 public class Sn76489Chip implements Chip {
 
     private final Setting.ChipType2[] chipTypes = setting.getSN76489Type();
-
-    private final Class<? extends PannableInstrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
@@ -56,8 +56,23 @@ public class Sn76489Chip implements Chip {
 
     private Audio context;
 
+    @SuppressWarnings("unchecked")
+    private Class<? extends PannableInstrument> _inst(int chipId) {
+        return (Class<? extends PannableInstrument>) inst(chipId);
+    }
+
+    @Override
+    public int activeIndex(int chipId) {
+        return chipTypes[chipId].getEnabledId();
+    }
+
     @Override
     @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {Sn76489Inst.class, Sn76496Inst.class};
+    }
+
+    @Override
     public void init(Audio context) {
         this.context = context;
 
@@ -65,9 +80,6 @@ public class Sn76489Chip implements Chip {
             register[chipId] = new int[] {0, 15, 0, 15, 0, 15, 0, 15};
 
             fadeout[chipId] = 0;
-
-            //
-            inst[chipId] = (Class<? extends PannableInstrument>) EnmChip.SN76489.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -118,7 +130,7 @@ public class Sn76489Chip implements Chip {
             }
         } else {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(inst[chipId], chipId, 0, 0, data);
+                context.mds.write(_inst(chipId), chipId, 0, 0, data);
             }
         }
     }
@@ -136,7 +148,7 @@ public class Sn76489Chip implements Chip {
             }
         } else {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.inst(inst[chipId]).setPan(chipId, dData);
+                context.mds.inst(_inst(chipId)).setPan(chipId, dData);
                 pan[chipId] = dData;
             }
         }

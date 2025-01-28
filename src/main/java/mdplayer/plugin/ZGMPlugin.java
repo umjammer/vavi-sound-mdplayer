@@ -2,15 +2,12 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.ArrayList;
-import java.util.List;
 
 import mdplayer.Audio;
 import mdplayer.Common;
-import mdplayer.Setting;
+import mdplayer.chips.Ym2203Chip;
 import mdplayer.driver.zgm.Zgm;
 import mdplayer.format.FileFormat;
-import mdsound.MDSound;
 
 import static java.lang.System.getLogger;
 
@@ -33,7 +30,7 @@ public class ZGMPlugin extends BasePlugin {
             audio.driverReal = new Zgm();
         }
 
-        boolean r = zgmPlay(setting);
+        boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
             return false;
@@ -42,77 +39,61 @@ logger.log(Level.WARNING, "cannot start: " + this);
         return true;
     }
 
-    boolean zgmPlay(Setting setting) {
-        if (vgmBuf == null || setting == null) return false;
+    /** */
+    private boolean _play() {
+        audio.vgmFadeout = false;
+        audio.vgmFadeoutCounter = 1.0;
+        audio.vgmFadeoutCounterV = 0.00001;
+        vgmSpeed = 1;
+        vgmRealFadeoutVol = 0;
+        vgmRealFadeoutVolWait = 4;
 
-        try {
-            audio.chipRegister.reset();
+        audio.chipRegister.clearFadeoutVolume();
 
-            audio.vgmFadeout = false;
-            audio.vgmFadeoutCounter = 1.0;
-            audio.vgmFadeoutCounterV = 0.00001;
-            vgmSpeed = 1;
-            vgmRealFadeoutVol = 0;
-            vgmRealFadeoutVolWait = 4;
+        audio.chipRegister.reset();
 
-            audio.chipRegister.clearFadeoutVolume();
+        // Sealed until MIDI is supported
+//        startTrdVgmReal();
 
-            audio.chipRegister.reset();
+        hiyorimiNecessary = setting.getHiyorimiMode();
 
-            useChip.clear();
+        audio.chipLED.clear();
 
-            // MIDIに対応するまで封印
-            // startTrdVgmReal();
+        audio.masterVolume = setting.getBalance().getMasterVolume();
 
-            List<MDSound.Chip> lstChips = new ArrayList<>();
-
-            hiyorimiNecessary = setting.getHiyorimiMode();
-
-            audio.chipLED.clear();
-
-            audio.masterVolume = setting.getBalance().getMasterVolume();
-
-            if (!audio.driverVirtual.init(vgmBuf
-                    , this
-                    , Common.EnmModel.VirtualModel
-                    , new Common.EnmChip[] {Common.EnmChip.YM2203}
-                    , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
-                    , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-                return false;
-
-            // MIDIに対応するまで封印
-            //if (driverReal != null && !driverReal.init(vgmBuf
-            //    , chipRegister
-            //    , EnmModel.RealModel
-            //    , new EnmChip[] { EnmChip.YM2203 }
-            //    , (int)(setting.getoutputDevice().getSampleRate() * setting.LatencySCCI / 1000)
-            //    , (int)(setting.getoutputDevice().getSampleRate() * setting.getoutputDevice().getWaitTime() / 1000)))
-            //    return false;
-
-            hiyorimiNecessary = setting.getHiyorimiMode();
-            int hiyorimiDeviceFlag = 0;
-
-            audio.chipLED.clear();
-
-            audio.masterVolume = setting.getBalance().getMasterVolume();
-
-            //
-            //chips initialization
-            //
-
-            hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
-
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
-
-            audio.paused = false;
-            oneTimeReset = false;
-
-            Thread.sleep(500);
-
-            return true;
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
+        if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
+                new Class[] {Ym2203Chip.class},
+                setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
+                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
             return false;
-        }
+
+        // Sealed until MIDI is supported
+//            if (driverReal != null && !driverReal.init(vgmBuf, this, EnmModel.RealModel,
+//                    new EnmChip[] {EnmChip.YM2203},
+//                    (int) (setting.getoutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000),
+//                    (int) (setting.getoutputDevice().getSampleRate() * setting.getoutputDevice().getWaitTime() / 1000)))
+//                return false;
+
+        hiyorimiNecessary = setting.getHiyorimiMode();
+        int hiyorimiDeviceFlag = 0;
+
+        audio.chipLED.clear();
+
+        audio.masterVolume = setting.getBalance().getMasterVolume();
+
+        //
+        // chips initialization
+        //
+
+        hiyorimiNecessary = hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary;
+
+        audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, flatten());
+
+        audio.paused = false;
+        oneTimeReset = false;
+
+        sleep(500);
+
+        return true;
     }
 }

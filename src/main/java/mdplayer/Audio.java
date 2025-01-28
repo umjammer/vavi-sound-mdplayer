@@ -360,10 +360,10 @@ logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
 
     public boolean stopped = false;
 
-    public void setVolume(String tag, Class<? extends Instrument> c, boolean isAbs, int volume) {
+    public void setVolume(String tag, Class<? extends Chip> c, boolean isAbs, int volume) {
         try {
             int v = Common.range((isAbs ? 0 : setting.getBalance().getVolume(tag, c)) + volume, -192, 20);
-            mds.setVolume(tag, c, v);
+            mds.setVolume(tag, Audio.getInstance().chipRegister.chip(c).inst(0), v); // TODO vavi
             setting.getBalance().setVolume(tag, c, v);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);

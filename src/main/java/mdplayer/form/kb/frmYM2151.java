@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -118,9 +117,9 @@ public class frmYM2151 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YM2151, chipId, ch);
+                            parent.resetChannelMask(Ym2151Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YM2151, chipId, ch);
+                            parent.setChannelMask(Ym2151Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -131,11 +130,11 @@ public class frmYM2151 extends frmBase {
 
             if (ch < 8) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.YM2151, chipId, ch);
+                    parent.setChannelMask(Ym2151Chip.class, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.YM2151, chipId, ch);
+                for (ch = 0; ch < 8; ch++) parent.resetChannelMask(Ym2151Chip.class, chipId, ch);
                 return;
 
             }
@@ -148,7 +147,7 @@ public class frmYM2151 extends frmBase {
 
             if (instCh < 8) {
                  // Copying a tone to the clipboard
-                parent.getInstCh(EnmChip.YM2151, instCh, chipId);
+                parent.getInstCh(Ym2151Chip.class, instCh, chipId);
             }
         }
     };

@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
+import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.zgm.zgmChip.ChipFactory;
 import mdplayer.driver.zgm.zgmChip.ZgmChip;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 
@@ -45,7 +45,7 @@ public class Zgm extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
@@ -66,7 +66,7 @@ public class Zgm extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 

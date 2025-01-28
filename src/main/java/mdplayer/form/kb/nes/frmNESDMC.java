@@ -16,11 +16,11 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.NesChip;
+import mdplayer.chips.NesChip.DmcChip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -280,25 +280,25 @@ public class frmNESDMC extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 2; ch++) {
                         if (newParam.sqrChannels[ch].mask)
-                            parent.resetChannelMask(EnmChip.NES, chipId, ch);
+                            parent.resetChannelMask(NesChip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.NES, chipId, ch);
+                            parent.setChannelMask(NesChip.class, chipId, ch);
                     }
 
                     if (newParam.triChannel.mask)
-                        parent.resetChannelMask(EnmChip.DMC, chipId, 0);
+                        parent.resetChannelMask(DmcChip.class, chipId, 0);
                     else
-                        parent.setChannelMask(EnmChip.DMC, chipId, 0);
+                        parent.setChannelMask(DmcChip.class, chipId, 0);
 
                     if (newParam.noiseChannel.mask)
-                        parent.resetChannelMask(EnmChip.DMC, chipId, 1);
+                        parent.resetChannelMask(DmcChip.class, chipId, 1);
                     else
-                        parent.setChannelMask(EnmChip.DMC, chipId, 1);
+                        parent.setChannelMask(DmcChip.class, chipId, 1);
 
                     if (newParam.dmcChannel.mask)
-                        parent.resetChannelMask(EnmChip.DMC, chipId, 2);
+                        parent.resetChannelMask(DmcChip.class, chipId, 2);
                     else
-                        parent.setChannelMask(EnmChip.DMC, chipId, 2);
+                        parent.setChannelMask(DmcChip.class, chipId, 2);
                 }
                 return;
             }
@@ -308,8 +308,8 @@ public class frmNESDMC extends frmBase {
                 if (ev.getButton() == MouseEvent.BUTTON2) {
                     for (int i = 0; i < 5; i++) {
                         // Unmask.
-                        if (i < 2) parent.resetChannelMask(EnmChip.NES, chipId, i);
-                        else parent.resetChannelMask(EnmChip.DMC, chipId, i - 2);
+                        if (i < 2) parent.resetChannelMask(NesChip.class, chipId, i);
+                        else parent.resetChannelMask(DmcChip.class, chipId, i - 2);
                     }
 
                     return;
@@ -322,8 +322,8 @@ public class frmNESDMC extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // Mask.
-                    if (ch < 2) parent.setChannelMask(EnmChip.NES, chipId, ch);
-                    else parent.setChannelMask(EnmChip.DMC, chipId, ch - 2);
+                    if (ch < 2) parent.setChannelMask(NesChip.class, chipId, ch);
+                    else parent.setChannelMask(DmcChip.class, chipId, ch - 2);
 
                 }
             }

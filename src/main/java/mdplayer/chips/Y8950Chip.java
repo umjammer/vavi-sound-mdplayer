@@ -10,6 +10,9 @@ import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdsound.Instrument;
+import mdsound.instrument.Ay8910Inst;
+import mdsound.instrument.MameAy8910Inst;
 import mdsound.instrument.Y8950Inst;
 
 
@@ -33,6 +36,12 @@ public class Y8950Chip implements Chip {
     };
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {Y8950Inst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -126,7 +135,7 @@ public class Y8950Chip implements Chip {
         if (model == EnmModel.VirtualModel) {
             // if (!chipTypes[chipId].UseScci)
             {
-                context.mds.write(Y8950Inst.class, chipId, 0, addr, data);
+                context.mds.write(inst(chipId), chipId, 0, addr, data);
             }
         } else {
         }

@@ -13,7 +13,6 @@ import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -227,9 +226,9 @@ public class frmAY8910 extends frmChipBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 3; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.AY8910, chipId, ch);
+                            parent.resetChannelMask(Ay8910Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.AY8910, chipId, ch);
+                            parent.setChannelMask(Ay8910Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -243,13 +242,13 @@ public class frmAY8910 extends frmChipBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // マスク
-                    parent.setChannelMask(EnmChip.AY8910, chipId, ch);
+                    parent.setChannelMask(Ay8910Chip.class, chipId, ch);
                     return;
                 }
 
                 //  Unmask.
                 for (ch = 0; ch < 3; ch++)
-                    parent.resetChannelMask(EnmChip.AY8910, chipId, ch);
+                    parent.resetChannelMask(Ay8910Chip.class, chipId, ch);
             }
         }
     };

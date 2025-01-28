@@ -11,6 +11,7 @@ import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdsound.Instrument;
 import mdsound.chips.SegaPcm;
 import mdsound.instrument.SegaPcmInst;
 
@@ -41,6 +42,12 @@ public class SegaPcmChip implements Chip {
     };
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {SegaPcmInst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -84,7 +91,7 @@ public class SegaPcmChip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0])
-                context.mds.write(SegaPcmInst.class, chipId, 0, offset, data);
+                context.mds.write(inst(chipId), chipId, 0, offset, data);
 //logger.log(Level.TRACE, "chipId=%d offset=%x data=%x ".formatted(chipId, offset, data));
         } else {
             if (realChips != null && realChips[chipId] != null)

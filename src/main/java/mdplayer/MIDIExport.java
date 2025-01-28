@@ -7,7 +7,8 @@ import java.util.List;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
-import mdplayer.Common.EnmChip;
+import mdplayer.chips.Ym2151Chip;
+import mdplayer.chips.Ym2612Chip;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
@@ -32,25 +33,22 @@ public class MIDIExport {
         this.setting = Setting.getInstance();
     }
 
-    public void outMIDIData(EnmChip chip, int chipId, int dPort, int dAddr, int dData, int hosei, long vgmFrameCounter) {
+    public void outMIDIData(Class<? extends Chip> chip, int chipId, int dPort, int dAddr, int dData, int hosei, long vgmFrameCounter) {
         if (!setting.getMidiExport().getUseMIDIExport()) return;
         if (setting.getMidiExport().getExportPath().isEmpty()) return;
         if (vgmFrameCounter < 0) return;
         if (chipId != 0) return;
 
-        if (chip != EnmChip.YM2612 && chip != EnmChip.YM2151) return;
+        if (chip != Ym2612Chip.class && chip != Ym2151Chip.class) return;
 
-        switch (chip) {
-        case YM2151:
+        if (chip == Ym2151Chip.class) {
             if (setting.getMidiExport().getUseYM2151Export()) {
                 outMIDIData_YM2151(chipId, dPort, dAddr, dData, hosei, vgmFrameCounter);
             }
-            break;
-        case YM2612:
+        } else if (chip == Ym2612Chip.class) {
             if (setting.getMidiExport().getUseYM2612Export()) {
                 outMIDIData_YM2612(chipId, dPort, dAddr, dData, vgmFrameCounter);
             }
-            break;
         }
     }
 

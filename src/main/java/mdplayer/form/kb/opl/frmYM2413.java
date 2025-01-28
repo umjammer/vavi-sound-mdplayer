@@ -18,7 +18,6 @@ import javax.swing.JPanel;
 
 import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -377,9 +376,9 @@ public class frmYM2413 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 14; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YM2413, chipId, ch);
+                            parent.resetChannelMask(Ym2413Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YM2413, chipId, ch);
+                            parent.setChannelMask(Ym2413Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -400,19 +399,19 @@ public class frmYM2413 extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // Mask.
-                    parent.setChannelMask(EnmChip.YM2413, chipId, ch);
+                    parent.setChannelMask(Ym2413Chip.class, chipId, ch);
                     return;
                 }
 
                 // Unmask.
-                for (ch = 0; ch < 14; ch++) parent.resetChannelMask(EnmChip.YM2413, chipId, ch);
+                for (ch = 0; ch < 14; ch++) parent.resetChannelMask(Ym2413Chip.class, chipId, ch);
                 return;
             }
 
             //音色欄
             if (py < 15 * 8 && px < 16 * 8) {
                 // Copying a tone to the clipboard
-                parent.getInstCh(EnmChip.YM2413, 0, chipId);
+                parent.getInstCh(Ym2413Chip.class, 0, chipId);
             }
         }
     };

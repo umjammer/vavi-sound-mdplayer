@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.instrument.P86Inst;
 
 
@@ -21,6 +22,12 @@ import mdsound.instrument.P86Inst;
 public class P86Chip implements Chip {
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {P86Inst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -58,6 +65,6 @@ public class P86Chip implements Chip {
 
         if (port == -1 && addr == -1 && data == -1)
             return;
-        context.mds.inst(P86Inst.class).write(chipId, port, addr, data);
+        context.mds.inst(inst(chipId)).write(chipId, port, addr, data);
     }
 }

@@ -45,8 +45,8 @@ public class VstMng {
                 vstPluginsInst.get(0).vstPluginsForm.setVisible(false);
                 if (vstPluginsInst.get(0).vstPlugins != null)
                     vstPluginsInst.get(0).vstPlugins.close();
-                if (vstPluginsInst.get(0).vstPlugins != null)
-                    vstPluginsInst.get(0).vstPlugins.MainsChanged(false);
+//                if (vstPluginsInst.get(0).vstPlugins != null)
+//                    vstPluginsInst.get(0).vstPlugins.MainsChanged(false);
                 vstPluginsInst.get(0).vstPlugins.close();
             }
 
@@ -61,9 +61,9 @@ public class VstMng {
                 vstPlugins.get(0).location = vstPlugins.get(0).vstPluginsForm.getLocation();
                 vstPlugins.get(0).vstPluginsForm.setVisible(false);
                 if (vstPlugins.get(0).vstPlugins != null)
-                    vstPlugins.get(0).vstPlugins.stopProcess();
-                if (vstPlugins.get(0).vstPlugins != null)
-                    vstPlugins.get(0).vstPlugins.MainsChanged(false);
+                    vstPlugins.get(0).vstPlugins.close();
+//                if (vstPlugins.get(0).vstPlugins != null)
+//                    vstPlugins.get(0).vstPlugins.MainsChanged(false);
                 vstPlugins.get(0).vstPlugins.close();
             }
 
@@ -116,9 +116,9 @@ public class VstMng {
 
             ctx.setBlockSize(512);
             ctx.setSampleRate(setting.getOutputDevice().getSampleRate() / 1000.0f);
-            ctx.MainsChanged(true);
-            ctx.StartProcess();
-            vi.effectName = ctx.GetEffectName();
+//            ctx.MainsChanged(true);
+//            ctx.StartProcess();
+            vi.effectName = ctx.getProgramName();
             vi.power = setting.getVst().getVSTInfo()[i].power;
             vi.editor = setting.getVst().getVSTInfo()[i].editor;
             vi.location = setting.getVst().getVSTInfo()[i].location;
@@ -186,7 +186,7 @@ public class VstMng {
     private void ReleaseAllPlugins() {
         for (VstInfo2 ctx : vstPlugins) {
             // dispose of all (unmanaged) resources
-            ctx.vstPlugins.Dispose();
+            ctx.vstPlugins.close();
         }
 
         vstPlugins.clear();
@@ -194,14 +194,14 @@ public class VstMng {
 
 
     public void Close() {
-        setting.getVst().VSTInfo = null;
+        setting.getVst().setVSTInfo(null);
         List<VstInfo> vstlst = new ArrayList<>();
 
         for (VstInfo2 vstPlugin : vstPlugins) {
             try {
-                vstPlugin.vstPluginsForm.timer1.setEnabled(false);
-                vstPlugin.location = vstPlugin.vstPluginsForm.Location;
-                vstPlugin.vstPluginsForm.Close();
+                vstPlugin.vstPluginsForm.timer1.stop();
+                vstPlugin.location = vstPlugin.vstPluginsForm.getLocation();
+                vstPlugin.vstPluginsForm.setVisible(false);
             } catch (Exception e) {
                 logger.log(Level.ERROR, e.getMessage(), e);
             }
@@ -209,9 +209,8 @@ public class VstMng {
             try {
                 if (vstPlugin.vstPlugins != null) {
                     vstPlugin.vstPlugins.editClose();
-                    vstPlugin.vstPlugins.PluginCommandStub.StopProcess();
-                    vstPlugin.vstPlugins.PluginCommandStub.MainsChanged(false);
-                    int pc = vstPlugin.vstPlugins.PluginInfo.ParameterCount;
+                    vstPlugin.vstPlugins.close();
+                    int pc = vstPlugin.vstPlugins.ParameterCount;
                     List<Float> plst = new ArrayList<>();
                     for (int p = 0; p < pc; p++) {
                         float v = vstPlugin.vstPlugins.getParameter(p);
@@ -235,14 +234,14 @@ public class VstMng {
 
             if (!vstPlugin.isInstrument) vstlst.add(vi);
         }
-        setting.getVst().setVSTInfo(vstlst.toArray(VstInfo::new));
+        setting.getVst().setVSTInfo(vstlst.toArray(VstInfo[]::new));
 
 
         for (VstInfo2 vstInfo2 : vstPluginsInst) {
             try {
-                vstInfo2.vstPluginsForm.timer1.setEnabled(false);
-                vstInfo2.location = vstInfo2.vstPluginsForm.Location;
-                vstInfo2.vstPluginsForm.Close();
+                vstInfo2.vstPluginsForm.timer1.stop();
+                vstInfo2.location = vstInfo2.vstPluginsForm.getLocation();
+                vstInfo2.vstPluginsForm.setVisible(false);
             } catch (Exception e) {
                 logger.log(Level.ERROR, e.getMessage(), e);
             }
@@ -250,8 +249,7 @@ public class VstMng {
             try {
                 if (vstInfo2.vstPlugins != null) {
                     vstInfo2.vstPlugins.editClose();
-                    vstInfo2.vstPlugins.StopProcess();
-                    vstInfo2.vstPlugins.PluginCommandStub.MainsChanged(false);
+                    vstInfo2.vstPlugins.close();
                     int pc = vstInfo2.vstPlugins.PluginInfo.ParameterCount;
                     List<Float> plst = new ArrayList<>();
                     for (int p = 0; p < pc; p++) {
@@ -755,43 +753,43 @@ public class VstMng {
             return vti;
         }
 
-        /* */
+        /** */
         public String GetVendorString() {
             RaisePluginCalled("GetVendorString()");
             return "";
         }
 
-        /* */
+        /** */
         public int GetVendorVersion() {
             RaisePluginCalled("GetVendorVersion()");
             return 1000;
         }
 
-        /* */
+        /** */
         public boolean IoChanged() {
             RaisePluginCalled("IoChanged()");
             return false;
         }
 
-        /* */
+        /** */
         public boolean OpenFileSelector(VstFileSelect fileSelect) {
             RaisePluginCalled("OpenFileSelector(" + fileSelect.Command + ")");
             return false;
         }
 
-        /* */
+        /** */
         public boolean ProcessEvents(VstEvent[] events) {
             RaisePluginCalled("ProcessEvents(" + events.length + ")");
             return false;
         }
 
-        /* */
+        /** */
         public boolean SizeWindow(int width, int height) {
             RaisePluginCalled("SizeWindow(" + width + ", " + height + ")");
             return false;
         }
 
-        /* */
+        /** */
         public boolean UpdateDisplay() {
             RaisePluginCalled("UpdateDisplay()");
             return false;

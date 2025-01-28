@@ -2,23 +2,24 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
 
 import dotnet4j.io.Stream;
 import mdplayer.Audio;
 import mdplayer.Common;
+import mdplayer.chips.P86Chip;
+import mdplayer.chips.PpsChip;
+import mdplayer.chips.Ppz8Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.pmd.PMDJava;
 import mdplayer.format.FileFormat;
 import mdplayer.format.MMLFileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
+import mdsound.instrument.P86Inst;
 import mdsound.instrument.PpsInst;
 import mdsound.instrument.Ppz8Inst;
 import mdsound.instrument.Ym2608Inst;
-import mdsound.instrument.P86Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -43,7 +44,7 @@ public class PMDPlugin extends BasePlugin {
             audio.driverReal = new PMDJava();
             ((PMDJava) audio.driverReal).setPlayingFileName(playingFileName);
         }
-        boolean r = mmlPlay_PMDDotNET(format instanceof MMLFileFormat ? 0 : 1);
+        boolean r = _play(format instanceof MMLFileFormat ? 0 : 1);
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
             return false;
@@ -52,131 +53,109 @@ logger.log(Level.WARNING, "cannot start: " + this);
         return true;
     }
 
-    boolean mmlPlay_PMDDotNET(int fileType) {
+    /** */
+    private boolean _play(int fileType) {
+        resetFadeOutParam();
 
-        try {
-            if (vgmBuf == null || setting == null) return false;
+        startTrdVgmReal();
 
-            //Stop();
+        hiyorimiNecessary = setting.getHiyorimiMode();
 
-            audio.chipRegister.reset();
-            resetFadeOutParam();
-            useChip.clear();
+        audio.chipLED.clear();
+        audio.masterVolume = setting.getBalance().getMasterVolume();
 
-            startTrdVgmReal();
-
-            List<MDSound.Chip> lstChips = new ArrayList<>();
-            MDSound.Chip chip;
-
-            hiyorimiNecessary = setting.getHiyorimiMode();
-
-            audio.chipLED.clear();
-            audio.masterVolume = setting.getBalance().getMasterVolume();
-
-            Ym2608Inst ym2608 = Instrument.getInstrument(Ym2608Inst.class);
-            chip = new MDSound.Chip();
-            chip.id = 0;
-            audio.chipLED.put("PriOPNA", 1);
-            chip.instrument = ym2608;
-            chip.samplingRate = 55467;
-            chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class);
-            chip.clock = PMDJava.baseclock;
+        MDSound.Chip chip = new MDSound.Chip();
+        chip.id = 0;
+        audio.chipLED.put("PriOPNA", 1);
+        chip.instrument = Instrument.getInstrument(Ym2608Inst.class);
+        chip.samplingRate = 55467;
+        chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
+        chip.clock = PMDJava.baseclock;
+        if (chip.instrument instanceof Ym2608Inst ym2608) {
             chip.setVolumes.put("FM", ym2608::setFMVolume);
             chip.setVolumes.put("PSG", ym2608::setPSGVolume);
             chip.setVolumes.put("Rhythm", ym2608::setRhythmVolume);
             chip.setVolumes.put("Adpcm", ym2608::setAdpcmVolume);
-            Function<String, Stream> fn = Common::getOPNARyhthmStream;
-            chip.option = new Object[] {fn};
-            lstChips.add(chip);
-            useChip.add(Common.EnmChip.YM2608);
+        }
+        Function<String, Stream> fn = Common::getOPNARyhthmStream;
+        chip.option = new Object[] {fn};
+        put(Ym2608Chip.class, chip);
 //            audio.clockYM2608 = PMDJava.baseclock;
 
-            Ppz8Inst ppz8 = Instrument.getInstrument(Ppz8Inst.class);
-            chip = new MDSound.Chip();
-            chip.id = (byte) 0;
-            chip.instrument = ppz8;
-            chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ppz8Inst.class);
-            chip.clock = PMDJava.baseclock;
-            chip.option = null;
-            audio.chipLED.put("PriPPZ8", 1);
-            lstChips.add(chip);
-            useChip.add(Common.EnmChip.PPZ8);
+        chip = new MDSound.Chip();
+        chip.id = 0;
+        chip.instrument = Instrument.getInstrument(Ppz8Inst.class);
+        chip.samplingRate = setting.getOutputDevice().getSampleRate();
+        chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ppz8Chip.class);
+        chip.clock = PMDJava.baseclock;
+        chip.option = null;
+        audio.chipLED.put("PriPPZ8", 1);
+        put(Ppz8Chip.class, chip);
 
+        chip = new MDSound.Chip();
+        chip.id = 0;
+        chip.instrument = Instrument.getInstrument(PpsInst.class);
+        chip.samplingRate = setting.getOutputDevice().getSampleRate();
+        chip.volume = 0;
+        chip.clock = PMDJava.baseclock;
+        chip.option = null;
+        audio.chipLED.put("PriPPSDRV", 1);
+        put(PpsChip.class, chip);
 
-            PpsInst ppsdrv = Instrument.getInstrument(PpsInst.class);
-            chip = new MDSound.Chip();
-            chip.id = (byte) 0;
-            chip.instrument = ppsdrv;
-            chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = 0;
-            chip.clock = PMDJava.baseclock;
-            chip.option = null;
-            audio.chipLED.put("PriPPSDRV", 1);
-            lstChips.add(chip);
-            useChip.add(Common.EnmChip.PPSDRV);
+        P86Inst P86 = Instrument.getInstrument(P86Inst.class);
+        chip = new MDSound.Chip();
+        chip.id = 0;
+        chip.instrument = P86;
+        chip.samplingRate = setting.getOutputDevice().getSampleRate();
+        chip.volume = 0;
+        chip.clock = PMDJava.baseclock;
+        chip.option = null;
+        audio.chipLED.put("PriP86", 1);
+        put(P86Chip.class, chip);
 
+        audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, flatten());
 
-            P86Inst P86 = Instrument.getInstrument(P86Inst.class);
-            chip = new MDSound.Chip();
-            chip.id = (byte) 0;
-            chip.instrument = P86;
-            chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = 0;
-            chip.clock = PMDJava.baseclock;
-            chip.option = null;
-            audio.chipLED.put("PriP86", 1);
-            lstChips.add(chip);
-            useChip.add(Common.EnmChip.P86);
+        audio.setVolume(MAIN_TAG, Ym2608Chip.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class));
+        audio.setVolume("FM", Ym2608Chip.class, true, setting.getBalance().getVolume("FM", Ym2608Chip.class));
+        audio.setVolume("PSG", Ym2608Chip.class, true, setting.getBalance().getVolume("PSG", Ym2608Chip.class));
+        audio.setVolume("Rhythm", Ym2608Chip.class, true, setting.getBalance().getVolume("Rhythm", Ym2608Chip.class));
+        audio.setVolume("Adpcm", Ym2608Chip.class, true, setting.getBalance().getVolume("Adpcm", Ym2608Chip.class));
 
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
+        audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x2d, 0x00, Common.EnmModel.VirtualModel);
+        audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x2d, 0x00, Common.EnmModel.RealModel);
+        audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
+        audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x29, 0x82, Common.EnmModel.RealModel);
+        audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
+        audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x29, 0x82, Common.EnmModel.RealModel);
+        audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Psg TONE でリセット
+        audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, Common.EnmModel.RealModel);
 
-            audio.setVolume(MAIN_TAG, Ym2608Inst.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2608Inst.class));
-            audio.setVolume("FM", Ym2608Inst.class, true, setting.getBalance().getVolume("FM", Ym2608Inst.class));
-            audio.setVolume("PSG", Ym2608Inst.class, true, setting.getBalance().getVolume("PSG", Ym2608Inst.class));
-            audio.setVolume("Rhythm", Ym2608Inst.class, true, setting.getBalance().getVolume("Rhythm", Ym2608Inst.class));
-            audio.setVolume("Adpcm", Ym2608Inst.class, true, setting.getBalance().getVolume("Adpcm", Ym2608Inst.class));
+        audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 0, PMDJava.baseclock, Common.EnmModel.RealModel);
+        audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 1, PMDJava.baseclock, Common.EnmModel.RealModel);
+        audio.chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
+        audio.chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
 
-            audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x2d, 0x00, Common.EnmModel.VirtualModel);
-            audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x2d, 0x00, Common.EnmModel.RealModel);
-            audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
-            audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x29, 0x82, Common.EnmModel.RealModel);
-            audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
-            audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x29, 0x82, Common.EnmModel.RealModel);
-            audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Psg TONE でリセット
-            audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, Common.EnmModel.RealModel);
-
-            audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 0, PMDJava.baseclock, Common.EnmModel.RealModel);
-            audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 1, PMDJava.baseclock, Common.EnmModel.RealModel);
-            audio.chipRegister.chip(Ym2608Chip.class).setVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
-            audio.chipRegister.chip(Ym2608Chip.class).setVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
-
-
-            if (!audio.driverVirtual.init(vgmBuf, fileType, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.YM2608}
-                    , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
+        if (!audio.driverVirtual.init(vgmBuf, fileType, this, Common.EnmModel.VirtualModel, new Class[] {Ym2608Chip.class}
+                , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
+                , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
+            return false;
+        if (audio.driverReal != null) {
+            if (!audio.driverReal.init(vgmBuf, fileType, this, Common.EnmModel.RealModel, new Class[] {Ym2608Chip.class}
+                    , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
                     , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
-            if (audio.driverReal != null) {
-                if (!audio.driverReal.init(vgmBuf, fileType, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.YM2608}
-                        , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
-                        , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-                    return false;
-            }
-
-            // Play
-
-            audio.paused = false;
-
-            if (audio.driverReal != null && setting.getYM2608Type()[0].getUseReal()[0]) {
-//                SoundChip.realChip.WaitOPNADPCMData(setting.getYM2608Type()[0].getRealChipInfo()[0].getSoundLocation() == -1);
-            }
-
-            oneTimeReset = false;
-
-            return true;
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-            return false;
         }
+
+        // Play
+
+        audio.paused = false;
+
+        if (audio.driverReal != null && setting.getYM2608Type()[0].getUseReal()[0]) {
+//                SoundChip.realChip.WaitOPNADPCMData(setting.getYM2608Type()[0].getRealChipInfo()[0].getSoundLocation() == -1);
+        }
+
+        oneTimeReset = false;
+
+        return true;
     }
 }

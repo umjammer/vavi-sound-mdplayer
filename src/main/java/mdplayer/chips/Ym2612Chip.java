@@ -8,11 +8,14 @@ package mdplayer.chips;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.Instrument;
+import mdsound.instrument.MameYm2612Inst;
+import mdsound.instrument.SimpleYm3438Inst;
+import mdsound.instrument.Ym2612Inst;
+import mdsound.instrument.Ym3438Inst;
 
 
 /**
@@ -24,8 +27,6 @@ import mdsound.Instrument;
 public class Ym2612Chip implements Chip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2612Type();
-
-    private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
@@ -48,6 +49,17 @@ public class Ym2612Chip implements Chip {
     private Audio context;
 
     @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {Ym2612Inst.class, Ym3438Inst.class, MameYm2612Inst.class, SimpleYm3438Inst.class};
+    }
+
+    @Override
+    public int activeIndex(int chipId) {
+        return chipTypes[chipId].getEnabledId();
+    }
+
+    @Override
     public void init(Audio context) {
         this.context = context;
 
@@ -66,9 +78,6 @@ public class Ym2612Chip implements Chip {
             keyOn[chipId] = new int[] {0, 0, 0, 0, 0, 0};
 
             fadeout[chipId] = 0;
-
-            //
-            inst[chipId] = EnmChip.YM2612.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -114,7 +123,7 @@ public class Ym2612Chip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
             register[chipId][port][addr] = data;
-            context.chipRegister.plugin(MidiPlugin.class).export.outMIDIData(EnmChip.YM2612, chipId, port, addr, data, 0, frameCounter);
+            context.chipRegister.plugin(MidiPlugin.class).export.outMIDIData(Ym2612Chip.class, chipId, port, addr, data, 0, frameCounter);
         }
 
         if ((model == EnmModel.RealModel && chipTypes[chipId].getUseReal()[0]) || (model == EnmModel.VirtualModel && !chipTypes[chipId].getUseReal()[0])) {
@@ -200,11 +209,11 @@ public class Ym2612Chip implements Chip {
                 // only PCM (6Ch) is played by emulator
                 if (chipTypes[chipId].getRealChipInfo()[0].getOnlyPCMEmulation()) {
                     if (port == 0 && addr == 0x2b) {
-                        context.mds.write(inst[chipId], chipId, port, addr, data);
+                        context.mds.write(inst(chipId), chipId, port, addr, data);
                     } else if (port == 0 && addr == 0x2a) {
-                        context.mds.write(inst[chipId], chipId, port, addr, data);
+                        context.mds.write(inst(chipId), chipId, port, addr, data);
                     } else if (port == 1 && addr == 0xb6) {
-                        context.mds.write(inst[chipId], chipId, port, addr, data);
+                        context.mds.write(inst(chipId), chipId, port, addr, data);
                     }
                 }
             } else {
@@ -234,7 +243,7 @@ public class Ym2612Chip implements Chip {
 
                 // Send data to MDSound only when using the emulator
 //logger.log(Level.TRACE, "setYM2612: chipId: %d, port: %02X, addr: %02X, data: %02X".formatted(chipId, port, addr, data));
-                context.mds.write(inst[chipId], chipId, port, addr, data);
+                context.mds.write(inst(chipId), chipId, port, addr, data);
             }
         } else {
 
@@ -275,9 +284,9 @@ public class Ym2612Chip implements Chip {
         write(chipId, p, 0x4c + c, register[chipId][p][0x4c + c], EnmModel.RealModel, -1);
 
         if (mask)
-            context.mds.inst(inst[chipId]).setMask(chipId, ch);
+            context.mds.inst(inst(chipId)).setMask(chipId, ch);
         else
-            context.mds.inst(inst[chipId]).resetMask(chipId, ch);
+            context.mds.inst(inst(chipId)).resetMask(chipId, ch);
     }
 
     public void setSyncWait(int chipId, int wait) {

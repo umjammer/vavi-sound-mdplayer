@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.chips.GbSound;
 import mdsound.instrument.DmgInst;
 
@@ -27,6 +28,12 @@ public class DmgChip implements Chip {
     };
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {DmgInst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -49,7 +56,7 @@ public class DmgChip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
 //            if (!ctNES[chipId].UseScci) {
-                context.mds.write(DmgInst.class, chipId, 0, addr, data);
+                context.mds.write(inst(chipId), chipId, 0, addr, data);
 //            }
         } else {
 //            if (scNES[chipId] == null) return;
@@ -60,12 +67,12 @@ public class DmgChip implements Chip {
 
     public void setMask(int chipId, int ch) {
         mask[chipId][ch] = true;
-        context.mds.inst(DmgInst.class).setMask(chipId, ch);
+        context.mds.inst(inst(chipId)).setMask(chipId, ch);
     }
 
     public void resetMask(int chipId, int ch) {
         mask[chipId][ch] = false;
-        context.mds.inst(DmgInst.class).resetMask(chipId, ch);
+        context.mds.inst(inst(chipId)).resetMask(chipId, ch);
     }
 
     public GbSound read(int chipId) {

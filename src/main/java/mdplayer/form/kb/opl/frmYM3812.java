@@ -18,7 +18,6 @@ import javax.swing.JPanel;
 
 import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -294,9 +293,9 @@ public class frmYM3812 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 9 + 5; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YM3812, chipId, ch);
+                            parent.resetChannelMask(Ym3812Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YM3812, chipId, ch);
+                            parent.setChannelMask(Ym3812Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -315,17 +314,17 @@ public class frmYM3812 extends frmBase {
             }
 
             if (ev.getButton() == MouseEvent.BUTTON1 && ch > 10 && ch < 20) {
-                parent.getInstCh(EnmChip.YM3812, ch - 11, chipId);
+                parent.getInstCh(Ym3812Chip.class, ch - 11, chipId);
             }
 
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 // Mask.
-                parent.setChannelMask(EnmChip.YM3812, chipId, ch);
+                parent.setChannelMask(Ym3812Chip.class, chipId, ch);
                 return;
             }
 
             // Unmask.
-            for (ch = 0; ch < 9 + 5; ch++) parent.resetChannelMask(EnmChip.YM3812, chipId, ch);
+            for (ch = 0; ch < 9 + 5; ch++) parent.resetChannelMask(Ym3812Chip.class, chipId, ch);
         }
     };
 

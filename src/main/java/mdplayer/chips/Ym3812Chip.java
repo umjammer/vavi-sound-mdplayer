@@ -8,11 +8,11 @@ package mdplayer.chips;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.Instrument;
+import mdsound.instrument.MameYm3812Inst;
 import mdsound.instrument.Ym3812Inst;
 
 
@@ -25,8 +25,6 @@ import mdsound.instrument.Ym3812Inst;
 public class Ym3812Chip implements Chip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM3812Type();
-
-    private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
@@ -44,6 +42,17 @@ public class Ym3812Chip implements Chip {
     private Audio context;
 
     @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {Ym3812Inst.class, MameYm3812Inst.class};
+    }
+
+    @Override
+    public int activeIndex(int chipId) {
+        return chipTypes[chipId].getEnabledId();
+    }
+
+    @Override
     public void init(Audio context) {
         this.context = context;
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -54,9 +63,6 @@ public class Ym3812Chip implements Chip {
             }
 
             fadeout[chipId] = 0;
-
-            //
-            inst[chipId] = EnmChip.YM3812.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -159,7 +165,7 @@ public class Ym3812Chip implements Chip {
     private void _write(int chipId, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(inst[chipId], chipId, 0, addr, data);
+                context.mds.write(inst(chipId), chipId, 0, addr, data);
             }
         } else {
             if (realChips[chipId] == null)

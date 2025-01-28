@@ -8,8 +8,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import javax.swing.JOptionPane;
 
-import dotnet4j.util.compat.TriConsumer;
-import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
@@ -19,8 +17,11 @@ import dotnet4j.io.IOException;
 import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
+import dotnet4j.util.compat.TriConsumer;
+import dotnet4j.util.compat.Tuple;
+import mdplayer.Chip;
+import mdplayer.Chip.Unused;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2608Chip;
@@ -32,13 +33,12 @@ import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
 import musicDriverInterface.GD3Tag;
-import musicDriverInterface.MmlDatum;
-import musicDriverInterface.Tag;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
+import musicDriverInterface.MmlDatum;
+import musicDriverInterface.Tag;
 import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
 
 
@@ -88,27 +88,27 @@ public class MucomJava extends BaseDriver {
         return g;
     }
 
-    public EnmChip[] useChipsFromMub(byte[] buf) {
-        List<EnmChip> chips = new ArrayList<>();
-        chips.add(EnmChip.YM2608);
-        chips.add(EnmChip.Unuse);
-        chips.add(EnmChip.Unuse);
-        chips.add(EnmChip.Unuse);
-        chips.add(EnmChip.Unuse);
+    public static Class<? extends Chip>[] useChipsFromMub(byte[] buf) {
+        List<Class<? extends Chip>> chips = new ArrayList<>();
+        chips.add(Ym2608Chip.class);
+        chips.add(Unused.class);
+        chips.add(Unused.class);
+        chips.add(Unused.class);
+        chips.add(Unused.class);
 
         // Standard mub files
         if (buf[0] == 0x4d
                 && buf[1] == 0x55
                 && buf[2] == 0x43
                 && buf[3] == 0x38) {
-            return chips.toArray(EnmChip[]::new);
+            return chips.toArray(Class[]::new);
         }
         // Standard mub files
         if (buf[0] == 0x4d
                 && buf[1] == 0x55
                 && buf[2] == 0x42
                 && buf[3] == 0x38) {
-            return chips.toArray(EnmChip[]::new);
+            return chips.toArray(Class[]::new);
         }
         // Extended mub file?
         if (buf[0] != 'm'
@@ -152,11 +152,11 @@ logger.log(Level.WARNING, "Extended mub file?");
         }
 
         chips.clear();
-        chips.add(EnmChip.Unuse);
-        chips.add(EnmChip.Unuse);
-        chips.add(EnmChip.Unuse);
-        chips.add(EnmChip.Unuse);
-        chips.add(EnmChip.Unuse);
+        chips.add(Unused.class);
+        chips.add(Unused.class);
+        chips.add(Unused.class);
+        chips.add(Unused.class);
+        chips.add(Unused.class);
 
         if (chipsCount > 0) {
             if (partCount[0] > 0) {
@@ -164,7 +164,7 @@ logger.log(Level.WARNING, "Extended mub file?");
                 for (int i = 0; i < partCount[0]; i++) {
                     n += pageCount[0][i];
                 }
-                if (n > 0) chips.set(0, EnmChip.YM2608);
+                if (n > 0) chips.set(0, Ym2608Chip.class);
             }
         }
 
@@ -174,7 +174,7 @@ logger.log(Level.WARNING, "Extended mub file?");
                 for (int i = 0; i < partCount[1]; i++) {
                     n += pageCount[1][i];
                 }
-                if (n > 0) chips.set(1, EnmChip.S_YM2608);
+                if (n > 0) chips.set(1, Ym2608Chip.class);
             }
         }
 
@@ -184,7 +184,7 @@ logger.log(Level.WARNING, "Extended mub file?");
                 for (int i = 0; i < partCount[2]; i++) {
                     n += pageCount[2][i];
                 }
-                if (n > 0) chips.set(2, EnmChip.YM2610);
+                if (n > 0) chips.set(2, Ym2610Chip.class);
             }
         }
 
@@ -194,7 +194,7 @@ logger.log(Level.WARNING, "Extended mub file?");
                 for (int i = 0; i < partCount[3]; i++) {
                     n += pageCount[3][i];
                 }
-                if (n > 0) chips.set(3, EnmChip.S_YM2610);
+                if (n > 0) chips.set(3, Ym2610Chip.class);
             }
         }
 
@@ -204,15 +204,15 @@ logger.log(Level.WARNING, "Extended mub file?");
                 for (int i = 0; i < partCount[4]; i++) {
                     n += pageCount[4][i];
                 }
-                if (n > 0) chips.set(4, EnmChip.YM2151);
+                if (n > 0) chips.set(4, Ym2151Chip.class);
             }
         }
 
-        return chips.toArray(EnmChip[]::new);
+        return chips.toArray(Class[]::new);
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         gd3 = getGD3Info(vgmBuf);
 
         this.vgmBuf = vgmBuf;
@@ -240,7 +240,7 @@ logger.log(Level.WARNING, "Extended mub file?");
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 
@@ -319,10 +319,10 @@ logger.log(Level.WARNING, "Extended mub file?");
             dest.add(md != null ? (byte) (md.dat & 0xff) : (byte) 0);
         }
 
-        return toByteArray(dest);
+        return ByteUtil.toByteArray(dest);
     }
 
-    private MUCOMFileType checkFileType(byte[] buf) {
+    private static MUCOMFileType checkFileType(byte[] buf) {
         if (buf == null || buf.length < 4) {
             return MUCOMFileType.unknown;
         }

@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dotnet4j.util.compat.Tuple;
+import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2608Chip;
@@ -19,8 +19,8 @@ import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mxdrv.XMemory;
 import mdplayer.plugin.BasePlugin;
-import mdsound.instrument.X68kMPcmInst;
 import mdsound.chips.MPcm;
+import mdsound.instrument.X68kMPcmInst;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
@@ -34,7 +34,7 @@ public class MnDrv extends BaseDriver {
     public List<Tuple<String, byte[]>> extendFile = null;
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
@@ -115,7 +115,7 @@ public class MnDrv extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 

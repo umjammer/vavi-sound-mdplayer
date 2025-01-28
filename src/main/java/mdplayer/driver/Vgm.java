@@ -12,8 +12,8 @@ import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple3;
+import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.DacControl;
 import mdplayer.Setting;
@@ -60,8 +60,8 @@ public class Vgm extends BaseDriver {
     public int okiM6295ClockValue = DefaultOKIM6295ClockValue;
     public int segaPCMClockValue = DefaultSEGAPCMClockValue;
     public int segaPCMInterface = 0;
-    public int yn2151ClockValue;
-    public int yn2608ClockValue;
+    public int ym2151ClockValue;
+    public int ym2608ClockValue;
     public int ym2203ClockValue;
     public int ym2610ClockValue;
     public int ym3812ClockValue;
@@ -132,8 +132,6 @@ public class Vgm extends BaseDriver {
 
     private final Runnable[] vgmCmdTbl = new Runnable[0x100];
 
-    private List<String> chips = null;
-
     private int vgmAdr;
     private int vgmWait;
     private int vgmLoopOffset = 0;
@@ -153,7 +151,7 @@ public class Vgm extends BaseDriver {
     private byte[][] ym2610AdpcmB = new byte[][] {null, null};
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
@@ -192,8 +190,8 @@ public class Vgm extends BaseDriver {
         isDataBlock = false;
         isPcmRAMWrite = false;
         useChipYM2612Ch6 = false;
-        for (mdplayer.Common.EnmChip uc : useChip) {
-            if (uc == mdplayer.Common.EnmChip.YM2612Ch6) {
+        for (Class<? extends Chip> uc : useChip) {
+            if (uc == Ym2612Chip.class && false) { // TODO Ym2612Ch6
                 useChipYM2612Ch6 = true;
                 break;
             }
@@ -202,7 +200,7 @@ public class Vgm extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 
@@ -1755,15 +1753,15 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private boolean getInformationHeader() {
-        chips = new ArrayList<>();
+        List<String> chips = new ArrayList<>();
         usedChips = "";
 
         sn76489ClockValue = 0; // defaultSN76489ClockValue;
         ym2612ClockValue = 0; // defaultYM2612ClockValue;
-        yn2151ClockValue = 0;
+        ym2151ClockValue = 0;
         segaPCMClockValue = 0;
         ym2203ClockValue = 0;
-        yn2608ClockValue = 0;
+        ym2608ClockValue = 0;
         ym2610ClockValue = 0;
         ym3812ClockValue = 0;
         ymF262ClockValue = 0;
@@ -1850,7 +1848,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
             int YM2151clock = ByteUtil.readLeInt(vgmBuf, 0x10);
             if (YM2151clock != 0) {
-                yn2151ClockValue = YM2151clock & 0x3fff_ffff;
+                ym2151ClockValue = YM2151clock & 0x3fff_ffff;
                 ym2151DualChipFlag = (YM2151clock & 0x4000_0000) != 0;
                 if (ym2151DualChipFlag) chips.add("YM2151x2");
                 else chips.add("YM2151");
@@ -1876,7 +1874,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
             int YM2151clock = ByteUtil.readLeInt(vgmBuf, 0x30);
             if (YM2151clock != 0) {
-                yn2151ClockValue = YM2151clock & 0x3fff_ffff;
+                ym2151ClockValue = YM2151clock & 0x3fff_ffff;
                 ym2151DualChipFlag = (YM2151clock & 0x4000_0000) != 0;
                 if (ym2151DualChipFlag) chips.add("YM2151x2");
                 else chips.add("YM2151");
@@ -1926,7 +1924,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                 if (vgmDataOffset > 0x48) {
                     int YM2608clock = ByteUtil.readLeInt(vgmBuf, 0x48);
                     if (YM2608clock != 0) {
-                        yn2608ClockValue = YM2608clock & 0x3fff_ffff;
+                        ym2608ClockValue = YM2608clock & 0x3fff_ffff;
                         ym2608DualChipFlag = (YM2608clock & 0x4000_0000) != 0;
                         if (ym2608DualChipFlag) chips.add("YM2608x2");
                         else chips.add("YM2608");

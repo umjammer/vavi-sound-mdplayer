@@ -13,7 +13,9 @@ import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.instrument.NesInst;
+import mdsound.instrument.NesInst.FME7;
 import mdsound.np.NpNesFds;
 import mdsound.np.chip.DeviceInfo;
 import mdsound.np.chip.NesApu;
@@ -41,6 +43,15 @@ public class NesChip implements Chip {
 
     private static final Logger logger = getLogger(NesChip.class.getName());
 
+    public abstract static class DmcChip implements Chip {}
+    public abstract static class Mmc5Chip implements Chip {}
+    public abstract static class Vrc6Chip implements Chip {}
+    public abstract static class Vrc7Chip implements Chip {}
+    public abstract static class N160Chip implements Chip {}
+    public abstract static class N163Chip implements Chip {}
+    public abstract static class FdsChip implements Chip {}
+    public abstract static class Fme7Chip implements Chip {}
+
     private int apuMask = 0;
     private int dmcMask = 0;
     private int fdsMask = 0;
@@ -64,6 +75,12 @@ public class NesChip implements Chip {
     private final ChipKeyInfo[] vrc7KeyOn = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {NesInst.class};
+    }
 
     @Override
     public void init(Audio context) {

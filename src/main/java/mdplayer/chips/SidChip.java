@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.driver.sid.Sid;
+import mdsound.Instrument;
 
 
 /**
@@ -20,6 +21,12 @@ import mdplayer.driver.sid.Sid;
 public class SidChip implements Chip {
 
     public Sid SID;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[0];
+    }
 
     @Override
     public void init(Audio context) {

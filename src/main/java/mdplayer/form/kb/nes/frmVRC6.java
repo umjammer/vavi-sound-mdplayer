@@ -16,12 +16,12 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.NesChip;
+import mdplayer.chips.NesChip.Vrc6Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -117,9 +117,9 @@ public class frmVRC6 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 3; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.VRC6, chipId, ch);
+                            parent.resetChannelMask(Vrc6Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.VRC6, chipId, ch);
+                            parent.setChannelMask(Vrc6Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -128,7 +128,7 @@ public class frmVRC6 extends frmBase {
             if (ev.getButton() == MouseEvent.BUTTON2) {
                 for (int i = 0; i < 3; i++) {
                     // Unmask.
-                    parent.resetChannelMask(EnmChip.VRC6, chipId, i);
+                    parent.resetChannelMask(Vrc6Chip.class, chipId, i);
                 }
 
                 return;
@@ -139,7 +139,7 @@ public class frmVRC6 extends frmBase {
             ch /= 2;
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 // Mask.
-                parent.setChannelMask(EnmChip.VRC6, chipId, ch);
+                parent.setChannelMask(Vrc6Chip.class, chipId, ch);
             }
         }
     };

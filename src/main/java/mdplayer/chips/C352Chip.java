@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.instrument.C352Inst;
 
 
@@ -32,6 +33,12 @@ public class C352Chip implements Chip {
     };
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {C352Inst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -68,7 +75,7 @@ public class C352Chip implements Chip {
             data &= 0xbfff;
         }
         if (model == EnmModel.VirtualModel)
-            context.mds.write(C352Inst.class, chipId, 0, adr, data);
+            context.mds.write(inst(chipId), chipId, 0, adr, data);
     }
 
     public int[] read(int chipId) {

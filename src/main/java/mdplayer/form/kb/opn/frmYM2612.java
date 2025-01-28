@@ -17,7 +17,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -410,9 +409,9 @@ public class frmYM2612 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 6; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YM2612, chipId, ch);
+                            parent.resetChannelMask(Ym2612Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YM2612, chipId, ch);
+                            parent.setChannelMask(Ym2612Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -429,14 +428,14 @@ public class frmYM2612 extends frmBase {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // Mask.
                     if (newParam.channels[ch].mask)
-                        parent.resetChannelMask(EnmChip.YM2612, chipId, ch);
+                        parent.resetChannelMask(Ym2612Chip.class, chipId, ch);
                     else
-                        parent.setChannelMask(EnmChip.YM2612, chipId, ch);
+                        parent.setChannelMask(Ym2612Chip.class, chipId, ch);
                     return;
                 }
 
                 // Unmask.
-                for (ch = 0; ch < 6; ch++) parent.resetChannelMask(EnmChip.YM2612, chipId, ch);
+                for (ch = 0; ch < 6; ch++) parent.resetChannelMask(Ym2612Chip.class, chipId, ch);
                 return;
             }
 
@@ -450,7 +449,7 @@ public class frmYM2612 extends frmBase {
 
             if (instCh < 6) {
                 // Copying a tone to the clipboard
-                parent.getInstCh(EnmChip.YM2612, instCh, chipId);
+                parent.getInstCh(Ym2612Chip.class, instCh, chipId);
             }
         }
     };

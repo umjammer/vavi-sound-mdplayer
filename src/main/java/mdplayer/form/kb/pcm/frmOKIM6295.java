@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -164,9 +163,9 @@ public class frmOKIM6295 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 4; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.OKIM6295, chipId, ch);
+                            parent.resetChannelMask(OkiM6295Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.OKIM6295, chipId, ch);
+                            parent.setChannelMask(OkiM6295Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -179,12 +178,12 @@ public class frmOKIM6295 extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // Mask.
-                    parent.setChannelMask(EnmChip.OKIM6295, chipId, ch);
+                    parent.setChannelMask(OkiM6295Chip.class, chipId, ch);
                     return;
                 }
 
                 // Unmask.
-                for (ch = 0; ch < 4; ch++) parent.resetChannelMask(EnmChip.OKIM6295, chipId, ch);
+                for (ch = 0; ch < 4; ch++) parent.resetChannelMask(OkiM6295Chip.class, chipId, ch);
             }
         }
     };

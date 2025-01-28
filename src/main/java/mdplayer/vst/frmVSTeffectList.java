@@ -30,6 +30,7 @@ import dotnet4j.io.Directory;
 import dotnet4j.io.Path;
 import mdplayer.Audio;
 import mdplayer.Setting;
+import mdplayer.chips.VstPlugin;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
@@ -76,7 +77,7 @@ public class frmVSTeffectList extends JFrame {
         while (!audio.getTrdStopped()) {
             Thread.yield();
         }
-        audio.addVSTeffect(ofd.getSelectedFile().getName());
+        audio.chipRegister.plugin(VstPlugin.class).addVSTeffect(ofd.getSelectedFile().getName());
         dispPluginList();
 
     }

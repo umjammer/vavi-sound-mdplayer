@@ -75,14 +75,17 @@ import dotnet4j.io.Path;
 import dotnet4j.io.StreamWriter;
 import dotnet4j.util.compat.Tuple;
 import dotnet4j.util.compat.Tuple4;
+import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.Common.EnmModel;
 import mdplayer.DoubleBuffer;
 import mdplayer.DrawBuff;
 import mdplayer.KeyboardHook;
 import mdplayer.MDChipParams;
+import mdplayer.MDChipParams.RF5C164;
+import mdplayer.MDChipParams.RF5C68;
+import mdplayer.MDChipParams.YM2413;
 import mdplayer.MIDIParam;
 import mdplayer.MmfControl;
 import mdplayer.OpeManager;
@@ -100,6 +103,12 @@ import mdplayer.chips.HuC6280Chip;
 import mdplayer.chips.K051649Chip;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.NesChip;
+import mdplayer.chips.NesChip.DmcChip;
+import mdplayer.chips.NesChip.FdsChip;
+import mdplayer.chips.NesChip.Mmc5Chip;
+import mdplayer.chips.NesChip.N163Chip;
+import mdplayer.chips.NesChip.Vrc6Chip;
+import mdplayer.chips.NesChip.Vrc7Chip;
 import mdplayer.chips.OkiM6258Chip;
 import mdplayer.chips.OkiM6295Chip;
 import mdplayer.chips.Ppz8Chip;
@@ -107,6 +116,7 @@ import mdplayer.chips.QSoundChip;
 import mdplayer.chips.Rf5C164Chip;
 import mdplayer.chips.Rf5C68Chip;
 import mdplayer.chips.SegaPcmChip;
+import mdplayer.chips.SidChip;
 import mdplayer.chips.Sn76489Chip;
 import mdplayer.chips.Y8950Chip;
 import mdplayer.chips.Ym2151Chip;
@@ -119,6 +129,7 @@ import mdplayer.chips.Ym3526Chip;
 import mdplayer.chips.Ym3812Chip;
 import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
+import mdplayer.chips.YmZ280BChip;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.form.kb.driver.frmPPZ8;
@@ -164,8 +175,10 @@ import mdplayer.format.M3UFileFormat;
 import mdplayer.format.ZIPFileFormat;
 import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
-import mdsound.chips.OotakeHuC6280;
 import mdsound.chips.K051649;
+import mdsound.chips.OotakeHuC6280;
+import mdsound.chips.PPZ8;
+import mdsound.instrument.Vrc6Inst;
 import mdsound.np.chip.NesN106;
 
 import static java.lang.System.getLogger;
@@ -3285,7 +3298,7 @@ setVisible(true);
         frmMMC5[chipId] = null;
     }
 
-    private void openFormRegTest(int chipId, EnmChip selectedChip/* = EnmChip.Unuse*/, boolean force/* = false*/) {
+    private void openFormRegTest(int chipId, Class<? extends Chip> selectedChip /* = null */, boolean force /* = false */) {
         if (frmRegTest != null) {
             frmRegTest.changeChip(selectedChip);
             return;
@@ -4389,24 +4402,24 @@ setVisible(true);
             //stop();
 
             //for (int chipId = 0; chipId < 2; chipId++) {
-            //    for (int ch = 0; ch < 3; ch++) ForceChannelMask(EnmChip.AY8910, chipId, ch, newParam.ay8910[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 8; ch++) ForceChannelMask(EnmChip.YM2151, chipId, ch, newParam.ym2151[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 9; ch++) ForceChannelMask(EnmChip.YM2203, chipId, ch, newParam.ym2203[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2413, chipId, ch, newParam.ym2413[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2608, chipId, ch, newParam.ym2608[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(EnmChip.YM2610, chipId, ch, newParam.ym2610[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.Ym2612Inst, chipId, ch, newParam.ym2612[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 4; ch++) ForceChannelMask(EnmChip.SN76489, chipId, ch, newParam.sn76489[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 8; ch++) ForceChannelMask(EnmChip.RF5C164, chipId, ch, newParam.rf5c164[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 24; ch++) ForceChannelMask(EnmChip.C140Inst, chipId, ch, newParam.c140[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 32; ch++) ForceChannelMask(EnmChip.C352Inst, chipId, ch, newParam.c352[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 16; ch++) ForceChannelMask(EnmChip.SEGAPCM, chipId, ch, newParam.segaPcm[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(EnmChip.OotakeHuC6280, chipId, ch, newParam.huc6280[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 4; ch++) ForceChannelMask(EnmChip.OKIM6295, chipId, ch, newParam.okim6295[chipId].channels[ch].mask);
-            //    for (int ch = 0; ch < 2; ch++) ResetChannelMask(EnmChip.NES, chipId, ch);
-            //    for (int ch = 0; ch < 3; ch++) ResetChannelMask(EnmChip.DMC, chipId, ch);
-            //    for (int ch = 0; ch < 3; ch++) ResetChannelMask(EnmChip.MMC5, chipId, ch);
-            //    ResetChannelMask(EnmChip.FDS, chipId, 0);
+            //    for (int ch = 0; ch < 3; ch++) ForceChannelMask(AY8910, chipId, ch, newParam.ay8910[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 8; ch++) ForceChannelMask(YM2151, chipId, ch, newParam.ym2151[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 9; ch++) ForceChannelMask(YM2203, chipId, ch, newParam.ym2203[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(YM2413, chipId, ch, newParam.ym2413[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(YM2608, chipId, ch, newParam.ym2608[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 14; ch++) ForceChannelMask(YM2610, chipId, ch, newParam.ym2610[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(Ym2612Inst, chipId, ch, newParam.ym2612[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 4; ch++) ForceChannelMask(SN76489, chipId, ch, newParam.sn76489[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 8; ch++) ForceChannelMask(RF5C164, chipId, ch, newParam.rf5c164[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 24; ch++) ForceChannelMask(C140Inst, chipId, ch, newParam.c140[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 32; ch++) ForceChannelMask(C352Inst, chipId, ch, newParam.c352[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 16; ch++) ForceChannelMask(SEGAPCM, chipId, ch, newParam.segaPcm[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 6; ch++) ForceChannelMask(OotakeHuC6280, chipId, ch, newParam.huc6280[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 4; ch++) ForceChannelMask(OKIM6295, chipId, ch, newParam.okim6295[chipId].channels[ch].mask);
+            //    for (int ch = 0; ch < 2; ch++) ResetChannelMask(NES, chipId, ch);
+            //    for (int ch = 0; ch < 3; ch++) ResetChannelMask(DMC, chipId, ch);
+            //    for (int ch = 0; ch < 3; ch++) ResetChannelMask(MMC5, chipId, ch);
+            //    ResetChannelMask(FDS, chipId, 0);
             //}
 
             //oldParam = new MDChipParams();
@@ -4456,49 +4469,49 @@ setVisible(true);
 
             for (int chipId = 0; chipId < 2; chipId++) {
                 for (int ch = 0; ch < 3; ch++)
-                    forceChannelMask(EnmChip.AY8910, chipId, ch, newParam.ay8910[chipId].channels[ch].mask);
+                    forceChannelMask(Ay8910Chip.class, chipId, ch, newParam.ay8910[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 8; ch++)
-                    forceChannelMask(EnmChip.YM2151, chipId, ch, newParam.ym2151[chipId].channels[ch].mask);
+                    forceChannelMask(Ym2151Chip.class, chipId, ch, newParam.ym2151[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 9; ch++)
-                    forceChannelMask(EnmChip.YM2203, chipId, ch, newParam.ym2203[chipId].channels[ch].mask);
+                    forceChannelMask(Ym2203Chip.class, chipId, ch, newParam.ym2203[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 14; ch++)
-                    forceChannelMask(EnmChip.YM2413, chipId, ch, newParam.ym2413[chipId].channels[ch].mask);
+                    forceChannelMask(Ym2413Chip.class, chipId, ch, newParam.ym2413[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 14; ch++)
-                    forceChannelMask(EnmChip.YM2608, chipId, ch, newParam.ym2608[chipId].channels[ch].mask);
+                    forceChannelMask(Ym2608Chip.class, chipId, ch, newParam.ym2608[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 14; ch++)
-                    forceChannelMask(EnmChip.YM2610, chipId, ch, newParam.ym2610[chipId].channels[ch].mask);
+                    forceChannelMask(Ym2610Chip.class, chipId, ch, newParam.ym2610[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 6; ch++)
-                    forceChannelMask(EnmChip.YM2612, chipId, ch, newParam.ym2612[chipId].channels[ch].mask);
+                    forceChannelMask(Ym2612Chip.class, chipId, ch, newParam.ym2612[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 4; ch++)
-                    forceChannelMask(EnmChip.SN76489, chipId, ch, newParam.sn76489[chipId].channels[ch].mask);
+                    forceChannelMask(Sn76489Chip.class, chipId, ch, newParam.sn76489[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 8; ch++)
-                    forceChannelMask(EnmChip.RF5C164, chipId, ch, newParam.rf5c164[chipId].channels[ch].mask);
+                    forceChannelMask(Rf5C164Chip.class, chipId, ch, newParam.rf5c164[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 8; ch++)
-                    forceChannelMask(EnmChip.RF5C68, chipId, ch, newParam.rf5c68[chipId].channels[ch].mask);
+                    forceChannelMask(Rf5C68Chip.class, chipId, ch, newParam.rf5c68[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 24; ch++)
-                    forceChannelMask(EnmChip.C140, chipId, ch, newParam.c140[chipId].channels[ch].mask);
+                    forceChannelMask(C140Chip.class, chipId, ch, newParam.c140[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 32; ch++)
-                    forceChannelMask(EnmChip.C352, chipId, ch, newParam.c352[chipId].channels[ch].mask);
+                    forceChannelMask(C352Chip.class, chipId, ch, newParam.c352[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 16; ch++)
-                    forceChannelMask(EnmChip.SEGAPCM, chipId, ch, newParam.segaPcm[chipId].channels[ch].mask);
+                    forceChannelMask(SegaPcmChip.class, chipId, ch, newParam.segaPcm[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 19; ch++)
-                    forceChannelMask(EnmChip.QSound, chipId, ch, newParam.qSound[chipId].channels[ch].mask);
+                    forceChannelMask(QSoundChip.class, chipId, ch, newParam.qSound[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 6; ch++)
-                    forceChannelMask(EnmChip.HuC6280, chipId, ch, newParam.huc6280[chipId].channels[ch].mask);
+                    forceChannelMask(HuC6280Chip.class, chipId, ch, newParam.huc6280[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 4; ch++)
-                    forceChannelMask(EnmChip.OKIM6295, chipId, ch, newParam.okim6295[chipId].channels[ch].mask);
-                for (int ch = 0; ch < 2; ch++) ForceChannelMaskNES(EnmChip.NES, chipId, ch, newParam.nesdmc);
-                for (int ch = 2; ch < 5; ch++) ForceChannelMaskNES(EnmChip.DMC, chipId, ch, newParam.nesdmc);
-                for (int ch = 0; ch < 3; ch++) resetChannelMask(EnmChip.MMC5, chipId, ch);
+                    forceChannelMask(OkiM6295Chip.class, chipId, ch, newParam.okim6295[chipId].channels[ch].mask);
+                for (int ch = 0; ch < 2; ch++) ForceChannelMaskNES(NesChip.class, chipId, ch, newParam.nesdmc);
+                for (int ch = 2; ch < 5; ch++) ForceChannelMaskNES(DmcChip.class, chipId, ch, newParam.nesdmc);
+                for (int ch = 0; ch < 3; ch++) resetChannelMask(Mmc5Chip.class, chipId, ch);
                 for (int ch = 0; ch < 8; ch++)
-                    forceChannelMask(EnmChip.PPZ8, chipId, ch, newParam.ppz8[chipId].channels[ch].mask);
+                    forceChannelMask(Ppz8Chip.class, chipId, ch, newParam.ppz8[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 4; ch++)
-                    forceChannelMask(EnmChip.DMG, chipId, ch, newParam.dmg[chipId].channels[ch].mask);
+                    forceChannelMask(DmgChip.class, chipId, ch, newParam.dmg[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 3; ch++)
-                    forceChannelMask(EnmChip.VRC6, chipId, ch, newParam.vrc6[chipId].channels[ch].mask);
+                    forceChannelMask(Vrc6Chip.class, chipId, ch, newParam.vrc6[chipId].channels[ch].mask);
                 for (int ch = 0; ch < 8; ch++)
-                    forceChannelMask(EnmChip.N163, chipId, ch, newParam.n106[chipId].channels[ch].mask);
-                resetChannelMask(EnmChip.FDS, chipId, 0);
+                    forceChannelMask(N163Chip.class, chipId, ch, newParam.n106[chipId].channels[ch].mask);
+                resetChannelMask(FdsChip.class, chipId, 0);
             }
 
             plugin.go();
@@ -4811,13 +4824,13 @@ setVisible(true);
         cmsOpenOtherPanel.setLocation(p.x, p.y);
     }
 
-    public void getInstCh(EnmChip chip, int ch, int chipId) {
+    public void getInstCh(Class<? extends Chip> chip, int ch, int chipId) {
         try {
             ym2612MIDI.setVoiceFromChipRegister(chip, chipId, ch);
 
             if (!setting.getOther().getUseGetInst()) return;
 
-            if (chip == EnmChip.YM2413) {
+            if (chip == Ym2413Chip.class) {
                 if (setting.getOther().getInstFormat() == EnmInstFormat.MML2VGM) {
 
                 } else if (setting.getOther().getInstFormat() == EnmInstFormat.SendMML2VGM) {
@@ -4825,21 +4838,21 @@ setVisible(true);
                 } else {
                     getInstChForMGSC(chip, ch, chipId);
                 }
-            } else if (chip == EnmChip.YM3812 || chip == EnmChip.YMF262 || chip == EnmChip.YMF278B) {
+            } else if (chip == Ym3812Chip.class || chip == YmF262Chip.class || chip == YmF278BChip.class) {
                 if (setting.getOther().getInstFormat() == EnmInstFormat.OPLI) {
                     getInstChForOPLI(chip, ch, chipId);
                 } else {
                     getInstChForSendMML2VGM(chip, ch, chipId);
                 }
-            } else if (chip == EnmChip.VRC7) {
+            } else if (chip == Vrc7Chip.class) {
                 getInstChForMGSC(chip, ch, chipId);
-            } else if (chip == EnmChip.K051649) {
+            } else if (chip == K051649Chip.class) {
                 if (setting.getOther().getInstFormat() == EnmInstFormat.MGSCSCC_PLAIN) {
                     getInstChForMGSCSCCPLAIN(ch, chipId);
                 } else {
                     getInstChForMGSC(chip, ch, chipId);
                 }
-            } else if (chip == EnmChip.N163) {
+            } else if (chip == N163Chip.class) {
                 getInstChForMCK(chip, ch, chipId);
             } else {
                 switch (setting.getOther().getInstFormat()) {
@@ -4896,18 +4909,18 @@ setVisible(true);
         }
     }
 
-    private void getInstChForFMP7(EnmChip chip, int ch, int chipId) {
+    private void getInstChForFMP7(Class<? extends Chip> chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612)
+            int[][] fmRegister = (chip == Ym2612Chip.class)
                     ? plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203 ?
+                    : (chip == Ym2203Chip.class ?
                     new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null} :
                     plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
@@ -4933,7 +4946,7 @@ setVisible(true);
                     fmRegister[p][0xb0 + c] & 0x07 // AL
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
             ));
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
             n.append("'@ FC xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AM\n");
 
@@ -4963,18 +4976,18 @@ setVisible(true);
         if (!n.isEmpty()) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMDX(EnmChip chip, int ch, int chipId) {
+    private void getInstChForMDX(Class<? extends Chip> chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612)
+            int[][] fmRegister = (chip == Ym2612Chip.class)
                     ? plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203
+                    : (chip == Ym2203Chip.class
                     ? new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
@@ -5001,7 +5014,7 @@ setVisible(true);
                     fmRegister[p][0xb0 + c] & 0x07 //AL
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3 //FB
             ));
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
 
             n.append("'@xx = {\n/* AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\n");
@@ -5032,12 +5045,12 @@ setVisible(true);
         if (!n.isEmpty()) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMML2VGM(EnmChip chip, int ch, int chipId) {
+    private void getInstChForMML2VGM(Class<? extends Chip> chip, int ch, int chipId) {
         String n = getInstChForMML2VGMFormat(chip, ch, chipId);
         if (n != null && n.isEmpty()) Common.setClipboard(n);
     }
 
-    private void getInstChForSendMML2VGM(EnmChip chip, int ch, int chipId) {
+    private void getInstChForSendMML2VGM(Class<? extends Chip> chip, int ch, int chipId) {
         String n = getInstChForMML2VGMFormat(chip, ch, chipId);
         if (n == null || !n.isEmpty()) return;
 
@@ -5056,18 +5069,18 @@ setVisible(true);
     private static final int[] slot1Tbl = new int[] {0, 1, 2, 6, 7, 8, 12, 13, 14};
     private static final int[] slot2Tbl = new int[] {3, 4, 5, 9, 10, 11, 15, 16, 17};
 
-    private String getInstChForMML2VGMFormat(EnmChip chip, int ch, int chipId) {
+    private String getInstChForMML2VGMFormat(Class<? extends Chip> chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612)
+            int[][] fmRegister = (chip == Ym2612Chip.class)
                     ? plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203
+                    : (chip == Ym2203Chip.class
                     ? new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
@@ -5094,7 +5107,7 @@ setVisible(true);
                     fmRegister[p][0xb0 + c] & 0x07//AL
                     , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
             ));
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
             n.append("'@ M xx\n   AR  DR  SR  RR  SL  TL  KS  ML  DT1 DT2 AME\n");
 
@@ -5119,7 +5132,7 @@ setVisible(true);
                     ym2151Register[0x20 + ch] & 0x07 // AL
                     , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
             ));
-        } else if (chip == EnmChip.HuC6280) {
+        } else if (chip == HuC6280Chip.class) {
             OotakeHuC6280 huc6280Register = plugin.audio.chipRegister.chip(HuC6280Chip.class).getChip(chipId);
             if (huc6280Register == null) return null;
             OotakeHuC6280.Psg psg = huc6280Register.getPsg(ch);
@@ -5141,10 +5154,10 @@ setVisible(true);
                         , (17 - psg.wave[i + 7])
                 ));
             }
-        } else if (chip == EnmChip.YM2413) {
+        } else if (chip == Ym2413Chip.class) {
             //Ym2413
             int[] regs = plugin.audio.chipRegister.chip(Ym2413Chip.class).read(chipId);
-        } else if (chip == EnmChip.YM3812) {
+        } else if (chip == Ym3812Chip.class) {
             //OPL2
             //'@ L No "Name"
             //'@ AR DR SL RR KSL TL MT AM VIB EGT KSR WS
@@ -5185,18 +5198,18 @@ setVisible(true);
         return n.toString();
     }
 
-    private void getInstChForMUSICLALF(EnmChip chip, int ch, int chipId) {
+    private void getInstChForMUSICLALF(Class<? extends Chip> chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612)
+            int[][] fmRegister = (chip == Ym2612Chip.class)
                     ? plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203
+                    : (chip == Ym2203Chip.class
                     ? new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
@@ -5220,7 +5233,7 @@ setVisible(true);
                 ));
             }
             n.append("  }\n");
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
 
             n.append("  @xx:{{\n  %3d %3d\n".formatted(
@@ -5248,18 +5261,18 @@ setVisible(true);
         if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMucom88(EnmChip chip, int ch, int chipId) {
+    private void getInstChForMucom88(Class<? extends Chip> chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612)
+            int[][] fmRegister = (chip == Ym2612Chip.class)
                     ? plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203
+                    : (chip == Ym2203Chip.class
                     ? new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
@@ -5283,7 +5296,7 @@ setVisible(true);
                 ));
             }
             n.append(",\"MDP\"  }\n");
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
 
             n.append("  @xx:{{\n  %3d, %3d\n".formatted(
@@ -5311,18 +5324,18 @@ setVisible(true);
         if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMUSICLALF2(EnmChip chip, int ch, int chipId) {
+    private void getInstChForMUSICLALF2(Class<? extends Chip> chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612)
+            int[][] fmRegister = (chip == Ym2612Chip.class)
                     ? plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203
+                    : (chip == Ym2203Chip.class
                     ? new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
@@ -5339,7 +5352,7 @@ setVisible(true);
             n.append("$%3x\n".formatted(
                     fmRegister[p][0xb0 + c] // FB/AL
             ));
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
 
             n.append("@%xxx\n");
@@ -5387,18 +5400,18 @@ setVisible(true);
         if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForNRTDRV(EnmChip chip, int ch, int chipId) {
+    private void getInstChForNRTDRV(Class<? extends Chip> chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612)
+            int[][] fmRegister = (chip == Ym2612Chip.class)
                     ? plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203
+                    : (chip == Ym2203Chip.class
                     ? new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
@@ -5425,7 +5438,7 @@ setVisible(true);
                 ));
             }
             n.append("}\n");
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
 
             n.append("@ xxxx {\n");
@@ -5456,11 +5469,11 @@ setVisible(true);
         if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForHuSIC(EnmChip chip, int ch, int chipId) {
+    private void getInstChForHuSIC(Class<? extends Chip> chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
-        if (chip == EnmChip.HuC6280) {
+        if (chip == HuC6280Chip.class) {
             OotakeHuC6280 huc6280Register = plugin.audio.chipRegister.chip(HuC6280Chip.class).getChip(chipId);
             if (huc6280Register == null) return;
             OotakeHuC6280.Psg psg = huc6280Register.getPsg(ch);
@@ -5489,21 +5502,21 @@ setVisible(true);
         if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMGSC(EnmChip chip, int ch, int chipId) {
+    private void getInstChForMGSC(Class<? extends Chip> chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
         int[] register = null;
 
-        if (chip == EnmChip.YM2413) {
+        if (chip == Ym2413Chip.class) {
             register = plugin.audio.chipRegister.chip(Ym2413Chip.class).read(chipId);
-        } else if (chip == EnmChip.VRC7) {
+        } else if (chip == Vrc7Chip.class) {
             int[] r = plugin.audio.chipRegister.chip(NesChip.class).readVrc7(chipId);
             if (r == null) return;
             register = new int[r.length];
             for (int i = 0; i < r.length; i++) {
                 register[i] = r[i];
             }
-        } else if (chip == EnmChip.K051649) {
+        } else if (chip == K051649Chip.class) {
             getInstChForMGSCSCC(ch, chipId);
             return;
         }
@@ -5584,8 +5597,8 @@ setVisible(true);
         Common.setClipboard(n.toString());
     }
 
-    private void getInstChForMCK(EnmChip chip, int ch, int chipId) {
-        if (chip == EnmChip.N163) {
+    private void getInstChForMCK(Class<? extends Chip> chip, int ch, int chipId) {
+        if (chip == N163Chip.class) {
             NesN106.TrackInfo[] info = (NesN106.TrackInfo[]) plugin.audio.chipRegister.chip(NesChip.class).readN106(0);
             if (info == null) return;
 
@@ -5600,18 +5613,18 @@ setVisible(true);
         }
     }
 
-    private void getInstChForTFI(EnmChip chip, int ch, int chipId) {
+    private void getInstChForTFI(Class<? extends Chip> chip, int ch, int chipId) {
 
         byte[] n = new byte[42];
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612)
+            int[][] fmRegister = (chip == Ym2612Chip.class)
                     ? plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203
+                    : (chip == Ym2203Chip.class
                     ? new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
@@ -5638,7 +5651,7 @@ setVisible(true);
                 n[i * 10 + 11] = (byte) (fmRegister[p][0x90 + ops + c] & 0x0f); // SSG
             }
 
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
 
             n[0] = (byte) (ym2151Register[0x20 + ch] & 0x07); // AL
@@ -5695,20 +5708,20 @@ setVisible(true);
         }
     }
 
-    private void getInstChForDMP(EnmChip chip, int ch, int chipId) {
+    private void getInstChForDMP(Class<? extends Chip> chip, int ch, int chipId) {
 
         byte[] n = new byte[51];
         n[0] = 0x0b; // FILE_VERSION
         n[2] = 0x01; // Instrument Mode(1=FM)
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612)
+            int[][] fmRegister = (chip == Ym2612Chip.class)
                     ? plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203
+                    : (chip == Ym2203Chip.class
                     ? new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
@@ -5740,7 +5753,7 @@ setVisible(true);
                 n[i * 11 + 17] = (byte) (fmRegister[p][0x90 + ops + c] & 0x0f); // SSG
             }
 
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
 
             n[1] = 0x08; // SYSTEM_YM2151
@@ -5819,7 +5832,7 @@ setVisible(true);
     //  License:
     //      MIT License
     //
-    private void getInstChForRYM2612(EnmChip chip, int ch, int chipId) {
+    private void getInstChForRYM2612(Class<? extends Chip> chip, int ch, int chipId) {
 
         List<String>[] op = new List[] {new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>()};
         int[] muls = new int[] {0, 1054, 1581, 2635, 3689, 4743, 5797, 6851, 7905, 8959, 10013, 10540, 11594, 12648, 14229, 15000};
@@ -5839,14 +5852,14 @@ setVisible(true);
         patch_Name = patch_Name.formatted(Instant.now().toEpochMilli());
         buf.append("<RYM2612Params patchName = \"{patch_Name}\" category = \"Piano\" rating = \"3\" type = \"User\" >\n");
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612)
+            int[][] fmRegister = (chip == Ym2612Chip.class)
                     ? plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203
+                    : (chip == Ym2203Chip.class
                     ? new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)
             ));
@@ -5880,7 +5893,7 @@ setVisible(true);
                 op[i].add("  <PARAM id=\"OP%dAM\" value=\"%d.0\"/>".formatted(i + 1, (fmRegister[p][0x60 + ops + c] & 0x80) >> 7));
             }
 
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
 
             alg = (ym2151Register[0x20 + ch] & 0x07) >> 0;
@@ -5972,7 +5985,7 @@ setVisible(true);
         }
     }
 
-    private void getInstChForOPNI(EnmChip chip, int ch, int chipId) {
+    private void getInstChForOPNI(Class<? extends Chip> chip, int ch, int chipId) {
 
         byte[] n = new byte[77];
         Arrays.fill(n, 0, n.length, (byte) 0);
@@ -5986,14 +5999,14 @@ setVisible(true);
         n[12 + 32 + 1] = 0x00;
         n[12 + 32 + 2] = 0x00; // 8-bit unsigned integer, Percussion instrument key number
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612)
+            int[][] fmRegister = (chip == Ym2612Chip.class)
                     ? plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203 ?
+                    : (chip == Ym2203Chip.class ?
                     new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
@@ -6012,7 +6025,7 @@ setVisible(true);
                 n[i * 7 + 12 + 32 + 11] = (byte) fmRegister[p][0x90 + ops + c]; // SSG
             }
 
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
 
             n[12 + 32 + 3] = (byte) ym2151Register[0x20 + ch]; // FB & ALG
@@ -6064,12 +6077,12 @@ setVisible(true);
         }
     }
 
-    private void getInstChForOPLI(EnmChip chip, int ch, int chipId) {
-        if (chip != EnmChip.YM3812 && chip != EnmChip.YMF262 && chip != EnmChip.YMF278B) return;
+    private void getInstChForOPLI(Class<? extends Chip> chip, int ch, int chipId) {
+        if (chip != Ym3812Chip.class && chip != YmF262Chip.class && chip != YmF278BChip.class) return;
 
         int[][] reg;
-        if (chip == EnmChip.YMF262) reg = plugin.audio.chipRegister.chip(YmF262Chip.class).read(chipId);
-        else if (chip == EnmChip.YMF278B) reg = plugin.audio.chipRegister.chip(YmF278BChip.class).read(chipId);
+        if (chip == YmF262Chip.class) reg = plugin.audio.chipRegister.chip(YmF262Chip.class).read(chipId);
+        else if (chip == YmF278BChip.class) reg = plugin.audio.chipRegister.chip(YmF278BChip.class).read(chipId);
         else {
             int[] r = plugin.audio.chipRegister.chip(Ym3812Chip.class).read(chipId);
             reg = new int[1][];
@@ -6104,7 +6117,7 @@ setVisible(true);
             op[1] = op[0] + 3;
             op[2] = op[0] + 6;
             op[3] = op[0] + 9;
-            isOP4 = (chip == EnmChip.YM3812) ? false : ((reg[1][0x04] & (0x1 << c)) != 0);
+            isOP4 = (chip == Ym3812Chip.class) ? false : ((reg[1][0x04] & (0x1 << c)) != 0);
             if (!isOP4 && ch % 2 != 0) {
                 c = ch;
                 op[0] = op[2];
@@ -6206,18 +6219,18 @@ setVisible(true);
         }
     }
 
-    private void getInstChForVOPM(EnmChip chip, int ch, int chipId) {
+    private void getInstChForVOPM(Class<? extends Chip> chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612) ?
+            int[][] fmRegister = (chip == Ym2612Chip.class) ?
                     plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203 ?
+                    : (chip == Ym2203Chip.class ?
                     new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
@@ -6246,7 +6259,7 @@ setVisible(true);
                         , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7 //AM
                 ));
             }
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
 
             n.append("@: n MDPlayer\n");
@@ -6280,18 +6293,18 @@ setVisible(true);
         if (n.isEmpty()) Common.setClipboard(n.toString());
     }
 
-    private void getInstChForPMD(EnmChip chip, int ch, int chipId) {
+    private void getInstChForPMD(Class<? extends Chip> chip, int ch, int chipId) {
 
         StringBuilder n = new StringBuilder();
 
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2203 || chip == EnmChip.YM2610) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2203Chip.class || chip == Ym2610Chip.class) {
             int p = (ch > 2) ? 1 : 0;
             int c = (ch > 2) ? ch - 3 : ch;
-            int[][] fmRegister = (chip == EnmChip.YM2612)
+            int[][] fmRegister = (chip == Ym2612Chip.class)
                     ? plugin.audio.chipRegister.chip(Ym2612Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2608
+                    : (chip == Ym2608Chip.class
                     ? plugin.audio.chipRegister.chip(Ym2608Chip.class).read(chipId)
-                    : (chip == EnmChip.YM2203
+                    : (chip == Ym2203Chip.class
                     ? new int[][] {plugin.audio.chipRegister.chip(Ym2203Chip.class).read(chipId), null}
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
@@ -6318,7 +6331,7 @@ setVisible(true);
                         , fmRegister[p][0x90 + ops + c] & 0x0f // SG
                 ));
             }
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
             n.append("; nm alg fbl\n");
             n.append("@xxx %3d %3d                            =      MDPlayer\n".formatted(
@@ -6438,9 +6451,8 @@ setVisible(true);
         return true;
     }
 
-    public void setChannelMask(EnmChip chip, int chipId, int ch) {
-        switch (chip) {
-        case YM2203:
+    public void setChannelMask(Class<? extends Chip> chip, int chipId, int ch) {
+        if (chip.equals(Ym2203Chip.class)) {
             if (ch >= 0 && ch < 9) {
                 plugin.audio.chipRegister.chip(Ym2203Chip.class).setMask(chipId, ch);
                 newParam.ym2203[chipId].channels[ch].mask = true;
@@ -6453,8 +6465,7 @@ setVisible(true);
                     newParam.ym2203[chipId].channels[8].mask = true;
                 }
             }
-            break;
-        case YM2413:
+        } else if (chip.equals(Ym2413Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 if (!newParam.ym2413[chipId].channels[ch].mask || newParam.ym2413[chipId].channels[ch].mask == null)
                     plugin.audio.chipRegister.chip(Ym2413Chip.class).setMask(chipId, ch);
@@ -6463,8 +6474,7 @@ setVisible(true);
 
                 newParam.ym2413[chipId].channels[ch].mask = !newParam.ym2413[chipId].channels[ch].mask;
             }
-            break;
-        case YM3526:
+        } else if (chip.equals(Ym3526Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 if (!newParam.ym3526[chipId].channels[ch].mask || newParam.ym3526[chipId].channels[ch].mask == null)
                     plugin.audio.chipRegister.chip(Ym3526Chip.class).setMask(chipId, ch);
@@ -6474,8 +6484,7 @@ setVisible(true);
                 newParam.ym3526[chipId].channels[ch].mask = !newParam.ym3526[chipId].channels[ch].mask;
 
             }
-            break;
-        case Y8950:
+        } else if (chip.equals(Y8950Chip.class)) {
             if (ch >= 0 && ch < 15) {
                 if (!newParam.y8950[chipId].channels[ch].mask || newParam.y8950[chipId].channels[ch].mask == null)
                     plugin.audio.chipRegister.chip(Y8950Chip.class).setMask(chipId, ch);
@@ -6485,8 +6494,7 @@ setVisible(true);
                 newParam.y8950[chipId].channels[ch].mask = !newParam.y8950[chipId].channels[ch].mask;
 
             }
-            break;
-        case YM3812:
+        } else if (chip.equals(Ym3812Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 if (!newParam.ym3812[chipId].channels[ch].mask || newParam.ym3812[chipId].channels[ch].mask == null)
                     plugin.audio.chipRegister.chip(Ym3812Chip.class).setMask(chipId, ch);
@@ -6496,8 +6504,7 @@ setVisible(true);
                 newParam.ym3812[chipId].channels[ch].mask = !newParam.ym3812[chipId].channels[ch].mask;
 
             }
-            break;
-        case YMF262:
+        } else if (chip.equals(YmF262Chip.class)) {
             if (ch >= 0 && ch < 23) {
                 if (!newParam.ymf262[chipId].channels[ch].mask || newParam.ymf262[chipId].channels[ch].mask == null)
                     plugin.audio.chipRegister.chip(YmF262Chip.class).setMask(chipId, ch);
@@ -6507,8 +6514,7 @@ setVisible(true);
                 newParam.ymf262[chipId].channels[ch].mask = !newParam.ymf262[chipId].channels[ch].mask;
 
             }
-            break;
-        case YMF278B:
+        } else if (chip.equals(YmF278BChip.class)) {
             if (ch >= 0 && ch < 47) {
                 if (!newParam.ymf278b[chipId].channels[ch].mask || newParam.ymf278b[chipId].channels[ch].mask == null)
                     plugin.audio.chipRegister.chip(YmF278BChip.class).setMask(chipId, ch);
@@ -6518,8 +6524,7 @@ setVisible(true);
                 newParam.ymf278b[chipId].channels[ch].mask = !newParam.ymf278b[chipId].channels[ch].mask;
 
             }
-            break;
-        case YM2608:
+        } else if (chip.equals(Ym2608Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 plugin.audio.chipRegister.chip(Ym2608Chip.class).setMask(chipId, ch);
                 newParam.ym2608[chipId].channels[ch].mask = true;
@@ -6532,8 +6537,7 @@ setVisible(true);
                     newParam.ym2608[chipId].channels[11].mask = true;
                 }
             }
-            break;
-        case YM2610:
+        } else if (chip.equals(Ym2610Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 int c = ch;
                 if (ch == 12) c = 13;
@@ -6550,8 +6554,7 @@ setVisible(true);
                     newParam.ym2610[chipId].channels[11].mask = true;
                 }
             }
-            break;
-        case YM2612:
+        } else if (chip.equals(Ym2612Chip.class)) {
             if (ch >= 0 && ch < 9) {
                 plugin.audio.chipRegister.chip(Ym2612Chip.class).setMask(chipId, ch);
                 newParam.ym2612[chipId].channels[ch].mask = true;
@@ -6564,170 +6567,152 @@ setVisible(true);
                     newParam.ym2612[chipId].channels[8].mask = true;
                 }
             }
-            break;
-        case SN76489:
+        } else if (chip.equals(Sn76489Chip.class)) {
             if (!newParam.sn76489[chipId].channels[ch].mask || newParam.sn76489[chipId].channels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(Sn76489Chip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(Sn76489Chip.class).resetMask(chipId, ch);
             }
             newParam.sn76489[chipId].channels[ch].mask = !newParam.sn76489[chipId].channels[ch].mask;
-            break;
-        case RF5C164:
+        } else if (chip.equals(Rf5C164Chip.class)) {
             if (!newParam.rf5c164[chipId].channels[ch].mask || newParam.rf5c164[chipId].channels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(Rf5C164Chip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(Rf5C164Chip.class).resetMask(chipId, ch);
             }
             newParam.rf5c164[chipId].channels[ch].mask = !newParam.rf5c164[chipId].channels[ch].mask;
-            break;
-        case RF5C68:
+        } else if (chip.equals(Rf5C68Chip.class)) {
             if (!newParam.rf5c68[chipId].channels[ch].mask || newParam.rf5c68[chipId].channels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(Rf5C68Chip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(Rf5C68Chip.class).resetMask(chipId, ch);
             }
             newParam.rf5c68[chipId].channels[ch].mask = !newParam.rf5c68[chipId].channels[ch].mask;
-            break;
-        case YM2151:
+        } else if (chip.equals(Ym2151Chip.class)) {
             if (!newParam.ym2151[chipId].channels[ch].mask || newParam.ym2151[chipId].channels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(Ym2151Chip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(Ym2151Chip.class).resetMask(chipId, ch, plugin.audio.stopped);
             }
             newParam.ym2151[chipId].channels[ch].mask = !newParam.ym2151[chipId].channels[ch].mask;
-            break;
-        case C140:
+        } else if (chip.equals(C140Chip.class)) {
             if (!newParam.c140[chipId].channels[ch].mask || newParam.c140[chipId].channels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(C140Chip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(C140Chip.class).resetMask(chipId, ch);
             }
             newParam.c140[chipId].channels[ch].mask = !newParam.c140[chipId].channels[ch].mask;
-            break;
-        case PPZ8:
+        } else if (chip.equals(PPZ8.class)) {
             if (!newParam.ppz8[chipId].channels[ch].mask || newParam.ppz8[chipId].channels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(Ppz8Chip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(Ppz8Chip.class).resetMask(chipId, ch);
             }
             newParam.ppz8[chipId].channels[ch].mask = !newParam.ppz8[chipId].channels[ch].mask;
-            break;
-        case C352:
+        } else if (chip.equals(C352Chip.class)) {
             if (!newParam.c352[chipId].channels[ch].mask || newParam.c352[chipId].channels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(C352Chip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(C352Chip.class).resetMask(chipId, ch);
             }
             newParam.c352[chipId].channels[ch].mask = !newParam.c352[chipId].channels[ch].mask;
-            break;
-        case SEGAPCM:
+        } else if (chip.equals(SegaPcmChip.class)) {
             if (!newParam.segaPcm[chipId].channels[ch].mask || newParam.segaPcm[chipId].channels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(SegaPcmChip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(SegaPcmChip.class).resetMask(chipId, ch);
             }
             newParam.segaPcm[chipId].channels[ch].mask = !newParam.segaPcm[chipId].channels[ch].mask;
-            break;
-        case QSound:
+        } else if (chip.equals(QSoundChip.class)) {
             if (!newParam.qSound[chipId].channels[ch].mask || newParam.qSound[chipId].channels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(QSoundChip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(QSoundChip.class).resetMask(chipId, ch);
             }
             newParam.qSound[chipId].channels[ch].mask = !newParam.qSound[chipId].channels[ch].mask;
-            break;
-        case AY8910:
+        } else if (chip.equals(Ay8910Chip.class)) {
             if (!newParam.ay8910[chipId].channels[ch].mask || newParam.ay8910[chipId].channels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(Ay8910Chip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(Ay8910Chip.class).resetMask(chipId, ch);
             }
             newParam.ay8910[chipId].channels[ch].mask = !newParam.ay8910[chipId].channels[ch].mask;
-            break;
-        case HuC6280:
+        } else if (chip.equals(HuC6280Chip.class)) {
             if (!newParam.huc6280[chipId].channels[ch].mask || newParam.huc6280[chipId].channels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(HuC6280Chip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(HuC6280Chip.class).resetMask(chipId, ch);
             }
             newParam.huc6280[chipId].channels[ch].mask = !newParam.huc6280[chipId].channels[ch].mask;
-            break;
-        case OKIM6258:
+        } else if (chip.equals(OkiM6258Chip.class)) {
             if (!newParam.okim6258[chipId].mask || newParam.okim6258[chipId].mask == null) {
                 plugin.audio.chipRegister.chip(OkiM6258Chip.class).setMask(chipId);
             } else {
                 plugin.audio.chipRegister.chip(OkiM6258Chip.class).resetMask(chipId);
             }
             newParam.okim6258[chipId].mask = !newParam.okim6258[chipId].mask;
-            break;
-        case OKIM6295:
+        } else if (chip.equals(OkiM6295Chip.class)) {
             if (!newParam.okim6295[chipId].channels[ch].mask || newParam.okim6295[chipId].channels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(OkiM6295Chip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(OkiM6295Chip.class).resetMask(chipId, ch);
             }
             newParam.okim6295[chipId].channels[ch].mask = !newParam.okim6295[chipId].channels[ch].mask;
-            break;
-        case NES:
+        } else if (chip.equals(NesChip.class)) {
             if (!newParam.nesdmc[chipId].sqrChannels[ch].mask || newParam.nesdmc[chipId].sqrChannels[ch].mask == null) {
                 plugin.audio.chipRegister.chip(NesChip.class).setMask(chipId, ch);
             } else {
                 plugin.audio.chipRegister.chip(NesChip.class).resetMask(chipId, ch);
             }
             newParam.nesdmc[chipId].sqrChannels[ch].mask = !newParam.nesdmc[chipId].sqrChannels[ch].mask;
-            break;
-        case DMC:
+        } else if (chip.equals(DmcChip.class)) {
             switch (ch) {
-            case 0:
-                if (!newParam.nesdmc[chipId].triChannel.mask || newParam.nesdmc[chipId].triChannel.mask == null)
-                    plugin.audio.chipRegister.chip(NesChip.class).setDmcMask(chipId, ch);
-                else plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, ch);
-                newParam.nesdmc[chipId].triChannel.mask = !newParam.nesdmc[chipId].triChannel.mask;
-                break;
-            case 1:
-                if (!newParam.nesdmc[chipId].noiseChannel.mask || newParam.nesdmc[chipId].noiseChannel.mask == null)
-                    plugin.audio.chipRegister.chip(NesChip.class).setDmcMask(chipId, ch);
-                else plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, ch);
-                newParam.nesdmc[chipId].noiseChannel.mask = !newParam.nesdmc[chipId].noiseChannel.mask;
-                break;
-            case 2:
-                if (!newParam.nesdmc[chipId].dmcChannel.mask || newParam.nesdmc[chipId].dmcChannel.mask == null)
-                    plugin.audio.chipRegister.chip(NesChip.class).setDmcMask(chipId, ch);
-                else plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, ch);
-                newParam.nesdmc[chipId].dmcChannel.mask = !newParam.nesdmc[chipId].dmcChannel.mask;
-                break;
+                case 0:
+                    if (!newParam.nesdmc[chipId].triChannel.mask || newParam.nesdmc[chipId].triChannel.mask == null)
+                        plugin.audio.chipRegister.chip(NesChip.class).setDmcMask(chipId, ch);
+                    else plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, ch);
+                    newParam.nesdmc[chipId].triChannel.mask = !newParam.nesdmc[chipId].triChannel.mask;
+                    break;
+                case 1:
+                    if (!newParam.nesdmc[chipId].noiseChannel.mask || newParam.nesdmc[chipId].noiseChannel.mask == null)
+                        plugin.audio.chipRegister.chip(NesChip.class).setDmcMask(chipId, ch);
+                    else plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, ch);
+                    newParam.nesdmc[chipId].noiseChannel.mask = !newParam.nesdmc[chipId].noiseChannel.mask;
+                    break;
+                case 2:
+                    if (!newParam.nesdmc[chipId].dmcChannel.mask || newParam.nesdmc[chipId].dmcChannel.mask == null)
+                        plugin.audio.chipRegister.chip(NesChip.class).setDmcMask(chipId, ch);
+                    else plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, ch);
+                    newParam.nesdmc[chipId].dmcChannel.mask = !newParam.nesdmc[chipId].dmcChannel.mask;
+                    break;
             }
-            break;
-        case FDS:
+        } else if (chip.equals(FdsChip.class)) {
             if (!newParam.fds[chipId].channel.mask || newParam.fds[chipId].channel.mask == null)
                 plugin.audio.chipRegister.chip(NesChip.class).setFdsMask(chipId);
             else plugin.audio.chipRegister.chip(NesChip.class).resetFdsMask(chipId);
             newParam.fds[chipId].channel.mask = !newParam.fds[chipId].channel.mask;
-            break;
-        case MMC5:
+        } else if (chip.equals(Mmc5Chip.class)) {
             switch (ch) {
-            case 0:
-                if (!newParam.mmc5[chipId].sqrChannels[0].mask || newParam.mmc5[chipId].sqrChannels[ch].mask == null)
-                    plugin.audio.chipRegister.chip(NesChip.class).setMmc5Mask(chipId, ch);
-                else plugin.audio.chipRegister.chip(NesChip.class).resetMmc5Mask(chipId, ch);
-                newParam.mmc5[chipId].sqrChannels[0].mask = !newParam.mmc5[chipId].sqrChannels[0].mask;
-                break;
-            case 1:
-                if (!newParam.mmc5[chipId].sqrChannels[1].mask || newParam.mmc5[chipId].sqrChannels[ch].mask == null)
-                    plugin.audio.chipRegister.chip(NesChip.class).setMmc5Mask(chipId, ch);
-                else plugin.audio.chipRegister.chip(NesChip.class).resetMmc5Mask(chipId, ch);
-                newParam.mmc5[chipId].sqrChannels[1].mask = !newParam.mmc5[chipId].sqrChannels[1].mask;
-                break;
-            case 2:
-                if (!newParam.mmc5[chipId].pcmChannel.mask || newParam.mmc5[chipId].pcmChannel.mask == null)
-                    plugin.audio.chipRegister.chip(NesChip.class).setMmc5Mask(chipId, ch);
-                else plugin.audio.chipRegister.chip(NesChip.class).resetMmc5Mask(chipId, ch);
-                newParam.mmc5[chipId].pcmChannel.mask = !newParam.mmc5[chipId].pcmChannel.mask;
-                break;
+                case 0:
+                    if (!newParam.mmc5[chipId].sqrChannels[0].mask || newParam.mmc5[chipId].sqrChannels[ch].mask == null)
+                        plugin.audio.chipRegister.chip(NesChip.class).setMmc5Mask(chipId, ch);
+                    else plugin.audio.chipRegister.chip(NesChip.class).resetMmc5Mask(chipId, ch);
+                    newParam.mmc5[chipId].sqrChannels[0].mask = !newParam.mmc5[chipId].sqrChannels[0].mask;
+                    break;
+                case 1:
+                    if (!newParam.mmc5[chipId].sqrChannels[1].mask || newParam.mmc5[chipId].sqrChannels[ch].mask == null)
+                        plugin.audio.chipRegister.chip(NesChip.class).setMmc5Mask(chipId, ch);
+                    else plugin.audio.chipRegister.chip(NesChip.class).resetMmc5Mask(chipId, ch);
+                    newParam.mmc5[chipId].sqrChannels[1].mask = !newParam.mmc5[chipId].sqrChannels[1].mask;
+                    break;
+                case 2:
+                    if (!newParam.mmc5[chipId].pcmChannel.mask || newParam.mmc5[chipId].pcmChannel.mask == null)
+                        plugin.audio.chipRegister.chip(NesChip.class).setMmc5Mask(chipId, ch);
+                    else plugin.audio.chipRegister.chip(NesChip.class).resetMmc5Mask(chipId, ch);
+                    newParam.mmc5[chipId].pcmChannel.mask = !newParam.mmc5[chipId].pcmChannel.mask;
+                    break;
             }
-            break;
-        case VRC7:
+        } else if (chip.equals(Vrc7Chip.class)) {
             if (ch >= 0 && ch < 6) {
                 if (!newParam.vrc7[chipId].channels[ch].mask || newParam.vrc7[chipId].channels[ch].mask == null)
                     plugin.audio.chipRegister.chip(NesChip.class).setVrc7Mask(chipId, ch);
@@ -6736,8 +6721,7 @@ setVisible(true);
 
                 newParam.vrc7[chipId].channels[ch].mask = !newParam.vrc7[chipId].channels[ch].mask;
             }
-            break;
-        case K051649:
+        } else if (chip.equals(K051649Chip.class)) {
             if (ch >= 0 && ch < 5) {
                 if (!newParam.k051649[chipId].channels[ch].mask || newParam.k051649[chipId].channels[ch].mask == null)
                     plugin.audio.chipRegister.chip(K051649Chip.class).setMask(chipId, ch);
@@ -6746,8 +6730,7 @@ setVisible(true);
 
                 newParam.k051649[chipId].channels[ch].mask = !newParam.k051649[chipId].channels[ch].mask;
             }
-            break;
-        case DMG:
+        } else if (chip.equals(DmgChip.class)) {
             if (ch >= 0 && ch < 4) {
                 if (!newParam.dmg[chipId].channels[ch].mask || newParam.dmg[chipId].channels[ch].mask == null)
                     plugin.audio.chipRegister.chip(DmgChip.class).setMask(chipId, ch);
@@ -6756,8 +6739,7 @@ setVisible(true);
 
                 newParam.dmg[chipId].channels[ch].mask = !newParam.dmg[chipId].channels[ch].mask;
             }
-            break;
-        case VRC6:
+        } else if (chip.equals(Vrc6Chip.class)) {
             if (ch >= 0 && ch < 3) {
                 if (!newParam.vrc6[chipId].channels[ch].mask || newParam.vrc6[chipId].channels[ch].mask == null)
                     plugin.audio.chipRegister.chip(NesChip.class).setVrc6Mask(chipId, ch);
@@ -6766,8 +6748,7 @@ setVisible(true);
 
                 newParam.vrc6[chipId].channels[ch].mask = !newParam.vrc6[chipId].channels[ch].mask;
             }
-            break;
-        case N163:
+        } else if (chip.equals(N163Chip.class)) {
             if (ch >= 0 && ch < 8) {
                 if (!newParam.n106[chipId].channels[ch].mask || newParam.n106[chipId].channels[ch].mask == null)
                     plugin.audio.chipRegister.chip(NesChip.class).setN163Mask(chipId, ch);
@@ -6776,29 +6757,23 @@ setVisible(true);
 
                 newParam.n106[chipId].channels[ch].mask = !newParam.n106[chipId].channels[ch].mask;
             }
-            break;
         }
     }
 
-    public void resetChannelMask(EnmChip chip, int chipId, int ch) {
-        switch (chip) {
-        case SN76489:
+    public void resetChannelMask(Class<? extends Chip> chip, int chipId, int ch) {
+        if (chip.equals(Sn76489Chip.class)) {
             newParam.sn76489[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(Sn76489Chip.class).resetMask(chipId, ch);
-            break;
-        case RF5C164:
+        } else if (chip.equals(Rf5C164Chip.class)) {
             newParam.rf5c164[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(Rf5C164Chip.class).resetMask(chipId, ch);
-            break;
-        case RF5C68:
+        } else if (chip.equals(Rf5C68Chip.class)) {
             newParam.rf5c68[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(Rf5C68Chip.class).resetMask(chipId, ch);
-            break;
-        case YM2151:
+        } else if (chip.equals(Ym2151Chip.class)) {
             newParam.ym2151[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(Ym2151Chip.class).resetMask(chipId, ch, plugin.audio.stopped);
-            break;
-        case YM2203:
+        } else if (chip.equals(Ym2203Chip.class)) {
             if (ch >= 0 && ch < 9) {
                 plugin.audio.chipRegister.chip(Ym2203Chip.class).resetMask(chipId, ch, plugin.audio.stopped);
                 newParam.ym2203[chipId].channels[ch].mask = false;
@@ -6811,16 +6786,13 @@ setVisible(true);
                     newParam.ym2203[chipId].channels[8].mask = false;
                 }
             }
-            break;
-        case YM2413:
+        } else if (chip.equals(YM2413.class)) {
             newParam.ym2413[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(Ym2413Chip.class).resetMask(chipId, ch);
-            break;
-        case VRC7:
+        } else if (chip.equals(Vrc7Chip.class)) {
             newParam.vrc7[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(NesChip.class).resetVrc7Mask(chipId, ch);
-            break;
-        case YM2608:
+        } else if (chip.equals(Ym2608Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 plugin.audio.chipRegister.chip(Ym2608Chip.class).resetMask(chipId, ch, plugin.audio.stopped);
                 newParam.ym2608[chipId].channels[ch].mask = false;
@@ -6833,8 +6805,7 @@ setVisible(true);
                     newParam.ym2608[chipId].channels[11].mask = false;
                 }
             }
-            break;
-        case YM2610:
+        } else if (chip.equals(Ym2610Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 int c = ch;
                 if (ch == 12) c = 13;
@@ -6851,8 +6822,7 @@ setVisible(true);
                     newParam.ym2610[chipId].channels[11].mask = false;
                 }
             }
-            break;
-        case YM2612:
+        } else if (chip.equals(Ym2612Chip.class)) {
             if (ch >= 0 && ch < 9) {
                 plugin.audio.chipRegister.chip(Ym2612Chip.class).resetMask(chipId, ch);
                 newParam.ym2612[chipId].channels[ch].mask = false;
@@ -6865,212 +6835,179 @@ setVisible(true);
                     newParam.ym2612[chipId].channels[8].mask = false;
                 }
             }
-            break;
-        case YM3526:
+        } else if (chip.equals(Ym3526Chip.class)) {
             newParam.ym3526[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(Ym3526Chip.class).resetMask(chipId, ch);
-            break;
-        case Y8950:
+        } else if (chip.equals(Y8950Chip.class)) {
             newParam.y8950[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(Y8950Chip.class).resetMask(chipId, ch);
-            break;
-        case YM3812:
+        } else if (chip.equals(Ym3812Chip.class)) {
             newParam.ym3812[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(Ym3812Chip.class).resetMask(chipId, ch);
-            break;
-        case YMF262:
+        } else if (chip.equals(YmF262Chip.class)) {
             newParam.ymf262[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(YmF262Chip.class).resetMask(chipId, ch);
-            break;
-        case YMF278B:
+        } else if (chip.equals(YmF278BChip.class)) {
             newParam.ymf278b[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(YmF278BChip.class).resetMask(chipId, ch);
-            break;
-        case C140:
+        } else if (chip.equals(C140Chip.class)) {
             newParam.c140[chipId].channels[ch].mask = false;
             if (ch < 24) plugin.audio.chipRegister.chip(C140Chip.class).resetMask(chipId, ch);
-            break;
-        case PPZ8:
+        } else if (chip.equals(Ppz8Chip.class)) {
             newParam.ppz8[chipId].channels[ch].mask = false;
             if (ch < 8) plugin.audio.chipRegister.chip(Ppz8Chip.class).resetMask(chipId, ch);
-            break;
-        case C352:
+        } else if (chip.equals(C352Chip.class)) {
             newParam.c352[chipId].channels[ch].mask = false;
             if (ch < 32) plugin.audio.chipRegister.chip(C352Chip.class).resetMask(chipId, ch);
-            break;
-        case SEGAPCM:
+        } else if (chip.equals(SegaPcmChip.class)) {
             newParam.segaPcm[chipId].channels[ch].mask = false;
             if (ch < 16) plugin.audio.chipRegister.chip(SegaPcmChip.class).resetMask(chipId, ch);
-            break;
-        case QSound:
+        } else if (chip.equals(QSoundChip.class)) {
             newParam.qSound[chipId].channels[ch].mask = false;
             if (ch < 19) plugin.audio.chipRegister.chip(QSoundChip.class).resetMask(chipId, ch);
-            break;
-        case AY8910:
+        } else if (chip.equals(Ay8910Chip.class)) {
             newParam.ay8910[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(Ay8910Chip.class).resetMask(chipId, ch);
-            break;
-        case HuC6280:
+        } else if (chip.equals(HuC6280Chip.class)) {
             newParam.huc6280[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(HuC6280Chip.class).resetMask(chipId, ch);
-            break;
-        case K051649:
+        } else if (chip.equals(K051649Chip.class)) {
             newParam.k051649[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(K051649Chip.class).resetMask(chipId, ch);
-            break;
-        case OKIM6258:
+        } else if (chip.equals(OkiM6258Chip.class)) {
             newParam.okim6258[chipId].mask = false;
             plugin.audio.chipRegister.chip(OkiM6258Chip.class).resetMask(chipId);
-            break;
-        case OKIM6295:
+        } else if (chip.equals(OkiM6295Chip.class)) {
             newParam.okim6295[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(OkiM6295Chip.class).resetMask(chipId, ch);
-            break;
-        case NES:
+        } else if (chip.equals(NesChip.class)) {
             switch (ch) {
-            case 0:
-            case 1:
-                newParam.nesdmc[chipId].sqrChannels[ch].mask = false;
-                plugin.audio.chipRegister.chip(NesChip.class).resetMask(chipId, ch);
-                break;
-            case 2:
-                newParam.nesdmc[chipId].triChannel.mask = false;
-                plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, 0);
-                break;
-            case 3:
-                newParam.nesdmc[chipId].noiseChannel.mask = false;
-                plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, 1);
-                break;
-            case 4:
-                newParam.nesdmc[chipId].dmcChannel.mask = false;
-                plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, 2);
-                break;
+                case 0:
+                case 1:
+                    newParam.nesdmc[chipId].sqrChannels[ch].mask = false;
+                    plugin.audio.chipRegister.chip(NesChip.class).resetMask(chipId, ch);
+                    break;
+                case 2:
+                    newParam.nesdmc[chipId].triChannel.mask = false;
+                    plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, 0);
+                    break;
+                case 3:
+                    newParam.nesdmc[chipId].noiseChannel.mask = false;
+                    plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, 1);
+                    break;
+                case 4:
+                    newParam.nesdmc[chipId].dmcChannel.mask = false;
+                    plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, 2);
+                    break;
             }
-            break;
-        case DMC:
+        } else if (chip.equals(DmcChip.class)) {
             switch (ch) {
-            case 0:
-                newParam.nesdmc[chipId].triChannel.mask = false;
-                plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, 0);
-                break;
-            case 1:
-                newParam.nesdmc[chipId].noiseChannel.mask = false;
-                plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, 1);
-                break;
-            case 2:
-                newParam.nesdmc[chipId].dmcChannel.mask = false;
-                plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, 2);
-                break;
+                case 0:
+                    newParam.nesdmc[chipId].triChannel.mask = false;
+                    plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, 0);
+                    break;
+                case 1:
+                    newParam.nesdmc[chipId].noiseChannel.mask = false;
+                    plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, 1);
+                    break;
+                case 2:
+                    newParam.nesdmc[chipId].dmcChannel.mask = false;
+                    plugin.audio.chipRegister.chip(NesChip.class).resetDmcMask(chipId, 2);
+                    break;
             }
-            break;
-        case FDS:
+        } else if (chip.equals(FdsChip.class)) {
             newParam.fds[chipId].channel.mask = false;
             plugin.audio.chipRegister.chip(NesChip.class).resetFdsMask(chipId);
-            break;
-        case MMC5:
+        } else if (chip.equals(Mmc5Chip.class)) {
             switch (ch) {
-            case 0:
-                newParam.mmc5[chipId].sqrChannels[0].mask = false;
-                break;
-            case 1:
-                newParam.mmc5[chipId].sqrChannels[1].mask = false;
-                break;
-            case 2:
-                newParam.mmc5[chipId].pcmChannel.mask = false;
-                break;
+                case 0:
+                    newParam.mmc5[chipId].sqrChannels[0].mask = false;
+                    break;
+                case 1:
+                    newParam.mmc5[chipId].sqrChannels[1].mask = false;
+                    break;
+                case 2:
+                    newParam.mmc5[chipId].pcmChannel.mask = false;
+                    break;
             }
             plugin.audio.chipRegister.chip(NesChip.class).resetMmc5Mask(chipId, ch);
-            break;
-        case DMG:
+        } else if (chip.equals(DmgChip.class)) {
             newParam.dmg[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(DmgChip.class).resetMask(chipId, ch);
-            break;
-        case VRC6:
+        } else if (chip.equals(Vrc6Chip.class)) {
             newParam.vrc6[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(NesChip.class).resetVrc6Mask(chipId, ch);
-            break;
-        case N163:
+        } else if (chip.equals(N163Chip.class)) {
             newParam.n106[chipId].channels[ch].mask = false;
             plugin.audio.chipRegister.chip(NesChip.class).resetN163Mask(chipId, ch);
-            break;
         }
     }
 
-    public void forceChannelMask(EnmChip chip, int chipId, int ch, boolean mask) {
-        switch (chip) {
-        case AY8910:
+    public void forceChannelMask(Class<? extends Chip> chip, int chipId, int ch, boolean mask) {
+        if (chip.equals(Ay8910Chip.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(Ay8910Chip.class).setMask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(Ay8910Chip.class).resetMask(chipId, ch);
             newParam.ay8910[chipId].channels[ch].mask = mask;
             oldParam.ay8910[chipId].channels[ch].mask = !mask;
-            break;
-        case C140:
+        } else if (chip.equals(C140Chip.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(C140Chip.class).setMask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(C140Chip.class).resetMask(chipId, ch);
             newParam.c140[chipId].channels[ch].mask = mask;
             oldParam.c140[chipId].channels[ch].mask = !mask;
-            break;
-        case C352:
+        } else if (chip.equals(C352Chip.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(C352Chip.class).setMask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(C352Chip.class).resetMask(chipId, ch);
             newParam.c352[chipId].channels[ch].mask = mask;
             oldParam.c352[chipId].channels[ch].mask = !mask;
-            break;
-        case HuC6280:
+        } else if (chip.equals(HuC6280Chip.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(HuC6280Chip.class).setMask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(HuC6280Chip.class).resetMask(chipId, ch);
             newParam.huc6280[chipId].channels[ch].mask = mask;
             oldParam.huc6280[chipId].channels[ch].mask = !mask;
-            break;
-        case RF5C164:
+        } else if (chip.equals(RF5C164.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(Rf5C164Chip.class).setMask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(Rf5C164Chip.class).resetMask(chipId, ch);
             newParam.rf5c164[chipId].channels[ch].mask = mask;
             oldParam.rf5c164[chipId].channels[ch].mask = !mask;
-            break;
-        case RF5C68:
+        } else if (chip.equals(RF5C68.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(Rf5C68Chip.class).setMask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(Rf5C68Chip.class).resetMask(chipId, ch);
             newParam.rf5c68[chipId].channels[ch].mask = mask;
             oldParam.rf5c68[chipId].channels[ch].mask = !mask;
-            break;
-        case SEGAPCM:
+        } else if (chip.equals(SegaPcmChip.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(SegaPcmChip.class).setMask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(SegaPcmChip.class).resetMask(chipId, ch);
             newParam.segaPcm[chipId].channels[ch].mask = mask;
             oldParam.segaPcm[chipId].channels[ch].mask = !mask;
-            break;
-        case QSound:
+        } else if (chip.equals(QSoundChip.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(QSoundChip.class).setMask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(QSoundChip.class).resetMask(chipId, ch);
             newParam.qSound[chipId].channels[ch].mask = mask;
             oldParam.qSound[chipId].channels[ch].mask = !mask;
-            break;
-        case YM2151:
+        } else if (chip.equals(Ym2151Chip.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(Ym2151Chip.class).setMask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(Ym2151Chip.class).resetMask(chipId, ch, plugin.audio.stopped);
             newParam.ym2151[chipId].channels[ch].mask = mask;
             oldParam.ym2151[chipId].channels[ch].mask = !mask;
-            break;
-        case YM2203:
+        } else if (chip.equals(Ym2203Chip.class)) {
             if (ch >= 0 && ch < 9) {
                 if (mask)
                     plugin.audio.chipRegister.chip(Ym2203Chip.class).setMask(chipId, ch);
@@ -7092,8 +7029,7 @@ setVisible(true);
                     oldParam.ym2203[chipId].channels[8].mask = !mask;
                 }
             }
-            break;
-        case YM2413:
+        } else if (chip.equals(Ym2413Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 if (mask)
                     plugin.audio.chipRegister.chip(Ym2413Chip.class).setMask(chipId, ch);
@@ -7103,8 +7039,7 @@ setVisible(true);
                 newParam.ym2413[chipId].channels[ch].mask = mask;
                 oldParam.ym2413[chipId].channels[ch].mask = !mask;
             }
-            break;
-        case YM2608:
+        } else if (chip.equals(Ym2608Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 //if (mask)
                 //    audio.audio.setYM2608Mask(chipId, ch);
@@ -7126,8 +7061,7 @@ setVisible(true);
                     oldParam.ym2608[chipId].channels[11].mask = !mask;
                 }
             }
-            break;
-        case YM2610:
+        } else if (chip.equals(Ym2610Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 int c = ch;
                 if (ch == 12) c = 13;
@@ -7152,8 +7086,7 @@ setVisible(true);
                     oldParam.ym2610[chipId].channels[11].mask = !mask;
                 }
             }
-            break;
-        case YM2612:
+        } else if (chip.equals(Ym2612Chip.class)) {
             if (ch >= 0 && ch < 9) {
                 if (mask)
                     plugin.audio.chipRegister.chip(Ym2612Chip.class).setMask(chipId, ch);
@@ -7175,8 +7108,7 @@ setVisible(true);
                     oldParam.ym2612[chipId].channels[8].mask = null;
                 }
             }
-            break;
-        case YM3526:
+        } else if (chip.equals(Ym3526Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 if (mask)
                     plugin.audio.chipRegister.chip(Ym3526Chip.class).setMask(chipId, ch);
@@ -7186,8 +7118,7 @@ setVisible(true);
                 newParam.ym3526[chipId].channels[ch].mask = mask;
                 oldParam.ym3526[chipId].channels[ch].mask = !mask;
             }
-            break;
-        case Y8950:
+        } else if (chip.equals(Y8950Chip.class)) {
             if (ch >= 0 && ch < 15) {
                 if (mask)
                     plugin.audio.chipRegister.chip(Y8950Chip.class).setMask(chipId, ch);
@@ -7197,8 +7128,7 @@ setVisible(true);
                 newParam.y8950[chipId].channels[ch].mask = mask;
                 oldParam.y8950[chipId].channels[ch].mask = !mask;
             }
-            break;
-        case YM3812:
+        } else if (chip.equals(Ym3812Chip.class)) {
             if (ch >= 0 && ch < 14) {
                 if (mask)
                     plugin.audio.chipRegister.chip(Ym3812Chip.class).setMask(chipId, ch);
@@ -7208,8 +7138,7 @@ setVisible(true);
                 newParam.ym3812[chipId].channels[ch].mask = mask;
                 oldParam.ym3812[chipId].channels[ch].mask = !mask;
             }
-            break;
-        case YMF262:
+        } else if (chip.equals(YmF262Chip.class)) {
             if (ch >= 0 && ch < 24) {
                 if (mask)
                     plugin.audio.chipRegister.chip(YmF262Chip.class).setMask(chipId, ch);
@@ -7219,8 +7148,7 @@ setVisible(true);
                 newParam.ymf262[chipId].channels[ch].mask = mask;
                 oldParam.ymf262[chipId].channels[ch].mask = !mask;
             }
-            break;
-        case YMF278B:
+        } else if (chip.equals(YmF278BChip.class)) {
             if (ch >= 0 && ch < 47) {
                 if (mask)
                     plugin.audio.chipRegister.chip(YmF278BChip.class).setMask(chipId, ch);
@@ -7230,51 +7158,45 @@ setVisible(true);
                 newParam.ymf278b[chipId].channels[ch].mask = mask;
                 oldParam.ymf278b[chipId].channels[ch].mask = !mask;
             }
-            break;
-        case SN76489:
+        } else if (chip.equals(Sn76489Chip.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(Sn76489Chip.class).setMask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(Sn76489Chip.class).resetMask(chipId, ch);
             newParam.sn76489[chipId].channels[ch].mask = mask;
             oldParam.sn76489[chipId].channels[ch].mask = !mask;
-            break;
-        case OKIM6295:
+        } else if (chip.equals(OkiM6295Chip.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(OkiM6295Chip.class).setMask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(OkiM6295Chip.class).resetMask(chipId, ch);
             newParam.okim6295[chipId].channels[ch].mask = mask;
             oldParam.okim6295[chipId].channels[ch].mask = !mask;
-            break;
-        case DMG:
+        } else if (chip.equals(DmgChip.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(DmgChip.class).setMask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(DmgChip.class).resetMask(chipId, ch);
             newParam.dmg[chipId].channels[ch].mask = mask;
             oldParam.dmg[chipId].channels[ch].mask = !mask;
-            break;
-        case VRC6:
+        } else if (chip.equals(Vrc6Inst.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(NesChip.class).setVrc6Mask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(NesChip.class).resetVrc6Mask(chipId, ch);
             newParam.vrc6[chipId].channels[ch].mask = mask;
             oldParam.vrc6[chipId].channels[ch].mask = !mask;
-            break;
-        case N163:
+        } else if (chip.equals(N163Chip.class)) {
             if (mask)
                 plugin.audio.chipRegister.chip(NesChip.class).setN163Mask(chipId, ch);
             else
                 plugin.audio.chipRegister.chip(NesChip.class).resetN163Mask(chipId, ch);
             newParam.n106[chipId].channels[ch].mask = mask;
             oldParam.n106[chipId].channels[ch].mask = !mask;
-            break;
         }
     }
 
-    public void ForceChannelMaskNES(EnmChip chip, int chipId, int ch, MDChipParams.NESDMC[] param) {
+    public void ForceChannelMaskNES(Class<? extends Chip> chip, int chipId, int ch, MDChipParams.NESDMC[] param) {
         if (ch == 0 || ch == 1) {
             if (param[chipId].sqrChannels[ch].mask) {
                 newParam.nesdmc[chipId].sqrChannels[ch].mask = true;
@@ -7801,24 +7723,24 @@ setVisible(true);
     }
 
     private void RegisterDumpMenuItem_Click(ActionEvent ev) {
-        if (ev.getSource() == yM2612ToolStripMenuItem) openFormRegTest(0, EnmChip.YM2612, false);
-        else if (ev.getSource() == ym2151ToolStripMenuItem) openFormRegTest(0, EnmChip.YM2151, false);
-        else if (ev.getSource() == ym2203ToolStripMenuItem) openFormRegTest(0, EnmChip.YM2203, false);
-        else if (ev.getSource() == ym2413ToolStripMenuItem) openFormRegTest(0, EnmChip.YM2413, false);
-        else if (ev.getSource() == ym2608ToolStripMenuItem) openFormRegTest(0, EnmChip.YM2608, false);
-        else if (ev.getSource() == yMF278BToolStripMenuItem) openFormRegTest(0, EnmChip.YMF278B, false);
-        else if (ev.getSource() == yMF262ToolStripMenuItem) openFormRegTest(0, EnmChip.YMF262, false);
-        else if (ev.getSource() == yM2610ToolStripMenuItem) openFormRegTest(0, EnmChip.YM2610, false);
-        else if (ev.getSource() == qSoundToolStripMenuItem) openFormRegTest(0, EnmChip.QSound, false);
-        else if (ev.getSource() == segaPCMToolStripMenuItem) openFormRegTest(0, EnmChip.SEGAPCM, false);
-        else if (ev.getSource() == yMZ280BToolStripMenuItem) openFormRegTest(0, EnmChip.YMZ280B, false);
-        else if (ev.getSource() == sN76489ToolStripMenuItem) openFormRegTest(0, EnmChip.SN76489, false);
-        else if (ev.getSource() == aY8910ToolStripMenuItem) openFormRegTest(0, EnmChip.AY8910, false);
-        else if (ev.getSource() == c140ToolStripMenuItem) openFormRegTest(0, EnmChip.C140, false);
-        else if (ev.getSource() == c352ToolStripMenuItem) openFormRegTest(0, EnmChip.C352, false);
-        else if (ev.getSource() == yM3812ToolStripMenuItem) openFormRegTest(0, EnmChip.YM3812, false);
-        else if (ev.getSource() == sIDToolStripMenuItem) openFormRegTest(0, EnmChip.SID, false);
-        else openFormRegTest(0, EnmChip.Unuse, false);
+        if (ev.getSource() == yM2612ToolStripMenuItem) openFormRegTest(0, Ym2612Chip.class, false);
+        else if (ev.getSource() == ym2151ToolStripMenuItem) openFormRegTest(0, Ym2151Chip.class, false);
+        else if (ev.getSource() == ym2203ToolStripMenuItem) openFormRegTest(0, Ym2203Chip.class, false);
+        else if (ev.getSource() == ym2413ToolStripMenuItem) openFormRegTest(0, Ym2413Chip.class, false);
+        else if (ev.getSource() == ym2608ToolStripMenuItem) openFormRegTest(0, Ym2608Chip.class, false);
+        else if (ev.getSource() == yMF278BToolStripMenuItem) openFormRegTest(0, YmF278BChip.class, false);
+        else if (ev.getSource() == yMF262ToolStripMenuItem) openFormRegTest(0, YmF262Chip.class, false);
+        else if (ev.getSource() == yM2610ToolStripMenuItem) openFormRegTest(0, Ym2610Chip.class, false);
+        else if (ev.getSource() == qSoundToolStripMenuItem) openFormRegTest(0, QSoundChip.class, false);
+        else if (ev.getSource() == segaPCMToolStripMenuItem) openFormRegTest(0, SegaPcmChip.class, false);
+        else if (ev.getSource() == yMZ280BToolStripMenuItem) openFormRegTest(0, YmZ280BChip.class, false);
+        else if (ev.getSource() == sN76489ToolStripMenuItem) openFormRegTest(0, Sn76489Chip.class, false);
+        else if (ev.getSource() == aY8910ToolStripMenuItem) openFormRegTest(0, Ay8910Chip.class, false);
+        else if (ev.getSource() == c140ToolStripMenuItem) openFormRegTest(0, C140Chip.class, false);
+        else if (ev.getSource() == c352ToolStripMenuItem) openFormRegTest(0, C352Chip.class, false);
+        else if (ev.getSource() == yM3812ToolStripMenuItem) openFormRegTest(0, Ym3812Chip.class, false);
+        else if (ev.getSource() == sIDToolStripMenuItem) openFormRegTest(0, SidChip.class, false);
+        else openFormRegTest(0, null, false);
     }
 
     private final BufferedImage[] lstOpeButtonEnterImage = new BufferedImage[] {

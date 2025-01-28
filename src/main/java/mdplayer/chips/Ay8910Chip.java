@@ -8,12 +8,13 @@ package mdplayer.chips;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RC86ctlSoundChip;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.Instrument;
+import mdsound.instrument.Ay8910Inst;
+import mdsound.instrument.MameAy8910Inst;
 
 
 /**
@@ -25,8 +26,6 @@ import mdsound.Instrument;
 public class Ay8910Chip implements Chip {
 
     private final Setting.ChipType2[] chipTypes = setting.getAY8910Type();
-
-    private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
@@ -46,6 +45,17 @@ public class Ay8910Chip implements Chip {
     private Audio context;
 
     @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {Ay8910Inst.class, MameAy8910Inst.class};
+    }
+
+    @Override
+    public int activeIndex(int chipId) {
+        return chipTypes[chipId].getEnabledId();
+    }
+
+    @Override
     public void init(Audio context) {
         this.context = context;
 
@@ -57,9 +67,6 @@ public class Ay8910Chip implements Chip {
             psgKeyOn[chipId] = new int[] {0, 0, 0};
 
             fadeoutVolume[chipId] = 0;
-
-            //
-            inst[chipId] = EnmChip.AY8910.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -102,7 +109,7 @@ public class Ay8910Chip implements Chip {
         if (model == EnmModel.VirtualModel) {
             if (chipTypes[chipId].getUseReal()[0])
                 return;
-            context.mds.write(inst[chipId], chipId, 0, addr, data);
+            context.mds.write(inst(chipId), chipId, 0, addr, data);
         } else {
             if (realChips[chipId] == null)
                 return;

@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.chips.MultiPCM;
 import mdsound.instrument.MultiPcmInst;
 
@@ -22,6 +23,12 @@ import mdsound.instrument.MultiPcmInst;
 public class MultiPcmChip implements Chip {
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {MultiPcmInst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -43,7 +50,7 @@ public class MultiPcmChip implements Chip {
             context.chipLED.put("SecMPCM", 2);
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.write(MultiPcmInst.class, chipId, 0, addr, data);
+            context.mds.write(inst(chipId), chipId, 0, addr, data);
         } else {
         }
     }

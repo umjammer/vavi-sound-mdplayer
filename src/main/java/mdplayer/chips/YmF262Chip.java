@@ -11,6 +11,7 @@ import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdsound.Instrument;
 import mdsound.instrument.YmF262Inst;
 
 import static mdplayer.chips.YmF278BChip.channel;
@@ -49,6 +50,12 @@ public class YmF262Chip implements Chip {
     private final int[] fadeout = {0, 0};
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {YmF262Inst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -185,7 +192,7 @@ public class YmF262Chip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(YmF262Inst.class, chipId, port, addr, data);
+                context.mds.write(inst(chipId), chipId, port, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
@@ -197,7 +204,7 @@ public class YmF262Chip implements Chip {
     private void _write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(YmF262Inst.class, chipId, port, addr, data);
+                context.mds.write(inst(chipId), chipId, port, addr, data);
             }
         } else {
             if (realChips[chipId] == null)

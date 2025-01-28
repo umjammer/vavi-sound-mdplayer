@@ -1,6 +1,5 @@
 package mdplayer;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Common.EnmRealModel;
 
@@ -14,7 +13,7 @@ public class ChipInf {
     /**
      * ChipType2
      */
-    public EnmChip type = EnmChip.Unuse;
+    public Class<? extends Chip> type = null;
 
     /**
      * model Virtual / Real

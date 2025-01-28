@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -168,9 +167,9 @@ public class frmRf5c68 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.RF5C68, chipId, ch);
+                            parent.resetChannelMask(Rf5C68Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.RF5C68, chipId, ch);
+                            parent.setChannelMask(Rf5C68Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -180,11 +179,11 @@ public class frmRf5c68 extends frmBase {
             if (ch < 0) return;
 
             if (ev.getButton() == MouseEvent.BUTTON1) {
-                parent.setChannelMask(EnmChip.RF5C68, chipId, ch);
+                parent.setChannelMask(Rf5C68Chip.class, chipId, ch);
                 return;
             }
 
-            for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.RF5C68, chipId, ch);
+            for (ch = 0; ch < 8; ch++) parent.resetChannelMask(Rf5C68Chip.class, chipId, ch);
         }
     };
 

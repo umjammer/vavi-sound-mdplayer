@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -189,9 +188,9 @@ public class frmOKIM6258 extends frmBase {
                 //  However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     if (newParam.mask)
-                        parent.resetChannelMask(EnmChip.OKIM6258, chipId, 0);
+                        parent.resetChannelMask(OkiM6258Chip.class, chipId, 0);
                     else
-                        parent.setChannelMask(EnmChip.OKIM6258, chipId, 0);
+                        parent.setChannelMask(OkiM6258Chip.class, chipId, 0);
                 }
                 return;
             }
@@ -203,12 +202,12 @@ public class frmOKIM6258 extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // マスク
-                    parent.setChannelMask(EnmChip.OKIM6258, chipId, 0);
+                    parent.setChannelMask(OkiM6258Chip.class, chipId, 0);
                     return;
                 }
 
                 //  Unmask.
-                parent.resetChannelMask(EnmChip.OKIM6258, chipId, 0);
+                parent.resetChannelMask(OkiM6258Chip.class, chipId, 0);
             }
         }
     };

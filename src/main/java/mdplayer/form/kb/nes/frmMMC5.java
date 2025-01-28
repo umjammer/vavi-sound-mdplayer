@@ -16,11 +16,11 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.NesChip;
+import mdplayer.chips.NesChip.Mmc5Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -182,15 +182,15 @@ public class frmMMC5 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 2; ch++) {
                         if (newParam.sqrChannels[ch].mask)
-                            parent.resetChannelMask(EnmChip.MMC5, chipId, ch);
+                            parent.resetChannelMask(Mmc5Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.MMC5, chipId, ch);
+                            parent.setChannelMask(Mmc5Chip.class, chipId, ch);
                     }
 
                     if (newParam.pcmChannel.mask)
-                        parent.resetChannelMask(EnmChip.MMC5, chipId, 0);
+                        parent.resetChannelMask(Mmc5Chip.class, chipId, 0);
                     else
-                        parent.setChannelMask(EnmChip.MMC5, chipId, 0);
+                        parent.setChannelMask(Mmc5Chip.class, chipId, 0);
 
                 }
                 return;
@@ -201,7 +201,7 @@ public class frmMMC5 extends frmBase {
                 if (ev.getButton() == MouseEvent.BUTTON2) {
                     for (int i = 0; i < 3; i++) {
                         // unmask
-                        if (i < 3) parent.resetChannelMask(EnmChip.MMC5, chipId, i);
+                        if (i < 3) parent.resetChannelMask(Mmc5Chip.class, chipId, i);
                     }
 
                     return;
@@ -224,7 +224,7 @@ public class frmMMC5 extends frmBase {
                         return;
                     }
                     // mask
-                    parent.setChannelMask(EnmChip.MMC5, chipId, ch);
+                    parent.setChannelMask(Mmc5Chip.class, chipId, ch);
 
                 }
             }

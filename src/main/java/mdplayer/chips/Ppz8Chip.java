@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.chips.PPZ8;
 import mdsound.instrument.Ppz8Inst;
 
@@ -27,6 +28,12 @@ public class Ppz8Chip implements Chip {
     };
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {Ppz8Inst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -68,7 +75,7 @@ public class Ppz8Chip implements Chip {
 
         if (dPort == -1 && dAddr == -1 && dData == -1)
             return;
-        context.mds.inst(Ppz8Inst.class).write(chipId, dPort, dAddr, dData);
+        context.mds.inst(inst(chipId)).write(chipId, dPort, dAddr, dData);
     }
 
     public void setMask(int chipId, int ch, boolean mask) {

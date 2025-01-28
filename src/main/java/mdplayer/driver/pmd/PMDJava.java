@@ -21,8 +21,8 @@ import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
 import dotnet4j.util.compat.Tuple;
+import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.P86Chip;
 import mdplayer.chips.PpsChip;
@@ -112,7 +112,7 @@ public class PMDJava extends BaseDriver {
                         int fileType,
                         BasePlugin plugin,
                         EnmModel model,
-                        EnmChip[] useChip,
+                        Class<? extends Chip>[] useChip,
                         int latency,
                         int waitTime) {
         mtype = fileType == 0 ? PMDFileType.MML : PMDFileType.M;
@@ -507,7 +507,7 @@ public class PMDJava extends BaseDriver {
     public boolean init(byte[] vgmBuf,
                         BasePlugin plugin,
                         EnmModel model,
-                        EnmChip[] useChip,
+                        Class<? extends Chip>[] useChip,
                         int latency,
                         int waitTime) {
         throw new UnsupportedOperationException();

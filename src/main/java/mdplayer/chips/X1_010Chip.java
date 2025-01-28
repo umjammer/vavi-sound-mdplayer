@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.instrument.X1_010Inst;
 
 
@@ -21,6 +22,12 @@ import mdsound.instrument.X1_010Inst;
 public class X1_010Chip implements Chip {
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {X1_010Inst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -42,7 +49,7 @@ public class X1_010Chip implements Chip {
             context.chipLED.put("SecX1010", 2);
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.write(X1_010Inst.class, chipId, 0, 0, mm * 0x100 + ll, rr);
+            context.mds.write(inst(chipId), chipId, 0, 0, mm * 0x100 + ll, rr);
         } else {
         }
     }

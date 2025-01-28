@@ -16,11 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.properties.Resources;
 import mdplayer.vst.VstInfo;
-import mdsound.Instrument;
 import vavi.util.serdes.Serdes;
 
 import static java.lang.System.getLogger;
@@ -849,7 +847,7 @@ public class Setting implements Serializable {
             this.setAY8910Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getAY8910Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getAY8910Type()[i].setUseEmu(new boolean[EnmChip.AY8910.variants.length]); // 2 means {0: libvgm, 1: mame}
+                this.getAY8910Type()[i].setUseEmu(new boolean[2]); // 2 means {0: libvgm, 1: mame}
                 this.getAY8910Type()[i].getUseEmu()[0] = true;
                 this.getAY8910Type()[i].setUseReal(new boolean[1]);
             }
@@ -894,8 +892,8 @@ public class Setting implements Serializable {
             this.setSN76489Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getSN76489Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getSN76489Type()[i].setUseEmu(new boolean[EnmChip.SN76489.variants.length]); // 2 means {0: sn76489, 1: sn76496}
-                this.getSN76489Type()[i].getUseEmu()[0] = true;
+                this.getSN76489Type()[i].setUseEmu(new boolean[2]);
+                this.getSN76489Type()[i].getUseEmu()[0] = true; // {0: sn76489, 1: sn76496}
                 this.getSN76489Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -912,8 +910,8 @@ public class Setting implements Serializable {
             this.setYM2151Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2151Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2151Type()[i].setUseEmu(new boolean[EnmChip.YM2151.variants.length]); // 4 means {0: fmgen, 1: mame, 2: 68k, 3: ymfm}
-                this.getYM2151Type()[i].getUseEmu()[0] = true;
+                this.getYM2151Type()[i].setUseEmu(new boolean[4]);
+                this.getYM2151Type()[i].getUseEmu()[0] = true; // {0: fmgen, 1: mame, 2: 68k, 3: ymfm}
                 this.getYM2151Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -921,8 +919,8 @@ public class Setting implements Serializable {
             this.setYM2203Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2203Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2203Type()[i].setUseEmu(new boolean[EnmChip.YM2203.variants.length]); // 2 means {0: fmgen, 1: ymfm}
-                this.getYM2203Type()[i].getUseEmu()[0] = true;
+                this.getYM2203Type()[i].setUseEmu(new boolean[2]);
+                this.getYM2203Type()[i].getUseEmu()[0] = true; // {0: fmgen, 1: ymfm}
                 this.getYM2203Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -939,8 +937,8 @@ public class Setting implements Serializable {
             this.setYM2608Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2608Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2608Type()[i].setUseEmu(new boolean[EnmChip.YM2608.variants.length]); // 2 means {0: fmgen, 1: ymfm}
-                this.getYM2608Type()[i].getUseEmu()[0] = true;
+                this.getYM2608Type()[i].setUseEmu(new boolean[2]);
+                this.getYM2608Type()[i].getUseEmu()[0] = true; // {0: fmgen, 1: ymfm}
                 this.getYM2608Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -955,8 +953,8 @@ public class Setting implements Serializable {
             this.setYM2610Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2610Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo()});
-                this.getYM2610Type()[i].setUseEmu(new boolean[EnmChip.YM2610.variants.length]); // 2 means {0: fmgen, 1: ymfm}
-                this.getYM2610Type()[i].getUseEmu()[0] = true;
+                this.getYM2610Type()[i].setUseEmu(new boolean[2]);
+                this.getYM2610Type()[i].getUseEmu()[0] = true; // {0: fmgen, 1: ymfm}
                 this.getYM2610Type()[i].setUseReal(new boolean[3]);
             }
         }
@@ -965,8 +963,8 @@ public class Setting implements Serializable {
             this._YM2612Type = new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()};
             for (int i = 0; i < 2; i++) {
                 this.getYM2612Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2612Type()[i].setUseEmu(new boolean[EnmChip.YM2612.variants.length]); // 4 means {0: mame-A, 1: nuke, 2: mame-B, 3: nuke-B}
-                this.getYM2612Type()[i].getUseEmu()[0] = true;
+                this.getYM2612Type()[i].setUseEmu(new boolean[4]);
+                this.getYM2612Type()[i].getUseEmu()[0] = true; // {0: mame-A, 1: nuke, 2: mame-B, 3: nuke-B}
                 this.getYM2612Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -983,8 +981,8 @@ public class Setting implements Serializable {
             this.setYM3812Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM3812Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM3812Type()[i].setUseEmu(new boolean[EnmChip.YM3812.variants.length]); // 2 means {0: dosbox, 1: mame}
-                this.getYM3812Type()[i].getUseEmu()[0] = true;
+                this.getYM3812Type()[i].setUseEmu(new boolean[2]);
+                this.getYM3812Type()[i].getUseEmu()[0] = true; // {0: dosbox, 1: mame}
                 this.getYM3812Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -1027,8 +1025,8 @@ public class Setting implements Serializable {
         if (this.getQSoundType() == null || this.getQSoundType().length < 2) {
             this.setQSoundType(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                this.getQSoundType()[i].setUseEmu(new boolean[EnmChip.QSound.variants.length]); // 2 means {0: qsound-ctr, 1: qsound}
-                this.getQSoundType()[i].getUseEmu()[0] = true;
+                this.getQSoundType()[i].setUseEmu(new boolean[2]);
+                this.getQSoundType()[i].getUseEmu()[0] = true; // {0: qsound-ctr, 1: qsound}
                 this.getQSoundType()[i].setUseReal(new boolean[1]);
             }
         }
@@ -2206,15 +2204,15 @@ public class Setting implements Serializable {
             return v > 20 || v < -192;
         }
 
-        private static String getKey(String tag, Class<? extends Instrument> c) {
+        private static String getKey(String tag, Class<? extends Chip> c) {
             return c.getSimpleName().replaceFirst("Inst$", ".") + tag;
         }
 
-        public int getVolume(String tag, Class<? extends Instrument> c) {
+        public int getVolume(String tag, Class<? extends Chip> c) {
             return volumes.getOrDefault(getKey(tag, c), 0);
         }
 
-        public void setVolume(String tag, Class<? extends Instrument> c, int v) {
+        public void setVolume(String tag, Class<? extends Chip> c, int v) {
             volumes.put(getKey(tag, c), outRange(v) ? 0 : v );
         }
 

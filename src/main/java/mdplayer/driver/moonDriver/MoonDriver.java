@@ -4,8 +4,8 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
 import dotnet4j.util.compat.Tuple;
+import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
@@ -47,7 +47,7 @@ public class MoonDriver extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
 
         this.vgmBuf = vgmBuf;
         this.plugin = plugin;
@@ -133,7 +133,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 

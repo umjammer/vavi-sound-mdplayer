@@ -18,7 +18,6 @@ import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.StreamReader;
 import dotnet4j.io.StreamWriter;
-import mdplayer.Common.EnmChip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
@@ -306,16 +305,16 @@ public class YM2612MIDI {
         return des;
     }
 
-    public void setVoiceFromChipRegister(EnmChip chip, int chipId, int ch) {
-        if (chip == EnmChip.YM2612 || chip == EnmChip.YM2608 || chip == EnmChip.YM2610 || chip == EnmChip.YM2203) {
+    public void setVoiceFromChipRegister(Class<? extends Chip> chip, int chipId, int ch) {
+        if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2610Chip.class || chip == Ym2203Chip.class) {
             int[][] srcRegs = null;
-            if (chip == EnmChip.YM2612) {
+            if (chip == Ym2612Chip.class) {
                 srcRegs = audio.chipRegister.chip(Ym2612Chip.class).read(chipId);
-            } else if (chip == EnmChip.YM2608) {
+            } else if (chip == Ym2608Chip.class) {
                 srcRegs = audio.chipRegister.chip(Ym2608Chip.class).read(chipId);
-            } else if (chip == EnmChip.YM2610) {
+            } else if (chip == Ym2610Chip.class) {
                 srcRegs = audio.chipRegister.chip(Ym2610Chip.class).read(chipId);
-            } else if (chip == EnmChip.YM2203) {
+            } else if (chip == Ym2203Chip.class) {
                 int[] sReg = audio.chipRegister.chip(Ym2203Chip.class).read(chipId);
                 srcRegs = new int[][] {sReg, null};
             }
@@ -324,7 +323,7 @@ public class YM2612MIDI {
                     voiceCopyCh(ch, i, srcRegs);
                 }
             }
-        } else if (chip == EnmChip.YM2151) {
+        } else if (chip == Ym2151Chip.class) {
             int[] reg = audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
             for (int i = 0; i < 6; i++) {
                 if (setting.getMidiKbd().getUseChannel()[i]) {

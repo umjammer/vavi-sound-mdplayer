@@ -11,6 +11,7 @@ import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdsound.Instrument;
 import mdsound.chips.C140;
 import mdsound.instrument.C140Inst;
 
@@ -39,6 +40,12 @@ public class C140Chip implements Chip {
     };
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {C140Inst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -84,7 +91,7 @@ public class C140Chip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
             if (chipTypes[chipId] == null || !chipTypes[chipId].getUseReal()[0])
-                context.mds.write(C140Inst.class, chipId, 0, adr, data);
+                context.mds.write(inst(chipId), chipId, 0, adr, data);
         } else {
             if (realChips != null && realChips[chipId] != null)
                 realChips[chipId].setRegister(adr, data);
