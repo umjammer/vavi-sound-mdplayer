@@ -14,6 +14,7 @@ import mdplayer.Setting;
 import mdsound.Instrument;
 import mdsound.instrument.MameYm2612Inst;
 import mdsound.instrument.SimpleYm3438Inst;
+import mdsound.instrument.VaviYm3438Inst;
 import mdsound.instrument.Ym2612Inst;
 import mdsound.instrument.Ym3438Inst;
 
@@ -51,7 +52,7 @@ public class Ym2612Chip implements Chip {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
-        return new Class[] {Ym2612Inst.class, Ym3438Inst.class, MameYm2612Inst.class, SimpleYm3438Inst.class};
+        return new Class[] {Ym2612Inst.class, Ym3438Inst.class, MameYm2612Inst.class, SimpleYm3438Inst.class, VaviYm3438Inst.class};
     }
 
     @Override
