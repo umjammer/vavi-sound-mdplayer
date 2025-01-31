@@ -195,13 +195,13 @@ public class Hes extends BaseDriver {
 
             if (bIdx <= bLast)
                 return false;
-            if (wspeed != 0)
-                wspeed = (wspeed + bIdx - bLast) / 2;
+            if (wSpeed != 0)
+                wSpeed = (wSpeed + bIdx - bLast) / 2;
             else
-                wspeed = bIdx - bLast; // First Time
+                wSpeed = bIdx - bLast; // First Time
             bLast = bIdx;
 
-            match_size = wspeed * match_second / match_interval;
+            match_size = wSpeed * match_second / match_interval;
             match_length = bufSize - match_size;
 
             if (match_length < 0)

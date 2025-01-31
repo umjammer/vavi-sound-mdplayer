@@ -843,6 +843,7 @@ public class Setting implements Serializable {
     }
 
     public void init() {
+        // ay8910
         if (this.getAY8910Type() == null || this.getAY8910Type().length < 2) {
             this.setAY8910Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
@@ -888,6 +889,7 @@ public class Setting implements Serializable {
                 this.getSEGAPCMType()[i].setUseReal(new boolean[1]);
             }
         }
+        // sn76489
         if (this.getSN76489Type() == null || this.getSN76489Type().length < 2) {
             this.setSN76489Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
@@ -906,6 +908,7 @@ public class Setting implements Serializable {
                 this.getY8950Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ym2151 OPM
         if (this.getYM2151Type() == null || this.getYM2151Type().length < 2) {
             this.setYM2151Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
@@ -915,6 +918,7 @@ public class Setting implements Serializable {
                 this.getYM2151Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ym2203 OPN
         if (this.getYM2203Type() == null || this.getYM2203Type().length < 2) {
             this.setYM2203Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
@@ -933,6 +937,7 @@ public class Setting implements Serializable {
                 this.getYM2413Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ym2608 OPNA
         if (this.getYM2608Type() == null || this.getYM2608Type().length < 2) {
             this.setYM2608Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
@@ -943,6 +948,7 @@ public class Setting implements Serializable {
             }
         }
 
+        // ym2610 OPNB
         if (this.getYM2610Type() == null
                 || this.getYM2610Type().length < 2
                 || this.getYM2610Type()[0].getUseReal() == null
@@ -959,6 +965,7 @@ public class Setting implements Serializable {
             }
         }
 
+        // ym2612 OPN2
         if (this.getYM2612Type() == null || this.getYM2612Type().length < 2) {
             this._YM2612Type = new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()};
             for (int i = 0; i < 2; i++) {
@@ -968,6 +975,7 @@ public class Setting implements Serializable {
                 this.getYM2612Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ym3526 OPL
         if (this.getYM3526Type() == null || this.getYM3526Type().length < 2) {
             this.setYM3526Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
@@ -977,6 +985,7 @@ public class Setting implements Serializable {
                 this.getYM3526Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ym3812 OPL2
         if (this.getYM3812Type() == null || this.getYM3812Type().length < 2) {
             this.setYM3812Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
@@ -986,6 +995,7 @@ public class Setting implements Serializable {
                 this.getYM3812Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ymf262 OPL3
         if (this.getYMF262Type() == null || this.getYMF262Type().length < 2) {
             this.setYMF262Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
@@ -1022,6 +1032,7 @@ public class Setting implements Serializable {
                 this.getYMZ280BType()[i].setUseReal(new boolean[1]);
             }
         }
+        // qsound
         if (this.getQSoundType() == null || this.getQSoundType().length < 2) {
             this.setQSoundType(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {

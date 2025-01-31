@@ -32,7 +32,7 @@ public class OkiM6295Chip implements Chip {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
-        return new Class[] {OkiM6295Chip.class};
+        return new Class[] {OkiM6295Inst.class};
     }
 
     @Override

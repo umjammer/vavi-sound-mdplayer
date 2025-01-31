@@ -1358,7 +1358,6 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         vgmAdr += 4;
         plugin.audio.chipRegister.chip(K051649Chip.class).write(scc1_chipId, (scc1_port << 1) | 0x00, scc1_offset, model);
         plugin.audio.chipRegister.chip(K051649Chip.class).write(scc1_chipId, (scc1_port << 1) | 0x01, rDat, model);
-
     }
 
     private void vcK053260() {
@@ -1389,7 +1388,6 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         int data = (vgmBuf[vgmAdr + 3] & 0xff) * 0x100 + (vgmBuf[vgmAdr + 4] & 0xff);
-
         plugin.audio.chipRegister.chip(C352Chip.class).write(id, adr, data, model);
         vgmAdr += 5;
     }
@@ -1408,31 +1406,28 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             return;
 
         if (Type == 0x7F) {
-            //ReadPCMTable(dataSize, data);
             readPCMTable(dataSize, adr);
             return;
         }
 
-        tempPCM = pcmBank[bnkType]; // &PCMBank[bnkType];
+        tempPCM = pcmBank[bnkType];
         tempPCM.bnkPos++;
         if (tempPCM.bnkPos <= tempPCM.bankCount)
             return; // Speed hack for restarting playback (skip already loaded blocks)
         curBnk = tempPCM.bankCount;
         tempPCM.bankCount++;
-        //if (Last95Max != 0xffFF) Last95Max = tempPCM.BankCount;
-        tempPCM.bank.add(new VgmPcmData()); // = (VgmPcmData*)realloc(tempPCM->Bank, sizeof(VgmPcmData) * tempPCM->BankCount);
+        tempPCM.bank.add(new VgmPcmData());
 
         if ((Type & 0x40) == 0)
             bankSize = dataSize;
         else
-            bankSize = ByteUtil.readLeInt(vgmBuf, adr + 1); // ReadLE32(&Data[0x01]);
+            bankSize = ByteUtil.readLeInt(vgmBuf, adr + 1);
 
         byte[] newData = new byte[tempPCM.dataSize + bankSize];
         if (tempPCM.data != null && tempPCM.data.length > 0)
             System.arraycopy(tempPCM.data, 0, newData, 0, tempPCM.data.length);
         tempPCM.data = newData;
 
-        //tempPCM.Data = new byte[tempPCM.dataSize + bankSize]; // realloc(tempPCM->Data, tempPCM->dataSize + bankSize);
         tempBnk = tempPCM.bank.get(curBnk);
         tempBnk.dataStart = tempPCM.dataSize;
         tempBnk.data = new byte[bankSize];
@@ -1443,20 +1438,15 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                 tempPCM.data[i + tempBnk.dataStart] = vgmBuf[adr + i];
                 tempBnk.data[i] = vgmBuf[adr + i];
             }
-            //tempBnk.Data = tempPCM.Data + tempBnk.DataStart;
-            //memcpy(tempBnk->Data, data, dataSize);
         } else {
-            //tempBnk.Data = tempPCM.Data + tempBnk.DataStart;
             retVal = decompressDataBlk(tempBnk, dataSize, adr);
             if (!retVal) {
                 tempBnk.data = null;
                 tempBnk.dataSize = 0x00;
             } else {
-                // dataSize; i++)
                 System.arraycopy(tempBnk.data, 0, tempPCM.data, tempBnk.dataStart, bankSize);
             }
         }
-        //if (bankSize != tempBnk.dataSize) logger.log(Level.TRACE, "Error reading data Block! data size conflict!\n");
         if (retVal)
             tempPCM.dataSize += bankSize;
 
@@ -1478,12 +1468,12 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         int outPos;
         int outDataEnd;
         int inVal;
-        int outVal = 0;// FUINT16 outVal;
+        int outVal = 0;
         int valSize;
         int inShift;
         int outShift;
-        int ent1B = 0;// UINT8* ent1B;
-        int ent2B = 0;// UINT16* ent2B;
+        int ent1B = 0;
+        int ent2B = 0;
 //#if defined(_DEBUG) && defined(WIN32)
 //        UINT32 Time;
 //#endif
@@ -1515,15 +1505,15 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                 //bank.dataSize = 0x00;
                 //return false;
 
-                ent1B = 0;// (UINT8*)PCMTbl.Entries; // Big Endian note: Those are stored : LE and converted when reading.
-                ent2B = 0;// (UINT16*)PCMTbl.Entries;
+                ent1B = 0; // Big Endian note: Those are stored : LE and converted when reading.
+                ent2B = 0;
                 if (pcmTbl.entryCount == 0) {
                     bank.dataSize = 0x00;
-                    //printf("Error loading table-compressed data block! No table loaded!\n");
+//logger.log(Level.ERROR, "loading table-compressed data block! No table loaded!");
                     return false;
                 } else if (bitDec != pcmTbl.bitDec || bitCmp != pcmTbl.bitCmp) {
                     bank.dataSize = 0x00;
-                    //printf("Warning! data block and loaded value table incompatible!\n");
+//logger.log(Level.WARNING, "data block and loaded value table incompatible!");
                     return false;
                 }
             }
@@ -1536,7 +1526,6 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 //            outDataEnd = bank.Data + bank.dataSize;
             outDataEnd = bank.dataSize;
 
-            //for (outPos = bank->Data; outPos < outDataEnd && inPos < inDataEnd; outPos += valSize)
             for (outPos = 0; outPos < outDataEnd && inPos < inDataEnd; outPos += valSize) {
                 //inVal = ReadBits(Data, inPos, &inShift, bitCmp);
                 // inlined - instanceof 30% faster
@@ -1549,7 +1538,6 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                     bitMask = (1 << bitReadVal) - 1;
 
                     inShift += bitReadVal;
-                    //inValB = (byte)(((vgmBuf[inPos] & 0xff) << inShift >> 8) & bitMask);
                     inValB = ((vgmBuf[inPos] & 0xff) << inShift >> 8) & bitMask;
                     if (inShift >= 8) {
                         inShift -= 8;
@@ -1578,7 +1566,6 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 //#ifndef BIG_ENDIAN
 //                        outVal = ent2B[inVal];
 //#else
-                        //ReadLE16((UINT8*)&ent2B[inVal]);
                         outVal = (pcmTbl.entries[ent2B + inVal * 2] & 0xff) + (pcmTbl.entries[ent2B + inVal * 2 + 1] & 0xff) * 0x100;
 //#endif
                         break;
@@ -1628,7 +1615,6 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             outDataEnd = bank.dataSize;// bank.Data + bank.dataSize;
             addVal = 0x0000;
 
-            // for (outPos = bank.Data; outPos < outDataEnd && inPos < inDataEnd; outPos += valSize)
             for (outPos = 0; outPos < outDataEnd && inPos < inDataEnd; outPos += valSize) {
                 // inVal = ReadBits(Data, inPos, &inShift, bitCmp);
                 // inlined - instanceof 30% faster
@@ -1658,7 +1644,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                     addVal = pcmTbl.entries[ent1B + inVal] & 0xff;
                     outVal += addVal;
                     outVal &= outMask;
-                    bank.data[outPos] = (byte) outVal; // *((UINT8*)outPos) = (UINT8)outVal;
+                    bank.data[outPos] = (byte) outVal;
                     break;
                 case 0x02:
 //#ifndef BIG_ENDIAN
@@ -1696,22 +1682,20 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         int valSize;
         int tblSize;
 
-        pcmTbl.comprType = vgmBuf[adr + 0] & 0xff; // data[0x00];
-        pcmTbl.cmpSubType = vgmBuf[adr + 1] & 0xff; // data[0x01];
-        pcmTbl.bitDec = vgmBuf[adr + 2] & 0xff; // data[0x02];
-        pcmTbl.bitCmp = vgmBuf[adr + 3] & 0xff; // data[0x03];
-        pcmTbl.entryCount = ByteUtil.readLeShort(vgmBuf, adr + 4) & 0xffff; // ReadLE16(&Data[0x04]);
+        pcmTbl.comprType = vgmBuf[adr + 0] & 0xff;
+        pcmTbl.cmpSubType = vgmBuf[adr + 1] & 0xff;
+        pcmTbl.bitDec = vgmBuf[adr + 2] & 0xff;
+        pcmTbl.bitCmp = vgmBuf[adr + 3] & 0xff;
+        pcmTbl.entryCount = ByteUtil.readLeShort(vgmBuf, adr + 4) & 0xffff;
 
         valSize = (pcmTbl.bitDec + 7) / 8;
         tblSize = pcmTbl.entryCount * valSize;
 
-        pcmTbl.entries = new byte[tblSize];// realloc(PCMTbl.Entries, tblSize);
+        pcmTbl.entries = new byte[tblSize];
         for (int i = 0; i < tblSize; i++) pcmTbl.entries[i] = vgmBuf[adr + 6 + i];
-        //memcpy(PCMTbl.Entries, &Data[0x06], tblSize);
 
         if (dataSize < 0x06 + tblSize) {
-            //logger.log(Level.TRACE, "Warning! Bad PCM Table Length!\n");
-            //printf("Warning! Bad PCM Table Length!\n");
+logger.log(Level.TRACE, "Bad PCM Table Length!");
         }
     }
 

@@ -326,7 +326,7 @@ public class MXDRV extends BaseDriver {
         makeMdxBuf(vgmBuf, mdx, mdxSize, pdxFileName);
         makePdxBuf(pdxFileName[0], pdx, pdxSize);
         if ((pdxFileName[0] == null || pdxFileName[0].isEmpty()) && pdx[0] == null) {
-            errMsg = "PCMファイル[%s]の読み込みに失敗しました。".formatted(pdxFileName[0]);
+            errMsg = "Failed to load PCM file [%s].".formatted(pdxFileName[0]);
             return false;
         }
 
@@ -348,12 +348,12 @@ public class MXDRV extends BaseDriver {
         mdxPCM.chips[0].MountMemory(mm.mm);
 
         int playtime = MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr, 1, Depend.TRUE);
-        // logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
+// logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
         totalCounter = (long) playtime * setting.getOutputDevice().getSampleRate() / 1000;
         terminatePlay = false;
         MXDRV_Play(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr);
 
-        // logger.log(Level.TRACE, "********************");
+//logger.log(Level.TRACE, "********************");
 
         return true;
     }
@@ -3577,7 +3577,7 @@ exit:   {
         if ((byte) D2 >= 0) {
             mm.write(A6 + MXWORK_CH.S0016, (byte) (mm.readByte(A6 + MXWORK_CH.S0016) & 0xfd));
             boolean c0 = (byte) (D2 & (1 << 6)) != 0;
-            D2 &= 0xffffffbf;// ~(1 << 6);
+            D2 &= 0xffff_ffbf;// ~(1 << 6);
             if (c0) {
                 mm.write(A6 + MXWORK_CH.S0016, (byte) (mm.readByte(A6 + MXWORK_CH.S0016) | 0x02));
             }
@@ -3779,7 +3779,7 @@ exit:   {
         memInd += mm.readInt(G + MXWORK_GLOBAL.L002220);
         mm.realloc(memInd);
         if (mm.readInt(G + MXWORK_GLOBAL.L001e34) == 0) {
-            return 0xffffffff;
+            return 0xffff_ffff;
         }
         // pdx
         mm.write(G + MXWORK_GLOBAL.L001e38, memInd);
@@ -3787,7 +3787,7 @@ exit:   {
         mm.realloc(memInd);
         if (mm.readInt(G + MXWORK_GLOBAL.L001e38) == 0) {
             mm.write(G + MXWORK_GLOBAL.L001e34, 0);
-            return 0xffffffff;
+            return 0xffff_ffff;
         }
         mm.write(G + MXWORK_GLOBAL.L001bac, memInd);
         memInd += mm.readInt(G + MXWORK_GLOBAL.L001ba8);
@@ -3795,7 +3795,7 @@ exit:   {
         if (mm.readInt(G + MXWORK_GLOBAL.L001bac) == 0) {
             mm.write(G + MXWORK_GLOBAL.L001e34, 0);
             mm.write(G + MXWORK_GLOBAL.L001e38, 0);
-            return 0xffffffff;
+            return 0xffff_ffff;
         }
 
         return 0;

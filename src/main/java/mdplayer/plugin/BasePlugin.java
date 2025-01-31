@@ -149,7 +149,7 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
 
 //        logger.log(Level.DEBUG, "Audio:Init:STEP 10");
 
-        audio.naudioWrap.start(setting);
+        audio.naudioWrap.start();
 
         logger.log(Level.DEBUG, "Audio:Init:Complete");
     }
@@ -360,14 +360,11 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
             return false;
         }
 
-//        Plugin plugin = audio.playingFileFormat.getPlugin();
-//        boolean r = plugin.play(playingFileName, audio.playingFileFormat);
-
         while (true) {
 //logger.log(Level.TRACE, "loop HERE");
             short[] buffer = new short[4];
 
-            audio.trdVgmVirtualFunction(buffer, 0, buffer.length);
+            audio.update(buffer, 0, buffer.length);
             audio.naudioWrap.write(buffer, 0, buffer.length);
             Thread.yield();
         }

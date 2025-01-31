@@ -22,21 +22,9 @@ public class RealChip implements Closeable {
 
 //#region IDisposable Support
 
-    private boolean disposedValue = false;
-
-    protected void Dispose(boolean disposing) {
-        if (!disposedValue) {
-            if (disposing) {
-                close_();
-            }
-
-            disposedValue = true;
-        }
-    }
-
     @Override
     public void close() {
-        Dispose(true);
+        close_();
     }
 
 //#endregion
@@ -52,16 +40,16 @@ public class RealChip implements Closeable {
 //        int n = 0;
 //        try {
 //            nScci = new NScci.NScci();
-//            n = nScci.NSoundInterfaceManager_ == null ? 0 : nScci.NSoundInterfaceManager_.getInterfaceCount();
+//            n = NScci.NSoundInterfaceManager() == null ? 0 : NScci.NSoundInterfaceManager().getInterfaceCount();
 //            if (n == 0) {
 //                if (nScci != null)
 //                    nScci.Dispose();
 //                nScci = null;
-//                Log.forcedWrite("RealChip:Ctr:Not found SCCI.");
+//                logger.log(Level.INFO, "RealChip:Ctr:Not found SCCI.");
 //            } else {
-//                Log.forcedWrite("RealChip:Ctr:Found SCCI.(Interface count=%d)".formatted(n));
+//                logger.log(Level.INFO, "RealChip:Ctr:Found SCCI.(Interface count=%d)".formatted(n));
 //                getScciInstances();
-//                nScci.NSoundInterfaceManager_.setLevelDisp(false);
+//                NScci.NSoundInterfaceManager().setLevelDisp(false);
 //            }
 //        } catch (Exception e) {
 //            nScci = null;
@@ -76,9 +64,9 @@ public class RealChip implements Closeable {
 //            if (n == 0) {
 //                nc86ctl.deinitialize();
 //                nc86ctl = null;
-//                Log.forcedWrite("RealChip:Ctr:Not found G.I.M.I.C.");
+//                logger.log(Level.INFO, "RealChip:Ctr:Not found G.I.M.I.C.");
 //            } else {
-//                Log.forcedWrite("RealChip:Ctr:Found G.I.M.I.C.(Interface count=%d)".formatted(n));
+//                logger.log(Level.INFO, "RealChip:Ctr:Found G.I.M.I.C.(Interface count=%d)".formatted(n));
 //                Nc86ctl.NIRealChip nirc = nc86ctl.getChipInterface(0);
 //                nirc.reset();
 //            }
@@ -106,10 +94,10 @@ public class RealChip implements Closeable {
     }
 
     public void getScciInstances() {
-//        int ifc = nScci.NSoundInterfaceManager_.getInterfaceCount();
+//        int ifc = NScci.NSoundInterfaceManager().getInterfaceCount();
 //
 //        for (int i = 0; i < ifc; i++) {
-//            NSoundInterface sif = nScci.NSoundInterfaceManager_.getInterface(i);
+//            NSoundInterface sif = NScci.NSoundInterfaceManager().getInterface(i);
 //
 //            int scc = sif.getSoundChipCount();
 //            for (int j = 0; j < scc; j++) {
@@ -122,12 +110,12 @@ public class RealChip implements Closeable {
     public void setLevelDisp(boolean v) {
 //        if (nScci == null)
 //            return;
-//        nScci.NSoundInterfaceManager_.setLevelDisp(v);
+//        NScci.NSoundInterfaceManager().setLevelDisp(v);
     }
 
     // public void Init() {
     // if (nScci != null) {
-    // nScci.NSoundInterfaceManager_.init();
+    // NScci.NSoundInterfaceManager().init();
     // }
     // if (nc86ctl != null) {
     // nc86ctl.initialize();
@@ -136,7 +124,7 @@ public class RealChip implements Closeable {
 
     public void reset() {
 //        if (nScci != null)
-//            nScci.NSoundInterfaceManager_.reset();
+//            NScci.NSoundInterfaceManager().reset();
 //        if (nc86ctl != null) {
 //            // nc86ctl.initialize();
 //            int n = nc86ctl.getNumberOfChip();
@@ -149,7 +137,7 @@ public class RealChip implements Closeable {
 
     public void SendData() {
 //        if (nScci != null)
-//            nScci.NSoundInterfaceManager_.sendData();
+//            NScci.NSoundInterfaceManager().sendData();
 //        if (nc86ctl != null) {
             // int n = nc86ctl.getNumberOfChip();
             // for (int i = 0; i < n; i++)
@@ -166,7 +154,7 @@ public class RealChip implements Closeable {
 
     public void WaitOPNADPCMData(boolean isGIMIC) {
 //        if (nScci != null)
-//            nScci.NSoundInterfaceManager_.sendData();
+//            NScci.NSoundInterfaceManager().sendData();
 //        if (nc86ctl != null && isGIMIC) {
             // int n = nc86ctl.getNumberOfChip();
             // for (int i = 0; i < n; i++) {
@@ -183,8 +171,8 @@ public class RealChip implements Closeable {
 //        } else {
 //            if (nScci == null)
 //                return;
-//            nScci.NSoundInterfaceManager_.sendData();
-//            while (!nScci.NSoundInterfaceManager_.isBufferEmpty()) {
+//            NScci.NSoundInterfaceManager().sendData();
+//            while (!NScci.NSoundInterfaceManager().isBufferEmpty()) {
 //                try { Thread.sleep(0); } catch (InterruptedException e) {}
 //            }
 //        }
@@ -197,10 +185,10 @@ public class RealChip implements Closeable {
             return null;
 
 //        if (nScci != null) {
-//            int iCount = nScci.NSoundInterfaceManager_.getInterfaceCount();
+//            int iCount = NScci.NSoundInterfaceManager().getInterfaceCount();
 //            for (int i = 0; i < iCount; i++) {
-//                NSoundInterface iIntfc = nScci.NSoundInterfaceManager_.getInterface(i);
-//                NSCCI_INTERFACE_INFO iInfo = nScci.NSoundInterfaceManager_.getInterfaceInfo(i);
+//                NSoundInterface iIntfc = NScci.NSoundInterfaceManager().getInterface(i);
+//                NSCCI_INTERFACE_INFO iInfo = NScci.NSoundInterfaceManager().getInterfaceInfo(i);
 //                int sCount = iIntfc.getSoundChipCount();
 //                for (int s = 0; s < sCount; s++) {
 //                    NSoundChip sc = iIntfc.getSoundChip(s);
@@ -246,10 +234,10 @@ public class RealChip implements Closeable {
         List<Setting.ChipType2> ret = new ArrayList<>();
 
 //        if (nScci != null) {
-//            int iCount = nScci.NSoundInterfaceManager_.getInterfaceCount();
+//            int iCount = NScci.NSoundInterfaceManager().getInterfaceCount();
 //            for (int i = 0; i < iCount; i++) {
-//                NSoundInterface iIntfc = nScci.NSoundInterfaceManager_.getInterface(i);
-//                NSCCI_INTERFACE_INFO iInfo = nScci.NSoundInterfaceManager_.getInterfaceInfo(i);
+//                NSoundInterface iIntfc = NScci.NSoundInterfaceManager().getInterface(i);
+//                NSCCI_INTERFACE_INFO iInfo = NScci.NSoundInterfaceManager().getInterfaceInfo(i);
 //                int sCount = iIntfc.getSoundChipCount();
 //                for (int s = 0; s < sCount; s++) {
 //                    NSoundChip sc = iIntfc.getSoundChip(s);
@@ -466,12 +454,12 @@ public class RealChip implements Closeable {
         @Override
         public void init() {
 //            realChip = null;
-//            int n = scci.NSoundInterfaceManager_.getInterfaceCount();
+//            int n = Scci.NSoundInterfaceManager().getInterfaceCount();
 //            if (BusID >= n) {
 //                return;
 //            }
 
-//            NSoundInterface nsif = scci.NSoundInterfaceManager_.getInterface(BusID);
+//            NSoundInterface nsif = Scci.NSoundInterfaceManager().getInterface(BusID);
 
 //            int c = nsif.getSoundChipCount();
 //            if (SoundChip >= c) {

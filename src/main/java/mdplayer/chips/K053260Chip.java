@@ -26,7 +26,7 @@ public class K053260Chip implements Chip {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
-        return new Class[] {K053260Chip.class};
+        return new Class[] {K053260Inst.class};
     }
 
     @Override

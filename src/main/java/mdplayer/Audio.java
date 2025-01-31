@@ -79,7 +79,7 @@ public class Audio {
         return count;
     }
 
-    public int trdVgmVirtualFunction(short[] buffer, int offset, int sampleCount) {
+    public int update(short[] buffer, int offset, int sampleCount) {
 //logger.log(Level.TRACE, ": " + sampleCount);
         //return nAaudioRead(buffer, offset, sampleCount);
 
@@ -301,7 +301,7 @@ logger.log(Level.DEBUG, "stop: " + stopped);
     private Audio() {
         logger.log(Level.DEBUG, "Audio:Init:STEP 01");
 
-        naudioWrap = new NAudioWrap(setting.getOutputDevice().getSampleRate(), this::trdVgmVirtualFunction);
+        naudioWrap = new NAudioWrap(setting.getOutputDevice().getSampleRate());
         naudioWrap.playbackStopped = this::naudioWrapPlaybackStopped;
 
         mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
