@@ -240,6 +240,25 @@ logger.log(Level.WARNING, "cannot start: " + this);
             }
         }
 
+        if (((Vgm) audio.driverVirtual).uPD7759ClockValue != 0) {
+            for (int i = 0; i < (((Vgm) audio.driverVirtual).uPD7759DualChipFlag ? 2 : 1); i++) {
+                MDSound.Chip chip = new MDSound.Chip();
+                chip.id = i;
+                chip.instrument = audio.chipRegister.chip(Upd7759Chip.class).instrument(i);
+                chip.samplingRate = (int) setting.getOutputDevice().getSampleRate();
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, Upd7759Chip.class);
+                chip.clock = ((Vgm) audio.driverVirtual).uPD7759ClockValue;
+                chip.option = null;
+
+                hiyorimiDeviceFlag |= 0x2;
+
+                if (i == 0) audio.chipLED.put("PriuPD7759", 1);
+                else audio.chipLED.put("SecuPD7759", 1);
+
+                put(Upd7759Chip.class, chip);
+            }
+        }
+
         if (((Vgm) audio.driverVirtual).okiM6258ClockValue != 0) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;

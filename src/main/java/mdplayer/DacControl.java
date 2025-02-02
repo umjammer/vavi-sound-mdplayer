@@ -9,6 +9,7 @@ import mdplayer.chips.OkiM6258Chip;
 import mdplayer.chips.PwmChip;
 import mdplayer.chips.Rf5C164Chip;
 import mdplayer.chips.Sn76489Chip;
+import mdplayer.chips.Upd7759Chip;
 import mdplayer.chips.Y8950Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
@@ -156,6 +157,9 @@ public class DacControl {
             break;
         case 0x14: // NES+
             chipRegister.chip(NesChip.class).write(chipId, offset, data, model);
+            break;
+        case 0x16: // UPD7759
+            chipRegister.chip(Upd7759Chip.class).write(chipId, offset, data, model);
             break;
         case 0x17: // OKIM6258
             if (model == EnmModel.VirtualModel)  // logger.log(Level.TRACE, "[DAC]");
