@@ -2,6 +2,7 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import dotnet4j.io.Stream;
@@ -596,6 +597,25 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 else audio.chipLED.put("SecWSW", 1);
 
                 put(WSwanChip.class, chip);
+            }
+        }
+
+        if (((Vgm) audio.driverVirtual).es5503ClockValue != 0) {
+            for (int i = 0; i < (((Vgm) audio.driverVirtual).es5503DualChipFlag ? 2 : 1); i++) {
+                MDSound.Chip chip = new MDSound.Chip();
+                chip.id = i;
+                chip.instrument = audio.chipRegister.chip(Es5503Chip.class).instrument(i);
+                chip.samplingRate = setting.getOutputDevice().getSampleRate();
+                chip.volume = setting.getBalance().getVolume(MAIN_TAG, Es5503Chip.class);
+                chip.clock = (((Vgm) audio.driverVirtual).es5503ClockValue & 0x3fff_ffff);
+                Consumer<Integer> fn = sr -> chip.samplingRate = sr;
+                chip.option = new Object[] {((Vgm) audio.driverVirtual).es5503Ch, fn};
+                hiyorimiDeviceFlag |= 0x2;
+
+                if (i == 0) audio.chipLED.put("PriES53", 1);
+                else audio.chipLED.put("SecES53", 1);
+
+                put(Es5503Chip.class, chip);
             }
         }
 

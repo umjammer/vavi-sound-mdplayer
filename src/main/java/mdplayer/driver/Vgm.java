@@ -77,6 +77,7 @@ public class Vgm extends BaseDriver {
     public int qSoundClockValue;
     public int saa1099ClockValue;
     public int wSwanClockValue;
+    public int es5503ClockValue;
     public int x1_010ClockValue;
     public int c352ClockValue;
     public int c352ClockDivider;
@@ -115,6 +116,7 @@ public class Vgm extends BaseDriver {
     public boolean c140DualChipFlag;
     public boolean saA1099DualChipFlag;
     public boolean wSwanDualChipFlag;
+    public boolean es5503DualChipFlag;
     public boolean x1_010DualChipFlag;
     public boolean c352DualChipFlag;
     public boolean ga20DualChipFlag;
@@ -129,6 +131,7 @@ public class Vgm extends BaseDriver {
     public DacControl dacControl;
     public boolean isPcmRAMWrite = false;
     public boolean useChipYM2612Ch6 = false;
+    public int es5503Ch = 2;
 
     private final Runnable[] vgmCmdTbl = new Runnable[0x100];
 
@@ -488,7 +491,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         vgmCmdTbl[0xd2] = this::vcK051649;
         vgmCmdTbl[0xd3] = this::vcK054539;
         vgmCmdTbl[0xd4] = this::vcC140;
-        vgmCmdTbl[0xd5] = this::vcDummy3Ope;
+        vgmCmdTbl[0xd5] = this::vcEs5503;
         vgmCmdTbl[0xd6] = this::vcDummy3Ope;
         vgmCmdTbl[0xd7] = this::vcDummy3Ope;
 
@@ -799,7 +802,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             chipId = 1;
         }
 
-        switch (bType & 0xc0) {
+        switch (bType & 0xe0) {
         case 0x00:
         case 0x40:
             addPCMData(bType, bLen, bAdr);
@@ -1029,6 +1032,29 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
             vgmAdr += bLen + 7;
             break;
+        case 0xe0:
+                int stAdr_E = ByteUtil.readLeInt(vgmBuf, vgmAdr + 7);
+                int dataSize_E = bLen - 2;
+                int ROMData_E = vgmAdr + 9;
+                if ((bType & 0x20) != 0) {
+                    stAdr_E = ByteUtil.readLeInt(vgmBuf, vgmAdr + 7);
+                    dataSize_E = bLen - 4;
+                    ROMData_E = vgmAdr + 11;
+                }
+
+                try {
+                    switch (bType) {
+                        case 0xe1:
+                            plugin.audio.chipRegister.chip(Es5503Chip.class).writePcm(chipId, stAdr_E, dataSize_E, vgmBuf, vgmAdr + 11, model);
+                            dumpData(model, "ES5503_PCMData", vgmAdr + 9, dataSize_E);
+                            break;
+                    }
+                } catch (Exception e) {
+                    logger.log(Level.ERROR, e.getMessage(), e);
+                }
+
+                vgmAdr += bLen + 7;
+                break;
         default:
             vgmAdr += bLen + 7;
             break;
@@ -1381,6 +1407,14 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         int data = vgmBuf[vgmAdr + 3] & 0xff;
         plugin.audio.chipRegister.chip(C140Chip.class).write(id, adr, data, model);
+        vgmAdr += 4;
+    }
+
+    private void vcEs5503() { //0xD5 pp aa dd
+        int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
+        int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
+        int data = vgmBuf[vgmAdr + 3] & 0xff;
+        plugin.audio.chipRegister.chip(Es5503Chip.class).write(id, adr, data, model);
         vgmAdr += 4;
     }
 
@@ -1764,6 +1798,7 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
         saa1099ClockValue = 0;
         x1_010ClockValue = 0;
         wSwanClockValue = 0;
+        es5503ClockValue = 0;
 
         // Check if the header is large enough to read
         if (vgmBuf.length < 0x40) return false;
@@ -2190,6 +2225,20 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
                         saA1099DualChipFlag = (saa1099Clock & 0x4000_0000) != 0;
                         if (saA1099DualChipFlag) chips.add("SAA1099x2");
                         else chips.add("SAA1099");
+                    }
+                }
+
+                if (vgmDataOffset > 0xcc) {
+
+                    int es5503clock = ByteUtil.readLeInt(vgmBuf, 0xcc);
+                    if (es5503clock != 0)
+                    {
+                        es5503ClockValue = es5503clock & 0x3fff_ffff;//def=7159090
+                        es5503DualChipFlag = (es5503clock & 0x4000_0000) != 0;
+                        es5503Ch = vgmBuf[0xd4];
+                        //if (es5503Ch == 1) es5503Ch = 2;
+                        if (es5503DualChipFlag) chips.add("ES5503x2");
+                        else chips.add("ES5503");
                     }
                 }
 
