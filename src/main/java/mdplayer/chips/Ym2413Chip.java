@@ -11,9 +11,9 @@ import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
-import mdplayer.driver.Vgm;
 import mdplayer.instruments.Vrc7Inst;
 import mdsound.Instrument;
+import mdsound.instrument.Emu2413Inst;
 import mdsound.instrument.Ym2413Inst;
 
 
@@ -30,8 +30,8 @@ public class Ym2413Chip implements Chip {
     private final RSoundChip[] realChips = {null, null};
 
     public final int[][] register = {null, null};
-//    private final int[] registerRyhthmB = {0, 0};
-//    private final int[] registerRyhthm = {0, 0};
+//    private final int[] registerRhythmB = {0, 0};
+//    private final int[] registerRhythm = {0, 0};
     private final ChipKeyInfo[] keyInfo = {new ChipKeyInfo(14), new ChipKeyInfo(14)};
     private final int[] fadeout = {0, 0};
     private final boolean[] rm = {false, false};
@@ -45,7 +45,7 @@ public class Ym2413Chip implements Chip {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
-        return new Class[] {Ym2413Inst.class, Vrc7Inst.class};
+        return new Class[] {Ym2413Inst.class, Vrc7Inst.class, Emu2413Inst.class};
     }
 
     @Override
