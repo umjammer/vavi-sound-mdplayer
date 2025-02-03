@@ -937,13 +937,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.chip(Ym3812Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).ym3812ClockValue, Common.EnmModel.RealModel);
         }
         if (contains(YmF262Chip.class, 0)) {
-            audio.chipRegister.chip(YmF262Chip.class).setRegister(0, 0, 0xbd, 0, Common.EnmModel.RealModel); // Rhythm mode off
-            audio.chipRegister.chip(YmF262Chip.class).setRegister(0, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
+            audio.chipRegister.chip(YmF262Chip.class).write(0, 0, 0xbd, 0, Common.EnmModel.RealModel); // Rhythm mode off
+            audio.chipRegister.chip(YmF262Chip.class).write(0, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
             audio.chipRegister.chip(YmF262Chip.class).writeClock((byte) 0, ((Vgm) audio.driverVirtual).ymF262ClockValue, Common.EnmModel.RealModel);
         }
         if (contains(YmF262Chip.class, 1)) {
-            audio.chipRegister.chip(YmF262Chip.class).setRegister(1, 0, 0xbd, 0, Common.EnmModel.RealModel); // Rhythm mode off
-            audio.chipRegister.chip(YmF262Chip.class).setRegister(1, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
+            audio.chipRegister.chip(YmF262Chip.class).write(1, 0, 0xbd, 0, Common.EnmModel.RealModel); // Rhythm mode off
+            audio.chipRegister.chip(YmF262Chip.class).write(1, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
             audio.chipRegister.chip(YmF262Chip.class).writeClock((byte) 1, ((Vgm) audio.driverVirtual).ymF262ClockValue, Common.EnmModel.RealModel);
         }
         if (audio.chipRegister.chip(Sn76489Chip.class).ngpFlag) {

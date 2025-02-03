@@ -5603,8 +5603,8 @@ setVisible(true);
             if (info == null) return;
 
             StringBuilder n = new StringBuilder("@Nxx = { ");
-            n.append("%d ".formatted(info[ch].wavelen));
-            for (int i = 0; i < info[ch].wavelen; i++) {
+            n.append("%d ".formatted(info[ch].waveLen));
+            for (int i = 0; i < info[ch].waveLen; i++) {
                 n.append("%d ".formatted((byte) info[ch].wave[i]));
             }
             n.append("}\n");

@@ -575,13 +575,11 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
     private void vcAY8910() {
         plugin.audio.chipRegister.chip(Ay8910Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
-        //plugin.audio.chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcDMG() {
         plugin.audio.chipRegister.chip(DmgChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
-        //plugin.audio.chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
@@ -680,14 +678,14 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private void vcYMF262Port0() {
-        plugin.audio.chipRegister.chip(YmF262Chip.class).setRegister((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(YmF262Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYMF262Port1() {
         int adr = vgmBuf[vgmAdr + 1] & 0xff;
         int dat = vgmBuf[vgmAdr + 2] & 0xff;
-        plugin.audio.chipRegister.chip(YmF262Chip.class).setRegister((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
+        plugin.audio.chipRegister.chip(YmF262Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
         vgmAdr += 3;
     }
 
@@ -959,7 +957,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                 dumpData(model, "uPD7759_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
-            case 0x8b:
+                case 0x8b:
                 // OKIM6295
                 plugin.audio.chipRegister.chip(OkiM6295Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "OKIM6295_PCMData", vgmAdr + 15, bLen - 8);

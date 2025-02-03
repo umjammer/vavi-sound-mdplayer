@@ -545,7 +545,7 @@ public class S98 extends BaseDriver {
     }
 
     private void writeYMF262(int chipId, int port, int adr, int data) {
-        plugin.audio.chipRegister.chip(YmF262Chip.class).setRegister(chipId, port, adr, data, model);
+        plugin.audio.chipRegister.chip(YmF262Chip.class).write(chipId, port, adr, data, model);
     }
 
     static int getVv(byte[] buf, int musicPtr) {

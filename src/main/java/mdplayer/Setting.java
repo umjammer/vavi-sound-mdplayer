@@ -1000,8 +1000,8 @@ public class Setting implements Serializable {
             this.setYMF262Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYMF262Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYMF262Type()[i].setUseEmu(new boolean[1]);
                 this.getYMF262Type()[i].getUseEmu()[0] = true;
+                this.getYMF262Type()[i].setUseEmu(new boolean[2]); // 2 means {0: dosbox/mame, 1: nuked}
                 this.getYMF262Type()[i].setUseReal(new boolean[1]);
             }
         }

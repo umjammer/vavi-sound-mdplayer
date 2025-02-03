@@ -132,7 +132,7 @@ public class DacControl {
             chipRegister.chip(Y8950Chip.class).write(chipId, offset, data, model);
             break;
         case 0x0C: // YMF262+
-            chipRegister.chip(YmF262Chip.class).setRegister(chipId, port, offset, data, model);
+            chipRegister.chip(YmF262Chip.class).write(chipId, port, offset, data, model);
             break;
         case 0x0D: // YMF278B+
             chipRegister.chip(YmF278BChip.class).write(chipId, port, offset, data, model);

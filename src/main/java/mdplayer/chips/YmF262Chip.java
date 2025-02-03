@@ -90,7 +90,7 @@ public class YmF262Chip implements Chip {
         return registerFm[chipId];
     }
 
-    public void setRegister(int chipId, int port, int addr, int data, EnmModel model) {
+    public void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOPL3", 2);
         else
@@ -187,18 +187,9 @@ public class YmF262Chip implements Chip {
                 data &= 0xfd;
             if (mask[chipId][22])
                 data &= 0xfe;
-
         }
 
-        if (model == EnmModel.VirtualModel) {
-            if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(inst(chipId), chipId, port, addr, data);
-            }
-        } else {
-            if (realChips[chipId] == null)
-                return;
-            realChips[chipId].setRegister(port * 0x100 + addr, data);
-        }
+        _write(chipId, port, addr, data, model);
     }
 
     private void _write(int chipId, int port, int addr, int data, EnmModel model) {
@@ -207,11 +198,10 @@ public class YmF262Chip implements Chip {
                 context.mds.write(inst(chipId), chipId, port, addr, data);
             }
         } else {
-            if (realChips[chipId] == null)
-                return;
-
+            if (realChips[chipId] != null) {
             realChips[chipId].setRegister(port * 0x100 + addr, data);
         }
+    }
     }
 
     public void softReset(int chipId, EnmModel model) {
@@ -243,8 +233,8 @@ public class YmF262Chip implements Chip {
     public void setFadeout(int chipId, int v) {
         fadeout[chipId] = v >> 1;// 0-63 (v range: 0-127)
         for (int c = 0; c < 22; c++) {
-            setRegister(chipId, 0, 0x40 + c, register[chipId][0][0x40 + c], EnmModel.RealModel);
-            setRegister(chipId, 1, 0x40 + c, register[chipId][1][0x40 + c], EnmModel.RealModel);
+            write(chipId, 0, 0x40 + c, register[chipId][0][0x40 + c], EnmModel.RealModel);
+            write(chipId, 1, 0x40 + c, register[chipId][1][0x40 + c], EnmModel.RealModel);
         }
     }
 

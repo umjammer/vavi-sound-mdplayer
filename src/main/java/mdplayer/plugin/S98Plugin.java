@@ -343,11 +343,11 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 1, YM2608ClockValue, Common.EnmModel.RealModel);
 
         if (contains(YmF262Chip.class, 0)) {
-            audio.chipRegister.chip(YmF262Chip.class).setRegister(0, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
+            audio.chipRegister.chip(YmF262Chip.class).write(0, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
             audio.chipRegister.chip(YmF262Chip.class).writeClock((byte) 0, YMF262ClockValue, Common.EnmModel.RealModel);
         }
         if (contains(YmF262Chip.class, 1)) {
-            audio.chipRegister.chip(YmF262Chip.class).setRegister(1, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
+            audio.chipRegister.chip(YmF262Chip.class).write(1, 1, 5, 1, Common.EnmModel.RealModel); // opl3mode
             audio.chipRegister.chip(YmF262Chip.class).writeClock((byte) 1, YMF262ClockValue, Common.EnmModel.RealModel);
         }
 

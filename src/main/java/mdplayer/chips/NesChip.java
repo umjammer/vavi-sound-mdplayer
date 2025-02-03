@@ -422,7 +422,7 @@ public class NesChip implements Chip {
 
         mmc5.read(0x5010, dat);
         mmc5Regs[8] = (byte) (mmc5.pcmMode ? 1 : 0);
-        mmc5Regs[9] = mmc5.pcm;
+        mmc5Regs[9] = (byte) mmc5.pcm;
 
         return mmc5Regs;
     }

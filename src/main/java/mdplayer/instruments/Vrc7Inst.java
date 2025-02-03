@@ -3,6 +3,7 @@ package mdplayer.instruments;
 
 import java.util.function.Consumer;
 
+import mdsound.Instrument;
 import mdsound.instrument.NesInst;
 import mdsound.instrument.Ym2413Inst;
 import mdsound.np.chip.NesVrc7;
@@ -78,6 +79,6 @@ public class Vrc7Inst extends Ym2413Inst {
     }
 
     private final Consumer<int[]> listener = ds -> {
-        if (ds[7] != -1) NesInst.np_nes_vrc7_volume = ds[7];
+        if (ds[7] != -1) Instrument.getInstrument(NesInst.class).np_nes_vrc7_volume = ds[7];
     };
 }

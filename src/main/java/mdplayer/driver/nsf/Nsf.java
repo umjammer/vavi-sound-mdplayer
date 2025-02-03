@@ -48,7 +48,7 @@ public class Nsf extends BaseDriver {
     @Override
     public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         if (ByteUtil.readLeInt(buf, 0) != FCC_NSF) {
-            // NSFeはとりあえず未サポート
+            // NSFe is not supported for now
 logger.log(Level.WARNING, "NSFe not supported.");
             return null;
         }
@@ -244,7 +244,7 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
     public NsfeEntry[] nsfeEntry = new NsfeEntry[NSFE_ENTRIES];
 
     /**
-     * 現在選択中の曲番号
+     * Currently selected track number
      */
     public int song;
 
@@ -252,9 +252,9 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
 
     private Device.Bus stack;
     private Device.Layer layer;
-    /** 最終出力段に掛ける直流フィルタ */
+    /** DC filter applied to the final output stage */
     private mdsound.np.DCFilter dcf;
-    /** 最終出力に掛けるローパスフィルタ */
+    /** Low-pass filter applied to the final output */
     private mdsound.np.Filter lpf;
 
     public mdsound.MDSound.Chip cAPU = null;

@@ -117,7 +117,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
 
     public static class YMDELTATPCMSOUND_ {
 
-        public byte[] chmask = new byte[] {
+        public byte[] chMask = {
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -255,17 +255,17 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
 
         public YMDELTATPCMSOUND_ YMDELTATPCMSOUND;
 
-        public static final byte[] table_step = new byte[] {
+        public static final byte[] table_step = {
                         1, 3, 5, 7, 9, 11, 13, 15,
                         -1, -1, -1, -1, 2, 4, 6, 8
                 };
 
-        public static final byte[] table_scale = new byte[] {
+        public static final byte[] table_scale = {
                         57, 57, 57, 57, 77, 102, (byte) 128, (byte) 153,
                         57, 57, 57, 57, 77, 102, (byte) 128, (byte) 153
                 };
 
-        public static final int[] scaletable = new int[] {
+        public static final int[] scaleTable = {
                 2, 6, 10, 14, 18, 22, 26, 30, -2, -6, -10, -14, -18, -22, -26, -30,
                 2, 6, 10, 14, 19, 23, 27, 31, -2, -6, -10, -14, -19, -23, -27, -31,
                 2, 6, 11, 15, 21, 25, 30, 34, -2, -6, -11, -15, -21, -25, -30, -34,
@@ -317,12 +317,12 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
                 194, 582, 970, 1358, 1746, 2134, 2522, 2910, -194, -582, -970, -1358, -1746, -2134, -2522, -2910
         };
 
-        private void writeram(int v) {
+        private void writeRam(int v) {
             this.rambuf[(this.common.mem >> 1) & this.rammask] = (byte) v;
             this.common.mem += 1 << 1;
         }
 
-        private int readram() {
+        private int readRam() {
             int v;
             v = this.romrambuf[(this.common.play >> 1) & this.romrammask];
             if ((this.common.play & 1) != 0)
@@ -348,7 +348,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
 
         private void stepDeltaT(int data) {
             if (this.ymdeltatpcm_type == 3) { // MSM5205
-                this.common.scale = this.common.scale + scaletable[(this.common.step << 4) + (data & 0xf)];
+                this.common.scale = this.common.scale + scaleTable[(this.common.step << 4) + (data & 0xf)];
                 if (this.common.scale > 2047) this.common.scale = 2047;
                 if (this.common.scale < -2048) this.common.scale = -2048;
 
@@ -390,7 +390,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
                 this.common.phase &= (1 << PHASE_SHIFT) - 1;
                 if (step != 0) {
                     do {
-                        stepDeltaT(readram());
+                        stepDeltaT(readRam());
                     } while (--step != 0);
                     if (this.ymdeltatpcm_type == 3) {
                         this.common.output = this.common.scale * this.common.level32;
@@ -399,7 +399,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
                     }
                     this.common.output = SSR(this.common.output, 8 + 2);
                 }
-                if (chmask[enmChMask.DEV_ADPCM_CH1.ordinal()] != 0) {
+                if (chMask[enmChMask.DEV_ADPCM_CH1.ordinal()] != 0) {
                     p[0] += this.common.output;
                     p[1] += this.common.output;
                 }
@@ -444,7 +444,7 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
             case 0x07: // Prescale H
                 break;
             case 0x08: // data
-                if ((this.common.regs[0] & 0x60) == 0x60) writeram(v);
+                if ((this.common.regs[0] & 0x60) == 0x60) writeRam(v);
                 break;
             case 0x09: // Delta-N L
             case 0x0a: // Delta-N H
