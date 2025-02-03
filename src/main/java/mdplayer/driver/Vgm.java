@@ -89,6 +89,7 @@ public class Vgm extends BaseDriver {
     public int dmgClockValue;
     public int nesClockValue;
     public int multiPCMClockValue;
+    public int uPD7759ClockValue;
     public int pokeyClockValue;
 
     public boolean ym2612DualChipFlag;
@@ -126,6 +127,7 @@ public class Vgm extends BaseDriver {
     public boolean dmgDualChipFlag;
     public boolean nesDualChipFlag;
     public boolean multiPCMDualChipFlag;
+    public boolean uPD7759DualChipFlag;
     public boolean pokeyDualChipFlag;
 
     public DacControl dacControl;
@@ -949,6 +951,12 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                 // MultiPCM
                 plugin.audio.chipRegister.chip(MultiPcmChip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "MultiPCM_PCMData", vgmAdr + 15, bLen - 8);
+                break;
+
+            case 0x8a:
+                // uPD7759
+                plugin.audio.chipRegister.chip(Upd7759Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                dumpData(model, "uPD7759_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
             case 0x8b:
@@ -1795,6 +1803,7 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
         k054539ClockValue = 0;
         nesClockValue = 0;
         multiPCMClockValue = 0;
+        uPD7759ClockValue = 0;
         saa1099ClockValue = 0;
         x1_010ClockValue = 0;
         wSwanClockValue = 0;
@@ -2095,6 +2104,16 @@ logger.log(Level.TRACE, "Bad PCM Table Length!");
                         multiPCMDualChipFlag = (MultiPCMclock & 0x4000_0000) != 0;
                         if (multiPCMDualChipFlag) chips.add("MultiPCMx2");
                         else chips.add("MultiPCM");
+                    }
+                }
+
+                if (vgmDataOffset > 0x8c) {
+                    int uPD7759clock = ByteUtil.readLeInt(vgmBuf, 0x8c);
+                    if (uPD7759clock != 0) {
+                        uPD7759ClockValue = uPD7759clock & 0xbfff_ffff;
+                        uPD7759DualChipFlag = (uPD7759clock & 0x4000_0000) != 0;
+                        if (uPD7759DualChipFlag) chips.add("uPD7759x2");
+                        else chips.add("uPD7759");
                     }
                 }
 

@@ -17,6 +17,7 @@ import mdsound.MDSound;
 import mdsound.chips.C352;
 import mdsound.chips.Ym3438Const;
 import mdsound.instrument.C352Inst;
+import mdsound.instrument.MameAy8910Inst;
 import mdsound.instrument.OkiM6258Inst;
 import mdsound.instrument.OkiM6295Inst;
 import mdsound.instrument.Sn76496Inst;
@@ -795,6 +796,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Y8950Chip.class);
                 chip.clock = ((Vgm) audio.driverVirtual).y8950ClockValue;
                 chip.option = null;
+                if (chip.instrument instanceof MameAy8910Inst) {
+                    chip.option = new Object[] {
+                            0x00, // chip_type 0x10: YM2149, 0x00: AY // TODO setting
+                            0x00  // chip_flag
+                    };
+                }
                 if (i == 0) audio.chipLED.put("PriY8950", 1);
                 else audio.chipLED.put("SecY8950", 1);
 
