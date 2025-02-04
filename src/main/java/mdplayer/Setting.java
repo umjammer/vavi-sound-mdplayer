@@ -971,7 +971,7 @@ public class Setting implements Serializable {
             for (int i = 0; i < 2; i++) {
                 this.getYM2612Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 this.getYM2612Type()[i].setUseEmu(new boolean[5]);
-                this.getYM2612Type()[i].getUseEmu()[4] = true; // {0: mame-A, 1: nuke-A, 2: mame-B, 3: nuke-B(simple), 4: nuke-A(vavi)}
+                this.getYM2612Type()[i].getUseEmu()[1] = true; // {0: mame-A, 1: nuke-A, 2: mame-B, 3: nuke-B(simple), 4: nuke-A(vavi)}
                 this.getYM2612Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -1000,8 +1000,8 @@ public class Setting implements Serializable {
             this.setYMF262Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYMF262Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYMF262Type()[i].getUseEmu()[0] = true;
                 this.getYMF262Type()[i].setUseEmu(new boolean[2]); // 2 means {0: dosbox/mame, 1: nuked}
+                this.getYMF262Type()[i].getUseEmu()[1] = true;
                 this.getYMF262Type()[i].setUseReal(new boolean[1]);
             }
         }
