@@ -41,6 +41,38 @@
     </profile>
 
     <profile>
+      <id>local</id>
+      <activation>
+        <file>
+          <exists>${basedir}/local.properties</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>properties-maven-plugin</artifactId>
+            <version>1.2.1</version>
+            <executions>
+              <execution>
+                <id>read-properties</id>
+                <phase>initialize</phase>
+                <goals>
+                  <goal>read-project-properties</goal>
+                </goals>
+                <configuration>
+                  <files>
+                    <file>${basedir}/local.properties</file>
+                  </files>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
       <id>spotbugs</id>
       <activation>
         <property>
@@ -130,6 +162,7 @@
           <argLine>
             -Djava.util.logging.config.file=src/test/resources/logging.properties
             -Dvavi.test.dev.null=@{dev.null}
+            -Dmdplayer.variant.ymf262=@{mdplayer.variant.ymf262}
           </argLine>
           <trimStackTrace>false</trimStackTrace>
         </configuration>
@@ -184,9 +217,9 @@
     </dependency>
 
     <dependency>
-      <groupId> com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
+      <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdsound</artifactId>
-      <version>0.0.4</version>
+      <version>0.0.5</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
