@@ -37,14 +37,15 @@ public class NSFPlugin extends BasePlugin {
 
     @Override
     public boolean play(String playingFileName, FileFormat format) {
-        NesInst.np_nes_apu_volume = 0;
-        NesInst.np_nes_dmc_volume = 0;
-        NesInst.np_nes_fds_volume = 0;
-        NesInst.np_nes_fme7_volume = 0;
-        NesInst.np_nes_mmc5_volume = 0;
-        NesInst.np_nes_n106_volume = 0;
-        NesInst.np_nes_vrc6_volume = 0;
-        NesInst.np_nes_vrc7_volume = 0;
+        NesInst nesInst = Instrument.getInstrument(NesInst.class);
+        nesInst.np_nes_apu_volume = 0;
+        nesInst.np_nes_dmc_volume = 0;
+        nesInst.np_nes_fds_volume = 0;
+        nesInst.np_nes_fme7_volume = 0;
+        nesInst.np_nes_mmc5_volume = 0;
+        nesInst.np_nes_n106_volume = 0;
+        nesInst.np_nes_vrc6_volume = 0;
+        nesInst.np_nes_vrc7_volume = 0;
 
         audio.driverVirtual = new Nsf();
         audio.driverReal = null;
