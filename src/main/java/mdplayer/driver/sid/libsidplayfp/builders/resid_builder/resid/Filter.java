@@ -1166,47 +1166,47 @@ public class Filter {
             break;
         case 0x75:
             vi = vhp + vbp + vlp + v3 + v1;
-            offset = 655361;// MixerOffset.IntI(5);//MixerOffset < 5 >::value;
+            offset = 655361; // MixerOffset.IntI(5); //MixerOffset<5>::value;
             break;
         case 0x76:
             vi = vhp + vbp + vlp + v3 + v2;
-            offset = 655361;// MixerOffset.IntI(5);//MixerOffset < 5 >::value;
+            offset = 655361; // MixerOffset.IntI(5); //MixerOffset<5>::value;
             break;
         case 0x77:
             vi = vhp + vbp + vlp + v3 + v2 + v1;
-            offset = 983041;//MixerOffset.IntI(6);//MixerOffset < 6 >::value;
+            offset = 983041; //MixerOffset.IntI(6); //MixerOffset<6>::value;
             break;
         case 0x78:
             vi = vhp + vbp + vlp + ve;
-            offset = 393217;//MixerOffset.IntI(4);//MixerOffset < 4 >::value;
+            offset = 393217; //MixerOffset.IntI(4); //MixerOffset<4>::value;
             break;
         case 0x79:
             vi = vhp + vbp + vlp + ve + v1;
-            offset = 655361;//MixerOffset.IntI(5);//MixerOffset < 5 >::value;
+            offset = 655361; //MixerOffset.IntI(5); //MixerOffset<5>::value;
             break;
         case 0x7a:
             vi = vhp + vbp + vlp + ve + v2;
-            offset = 655361;//MixerOffset.IntI(5);//MixerOffset < 5 >::value;
+            offset = 655361; //MixerOffset.IntI(5); //MixerOffset<5>::value;
             break;
         case 0x7b:
             vi = vhp + vbp + vlp + ve + v2 + v1;
-            offset = 983041;//MixerOffset.IntI(6);//MixerOffset < 6 >::value;
+            offset = 983041; //MixerOffset.IntI(6); //MixerOffset<6>::value;
             break;
         case 0x7c:
             vi = vhp + vbp + vlp + ve + v3;
-            offset = 655361;//MixerOffset.IntI(5);//MixerOffset < 5 >::value;
+            offset = 655361; //MixerOffset.IntI(5); //MixerOffset<5>::value;
             break;
         case 0x7d:
             vi = vhp + vbp + vlp + ve + v3 + v1;
-            offset = 983041;// MixerOffset.IntI(6);//MixerOffset < 6 >::value;
+            offset = 983041; // MixerOffset.IntI(6); //MixerOffset<6>::value;
             break;
         case 0x7e:
             vi = vhp + vbp + vlp + ve + v3 + v2;
-            offset = 983041;//MixerOffset.IntI(6);//MixerOffset < 6 >::value;
+            offset = 983041; //MixerOffset.IntI(6); //MixerOffset<6>::value;
             break;
         case 0x7f:
             vi = vhp + vbp + vlp + ve + v3 + v2 + v1;
-            offset = 1376257;// MixerOffset.IntI(7);//MixerOffset < 7 >::value;
+            offset = 1376257; // MixerOffset.IntI(7); //MixerOffset<7>::value;
             break;
         }
 
@@ -1215,15 +1215,14 @@ public class Filter {
             return (short) (f.gain[vol][f.mixer[offset + vi]] - (1 << 15));
         } else {
             // FIXME: Temporary code for MOS 8580, should use code above.
-                /* do hard clipping here, else some tunes manage to overflow this
-                   (eg /MUSICIANS/L/Linus/64_Forever.Sid, starting at 0:44) */
+            // do hard clipping here, else some tunes manage to overflow this
+            // (eg /MUSICIANS/L/Linus/64_Forever.Sid, starting at 0:44)
             int tmp = vi * vol >> 4;
             if (tmp < -32768) tmp = -32768;
             else if (tmp > 32767) tmp = 32767;
             return (short) tmp;
         }
     }
-
 
     /*
     Find Output voltage : inverting gain and inverting summer Sid op-amp
