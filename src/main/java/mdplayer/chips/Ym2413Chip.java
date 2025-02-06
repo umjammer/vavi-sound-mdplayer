@@ -50,7 +50,7 @@ public class Ym2413Chip implements Chip {
 
     @Override
     public int activeIndex(int chipId) {
-        return !((Vgm) context.driverVirtual).ym2413VRC7Flag ? 0 : 1;
+        return Integer.parseInt(System.getProperty("mdplayer.variant.ym2413", "0")); //!((Vgm) context.driverVirtual).ym2413VRC7Flag ? 0 : 1; // TODO setting
     }
 
     @Override

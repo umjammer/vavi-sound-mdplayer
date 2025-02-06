@@ -26,6 +26,7 @@ import mdsound.instrument.Ym2608Inst;
 import mdsound.instrument.Ym2610Inst;
 import mdsound.instrument.Ym2612Inst;
 import mdsound.instrument.Ym3438Inst;
+import mdsound.instrument.YmF262Inst;
 import mdsound.instrument.YmFmYm2203Inst;
 
 import static java.lang.System.getLogger;
@@ -445,6 +446,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, YmF262Chip.class);
                 chip.clock = ((Vgm) audio.driverVirtual).ymF262ClockValue & 0x7fff_ffff;
                 chip.option = null;
+                if (chip.instrument instanceof YmF262Inst) {
+                    chip.option = new Object[] {audio.chipRegister.chip(YmF262Chip.class).activeIndex(i)};
+                }
 
                 hiyorimiDeviceFlag |= 0x2;
 

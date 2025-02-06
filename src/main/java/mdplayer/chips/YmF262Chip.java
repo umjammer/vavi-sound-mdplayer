@@ -12,7 +12,10 @@ import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.Instrument;
+import mdsound.instrument.CozYmF262Inst;
+import mdsound.instrument.NukedYmF262Inst;
 import mdsound.instrument.YmF262Inst;
+import mdsound.instrument.YmFmYmF262Inst;
 
 import static mdplayer.chips.YmF278BChip.channel;
 
@@ -54,7 +57,12 @@ public class YmF262Chip implements Chip {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
-        return new Class[] {YmF262Inst.class};
+        return new Class[] {YmF262Inst.class, YmF262Inst.class, NukedYmF262Inst.class, CozYmF262Inst.class, YmFmYmF262Inst.class};
+    }
+
+    @Override
+    public int activeIndex(int chipId) {
+        return chipTypes[chipId].getEnabledId();
     }
 
     @Override
@@ -199,28 +207,26 @@ public class YmF262Chip implements Chip {
             }
         } else {
             if (realChips[chipId] != null) {
-            realChips[chipId].setRegister(port * 0x100 + addr, data);
+                realChips[chipId].setRegister(port * 0x100 + addr, data);
+            }
         }
-    }
     }
 
     public void softReset(int chipId, EnmModel model) {
-        int i;
-
         // FM All Channel Key Off
-        for (i = 0; i < 9; i++) {
+        for (int i = 0; i < 9; i++) {
             _write(chipId, 0, 0xb0 + i, 0x00, model);
             _write(chipId, 1, 0xb0 + i, 0x00, model);
         }
 
         // FM TL=127
-        for (i = 0; i < 22; i++) {
+        for (int i = 0; i < 22; i++) {
             _write(chipId, 0, 0x40 + i, 0x3f, model);
             _write(chipId, 1, 0x40 + i, 0x3f, model);
         }
 
         // SL=15 RR=15
-        for (i = 0; i < 22; i++) {
+        for (int i = 0; i < 22; i++) {
             _write(chipId, 0, 0x80 + i, 0xff, model);
             _write(chipId, 1, 0x80 + i, 0xff, model);
         }
