@@ -17,7 +17,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -563,9 +562,9 @@ public class frmYMF278B extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 47; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YMF278B, chipId, ch);
+                            parent.resetChannelMask(YmF278BChip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YMF278B, chipId, ch);
+                            parent.setChannelMask(YmF278BChip.class, chipId, ch);
                     }
                 }
                 return;
@@ -587,16 +586,16 @@ public class frmYMF278B extends frmBase {
 
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 if (ch < 18) {
-                    parent.getInstCh(EnmChip.YMF278B, ch, chipId);
+                    parent.getInstCh(YmF278BChip.class, ch, chipId);
                 }
 
                 // Mask.
-                parent.setChannelMask(EnmChip.YMF278B, chipId, ch);
+                parent.setChannelMask(YmF278BChip.class, chipId, ch);
                 return;
             }
 
             // Unmask.
-            for (ch = 0; ch < 47; ch++) parent.resetChannelMask(EnmChip.YMF278B, chipId, ch);
+            for (ch = 0; ch < 47; ch++) parent.resetChannelMask(YmF278BChip.class, chipId, ch);
         }
     };
 

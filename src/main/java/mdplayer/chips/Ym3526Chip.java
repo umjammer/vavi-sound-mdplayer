@@ -11,6 +11,7 @@ import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdsound.Instrument;
 import mdsound.instrument.Ym3526Inst;
 
 
@@ -40,6 +41,12 @@ public class Ym3526Chip implements Chip {
     };
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {Ym3526Inst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -152,16 +159,16 @@ public class Ym3526Chip implements Chip {
         return keyInfoRet[chipId];
     }
 
-    private void _write(int chipId, int dAddr, int dData, EnmModel model) {
+    private void _write(int chipId, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(Ym3526Inst.class, chipId, 0, dAddr, dData);
+                context.mds.write(inst(chipId), chipId, 0, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
                 return;
 
-            realChips[chipId].setRegister(dAddr, dData);
+            realChips[chipId].setRegister(addr, data);
         }
     }
 

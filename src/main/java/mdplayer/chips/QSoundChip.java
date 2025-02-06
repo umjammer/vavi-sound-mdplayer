@@ -8,10 +8,12 @@ package mdplayer.chips;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
+import mdsound.instrument.CtrQSoundInst;
+import mdsound.instrument.QSoundInst;
 
 
 /**
@@ -24,8 +26,6 @@ public class QSoundChip implements Chip {
 
     private final Setting.ChipType2[] chipTypes = setting.getQSoundType();
 
-    private final Class<? extends PcmEnabledInstrument>[] inst = new Class[2];
-
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
                     false, false, false,},
@@ -35,15 +35,26 @@ public class QSoundChip implements Chip {
 
     private Audio context;
 
+    @SuppressWarnings("unchecked")
+    private Class<? extends PcmEnabledInstrument> _inst(int chipId) {
+        return (Class<? extends PcmEnabledInstrument>) inst(chipId);
+    }
+
+    @Override
+    public int activeIndex(int chipId) {
+        return chipTypes[chipId].getEnabledId();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {CtrQSoundInst.class, QSoundInst.class};
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public void init(Audio context) {
         this.context = context;
-
-        for (int chipId = 0; chipId < inst.length; chipId++) {
-            //
-            inst[chipId] = (Class<? extends PcmEnabledInstrument>) EnmChip.QSound.getInstClass(chipTypes[chipId].getEnabledId());
-        }
     }
 
     @Override
@@ -59,9 +70,9 @@ public class QSoundChip implements Chip {
             context.chipLED.put("PriQsnd", 2);
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.write(inst[chipId], chipId, 0, 0, mm);
-            context.mds.write(inst[chipId], chipId, 0, 1, ll);
-            context.mds.write(inst[chipId], chipId, 0, 2, rr);
+            context.mds.write(_inst(chipId), chipId, 0, 0, mm);
+            context.mds.write(_inst(chipId), chipId, 0, 1, ll);
+            context.mds.write(_inst(chipId), chipId, 0, 2, rr);
 
             register[chipId][rr] = mm * 0x100 + ll;
         } else {
@@ -79,9 +90,9 @@ public class QSoundChip implements Chip {
     public void setMask(int chipId, int ch, boolean mask) {
         this.mask[chipId][ch] = mask;
         if (mask)
-            context.mds.inst(inst[chipId]).setMask(chipId, ch);
+            context.mds.inst(_inst(chipId)).setMask(chipId, ch);
         else
-            context.mds.inst(inst[chipId]).resetMask(chipId, ch);
+            context.mds.inst(_inst(chipId)).resetMask(chipId, ch);
     }
 
     public void writePcm(int chipId,
@@ -95,7 +106,7 @@ public class QSoundChip implements Chip {
             context.chipLED.put("PriQsnd", 2);
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.inst(inst[chipId]).writePcm(chipId, romData, dataStart, dataLength, srcStartAdr, romSize);
+            context.mds.inst(_inst(chipId)).writePcm(chipId, romData, dataStart, dataLength, srcStartAdr, romSize);
         }
     }
 

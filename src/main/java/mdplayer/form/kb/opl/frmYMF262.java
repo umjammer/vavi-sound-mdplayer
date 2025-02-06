@@ -17,7 +17,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -417,9 +416,9 @@ public class frmYMF262 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 23; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YMF262, chipId, ch);
+                            parent.resetChannelMask(YmF262Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YMF262, chipId, ch);
+                            parent.setChannelMask(YmF262Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -434,7 +433,7 @@ public class frmYMF262 extends frmBase {
                     //音色欄をクリック
                     // Copying a tone to the clipboard
                     if (ev.getButton() == MouseEvent.BUTTON1)
-                        parent.getInstCh(EnmChip.YMF262, ch - 20, chipId);
+                        parent.getInstCh(YmF262Chip.class, ch - 20, chipId);
                 }
                 return;
             }
@@ -451,12 +450,12 @@ public class frmYMF262 extends frmBase {
 
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 // Mask.
-                parent.setChannelMask(EnmChip.YMF262, chipId, ch);
+                parent.setChannelMask(YmF262Chip.class, chipId, ch);
                 return;
             }
 
             // Unmask.
-            for (ch = 0; ch < 18 + 5; ch++) parent.resetChannelMask(EnmChip.YMF262, chipId, ch);
+            for (ch = 0; ch < 18 + 5; ch++) parent.resetChannelMask(YmF262Chip.class, chipId, ch);
         }
     };
 

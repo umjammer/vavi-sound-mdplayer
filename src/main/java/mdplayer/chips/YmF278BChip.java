@@ -11,6 +11,7 @@ import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdsound.Instrument;
 import mdsound.instrument.YmF278BInst;
 
 
@@ -56,6 +57,12 @@ public class YmF278BChip implements Chip {
     };
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {YmF278BInst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -173,7 +180,7 @@ public class YmF278BChip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(YmF278BInst.class, chipId, port, addr, data);
+                context.mds.write(inst(chipId), chipId, port, addr, data);
             }
         } else {
             if (realChips[chipId] == null)

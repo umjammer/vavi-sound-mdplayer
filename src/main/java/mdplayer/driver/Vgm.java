@@ -12,8 +12,8 @@ import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple3;
+import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.DacControl;
 import mdplayer.Setting;
@@ -60,8 +60,8 @@ public class Vgm extends BaseDriver {
     public int okiM6295ClockValue = DefaultOKIM6295ClockValue;
     public int segaPCMClockValue = DefaultSEGAPCMClockValue;
     public int segaPCMInterface = 0;
-    public int yn2151ClockValue;
-    public int yn2608ClockValue;
+    public int ym2151ClockValue;
+    public int ym2608ClockValue;
     public int ym2203ClockValue;
     public int ym2610ClockValue;
     public int ym3812ClockValue;
@@ -77,6 +77,7 @@ public class Vgm extends BaseDriver {
     public int qSoundClockValue;
     public int saa1099ClockValue;
     public int wSwanClockValue;
+    public int es5503ClockValue;
     public int x1_010ClockValue;
     public int c352ClockValue;
     public int c352ClockDivider;
@@ -88,6 +89,7 @@ public class Vgm extends BaseDriver {
     public int dmgClockValue;
     public int nesClockValue;
     public int multiPCMClockValue;
+    public int uPD7759ClockValue;
     public int pokeyClockValue;
 
     public boolean ym2612DualChipFlag;
@@ -115,6 +117,7 @@ public class Vgm extends BaseDriver {
     public boolean c140DualChipFlag;
     public boolean saA1099DualChipFlag;
     public boolean wSwanDualChipFlag;
+    public boolean es5503DualChipFlag;
     public boolean x1_010DualChipFlag;
     public boolean c352DualChipFlag;
     public boolean ga20DualChipFlag;
@@ -124,15 +127,15 @@ public class Vgm extends BaseDriver {
     public boolean dmgDualChipFlag;
     public boolean nesDualChipFlag;
     public boolean multiPCMDualChipFlag;
+    public boolean uPD7759DualChipFlag;
     public boolean pokeyDualChipFlag;
 
     public DacControl dacControl;
     public boolean isPcmRAMWrite = false;
     public boolean useChipYM2612Ch6 = false;
+    public int es5503Ch = 2;
 
     private final Runnable[] vgmCmdTbl = new Runnable[0x100];
-
-    private List<String> chips = null;
 
     private int vgmAdr;
     private int vgmWait;
@@ -153,7 +156,7 @@ public class Vgm extends BaseDriver {
     private byte[][] ym2610AdpcmB = new byte[][] {null, null};
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
@@ -192,8 +195,8 @@ public class Vgm extends BaseDriver {
         isDataBlock = false;
         isPcmRAMWrite = false;
         useChipYM2612Ch6 = false;
-        for (mdplayer.Common.EnmChip uc : useChip) {
-            if (uc == mdplayer.Common.EnmChip.YM2612Ch6) {
+        for (Class<? extends Chip> uc : useChip) {
+            if (uc == Ym2612Chip.class && false) { // TODO Ym2612Ch6
                 useChipYM2612Ch6 = true;
                 break;
             }
@@ -202,7 +205,7 @@ public class Vgm extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 
@@ -490,7 +493,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         vgmCmdTbl[0xd2] = this::vcK051649;
         vgmCmdTbl[0xd3] = this::vcK054539;
         vgmCmdTbl[0xd4] = this::vcC140;
-        vgmCmdTbl[0xd5] = this::vcDummy3Ope;
+        vgmCmdTbl[0xd5] = this::vcEs5503;
         vgmCmdTbl[0xd6] = this::vcDummy3Ope;
         vgmCmdTbl[0xd7] = this::vcDummy3Ope;
 
@@ -572,13 +575,11 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
     private void vcAY8910() {
         plugin.audio.chipRegister.chip(Ay8910Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
-        //plugin.audio.chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcDMG() {
         plugin.audio.chipRegister.chip(DmgChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
-        //plugin.audio.chipRegister.setAY8910Register(0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
@@ -677,14 +678,14 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private void vcYMF262Port0() {
-        plugin.audio.chipRegister.chip(YmF262Chip.class).setRegister((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
+        plugin.audio.chipRegister.chip(YmF262Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 0, vgmBuf[vgmAdr + 1] & 0xff, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
     private void vcYMF262Port1() {
         int adr = vgmBuf[vgmAdr + 1] & 0xff;
         int dat = vgmBuf[vgmAdr + 2] & 0xff;
-        plugin.audio.chipRegister.chip(YmF262Chip.class).setRegister((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
+        plugin.audio.chipRegister.chip(YmF262Chip.class).write((vgmBuf[vgmAdr] & 0x80) == 0 ? 0 : 1, 1, adr, dat, model);
         vgmAdr += 3;
     }
 
@@ -801,7 +802,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             chipId = 1;
         }
 
-        switch (bType & 0xc0) {
+        switch (bType & 0xe0) {
         case 0x00:
         case 0x40:
             addPCMData(bType, bLen, bAdr);
@@ -950,7 +951,13 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                 dumpData(model, "MultiPCM_PCMData", vgmAdr + 15, bLen - 8);
                 break;
 
-            case 0x8b:
+            case 0x8a:
+                // uPD7759
+                plugin.audio.chipRegister.chip(Upd7759Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
+                dumpData(model, "uPD7759_PCMData", vgmAdr + 15, bLen - 8);
+                break;
+
+                case 0x8b:
                 // OKIM6295
                 plugin.audio.chipRegister.chip(OkiM6295Chip.class).writePcm(chipId, romSize, startAddress, bLen - 8, vgmBuf, vgmAdr + 15, model);
                 dumpData(model, "OKIM6295_PCMData", vgmAdr + 15, bLen - 8);
@@ -1031,6 +1038,29 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
             vgmAdr += bLen + 7;
             break;
+        case 0xe0:
+                int stAdr_E = ByteUtil.readLeInt(vgmBuf, vgmAdr + 7);
+                int dataSize_E = bLen - 2;
+                int ROMData_E = vgmAdr + 9;
+                if ((bType & 0x20) != 0) {
+                    stAdr_E = ByteUtil.readLeInt(vgmBuf, vgmAdr + 7);
+                    dataSize_E = bLen - 4;
+                    ROMData_E = vgmAdr + 11;
+                }
+
+                try {
+                    switch (bType) {
+                        case 0xe1:
+                            plugin.audio.chipRegister.chip(Es5503Chip.class).writePcm(chipId, stAdr_E, dataSize_E, vgmBuf, vgmAdr + 11, model);
+                            dumpData(model, "ES5503_PCMData", vgmAdr + 9, dataSize_E);
+                            break;
+                    }
+                } catch (Exception e) {
+                    logger.log(Level.ERROR, e.getMessage(), e);
+                }
+
+                vgmAdr += bLen + 7;
+                break;
         default:
             vgmAdr += bLen + 7;
             break;
@@ -1360,7 +1390,6 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         vgmAdr += 4;
         plugin.audio.chipRegister.chip(K051649Chip.class).write(scc1_chipId, (scc1_port << 1) | 0x00, scc1_offset, model);
         plugin.audio.chipRegister.chip(K051649Chip.class).write(scc1_chipId, (scc1_port << 1) | 0x01, rDat, model);
-
     }
 
     private void vcK053260() {
@@ -1387,11 +1416,18 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         vgmAdr += 4;
     }
 
+    private void vcEs5503() { //0xD5 pp aa dd
+        int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
+        int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
+        int data = vgmBuf[vgmAdr + 3] & 0xff;
+        plugin.audio.chipRegister.chip(Es5503Chip.class).write(id, adr, data, model);
+        vgmAdr += 4;
+    }
+
     private void vcC352() {
         int id = (vgmBuf[vgmAdr + 1] & 0x80) != 0 ? 1 : 0;
         int adr = (vgmBuf[vgmAdr + 1] & 0x7f) * 0x100 + (vgmBuf[vgmAdr + 2] & 0xff);
         int data = (vgmBuf[vgmAdr + 3] & 0xff) * 0x100 + (vgmBuf[vgmAdr + 4] & 0xff);
-
         plugin.audio.chipRegister.chip(C352Chip.class).write(id, adr, data, model);
         vgmAdr += 5;
     }
@@ -1410,31 +1446,28 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             return;
 
         if (Type == 0x7F) {
-            //ReadPCMTable(dataSize, data);
             readPCMTable(dataSize, adr);
             return;
         }
 
-        tempPCM = pcmBank[bnkType]; // &PCMBank[bnkType];
+        tempPCM = pcmBank[bnkType];
         tempPCM.bnkPos++;
         if (tempPCM.bnkPos <= tempPCM.bankCount)
             return; // Speed hack for restarting playback (skip already loaded blocks)
         curBnk = tempPCM.bankCount;
         tempPCM.bankCount++;
-        //if (Last95Max != 0xffFF) Last95Max = tempPCM.BankCount;
-        tempPCM.bank.add(new VgmPcmData()); // = (VgmPcmData*)realloc(tempPCM->Bank, sizeof(VgmPcmData) * tempPCM->BankCount);
+        tempPCM.bank.add(new VgmPcmData());
 
         if ((Type & 0x40) == 0)
             bankSize = dataSize;
         else
-            bankSize = ByteUtil.readLeInt(vgmBuf, adr + 1); // ReadLE32(&Data[0x01]);
+            bankSize = ByteUtil.readLeInt(vgmBuf, adr + 1);
 
         byte[] newData = new byte[tempPCM.dataSize + bankSize];
         if (tempPCM.data != null && tempPCM.data.length > 0)
             System.arraycopy(tempPCM.data, 0, newData, 0, tempPCM.data.length);
         tempPCM.data = newData;
 
-        //tempPCM.Data = new byte[tempPCM.dataSize + bankSize]; // realloc(tempPCM->Data, tempPCM->dataSize + bankSize);
         tempBnk = tempPCM.bank.get(curBnk);
         tempBnk.dataStart = tempPCM.dataSize;
         tempBnk.data = new byte[bankSize];
@@ -1445,20 +1478,15 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                 tempPCM.data[i + tempBnk.dataStart] = vgmBuf[adr + i];
                 tempBnk.data[i] = vgmBuf[adr + i];
             }
-            //tempBnk.Data = tempPCM.Data + tempBnk.DataStart;
-            //memcpy(tempBnk->Data, data, dataSize);
         } else {
-            //tempBnk.Data = tempPCM.Data + tempBnk.DataStart;
             retVal = decompressDataBlk(tempBnk, dataSize, adr);
             if (!retVal) {
                 tempBnk.data = null;
                 tempBnk.dataSize = 0x00;
             } else {
-                // dataSize; i++)
                 System.arraycopy(tempBnk.data, 0, tempPCM.data, tempBnk.dataStart, bankSize);
             }
         }
-        //if (bankSize != tempBnk.dataSize) logger.log(Level.TRACE, "Error reading data Block! data size conflict!\n");
         if (retVal)
             tempPCM.dataSize += bankSize;
 
@@ -1480,12 +1508,12 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         int outPos;
         int outDataEnd;
         int inVal;
-        int outVal = 0;// FUINT16 outVal;
+        int outVal = 0;
         int valSize;
         int inShift;
         int outShift;
-        int ent1B = 0;// UINT8* ent1B;
-        int ent2B = 0;// UINT16* ent2B;
+        int ent1B = 0;
+        int ent2B = 0;
 //#if defined(_DEBUG) && defined(WIN32)
 //        UINT32 Time;
 //#endif
@@ -1517,15 +1545,15 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                 //bank.dataSize = 0x00;
                 //return false;
 
-                ent1B = 0;// (UINT8*)PCMTbl.Entries; // Big Endian note: Those are stored : LE and converted when reading.
-                ent2B = 0;// (UINT16*)PCMTbl.Entries;
+                ent1B = 0; // Big Endian note: Those are stored : LE and converted when reading.
+                ent2B = 0;
                 if (pcmTbl.entryCount == 0) {
                     bank.dataSize = 0x00;
-                    //printf("Error loading table-compressed data block! No table loaded!\n");
+//logger.log(Level.ERROR, "loading table-compressed data block! No table loaded!");
                     return false;
                 } else if (bitDec != pcmTbl.bitDec || bitCmp != pcmTbl.bitCmp) {
                     bank.dataSize = 0x00;
-                    //printf("Warning! data block and loaded value table incompatible!\n");
+//logger.log(Level.WARNING, "data block and loaded value table incompatible!");
                     return false;
                 }
             }
@@ -1538,7 +1566,6 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 //            outDataEnd = bank.Data + bank.dataSize;
             outDataEnd = bank.dataSize;
 
-            //for (outPos = bank->Data; outPos < outDataEnd && inPos < inDataEnd; outPos += valSize)
             for (outPos = 0; outPos < outDataEnd && inPos < inDataEnd; outPos += valSize) {
                 //inVal = ReadBits(Data, inPos, &inShift, bitCmp);
                 // inlined - instanceof 30% faster
@@ -1551,7 +1578,6 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                     bitMask = (1 << bitReadVal) - 1;
 
                     inShift += bitReadVal;
-                    //inValB = (byte)(((vgmBuf[inPos] & 0xff) << inShift >> 8) & bitMask);
                     inValB = ((vgmBuf[inPos] & 0xff) << inShift >> 8) & bitMask;
                     if (inShift >= 8) {
                         inShift -= 8;
@@ -1580,7 +1606,6 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 //#ifndef BIG_ENDIAN
 //                        outVal = ent2B[inVal];
 //#else
-                        //ReadLE16((UINT8*)&ent2B[inVal]);
                         outVal = (pcmTbl.entries[ent2B + inVal * 2] & 0xff) + (pcmTbl.entries[ent2B + inVal * 2 + 1] & 0xff) * 0x100;
 //#endif
                         break;
@@ -1630,7 +1655,6 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             outDataEnd = bank.dataSize;// bank.Data + bank.dataSize;
             addVal = 0x0000;
 
-            // for (outPos = bank.Data; outPos < outDataEnd && inPos < inDataEnd; outPos += valSize)
             for (outPos = 0; outPos < outDataEnd && inPos < inDataEnd; outPos += valSize) {
                 // inVal = ReadBits(Data, inPos, &inShift, bitCmp);
                 // inlined - instanceof 30% faster
@@ -1660,7 +1684,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                     addVal = pcmTbl.entries[ent1B + inVal] & 0xff;
                     outVal += addVal;
                     outVal &= outMask;
-                    bank.data[outPos] = (byte) outVal; // *((UINT8*)outPos) = (UINT8)outVal;
+                    bank.data[outPos] = (byte) outVal;
                     break;
                 case 0x02:
 //#ifndef BIG_ENDIAN
@@ -1698,22 +1722,20 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         int valSize;
         int tblSize;
 
-        pcmTbl.comprType = vgmBuf[adr + 0] & 0xff; // data[0x00];
-        pcmTbl.cmpSubType = vgmBuf[adr + 1] & 0xff; // data[0x01];
-        pcmTbl.bitDec = vgmBuf[adr + 2] & 0xff; // data[0x02];
-        pcmTbl.bitCmp = vgmBuf[adr + 3] & 0xff; // data[0x03];
-        pcmTbl.entryCount = ByteUtil.readLeShort(vgmBuf, adr + 4) & 0xffff; // ReadLE16(&Data[0x04]);
+        pcmTbl.comprType = vgmBuf[adr + 0] & 0xff;
+        pcmTbl.cmpSubType = vgmBuf[adr + 1] & 0xff;
+        pcmTbl.bitDec = vgmBuf[adr + 2] & 0xff;
+        pcmTbl.bitCmp = vgmBuf[adr + 3] & 0xff;
+        pcmTbl.entryCount = ByteUtil.readLeShort(vgmBuf, adr + 4) & 0xffff;
 
         valSize = (pcmTbl.bitDec + 7) / 8;
         tblSize = pcmTbl.entryCount * valSize;
 
-        pcmTbl.entries = new byte[tblSize];// realloc(PCMTbl.Entries, tblSize);
+        pcmTbl.entries = new byte[tblSize];
         for (int i = 0; i < tblSize; i++) pcmTbl.entries[i] = vgmBuf[adr + 6 + i];
-        //memcpy(PCMTbl.Entries, &Data[0x06], tblSize);
 
         if (dataSize < 0x06 + tblSize) {
-            //logger.log(Level.TRACE, "Warning! Bad PCM Table Length!\n");
-            //printf("Warning! Bad PCM Table Length!\n");
+logger.log(Level.TRACE, "Bad PCM Table Length!");
         }
     }
 
@@ -1755,15 +1777,15 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
     }
 
     private boolean getInformationHeader() {
-        chips = new ArrayList<>();
+        List<String> chips = new ArrayList<>();
         usedChips = "";
 
         sn76489ClockValue = 0; // defaultSN76489ClockValue;
         ym2612ClockValue = 0; // defaultYM2612ClockValue;
-        yn2151ClockValue = 0;
+        ym2151ClockValue = 0;
         segaPCMClockValue = 0;
         ym2203ClockValue = 0;
-        yn2608ClockValue = 0;
+        ym2608ClockValue = 0;
         ym2610ClockValue = 0;
         ym3812ClockValue = 0;
         ymF262ClockValue = 0;
@@ -1779,9 +1801,11 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         k054539ClockValue = 0;
         nesClockValue = 0;
         multiPCMClockValue = 0;
+        uPD7759ClockValue = 0;
         saa1099ClockValue = 0;
         x1_010ClockValue = 0;
         wSwanClockValue = 0;
+        es5503ClockValue = 0;
 
         // Check if the header is large enough to read
         if (vgmBuf.length < 0x40) return false;
@@ -1850,7 +1874,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
             int YM2151clock = ByteUtil.readLeInt(vgmBuf, 0x10);
             if (YM2151clock != 0) {
-                yn2151ClockValue = YM2151clock & 0x3fff_ffff;
+                ym2151ClockValue = YM2151clock & 0x3fff_ffff;
                 ym2151DualChipFlag = (YM2151clock & 0x4000_0000) != 0;
                 if (ym2151DualChipFlag) chips.add("YM2151x2");
                 else chips.add("YM2151");
@@ -1876,7 +1900,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
             int YM2151clock = ByteUtil.readLeInt(vgmBuf, 0x30);
             if (YM2151clock != 0) {
-                yn2151ClockValue = YM2151clock & 0x3fff_ffff;
+                ym2151ClockValue = YM2151clock & 0x3fff_ffff;
                 ym2151DualChipFlag = (YM2151clock & 0x4000_0000) != 0;
                 if (ym2151DualChipFlag) chips.add("YM2151x2");
                 else chips.add("YM2151");
@@ -1926,7 +1950,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                 if (vgmDataOffset > 0x48) {
                     int YM2608clock = ByteUtil.readLeInt(vgmBuf, 0x48);
                     if (YM2608clock != 0) {
-                        yn2608ClockValue = YM2608clock & 0x3fff_ffff;
+                        ym2608ClockValue = YM2608clock & 0x3fff_ffff;
                         ym2608DualChipFlag = (YM2608clock & 0x4000_0000) != 0;
                         if (ym2608DualChipFlag) chips.add("YM2608x2");
                         else chips.add("YM2608");
@@ -2081,6 +2105,16 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                     }
                 }
 
+                if (vgmDataOffset > 0x8c) {
+                    int uPD7759clock = ByteUtil.readLeInt(vgmBuf, 0x8c);
+                    if (uPD7759clock != 0) {
+                        uPD7759ClockValue = uPD7759clock & 0xbfff_ffff;
+                        uPD7759DualChipFlag = (uPD7759clock & 0x4000_0000) != 0;
+                        if (uPD7759DualChipFlag) chips.add("uPD7759x2");
+                        else chips.add("uPD7759");
+                    }
+                }
+
                 if (vgmDataOffset > 0x90) {
                     int OKIM6258clock = ByteUtil.readLeInt(vgmBuf, 0x90);
                     if (OKIM6258clock != 0) {
@@ -2208,6 +2242,20 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
                         saA1099DualChipFlag = (saa1099Clock & 0x4000_0000) != 0;
                         if (saA1099DualChipFlag) chips.add("SAA1099x2");
                         else chips.add("SAA1099");
+                    }
+                }
+
+                if (vgmDataOffset > 0xcc) {
+
+                    int es5503clock = ByteUtil.readLeInt(vgmBuf, 0xcc);
+                    if (es5503clock != 0)
+                    {
+                        es5503ClockValue = es5503clock & 0x3fff_ffff;//def=7159090
+                        es5503DualChipFlag = (es5503clock & 0x4000_0000) != 0;
+                        es5503Ch = vgmBuf[0xd4];
+                        //if (es5503Ch == 1) es5503Ch = 2;
+                        if (es5503DualChipFlag) chips.add("ES5503x2");
+                        else chips.add("ES5503");
                     }
                 }
 

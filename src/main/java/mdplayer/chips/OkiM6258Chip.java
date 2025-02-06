@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.chips.OkiM6258;
 import mdsound.instrument.OkiM6258Inst;
 
@@ -26,6 +27,12 @@ public class OkiM6258Chip implements Chip {
     public final boolean[] keyOn = {false, false};
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {OkiM6258Inst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -68,7 +75,7 @@ public class OkiM6258Chip implements Chip {
         }
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.write(OkiM6258Inst.class, chipId, 0, port, data);
+            context.mds.write(inst(chipId), chipId, 0, port, data);
         }
     }
 

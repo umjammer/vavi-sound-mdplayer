@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.instrument.PwmInst;
 
 
@@ -21,6 +22,12 @@ import mdsound.instrument.PwmInst;
 public class PwmChip implements Chip {
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {PwmInst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -42,6 +49,6 @@ public class PwmChip implements Chip {
             context.chipLED.put("SecPWM", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.write(PwmInst.class, chipId, 0, adr, data);
+            context.mds.write(inst(chipId), chipId, 0, adr, data);
     }
 }

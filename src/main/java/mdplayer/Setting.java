@@ -16,11 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmInstFormat;
 import mdplayer.properties.Resources;
 import mdplayer.vst.VstInfo;
-import mdsound.Instrument;
 import vavi.util.serdes.Serdes;
 
 import static java.lang.System.getLogger;
@@ -845,12 +843,13 @@ public class Setting implements Serializable {
     }
 
     public void init() {
+        // ay8910
         if (this.getAY8910Type() == null || this.getAY8910Type().length < 2) {
             this.setAY8910Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getAY8910Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getAY8910Type()[i].setUseEmu(new boolean[EnmChip.AY8910.variants.length]); // 2 means {0: libvgm, 1: mame}
-                this.getAY8910Type()[i].getUseEmu()[0] = true;
+                this.getAY8910Type()[i].setUseEmu(new boolean[2]); // 2 means {0: fmgen, 1: mame}
+                this.getAY8910Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ay8910", "0"))] = true;
                 this.getAY8910Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -890,12 +889,13 @@ public class Setting implements Serializable {
                 this.getSEGAPCMType()[i].setUseReal(new boolean[1]);
             }
         }
+        // sn76489
         if (this.getSN76489Type() == null || this.getSN76489Type().length < 2) {
             this.setSN76489Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getSN76489Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getSN76489Type()[i].setUseEmu(new boolean[EnmChip.SN76489.variants.length]); // 2 means {0: sn76489, 1: sn76496}
-                this.getSN76489Type()[i].getUseEmu()[0] = true;
+                this.getSN76489Type()[i].setUseEmu(new boolean[2]); // {0: sn76489, 1: sn76496}
+                this.getSN76489Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.sn76489", "0"))] = true;
                 this.getSN76489Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -908,21 +908,23 @@ public class Setting implements Serializable {
                 this.getY8950Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ym2151 OPM
         if (this.getYM2151Type() == null || this.getYM2151Type().length < 2) {
             this.setYM2151Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2151Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2151Type()[i].setUseEmu(new boolean[EnmChip.YM2151.variants.length]); // 4 means {0: fmgen, 1: mame, 2: 68k, 3: ymfm}
-                this.getYM2151Type()[i].getUseEmu()[0] = true;
+                this.getYM2151Type()[i].setUseEmu(new boolean[4]); // {0: fmgen, 1: mame, 2: 68k, 3: ymfm}
+                this.getYM2151Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ym2151", "0"))] = true;
                 this.getYM2151Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ym2203 OPN
         if (this.getYM2203Type() == null || this.getYM2203Type().length < 2) {
             this.setYM2203Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2203Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2203Type()[i].setUseEmu(new boolean[EnmChip.YM2203.variants.length]); // 2 means {0: fmgen, 1: ymfm}
-                this.getYM2203Type()[i].getUseEmu()[0] = true;
+                this.getYM2203Type()[i].setUseEmu(new boolean[2]); // {0: fmgen, 1: ymfm}
+                this.getYM2203Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ym2203", "0"))] = true;
                 this.getYM2203Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -935,16 +937,18 @@ public class Setting implements Serializable {
                 this.getYM2413Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ym2608 OPNA
         if (this.getYM2608Type() == null || this.getYM2608Type().length < 2) {
             this.setYM2608Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2608Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2608Type()[i].setUseEmu(new boolean[EnmChip.YM2608.variants.length]); // 2 means {0: fmgen, 1: ymfm}
-                this.getYM2608Type()[i].getUseEmu()[0] = true;
+                this.getYM2608Type()[i].setUseEmu(new boolean[2]); // {0: fmgen, 1: ymfm}
+                this.getYM2608Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ym2608", "0"))] = true;
                 this.getYM2608Type()[i].setUseReal(new boolean[1]);
             }
         }
 
+        // ym2610 OPNB
         if (this.getYM2610Type() == null
                 || this.getYM2610Type().length < 2
                 || this.getYM2610Type()[0].getUseReal() == null
@@ -955,21 +959,23 @@ public class Setting implements Serializable {
             this.setYM2610Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM2610Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo()});
-                this.getYM2610Type()[i].setUseEmu(new boolean[EnmChip.YM2610.variants.length]); // 2 means {0: fmgen, 1: ymfm}
-                this.getYM2610Type()[i].getUseEmu()[0] = true;
+                this.getYM2610Type()[i].setUseEmu(new boolean[2]); // {0: fmgen, 1: ymfm}
+                this.getYM2610Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ym2610", "0"))] = true;
                 this.getYM2610Type()[i].setUseReal(new boolean[3]);
             }
         }
 
+        // ym2612 OPN2
         if (this.getYM2612Type() == null || this.getYM2612Type().length < 2) {
             this._YM2612Type = new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()};
             for (int i = 0; i < 2; i++) {
                 this.getYM2612Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM2612Type()[i].setUseEmu(new boolean[EnmChip.YM2612.variants.length]); // 4 means {0: mame-A, 1: nuke, 2: mame-B, 3: nuke-B}
-                this.getYM2612Type()[i].getUseEmu()[0] = true;
+                this.getYM2612Type()[i].setUseEmu(new boolean[5]); // {0: mame-A, 1: nuke-A, 2: mame-B, 3: nuke-B(simple), 4: nuke-A(vavi)}
+                this.getYM2612Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ym2612", "0"))] = true;
                 this.getYM2612Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ym3526 OPL
         if (this.getYM3526Type() == null || this.getYM3526Type().length < 2) {
             this.setYM3526Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
@@ -979,21 +985,23 @@ public class Setting implements Serializable {
                 this.getYM3526Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ym3812 OPL2
         if (this.getYM3812Type() == null || this.getYM3812Type().length < 2) {
             this.setYM3812Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYM3812Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYM3812Type()[i].setUseEmu(new boolean[EnmChip.YM3812.variants.length]); // 2 means {0: dosbox, 1: mame}
-                this.getYM3812Type()[i].getUseEmu()[0] = true;
+                this.getYM3812Type()[i].setUseEmu(new boolean[2]); // {0: dosbox, 1: mame}
+                this.getYM3812Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ym3812", "0"))] = true;
                 this.getYM3812Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // ymf262 OPL3
         if (this.getYMF262Type() == null || this.getYMF262Type().length < 2) {
             this.setYMF262Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getYMF262Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getYMF262Type()[i].setUseEmu(new boolean[1]);
-                this.getYMF262Type()[i].getUseEmu()[0] = true;
+                this.getYMF262Type()[i].setUseEmu(new boolean[5]); // {0: dosbox 1: mame, 2: nuked, 3: cozendey, 4: ymfm}
+                this.getYMF262Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ymf262", "0"))] = true;
                 this.getYMF262Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -1024,11 +1032,12 @@ public class Setting implements Serializable {
                 this.getYMZ280BType()[i].setUseReal(new boolean[1]);
             }
         }
+        // qsound
         if (this.getQSoundType() == null || this.getQSoundType().length < 2) {
             this.setQSoundType(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
-                this.getQSoundType()[i].setUseEmu(new boolean[EnmChip.QSound.variants.length]); // 2 means {0: qsound-ctr, 1: qsound}
-                this.getQSoundType()[i].getUseEmu()[0] = true;
+                this.getQSoundType()[i].setUseEmu(new boolean[2]); // {0: qsound-ctr, 1: qsound}
+                this.getQSoundType()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.qsound", "0"))] = true;
                 this.getQSoundType()[i].setUseReal(new boolean[1]);
             }
         }
@@ -1184,30 +1193,22 @@ public class Setting implements Serializable {
     // setYMF262SType(ChipType2 { _YMF262SType = value; }
 
     // private ChipType2 _YMF271SType = new ChipType2();
-    // public ChipType2 YMF271SType    // {
+    // public ChipType2 YMF271SType
     // get()
     // {
     // return _YMF271SType;
     // }
-
-    // set
-    // {
+    // set {
     // _YMF271SType = value;
-    // }
     // }
 
     // private ChipType2 _YMF278BSType = new ChipType2();
     // public ChipType2 YMF278BSType
-    // {
-    // get()
-    // {
+    // get() {
     // return _YMF278BSType;
     // }
-
-    // set
-    // {
+    // set {
     // _YMF278BSType = value;
-    // }
     // }
 
     // private ChipType2 _YMZ280BSType = new ChipType2();
@@ -1215,10 +1216,8 @@ public class Setting implements Serializable {
     // get() {
     // return _YMZ280BSType;
     // }
-
     // set {
     // _YMZ280BSType = value;
-    // }
     // }
 
     // private ChipType2 _SN76489SType = new ChipType2();
@@ -1226,10 +1225,8 @@ public class Setting implements Serializable {
     // get() {
     // return _SN76489SType;
     // }
-
     // set {
     // _SN76489SType = value;
-    // }
     // }
 
     // private ChipType2 _HuC6280SType = new ChipType2();
@@ -1237,10 +1234,8 @@ public class Setting implements Serializable {
     // get() {
     // return _HuC6280SType;
     // }
-
     // set {
     // _HuC6280SType = value;
-    // }
     // }
 
     private ChipType2[] _YM3526Type = null;
@@ -1255,16 +1250,11 @@ public class Setting implements Serializable {
 
     // private ChipType2 _YM3526SType = new ChipType2();
     // public ChipType2 YM3526SType
-    // {
-    // get()
-    // {
+    // get() {
     // return _YM3526SType;
     // }
-
-    // set
-    // {
+    // set {
     // _YM3526SType = value;
-    // }
     // }
 
     private ChipType2[] _YM3812Type = null;
@@ -1277,16 +1267,11 @@ public class Setting implements Serializable {
 
     // private ChipType2 _YM3812SType = new ChipType2();
     // public ChipType2 YM3812SType
-    // {
-    // get()
-    // {
+    // get() {
     // return _YM3812SType;
     // }
-
-    // set
-    // {
+    // set {
     // _YM3812SType = value;
-    // }
     // }
 
     private ChipType2[] _Y8950Type = null;
@@ -1299,16 +1284,11 @@ public class Setting implements Serializable {
 
     // private ChipType2 _Y8950SType = new ChipType2();
     // public ChipType2 Y8950SType
-    // {
-    // get()
-    // {
+    // get() {
     // return _Y8950SType;
     // }
-
-    // set
-    // {
+    // set {
     // _Y8950SType = value;
-    // }
     // }
 
     private ChipType2[] _C140Type = null;
@@ -1321,16 +1301,11 @@ public class Setting implements Serializable {
 
     // private ChipType2 _C140SType = new ChipType2();
     // public ChipType2 C140SType
-    // {
-    // get()
-    // {
+    // get() {
     // return _C140SType;
     // }
-
-    // set
-    // {
+    // set {
     // _C140SType = value;
-    // }
     // }
 
     private ChipType2[] _SEGAPCMType = null;
@@ -1343,16 +1318,11 @@ public class Setting implements Serializable {
 
     // private ChipType2 _SEGAPCMSType = new ChipType2();
     // public ChipType2 SEGAPCMSType
-    // {
-    // get()
-    // {
+    // get() {
     // return _SEGAPCMSType;
     // }
-
-    // set
-    // {
+    // set {
     // _SEGAPCMSType = value;
-    // }
     // }
 
     private ChipType2[] _QSoundType = null;
@@ -1598,359 +1568,235 @@ public class Setting implements Serializable {
 
     // implements Serializable;
     // public class ChipType2 {
+
     // private boolean _UseEmu = true;
-    // public boolean UseEmu {
-    // get() {
+    // public boolean getUseEmu() {
     // return _UseEmu;
     // }
-
-    // set {
+    // public void setUseEmu(boolean value) {
     // _UseEmu = value;
-    // }
     // }
 
     // private boolean _UseEmu2 = false;
-    // public boolean UseEmu2 {
-    // get() {
+    // public boolean getUseEmu2() {
     // return _UseEmu2;
     // }
-
-    // set {
+    // public void setUseEmu2(boolean value) {
     // _UseEmu2 = value;
-    // }
     // }
 
     // private boolean _UseEmu3 = false;
-    // public boolean UseEmu3
-    // {
-    // get() {
+    // public boolean getUseEmu3() {
     // return _UseEmu3;
     // }
-
-    // set {
+    // public void setUseEmu3(boolean value) {
     // _UseEmu3 = value;
-    // }
     // }
 
     // private boolean _UseScci = false;
     // public boolean UseScci
-    // {
-    // get()
-    // {
+    // get() {
     // return _UseScci;
     // }
-
-    // set
-    // {
+    // public boolean UseScciset {
     // _UseScci = value;
-    // }
     // }
 
     // private String _InterfaceName = "";
     // public String InterfaceName
-    // {
-    // get()
-    // {
+    // get() {
     // return _InterfaceName;
     // }
-
-    // set
-    // {
+    // public String InterfaceNameset {
     // _InterfaceName = value;
-    // }
     // }
 
     // private int _Soun.setLocation(-1);
     // public int SoundLocation
-    // {
-    // get()
-    // {
+    // get() {
     // return _SoundLocation;
     // }
-
-    // set
-    // {
+    // public int SoundLocationset {
     // _Soun.setLocation(value);
-    // }
     // }
 
     // private int _BusID = -1;
     // public int BusID
-    // {
-    // get()
-    // {
+    // get() {
     // return _BusID;
     // }
-
-    // set
-    // {
+    // public int BusIDset {
     // _BusID = value;
-    // }
     // }
 
     // private int _SoundChip = -1;
     // public int SoundChip
-    // {
-    // get()
-    // {
+    // get() {
     // return _SoundChip;
     // }
-
-    // set
-    // {
+    // public int SoundChipset {
     // _SoundChip = value;
-    // }
     // }
 
     // private String _ChipName = "";
     // public String ChipName
-    // {
-    // get()
-    // {
+    // get() {
     // return _ChipName;
     // }
-
-    // set
-    // {
+    // public String ChipNameset {
     // _ChipName = value;
-    // }
     // }
 
     // private boolean _UseScci2 = false;
     // public boolean UseScci2
-    // {
-    // get()
-    // {
+    // get() {
     // return _UseScci2;
     // }
-
-    // set
-    // {
+    // public boolean UseScci2set {
     // _UseScci2 = value;
-    // }
     // }
 
     // private String _InterfaceName2A = "";
     // public String InterfaceName2A
-    // {
-    // get()
-    // {
+    // get() {
     // return _InterfaceName2A;
     // }
-
-    // set
-    // {
+    // public String InterfaceName2Aset {
     // _InterfaceName2A = value;
-    // }
     // }
 
     // private int _SoundLocation2A = -1;
     // public int SoundLocation2A
-    // {
-    // get()
-    // {
+    // get() {
     // return _SoundLocation2A;
     // }
-
-    // set
-    // {
+    // public int SoundLocation2Aset {
     // _SoundLocation2A = value;
-    // }
     // }
 
     // private int _BusID2A = -1;
     // public int BusID2A
-    // {
-    // get()
-    // {
+    // get() {
     // return _BusID2A;
     // }
-
-    // set
-    // {
+    // public int BusID2Aset {
     // _BusID2A = value;
-    // }
     // }
 
     // private int _SoundChip2A = -1;
     // public int SoundChip2A
-    // {
-    // get()
-    // {
+    // get() {
     // return _SoundChip2A;
     // }
-
-    // set
-    // {
+    // public int SoundChip2Aset {
     // _SoundChip2A = value;
-    // }
     // }
 
     // private String _ChipName2A = "";
     // public String ChipName2A
-    // {
-    // get()
-    // {
+    // get() {
     // return _ChipName2A;
     // }
-
-    // set
-    // {
+    // public String ChipName2Aset {
     // _ChipName2A = value;
-    // }
     // }
 
     // private int _Type = 0;
     // public int Type
-    // {
-    // get()
-    // {
+    // get() {
     // return _Type;
     // }
-
-    // set
-    // {
+    // public int Typeset {
     // _Type = value;
-    // }
     // }
 
     // private String _InterfaceName2B = "";
     // public String InterfaceName2B
-    // {
-    // get()
-    // {
+    // get() {
     // return _InterfaceName2B;
     // }
-
-    // set
-    // {
+    // public String InterfaceName2Bset {
     // _InterfaceName2B = value;
-    // }
     // }
 
     // private int _SoundLocation2B = -1;
     // public int SoundLocation2B
-    // {
-    // get()
-    // {
+    // get() {
     // return _SoundLocation2B;
     // }
-
-    // set
-    // {
+    // public int SoundLocation2Bset {
     // _SoundLocation2B = value;
-    // }
     // }
 
     // private int _BusID2B = -1;
     // public int BusID2B
-    // {
-    // get()
-    // {
+    // get() {
     // return _BusID2B;
     // }
-
-    // set
-    // {
+    // public int BusID2Bset {
     // _BusID2B = value;
-    // }
     // }
 
     // private int _SoundChip2B = -1;
-    // public int SoundChip2B
-    // {
-    // get()
-    // {
+    // public int getSoundChip2B() {
     // return _SoundChip2B;
     // }
-
-    // set
-    // {
+    // public int getSoundChip2Bset {
     // _SoundChip2B = value;
-    // }
     // }
 
     // private String _ChipName2B = "";
     // public String ChipName2B
-    // {
-    // get()
-    // {
+    // get() {
     // return _ChipName2B;
     // }
-
-    // set
-    // {
+    // public String ChipName2Bset {
     // _ChipName2B = value;
-    // }
     // }
 
     // private boolean _UseWait = true;
     // public boolean UseWait
-    // {
-    // get()
-    // {
+    // get() {
     // return _UseWait;
     // }
-
-    // set
-    // {
+    // public boolean UseWaitset {
     // _UseWait = value;
-    // }
     // }
 
     // private boolean _UseWaitBoost = false;
     // public boolean UseWaitBoost {
-    // get()
-    // {
+    // get() {
     // return _UseWaitBoost;
     // }
-
-    // set
-    // {
+    // public boolean UseWaitBoostset {
     // _UseWaitBoost = value;
-    // }
     // }
 
     // private boolean _OnlyPCMEmulation = false;
     // public boolean OnlyPCMEmulation
-    // {
-    // get()
-    // {
+    // get() {
     // return _OnlyPCMEmulation;
     // }
-
-    // set
-    // {
+    // public boolean OnlyPCMEmulationset {
     // _OnlyPCMEmulation = value;
-    // }
     // }
 
     // private int _LatencyForEmulation = 0;
     // public int LatencyForEmulation
-    // {
-    // get()
-    // {
+    // get() {
     // return _LatencyForEmulation;
     // }
-
-    // set
-    // {
+    // public int LatencyForEmulationset {
     // _LatencyForEmulation = value;
-    // }
     // }
 
     // private int _LatencyForScci = 0;
     // public int LatencyForScci
-    // {
-    // get()
-    // {
+    // get() {
     // return _LatencyForScci;
     // }
-
-    // set
-    // {
+    // public int LatencyForScciset {
     // _LatencyForScci = value;
-    // }
     // }
 
     // public ChipType2 Copy()
@@ -2206,15 +2052,15 @@ public class Setting implements Serializable {
             return v > 20 || v < -192;
         }
 
-        private static String getKey(String tag, Class<? extends Instrument> c) {
+        private static String getKey(String tag, Class<? extends Chip> c) {
             return c.getSimpleName().replaceFirst("Inst$", ".") + tag;
         }
 
-        public int getVolume(String tag, Class<? extends Instrument> c) {
+        public int getVolume(String tag, Class<? extends Chip> c) {
             return volumes.getOrDefault(getKey(tag, c), 0);
         }
 
-        public void setVolume(String tag, Class<? extends Instrument> c, int v) {
+        public void setVolume(String tag, Class<? extends Chip> c, int v) {
             volumes.put(getKey(tag, c), outRange(v) ? 0 : v );
         }
 

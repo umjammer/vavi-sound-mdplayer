@@ -18,8 +18,9 @@ public interface Plugin {
 
     void close();
 
+    ServiceLoader<Plugin> plugins = ServiceLoader.load(Plugin.class);
+
     static Plugin getPlugin(Class<? extends Plugin> clazz) {
-        ServiceLoader<Plugin> plugins = ServiceLoader.load(Plugin.class);
         for (Plugin p : plugins) {
             if (p.getClass() == clazz) {
                 return p;

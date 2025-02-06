@@ -17,7 +17,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -119,9 +118,9 @@ public class frmSegaPCM extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 16; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.SEGAPCM, chipId, ch);
+                            parent.resetChannelMask(SegaPcmChip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.SEGAPCM, chipId, ch);
+                            parent.setChannelMask(SegaPcmChip.class, chipId, ch);
                     }
                 }
                 return;
@@ -132,11 +131,11 @@ public class frmSegaPCM extends frmBase {
 
             if (ch < 16) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.SEGAPCM, chipId, ch);
+                    parent.setChannelMask(SegaPcmChip.class, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 16; ch++) parent.resetChannelMask(EnmChip.SEGAPCM, chipId, ch);
+                for (ch = 0; ch < 16; ch++) parent.resetChannelMask(SegaPcmChip.class, chipId, ch);
 
             }
         }

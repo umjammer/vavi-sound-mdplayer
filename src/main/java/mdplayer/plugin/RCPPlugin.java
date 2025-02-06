@@ -2,14 +2,12 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.ArrayList;
-import java.util.List;
 
+import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.driver.rcp.RCP;
 import mdplayer.format.FileFormat;
-import mdsound.MDSound;
 
 import static java.lang.System.getLogger;
 
@@ -33,7 +31,7 @@ public class RCPPlugin extends BasePlugin {
             audio.driverReal = new RCP();
             ((RCP) audio.driverReal).ExtendFile = extendFile;
         }
-        boolean r = rcpPlay();
+        boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
             return false;
@@ -42,65 +40,28 @@ logger.log(Level.WARNING, "cannot start: " + this);
         return true;
     }
 
-    boolean rcpPlay() {
-        try {
-            if (vgmBuf == null || setting == null) return false;
+    /** */
+    private boolean _play() {
+        startTrdVgmReal();
 
-            //Stop();
+        audio.chipLED.put("PriMID", 1);
+        audio.chipLED.put("SecMID", 1);
 
-            audio.chipRegister.reset();
+        audio.chipRegister.plugin(MidiPlugin.class).releaseAll();
+        audio.chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
+        audio.chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
 
-            audio.vgmFadeout = false;
-            audio.vgmFadeoutCounter = 1.0;
-            audio.vgmFadeoutCounterV = 0.00001;
-            vgmSpeed = 1;
-            vgmRealFadeoutVol = 0;
-            vgmRealFadeoutVolWait = 4;
-
-            audio.chipRegister.clearFadeoutVolume();
-
-            audio.chipRegister.reset();
-
-            useChip.clear();
-
-            startTrdVgmReal();
-
-            List<MDSound.Chip> lstChips = new ArrayList<>();
-
-            hiyorimiNecessary = setting.getHiyorimiMode();
-
-            audio.chipLED.clear();
-            audio.chipLED.put("PriMID", 1);
-            audio.chipLED.put("SecMID", 1);
-
-            audio.masterVolume = setting.getBalance().getMasterVolume();
-
-            audio.chipRegister.plugin(MidiPlugin.class).releaseAll();
-            audio.chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
-            audio.chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
-
-            if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
-                    , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
-                    , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-                return false;
-            if (audio.driverReal != null) {
-                if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
-                        , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
-                        , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-                    return false;
-            }
-
-            //Play
-
-            audio.paused = false;
-            oneTimeReset = false;
-
-            Thread.sleep(500);
-
-            return true;
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
+        if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
+                setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
+                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
             return false;
+        if (audio.driverReal != null) {
+            if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
+                    setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
+                    setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
+                return false;
         }
+
+        return true;
     }
 }

@@ -17,11 +17,11 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
 import mdplayer.Chip.ChipKeyInfo;
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.NesChip;
+import mdplayer.chips.NesChip.Vrc7Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -260,9 +260,9 @@ public class frmVRC7 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 6; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.VRC7, chipId, ch);
+                            parent.resetChannelMask(Vrc7Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.VRC7, chipId, ch);
+                            parent.setChannelMask(Vrc7Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -283,19 +283,19 @@ public class frmVRC7 extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // Mask.
-                    parent.setChannelMask(EnmChip.VRC7, chipId, ch);
+                    parent.setChannelMask(Vrc7Chip.class, chipId, ch);
                     return;
                 }
 
                 // Unmask.
-                for (ch = 0; ch < 6; ch++) parent.resetChannelMask(EnmChip.VRC7, chipId, ch);
+                for (ch = 0; ch < 6; ch++) parent.resetChannelMask(Vrc7Chip.class, chipId, ch);
                 return;
             }
 
             //音色欄
             if (py < 15 * 8 && px < 16 * 8) {
                 // Copying a tone to the clipboard
-                parent.getInstCh(EnmChip.VRC7, 0, chipId);
+                parent.getInstCh(Vrc7Chip.class, 0, chipId);
             }
         }
     };

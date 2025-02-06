@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -117,9 +116,9 @@ public class frmYMZ280B extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.YMZ280B, chipId, ch);
+                            parent.resetChannelMask(YmZ280BChip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YMZ280B, chipId, ch);
+                            parent.setChannelMask(YmZ280BChip.class, chipId, ch);
                     }
                 }
                 return;
@@ -130,11 +129,11 @@ public class frmYMZ280B extends frmBase {
 
             if (ch < 8) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.YMZ280B, chipId, ch);
+                    parent.setChannelMask(YmZ280BChip.class, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.YMZ280B, chipId, ch);
+                for (ch = 0; ch < 8; ch++) parent.resetChannelMask(YmZ280BChip.class, chipId, ch);
             }
         }
     };

@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -300,9 +299,9 @@ public class frmDMG extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 4; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.DMG, chipId, ch);
+                            parent.resetChannelMask(DmgChip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.DMG, chipId, ch);
+                            parent.setChannelMask(DmgChip.class, chipId, ch);
                     }
                 }
                 return;
@@ -315,12 +314,12 @@ public class frmDMG extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // mask
-                    parent.setChannelMask(EnmChip.DMG, chipId, ch);
+                    parent.setChannelMask(DmgChip.class, chipId, ch);
                     return;
                 }
 
                 // Unmask
-                for (ch = 0; ch < 4; ch++) parent.resetChannelMask(EnmChip.DMG, chipId, ch);
+                for (ch = 0; ch < 4; ch++) parent.resetChannelMask(DmgChip.class, chipId, ch);
             }
         }
     };

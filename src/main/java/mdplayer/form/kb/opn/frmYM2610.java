@@ -17,7 +17,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -126,9 +125,9 @@ public class frmYM2610 extends frmBase {
                         if (ch == 13) c = 12;
 
                         if (newParam.channels[c].mask)
-                            parent.resetChannelMask(EnmChip.YM2610, chipId, ch);
+                            parent.resetChannelMask(Ym2610Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.YM2610, chipId, ch);
+                            parent.setChannelMask(Ym2610Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -145,13 +144,13 @@ public class frmYM2610 extends frmBase {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // Mask.
                     if (newParam.channels[c].mask)
-                        parent.resetChannelMask(EnmChip.YM2610, chipId, ch);
+                        parent.resetChannelMask(Ym2610Chip.class, chipId, ch);
                     else
-                        parent.setChannelMask(EnmChip.YM2610, chipId, ch);
+                        parent.setChannelMask(Ym2610Chip.class, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 14; ch++) parent.resetChannelMask(EnmChip.YM2610, chipId, ch);
+                for (ch = 0; ch < 14; ch++) parent.resetChannelMask(Ym2610Chip.class, chipId, ch);
                 return;
             }
 
@@ -163,7 +162,7 @@ public class frmYM2610 extends frmBase {
 
             if (instCh < 6) {
                 // Copying a tone to the clipboard
-                parent.getInstCh(EnmChip.YM2610, instCh, chipId);
+                parent.getInstCh(Ym2610Chip.class, instCh, chipId);
             }
         }
     };

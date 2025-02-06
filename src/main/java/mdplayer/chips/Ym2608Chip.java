@@ -8,11 +8,12 @@ package mdplayer.chips;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.Instrument;
+import mdsound.instrument.Ym2608Inst;
+import mdsound.instrument.YmFmYm2608Inst;
 
 
 /**
@@ -24,8 +25,6 @@ import mdsound.Instrument;
 public class Ym2608Chip implements Chip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2608Type();
-
-    private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
@@ -64,6 +63,17 @@ public class Ym2608Chip implements Chip {
     private Audio context;
 
     @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {Ym2608Inst.class, YmFmYm2608Inst.class};
+    }
+
+    @Override
+    public int activeIndex(int chipId) {
+        return chipTypes[chipId].getEnabledId();
+    }
+
+    @Override
     public void init(Audio context) {
         this.context = context;
 
@@ -82,9 +92,6 @@ public class Ym2608Chip implements Chip {
             keyOn[chipId] = new int[] {0, 0, 0, 0, 0, 0};
 
             fadeout[chipId] = 0;
-
-            //
-            inst[chipId] = EnmChip.YM2608.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -307,7 +314,7 @@ public class Ym2608Chip implements Chip {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0] && chipTypes[chipId].getUseEmu()[0]) {
 //if (addr == 0x29) logger.log(Level.TRACE, "%2x:%2x:%2x ".formatted(port, addr, data));
-                context.mds.write(inst[chipId], chipId, port, addr, data);
+                context.mds.write(inst(chipId), chipId, port, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
@@ -331,7 +338,7 @@ public class Ym2608Chip implements Chip {
     private void _write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0] && chipTypes[chipId].getUseEmu()[0]) {
-                context.mds.write(inst[chipId], chipId, port, addr, data);
+                context.mds.write(inst(chipId), chipId, port, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
@@ -509,7 +516,7 @@ public class Ym2608Chip implements Chip {
         }
     }
 
-    public void setVolume(int chipId, int vol, EnmModel model) {
+    public void setSsgVolume(int chipId, int vol, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (realChips != null && realChips[chipId] != null) {

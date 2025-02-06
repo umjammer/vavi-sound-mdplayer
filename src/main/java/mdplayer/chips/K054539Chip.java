@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.instrument.K054539Inst;
 
 
@@ -21,6 +22,12 @@ import mdsound.instrument.K054539Inst;
 public class K054539Chip implements Chip {
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {K054539Inst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -42,7 +49,7 @@ public class K054539Chip implements Chip {
             context.chipLED.put("SecK054539", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.write(K054539Inst.class, chipId, 0, adr, data);
+            context.mds.write(inst(chipId), chipId, 0, adr, data);
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {

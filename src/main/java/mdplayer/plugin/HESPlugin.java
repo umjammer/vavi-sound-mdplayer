@@ -2,16 +2,16 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.ArrayList;
-import java.util.List;
+
+import javax.annotation.RegEx;
 
 import mdplayer.Audio;
+import mdplayer.Chip.Unused;
 import mdplayer.Common;
+import mdplayer.chips.HuC6280Chip;
 import mdplayer.driver.hes.Hes;
 import mdplayer.format.FileFormat;
-import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.HuC6280Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -32,10 +32,11 @@ public class HESPlugin extends BasePlugin {
         audio.driverVirtual = new Hes();
 
         audio.driverReal = null;
-        //if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
-        //    driverReal = new Hes();
-        //}
-        boolean r = hesPlay();
+//        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
+//            driverReal = new Hes();
+//        }
+        prepare();
+        boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
             return false;
@@ -44,83 +45,43 @@ logger.log(Level.WARNING, "cannot start: " + this);
         return true;
     }
 
-    boolean hesPlay() {
-        try {
-            if (vgmBuf == null || setting == null) return false;
+    /** */
+    private boolean _play() {
+        startTrdVgmReal();
 
-            //Stop();
+        audio.chipLED.put("PriHuC", 1);
 
-            audio.chipRegister.reset();
+        //((Hes)driverVirtual).song = (byte)SongNo;
+        //((Hes)driverReal).song = (byte)SongNo;
+        //if (!driverVirtual.init(vgmBuf, chipRegister, enmModel.VirtualModel, new enmUseChip[] { enmUseChip.Unuse }, 0)) return false;
+        //if (!driverReal.init(vgmBuf, chipRegister, enmModel.RealModel, new enmUseChip[] { enmUseChip.Unuse }, 0)) return false;
 
-            audio.vgmFadeout = false;
-            audio.vgmFadeoutCounter = 1.0;
-            audio.vgmFadeoutCounterV = 0.00001;
-            vgmSpeed = 1;
-            vgmRealFadeoutVol = 0;
-            vgmRealFadeoutVolWait = 4;
+        MDSound.Chip chip = new MDSound.Chip();
+        chip.id = 0;
+        chip.instrument = audio.chipRegister.chip(HuC6280Chip.class).instrument(0);
+        chip.additionalUpdate = ((Hes) audio.driverVirtual)::additionalUpdate;
+        chip.samplingRate = setting.getOutputDevice().getSampleRate();
+        chip.volume = setting.getBalance().getVolume(MAIN_TAG, HuC6280Chip.class);
+        chip.clock = 3579545;
+        chip.option = null;
+        put(HuC6280Chip.class, chip);
+        ((Hes) audio.driverVirtual).c6280 = chip;
 
-            audio.chipRegister.clearFadeoutVolume();
+        audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, flatten());
 
-            audio.chipRegister.reset();
-
-            useChip.clear();
-
-            startTrdVgmReal();
-
-            List<MDSound.Chip> lstChips = new ArrayList<>();
-
-            hiyorimiNecessary = setting.getHiyorimiMode();
-
-            audio.chipLED.clear();
-            audio.chipLED.put("PriHuC", 1);
-
-            audio.masterVolume = setting.getBalance().getMasterVolume();
-
-            //((Hes)driverVirtual).song = (byte)SongNo;
-            //((Hes)driverReal).song = (byte)SongNo;
-            //if (!driverVirtual.init(vgmBuf, chipRegister, enmModel.VirtualModel, new enmUseChip[] { enmUseChip.Unuse }, 0)) return false;
-            //if (!driverReal.init(vgmBuf, chipRegister, enmModel.RealModel, new enmUseChip[] { enmUseChip.Unuse }, 0)) return false;
-
-            MDSound.Chip chip;
-            HuC6280Inst huc = Instrument.getInstrument(HuC6280Inst.class);
-
-            chip = new MDSound.Chip();
-            chip.id = 0;
-            chip.instrument = huc;
-            chip.additionalUpdate = ((Hes) audio.driverVirtual)::additionalUpdate;
-            chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.volume = setting.getBalance().getVolume(MAIN_TAG, HuC6280Inst.class);
-            chip.clock = 3579545;
-            chip.option = null;
-            lstChips.add(chip);
-            ((Hes) audio.driverVirtual).c6280 = chip;
-            useChip.add(Common.EnmChip.HuC6280);
-
-            audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, lstChips);
-
-            ((Hes) audio.driverVirtual).song = songNo;
-            if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
-                    , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
-                    , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-                return false;
-            if (audio.driverReal != null) {
-                ((Hes) audio.driverReal).song = songNo;
-                if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
-                        , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
-                        , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-                    return false;
-            }
-            // Play
-
-            audio.paused = false;
-            oneTimeReset = false;
-
-            Thread.sleep(500);
-
-            return true;
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
+        ((Hes) audio.driverVirtual).song = songNo;
+        if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
+                setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
+                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
             return false;
+        if (audio.driverReal != null) {
+            ((Hes) audio.driverReal).song = songNo;
+            if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
+                    setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
+                    setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
+                return false;
         }
+
+        return true;
     }
 }

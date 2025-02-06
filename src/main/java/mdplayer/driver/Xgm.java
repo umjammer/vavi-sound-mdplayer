@@ -3,8 +3,8 @@ package mdplayer.driver;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
+import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdplayer.chips.Sn76489Chip;
@@ -46,7 +46,7 @@ public class Xgm extends BaseDriver {
     private int gd3InfoStartAddr = 0;
 
     @Override
-    public boolean init(byte[] xgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] xgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         this.vgmBuf = xgmBuf;
         this.plugin = plugin;
         this.model = model;
@@ -79,7 +79,7 @@ public class Xgm extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 

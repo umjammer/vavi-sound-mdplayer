@@ -3,6 +3,7 @@ package mdplayer.plugin;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
+import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.driver.sid.Sid;
 import mdplayer.format.FileFormat;
@@ -37,60 +38,25 @@ logger.log(Level.WARNING, "cannot start: " + this);
         return true;
     }
 
-    boolean sidPlay() {
+    /** */
+    private boolean sidPlay() {
+        startTrdVgmReal();
 
-        try {
+        audio.chipLED.put("priSID", 1);
 
-            if (vgmBuf == null || setting == null) return false;
-
-            stop();
-
-            audio.chipRegister.reset();
-
-            audio.vgmFadeout = false;
-            audio.vgmFadeoutCounter = 1.0;
-            audio.vgmFadeoutCounterV = 0.00001;
-            vgmSpeed = 1;
-            vgmRealFadeoutVol = 0;
-            vgmRealFadeoutVolWait = 4;
-
-            audio.chipRegister.clearFadeoutVolume();
-
-            audio.chipRegister.reset();
-
-            useChip.clear();
-
-            startTrdVgmReal();
-
-            hiyorimiNecessary = setting.getHiyorimiMode();
-
-            audio.chipLED.clear();
-            audio.chipLED.put("priSID", 1);
-
-            audio.masterVolume = setting.getBalance().getMasterVolume();
-
-            ((Sid) audio.driverVirtual).song = songNo + 1;
-            if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
-                    , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
-                    , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-                return false;
-            if (audio.driverReal != null) {
-                ((Sid) audio.driverReal).song = songNo + 1;
-                if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Common.EnmChip[] {Common.EnmChip.Unuse}
-                        , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
-                        , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-                    return false;
-            }
-
-            audio.paused = false;
-            oneTimeReset = false;
-
-            Thread.sleep(500);
-
-            return true;
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
+        ((Sid) audio.driverVirtual).song = songNo + 1;
+        if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
+                setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
+                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
             return false;
+        if (audio.driverReal != null) {
+            ((Sid) audio.driverReal).song = songNo + 1;
+            if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
+                    setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
+                    setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
+                return false;
         }
+
+        return true;
     }
 }

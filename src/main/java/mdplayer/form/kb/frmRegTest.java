@@ -22,7 +22,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import mdplayer.Common.EnmChip;
+import mdplayer.Chip;
 import mdplayer.DrawBuff;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.C140Chip;
@@ -45,8 +45,8 @@ import mdplayer.chips.YmZ280BChip;
 import mdplayer.driver.sid.Sid;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidInfo;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
+import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
@@ -190,28 +190,28 @@ public class frmRegTest extends frmChipBase {
 
     RegisterManager regMan = new RegisterManager();
 
-    private final Map<EnmChip, Integer> pageDict = new HashMap<>() {{
-        put(EnmChip.YMF278B, 0);
-        put(EnmChip.YMF262, 3);
-        put(EnmChip.YM2151, 5);
-        put(EnmChip.YM2610, 6);
-        put(EnmChip.YM2608, 7);
-        put(EnmChip.YM2612, 8);
-        put(EnmChip.C140, 9);
-        put(EnmChip.QSound, 10);
-        put(EnmChip.SEGAPCM, 11);
-        put(EnmChip.YMZ280B, 12);
-        put(EnmChip.SN76489, 13);
-        put(EnmChip.AY8910, 14);
-        put(EnmChip.C352, 15);
-        put(EnmChip.YM2203, 16);
-        put(EnmChip.YM2413, 17);
-        put(EnmChip.YM3812, 18);
-        put(EnmChip.NES, 19);
-        put(EnmChip.SID, 20);
+    private final Map<Class<? extends Chip>, Integer> pageDict = new HashMap<>() {{
+        put(YmF278BChip.class, 0);
+        put(YmF262Chip.class, 3);
+        put(Ym2151Chip.class, 5);
+        put(Ym2610Chip.class, 6);
+        put(Ym2608Chip.class, 7);
+        put(Ym2612Chip.class, 8);
+        put(C140Chip.class, 9);
+        put(QSoundChip.class, 10);
+        put(SegaPcmChip.class, 11);
+        put(YmZ280BChip.class, 12);
+        put(Sn76489Chip.class, 13);
+        put(Ay8910Chip.class, 14);
+        put(C352Chip.class, 15);
+        put(Ym2203Chip.class, 16);
+        put(Ym2413Chip.class, 17);
+        put(Ym3812Chip.class, 18);
+        put(NesChip.class, 19);
+        put(SidChip.class, 20);
     }};
 
-    public frmRegTest(frmMain frm, int chipId, EnmChip enmPage, int zoom) {
+    public frmRegTest(frmMain frm, int chipId, Class<? extends Chip> enmPage, int zoom) {
         parent = frm;
         this.chipId = chipId;
         this.zoom = zoom;
@@ -226,7 +226,7 @@ public class frmRegTest extends frmChipBase {
         update();
     }
 
-    public void changeChip(EnmChip chip) {
+    public void changeChip(Class<? extends Chip> chip) {
         int pageSel = pageDict.get(chip);
         regMan.setSelect(pageSel);
         regMan.needRefresh = true;

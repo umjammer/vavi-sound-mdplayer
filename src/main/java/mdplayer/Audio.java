@@ -11,7 +11,6 @@ import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.VstPlugin;
 import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
-import mdsound.Instrument;
 import mdsound.MDSound;
 import vavi.util.ByteUtil;
 
@@ -80,7 +79,7 @@ public class Audio {
         return count;
     }
 
-    public int trdVgmVirtualFunction(short[] buffer, int offset, int sampleCount) {
+    public int update(short[] buffer, int offset, int sampleCount) {
 //logger.log(Level.TRACE, ": " + sampleCount);
         //return nAaudioRead(buffer, offset, sampleCount);
 
@@ -270,8 +269,8 @@ logger.log(Level.DEBUG, "stop: " + stopped);
                 if (timeout < 1) break;
             }
             stopped = true;
-new Exception().printStackTrace();
-logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
+//new Exception().printStackTrace();
+//logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
 
             chipRegister.softReset(EnmModel.VirtualModel);
             chipRegister.softReset(EnmModel.RealModel);
@@ -302,7 +301,7 @@ logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
     private Audio() {
         logger.log(Level.DEBUG, "Audio:Init:STEP 01");
 
-        naudioWrap = new NAudioWrap(setting.getOutputDevice().getSampleRate(), this::trdVgmVirtualFunction);
+        naudioWrap = new NAudioWrap(setting.getOutputDevice().getSampleRate());
         naudioWrap.playbackStopped = this::naudioWrapPlaybackStopped;
 
         mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
@@ -360,10 +359,10 @@ logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
 
     public boolean stopped = false;
 
-    public void setVolume(String tag, Class<? extends Instrument> c, boolean isAbs, int volume) {
+    public void setVolume(String tag, Class<? extends Chip> c, boolean isAbs, int volume) {
         try {
             int v = Common.range((isAbs ? 0 : setting.getBalance().getVolume(tag, c)) + volume, -192, 20);
-            mds.setVolume(tag, c, v);
+            mds.setVolume(tag, Audio.getInstance().chipRegister.chip(c).inst(0), v); // TODO vavi
             setting.getBalance().setVolume(tag, c, v);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);

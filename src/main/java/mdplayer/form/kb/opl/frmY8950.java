@@ -18,7 +18,6 @@ import javax.swing.JPanel;
 
 import mdplayer.Chip.ChipKeyInfo;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -103,9 +102,9 @@ public class frmY8950 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 9 + 5 + 1; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.Y8950, chipId, ch);
+                            parent.resetChannelMask(Y8950Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.Y8950, chipId, ch);
+                            parent.setChannelMask(Y8950Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -127,12 +126,12 @@ public class frmY8950 extends frmBase {
 
             if (ev.getButton() == MouseEvent.BUTTON1) {
                 // Mask.
-                parent.setChannelMask(EnmChip.Y8950, chipId, ch);
+                parent.setChannelMask(Y8950Chip.class, chipId, ch);
                 return;
             }
 
             // Unmask.
-            for (ch = 0; ch < 9 + 5 + 1; ch++) parent.resetChannelMask(EnmChip.Y8950, chipId, ch);
+            for (ch = 0; ch < 9 + 5 + 1; ch++) parent.resetChannelMask(Y8950Chip.class, chipId, ch);
         }
     };
 

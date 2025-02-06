@@ -4,8 +4,8 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.Arrays;
 
+import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
@@ -40,7 +40,7 @@ public class Hes extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
 
         this.vgmBuf = vgmBuf;
         this.plugin = plugin;
@@ -195,13 +195,13 @@ public class Hes extends BaseDriver {
 
             if (bIdx <= bLast)
                 return false;
-            if (wspeed != 0)
-                wspeed = (wspeed + bIdx - bLast) / 2;
+            if (wSpeed != 0)
+                wSpeed = (wSpeed + bIdx - bLast) / 2;
             else
-                wspeed = bIdx - bLast; // First Time
+                wSpeed = bIdx - bLast; // First Time
             bLast = bIdx;
 
-            match_size = wspeed * match_second / match_interval;
+            match_size = wSpeed * match_second / match_interval;
             match_length = bufSize - match_size;
 
             if (match_length < 0)
@@ -237,7 +237,7 @@ public class Hes extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 }

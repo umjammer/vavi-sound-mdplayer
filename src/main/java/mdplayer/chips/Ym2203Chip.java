@@ -8,12 +8,13 @@ package mdplayer.chips;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RC86ctlSoundChip;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.Instrument;
+import mdsound.instrument.Ym2203Inst;
+import mdsound.instrument.YmFmYm2203Inst;
 
 
 /**
@@ -25,8 +26,6 @@ import mdsound.Instrument;
 public class Ym2203Chip implements Chip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2203Type();
-
-    private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
@@ -43,6 +42,17 @@ public class Ym2203Chip implements Chip {
     private Audio context;
 
     @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {Ym2203Inst.class, YmFmYm2203Inst.class};
+    }
+
+    @Override
+    public int activeIndex(int chipId) {
+        return chipTypes[chipId].getEnabledId();
+    }
+
+    @Override
     public void init(Audio context) {
         this.context = context;
 
@@ -54,9 +64,6 @@ public class Ym2203Chip implements Chip {
             fmKeyOn[chipId] = new int[] {0, 0, 0, 0, 0, 0};
 
             nowFadeoutVol[chipId] = 0;
-
-            //
-            inst[chipId] = EnmChip.YM2203.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -178,7 +185,7 @@ public class Ym2203Chip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(inst[chipId], chipId, 0, addr, data);
+                context.mds.write(inst(chipId), chipId, 0, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
@@ -191,7 +198,7 @@ public class Ym2203Chip implements Chip {
     private void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(inst[chipId], chipId, 0, addr, data);
+                context.mds.write(inst(chipId), chipId, 0, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
@@ -310,7 +317,7 @@ public class Ym2203Chip implements Chip {
         }
     }
 
-    public void setVolume(int chipId, int vol, EnmModel model) {
+    public void setSsgVolume(int chipId, int vol, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
         } else {
             if (realChips != null && realChips[chipId] != null) {

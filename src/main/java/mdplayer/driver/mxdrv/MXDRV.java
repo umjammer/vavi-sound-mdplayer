@@ -17,9 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import dotnet4j.util.compat.Tuple;
+import mdplayer.Chip;
 import mdplayer.ChipRegister;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
@@ -257,7 +257,7 @@ public class MXDRV extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
@@ -288,7 +288,7 @@ public class MXDRV extends BaseDriver {
         return true;
     }
 
-    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, EnmChip[] useChip, int latency, int waitTime, X68kYm2151Inst mdxPCM) {
+    public boolean init(byte[] vgmBuf, ChipRegister chipRegister, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, X68kYm2151Inst mdxPCM) {
         this.vgmBuf = vgmBuf;
         this.model = model;
         this.useChip = useChip;
@@ -326,7 +326,7 @@ public class MXDRV extends BaseDriver {
         makeMdxBuf(vgmBuf, mdx, mdxSize, pdxFileName);
         makePdxBuf(pdxFileName[0], pdx, pdxSize);
         if ((pdxFileName[0] == null || pdxFileName[0].isEmpty()) && pdx[0] == null) {
-            errMsg = "PCMファイル[%s]の読み込みに失敗しました。".formatted(pdxFileName[0]);
+            errMsg = "Failed to load PCM file [%s].".formatted(pdxFileName[0]);
             return false;
         }
 
@@ -348,18 +348,18 @@ public class MXDRV extends BaseDriver {
         mdxPCM.chips[0].MountMemory(mm.mm);
 
         int playtime = MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr, 1, Depend.TRUE);
-        // logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
+// logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
         totalCounter = (long) playtime * setting.getOutputDevice().getSampleRate() / 1000;
         terminatePlay = false;
         MXDRV_Play(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr);
 
-        // logger.log(Level.TRACE, "********************");
+//logger.log(Level.TRACE, "********************");
 
         return true;
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 
@@ -3577,7 +3577,7 @@ exit:   {
         if ((byte) D2 >= 0) {
             mm.write(A6 + MXWORK_CH.S0016, (byte) (mm.readByte(A6 + MXWORK_CH.S0016) & 0xfd));
             boolean c0 = (byte) (D2 & (1 << 6)) != 0;
-            D2 &= 0xffffffbf;// ~(1 << 6);
+            D2 &= 0xffff_ffbf;// ~(1 << 6);
             if (c0) {
                 mm.write(A6 + MXWORK_CH.S0016, (byte) (mm.readByte(A6 + MXWORK_CH.S0016) | 0x02));
             }
@@ -3779,7 +3779,7 @@ exit:   {
         memInd += mm.readInt(G + MXWORK_GLOBAL.L002220);
         mm.realloc(memInd);
         if (mm.readInt(G + MXWORK_GLOBAL.L001e34) == 0) {
-            return 0xffffffff;
+            return 0xffff_ffff;
         }
         // pdx
         mm.write(G + MXWORK_GLOBAL.L001e38, memInd);
@@ -3787,7 +3787,7 @@ exit:   {
         mm.realloc(memInd);
         if (mm.readInt(G + MXWORK_GLOBAL.L001e38) == 0) {
             mm.write(G + MXWORK_GLOBAL.L001e34, 0);
-            return 0xffffffff;
+            return 0xffff_ffff;
         }
         mm.write(G + MXWORK_GLOBAL.L001bac, memInd);
         memInd += mm.readInt(G + MXWORK_GLOBAL.L001ba8);
@@ -3795,7 +3795,7 @@ exit:   {
         if (mm.readInt(G + MXWORK_GLOBAL.L001bac) == 0) {
             mm.write(G + MXWORK_GLOBAL.L001e34, 0);
             mm.write(G + MXWORK_GLOBAL.L001e38, 0);
-            return 0xffffffff;
+            return 0xffff_ffff;
         }
 
         return 0;

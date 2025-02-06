@@ -6,27 +6,30 @@
 
 package mdplayer.chips;
 
+import java.util.Arrays;
+
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
-import mdsound.instrument.X1_010Inst;
+import mdsound.instrument.Es5503Inst;
+import mdsound.instrument.Upd7759Inst;
 
 
 /**
- * X1_010Chip.
+ * Upd7759Chip.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
- * @version 0.00 2025-01-19 nsano initial version <br>
+ * @version 0.00 2025-02-02 nsano initial version <br>
  */
-public class X1_010Chip implements Chip {
+public class Upd7759Chip implements Chip {
 
     private Audio context;
 
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
-        return new Class[] {X1_010Inst.class};
+        return new Class[] {Upd7759Inst.class};
     }
 
     @Override
@@ -42,25 +45,26 @@ public class X1_010Chip implements Chip {
     public void updateVol() {
     }
 
-    public void write(int chipId, int mm, int ll, int rr, EnmModel model) {
+    public void write(int chipId, int port, int data, EnmModel model) {
         if (chipId == 0)
-            context.chipLED.put("PriX1010", 2);
+            context.chipLED.put("PriuPD7759", 2);
         else
-            context.chipLED.put("SecX1010", 2);
+            context.chipLED.put("SecuPD7759", 2);
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.write(inst(chipId), chipId, 0, 0, mm * 0x100 + ll, rr);
-        } else {
+            context.mds.write(inst(chipId), chipId, 0, port, data);
         }
     }
 
     public void writePcm(int chipId, int romSize, int offset, int length, byte[] buf, int srcOffset, EnmModel model) {
         if (chipId == 0)
-            context.chipLED.put("PriX1010", 2);
+            context.chipLED.put("PriuPD7759", 2);
         else
-            context.chipLED.put("SecX1010", 2);
+            context.chipLED.put("SecuPD7759", 2);
 
-        if (model == EnmModel.VirtualModel)
-            context.mds.inst(X1_010Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
+        if (model == EnmModel.VirtualModel) {
+            context.mds.inst(Upd7759Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
+        } else {
+        }
     }
 }

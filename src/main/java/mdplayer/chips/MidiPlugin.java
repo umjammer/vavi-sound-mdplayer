@@ -202,31 +202,29 @@ public class MidiPlugin implements Plugin {
     }
 
     public void mdsInit() {
+        List<MDSound.Chip> infos = new ArrayList<>();
         //
-        List<MDSound.Chip> lstChips = new ArrayList<>();
-        MDSound.Chip chip;
-
-        chip = new MDSound.Chip();
+        MDSound.Chip chip = new MDSound.Chip();
         chip.id = 0;
         chip.instrument = Instrument.getInstrument(Ym2612Inst.class);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
-        chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Inst.class);
+        chip.volume = Plugin.setting.getBalance().getVolume(MAIN_TAG, Ym2612Chip.class);
         chip.clock = 7670454;
         chip.option = null;
         context.chipLED.put("PriOPN2", 1);
-        lstChips.add(chip);
+        infos.add(chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
         chip.instrument = Instrument.getInstrument(Sn76489Inst.class);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
-        chip.volume = setting.getBalance().getVolume(MAIN_TAG, Sn76489Inst.class);
+        chip.volume = setting.getBalance().getVolume(MAIN_TAG, Sn76489Chip.class);
         chip.clock = 3579545;
         chip.option = null;
         context.chipLED.put("PriDCSG", 1);
-        lstChips.add(chip);
+        infos.add(chip);
 
-        mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, lstChips);
+        mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, infos);
 
         // Creates a midi instance.
         make(setting, 1);

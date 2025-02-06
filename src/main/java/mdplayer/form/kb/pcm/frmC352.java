@@ -17,7 +17,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -120,9 +119,9 @@ public class frmC352 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 32; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.C352, chipId, ch);
+                            parent.resetChannelMask(C352Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.C352, chipId, ch);
+                            parent.setChannelMask(C352Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -133,11 +132,11 @@ public class frmC352 extends frmBase {
 
             if (ch < 32) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.C352, chipId, ch);
+                    parent.setChannelMask(C352Chip.class, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 32; ch++) parent.resetChannelMask(EnmChip.C352, chipId, ch);
+                for (ch = 0; ch < 32; ch++) parent.resetChannelMask(C352Chip.class, chipId, ch);
 
             }
         }

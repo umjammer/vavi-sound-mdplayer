@@ -11,18 +11,18 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.function.BiConsumer;
 
-import dotnet4j.util.compat.Tuple;
 import dotnet4j.io.Path;
+import dotnet4j.util.compat.Tuple;
+import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
+import mdplayer.MidiOutInfo;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
+import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
-import mdplayer.driver.Vgm.Gd3;
-import mdplayer.MidiOutInfo;
 import mdplayer.plugin.BasePlugin;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
@@ -186,7 +186,7 @@ public class RCP extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         this.vgmBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
@@ -222,7 +222,7 @@ public class RCP extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, EnmChip[] useChip, int latency, int waitTime) {
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         throw new UnsupportedOperationException("This driver does not require this method");
     }
 

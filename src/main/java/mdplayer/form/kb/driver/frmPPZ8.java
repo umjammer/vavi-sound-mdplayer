@@ -17,7 +17,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -118,11 +117,11 @@ public class frmPPZ8 extends frmBase {
 
             if (ch < 8) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.PPZ8, chipId, ch);
+                    parent.setChannelMask(Ppz8Chip.class, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 8; ch++) parent.resetChannelMask(EnmChip.PPZ8, chipId, ch);
+                for (ch = 0; ch < 8; ch++) parent.resetChannelMask(Ppz8Chip.class, chipId, ch);
             }
         }
     };

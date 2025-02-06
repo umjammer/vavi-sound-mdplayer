@@ -44,7 +44,7 @@ public class TestCase {
         }
 
         System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
-Debug.println("volume: " + volume + ", " + System.getProperty("mdplayer.volume") + ", " + System.getProperty("user.dir"));
+Debug.println("volume: " + volume + ", " + System.getProperty("mdplayer.volume") + ", " + System.getProperty("user.dir") + ", " + System.getProperty("mdplayer.variant.ymf262"));
     }
 
     /**

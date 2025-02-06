@@ -1,4 +1,3 @@
-
 package mdplayer.vst;
 
 import java.awt.Point;

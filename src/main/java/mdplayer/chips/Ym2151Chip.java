@@ -8,11 +8,14 @@ package mdplayer.chips;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.Common.EnmChip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.Instrument;
+import mdsound.instrument.MameYm2151Inst;
+import mdsound.instrument.X68kYm2151Inst;
+import mdsound.instrument.Ym2151Inst;
+import mdsound.instrument.YmFmYm2151Inst;
 
 
 /**
@@ -24,8 +27,6 @@ import mdsound.Instrument;
 public class Ym2151Chip implements Chip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2151Type();
-
-    private final Class<? extends Instrument>[] inst = new Class[2];
 
     private final RSoundChip[] realChips = {null, null};
 
@@ -47,6 +48,17 @@ public class Ym2151Chip implements Chip {
     private Audio context;
 
     @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {Ym2151Inst.class, MameYm2151Inst.class, X68kYm2151Inst.class, YmFmYm2151Inst.class};
+    }
+
+    @Override
+    public int activeIndex(int chipId) {
+        return chipTypes[chipId].getEnabledId();
+    }
+
+    @Override
     public void init(Audio context) {
         this.context = context;
 
@@ -58,9 +70,6 @@ public class Ym2151Chip implements Chip {
             keyOn[chipId] = new int[] {0, 0, 0, 0, 0, 0, 0, 0};
 
             fadeout[chipId] = 0;
-
-            //
-            inst[chipId] = EnmChip.YM2151.getInstClass(chipTypes[chipId].getEnabledId());
         }
     }
 
@@ -104,7 +113,7 @@ public class Ym2151Chip implements Chip {
         if ((model == EnmModel.VirtualModel && (chipTypes[chipId] == null || !chipTypes[chipId].getUseReal()[0])) ||
                 (model == EnmModel.RealModel && (realChips != null && realChips[chipId] != null))) {
             register[chipId][addr] = data;
-            context.chipRegister.plugin(MidiPlugin.class).export.outMIDIData(EnmChip.YM2151, chipId, port, addr, data, correction, frameCounter);
+            context.chipRegister.plugin(MidiPlugin.class).export.outMIDIData(Ym2151Chip.class, chipId, port, addr, data, correction, frameCounter);
         }
 
         if ((model == EnmModel.RealModel && chipTypes[chipId].getUseReal()[0]) ||
@@ -142,7 +151,7 @@ public class Ym2151Chip implements Chip {
                     if (mask[chipId][ch]) {
                         if (model == EnmModel.VirtualModel) {
                             if (!chipTypes[chipId].getUseReal()[0]) {
-                                context.mds.write(inst[chipId], chipId, 0, 0x60 + i * 8 + ch, 127);
+                                context.mds.write(inst(chipId), chipId, 0, 0x60 + i * 8 + ch, 127);
                             }
                         } else {
                             if (realChips != null && realChips[chipId] != null)
@@ -163,7 +172,7 @@ public class Ym2151Chip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(inst[chipId], chipId, 0, addr, data);
+                context.mds.write(inst(chipId), chipId, 0, addr, data);
             }
         } else {
             if (realChips[chipId] == null)
@@ -198,7 +207,7 @@ public class Ym2151Chip implements Chip {
     private void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(inst[chipId], chipId, 0, addr, data);
+                context.mds.write(inst(chipId), chipId, 0, addr, data);
             }
         } else {
             if (realChips[chipId] != null)

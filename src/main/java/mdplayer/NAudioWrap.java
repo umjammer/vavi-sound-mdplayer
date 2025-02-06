@@ -27,37 +27,27 @@ public class NAudioWrap {
 
     private static final Logger logger = getLogger(NAudioWrap.class.getName());
 
-    public interface naudioCallBack extends TriFunction<short[], Integer, Integer, Integer> {
-    }
-
     public Consumer<LineEvent> playbackStopped;
 
     private SourceDataLine dsOut;
     private NullOut nullOut;
 
     int sampleRate;
-    // no need
-    private static naudioCallBack callBack = null;
-    private Setting setting = null;
+    private final Setting setting = Setting.getInstance();
     private final SynchronizationContext syncContext = SynchronizationContext.getCurrent();
 
     static final UUID Empty = new UUID(0, 0);
 
-    public NAudioWrap(int sampleRate, naudioCallBack nCallBack) {
-        init(sampleRate, nCallBack);
+    public NAudioWrap(int sampleRate) {
+        init(sampleRate);
     }
 
-    /** @param nCallBack no need */
-    public void init(int sampleRate, naudioCallBack nCallBack) {
-
+    public void init(int sampleRate) {
         stop();
-
         this.sampleRate = sampleRate;
-        callBack = nCallBack; // maybe no need
     }
 
-    public void start(Setting setting) {
-        this.setting = setting;
+    public void start() {
         if (dsOut != null) dsOut.close();
         dsOut = null;
         if (nullOut != null) nullOut.close();

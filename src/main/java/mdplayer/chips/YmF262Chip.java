@@ -11,7 +11,11 @@ import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdsound.Instrument;
+import mdsound.instrument.CozYmF262Inst;
+import mdsound.instrument.NukedYmF262Inst;
 import mdsound.instrument.YmF262Inst;
+import mdsound.instrument.YmFmYmF262Inst;
 
 import static mdplayer.chips.YmF278BChip.channel;
 
@@ -51,6 +55,17 @@ public class YmF262Chip implements Chip {
     private Audio context;
 
     @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {YmF262Inst.class, YmF262Inst.class, NukedYmF262Inst.class, CozYmF262Inst.class, YmFmYmF262Inst.class};
+    }
+
+    @Override
+    public int activeIndex(int chipId) {
+        return chipTypes[chipId].getEnabledId();
+    }
+
+    @Override
     public void init(Audio context) {
         this.context = context;
 
@@ -83,7 +98,7 @@ public class YmF262Chip implements Chip {
         return registerFm[chipId];
     }
 
-    public void setRegister(int chipId, int port, int addr, int data, EnmModel model) {
+    public void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (chipId == 0)
             context.chipLED.put("PriOPL3", 2);
         else
@@ -180,50 +195,38 @@ public class YmF262Chip implements Chip {
                 data &= 0xfd;
             if (mask[chipId][22])
                 data &= 0xfe;
-
         }
 
-        if (model == EnmModel.VirtualModel) {
-            if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(YmF262Inst.class, chipId, port, addr, data);
-            }
-        } else {
-            if (realChips[chipId] == null)
-                return;
-            realChips[chipId].setRegister(port * 0x100 + addr, data);
-        }
+        _write(chipId, port, addr, data, model);
     }
 
     private void _write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(YmF262Inst.class, chipId, port, addr, data);
+                context.mds.write(inst(chipId), chipId, port, addr, data);
             }
         } else {
-            if (realChips[chipId] == null)
-                return;
-
-            realChips[chipId].setRegister(port * 0x100 + addr, data);
+            if (realChips[chipId] != null) {
+                realChips[chipId].setRegister(port * 0x100 + addr, data);
+            }
         }
     }
 
     public void softReset(int chipId, EnmModel model) {
-        int i;
-
         // FM All Channel Key Off
-        for (i = 0; i < 9; i++) {
+        for (int i = 0; i < 9; i++) {
             _write(chipId, 0, 0xb0 + i, 0x00, model);
             _write(chipId, 1, 0xb0 + i, 0x00, model);
         }
 
         // FM TL=127
-        for (i = 0; i < 22; i++) {
+        for (int i = 0; i < 22; i++) {
             _write(chipId, 0, 0x40 + i, 0x3f, model);
             _write(chipId, 1, 0x40 + i, 0x3f, model);
         }
 
         // SL=15 RR=15
-        for (i = 0; i < 22; i++) {
+        for (int i = 0; i < 22; i++) {
             _write(chipId, 0, 0x80 + i, 0xff, model);
             _write(chipId, 1, 0x80 + i, 0xff, model);
         }
@@ -236,8 +239,8 @@ public class YmF262Chip implements Chip {
     public void setFadeout(int chipId, int v) {
         fadeout[chipId] = v >> 1;// 0-63 (v range: 0-127)
         for (int c = 0; c < 22; c++) {
-            setRegister(chipId, 0, 0x40 + c, register[chipId][0][0x40 + c], EnmModel.RealModel);
-            setRegister(chipId, 1, 0x40 + c, register[chipId][1][0x40 + c], EnmModel.RealModel);
+            write(chipId, 0, 0x40 + c, register[chipId][0][0x40 + c], EnmModel.RealModel);
+            write(chipId, 1, 0x40 + c, register[chipId][1][0x40 + c], EnmModel.RealModel);
         }
     }
 

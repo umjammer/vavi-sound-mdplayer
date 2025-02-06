@@ -7,6 +7,7 @@
 package mdplayer;
 
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 
 
 /**
@@ -17,6 +18,9 @@ import mdplayer.Common.EnmModel;
  */
 public interface Chip {
 
+    abstract class Unused implements Chip {}
+
+    /** */
     class ChipKeyInfo {
 
         public boolean[] on;
@@ -36,13 +40,34 @@ public interface Chip {
     // for ym chips
     byte[] algM = {0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f};
 
+    /** implementation variants database */
+    Class<? extends Instrument>[] implementations();
+
+    /** which is active for {@link #implementations} */
+    default int activeIndex(int chipId) { return 0; }
+
+    /** */
     void init(Audio context);
 
+    /** */
     void reset();
 
+    /** */
     void updateVol();
 
+    /** */
     default void clearFadeout() {}
 
+    /** */
     default void softReset(EnmModel model) {}
+
+    /** */
+    default Class<? extends Instrument> inst(int chipId) {
+        return implementations()[activeIndex(chipId)];
+    }
+
+    /** */
+    default Instrument instrument(int chipId) {
+        return Instrument.getInstrument(inst(chipId));
+    }
 }

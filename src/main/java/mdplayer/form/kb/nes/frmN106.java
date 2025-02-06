@@ -16,12 +16,12 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.NesChip;
+import mdplayer.chips.NesChip.N163Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -117,9 +117,9 @@ public class frmN106 extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.N163, chipId, ch);
+                            parent.resetChannelMask(N163Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.N163, chipId, ch);
+                            parent.setChannelMask(N163Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -133,17 +133,17 @@ public class frmN106 extends frmBase {
             if (ev.getButton() == MouseEvent.BUTTON2) {
                 for (int i = 0; i < 8; i++) {
                     // Unmask.
-                    parent.resetChannelMask(EnmChip.N163, chipId, i);
+                    parent.resetChannelMask(N163Chip.class, chipId, i);
                 }
                 return;
             }
 
             if (m != 0) {
                 // Copying a tone to the clipboard
-                parent.getInstCh(EnmChip.N163, ch, chipId);
+                parent.getInstCh(N163Chip.class, ch, chipId);
             } else {
                 // Mask.
-                parent.setChannelMask(EnmChip.N163, chipId, ch);
+                parent.setChannelMask(N163Chip.class, chipId, ch);
             }
         }
     };
@@ -180,8 +180,8 @@ public class frmN106 extends frmBase {
             v = info[ch].getNote(info[ch].getFreqHz()) - 4 * 12;
             nyc.note = (nyc.volumeL == 0 || !nyc.bit[0]) ? -1 : v;
 
-            nyc.bank = info[ch].wavelen & 127;
-            nyc.bank = nyc.bank <= 0 ? (info[ch].wavelen > 127 ? 127 : 0) : nyc.bank;
+            nyc.bank = info[ch].waveLen & 127;
+            nyc.bank = nyc.bank <= 0 ? (info[ch].waveLen > 127 ? 127 : 0) : nyc.bank;
             if (nyc.aryWave16bit == null) nyc.aryWave16bit = new short[280];
             for (int i = 0; i < 280; i++) {
                 if (i < nyc.bank) {

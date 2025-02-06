@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -232,9 +231,9 @@ public class frmHuC6280 extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 6; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.HuC6280, chipId, ch);
+                            parent.resetChannelMask(HuC6280Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.HuC6280, chipId, ch);
+                            parent.setChannelMask(HuC6280Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -247,12 +246,12 @@ public class frmHuC6280 extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // Mask.
-                    parent.setChannelMask(EnmChip.HuC6280, chipId, ch);
+                    parent.setChannelMask(HuC6280Chip.class, chipId, ch);
                     return;
                 }
 
                 // Unmask.
-                for (ch = 0; ch < 6; ch++) parent.resetChannelMask(EnmChip.HuC6280, chipId, ch);
+                for (ch = 0; ch < 6; ch++) parent.resetChannelMask(HuC6280Chip.class, chipId, ch);
                 return;
             }
 
@@ -266,7 +265,7 @@ public class frmHuC6280 extends frmBase {
 
             if (instCh < 6) {
                 // Copying a tone to the clipboard
-                parent.getInstCh(EnmChip.HuC6280, instCh, chipId);
+                parent.getInstCh(HuC6280Chip.class, instCh, chipId);
             }
         }
     };

@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdsound.Instrument;
 import mdsound.instrument.WSwanInst;
 
 
@@ -21,6 +22,12 @@ import mdsound.instrument.WSwanInst;
 public class WSwanChip implements Chip {
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {WSwanInst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -42,7 +49,7 @@ public class WSwanChip implements Chip {
             context.chipLED.put("SecWSW", 2);
 
         if (model == EnmModel.VirtualModel) {
-            context.mds.write(WSwanInst.class, chipId, 0, port, data);
+            context.mds.write(inst(chipId), chipId, 0, port, data);
         }
     }
 

@@ -17,7 +17,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
 import mdplayer.Common;
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
@@ -118,9 +117,9 @@ public class frmQSound extends frmBase {
                 if (px < 8) {
                     for (ch = 0; ch < 19; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.QSound, chipId, ch);
+                            parent.resetChannelMask(QSoundChip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.QSound, chipId, ch);
+                            parent.setChannelMask(QSoundChip.class, chipId, ch);
                     }
                 }
                 return;
@@ -131,11 +130,11 @@ public class frmQSound extends frmBase {
 
             if (ch < 19) {
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    parent.setChannelMask(EnmChip.QSound, chipId, ch);
+                    parent.setChannelMask(QSoundChip.class, chipId, ch);
                     return;
                 }
 
-                for (ch = 0; ch < 19; ch++) parent.resetChannelMask(EnmChip.QSound, chipId, ch);
+                for (ch = 0; ch < 19; ch++) parent.resetChannelMask(QSoundChip.class, chipId, ch);
             }
         }
     };

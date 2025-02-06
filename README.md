@@ -31,19 +31,35 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | M/M2/MZ  | PMD            |   🚫   | driver       |                         |
 | WAV      |                |   ️→   |              | javax.sound.sampled.spi |
 | MP3      |                |   ️→   |              | mp3spi                  |
-| AIF      |                |   ️→   |              | javax.sound.sampled.spi |
-| AY       | ZX             |        |              |                         |
-| GBS      | Game Boy       |   ️→   |              | vavi-sound-emu          |
-| GYM      | Sega Genesis   |        |              |                         |
-| KSS      | MSX            |        |              |                         |
-| SAP      | Atari          |        |              |                         |
-| SPC      | SNES           |   ️→   |              | vavi-sound-emu          |
+| AIF      |                | n/a ️→ |              | javax.sound.sampled.spi |
+| AY       | ZX             |  n/a   |              |                         |
+| GBS      | Game Boy       | n/a →  |              | vavi-sound-emu          |
+| GYM      | Sega Genesis   |  n/a   |              |                         |
+| KSS      | MSX            |  n/a   |              |                         |
+| SAP      | Atari          |  n/a   |              |                         |
+| SPC      | SNES           | n/a ️→ |              | vavi-sound-emu          |
 
 ## Install
 
  * [maven](https://jitpack.io/#umjammer/vavi-apps-mdplayer)
 
 ## Usage
+
+### Settings (WIP)
+
+| chip    | system property          | setting                                                             |
+|---------|--------------------------|---------------------------------------------------------------------|
+| AY8910  | mdplayer.variant.ay8910  | 0: fmgen, 1: mame                                                   |
+| SN76496 | mdplayer.variant.sn76496 | 0: sn76489, 1: sn76496                                              |
+| YM2151  | mdplayer.variant.ym2151  | 0: fmgen, 1: mame, 2: 68k, 3: ymfm                                  |
+| YM2203  | mdplayer.variant.ym2203  | 0: fmgen, 1: ymfm                                                   |
+| YM2413  | mdplayer.variant.ym2413  | 0: mame, 1: vrc7, 2: emu                                            |
+| YM2608  | mdplayer.variant.ym2608  | 0: fmgen, 1: ymfm                                                   |
+| YM2610  | mdplayer.variant.ym2610  | 0: fmgen, 1: ymfm                                                   |
+| YM2612  | mdplayer.variant.ym2612  | 0: mame-A, 1: nuke-A, 2: mame-B, 3: nuke-B(simple), 4: nuke-A(vavi) |
+| YM3812  | mdplayer.variant.ym3812  | 0: dosbox, 1: mame                                                  |
+| YMF262  | mdplayer.variant.ymF262  | 0: dosbox, 1: mame, 2: nuked, 3: cozendey, 4: ymfm                  |
+| Qsound  | mdplayer.variant.qsound  | 0: qsound-ctr, 1: qsound                                            |
 
 ## References
 

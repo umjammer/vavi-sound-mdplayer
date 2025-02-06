@@ -28,6 +28,8 @@ public class K051649Chip implements Chip {
 
     private final RSoundChip[] realChips = {null, null};
 
+    private K051649 scc_k051649 = new K051649();
+
     private int sccR_port;
 
     private int sccR_offset;
@@ -44,6 +46,12 @@ public class K051649Chip implements Chip {
     };
 
     private Audio context;
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Class<? extends Instrument>[] implementations() {
+        return new Class[] {K051649Inst.class};
+    }
 
     @Override
     public void init(Audio context) {
@@ -93,17 +101,17 @@ public class K051649Chip implements Chip {
 
         if (model == EnmModel.VirtualModel) {
             if (!chipTypes[chipId].getUseReal()[0]) {
-                context.mds.write(K051649Inst.class, chipId, 0, adr, data);
+                context.mds.write(inst(chipId), chipId, 0, adr, data);
 
                 // Save register data
-                context.mds.inst(K051649Inst.class).write(chipId, 0, adr, data);
+                scc_k051649.write(adr, data);
             }
         } else {
             if (realChips[chipId] == null)
                 return;
 
             // Save register data
-            context.mds.inst(K051649Inst.class).write(chipId, 0, adr, data);
+            context.mds.inst(inst(chipId)).write(chipId, 0, adr, data);
 
             if ((adr & 1) == 0) {
                 sccR_port = (adr >> 1);

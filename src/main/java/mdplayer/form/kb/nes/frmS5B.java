@@ -16,12 +16,12 @@ import java.awt.image.BufferedImage;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 
-import mdplayer.Common.EnmChip;
 import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.Tables;
 import mdplayer.chips.NesChip;
+import mdplayer.chips.NesChip.Fme7Chip;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -191,9 +191,9 @@ public class frmS5B extends frmBase {
                 if (px < 8) {
                     for (int ch = 0; ch < 3; ch++) {
                         if (newParam.channels[ch].mask)
-                            parent.resetChannelMask(EnmChip.FME7, chipId, ch);
+                            parent.resetChannelMask(Fme7Chip.class, chipId, ch);
                         else
-                            parent.setChannelMask(EnmChip.FME7, chipId, ch);
+                            parent.setChannelMask(Fme7Chip.class, chipId, ch);
                     }
                 }
                 return;
@@ -206,12 +206,12 @@ public class frmS5B extends frmBase {
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // Mask.
-                    parent.setChannelMask(EnmChip.FME7, chipId, ch);
+                    parent.setChannelMask(Fme7Chip.class, chipId, ch);
                     return;
                 }
 
                 // Unmask.
-                for (ch = 0; ch < 3; ch++) parent.resetChannelMask(EnmChip.FME7, chipId, ch);
+                for (ch = 0; ch < 3; ch++) parent.resetChannelMask(Fme7Chip.class, chipId, ch);
             }
         }
     };
