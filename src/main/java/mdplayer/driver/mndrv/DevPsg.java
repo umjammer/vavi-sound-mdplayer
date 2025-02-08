@@ -283,7 +283,7 @@ public class DevPsg {
     }
 
     /**
-     * v通常
+     * v common
      */
     public void _psg_echo_common_v() {
         if ((mm.readByte(reg.a5 + W.reverb) & 0x08) != 0) {
@@ -314,7 +314,7 @@ public class DevPsg {
     }
 
     /**
-     * v微調整
+     * v fine tuning
      */
     public void _psg_echo_volume_v() {
         reg.setD0_B(mm.readByte(reg.a5 + W.vol));
@@ -362,7 +362,7 @@ public class DevPsg {
     }
 
     /**
-     * v直接
+     * v direct
      */
     public void _psg_echo_direct_v() {
         reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol));
@@ -523,7 +523,7 @@ public class DevPsg {
     }
 
     /**
-     * MML コマンド処理 ( Psg 部 )
+     * MML command processing (PSG section)
      */
     public void _psg_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
@@ -540,7 +540,7 @@ public class DevPsg {
             break; // 82
         case 0x03:
             comcmds._COM_83();
-            break; // 83	Slurs
+            break; // 83 Slurs
         case 0x04:
             _PSG_NOP();
             break; // 84
@@ -549,16 +549,16 @@ public class DevPsg {
             break; // 85
         case 0x06:
             comcmds._COM_86();
-            break; // 86	Synchronization signal transmission
+            break; // 86 Synchronization signal transmission
         case 0x07:
             comcmds._COM_87();
-            break; // 87	同期待ち
+            break; // 87 Synchronization Wait
         case 0x08:
             _PSG_88();
-            break; // 88	Pitch Bend
+            break; // 88 Pitch Bend
         case 0x09:
             _PSG_89();
-            break; // 89	Portamento
+            break; // 89 Portamento
         case 0x0a:
             _PSG_NOP();
             break; // 8A
@@ -580,19 +580,19 @@ public class DevPsg {
 
         case 0x10:
             comcmds._COM_90();
-            break; // 90	q
+            break; // 90 q
         case 0x11:
             comcmds._COM_91();
-            break; // 91	@q
+            break; // 91 @q
         case 0x12:
             _PSG_NOP();
             break; // 92
         case 0x13:
             comcmds._COM_93();
-            break; // 93	neg @q
+            break; // 93 neg @q
         case 0x14:
             comcmds._COM_94();
-            break; // 94	keyoff mode
+            break; // 94 keyoff mode
         case 0x15:
             _PSG_NOP();
             break; // 95
@@ -604,13 +604,13 @@ public class DevPsg {
             break; // 97
         case 0x18:
             _PSG_98();
-            break; // 98	Pseudo reverb
+            break; // 98 Pseudo reverb
         case 0x19:
             _PSG_NOP();
             break; // 99
         case 0x1a:
             comcmds._COM_9A();
-            break; // 9A	擬似 step time
+            break; // 9A Pseudo step time
         case 0x1b:
             _PSG_NOP();
             break; // 9B
@@ -629,16 +629,16 @@ public class DevPsg {
 
         case 0x20:
             _PSG_A0();
-            break; // A0	wavenum
+            break; // A0 wavenum
         case 0x21:
             _PSG_A1();
-            break; // A1	bank + wavenum
+            break; // A1 bank + wavenum
         case 0x22:
             _PSG_A2();
-            break; // A2	書き換え & 再定義
+            break; // A2 Rewrite & Redefine
         case 0x23:
             _PSG_A3();
-            break; // A3	音量テーブル
+            break; // A3 Volume table
         case 0x24:
             _PSG_F2();
             break; // A4
@@ -720,29 +720,29 @@ public class DevPsg {
             break; // BD
         case 0x3e:
             comcmds._COM_BE();
-            break; // BE	Jump
+            break; // BE Jump
         case 0x3f:
             comcmds._COM_BF();
             break; // BF
 
         case 0x40:
             _PSG_C0();
-            break; // C0	ソフトウェアエンベロープ
+            break; // C0 Software Envelope
         case 0x41:
             _PSG_C1();
-            break; // C1	ソフトウェアエンベロープ
+            break; // C1 Software Envelope
         case 0x42:
             _PSG_C2();
-            break; // C2	キーオフボリューム
+            break; // C2 Key Off Volume
         case 0x43:
             _PSG_C3();
-            break; // C3	ソフトウェアエンベロープスイッチ
+            break; // C3 Software Envelope Switch
         case 0x44:
             _PSG_A0();
-            break; // C4	エンベロープ切り替え (@e)
+            break; // C4 Envelope Switching (@e)
         case 0x45:
             _PSG_A1();
-            break; // C5	エンベロープ切り替え (@e bank)
+            break; // C5 Envelope switching (@e bank)
         case 0x46:
             _PSG_NOP();
             break; // C6
@@ -751,10 +751,10 @@ public class DevPsg {
             break; // C7
         case 0x48:
             _PSG_C8();
-            break; // C8	Noise Frequency
+            break; // C8 Noise Frequency
         case 0x49:
             _PSG_C9();
-            break; // C9	 Mixerー
+            break; // C9 Mixer
         case 0x4a:
             _PSG_NOP();
             break; // CA
@@ -772,14 +772,14 @@ public class DevPsg {
             break; // CE
         case 0x4f:
             _PSG_CF();
-            break; // CF	エンベロープ2
+            break; // CF Envelope 2
 
         case 0x50:
             comcmds._COM_D0();
-            break; // D0	Key Transpose
+            break; // D0 Key Transpose
         case 0x51:
             comcmds._COM_D1();
-            break; // D1	Relative Key Transpose
+            break; // D1 Relative Key Transpose
         case 0x52:
             _PSG_NOP();
             break; // D2
@@ -800,10 +800,10 @@ public class DevPsg {
             break; // D7
         case 0x58:
             comcmds._COM_D8();
-            break; // D8	Detune
+            break; // D8 Detune
         case 0x59:
             comcmds._COM_D9();
-            break; // D9	Relative Detune
+            break; // D9 Relative Detune
         case 0x5a:
             _PSG_NOP();
             break; // DA
@@ -831,13 +831,13 @@ public class DevPsg {
             break; // E1
         case 0x62:
             comcmds._COM_E2();
-            break; // E2	pitch LFO
+            break; // E2 pitch LFO
         case 0x63:
             comcmds._COM_E3();
-            break; // E3	pitch LFO switch
+            break; // E3 pitch LFO switch
         case 0x64:
             comcmds._COM_E4();
-            break; // E4	pitch LFO delay
+            break; // E4 pitch LFO delay
         case 0x65:
             _PSG_NOP();
             break; // E5
@@ -846,13 +846,13 @@ public class DevPsg {
             break; // E6
         case 0x67:
             _PSG_E7();
-            break; // E7	amp LFO
+            break; // E7 amp LFO
         case 0x68:
             _PSG_E8();
-            break; // E8	amp LFO switch
+            break; // E8 amp LFO switch
         case 0x69:
             _PSG_E9();
-            break; // E9	amp LFO delay
+            break; // E9 amp LFO delay
         case 0x6a:
             _PSG_NOP();
             break; // EA
@@ -880,19 +880,19 @@ public class DevPsg {
             break; // F1
         case 0x72:
             _PSG_F2();
-            break; // F2	volume
+            break; // F2 volume
         case 0x73:
             comcmds._COM_91();
-            break; // F3	@q
+            break; // F3 @q
         case 0x74:
             _PSG_NOP();
             break; // F4
         case 0x75:
             _PSG_F5();
-            break; // F5	)
+            break; // F5 )
         case 0x76:
             _PSG_F6();
-            break; // F6	(
+            break; // F6 (
         case 0x77:
             _PSG_NOP();
             break; // F7
@@ -901,25 +901,25 @@ public class DevPsg {
             break; // F8
         case 0x79:
             comcmds._COM_F9();
-            break; // F9	Permanent loop point mark
+            break; // F9 Permanent loop point mark
         case 0x7a:
             devopn._FM_FA();
-            break; // FA	y command
+            break; // FA y command
         case 0x7b:
             comcmds._COM_FB();
-            break; // FB	リピート抜け出し
+            break; // FB Exiting from Repeat
         case 0x7c:
             comcmds._COM_FC();
-            break; // FC	リピート開始
+            break; // FC Repeat Start
         case 0x7d:
             comcmds._COM_FD();
-            break; // FD	リピート終端
+            break; // FD Repeat Termination
         case 0x7e:
             comcmds._COM_FE();
-            break; // FE	tempo
+            break; // FE tempo
         case 0x7f:
             _PSG_FF();
-            break; // FF	end of data
+            break; // FF end of data
         }
     }
 
@@ -937,8 +937,10 @@ public class DevPsg {
     }
 
     /**
-     * ピッチベンド
-     * 	[$88] + [目標音程]b + [delay]b + [speed]b + [rate]W
+     * Pitch Bend
+     * <pre>
+     *  [$88] + [Target pitch]b + [delay]b + [speed]b + [rate]W
+     *  </pre>
      */
     public void _PSG_88() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x80));
@@ -963,8 +965,10 @@ public class DevPsg {
     }
 
     /**
-     * ポルタメント
-     * 	[$89] + [switch]b + [先note]b + [元note]b + [step]b
+     * Portamento
+     * <pre>
+     *  [$89] + [switch]b + [target note]b + [original note]b + [step]b
+     * </pre>
      */
     public void _PSG_89() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x80));
@@ -1027,13 +1031,13 @@ public class DevPsg {
 
     /**
      * Pseudo reverb
-     * 	switch = $80 = ON
-     * 		 $81 = OFF
-     * 		 $00 = + [volume]b
-     * 		 $01 = + [volume]b + [pan]b
-     * 		 $02 = + [volume]b + [tone]b
-     * 		 $03 = + [volume]b + [panpot]b + [tone]b
-     * 		 $04 = + [volume]b
+     *  switch = $80 = ON
+     *    $81 = OFF
+     *    $00 = + [volume]b
+     *    $01 = + [volume]b + [pan]b
+     *    $02 = + [volume]b + [tone]b
+     *    $03 = + [volume]b + [panpot]b + [tone]b
+     *    $04 = + [volume]b
      */
     public void _PSG_98() {
         comcmds._COM_98();
@@ -1044,8 +1048,10 @@ public class DevPsg {
     }
 
     /**
-     * ソフトウェアエンベロープ
-     * 	[$A0] + [NUM]b
+     * Software Envelope
+     * <pre>
+     *  [$A0] + [NUM]b
+     * </pre>
      */
     public void _PSG_A0() {
         reg.setD5_B(mm.readByte(reg.a1++));
@@ -1215,7 +1221,7 @@ public class DevPsg {
     }
 
     /**
-     * 音量テーブル
+     * Volume table
      */
     public void _PSG_A3() {
         comcmds._COM_A3();
@@ -1223,8 +1229,10 @@ public class DevPsg {
     }
 
     /**
-     * ソフトウェアエンベロープ
-     * 	[$C0] + [SV]b + [AR]b + [DR]b + [SL]b + [SR]b + [RR]b
+     * Software Envelope
+     * <pre>
+     *  [$C0] + [SV]b + [AR]b + [DR]b + [SL]b + [SR]b + [RR]b
+     * </pre>
      */
     public void _PSG_C0() {
         mm.write(reg.a5 + W.program, 0xff);
@@ -1262,8 +1270,10 @@ public class DevPsg {
     };
 
     /**
-     * ソフトウェアエンベロープ
-     * 	[$C1] + [AL]b + [DD]b + [SR]b + [RR]b
+     * Software Envelope
+     * <pre>
+     *  [$C1] + [AL]b + [DD]b + [SR]b + [RR]b
+     * </pre>
      */
     public void _PSG_C1() {
         reg.setD0_B(mm.readByte(reg.a1++));
@@ -1288,8 +1298,10 @@ public class DevPsg {
     }
 
     /**
-     * キーオフボリューム
-     * 	[$C2] + [KOV]
+     * Key Off Volume
+     * <pre>
+     *  [$C2] + [KOV]
+     * </pre>
      */
     public void _PSG_C2() {
         reg.a0 = mm.readInt(reg.a5 + W.psgenv_adrs);
@@ -1299,8 +1311,10 @@ public class DevPsg {
     }
 
     /**
-     * ソフトウェアエンベロープスイッチ
-     * 	[$C3] + [switch]
+     * Software Envelope Switch
+     * <pre>
+     *  [$C3] + [switch]
+     * </pre>
      */
     public void _PSG_C3() {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) & 0x7f));
@@ -1312,7 +1326,7 @@ public class DevPsg {
     }
 
     /**
-     * noise 周波数
+     * noise frequency
      */
     public void _PSG_C8() {
         reg.setD0_B(mm.readByte(reg.a1++));
@@ -1330,7 +1344,7 @@ public class DevPsg {
     }
 
     /**
-     *  Mixerー設定
+     * Mixer - Settings
      */
     public void _PSG_C9() {
         reg.D1_L = 0;
@@ -1367,7 +1381,7 @@ public class DevPsg {
     }
 
     /**
-     * ソフトウェアエンベロープ
+     * Software Envelope
      */
     public void _PSG_CF() {
         reg.D1_L = 0x1f;
@@ -1408,7 +1422,7 @@ public class DevPsg {
     }
 
     /**
-     * 音量LFO
+     * Volume LFO
      */
     public void _PSG_E7() {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) & 0x7f));
@@ -1416,7 +1430,7 @@ public class DevPsg {
     }
 
     /**
-     * 音量LFO switch
+     * Volume LFO switch
      */
     public void _PSG_E8() {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) & 0x7f));
@@ -1424,7 +1438,7 @@ public class DevPsg {
     }
 
     /**
-     * 音量LFO delay
+     * Volume LFO delay
      */
     public void _PSG_E9() {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) & 0x7f));
@@ -1559,7 +1573,7 @@ L3:{
             mm.write(reg.a5 + W.weffect, 0);
             mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x7f));
             mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfe));
-            // pea	_all_end_check(pc)
+            // pea _all_end_check(pc)
             _psg_volume_0();
             comcmds._all_end_check();
         }
@@ -1954,7 +1968,7 @@ _ch_psg_lfo_end2: {
         //_ch_psg_bend_job:
         reg.setD0_B(mm.readByte(reg.a5 + W.lfo));
         if ((byte) reg.getD0_B() >= 0) return;
-        // btst.b	//#1,w_flag2(a5)
+        // btst.b //#1,w_flag2(a5)
         if ((mm.readByte(reg.a5 + W.flag2) & 0x02) != 0) {
             _ch_psg_porta();
             return;
@@ -2072,7 +2086,7 @@ _soft2_ok: {
         }
         reg.setD0_B(reg.getD0_B() - 1); //2
         if (reg.getD0_B() == 0) {
-            if (mm.readByte(reg.a5 + W.e_dd) == 0) break _soft2_ok; // dr=0 は減衰無し
+            if (mm.readByte(reg.a5 + W.e_dd) == 0) break _soft2_ok; // dr=0 is no attenuation
             mm.write(reg.a5 + W.e_p, 3);
             reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.e_dd));
             if ((byte) reg.getD1_B() >= 0) break _soft2_ok;
@@ -2096,7 +2110,7 @@ _soft2_ok: {
         //_soft2_rr:
         reg.setD0_B(reg.getD0_B() - 1); //4
         if (reg.getD0_B() == 0) {
-            if (mm.readByte(reg.a5 + W.e_rr) != 0) // rr = 0 は消音
+            if (mm.readByte(reg.a5 + W.e_rr) != 0) // rr = 0 is silent
             {
                 mm.write(reg.a5 + W.e_rrw, (byte) (mm.readByte(reg.a5 + W.e_rrw) - 1));
                 if (mm.readByte(reg.a5 + W.e_rrw) != 0) break _soft2_ok;
@@ -2281,7 +2295,7 @@ _soft3_ok: {
 
 /*_soft3_ok:*/}
         //
-        // 拡張版 音量=dl*(eenv_vol+1)/16
+        // Extended version volume = dl * (eenv_vol + 1) / 16
         //
         reg.D0_L = 0;
         reg.D1_L = 0;
@@ -2335,7 +2349,7 @@ _ex_soft4_ok: {
         reg.setD0_B(mm.readByte(reg.a5 + W.e_p));
         if (reg.getD0_B() == 0) break _ex_soft4_end;
 
-        //_ex_soft4_ar:				// 1
+        //_ex_soft4_ar:    // 1
         reg.setD0_B(reg.getD0_B() - 1);
         if (reg.getD0_B() == 0) { // break _ex_soft4_dr;
 

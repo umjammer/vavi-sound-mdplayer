@@ -135,7 +135,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x2d, 0x00, Common.EnmModel.RealModel);
             audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
             audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x29, 0x82, Common.EnmModel.RealModel);
-            audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Psg TONE でリセット
+            audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Reset with Psg TONE
             audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, Common.EnmModel.RealModel);
             audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 0, 8000000, Common.EnmModel.RealModel);
             audio.chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
@@ -146,7 +146,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x2d, 0x00, Common.EnmModel.RealModel);
             audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x29, 0x82, Common.EnmModel.VirtualModel);
             audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x29, 0x82, Common.EnmModel.RealModel);
-            audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Psg TONE でリセット
+            audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Reset with Psg TONE
             audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, 0x07, 0x38, Common.EnmModel.RealModel);
             audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 1, 8000000, Common.EnmModel.RealModel);
             audio.chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);

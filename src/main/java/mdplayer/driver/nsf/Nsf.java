@@ -468,6 +468,7 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
         return Region.NTSC; // fallback for invalid Flags
     }
 
+int CC;
     public int render_(short[] b, int length) {
         return render_(b, length, 0);
     }
@@ -628,7 +629,6 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
 //if (CC++ % INTERVAL == 0) { logger.log(Level.DEBUG, "render: %d, %d, pc: %04x".formatted(out[0], out[1], chip.cpu.p)); }
         return length;
     }
-int CC = 0;
 static final int INTERVAL = 1024;
 
     public void visWaveBufferCopy(short[][] dest) {

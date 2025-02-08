@@ -62,13 +62,12 @@ public class S_Deltat extends KMIF_SOUND_DEVICE {
 
         public static void LogTableRelease(Object ctx) {
             synchronized (log_tables_mutex) {
-                //while (log_tables_mutex != 1)
-                //{
-                //XSLEEP(0);
-                //}
+//                while (log_tables_mutex != 1) {
+//                    XSLEEP(0);
+//                }
                 log_tables_refcount--;
                 if (log_tables_refcount == 0) {
-                    //XFREE(ctx);
+//                    XFREE(ctx);
                     log_tables = null;
                 }
             }

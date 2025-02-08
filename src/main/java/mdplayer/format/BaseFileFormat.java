@@ -171,7 +171,7 @@ public abstract class BaseFileFormat implements FileFormat {
     }
 
     /**
-     * 汎用
+     * General purpose
      */
     @Override
     public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/*=null*/) throws IOException {

@@ -653,7 +653,7 @@ public class DevOpm {
             break; // A3 Volume table switching
         case 0x24:
             _OPM_F2();
-            break; // A4 音量
+            break; // A4 volume
         case 0x25:
             _OPM_F5();
             break; // A5
@@ -737,7 +737,7 @@ public class DevOpm {
             comcmds._COM_BF();
             break; // BF
 
-        // Psg 系
+        // Psg series
         case 0x40:
             comcmds._COM_C0();
             break; // C0 Software Envelope 1
@@ -787,7 +787,7 @@ public class DevOpm {
             _OPM_NOP();
             break; // CF
 
-        // KEY 系
+        // KEY series
         case 0x50:
             comcmds._COM_D0();
             break; // D0 Key Transpose
@@ -837,7 +837,7 @@ public class DevOpm {
             _OPM_NOP();
             break; // DF
 
-        // LFO 系
+        // LFO series
         case 0x60:
             _OPM_E0();
             break; // E0 hardware LFO
@@ -1325,9 +1325,10 @@ public class DevOpm {
     }
 
     /**
-    // 音量 LFO on /off
-    //
-    // $E8,num,switch
+     * volume LFO on /off
+     * <pre>
+     * $E8,num,switch
+     * </pre>
      */
     public void _OPM_E8() {
         reg.setD4_B(mm.readByte(reg.a5 + W.vol));
@@ -1337,8 +1338,10 @@ public class DevOpm {
     }
 
     /**
-    // LW type LFO
-    //  [$EE] + [wf/sync] + [freq] + [pmd] + [amd] + [speed]b
+     * LW type LFO
+     * <pre>
+     *  [$EE] + [wf/sync] + [freq] + [pmd] + [amd] + [speed]b
+     * </pre>
      */
     public void _OPM_EE() {
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) | 0x08));

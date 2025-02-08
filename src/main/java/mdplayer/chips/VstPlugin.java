@@ -81,4 +81,8 @@ public class VstPlugin implements Plugin {
     public void update(short[] buffer, int offset, int sampleCount) {
 //        vstMng.VST_Update(buffer, offset, sampleCount);
     }
+
+    public void addVSTeffect(String name) {
+
+    }
 }

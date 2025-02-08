@@ -107,8 +107,8 @@ public class ZIPFileFormat extends BaseFileFormat {
                     m.arcType = mc.arcType;
                     tMember.addAll(addFileLoop(m, archive, ent));
 
-                    // m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
-                    // それを防ぐためここでbreakする
+                    // When multiple m3u files are included, there are cases where multiple files with the same name are added.
+                    // To prevent this, we will break here.
                     break;
                 }
             }
@@ -178,8 +178,8 @@ public class ZIPFileFormat extends BaseFileFormat {
                     m.arcType = mc.arcType;
                     tMember.addAll(addFileLoop(index, m, archive, ent));
 
-                    // m3uが複数同梱されている時、同名のファイルが多数追加されることになるケースがある。
-                    // それを防ぐためここでbreakする
+                    // When multiple m3u files are included, there are cases where multiple files with the same name are added.
+                    // To prevent this, we will break here.
                     break;
                 }
             }

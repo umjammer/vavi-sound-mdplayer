@@ -205,7 +205,7 @@ public class DevOpnEmu {
             break;// A3 Volume table switching
         case 0x24:
             devopm._OPM_F2();
-            break;// A4 音量
+            break;// A4 volume
         case 0x25:
             devopm._OPM_F5();
             break;// A5

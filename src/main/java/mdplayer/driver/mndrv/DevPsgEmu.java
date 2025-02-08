@@ -210,7 +210,7 @@ public class DevPsgEmu {
             break; // A3 Volume table switching
         case 0x24:
             devopm._OPM_F2();
-            break; // A4 音量
+            break; // A4 volume
         case 0x25:
             devopm._OPM_F5();
             break; // A5
@@ -294,7 +294,7 @@ public class DevPsgEmu {
             comcmds._COM_BF();
             break; // BF
 
-        // Psg 系
+        // Psg series
         case 0x40:
             comcmds._COM_C0();
             break; // C0 Software Envelope 1
@@ -344,7 +344,7 @@ public class DevPsgEmu {
             _PSGE_NOP();
             break; // CF
 
-        // KEY 系
+        // KEY series
         case 0x50:
             comcmds._COM_D0();
             break; // D0 Key Transpose
@@ -394,7 +394,7 @@ public class DevPsgEmu {
             _PSGE_NOP();
             break; // DF
 
-        // LFO 系
+        // LFO series
         case 0x60:
             devopm._OPM_E0();
             break; // E0 hardware LFO

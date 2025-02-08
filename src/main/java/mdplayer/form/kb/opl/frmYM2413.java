@@ -384,7 +384,7 @@ public class frmYM2413 extends frmBase {
                 return;
             }
 
-            //鍵盤
+            // keyboard
             if (py < 11 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
@@ -408,7 +408,7 @@ public class frmYM2413 extends frmBase {
                 return;
             }
 
-            //音色欄
+            // Tone column
             if (py < 15 * 8 && px < 16 * 8) {
                 // Copying a tone to the clipboard
                 parent.getInstCh(Ym2413Chip.class, 0, chipId);

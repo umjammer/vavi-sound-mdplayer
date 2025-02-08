@@ -960,7 +960,7 @@ public class DevOpn {
             break; // A3 Volume table switching
         case 0x24:
             _FM_F2();
-            break; // A4 音量
+            break; // A4 volume
         case 0x25:
             _FM_F5();
             break; // A5
@@ -1044,7 +1044,7 @@ public class DevOpn {
             comcmds._COM_BF();
             break; // BF
 
-        // Psg 系
+        // Psg series
         case 0x40:
             comcmds._COM_C0();
             break; // C0 Software Envelope 1
@@ -1094,7 +1094,7 @@ public class DevOpn {
             _FM_NOP();
             break; // CF
 
-        // KEY 系
+        // KEY series
         case 0x50:
             comcmds._COM_D0();
             break; // D0 Key Transpose
@@ -1144,7 +1144,7 @@ public class DevOpn {
             _FM_NOP();
             break; // DF
 
-        // LFO 系
+        // LFO series
         case 0x60:
             _FM_E0();
             break; // E0 hardware LFO
@@ -1218,10 +1218,10 @@ public class DevOpn {
             break; // F6 ( voldown
         case 0x77:
             _FM_F7();
-            break; // F7 効果音モード切り替え
+            break; // F7 Sound effect mode switching
         case 0x78:
             _FM_F8();
-            break; // F8 スロットマスク変更
+            break; // F8 Slot mask change
         case 0x79:
             comcmds._COM_F9();
             break; // F9 Permanent loop point mark
@@ -1230,13 +1230,13 @@ public class DevOpn {
             break; // FA y command
         case 0x7b:
             comcmds._COM_FB();
-            break; // FB リピート抜け出し
+            break; // FB Exiting from Repeat
         case 0x7c:
             comcmds._COM_FC();
-            break; // FC リピート開始
+            break; // FC Repeat Start
         case 0x7d:
             comcmds._COM_FD();
-            break; // FD リピート終端
+            break; // FD Repeat Termination
         case 0x7e:
             comcmds._COM_FE();
             break; // FE tempo
@@ -1260,8 +1260,10 @@ public class DevOpn {
     }
 
     /**
-     * ピッチベンド
-     * [$88] + [目標音程]b + [delay]b + [speed]b + [rate]W
+     * Pitch Bend
+     * <pre>
+     * [$88] + [Target pitch]b + [delay]b + [speed]b + [rate]W
+     * </pre>
      */
     public void _FM_88() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x80));
@@ -1291,8 +1293,10 @@ public class DevOpn {
     }
 
     /**
-    // ポルタメント
-    //  [$89] + [switch]b + [先note]b + [元note]b + [step]b
+     * Portamento
+     * <pre>
+     *  [$89] + [switch]b + [target note]b + [original note]b + [step]b
+     * </pre>
      */
     public void _FM_89() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x80));
@@ -1371,8 +1375,10 @@ public class DevOpn {
     }
 
     /**
-    // RR cut設定
-    //   [$92] + [switch]b
+     * RR cut setting
+     * <pre>
+     *  [$92] + [switch]b
+     * </pre>
      */
     public void _FM_92() {
         mm.write(reg.a5 + W.effect, (byte) (mm.readByte(reg.a5 + W.effect) | 0x3));
@@ -1392,11 +1398,13 @@ public class DevOpn {
     }
 
     /**
-    // Pseudo reverb
-    //  switch = $80 = ON
-    //    $81 = OFF
-    //    $00 = + [volume]b
-    //    $01 = + [volume]b + [pan]b
+     * Pseudo reverb
+     * <pre>
+     *  switch = $80 = ON
+     *    $81 = OFF
+     *    $00 = + [volume]b
+     *    $01 = + [volume]b + [pan]b
+     * </pre>
      */
     public void _FM_98() {
         comcmds._COM_98();
@@ -1407,14 +1415,14 @@ public class DevOpn {
     }
 
     /**
-    // Pseudo Echo
+     * Pseudo Echo
      */
     public void _FM_99() {
         comcmds._COM_99();
     }
 
     /**
-    // Bank & Tone switching
+     * Bank & Tone switching
      */
     public void _FM_A1() {
         mm.write(reg.a5 + W.bank, mm.readByte(reg.a1++));
@@ -1422,7 +1430,7 @@ public class DevOpn {
     }
 
     /**
-    // 音量テーブル
+     * Volume table
      */
     public void _FM_A3() {
         comcmds._COM_A3();
@@ -1436,8 +1444,10 @@ public class DevOpn {
     }
 
     /**
-    // slot detune
-    //  [$DA] + [num]b + [slot1]W + [slot2]W + [slot3]W + [slot4]W
+     * slot detune
+     * <pre>
+     *  [$DA] + [num]b + [slot1]W + [slot2]W + [slot3]W + [slot4]W
+     * </pre>
      */
     public void _FM_DA() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
@@ -1477,8 +1487,10 @@ public class DevOpn {
     }
 
     /**
-    // slot detune
-    //  [$DB] + [num]b + [slot1]W + [slot2]W + [slot3]W + [slot4]W
+     * slot detune
+     * <pre>
+     * [$DB] + [num]b + [slot1]W + [slot2]W + [slot3]W + [slot4]W
+     * </pre>
      */
     public void _FM_DB() {
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
@@ -1515,13 +1527,13 @@ public class DevOpn {
             reg.a1 += 2;
             mm.write(reg.a5 + W.sdetune4, (short) (mm.readShort(reg.a5 + W.sdetune4) + (short) reg.getD0_W()));
         }
-
     }
 
     /**
-    // hardware LFO
-    //
-    // $E0,freq,ams,pms
+     * hardware LFO
+     * <pre>
+     *  $E0,freq,ams,pms
+     * </pre>
      */
     public void _FM_E0() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x01));
@@ -1544,9 +1556,10 @@ public class DevOpn {
     }
 
     /**
-    // hardware LFO ON / OFF
-    //
-    // $E1,[on / off]
+     * hardware LFO ON / OFF
+     * <pre>
+     *  $E1,[on / off]
+     * </pre>
      */
     public void _FM_E1() {
         reg.a4 = reg.a5 + W.v_pattern4;
@@ -1623,9 +1636,10 @@ public class DevOpn {
     }
 
     /**
-    // 音量 LFO on /off
-    //
-    // $E8,num,switch
+     * Volume LFO on /off
+     * <pre>
+     *  $E8,num,switch
+     * </pre>
      */
     public void _FM_E8() {
         reg.setD4_B(mm.readByte(reg.a5 + W.vol));
@@ -1635,8 +1649,10 @@ public class DevOpn {
     }
 
     /**
-    // LW type LFO
-    //  [$EE] + [freq]b + [speed]b
+     * LW type LFO
+     * <pre>
+     *  [$EE] + [freq]b + [speed]b
+     * </pre>
      */
     public void _FM_EE() {
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) | 0x08));
@@ -1661,7 +1677,7 @@ public class DevOpn {
     }
 
     /**
-    // 音色設定
+     * Tone Settings
      */
     public void _FM_F0() {
         if (mm.readByte(reg.a5 + W.reverb) < 0) {
@@ -1985,12 +2001,13 @@ public class DevOpn {
     };
 
     /**
-    // volume 設定
-    //
-    // FM COMMAND
-    // $F2 [ volume ]
-    //   [$F2] + [$00～$15]b    vコマンド
-    //   [$F2] + [$80～$FF]b    @vコマンド（ビット7無効）
+     * volume settings
+     * <pre>
+     * FM COMMAND
+     * $F2 [ volume ]
+     *   [$F2] + [$00～$15]b    v command
+     *   [$F2] + [$80～$FF]b    @v command（Bit 7 disabled）
+     * </pre>
      */
     public void _FM_F2() {
         mm.write(reg.a5 + W.flag3, (byte) (mm.readByte(reg.a5 + W.flag3) & 0xef));
@@ -2101,8 +2118,10 @@ public class DevOpn {
     }
 
     /**
-    // pan 設定
-    //   [$F4] + [DATA]b
+     * pan settings
+     * <pre>
+     *  [$F4] + [DATA]b
+     * </pre>
      */
     public void _FM_F4() {
         reg.D0_L = 0x3f;
@@ -2115,8 +2134,10 @@ public class DevOpn {
     }
 
     /**
-    // volup
-    //   [$F5] + [DATA]b
+     * volume up
+     * <pre>
+     *  [$F5] + [DATA]b
+     * </pre>
      */
     public void _FM_F5() {
         if (mm.readByte(reg.a5 + W.volmode) == 0) {
@@ -2151,8 +2172,10 @@ public class DevOpn {
     }
 
     /**
-    // voldown
-    //   [$F6] + [DATA]b
+     * volume down
+     * <pre>
+     *  [$F6] + [DATA]b
+     * </pre>
      */
     public void _FM_F6() {
         if (mm.readByte(reg.a5 + W.volmode) == 0) {
@@ -2186,8 +2209,10 @@ public class DevOpn {
     }
 
     /**
-    // 効果音モード設定
-    //   [$F7] + [switch]b
+     * Sound effect mode setting
+     * <pre>
+     *  [$F7] + [switch]b
+     * </pre>
      */
     public void _FM_F7() {
         reg.setD0_B(mm.readByte(reg.a1++));
@@ -2274,8 +2299,10 @@ public class DevOpn {
     }
 
     /**
-    // スロットマスク設定
-    //   [$F8] + [data]b
+     * Slot Mask Settings
+     * <pre>
+     *  [$F8] + [data]b
+     * </pre>
      */
     public void _FM_F8() {
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) | 0x20));
@@ -2283,8 +2310,10 @@ public class DevOpn {
     }
 
     /**
-    // y command
-    //   [$FA] + [REG] + [DAT]a
+     * y command
+     * <pre>
+     *  [$FA] + [REG] + [DAT]a
+     * </pre>
      */
     public void _FM_FA() {
         reg.D2_L = 0x26;
@@ -3554,7 +3583,7 @@ public class DevOpn {
     }
 
     /**
-    // pitch LFO 鋸波
+     * pitch LFO sawtooth wave
      */
     public void _ch_fm_p_0() {
         comlfo.comLfoSaw();
@@ -3563,7 +3592,7 @@ public class DevOpn {
     }
 
     /**
-    // pitch LFO portament
+     * pitch LFO portamento
      */
     public void _ch_fm_p_1() {
         comlfo.comLfoPortament();
@@ -3572,7 +3601,7 @@ public class DevOpn {
     }
 
     /**
-    // pitch LFO delta
+     * pitch LFO delta
      */
     public void _ch_fm_p_2() {
         comlfo.comLfoTriangle();
@@ -3581,7 +3610,7 @@ public class DevOpn {
     }
 
     /**
-    // pitch LFO portament2
+     * pitch LFO portamento 2
      */
     public void _ch_fm_p_3() {
         comlfo.comLfoPortament();
@@ -3590,7 +3619,7 @@ public class DevOpn {
     }
 
     /**
-    // pitch LFO delta2
+     * pitch LFO delta 2
      */
     public void _ch_fm_p_4() {
         comlfo.comLfoTriangle();
@@ -3599,7 +3628,7 @@ public class DevOpn {
     }
 
     /**
-    // pitch LFO delta 3
+     * pitch LFO delta 3
      */
     public void _ch_fm_p_5() {
         mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
@@ -3640,7 +3669,7 @@ public class DevOpn {
     }
 
     /**
-    // pitch LFO 1shot
+     * pitch LFO 1shot
      */
     public void _ch_fm_p_6() {
         comlfo.comLfoOneshot();
@@ -3649,7 +3678,7 @@ public class DevOpn {
     }
 
     /**
-    // pitch LFO 1shot 2
+     * pitch LFO 1shot 2
      */
     public void _ch_fm_p_7() {
         comlfo.comLfoOneshot();
@@ -3658,7 +3687,7 @@ public class DevOpn {
     }
 
     /**
-    // wavememory pitch
+     * wave-memory pitch
      */
     public void _ch_fm_p_wavememory() {
         reg.setD4_W(mm.readShort(reg.a4 + W_L.flag));

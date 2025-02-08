@@ -1,6 +1,11 @@
 
 package mdplayer;
 
+import real.NSoundInterface;
+import real.nscci.NScci;
+import real.nscci.NScci.NSoundChip;
+
+
 public class SoundChip {
     public static final RealChip.RSoundChip[] scYM2612 = new RealChip.RSoundChip[] {null, null};
     public static final RealChip.RSoundChip[] scSN76489 = new RealChip.RSoundChip[] {null, null};
@@ -22,9 +27,9 @@ public class SoundChip {
     public static RealChip realChip;
 
     // public NScci.NScci nScci;
-    private final NScci.NSoundChip nSoundChip = null;
+    private final NSoundChip nSoundChip = null;
 
-    private final NScci.NSoundInterface nSoundInterface = null;
+    private final NSoundInterface nSoundInterface = null;
 
     private final NScci.NSoundInterfaceManager nSoundInterfaceManager = null;
 
