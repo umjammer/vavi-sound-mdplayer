@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 import mdplayer.Common.EnmInstFormat;
+import mdplayer.driver.mxdrv.MXDRV;
 import mdplayer.properties.Resources;
 import mdplayer.vst.VstInfo;
 import vavi.util.serdes.Serdes;
@@ -207,6 +208,10 @@ public class Setting implements Serializable {
             latencyForReal = value;
         }
 
+        private boolean[] _useRealChipFreqDiff = new boolean[2];
+        public boolean[] getUseRealChipFreqDiff() { return _useRealChipFreqDiff; }
+        public void setUseRealChipFreqDiff(boolean[] value) { _useRealChipFreqDiff = value; }
+
         public ChipType2 copy() {
             ChipType2 ct = new ChipType2();
 
@@ -380,6 +385,32 @@ public class Setting implements Serializable {
             p.volumeRhythm = this.volumeRhythm;
             p.volumeAdpcm = this.volumeAdpcm;
             p.volumeGIMICSSG = this.volumeGIMICSSG;
+
+            return p;
+        }
+    }
+
+    public static class Mxdrv implements Serializable {
+
+        public int pcm8type = 1;
+        public int pcm8ppSoption = -1;
+
+        public Mxdrv Copy() {
+            Mxdrv p = new Mxdrv();
+            p.pcm8type = this.pcm8type;
+            p.pcm8ppSoption = this.pcm8ppSoption;
+
+            return p;
+        }
+    }
+
+    public static class Mndrv implements Serializable {
+
+        public int mpcmtype = 1;
+
+        public Mndrv Copy() {
+            Mndrv p = new Mndrv();
+            p.mpcmtype = this.mpcmtype;
 
             return p;
         }
@@ -1463,6 +1494,11 @@ public class Setting implements Serializable {
     void setPMDDotNET(PMDDotNET value) {
         pmdDotNET = value;
     }
+
+    private Mxdrv _Mxdrv = new Mxdrv();
+
+    public Mxdrv getMxdrv() { return _Mxdrv; };
+    public void setMxdrv(Mxdrv value) { _Mxdrv = value; };
 
     public KeyBoardHook getKeyBoardHook() {
         return _keyBoardHook;

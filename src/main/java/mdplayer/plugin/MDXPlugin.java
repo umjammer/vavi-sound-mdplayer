@@ -6,15 +6,16 @@ import java.lang.System.Logger.Level;
 import mdplayer.Audio;
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
+import mdplayer.chips.Pcm8Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.mxdrv.MXDRV;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.MDSound.Chip;
+import mdsound.instrument.Pcm8PPInst;
 import mdsound.instrument.X68kYm2151Inst;
 import mdsound.x68sound.SoundIocs;
-import mdsound.x68sound.X68Sound;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -62,20 +63,42 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
         Chip chip = new MDSound.Chip();
         chip.id = 0;
         chip.instrument = audio.chipRegister.chip(Ym2151Chip.class).instrument(0);
-        chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
         chip.clock = 4000000;
         if (chip.instrument instanceof X68kYm2151Inst) {
             chip.option = new Object[] {1, 0, 0};
         }
+        chip.samplingRate = chip.clock / 64;
         put(Ym2151Chip.class, chip);
 
         X68kYm2151Inst mdxPCM_V = Instrument.getInstrument(X68kYm2151Inst.class);
-        mdxPCM_V.chips[0] = new X68Sound();
         mdxPCM_V.soundIocs[0] = new SoundIocs(mdxPCM_V.chips[0]);
+        chip = new MDSound.Chip();
+        chip.id = 0;
+        chip.instrument = mdxPCM_V;
+        chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
+        chip.clock = 4000000;
+        chip.samplingRate = setting.getOutputDevice().getSampleRate(); // TODO vavi
+        put(Ym2151Chip.class, chip);
+
         X68kYm2151Inst mdxPCM_R = Instrument.getInstrument(X68kYm2151Inst.class);
-        mdxPCM_R.chips[0] = new X68Sound();
         mdxPCM_R.soundIocs[0] = new SoundIocs(mdxPCM_R.chips[0]);
+
+        Pcm8PPInst pcm8pp = Instrument.getInstrument(Pcm8PPInst.class);
+        ((MXDRV) audio.driverVirtual).pcm8type = 0;
+        if (setting.getMxdrv().pcm8type == 0) {
+            // mxdrv is special and requires PCM8
+        } else {
+            chip = new MDSound.Chip();
+            chip.id = 0;
+            chip.instrument = pcm8pp;
+            chip.volume = 0;
+            chip.clock = 4_000_000;
+            chip.samplingRate = setting.getOutputDevice().getSampleRate();
+            chip.option = new Object[] { setting.getMxdrv().pcm8ppSoption };
+            put(Pcm8Chip.class, chip);
+            ((MXDRV) audio.driverVirtual).pcm8type = 1;
+        }
 
         audio.chipLED.put("PriOPM", 1);
         audio.chipLED.put("PriOKI5", 1);
@@ -89,6 +112,12 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
         if (contains(Ym2151Chip.class, 0))
             audio.chipRegister.chip(Ym2151Chip.class).writeClock((byte) 0, 4000000, Common.EnmModel.RealModel);
 //            audio.chipRegister.chip(Ym2151Chip.class).writeClock(1, 4000000, enmModel.RealModel);
+        audio.chipRegister.chip(Ym2151Chip.class).getUse4MYM2151scci()[0] = false;
+        if (setting.getYM2151Type()[0].getUseRealChipFreqDiff() != null
+                && setting.getYM2151Type()[0].getUseRealChipFreqDiff().length > 0
+                && setting.getYM2151Type()[0].getUseRealChipFreqDiff()[0]) {
+            audio.chipRegister.chip(Ym2151Chip.class).getUse4MYM2151scci()[0] = true;
+        }
 
         audio.driverVirtual.setYm2151Hosei(4000000);
         if (audio.driverReal != null) audio.driverReal.setYm2151Hosei(4000000);
@@ -99,22 +128,22 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
 
         boolean retV = ((mdplayer.driver.mxdrv.MXDRV) audio.driverVirtual).init(
                 vgmBuf,
-                audio.chipRegister,
+                this,
                 Common.EnmModel.VirtualModel,
                 new Class[] {Unused.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
-                mdxPCM_V);
+                mdxPCM_V, pcm8pp);
         boolean retR = true;
         if (audio.driverReal != null) {
             retR = ((mdplayer.driver.mxdrv.MXDRV) audio.driverReal).init(
                     vgmBuf,
-                    audio.chipRegister,
+                    this,
                     Common.EnmModel.RealModel,
                     new Class[] {Unused.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
-                    mdxPCM_R);
+                    mdxPCM_R, pcm8pp);
         }
 
         if (!retV || !retR) {
