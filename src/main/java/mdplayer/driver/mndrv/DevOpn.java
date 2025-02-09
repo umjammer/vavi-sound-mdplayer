@@ -52,7 +52,7 @@ public class DevOpn {
      * SET F-Number
      */
     public void _set_fnum() {
-        reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.detune));
+        reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.detune) & 0xffff));
         if ((short) reg.getD2_W() < 0) {
             reg.D2_L = 0;
         }
@@ -65,13 +65,13 @@ public class DevOpn {
             return;
         }
 
-        if (reg.getD2_W() - mm.readShort(reg.a5 + W.tune) == 0) return;
+        if (reg.getD2_W() - (mm.readShort(reg.a5 + W.tune) & 0xffff) == 0) return;
 
         mm.write(reg.a5 + W.tune, (short) reg.getD2_W());
 
         reg.setD0_B((byte) (reg.getD2_W() >> 8));
         reg.D1_L = 0xa4;
-        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
+        reg.setD1_B(reg.getD1_B() + (mm.readByte(reg.a5 + W.dev) & 0xff));
         mndrv._OPN_WRITE2();
         reg.setD0_B(reg.getD2_B());
         reg.setD1_W(reg.getD1_W() - 4);
@@ -79,12 +79,12 @@ public class DevOpn {
     }
 
     public void _set_fnum_ch3() {
-        reg.setD5_B(mm.readByte(reg.a5 + W.ch3));
+        reg.setD5_B(mm.readByte(reg.a5 + W.ch3) & 0xff);
         int f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
             reg.setD3_W(reg.getD2_W());
-            reg.setD3_W(reg.getD3_W() + mm.readShort(reg.a5 + W.sdetune4));
+            reg.setD3_W(reg.getD3_W() + (mm.readShort(reg.a5 + W.sdetune4) & 0xffff));
             if ((short) reg.getD3_W() < 0) {
                 reg.D3_L = 0;
             }
@@ -105,7 +105,7 @@ public class DevOpn {
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
             reg.setD3_W(reg.getD2_W());
-            reg.setD3_W(reg.getD3_W() + mm.readShort(reg.a5 + W.sdetune3));
+            reg.setD3_W(reg.getD3_W() + (mm.readShort(reg.a5 + W.sdetune3) & 0xffff));
             if ((short) reg.getD3_W() < 0) {
                 reg.D3_L = 0;
             }
@@ -126,7 +126,7 @@ public class DevOpn {
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
             reg.setD3_W(reg.getD2_W());
-            reg.setD3_W(reg.getD3_W() + mm.readShort(reg.a5 + W.sdetune2));
+            reg.setD3_W(reg.getD3_W() + (mm.readShort(reg.a5 + W.sdetune2) & 0xffff));
             if ((short) reg.getD3_W() < 0) {
                 reg.D3_L = 0;
             }
@@ -147,7 +147,7 @@ public class DevOpn {
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
             reg.setD3_W(reg.getD2_W());
-            reg.setD3_W(reg.getD3_W() + mm.readShort(reg.a5 + W.sdetune1));
+            reg.setD3_W(reg.getD3_W() + (mm.readShort(reg.a5 + W.sdetune1) & 0xffff));
             if ((short) reg.getD3_W() < 0) {
                 reg.D3_L = 0;
             }
@@ -180,7 +180,7 @@ public class DevOpn {
 
         reg.setD0_B((byte) (reg.getD2_W() >> 8));
         reg.D1_L = 0xa4;
-        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
+        reg.setD1_B(reg.getD1_B() + (mm.readByte(reg.a5 + W.dev) & 0xff));
         mndrv._OPN_WRITE2();
         reg.setD0_B(reg.getD2_B());
         reg.setD1_W(reg.getD1_W() - 4);
@@ -188,12 +188,12 @@ public class DevOpn {
     }
 
     public void _set_fnum2_ch3() {
-        reg.setD5_B(mm.readByte(reg.a5 + W.ch3));
+        reg.setD5_B(mm.readByte(reg.a5 + W.ch3) & 0xff);
 
         int f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode2_s4));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode2_s4) & 0xffff);
 
             reg.setD0_B((byte) (reg.getD2_W() >> 8));
             reg.D1_L = 0xa6;
@@ -206,7 +206,7 @@ public class DevOpn {
         f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode2_s3));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode2_s3) & 0xffff);
 
             reg.setD0_B((byte) (reg.getD2_W() >> 8));
             reg.D1_L = 0xac;
@@ -219,7 +219,7 @@ public class DevOpn {
         f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode2_s2));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode2_s2) & 0xffff);
 
             reg.setD0_B((byte) (reg.getD2_W() >> 8));
             reg.D1_L = 0xae;
@@ -232,7 +232,7 @@ public class DevOpn {
         f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode2_s1));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode2_s1) & 0xffff);
 
             reg.setD0_B((byte) (reg.getD2_W() >> 8));
             reg.D1_L = 0xad;
@@ -248,7 +248,7 @@ public class DevOpn {
      */
     public void _fm_keyon() {
         reg.D0_L = 3;
-        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.effect));
+        reg.setD0_B(reg.getD0_B() & (mm.readByte(reg.a5 + W.effect) & 0xff));
         if (reg.getD0_B() - 3 == 0) {
             _FM_RR_cut();
         }
@@ -256,7 +256,7 @@ public class DevOpn {
 
         if (mm.readByte(reg.a5 + W.flag2) < 0) {
             reg.D0_L = 0;
-            reg.setD0_B(mm.readByte(reg.a5 + W.ch));
+            reg.setD0_B(mm.readByte(reg.a5 + W.ch) & 0xff);
             if (mm.readByte(reg.a5 + W.ch3mode) != 0) {
                 _fm_keyoff_ch3();
                 return;
@@ -280,29 +280,29 @@ public class DevOpn {
 
         mm.write(reg.a5 + W.e_p, (byte) 5);
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.ch));
+        reg.setD0_B(mm.readByte(reg.a5 + W.ch) & 0xff);
         if (mm.readByte(reg.a5 + W.ch3mode) != 0) {
             _fm_keyon_ch3();
             return;
         }
 
         reg.setD0_B(_keyon_table[reg.getD0_W()]); // mm.readByte(_keyon_table + reg.getD0_W());
-        reg.setD0_B(reg.getD0_B() | mm.readByte(reg.a5 + W.smask));
+        reg.setD0_B(reg.getD0_B() | (mm.readByte(reg.a5 + W.smask) & 0xff));
         reg.D1_L = 0x28;
         mndrv._OPN_WRITE3();
 
         reg.D0_L = 3;
-        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.effect));
+        reg.setD0_B(reg.getD0_B() & (mm.readByte(reg.a5 + W.effect) & 0xff));
         if (reg.getD0_B() != 0) {
             _FM_RR_ret();
         }
     }
 
     public void _fm_keyon_ch3() {
-        reg.setD3_B(mm.readByte(reg.a5 + W.ch3));
-        reg.setD2_B(mm.readByte(reg.a6 + Dw.CH3KOM));
+        reg.setD3_B(mm.readByte(reg.a5 + W.ch3) & 0xff);
+        reg.setD2_B(mm.readByte(reg.a6 + Dw.CH3KOM) & 0xff);
         if (reg.getD0_B() >= 6) {
-            reg.setD2_B(mm.readByte(reg.a6 + Dw.CH3KOS));
+            reg.setD2_B(mm.readByte(reg.a6 + Dw.CH3KOS) & 0xff);
         }
 
         reg.setD2_B(reg.getD2_B() | reg.getD3_B());
@@ -337,7 +337,7 @@ public class DevOpn {
         comwave._wave_init_kof();
 
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
-        reg.setD0_B(mm.readByte(reg.a5 + W.effect));
+        reg.setD0_B(mm.readByte(reg.a5 + W.effect) & 0xff);
         int f = reg.getD0_B() & 1;
         reg.setD0_B(reg.getD0_B() >> 1);
         if (f != 0) {
@@ -361,7 +361,7 @@ public class DevOpn {
 
     public void _fm_keyoff_direct() {
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.ch));
+        reg.setD0_B(mm.readByte(reg.a5 + W.ch) & 0xff);
         mm.write(reg.a5 + W.e_p, 4);
         if (mm.readByte(reg.a5 + W.ch3mode) != 0) {
             _fm_keyoff_ch3();
@@ -381,10 +381,10 @@ public class DevOpn {
     }
 
     public void _fm_keyoff_ch3() {
-        reg.setD3_B(mm.readByte(reg.a5 + W.ch3));
-        reg.setD2_B(mm.readByte(reg.a6 + Dw.CH3KOM));
+        reg.setD3_B(mm.readByte(reg.a5 + W.ch3) & 0xff);
+        reg.setD2_B(mm.readByte(reg.a6 + Dw.CH3KOM) & 0xff);
         if (reg.getD0_B() >= 6) {
-            reg.setD2_B(mm.readByte(reg.a6 + Dw.CH3KOS));
+            reg.setD2_B(mm.readByte(reg.a6 + Dw.CH3KOS) & 0xff);
         }
         reg.setD3_B(~reg.getD3_B());
         reg.setD3_B(reg.getD3_B() & reg.getD2_B());
@@ -411,26 +411,26 @@ public class DevOpn {
             return;
         }
         reg.D1_L = 0x80;
-        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD1_B(reg.getD1_B() + (mm.readByte(reg.a5 + W.dev) & 0xff));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         reg.setD0_B(reg.getD0_B() | reg.getD2_B());
         mndrv._OPN_WRITE2();
         reg.setD1_B(reg.getD1_B() + 4);
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         reg.setD0_B(reg.getD0_B() | reg.getD2_B());
         mndrv._OPN_WRITE2();
         reg.setD1_B(reg.getD1_B() + 4);
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         reg.setD0_B(reg.getD0_B() | reg.getD2_B());
         mndrv._OPN_WRITE2();
         reg.setD1_B(reg.getD1_B() + 4);
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         reg.setD0_B(reg.getD0_B() | reg.getD2_B());
         mndrv._OPN_WRITE2();
     }
 
     public void _FM_RR_loop_CH3() {
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         int f = reg.getD3_B() & 1;
         reg.setD3_B(reg.getD3_B() >> 1);
         if (f != 0) {
@@ -438,7 +438,7 @@ public class DevOpn {
             reg.D1_L = 0x82;
             mndrv._OPN_WRITE2();
         }
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         f = reg.getD3_B() & 1;
         reg.setD3_B(reg.getD3_B() >> 1);
         if (f != 0) {
@@ -446,7 +446,7 @@ public class DevOpn {
             reg.D1_L = 0x86;
             mndrv._OPN_WRITE2();
         }
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         f = reg.getD3_B() & 1;
         reg.setD3_B(reg.getD3_B() >> 1);
         if (f != 0) {
@@ -457,7 +457,7 @@ public class DevOpn {
         f = reg.getD3_B() & 1;
         reg.setD3_B(reg.getD3_B() >> 1);
         if (f != 0) {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             reg.setD0_B(reg.getD0_B() | reg.getD2_B());
             reg.D1_L = 0x8e;
             mndrv._OPN_WRITE2();
@@ -468,7 +468,7 @@ public class DevOpn {
      */
     public void _FM_RR_ret() {
         reg.a2 = reg.a5 + W.tone_rr;
-        reg.setD3_B(mm.readByte(reg.a5 + W.ch3tl));
+        reg.setD3_B(mm.readByte(reg.a5 + W.ch3tl) & 0xff);
         if (reg.getD3_B() != 0) {
             _FM_RR_ret_CH3();
             return;
@@ -476,36 +476,36 @@ public class DevOpn {
 
         reg.D1_L = 0x80;
 
-        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD1_B(reg.getD1_B() + (mm.readByte(reg.a5 + W.dev) & 0xff));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         mndrv._OPN_WRITE2();
         reg.setD1_B(reg.getD1_B() + 4);
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         mndrv._OPN_WRITE2();
         reg.setD1_B(reg.getD1_B() + 4);
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         mndrv._OPN_WRITE2();
         reg.setD1_B(reg.getD1_B() + 4);
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         mndrv._OPN_WRITE2();
     }
 
     public void _FM_RR_ret_CH3() {
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         int f = reg.getD3_B() & 1;
         reg.setD3_B(reg.getD3_B() >> 1);
         if (f != 0) {
             reg.D1_L = 0x82;
             mndrv._OPN_WRITE2();
         }
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         f = reg.getD3_B() & 1;
         reg.setD3_B(reg.getD3_B() >> 1);
         if (f != 0) {
             reg.D1_L = 0x86;
             mndrv._OPN_WRITE2();
         }
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         f = reg.getD3_B() & 1;
         reg.setD3_B(reg.getD3_B() >> 1);
         if (f != 0) {
@@ -515,7 +515,7 @@ public class DevOpn {
         f = reg.getD3_B() & 1;
         reg.setD3_B(reg.getD3_B() >> 1);
         if (f != 0) {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             reg.D1_L = 0x8e;
             mndrv._OPN_WRITE2();
         }
@@ -533,7 +533,7 @@ public class DevOpn {
         mm.write(reg.a5 + W.reverb_time_work, mm.readByte(reg.a5 + W.reverb_time));
 
         reg.D5_L = 7;
-        reg.setD5_B(reg.getD5_B() & mm.readByte(reg.a5 + W.reverb));
+        reg.setD5_B(reg.getD5_B() & (mm.readByte(reg.a5 + W.reverb) & 0xff));
         reg.setD5_W(reg.getD5_W() + 1);
         reg.setD5_W(reg.getD5_W() + (int) (short) reg.getD5_W());
 
@@ -602,8 +602,8 @@ public class DevOpn {
     /** */
     public void _fm_echo_pan() {
         reg.D0_L = 0x3f;
-        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.pan_ampm));
-        reg.setD0_B(reg.getD0_B() | mm.readByte(reg.a5 + W.reverb_pan));
+        reg.setD0_B(reg.getD0_B() & (mm.readByte(reg.a5 + W.pan_ampm) & 0xff));
+        reg.setD0_B(reg.getD0_B() | (mm.readByte(reg.a5 + W.reverb_pan) & 0xff));
         reg.D1_L = 0xb4;
         mndrv._OPN_WRITE4();
     }
@@ -611,7 +611,7 @@ public class DevOpn {
     /** */
     public void _fm_echo_tone() {
         reg.D5_L = 0;
-        reg.setD5_B(mm.readByte(reg.a5 + W.reverb_tone));
+        reg.setD5_B(mm.readByte(reg.a5 + W.reverb_tone) & 0xff);
         _fm_echo_tone_change();
     }
 
@@ -625,9 +625,9 @@ public class DevOpn {
         }
 
         reg.D4_L = 0;
-        reg.setD4_B(mm.readByte(reg.a5 + W.volume));
+        reg.setD4_B(mm.readByte(reg.a5 + W.volume) & 0xff);
 
-        reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol));
+        reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         if ((byte) reg.getD0_B() >= 0) {
             _fm_echo_plus_v();
             return;
@@ -638,7 +638,7 @@ public class DevOpn {
             reg.D4_L = 0;
         }
         reg.a0 = reg.a5 + W.voltable;
-        reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()));
+        reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()) & 0xff);
         _FM_F2_softenv();
     }
 
@@ -647,12 +647,12 @@ public class DevOpn {
         if ((byte) reg.getD4_B() < 0) {
             reg.D4_L = 0x7f;
         }
-        if (reg.getD4_B() >= mm.readByte(reg.a5 + W.volcount)) {
-            reg.setD4_B(mm.readByte(reg.a5 + W.volcount));
+        if (reg.getD4_B() >= (mm.readByte(reg.a5 + W.volcount) & 0xff)) {
+            reg.setD4_B(mm.readByte(reg.a5 + W.volcount) & 0xff);
             reg.setD4_B(reg.getD4_B() - 1);
         }
         reg.a0 = reg.a5 + W.voltable;
-        reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()));
+        reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()) & 0xff);
         _FM_F2_softenv();
     }
 
@@ -665,9 +665,9 @@ public class DevOpn {
             return;
         }
 
-        reg.setD4_B(mm.readByte(reg.a5 + W.vol));
+        reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
 
-        reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol));
+        reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         if ((byte) reg.getD0_B() >= 0) {
             _fm_echo_plus();
             return;
@@ -695,8 +695,8 @@ public class DevOpn {
      */
     public void _fm_echo_volume_v() {
         reg.D4_L = 0;
-        reg.setD4_B(mm.readByte(reg.a5 + W.volume));
-        reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol));
+        reg.setD4_B(mm.readByte(reg.a5 + W.volume) & 0xff);
+        reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         if ((byte) reg.getD0_B() < 0) {
             _fm_echo_vol_v_plus();
             return;
@@ -708,7 +708,7 @@ public class DevOpn {
         }
         reg.setD4_B(reg.getD4_B() >> 1);
         reg.a0 = reg.a5 + W.voltable;
-        reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()));
+        reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()) & 0xff);
         _FM_F2_softenv();
     }
 
@@ -717,7 +717,7 @@ public class DevOpn {
         reg.setD4_B(reg.getD4_B() >> 1);
         reg.setD4_W(reg.getD4_W() & 0x7f);
         reg.a0 = reg.a5 + W.voltable;
-        reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()));
+        reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()) & 0xff);
         _FM_F2_softenv();
     }
 
@@ -725,8 +725,8 @@ public class DevOpn {
      * "@v" fine tune
      */
     public void _fm_echo_volume_atv() {
-        reg.setD4_B(mm.readByte(reg.a5 + W.vol));
-        reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol));
+        reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+        reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         reg.setD4_B(reg.getD4_B() + (int) (byte) reg.getD0_B());
         reg.D0_L = 127;
         reg.setD0_B(reg.getD0_B() - (int) (byte) reg.getD4_B());
@@ -741,9 +741,9 @@ public class DevOpn {
      */
     public void _fm_echo_direct_v() {
         reg.D4_L = 0;
-        reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol));
+        reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         reg.a0 = reg.a5 + W.voltable;
-        reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()));
+        reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()) & 0xff);
         _FM_F2_softenv();
     }
 
@@ -751,7 +751,7 @@ public class DevOpn {
      * "@v" direct
      */
     public void _fm_echo_direct_atv() {
-        reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol));
+        reg.setD4_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         _FM_F2_softenv();
     }
 
@@ -765,25 +765,25 @@ public class DevOpn {
 
         _fm_keyoff_direct();
         if ((mm.readByte(reg.a5 + W.reverb) & 0x02) != 0) {
-            reg.setD5_B(mm.readByte(reg.a5 + W.program2));
+            reg.setD5_B(mm.readByte(reg.a5 + W.program2) & 0xff);
             _fm_echo_tone_change();
             reg.setD4_W(sp);
             return;
         }
-        reg.setD4_B(mm.readByte(reg.a5 + W.vol));
+        reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         if ((mm.readByte(reg.a5 + W.flag3) & 0x10) != 0) {
             reg.D4_L = 0;
-            reg.setD4_B(mm.readByte(reg.a5 + W.volume));
+            reg.setD4_B(mm.readByte(reg.a5 + W.volume) & 0xff);
             reg.a0 = reg.a5 + W.voltable;
-            reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()));
+            reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()) & 0xff);
         }
 
         _FM_F2_softenv();
-        reg.setD5_B(mm.readByte(reg.a5 + W.reverb));
+        reg.setD5_B(mm.readByte(reg.a5 + W.reverb) & 0xff);
         int f = reg.getD5_B() & 1;
         reg.setD5_B(reg.getD5_B() >> 1);
         if (f != 0) {
-            reg.setD0_B(mm.readByte(reg.a5 + W.pan_ampm));
+            reg.setD0_B(mm.readByte(reg.a5 + W.pan_ampm) & 0xff);
             reg.D1_L = 0xb4;
             mndrv._OPN_WRITE4();
         }
@@ -794,15 +794,15 @@ public class DevOpn {
     public void _init_hlfo() {
         if ((mm.readByte(reg.a5 + W.lfo) & 1) != 0) {
             reg.D0_L = 0xc;
-            reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.flag2));
+            reg.setD0_B(reg.getD0_B() & (mm.readByte(reg.a5 + W.flag2) & 0xff));
             if (reg.getD0_B() != 0) {
                 reg.a4 = reg.a5 + W.v_pattern4;
                 mm.write(reg.a4 + W_L.henka_work, (byte) 0);
-                reg.setD0_B(mm.readByte(reg.a4 + W_L.lfo_sp));
-                reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a4 + W_L.keydelay));
+                reg.setD0_B(mm.readByte(reg.a4 + W_L.lfo_sp) & 0xff);
+                reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a4 + W_L.keydelay) & 0xff));
                 mm.write(reg.a4 + W_L.delay_work, (byte) reg.getD0_B());
                 reg.D0_L = 0xc0;
-                reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.pan_ampm));
+                reg.setD0_B(reg.getD0_B() & (mm.readByte(reg.a5 + W.pan_ampm) & 0xff));
                 reg.D1_L = 0xb4;
                 mndrv._OPN_WRITE4();
             }
@@ -814,14 +814,14 @@ public class DevOpn {
             if ((mm.readByte(reg.a5 + W.effect) & 0x20) != 0) return;
 
             reg.D5_L = 0x70;
-            reg.setD5_B(reg.getD5_B() & mm.readByte(reg.a5 + W.lfo));
+            reg.setD5_B(reg.getD5_B() & (mm.readByte(reg.a5 + W.lfo) & 0xff));
             if (reg.getD5_B() == 0) return;
 
-            reg.setD4_B(mm.readByte(reg.a5 + W.vol));
+            reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
             _FM_F2_init();
         }
 
-        reg.setD5_B(mm.readByte(reg.a5 + W.lfo));
+        reg.setD5_B(mm.readByte(reg.a5 + W.lfo) & 0xff);
         int f = reg.getD5_B() & 0x40; //lsl.b //#2
         reg.setD5_B(reg.getD5_B() << 2);
         if (f != 0) {
@@ -1266,28 +1266,28 @@ public class DevOpn {
      * </pre>
      */
     public void _FM_88() {
-        mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x80));
+        mm.write(reg.a5 + W.lfo, (byte) ((mm.readByte(reg.a5 + W.lfo) & 0xff) | 0x80));
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfd));
         reg.a4 = reg.a5 + W.p_pattern4;
 
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a1++));
-        reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a5 + W.key_trans));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
+        reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a5 + W.key_trans) & 0xff));
         mm.write(reg.a5 + W.key2, (byte) reg.getD0_B());
         _get_fnum();
-        reg.setD0_W(reg.getD0_W() + mm.readShort(reg.a5 + W.detune));
+        reg.setD0_W(reg.getD0_W() + (mm.readShort(reg.a5 + W.detune) & 0xffff));
         if ((short) reg.getD0_W() < 0) {
             reg.D0_L = 0;
         }
         mm.write(reg.a4 + W_L.mokuhyou, (short) reg.getD0_W());
 
-        reg.setD0_B(mm.readByte(reg.a1++));
-        reg.setD1_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
+        reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a4 + W_L.lfo_sp, (byte) reg.getD1_B());
         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
         mm.write(reg.a4 + W_L.delay_work, (byte) reg.getD0_B());
 
-        reg.setD0_W(mm.readShort(reg.a1));
+        reg.setD0_W(mm.readShort(reg.a1) & 0xffff);
         reg.a1 += 2;
         mm.write(reg.a4 + W_L.henka, (short) reg.getD0_W());
     }
@@ -1299,24 +1299,24 @@ public class DevOpn {
      * </pre>
      */
     public void _FM_89() {
-        mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x80));
-        mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) | 0x02));
+        mm.write(reg.a5 + W.lfo, (byte) ((mm.readByte(reg.a5 + W.lfo) & 0xff) | 0x80));
+        mm.write(reg.a5 + W.flag2, (byte) ((mm.readByte(reg.a5 + W.flag2) & 0xff) | 0x02));
         reg.a4 = reg.a5 + W.p_pattern4;
 
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
 
         //_FM_89_normal:
         reg.D0_L = 0;
         reg.D1_L = reg.D0_L;
-        reg.setD0_B(mm.readByte(reg.a1++));
-        reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a5 + W.key_trans));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
+        reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a5 + W.key_trans) & 0xff));
         mm.write(reg.a5 + W.key2, (byte) reg.getD0_B());
         _get_fnum();
         reg.setD1_W(reg.getD0_W());
 
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a1));
-        reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a5 + W.key_trans));
+        reg.setD0_B(mm.readByte(reg.a1) & 0xff);
+        reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a5 + W.key_trans) & 0xff));
         _get_fnum();
 
         reg.D5_L = 0;
@@ -1337,7 +1337,7 @@ public class DevOpn {
         reg.setD5_W(reg.getD5_W() + (int) (short) reg.getD1_W());
 
         reg.D2_L = 0;
-        reg.setD2_B(mm.readByte(reg.a1 + 1));
+        reg.setD2_B(mm.readByte(reg.a1 + 1) & 0xff);
         mm.write(reg.a4 + W_L.count, (byte) reg.getD2_B());
 
         reg.D5_L = (short) reg.getD5_W();
@@ -1382,7 +1382,7 @@ public class DevOpn {
      */
     public void _FM_92() {
         mm.write(reg.a5 + W.effect, (byte) (mm.readByte(reg.a5 + W.effect) | 0x3));
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         if (reg.getD0_B() != 0) {
             if ((byte) reg.getD0_B() >= 0) {
                 if (reg.getD0_B() - 2 == 0) return;
@@ -1437,9 +1437,9 @@ public class DevOpn {
 
         if ((mm.readByte(reg.a5 + W.flag3) & 0x10) == 0) return;
         reg.D4_L = 0;
-        reg.setD4_B(mm.readByte(reg.a5 + W.volume));
+        reg.setD4_B(mm.readByte(reg.a5 + W.volume) & 0xff);
         reg.a0 = reg.a5 + W.voltable;
-        reg.setD4_B(mm.readByte(reg.a2 + (int) (short) reg.getD4_W()));
+        reg.setD4_B(mm.readByte(reg.a2 + (int) (short) reg.getD4_W()) & 0xff);
         _FM_F2_v();
     }
 
@@ -1450,13 +1450,13 @@ public class DevOpn {
      * </pre>
      */
     public void _FM_DA() {
-        mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
-        reg.setD1_B(mm.readByte(reg.a1++));
+        mm.write(reg.a5 + W.flag, (byte) ((mm.readByte(reg.a5 + W.flag) & 0xff) | 0x02));
+        reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
 
         int f = reg.getD1_B() & 1;
         reg.setD1_B(reg.getD1_B() >> 1);
         if (f != 0) {
-            reg.setD0_W(mm.readShort(reg.a1));
+            reg.setD0_W(mm.readShort(reg.a1) & 0xffff);
             reg.a1 += 2;
             mm.write(reg.a5 + W.sdetune1, (short) reg.getD0_W());
         }
@@ -1464,7 +1464,7 @@ public class DevOpn {
         f = reg.getD1_B() & 1;
         reg.setD1_B(reg.getD1_B() >> 1);
         if (f != 0) {
-            reg.setD0_W(mm.readShort(reg.a1));
+            reg.setD0_W(mm.readShort(reg.a1) & 0xffff);
             reg.a1 += 2;
             mm.write(reg.a5 + W.sdetune2, (short) reg.getD0_W());
         }
@@ -1472,7 +1472,7 @@ public class DevOpn {
         f = reg.getD1_B() & 1;
         reg.setD1_B(reg.getD1_B() >> 1);
         if (f != 0) {
-            reg.setD0_W(mm.readShort(reg.a1));
+            reg.setD0_W(mm.readShort(reg.a1) & 0xffff);
             reg.a1 += 2;
             mm.write(reg.a5 + W.sdetune3, (short) reg.getD0_W());
         }
@@ -1480,7 +1480,7 @@ public class DevOpn {
         f = reg.getD1_B() & 1;
         reg.setD1_B(reg.getD1_B() >> 1);
         if (f != 0) {
-            reg.setD0_W(mm.readShort(reg.a1));
+            reg.setD0_W(mm.readShort(reg.a1) & 0xffff);
             reg.a1 += 2;
             mm.write(reg.a5 + W.sdetune4, (short) reg.getD0_W());
         }
@@ -1493,39 +1493,39 @@ public class DevOpn {
      * </pre>
      */
     public void _FM_DB() {
-        mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
-        reg.setD1_B(mm.readByte(reg.a1++));
+        mm.write(reg.a5 + W.flag, (byte) ((mm.readByte(reg.a5 + W.flag) & 0xff) | 0x02));
+        reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
 
         int f = reg.getD1_B() & 1;
         reg.setD1_B(reg.getD1_B() >> 1);
         if (f != 0) {
-            reg.setD0_W(mm.readShort(reg.a1));
+            reg.setD0_W(mm.readShort(reg.a1) & 0xffff);
             reg.a1 += 2;
-            mm.write(reg.a5 + W.sdetune1, (short) (mm.readShort(reg.a5 + W.sdetune1) + (short) reg.getD0_W()));
+            mm.write(reg.a5 + W.sdetune1, (short) ((mm.readShort(reg.a5 + W.sdetune1) & 0xffff) + (short) reg.getD0_W()));
         }
 
         f = reg.getD1_B() & 1;
         reg.setD1_B(reg.getD1_B() >> 1);
         if (f != 0) {
-            reg.setD0_W(mm.readShort(reg.a1));
+            reg.setD0_W(mm.readShort(reg.a1) & 0xffff);
             reg.a1 += 2;
-            mm.write(reg.a5 + W.sdetune2, (short) (mm.readShort(reg.a5 + W.sdetune2) + (short) reg.getD0_W()));
+            mm.write(reg.a5 + W.sdetune2, (short) ((mm.readShort(reg.a5 + W.sdetune2) & 0xffff) + (short) reg.getD0_W()));
         }
 
         f = reg.getD1_B() & 1;
         reg.setD1_B(reg.getD1_B() >> 1);
         if (f != 0) {
-            reg.setD0_W(mm.readShort(reg.a1));
+            reg.setD0_W(mm.readShort(reg.a1) & 0xffff);
             reg.a1 += 2;
-            mm.write(reg.a5 + W.sdetune3, (short) (mm.readShort(reg.a5 + W.sdetune3) + (short) reg.getD0_W()));
+            mm.write(reg.a5 + W.sdetune3, (short) ((mm.readShort(reg.a5 + W.sdetune3) & 0xffff) + (short) reg.getD0_W()));
         }
 
         f = reg.getD1_B() & 1;
         reg.setD1_B(reg.getD1_B() >> 1);
         if (f != 0) {
-            reg.setD0_W(mm.readShort(reg.a1));
+            reg.setD0_W(mm.readShort(reg.a1) & 0xffff);
             reg.a1 += 2;
-            mm.write(reg.a5 + W.sdetune4, (short) (mm.readShort(reg.a5 + W.sdetune4) + (short) reg.getD0_W()));
+            mm.write(reg.a5 + W.sdetune4, (short) ((mm.readShort(reg.a5 + W.sdetune4) & 0xffff) + (short) reg.getD0_W()));
         }
     }
 
@@ -1536,18 +1536,18 @@ public class DevOpn {
      * </pre>
      */
     public void _FM_E0() {
-        mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x01));
-        reg.setD1_B(mm.readByte(reg.a1++));
+        mm.write(reg.a5 + W.lfo, (byte) ((mm.readByte(reg.a5 + W.lfo) & 0xff) | 0x01));
+        reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
 
         reg.setD0_B(reg.getD0_B() + 8);
         reg.D1_L = 0x22;
         mndrv._OPN_WRITE3();
 
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD0_B(reg.getD0_B() << 4);
-        reg.setD0_B(reg.getD0_B() | mm.readByte(reg.a1++));
+        reg.setD0_B(reg.getD0_B() | (mm.readByte(reg.a1++) & 0xff));
         reg.D1_L = 0xc0;
-        reg.setD1_B(reg.getD1_B() & mm.readByte(reg.a5 + W.pan_ampm));
+        reg.setD1_B(reg.getD1_B() & (mm.readByte(reg.a5 + W.pan_ampm) & 0xff));
         reg.setD0_B(reg.getD0_B() | reg.getD1_B());
         mm.write(reg.a5 + W.pan_ampm, (byte) reg.getD0_B());
         mm.write(reg.a5 + W.reverb_pan_work, (byte) reg.getD0_B());
@@ -1563,7 +1563,7 @@ public class DevOpn {
      */
     public void _FM_E1() {
         reg.a4 = reg.a5 + W.v_pattern4;
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         if (reg.getD0_B() == 0) {
             _FM_E1_off();
             return;
@@ -1594,44 +1594,44 @@ public class DevOpn {
     }
 
     public void _FM_E1_normal() {
-        mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x01));
-        mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
+        mm.write(reg.a5 + W.lfo, (byte) ((mm.readByte(reg.a5 + W.lfo) & 0xff) | 0x01));
+        mm.write(reg.a5 + W.flag, (byte) ((mm.readByte(reg.a5 + W.flag) & 0xff) | 0x02));
 
         if ((mm.readByte(reg.a5 + W.flag2) & 0x08) != 0) {
             _FM_E1_LW();
             return;
         }
-        reg.setD0_B(mm.readByte(reg.a5 + W.pan_ampm));
+        reg.setD0_B(mm.readByte(reg.a5 + W.pan_ampm) & 0xff);
         reg.D1_L = 0xb4;
         mndrv._OPN_WRITE4();
     }
 
     public void _FM_E1_off() {
-        mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0xfe));
+        mm.write(reg.a5 + W.lfo, (byte) ((mm.readByte(reg.a5 + W.lfo) & 0xff) & 0xfe));
         _FM_E1_LW();
     }
 
     public void _FM_E1_LW() {
         reg.D0_L = 0xc0;
-        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.pan_ampm));
+        reg.setD0_B(reg.getD0_B() & (mm.readByte(reg.a5 + W.pan_ampm) & 0xff));
         reg.D1_L = 0xb4;
         mndrv._OPN_WRITE4();
     }
 
     public void _FM_E1_time() {
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         if (reg.getD0_B() == 0) {
             mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xf7));
             return;
         }
 
-        mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
-        mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x01));
-        mm.write(reg.a5 + W.flag3, (byte) (mm.readByte(reg.a5 + W.flag3) | 0x08));
+        mm.write(reg.a5 + W.flag, (byte) ((mm.readByte(reg.a5 + W.flag) & 0xff) | 0x02));
+        mm.write(reg.a5 + W.lfo, (byte) ((mm.readByte(reg.a5 + W.lfo) & 0xff) | 0x01));
+        mm.write(reg.a5 + W.flag3, (byte) ((mm.readByte(reg.a5 + W.flag3) & 0xff) | 0x08));
 
         reg.a4 = reg.a5 + W.v_pattern4;
         mm.write(reg.a4 + W_L.lfo_sp, (byte) reg.getD0_B());
-        reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a4 + W_L.keydelay));
+        reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a4 + W_L.keydelay) & 0xff));
         mm.write(reg.a4 + W_L.delay_work, (byte) reg.getD0_B());
     }
 
@@ -1642,7 +1642,7 @@ public class DevOpn {
      * </pre>
      */
     public void _FM_E8() {
-        reg.setD4_B(mm.readByte(reg.a5 + W.vol));
+        reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         // pea _COM_E8
         _FM_F2_init();
         comcmds._COM_E8();
@@ -1655,24 +1655,24 @@ public class DevOpn {
      * </pre>
      */
     public void _FM_EE() {
-        mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) | 0x08));
-        mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x02));
-        mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x01));
+        mm.write(reg.a5 + W.flag2, (byte) ((mm.readByte(reg.a5 + W.flag2) & 0xff) | 0x08));
+        mm.write(reg.a5 + W.flag, (byte) ((mm.readByte(reg.a5 + W.flag) & 0xff) | 0x02));
+        mm.write(reg.a5 + W.lfo, (byte) ((mm.readByte(reg.a5 + W.lfo) & 0xff) | 0x01));
 
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD0_B(reg.getD0_B() + 8);
         reg.D1_L = 0x22;
         mndrv._OPN_WRITE3();
         reg.D0_L = 0xc0;
-        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.pan_ampm));
+        reg.setD0_B(reg.getD0_B() & (mm.readByte(reg.a5 + W.pan_ampm) & 0xff));
         mm.write(reg.a5 + W.pan_ampm, (byte) reg.getD0_B());
         reg.D1_L = 0xB4;
         mndrv._OPN_WRITE4();
 
         reg.a4 = reg.a5 + W.v_pattern4;
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a4 + W_L.lfo_sp, (byte) reg.getD0_B());
-        reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a4 + W_L.keydelay));
+        reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a4 + W_L.keydelay) & 0xff));
         mm.write(reg.a4 + W_L.delay_work, (byte) reg.getD0_B());
     }
 
@@ -1683,7 +1683,7 @@ public class DevOpn {
         if (mm.readByte(reg.a5 + W.reverb) < 0) {
             _fm_keyoff();
         }
-        reg.setD5_B(mm.readByte(reg.a1++));
+        reg.setD5_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a5 + W.program2, (byte) reg.getD5_B());
 
         _fm_echo_tone_change();
@@ -1691,28 +1691,28 @@ public class DevOpn {
 
     public void _fm_echo_tone_change() {
         mm.write(reg.a5 + W.program, (byte) reg.getD5_B());
-        reg.setD3_B(mm.readByte(reg.a5 + W.dev));
+        reg.setD3_B(mm.readByte(reg.a5 + W.dev) & 0xff);
         reg.D0_L = mm.readInt(reg.a6 + Dw.TONE_PTR);
         if (reg.D0_L == 0) return;
         reg.a2 = reg.D0_L;
         reg.a2 += 6;
-        reg.setD4_W(mm.readShort(reg.a6 + Dw.VOICENUM));
-        reg.setD1_B(mm.readByte(reg.a5 + W.bank));
+        reg.setD4_W(mm.readShort(reg.a6 + Dw.VOICENUM) & 0xffff);
+        reg.setD1_B(mm.readByte(reg.a5 + W.bank) & 0xff);
         _voice_ana_loop();
     }
 
     public void _voice_ana_loop() {
 // L:
         while (true) {
-            if (reg.getD1_B() - mm.readByte(reg.a2 + 2) == 0) {
-                if (reg.getD5_B() - mm.readByte(reg.a2 + 3) == 0) {
+            if (reg.getD1_B() - (mm.readByte(reg.a2 + 2) & 0xff) == 0) {
+                if (reg.getD5_B() - (mm.readByte(reg.a2 + 3) & 0xff) == 0) {
                     _voice_ana_set();
                     return;
                 }
             }
             reg.setD4_W(reg.getD4_W() - 1);
             if (reg.getD4_W() != 0) {
-                reg.setD0_W(mm.readShort(reg.a2));
+                reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
                 reg.a2 = reg.a2 + (int) (short) reg.getD0_W();
                 continue; // break L; // _voice_ana_loop();
             }
@@ -1751,9 +1751,9 @@ public class DevOpn {
         mm.write(reg.a4++, mm.readByte(reg.a0++));
         mm.write(reg.a4++, mm.readByte(reg.a0++));
 
-        reg.setD2_W(mm.readShort(reg.a2));
+        reg.setD2_W(mm.readShort(reg.a2) & 0xffff);
 
-        reg.setD0_B(mm.readByte(reg.a2 + 4));
+        reg.setD0_B(mm.readByte(reg.a2 + 4) & 0xff);
         mm.write(reg.a5 + W.fbcon, (byte) reg.getD0_B());
         reg.D1_L = 0xb0;
         reg.setD1_B(reg.getD1_B() + (int) (byte) reg.getD3_B());
@@ -1763,7 +1763,7 @@ public class DevOpn {
         reg.setD5_B(_fm_vol_con_pat[reg.getD0_W()]); // mm.readByte(Reg.a0 + reg.getD0_W());
 
         if ((mm.readByte(reg.a5 + W.flag2) & 0x20) == 0) {
-            reg.setD0_B(mm.readByte(reg.a2 + 5));
+            reg.setD0_B(mm.readByte(reg.a2 + 5) & 0xff);
             reg.setD0_W(reg.getD0_W() << 4);
             mm.write(reg.a5 + W.smask, (byte) reg.getD0_B());
         }
@@ -1771,22 +1771,22 @@ public class DevOpn {
         reg.D1_L = 0x30;
         reg.setD1_B(reg.getD1_B() + (int) (byte) reg.getD3_B());
         reg.a2 += 6;
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         mndrv._OPN_WRITE2();
         reg.setD1_W(reg.getD1_W() + 4);
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         mndrv._OPN_WRITE2();
         reg.setD1_W(reg.getD1_W() + 4);
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         mndrv._OPN_WRITE2();
         reg.setD1_W(reg.getD1_W() + 4);
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         mndrv._OPN_WRITE2();
         reg.setD1_W(reg.getD1_W() + 4);
 
         mm.write(reg.a5 + W.voiceptr, reg.a2);
-        reg.setD4_B(mm.readByte(reg.a5 + W.vol));
-        reg.setD0_B(mm.readByte(reg.a5 + W.track_vol));
+        reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+        reg.setD0_B(mm.readByte(reg.a5 + W.track_vol) & 0xff);
         if ((byte) reg.getD0_B() < 0) {
             reg.setD4_B(reg.getD4_B() - (int) (byte) reg.getD0_B());
             if ((byte) reg.getD4_B() < 0) {
@@ -1798,7 +1798,7 @@ public class DevOpn {
                 reg.D4_L = 0x00;
             }
         }
-        reg.setD4_B(reg.getD4_B() + mm.readByte(reg.a6 + Dw.MASTER_VOL_FM));
+        reg.setD4_B(reg.getD4_B() + (mm.readByte(reg.a6 + Dw.MASTER_VOL_FM) & 0xff));
         if ((byte) reg.getD4_B() < 0) {
             reg.D4_L = 0x7f;
         }
@@ -1808,7 +1808,7 @@ public class DevOpn {
         mm.write(reg.a5 + W.vol2, (byte) reg.getD4_B());
         reg.D2_L = 4 - 1;
         do {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             int f = reg.getD5_B() & 1;
             reg.setD5_B(reg.getD5_B() >> 1);
             if (f != 0) {
@@ -1823,7 +1823,7 @@ public class DevOpn {
 
         reg.D2_L = 16 - 1;
         do {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             mndrv._OPN_WRITE2();
             reg.setD1_B(reg.getD1_B() + 4);
         } while (reg.decAfterD2_W() != 0); // D2_B--
@@ -1832,26 +1832,26 @@ public class DevOpn {
 
         if (reg.getD2_W() >= 0x21) {
             reg.setD1_W(reg.getD1_W() + 4);
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             mm.write(reg.a4++, (byte) reg.getD0_B());
             mndrv._OPN_WRITE2();
             reg.setD1_W(reg.getD1_W() + 4);
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             mm.write(reg.a4++, (byte) reg.getD0_B());
             mndrv._OPN_WRITE2();
             reg.setD1_W(reg.getD1_W() + 4);
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             mm.write(reg.a4++, (byte) reg.getD0_B());
             mndrv._OPN_WRITE2();
             reg.setD1_W(reg.getD1_W() + 4);
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             mm.write(reg.a4++, (byte) reg.getD0_B());
             mndrv._OPN_WRITE2();
         }
     }
 
     public void _voice_ana_set_ch3() {
-        reg.setD4_B(mm.readByte(reg.a5 + W.ch3tl));
+        reg.setD4_B(mm.readByte(reg.a5 + W.ch3tl) & 0xff);
         reg.setD5_B(reg.getD4_B());
         reg.D1_L = 0x82;
         reg.D0_L = 0xff;
@@ -1886,9 +1886,9 @@ public class DevOpn {
         mm.write(reg.a4++, mm.readByte(reg.a0++));
         mm.write(reg.a4++, mm.readByte(reg.a0++));
 
-        reg.setD3_W(mm.readShort(reg.a2));
+        reg.setD3_W(mm.readShort(reg.a2) & 0xffff);
 
-        reg.setD0_B(mm.readByte(reg.a2 + 4));
+        reg.setD0_B(mm.readByte(reg.a2 + 4) & 0xff);
         mm.write(reg.a5 + W.fbcon, (byte) reg.getD0_B());
         reg.D1_L = 0xb2;
         mndrv._OPN_WRITE2();
@@ -1897,30 +1897,30 @@ public class DevOpn {
         reg.setD5_B(_fm_vol_con_pat[reg.getD0_W()]); // mm.readByte(Reg.a0 + reg.getD0_W());
 
         reg.a2 += 6;
-        reg.setD2_B(mm.readByte(reg.a5 + W.ch3tl));
+        reg.setD2_B(mm.readByte(reg.a5 + W.ch3tl) & 0xff);
 
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         f = reg.getD2_B() & 1;
         reg.setD2_B(reg.getD2_B() >> 1);
         if (f != 0) {
             reg.D1_L = 0x32;
             mndrv._OPN_WRITE2();
         }
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         f = reg.getD2_B() & 1;
         reg.setD2_B(reg.getD2_B() >> 1);
         if (f != 0) {
             reg.D1_L = 0x36;
             mndrv._OPN_WRITE2();
         }
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         f = reg.getD2_B() & 1;
         reg.setD2_B(reg.getD2_B() >> 1);
         if (f != 0) {
             reg.D1_L = 0x3a;
             mndrv._OPN_WRITE2();
         }
-        reg.setD0_B(mm.readByte(reg.a2++));
+        reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
         f = reg.getD2_B() & 1;
         reg.setD2_B(reg.getD2_B() >> 1);
         if (f != 0) {
@@ -1930,8 +1930,8 @@ public class DevOpn {
 
         mm.write(reg.a5 + W.voiceptr, reg.a2);
 
-        reg.setD4_B(mm.readByte(reg.a5 + W.vol));
-        reg.setD0_B(mm.readByte(reg.a5 + W.track_vol));
+        reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+        reg.setD0_B(mm.readByte(reg.a5 + W.track_vol) & 0xff);
         if ((byte) reg.getD0_B() < 0) {
             reg.setD4_B(reg.getD4_B() - (int) (byte) reg.getD0_B());
             if ((byte) reg.getD4_B() < 0) {
@@ -1943,7 +1943,7 @@ public class DevOpn {
                 reg.D4_L = 0x00;
             }
         }
-        reg.setD4_B(reg.getD4_B() + mm.readByte(reg.a6 + Dw.MASTER_VOL_FM));
+        reg.setD4_B(reg.getD4_B() + (mm.readByte(reg.a6 + Dw.MASTER_VOL_FM) & 0xff));
         if ((byte) reg.getD4_B() < 0) {
             reg.D4_L = 0x7f;
         }
@@ -1953,9 +1953,9 @@ public class DevOpn {
         mm.write(reg.a5 + W.vol2, (byte) reg.getD4_B());
         reg.D1_L = 0x42;
         reg.D2_L = 4 - 1;
-        reg.setD3_B(mm.readByte(reg.a5 + W.ch3tl));
+        reg.setD3_B(mm.readByte(reg.a5 + W.ch3tl) & 0xff);
         do {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             f = reg.getD3_B() & 1;
             reg.setD3_B(reg.getD3_B() >> 1);
             if (f == 0) {
@@ -1980,12 +1980,12 @@ public class DevOpn {
         if (reg.getD3_W() >= 0x21) {
             reg.D5_L = 5 - 1;
         }
-        reg.setD3_B(mm.readByte(reg.a5 + W.ch3tl));
+        reg.setD3_B(mm.readByte(reg.a5 + W.ch3tl) & 0xff);
         do {
             reg.setD4_B(reg.getD3_B());
             reg.D2_L = 4 - 1;
             do {
-                reg.setD0_B(mm.readByte(reg.a2++));
+                reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
                 f = reg.getD4_B() & 1;
                 reg.setD4_B(reg.getD4_B() >> 1);
                 if (f != 0) {
@@ -2010,24 +2010,24 @@ public class DevOpn {
      * </pre>
      */
     public void _FM_F2() {
-        mm.write(reg.a5 + W.flag3, (byte) (mm.readByte(reg.a5 + W.flag3) & 0xef));
+        mm.write(reg.a5 + W.flag3, (byte) ((mm.readByte(reg.a5 & 0xff) + W.flag3) & 0xef));
         reg.D4_L = 0;
-        reg.setD4_B(mm.readByte(reg.a1++));
+        reg.setD4_B(mm.readByte(reg.a1++) & 0xff);
         if ((byte) reg.getD4_B() < 0) {
             reg.setD4_B(reg.getD4_B() & 0x7f);
             _FM_F2_v();
             return;
         }
         if (mm.readByte(reg.a5 + W.volmode) != 0) {
-            mm.write(reg.a5 + W.flag3, (byte) (mm.readByte(reg.a5 + W.flag3) | 0x10));
+            mm.write(reg.a5 + W.flag3, (byte) ((mm.readByte(reg.a5 & 0xff) + W.flag3) | 0x10));
         }
-        if (reg.getD4_B() >= mm.readByte(reg.a5 + W.volcount)) {
-            reg.setD4_B(mm.readByte(reg.a5 + W.volcount));
+        if (reg.getD4_B() >= (mm.readByte(reg.a5 + W.volcount) & 0xff)) {
+            reg.setD4_B(mm.readByte(reg.a5 + W.volcount) & 0xff);
             reg.setD4_B(reg.getD4_B() - 1);
         }
         mm.write(reg.a5 + W.volume, (byte) reg.getD4_B());
         reg.a2 = reg.a5 + W.voltable;
-        reg.setD4_B(mm.readByte(reg.a2 + (int) (short) reg.getD4_W()));
+        reg.setD4_B(mm.readByte(reg.a2 + (int) (short) reg.getD4_W()) & 0xff);
         _FM_F2_v();
     }
 
@@ -2037,7 +2037,7 @@ public class DevOpn {
     }
 
     public void _FM_F2_softenv() {
-        reg.setD0_B(mm.readByte(reg.a5 + W.track_vol));
+        reg.setD0_B(mm.readByte(reg.a5 + W.track_vol) & 0xff);
         if ((byte) reg.getD0_B() < 0) {
             reg.setD4_B(reg.getD4_B() - (int) (byte) reg.getD0_B());
             if ((byte) reg.getD4_B() < 0) {
@@ -2049,7 +2049,7 @@ public class DevOpn {
                 reg.D4_L = 0;
             }
         }
-        reg.setD4_B(reg.getD4_B() + mm.readByte(reg.a6 + Dw.MASTER_VOL_FM));
+        reg.setD4_B(reg.getD4_B() + (mm.readByte(reg.a6 + Dw.MASTER_VOL_FM) & 0xff));
         if ((byte) reg.getD4_B() < 0) {
             reg.D4_L = 0x7f;
         }
@@ -2065,21 +2065,21 @@ public class DevOpn {
         reg.a2 = reg.D1_L;
 
         reg.D0_L = 7;
-        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.fbcon));
+        reg.setD0_B(reg.getD0_B() & (mm.readByte(reg.a5 + W.fbcon) & 0xff));
         reg.setD3_B(_fm_vol_con_pat[reg.getD0_W()]); // mm.readByte(_fm_vol_con_pat);
 
         reg.D1_L = 0x40;
-        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
+        reg.setD1_B(reg.getD1_B() + (mm.readByte(reg.a5 + W.dev) & 0xff));
 
         reg.D2_L = 4 - 1;
-        reg.setD5_B(mm.readByte(reg.a5 + W.ch3));
+        reg.setD5_B(mm.readByte(reg.a5 + W.ch3) & 0xff);
         if (reg.getD5_B() != 0) {
             _FM_F2_SL_CH3();
             return;
         }
         //_FM_F2_set_loop:
         do {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             int f = reg.getD3_B() & 1;
             reg.setD3_B(reg.getD3_B() >> 1);
             if (f != 0) {
@@ -2094,10 +2094,10 @@ public class DevOpn {
     }
 
     public void _FM_F2_SL_CH3() {
-        reg.setD5_B(mm.readByte(reg.a5 + W.ch3tl));
+        reg.setD5_B(mm.readByte(reg.a5 + W.ch3tl) & 0xff);
         //_FM_F2_SL_loop:
         do {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             int f = reg.getD5_B() & 1;
             reg.setD5_B(reg.getD5_B() >> 1);
             if (f == 0) {
@@ -2125,8 +2125,8 @@ public class DevOpn {
      */
     public void _FM_F4() {
         reg.D0_L = 0x3f;
-        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.pan_ampm));
-        reg.setD0_B(reg.getD0_B() | mm.readByte(reg.a1++));
+        reg.setD0_B(reg.getD0_B() & (mm.readByte(reg.a5 + W.pan_ampm) & 0xff));
+        reg.setD0_B(reg.getD0_B() | (mm.readByte(reg.a1++) & 0xff));
         mm.write(reg.a5 + W.pan_ampm, (byte) reg.getD0_B());
         mm.write(reg.a5 + W.reverb_pan_work, (byte) reg.getD0_B());
         reg.D1_L = 0xb4;
@@ -2150,21 +2150,21 @@ public class DevOpn {
         }
 
         reg.D4_L = 0;
-        reg.setD4_B(mm.readByte(reg.a5 + W.volume));
-        reg.setD4_B(reg.getD4_B() + mm.readByte(reg.a1++));
-        if (reg.getD4_B() >= mm.readByte(reg.a5 + W.volcount)) {
-            reg.setD4_B(mm.readByte(reg.a5 + W.volcount));
+        reg.setD4_B(mm.readByte(reg.a5 + W.volume) & 0xff);
+        reg.setD4_B(reg.getD4_B() + (mm.readByte(reg.a1++) & 0xff));
+        if (reg.getD4_B() >= (mm.readByte(reg.a5 + W.volcount) & 0xff)) {
+            reg.setD4_B(mm.readByte(reg.a5 + W.volcount) & 0xff);
             reg.setD4_B(reg.getD4_B() - 1);
         }
         mm.write(reg.a5 + W.volume, (byte) reg.getD4_B());
         reg.a2 = reg.a5 + W.voltable;
-        reg.setD4_B(mm.readByte(reg.a2 + (int) (short) reg.getD4_W()));
+        reg.setD4_B(mm.readByte(reg.a2 + (int) (short) reg.getD4_W()) & 0xff);
         _FM_F2_v();
     }
 
     public void _FM_F5_normal() {
-        reg.setD4_B(mm.readByte(reg.a5 + W.vol));
-        reg.setD4_B(reg.getD4_B() - mm.readByte(reg.a1++));
+        reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+        reg.setD4_B(reg.getD4_B() - (mm.readByte(reg.a1++) & 0xff));
         if ((byte) reg.getD4_B() < 0) {
             reg.D4_L = 0;
         }
@@ -2188,20 +2188,20 @@ public class DevOpn {
         }
 
         reg.D4_L = 0;
-        reg.setD4_B(mm.readByte(reg.a5 + W.volume));
-        reg.setD4_B(reg.getD4_B() - mm.readByte(reg.a1++));
+        reg.setD4_B(mm.readByte(reg.a5 + W.volume) & 0xff);
+        reg.setD4_B(reg.getD4_B() - (mm.readByte(reg.a1++) & 0xff));
         if ((byte) reg.getD4_B() < 0) {
             reg.D4_L = 0;
         }
         mm.write(reg.a5 + W.volume, (byte) reg.getD4_B());
         reg.a2 = reg.a5 + W.voltable;
-        reg.setD4_B(mm.readByte(reg.a2 + (int) (short) reg.getD4_W()));
+        reg.setD4_B(mm.readByte(reg.a2 + (int) (short) reg.getD4_W()) & 0xff);
         _FM_F2_v();
     }
 
     public void _FM_F6_normal() {
-        reg.setD4_B(mm.readByte(reg.a5 + W.vol));
-        reg.setD4_B(reg.getD4_B() + mm.readByte(reg.a1++));
+        reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+        reg.setD4_B(reg.getD4_B() + (mm.readByte(reg.a1++) & 0xff));
         if ((byte) reg.getD4_B() < 0) {
             reg.D4_L = 0x7f;
         }
@@ -2215,7 +2215,7 @@ public class DevOpn {
      * </pre>
      */
     public void _FM_F7() {
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         if (reg.getD0_B() - (-1) == 0) {
             _FM_F7_OFF();
             return;
@@ -2317,8 +2317,8 @@ public class DevOpn {
      */
     public void _FM_FA() {
         reg.D2_L = 0x26;
-        reg.setD1_B(mm.readByte(reg.a1++));
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         if (reg.getD1_B() - reg.getD2_B() != 0) {
             mndrv._OPN_WRITE2();
             return;
@@ -2333,7 +2333,7 @@ public class DevOpn {
     public void _FM_FF() {
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfe));
 
-        reg.setD0_W(mm.readShort(reg.a6 + Dw.USE_TRACK));
+        reg.setD0_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
         reg.a0 = reg.a6 + Dw.TRACKWORKADR;
 
 // L1:
@@ -2348,8 +2348,8 @@ public class DevOpn {
         } while (reg.getD0_W() != 0); // break L1;
 
         if (!L3) {
-            mm.write(reg.a6 + Dw.LOOP_COUNTER, (short) (mm.readShort(reg.a6 + Dw.LOOP_COUNTER) + 1));
-            reg.setD1_W(mm.readShort(reg.a6 + Dw.LOOP_COUNTER));
+            mm.write(reg.a6 + Dw.LOOP_COUNTER, (short) ((mm.readShort(reg.a6 + Dw.LOOP_COUNTER) & 0xffff) + 1));
+            reg.setD1_W(mm.readShort(reg.a6 + Dw.LOOP_COUNTER) & 0xffff);
             if (reg.getD1_W() - 0xffff == 0) {
                 reg.D1_L = 0;
                 mm.write(reg.a6 + Dw.LOOP_COUNTER, (short) reg.getD1_W());
@@ -2357,7 +2357,7 @@ public class DevOpn {
             reg.D0_L = 1;
             mndrv.SUBEVENT();
 
-            reg.setD0_W(mm.readShort(reg.a6 + Dw.USE_TRACK));
+            reg.setD0_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
             reg.a0 = reg.a6 + Dw.TRACKWORKADR;
             do {
                 if (mm.readByte(reg.a0 + W.flag) < 0) {
@@ -2368,7 +2368,7 @@ public class DevOpn {
             } while (reg.getD0_W() != 0);
         }
 // L3:
-        reg.setD0_W(mm.readShort(reg.a1));
+        reg.setD0_W(mm.readShort(reg.a1) & 0xffff);
         reg.a1 += 2;
         if (reg.getD0_W() != 0) {
             if (reg.getD0_W() - 0xffff != 0) {
@@ -2396,7 +2396,7 @@ public class DevOpn {
             reg.a4 = reg.a5 + W.ww_pattern1;
             _ch_fm_ww();
         }
-        reg.setD0_B(mm.readByte(reg.a5 + W.lfo));
+        reg.setD0_B(mm.readByte(reg.a5 + W.lfo) & 0xff);
         if (reg.getD0_B() == 0) return;
         mm.write(reg.a5 + W.addkeycode, (short) 0);
         mm.write(reg.a5 + W.addvolume, (short) 0);
@@ -2473,8 +2473,8 @@ public class DevOpn {
         }
 
         //_ch_fm_lfo_end:
-        reg.setD0_W(mm.readShort(reg.a5 + W.addvolume));
-        if (reg.getD0_W() - mm.readShort(reg.a5 + W.addvolume2) != 0) {
+        reg.setD0_W(mm.readShort(reg.a5 + W.addvolume) & 0xffff);
+        if (reg.getD0_W() - (mm.readShort(reg.a5 + W.addvolume2) & 0xffff) != 0) {
             mm.write(reg.a5 + W.addvolume2, (short) reg.getD0_W());
             _ch_fm_v_calc();
         }
@@ -2541,13 +2541,13 @@ public class DevOpn {
     /** */
     public void _ch_fm_p_common() {
         reg.D0_L = 1;
-        reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern));
+        reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern) & 0xff);
         if ((byte) reg.getD1_B() < 0) {
             _ch_fm_p_wavememory();
             return;
         }
 
-        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag));
+        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag) & 0xffff);
         if ((short) reg.getD4_W() >= 0) {
             _ch_fm_p_com_exec();
             return;
@@ -2662,13 +2662,13 @@ public class DevOpn {
     /** */
     public void _ch_fm_a_common() {
         reg.D0_L = 1;
-        reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern));
+        reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern) & 0xff);
         if ((byte) reg.getD1_B() < 0) {
             comwave._com_wavememory();
             mm.write(reg.a5 + W.addvolume, (short) reg.getD0_W());
             return;
         }
-        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag));
+        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag) & 0xffff);
         if ((short) reg.getD4_W() >= 0) {
             _ch_fm_v_com_exec();
             return;
@@ -2710,7 +2710,7 @@ public class DevOpn {
 
     /** */
     public void _ch_fm_v_calc() {
-        reg.setD3_B(mm.readByte(reg.a3 + W_W.slot));
+        reg.setD3_B(mm.readByte(reg.a3 + W_W.slot) & 0xff);
         if ((byte) reg.getD3_B() < 0) {
             _fm_v_calc_slot();
             return;
@@ -2722,7 +2722,7 @@ public class DevOpn {
         }
 
         reg.D4_L = 0;
-        reg.setD4_B(mm.readByte(reg.a5 + W.vol));
+        reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD4_W(reg.getD4_W() + (int) (short) reg.getD0_W());
         if ((short) reg.getD4_W() < 0) {
             reg.D4_L = 0x7f;
@@ -2732,7 +2732,7 @@ public class DevOpn {
 
     public void _ch_fm_v_minus() {
         reg.D4_L = 0;
-        reg.setD4_B(mm.readByte(reg.a5 + W.vol));
+        reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD4_W(reg.getD4_W() + (int) (short) reg.getD0_W());
         if ((short) reg.getD4_W() < 0) {
             reg.D4_L = 0x00;
@@ -2742,7 +2742,7 @@ public class DevOpn {
 
     /** */
     public void _FM_F2_lfo() {
-        reg.setD4_B(reg.getD4_B() + mm.readByte(reg.a6 + Dw.MASTER_VOL_FM));
+        reg.setD4_B(reg.getD4_B() + (mm.readByte(reg.a6 + Dw.MASTER_VOL_FM) & 0xff));
         if ((byte) reg.getD4_B() >= 0) {
             _FM_F2_set();
             return;
@@ -2752,10 +2752,10 @@ public class DevOpn {
         reg.D0_L = mm.readInt(reg.a5 + W.voiceptr);
         if (reg.D0_L == 0) return;
 
-        reg.setD3_B(mm.readByte(reg.a3 + W_W.slot));
+        reg.setD3_B(mm.readByte(reg.a3 + W_W.slot) & 0xff);
         if ((byte) reg.getD3_B() >= 0) {
             reg.D3_L = 7;
-            reg.setD3_B(reg.getD3_B() & mm.readByte(reg.a5 + W.fbcon));
+            reg.setD3_B(reg.getD3_B() & mm.readByte(reg.a5 + W.fbcon) & 0xff);
             reg.a2 = Ab.dummyAddress; // _fm_vol_con_pat;
             reg.setD3_B(_fm_vol_con_pat[reg.getD3_W()]); // mm.readByte(Reg.a2 + reg.getD3_W());
         }
@@ -2763,15 +2763,15 @@ public class DevOpn {
         reg.a2 = reg.D0_L;
 
         reg.D1_L = 0x40;
-        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
+        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev) & 0xff);
         reg.D2_L = 4 - 1;
-        reg.setD5_B(mm.readByte(reg.a5 + W.ch3));
+        reg.setD5_B(mm.readByte(reg.a5 + W.ch3) & 0xff);
         if (reg.getD5_B() != 0) {
             _FM_F2_lfo_loop_ch3();
             return;
         }
         do {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             int f = reg.getD3_B() & 1;
             reg.setD3_B(reg.getD3_B() >> 1);
             if (f != 0) {
@@ -2787,7 +2787,7 @@ public class DevOpn {
 
     public void _FM_F2_lfo_loop_ch3() {
         do {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             int f = reg.getD5_B() & 1;
             reg.setD5_B(reg.getD5_B() >> 1);
             if (f == 0) {
@@ -2815,7 +2815,7 @@ public class DevOpn {
 
         reg.a2 = reg.D0_L;
         reg.D1_L = 0x40;
-        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
+        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev) & 0xff);
         reg.D2_L = 4 - 1;
         reg.D0_L = 0;
         if ((short) reg.getD4_W() < 0) {
@@ -2823,7 +2823,7 @@ public class DevOpn {
             return;
         }
         do {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             int f = reg.getD3_B() & 1;
             reg.setD3_B(reg.getD3_B() >> 1);
             if (f != 0) {
@@ -2839,7 +2839,7 @@ public class DevOpn {
 
     public void _fm_v_calc_slot_minus() {
         do {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             int f = reg.getD3_B() & 1;
             reg.setD3_B(reg.getD3_B() >> 1);
             if (f != 0) {
@@ -2893,7 +2893,7 @@ public class DevOpn {
         if (reg.getD0_W() != 0) {
             reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
             reg.a4 = Ab.dummyAddress; // _ch_fm_alfo_table;
-            reg.setD0_W(mm.readShort(reg.a4 + (short) reg.getD0_W()));
+            reg.setD0_W(mm.readShort(reg.a4 + (short) reg.getD0_W()) & 0xffff);
             switch (reg.getD0_W() / 2) {
             case 1:
                 _ch_fm_alfo_1();
@@ -2918,16 +2918,16 @@ public class DevOpn {
                 break;
             }
         }
-        reg.setD0_W(mm.readShort(reg.a5 + W.addvolume));
-        if (reg.getD0_W() - mm.readShort(reg.a5 + W.addvolume2) != 0) {
+        reg.setD0_W(mm.readShort(reg.a5 + W.addvolume) & 0xffff);
+        if (reg.getD0_W() - (mm.readShort(reg.a5 + W.addvolume2) & 0xffff) != 0) {
             mm.write(reg.a5 + W.addvolume2, (short) reg.getD0_W());
             _ch_fm_v_calc();
         }
-        reg.setD2_W(mm.readShort(reg.a5 + W.addkeycode));
-        if (reg.getD2_W() - mm.readShort(reg.a5 + W.addkeycode2) == 0) return;
+        reg.setD2_W(mm.readShort(reg.a5 + W.addkeycode) & 0xffff);
+        if (reg.getD2_W() - (mm.readShort(reg.a5 + W.addkeycode2) & 0xffff) == 0) return;
         mm.write(reg.a5 + W.addkeycode2, (short) reg.getD2_W());
 
-        reg.setD4_B(mm.readByte(reg.a5 + W.ch3));
+        reg.setD4_B(mm.readByte(reg.a5 + W.ch3) & 0xff);
         if (reg.getD4_B() != 0) {
             _ch_fm_lfo_ex_slot4();
             return;
@@ -2935,7 +2935,7 @@ public class DevOpn {
         if (mm.readByte(reg.a5 + W.ch3mode) != 0) return;
 
         // pea _set_fnum2(pc)
-        reg.setD2_W(mm.readShort(reg.a5 + W.keycode3));
+        reg.setD2_W(mm.readShort(reg.a5 + W.keycode3) & 0xffff);
         _ex_slot_calc();
         _set_fnum2();
     }
@@ -2944,40 +2944,40 @@ public class DevOpn {
         int f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s4));
-            reg.setD2_W(reg.getD2_W() - mm.readShort(reg.a5 + W.sdetune4));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s4) & 0xffff);
+            reg.setD2_W(reg.getD2_W() - (mm.readShort(reg.a5 + W.sdetune4) & 0xffff));
             _ex_slot_calc();
-            reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.sdetune4));
+            reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.sdetune4) & 0xffff));
             mm.write(reg.a5 + W.keycode2_s4, (short) reg.getD2_W());
         }
 
         f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3));
-            reg.setD2_W(reg.getD2_W() - mm.readShort(reg.a5 + W.sdetune3));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3) & 0xffff);
+            reg.setD2_W(reg.getD2_W() - (mm.readShort(reg.a5 + W.sdetune3) & 0xffff));
             _ex_slot_calc();
-            reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.sdetune3));
+            reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.sdetune3) & 0xffff));
             mm.write(reg.a5 + W.keycode2_s3, (short) reg.getD2_W());
         }
 
         f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2));
-            reg.setD2_W(reg.getD2_W() - mm.readShort(reg.a5 + W.sdetune2));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2) & 0xffff);
+            reg.setD2_W(reg.getD2_W() - (mm.readShort(reg.a5 + W.sdetune2) & 0xffff));
             _ex_slot_calc();
-            reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.sdetune2));
+            reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.sdetune2) & 0xffff));
             mm.write(reg.a5 + W.keycode2_s2, (short) reg.getD2_W());
         }
 
         f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1));
-            reg.setD2_W(reg.getD2_W() - mm.readShort(reg.a5 + W.sdetune1));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1) & 0xffff);
+            reg.setD2_W(reg.getD2_W() - (mm.readShort(reg.a5 + W.sdetune1) & 0xffff));
             _ex_slot_calc();
-            reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.sdetune1));
+            reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.sdetune1) & 0xffff));
             mm.write(reg.a5 + W.keycode2_s1, (short) reg.getD2_W());
         }
 
@@ -2993,7 +2993,7 @@ public class DevOpn {
             return;
         }
 
-        reg.setD1_W(mm.readShort(reg.a5 + W.addkeycode));
+        reg.setD1_W(mm.readShort(reg.a5 + W.addkeycode) & 0xffff);
         if ((short) reg.getD1_W() < 0) {
             _ex_slot_calc_minus();
             return;
@@ -3073,13 +3073,13 @@ public class DevOpn {
     public void _ex_slot_calc2() {
         int sp = reg.D4_L;
         try {
-            reg.setD1_W(mm.readShort(reg.a5 + W.addkeycode));
+            reg.setD1_W(mm.readShort(reg.a5 + W.addkeycode) & 0xffff);
             if ((short) reg.getD1_W() >= 0) { // break _ex_slot_calc2_minus;
 
                 reg.setD3_W(reg.getD2_W());
                 reg.setD3_W(reg.getD3_W() & 0x3800);
                 reg.setD2_W(reg.getD2_W() & 0x7ff);
-                reg.setD2_W(reg.getD2_W() - mm.readShort(reg.a5 + W.detune));
+                reg.setD2_W(reg.getD2_W() - (mm.readShort(reg.a5 + W.detune) & 0xffff));
                 reg.setD4_W(0x26a);
                 reg.setD2_W(reg.getD2_W() - (int) (short) reg.getD4_W());
                 reg.setD5_W(0x800);
@@ -3103,7 +3103,7 @@ public class DevOpn {
                     }
                 }
                 reg.setD2_W(reg.getD2_W() + (int) (short) reg.getD4_W());
-                reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.detune));
+                reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.detune) & 0xffff));
                 reg.setD2_W(reg.getD2_W() | reg.getD3_W());
                 return; // break _ex_slot_calc2_exit;
                 //9:
@@ -3115,7 +3115,7 @@ public class DevOpn {
             reg.setD3_W(reg.getD2_W());
             reg.setD3_W(reg.getD3_W() & 0x3800);
             reg.setD2_W(reg.getD2_W() & 0x7ff);
-            reg.setD2_W((short) ((short) reg.getD2_W() - mm.readShort(reg.a5 + W.detune)));
+            reg.setD2_W((short) ((short) reg.getD2_W() - (mm.readShort(reg.a5 + W.detune) & 0xffff)));
             reg.setD4_W(0x26a);
             reg.setD2_W((short) ((short) reg.getD2_W() - (short) reg.getD4_W()));
             reg.setD5_W(0x800);
@@ -3140,7 +3140,7 @@ public class DevOpn {
                 }
             }
             reg.setD2_W(reg.getD2_W() + (int) (short) reg.getD4_W());
-            reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.detune));
+            reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.detune) & 0xffff));
             reg.setD2_W(reg.getD2_W() | reg.getD3_W());
         } finally {
 // _ex_slot_calc2_exit:
@@ -3151,13 +3151,13 @@ public class DevOpn {
     /** */
     public void _ch_fm_exp_common() {
         reg.D0_L = 1;
-        reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern));
+        reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern) & 0xff);
         if ((byte) reg.getD1_B() < 0) {
             comwave._com_wavememory();
-            mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) & reg.getD0_W()));
+            mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) & reg.getD0_W()));
             return;
         }
-        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag));
+        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag) & 0xffff);
         if ((short) reg.getD4_W() >= 0) {
             _ch_fm_exp_com_exec();
             return;
@@ -3204,7 +3204,7 @@ public class DevOpn {
             comlfo.comLfoRandom();
             break;
         }
-        mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
+        mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
 
     }
 
@@ -3213,10 +3213,10 @@ public class DevOpn {
      */
     public void _ch_fm_HLFO() {
         reg.D1_L = 0xc;
-        reg.setD1_B(reg.getD1_B() & mm.readByte(reg.a5 + W.flag2));
+        reg.setD1_B(reg.getD1_B() & (mm.readByte(reg.a5 + W.flag2) & 0xff));
         if (reg.getD1_B() == 0) return;
         reg.a4 = reg.a5 + W.v_pattern4;
-        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag));
+        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag) & 0xffff);
         if ((short) reg.getD4_W() >= 0) {
             _ch_fm_HLFO_exec();
             return;
@@ -3240,7 +3240,7 @@ public class DevOpn {
     }
 
     public void _ch_fm_HLFO_exec() {
-        mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
+        mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) {
             return;
         }
@@ -3251,7 +3251,7 @@ public class DevOpn {
             return;
         }
 
-        reg.setD0_B(mm.readByte(reg.a5 + W.pan_ampm));
+        reg.setD0_B(mm.readByte(reg.a5 + W.pan_ampm) & 0xff);
         reg.D1_L = 0x84;
         mndrv._OPN_WRITE4();
         //_ch_fm_HLFO_exit();
@@ -3259,8 +3259,8 @@ public class DevOpn {
 
     public void _ch_fm_HLFO_lw() {
         reg.D0_L = 0xc0;
-        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.pan_ampm));
-        reg.setD1_B(mm.readByte(reg.a4 + W_L.henka_work));
+        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.pan_ampm) & 0xff);
+        reg.setD1_B(mm.readByte(reg.a4 + W_L.henka_work) & 0xff);
         reg.setD1_B(0x11);
         if ((byte) reg.getD1_B() < 0) return;
         mm.write(reg.a4 + W_L.henka_work, (byte) reg.getD1_B());
@@ -3278,7 +3278,7 @@ public class DevOpn {
     public void _ch_fm_mml_job() {
         comanalyze._track_analyze();
 
-        reg.setD0_B(mm.readByte(reg.a5 + W.lfo));
+        reg.setD0_B(mm.readByte(reg.a5 + W.lfo) & 0xff);
         if ((byte) reg.getD0_B() >= 0) return;
         if ((mm.readByte(reg.a5 + W.flag2) & 0x2) != 0) {
             _ch_fm_porta();
@@ -3292,18 +3292,18 @@ public class DevOpn {
      */
     public void _ch_fm_bend() {
         reg.a4 = reg.a5 + W.p_pattern4;
-        mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
+        mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) return;
 
         mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
 
-        reg.setD5_B(mm.readByte(reg.a5 + W.ch3));
+        reg.setD5_B(mm.readByte(reg.a5 + W.ch3) & 0xff);
         if (reg.getD5_B() == 0) {
-            reg.setD1_W(mm.readShort(reg.a4 + W_L.henka));
+            reg.setD1_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
             if ((short) reg.getD1_W() >= 0) {
-                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3));
+                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3) & 0xffff);
                 _ch_fm_porta_calc();
-                if (reg.getD2_W() >= mm.readShort(reg.a4 + W_L.mokuhyou)) {
+                if (reg.getD2_W() >= (mm.readShort(reg.a4 + W_L.mokuhyou) & 0xffff)) {
                     _ch_fm_bend_end();
                     return;
                 }
@@ -3311,9 +3311,9 @@ public class DevOpn {
                 _set_fnum2();
                 return;
             }
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3) & 0xffff);
             _ch_fm_porta_calc();
-            if (reg.getD2_W() < mm.readShort(reg.a4 + W_L.mokuhyou)) {
+            if (reg.getD2_W() < (mm.readShort(reg.a4 + W_L.mokuhyou) & 0xffff)) {
                 _ch_fm_bend_end();
                 return;
             }
@@ -3325,20 +3325,20 @@ public class DevOpn {
         int f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
-            reg.setD1_W(mm.readShort(reg.a4 + W_L.henka));
+            reg.setD1_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
             if ((short) reg.getD1_W() >= 0) {
-                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s4));
+                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s4) & 0xffff);
                 _ch_fm_porta_calc();
-                if (reg.getD2_W() >= mm.readShort(reg.a4 + W_L.mokuhyou)) {
+                if (reg.getD2_W() >= (mm.readShort(reg.a4 + W_L.mokuhyou) & 0xffff)) {
                     _ch_fm_bend_end();
                     return;
                 }
                 mm.write(reg.a5 + W.keycode2_s4, (short) reg.getD2_W());
                 mm.write(reg.a5 + W.keycode3_s4, (short) reg.getD2_W());
             } else {
-                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s4));
+                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s4) & 0xffff);
                 _ch_fm_porta_calc();
-                if (reg.getD2_W() < mm.readShort(reg.a4 + W_L.mokuhyou)) {
+                if (reg.getD2_W() < (mm.readShort(reg.a4 + W_L.mokuhyou) & 0xffff)) {
                     _ch_fm_bend_end();
                     return;
                 }
@@ -3350,20 +3350,20 @@ public class DevOpn {
         f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
-            reg.setD1_W(mm.readShort(reg.a4 + W_L.henka));
+            reg.setD1_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
             if ((short) reg.getD1_W() >= 0) {
                 reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3));
                 _ch_fm_porta_calc();
-                if (reg.getD2_W() >= mm.readShort(reg.a4 + W_L.mokuhyou)) {
+                if (reg.getD2_W() >= (mm.readShort(reg.a4 + W_L.mokuhyou) & 0xffff)) {
                     _ch_fm_bend_end();
                     return;
                 }
                 mm.write(reg.a5 + W.keycode2_s3, (short) reg.getD2_W());
                 mm.write(reg.a5 + W.keycode3_s3, (short) reg.getD2_W());
             } else {
-                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3));
+                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3) & 0xffff);
                 _ch_fm_porta_calc();
-                if (reg.getD2_W() < mm.readShort(reg.a4 + W_L.mokuhyou)) {
+                if (reg.getD2_W() < (mm.readShort(reg.a4 + W_L.mokuhyou) & 0xffff)) {
                     _ch_fm_bend_end();
                     return;
                 }
@@ -3375,20 +3375,20 @@ public class DevOpn {
         f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
-            reg.setD1_W(mm.readShort(reg.a4 + W_L.henka));
+            reg.setD1_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
             if ((short) reg.getD1_W() >= 0) {
-                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2));
+                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2) & 0xffff);
                 _ch_fm_porta_calc();
-                if (reg.getD2_W() >= mm.readShort(reg.a4 + W_L.mokuhyou)) {
+                if (reg.getD2_W() >= (mm.readShort(reg.a4 + W_L.mokuhyou) & 0xffff)) {
                     _ch_fm_bend_end();
                     return;
                 }
                 mm.write(reg.a5 + W.keycode2_s2, (short) reg.getD2_W());
                 mm.write(reg.a5 + W.keycode3_s2, (short) reg.getD2_W());
             } else {
-                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2));
+                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2) & 0xffff);
                 _ch_fm_porta_calc();
-                if (reg.getD2_W() < mm.readShort(reg.a4 + W_L.mokuhyou)) {
+                if (reg.getD2_W() < (mm.readShort(reg.a4 + W_L.mokuhyou) & 0xffff)) {
                     _ch_fm_bend_end();
                     return;
                 }
@@ -3400,20 +3400,20 @@ public class DevOpn {
         f = reg.getD5_B() & 0x80;
         reg.setD5_B(reg.getD5_B() << 1);
         if (f != 0) {
-            reg.setD1_W(mm.readShort(reg.a4 + W_L.henka));
+            reg.setD1_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
             if ((short) reg.getD1_W() >= 0) {
-                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1));
+                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1) & 0xffff);
                 _ch_fm_porta_calc();
-                if (reg.getD2_W() >= mm.readShort(reg.a4 + W_L.mokuhyou)) {
+                if (reg.getD2_W() >= (mm.readShort(reg.a4 + W_L.mokuhyou) & 0xffff)) {
                     _ch_fm_bend_end();
                     return;
                 }
                 mm.write(reg.a5 + W.keycode2_s1, (short) reg.getD2_W());
                 mm.write(reg.a5 + W.keycode3_s1, (short) reg.getD2_W());
             } else {
-                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1));
+                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1) & 0xffff);
                 _ch_fm_porta_calc();
-                if (reg.getD2_W() < mm.readShort(reg.a4 + W_L.mokuhyou)) {
+                if (reg.getD2_W() < (mm.readShort(reg.a4 + W_L.mokuhyou) & 0xffff)) {
                     _ch_fm_bend_end();
                     return;
                 }
@@ -3431,7 +3431,7 @@ public class DevOpn {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
 
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.key2));
+        reg.setD0_B(mm.readByte(reg.a5 + W.key2) & 0xff);
         mm.write(reg.a5 + W.key, (byte) reg.getD0_B());
 
         reg.D1_L = 0;
@@ -3454,14 +3454,14 @@ public class DevOpn {
      */
     public void _ch_fm_porta() {
         reg.a4 = reg.a5 + W.p_pattern4;
-        reg.setD5_B(mm.readByte(reg.a5 + W.ch3));
+        reg.setD5_B(mm.readByte(reg.a5 + W.ch3) & 0xff);
         if (reg.getD5_B() != 0) { // break _ch_fm_porta_normal;
 
             int f = reg.getD5_B() & 0x10;
             reg.setD5_B(reg.getD5_B() >> 5);
             if (f != 0) {
-                reg.setD1_W(mm.readShort(reg.a4 + W_L.henka));
-                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1));
+                reg.setD1_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
+                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1) & 0xffff);
                 _ch_fm_porta_calc();
                 mm.write(reg.a5 + W.keycode2_s1, (short) reg.getD2_W());
                 mm.write(reg.a5 + W.keycode3_s1, (short) reg.getD2_W());
@@ -3470,8 +3470,8 @@ public class DevOpn {
             f = reg.getD5_B() & 0x1;
             reg.setD5_B(reg.getD5_B() >> 1);
             if (f != 0) {
-                reg.setD1_W(mm.readShort(reg.a4 + W_L.henka));
-                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2));
+                reg.setD1_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
+                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2) & 0xffff);
                 _ch_fm_porta_calc();
                 mm.write(reg.a5 + W.keycode2_s2, (short) reg.getD2_W());
                 mm.write(reg.a5 + W.keycode3_s2, (short) reg.getD2_W());
@@ -3480,8 +3480,8 @@ public class DevOpn {
             f = reg.getD5_B() & 0x1;
             reg.setD5_B(reg.getD5_B() >> 1);
             if (f != 0) {
-                reg.setD1_W(mm.readShort(reg.a4 + W_L.henka));
-                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3));
+                reg.setD1_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
+                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3) & 0xffff);
                 _ch_fm_porta_calc();
                 mm.write(reg.a5 + W.keycode2_s3, (short) reg.getD2_W());
                 mm.write(reg.a5 + W.keycode3_s3, (short) reg.getD2_W());
@@ -3490,8 +3490,8 @@ public class DevOpn {
             f = reg.getD5_B() & 0x1;
             reg.setD5_B(reg.getD5_B() >> 1);
             if (f != 0) {
-                reg.setD1_W(mm.readShort(reg.a4 + W_L.henka));
-                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3));
+                reg.setD1_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
+                reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3) & 0xffff);
                 _ch_fm_porta_calc();
                 mm.write(reg.a5 + W.keycode2_s3, (short) reg.getD2_W());
                 mm.write(reg.a5 + W.keycode3_s3, (short) reg.getD2_W());
@@ -3499,17 +3499,17 @@ public class DevOpn {
 //            break L2;
         } else {
 // _ch_fm_porta_normal:
-            reg.setD1_W(mm.readShort(reg.a4 + W_L.henka));
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3));
+            reg.setD1_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3) & 0xffff);
         }
 // L2:
-        mm.write(reg.a4 + W_L.count, (byte) (mm.readByte(reg.a4 + W_L.count) - 1));
+        mm.write(reg.a4 + W_L.count, (byte) ((mm.readByte(reg.a4 + W_L.count) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_L.count) == 0) {
             mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
             mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfd));
             mm.write(reg.a4 + W_L.bendwork, (short) 0);
             reg.D0_L = 0;
-            reg.setD0_B(mm.readByte(reg.a5 + W.key2));
+            reg.setD0_B(mm.readByte(reg.a5 + W.key2) & 0xff);
             mm.write(reg.a5 + W.key, (byte) reg.getD0_B());
             reg.D1_L = 0;
             reg.setD2_W(0x800);
@@ -3536,20 +3536,20 @@ public class DevOpn {
         reg.setD3_W(reg.getD2_W());
         reg.setD2_W(reg.getD2_W() & 0x7ff);
         reg.setD3_W(reg.getD3_W() & 0x3800);
-        mm.write(reg.a4 + W_L.bendwork, (short) (mm.readShort(reg.a4 + W_L.bendwork) + (short) reg.getD1_W()));
+        mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) + (short) reg.getD1_W()));
         reg.setD2_W(reg.getD2_W() + (int) (short) reg.getD1_W());
         if (mm.readShort(reg.a4 + W_L.henka_work) != 0) { // break _ch_fm_porta_c;
             if (mm.readShort(reg.a4 + W_L.henka_work) >= 0) { // break _ch_fm_porta_m;
 
-                mm.write(reg.a4 + W_L.henka_work, (short) (mm.readShort(reg.a4 + W_L.henka_work) - 1));
-                mm.write(reg.a4 + W_L.bendwork, (short) (mm.readShort(reg.a4 + W_L.bendwork) + 1));
+                mm.write(reg.a4 + W_L.henka_work, (short) ((mm.readShort(reg.a4 + W_L.henka_work) & 0xffff) - 1));
+                mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) + 1));
                 reg.setD2_W(reg.getD2_W() + 1);
 //                break _ch_fm_porta_c;
             } else {
 // _ch_fm_porta_m:
 
-                mm.write(reg.a4 + W_L.henka_work, (short) (mm.readShort(reg.a4 + W_L.henka_work) + 1));
-                mm.write(reg.a4 + W_L.bendwork, (short) (mm.readShort(reg.a4 + W_L.bendwork) - 1));
+                mm.write(reg.a4 + W_L.henka_work, (short) ((mm.readShort(reg.a4 + W_L.henka_work) & 0xffff) + 1));
+                mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) - 1));
                 reg.setD2_W(reg.getD2_W() - 1);
             }
         }
@@ -3587,7 +3587,7 @@ public class DevOpn {
      */
     public void _ch_fm_p_0() {
         comlfo.comLfoSaw();
-        mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
+        mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fm_p_calc3();
     }
 
@@ -3596,7 +3596,7 @@ public class DevOpn {
      */
     public void _ch_fm_p_1() {
         comlfo.comLfoPortament();
-        mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
+        mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fm_p_calc3();
     }
 
@@ -3605,7 +3605,7 @@ public class DevOpn {
      */
     public void _ch_fm_p_2() {
         comlfo.comLfoTriangle();
-        mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
+        mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fm_p_calc3();
     }
 
@@ -3614,7 +3614,7 @@ public class DevOpn {
      */
     public void _ch_fm_p_3() {
         comlfo.comLfoPortament();
-        mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
+        mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fm_p_calc2();
     }
 
@@ -3623,7 +3623,7 @@ public class DevOpn {
      */
     public void _ch_fm_p_4() {
         comlfo.comLfoTriangle();
-        mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
+        mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fm_p_calc2();
     }
 
@@ -3631,15 +3631,15 @@ public class DevOpn {
      * pitch LFO delta 3
      */
     public void _ch_fm_p_5() {
-        mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
+        mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) return;
 
         mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
-        reg.setD2_W(mm.readShort(reg.a5 + W.keycode));
-        reg.setD1_W(mm.readShort(reg.a4 + W_L.henka_work));
+        reg.setD2_W(mm.readShort(reg.a5 + W.keycode) & 0xffff);
+        reg.setD1_W(mm.readShort(reg.a4 + W_L.henka_work) & 0xffff);
         if ((short) reg.getD1_W() < 0) { // break _ch_fm_p_5_plus;
 
-            mm.write(reg.a4 + W_L.bendwork, (short) (mm.readShort(reg.a4 + W_L.bendwork) + 1));
+            mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) + 1));
             reg.setD2_W(reg.getD2_W() + (int) (short) reg.getD1_W());
             if ((short) reg.getD2_W() < 0) { // break _ch_fm_p_5_common;
                 reg.D2_L = 0;
@@ -3647,7 +3647,7 @@ public class DevOpn {
             }
         } else {
 // _ch_fm_p_5_plus:
-            mm.write(reg.a4 + W_L.bendwork, (short) (mm.readShort(reg.a4 + W_L.bendwork) + (short) reg.getD1_W()));
+            mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) + (short) reg.getD1_W()));
             reg.setD2_W(reg.getD2_W() + (int) (short) reg.getD1_W());
             if ((short) reg.getD2_W() < 0) { // break _ch_fm_p_5_common;
                 reg.setD2_W(0x3fff);
@@ -3655,13 +3655,13 @@ public class DevOpn {
         }
 // _ch_fm_p_5_common:
         if (mm.readByte(reg.a5 + W.ch3) != 0) {
-            mm.write(reg.a5 + W.keycode_s1, (short) (mm.readShort(reg.a5 + W.keycode_s1) + (short) reg.getD1_W()));
-            mm.write(reg.a5 + W.keycode_s2, (short) (mm.readShort(reg.a5 + W.keycode_s2) + (short) reg.getD1_W()));
-            mm.write(reg.a5 + W.keycode_s3, (short) (mm.readShort(reg.a5 + W.keycode_s3) + (short) reg.getD1_W()));
-            mm.write(reg.a5 + W.keycode_s4, (short) (mm.readShort(reg.a5 + W.keycode_s4) + (short) reg.getD1_W()));
+            mm.write(reg.a5 + W.keycode_s1, (short) ((mm.readShort(reg.a5 + W.keycode_s1) & 0xffff) + (short) reg.getD1_W()));
+            mm.write(reg.a5 + W.keycode_s2, (short) ((mm.readShort(reg.a5 + W.keycode_s2) & 0xffff) + (short) reg.getD1_W()));
+            mm.write(reg.a5 + W.keycode_s3, (short) ((mm.readShort(reg.a5 + W.keycode_s3) & 0xffff) + (short) reg.getD1_W()));
+            mm.write(reg.a5 + W.keycode_s4, (short) ((mm.readShort(reg.a5 + W.keycode_s4) & 0xffff) + (short) reg.getD1_W()));
         }
         _set_fnum2();
-        mm.write(reg.a4 + W_L.count_work, (byte) (mm.readByte(reg.a4 + W_L.count_work) - 1));
+        mm.write(reg.a4 + W_L.count_work, (byte) ((mm.readByte(reg.a4 + W_L.count_work) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_L.count_work) == 0) {
             mm.write(reg.a4 + W_L.count_work, mm.readByte(reg.a4 + W_L.count));
             mm.write(reg.a4 + W_L.henka_work, (short) (-(short) mm.readShort(reg.a4 + W_L.henka_work)));
@@ -3673,7 +3673,7 @@ public class DevOpn {
      */
     public void _ch_fm_p_6() {
         comlfo.comLfoOneshot();
-        mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
+        mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fm_p_calc3();
     }
 
@@ -3682,7 +3682,7 @@ public class DevOpn {
      */
     public void _ch_fm_p_7() {
         comlfo.comLfoOneshot();
-        mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
+        mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
         _ch_fm_p_calc2();
     }
 
@@ -3690,7 +3690,7 @@ public class DevOpn {
      * wave-memory pitch
      */
     public void _ch_fm_p_wavememory() {
-        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag));
+        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag) & 0xffff);
         if ((short) reg.getD4_W() >= 0) {
             _fm_p_wave_exec();
             return;
@@ -3710,17 +3710,17 @@ public class DevOpn {
 
     public void _fm_p_wave_exec() {
         comwave._com_wave_exec();
-        mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD0_W()));
+        mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD0_W()));
         _ch_fm_p_calc();
     }
 
     /** */
     public void _ch_fm_p_calc() {
-        reg.setD4_B(mm.readByte(reg.a5 + W.ch3));
+        reg.setD4_B(mm.readByte(reg.a5 + W.ch3) & 0xff);
         if (reg.getD4_B() == 0) {
             if (mm.readByte(reg.a5 + W.ch3mode) != 0) return;
 
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3) & 0xffff);
             // pea _set_fnum2(pc)
             _ex_slot_calc();
             _set_fnum2();
@@ -3730,7 +3730,7 @@ public class DevOpn {
         int f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s4));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s4) & 0xffff);
             _ex_slot_calc();
             mm.write(reg.a5 + W.keycode2_s4, (short) reg.getD2_W());
         }
@@ -3738,7 +3738,7 @@ public class DevOpn {
         f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3) & 0xffff);
             _ex_slot_calc();
             mm.write(reg.a5 + W.keycode2_s3, (short) reg.getD2_W());
         }
@@ -3746,7 +3746,7 @@ public class DevOpn {
         f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2) & 0xffff);
             _ex_slot_calc();
             mm.write(reg.a5 + W.keycode2_s2, (short) reg.getD2_W());
         }
@@ -3754,7 +3754,7 @@ public class DevOpn {
         f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1) & 0xffff);
             _ex_slot_calc();
             mm.write(reg.a5 + W.keycode2_s1, (short) reg.getD2_W());
         }
@@ -3764,10 +3764,10 @@ public class DevOpn {
 
     /** */
     public void _ch_fm_p_calc2() {
-        reg.setD4_B(mm.readByte(reg.a5 + W.ch3));
+        reg.setD4_B(mm.readByte(reg.a5 + W.ch3) & 0xff);
         if (reg.getD4_B() == 0) {
             // pea _set_fnum2(pc)
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3) & 0xffff);
             _ex_slot_calc2();
             _set_fnum2();
             return;
@@ -3776,7 +3776,7 @@ public class DevOpn {
         int f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s4));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s4) & 0xffff);
             _ex_slot_calc2();
             mm.write(reg.a5 + W.keycode2_s4, (short) reg.getD2_W());
         }
@@ -3784,7 +3784,7 @@ public class DevOpn {
         f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3) & 0xffff);
             _ex_slot_calc2();
             mm.write(reg.a5 + W.keycode2_s3, (short) reg.getD2_W());
         }
@@ -3792,7 +3792,7 @@ public class DevOpn {
         f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2) & 0xffff);
             _ex_slot_calc2();
             mm.write(reg.a5 + W.keycode2_s2, (short) reg.getD2_W());
         }
@@ -3800,7 +3800,7 @@ public class DevOpn {
         f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1) & 0xffff);
             _ex_slot_calc2();
             mm.write(reg.a5 + W.keycode2_s1, (short) reg.getD2_W());
         }
@@ -3810,11 +3810,11 @@ public class DevOpn {
 
     /** */
     public void _ch_fm_p_calc3() {
-        reg.setD4_B(mm.readByte(reg.a5 + W.ch3));
+        reg.setD4_B(mm.readByte(reg.a5 + W.ch3) & 0xff);
         if (reg.getD4_B() == 0) {
             if (mm.readByte(reg.a5 + W.ch3mode) != 0) return;
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3));
-            reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.addkeycode));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3) & 0xffff);
+            reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.addkeycode) & 0xffff));
             _set_fnum2();
             return;
         }
@@ -3822,29 +3822,29 @@ public class DevOpn {
         int f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s4));
-            reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.addkeycode));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s4) & 0xffff);
+            reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.addkeycode) & 0xffff));
             mm.write(reg.a5 + W.keycode2_s4, (short) reg.getD2_W());
         }
 
         f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3));
-            reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.addkeycode));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s3) & 0xffff);
+            reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.addkeycode) & 0xffff));
             mm.write(reg.a5 + W.keycode2_s3, (short) reg.getD2_W());
         }
 
         f = reg.getD4_B() & 0x80;
         reg.setD4_B(reg.getD4_B() << 1);
         if (f != 0) {
-            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2));
-            reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.addkeycode));
+            reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s2) & 0xffff);
+            reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.addkeycode) & 0xffff));
             mm.write(reg.a5 + W.keycode2_s2, (short) reg.getD2_W());
         }
 
-        reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1));
-        reg.setD2_W(reg.getD2_W() + mm.readShort(reg.a5 + W.addkeycode));
+        reg.setD2_W(mm.readShort(reg.a5 + W.keycode3_s1) & 0xffff);
+        reg.setD2_W(reg.getD2_W() + (mm.readShort(reg.a5 + W.addkeycode) & 0xffff));
         mm.write(reg.a5 + W.keycode2_s1, (short) reg.getD2_W());
 
         _set_fnum2();
@@ -3854,21 +3854,21 @@ public class DevOpn {
      * wowwow
      */
     public void _ch_fm_ww() {
-        mm.write(reg.a4 + W_Ww.delay_work, (byte) (mm.readByte(reg.a4 + W_Ww.delay_work) - 1));
+        mm.write(reg.a4 + W_Ww.delay_work, (byte) ((mm.readByte(reg.a4 + W_Ww.delay_work) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_Ww.delay_work) != 0) return;
 
         mm.write(reg.a4 + W_Ww.delay_work, mm.readByte(reg.a4 + W_Ww.speed));
-        reg.setD4_B(mm.readByte(reg.a4 + W_Ww.work));
-        reg.setD4_B(reg.getD4_B() + mm.readByte(reg.a4 + W_Ww.rate_work));
+        reg.setD4_B(mm.readByte(reg.a4 + W_Ww.work) & 0xff);
+        reg.setD4_B(reg.getD4_B() + (mm.readByte(reg.a4 + W_Ww.rate_work) & 0xff));
         mm.write(reg.a4 + W_Ww.work, (byte) reg.getD4_B());
 
         reg.a2 = mm.readInt(reg.a5 + W.voiceptr);
         reg.D1_L = 0x40;
-        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
-        reg.setD3_B(mm.readByte(reg.a4 + W_Ww.slot));
+        reg.setD1_B(reg.getD1_B() + (mm.readByte(reg.a5 + W.dev) & 0xff));
+        reg.setD3_B(mm.readByte(reg.a4 + W_Ww.slot) & 0xff);
         reg.D2_L = 4 - 1;
         do {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             int f = reg.getD3_B() & 1;
             reg.setD3_B(reg.getD3_B() >> 1);
             if (f != 0) {
@@ -3881,7 +3881,7 @@ public class DevOpn {
             reg.setD1_W(reg.getD1_W() + 4);
         } while (reg.decAfterD2_W() != 0);
 
-        mm.write(reg.a4 + W_Ww.depth_work, (byte) (mm.readByte(reg.a4 + W_Ww.depth_work) - 1));
+        mm.write(reg.a4 + W_Ww.depth_work, (byte) ((mm.readByte(reg.a4 + W_Ww.depth_work) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_Ww.depth_work) != 0) return;
         mm.write(reg.a4 + W_Ww.depth_work, mm.readByte(reg.a4 + W_Ww.depth));
         mm.write(reg.a4 + W_Ww.rate_work, (byte) (-(byte) mm.readByte(reg.a4 + W_Ww.rate_work)));
@@ -3895,17 +3895,17 @@ public class DevOpn {
         if (reg.D1_L == 0) return;
         reg.a2 = reg.D1_L;
         reg.D0_L = 6;
-        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.fbcon));
+        reg.setD0_B(reg.getD0_B() & (mm.readByte(reg.a5 + W.fbcon) & 0xff));
         reg.a0 = Ab.dummyAddress; // _fm_vol_con_pat;
         reg.setD3_B(_fm_vol_con_pat[reg.getD0_W()]); // mm.readByte(Reg.a0 + reg.getD0_W());
 
         reg.D1_L = 0x40;
-        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
+        reg.setD1_B(reg.getD1_B() + (mm.readByte(reg.a5 + W.dev) & 0xff));
         reg.D2_L = 4 - 1;
-        reg.setD5_B(mm.readByte(reg.a5 + W.ch3tl));
+        reg.setD5_B(mm.readByte(reg.a5 + W.ch3tl) & 0xff);
         //_FM_F2_init_loop:
         do {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             int f = reg.getD5_B() & 1;
             reg.setD5_B(reg.getD5_B() >> 1);
             if (f == 0) {
@@ -3949,7 +3949,7 @@ public class DevOpn {
         reg.setD0_W(reg.getD0_W() & 3);
         reg.setD0_B(_fm_effect_pan_table[reg.getD0_W()]);
         reg.D1_L = 0x3f;
-        reg.setD1_B(reg.getD1_B() & mm.readByte(reg.a5 + W.pan_ampm));
+        reg.setD1_B(reg.getD1_B() & (mm.readByte(reg.a5 + W.pan_ampm) & 0xff));
         reg.setD0_B(reg.getD0_B() | reg.getD1_B());
         mm.write(reg.a5 + W.pan_ampm, (byte) reg.getD0_B());
         mm.write(reg.a5 + W.reverb_pan_work, (byte) reg.getD0_B());

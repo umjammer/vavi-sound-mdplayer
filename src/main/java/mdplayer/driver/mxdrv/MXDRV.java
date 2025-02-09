@@ -29,6 +29,7 @@ import mdplayer.plugin.BasePlugin;
 import mdsound.instrument.X68kYm2151Inst;
 import mdsound.x68sound.X68Sound;
 import vavi.util.ByteUtil;
+import vavi.util.Debug;
 
 import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
@@ -429,16 +430,17 @@ public class MXDRV extends BaseDriver {
     private void makeMdxBuf(byte[] buf, byte[][] mdx, int[] mdxSize, String[] pdxFileName) {
         // Skip title
         int p = 8;
-        byte c;
+        int c;
+        mdxSize[0] = buf.length;
         mdx[0] = new byte[buf.length + 8];
         System.arraycopy(buf, 0, mdx[0], 8, mdxSize[0]);
 
         while (true) {
-            c = mdx[0][p++];
+            c = mdx[0][p++] & 0xff;
             if (c == 0x0d) break;
             if (c == 0x0a) break;
             if (c < 0x20) {
-                if (c != 0x1b) throw new IllegalStateException();
+                if (c != 0x1b) throw new IllegalArgumentException("illegal char: " + Integer.toHexString(c));
             }
         }
         p--;
@@ -497,8 +499,8 @@ public class MXDRV extends BaseDriver {
         pdx[0][1] = 0x00;
         pdx[0][2] = 0x00;
         pdx[0][3] = 0x00;
-        pdx[0][4] = (byte) (((8 + pdxFileName.length() + 2) & 0xfffffffe) >> 8);
-        pdx[0][5] = (byte) ((8 + pdxFileName.length() + 2) & 0xfffffffe);
+        pdx[0][4] = (byte) (((8 + pdxFileName.length() + 2) & 0xffff_fffe) >> 8);
+        pdx[0][5] = (byte) ((8 + pdxFileName.length() + 2) & 0xffff_fffe);
         pdx[0][4] = (byte) ((8 + pdxFileName.length() + 1) >> 8);
         pdx[0][5] = (byte) (8 + pdxFileName.length() + 1);
         pdx[0][6] = (byte) ((pdxFileName.length() + 1) >> 8);
@@ -508,11 +510,11 @@ public class MXDRV extends BaseDriver {
 
     public static void getPDXFileName(byte[] buf, String[] pdx) {
         int p = 0;
-        byte c;
+        int c;
         while (true) {
-            c = buf[p++];
+            c = buf[p++] & 0xff;
             if (c == 0x0d || c == 0x0a) break;
-            if (c < 0x20 && c != 0x1b) throw new IllegalStateException();
+            if (c < 0x20 && c != 0x1b) throw new IllegalArgumentException("illegal char: " + Integer.toHexString(c));
         }
         if ((p & 0x01) != 0) p++;
         if (c != 0x0d) while (buf[p++] != 0x0d) ;
@@ -520,7 +522,7 @@ public class MXDRV extends BaseDriver {
         if (buf[p] == 0) return;
         List<Byte> lstPdxfileName = new ArrayList<>();
         while (buf[p] != 0x00) lstPdxfileName.add(buf[p++]);
-        pdx[0] = new String(toByteArray(lstPdxfileName), Charset.forName("MS932"));
+        pdx[0] = new String(ByteUtil.toByteArray(lstPdxfileName), Charset.forName("MS932"));
     }
 
     // private double deltaCnt = 0;
@@ -583,11 +585,11 @@ public class MXDRV extends BaseDriver {
 
     private final Object CS_OPMINT = new Object();
 
-    private static final byte[] CarrierSlot = {
+    private static final int[] CarrierSlot = {
             0x08, 0x08, 0x08, 0x08, 0x0c, 0x0e, 0x0e, 0x0f,
     };
 
-    private static final byte[] KeyCode = {
+    private static final int[] KeyCode = {
             0x00, 0x01, 0x02, 0x04, 0x05, 0x06, 0x08, 0x09,
             0x0a, 0x0c, 0x0d, 0x0e, 0x10, 0x11, 0x12, 0x14,
             0x15, 0x16, 0x18, 0x19, 0x1a, 0x1c, 0x1d, 0x1e,
@@ -602,23 +604,23 @@ public class MXDRV extends BaseDriver {
             0x75, 0x76, 0x78, 0x79, 0x7a, 0x7c, 0x7d, 0x7e,
     };
 
-    private static final byte[] Volume = {
+    private static final int[] Volume = {
             0x2a, 0x28, 0x25, 0x22, 0x20, 0x1d, 0x1a, 0x18,
             0x15, 0x12, 0x10, 0x0d, 0x0a, 0x08, 0x05, 0x02,
     };
 
-    private static final byte[] PCMVolume = {
+    private static final int[] PCMVolume = {
             0x0f, 0x0f, 0x0f, 0x0e, 0x0e, 0x0e, 0x0d, 0x0d,
             0x0d, 0x0c, 0x0c, 0x0b, 0x0b, 0x0b, 0x0a, 0x0a,
             0x0a, 0x09, 0x09, 0x08, 0x08, 0x08, 0x07, 0x07,
             0x07, 0x06, 0x06, 0x05, 0x05, 0x05, 0x04, 0x04,
             0x04, 0x03, 0x03, 0x02, 0x02, 0x02, 0x01, 0x01,
-            0x01, 0x00, 0x00, (byte) 0xff,
+            0x01, 0x00, 0x00, 0xff,
     };
 
     private int L0019b2;
     Runnable[] L001252;
-    Runnable[] jumptable;
+    Runnable[] jumpTable;
     Runnable[] L0016aa;
     Runnable[] L0010b4_Table;
     Runnable[] L001116Table;
@@ -660,7 +662,7 @@ public class MXDRV extends BaseDriver {
                 this::L001442,
         };
 
-        jumptable = new Runnable[] {
+        jumpTable = new Runnable[] {
                 this::L_FREE,
                 this::L_ERROR,
                 this::L_SETMDX,
@@ -730,7 +732,7 @@ public class MXDRV extends BaseDriver {
             int mdxbuf,
             int pdxbuf,
             int opmmode,
-            int opmflag /* =1 */,
+            int opmflag /* = 1 */,
             int adpcmflag /* = 1 */
     ) {
         int ret;
@@ -756,10 +758,10 @@ public class MXDRV extends BaseDriver {
         mm = new XMemory();
         mm.alloc(memInd);
 
-        mm.write(G + MXWORK_GLOBAL.MEASURETIMELIMIT, (int) ((long) ((1000 * (60 * 20 - 2))) * 4000 / 1024)); // 20min-2sec
-        mm.write(L0019b2 + 0, 0x7f);
-        mm.write(L0019b2 + 1, 0xf1);
-        mm.write(L0019b2 + 2, 0x00);
+        mm.write(G + MXWORK_GLOBAL.MEASURETIMELIMIT, (int) (((1000L * (60 * 20 - 2))) * 4000 / 1024)); // 20min-2sec
+        mm.write(L0019b2 + 0, (byte) 0x7f);
+        mm.write(L0019b2 + 1, (byte) 0xf1);
+        mm.write(L0019b2 + 2, (byte) 0x00);
 
         ret = 0; // x68Sound.Load();
         if (ret != 0) {
@@ -794,7 +796,7 @@ public class MXDRV extends BaseDriver {
             return MXDRV_ERR.MEMORY.ordinal();
         }
 
-        return (0);
+        return 0;
     }
 
     private void MXDRV_End() {
@@ -884,7 +886,7 @@ public class MXDRV extends BaseDriver {
         if (mm.readShort(G + MXWORK_GLOBAL.L002246) == (short) 65535) {
             terminatePlay = true;
         } else {
-            loopCount = mm.readShort(G + MXWORK_GLOBAL.L002246);
+            loopCount = mm.readShort(G + MXWORK_GLOBAL.L002246) & 0xffff;
             if (!fadeoutStart) {
                 if (loopCount >= loopLimit) {
                     if (reqFadeout) {
@@ -938,7 +940,7 @@ public class MXDRV extends BaseDriver {
         }
 
         reg.d0 = 0x0f;
-        reg.d1 = 0xffffffff;
+        reg.d1 = 0xffff_ffff;
         MXDRV_(reg);
 
         while (!terminatePlay) OPMINTFUNC();
@@ -978,7 +980,7 @@ public class MXDRV extends BaseDriver {
         chmaskback = mm.readShort(G + MXWORK_GLOBAL.L001e1c);
 
         reg.d0 = 0x0f;
-        reg.d1 = 0xffffffff;
+        reg.d1 = 0xffff_ffff;
         MXDRV_(reg);
 
         opmwaitback = mdxPCM.chips[0].opmWait(-1);
@@ -1063,12 +1065,11 @@ public class MXDRV extends BaseDriver {
             if (mm.readByte(G + MXWORK_GLOBAL.STOPMUSICTIMER) == 0) {
                 mm.write(G + MXWORK_GLOBAL.PLAYTIME,
                         mm.readInt(G + MXWORK_GLOBAL.PLAYTIME)
-                                + (256 - mm.readByte(G + MXWORK_GLOBAL.MUSICTIMER))
+                                + (256 - (mm.readByte(G + MXWORK_GLOBAL.MUSICTIMER) & 0xff))
                 ); // OPMBUF[0x12];
             }
             if (MXCALLBACK_OPMINT != null) MXCALLBACK_OPMINT.run();
         }
-
     }
 
     private void SETOPMINT(Runnable func) {
@@ -1100,7 +1101,7 @@ public class MXDRV extends BaseDriver {
         A7 = reg.a7;
 
         if (D0 >= 0x20) return;
-        jumptable[D0].run();
+        jumpTable[D0].run();
 
         reg.d0 = D0;
         reg.d1 = D1;
@@ -1152,46 +1153,46 @@ public class MXDRV extends BaseDriver {
         if (D1 < 0) {
             mm.write(G + MXWORK_GLOBAL.L001e0e, (byte) D1);
         } else {
-            D0 = mm.readByte(G + MXWORK_GLOBAL.L001e0e);
+            D0 = mm.readByte(G + MXWORK_GLOBAL.L001e0e) & 0xff;
         }
     }
 
     // 
     private void L_12() {
-        D0 = mm.readByte(G + MXWORK_GLOBAL.L001e12) * 256
-                + mm.readByte(G + MXWORK_GLOBAL.L001e13);
+        D0 = (mm.readByte(G + MXWORK_GLOBAL.L001e12) & 0xff) * 256
+                + (mm.readByte(G + MXWORK_GLOBAL.L001e13) & 0xff);
     }
 
     // 
     private void L_13() {
-        D0 = mm.readByte(G + MXWORK_GLOBAL.L001e0a);
+        D0 = mm.readByte(G + MXWORK_GLOBAL.L001e0a) & 0xff;
         mm.write(G + MXWORK_GLOBAL.L001e0a, (byte) D1);
     }
 
     // 
     private void L_14() {
-        D0 = (short) ~mm.readShort(G + MXWORK_GLOBAL.L001e06);
+        D0 = (short) ~(mm.readShort(G + MXWORK_GLOBAL.L001e06) & 0xffff);
     }
 
     // 
     private void L_15() {
-        D0 = mm.readByte(G + MXWORK_GLOBAL.L001e0b);
+        D0 = mm.readByte(G + MXWORK_GLOBAL.L001e0b) & 0xff;
         mm.write(G + MXWORK_GLOBAL.L001e0b, (byte) D1);
     }
 
     // 
     private void L_16() {
-        D0 = mm.readByte(G + MXWORK_GLOBAL.L001e08);
+        D0 = mm.readByte(G + MXWORK_GLOBAL.L001e08) & 0xff;
         mm.write(G + MXWORK_GLOBAL.L001e08, (byte) D1);
         L_STOP();
     }
 
     // 
     private void L_17() {
-        D0 = mm.readByte(G + MXWORK_GLOBAL.L001e08);
+        D0 = mm.readByte(G + MXWORK_GLOBAL.L001e08) & 0xff;
         if (D0 == 0) {
-            D0 = mm.readByte(G + MXWORK_GLOBAL.L001e12) * 256
-                    + mm.readByte(G + MXWORK_GLOBAL.L001e13);
+            D0 = (mm.readByte(G + MXWORK_GLOBAL.L001e12) & 0xff) * 256
+                    + (mm.readByte(G + MXWORK_GLOBAL.L001e13) & 0xff);
             return;
         }
         L0000dc();
@@ -1227,12 +1228,12 @@ exit:
                 a0_w[1] -= 2;
             } else {
                 A1 = G + MXWORK_GLOBAL.L001e14;
-                if (mm.readByte(A1) >= 0x0a) {
+                if ((mm.readByte(A1) & 0xff) >= 0x0a) {
                     mm.write(G + MXWORK_GLOBAL.L001e15, (byte) Depend.SET);
                 }
 
-                if (mm.readByte(A1) < 0x3e) {
-                    mm.write(A1, (byte) (mm.readByte(A1) + 1));
+                if ((mm.readByte(A1) & 0xff) < 0x3e) {
+                    mm.write(A1, (byte) ((mm.readByte(A1) & 0xff) + 1));
                     a0_w[1] = a0_w[0];
                 } else {
                     if (mm.readByte(G + MXWORK_GLOBAL.L001e18) != 0) {
@@ -1259,7 +1260,7 @@ exit:
             }
 
             A0 = G + MXWORK_GLOBAL.L001e0c;
-            D2 = mm.readByte(A0);
+            D2 = mm.readByte(A0) & 0xff;
             D1 = 0x12;
 
             if (mm.readByte(G + MXWORK_GLOBAL.L001e13) == 0) {
@@ -1271,7 +1272,7 @@ exit:
                 do {
                     L001050();
                     L0011b4();
-                    D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c);
+                    D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c) & 0xffff;
                     if ((D0 & (1 << D7)) == 0) {
                         L000c66();
                     }
@@ -1285,7 +1286,7 @@ exit:
                     do {
                         L001050();
                         L0011b4();
-                        D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c);
+                        D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c) & 0xffff;
                         if ((D0 & (1 << D7)) == 0) {
                             L000c66();
                         }
@@ -1312,8 +1313,8 @@ exit:
         A5 = a5;
         A6 = a6;
 
-        D0 = mm.readByte(G + MXWORK_GLOBAL.L001e12) * 256
-                + mm.readByte(G + MXWORK_GLOBAL.L001e13);
+        D0 = (mm.readByte(G + MXWORK_GLOBAL.L001e12) & 0xff) * 256
+                + (mm.readByte(G + MXWORK_GLOBAL.L001e13) & 0xff);
     }
 
     // 
@@ -1736,7 +1737,7 @@ exit:   {
 
     // 
     private void L_1D() {
-        D4 = mm.readByte(G + MXWORK_GLOBAL.L001e08);
+        D4 = mm.readByte(G + MXWORK_GLOBAL.L001e08) & 0xff;
         D3 = D1;
         mm.write(G + MXWORK_GLOBAL.L001e08, (byte) Depend.SET);
         D1 = 0xffff;
@@ -1752,7 +1753,7 @@ exit:   {
 
     // 
     private void L_1E() {
-        D4 = mm.readByte(G + MXWORK_GLOBAL.L001e08);
+        D4 = mm.readByte(G + MXWORK_GLOBAL.L001e08) & 0xff;
         D3 = D1;
         mm.write(G + MXWORK_GLOBAL.L001e1c, (short) 0xffff);
         mm.write(G + MXWORK_GLOBAL.L001e08, (byte) Depend.SET);
@@ -1788,7 +1789,7 @@ exit:   {
         }
         L00056a();
         D1 = 0x0000_0012;
-        D2 = mm.readByte(G + MXWORK_GLOBAL.L001e0c);
+        D2 = mm.readByte(G + MXWORK_GLOBAL.L001e0c) & 0xff;
         L_WRITEOPM();
         D1 = 0x0000_0014;
         D2 = 0x0000_003a;
@@ -1799,7 +1800,7 @@ exit:   {
 
     // 
     private void L_1F() {
-        D0 = mm.readShort(G + MXWORK_GLOBAL.L001ba6);
+        D0 = mm.readShort(G + MXWORK_GLOBAL.L001ba6) & 0xffff;
     }
 
     // 
@@ -1809,7 +1810,7 @@ exit:   {
             return;
         }
         if (D1 == (byte) 0xfc) {
-            D0 = mm.readByte(G + MXWORK_GLOBAL.L001e19);
+            D0 = mm.readByte(G + MXWORK_GLOBAL.L001e19) & 0xff;
             return;
         }
         if (D1 < 0) {
@@ -1863,6 +1864,7 @@ exit:   {
      * interrupt
      */
     private void L00056a() {
+Debug.println("here");
         mm.write(G + MXWORK_GLOBAL.L001e13, (byte) Depend.CLR);
         if (mm.readByte(G + MXWORK_GLOBAL.L001e08) == 0) {
             SETOPMINT(this::L_OPMINT);
@@ -2065,7 +2067,7 @@ exit:   {
     // 
     private void L000756() {
         D2 = 0x30;
-        D1 = mm.readByte(G + MXWORK_GLOBAL.L001e08);
+        D1 = mm.readByte(G + MXWORK_GLOBAL.L001e08) & 0xff;
         if (D1 == 0) {
             D2 = 0x3a;
         }
@@ -2151,7 +2153,7 @@ exit:   {
         mm.write(G + MXWORK_GLOBAL.L001e06, (short) 0x01ff);
         mm.write(G + MXWORK_GLOBAL.L002246, (short) Depend.CLR);
         mm.write(G + MXWORK_GLOBAL.L001ba6, (short) Depend.CLR);
-        D0 = mm.readByte(G + MXWORK_GLOBAL.L002230);
+        D0 = mm.readByte(G + MXWORK_GLOBAL.L002230) & 0xff;
         if (D0 == 0) {
             L_ERROR();
             return;
@@ -2367,11 +2369,11 @@ exit: {
                     mm.write(a0_w + 2, (short) (mm.readShort(a0_w + 2) - 2));
                 } else {
                     A1 = G + MXWORK_GLOBAL.L001e14;
-                    if (mm.readByte(A1) >= 0x0a) {
+                    if ((mm.readByte(A1) & 0xff) >= 0x0a) {
                         mm.write(G + MXWORK_GLOBAL.L001e15, (byte) Depend.SET);
                     }
-                    if (mm.readByte(A1) < 0x3e) {
-                        mm.write(A1, (byte) (mm.readByte(A1) + 1));
+                    if ((mm.readByte(A1) & 0xff) < 0x3e) {
+                        mm.write(A1, (byte) ((mm.readByte(A1) & 0xff) + 1));
                         mm.write(a0_w + 2, mm.readShort(a0_w + 0));
                     } else {
                         if (mm.readByte(G + MXWORK_GLOBAL.L001e18) != 0) {
@@ -2397,7 +2399,7 @@ exit: {
         }
 
         A0 = G + MXWORK_GLOBAL.L001e0c;
-        D2 = mm.readByte(A0);
+        D2 = mm.readByte(A0) & 0xff;
         D1 = 0x12;
 IL_892: { // java doesn't have goto statement, so what?
 IL_836: { // don't say those blocks ugly.
@@ -2435,13 +2437,13 @@ IL_7BF: { // w/o that, i couldn't port this method to java.
                                     break IL_800;
                                 }
                                 if (mm.readByte(G + MXWORK_GLOBAL.L001e10) == 0) {
-                                    mm.write(G + MXWORK_GLOBAL.L001e0e, (byte) (mm.readByte(G + MXWORK_GLOBAL.L001e0e) - 1));
+                                    mm.write(G + MXWORK_GLOBAL.L001e0e, (byte) ((mm.readByte(G + MXWORK_GLOBAL.L001e0e) & 0xff) - 1));
                                     break IL_7E5;
                                 }
                                 break IL_7E5;
                             } else {
                                 if (mm.readByte(G + MXWORK_GLOBAL.L001e10) == 0) {
-                                    mm.write(G + MXWORK_GLOBAL.L001e0e, (byte) (mm.readByte(G + MXWORK_GLOBAL.L001e0e) + 1));
+                                    mm.write(G + MXWORK_GLOBAL.L001e0e, (byte) ((mm.readByte(G + MXWORK_GLOBAL.L001e0e) & 0xff) + 1));
                                     break IL_7E5;
                                 }
                                 break IL_7E5;
@@ -2527,7 +2529,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
 /*IL_800:*/}
         mm.write(G + MXWORK_GLOBAL.L001e10, (byte) Depend.CLR);
 /*IL_815:*/}
-        D2 += mm.readByte(G + MXWORK_GLOBAL.L001e0e);
+        D2 += mm.readByte(G + MXWORK_GLOBAL.L001e0e) & 0xff;
 /*IL_836:*/}
         if (mm.readByte(G + MXWORK_GLOBAL.L001e12) != 0 ||
             mm.readByte(G + MXWORK_GLOBAL.L001e13) != 0) {
@@ -2547,7 +2549,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             //logger.log(Level.TRACE, "Ch%02d adr:%04x".formatted(D7,mm.Readint(A6+MXWORK_CH.S0000)));
             L001050();
             L0011b4();
-            D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c);
+            D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c) & 0xffff;
             if ((D0 & (1 << D7)) == 0) {
                 L000c66();
             }
@@ -2560,7 +2562,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             do {
                 L001050();
                 L0011b4();
-                D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c);
+                D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c) & 0xffff;
                 if ((D0 & (1 << D7)) == 0) {
                     L000c66();
                 }
@@ -2624,7 +2626,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
                 mm.write(A6 + MXWORK_CH.S0016, (byte) (mm.readByte(A6 + MXWORK_CH.S0016) & 0xfe));
                 return;
             }
-            mm.write(A6 + MXWORK_CH.S0020, (byte) (mm.readByte(A6 + MXWORK_CH.S0020) - 1));
+            mm.write(A6 + MXWORK_CH.S0020, (byte) ((mm.readByte(A6 + MXWORK_CH.S0020) & 0xff) - 1));
         }
         if (mm.readByte(A6 + MXWORK_CH.S0018) >= 0) {
             L000cdc();
@@ -2634,10 +2636,10 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
 
     // 
     private void L000cdc() {
-        D2 = mm.readShort(A6 + MXWORK_CH.S0012); // note+D
+        D2 = mm.readShort(A6 + MXWORK_CH.S0012) & 0xffff; // note+D
         D2 = (short) ((short) D2 + (short) (mm.readInt(A6 + MXWORK_CH.S000c) >> 16)); // +bend
         D2 = (short) ((short) D2 + (short) (mm.readInt(A6 + MXWORK_CH.S0036) >> 16)); // +LfoPitch
-        if (D2 != mm.readShort(A6 + MXWORK_CH.S0014)) { // Compare if same as previous value
+        if (D2 != (mm.readShort(A6 + MXWORK_CH.S0014) & 0xffff)) { // Compare if same as previous value
             mm.write(A6 + MXWORK_CH.S0014, (short) D2);
             D1 = 0x17ff;
             if (D1 < D2) {
@@ -2649,7 +2651,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             }
             D2 = (short) (D2 * 4);
             D1 = 0x30;
-            D1 += mm.readByte(A6 + MXWORK_CH.S0018);
+            D1 += (mm.readByte(A6 + MXWORK_CH.S0018) & 0xff);
             L_WRITEOPM(); // KF
             D1 -= 8;
             D2 >>= 8;
@@ -2660,29 +2662,29 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
 
     // 
     private void L000d84() {
-        boolean c0 = (byte) (mm.readByte(A6 + MXWORK_CH.S0017) & (1 << 1)) != 0;
+        boolean c0 = (mm.readByte(A6 + MXWORK_CH.S0017) & (1 << 1)) != 0;
         mm.write(A6 + MXWORK_CH.S0017, (byte) (mm.readByte(A6 + MXWORK_CH.S0017) & ~(1 << 1)));
         if (c0) {
             A0 = mm.readInt(A6 + MXWORK_CH.S0004);
             if (A0 == 0) A0 = FAKEA6S0004 + 0;
             mm.write(A6 + MXWORK_CH.S001c, (byte) (mm.readByte(A6 + MXWORK_CH.S001c) & 0xc0));
-            D0 = mm.readByte(A0);
+            D0 = mm.readByte(A0) & 0xff;
             A0++;
             mm.write(A6 + MXWORK_CH.S001c, (byte) (mm.readByte(A6 + MXWORK_CH.S001c) | D0));
             D0 &= 0x0007;
             D3 = CarrierSlot[D0];
             mm.write(A6 + MXWORK_CH.S0019, (byte) D3);
-            D0 = mm.readByte(A0);
+            D0 = mm.readByte(A0) & 0xff;
             A0++;
             D0 <<= 3;
-            D0 |= mm.readByte(A6 + MXWORK_CH.S0018);
+            D0 |= mm.readByte(A6 + MXWORK_CH.S0018) & 0xff;
             mm.write(A6 + MXWORK_CH.S001d, (byte) D0);
             D1 = 0x40;
-            D1 += mm.readByte(A6 + MXWORK_CH.S0018);
+            D1 += mm.readByte(A6 + MXWORK_CH.S0018) & 0xff;
             D0 = 0x03;
 
             do {
-                D2 = mm.readByte(A0);
+                D2 = mm.readByte(A0) & 0xff;
                 A0++;
                 L_WRITEOPM();
                 D1 += 8;
@@ -2690,7 +2692,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             D0 = 0x03;
 
             do {
-                D2 = mm.readByte(A0);
+                D2 = mm.readByte(A0) & 0xff;
                 A0++;
                 c0 = (D3 & 1) != 0;
                 D3 >>= 1;
@@ -2703,7 +2705,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             D0 = 0x0f;
 
             do {
-                D2 = mm.readByte(A0);
+                D2 = mm.readByte(A0) & 0xff;
                 A0++;
                 L_WRITEOPM();
                 D1 += 8;
@@ -2716,17 +2718,17 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
     // 
     private void L000dfe() {
         D0 = 0x00;
-        D0 = mm.readByte(A6 + MXWORK_CH.S0022);
+        D0 = mm.readByte(A6 + MXWORK_CH.S0022) & 0xff;
         boolean c0 = (D0 & (1 << 7)) != 0;
         D0 &= 0xff7f; // (~(1 << 7));
         if (!c0) {
             D0 = Volume[D0];
         }
-        D0 += mm.readByte(G + MXWORK_GLOBAL.L001e14);
+        D0 += mm.readByte(G + MXWORK_GLOBAL.L001e14) & 0xff;
         if (D0 > 0xff || (byte) D0 < 0) {
             D0 = 0x7f;
         }
-        D0 += (byte) (mm.readShort(A6 + MXWORK_CH.S004a) >> 8);
+        D0 += (byte) ((mm.readShort(A6 + MXWORK_CH.S004a) & 0xffff) >> 8);
         if (D0 > 0xff ||  (byte) D0 < 0) {
             D0 = 0x7f;
         }
@@ -2737,18 +2739,18 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
 
     private void L000e28() {
         mm.write(A6 + MXWORK_CH.S0023, (byte) D0);
-        A0 = mm.readInt(A6 + MXWORK_CH.S0004);
+        A0 = mm.readInt(A6 + MXWORK_CH.S0004) & 0xff;
         if (A0 == 0) {
             A0 = FAKEA6S0004 + 0;
         }
         A0 += 6; // Move to TL position
-        D3 = mm.readByte(A6 + MXWORK_CH.S0019);
+        D3 = mm.readByte(A6 + MXWORK_CH.S0019) & 0xff;
         D1 = 0x60;
-        D1 += mm.readByte(A6 + MXWORK_CH.S0018);
+        D1 += mm.readByte(A6 + MXWORK_CH.S0018) & 0xff;
         D4 = 0x03;
 
         do {
-            D2 = mm.readByte(A0++);
+            D2 = mm.readByte(A0++) & 0xff;
             boolean c0 = (D3 & 1) != 0;
             D3 >>= 1;
             if (c0) {
@@ -2767,9 +2769,9 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
         boolean c0 = (mm.readByte(A6 + MXWORK_CH.S0017) & (1 << 2)) != 0;
         mm.write(A6 + MXWORK_CH.S0017, (byte) (mm.readByte(A6 + MXWORK_CH.S0017) & ~(1 << 2)));
         if (c0) {
-            D2 = mm.readByte(A6 + MXWORK_CH.S001c);
+            D2 = mm.readByte(A6 + MXWORK_CH.S001c) & 0xff;
             D1 = 0x20;
-            D1 += mm.readByte(A6 + MXWORK_CH.S0018);
+            D1 += mm.readByte(A6 + MXWORK_CH.S0018) & 0xff;
             L_WRITEOPM();
         }
     }
@@ -2785,7 +2787,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             L000ff6();
         }
         if (mm.readByte(A6 + MXWORK_CH.S0018) >= 0) {
-            D2 = mm.readByte(A6 + MXWORK_CH.S001d);
+            D2 = mm.readByte(A6 + MXWORK_CH.S001d) & 0xff;
             A2 = G + MXWORK_GLOBAL.L00223c;
             mm.write(A2 + D7, (byte) D2);
             A2 = G + MXWORK_GLOBAL.L001bb4;
@@ -2794,15 +2796,15 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             L_WRITEOPM();
             return;
         }
-        D0 = mm.readByte(G + MXWORK_GLOBAL.L002231);
+        D0 = mm.readByte(G + MXWORK_GLOBAL.L002231) & 0xff;
         if (D0 == 0 || mm.readByte(G + MXWORK_GLOBAL.L001e09) != 0) {
             return;
         }
 
         D0 = 0x00;
-        D0 = mm.readShort(A6 + MXWORK_CH.S0012);
+        D0 = mm.readShort(A6 + MXWORK_CH.S0012) & 0xffff;
         D0 >>= 6;
-        D2 = mm.readByte(A6 + MXWORK_CH.S001c);
+        D2 = mm.readByte(A6 + MXWORK_CH.S001c) & 0xff;
         D1 = D2;
         D1 &= 0x0003;
         if (D1 == 0 || D1 == 0x0003) {
@@ -2836,7 +2838,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             }
         } else {
             D1 = 0x00;
-            D1 = mm.readByte(A6 + MXWORK_CH.S0004_b);
+            D1 = mm.readByte(A6 + MXWORK_CH.S0004_b) & 0xff;
             D1 <<= 5;
             D0 += D1;
             D1 += D1;
@@ -2847,10 +2849,10 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             D3 = Depend.getBlong(mm, A0 + 4);
             if (D3 != 0) {
                 A1 += Depend.getBlong(mm, A0);
-                D0 = (D0 & 0xffff_ff00) + mm.readByte(A6 + MXWORK_CH.S0018);
+                D0 = (D0 & 0xffff_ff00) + mm.readByte(A6 + MXWORK_CH.S0018) & 0xff;
                 D0 &= 0xffff_0007;
                 D1 = 0x00;
-                D1 = mm.readByte(A6 + MXWORK_CH.S0022);
+                D1 = mm.readByte(A6 + MXWORK_CH.S0022) & 0xff;
                 c0 = (D1 & (1 << 7)) != 0;
                 D1 &= 0xffff_ff7f;// (~(1 << 7));
                 if (!c0) {
@@ -2858,7 +2860,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
                     // D1 = A2[D1];
                     D1 = Volume[D1];
                 }
-                D1 += mm.readByte(G + MXWORK_GLOBAL.L001e14);
+                D1 += mm.readByte(G + MXWORK_GLOBAL.L001e14) & 0xff;
                 if ((byte) D1 < 0 || D1 >= 0x2b) {
                     D1 = 0x00;
                     D2 &= 0xffff_ff00;
@@ -2892,7 +2894,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
     }
 
     private void L000ff6() {
-        D2 = mm.readByte(A6 + MXWORK_CH.S0018);
+        D2 = mm.readByte(A6 + MXWORK_CH.S0018) & 0xff;
         if ((byte) D2 >= 0) {
             D1 = 0x08;
             A2 = G + MXWORK_GLOBAL.L00223c + 0;
@@ -2903,7 +2905,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             return;
         }
 
-        D0 = mm.readByte(G + MXWORK_GLOBAL.L002231);
+        D0 = mm.readByte(G + MXWORK_GLOBAL.L002231) & 0xff;
         if (D0 == 0) {
             return;
         }
@@ -2981,7 +2983,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
     // 
     private void L0010be() {
         mm.write(A6 + MXWORK_CH.S0036, mm.readInt(A6 + MXWORK_CH.S0036) + D1);
-        mm.write(A6 + MXWORK_CH.S003e, (short) (mm.readShort(A6 + MXWORK_CH.S003e) - 1));
+        mm.write(A6 + MXWORK_CH.S003e, (short) ((mm.readShort(A6 + MXWORK_CH.S003e) & 0xffff) - 1));
         if (mm.readShort(A6 + MXWORK_CH.S003e) == 0) {
             mm.write(A6 + MXWORK_CH.S003e, mm.readShort(A6 + MXWORK_CH.S003c));
             mm.write(A6 + MXWORK_CH.S0036, -mm.readInt(A6 + MXWORK_CH.S0036));
@@ -2991,7 +2993,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
     // 
     private void L0010d4() {
         mm.write(A6 + MXWORK_CH.S0036, D1);
-        mm.write(A6 + MXWORK_CH.S003e, (short) (mm.readShort(A6 + MXWORK_CH.S003e) - 1));
+        mm.write(A6 + MXWORK_CH.S003e, (short) ((mm.readShort(A6 + MXWORK_CH.S003e) & 0xffff) - 1));
         if (mm.readShort(A6 + MXWORK_CH.S003e) == 0) {
             mm.write(A6 + MXWORK_CH.S003e, mm.readShort(A6 + MXWORK_CH.S003c));
             mm.write(A6 + MXWORK_CH.S0032, -mm.readInt(A6 + MXWORK_CH.S0032));
@@ -3001,7 +3003,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
     // 
     private void L0010ea() {
         mm.write(A6 + MXWORK_CH.S0036, mm.readInt(A6 + MXWORK_CH.S0036) + D1);
-        mm.write(A6 + MXWORK_CH.S003e, (short) (mm.readShort(A6 + MXWORK_CH.S003e) - 1));
+        mm.write(A6 + MXWORK_CH.S003e, (short) ((mm.readShort(A6 + MXWORK_CH.S003e) & 0xffff) - 1));
         if (mm.readShort(A6 + MXWORK_CH.S003e) == 0) {
             mm.write(A6 + MXWORK_CH.S003e, mm.readShort(A6 + MXWORK_CH.S003c));
             mm.write(A6 + MXWORK_CH.S0032, -mm.readInt(A6 + MXWORK_CH.S0032));
@@ -3010,7 +3012,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
 
     // 
     private void L001100() {
-        mm.write(A6 + MXWORK_CH.S003e, (short) (mm.readShort(A6 + MXWORK_CH.S003e) - 1));
+        mm.write(A6 + MXWORK_CH.S003e, (short) ((mm.readShort(A6 + MXWORK_CH.S003e) & 0xffff) - 1));
         if (mm.readShort(A6 + MXWORK_CH.S003e) == 0) {
             L00117a();
             D0 = (short) D0 * (short) D1;
@@ -3031,8 +3033,8 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
 
     // 
     private void L001120() {
-        mm.write(A6 + MXWORK_CH.S004a, (short) (mm.readShort(A6 + MXWORK_CH.S004a) + (short) D1));
-        mm.write(A6 + MXWORK_CH.S004e, (short) (mm.readShort(A6 + MXWORK_CH.S004e) - 1));
+        mm.write(A6 + MXWORK_CH.S004a, (short) ((mm.readShort(A6 + MXWORK_CH.S004a) & 0xffff) + (short) D1));
+        mm.write(A6 + MXWORK_CH.S004e, (short) ((mm.readShort(A6 + MXWORK_CH.S004e) & 0xffff) - 1));
         if (mm.readShort(A6 + MXWORK_CH.S004e) == 0) {
             mm.write(A6 + MXWORK_CH.S004e, mm.readShort(A6 + MXWORK_CH.S004c));
             mm.write(A6 + MXWORK_CH.S004a, mm.readShort(A6 + MXWORK_CH.S0046));
@@ -3041,18 +3043,18 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
 
     // 
     private void L001138() {
-        mm.write(A6 + MXWORK_CH.S004e, (short) (mm.readShort(A6 + MXWORK_CH.S004e) - 1));
+        mm.write(A6 + MXWORK_CH.S004e, (short) ((mm.readShort(A6 + MXWORK_CH.S004e) & 0xffff) - 1));
         if (mm.readShort(A6 + MXWORK_CH.S004e) == 0) {
             mm.write(A6 + MXWORK_CH.S004e, mm.readShort(A6 + MXWORK_CH.S004c));
-            mm.write(A6 + MXWORK_CH.S004a, (short) (mm.readShort(A6 + MXWORK_CH.S004a) + (short) D1));
+            mm.write(A6 + MXWORK_CH.S004a, (short) ((mm.readShort(A6 + MXWORK_CH.S004a) & 0xffff) + (short) D1));
             mm.write(A6 + MXWORK_CH.S0048, (short) (-mm.readShort(A6 + MXWORK_CH.S0048)));
         }
     }
 
     // 
     private void L00114e() {
-        mm.write(A6 + MXWORK_CH.S004a, (short) (mm.readShort(A6 + MXWORK_CH.S004a) + (short) D1));
-        mm.write(A6 + MXWORK_CH.S004e, (short) (mm.readShort(A6 + MXWORK_CH.S004e) - 1));
+        mm.write(A6 + MXWORK_CH.S004a, (short) ((mm.readShort(A6 + MXWORK_CH.S004a) & 0xffff) + (short) D1));
+        mm.write(A6 + MXWORK_CH.S004e, (short) ((mm.readShort(A6 + MXWORK_CH.S004e) & 0xffff) - 1));
         if (mm.readShort(A6 + MXWORK_CH.S004e) == 0) {
             mm.write(A6 + MXWORK_CH.S004e, mm.readShort(A6 + MXWORK_CH.S004c));
             mm.write(A6 + MXWORK_CH.S0048, (short) (-mm.readShort(A6 + MXWORK_CH.S0048)));
@@ -3061,7 +3063,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
 
     // 
     private void L001164() {
-        mm.write(A6 + MXWORK_CH.S004e, (short) (mm.readShort(A6 + MXWORK_CH.S004e) - 1));
+        mm.write(A6 + MXWORK_CH.S004e, (short) ((mm.readShort(A6 + MXWORK_CH.S004e) & 0xffff) - 1));
         if (mm.readShort(A6 + MXWORK_CH.S004e) == 0) {
             L00117a();
             D1 = (short) D1 * (short) D0;
@@ -3126,7 +3128,7 @@ exit:   {
             while (true) {
                 D0 = 0x00;
                 D1 = 0x00;
-                D0 = mm.readByte(A4++);
+                D0 = mm.readByte(A4++) & 0xff;
                 D1 = D0;
                 if ((byte) D1 >= 0) {
                     break exit;
@@ -3145,13 +3147,13 @@ exit:   {
             D0 &= 0x007f;
             D0 <<= 6;
             D0 += 5;
-            D0 += mm.readShort(A6 + MXWORK_CH.S0010);
+            D0 += mm.readShort(A6 + MXWORK_CH.S0010) & 0xffff;
             mm.write(A6 + MXWORK_CH.S0012, (short) D0);
             mm.write(A6 + MXWORK_CH.S0016, (byte) (mm.readByte(A6 + MXWORK_CH.S0016) | 0x01));
             mm.write(A6 + MXWORK_CH.S0020, mm.readByte(A6 + MXWORK_CH.S001f));
             D0 = 0x00;
-            D0 = mm.readByte(A4++);
-            D1 = mm.readByte(A6 + MXWORK_CH.S001e);
+            D0 = mm.readByte(A4++) & 0xff;
+            D1 = mm.readByte(A6 + MXWORK_CH.S001e) & 0xff;
             if ((byte) D1 >= 0) {
                 D1 *= D0;
                 D1 = (D1 & 0xffff) >> 3;
@@ -3174,7 +3176,7 @@ exit:   {
     // @@ @t
     private void L001292() {
         D1 = 0x12;
-        D2 = mm.readByte(A4++);
+        D2 = mm.readByte(A4++) & 0xff;
         mm.write(G + MXWORK_GLOBAL.L001e0c, (byte) D2);
         mm.write(G + MXWORK_GLOBAL.MUSICTIMER, (byte) D2);
         if (mm.readByte(G + MXWORK_GLOBAL.L001e08) == 0) {
@@ -3184,8 +3186,8 @@ exit:   {
 
     // 
     private void L0012a6() {
-        D1 = mm.readByte(A4++);
-        D2 = mm.readByte(A4++);
+        D1 = mm.readByte(A4++) & 0xff;
+        D2 = mm.readByte(A4++) & 0xff;
         if (D1 == 0x12) {
             if (mm.readByte(G + MXWORK_GLOBAL.L001e08) != 0) return;
             mm.write(G + MXWORK_GLOBAL.L001e0c, (byte) D2);
@@ -3197,7 +3199,7 @@ exit:   {
     // @@ @
     private void L0012be() {
         if (mm.readByte(A6 + MXWORK_CH.S0018) >= 0) {
-            D0 = mm.readByte(A4++);
+            D0 = mm.readByte(A4++) & 0xff;
             A0 = mm.readInt(G + MXWORK_GLOBAL.L002228);
             // checker
             while (A0 < mm.readInt(G + MXWORK_GLOBAL.L001e34) + mm.readInt(G + MXWORK_GLOBAL.L002220)) {
@@ -3223,7 +3225,7 @@ exit:   {
             mm.write(A6 + MXWORK_CH.S001c, (byte) D0);
             mm.write(A6 + MXWORK_CH.S0017, (byte) (mm.readByte(A6 + MXWORK_CH.S0017) | 0x04));
         } else {
-            D0 = mm.readByte(A4++);
+            D0 = mm.readByte(A4++) & 0xff;
             if (D0 == 0 || D0 == 0x03) {
                 D0 ^= 0x03;
             }
@@ -3240,7 +3242,7 @@ exit:   {
 
     // 
     private void L001328() {
-        D2 = mm.readByte(A6 + MXWORK_CH.S0022);
+        D2 = mm.readByte(A6 + MXWORK_CH.S0022) & 0xff;
         if ((byte) D2 >= 0) {
             if (D2 != 0) {
                 mm.write(A6 + MXWORK_CH.S0022, (byte) (mm.readByte(A6 + MXWORK_CH.S0022) - 1));
@@ -3262,7 +3264,7 @@ exit:   {
 
     // 
     private void L001344() {
-        D2 = mm.readByte(A6 + MXWORK_CH.S0022);
+        D2 = mm.readByte(A6 + MXWORK_CH.S0022) & 0xff;
         if ((byte) D2 >= 0) {
             if (D2 != 0x0f) {
                 mm.write(A6 + MXWORK_CH.S0022, (byte) (mm.readByte(A6 + MXWORK_CH.S0022) + 1));
@@ -3297,7 +3299,7 @@ exit:   {
         D0 = Depend.getBword(mm, A4);
         A4 += 2;
         D0 = (D0 ^ 0xffff) + 1;
-        mm.write(A4 - D0 - 1, (byte) (mm.readByte(A4 - D0 - 1) - 1));
+        mm.write(A4 - D0 - 1, (byte) ((mm.readByte(A4 - D0 - 1) & 0xff) - 1));
         if (mm.readByte(A4 - D0 - 1) != 0) {
             if (mm.readByte(G + MXWORK_GLOBAL.L001e0b) != 0 &&
                 (mm.readByte(A4) & 0xff) == 0xf1 &&
@@ -3372,23 +3374,23 @@ exit:   {
         // checker end
 
         A4 -= D0;
-        D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1a);
+        D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1a) & 0xffff;
         D0 &= ~(1 << D7);
         mm.write(G + MXWORK_GLOBAL.L001e1a, (short) D0);
-        D0 &= mm.readShort(G + MXWORK_GLOBAL.L001e06);
+        D0 &= (mm.readShort(G + MXWORK_GLOBAL.L001e06) & 0xffff);
         if (D0 == 0) {
             if (mm.readByte(G + MXWORK_GLOBAL.L001e18) == 0) {
                 mm.write(G + MXWORK_GLOBAL.L001e1a, (short) 0x01ff);
                 if (mm.readByte(G + MXWORK_GLOBAL.L001df4) != 0) {
                     mm.write(G + MXWORK_GLOBAL.L001e1a, (short) (mm.readShort(G + MXWORK_GLOBAL.L001e1a) | 0xfe00));
                 }
-                mm.write(G + MXWORK_GLOBAL.L002246, (short) (mm.readShort(G + MXWORK_GLOBAL.L002246) + 1));
+                mm.write(G + MXWORK_GLOBAL.L002246, (short) ((mm.readShort(G + MXWORK_GLOBAL.L002246) & 0xffff) + 1));
             } else if (mm.readByte(G + MXWORK_GLOBAL.L001e17) == 0) {
                 mm.write(G + MXWORK_GLOBAL.L001e1a, (short) 0x01ff);
                 if (mm.readByte(G + MXWORK_GLOBAL.L001df4) != 0) {
                     mm.write(G + MXWORK_GLOBAL.L001e1a, (short) (mm.readShort(G + MXWORK_GLOBAL.L001e1a) | 0xfe00));
                 }
-                mm.write(G + MXWORK_GLOBAL.L001e22, (short) (mm.readShort(G + MXWORK_GLOBAL.L001e22) - 1));
+                mm.write(G + MXWORK_GLOBAL.L001e22, (short) ((mm.readShort(G + MXWORK_GLOBAL.L001e22) & 0xffff) - 1));
                 if (mm.readShort(G + MXWORK_GLOBAL.L001e22) == 0) {
                     mm.write(G + MXWORK_GLOBAL.L001e1e + 0, (short) (0x0011));
                     mm.write(G + MXWORK_GLOBAL.L001e17, (byte) Depend.SET);
@@ -3405,10 +3407,10 @@ exit:   {
     // 
     private void L001442() {
         A4 = L0019b2;
-        D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1a);
+        D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1a) & 0xffff;
         D0 &= ~(1 << D7);
         mm.write(G + MXWORK_GLOBAL.L001e1a, (short) D0);
-        D0 = mm.readShort(G + MXWORK_GLOBAL.L001e06);
+        D0 = mm.readShort(G + MXWORK_GLOBAL.L001e06) & 0xffff;
         D0 &= ~(1 << D7);
         mm.write(G + MXWORK_GLOBAL.L001e06, (short) D0);
         if (D0 == 0) {
@@ -3436,7 +3438,7 @@ exit:   {
 
     // 
     private void L001498() {
-        D0 = mm.readByte(A4++);
+        D0 = mm.readByte(A4++) & 0xff;
         A0 = mm.readByte(G + MXWORK_GLOBAL.L001df6 + 0);
         mm.write(A0 + D0, (byte) Depend.SET);
         if (D0 < 0x0009) {
@@ -3462,7 +3464,7 @@ exit:   {
 
     // 
     private void L0014dc() {
-        D2 = mm.readByte(A4++);
+        D2 = mm.readByte(A4++) & 0xff;
         if (mm.readByte(A6 + MXWORK_CH.S0018) >= 0x00) {
             mm.write(G + MXWORK_GLOBAL.L002232, (byte) D2);
             D1 = 0x0f;
@@ -3525,7 +3527,7 @@ exit:   {
     // 
     private void L001590() {
         mm.write(A6 + MXWORK_CH.S0016, (byte) (mm.readByte(A6 + MXWORK_CH.S0016) | 0x40));
-        D2 = mm.readByte(A4++);
+        D2 = mm.readByte(A4++) & 0xff;
         if ((byte) D2 < 0) {
             L0015e4();
             return;
@@ -3573,7 +3575,7 @@ exit:   {
 
     // 
     private void L0015fe() {
-        D2 = mm.readByte(A4++);
+        D2 = mm.readByte(A4++) & 0xff;
         if ((byte) D2 >= 0) {
             mm.write(A6 + MXWORK_CH.S0016, (byte) (mm.readByte(A6 + MXWORK_CH.S0016) & 0xfd));
             boolean c0 = (byte) (D2 & (1 << 6)) != 0;
@@ -3588,23 +3590,23 @@ exit:   {
             D1 = 0x1b;
             L_WRITEOPM();
             D1 = 0x18;
-            D2 = mm.readByte(A4++);
+            D2 = mm.readByte(A4++) & 0xff;
             L_WRITEOPM();
             D1 = 0x19;
-            D2 = mm.readByte(A4++);
+            D2 = mm.readByte(A4++) & 0xff;
             L_WRITEOPM();
-            D2 = mm.readByte(A4++);
+            D2 = mm.readByte(A4++) & 0xff;
             L_WRITEOPM();
-            D2 = mm.readByte(A4++);
+            D2 = mm.readByte(A4++) & 0xff;
             mm.write(A6 + MXWORK_CH.S0021, (byte) D2);
         } else {
             D2 &= 0x01;
             if (D2 != 0) {
-                D2 = mm.readByte(A6 + MXWORK_CH.S0021);
+                D2 = mm.readByte(A6 + MXWORK_CH.S0021) & 0xff;
             }
         }
         D1 = 0x38;
-        D1 += mm.readByte(A6 + MXWORK_CH.S0018);
+        D1 += mm.readByte(A6 + MXWORK_CH.S0018) & 0xff;
         L_WRITEOPM();
     }
 
@@ -3626,7 +3628,7 @@ exit:   {
 
     // 
     private void L001694() {
-        D0 = mm.readByte(A4++);
+        D0 = mm.readByte(A4++) & 0xff;
         if (D0 > 7) {
             L001442();
             return;
@@ -3636,7 +3638,7 @@ exit:   {
 
     // 
     private void L0016b8() {
-        D0 = mm.readByte(A4++);
+        D0 = mm.readByte(A4++) & 0xff;
         mm.write(G + MXWORK_GLOBAL.L001e1e + 0, (short) D0);
         mm.write(G + MXWORK_GLOBAL.L001e17, (byte) Depend.SET);
     }
@@ -3665,7 +3667,7 @@ exit:   {
 
     // 
     private void L00170e() {
-        D0 = mm.readByte(A4++);
+        D0 = mm.readByte(A4++) & 0xff;
         int a6 = A6;
         int d7 = D7;
         D7 = D0;
@@ -3679,7 +3681,7 @@ exit:   {
         mm.write(A6 + MXWORK_CH.S0016, (short) (mm.readByte(A6 + MXWORK_CH.S0016) & 0x7b));
         D0 = 0;
         D1 = 0;
-        D0 = mm.readByte(A4++);
+        D0 = mm.readByte(A4++) & 0xff;
         D1 = D0;
 
 exit:   {
@@ -3688,12 +3690,12 @@ exit:   {
                     D0 &= 0x007f;
                     D0 <<= 6;
                     D0 += 0x05;
-                    D0 += mm.readShort(A6 + MXWORK_CH.S0010);
+                    D0 += mm.readShort(A6 + MXWORK_CH.S0010) & 0xffff;
                     mm.write(A6 + MXWORK_CH.S0012, (short) D0);
                     mm.write(A6 + MXWORK_CH.S0016, (byte) (mm.readByte(A6 + MXWORK_CH.S0016) | 0x01));
                     mm.write(A6 + MXWORK_CH.S0020, mm.readByte(A6 + MXWORK_CH.S001f));
-                    D0 = mm.readByte(A4++);
-                    D1 = mm.readByte(A6 + MXWORK_CH.S001e);
+                    D0 = mm.readByte(A4++) & 0xff;
+                    D1 = mm.readByte(A6 + MXWORK_CH.S001e) & 0xff;
                     if ((byte) D1 >= 0) {
                         D1 = (short) (D1 * (short) D0);
                         D1 >>= 3;
@@ -3736,7 +3738,7 @@ exit:   {
     }
 
     private void L00178a() {
-        D0 = mm.readByte(A4++);
+        D0 = mm.readByte(A4++) & 0xff;
         D1 = D0;
         L001216();
         mm.write(A6 + MXWORK_CH.S0016, (byte) (mm.readByte(A6 + MXWORK_CH.S0016) & 0xfe));

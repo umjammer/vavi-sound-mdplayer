@@ -23,15 +23,15 @@ public class XMemory {
     }
 
     public void write(int v1, short v2) {
-        write(v1, (byte) (v2 >> 8));
-        write(v1 + 1, (byte) (v2 >> 0));
+        write(v1, (byte) ((v2 & 0xff00) >> 8));
+        write(v1 + 1, (byte) ((v2 & 0xff) >> 0));
     }
 
     public void write(int v1, int v2) {
-        write(v1, (byte) (v2 >> 24));
-        write(v1 + 1, (byte) (v2 >> 16));
-        write(v1 + 2, (byte) (v2 >> 8));
-        write(v1 + 3, (byte) (v2 >> 0));
+        write(v1, (byte) ((v2 & 0xff00_0000) >> 24));
+        write(v1 + 1, (byte) ((v2 & 0xff_0000) >> 16));
+        write(v1 + 2, (byte) ((v2 & 0xff00) >> 8));
+        write(v1 + 3, (byte) ((v2 & 0xff) >> 0));
     }
 
     public byte readByte(int v1) {
