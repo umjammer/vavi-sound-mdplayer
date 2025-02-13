@@ -59,7 +59,7 @@ public class Sid extends BaseDriver {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            gd3.trackName = gd3.trackName.substring(0, gd3.trackName.indexOf((char) 0));
+            gd3.trackName = gd3.trackName.substring(0, gd3.trackName.indexOf((char) 0) + 1);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -69,7 +69,7 @@ public class Sid extends BaseDriver {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            gd3.composer = gd3.composer.substring(0, gd3.composer.indexOf((char) 0));
+            gd3.composer = gd3.composer.substring(0, gd3.composer.indexOf((char) 0) + 1);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -79,7 +79,7 @@ public class Sid extends BaseDriver {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            gd3.notes = gd3.notes.substring(0, gd3.notes.indexOf((char) 0));
+            gd3.notes = gd3.notes.substring(0, gd3.notes.indexOf((char) 0) + 1);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -185,7 +185,7 @@ public class Sid extends BaseDriver {
                 fs.read(aryCharacter, 0, aryCharacter.length);
             }
 
-        engine = new playSidFp(setting);
+        engine = new playSidFp(setting.getOutputDevice().getSampleRate());
         engine.debug(false, null);
         engine.setRoms(aryKernal, aryBasic, aryCharacter);
 
@@ -211,7 +211,7 @@ public class Sid extends BaseDriver {
 //        if (!createSidEmu(m_driver.Sid))
 //            return false;
 
-        cfg = new SidConfig(setting);
+        cfg = new SidConfig(setting.getOutputDevice().getSampleRate());
         cfg.frequency = setting.getOutputDevice().getSampleRate();
         cfg.samplingMethod = (setting.getSid().quality & 2) == 0 ? SidConfig.SamplingMethod.INTERPOLATE : SidConfig.SamplingMethod.RESAMPLE_INTERPOLATE;
         cfg.fastSampling = (setting.getSid().quality & 1) == 0;

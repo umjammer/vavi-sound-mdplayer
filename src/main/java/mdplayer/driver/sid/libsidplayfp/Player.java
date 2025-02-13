@@ -132,16 +132,13 @@ public class Player {
         }
     }
 
-    private final Setting setting;
-
 //        public Player(MDPlayer.Setting setting) {
 //            this.setting = setting;
 //            m_cfg = new playSidFp.SidConfig(setting);
 //        }
 
-    public Player(Setting setting) {
-        this.setting = setting;
-        config = new SidConfig(setting);
+    public Player(int sampleRate) {
+        config = new SidConfig(sampleRate);
 
         // Set default settings for system
         tune = null;

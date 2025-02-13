@@ -390,12 +390,12 @@ public class Filter {
         // Reverse op-amp transfer function.
         public short[] opampRev = new short[1 << 16];
         // Lookup tables for gain and summer op-amps : Output stage / filter.
-        public short[] summer = new short[SummerOffset.intI(5)];// < 5 >::value];
+        public short[] summer = new short[SummerOffset.intI(5)]; // <5>::value];
         public short[][] gain = new short[][] {new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
                 new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
                 new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
                 new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16]};
-        public short[] mixer = new short[MixerOffset.intI(8)];// < 8 >::value];
+        public short[] mixer = new short[MixerOffset.intI(8)]; // <8>::value];
         // Cutoff frequency DAC Output voltage table. FC instanceof an 11 bit register.
         public short[] f0Dac = new short[1 << 11];
     }
@@ -406,11 +406,11 @@ public class Filter {
 
     protected static ModelFilter[] modelFilters = new ModelFilter[] {new ModelFilter(), new ModelFilter()};
 
-    /*
+    //
     // Inline functions.
     // The following functions are defined inline because they are called every
     // time a sample instanceof calculated.
-    */
+    //
 
 //#if RESID_INLINING || RESID_FILTER_CC
 
@@ -1228,8 +1228,8 @@ public class Filter {
     Find Output voltage : inverting gain and inverting summer Sid op-amp
     circuits, using a combination of Newton-Raphson and bisection.
 
-                 ---R2--
-                |       |
+             ---R2--
+            |       |
       vi ---R1-----[a>----- vo
                 vx
 
@@ -1278,7 +1278,7 @@ public class Filter {
         if (b_vi < 0) b_vi = 0;
         int c = n * (b_vi * b_vi >> 12);    // Scaled by m^2*2^27
 
-        for (; ; ) {
+        while (true) {
             int xk = x;
 
             // Calculate f and df.
@@ -1300,9 +1300,9 @@ public class Filter {
             int b_vo = b - vo;
             if (b_vo < 0) b_vo = 0;
             // The dividend instanceof scaled by m^2*2^27.
-            int f = a * (b_vx * b_vx >> 12) - c - (b_vo * b_vo >> 5);
+            int f = a * (b_vx * b_vx >>> 12) - c - (b_vo * b_vo >>> 5);
             // The divisor instanceof scaled by m*2^11.
-            int df = (b_vo * (dvx + (1 << 11)) - a * (b_vx * dvx >> 7)) >> 15;
+            int df = (b_vo * (dvx + (1 << 11)) - a * (b_vx * dvx >>> 7)) >>> 15;
             // The resulting quotient instanceof thus scaled by m*2^16.
 
             // Newton-Raphson step: xk1 = xk - f(xk)/f'(xk)
@@ -1507,70 +1507,70 @@ public class Filter {
     // All measured chips have op-amps with Output voltages (and thus input
     // voltages) within the range of 0.81V - 10.31V.
 
-    private static final double[][] opamp_voltage_6581 = new double[][] {
-            new double[] {0.81, 10.31},  // Approximate start of actual range
-            new double[] {0.81, 10.31},  // Repeated point
-            new double[] {2.40, 10.31},
-            new double[] {2.60, 10.30},
-            new double[] {2.70, 10.29},
-            new double[] {2.80, 10.26},
-            new double[] {2.90, 10.17},
-            new double[] {3.00, 10.04},
-            new double[] {3.10, 9.83},
-            new double[] {3.20, 9.58},
-            new double[] {3.30, 9.32},
-            new double[] {3.50, 8.69},
-            new double[] {3.70, 8.00},
-            new double[] {4.00, 6.89},
-            new double[] {4.40, 5.21},
-            new double[] {4.54, 4.54},  // Working point (vi = vo)
-            new double[] {4.60, 4.19},
-            new double[] {4.80, 3.00},
-            new double[] {4.90, 2.30},  // Change of curvature
-            new double[] {4.95, 2.03},
-            new double[] {5.00, 1.88},
-            new double[] {5.05, 1.77},
-            new double[] {5.10, 1.69},
-            new double[] {5.20, 1.58},
-            new double[] {5.40, 1.44},
-            new double[] {5.60, 1.33},
-            new double[] {5.80, 1.26},
-            new double[] {6.00, 1.21},
-            new double[] {6.40, 1.12},
-            new double[] {7.00, 1.02},
-            new double[] {7.50, 0.97},
-            new double[] {8.50, 0.89},
-            new double[] {10.00, 0.81},
-            new double[] {10.31, 0.81},  // Approximate end of actual range
-            new double[] {10.31, 0.81}   // Repeated end point
+    private static final double[][] opamp_voltage_6581 = {
+            {0.81, 10.31},  // Approximate start of actual range
+            {0.81, 10.31},  // Repeated point
+            {2.40, 10.31},
+            {2.60, 10.30},
+            {2.70, 10.29},
+            {2.80, 10.26},
+            {2.90, 10.17},
+            {3.00, 10.04},
+            {3.10, 9.83},
+            {3.20, 9.58},
+            {3.30, 9.32},
+            {3.50, 8.69},
+            {3.70, 8.00},
+            {4.00, 6.89},
+            {4.40, 5.21},
+            {4.54, 4.54},  // Working point (vi = vo)
+            {4.60, 4.19},
+            {4.80, 3.00},
+            {4.90, 2.30},  // Change of curvature
+            {4.95, 2.03},
+            {5.00, 1.88},
+            {5.05, 1.77},
+            {5.10, 1.69},
+            {5.20, 1.58},
+            {5.40, 1.44},
+            {5.60, 1.33},
+            {5.80, 1.26},
+            {6.00, 1.21},
+            {6.40, 1.12},
+            {7.00, 1.02},
+            {7.50, 0.97},
+            {8.50, 0.89},
+            {10.00, 0.81},
+            {10.31, 0.81},  // Approximate end of actual range
+            {10.31, 0.81}   // Repeated end point
     };
 
     // This instanceof the Sid 8580 op-amp voltage transfer function, measured on
     // CAP1B/CAP1A on a chips marked CSG 8580R5 1690 25.
-    private static final double[][] opamp_voltage_8580 = new double[][] {
-            new double[] {1.30, 8.91},  // Approximate start of actual range
-            new double[] {1.30, 8.91},  // Repeated end point
-            new double[] {4.76, 8.91},
-            new double[] {4.77, 8.90},
-            new double[] {4.78, 8.88},
-            new double[] {4.785, 8.86},
-            new double[] {4.79, 8.80},
-            new double[] {4.795, 8.60},
-            new double[] {4.80, 8.25},
-            new double[] {4.805, 7.50},
-            new double[] {4.81, 6.10},
-            new double[] {4.815, 4.05},  // Change of curvature
-            new double[] {4.82, 2.27},
-            new double[] {4.825, 1.65},
-            new double[] {4.83, 1.55},
-            new double[] {4.84, 1.47},
-            new double[] {4.85, 1.43},
-            new double[] {4.87, 1.37},
-            new double[] {4.90, 1.34},
-            new double[] {5.00, 1.30},
-            new double[] {5.10, 1.30},
-            new double[] {8.91, 1.30},  // Approximate end of actual range
-            new double[] {8.91, 1.30}   // Repeated end point
+    private static final double[][] opamp_voltage_8580 = {
+            {1.30, 8.91},  // Approximate start of actual range
+            {1.30, 8.91},  // Repeated end point
+            {4.76, 8.91},
+            {4.77, 8.90},
+            {4.78, 8.88},
+            {4.785, 8.86},
+            {4.79, 8.80},
+            {4.795, 8.60},
+            {4.80, 8.25},
+            {4.805, 7.50},
+            {4.81, 6.10},
+            {4.815, 4.05},  // Change of curvature
+            {4.82, 2.27},
+            {4.825, 1.65},
+            {4.83, 1.55},
+            {4.84, 1.47},
+            {4.85, 1.43},
+            {4.87, 1.37},
+            {4.90, 1.34},
+            {5.00, 1.30},
+            {5.10, 1.30},
+            {8.91, 1.30},  // Approximate end of actual range
+            {8.91, 1.30}   // Repeated end point
     };
 
     public static class ModelFilterInit {
@@ -1630,7 +1630,6 @@ public class Filter {
         modelFilterInits[0].dacScale = 2.63;
         modelFilterInits[0].dac2RDivR = 2.20;
         modelFilterInits[0].dacTerm = false;
-
 
         modelFilterInits[1] = new ModelFilterInit();
         modelFilterInits[1].opampVoltage = opamp_voltage_8580;
