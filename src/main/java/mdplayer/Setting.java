@@ -902,12 +902,13 @@ public class Setting implements Serializable {
                 this.getK051649Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // c140, c219
         if (this.getC140Type() == null || this.getC140Type().length < 2) {
             this.setC140Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getC140Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getC140Type()[i].setUseEmu(new boolean[1]);
-                this.getC140Type()[i].getUseEmu()[0] = true;
+                this.getC140Type()[i].setUseEmu(new boolean[2]); // {0: c140, 1: c219}
+                this.getC140Type()[i].getUseEmu()[parseInt("mdplayer.variant.c140", 0)] = true;
                 this.getC140Type()[i].setUseReal(new boolean[1]);
             }
         }

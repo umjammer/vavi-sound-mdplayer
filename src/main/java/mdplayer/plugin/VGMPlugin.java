@@ -16,6 +16,7 @@ import mdplayer.format.FileFormat;
 import mdsound.MDSound;
 import mdsound.chips.C352;
 import mdsound.chips.Ym3438Const;
+import mdsound.instrument.C140Inst;
 import mdsound.instrument.C352Inst;
 import mdsound.instrument.MameAy8910Inst;
 import mdsound.instrument.OkiM6258Inst;
@@ -212,7 +213,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, C140Chip.class);
                 chip.clock = ((Vgm) audio.driverVirtual).c140ClockValue;
-                chip.option = new Object[] {((Vgm) audio.driverVirtual).C140Type};
+                if (chip.instrument instanceof C140Inst) {
+                    chip.option = new Object[] {((Vgm) audio.driverVirtual).C140Type};
+                }
 
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -247,7 +250,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 MDSound.Chip chip = new MDSound.Chip();
                 chip.id = i;
                 chip.instrument = audio.chipRegister.chip(Upd7759Chip.class).instrument(i);
-                chip.samplingRate = (int) setting.getOutputDevice().getSampleRate();
+                chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Upd7759Chip.class);
                 chip.clock = ((Vgm) audio.driverVirtual).uPD7759ClockValue;
                 chip.option = null;
