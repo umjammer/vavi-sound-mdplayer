@@ -963,7 +963,7 @@ public class frmMixer2 extends JFrame {
 
     private void tsmiSaveDriverBalance_Click(ActionEvent ev) {
         try {
-            String retMsg = parent.SaveDriverBalance(parent.setting.getBalance().copy());
+            String retMsg = parent.SaveDriverBalance(parent.setting.getBalance().clone());
             if (!retMsg.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "ドライバーの Mixerーバランス[%s]を設定フォルダーに保存しました。".formatted(retMsg), "保存", JOptionPane.INFORMATION_MESSAGE);
             }
@@ -976,7 +976,7 @@ public class frmMixer2 extends JFrame {
 
     private void tsmiSaveSongBalance_Click(ActionEvent ev) {
         try {
-            Setting.Balance bln = parent.setting.getBalance().copy();
+            Setting.Balance bln = parent.setting.getBalance().clone();
             PlayList.Music ms = parent.GetPlayingMusicInfo();
             if (ms == null) {
                 JOptionPane.showMessageDialog(null, "演奏情報が取得できませんでした。\n演奏中又は演奏完了直後に再度お試しください。",

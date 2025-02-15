@@ -89,7 +89,7 @@ public class frmSetting extends JDialog {
 
     public frmSetting(Setting setting) {
         setModal(true);
-        this.setting = setting.copy();
+        this.setting = setting.clone();
 
         initializeComponent();
 

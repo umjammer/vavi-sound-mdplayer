@@ -19,7 +19,7 @@ import static java.lang.System.getLogger;
 
 
 @Serdes(beanBinder = JacksonXMLBeanBinder.class)
-public class TonePallet implements Serializable {
+public class TonePallet implements Serializable, Cloneable {
 
     private static final Logger logger = getLogger(TonePallet.class.getName());
 
@@ -35,7 +35,8 @@ public class TonePallet implements Serializable {
         _lstTone = value;
     }
 
-    public TonePallet copy() {
+    @Override
+    public TonePallet clone() {
         TonePallet TonePallet = new TonePallet();
 
         return TonePallet;
