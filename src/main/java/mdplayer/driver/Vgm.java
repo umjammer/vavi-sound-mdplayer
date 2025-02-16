@@ -1039,28 +1039,28 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
             vgmAdr += bLen + 7;
             break;
         case 0xe0:
-                int stAdr_E = ByteUtil.readLeInt(vgmBuf, vgmAdr + 7);
-                int dataSize_E = bLen - 2;
-                int ROMData_E = vgmAdr + 9;
-                if ((bType & 0x20) != 0) {
-                    stAdr_E = ByteUtil.readLeInt(vgmBuf, vgmAdr + 7);
-                    dataSize_E = bLen - 4;
-                    ROMData_E = vgmAdr + 11;
-                }
+            int stAdr_E = ByteUtil.readLeInt(vgmBuf, vgmAdr + 7);
+            int dataSize_E = bLen - 2;
+            int ROMData_E = vgmAdr + 9;
+            if ((bType & 0x20) != 0) {
+                stAdr_E = ByteUtil.readLeInt(vgmBuf, vgmAdr + 7);
+                dataSize_E = bLen - 4;
+                ROMData_E = vgmAdr + 11;
+            }
 
-                try {
-                    switch (bType) {
-                        case 0xe1:
-                            plugin.audio.chipRegister.chip(Es5503Chip.class).writePcm(chipId, stAdr_E, dataSize_E, vgmBuf, vgmAdr + 11, model);
-                            dumpData(model, "ES5503_PCMData", vgmAdr + 9, dataSize_E);
-                            break;
-                    }
-                } catch (Exception e) {
-                    logger.log(Level.ERROR, e.getMessage(), e);
+            try {
+                switch (bType) {
+                    case 0xe1:
+                        plugin.audio.chipRegister.chip(Es5503Chip.class).writePcm(chipId, stAdr_E, dataSize_E, vgmBuf, vgmAdr + 11, model);
+                        dumpData(model, "ES5503_PCMData", vgmAdr + 9, dataSize_E);
+                        break;
                 }
+            } catch (Exception e) {
+                logger.log(Level.ERROR, e.getMessage(), e);
+            }
 
-                vgmAdr += bLen + 7;
-                break;
+            vgmAdr += bLen + 7;
+            break;
         default:
             vgmAdr += bLen + 7;
             break;

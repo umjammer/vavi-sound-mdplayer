@@ -14,7 +14,7 @@ import java.util.List;
 
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
-import mdplayer.chips.NesChip2;
+import mdplayer.chips.NesChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
@@ -146,7 +146,7 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
         this.latency = latency;
         this.waitTime = waitTime;
 
-        this.chip = plugin.audio.chipRegister.chip(NesChip2.class);
+        this.chip = plugin.audio.chipRegister.chip(NesChip.class);
 
         if (model == EnmModel.RealModel) {
             stopped = true;
@@ -292,7 +292,7 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
     private mdsound.MDSound.Chip cVRC7 = null;
     private mdsound.MDSound.Chip cFME7 = null;
 
-    private NesChip2 chip;
+    private NesChip chip;
 
     private final int sampleRate;
 
