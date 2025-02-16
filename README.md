@@ -11,33 +11,38 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 
 ### Status
 
-| type     | description    | status | comment      | alternative             |
-|----------|----------------|:------:|--------------|-------------------------|
-| VGM/VGZ  | mega drive     |  ✅️ ️  |              | vavi-sound-emu          |
-| NRD      | x1             |        |              |                         |
-| XGM      | mega drive     |        |              |                         |
-| S98      | jp retro pc    |   ✅️   |              |                         |
-| MID      | midi           |   ️→   |              | javax.sound.midi.spi    |
-| RCP      | recopon        |        |              |                         |
-| NSF/NSFE | NES            | 🚫️️→  | no nsfe →    | vavi-sound-emu          |
-| HES      | PC Engine      |        |              | (gme)                   |
-| SID      | commodore      |   ️→   |              | javamod                 |
-| MGS      | MGSDRV         |        |              |                         |
-| MDR      | MoonDriver MSX | 🚫️ ️  | driver       |                         |
-| MND      | MNDRV X68000   |        |              |                         |
-| MDX      | MXDRV          |        |              |                         |
-| MUC/MUB  | MUCOM88        |   ✅️   | compiler wip |                         |
-| MDR      | MSX            |        |              |                         |
-| M/M2/MZ  | PMD            |   🚫   | driver       |                         |
-| WAV      |                |   ️→   |              | javax.sound.sampled.spi |
-| MP3      |                |   ️→   |              | mp3spi                  |
-| AIF      |                | n/a ️→ |              | javax.sound.sampled.spi |
-| AY       | ZX             |  n/a   |              |                         |
-| GBS      | Game Boy       | n/a →  |              | vavi-sound-emu          |
-| GYM      | Sega Genesis   |  n/a   |              |                         |
-| KSS      | MSX            |  n/a   |              |                         |
-| SAP      | Atari          |  n/a   |              |                         |
-| SPC      | SNES           | n/a ️→ |              | vavi-sound-emu          |
+| type     | description     |      status      | comment              | alternative                                                    |
+|----------|-----------------|:----------------:|----------------------|----------------------------------------------------------------|
+| VGM/VGZ  | mega drive      |       ✅️ ️       | built-in             | vavi-sound-emu                                                 |
+| NRD      | x1              |                  | built-in             |                                                                |
+| XGM      | mega drive      |                  | built-in             |                                                                |
+| S98      | PC-98001        |        ✅️        | built-in             |                                                                |
+| MID      | midi            |        ️→        | built-in             | javax.sound.midi.spi                                           |
+| RCP      | recopon         |                  | built-in             |                                                                |
+| NSF/NSFE | NES             | ✅️️ <sup>1</sup> | built-in,            | [NsfPlayer](https://github.com/umjammer/NsfPlayer)             |
+| HES      | PC Engine       |       ✅️?        | built-in             | libgme                                                         |
+| SID      | commodore       | ✅️️ <sup>2</sup> | built-in             | [JSIDPlay2](https://github.com/umjammer/JSIDPlay2)             |
+| MGS      | MGSDRV MSX      |                  | built-in             |                                                                |
+| MDR      | MoonDriver MSX  |      🚫️ ️       | driver               |                                                                |
+| MND      | MNDRV X68000    |                  | built-in             |                                                                |
+| MDX      | MXDRV X68000    |        🚧        | built-in             |                                                                |
+| MUC/MUB  | MUCOM88 PC-8801 |      ✅️ 🚧       | driver, compiler wip |                                                                |
+| M/M2/MZ  | PMD ja retro    |        🚫        | driver               |                                                                |
+| WAV      |                 |        ️→        | built-in             | javax.sound.sampled.spi                                        |
+| MP3      |                 |        ️→        | built-in             | mp3spi                                                         |
+| AIF      |                 |        ️→        | built-in             | javax.sound.sampled.spi                                        |
+| AY       | ZX              |       n/a        |                      | libgme                                                         |
+| GBS      | Game Boy        |      n/a →       |                      | vavi-sound-emu                                                 |
+| GYM      | Sega Genesis    |       n/a        |                      | libgme                                                         |
+| KSS      | MSX             |       n/a        |                      | libgme                                                         |
+| SAP      | Atari           |       n/a        |                      | libgme                                                         |
+| SPC      | SNES            |      n/a ️→      |                      | vavi-sound-emu                                                 |
+| YM       | Atari ST        |        ️         |                      | [FastTracker_2](https://en.wikipedia.org/wiki/FastTracker_2)   |
+| HVL      | Hively Tracker  |        ️         |                      | [Hively Tracker](https://github.com/pete-gordon/hivelytracker) |
+| AHX      | AHX Clone       |        ️         |                      | [AHX](http://amigascne.org/abyss/ahx/)                         |
+
+ <sub>1. use NsfPlayer instead of built-in np library</sub><br/>
+ <sub>2. use JSIDPlay2 instead of built-in sid library</sub>
 
 ## Install
 
@@ -67,6 +72,10 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 * https://github.com/kwhat/jnativehook
 * https://github.com/waynetam/JavaSSRC/tree/master
 * https://gimic.jp/index.php?%E3%83%86%E3%82%B9%E3%83%88%E3%83%87%E3%83%BC%E3%82%BF (test data)
+* https://github.com/ika-musuko/HuSIC (hes)
+* https://www.zophar.net/music/hes.html (hes download)
+* https://github.com/vampirefrog/mdxtools (mdx)
+* https://github.com/Kermalis/VGMusicStudio (mp2k, sdat, dse (gba/nds/wii))
 
 ## TODO
 
@@ -75,6 +84,9 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
     * ~~vgm using YM2151~~
       * ~~some timing is wrong for "Out_Run_(Arcade)/01 Magical Sound Shower.vgz"~~
         * ~~3 alter chips reproduce same glitch, so vgm driver is wrong?~~ ... yes it's unsigned short problem
+    * mucom: some are ok and some are not
+    * mxdrv: luck of fm channel
+    * hes: volume related???
 
 ---
 
