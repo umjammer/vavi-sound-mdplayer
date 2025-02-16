@@ -103,7 +103,7 @@ public class Ym2413Chip implements Chip {
                 keyInfo[chipId].off[ch] = false;
             }
 
-            // mask適用
+            // Apply mask
             if (mask[chipId][ch])
                 data &= 0xef;
         }

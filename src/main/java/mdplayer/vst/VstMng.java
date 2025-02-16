@@ -14,6 +14,8 @@ import mdplayer.Common.EnmModel;
 import mdplayer.MIDIParam;
 import mdplayer.Setting;
 import mdplayer.MidiOutInfo;
+import net.sf.saxon.functions.Count;
+import org.urish.jnavst.AEffect;
 import org.urish.jnavst.VstConst;
 import org.urish.jnavst.VstPlugin;
 import org.urish.jnavst.VstTimeInfo;
@@ -88,9 +90,9 @@ public class VstMng {
 
         ctx.setBlockSize(512);
         ctx.setSampleRate(setting.getOutputDevice().getSampleRate());
-        ctx.MainsChanged(true);
-        ctx.startProcess();
-        vi.effectName = ctx.GetEffectName();
+//        ctx.MainsChanged(true);
+        ctx.open();
+        vi.effectName = ctx.getProgramName();
         vi.editor = true;
 
         if (vi.editor) {
@@ -133,7 +135,7 @@ public class VstMng {
 
             if (vi.param != null) {
                 for (int p = 0; p < vi.param.length; p++) {
-                    ctx.setParameter(p, vi.param[p]);
+//                    ctx.setParameter(p, vi.param[p]);
                 }
             }
 
@@ -210,13 +212,13 @@ public class VstMng {
                 if (vstPlugin.vstPlugins != null) {
                     vstPlugin.vstPlugins.editClose();
                     vstPlugin.vstPlugins.close();
-                    int pc = vstPlugin.vstPlugins.ParameterCount;
+                    int pc = vstPlugin.vstPlugins.getNumOutputs();
                     List<Float> plst = new ArrayList<>();
                     for (int p = 0; p < pc; p++) {
-                        float v = vstPlugin.vstPlugins.getParameter(p);
-                        plst.add(v);
+//                        float v = vstPlugin.vstPlugins.getParameter(p);
+//                        plst.add(v);
                     }
-                    vstPlugin.param = Common.toArray(plst);
+//                    vstPlugin.param = Common.toArray(plst);
                     vstPlugin.vstPlugins.close();
                 }
             } catch (Exception e) {
@@ -250,13 +252,13 @@ public class VstMng {
                 if (vstInfo2.vstPlugins != null) {
                     vstInfo2.vstPlugins.editClose();
                     vstInfo2.vstPlugins.close();
-                    int pc = vstInfo2.vstPlugins.PluginInfo.ParameterCount;
+                    int pc = vstInfo2.vstPlugins.getNumInputs() + vstInfo2.vstPlugins.getNumOutputs();
                     List<Float> plst = new ArrayList<>();
                     for (int p = 0; p < pc; p++) {
-                        float v = vstInfo2.vstPlugins.PluginCommandStub.GetParameter(p);
-                        plst.add(v);
+//                        float v = vstInfo2.vstPlugins.PluginCommandStub.GetParameter(p);
+//                        plst.add(v);
                     }
-                    vstInfo2.param = Common.toArray(plst);
+//                    vstInfo2.param = Common.toArray(plst);
                     vstInfo2.vstPlugins.close();
                 }
             } catch (Exception e) {
@@ -284,95 +286,94 @@ public class VstMng {
             int blockSize = sampleCount / 2;
 
             for (VstInfo2 info2 : vstPluginsInst) {
-                VstPluginContext PluginContext = info2.vstPlugins;
+                VstPlugin PluginContext = info2.vstPlugins;
                 if (PluginContext == null) continue;
-                if (PluginContext.PluginCommandStub == null) continue;
+//                if (PluginContext == null) continue;
 
+                int inputCount = info2.vstPlugins.getNumInputs();
+                int outputCount = info2.vstPlugins.getNumOutputs();
 
-                int inputCount = info2.vstPlugins.PluginInfo.AudioInputCount;
-                int outputCount = info2.vstPlugins.PluginInfo.AudioOutputCount;
-
-                try (VstAudioBufferManager inputMgr = new VstAudioBufferManager(inputCount, blockSize)) {
-                    try (VstAudioBufferManager outputMgr = new VstAudioBufferManager(outputCount, blockSize)) {
-                        VstAudioBuffer[] inputBuffers = inputMgr.toArray();
-                        VstAudioBuffer[] outputBuffers = outputMgr.toArray();
-
-                        if (inputCount != 0) {
-                            inputMgr.ClearBuffer(inputBuffers[0]);
-                            inputMgr.ClearBuffer(inputBuffers[1]);
-
-                            for (int j = 0; j < blockSize; j++) {
-                                // generate a value between -1.0 and 1.0
-                                inputBuffers[0].set(j, buffer[j * 2 + offset + 0] / (float) Short.MAX_VALUE);
-                                inputBuffers[1].set(j, buffer[j * 2 + offset + 1] / (float) Short.MAX_VALUE);
-                            }
-                        }
-
-                        outputMgr.ClearBuffer(outputBuffers[0]);
-                        outputMgr.ClearBuffer(outputBuffers[1]);
-
-                        PluginContext.PluginCommandStub.ProcessEvents(info2.lstEvent.toArray());
-                        info2.lstEvent.clear();
-
-
-                        PluginContext.PluginCommandStub.ProcessReplacing(inputBuffers, outputBuffers);
-
-                        for (int j = 0; j < blockSize; j++) {
-                            // generate a value between -1.0 and 1.0
-                            if (inputCount == 0) {
-                                buffer[j * 2 + offset + 0] += (short) (outputBuffers[0][j] * Short.MAX_VALUE);
-                                buffer[j * 2 + offset + 1] += (short) (outputBuffers[1][j] * Short.MAX_VALUE);
-                            } else {
-                                buffer[j * 2 + offset + 0] = (short) (outputBuffers[0][j] * Short.MAX_VALUE);
-                                buffer[j * 2 + offset + 1] = (short) (outputBuffers[1][j] * Short.MAX_VALUE);
-                            }
-                        }
-                    }
-                }
+//                try (VstAudioBufferManager inputMgr = new VstAudioBufferManager(inputCount, blockSize)) {
+//                    try (VstAudioBufferManager outputMgr = new VstAudioBufferManager(outputCount, blockSize)) {
+//                        VstAudioBuffer[] inputBuffers = inputMgr.toArray();
+//                        VstAudioBuffer[] outputBuffers = outputMgr.toArray();
+//
+//                        if (inputCount != 0) {
+//                            inputMgr.ClearBuffer(inputBuffers[0]);
+//                            inputMgr.ClearBuffer(inputBuffers[1]);
+//
+//                            for (int j = 0; j < blockSize; j++) {
+//                                // generate a value between -1.0 and 1.0
+//                                inputBuffers[0].set(j, buffer[j * 2 + offset + 0] / (float) Short.MAX_VALUE);
+//                                inputBuffers[1].set(j, buffer[j * 2 + offset + 1] / (float) Short.MAX_VALUE);
+//                            }
+//                        }
+//
+//                        outputMgr.ClearBuffer(outputBuffers[0]);
+//                        outputMgr.ClearBuffer(outputBuffers[1]);
+//
+//                        PluginContext.PluginCommandStub.ProcessEvents(info2.lstEvent.toArray());
+//                        info2.lstEvent.clear();
+//
+//
+//                        PluginContext.PluginCommandStub.ProcessReplacing(inputBuffers, outputBuffers);
+//
+//                        for (int j = 0; j < blockSize; j++) {
+//                            // generate a value between -1.0 and 1.0
+//                            if (inputCount == 0) {
+//                                buffer[j * 2 + offset + 0] += (short) (outputBuffers[0][j] * Short.MAX_VALUE);
+//                                buffer[j * 2 + offset + 1] += (short) (outputBuffers[1][j] * Short.MAX_VALUE);
+//                            } else {
+//                                buffer[j * 2 + offset + 0] = (short) (outputBuffers[0][j] * Short.MAX_VALUE);
+//                                buffer[j * 2 + offset + 1] = (short) (outputBuffers[1][j] * Short.MAX_VALUE);
+//                            }
+//                        }
+//                    }
+//                }
             }
 
             for (VstInfo2 info2 : vstPlugins) {
-                VstPluginContext PluginContext = info2.vstPlugins;
-                if (PluginContext == null) continue;
-                if (PluginContext.PluginCommandStub == null) continue;
-
-
-                int inputCount = info2.vstPlugins.PluginInfo.AudioInputCount;
-                int outputCount = info2.vstPlugins.PluginInfo.AudioOutputCount;
-
-                try (VstAudioBufferManager inputMgr = new VstAudioBufferManager(inputCount, blockSize)) {
-                    try (VstAudioBufferManager outputMgr = new VstAudioBufferManager(outputCount, blockSize)) {
-                        VstAudioBuffer[] inputBuffers = inputMgr.toArray();
-                        VstAudioBuffer[] outputBuffers = outputMgr.toArray();
-
-                        if (inputCount != 0) {
-                            inputMgr.ClearBuffer(inputBuffers[0]);
-                            inputMgr.ClearBuffer(inputBuffers[1]);
-
-                            for (int j = 0; j < blockSize; j++) {
-                                // generate a value between -1.0 and 1.0
-                                inputBuffers[0][j] = buffer[j * 2 + offset + 0] / (float) Short.MAX_VALUE;
-                                inputBuffers[1][j] = buffer[j * 2 + offset + 1] / (float) Short.MAX_VALUE;
-                            }
-                        }
-
-                        outputMgr.ClearBuffer(outputBuffers[0]);
-                        outputMgr.ClearBuffer(outputBuffers[1]);
-
-                        PluginContext.PluginCommandStub.ProcessReplacing(inputBuffers, outputBuffers);
-
-                        for (int j = 0; j < blockSize; j++) {
-                            // generate a value between -1.0 and 1.0
-                            if (inputCount == 0) {
-                                buffer[j * 2 + offset + 0] += (short) (outputBuffers[0][j] * Short.MAX_VALUE);
-                                buffer[j * 2 + offset + 1] += (short) (outputBuffers[1][j] * Short.MAX_VALUE);
-                            } else {
-                                buffer[j * 2 + offset + 0] = (short) (outputBuffers[0][j] * Short.MAX_VALUE);
-                                buffer[j * 2 + offset + 1] = (short) (outputBuffers[1][j] * Short.MAX_VALUE);
-                            }
-                        }
-                    }
-                }
+//                VstPluginContext PluginContext = info2.vstPlugins;
+//                if (PluginContext == null) continue;
+//                if (PluginContext.PluginCommandStub == null) continue;
+//
+//
+//                int inputCount = info2.vstPlugins.PluginInfo.AudioInputCount;
+//                int outputCount = info2.vstPlugins.PluginInfo.AudioOutputCount;
+//
+//                try (VstAudioBufferManager inputMgr = new VstAudioBufferManager(inputCount, blockSize)) {
+//                    try (VstAudioBufferManager outputMgr = new VstAudioBufferManager(outputCount, blockSize)) {
+//                        VstAudioBuffer[] inputBuffers = inputMgr.toArray();
+//                        VstAudioBuffer[] outputBuffers = outputMgr.toArray();
+//
+//                        if (inputCount != 0) {
+//                            inputMgr.ClearBuffer(inputBuffers[0]);
+//                            inputMgr.ClearBuffer(inputBuffers[1]);
+//
+//                            for (int j = 0; j < blockSize; j++) {
+//                                // generate a value between -1.0 and 1.0
+//                                inputBuffers[0][j] = buffer[j * 2 + offset + 0] / (float) Short.MAX_VALUE;
+//                                inputBuffers[1][j] = buffer[j * 2 + offset + 1] / (float) Short.MAX_VALUE;
+//                            }
+//                        }
+//
+//                        outputMgr.ClearBuffer(outputBuffers[0]);
+//                        outputMgr.ClearBuffer(outputBuffers[1]);
+//
+//                        PluginContext.PluginCommandStub.ProcessReplacing(inputBuffers, outputBuffers);
+//
+//                        for (int j = 0; j < blockSize; j++) {
+//                            // generate a value between -1.0 and 1.0
+//                            if (inputCount == 0) {
+//                                buffer[j * 2 + offset + 0] += (short) (outputBuffers[0][j] * Short.MAX_VALUE);
+//                                buffer[j * 2 + offset + 1] += (short) (outputBuffers[1][j] * Short.MAX_VALUE);
+//                            } else {
+//                                buffer[j * 2 + offset + 0] = (short) (outputBuffers[0][j] * Short.MAX_VALUE);
+//                                buffer[j * 2 + offset + 1] = (short) (outputBuffers[1][j] * Short.MAX_VALUE);
+//                            }
+//                        }
+//                    }
+//                }
             }
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
@@ -385,33 +386,33 @@ public class VstMng {
         if (num >= vstMidiOuts.size()) return;
         if (vstMidiOuts.get(num) == null) return;
 
-        VstMidiEvent evt = new VstMidiEvent(
-                deltaFrames
-                , 0 // noteLength
-                , 0 // noteOffset
-                , new byte[] {cmd, prm1, prm2}
-                , 0 // detune
-                , 0 // noteOffVelocity
-        );
-        vstMidiOuts.get(num).AddMidiEvent(evt);
-        if (num < midiParams.length) midiParams[num].sendBuffer(new byte[] {cmd, prm1, prm2});
+//        VstMidiEvent evt = new VstMidiEvent(
+//                deltaFrames
+//                , 0 // noteLength
+//                , 0 // noteOffset
+//                , new byte[] {cmd, prm1, prm2}
+//                , 0 // detune
+//                , 0 // noteOffVelocity
+//        );
+//        vstMidiOuts.get(num).AddMidiEvent(evt);
+//        if (num < midiParams.length) midiParams[num].sendBuffer(new byte[] {cmd, prm1, prm2});
     }
 
-    public void sendMIDIout(EnmModel model, int num, byte cmd, byte prm1, int deltaFrames/* = 0*/) {
+    public void sendMIDIout(EnmModel model, int num, byte cmd, byte prm1, int deltaFrames /* = 0 */) {
         if (model == EnmModel.RealModel) return;
         if (vstMidiOuts == null) return;
         if (num >= vstMidiOuts.size()) return;
         if (vstMidiOuts.get(num) == null) return;
 
-        Jacobi.Vst.Core.VstMidiEvent evt = new Jacobi.Vst.Core.VstMidiEvent(
-                deltaFrames
-                , 0 // noteLength
-                , 0 // noteOffset
-                , new byte[] {cmd, prm1}
-                , 0 // detune
-                , 0 // noteOffVelocity
-        );
-        vstMidiOuts.get(num).AddMidiEvent(evt);
+//        Jacobi.Vst.Core.VstMidiEvent evt = new Jacobi.Vst.Core.VstMidiEvent(
+//                deltaFrames
+//                , 0 // noteLength
+//                , 0 // noteOffset
+//                , new byte[] {cmd, prm1}
+//                , 0 // detune
+//                , 0 // noteOffVelocity
+//        );
+//        vstMidiOuts.get(num).AddMidiEvent(evt);
         if (num < midiParams.length) midiParams[num].sendBuffer(new byte[] {cmd, prm1});
     }
 
@@ -421,15 +422,15 @@ public class VstMng {
         if (num >= vstMidiOuts.size()) return;
         if (vstMidiOuts.get(num) == null) return;
 
-        VstMidiEvent evt = new VstMidiEvent(
-                deltaFrames
-                , 0 // noteLength
-                , 0 // noteOffset
-                , data
-                , 0 // detune
-                , 0 // noteOffVelocity
-        );
-        vstMidiOuts.get(num).AddMidiEvent(evt);
+//        VstMidiEvent evt = new VstMidiEvent(
+//                deltaFrames
+//                , 0 // noteLength
+//                , 0 // noteOffset
+//                , data
+//                , 0 // detune
+//                , 0 // noteOffVelocity
+//        );
+//        vstMidiOuts.get(num).AddMidiEvent(evt);
         if (num < midiParams.length) midiParams[num].sendBuffer(data);
     }
 
@@ -438,9 +439,9 @@ public class VstMng {
 
         if (vstMidiOuts == null) return;
         for (int i = 0; i < vstMidiOuts.size(); i++) {
-            if (vstMidiOuts[i] == null) continue;
-            if (vstMidiOuts[i].vstPlugins == null) continue;
-            if (vstMidiOuts[i].vstPlugins.PluginCommandStub == null) continue;
+//            if (vstMidiOuts[i] == null) continue;
+//            if (vstMidiOuts[i].vstPlugins == null) continue;
+//            if (vstMidiOuts[i].vstPlugins.PluginCommandStub == null) continue;
 
             try {
                 List<Byte> dat = new ArrayList<>();
@@ -458,13 +459,13 @@ public class VstMng {
     public VstPlugin OpenPlugin(String pluginPath) {
         try {
             HostCommandStub hostCmdStub = new HostCommandStub(setting);
-            hostCmdStub.PluginCalled += new EventHandler<>(HostCmdStub_PluginCalled);
+//            hostCmdStub.PluginCalled += new EventHandler<>(HostCmdStub_PluginCalled);
 
             VstPlugin ctx = new VstPlugin(new File(pluginPath)/*, hostCmdStub*/);
 
             // add custom data to the context
-            ctx.Set("PluginPath", pluginPath);
-            ctx.Set("HostCmdStub", hostCmdStub);
+//            ctx.Set("PluginPath", pluginPath);
+//            ctx.Set("HostCmdStub", hostCmdStub);
 
             // actually open the chips itself
             ctx.open();
@@ -482,11 +483,11 @@ public class VstMng {
         HostCommandStub hostCmdStub = (HostCommandStub) sender;
 
         // can be null when called from inside the chips main entry point.
-        if (hostCmdStub.PluginContext.PluginInfo != null) {
-            logger.log(Level.DEBUG, "Plugin " + hostCmdStub.PluginContext.PluginInfo.PluginID + " called:" + e.getMessage());
-        } else {
-            logger.log(Level.DEBUG, "The loading Plugin called:" + e.getMessage());
-        }
+//        if (hostCmdStub.PluginContext.PluginInfo != null) {
+//            logger.log(Level.DEBUG, "Plugin " + hostCmdStub.PluginContext.PluginInfo.PluginID + " called:" + e.getMessage());
+//        } else {
+//            logger.log(Level.DEBUG, "The loading Plugin called:" + e.getMessage());
+//        }
     }
 
     public List<VstInfo2> getVSTInfos() {
@@ -524,11 +525,11 @@ public class VstMng {
 
         ctx.setBlockSize(512);
         ctx.setSampleRate(setting.getOutputDevice().getSampleRate());
-        ctx.MainsChanged(true);
-        ctx.StartProcess();
+//        ctx.MainsChanged(true);
+//        ctx.StartProcess();
         vi.effectName = ctx.getName();
         vi.power = true;
-        ctx.getParameterProperties(0);
+//        ctx.getParameterProperties(0);
 
 
         frmVST dlg = new frmVST(null);
@@ -556,7 +557,7 @@ public class VstMng {
             v.vendorName = vi.vendorName;
             lvi.add(v);
         }
-        setting.getVst().setVSTInfo(lvi.toArray());
+        setting.getVst().setVSTInfo(lvi.toArray(VstInfo[]::new));
 
         return true;
     }
@@ -570,15 +571,15 @@ public class VstMng {
                         vstPlugin.location = vstPlugin.vstPluginsForm.getLocation();
                         vstPlugin.vstPluginsForm.setVisible(false);
                         vstPlugin.vstPlugins.editClose();
-                        vstPlugin.vstPlugins.StopProcess();
-                        vstPlugin.vstPlugins.MainsChanged(false);
+//                        vstPlugin.vstPlugins.StopProcess();
+//                        vstPlugin.vstPlugins.MainsChanged(false);
                         vstPlugin.vstPlugins.close();
                     }
                 } catch (Exception e) {
                 }
             }
             vstPlugins.clear();
-            setting.getVst().setVSTInfo(VstInfo::new);
+            setting.getVst().setVSTInfo(new VstInfo[0]);
         } else {
             int ind = -1;
             for (int i = 0; i < vstPlugins.size(); i++) {
@@ -596,8 +597,8 @@ public class VstMng {
                         vstPlugins.get(ind).location = vstPlugins.get(ind).vstPluginsForm.getLocation();
                         vstPlugins.get(ind).vstPluginsForm.setVisible(false);
                         vstPlugins.get(ind).vstPlugins.editClose();
-                        vstPlugins.get(ind).vstPlugins.StopProcess();
-                        vstPlugins.get(ind).vstPlugins.MainsChanged(false);
+//                        vstPlugins.get(ind).vstPlugins.StopProcess();
+//                        vstPlugins.get(ind).vstPlugins.MainsChanged(false);
                         vstPlugins.get(ind).vstPlugins.close();
                     }
                 } catch (Exception e) {
@@ -611,7 +612,7 @@ public class VstMng {
                 if (vi.key.equals(key)) continue;
                 nvst.add(vi);
             }
-            setting.getVst().setVSTInfo(nvst.toArray(VstInfo::new));
+//            setting.getVst().setVSTInfo(nvst.toArray(VstInfo::new));
         }
 
         return true;
@@ -620,7 +621,7 @@ public class VstMng {
     /**
      * The HostCommandStub class represents the part of the host that a chips can call.
      */
-    public static class HostCommandStub implements IVstHostCommandStub {
+    public static class HostCommandStub /* implements IVstHostCommandStub */ {
         private final Setting setting;
 
         public HostCommandStub(Setting setting) {
@@ -636,19 +637,19 @@ public class VstMng {
             EventHandler<PluginCalledEventArgs> handler = PluginCalled;
 
             if (handler != null) {
-                handler(this, new PluginCalledEventArgs(message));
+//                handler(this, new PluginCalledEventArgs(message));
             }
         }
 
 //#region IVstHostCommandsStub Members
 
         /* TODO */
-        public IVstPluginContext getPluginContext() {
-            return null;
-        }
+//        public IVstPluginContext getPluginContext() {
+//            return null;
+//        }
 
-        public void setPluginContext(IVstPluginContext value) {
-        }
+//        public void setPluginContext(IVstPluginContext value) {
+//        }
 
         /* */
         public boolean BeginEdit(int index) {
@@ -658,16 +659,16 @@ public class VstMng {
         }
 
         /* */
-        public VstCanDoResult CanDo(String cando) {
-            RaisePluginCalled("CanDo(" + cando + ")");
-            return VstCanDoResult.Unknown;
-        }
+//        public VstCanDoResult CanDo(String cando) {
+//            RaisePluginCalled("CanDo(" + cando + ")");
+//            return VstCanDoResult.Unknown;
+//        }
 
         /* */
-        public boolean CloseFileSelector(VstFileSelect fileSelect) {
-            RaisePluginCalled("CloseFileSelector(" + fileSelect.Command + ")");
-            return false;
-        }
+//        public boolean CloseFileSelector(VstFileSelect fileSelect) {
+//            RaisePluginCalled("CloseFileSelector(" + fileSelect.Command + ")");
+//            return false;
+//        }
 
         /* */
         public boolean EndEdit(int index) {
@@ -676,10 +677,10 @@ public class VstMng {
         }
 
         /* */
-        public VstAutomationStates GetAutomationState() {
-            RaisePluginCalled("GetAutomationState()");
-            return VstAutomationStates.Off;
-        }
+//        public VstAutomationStates GetAutomationState() {
+//            RaisePluginCalled("GetAutomationState()");
+//            return VstAutomationStates.Off;
+//        }
 
         /* */
         public int GetBlockSize() {
@@ -700,10 +701,10 @@ public class VstMng {
         }
 
         /* */
-        public VstHostLanguage GetLanguage() {
-            RaisePluginCalled("GetLanguage()");
-            return VstHostLanguage.NotSupported;
-        }
+//        public VstHostLanguage GetLanguage() {
+//            RaisePluginCalled("GetLanguage()");
+//            return VstHostLanguage.NotSupported;
+//        }
 
         /* */
         public int GetOutputLatency() {
@@ -712,10 +713,10 @@ public class VstMng {
         }
 
         /* */
-        public VstProcessLevels GetProcessLevel() {
-            RaisePluginCalled("GetProcessLevel()");
-            return VstProcessLevels.Unknown;
-        }
+//        public VstProcessLevels GetProcessLevel() {
+//            RaisePluginCalled("GetProcessLevel()");
+//            return VstProcessLevels.Unknown;
+//        }
 
         /* */
         public String GetProductString() {
@@ -730,28 +731,28 @@ public class VstMng {
         }
 
         /* */
-        public VstTimeInfo GetTimeInfo(VstTimeInfoFlags filterFlags) {
-            //RaisePluginCalled("GetTimeInfo(" + filterFlags + ")");
-            VstTimeInfo vti = new VstTimeInfo();
-            vti.samplePos = 0;
-            vti.sampleRate = setting.getOutputDevice().getSampleRate() / 1000.0f;
-            vti.nanoSeconds = 0;
-            vti.ppqPos = 0;
-            vti.tempo = 120;
-            vti.barStartPos = 0;
-            vti.cycleStartPos = 0;
-            vti.cycleEndPos = 0;
-            vti.timeSigNumerator = 4;
-            vti.timeSigDenominator = 4;
-            vti.smpteOffset = 0;
-            vti.smpteFrameRate = VstSmpteFrameRate.Smpte24fps;
-            vti.samplesToNextClock = 0;
-            vti.flags = VstConst.VST_NanosValid
-                    | VstConst.VST_PpqPosValid
-                    | VstConst.VST_TempoValid
-                    | VstConst.VST_TimeSigValid;
-            return vti;
-        }
+//        public VstTimeInfo GetTimeInfo(VstTimeInfoFlags filterFlags) {
+//            //RaisePluginCalled("GetTimeInfo(" + filterFlags + ")");
+//            VstTimeInfo vti = new VstTimeInfo();
+//            vti.samplePos = 0;
+//            vti.sampleRate = setting.getOutputDevice().getSampleRate() / 1000.0f;
+//            vti.nanoSeconds = 0;
+//            vti.ppqPos = 0;
+//            vti.tempo = 120;
+//            vti.barStartPos = 0;
+//            vti.cycleStartPos = 0;
+//            vti.cycleEndPos = 0;
+//            vti.timeSigNumerator = 4;
+//            vti.timeSigDenominator = 4;
+//            vti.smpteOffset = 0;
+//            vti.smpteFrameRate = VstSmpteFrameRate.Smpte24fps;
+//            vti.samplesToNextClock = 0;
+//            vti.flags = VstConst.VST_NanosValid
+//                    | VstConst.VST_PpqPosValid
+//                    | VstConst.VST_TempoValid
+//                    | VstConst.VST_TimeSigValid;
+//            return vti;
+//        }
 
         /** */
         public String GetVendorString() {
@@ -771,14 +772,14 @@ public class VstMng {
             return false;
         }
 
-        /** */
-        public boolean OpenFileSelector(VstFileSelect fileSelect) {
-            RaisePluginCalled("OpenFileSelector(" + fileSelect.Command + ")");
-            return false;
-        }
+//        /** */
+//        public boolean OpenFileSelector(VstFileSelect fileSelect) {
+//            RaisePluginCalled("OpenFileSelector(" + fileSelect.Command + ")");
+//            return false;
+//        }
 
         /** */
-        public boolean ProcessEvents(VstEvent[] events) {
+        public boolean ProcessEvents(AEffect[] events) {
             RaisePluginCalled("ProcessEvents(" + events.length + ")");
             return false;
         }
@@ -795,10 +796,10 @@ public class VstMng {
             return false;
         }
 
-        public int GetCurrentPluginID() {
-            RaisePluginCalled("GetCurrentPluginID()");
-            return PluginContext.PluginInfo.PluginID;
-        }
+//        public int GetCurrentPluginID() {
+//            RaisePluginCalled("GetCurrentPluginID()");
+//            return PluginContext.PluginInfo.PluginID;
+//        }
 
         public int GetVersion() {
             RaisePluginCalled("GetVersion()");
@@ -843,9 +844,9 @@ public class VstMng {
 
         // It doesn't matter if it's actually a VSTi or not.
         public boolean isInstrument = false;
-        public List<VstMidiEvent> lstEvent = new ArrayList<>();
+        public List<AEffect> lstEvent = new ArrayList<>();
 
-        public void AddMidiEvent(VstMidiEvent evt) {
+        public void AddMidiEvent(AEffect evt) {
             lstEvent.add(evt);
         }
     }

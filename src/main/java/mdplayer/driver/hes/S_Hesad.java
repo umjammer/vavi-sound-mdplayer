@@ -57,7 +57,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         p[0] = p[0] * PCE_VOLUME;
         p[1] = p[1] * PCE_VOLUME;
 
-        sndp.deltadev.synth.accept(pbf);
+//        sndp.deltadev.synth.accept(pbf); // TODO vavi
 
         sndp.common.pt += sndp.common.cps;
 
@@ -93,7 +93,7 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
         sndp.common.cps = 100000000 / freq;
         sndp.common.pt = 0;
         sndp.volume = 0xff;
-        sndp.deltadev.reset.accept(clock, freq);
+//        sndp.deltadev.reset.accept(clock, freq); // TODO vavi: self recursion
         sndp.deltadev.write.accept(1, 0);
         sndp.deltadev.write.accept(0xb, 0xff);
         //sndp->deltadev->setinst(sndp->deltadev,0,sndp->pcmbuf,0x100);
@@ -255,13 +255,13 @@ public class S_Hesad extends KMIF_SOUND_DEVICE {
     //}
     // Register viewer settings up to here
 
-    public KMIF_SOUND_DEVICE HESAdPcmAlloc() {
+    public KMIF_SOUND_DEVICE HESAdPcmAlloc(S_Hesad s_hesad) {
         HESADPCM sndp;
         //sndp = XMALLOC(sizeof(HESADPCM));
         sndp = new HESADPCM();
         if (sndp == null) return null;
         //XMEMSET(sndp, 0, sizeof(HESADPCM));
-        sndp.kmif = new S_Hesad();
+        sndp.kmif = s_hesad; // TODO vavi
         sndp.kmif.ctx = sndp;
         sndp.kmif.release = this::sndrelease;
         sndp.kmif.reset = this::sndreset;

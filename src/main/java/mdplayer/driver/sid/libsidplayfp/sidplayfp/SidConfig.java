@@ -144,8 +144,8 @@ public class SidConfig {
      */
     public boolean fastSampling;
 
-    public SidConfig(Setting setting) {
-        DEFAULT_SAMPLING_FREQ = setting.getOutputDevice().getSampleRate();
+    public SidConfig(int sampleRate) {
+        DEFAULT_SAMPLING_FREQ = sampleRate;
         defaultC64Model = C64Model.PAL;
         forceC64Model = false;
         defaultSidModel = SidModel.MOS6581;

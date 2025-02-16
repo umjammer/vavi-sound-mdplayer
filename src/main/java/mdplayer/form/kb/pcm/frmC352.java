@@ -166,7 +166,7 @@ public class frmC352 extends frmBase {
 
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
-            int a = 0x10000 //1sample進むのに必要なカウント数
+            int a = 0x10000 // Number of counts required to advance 1 sample
                     //8000.0
                     //Tables.pcmMulTbl[i % 12 + 12]
                     //Math.pow(2, (i / 12 - 3 + 2))

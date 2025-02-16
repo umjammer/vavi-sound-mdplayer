@@ -24,12 +24,15 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import dotnet4j.io.IOException;
 import mdplayer.driver.sid.Mem;
 import mdplayer.driver.sid.libsidplayfp.SidMd5;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
+import vavi.util.ByteUtil;
+import vavi.util.Debug;
 
 import static java.lang.System.getLogger;
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toBig16;
@@ -126,6 +129,9 @@ public class PSid extends SidTuneBase {
         Clock(int v) {
             this.v = v;
         }
+        static Clock valueOf(int v) {
+            return Arrays.stream(values()).filter(e -> e.v == v).findFirst().orElseThrow();
+        }
     }
 
     public enum SidModel {
@@ -208,15 +214,15 @@ public class PSid extends SidTuneBase {
         }
 
         // Read v1 fields
-        header.id = toBig32(ByteBuffer.wrap(dataBuf, 0, 4));
-        header.version = toBig16(ByteBuffer.wrap(dataBuf, 4, 2));
-        header.data = toBig16(ByteBuffer.wrap(dataBuf, 6, 2));
-        header.load = toBig16(ByteBuffer.wrap(dataBuf, 8, 2));
-        header.init = toBig16(ByteBuffer.wrap(dataBuf, 10, 2));
-        header.play = toBig16(ByteBuffer.wrap(dataBuf, 12, 2));
-        header.songs = toBig16(ByteBuffer.wrap(dataBuf, 14, 2));
-        header.start = toBig16(ByteBuffer.wrap(dataBuf, 16, 2));
-        header.speed = toBig32(ByteBuffer.wrap(dataBuf, 18, 4));
+        header.id = ByteUtil.readBeInt(dataBuf, 0);
+        header.version = ByteUtil.readBeShort(dataBuf, 4);
+        header.data = ByteUtil.readBeShort(dataBuf, 6);
+        header.load = ByteUtil.readBeShort(dataBuf, 8);
+        header.init = ByteUtil.readBeShort(dataBuf, 10);
+        header.play = ByteUtil.readBeShort(dataBuf, 12);
+        header.songs = ByteUtil.readBeShort(dataBuf, 14);
+        header.start = ByteUtil.readBeShort(dataBuf, 16);
+        header.speed = ByteUtil.readBeInt(dataBuf, 18);
         Mem.memcpy(header.name, ByteBuffer.wrap(dataBuf, 22, PSID_MAXSTRLEN), PSID_MAXSTRLEN);
         Mem.memcpy(header.author, ByteBuffer.wrap(dataBuf, 54, PSID_MAXSTRLEN), PSID_MAXSTRLEN);
         Mem.memcpy(header.released, ByteBuffer.wrap(dataBuf, 86, PSID_MAXSTRLEN), PSID_MAXSTRLEN);
@@ -227,7 +233,7 @@ public class PSid extends SidTuneBase {
             }
 
             // Read v2/3/4 fields
-            header.flags = toBig16(ByteBuffer.wrap(dataBuf, 118, 2));
+            header.flags = ByteUtil.readBeShort(dataBuf, 118);
             header.relocStartPage = dataBuf[120];
             header.relocPages = dataBuf[121];
             header.sidChipBase2 = dataBuf[122];
@@ -240,6 +246,7 @@ public class PSid extends SidTuneBase {
 
         // Require a valid ID and version number.
         if (pHeader.id == PSID_ID) {
+Debug.printf("id: %d, ver: %d%n", pHeader.id, pHeader.version);
             switch (pHeader.version) {
             case 1:
                 compatibility = SidTuneInfo.Compatibility.PSID;
@@ -288,7 +295,7 @@ public class PSid extends SidTuneBase {
                 clock = SidTuneInfo.Clock.ANY;
                 musPlayer = true;
             } else {
-                switch (Clock.values()[flags & (short) Kind.CLOCK.v]) {
+                switch (Clock.valueOf(flags & (short) Kind.CLOCK.v)) {
                 case ANY -> clock = SidTuneInfo.Clock.ANY;
                 case PAL -> clock = SidTuneInfo.Clock.PAL;
                 case NTSC -> clock = SidTuneInfo.Clock.NTSC;
@@ -434,4 +441,3 @@ public class PSid extends SidTuneBase {
         return md5;
     }
 }
-

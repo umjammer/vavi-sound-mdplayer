@@ -58,10 +58,10 @@ public class UnknownFileFormat extends BaseFileFormat {
         if (ByteUtil.readLeInt(buf, 0x00) != Vgm.FCC_VGM) {
             // musics.add(Music);
             // return musics;
-            // VGZかもしれないので確認する
+            // Might be VGZ so check.
             try {
                 int num;
-                buf = new byte[1024]; // 1Kbytesずつ処理する
+                buf = new byte[1024]; // Process 1Kbytes at a time
 
                 if (entry == null || entry instanceof JdkZipEntry) {
                     if (archive == null && entry == null) {
@@ -82,7 +82,7 @@ public class UnknownFileFormat extends BaseFileFormat {
                 }
             } catch (Exception e) {
                 logger.log(Level.ERROR, e.getMessage(), e);
-                // vgzではなかった
+                // It was not vgz
             }
         }
 

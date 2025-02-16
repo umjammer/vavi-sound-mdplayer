@@ -104,7 +104,7 @@ public class MnDrv extends BaseDriver {
             }
         }
 
-        reg.setD0_B(0x03); // MND 演奏開始
+        reg.setD0_B(0x03); // MND begins playing
         _trap4_entry();
         if (reg.D0_L < 0) {
             stopped = true;
@@ -121,7 +121,7 @@ public class MnDrv extends BaseDriver {
 
     @Override
     public void processOneFrame() {
-         // デバッグ向け
+        // For debugging
         //if (model == enmModel.RealModel) return;
 
         if (mm.mm == null) {
@@ -147,7 +147,7 @@ public class MnDrv extends BaseDriver {
             if ((mm.readByte(reg.a6 + Dw.DRV_STATUS) & 0x20) != 0) {
                 stopped = true;
             }
-            vgmCurLoop = mm.readShort(reg.a6 + Dw.LOOP_COUNTER);
+            vgmCurLoop = mm.readShort(reg.a6 + Dw.LOOP_COUNTER) & 0xffff;
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -292,7 +292,7 @@ public class MnDrv extends BaseDriver {
     byte[] vtbl = new byte[128 * 2];
     public X68kMPcmInst mpcm;
 
-    // トラップ処理(実質MPCM制御)
+    // Trap processing (effectively MPCM control)
     public void trap(int n) {
         if (model == EnmModel.RealModel) return;
 
@@ -349,7 +349,7 @@ public class MnDrv extends BaseDriver {
      * MnDrv Music driver
      * Copyright(C)1997,1998,1999,2000 s.Tsuyuzaki
      *
-     * 参考:	SORCERIAN for X680x0        - PROPN
+     * reference: SORCERIAN for X680x0  - PROPN
      * Music creative driver            - MCDRV
      * 	    FMP SYSTEM                  - FMP
      * 	    Professional Music Driver   - PMD
@@ -402,34 +402,34 @@ public class MnDrv extends BaseDriver {
             _t_trans_pcm(); // 02 copy to buffer
             break;
         case 8:
-            _t_play_music(); // 03 演奏開始
+            _t_play_music(); // 03 Start playing
             break;
         case 10:
-            _t_pause(); // 04 一時停止
+            _t_pause(); // 04 Pause
             break;
         case 12:
-            _t_stop_music(); // 05 演奏停止
+            _t_stop_music(); // 05 Stop playing
             break;
         case 14:
-            _t_get_title(); // 06 タイトル取得
+            _t_get_title(); // 06 Title Acquisition
             break;
         case 16:
-            _t_get_work(); // 07 システムワーク取得
+            _t_get_work(); // 07 System work acquisition
             break;
         case 18:
-            _t_get_track_work(); // 08 トラックワークアドレス取得
+            _t_get_track_work(); // 08 Get trackwork address
             break;
         case 20:
-            _t_get_trwork_size(); //  09 track work size 取得
+            _t_get_trwork_size(); //  09 Get track work size
             break;
         case 22:
-            _t_set_master_vol(); // 0A マスターボリューム
+            _t_set_master_vol(); // 0A Master Volume
             break;
         case 24:
-            _t_track_mask(); // 0B トラックマスク
+            _t_track_mask(); // 0B Track Mask
             break;
         case 26:
-            _t_key_mask(); // 0C キーコントロール制御
+            _t_key_mask(); // 0C Key Control
             break;
         case 28:
             _t_fadeout(); // 0D FADEOUT
@@ -507,18 +507,18 @@ public class MnDrv extends BaseDriver {
     }
 
     public void _t_nop() {
-        reg.D0_L = 0xffffffff;
+        reg.D0_L = 0xffff_ffff;
     }
 
     public static final String M_keeptitle = "MnDrv Music driver";
 
     /**
      * MNCALL 0
-     * 常駐解除(実際は再生停止と初期化のみ)
+     * Uninstall (actually just stops playback and initializes)
      */
     public void _t_release() {
         if (mm.readShort(reg.a6 + Dw.UNREMOVE) != 0) {
-            reg.D0_L = 0xffffffff;
+            reg.D0_L = 0xffff_ffff;
             return;
         }
 
@@ -526,7 +526,7 @@ public class MnDrv extends BaseDriver {
         _d_stop_music();
         mm.write(reg.a6 + Dw.DRV_FLAG, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG) | 0x20));
         _dev_reset();
-        reg.D0_L = 0xffffffff;
+        reg.D0_L = 0xffff_ffff;
         SUBEVENT();
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x40) != 0) {
             reg.setD0_W(0x8001);
@@ -535,7 +535,7 @@ public class MnDrv extends BaseDriver {
         }
 
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x08) != 0) {
-            reg.D1_L = 0xffffffff; // -1
+            reg.D1_L = 0xffff_ffff; // -1
             reg.setD0_W(0x8001);
             trap(3);
         }
@@ -543,17 +543,18 @@ public class MnDrv extends BaseDriver {
         _vec_release();
         reg.a1 = sp;
 
-        // 常駐解除処理
+        // Residency release process
 
         reg.D0_L = 0;
     }
 
     /**
      * MNCALL 1
-     * データを内部バッファにコピー
-     *
+     * Copy the data to an internal buffer
+     * <pre>
      * in	d1 : len
      * 	a1 : pointer
+     * </pre>
      */
     public void _t_trans_mnd() {
         int sp = reg.D1_L;
@@ -568,12 +569,12 @@ public class MnDrv extends BaseDriver {
 
         reg.D1_L = sp;
         if (reg.D1_L == 0) {
-            reg.D0_L = 0; // lenが0の場合はコピーせずに成功として処理終了
+            reg.D0_L = 0; // If len is 0, the process ends successfully without copying.
             return;
         }
         if (_MCMALLOC() < 0) {
-            // 確保失敗
-            reg.D0_L = 0xffffffff;
+            // Failed to secure
+            reg.D0_L = 0xffff_ffff;
             return;
         }
 
@@ -589,10 +590,11 @@ public class MnDrv extends BaseDriver {
 
     /**
      * MNCALL 2
-     * PCMデータを内部バッファにコピー
-     *
+     * Copy PCM data to internal buffer
+     * <pre>
      * in	d1 : len
      * 	a1 : pointer
+     * </pre>
      */
     public void _t_trans_pcm() {
         mm.write(reg.a6 + Dw.DRV_FLAG, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0xed));
@@ -630,7 +632,7 @@ public class MnDrv extends BaseDriver {
         reg.D1_L = sp;
         if (_MCMALLOC() < 0) {
             //_t_trans_pcm_err:
-            reg.D0_L = 0xffffffff;
+            reg.D0_L = 0xffff_ffff;
             return;
         }
 
@@ -648,13 +650,13 @@ public class MnDrv extends BaseDriver {
         reg.a0 = mm.readInt(reg.a6 + Dw.PCMBUFADR);
         int vl = mm.readInt(reg.a0);
         reg.a0 += 4;
-        if (vl - 0x1a5a6d61 != 0) {
+        if (vl - 0x1a5a_6d61 != 0) {
             _trans_nozpd();
             return;
         }
         vl = mm.readInt(reg.a0);
         reg.a0 += 4;
-        if (vl - 0x4450634d != 0) // 'DPcM'
+        if (vl - 0x4450_634d != 0) // 'DPcM'
         {
             _trans_nozpd();
             return;
@@ -667,7 +669,7 @@ public class MnDrv extends BaseDriver {
         reg.D7_L = reg.D1_L;
         reg.D1_L = P._pcm_work_size * reg.D1_L;
         if (_MCMALLOC() < 0) {
-            reg.D0_L = 0xffffffff;
+            reg.D0_L = 0xffff_ffff;
             return;
         }
 
@@ -732,7 +734,7 @@ public class MnDrv extends BaseDriver {
     public void _trans_nozpd() {
         reg.D1_L = P._pcm_work_size;
         if (_MCMALLOC() < 0) {
-            reg.D0_L = 0xffffffff;
+            reg.D0_L = 0xffff_ffff;
             return;
         }
         mm.write(reg.a6 + Dw.MPCMWORKADR, reg.D0_L);
@@ -740,24 +742,24 @@ public class MnDrv extends BaseDriver {
         reg.D0_L = 0;
         mm.write(reg.a6 + Dw.ZPDCOUNT, reg.D0_L);
         mm.write(reg.a3, (short) reg.getD0_W());
-        reg.a3 += 2; //  登録番号
+        reg.a3 += 2; // Registration number
         mm.write(reg.a3, 0xff);
-        reg.a3++; // 登録タイプ (ADPCMと仮定)
+        reg.a3++; // Registration type (assuming ADPCM)
         mm.write(reg.a3, 0xff);
-        reg.a3++; // オリジナルキー
+        reg.a3++; // Original Key
         mm.write(reg.a3, (byte) reg.getD0_B());
-        reg.a3++; // 属性
+        reg.a3++; // attribute
         mm.write(reg.a3, (byte) reg.getD0_B());
         reg.a3++; // reserved
         mm.write(reg.a3, reg.D0_L);
-        reg.a3 += 4; // データアドレス
+        reg.a3 += 4; // Data Address
         mm.write(reg.a3, reg.D0_L);
-        reg.a3 += 4; // データサイズ
+        reg.a3 += 4; // Data size
         mm.write(reg.a3, reg.D0_L);
-        reg.a3 += 4; // ループ開始ポイント
+        reg.a3 += 4; // Loop Start Point
         mm.write(reg.a3, reg.D0_L);
-        reg.a3 += 4; // ループ終了ポイント
-        mm.write(reg.a3, 1); // ループ回数
+        reg.a3 += 4; // Loop End Point
+        mm.write(reg.a3, 1); // Loop Count
 
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x40) != 0) {
             mm.write(reg.a6 + Dw.DRV_FLAG, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG) | 0x12));
@@ -766,10 +768,10 @@ public class MnDrv extends BaseDriver {
     }
 
     /**
-     * 高速データ転送ルーチン
-     * in	d0.l	データのバイト数
-     *	a0	転送元アドレス(絶対偶数)
-     * 	a1	転送先アドレス(   〃  )
+     * High-speed data transfer routine
+     * in	d0.l	Number of bytes of data
+     *	a0	Source address (absolute even number)
+     * 	a1	Forwarding address (ditto)
      *
      * from MCDRV.s (MCDRV)
      */
@@ -788,12 +790,12 @@ public class MnDrv extends BaseDriver {
         spReg.a3 = reg.a3;
 
         reg.D1_L = reg.D0_L;
-        if (reg.a1 <= reg.a0) { // break hscopy_rf; //  転送元が転送先より下位にある場合の転送へ
+        if (reg.a1 <= reg.a0) { // break hscopy_rf; //  To forward when source is lower than destination
             if (reg.a1 != reg.a0) { // break hscopy90;
 
                 //hscopy_fr:
-                reg.setD0_W(reg.getD0_W() & 0x7f); //  余り128バイトの転送準備
-                reg.D1_L >>= 7; //  128バイト単位の転送準備
+                reg.setD0_W(reg.getD0_W() & 0x7f); //  Prepare to transfer remaining 128 bytes
+                reg.D1_L >>= 7; //  Prepare to transfer in 128-byte units
 
                 boolean hscopy18 = true;
 //                break hscopy18;
@@ -824,13 +826,13 @@ public class MnDrv extends BaseDriver {
 // hscopy28:
                 } while (reg.decAfterD0_W() != 0); // break hscopy20;
             }
-//            break hscopy90; //  転送終了
+//            break hscopy90; //  Transfer completed
         } else {
 // hscopy_rf:
-            reg.a0 += reg.D0_L; //  ブロック後方から転送をする
+            reg.a0 += reg.D0_L; //  Transfer from behind the block
             reg.a1 += reg.D0_L;
-            reg.setD0_W(reg.getD0_W() & 0x7f); //  余り128バイトの転送準備
-            reg.D1_L >>= 7; //  128バイト単位の転送準備
+            reg.setD0_W(reg.getD0_W() & 0x7f); //  Prepare to transfer remaining 128 bytes
+            reg.D1_L >>= 7; //  Prepare to transfer in 128-byte units
 
             boolean hscopy68 = true;
 //            break hscopy68;
@@ -838,7 +840,7 @@ public class MnDrv extends BaseDriver {
             do {
                 if (!hscopy68) {
                     reg.a1--;
-                    reg.a0--; //  余り128バイトをコピーする
+                    reg.a0--; //  Copy the remaining 128 bytes
                     mm.write(reg.a1, mm.readInt(reg.a0));
                     hscopy68 = false;
                 }
@@ -877,7 +879,7 @@ public class MnDrv extends BaseDriver {
 
     /**
      * MNCALL 3
-     * データを解析し，演奏を開始する
+     * Analyze the data and start playing
      */
     public void _t_play_music() {
         _d_stop_music();
@@ -931,7 +933,7 @@ public class MnDrv extends BaseDriver {
         mm.write(reg.a6 + Dw.RHY_DAT2, (byte) 0);
 
         reg.D0_L = 4; // mnd version
-        reg.setD2_W(mm.readShort(reg.a0 + (int) (short) reg.getD0_W()));
+        reg.setD2_W(mm.readShort(reg.a0 + (int) (short) reg.getD0_W()) & 0xffff);
         if (reg.getD2_W() == 0) { // break _play_music_error;
             reg.D0_L = -1;
             return;
@@ -968,7 +970,7 @@ public class MnDrv extends BaseDriver {
         }
 
         reg.setD0_W(reg.getD0_W() + 2);
-        reg.setD3_W(mm.readShort(reg.a0 + (int) (short) reg.getD0_W()));
+        reg.setD3_W(mm.readShort(reg.a0 + (int) (short) reg.getD0_W()) & 0xffff);
         reg.setD0_W(reg.getD0_W() + 2);
         if (reg.getD0_W() - reg.getD3_W() == 0) { // break _play_music_error;
             reg.D0_L = -1;
@@ -983,7 +985,7 @@ public class MnDrv extends BaseDriver {
         reg.a2 = reg.a0 + reg.D1_L;
         mm.write(reg.a6 + Dw.TONE_PTR, reg.a2);
         reg.a2 += 4;
-        reg.setD4_W(mm.readShort(reg.a2));
+        reg.setD4_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         mm.write(reg.a6 + Dw.VOICENUM, (short) reg.getD4_W());
         //
@@ -1041,7 +1043,7 @@ public class MnDrv extends BaseDriver {
                         reg.a2 = reg.a0 + reg.D1_L;
                         mm.write(reg.a6 + Dw.ENV_PTR, reg.a2);
                         reg.a2 += 4;
-                        reg.setD4_W(mm.readShort(reg.a2));
+                        reg.setD4_W(mm.readShort(reg.a2) & 0xffff);
                         reg.a2 += 2;
                         mm.write(reg.a6 + Dw.ENVNUM, (short) reg.getD4_W());
                     }
@@ -1074,7 +1076,7 @@ public class MnDrv extends BaseDriver {
 //_track_ana:
         reg.a2 = mm.readInt(reg.a6 + Dw.SEQ_DATA_PTR);
         reg.a0 = reg.a2;
-        reg.setD0_W(mm.readShort(reg.a2));
+        reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         mm.write(reg.a6 + Dw.USE_TRACK, (short) reg.getD0_W());
         reg.a5 = reg.a6 + Dw.TRACKWORKADR;
@@ -1093,13 +1095,13 @@ public class MnDrv extends BaseDriver {
 //#endif
 
             reg.D1_L = 0;
-            reg.setD1_B(mm.readByte(reg.a2++));
+            reg.setD1_B(mm.readByte(reg.a2++) & 0xff);
             mm.write(reg.a5 + W.ch, (byte) reg.getD1_B());
             reg.a3 = Cw._ch_table;
             //mm.write(Reg.a5 + W.dev, mm.readByte(Reg.a3 + reg.getD1_W()));
             mm.write(reg.a5 + W.dev, _ch_table[reg.getD1_W()]);
 
-            reg.setD2_B(mm.readByte(reg.a2++));
+            reg.setD2_B(mm.readByte(reg.a2++) & 0xff);
             if (reg.getD3_B() >= 7) {
                 mm.write(reg.a5 + W.track_vol, (byte) reg.getD2_B());
             }
@@ -1148,13 +1150,13 @@ public class MnDrv extends BaseDriver {
         mm.write(reg.a4++, (byte) reg.getD0_B());
 
         // _timer_start:
-        reg.setD0_B(mm.readByte(reg.a6 + Dw.DRV_FLAG));
+        reg.setD0_B(mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0xff);
         reg.setD0_B(reg.getD0_B() & 0b0010_0001);
         if (reg.getD0_B() == 0) { // break _start_opm;
 
             reg.D7_L = 0;
             reg.D1_L = 0x26; //timer-B
-            reg.setD0_B(mm.readByte(reg.a6 + Dw.TEMPO));
+            reg.setD0_B(mm.readByte(reg.a6 + Dw.TEMPO) & 0xff);
             _OPN_WRITE();
 
             reg.D1_L = 0x29;
@@ -1166,7 +1168,7 @@ public class MnDrv extends BaseDriver {
             _OPN_WRITE();
 
             reg.D0_L = 0x1c;
-            reg.setD1_B(mm.readByte(reg.a6 + Dw.DRV_FLAG3));
+            reg.setD1_B(mm.readByte(reg.a6 + Dw.DRV_FLAG3) & 0xff);
             reg.setD1_B(reg.getD1_B() & 0xc0);
             if (reg.getD1_B() == 0) {
                 reg.D0_L = 0x1d;
@@ -1179,7 +1181,7 @@ public class MnDrv extends BaseDriver {
         } else {
 // _start_opm:
             reg.D1_L = 0x12;
-            reg.setD0_B(mm.readByte(reg.a6 + Dw.TEMPO));
+            reg.setD0_B(mm.readByte(reg.a6 + Dw.TEMPO) & 0xff);
             _OPM_WRITE();
 
             reg.D1_L = 0x14;
@@ -1610,11 +1612,11 @@ public class MnDrv extends BaseDriver {
         ab.hlw_we_pan_adrs.put(reg.a5, act);
 
         reg.D2_L = 0;
-        reg.setD2_B(mm.readByte(reg.a5 + W.ch));
+        reg.setD2_B(mm.readByte(reg.a5 + W.ch) & 0xff);
         reg.setD2_B(reg.getD2_B() + 8);
         reg.a3 = Cw._ch_table;
         //reg.getD2_B() = mm.readByte(Reg.a3 + reg.getD2_W());
-        reg.setD2_B(_ch_table[reg.getD2_W()]);
+        reg.setD2_B(_ch_table[reg.getD2_W()] & 0xff);
 
         reg.a3 = reg.a6 + Dw.SOFTENV_PATTERN;
         reg.a3 = reg.a3 + (int) (short) reg.getD2_W();
@@ -1631,7 +1633,7 @@ public class MnDrv extends BaseDriver {
     }
 
     public void _track_opm() {
-        reg.setD2_B(mm.readByte(reg.a6 + Dw.EMUMODE));
+        reg.setD2_B(mm.readByte(reg.a6 + Dw.EMUMODE) & 0xff);
         if (reg.getD2_B() != 0) { // break _track_opm_normal;
 
             boolean _track_opm_psg_emu = false;
@@ -1640,14 +1642,14 @@ public class MnDrv extends BaseDriver {
                 reg.setD2_B(reg.getD2_B() + 1);
                 if (reg.getD2_B() != 0) { // break _track_opm_fm6;
 
-                    reg.setD2_B(mm.readByte(reg.a5 + W.dev));
+                    reg.setD2_B(mm.readByte(reg.a5 + W.dev) & 0xff);
                     if (reg.getD2_B() >= (4 + 1)) { // break _track_opm_psg_emu;
                         _track_opm_psg_emu = true;
                     }
 //                    break _track_opm_fm_emu;
                 } else {
 // _track_opm_fm6:
-                    reg.setD2_B(mm.readByte(reg.a5 + W.dev));
+                    reg.setD2_B(mm.readByte(reg.a5 + W.dev) & 0xff);
                     if (reg.getD2_B() >= (5 + 1)) { // break _track_opm_psg_emu;
                         _track_opm_psg_emu = true;
                     }
@@ -1655,7 +1657,7 @@ public class MnDrv extends BaseDriver {
                 }
             } else {
 // _track_opm_fm7:
-                reg.setD2_B(mm.readByte(reg.a5 + W.dev));
+                reg.setD2_B(mm.readByte(reg.a5 + W.dev) & 0xff);
                 if (reg.getD2_B() >= (6 + 1)) { // break _track_opm_psg_emu;
                     _track_opm_psg_emu = true;
                 }
@@ -1910,45 +1912,45 @@ public class MnDrv extends BaseDriver {
     };
 
     /**
-     * 共通コマンド解析
+     * Common Command Analysis
      */
     public void _common_analyze() {
         do {
             reg.D4_L = 0;
-            reg.setD4_B(mm.readByte(reg.a2++));
+            reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
             if (reg.getD4_B() == 0) return;
             reg.setD4_W(reg.getD4_W() + (int) (short) reg.getD4_W());
 
             switch (reg.getD4_W()) {
             case 2:
-                _common_timer(); //   01: 駆動タイマー
+                _common_timer(); //   01: Drive timer
                 break;
             case 4:
-                _common_lfotimer(); //   02: LFOタイマー
+                _common_lfotimer(); //   02: LFO Timer
                 break;
             case 6:
-                _common_psgtimer(); //   03: PSGタイマー
+                _common_psgtimer(); //   03: PSG Timer
                 break;
             case 8:
-                _common_tempo(); //   04: てんぽ
+                _common_tempo(); //   04: Tempo
                 break;
             case 10:
-                _common_tie(); //   05: タイ方式
+                _common_tie(); //   05: Ties Operation
                 break;
             case 12:
-                _common_lfo(); //   06: LFO方式
+                _common_lfo(); //   06: LFO Operation
                 break;
             case 14:
-                _common_clock(); //   07: 全音符clock
+                _common_clock(); //   07: Whole note clock
                 break;
             case 16:
-                _common_volume(); //   08: 音量モード
+                _common_volume(); //   08: Volume Mode
                 break;
             case 18:
-                _common_opnemu(); //   09: OPNエミュモード
+                _common_opnemu(); //   09: OPN Emulation Mode
                 break;
             case 20:
-                _common_q_mode(); //   0A: @qのモード
+                _common_q_mode(); //   0A: @q mode
                 break;
             case 22:
                 _common_env_mode(); //   0B: env mode
@@ -1968,10 +1970,10 @@ public class MnDrv extends BaseDriver {
     }
 
     /**
-     * TEMPO 駆動タイマー
+     * TEMPO Drive Timer
      */
     public void _common_timer() {
-        reg.setD4_B(mm.readByte(reg.a2++));
+        reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
         if (reg.getD4_B() != 0) {
             mm.write(reg.a6 + Dw.DRV_FLAG, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0xdf));
             return;
@@ -1980,10 +1982,10 @@ public class MnDrv extends BaseDriver {
     }
 
     /**
-     * LFO 駆動タイマー
+     * LFO Driven Timer
      */
     public void _common_lfotimer() {
-        reg.setD4_B(mm.readByte(reg.a2++));
+        reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
         if (reg.getD4_B() != 0) {
             mm.write(reg.a6 + Dw.DRV_FLAG3, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG3) | 0x80)); //  use TIMER-a
             return;
@@ -1992,10 +1994,10 @@ public class MnDrv extends BaseDriver {
     }
 
     /**
-     * Psg 駆動タイマー
+     * Psg Drive Timer
      */
     public void _common_psgtimer() {
-        reg.setD4_B(mm.readByte(reg.a2++));
+        reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
         if (reg.getD4_B() != 0) {
             mm.write(reg.a6 + Dw.DRV_FLAG3, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG3) | 0x40)); //  use TIMER-a
             return;
@@ -2004,18 +2006,18 @@ public class MnDrv extends BaseDriver {
     }
 
     /**
-     * 初期テンポ
+     * Initial Tempo
      */
     public void _common_tempo() {
         mm.write(reg.a6 + Dw.TEMPO, mm.readByte(reg.a2++));
     }
 
     /**
-     * タイ動作モード
+     * Tie Operation Mode
      */
     public void _common_tie() {
         mm.write(reg.a6 + Dw.DRV_FLAG2, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0x3f));
-        reg.setD4_B(mm.readByte(reg.a2++));
+        reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
         if (reg.getD4_B() == 0) return;
         reg.setD4_B(reg.getD4_B() - 1);
         if (reg.getD4_B() == 0) {
@@ -2026,10 +2028,10 @@ public class MnDrv extends BaseDriver {
     }
 
     /**
-     * LFO 動作モード
+     * LFO Operation Mode
      */
     public void _common_lfo() {
-        reg.setD4_B(mm.readByte(reg.a2++));
+        reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
         if (reg.getD4_B() == 0) return;
         reg.setD4_B(reg.getD4_B() - 1);
         if (reg.getD4_B() == 0) {
@@ -2040,10 +2042,10 @@ public class MnDrv extends BaseDriver {
     }
 
     /**
-     * 全音符のクロック
+     * Whole Note Clock
      */
     public void _common_clock() {
-        reg.setD0_W(mm.readShort(reg.a2));
+        reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         mm.write(reg.a6 + Dw.DIV, (short) reg.getD0_W());
     }
@@ -2052,21 +2054,21 @@ public class MnDrv extends BaseDriver {
      * Relative Volume Mode
      */
     public void _common_volume() {
-        reg.setD4_B(mm.readByte(reg.a2++));
+        reg.setD4_B(mm.readByte(reg.a2++) & 0xff);
         if (reg.getD4_B() != 0) {
             mm.write(reg.a6 + Dw.VOLMODE, 0xff);
         }
     }
 
     /**
-     * OPNエミュレーションモード
+     * OPN Emulation Mode
      */
     public void _common_opnemu() {
         mm.write(reg.a6 + Dw.EMUMODE, mm.readByte(reg.a2++));
     }
 
     /**
-     * クオンタイズモード
+     * Quantize Mode
      */
     public void _common_q_mode() {
         mm.write(reg.a6 + Dw.DRV_FLAG2, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0xef));
@@ -2075,7 +2077,7 @@ public class MnDrv extends BaseDriver {
     }
 
     /**
-     * ソフトウェアエンベロープ
+     * Software Envelope
      */
     public void _common_env_mode() {
         mm.write(reg.a6 + Dw.DRV_FLAG2, (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0xfb));
@@ -2085,7 +2087,7 @@ public class MnDrv extends BaseDriver {
 
     /**
      * MNCALL 4
-     * 演奏一時停止
+     * Playback pause
      */
     public void _t_pause() {
         if ((mm.readByte(reg.a6 + Dw.DRV_STATUS) & 0x20) != 0) return;
@@ -2102,16 +2104,16 @@ public class MnDrv extends BaseDriver {
 
     public void _all_mute() {
         reg.a5 = reg.a6 + Dw.TRACKWORKADR;
-        reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK));
+        reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
 
         //_pause_loop:
         while (reg.getD7_W() != 0) {
             int x;
-            if ((byte) (mm.readByte(reg.a5 + W.ch) - 0xa0) >= 0) { x = 9; } // break L9;
-            else if ((byte) (mm.readByte(reg.a5 + W.ch) - 0x80) >= 0) { x = 2; } // break L2;
+            if ((mm.readByte(reg.a5 + W.ch) & 0xff) - 0xa0 >= 0) { x = 9; } // break L9;
+            else if ((mm.readByte(reg.a5 + W.ch) & 0xff) - 0x80 >= 0) { x = 2; } // break L2;
             else if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x1) != 0) { x = 9; } // break L9;
-            else if ((byte) (mm.readByte(reg.a5 + W.ch) - 0x40) >= 0) { x = 9; } // break L9;
-            else if ((byte) (mm.readByte(reg.a5 + W.ch) - 0x20) >= 0) { x = 1; } // break L1;
+            else if ((mm.readByte(reg.a5 + W.ch) & 0xff) - 0x40 >= 0) { x = 9; } // break L9;
+            else if ((mm.readByte(reg.a5 + W.ch) & 0xff) - 0x20 >= 0) { x = 1; } // break L1;
             else {
                 reg.D4_L = 0x7f;
                 devopn._FM_F2_set();
@@ -2145,7 +2147,7 @@ public class MnDrv extends BaseDriver {
 
     public void _pause_release() {
         reg.a5 = reg.a6 + Dw.TRACKWORKADR;
-        reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK));
+        reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
 // _pause_rel_loop:
         do {
             int x;
@@ -2154,8 +2156,8 @@ public class MnDrv extends BaseDriver {
             else if (mm.readByte(reg.a5 + W.ch) >= 0x40) { x = 9; } // break L9b;
             else if (mm.readByte(reg.a5 + W.ch) >= 0x20) { x = 1; } // break L1b;
             else {
-                reg.setD4_B(mm.readByte(reg.a5 + W.vol));
-                reg.setD4_B(reg.getD4_B() + mm.readByte(reg.a6 + Dw.MASTER_VOL_FM));
+                reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+                reg.setD4_B(reg.getD4_B() + mm.readByte(reg.a6 + Dw.MASTER_VOL_FM) & 0xff);
                 if ((byte) reg.getD4_B() >= 0) {
                     x = 8;
 //                    break L8b;
@@ -2174,15 +2176,15 @@ public class MnDrv extends BaseDriver {
 
             if (x == 1) {
 // L1b:
-                reg.setD0_B(mm.readByte(reg.a5 + W.e_ini));
+                reg.setD0_B(mm.readByte(reg.a5 + W.e_ini) & 0xff);
                 devpsg._psg_volume_set2();
                 x = 9;
 //                break L9b;
             }
             if (x == 2) {
 // L2b:
-                reg.setD4_B(mm.readByte(reg.a5 + W.vol));
-                reg.setD4_B(reg.getD4_B() + mm.readByte(reg.a6 + Dw.MASTER_VOL_FM));
+                reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+                reg.setD4_B(reg.getD4_B() + mm.readByte(reg.a6 + Dw.MASTER_VOL_FM) & 0xff);
                 if ((byte) reg.getD4_B() < 0) {
                     reg.D4_L = 0x7f;
                 }
@@ -2199,7 +2201,7 @@ public class MnDrv extends BaseDriver {
 
     /**
      * MNCALL 5
-     * 演奏停止
+     * Stop playing
      */
     public void _t_stop_music() {
         reg.D0_L = 2;
@@ -2211,7 +2213,7 @@ public class MnDrv extends BaseDriver {
         mm.write(reg.a6 + Dw.DRV_STATUS, (byte) 0x20);
         mm.write(reg.a6 + Dw.TEMPO, 0);
 
-        reg.setD0_B(mm.readByte(reg.a6 + Dw.DRV_FLAG));
+        reg.setD0_B(mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0xff);
         reg.setD0_B(reg.getD0_B() & 0b0010_0001);
         if (reg.getD0_B() == 0) { // break _t_stop_music_opm;
 
@@ -2235,7 +2237,7 @@ public class MnDrv extends BaseDriver {
 
     /**
      * MNCALL 6
-     * タイトルデータへのポインタを取得
+     * Get a pointer to the title data
      * out	a1 : title pointer
      */
     public void _t_get_title() {
@@ -2245,7 +2247,7 @@ public class MnDrv extends BaseDriver {
 
     /**
      * MNCALL 7
-     * ワークアドレス取得
+     * Get work address
      * out	a1 : work pointer
      */
     public void _t_get_work() {
@@ -2255,7 +2257,7 @@ public class MnDrv extends BaseDriver {
 
     /**
      * MNCALL 8
-     * トラックワークアドレス取得
+     * Get trackwork address
      * out	a1 : work pointer
      */
     public void _t_get_track_work() {
@@ -2265,7 +2267,7 @@ public class MnDrv extends BaseDriver {
 
     /**
      * MNCALL 9
-     * トラックワークサイズ取得
+     * Get track work size
      * out	d0 : work pointer
      */
     public void _t_get_trwork_size() {
@@ -2274,7 +2276,7 @@ public class MnDrv extends BaseDriver {
 
     /**
      * MNCALL $0A
-     * マスターボリューム設定
+     * Master Volume Settings
      * in	d1 : device
      * 	d2 : volume
      */
@@ -2300,7 +2302,7 @@ public class MnDrv extends BaseDriver {
 
     /**
      * MNCALL $0B
-     * トラックマスク
+     * Track Mask
      * in	d1 : track
      */
     public void _t_track_mask() {
@@ -2327,7 +2329,7 @@ public class MnDrv extends BaseDriver {
 
     /**
      * MNCALL $0C
-     * キーコントロール制御
+     * Key Control
      * in	d1 : enabe / disable
      */
     public void _t_key_mask() {
@@ -2397,7 +2399,7 @@ public class MnDrv extends BaseDriver {
             reg.a0++;
             reg.a1++;
             reg.D0_L--;
-        } while (reg.D0_L != 0);  // 違うかも
+        } while (reg.D0_L != 0);  // Maybe not.
         // dbeq	d0,1b
         if (reg.D0_L != 0) {
             reg.a0--;
@@ -2429,7 +2431,7 @@ public class MnDrv extends BaseDriver {
 // cmpapn10:
         boolean f;
         do {
-            reg.setD1_B(mm.readByte(reg.a1++));
+            reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
             if (reg.getD1_B() == 0) { // break cmpapn50;
                 f = true;
                 break;
@@ -2437,7 +2439,7 @@ public class MnDrv extends BaseDriver {
             if ((byte) reg.getD1_B() < 0) {
                 reg.setD3_B(0xff);
             }
-            reg.setD2_B(mm.readByte(reg.a0++));
+            reg.setD2_B(mm.readByte(reg.a0++) & 0xff);
             if ((byte) reg.getD2_B() < 0) {
                 reg.setD4_B(0xff);
             }
@@ -2481,7 +2483,7 @@ public class MnDrv extends BaseDriver {
      * get loopcount
      */
     public void _t_get_loopcount() {
-        reg.setD0_W(mm.readShort(reg.a6 + Dw.LOOP_COUNTER));
+        reg.setD0_W(mm.readShort(reg.a6 + Dw.LOOP_COUNTER) & 0xffff);
         reg.D0_L = (short) reg.getD0_W();
     }
 
@@ -2490,14 +2492,14 @@ public class MnDrv extends BaseDriver {
      * set intexec
      */
     public void _t_intexec() {
-        reg.setD1_W(mm.readShort(reg.a6 + Dw.INTEXECNUM));
+        reg.setD1_W(mm.readShort(reg.a6 + Dw.INTEXECNUM) & 0xffff);
         reg.D0_L = 0xffffffff;
         if (reg.getD1_W() - 8 != 0) {
             reg.setD1_W(reg.getD1_W() + (int) (short) reg.getD1_W());
             reg.setD1_W(reg.getD1_W() + (int) (short) reg.getD1_W());
             reg.a5 = reg.a6 + Dw.INTEXECBUF;
             mm.write(reg.a5 + (int) (short) reg.getD1_W(), reg.a1);
-            mm.write(reg.a6 + Dw.INTEXECNUM, (short) (mm.readShort(reg.a6 + Dw.INTEXECNUM) + 1));
+            mm.write(reg.a6 + Dw.INTEXECNUM, (short) ((mm.readShort(reg.a6 + Dw.INTEXECNUM) & 0xffff) + 1));
             reg.D0_L = 0;
         }
     }
@@ -2531,13 +2533,13 @@ public class MnDrv extends BaseDriver {
             reg.a0 -= 4;
             mm.write(reg.a0, reg.a1);
             mm.write(reg.a0 + 8 * 4, reg.D2_L);
-            mm.write(reg.a6 + Dw.SUBEVENTNUM, (short) (mm.readShort(reg.a6 + Dw.SUBEVENTNUM) + 1));
+            mm.write(reg.a6 + Dw.SUBEVENTNUM, (short) ((mm.readShort(reg.a6 + Dw.SUBEVENTNUM) & 0xffff) + 1));
             reg.D0_L = 0;
             return;
         case 4:
             pl = SRCHSSEID();
             if (!pl) return;
-            mm.write(reg.a6 + Dw.SUBEVENTNUM, (short) (mm.readShort(reg.a6 + Dw.SUBEVENTNUM) - 1));
+            mm.write(reg.a6 + Dw.SUBEVENTNUM, (short) ((mm.readShort(reg.a6 + Dw.SUBEVENTNUM) & 0xffff) - 1));
             mm.write(reg.a0, 0);
             mm.write(reg.a0 - 8 * 4, 0);
 // L1:
@@ -2550,10 +2552,10 @@ public class MnDrv extends BaseDriver {
     /**
      * from MCDRV
      *
-     * 	ID 検索
-     * in	d2.l	ID ネーム
-     * out	d1.l	アドレス
-     * a0	ID の入っているアドレス
+     * 	ID Search
+     * in	d2.l	ID Name
+     * out	d1.l	address
+     * a0	Address containing ID
      */
     public boolean SRCHSSEID() {
         reg.a0 = reg.a6 + Dw.SUBEVENTID;
@@ -2571,19 +2573,19 @@ public class MnDrv extends BaseDriver {
             }
             reg.D1_L--;
         } while (reg.D1_L != 0);
-        if (flg) { // break srchsseid90; // 見つからなかった
+        if (flg) { // break srchsseid90; // Not Found
 
             reg.a0 -= 4;
-            reg.D0_L = mm.readInt(reg.a0 - 8 * 4); // アドレス入れて終わる
+            reg.D0_L = mm.readInt(reg.a0 - 8 * 4); // Enter the address and finish
         }
 // srchsseid90:
-        return reg.D0_L >= 0; // ccr へ ?
+        return reg.D0_L >= 0; // To ccr?
     }
 
     /**
      * form MCDRV
-     * サブイベントコール
-    // in	d0	イベント番号
+     * Sub-event call
+     * in	d0	Event number
      */
     public void SUBEVENT() {
         Reg spReg = new Reg();
@@ -2593,7 +2595,7 @@ public class MnDrv extends BaseDriver {
         spReg.a2 = reg.a2;
 
         reg.a2 = reg.a6 + Dw.SUBEVENTADR;
-        reg.setD7_W(mm.readShort(reg.a6 + Dw.SUBEVENTNUM));
+        reg.setD7_W(mm.readShort(reg.a6 + Dw.SUBEVENTNUM) & 0xffff);
         if (reg.decAfterD7_W() <= 0) { // break subevent20;
 // subevent10:
             do {
@@ -2601,11 +2603,11 @@ public class MnDrv extends BaseDriver {
                     reg.D6_L = mm.readInt(reg.a2);
                     if (reg.D6_L != 0) break;
                     reg.setD7_W(reg.getD7_W() - 1);
-                } while (reg.getD7_W() > 0); // 0=未登録
+                } while (reg.getD7_W() > 0); // 0=Not registered
 
                 if (reg.D6_L == 0) break; // subevent90;
                 reg.a0 = reg.D6_L;
-                 // actSUBEVENT(Reg.a0); //  サブルーチンコール
+                 // actSUBEVENT(Reg.a0); //  Subroutine Call
 // subevent20:
             } while (reg.decAfterD7_W() > 0); // break subevent10;
         }
@@ -2621,8 +2623,8 @@ public class MnDrv extends BaseDriver {
      * unremove
      */
     public void _t_unremove() {
-        mm.write(reg.a6 + Dw.UNREMOVE, (short) (mm.readShort(reg.a6 + Dw.UNREMOVE) + (short) reg.getD1_W()));
-        reg.setD0_W(mm.readShort(reg.a6 + Dw.UNREMOVE));
+        mm.write(reg.a6 + Dw.UNREMOVE, (short) ((mm.readShort(reg.a6 + Dw.UNREMOVE) & 0xffff) + (short) reg.getD1_W()));
+        reg.setD0_W(mm.readShort(reg.a6 + Dw.UNREMOVE) & 0xffff);
         reg.D0_L = (short) reg.getD0_W();
     }
 
@@ -2631,11 +2633,11 @@ public class MnDrv extends BaseDriver {
      * get status
      */
     public void _t_get_status() {
-        reg.setD0_W((short) (mm.readByte(reg.a6 + Dw.DRV_STATUS) * 0x100));
-        reg.setD0_B(mm.readByte(reg.a6 + Dw.DRV_FLAG2));
+        reg.setD0_W((short) ((mm.readByte(reg.a6 + Dw.DRV_STATUS) & 0xff) * 0x100));
+        reg.setD0_B(mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0xff);
         reg.D0_L = (reg.D0_L >> 16) | (reg.D0_L << 16);
-        reg.setD0_W((short) (mm.readByte(reg.a6 + Dw.DRV_FLAG3) * 0x100));
-        reg.setD0_B(mm.readByte(reg.a6 + Dw.DRV_FLAG));
+        reg.setD0_W((short) ((mm.readByte(reg.a6 + Dw.DRV_FLAG3) & 0xff) * 0x100));
+        reg.setD0_B(mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0xff);
     }
 
     /**
@@ -2644,9 +2646,9 @@ public class MnDrv extends BaseDriver {
      */
     public void _t_get_tempo() {
         reg.D0_L = 0;
-        reg.setD0_W(mm.readShort(reg.a6 + Dw.DIV));
+        reg.setD0_W(mm.readShort(reg.a6 + Dw.DIV) & 0xffff);
         reg.D0_L = (reg.D0_L >> 16) | (reg.D0_L << 16);
-        reg.setD0_B(mm.readByte(reg.a6 + Dw.TEMPO));
+        reg.setD0_B(mm.readByte(reg.a6 + Dw.TEMPO) & 0xff);
     }
 
     /** */
@@ -2659,7 +2661,7 @@ public class MnDrv extends BaseDriver {
             , 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
             // 0x20～
             , 0x00, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00, 0x00        // Psg
-            , 0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x00, 0x00        // softenv 用
+            , 0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x00, 0x00        // for softenv
             // 0x30～
             , 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
             , 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
@@ -2702,14 +2704,14 @@ public class MnDrv extends BaseDriver {
     };
 
     /**
-     * OPN3 書き込み
+     * OPN3 Write
      *
      * break d6-d7/a0/a3
      */
     public void _OPN_WRITE4() {
         reg.D6_L = 0;
-        reg.setD6_B(mm.readByte(reg.a5 + W.ch));
-        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
+        reg.setD6_B(mm.readByte(reg.a5 + W.ch) & 0xff);
+        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev) & 0xff);
         _OPN_WRITE_();
     }
 
@@ -2732,7 +2734,7 @@ public class MnDrv extends BaseDriver {
 
     public void _OPN_WRITE2() {
         reg.D6_L = 0;
-        reg.setD6_B(mm.readByte(reg.a5 + W.ch));
+        reg.setD6_B(mm.readByte(reg.a5 + W.ch) & 0xff);
         _OPN_WRITE_();
     }
 
@@ -2859,12 +2861,12 @@ public class MnDrv extends BaseDriver {
     };
 
     /**
-     * OPM 書き込み
+     * OPM Write
      *
      * break a3
      */
     public void _OPM_WRITE4() {
-        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev));
+        reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.dev) & 0xff);
         _OPM_WRITE();
     }
 
@@ -3068,7 +3070,7 @@ public class MnDrv extends BaseDriver {
     public void start() {
         logger.log(Level.DEBUG, M_title);
 
-        // スーパーバイザ処理　不要
+        // Supervisor processing not required
 
         // ori.W	//#$700,sr ?
 
@@ -3098,9 +3100,9 @@ public class MnDrv extends BaseDriver {
         _dev_reset();
         _print_information();
 
-        //スーパーバイザ処理　不要
+        // Supervisor processing not required
 
-        //常駐処理　不要
+        // Resident processing not required
     }
 
     /** */
@@ -3116,16 +3118,16 @@ public class MnDrv extends BaseDriver {
         boolean sw_help = false;
 // _sw_chk_loop:
         do {
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             if (reg.getD0_B() == 0) return; // break sw_end;
             if (reg.getD0_B() - ' ' == 0) continue; // break _sw_chk_loop;
-            //if (reg.getD0_B() - ' ' == 0) break _sw_chk_loop; //全角スペースのスキップは不要
+            //if (reg.getD0_B() - ' ' == 0) break _sw_chk_loop; // No need to skip full-width spaces
             if (reg.getD0_B() - '-' != 0) { // break sw_set;
                 sw_help = true;
                 break; // sw_help;
             }
 // sw_set:
-            reg.setD0_B(mm.readByte(reg.a2++));
+            reg.setD0_B(mm.readByte(reg.a2++) & 0xff);
             if (reg.getD0_B() == 0) return; // break sw_end;
             if (reg.getD0_B() - 'h' == 0) { // break sw_help;
                 sw_help = true;
@@ -3161,11 +3163,11 @@ public class MnDrv extends BaseDriver {
                     trap(4);
                     if (reg.D0_L == 0) { // break _release_false;
 
-                        //スーパーバイザ処理　不要
+                        // Supervisor processing not required
 
                         logger.log(Level.DEBUG, M_release);
 
-                        return; // 本来はプログラム終了
+                        return; // The program is actually over
                     }
                 } else {
 // _mndrv_not_kept:
@@ -3215,7 +3217,7 @@ public class MnDrv extends BaseDriver {
 
     /** */
     public int _get_mem() {
-        // _SETBLOCK処理不要
+        // _SETBLOCK processing not required
 
         reg.a0 = _work_top;
         mm.write(reg.a0, reg.a1);
@@ -3250,9 +3252,9 @@ public class MnDrv extends BaseDriver {
     /**
      * from Mem.s (MCDRV)
      *
-     * 	メモリブロックの取得
-     * in	d1.l	サイズ
-     * out	d0.l	確保したメモリブロック+$10 のアドレス
+     * 	Obtaining a memory block
+     * in	d1.l	size
+     * out	d0.l	Address of the allocated memory block + $10
      */
     int bufferPtr = 0;
 
@@ -3261,75 +3263,73 @@ public class MnDrv extends BaseDriver {
             bufferPtr = _buffer_top;
         }
         reg.D0_L = bufferPtr;
-        if ((reg.D1_L & 1) != 0) // 奇数サイズか？
+        if ((reg.D1_L & 1) != 0) // Odd size?
         {
-            reg.D1_L++; // そうなら +1
+            reg.D1_L++; // If so, +1
         }
         bufferPtr += reg.D1_L;
         return 0;
 
-        //Reg spReg = new Reg();
-        //spReg.D1_L = Reg.D1_L;
-        //spReg.a0 = Reg.a0;
-        //spReg.a1 = Reg.a1;
-        //spReg.a6 = Reg.a6;
-
-        //Reg.a0 = _buffer_top;
-        //if ((Reg.D1_L & 1) != 0) // 奇数サイズか？
-        //{
-        //    Reg.D1_L++; // そうなら +1
-        //}
-        //mcmalloc10:
-        //if (mm.readByte(Reg.a0 + 13) == 0)
-        //{
-        //    if (Reg.D1_L - mm.Readint(Reg.a0 + 8) <= 0) break mcmalloc30; // サイズは足りるか？
-        //}
-        ////mcmalloc20:
-        //Reg.D0_L = mm.Readint(Reg.a0 + 4); // 前から空ブロックをたどる
-        //if (Reg.D0_L == 0) break mcmalloc80; // メモリに空きがない
-        //Reg.a0 = Reg.D0_L;
-        //break mcmalloc10;
-        //mcmalloc30:
-        //Reg.a1 = Reg.a0 + Reg.D1_L + 16; // a1 = 次のメモリブロックのアドレス
-        //Reg.D0_L = (unchecked((int)(-16))); // サイズ
-        //Reg.D0_L += mm.Readint(Reg.a0 + 8);
-        //Reg.D0_L -= Reg.D1_L; // 管理エリアが作れるか？
-        //if ((int)Reg.D0_L < 0) break mcmalloc40; // 作れないならそのまま終わる
-        //mm.Write(Reg.a1 + 8, Reg.D0_L);
-        //mm.Write(Reg.a0 + 8, Reg.D1_L);
-        //Reg.D0_L = 0;
-        //mm.Write(Reg.a1 + 12, Reg.D0_L);
-
-        //Reg.D0_L = mm.Readint(Reg.a0 + 4);
-        //mm.Write(Reg.a0 + 4, Reg.a1);
-        //mm.Write(Reg.a1, Reg.a0);
-        //mm.Write(Reg.a1 + 4, Reg.D0_L); // リンク
-        //if (mm.Readint(Reg.a1 + 4) == 0) break mcmalloc40;
-        //int v = Reg.a0;
-        //Reg.a0 = Reg.D0_L;
-        //Reg.D0_L = v;
-        //mm.Write(Reg.a0, Reg.a1);
-        //Reg.a0 = Reg.D0_L;
-        //mcmalloc40:
-        //mm.Write(Reg.a0 + 12, 0);
-        //mm.Write(Reg.a0 + 13, 0xff);
-        //Reg.D0_L = 0x16;
-        //Reg.D0_L += Reg.a0;
-        //break mcmalloc90;
-        //mcmalloc80:
-        //Reg.D0_L = 0xffffffff; // -1
-        //mcmalloc90:
-        //Reg.D1_L = spReg.D1_L;
-        //Reg.a0 = spReg.a0;
-        //Reg.a1 = spReg.a1;
-        //Reg.a6 = spReg.a6;
-
-        //return (byte)((Reg.D0_L == 0xffffffff) ? -1 : 0);
+//        Reg spReg = new Reg();
+//        spReg.D1_L = Reg.D1_L;
+//        spReg.a0 = Reg.a0;
+//        spReg.a1 = Reg.a1;
+//        spReg.a6 = Reg.a6;
+//
+//        Reg.a0 = _buffer_top;
+//        if ((Reg.D1_L & 1) != 0) { // Odd size?
+//            Reg.D1_L++; // If so, +1
+//        }
+//mcmalloc10:
+//        if (mm.readByte(Reg.a0 + 13) == 0) {
+//            if (Reg.D1_L - mm.Readint(Reg.a0 + 8) <= 0) break mcmalloc30; // Is the size enough?
+//        }
+//        //mcmalloc20:
+//        Reg.D0_L = mm.Readint(Reg.a0 + 4); // Follow empty blocks from the front
+//        if (Reg.D0_L == 0) break mcmalloc80; // No free memory
+//        Reg.a0 = Reg.D0_L;
+//        break mcmalloc10;
+//mcmalloc30:
+//        Reg.a1 = Reg.a0 + Reg.D1_L + 16; // a1 = address of the next memory block
+//        Reg.D0_L = (unchecked((int) (-16))); // size
+//        Reg.D0_L += mm.Readint(Reg.a0 + 8);
+//        Reg.D0_L -= Reg.D1_L; // Can I create a managed area?
+//        if ((int) Reg.D0_L < 0) break mcmalloc40; // If you can't make it, it's over.
+//        mm.Write(Reg.a1 + 8, Reg.D0_L);
+//        mm.Write(Reg.a0 + 8, Reg.D1_L);
+//        Reg.D0_L = 0;
+//        mm.Write(Reg.a1 + 12, Reg.D0_L);
+//
+//        Reg.D0_L = mm.Readint(Reg.a0 + 4);
+//        mm.Write(Reg.a0 + 4, Reg.a1);
+//        mm.Write(Reg.a1, Reg.a0);
+//        mm.Write(Reg.a1 + 4, Reg.D0_L); // link
+//        if (mm.Readint(Reg.a1 + 4) == 0) break mcmalloc40;
+//        int v = Reg.a0;
+//        Reg.a0 = Reg.D0_L;
+//        Reg.D0_L = v;
+//        mm.Write(Reg.a0, Reg.a1);
+//        Reg.a0 = Reg.D0_L;
+//mcmalloc40:
+//        mm.Write(Reg.a0 + 12, 0);
+//        mm.Write(Reg.a0 + 13, 0xff);
+//        Reg.D0_L = 0x16;
+//        Reg.D0_L += Reg.a0;
+//        break mcmalloc90;
+//mcmalloc80:
+//        Reg.D0_L = 0xffff_ffff; // -1
+//mcmalloc90:
+//        Reg.D1_L = spReg.D1_L;
+//        Reg.a0 = spReg.a0;
+//        Reg.a1 = spReg.a1;
+//        Reg.a6 = spReg.a6;
+//
+//        return (byte) ((Reg.D0_L == 0xffff_ffff) ? -1 : 0);
     }
 
     /**
-     * メモリブロックの開放
-     * in	d1.l	開放するメモリブロックのアドレス
+     * Freeing a memory block
+     * in	d1.l	Address of the memory block to be freed
      */
     public void _MCMFREE() {
         Reg spReg = new Reg();
@@ -3341,7 +3341,7 @@ public class MnDrv extends BaseDriver {
             reg.a6 = _buffer_top;
             reg.a0 = -16;
             reg.a0 += reg.D1_L;
-            if (mm.readByte(reg.a0 + 12) != 0) { // break mcmfree80; // ロック状態ならエラー
+            if (mm.readByte(reg.a0 + 12) != 0) { // break mcmfree80; // If locked, an error occurs
                 reg.D0_L = -1;
                 return;
             }
@@ -3351,7 +3351,7 @@ public class MnDrv extends BaseDriver {
             reg.D0_L = mm.readInt(reg.a0);
             if (reg.D0_L != 0) { // break mcmfree20;
                 reg.a1 = reg.D0_L;
-                if (reg.a0 - mm.readInt(reg.a1 + 4) != 0) { // break mcmfree80; // 自分と前がちゃんとリンクしていないならエラー
+                if (reg.a0 - mm.readInt(reg.a1 + 4) != 0) { // break mcmfree80; // If you are not properly linked to the previous one, an error will occur.
                     reg.D0_L = -1;
                     return;
                 }
@@ -3360,26 +3360,26 @@ public class MnDrv extends BaseDriver {
             reg.D0_L = mm.readInt(reg.a0 + 4);
             if (reg.D0_L != 0) { // break mcmfree30;
                 reg.a1 = reg.D0_L;
-                if (reg.a0 - mm.readInt(reg.a1) != 0) { // break mcmfree80; // 自分と後がちゃんとリンクしていないならエラー
+                if (reg.a0 - mm.readInt(reg.a1) != 0) { // break mcmfree80; // If you are not properly linked to the next one, an error will occur.
                     reg.D0_L = -1;
                     return;
                 }
             }
 // mcmfree30:
-            mm.write(reg.a0 + 13, 0); // 自分を空ブロックに変更
+            mm.write(reg.a0 + 13, 0); // Change yourself to an empty block
             reg.D0_L = mm.readInt(reg.a0);
             if (reg.D0_L != 0) { // break mcmfree40;
                 reg.a1 = reg.D0_L;
-                if (mm.readByte(reg.a1 + 13) == 0) { // break mcmfree40; //  前は空ブロックか？
+                if (mm.readByte(reg.a1 + 13) == 0) { // break mcmfree40; // Was that an empty block before?
                     reg.D0_L = 16;
                     reg.D0_L += mm.readInt(reg.a1 + 8);
                     reg.D0_L += reg.a1;
-                    if (reg.a0 - reg.D0_L == 0) { // break mcmfree40; // また連続のブロックであるか？
-                        reg.D0_L = 0x16; // 空ならくっつける
+                    if (reg.a0 - reg.D0_L == 0) { // break mcmfree40; // Also, is it a continuous block?
+                        reg.D0_L = 0x16; // If it's empty, stick it together
                         reg.D0_L += mm.readInt(reg.a0 + 8);
-                        mm.write(reg.a1 + 8, mm.readInt(reg.a1 + 8) + reg.D0_L); // サイズを足す
+                        mm.write(reg.a1 + 8, mm.readInt(reg.a1 + 8) + reg.D0_L); // Add size
                         reg.a0 = mm.readInt(reg.a0 + 4);
-                        mm.write(reg.a1 + 4, reg.a0); // リンク
+                        mm.write(reg.a1 + 4, reg.a0); // link
                         reg.D0_L = reg.a0;
                         if (reg.D0_L != 0) { // break mcmfree35;
                             mm.write(reg.a0, reg.a1);
@@ -3393,16 +3393,16 @@ public class MnDrv extends BaseDriver {
             reg.D0_L = mm.readInt(reg.a0 + 4);
             if (reg.D0_L != 0) { // break mcmfree50;
                 reg.a1 = reg.D0_L;
-                if (mm.readByte(reg.a1 + 13) == 0) { // break mcmfree50; // 後ろは空ブロックか？
+                if (mm.readByte(reg.a1 + 13) == 0) { // break mcmfree50; // Is there an empty block behind it?
                     reg.D0_L = 16;
                     reg.D0_L += mm.readInt(reg.a0 + 8);
                     reg.D0_L += reg.a0;
-                    if (reg.a1 - reg.D0_L == 0) { // break mcmfree50; // また連続のブロックであるか？
-                        reg.D0_L = 16; // 空ならくっつける
+                    if (reg.a1 - reg.D0_L == 0) { // break mcmfree50; // Also, is it a continuous block?
+                        reg.D0_L = 16; // If it's empty, stick it together
                         reg.D0_L += mm.readInt(reg.a1 + 8);
-                        mm.write(reg.a1 + 8, mm.readInt(reg.a1 + 8) + reg.D0_L); // サイズを足す
+                        mm.write(reg.a1 + 8, mm.readInt(reg.a1 + 8) + reg.D0_L); // Add size
                         reg.a1 = mm.readInt(reg.a1 + 4);
-                        mm.write(reg.a0 + 4, reg.a1); // リンク
+                        mm.write(reg.a0 + 4, reg.a1); // link
                         reg.D0_L = reg.a1;
                         if (reg.D0_L != 0) { // break mcmfree45;
                             mm.write(reg.a1, reg.a0);
@@ -3551,11 +3551,11 @@ public class MnDrv extends BaseDriver {
             0x00, 0x01, (byte) 0xff, (byte) 0xff, 0x00, (byte) 0x81, 0x00, 0x00, 0x00, (byte) 0x81, 0x00, 0x00, (byte) 0xff, (byte) 0x81, 0x00, 0x00
     };
 
-    /** 多分使用しない */
+    /** Probably not */
     public void _vec_set() {
     }
 
-    /** 多分使用しない */
+    /** Probably not */
     public void _vec_release() {
         mm.write(0xe88009, (byte) (mm.readByte(0xe88009) & 0xf7));
         mm.write(0xe88015, (byte) (mm.readByte(0xe88015) & 0xf7));
@@ -3563,13 +3563,13 @@ public class MnDrv extends BaseDriver {
         // move.W	sr,-(sp)
         // ori.W	//#$700,sr
 
-        //wait 多分不要
+        //wait Probably not necessary
         //while (mm.readByte(0xe9a001) != 0 || (mm.readByte(Reg.a6 + Dw.DRV_STATUS) & 1) != 0) ;
 
         mm.write(0x10c, _old_opm_vec);
         mm.write(0x90, _old_trap4_vec);
 
-        //wait 多分不要
+        //wait Probably not necessary
         //while ((mm.readByte(Reg.a6 + Dw.DRV_FLAG) & 1) != 0) ;
 
         mm.write(0xecc0b1, _old_merc_vec);
@@ -3590,7 +3590,7 @@ public class MnDrv extends BaseDriver {
      * driver check
      */
     public int _mndrv_check() {
-        //チェック不要(そもそも常駐しない)
+        // No check required (not always resident)
         return 1;
     }
 
@@ -3629,7 +3629,7 @@ public class MnDrv extends BaseDriver {
     }
 
     /**
-     * OPM割り込みちぇっく
+     * OPM interrupt check
      */
     public int _opm_check() {
         return 0;
@@ -3637,7 +3637,7 @@ public class MnDrv extends BaseDriver {
     }
 
     /**
-     * PCM ドライバ常駐チェック
+     * PCM driver resident check
      */
     public void _mpcm_check() {
         //Reg.a1 = mm.Readint(0x84);
@@ -3673,20 +3673,20 @@ public class MnDrv extends BaseDriver {
         trap(1);
 
         reg.setD0_W(0x8005);
-        reg.D1_L = 0xffffffff;
+        reg.D1_L = 0xffff_ffff;
         //Reg.a1 = _mpcm_volume_table;
         trap(1);
     }
 
     /**
-     * zdd 常駐チェック
+     * zdd resident check
      */
     public void _zdd_check() {
     }
 
     /**
-     * まーきゅりー存在チェック
-     * Xellent30 / YMF288 検出付き
+     * "Mercury" existence check
+     * with Xellent30 / YMF288 detection
      */
     public void _mercury_check() {
         Reg spReg = new Reg();
@@ -3743,8 +3743,8 @@ public class MnDrv extends BaseDriver {
     }
 
     public int _bus_check() {
-        // 0xecc080 -> mercがない 場合だけL1以降が実行
-        // 0xecc100 -> mercがある 場合だけL1以降が実行
+        // 0xecc080 -> L1 and onwards are executed only if there is no merc
+        // 0xecc100 -> L1 and onwards are executed only if merc is present
         if (reg.a0 == 0xecc080) return 0;
         return -1;
 
@@ -3760,7 +3760,7 @@ public class MnDrv extends BaseDriver {
         //L1:
         //sp = Reg.D6_L;
         //mm.Write(8, Reg.a2);
-        //Reg.D0_L = 0xffffffff;
+        //Reg.D0_L = 0xffff_ffff;
         //return;
     }
 
@@ -3951,7 +3951,7 @@ public class MnDrv extends BaseDriver {
     /**
      * data section
      */
-    public static final short[] _mpcm_volume_table = new short[] {
+    public static final short[] _mpcm_volume_table = {
             0, 17, 18, 19, 20, 21, 22, 23
             , 24, 25, 26, 27, 28, 29, 30, 31
             , 32, 33, 34, 35, 36, 37, 38, 39
@@ -3973,7 +3973,7 @@ public class MnDrv extends BaseDriver {
     /**
      * OPN → OPM TUNE CONVERT TABLE (DEFAULT)
      */
-    public static final short[] FNUM_BASE = new short[] {
+    public static final short[] FNUM_BASE = {
             0x00A3, 0x00AD, 0x00B7, 0x00C2
             , 0x00CD, 0x00DA, 0x00E7, 0x00F4
             , 0x0103, 0x0112, 0x0123, 0x0134
@@ -3988,7 +3988,7 @@ public class MnDrv extends BaseDriver {
             , 0x081C, 0x0896, 0x091A, 0x09A4
     };
 
-    public static final byte[] FNUM_KC_BASE = new byte[] {
+    public static final byte[] FNUM_KC_BASE = {
             (byte) 0xDD, (byte) 0xDE, (byte) 0xE0, (byte) 0xE1, (byte) 0xE2, (byte) 0xE4, (byte) 0xE5, (byte) 0xE6
             , (byte) 0xE8, (byte) 0xE9, (byte) 0xEA, (byte) 0xEC, (byte) 0xED, (byte) 0xEE, (byte) 0xF0, (byte) 0xF1
             , (byte) 0xF2, (byte) 0xF4, (byte) 0xF5, (byte) 0xF6, (byte) 0xF8, (byte) 0xF9, (byte) 0xFA, (byte) 0xFC
@@ -3997,7 +3997,7 @@ public class MnDrv extends BaseDriver {
             , 0x12, 0x14, 0x15, 0x16, 0x18, 0x19, 0x1A, 0x1C
     };
 
-    public static final short[] FREQ_BASE = new short[] {
+    public static final short[] FREQ_BASE = {
             0x000E, 0x000F, 0x0010, 0x0011
             , 0x0012, 0x0013, 0x0015, 0x0016
             , 0x0017, 0x0019, 0x001A, 0x001C
@@ -4027,7 +4027,7 @@ public class MnDrv extends BaseDriver {
             , 0x17B0, 0x1910, 0x1A90, 0x1C20
     };
 
-    public static final byte[] FREQ_KC_BASE = new byte[] {
+    public static final byte[] FREQ_KC_BASE = {
             (byte) 0x8C, (byte) 0x8A, (byte) 0x89, (byte) 0x88, (byte) 0x86, (byte) 0x85, (byte) 0x84, (byte) 0x82
             , (byte) 0x81, (byte) 0x80, 0x7E, 0x7D, 0x7C, 0x7A, 0x79, 0x78
             , 0x76, 0x75, 0x74, 0x72, 0x71, 0x70, 0x6E, 0x6D
@@ -4048,23 +4048,23 @@ public class MnDrv extends BaseDriver {
             "X68k MnDrv mania driver version "
                     + DRVVER
                     + " (c)1997-2000 BEL.\n";
-    public static final String M_merc = "まーきゅりーゆにっとから出力が可能です\n";
+    public static final String M_merc = "Output is possible from 'Mercury Unit'\n";
     public static final String M_MPCM = "MPCM";
     public static final String M_zdd = "zdd";
-    public static final String M_PCMOUT = "から多重/音程,音量変換出力が可能です\n";
-    public static final String M_buf = "KBのバッファを確保しました\n";
-    public static final String M_release = "mndrvを解除しました\n";
-    public static final String M_already = "すでに常駐しています\n";
-    public static final String M_notkept = "mndrvは常駐していません\n";
-    public static final String M_notremove = "占有されているので解除出来ません\n";
-    public static final String M_trap4err = "trap //#4がすでに使われています\n";
-    public static final String M_opmerr = "OPM割り込みがすでに使われています\n";
-    public static final String M_memory_msg = "メモリが足りません\n";
-    public static final String M_numover = "数値が範囲外です\n";
+    public static final String M_PCMOUT = "Multiplexing/pitch and volume conversion output is possible\n";
+    public static final String M_buf = "KB buffer reserved\n";
+    public static final String M_release = "released mndrv\n";
+    public static final String M_already = "Already resident\n";
+    public static final String M_notkept = "mndrv is not resident\n";
+    public static final String M_notremove = "It is occupied and cannot be released\n";
+    public static final String M_trap4err = "trap //#4 is already in use\n";
+    public static final String M_opmerr = "OPM interrupt already in use\n";
+    public static final String M_memory_msg = "Not enough memory\n";
+    public static final String M_numover = "Number out of range\n";
     public static final String M_help = """
             usage: MnDrv [option]
-            	-b[num]	バッファサイズ指定
-            	-k	キーコントロール無効
-            	-r	常駐解除
+            	-b[num]	Buffer size specification
+            	-k	Key control disabled
+            	-r	Cancel residency
             """;
 }

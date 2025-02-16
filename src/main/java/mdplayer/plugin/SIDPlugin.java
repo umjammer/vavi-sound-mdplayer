@@ -6,6 +6,8 @@ import java.lang.System.Logger.Level;
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.driver.sid.Sid;
+import mdplayer.driver.sid.Sid2;
+import mdplayer.driver.sid.SidDriver;
 import mdplayer.format.FileFormat;
 
 import static java.lang.System.getLogger;
@@ -23,7 +25,7 @@ public class SIDPlugin extends BasePlugin {
 
     @Override
     public boolean play(String playingFileName, FileFormat format) {
-        audio.driverVirtual = new Sid();
+        audio.driverVirtual = new Sid2();
 
         audio.driverReal = null;
 //        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
@@ -44,13 +46,13 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
         audio.chipLED.put("priSID", 1);
 
-        ((Sid) audio.driverVirtual).song = songNo + 1;
+        ((SidDriver) audio.driverVirtual).setSong(songNo + 1);
         if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
             return false;
         if (audio.driverReal != null) {
-            ((Sid) audio.driverReal).song = songNo + 1;
+            ((SidDriver) audio.driverReal).setSong(songNo + 1);
             if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))

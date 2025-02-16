@@ -30,7 +30,7 @@ import vavi.util.serdes.Serdes;
 import static java.lang.System.getLogger;
 
 
-public class PlayList implements Serializable {
+public class PlayList implements Serializable, Cloneable {
 
     private static final Logger logger = getLogger(PlayList.class.getName());
 
@@ -76,7 +76,8 @@ public class PlayList implements Serializable {
         musics = value;
     }
 
-    public PlayList copy() {
+    @Override
+    public PlayList clone() {
         PlayList playList = new PlayList();
 
         return playList;

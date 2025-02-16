@@ -122,10 +122,9 @@ public class Hes extends BaseDriver {
     public boolean playtime_detected = false;
 
     private final int[] buf = new int[2];
-    BasePlugin audio; // TODO
 
     public void additionalUpdate(mdsound.MDSound.Chip sender, int chipId, int[][] buffer, int length) {
-        if (audio.isStopped()) {
+        if (plugin.isStopped()) {
             return;
         }
         try {

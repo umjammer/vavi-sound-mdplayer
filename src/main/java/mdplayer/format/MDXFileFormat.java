@@ -61,7 +61,7 @@ public class MDXFileFormat extends BaseFileFormat {
 
         String[] PDX = new String[1];
         MXDRV.getPDXFileName(srcBuf, PDX);
-        if (PDX[0] != null && PDX[0].isEmpty()) {
+        if (PDX[0] != null && !PDX[0].isEmpty()) {
             buf = getExtendFileAllBytes(fn, PDX[0], archive, entry);
             if (buf == null) {
                 buf = getExtendFileAllBytes(fn, PDX[0] + ".PDX", archive, entry);
@@ -90,7 +90,7 @@ public class MDXFileFormat extends BaseFileFormat {
         var r = super.load(archive, fn);
         if (Path.getExtension(fn).equalsIgnoreCase(".MDX")) {
             if (Setting.getInstance().getOutputDevice().getSampleRate() != 44100) {
-                throw new IllegalStateException("MDXファイルを再生する場合はサンプリングレートを44.1kHzに設定してください。");
+                throw new IllegalStateException("When playing MDX files, set the sampling rate to 44.1kHz.");
             }
         }
         return r;

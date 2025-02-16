@@ -110,7 +110,7 @@ public class frmY8950 extends frmBase {
                 return;
             }
 
-            //鍵盤 FM & RHM
+            // Keyboard FM & RHM
             ch = (py / 8) - 1;
             if (ch < 0) return;
 
@@ -239,7 +239,7 @@ public class frmY8950 extends frmBase {
         newParam.channels[9].dda = ((Y8950Register[0xbd] >> 7) & 0x01) != 0;//DA
         newParam.channels[10].dda = ((Y8950Register[0xbd] >> 6) & 0x01) != 0;//DV
 
-        // //#region リズム情報の取得
+//#region Acquisition of rhythm information
 
         //slot14 TL 0x51 HH
         //slot15 TL 0x52 TOM
@@ -256,9 +256,9 @@ public class frmY8950 extends frmBase {
             }
         }
 
-        // //#endregion
+//#endregion
 
-        // //#region ADPCM
+//#region ADPCM
 
         //Delta
         newParam.channels[14].inst[12] = Y8950Register[0x10]
@@ -287,7 +287,7 @@ public class frmY8950 extends frmBase {
             if (newParam.channels[14].volume < 0) newParam.channels[14].volume = 0;
         }
 
-        // //#endregion
+//#endregion
     }
 
     public void screenDrawParams() {
@@ -329,13 +329,13 @@ public class frmY8950 extends frmBase {
         DrawBuff.drawNESSw(frameBuffer, 76 * 4, 11 * 8, oldParam.channels[9].dda, newParam.channels[9].dda);//DA
         DrawBuff.drawNESSw(frameBuffer, 80 * 4, 11 * 8, oldParam.channels[10].dda, newParam.channels[10].dda);//DV
 
-        //Rhythm
+        // Rhythm
         for (int c = 9; c < 14; c++) {
             DrawBuff.ChY8950(frameBuffer, c, oldParam.channels[c].mask, newParam.channels[c].mask, tp);
             DrawBuff.VolumeXY(frameBuffer, 3 + (c - 9) * 15, 11 * 2, 0, oldParam.channels[c].volume, newParam.channels[c].volume, tp);
         }
 
-        //ADPCM
+        // ADPCM
         DrawBuff.keyBoard(frameBuffer, 9, oldParam.channels[14].note, newParam.channels[14].note, tp);
         DrawBuff.VolumeXY(frameBuffer, 64, 9 * 2 + 2, 0, oldParam.channels[14].volume, newParam.channels[14].volume, tp);
         DrawBuff.ChY8950(frameBuffer, 14, oldParam.channels[14].mask, newParam.channels[14].mask, tp);

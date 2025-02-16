@@ -12,8 +12,10 @@ import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
 import mdsound.Instrument;
+import mdsound.Instrument.PcmEnabledInstrument;
 import mdsound.chips.C140;
 import mdsound.instrument.C140Inst;
+import mdsound.instrument.C219Inst;
 
 
 /**
@@ -41,10 +43,20 @@ public class C140Chip implements Chip {
 
     private Audio context;
 
+    @SuppressWarnings("unchecked")
+    private Class<? extends PcmEnabledInstrument> _inst(int chipId) {
+        return (Class<? extends PcmEnabledInstrument>) inst(chipId);
+    }
+
+    @Override
+    public int activeIndex(int chipId) {
+        return chipTypes[chipId].getEnabledId();
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
-        return new Class[] {C140Inst.class};
+        return new Class[] {C140Inst.class, C219Inst.class};
     }
 
     @Override
@@ -105,7 +117,7 @@ public class C140Chip implements Chip {
             context.chipLED.put("SecC140", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(C140Inst.class).writePcm(chipId, buf, offset, length, srcOffset, romSize);
+            context.mds.inst(_inst(chipId)).writePcm(chipId, buf, offset, length, srcOffset, romSize);
         else {
             if (realChips != null && realChips[chipId] != null) {
                 // Start address setting

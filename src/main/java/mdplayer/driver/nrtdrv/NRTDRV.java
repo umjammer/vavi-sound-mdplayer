@@ -139,7 +139,7 @@ public class NRTDRV extends BaseDriver {
 
             System.arraycopy(vgmBuf, 0, ram, 0x4000, Math.min(vgmBuf.length, 0xfeff - 0x4000));
         } catch (Exception ex) {
-            throw new IllegalStateException("Driverの初期化に失敗しました。", ex);
+            throw new IllegalStateException("Driver initialization failed.", ex);
         }
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -153,7 +153,7 @@ public class NRTDRV extends BaseDriver {
             }
         }
 
-        // Driverの初期化
+        // Initializing the Driver
         call(0);
 
         if (model == EnmModel.RealModel) {
@@ -469,24 +469,23 @@ public class NRTDRV extends BaseDriver {
             counter++;
             vgmFrameCounter++;
 
-            // KUMA:(CTC0 & 0x40)==0は常に成り立つ
+            // KUMA: (CTC0 & 0x40)==0 is always true
             // CTC0DownCounterMAX = (work.ctc0timeconstant == 0 ? 0x100 : work.ctc0timeconstant) * ((work.ctc0 & 0x40) == 0 ? ((work.ctc0 & 0x20) != 0 ? 256.0f : 16.0f) : 1);
             CTC0DownCounterMAX = (work.ctc0TimeConstant == 0 ? 0x100 : work.ctc0TimeConstant) * ((work.ctc0 & 0x20) != 0 ? 256.0f : 16.0f);
-            // KUMA:(CTC1 & 0x40)==0は常に成り立つ
+            // KUMA: (CTC1 & 0x40)==0 is always true
             // CTC1DownCounterMAX = (work.ctc1timeconstant == 0 ? 0x100 : work.ctc1timeconstant) * ((work.ctc1 & 0x40) == 0 ? ((work.ctc1 & 0x20) != 0 ? 256.0f : 16.0f) : 1);
             CTC1DownCounterMAX = (work.ctc1TimeConstant == 0 ? 0x100 : work.ctc1TimeConstant) * ((work.ctc1 & 0x20) != 0 ? 256.0f : 16.0f);
             CTC3DownCounterMAX = (work.ctc3TimeConstant == 0 ? 0x100 : work.ctc3TimeConstant) * ((work.ctc3 & 0x40) == 0 ? ((work.ctc3 & 0x20) != 0 ? 256.0f : 16.0f) : 1);
             CTC0Paluse = false;
             // CTC3Paluse = false;
 
-            // KUMA:(CTC0 & 0x40)==0は常に成り立つ
+            // KUMA: (CTC0 & 0x40)==0 is always true
             // ctc0
             // if ((work.ctc0 & 0x40) == 0) {
             // Timer Mode
             CTC0DownCounter -= ctcStep;
-            // }
-            // else {
-            // CounterMode 無し
+            // } else {
+            // CounterMode None
             // ;
             // }
 
@@ -498,15 +497,13 @@ public class NRTDRV extends BaseDriver {
                 CTC0DownCounter += CTC0DownCounterMAX;
             }
 
-
-            // KUMA:(CTC1 & 0x40)==0は常に成り立つ
+            // KUMA: (CTC1 & 0x40)==0 is always true
             // ctc1
             // if ((work.ctc1 & 0x40) == 0) {
             // Timer Mode
             CTC1DownCounter -= ctc1Step;
-            // }
-            // else {
-            // CounterMode 無し
+            // } else {
+            // CounterMode None
             // ;
             // }
 
@@ -524,7 +521,7 @@ public class NRTDRV extends BaseDriver {
                 // Timer Mode
                 CTC3DownCounter -= 1.0f;
             } else if (CTC0Paluse) {
-                // Counter Mode(ctc0のパルスをカウント)
+                // Counter Mode(Counting the pulses of ctc0)
                 CTC3DownCounter -= 1.0f;
             }
 
@@ -544,11 +541,11 @@ public class NRTDRV extends BaseDriver {
     private void drvini() {
 
         work.ctcFlg = 0;
-        work.ctcFlg |= 2; // OPM2を使用する場合は2　しない場合は0
-        work.ctcFlg |= 1; // OPM1を使用する場合は1　しない場合は0
-        work.ctcFlg |= 4; // turbo仕様の場合は4　しない場合は0
+        work.ctcFlg |= 2; // 2 if OPM2 is used, 0 if not
+        work.ctcFlg |= 1; // 1 if OPM1 is used, 0 if not
+        work.ctcFlg |= 4; // 4 if turbo spec, 0 if not
 
-        work.ctc3io = 0x1fa3; // turboのctc3のIOポート番号保存　しない場合は0x0707
+        work.ctc3io = 0x1fa3; // Turbo ctc3 IO port number saved. 0x0707 if not saved
     }
 
     private void mplay() {
@@ -575,7 +572,7 @@ public class NRTDRV extends BaseDriver {
         work.PSGKeyONEnable = false;
         work.PSGRestEnable = false;
 
-        // 割り込みルーチン最後のEI 無効
+        // EI at the end of interrupt routine is invalid
 
         work.imain();
         if (model == EnmModel.RealModel) {
@@ -591,7 +588,7 @@ public class NRTDRV extends BaseDriver {
         work.PSGRestEnable = true;
         work.OPMT19Enable = true;
 
-        // 割り込みルーチン最後のEI 有効
+        // EI valid at the end of interrupt routine
 
         // EI
 
@@ -605,7 +602,7 @@ public class NRTDRV extends BaseDriver {
         hl += 2;
         byte c = ram[hl];
 
-        work.opmFlg = (byte) (ram[hl] & 1); // OPMウェイトフラグ保存
+        work.opmFlg = (byte) (ram[hl] & 1); // OPM wait flag storage
         if ((ram[hl] & 2) != 0) {
             work.keyOnFOpmMask = 0;
             work.PENVF_VOL0 = true;
@@ -694,7 +691,7 @@ public class NRTDRV extends BaseDriver {
 
     private void minit(int hl) {
         lreset();
-        wopm((byte) 0xf, (byte) 0); // OPMレジスタ0FH=0（ノイズ初期化）
+        wopm((byte) 0xf, (byte) 0); // OPM register 0FH=0 (noise initialization)
 
         Ch[] wChs = work.opm1Chs;
         if (work.opmIo != 0x701) {
@@ -754,29 +751,29 @@ public class NRTDRV extends BaseDriver {
     private void wopm(byte d, byte a) {
         if (model == EnmModel.VirtualModel) {
             if (work.opmIo == 0x701) {
-                // 仮想レジスタに書き込み
+                // Write to a virtual register
                 work.opm1VReg[d] = a;
-                // 実レジスタに書き込み
+                // Write to real register
                 plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
                 // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
-                // 仮想レジスタに書き込み
+                // Write to a virtual register
                 work.opm2VReg[d] = a;
-                // 実レジスタに書き込み
+                // Write to real register
                 plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
                 // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         } else {
             if (work.opmIo == 0x701) {
-                // 仮想レジスタに書き込み
+                // Write to a virtual register
                 work.opm1VReg[d] = a;
-                // 実レジスタに書き込み
+                // Write to real register
                 plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d, a, EnmModel.RealModel, ym2151Hosei[0], 0);
                 // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
-                // 仮想レジスタに書き込み
+                // Write to a virtual register
                 work.opm2VReg[d] = a;
-                // 実レジスタに書き込み
+                // Write to real register
                 plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d, a, EnmModel.RealModel, ym2151Hosei[1], 0);
                 // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
@@ -829,7 +826,7 @@ public class NRTDRV extends BaseDriver {
         public byte amd2 = 0;
         public byte pmd2 = 0;
 
-        // 命令直接書き換え処理対策向けフラグ
+        // Flag for countermeasures against direct instruction rewrite processing
 
         public byte keyOnFOpmMask = 0x78;
         public boolean PENVF_VOL0 = false;
@@ -952,37 +949,37 @@ public class NRTDRV extends BaseDriver {
         public byte isCountNext = 0; // IX+18
         public byte lfoFlags = 0; // IX+19
         public byte transpose = 0; // IX+20
-        public byte kf = 0; // キーフラクション(IX+21)
-        public byte noteNumber = 0; // ノートナンバー(IX+22)
-        public int psgTone = 0; // PSG音程IX+21,IX+22
-        public byte portaFlg = 9; // ポルタメントフラグIX+23
-        public int portaTone = 0; // ポルタメント到達音程IX+24,IX+25
-        public byte softPMDelay = 0; // ソフトPMディレイ設定値IX+26
-        public byte softPMPitch = 0; // ソフトPMピッチ設定値IX+27
-        public byte softPMStep = 0; // ソフトPMステップ設定値IX+28
-        public byte softPMDelayCount = 0; // ソフトPMディレイカウンタIX+29
-        public byte softPMStepCount = 0; // ソフトPMステップカウンタIX+30
-        public byte softPMProcCount = 0; // ソフトPMプロセスカウンタIX+31
-        public byte softPMType = 0; // ソフトPMステップカウンタIX+32
-        public byte softAMFlagAndDelay = 0; // ソフトAMフラグ兼ディレイ設定値 (0=オフ)(IX+33)
-        public byte psgHardEnvelopeType = 16; // PSGハードエンベ形状 (16=ソフトエンベ)(IX+33)
-        public byte softAMDepth = 0; // ソフトAM深度設定値IX+34
-        public byte softAMStep = 0; // ソフトAMステップ設定値IX+35
-        public byte softAMSelOP = 0; // ソフトAM選択OP IX+36
-        public byte softAMDelayCount = 0; // ソフトAMディレイカウンタIX+37
-        public byte softAMStepCount = 0; // ソフトAMステップカウンタIX+38
-        public byte softAMProcCount = 0; // ソフトAMプロセスカウンタIX+39
+        public byte kf = 0; // Key Fraction (IX+21)
+        public byte noteNumber = 0; // Note Number (IX+22)
+        public int psgTone = 0; // PSG intervals IX+21, IX+22
+        public byte portaFlg = 9; // Portamento Flag IX+23
+        public int portaTone = 0; // Portamento reaching pitch IX+24, IX+25
+        public byte softPMDelay = 0; // Soft PM delay setting value IX+26
+        public byte softPMPitch = 0; // Soft PM pitch setting value IX+27
+        public byte softPMStep = 0; // Soft PM step setting value IX+28
+        public byte softPMDelayCount = 0; // Soft PM Delay Counter IX+29
+        public byte softPMStepCount = 0; // Soft PM step counter IX+30
+        public byte softPMProcCount = 0; // Soft PM process counter IX+31
+        public byte softPMType = 0; // Soft PM step counter IX+32
+        public byte softAMFlagAndDelay = 0; // Soft AM flag and delay setting value (0=off) (IX+33)
+        public byte psgHardEnvelopeType = 16; // PSG hard envelope shape (16=soft envelope) (IX+33)
+        public byte softAMDepth = 0; // Soft AM depth setting value IX+34
+        public byte softAMStep = 0; // Soft AM step setting value IX+35
+        public byte softAMSelOP = 0; // Soft AM selection OP IX+36
+        public byte softAMDelayCount = 0; // Soft AM Delay Counter IX+37
+        public byte softAMStepCount = 0; // Soft AM step counter IX+38
+        public byte softAMProcCount = 0; // Soft AM process counter IX+39
         public byte op1Tls = (byte) 255; // IX+40
         public byte op2Tls = (byte) 255; // IX+41
         public byte op3Tls = (byte) 255; // IX+42
         public byte op4Tls = (byte) 255; // IX+43
-        public byte portaStartFlg = 0; // ポルタメント動作フラグIX+44
-        public byte legartDelayFlg = 0; // レガート遅延フラグIX+45
-        public byte keyOffFlg = 0; // キーオフフラグIX+46
-        public byte trackStopFlg = 0; // トラック停止フラグIX+47
-        public byte glideFlg = 0; // グライドフラグIX+48
-        public int glide = 0; // グライド値IX+49,IX+50
-        public byte workForPlayer = 0; // プレイヤー用ワーク(加工前のノートナンバー)IX+51
+        public byte portaStartFlg = 0; // Portamento operation flag IX+44
+        public byte legartDelayFlg = 0; // Legato Delay Flag IX+45
+        public byte keyOffFlg = 0; // Key-off flag IX+46
+        public byte trackStopFlg = 0; // Truck Stop Flag IX+47
+        public byte glideFlg = 0; // Glide Flag IX+48
+        public int glide = 0; // Glide value IX+49, IX+50
+        public byte workForPlayer = 0; // Player work (note number before processing) IX+51
         public byte psgRr = 0; // IX+52
         public byte psgRrLevel = 15; // IX+53
         public byte psgRrCounter = 0; // IX+54
@@ -1056,12 +1053,12 @@ public class NRTDRV extends BaseDriver {
                     }
                     return;
                 } else if (cmdno == 127) {
-                    // トラック終端
+                    // Track End
                     trkend();
                 } else if (cmdno < 38) {
                     if (comck0(e, cmdno) == 1) return;
                 } else if (cmdno == 125) {
-                    // トラック一時停止
+                    // Track Pause
                     this.trackStopFlg = 125;
                     return;
                 } else {
@@ -1535,14 +1532,14 @@ public class NRTDRV extends BaseDriver {
                 // OPM1
                 work.opm1VReg[d] = a;
                 if (work.opmFlg != 0) {
-                    // ウエイト
+                    // Weight
                 }
                 plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
             } else {
                 // OPM2
                 work.opm2VReg[d] = a;
                 if (work.opmFlg != 0) {
-                    // ウエイト
+                    // Weight
                 }
                 plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
             }
@@ -1563,7 +1560,7 @@ public class NRTDRV extends BaseDriver {
             hl += bc;
             this.ptrData = hl;
 
-            // CCRET1 不要
+            // CCRET1 Not required
 
             return 0;
         }
@@ -1571,7 +1568,7 @@ public class NRTDRV extends BaseDriver {
         private int LEGON(byte e) {
             this.legartFlg = 1;
 
-            // CCRET1 不要
+            // CCRET1 Not required
 
             return 0;
         }
@@ -1579,7 +1576,7 @@ public class NRTDRV extends BaseDriver {
         private int LEGOFF(byte e) {
             this.legartFlg = 0;
 
-            // CCRET1 不要
+            // CCRET1 Not required
 
             return 0;
         }
@@ -1617,37 +1614,37 @@ public class NRTDRV extends BaseDriver {
             byte d = ram[this.ptrData];
             this.ptrData++;
 
-            // RASRSは多分不要
+            // RASRS is probably unnecessary
 
             this.repBuf[this.nestCount - 1].count = d;
             this.repBuf[this.nestCount - 1].startAdr = this.ptrData;
 
-            // CCRET1は不要
+            // CCRET1 is not required
             return 0;
         }
 
         private int REND(byte e) {
-            // RASRSは多分不要
+            // RASRS is probably unnecessary
 
             this.repBuf[this.nestCount - 1].count--;
             if (this.repBuf[this.nestCount - 1].count == 0) {
                 this.nestCount--;
-                // CCRET1は不要
+                // CCRET1 is not required
                 return 0;
             }
 
             this.repBuf[this.nestCount - 1].endAdr = this.ptrData;
             this.ptrData = this.repBuf[this.nestCount - 1].startAdr;
 
-            // CCRET1は不要
+            // CCRET1 is not required
             return 0;
         }
 
         private int RQUIT(byte e) {
-            // RASRSは多分不要
+            // RASRS is probably unnecessary
 
             if (this.repBuf[this.nestCount - 1].count != 1) {
-                // CCRET1は不要
+                // CCRET1 is not required
                 return 0;
             }
 
@@ -1655,7 +1652,7 @@ public class NRTDRV extends BaseDriver {
             this.ptrData = this.repBuf[this.nestCount - 1].endAdr;
             this.nestCount--;
 
-            // CCRET1は不要
+            // CCRET1 is not required
             return 0;
         }
 
@@ -1764,7 +1761,7 @@ public class NRTDRV extends BaseDriver {
                 c.trackStopFlg = 0;
             }
 
-            // CCRET1は不要
+            // CCRET1 is not required
             return 0;
         }
 
@@ -1823,7 +1820,7 @@ public class NRTDRV extends BaseDriver {
                 this.ptrData = work.bgmAdr + bc;
                 this.loopCounter++;
             }
-            // ccret1は不要
+            // CCRET1 is not required
         }
 
         private void mvset(byte e) {
@@ -2172,7 +2169,7 @@ public class NRTDRV extends BaseDriver {
                     }
                     return;
                 } else if (cmdno == 127) {
-                    // トラック終端
+                    // Track End
                     this.trkend();
                     // return;
                 } else if (cmdno < 38) {
@@ -2416,12 +2413,12 @@ public class NRTDRV extends BaseDriver {
             this.gatetime = a;
 
             // PKONR
-            bc = this.workForPlayer; // 2倍 不要
+            bc = this.workForPlayer; // 2x Not required
             byte d = (byte) (e << 1);
 
             byte b = 0;
             byte c;
-            if (bc < PTABLE.length) { // 180303 未満のバージョンで配列を超える場合あり。よってインデックスをチェックするコードを追加
+            if (bc < PTABLE.length) { // In versions earlier than 180303, the array may be exceeded. Therefore, a code to check the index has been added.
                 c = (byte) (PTABLE[bc]);
             } else {
                 c = 0;
@@ -2446,7 +2443,7 @@ public class NRTDRV extends BaseDriver {
             }
             // PKON5
             c = a;
-            if (bc < PTABLE.length) { // 180303 未満のバージョンで配列を超える場合あり。よってインデックスをチェックするコードを追加
+            if (bc < PTABLE.length) { // In versions earlier than 180303, the array may be exceeded. Therefore, a code to check the index has been added.
                 a = (byte) (PTABLE[bc] >> 8);
             } else {
                 a = 0;
@@ -2649,7 +2646,7 @@ public class NRTDRV extends BaseDriver {
 
             //
             if (neg) {
-                // 減算処理
+                // Subtraction
                 int p = this.portaFlg * 4;
                 int hl = (h * 0x100) + l - p;
                 if (hl < 0) {
@@ -2664,7 +2661,7 @@ public class NRTDRV extends BaseDriver {
                     l = (byte) (hl & 0xff);
                 }
             } else {
-                // 加算処理
+                // Addition
                 int p = this.portaFlg * 4;
                 int hl = (h * 0x100) + l + p;
                 h = (byte) (hl >> 8);
@@ -2903,7 +2900,7 @@ public class NRTDRV extends BaseDriver {
 
             //
             if (neg) {
-                // 減算処理
+                // Subtraction
                 int p = this.op3Tls;
                 int hl = (h * 0x100) + l - p;
                 h = (byte) (hl >> 8);
@@ -2914,7 +2911,7 @@ public class NRTDRV extends BaseDriver {
                     l = c;
                 }
             } else {
-                // 加算処理
+                // Addition
                 int p = this.op3Tls;
                 int hl = (h * 0x100) + l + p;
                 h = (byte) (hl >> 8);

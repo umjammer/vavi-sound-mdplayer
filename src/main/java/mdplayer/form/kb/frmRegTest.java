@@ -42,10 +42,11 @@ import mdplayer.chips.Ym3812Chip;
 import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.chips.YmZ280BChip;
-import mdplayer.driver.sid.Sid;
+import mdplayer.driver.sid.SidDriver;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidInfo;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
+import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo.Model;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
@@ -324,7 +325,7 @@ public class frmRegTest extends frmChipBase {
 
         if (regMan.getName().contains("Sid")) {
             //y += 8;
-            Sid curSID = audio.chipRegister.chip(SidChip.class).SID;
+            SidDriver curSID = audio.chipRegister.chip(SidChip.class).sid;
             //Sid curSID = ChipRegister.Sid;
             Object a = regMan.getData();
             if (a == null) return;
@@ -378,7 +379,7 @@ public class frmRegTest extends frmChipBase {
             DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, "VOICE1 PWDC %4x".formatted(pwdc1));
 
             DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, "VOICE1 MODE ");
-            DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, "" +
+            DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0,
                     ((mode1 & 0b10000000) == 0x80 ? "NOISE" : "-----") +
                     ((mode1 & 0b01000000) == 0x40 ? "PULSE" : "-----") +
                     ((mode1 & 0b00100000) == 0x20 ? "SAWTOOTH" : "--------") +
@@ -395,7 +396,7 @@ public class frmRegTest extends frmChipBase {
             DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, "VOICE2 PWDC %4x".formatted(pwdc2));
 
             DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, "VOICE2 MODE ");
-            DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, "" +
+            DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0,
                     ((mode2 & 0b10000000) == 0x80 ? "NOISE" : "-----") +
                     ((mode2 & 0b01000000) == 0x40 ? "PULSE" : "-----") +
                     ((mode2 & 0b00100000) == 0x20 ? "SAWTOOTH" : "--------") +
@@ -412,7 +413,7 @@ public class frmRegTest extends frmChipBase {
             DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, "VOICE3 PWDC %4x".formatted(pwdc3));
 
             DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, "VOICE3 MODE ");
-            DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, "" +
+            DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0,
                     ((mode3 & 0b10000000) == 0x80 ? "NOISE" : "-----") +
                     ((mode3 & 0b01000000) == 0x40 ? "PULSE" : "-----") +
                     ((mode3 & 0b00100000) == 0x20 ? "SAWTOOTH" : "--------") +
@@ -429,14 +430,14 @@ public class frmRegTest extends frmChipBase {
             DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, "FILTER RESONANCE %2x".formatted(filterreso));
 
             DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, "FILTER ROUTE");
-            DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, "" +
+            DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0,
                     ((filterroute & 0b00001000) == 0x08 ? "EXT.IN" : "------") +
                     ((filterroute & 0b00000100) == 0x04 ? "VOICE3" : "------") +
                     ((filterroute & 0b00000010) == 0x02 ? "VOICE2" : "------") +
                     ((filterroute & 0b00000001) == 0x01 ? "VOICE1" : "------"));
 
             DrawBuff.drawFont4(frameBuffer, 2, y + 32, 0, "FILTER MODE");
-            DrawBuff.drawFont4(frameBuffer, 2, y + 40, 0, "" +
+            DrawBuff.drawFont4(frameBuffer, 2, y + 40, 0,
                     ((filtermode & 0b00001000) == 0x08 ? "MUTE V3" : "-------") +
                     ((filtermode & 0b00000100) == 0x04 ? "HIGHPASS" : "--------") +
                     ((filtermode & 0b00000010) == 0x02 ? "BANDPASS" : "--------") +
@@ -445,15 +446,12 @@ public class frmRegTest extends frmChipBase {
 
             y += 56;
 
-            SidTuneInfo sti = curSID.tuneInfo;
-            SidConfig cfg = curSID.cfg;
-            playSidFp curEngine = curSID.GetCurrentEngineContext();
-            SidInfo si = curEngine.info();
+            Map<String, Object> info = curSID.getInfo();
 
-            DrawBuff.drawFont4(frameBuffer, 2, y, 0, "LOAD ADDR %04xh".formatted(sti.getLoadAddr()));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, "INIT ADDR %04xh".formatted(sti.getInitAddress()));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, "PLAY ADDR %04xh".formatted(sti.getPlayAddress()));
-            DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, "%s %s; CUR:%s SPD:%s".formatted(sti.sidModel(Integer.parseInt(p)), sti.getClockSpeed(), cfg.defaultSidModel, si.getSpeedString()));
+            DrawBuff.drawFont4(frameBuffer, 2, y, 0, "LOAD ADDR %04xh".formatted((int) info.get("LoadAddr")));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 8, 0, "INIT ADDR %04xh".formatted((int) info.get("InitAddress")));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 16, 0, "PLAY ADDR %04xh".formatted((int) info.get("PlayAddress")));
+            DrawBuff.drawFont4(frameBuffer, 2, y + 24, 0, "%s %s; CUR:%s SPD:%s".formatted(((Function<Integer, Model>)info.get("sidModel")).apply(Integer.parseInt(p)), info.get("ClockSpeed"), info.get("defaultSidModel"), info.get("SpeedString")));
 
             y += 32;
             //return;

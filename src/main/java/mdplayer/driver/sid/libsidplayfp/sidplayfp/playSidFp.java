@@ -42,8 +42,8 @@ public class playSidFp {
     }
 
 
-    public playSidFp(Setting setting) {
-        sidPlayer = new Player(setting);
+    public playSidFp(int sampleRate) {
+        sidPlayer = new Player(sampleRate);
     }
 
     public boolean config(SidConfig cfg) {

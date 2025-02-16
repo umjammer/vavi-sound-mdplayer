@@ -14,6 +14,7 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
+import mdsound.MDSound;
 import mdsound.np.DCFilter;
 import mdsound.np.Device;
 import mdsound.np.Filter;
@@ -36,7 +37,7 @@ import vavi.util.ByteUtil;
 import static java.lang.System.getLogger;
 
 
-public class Nsf extends BaseDriver {
+public class Nsf extends BaseDriver implements NsfDriver {
 
     private static final Logger logger = getLogger(Nsf.class.getName());
 
@@ -235,6 +236,66 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
     public int nsfePlstSize;
     private static final int NSFE_ENTRIES = 256;
 
+    @Override public void setSong(int songNo) {
+        song = songNo;
+    }
+
+    @Override public boolean useFds() {
+        return useFds;
+    }
+
+    @Override public boolean useFme7() {
+        return useFme7;
+    }
+
+    @Override public boolean useMmc5() {
+        return useMmc5;
+    }
+
+    @Override public boolean useN106() {
+        return useN106;
+    }
+
+    @Override public boolean useVrc6() {
+        return useVrc6;
+    }
+
+    @Override public boolean useVrc7() {
+        return useVrc7;
+    }
+
+    @Override public void setApu(MDSound.Chip chip) {
+        cAPU = chip;
+    }
+
+    @Override public void setDmc(MDSound.Chip chip) {
+        cDMC = chip;
+    }
+
+    @Override public void setFds(MDSound.Chip chip) {
+        cFDS = chip;
+    }
+
+    @Override public void setMmc5(MDSound.Chip chip) {
+        cMMC5 = chip;
+    }
+
+    @Override public void setN160(MDSound.Chip chip) {
+        cN160 = chip;
+    }
+
+    @Override public void setVrc6(MDSound.Chip chip) {
+        cVRC6 = chip;
+    }
+
+    @Override public void setVrc7(MDSound.Chip chip) {
+        cVRC7 = chip;
+    }
+
+    @Override public void setFme7(MDSound.Chip chip) {
+        cFME7 = chip;
+    }
+
     public static class NsfeEntry {
 
         public int[] tlbl;
@@ -258,14 +319,14 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
     /** Low-pass filter applied to the final output */
     private mdsound.np.Filter lpf;
 
-    public mdsound.MDSound.Chip cAPU = null;
-    public mdsound.MDSound.Chip cDMC = null;
-    public mdsound.MDSound.Chip cFDS = null;
-    public mdsound.MDSound.Chip cMMC5 = null;
-    public mdsound.MDSound.Chip cN160 = null;
-    public mdsound.MDSound.Chip cVRC6 = null;
-    public mdsound.MDSound.Chip cVRC7 = null;
-    public mdsound.MDSound.Chip cFME7 = null;
+    private mdsound.MDSound.Chip cAPU = null;
+    private mdsound.MDSound.Chip cDMC = null;
+    private mdsound.MDSound.Chip cFDS = null;
+    private mdsound.MDSound.Chip cMMC5 = null;
+    private mdsound.MDSound.Chip cN160 = null;
+    private mdsound.MDSound.Chip cVRC6 = null;
+    private mdsound.MDSound.Chip cVRC7 = null;
+    private mdsound.MDSound.Chip cFME7 = null;
 
     private LoopDetector.NESDetector ld = null;
 //    private NESDetectorEx ld = null;
@@ -329,15 +390,15 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
         dcf.setRate(this.sampleRate);
         dcf.reset();
         dcf.setParam(270, 256 - setting.getNsf().getHPF()); // HPF:256-(Range0-256(Def:92))
-        lpf.SetParam(4700.0, setting.getNsf().getLPF()); // LPF:(Range 0-400(Def:112))
+        lpf.setParam(4700.0, setting.getNsf().getLPF()); // LPF:(Range 0-400(Def:112))
 //logger.log(Level.TRACE, "dcf:%d".formatted(dcf.getFactor()));
 //logger.log(Level.TRACE, "lpf:%d".formatted(lpf.getFactor()));
 
         int bmax = 0;
 
         for (int i = 0; i < 8; i++)
-            if (bmax < bankSwitch[i])
-                bmax = bankSwitch[i];
+            if (bmax < (bankSwitch[i] & 0xff))
+                bmax = bankSwitch[i] & 0xff;
 
         chip.mem.setImage(body, load_address & 0xffff, bodySize);
 
@@ -468,6 +529,7 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
         return Region.NTSC; // fallback for invalid Flags
     }
 
+int CC;
     public int render_(short[] b, int length) {
         return render_(b, length, 0);
     }
@@ -625,17 +687,16 @@ logger.log(Level.INFO, "%s%s%s%s%s%s".formatted(useVrc6 ? "6" : "_", useVrc7 ? "
             else stopped = true;
         }
 
-//if (CC++ % INTERVAL == 0) { logger.log(Level.DEBUG, "render: %d, %d, pc: %04x".formatted(out[0], out[1], chip.cpu.p)); }
+if (CC++ % INTERVAL == 0) { logger.log(Level.DEBUG, "NSF: %d, %d, pc: %04x".formatted(out[0], out[1], chip.cpu.p)); }
         return length;
     }
-int CC = 0;
 static final int INTERVAL = 1024;
 
     public void visWaveBufferCopy(short[][] dest) {
         visWB.copy(dest);
     }
 
-    private mdsound.VisWaveBuffer visWB = new mdsound.VisWaveBuffer();
+    private final mdsound.VisWaveBuffer visWB = new mdsound.VisWaveBuffer();
 
     private boolean playtime_detected = false;
 

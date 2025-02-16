@@ -141,7 +141,7 @@ public class frmFDS extends frmBase {
             newParam.ModFrq = reg.freq[0];
             newParam.ModCnt = reg.modPos;
 
-            newParam.EnvSpd = reg.masterEnvSpeed;
+            newParam.EnvSpd = (int) reg.masterEnvSpeed;
             newParam.EnvVolSw = !reg.envDisable[1];
             newParam.EnvModSw = !reg.envDisable[0];
 
@@ -199,7 +199,7 @@ public class frmFDS extends frmBase {
                 return;
             }
 
-            //鍵盤
+            // keyboard
             if (py < 2 * 8) {
                 if (ev.getButton() == MouseEvent.BUTTON2) {
                     // Unmask.

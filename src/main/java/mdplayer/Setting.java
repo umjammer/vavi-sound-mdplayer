@@ -1,4 +1,3 @@
-
 package mdplayer;
 
 import java.awt.Dimension;
@@ -24,11 +23,11 @@ import vavi.util.serdes.Serdes;
 import static java.lang.System.getLogger;
 
 
-public class Setting implements Serializable {
+public class Setting implements Serializable, Cloneable {
 
     private static final Logger logger = getLogger(Setting.class.getName());
 
-    public static class ChipType2 implements Serializable {
+    public static class ChipType2 implements Serializable, Cloneable {
         private boolean[] useEmu = null;
 
         public boolean[] getUseEmu() {
@@ -59,7 +58,7 @@ public class Setting implements Serializable {
             realChipInfos = value;
         }
 
-        public static class RealChipInfo {
+        public static class RealChipInfo implements Cloneable {
 
             /** Chip common identification information */
             private int interfaceType = -1;
@@ -167,7 +166,8 @@ public class Setting implements Serializable {
                 onlyPCMEmulation = value;
             }
 
-            public RealChipInfo copy() {
+            @Override
+            public RealChipInfo clone() {
                 RealChipInfo ret = new RealChipInfo();
 
                 ret.interfaceType = this.interfaceType;
@@ -207,7 +207,12 @@ public class Setting implements Serializable {
             latencyForReal = value;
         }
 
-        public ChipType2 copy() {
+        private boolean[] _useRealChipFreqDiff = new boolean[2];
+        public boolean[] getUseRealChipFreqDiff() { return _useRealChipFreqDiff; }
+        public void setUseRealChipFreqDiff(boolean[] value) { _useRealChipFreqDiff = value; }
+
+        @Override
+        public ChipType2 clone() {
             ChipType2 ct = new ChipType2();
 
             ct.useEmu = null;
@@ -227,7 +232,7 @@ public class Setting implements Serializable {
                 ct.realChipInfos = new RealChipInfo[this.realChipInfos.length];
                 for (int i = 0; i < this.realChipInfos.length; i++)
                     if (this.realChipInfos[i] != null)
-                        ct.realChipInfos[i] = this.realChipInfos[i].copy();
+                        ct.realChipInfos[i] = this.realChipInfos[i].clone();
             }
 
             ct.latencyForEmulation = this.latencyForEmulation;
@@ -241,7 +246,7 @@ public class Setting implements Serializable {
         }
     }
 
-    public static class SID implements Serializable {
+    public static class SID implements Serializable, Cloneable {
         public String romKernalPath = "";
         public String romBasicPath = "";
         public String romCharacterPath = "";
@@ -252,7 +257,8 @@ public class Setting implements Serializable {
         public int sidModel = 0;
         public boolean sidmodelForce = false;
 
-        public SID copy() {
+        @Override
+        public SID clone() {
             SID sid = new SID();
 
             sid.romKernalPath = this.romKernalPath;
@@ -269,7 +275,7 @@ public class Setting implements Serializable {
         }
     }
 
-    public static class NukedOPN2 implements Serializable {
+    public static class NukedOPN2 implements Serializable, Cloneable {
         public int emuType = 0;
 
         // Sorry, Gens options are here too...
@@ -277,7 +283,8 @@ public class Setting implements Serializable {
         public boolean gensDACHPF = true;
         public boolean gensSSGEG = true;
 
-        public NukedOPN2 copy() {
+        @Override
+        public NukedOPN2 clone() {
             NukedOPN2 no = new NukedOPN2();
             no.emuType = this.emuType;
             no.gensDACHPF = this.gensDACHPF;
@@ -287,7 +294,7 @@ public class Setting implements Serializable {
         }
     }
 
-    public static class AutoBalance implements Serializable {
+    public static class AutoBalance implements Serializable, Cloneable {
         private boolean useThis = false;
         private boolean loadSongBalance = false;
         private boolean loadDriverBalance = false;
@@ -334,7 +341,8 @@ public class Setting implements Serializable {
             samePositionAsSongData = value;
         }
 
-        public AutoBalance copy() {
+        @Override
+        public AutoBalance clone() {
             AutoBalance AutoBalance = new AutoBalance();
             AutoBalance.useThis = this.useThis;
             AutoBalance.loadSongBalance = this.loadSongBalance;
@@ -346,7 +354,7 @@ public class Setting implements Serializable {
         }
     }
 
-    public static class PMDDotNET implements Serializable {
+    public static class PMDDotNET implements Serializable, Cloneable {
         public String compilerArguments = "/v /C";
         public boolean isAuto = true;
         public int soundBoard = 1;
@@ -363,7 +371,8 @@ public class Setting implements Serializable {
         public int volumeAdpcm = 0;
         public int volumeGIMICSSG = 31;
 
-        public PMDDotNET copy() {
+        @Override
+        public PMDDotNET clone() {
             PMDDotNET p = new PMDDotNET();
             p.compilerArguments = this.compilerArguments;
             p.isAuto = this.isAuto;
@@ -385,7 +394,35 @@ public class Setting implements Serializable {
         }
     }
 
-    public static class MidiExport implements Serializable {
+    public static class Mxdrv implements Serializable, Cloneable {
+
+        public int pcm8type = 1;
+        public int pcm8ppSoption = -1;
+
+        @Override
+        public Mxdrv clone() {
+            Mxdrv p = new Mxdrv();
+            p.pcm8type = this.pcm8type;
+            p.pcm8ppSoption = this.pcm8ppSoption;
+
+            return p;
+        }
+    }
+
+    public static class Mndrv implements Serializable, Cloneable {
+
+        public int mpcmtype = 1;
+
+        @Override
+        public Mndrv clone() {
+            Mndrv p = new Mndrv();
+            p.mpcmtype = this.mpcmtype;
+
+            return p;
+        }
+    }
+
+    public static class MidiExport implements Serializable, Cloneable {
 
         private boolean useMIDIExport = false;
 
@@ -447,7 +484,8 @@ public class Setting implements Serializable {
             keyOnFnum = value;
         }
 
-        public MidiExport copy() {
+        @Override
+        public MidiExport clone() {
             MidiExport midiExport = new MidiExport();
 
             midiExport.useMIDIExport = this.useMIDIExport;
@@ -461,7 +499,7 @@ public class Setting implements Serializable {
         }
     }
 
-    public static class MidiKbd implements Serializable {
+    public static class MidiKbd implements Serializable, Cloneable {
 
         private boolean useMIDIKeyboard = false;
         public boolean getUseMIDIKeyboard() {
@@ -590,7 +628,8 @@ public class Setting implements Serializable {
             midiCtrlNext = value;
         }
 
-        public MidiKbd copy() {
+        @Override
+        public MidiKbd clone() {
             MidiKbd midiKbd = new MidiKbd();
 
             midiKbd.midiInDeviceName = this.midiInDeviceName;
@@ -615,7 +654,7 @@ public class Setting implements Serializable {
         }
     }
 
-    public static class KeyBoardHook implements Serializable {
+    public static class KeyBoardHook implements Serializable, Cloneable {
         public static class HookKeyInfo implements Serializable {
             private boolean shift = false;
             private boolean ctrl = false;
@@ -654,7 +693,8 @@ public class Setting implements Serializable {
                 key = value;
             }
 
-            public HookKeyInfo copy() {
+            @Override
+            public HookKeyInfo clone() {
                 HookKeyInfo hookKeyInfo = new HookKeyInfo();
                 hookKeyInfo.shift = this.shift;
                 hookKeyInfo.ctrl = this.ctrl;
@@ -731,23 +771,24 @@ public class Setting implements Serializable {
         private HookKeyInfo next = new HookKeyInfo();
         private HookKeyInfo fast = new HookKeyInfo();
 
-        public KeyBoardHook copy() {
+        @Override
+        public KeyBoardHook clone() {
             KeyBoardHook keyBoard = new KeyBoardHook();
             keyBoard.useKeyBoardHook = this.useKeyBoardHook;
-            keyBoard.stop = this.stop.copy();
-            keyBoard.pause = this.pause.copy();
-            keyBoard.fadeout = this.fadeout.copy();
-            keyBoard.prev = this.prev.copy();
-            keyBoard.slow = this.slow.copy();
-            keyBoard.play = this.play.copy();
-            keyBoard.next = this.next.copy();
-            keyBoard.fast = this.fast.copy();
+            keyBoard.stop = this.stop.clone();
+            keyBoard.pause = this.pause.clone();
+            keyBoard.fadeout = this.fadeout.clone();
+            keyBoard.prev = this.prev.clone();
+            keyBoard.slow = this.slow.clone();
+            keyBoard.play = this.play.clone();
+            keyBoard.next = this.next.clone();
+            keyBoard.fast = this.fast.clone();
 
             return keyBoard;
         }
     }
 
-    public static class Vst implements Serializable {
+    public static class Vst implements Serializable, Cloneable {
 
         private String defaultPath = "";
         private String[] vstPluginPath = null;
@@ -771,7 +812,8 @@ public class Setting implements Serializable {
             defaultPath = value;
         }
 
-        public Vst copy() {
+        @Override
+        public Vst clone() {
             Vst vst = new Vst();
 
             vst.vstInfos = this.vstInfos;
@@ -781,7 +823,7 @@ public class Setting implements Serializable {
         }
     }
 
-    public static class MidiOut implements Serializable {
+    public static class MidiOut implements Serializable, Cloneable {
 
         private String gmReset = "30:F0,7E,7F,09,01,F7";
         public String getGMReset() {
@@ -819,7 +861,8 @@ public class Setting implements Serializable {
             midiOutInfos = value;
         }
 
-        public MidiOut copy() {
+        @Override
+        public MidiOut clone() {
             MidiOut MidiOut = new MidiOut();
 
             MidiOut.gmReset = this.gmReset;
@@ -842,14 +885,23 @@ public class Setting implements Serializable {
         instance.init();
     }
 
+    static int parseInt(String str, int def) {
+        try {
+            return Integer.parseInt(System.getProperty(str, String.valueOf(def)));
+        } catch (Exception e) {
+            logger.log(Level.TRACE, e.getMessage(), e);
+            return def;
+        }
+    }
+
     public void init() {
         // ay8910
         if (this.getAY8910Type() == null || this.getAY8910Type().length < 2) {
             this.setAY8910Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getAY8910Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getAY8910Type()[i].setUseEmu(new boolean[2]); // 2 means {0: fmgen, 1: mame}
-                this.getAY8910Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ay8910", "0"))] = true;
+                this.getAY8910Type()[i].setUseEmu(new boolean[2]); // {0: fmgen, 1: mame}
+                this.getAY8910Type()[i].getUseEmu()[parseInt("mdplayer.variant.ay8910", 0)] = true;
                 this.getAY8910Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -862,12 +914,13 @@ public class Setting implements Serializable {
                 this.getK051649Type()[i].setUseReal(new boolean[1]);
             }
         }
+        // c140, c219
         if (this.getC140Type() == null || this.getC140Type().length < 2) {
             this.setC140Type(new Setting.ChipType2[] {new Setting.ChipType2(), new Setting.ChipType2()});
             for (int i = 0; i < 2; i++) {
                 this.getC140Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
-                this.getC140Type()[i].setUseEmu(new boolean[1]);
-                this.getC140Type()[i].getUseEmu()[0] = true;
+                this.getC140Type()[i].setUseEmu(new boolean[2]); // {0: c140, 1: c219}
+                this.getC140Type()[i].getUseEmu()[parseInt("mdplayer.variant.c140", 0)] = true;
                 this.getC140Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -895,7 +948,7 @@ public class Setting implements Serializable {
             for (int i = 0; i < 2; i++) {
                 this.getSN76489Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 this.getSN76489Type()[i].setUseEmu(new boolean[2]); // {0: sn76489, 1: sn76496}
-                this.getSN76489Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.sn76489", "0"))] = true;
+                this.getSN76489Type()[i].getUseEmu()[parseInt("mdplayer.variant.sn76489", 0)] = true;
                 this.getSN76489Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -914,7 +967,7 @@ public class Setting implements Serializable {
             for (int i = 0; i < 2; i++) {
                 this.getYM2151Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 this.getYM2151Type()[i].setUseEmu(new boolean[4]); // {0: fmgen, 1: mame, 2: 68k, 3: ymfm}
-                this.getYM2151Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ym2151", "0"))] = true;
+                this.getYM2151Type()[i].getUseEmu()[parseInt("mdplayer.variant.ym2151", 0)] = true;
                 this.getYM2151Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -924,7 +977,7 @@ public class Setting implements Serializable {
             for (int i = 0; i < 2; i++) {
                 this.getYM2203Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 this.getYM2203Type()[i].setUseEmu(new boolean[2]); // {0: fmgen, 1: ymfm}
-                this.getYM2203Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ym2203", "0"))] = true;
+                this.getYM2203Type()[i].getUseEmu()[parseInt("mdplayer.variant.ym2203", 0)] = true;
                 this.getYM2203Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -943,7 +996,7 @@ public class Setting implements Serializable {
             for (int i = 0; i < 2; i++) {
                 this.getYM2608Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 this.getYM2608Type()[i].setUseEmu(new boolean[2]); // {0: fmgen, 1: ymfm}
-                this.getYM2608Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ym2608", "0"))] = true;
+                this.getYM2608Type()[i].getUseEmu()[parseInt("mdplayer.variant.ym2608", 0)] = true;
                 this.getYM2608Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -960,7 +1013,7 @@ public class Setting implements Serializable {
             for (int i = 0; i < 2; i++) {
                 this.getYM2610Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo(), new Setting.ChipType2.RealChipInfo()});
                 this.getYM2610Type()[i].setUseEmu(new boolean[2]); // {0: fmgen, 1: ymfm}
-                this.getYM2610Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ym2610", "0"))] = true;
+                this.getYM2610Type()[i].getUseEmu()[parseInt("mdplayer.variant.ym2610", 0)] = true;
                 this.getYM2610Type()[i].setUseReal(new boolean[3]);
             }
         }
@@ -971,7 +1024,7 @@ public class Setting implements Serializable {
             for (int i = 0; i < 2; i++) {
                 this.getYM2612Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 this.getYM2612Type()[i].setUseEmu(new boolean[5]); // {0: mame-A, 1: nuke-A, 2: mame-B, 3: nuke-B(simple), 4: nuke-A(vavi)}
-                this.getYM2612Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ym2612", "0"))] = true;
+                this.getYM2612Type()[i].getUseEmu()[parseInt("mdplayer.variant.ym2612", 0)] = true;
                 this.getYM2612Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -991,7 +1044,7 @@ public class Setting implements Serializable {
             for (int i = 0; i < 2; i++) {
                 this.getYM3812Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 this.getYM3812Type()[i].setUseEmu(new boolean[2]); // {0: dosbox, 1: mame}
-                this.getYM3812Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ym3812", "0"))] = true;
+                this.getYM3812Type()[i].getUseEmu()[parseInt("mdplayer.variant.ym3812", 0)] = true;
                 this.getYM3812Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -1001,7 +1054,7 @@ public class Setting implements Serializable {
             for (int i = 0; i < 2; i++) {
                 this.getYMF262Type()[i].setRealChipInfo(new Setting.ChipType2.RealChipInfo[] {new Setting.ChipType2.RealChipInfo()});
                 this.getYMF262Type()[i].setUseEmu(new boolean[5]); // {0: dosbox 1: mame, 2: nuked, 3: cozendey, 4: ymfm}
-                this.getYMF262Type()[i].getUseEmu()[Integer.parseInt(System.getProperty("mdplayer.variant.ymf262", "0"))] = true;
+                this.getYMF262Type()[i].getUseEmu()[parseInt("mdplayer.variant.ymf262", 0)] = true;
                 this.getYMF262Type()[i].setUseReal(new boolean[1]);
             }
         }
@@ -1464,6 +1517,11 @@ public class Setting implements Serializable {
         pmdDotNET = value;
     }
 
+    private Mxdrv _Mxdrv = new Mxdrv();
+
+    public Mxdrv getMxdrv() { return _Mxdrv; };
+    public void setMxdrv(Mxdrv value) { _Mxdrv = value; };
+
     public KeyBoardHook getKeyBoardHook() {
         return _keyBoardHook;
     }
@@ -1484,7 +1542,7 @@ public class Setting implements Serializable {
 
     private KeyBoardHook _keyBoardHook = new KeyBoardHook();
 
-    public static class OutputDevice implements Serializable {
+    public static class OutputDevice implements Serializable, Cloneable {
 
         private int deviceType = 1;
         public int getDeviceType() {
@@ -1550,7 +1608,8 @@ public class Setting implements Serializable {
             sampleRate = value;
         }
 
-        public OutputDevice copy() {
+        @Override
+        public OutputDevice clone() {
             OutputDevice outputDevice = new OutputDevice();
             outputDevice.deviceType = this.deviceType;
             outputDevice.latency = this.latency;
@@ -1799,8 +1858,7 @@ public class Setting implements Serializable {
     // _LatencyForScci = value;
     // }
 
-    // public ChipType2 Copy()
-    // {
+    // public ChipType2 clone() {
     // ChipType2 ct = new ChipType2();
     // ct.UseEmu = this.UseEmu;
     // ct.UseEmu2 = this.UseEmu2;
@@ -1837,7 +1895,7 @@ public class Setting implements Serializable {
     // }
     // }
 
-    public static class Other implements Serializable {
+    public static class Other implements Serializable, Cloneable {
         private boolean useLoopTimes = true;
         public boolean getUseLoopTimes() {
             return useLoopTimes;
@@ -2000,7 +2058,8 @@ public class Setting implements Serializable {
             nonRenderingForPause = value;
         }
 
-        public Other copy() {
+        @Override
+        public Other clone() {
             Other other = new Other();
             other.useLoopTimes = this.useLoopTimes;
             other.loopTimes = this.loopTimes;
@@ -2030,7 +2089,7 @@ public class Setting implements Serializable {
         }
     }
 
-    public static class Balance implements Serializable {
+    public static class Balance implements Serializable, Cloneable {
 
         private int masterVolume = 0;
 
@@ -2852,7 +2911,8 @@ public class Setting implements Serializable {
                 _GimicOPNAVolume = 30;
         }
 
-        public Balance copy() {
+        @Override
+        public Balance clone() {
             Balance balance = new Balance();
             balance.masterVolume = this.masterVolume;
 
@@ -4025,7 +4085,8 @@ public class Setting implements Serializable {
             _ChipSelect = value;
         }
 
-        public Location copy() {
+        @Override
+        public Location clone() {
             Location location = new Location();
 
             location._PMain = this._PMain;
@@ -4111,7 +4172,7 @@ public class Setting implements Serializable {
         }
     }
 
-    public static class NSF implements Serializable {
+    public static class NSF implements Serializable, Cloneable {
         private boolean _NESUnmuteOnReset = true;
         private boolean _NESNonLinearMixer = true;
         private boolean _NESPhaseRefresh = true;
@@ -4268,7 +4329,8 @@ public class Setting implements Serializable {
             _DMCDPCMReverse = value;
         }
 
-        public NSF copy() {
+        @Override
+        public NSF clone() {
             NSF nsf = new NSF();
 
             nsf._NESUnmuteOnReset = this._NESUnmuteOnReset;
@@ -4303,143 +4365,144 @@ public class Setting implements Serializable {
         }
     }
 
-    public Setting copy() {
+    @Override
+    public Setting clone() {
         Setting setting = new Setting();
-        setting.outputDevice = this.outputDevice.copy();
+        setting.outputDevice = this.outputDevice.clone();
 
         setting.ay8910Type = null;
         if (this.ay8910Type != null) {
             setting.ay8910Type = new ChipType2[this.ay8910Type.length];
             for (int i = 0; i < this.ay8910Type.length; i++)
-                setting.ay8910Type[i] = this.ay8910Type[i].copy();
+                setting.ay8910Type[i] = this.ay8910Type[i].clone();
         }
 
         setting.k051649Type = null;
         if (this.k051649Type != null) {
             setting.k051649Type = new ChipType2[this.k051649Type.length];
             for (int i = 0; i < this.k051649Type.length; i++)
-                setting.k051649Type[i] = this.k051649Type[i].copy();
+                setting.k051649Type[i] = this.k051649Type[i].clone();
         }
 
         setting.ym2151Type = null;
         if (this.ym2151Type != null) {
             setting.ym2151Type = new ChipType2[this.ym2151Type.length];
             for (int i = 0; i < this.ym2151Type.length; i++)
-                setting.ym2151Type[i] = this.ym2151Type[i].copy();
+                setting.ym2151Type[i] = this.ym2151Type[i].clone();
         }
 
         setting.ym2203Type = null;
         if (this.ym2203Type != null) {
             setting.ym2203Type = new ChipType2[this.ym2203Type.length];
             for (int i = 0; i < this.ym2203Type.length; i++)
-                setting.ym2203Type[i] = this.ym2203Type[i].copy();
+                setting.ym2203Type[i] = this.ym2203Type[i].clone();
         }
 
         setting.ym2413Type = null;
         if (this.ym2413Type != null) {
             setting.ym2413Type = new ChipType2[this.ym2413Type.length];
             for (int i = 0; i < this.ym2413Type.length; i++)
-                setting.ym2413Type[i] = this.ym2413Type[i].copy();
+                setting.ym2413Type[i] = this.ym2413Type[i].clone();
         }
 
         setting.ym2608Type = null;
         if (this.ym2608Type != null) {
             setting.ym2608Type = new ChipType2[this.ym2608Type.length];
             for (int i = 0; i < this.ym2608Type.length; i++)
-                setting.ym2608Type[i] = this.ym2608Type[i].copy();
+                setting.ym2608Type[i] = this.ym2608Type[i].clone();
         }
 
         setting.ym2610Type = null;
         if (this.ym2610Type != null) {
             setting.ym2610Type = new ChipType2[this.ym2610Type.length];
             for (int i = 0; i < this.ym2610Type.length; i++)
-                setting.ym2610Type[i] = this.ym2610Type[i].copy();
+                setting.ym2610Type[i] = this.ym2610Type[i].clone();
         }
 
         setting._YM2612Type = null;
         if (this._YM2612Type != null) {
             setting._YM2612Type = new ChipType2[this._YM2612Type.length];
             for (int i = 0; i < this._YM2612Type.length; i++)
-                setting._YM2612Type[i] = this._YM2612Type[i].copy();
+                setting._YM2612Type[i] = this._YM2612Type[i].clone();
         }
 
         setting._YM3526Type = null;
         if (this._YM3526Type != null) {
             setting._YM3526Type = new ChipType2[this._YM3526Type.length];
             for (int i = 0; i < this._YM3526Type.length; i++)
-                setting._YM3526Type[i] = this._YM3526Type[i].copy();
+                setting._YM3526Type[i] = this._YM3526Type[i].clone();
         }
 
         setting._YM3812Type = null;
         if (this._YM3812Type != null) {
             setting._YM3812Type = new ChipType2[this._YM3812Type.length];
             for (int i = 0; i < this._YM3812Type.length; i++)
-                setting._YM3812Type[i] = this._YM3812Type[i].copy();
+                setting._YM3812Type[i] = this._YM3812Type[i].clone();
         }
 
         setting.ymf262Type = null;
         if (this.ymf262Type != null) {
             setting.ymf262Type = new ChipType2[this.ymf262Type.length];
             for (int i = 0; i < this.ymf262Type.length; i++)
-                setting.ymf262Type[i] = this.ymf262Type[i].copy();
+                setting.ymf262Type[i] = this.ymf262Type[i].clone();
         }
 
         setting._SN76489Type = null;
         if (this._SN76489Type != null) {
             setting._SN76489Type = new ChipType2[this._SN76489Type.length];
             for (int i = 0; i < this._SN76489Type.length; i++)
-                setting._SN76489Type[i] = this._SN76489Type[i].copy();
+                setting._SN76489Type[i] = this._SN76489Type[i].clone();
         }
 
         setting._C140Type = null;
         if (this._C140Type != null) {
             setting._C140Type = new ChipType2[this._C140Type.length];
             for (int i = 0; i < this._C140Type.length; i++)
-                setting._C140Type[i] = this._C140Type[i].copy();
+                setting._C140Type[i] = this._C140Type[i].clone();
         }
 
         setting._SEGAPCMType = null;
         if (this._SEGAPCMType != null) {
             setting._SEGAPCMType = new ChipType2[this._SEGAPCMType.length];
             for (int i = 0; i < this._SEGAPCMType.length; i++)
-                setting._SEGAPCMType[i] = this._SEGAPCMType[i].copy();
+                setting._SEGAPCMType[i] = this._SEGAPCMType[i].clone();
         }
 
         setting.unuseRealChip = this.unuseRealChip;
         setting.fileSearchPathList = this.fileSearchPathList;
 
-//        setting._YM2151SType = this._YM2151SType.copy();
-//        setting._YM2203SType = this._YM2203SType.copy();
-//        setting._YM2413SType = this._YM2413SType.copy();
-//        setting._AY8910SType = this._AY8910SType.copy();
-//        setting._YM2608SType = this._YM2608SType.copy();
-//        setting._YM2610SType = this._YM2610SType.copy();
-//        setting._YM2612SType = this._YM2612SType.copy();
-//        setting._YM3526SType = this._YM3526SType.copy();
-//        setting._YM3812SType = this._YM3812SType.copy();
-//        setting._YMF262SType = this._YMF262SType.copy();
-//        setting._SN76489SType = this._SN76489SType.copy();
-//        setting._C140SType = this._C140SType.copy();
-//        setting._SEGAPCMSType = this._SEGAPCMSType.copy();
+//        setting._YM2151SType = this._YM2151SType.clone();
+//        setting._YM2203SType = this._YM2203SType.clone();
+//        setting._YM2413SType = this._YM2413SType.clone();
+//        setting._AY8910SType = this._AY8910SType.clone();
+//        setting._YM2608SType = this._YM2608SType.clone();
+//        setting._YM2610SType = this._YM2610SType.clone();
+//        setting._YM2612SType = this._YM2612SType.clone();
+//        setting._YM3526SType = this._YM3526SType.clone();
+//        setting._YM3812SType = this._YM3812SType.clone();
+//        setting._YMF262SType = this._YMF262SType.clone();
+//        setting._SN76489SType = this._SN76489SType.clone();
+//        setting._C140SType = this._C140SType.clone();
+//        setting._SEGAPCMSType = this._SEGAPCMSType.clone();
 
-        setting.other = this.other.copy();
-        setting.balance = this.balance.copy();
+        setting.other = this.other.clone();
+        setting.balance = this.balance.clone();
         setting.latencyEmulation = this.latencyEmulation;
         setting.latencySCCI = this.latencySCCI;
         setting.debugDispFrameCounter = this.debugDispFrameCounter;
         setting.hiyorimiMode = this.hiyorimiMode;
-        setting.location = this.location.copy();
-        setting.midiExport = this.midiExport.copy();
-        setting.midiKbd = this.midiKbd.copy();
-//        setting.vst = this.vst.copy();
-        setting.midiOut = this.midiOut.copy();
-        setting.nsf = this.nsf.copy();
-        setting.sid = this.sid.copy();
-        setting.nukedOPN2 = this.nukedOPN2.copy();
-        setting.autoBalance = this.autoBalance.copy();
-        setting.pmdDotNET = this.pmdDotNET.copy();
+        setting.location = this.location.clone();
+        setting.midiExport = this.midiExport.clone();
+        setting.midiKbd = this.midiKbd.clone();
+//        setting.vst = this.vst.clone();
+        setting.midiOut = this.midiOut.clone();
+        setting.nsf = this.nsf.clone();
+        setting.sid = this.sid.clone();
+        setting.nukedOPN2 = this.nukedOPN2.clone();
+        setting.autoBalance = this.autoBalance.clone();
+        setting.pmdDotNET = this.pmdDotNET.clone();
 
-        setting._keyBoardHook = this._keyBoardHook.copy();
+        setting._keyBoardHook = this._keyBoardHook.clone();
 
         return setting;
     }

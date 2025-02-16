@@ -92,11 +92,11 @@ public class Km6280 {
 
         public static final int BASE_OF_ZERO = 0x2000;
 
-        public static final int VEC_RESET = 0xffFE;
-        public static final int VEC_NMI = 0xffFC;
-        public static final int VEC_TIMER = 0xffFA;
-        public static final int VEC_INT1 = 0xffF8;
-        public static final int VEC_INT = 0xffF6;
+        public static final int VEC_RESET = 0xfffe;
+        public static final int VEC_NMI = 0xfffc;
+        public static final int VEC_TIMER = 0xfffa;
+        public static final int VEC_INT1 = 0xfff8;
+        public static final int VEC_INT = 0xfff6;
 
         public static final int VEC_BRK = VEC_INT;
 
@@ -184,13 +184,13 @@ public class Km6280 {
 
         public int KI_READWORD(int adr) {
             int ret = readK(adr);
-            int i = ret + (readK((adr + 1) & 0xffff) << 8);
+            int i = (ret + (readK((adr + 1) & 0xffff) << 8)) & 0xffff;;
             return i;
         }
 
         public int KI_READWORDZP(int adr) {
             int ret = readK(BASE_OF_ZERO + adr);
-            return ret + (readK(BASE_OF_ZERO + ((adr + 1) & 0xff)) << 8);
+            return (ret + (readK(BASE_OF_ZERO + ((adr + 1) & 0xff)) << 8)) & 0xffff;
         }
 
         public int KAI_IMM() {
@@ -279,22 +279,24 @@ public class Km6280 {
 
         public void KM_ALUADDER(int src) {
             int w = this.a + src + (this.p & C_FLAG);
-            this.p &= ~(int) (N_FLAG | V_FLAG | Z_FLAG | C_FLAG | T_FLAG);
+            this.p &= ~(N_FLAG | V_FLAG | Z_FLAG | C_FLAG | T_FLAG);
             this.p += FLAG_NZC(w)
                     + ((((~this.a ^ src) & (this.a ^ w)) >> 1) & V_FLAG);
+            this.p &= 0xff;
             this.a = w & 0xff;
         }
 
         public void KM_ALUADDER_D(int src) {
             int wl = (this.a & 0x0F) + (src & 0x0F) + (this.p & C_FLAG);
             int w = this.a + src + (this.p & C_FLAG);
-            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p &= ~(N_FLAG | Z_FLAG | C_FLAG);
             if (wl > 0x9) w += 0x6;
             if (w > 0x9F) {
                 this.p += C_FLAG;
                 w += 0x60;
             }
             this.p += FLAG_NZ(w);
+            this.p &= 0xff;
             this.a = w & 0xff;
             KI_ADDCLOCK(1);
         }
@@ -317,92 +319,105 @@ public class Km6280 {
 
         public void KM_CMP(int src) {
             int w = this.a + (src ^ 0xff) + 1;
-            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p &= ~(N_FLAG | Z_FLAG | C_FLAG);
             this.p += FLAG_NZC(w);
+            this.p &= 0xff;
         }
 
         public void KM_CPX(int src) {
             int w = this.x + (src ^ 0xff) + 1;
-            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p &= ~(N_FLAG | Z_FLAG | C_FLAG);
             this.p += FLAG_NZC(w);
+            this.p &= 0xff;
         }
 
         public void KM_CPY(int src) {
             int w = this.y + (src ^ 0xff) + 1;
-            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p &= ~(N_FLAG | Z_FLAG | C_FLAG);
             this.p += FLAG_NZC(w);
+            this.p &= 0xff;
         }
 
         public void KM_BIT(int src) {
             int w = this.a & src;
-            this.p &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
+            this.p &= ~(N_FLAG | V_FLAG | Z_FLAG);
             this.p += (src & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
+            this.p &= 0xff;
         }
 
         public void KM_AND(int src) {
             this.a &= src;
-            this.p &= ~(int) (N_FLAG | Z_FLAG | T_FLAG);
+            this.p &= ~(N_FLAG | Z_FLAG | T_FLAG);
             this.p += FLAG_NZ(this.a);
+            this.p &= 0xff;
         }
 
         public void KM_ORA(int src) {
             this.a |= src;
-            this.p &= ~(int) (N_FLAG | Z_FLAG | T_FLAG);
+            this.p &= ~(N_FLAG | Z_FLAG | T_FLAG);
             this.p += FLAG_NZ(this.a);
+            this.p &= 0xff;
         }
 
         public void KM_EOR(int src) {
             this.a ^= src;
-            this.p &= ~(int) (N_FLAG | Z_FLAG | T_FLAG);
+            this.p &= ~(N_FLAG | Z_FLAG | T_FLAG);
             this.p += FLAG_NZ(this.a);
+            this.p &= 0xff;
         }
 
         public int KM_DEC(int des) {
             int w = des - 1;
-            this.p &= ~(int) (N_FLAG | Z_FLAG);
+            this.p &= ~(N_FLAG | Z_FLAG);
             this.p += FLAG_NZ(w);
+            this.p &= 0xff;
             return w & 0xff;
         }
 
         public int KM_INC(int des) {
             int w = des + 1;
-            this.p &= ~(int) (N_FLAG | Z_FLAG);
+            this.p &= ~(N_FLAG | Z_FLAG);
             this.p += FLAG_NZ(w);
+            this.p &= 0xff;
             return w & 0xff;
         }
 
         public int KM_ASL(int des) {
             int w = des << 1;
-            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
-            this.p += FLAG_NZ(w) + ((des >> 7)/* & C_FLAG*/);
+            this.p &= ~(N_FLAG | Z_FLAG | C_FLAG);
+            this.p += FLAG_NZ(w) + ((des >> 7) /* & C_FLAG*/);
+            this.p &= 0xff;
             return w & 0xff;
         }
 
         public int KM_LSR(int des) {
             int w = des >> 1;
-            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p &= ~(N_FLAG | Z_FLAG | C_FLAG);
             this.p += FLAG_NZ(w) + (des & C_FLAG);
             return w;
         }
 
         public int KM_LD(int src) {
-            this.p &= ~(int) (N_FLAG | Z_FLAG);
+            this.p &= ~(N_FLAG | Z_FLAG);
             this.p += FLAG_NZ(src);
+            this.p &= 0xff;
             return src;
         }
 
         public int KM_ROL(int des) {
             int w = (des << 1) + (this.p & C_FLAG);
-            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
-            this.p += FLAG_NZ(w) + ((des >> 7)/* & C_FLAG*/);
+            this.p &= ~(N_FLAG | Z_FLAG | C_FLAG);
+            this.p += FLAG_NZ(w) + ((des >> 7) /* & C_FLAG */);
+            this.p &= 0xff;
             return (w) & 0xff;
         }
 
         public int KM_ROR(int des) {
             int w = (des >> 1) + ((this.p & C_FLAG) << 7);
-            this.p &= ~(int) (N_FLAG | Z_FLAG | C_FLAG);
+            this.p &= ~(N_FLAG | Z_FLAG | C_FLAG);
             this.p += FLAG_NZ(w) + (des & C_FLAG);
-            return (w) & 0xff;
+            this.p &= 0xff;
+            return w & 0xff;
         }
 
         public void KM_BRA(int rel) {
@@ -422,14 +437,14 @@ public class Km6280 {
 
         public int KM_TSB(int mem) {
             int w = this.a | mem;
-            this.p &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
+            this.p &= ~(N_FLAG | V_FLAG | Z_FLAG);
             this.p += (mem & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
             return w;
         }
 
         public int KM_TRB(int mem) {
             int w = (this.a ^ 0xff) & mem;
-            this.p &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
+            this.p &= ~(N_FLAG | V_FLAG | Z_FLAG);
             this.p += (mem & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
             return w;
         }
@@ -448,7 +463,7 @@ public class Km6280 {
 
         public void KM_TST(int imm, int mem) {
             int w = imm & mem;
-            this.p &= ~(int) (N_FLAG | V_FLAG | Z_FLAG);
+            this.p &= ~(N_FLAG | V_FLAG | Z_FLAG);
             this.p += (mem & (N_FLAG | V_FLAG)) + (w != 0 ? 0 : Z_FLAG);
         }
 
@@ -953,22 +968,22 @@ public class Km6280 {
 
         /* --- CLC --- */
         public void Opcode18() { // 18 - CLC
-            this.p &= ~(int) C_FLAG;
+            this.p &= ~C_FLAG;
         }
 
         /* --- CLD --- */
         public void OpcodeD8() { // D8 - CLD
-            this.p &= ~(int) D_FLAG;
+            this.p &= ~D_FLAG;
         }
 
         /* --- CLI --- */
         public void Opcode58() { // 58 - CLI
-            this.p &= ~(int) I_FLAG;
+            this.p &= ~I_FLAG;
         }
 
         /* --- CLV --- */
         public void OpcodeB8() { // B8 - CLV
-            this.p &= ~(int) V_FLAG;
+            this.p &= ~V_FLAG;
         }
 
         /* --- CMP --- */
@@ -2937,7 +2952,7 @@ public class Km6280 {
                     KM_PUSH(this.p | R_FLAG | B_FLAG);
 //#if BUILD_M65C02 || BUILD_HUC6280
                     this.p = (this.p & ~(D_FLAG | T_FLAG)) | I_FLAG;
-                    this.iRequest &= ~(int) IRQ_NMI;
+                    this.iRequest &= ~IRQ_NMI;
 //#else
 //                    __THIS__.p = (__THIS__.p & ~T_FLAG) | I_FLAG;   // 6502 bug
 //                    __THIS__.iRequest &= ~(IRQ_NMI | IRQ_BRK);
@@ -2953,7 +2968,7 @@ public class Km6280 {
 //#else
 //                    __THIS__.p = (__THIS__.p & ~T_FLAG) | I_FLAG;   // 6502 bug
 //#endif
-                    this.iRequest &= ~(int) IRQ_BRK;
+                    this.iRequest &= ~IRQ_BRK;
                     this.pc = KI_READWORD(VEC_BRK);
                     KI_ADDCLOCK(7);
                 } else if ((this.p & I_FLAG) != 0) {

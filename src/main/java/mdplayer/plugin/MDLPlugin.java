@@ -85,7 +85,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 //        audio.chipRegister.setYM2608Register(0, 0, 0x29, 0x82, EnmModel.RealModel);
 //        audio.chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.VirtualModel);
 //        audio.chipRegister.setYM2608Register(1, 0, 0x29, 0x82, EnmModel.RealModel);
-//        audio.chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); // Psg TONE でリセット
+//        audio.chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.VirtualModel); // Reset with Psg TONE
 //        audio.chipRegister.setYM2608Register(0, 0, 0x07, 0x38, EnmModel.RealModel);
 //        audio.chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.VirtualModel);
 //        audio.chipRegister.setYM2608Register(0, 0, 0x08, 0x00, EnmModel.RealModel);

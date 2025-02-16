@@ -303,7 +303,7 @@ public class frmNESDMC extends frmBase {
                 return;
             }
 
-            //鍵盤
+            // keyboard
             if (py < 7 * 8) {
                 if (ev.getButton() == MouseEvent.BUTTON2) {
                     for (int i = 0; i < 5; i++) {

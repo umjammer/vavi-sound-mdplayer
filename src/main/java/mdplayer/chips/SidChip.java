@@ -8,7 +8,7 @@ package mdplayer.chips;
 
 import mdplayer.Audio;
 import mdplayer.Chip;
-import mdplayer.driver.sid.Sid;
+import mdplayer.driver.sid.SidDriver;
 import mdsound.Instrument;
 
 
@@ -20,7 +20,7 @@ import mdsound.Instrument;
  */
 public class SidChip implements Chip {
 
-    public Sid SID;
+    public SidDriver sid;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -41,8 +41,12 @@ public class SidChip implements Chip {
     }
 
     public Integer[] read(int chipId) {
-        if (SID == null)
+        if (sid == null)
             return null;
-        return SID.GetRegisterFromSid()[chipId];
+        return sid.getRegisterFromSid()[chipId];
+    }
+
+    public void setDriver(SidDriver driver) {
+        this.sid = driver;
     }
 }

@@ -45,6 +45,10 @@ public class Ym2151Chip implements Chip {
     public final int[] amd = {-1, -1};
     public final int[] pmd = {-1, -1};
 
+    private final boolean[] use4MYM2151scci = { false, false };
+
+    public boolean[] getUse4MYM2151scci() { return use4MYM2151scci; };
+
     private Audio context;
 
     @Override

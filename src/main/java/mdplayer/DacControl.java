@@ -239,34 +239,34 @@ public class DacControl {
             // Support for the important chips
             case 0x02: // Ym2612 (16-bit Register (actually 9 Bit), 8-bit data)
                 port = (dstCommand & 0xff00) >> 8;
-                command = dstCommand & 0x00FF;
+                command = dstCommand & 0x00ff;
                 data = this.data[(dataStart + realPos)];
                 //if (model == enmModel.RealModel) logger.log(Level.DEBUG, "%x %x".formatted(data, chips.RealPos)));
 
                 writeChipReg(dstChipType2, dstChipID, port, command, data);
                 break;
             case 0x11: // PWM (4-bit Register, 12-bit data)
-                port = dstCommand & 0x000F;
+                port = dstCommand & 0x000f;
                 command = this.data[dataStart + realPos + 1] & 0x0F;
                 data = this.data[dataStart + realPos];
                 writeChipReg(dstChipType2, dstChipID, port, command, data);
                 break;
             // Support for other chips (mainly for completeness)
             case 0x00: // SN76496 (4-bit Register, 4-bit/10-bit data)
-                command = dstCommand & 0x00F0;
+                command = dstCommand & 0x00f0;
                 data = this.data[dataStart + realPos] & 0x0F;
                 if ((command & 0x10) != 0) {
                     // Volume Change (4-Bit value)
                     writeChipReg(dstChipType2, dstChipID, 0x00, 0x00, command | data);
                 } else {
                     // Frequency Write (10-Bit value)
-                    port = ((this.data[dataStart + realPos + 1] & 0x03) << 4) | ((this.data[dataStart + realPos] & 0xF0) >> 4);
+                    port = ((this.data[dataStart + realPos + 1] & 0x03) << 4) | ((this.data[dataStart + realPos] & 0xf0) >> 4);
                     writeChipReg(dstChipType2, dstChipID, 0x00, 0x00, command | data);
                     writeChipReg(dstChipType2, dstChipID, 0x00, 0x00, port);
                 }
                 break;
             case 0x18: // OKIM6295 - TODO: verify
-                command = dstCommand & 0x00FF;
+                command = dstCommand & 0x00ff;
                 data = this.data[dataStart + realPos];
 
                 if (command == 0) {

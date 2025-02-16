@@ -47,6 +47,7 @@ public interface FileFormat {
      * @return {@link UnknownFileFormat} when not found
      */
     static FileFormat getFileFormat(String filename) {
+        assert filename != null : "specify file name";
         ServiceLoader<FileFormat> loader = ServiceLoader.load(FileFormat.class);
         for (FileFormat e : loader) {
             if (e.getExtensions() != null) {

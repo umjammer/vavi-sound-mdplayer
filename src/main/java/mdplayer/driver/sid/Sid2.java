@@ -1,48 +1,67 @@
+/*
+ * Copyright (c) 2025 by Naohide Sano, All rights reserved.
+ *
+ * Programmed by Naohide Sano
+ */
+
 package mdplayer.driver.sid;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
+import libsidplay.common.SamplingRate;
+import libsidplay.config.IConfig;
+import libsidplay.sidtune.SidTune;
+import libsidplay.sidtune.SidTuneError;
+import libsidplay.sidtune.SidTuneInfo;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.SidChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.sid.libsidplayfp.SidEmu;
-import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.ReSidBuilder;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo.Model;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
 import mdplayer.plugin.BasePlugin;
 import mdsound.VisWaveBuffer;
+import sidplay.Player;
+import sidplay.audio.Audio;
+import sidplay.audio.AudioDriver;
+import sidplay.audio.JWAVDriver.JWAVStreamDriver;
+import sidplay.ini.IniConfig;
+import sidplay.player.State;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
 
 
-public class Sid extends BaseDriver implements SidDriver {
+/**
+ * Sid2.
+ *
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
+ * @version 0.00 2025-02-16 nsano initial version <br>
+ */
+public class Sid2 extends BaseDriver implements SidDriver {
 
-    private static final Logger logger = getLogger(Sid.class.getName());
+    private static final Logger logger = getLogger(Sid2.class.getName());
 
     private static final int FCC_PSID = 0x44495350;
     private static final int FCC_RSID = 0x44495352;
     public int songs;
     private int song;
 
-    private playSidFp engine;
-    private boolean initial = false;
-
-    private SidConfig cfg;
+    private SidTune sidTune;
+    private Player sidPlayer;
+    private IConfig sidConfig;
     private SidTuneInfo tuneInfo;
 
     @Override
@@ -116,10 +135,7 @@ public class Sid extends BaseDriver implements SidDriver {
 
         gd3 = getGD3Info(vgmBuf);
 
-        init(vgmBuf);
-        initial = true;
-
-        return true;
+        return init(vgmBuf);
     }
 
     @Override
@@ -146,35 +162,51 @@ public class Sid extends BaseDriver implements SidDriver {
         }
     }
 
-    @Override
-    public int render(short[] b, int offset, int length) {
-        if (!initial) {
-            return length;
-        }
-//        vstDelta = 0;
+    private final BlockingDeque<Short> deque = new LinkedBlockingDeque<>(Integer.MAX_VALUE);
 
-        if (vgmFrameCounter < 0) {
-            vgmFrameCounter += length / 2;
-            return length;
+    private final OutputStream os = new OutputStream() {
+        @Override
+        public void write(int b) throws IOException {
+            byte[] buf = new byte[] {(byte) b};
+            write(buf, 0, 1);
         }
 
-        plugin.audio.chipRegister.chip(SidChip.class).sid = this;
-        engine.fastForward(100);
-        engine.play(b, length);
-        for (int i = 0; i < length / 2; i++) {
-            processOneFrame();
-            visWB.enq(b[i * 2 + 0], b[i * 2 + 1]);
+        private byte[] bb;
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            try {
+                byte[] x;
+                if (bb != null) {
+                    x = new byte[len + bb.length];
+                    System.arraycopy(bb, 0, x, 0, bb.length);
+                    System.arraycopy(b, off, x, bb.length, len);
+                    off = 0;
+                    len = x.length;
+                } else {
+                    x = b;
+                }
+                for (int i = 0; i < len / 4; i++) {
+                    deque.offer(ByteUtil.readLeShort(x, off + i * 4 + 0));
+                    deque.offer(ByteUtil.readLeShort(x, off + i * 4 + 2));
+                }
+                int mod = x.length % 4;
+                if (mod != 0) {
+                    bb = new byte[mod];
+                    System.arraycopy(x, x.length - mod, bb, 0, mod);
+                }
+                else bb = null;
+            } catch (Exception e) {
+                logger.log(Level.ERROR, e.getMessage(), e);
+            }
         }
+    };
 
-        return length;
-    }
+    private boolean init(byte[] vgmBuf) {
 
-    private void init(byte[] vgmBuf) {
-        SidEmu.Output.outputBufferSize = setting.getSid().outputBufferSize;
-
-        byte[] aryKernel = null;
-        byte[] aryBasic = null;
-        byte[] aryCharacter = null;
+        byte[] aryKernel;
+        byte[] aryBasic;
+        byte[] aryCharacter;
         if (File.exists(setting.getSid().romKernalPath))
             try (FileStream fs = new FileStream(setting.getSid().romKernalPath, FileMode.Open, FileAccess.Read)) {
                 aryKernel = new byte[(int) fs.getLength()];
@@ -191,73 +223,53 @@ public class Sid extends BaseDriver implements SidDriver {
                 fs.read(aryCharacter, 0, aryCharacter.length);
             }
 
-        engine = new playSidFp(setting.getOutputDevice().getSampleRate());
-        engine.debug(false, null);
-        engine.setRoms(aryKernel, aryBasic, aryCharacter);
+        try {
+            sidTune = SidTune.load("mdsound", new ByteArrayInputStream(vgmBuf));
 
-        ReSidBuilder rs = new ReSidBuilder("ReSid", setting);
+            sidConfig = new IniConfig();
+            sidConfig.getAudioSection().setAudio(Audio.STREAM);
+            SamplingRate samplingRate = SamplingRate.getByFrequency(setting.getOutputDevice().getSampleRate());
+logger.log(Level.TRACE, "sampleRate: " + setting.getOutputDevice().getSampleRate());
+            sidConfig.getAudioSection().setSamplingRate(samplingRate);
 
-        int maxSids = (engine.info()).maxsids();
-        rs.create(maxSids);
+            sidPlayer = new Player(sidConfig);
+            sidPlayer.setTune(sidTune);
 
-        SidTune tune = new SidTune(vgmBuf, vgmBuf.length);
-        tune.selectSong(song);
+            AudioDriver audioDriver = sidConfig.getAudioSection().getAudio().getAudioDriver();
+logger.log(Level.TRACE, "audioDriver: " + audioDriver);
+            if (!(audioDriver instanceof JWAVStreamDriver streamDriver)) {
+                throw new IllegalStateException("unsupported audio driver: " + audioDriver);
+            }
 
-        if (!engine.load(tune)) {
-            logger.log(Level.TRACE, "Error: " + engine.error());
-            return;
+            streamDriver.setOut(os);
+
+            sidPlayer.play(sidTune);
+            while (sidPlayer.stateProperty().get() != State.PLAY) {
+                try { Thread.sleep(10L); } catch (InterruptedException ex) { /* noop */ }
+            }
+
+            // Get tune details
+            tuneInfo = sidTune.getInfo();
+        } catch (IOException | SidTuneError e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+            return false;
         }
 
-        // Get tune details
-        tuneInfo = tune.getInfo();
-//        if (!m_track.single)
-//            m_track.songs = (short)tuneInfo.songs();
-//        if (!createOutput(m_driver.Output, tuneInfo))
-//            return false;
-//        if (!createSidEmu(m_driver.Sid))
-//            return false;
+        plugin.audio.chipRegister.chip(SidChip.class).setDriver(this);
 
-        cfg = new SidConfig(setting.getOutputDevice().getSampleRate());
-        cfg.frequency = setting.getOutputDevice().getSampleRate();
-        cfg.samplingMethod = (setting.getSid().quality & 2) == 0 ? SidConfig.SamplingMethod.INTERPOLATE : SidConfig.SamplingMethod.RESAMPLE_INTERPOLATE;
-        cfg.fastSampling = (setting.getSid().quality & 1) == 0;
-        cfg.playback = SidConfig.Playback.STEREO;
-        cfg.defaultC64Model = setting.getSid().c64model == 0 ? SidConfig.C64Model.PAL : (
-                setting.getSid().c64model == 1 ? SidConfig.C64Model.NTSC : (
-                        setting.getSid().c64model == 2 ? SidConfig.C64Model.OLD_NTSC : (
-                                setting.getSid().c64model == 3 ? SidConfig.C64Model.DREAN : SidConfig.C64Model.PAL)));
-        cfg.defaultSidModel = setting.getSid().sidModel == 0 ? SidConfig.SidModel.MOS6581 : (
-                setting.getSid().sidModel == 1 ? SidConfig.SidModel.MOS8580 : SidConfig.SidModel.MOS6581);
-        cfg.forceC64Model = setting.getSid().c64modelForce; // Force use of defaultC64Model
-        cfg.forceSidModel = setting.getSid().sidmodelForce; // Whether to force the use of defaultSidModel
-
-        cfg.sidEmulation = rs;
-
-        if (!engine.config(cfg)) {
-            logger.log(Level.TRACE, "Error: " + engine.error());
-        }
+        return true;
     }
 
     VisWaveBuffer visWB = new VisWaveBuffer();
 
     @Override
     public Integer[][] getRegisterFromSid() {
-        if (engine == null) return null;
-        return engine.getSidRegister();
+        return null;
     }
 
     @Override
     public Map<String, Object> getInfo() {
-        Function<Integer, Model> f = i -> tuneInfo.sidModel(i);
-        return Map.of(
-            "LoadAddr", tuneInfo.loadAddr(),
-            "InitAddress", tuneInfo.initAddr(),
-            "PlayAddress", tuneInfo.playAddr(),
-            "sidModel", f,
-            "ClockSpeed", tuneInfo.clockSpeed(),
-            "defaultSidModel", cfg.defaultSidModel,
-            "SpeedString", engine.info().getSpeedString()
-        );
+        return Map.of();
     }
 
     @Override
@@ -265,8 +277,41 @@ public class Sid extends BaseDriver implements SidDriver {
         this.song = songNo;
     }
 
+int CC;
+static final int INTERVAL = 1024;
+
+    @Override
+    public int render(short[] buffer, int offset, int sampleCount) {
+        if (vgmFrameCounter < 0) {
+            vgmFrameCounter += sampleCount / 2;
+            return sampleCount;
+        }
+
+        int c = 0;
+
+        try {
+            for (int i = 0; i < sampleCount / 2 && !deque.isEmpty(); i++) {
+                processOneFrame();
+                buffer[c + 0] = deque.take();
+                buffer[c + 1] = deque.take();
+if (CC++ % INTERVAL == 0) { logger.log(Level.DEBUG, "SID: %d, %d".formatted(buffer[c + 0], buffer[c + 1])); }
+                visWB.enq(buffer[c + 0], buffer[c + 1]);
+                c += 2;
+            }
+        } catch (InterruptedException e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+
+        return c;
+    }
+
     @Override
     public void copyWaveBuffer(short[][] dest) {
         visWB.copy(dest);
+    }
+
+    @Override
+    public boolean isNotRenderingOnPause() {
+        return true;
     }
 }

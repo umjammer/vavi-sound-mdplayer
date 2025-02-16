@@ -49,7 +49,7 @@ public class VGMFileFormat extends BaseFileFormat {
 
     @Override
     public byte[] getAllBytes(String filename) {
-        // .VGMの場合はヘッダの確認とGzipで解凍後のファイルのヘッダの確認
+        // For .VGM, check the header and the header of the file after decompression with Gzip
         byte[] buf = super.getAllBytes(filename);
         int vgm = ByteUtil.readLeInt(buf);
         if (vgm == FCC_VGM) {
@@ -57,17 +57,17 @@ public class VGMFileFormat extends BaseFileFormat {
         }
 
         int num;
-        buf = new byte[1024]; // 1Kbytesずつ処理する
+        buf = new byte[1024]; // Process 1Kbytes at a time
 
-        try (FileStream inStream // 入力ストリーム
+        try (FileStream inStream // Input Stream
                      = new FileStream(filename, FileMode.Open, FileAccess.Read);
 
-             GZipStream decompStream // 解凍ストリーム
+             GZipStream decompStream // Decompressed Stream
                      = new GZipStream(
-                     inStream, // 入力元となるストリームを指定
-                     CompressionMode.Decompress); // 解凍（圧縮解除）を指定
+                     inStream, // Specify the input source stream
+                     CompressionMode.Decompress); // Specify decompression (uncompression)
 
-             MemoryStream outStream // 出力ストリーム
+             MemoryStream outStream // Output Stream
                      = new MemoryStream()
 
         ) {

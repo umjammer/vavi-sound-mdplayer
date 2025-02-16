@@ -38,6 +38,7 @@ import musicDriverInterface.IDriver;
 import musicDriverInterface.MmlDatum;
 import musicDriverInterface.Tag;
 import vavi.util.ByteUtil;
+import vavi.util.StringUtil;
 
 import static java.lang.System.getLogger;
 
@@ -116,7 +117,7 @@ public class MucomJava extends BaseDriver {
                 || buf[2] != 'P'
                 || buf[3] != 'b') {
             // Unknown files
-logger.log(Level.WARNING, "Extended mub file?");
+logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
             return null;
         }
 

@@ -11,24 +11,24 @@ public class Depend {
     public static final int CLR = 0;
 
     public static short getBword(XMemory mm, int a) {
-        return (short) ((mm.readByte(a + 0) * 256) + mm.readByte(a + 1));
+        return (short) (((mm.readByte(a + 0) & 0xff) * 0x100) + (mm.readByte(a + 1) & 0xff));
     }
 
     public static int getBlong(XMemory mm, int a) {
-        return (mm.readByte(a + 0) * 16777216) + (mm.readByte(a + 1) * 65536) +
-                      (mm.readByte(a + 2) * 256) + mm.readByte(a + 3);
+        return ((mm.readByte(a + 0) & 0xff) * 0x1000000) + ((mm.readByte(a + 1) & 0xff) * 0x10000) +
+                      ((mm.readByte(a + 2) & 0xff) * 0x100) + (mm.readByte(a + 3) & 0xff);
     }
 
     public static void putbword(ByteBuffer a, short b) {
-        a.put(0, (byte) (b >> 8));
-        a.put(1, (byte) (b >> 0));
+        a.put(0, (byte) ((b & 0xff00) >> 8));
+        a.put(1, (byte) ((b & 0xff) >> 0));
     }
 
     public static void putblong(XMemory mm, int a, int b) {
-        mm.write(a + 0, (byte) (b >> 24));
-        mm.write(a + 1, (byte) (b >> 16));
-        mm.write(a + 2, (byte) (b >> 8));
-        mm.write(a + 3, (byte) (b >> 0));
+        mm.write(a + 0, (byte) ((b & 0xff000000) >> 24));
+        mm.write(a + 1, (byte) ((b & 0xff0000) >> 16));
+        mm.write(a + 2, (byte) ((b & 0xff00) >> 8));
+        mm.write(a + 3, (byte) ((b & 0xff) >> 0));
     }
 }
 

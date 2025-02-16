@@ -42,7 +42,7 @@ public class DevPsg {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
         reg.setD0_W(_psg_table[reg.getD0_W() / 2]);
         mm.write(reg.a5 + W.makotune, (short) reg.getD0_W());
-        reg.setD2_B(mm.readByte(reg.a6 + Dw.DRV_FLAG2));
+        reg.setD2_B(mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0xff);
         int f = reg.getD2_B() & 1;
         reg.setD2_B(reg.getD2_B() >> 1);
         if (f == 0) {
@@ -59,7 +59,7 @@ public class DevPsg {
         mm.write(reg.a5 + W.freqbase, (short) reg.getD0_W());
         mm.write(reg.a5 + W.freqwork, (short) reg.getD0_W());
         reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
-        reg.setD0_W(reg.getD0_W() + mm.readShort(reg.a5 + W.detune));
+        reg.setD0_W(reg.getD0_W() + (mm.readShort(reg.a5 + W.detune) & 0xffff));
         if ((short) reg.getD0_W() < 0) {
             reg.D0_L = 0;
         }
@@ -72,7 +72,7 @@ public class DevPsg {
         mm.write(reg.a5 + W.freqbase, (short) reg.getD0_W());
         mm.write(reg.a5 + W.freqwork, (short) reg.getD0_W());
         reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
-        reg.setD1_W(mm.readShort(reg.a5 + W.detune));
+        reg.setD1_W(mm.readShort(reg.a5 + W.detune) & 0xffff);
         reg.setD1_W((short) (-(short) reg.getD1_W()));
 
         reg.setD1_W((short) ((short) reg.getD1_W() >> 2));
@@ -82,7 +82,7 @@ public class DevPsg {
     }
 
     public void _set_psg_() {
-        reg.setD0_W(reg.getD0_W() + mm.readShort(reg.a5 + W.detune));
+        reg.setD0_W(reg.getD0_W() + (mm.readShort(reg.a5 + W.detune) & 0xffff));
         if ((short) reg.getD0_W() < 0) {
             reg.D0_L = 0;
         }
@@ -96,10 +96,10 @@ public class DevPsg {
 
     public void _set_psg_bend() {
         mm.write(reg.a5 + W.keycode, (short) reg.getD0_W());
-        reg.setD1_B(mm.readByte(reg.a5 + W.dev));
+        reg.setD1_B(mm.readByte(reg.a5 + W.dev) & 0xff);
         reg.setD1_B(reg.getD1_B() + (int) (byte) reg.getD1_B());
 
-        if (reg.getD0_W() - mm.readShort(reg.a5 + W.tune) == 0) return;
+        if (reg.getD0_W() - (mm.readShort(reg.a5 + W.tune) & 0xffff) == 0) return;
 
         mm.write(reg.a5 + W.tune, (short) reg.getD0_W());
         short sp = (short) reg.getD0_W();
@@ -131,14 +131,14 @@ public class DevPsg {
 
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0xfb));
 
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_sw));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_sw) & 0xff);
         if ((byte) reg.getD0_B() < 0) {
             _psg_env_keyon_();
             return;
         }
 
-        reg.setD0_B(mm.readByte(reg.a5 + W.vol));
-        reg.setD1_B(mm.readByte(reg.a5 + W.track_vol));
+        reg.setD0_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+        reg.setD1_B(mm.readByte(reg.a5 + W.track_vol) & 0xff);
         if ((byte) reg.getD1_B() >= 0) {
             _psg_env_keyon1();
             return;
@@ -161,14 +161,14 @@ public class DevPsg {
     }
 
     public void _psg_env_keyon2() {
-        reg.setD0_B(reg.getD0_B() - mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG));
+        reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG) & 0xff));
         if ((byte) reg.getD0_B() < 0) {
             reg.D0_L = 0;
         }
 
         reg.setD0_W(reg.getD0_W() & 0xf);
         reg.a2 = reg.a5 + W.voltable;
-        reg.setD0_B(mm.readByte(reg.a2 + (int) (short) reg.getD0_W()));
+        reg.setD0_B(mm.readByte(reg.a2 + (int) (short) reg.getD0_W()) & 0xff);
         mm.write(reg.a5 + W.vol2, (byte) reg.getD0_B());
         reg.D1_L = 8;
         mndrv._OPN_WRITE4();
@@ -184,12 +184,12 @@ public class DevPsg {
 
         reg.a0 = mm.readInt(reg.a5 + W.psgenv_adrs);
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_p));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_p) & 0xff);
         reg.setD0_B(reg.getD0_B() & 0xf0);
         mm.write(reg.a5 + W.e_p, (byte) reg.getD0_B());
         mm.write(reg.a5 + W.e_dl, mm.readByte(reg.a0 + (int) (short) reg.getD0_W()));
         reg.D1_L = 0x7f;
-        reg.setD1_B(reg.getD1_B() & mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 1));
+        reg.setD1_B(reg.getD1_B() & (mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 1) & 0xff));
         mm.write(reg.a5 + W.e_sp, (byte) reg.getD1_B());
         mm.write(reg.a5 + W.e_lm, mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 2));
         mm.write(reg.a5 + W.e_ini, mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 3));
@@ -212,7 +212,7 @@ public class DevPsg {
         comwave._wave_init_kof();
         mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x98));
 
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_sw));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_sw) & 0xff);
         if ((byte) reg.getD0_B() >= 0) {
             reg.D0_L = 0;
             reg.D1_L = 8;
@@ -230,12 +230,12 @@ public class DevPsg {
         reg.a0 = mm.readInt(reg.a5 + W.psgenv_adrs);
 
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_p));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_p) & 0xff);
         reg.setD0_B(reg.getD0_B() & 0xf0);
         reg.setD0_B(reg.getD0_B() + 0xc);
         mm.write(reg.a5 + W.e_p, (byte) reg.getD0_B());
         mm.write(reg.a5 + W.e_dl, mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 0));
-        reg.setD1_B(mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 1));
+        reg.setD1_B(mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 1) & 0xff);
         reg.setD1_B(reg.getD1_B() & 0x7f);
         mm.write(reg.a5 + W.e_sp, (byte) reg.getD1_B());
         mm.write(reg.a5 + W.e_lm, mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 2));
@@ -251,7 +251,7 @@ public class DevPsg {
         mm.write(reg.a5 + W.reverb_time_work, mm.readByte(reg.a5 + W.reverb_time));
 
         reg.D5_L = 7;
-        reg.setD5_B(reg.getD5_B() & mm.readByte(reg.a5 + W.reverb));
+        reg.setD5_B(reg.getD5_B() & (mm.readByte(reg.a5 + W.reverb) & 0xff));
         reg.setD5_W(reg.getD5_W() + 1);
         reg.setD5_W(reg.getD5_W() + (int) (short) reg.getD5_W());
         switch (reg.getD5_W()) {
@@ -283,7 +283,7 @@ public class DevPsg {
     }
 
     /**
-     * v通常
+     * v common
      */
     public void _psg_echo_common_v() {
         if ((mm.readByte(reg.a5 + W.reverb) & 0x08) != 0) {
@@ -291,8 +291,8 @@ public class DevPsg {
             return;
         }
 
-        reg.setD0_B(mm.readByte(reg.a5 + W.vol));
-        reg.setD1_B(mm.readByte(reg.a5 + W.reverb_vol));
+        reg.setD0_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+        reg.setD1_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         if ((byte) reg.getD1_B() >= 0) {
             _psg_echo_plus();
             return;
@@ -314,11 +314,11 @@ public class DevPsg {
     }
 
     /**
-     * v微調整
+     * v fine tuning
      */
     public void _psg_echo_volume_v() {
-        reg.setD0_B(mm.readByte(reg.a5 + W.vol));
-        reg.setD1_B(mm.readByte(reg.a5 + W.track_vol));
+        reg.setD0_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+        reg.setD1_B(mm.readByte(reg.a5 + W.track_vol) & 0xff);
         if ((byte) reg.getD1_B() < 0) {
             reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
             if ((byte) reg.getD0_B() < 0) {
@@ -331,12 +331,12 @@ public class DevPsg {
             }
         }
 
-        reg.setD0_B(reg.getD0_B() - mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG));
+        reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG) & 0xff));
         if ((byte) reg.getD0_B() < 0) {
             reg.D0_L = 0;
         }
 
-        reg.setD1_B(mm.readByte(reg.a5 + W.reverb_vol));
+        reg.setD1_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         if ((byte) reg.getD1_B() < 0) {
             _psg_echo_vol_plus();
             return;
@@ -362,10 +362,10 @@ public class DevPsg {
     }
 
     /**
-     * v直接
+     * v direct
      */
     public void _psg_echo_direct_v() {
-        reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol));
+        reg.setD0_B(mm.readByte(reg.a5 + W.reverb_vol) & 0xff);
         _psg_f2_softenv();
     }
 
@@ -382,8 +382,8 @@ public class DevPsg {
         reg.a4 = mm.readInt(reg.a5 + W.psgenv_adrs);
 
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_p));
-        reg.setD1_B(mm.readByte(reg.a4 + (int) (short) reg.getD0_W() + 1));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_p) & 0xff);
+        reg.setD1_B(mm.readByte(reg.a4 + (int) (short) reg.getD0_W() + 1) & 0xff);
         if ((byte) reg.getD1_B() < 0) {
             _psg_env_minus();
             return;
@@ -391,14 +391,14 @@ public class DevPsg {
 
         reg.setD1_B(reg.getD1_B() & 0x7f);
         mm.write(reg.a5 + W.e_sp, (byte) reg.getD1_B());
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_ini));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_ini) & 0xff);
         boolean f = reg.cryADD((byte) reg.getD0_B(), mm.readByte(reg.a5 + W.e_dl));
-        reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a5 + W.e_dl));
+        reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a5 + W.e_dl) & 0xff));
         if (f) {
             _psg_env_common();
             return;
         }
-        if (reg.getD0_B() >= mm.readByte(reg.a5 + W.e_lm)) {
+        if (reg.getD0_B() >= (mm.readByte(reg.a5 + W.e_lm) & 0xff)) {
             _psg_env_common();
             return;
         }
@@ -408,14 +408,14 @@ public class DevPsg {
     public void _psg_env_minus() {
         reg.setD1_B(reg.getD1_B() & 0x7f);
         mm.write(reg.a5 + W.e_sp, (byte) reg.getD1_B());
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_ini));
-        boolean cf = reg.getD0_B() < mm.readByte(reg.a5 + W.e_dl);
-        reg.setD0_B(reg.getD0_B() - mm.readByte(reg.a5 + W.e_dl));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_ini) & 0xff);
+        boolean cf = reg.getD0_B() < (mm.readByte(reg.a5 + W.e_dl) & 0xff);
+        reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a5 + W.e_dl) & 0xff));
         if (cf) {
             _psg_env_common();
             return;
         }
-        if (reg.getD0_B() <= mm.readByte(reg.a5 + W.e_lm)) {
+        if (reg.getD0_B() <= (mm.readByte(reg.a5 + W.e_lm) & 0xff)) {
             _psg_env_common();
             return;
         }
@@ -423,14 +423,14 @@ public class DevPsg {
     }
 
     public void _psg_env_common() {
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_lm));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_lm) & 0xff);
         _psg_volume_set();
         if (mm.readByte(reg.a5 + W.e_ini) == 0) {
             _psg_volume_0();
             return;
         }
 
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_p));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_p) & 0xff);
         if ((reg.D0_L & 0x8) != 0) {
             _psg_volume_0();
             return;
@@ -439,7 +439,7 @@ public class DevPsg {
         mm.write(reg.a5 + W.e_p, (byte) reg.getD0_B());
         mm.write(reg.a5 + W.e_dl, mm.readByte(reg.a4 + (int) (short) reg.getD0_W() + 0));
         reg.D1_L = 0x7f;
-        reg.setD1_B(reg.getD1_B() & mm.readByte(reg.a4 + (int) (short) reg.getD0_W() + 1));
+        reg.setD1_B(reg.getD1_B() & (mm.readByte(reg.a4 + (int) (short) reg.getD0_W() + 1) & 0xff));
         mm.write(reg.a5 + W.e_sp, (byte) reg.getD1_B());
         mm.write(reg.a5 + W.e_lm, mm.readByte(reg.a4 + (int) (short) reg.getD0_W() + 2));
     }
@@ -456,8 +456,8 @@ public class DevPsg {
 
     public void _psg_volume_set2() {
         reg.D1_L = 0;
-        reg.setD1_B(mm.readByte(reg.a5 + W.vol));
-        reg.setD2_B(mm.readByte(reg.a5 + W.track_vol));
+        reg.setD1_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+        reg.setD2_B(mm.readByte(reg.a5 + W.track_vol) & 0xff);
         if ((byte) reg.getD2_B() < 0) {
             reg.setD1_B(reg.getD1_B() + (int) (byte) reg.getD2_B());
             if ((byte) reg.getD1_B() < 0) {
@@ -469,7 +469,7 @@ public class DevPsg {
                 reg.D1_L = 15;
             }
         }
-        reg.setD1_B(reg.getD1_B() - mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG));
+        reg.setD1_B(reg.getD1_B() - (mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG) & 0xff));
         if ((byte) reg.getD1_B() < 0) {
             reg.D1_L = 0;
         }
@@ -483,7 +483,7 @@ public class DevPsg {
 
     public void _psg_volume_set3() {
         reg.a2 = reg.a5 + W.voltable;
-        reg.setD0_B(mm.readByte(reg.a2 + (int) (short) reg.getD0_W()));
+        reg.setD0_B(mm.readByte(reg.a2 + (int) (short) reg.getD0_W()) & 0xff);
 
         if (reg.getD0_B() - mm.readByte(reg.a5 + W.vol2) != 0) {
             mm.write(reg.a5 + W.vol2, (byte) reg.getD0_B());
@@ -497,11 +497,11 @@ public class DevPsg {
     public void _init_lfo_psg() {
         if (mm.readByte(reg.a5 + W.e_sw) >= 0) return;
         if (mm.readByte(reg.a6 + Dw.FADEFLAG) == 0) {
-            reg.setD0_B(mm.readByte(reg.a5 + W.vol));
+            reg.setD0_B(mm.readByte(reg.a5 + W.vol) & 0xff);
             _psg_lfo();
         }
 
-        reg.setD5_B(mm.readByte(reg.a5 + W.lfo));
+        reg.setD5_B(mm.readByte(reg.a5 + W.lfo) & 0xff);
         int f = reg.getD5_B() & 0x40;
         reg.setD5_B(reg.getD5_B() << 2);
         if (f != 0) {
@@ -523,7 +523,7 @@ public class DevPsg {
     }
 
     /**
-     * MML コマンド処理 ( Psg 部 )
+     * MML command processing (PSG section)
      */
     public void _psg_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
@@ -540,7 +540,7 @@ public class DevPsg {
             break; // 82
         case 0x03:
             comcmds._COM_83();
-            break; // 83	Slurs
+            break; // 83 Slurs
         case 0x04:
             _PSG_NOP();
             break; // 84
@@ -549,16 +549,16 @@ public class DevPsg {
             break; // 85
         case 0x06:
             comcmds._COM_86();
-            break; // 86	Synchronization signal transmission
+            break; // 86 Synchronization signal transmission
         case 0x07:
             comcmds._COM_87();
-            break; // 87	同期待ち
+            break; // 87 Synchronization Wait
         case 0x08:
             _PSG_88();
-            break; // 88	Pitch Bend
+            break; // 88 Pitch Bend
         case 0x09:
             _PSG_89();
-            break; // 89	Portamento
+            break; // 89 Portamento
         case 0x0a:
             _PSG_NOP();
             break; // 8A
@@ -580,19 +580,19 @@ public class DevPsg {
 
         case 0x10:
             comcmds._COM_90();
-            break; // 90	q
+            break; // 90 q
         case 0x11:
             comcmds._COM_91();
-            break; // 91	@q
+            break; // 91 @q
         case 0x12:
             _PSG_NOP();
             break; // 92
         case 0x13:
             comcmds._COM_93();
-            break; // 93	neg @q
+            break; // 93 neg @q
         case 0x14:
             comcmds._COM_94();
-            break; // 94	keyoff mode
+            break; // 94 keyoff mode
         case 0x15:
             _PSG_NOP();
             break; // 95
@@ -604,13 +604,13 @@ public class DevPsg {
             break; // 97
         case 0x18:
             _PSG_98();
-            break; // 98	Pseudo reverb
+            break; // 98 Pseudo reverb
         case 0x19:
             _PSG_NOP();
             break; // 99
         case 0x1a:
             comcmds._COM_9A();
-            break; // 9A	擬似 step time
+            break; // 9A Pseudo step time
         case 0x1b:
             _PSG_NOP();
             break; // 9B
@@ -629,16 +629,16 @@ public class DevPsg {
 
         case 0x20:
             _PSG_A0();
-            break; // A0	wavenum
+            break; // A0 wavenum
         case 0x21:
             _PSG_A1();
-            break; // A1	bank + wavenum
+            break; // A1 bank + wavenum
         case 0x22:
             _PSG_A2();
-            break; // A2	書き換え & 再定義
+            break; // A2 Rewrite & Redefine
         case 0x23:
             _PSG_A3();
-            break; // A3	音量テーブル
+            break; // A3 Volume table
         case 0x24:
             _PSG_F2();
             break; // A4
@@ -720,29 +720,29 @@ public class DevPsg {
             break; // BD
         case 0x3e:
             comcmds._COM_BE();
-            break; // BE	Jump
+            break; // BE Jump
         case 0x3f:
             comcmds._COM_BF();
             break; // BF
 
         case 0x40:
             _PSG_C0();
-            break; // C0	ソフトウェアエンベロープ
+            break; // C0 Software Envelope
         case 0x41:
             _PSG_C1();
-            break; // C1	ソフトウェアエンベロープ
+            break; // C1 Software Envelope
         case 0x42:
             _PSG_C2();
-            break; // C2	キーオフボリューム
+            break; // C2 Key Off Volume
         case 0x43:
             _PSG_C3();
-            break; // C3	ソフトウェアエンベロープスイッチ
+            break; // C3 Software Envelope Switch
         case 0x44:
             _PSG_A0();
-            break; // C4	エンベロープ切り替え (@e)
+            break; // C4 Envelope Switching (@e)
         case 0x45:
             _PSG_A1();
-            break; // C5	エンベロープ切り替え (@e bank)
+            break; // C5 Envelope switching (@e bank)
         case 0x46:
             _PSG_NOP();
             break; // C6
@@ -751,10 +751,10 @@ public class DevPsg {
             break; // C7
         case 0x48:
             _PSG_C8();
-            break; // C8	Noise Frequency
+            break; // C8 Noise Frequency
         case 0x49:
             _PSG_C9();
-            break; // C9	 Mixerー
+            break; // C9 Mixer
         case 0x4a:
             _PSG_NOP();
             break; // CA
@@ -772,14 +772,14 @@ public class DevPsg {
             break; // CE
         case 0x4f:
             _PSG_CF();
-            break; // CF	エンベロープ2
+            break; // CF Envelope 2
 
         case 0x50:
             comcmds._COM_D0();
-            break; // D0	Key Transpose
+            break; // D0 Key Transpose
         case 0x51:
             comcmds._COM_D1();
-            break; // D1	Relative Key Transpose
+            break; // D1 Relative Key Transpose
         case 0x52:
             _PSG_NOP();
             break; // D2
@@ -800,10 +800,10 @@ public class DevPsg {
             break; // D7
         case 0x58:
             comcmds._COM_D8();
-            break; // D8	Detune
+            break; // D8 Detune
         case 0x59:
             comcmds._COM_D9();
-            break; // D9	Relative Detune
+            break; // D9 Relative Detune
         case 0x5a:
             _PSG_NOP();
             break; // DA
@@ -831,13 +831,13 @@ public class DevPsg {
             break; // E1
         case 0x62:
             comcmds._COM_E2();
-            break; // E2	pitch LFO
+            break; // E2 pitch LFO
         case 0x63:
             comcmds._COM_E3();
-            break; // E3	pitch LFO switch
+            break; // E3 pitch LFO switch
         case 0x64:
             comcmds._COM_E4();
-            break; // E4	pitch LFO delay
+            break; // E4 pitch LFO delay
         case 0x65:
             _PSG_NOP();
             break; // E5
@@ -846,13 +846,13 @@ public class DevPsg {
             break; // E6
         case 0x67:
             _PSG_E7();
-            break; // E7	amp LFO
+            break; // E7 amp LFO
         case 0x68:
             _PSG_E8();
-            break; // E8	amp LFO switch
+            break; // E8 amp LFO switch
         case 0x69:
             _PSG_E9();
-            break; // E9	amp LFO delay
+            break; // E9 amp LFO delay
         case 0x6a:
             _PSG_NOP();
             break; // EA
@@ -880,19 +880,19 @@ public class DevPsg {
             break; // F1
         case 0x72:
             _PSG_F2();
-            break; // F2	volume
+            break; // F2 volume
         case 0x73:
             comcmds._COM_91();
-            break; // F3	@q
+            break; // F3 @q
         case 0x74:
             _PSG_NOP();
             break; // F4
         case 0x75:
             _PSG_F5();
-            break; // F5	)
+            break; // F5 )
         case 0x76:
             _PSG_F6();
-            break; // F6	(
+            break; // F6 (
         case 0x77:
             _PSG_NOP();
             break; // F7
@@ -901,25 +901,25 @@ public class DevPsg {
             break; // F8
         case 0x79:
             comcmds._COM_F9();
-            break; // F9	Permanent loop point mark
+            break; // F9 Permanent loop point mark
         case 0x7a:
             devopn._FM_FA();
-            break; // FA	y command
+            break; // FA y command
         case 0x7b:
             comcmds._COM_FB();
-            break; // FB	リピート抜け出し
+            break; // FB Exiting from Repeat
         case 0x7c:
             comcmds._COM_FC();
-            break; // FC	リピート開始
+            break; // FC Repeat Start
         case 0x7d:
             comcmds._COM_FD();
-            break; // FD	リピート終端
+            break; // FD Repeat Termination
         case 0x7e:
             comcmds._COM_FE();
-            break; // FE	tempo
+            break; // FE tempo
         case 0x7f:
             _PSG_FF();
-            break; // FF	end of data
+            break; // FF end of data
         }
     }
 
@@ -937,56 +937,60 @@ public class DevPsg {
     }
 
     /**
-     * ピッチベンド
-     * 	[$88] + [目標音程]b + [delay]b + [speed]b + [rate]W
+     * Pitch Bend
+     * <pre>
+     *  [$88] + [Target pitch]b + [delay]b + [speed]b + [rate]W
+     *  </pre>
      */
     public void _PSG_88() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x80));
         reg.a4 = reg.a5 + W.p_pattern4;
 
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a1++));
-        reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a5 + W.key_trans));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
+        reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a5 + W.key_trans) & 0xff));
         mm.write(reg.a5 + W.key2, (byte) reg.getD0_B());
         _get_freq();
         mm.write(reg.a4 + W_L.mokuhyou, (short) reg.getD0_W());
 
-        reg.setD0_B(mm.readByte(reg.a1++));
-        reg.setD1_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
+        reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
         mm.write(reg.a4 + W_L.delay_work, (byte) reg.getD0_B());
         mm.write(reg.a4 + W_L.lfo_sp, (byte) reg.getD1_B());
 
-        reg.setD0_W(mm.readShort(reg.a1));
+        reg.setD0_W(mm.readShort(reg.a1) & 0xffff);
         reg.a1 += 2;
         mm.write(reg.a4 + W_L.henka, (short) reg.getD0_W());
     }
 
     /**
-     * ポルタメント
-     * 	[$89] + [switch]b + [先note]b + [元note]b + [step]b
+     * Portamento
+     * <pre>
+     *  [$89] + [switch]b + [target note]b + [original note]b + [step]b
+     * </pre>
      */
     public void _PSG_89() {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) | 0x80));
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) | 0x02));
         reg.a4 = reg.a5 + W.p_pattern4;
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
 
         _PSG_89_normal();
     }
 
     public void _PSG_89_normal() {
-        reg.setD0_B(mm.readByte(reg.a1++));
-        reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a5 + W.key_trans));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
+        reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a5 + W.key_trans) & 0xff));
         _get_freq();
         reg.setD1_W(reg.getD0_W());
 
-        reg.setD0_B(mm.readByte(reg.a1));
-        reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a5 + W.key_trans));
+        reg.setD0_B(mm.readByte(reg.a1) & 0xff);
+        reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a5 + W.key_trans) & 0xff));
         _get_freq();
 
         reg.D2_L = 0;
-        reg.setD2_B(mm.readByte(reg.a1 + 1));
+        reg.setD2_B(mm.readByte(reg.a1 + 1) & 0xff);
         mm.write(reg.a4 + W_L.count, (byte) reg.getD2_B());
 
         reg.setD1_W(reg.getD1_W() - (int) (short) reg.getD0_W());
@@ -1014,7 +1018,7 @@ public class DevPsg {
             reg.setD1_B(reg.getD1_B() + 1);
         }
         reg.setD0_W(_psg_table[reg.getD0_W()]);
-        reg.setD0_W(reg.getD0_W() + mm.readShort(reg.a5 + W.detune));
+        reg.setD0_W(reg.getD0_W() + mm.readShort(reg.a5 + W.detune) & 0xffff);
         if ((short) reg.getD0_W() < 0) {
             reg.D0_L = 0;
         }
@@ -1027,13 +1031,13 @@ public class DevPsg {
 
     /**
      * Pseudo reverb
-     * 	switch = $80 = ON
-     * 		 $81 = OFF
-     * 		 $00 = + [volume]b
-     * 		 $01 = + [volume]b + [pan]b
-     * 		 $02 = + [volume]b + [tone]b
-     * 		 $03 = + [volume]b + [panpot]b + [tone]b
-     * 		 $04 = + [volume]b
+     *  switch = $80 = ON
+     *    $81 = OFF
+     *    $00 = + [volume]b
+     *    $01 = + [volume]b + [pan]b
+     *    $02 = + [volume]b + [tone]b
+     *    $03 = + [volume]b + [panpot]b + [tone]b
+     *    $04 = + [volume]b
      */
     public void _PSG_98() {
         comcmds._COM_98();
@@ -1044,11 +1048,13 @@ public class DevPsg {
     }
 
     /**
-     * ソフトウェアエンベロープ
-     * 	[$A0] + [NUM]b
+     * Software Envelope
+     * <pre>
+     *  [$A0] + [NUM]b
+     * </pre>
      */
     public void _PSG_A0() {
-        reg.setD5_B(mm.readByte(reg.a1++));
+        reg.setD5_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a5 + W.program, (byte) reg.getD5_B());
 
         reg.D0_L = mm.readInt(reg.a6 + Dw.ENV_PTR);
@@ -1056,23 +1062,23 @@ public class DevPsg {
 
         reg.a2 = reg.D0_L;
         reg.a2 += 6;
-        reg.setD4_W(mm.readShort(reg.a6 + Dw.ENVNUM));
+        reg.setD4_W(mm.readShort(reg.a6 + Dw.ENVNUM) & 0xffff);
         if (reg.getD4_W() == 0) return;
 
-        reg.setD1_B(mm.readByte(reg.a5 + W.bank));
+        reg.setD1_B(mm.readByte(reg.a5 + W.bank) & 0xff);
 // _psg_a0_ana_loop:
         while (true) {
-            if (reg.getD1_B() - mm.readByte(reg.a2 + 2) == 0) {
-                if (reg.getD5_B() - mm.readByte(reg.a2 + 3) == 0) break; // _psg_a0_set;
+            if (reg.getD1_B() - (mm.readByte(reg.a2 + 2) & 0xff) == 0) {
+                if (reg.getD5_B() - (mm.readByte(reg.a2 + 3) & 0xff) == 0) break; // _psg_a0_set;
             }
             reg.setD4_W(reg.getD4_W() - 1);
             if (reg.getD4_W() == 0) return;
-            reg.setD0_W(mm.readShort(reg.a2));
+            reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
             reg.a2 = reg.a2 + (int) (short) reg.getD0_W();
 //            break _psg_a0_ana_loop;
         }
 // _psg_a0_set:
-        reg.setD5_W(mm.readShort(reg.a2));
+        reg.setD5_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.a2 += 2;
 
@@ -1088,11 +1094,11 @@ public class DevPsg {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) | 0x80));
 
         reg.D1_L = 0;
-        reg.setD1_B(mm.readByte(reg.a2++));
+        reg.setD1_B(mm.readByte(reg.a2++) & 0xff);
         if ((byte) reg.getD1_B() >= 0) {
             _psg_c9_();
         }
-        reg.setD0_B(mm.readByte(reg.a2));
+        reg.setD0_B(mm.readByte(reg.a2) & 0xff);
         reg.a2++;
         if ((byte) reg.getD0_B() >= 0) {
             _psg_c8_();
@@ -1103,10 +1109,10 @@ public class DevPsg {
 
             reg.a0 = mm.readInt(reg.a5 + W.psgenv_adrs);
             reg.D0_L = 0;
-            reg.setD0_B(mm.readByte(reg.a5 + W.e_p));
+            reg.setD0_B(mm.readByte(reg.a5 + W.e_p) & 0xff);
             mm.write(reg.a5 + W.e_dl, mm.readByte(reg.a0 + (int) (short) reg.getD0_W()));
             reg.D1_L = 0x7f;
-            reg.setD1_B(reg.getD1_B() & mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 1));
+            reg.setD1_B(reg.getD1_B() & (mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 1) & 0xff));
             mm.write(reg.a5 + W.e_sp, (byte) reg.getD1_B());
 
             mm.write(reg.a5 + W.e_lm, mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 2));
@@ -1147,9 +1153,9 @@ public class DevPsg {
      *
      */
     public void _PSG_A2() {
-        reg.setD1_B(mm.readByte(reg.a1++));
+        reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a5 + W.bank, (byte) reg.getD1_B());
-        reg.setD5_B(mm.readByte(reg.a1++));
+        reg.setD5_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a5 + W.program, (byte) reg.getD5_B());
 
         reg.D0_L = mm.readInt(reg.a6 + Dw.ENV_PTR);
@@ -1157,7 +1163,7 @@ public class DevPsg {
 
         reg.a2 = reg.D0_L;
         reg.a2 += 6;
-        reg.setD4_W(mm.readShort(reg.a6 + Dw.ENVNUM));
+        reg.setD4_W(mm.readShort(reg.a6 + Dw.ENVNUM) & 0xffff);
         if (reg.getD4_W() == 0) return;
 
 // _psg_a2_ana_loop:
@@ -1168,12 +1174,12 @@ public class DevPsg {
             }
             reg.setD4_W(reg.getD4_W() - 1);
             if (reg.getD4_W() == 0) return;
-            reg.setD0_W(mm.readShort(reg.a2));
+            reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
             reg.a2 = reg.a2 + (int) (short) reg.getD0_W();
 //            break _psg_a2_ana_loop;
         }
 // _psg_a2_set:
-        reg.setD5_W(mm.readShort(reg.a2));
+        reg.setD5_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.a2 += 2;
 
@@ -1206,16 +1212,16 @@ public class DevPsg {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) | 0x80));
         reg.a0 = mm.readInt(reg.a5 + W.psgenv_adrs);
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_p));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_p) & 0xff);
         mm.write(reg.a5 + W.e_dl, mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 0));
         reg.D1_L = 0x7f;
-        reg.setD1_B(reg.getD1_B() & mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 1));
+        reg.setD1_B(reg.getD1_B() & (mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 1) & 0xff));
         mm.write(reg.a5 + W.e_sp, (byte) reg.getD1_B());
         mm.write(reg.a5 + W.e_lm, mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 2));
     }
 
     /**
-     * 音量テーブル
+     * Volume table
      */
     public void _PSG_A3() {
         comcmds._COM_A3();
@@ -1223,8 +1229,10 @@ public class DevPsg {
     }
 
     /**
-     * ソフトウェアエンベロープ
-     * 	[$C0] + [SV]b + [AR]b + [DR]b + [SL]b + [SR]b + [RR]b
+     * Software Envelope
+     * <pre>
+     *  [$C0] + [SV]b + [AR]b + [DR]b + [SL]b + [SR]b + [RR]b
+     * </pre>
      */
     public void _PSG_C0() {
         mm.write(reg.a5 + W.program, 0xff);
@@ -1249,10 +1257,10 @@ public class DevPsg {
         reg.a0 = mm.readInt(reg.a5 + W.psgenv_adrs);
 
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_p));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_p) & 0xff);
         mm.write(reg.a5 + W.e_dl, mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 0));
         reg.D1_L = 0x7f;
-        reg.setD1_B(reg.getD1_B() & mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 1));
+        reg.setD1_B(reg.getD1_B() & (mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 1) & 0xff));
         mm.write(reg.a5 + W.e_sp, (byte) reg.getD1_B());
         mm.write(reg.a5 + W.e_lm, mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 2));
     }
@@ -1262,18 +1270,20 @@ public class DevPsg {
     };
 
     /**
-     * ソフトウェアエンベロープ
-     * 	[$C1] + [AL]b + [DD]b + [SR]b + [RR]b
+     * Software Envelope
+     * <pre>
+     *  [$C1] + [AL]b + [DD]b + [SR]b + [RR]b
+     * </pre>
      */
     public void _PSG_C1() {
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a5 + W.e_al, (byte) reg.getD0_B());
         mm.write(reg.a5 + W.e_alw, (byte) reg.getD0_B());
         mm.write(reg.a5 + W.e_dd, mm.readByte(reg.a1++));
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a5 + W.e_sr, (byte) reg.getD0_B());
         mm.write(reg.a5 + W.e_srw, (byte) reg.getD0_B());
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a5 + W.e_rr, (byte) reg.getD0_B());
         mm.write(reg.a5 + W.e_rrw, (byte) reg.getD0_B());
         mm.write(reg.a5 + W.e_p, 0);
@@ -1288,23 +1298,27 @@ public class DevPsg {
     }
 
     /**
-     * キーオフボリューム
-     * 	[$C2] + [KOV]
+     * Key Off Volume
+     * <pre>
+     *  [$C2] + [KOV]
+     * </pre>
      */
     public void _PSG_C2() {
         reg.a0 = mm.readInt(reg.a5 + W.psgenv_adrs);
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a5 + W.kov, (byte) reg.getD0_B());
         mm.write(reg.a0 + 14, (byte) reg.getD0_B());
     }
 
     /**
-     * ソフトウェアエンベロープスイッチ
-     * 	[$C3] + [switch]
+     * Software Envelope Switch
+     * <pre>
+     *  [$C3] + [switch]
+     * </pre>
      */
     public void _PSG_C3() {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) & 0x7f));
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
 
         if (reg.getD0_B() != 0) {
             mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) | 0x80));
@@ -1312,10 +1326,10 @@ public class DevPsg {
     }
 
     /**
-     * noise 周波数
+     * noise frequency
      */
     public void _PSG_C8() {
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         _psg_c8_();
     }
 
@@ -1330,25 +1344,25 @@ public class DevPsg {
     }
 
     /**
-     *  Mixerー設定
+     * Mixer - Settings
      */
     public void _PSG_C9() {
         reg.D1_L = 0;
-        reg.setD1_B(mm.readByte(reg.a1++));
+        reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         _psg_c9_();
     }
 
     public void _psg_c9_() {
         reg.D3_L = 0;
-        reg.setD3_B(mm.readByte(reg.a5 + W.ch));
-        reg.setD6_B(MnDrv._ch_table[reg.getD3_W() + 0]);
-        reg.setD3_B(MnDrv._ch_table[reg.getD3_W() + 8]);
+        reg.setD3_B(mm.readByte(reg.a5 + W.ch) & 0xff);
+        reg.setD6_B(MnDrv._ch_table[reg.getD3_W() + 0] & 0xff);
+        reg.setD3_B(MnDrv._ch_table[reg.getD3_W() + 8] & 0xff);
 
         if (reg.getD3_B() < 0x30) {
             reg.D0_L = 0;
-            reg.setD0_B(mm.readByte(reg.a6 + Dw.PSGMIX_M));
+            reg.setD0_B(mm.readByte(reg.a6 + Dw.PSGMIX_M) & 0xff);
         } else {
-            reg.setD0_B(mm.readByte(reg.a6 + Dw.PSGMIX_S));
+            reg.setD0_B(mm.readByte(reg.a6 + Dw.PSGMIX_S) & 0xff);
         }
         reg.D2_L = 9;
         reg.setD2_W(reg.getD2_W() << reg.getD6_W());
@@ -1367,23 +1381,23 @@ public class DevPsg {
     }
 
     /**
-     * ソフトウェアエンベロープ
+     * Software Envelope
      */
     public void _PSG_CF() {
         reg.D1_L = 0x1f;
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD0_B(reg.getD0_B() & reg.getD1_B());
         mm.write(reg.a5 + W.eenv_ar, (byte) reg.getD0_B());
 
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD0_B(reg.getD0_B() & reg.getD1_B());
         mm.write(reg.a5 + W.eenv_dr, (byte) reg.getD0_B());
 
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD0_B(reg.getD0_B() & reg.getD1_B());
         mm.write(reg.a5 + W.eenv_sr, (byte) reg.getD0_B());
 
-        reg.setD1_B(mm.readByte(reg.a1++));
+        reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         reg.D0_L = 0xf;
         reg.setD0_B(reg.getD0_B() & reg.getD1_B());
         mm.write(reg.a5 + W.eenv_rr, (byte) reg.getD0_B());
@@ -1393,7 +1407,7 @@ public class DevPsg {
         mm.write(reg.a5 + W.eenv_sl, (byte) reg.getD1_B());
 
         reg.D0_L = 0xf;
-        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a1++));
+        reg.setD0_B(reg.getD0_B() & (mm.readByte(reg.a1++) & 0xff));
         mm.write(reg.a5 + W.eenv_al, (byte) reg.getD0_B());
 
         mm.write(reg.a5 + W.e_sw, 0x81);
@@ -1408,7 +1422,7 @@ public class DevPsg {
     }
 
     /**
-     * 音量LFO
+     * Volume LFO
      */
     public void _PSG_E7() {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) & 0x7f));
@@ -1416,7 +1430,7 @@ public class DevPsg {
     }
 
     /**
-     * 音量LFO switch
+     * Volume LFO switch
      */
     public void _PSG_E8() {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) & 0x7f));
@@ -1424,7 +1438,7 @@ public class DevPsg {
     }
 
     /**
-     * 音量LFO delay
+     * Volume LFO delay
      */
     public void _PSG_E9() {
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) & 0x7f));
@@ -1437,7 +1451,7 @@ public class DevPsg {
     public void _PSG_F2() {
         reg.D0_L = 0;
         reg.D1_L = 0;
-        reg.setD0_B(mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
         mm.write(reg.a5 + W.vol, (byte) reg.getD0_B());
 //#if false
 //        reg.setD1_B(reg.getD0_B());
@@ -1450,7 +1464,7 @@ public class DevPsg {
     }
 
     public void _psg_f2_softenv() {
-        reg.setD1_B(mm.readByte(reg.a5 + W.track_vol));
+        reg.setD1_B(mm.readByte(reg.a5 + W.track_vol) & 0xff);
         if ((byte) reg.getD1_B() < 0) {
             reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
             if ((byte) reg.getD0_B() < 0) {
@@ -1462,7 +1476,7 @@ public class DevPsg {
                 reg.D0_L = 15;
             }
         }
-        reg.setD0_B(reg.getD0_B() - mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG));
+        reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG) & 0xff));
         if ((byte) reg.getD0_B() < 0) {
             reg.D0_L = 0;
         }
@@ -1475,7 +1489,7 @@ public class DevPsg {
         }
         reg.setD0_W(reg.getD0_W() & 0xf);
         reg.a2 = reg.a5 + W.voltable;
-        reg.setD0_B(mm.readByte(reg.a2 + (int) (short) reg.getD0_W()));
+        reg.setD0_B(mm.readByte(reg.a2 + (int) (short) reg.getD0_W()) & 0xff);
         mm.write(reg.a5 + W.vol2, (byte) reg.getD0_B());
         reg.D1_L = 8;
         mndrv._OPN_WRITE4();
@@ -1485,8 +1499,8 @@ public class DevPsg {
      * volup
      */
     public void _PSG_F5() {
-        reg.setD0_B(mm.readByte(reg.a5 + W.vol));
-        reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+        reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a1++) & 0xff));
         if (reg.getD0_B() >= 0xf) {
             reg.D0_L = 0xf;
         }
@@ -1500,8 +1514,8 @@ public class DevPsg {
      * voldown
      */
     public void _PSG_F6() {
-        reg.setD0_B(mm.readByte(reg.a5 + W.vol));
-        reg.setD0_B(reg.getD0_B() - mm.readByte(reg.a1++));
+        reg.setD0_B(mm.readByte(reg.a5 + W.vol) & 0xff);
+        reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a1++) & 0xff));
         if ((byte) reg.getD0_B() < 0) {
             reg.D0_L = 0;
         }
@@ -1516,17 +1530,17 @@ public class DevPsg {
     public void _PSG_FF() {
         mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfe));
 
-        reg.setD0_W(mm.readShort(reg.a6 + Dw.USE_TRACK));
+        reg.setD0_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
         reg.a0 = reg.a6 + Dw.TRACKWORKADR;
 L3:{
         do {
             if ((mm.readByte(reg.a0 + W.flag2) & 1) != 0) break L3;
             reg.a0 = reg.a0 + W._track_work_size; // Dw._trackworksize;
-            reg.setD0_W(reg.getD0_W() -1);
+            reg.setD0_W(reg.getD0_W() - 1);
         } while (reg.getD0_W() != 0);
 
-        mm.write(reg.a6 + Dw.LOOP_COUNTER, (short) (mm.readShort(reg.a6 + Dw.LOOP_COUNTER) + 1));
-        reg.setD1_W(mm.readShort(reg.a6 + Dw.LOOP_COUNTER));
+        mm.write(reg.a6 + Dw.LOOP_COUNTER, (short) ((mm.readShort(reg.a6 + Dw.LOOP_COUNTER) & 0xffff) + 1));
+        reg.setD1_W(mm.readShort(reg.a6 + Dw.LOOP_COUNTER) & 0xffff);
         if (reg.getD1_W() - (-1) == 0) {
             reg.D1_L = 0;
             mm.write(reg.a6 + Dw.LOOP_COUNTER, (short) reg.getD1_W());
@@ -1534,7 +1548,7 @@ L3:{
         reg.D0_L = 1;
         mndrv.SUBEVENT();
 
-        reg.setD0_W(mm.readShort(reg.a6 + Dw.USE_TRACK));
+        reg.setD0_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
         reg.a0 = reg.a6 + Dw.TRACKWORKADR;
 
         do {
@@ -1546,7 +1560,7 @@ L3:{
         } while (reg.getD0_W() != 0);
 
 /*L3:*/}
-        reg.setD0_W(mm.readShort(reg.a1));
+        reg.setD0_W(mm.readShort(reg.a1) & 0xffff);
         reg.a1 += 2;
         if (reg.getD0_W() != 0) {
             if (reg.getD0_W() - 0xffff != 0) {
@@ -1559,7 +1573,7 @@ L3:{
             mm.write(reg.a5 + W.weffect, 0);
             mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0x7f));
             mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfe));
-            // pea	_all_end_check(pc)
+            // pea _all_end_check(pc)
             _psg_volume_0();
             comcmds._all_end_check();
         }
@@ -1574,7 +1588,7 @@ L3:{
         mm.write(reg.a5 + W.addkeycode, (short) 0);
         mm.write(reg.a5 + W.addvolume, (short) 0);
 
-        reg.setD0_B(mm.readByte(reg.a5 + W.lfo));
+        reg.setD0_B(mm.readByte(reg.a5 + W.lfo) & 0xff);
         if (reg.getD0_B() == 0) return;
         reg.D1_L = 0xe;
         reg.setD1_B(reg.getD1_B() & reg.getD0_B());
@@ -1637,12 +1651,12 @@ L3:{
         //_ch_psg_lfo_end:
 _ch_psg_a_exit: {
 _ch_psg_a_minus: {
-        reg.setD1_W(mm.readShort(reg.a5 + W.addvolume));
+        reg.setD1_W(mm.readShort(reg.a5 + W.addvolume) & 0xffff);
         if (reg.getD1_W() == 0) break _ch_psg_a_exit;
         if ((short) reg.getD1_W() < 0) break _ch_psg_a_minus;
 
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.vol));
+        reg.setD0_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD0_W(reg.getD0_W() - (int) (short) reg.getD1_W());
         if ((short) reg.getD0_W() < 0) {
             reg.D0_L = 0;
@@ -1652,7 +1666,7 @@ _ch_psg_a_minus: {
 
 /*_ch_psg_a_minus:*/}
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.vol));
+        reg.setD0_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD0_W(reg.getD0_W() - (int) (short) reg.getD1_W());
         if ((short) (reg.getD0_W() - 0xf) < 0) {
             reg.D0_L = 0xf;
@@ -1662,7 +1676,7 @@ _ch_psg_a_minus: {
 /*_ch_psg_a_exit:*/}
 _ch_psg_lfo_end3: {
 _ch_psg_lfo_end2: {
-        reg.setD2_B(mm.readByte(reg.a6 + Dw.DRV_FLAG2));
+        reg.setD2_B(mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0xff);
         int f = reg.getD2_B() & 1;
         reg.setD2_B(reg.getD2_B() >> 1);
         if (f != 0) break _ch_psg_lfo_end2;
@@ -1670,20 +1684,20 @@ _ch_psg_lfo_end2: {
         reg.setD2_B(reg.getD2_B() >> 1);
         if (f != 0) break _ch_psg_lfo_end3;
 
-        reg.setD0_W(mm.readShort(reg.a5 + W.freqbase));
-        reg.setD0_W(reg.getD0_W() + mm.readShort(reg.a5 + W.addkeycode));
+        reg.setD0_W(mm.readShort(reg.a5 + W.freqbase) & 0xffff);
+        reg.setD0_W(reg.getD0_W() + (mm.readShort(reg.a5 + W.addkeycode) & 0xffff));
         reg.D1_L = 0;
-        reg.setD1_B(mm.readByte(reg.a5 + W.octave));
+        reg.setD1_B(mm.readByte(reg.a5 + W.octave) & 0xff);
         reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
         _set_psg_bend();
         return;
 
 /*_ch_psg_lfo_end2:*/}
-        reg.setD0_W(mm.readShort(reg.a5 + W.makotune));
+        reg.setD0_W(mm.readShort(reg.a5 + W.makotune) & 0xffff);
         reg.D1_L = 0;
-        reg.setD1_B(mm.readByte(reg.a5 + W.octave));
+        reg.setD1_B(mm.readByte(reg.a5 + W.octave) & 0xff);
         reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
-        reg.setD1_W(mm.readShort(reg.a5 + W.detune));
+        reg.setD1_W(mm.readShort(reg.a5 + W.detune) & 0xffff);
 
         //; Wed Mar  8 08:23 JST 2000 (saori)
 //#if false
@@ -1692,7 +1706,7 @@ _ch_psg_lfo_end2: {
 //        }
 //#endif
 
-        reg.setD1_W(reg.getD1_W() + mm.readShort(reg.a5 + W.addkeycode));
+        reg.setD1_W(reg.getD1_W() + mm.readShort(reg.a5 + W.addkeycode) & 0xffff);
         reg.setD1_W((short) (-(short) reg.getD1_W()));
         reg.setD1_W((short) ((short) reg.getD1_W() >> 2));
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD1_W());
@@ -1700,15 +1714,15 @@ _ch_psg_lfo_end2: {
         return;
 
 /*_ch_psg_lfo_end3:*/}
-        reg.setD0_W(mm.readShort(reg.a5 + W.makotune));
+        reg.setD0_W(mm.readShort(reg.a5 + W.makotune) & 0xffff);
         reg.D1_L = 0;
-        reg.setD1_B(mm.readByte(reg.a5 + W.octave));
+        reg.setD1_B(mm.readByte(reg.a5 + W.octave) & 0xff);
         reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
-        reg.setD0_W(reg.getD0_W() + mm.readShort(reg.a5 + W.detune));
+        reg.setD0_W(reg.getD0_W() + mm.readShort(reg.a5 + W.detune) & 0xffff);
         if ((short) reg.getD0_W() < 0) {
             reg.D0_L = 0;
         }
-        reg.setD0_W(reg.getD0_W() + mm.readShort(reg.a5 + W.addkeycode));
+        reg.setD0_W(reg.getD0_W() + mm.readShort(reg.a5 + W.addkeycode) & 0xffff);
         _set_psg_bend();
     }
 
@@ -1831,13 +1845,13 @@ _ch_psg_lfo_end2: {
     /** */
     public void _ch_psg_a_common() {
         reg.D0_L = 1;
-        reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern));
+        reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern) & 0xff);
         if ((byte) reg.getD1_B() < 0) {
             comwave._com_wavememory();
-            mm.write(reg.a5 + W.addvolume, (short) (mm.readShort(reg.a5 + W.addvolume) + (short) reg.getD0_W()));
+            mm.write(reg.a5 + W.addvolume, (short) ((mm.readShort(reg.a5 + W.addvolume) & 0xffff) + (short) reg.getD0_W()));
             return;
         }
-        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag));
+        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag) & 0xffff);
         if ((short) reg.getD4_W() < 0) {
             int f = reg.getD4_B() & 1;
             reg.setD4_B(reg.getD4_B() >> 1);
@@ -1864,19 +1878,19 @@ _ch_psg_lfo_end2: {
             break;
         }
 
-        mm.write(reg.a5 + W.addvolume, (short) (mm.readShort(reg.a5 + W.addvolume) + (short) reg.getD1_W()));
+        mm.write(reg.a5 + W.addvolume, (short) ((mm.readShort(reg.a5 + W.addvolume) & 0xffff) + (short) reg.getD1_W()));
     }
 
     /** */
     public void _ch_psg_p_common() {
         reg.D0_L = 1;
-        reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern));
+        reg.setD1_B(mm.readByte(reg.a4 + W_L.pattern) & 0xff);
         if ((byte) reg.getD1_B() < 0) {
             comwave._com_wavememory();
-            mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD0_W()));
+            mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD0_W()));
             return;
         }
-        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag));
+        reg.setD4_W(mm.readShort(reg.a4 + W_L.flag) & 0xffff);
         if ((short) reg.getD4_W() < 0) {
             int f = reg.getD4_B() & 1;
             reg.setD4_B(reg.getD4_B() >> 1);
@@ -1918,7 +1932,7 @@ _ch_psg_lfo_end2: {
                 comlfo.comLfoOneshot();
                 break;
             }
-            mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
+            mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
             return;
         }
 
@@ -1943,7 +1957,7 @@ _ch_psg_lfo_end2: {
             comlfo.comLfoRandom();
             break;
         }
-        mm.write(reg.a5 + W.addkeycode, (short) (mm.readShort(reg.a5 + W.addkeycode) + (short) reg.getD1_W()));
+        mm.write(reg.a5 + W.addkeycode, (short) ((mm.readShort(reg.a5 + W.addkeycode) & 0xffff) + (short) reg.getD1_W()));
 
     }
 
@@ -1952,9 +1966,9 @@ _ch_psg_lfo_end2: {
         comanalyze._track_analyze();
 
         //_ch_psg_bend_job:
-        reg.setD0_B(mm.readByte(reg.a5 + W.lfo));
+        reg.setD0_B(mm.readByte(reg.a5 + W.lfo) & 0xff);
         if ((byte) reg.getD0_B() >= 0) return;
-        // btst.b	//#1,w_flag2(a5)
+        // btst.b //#1,w_flag2(a5)
         if ((mm.readByte(reg.a5 + W.flag2) & 0x02) != 0) {
             _ch_psg_porta();
             return;
@@ -1967,21 +1981,21 @@ _ch_psg_lfo_end2: {
      */
     public void _ch_psg_bend() {
         reg.a4 = reg.a5 + W.p_pattern4;
-        mm.write(reg.a4 + W_L.delay_work, (byte) (mm.readByte(reg.a4 + W_L.delay_work) - 1));
+        mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) return;
 
         mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
-        reg.setD0_W(mm.readShort(reg.a5 + W.freqbase));
+        reg.setD0_W(mm.readShort(reg.a5 + W.freqbase) & 0xffff);
         reg.D1_L = 0;
-        reg.setD1_B(mm.readByte(reg.a5 + W.octave));
-        reg.setD2_W(mm.readShort(reg.a4 + W_L.henka));
+        reg.setD1_B(mm.readByte(reg.a5 + W.octave) & 0xff);
+        reg.setD2_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
 
         if ((short) reg.getD2_W() >= 0) {
-            mm.write(reg.a4 + W_L.bendwork, (short) (mm.readShort(reg.a4 + W_L.bendwork) - reg.getD2_W()));
+            mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) - reg.getD2_W()));
             reg.setD0_W(reg.getD0_W() - (int) (short) reg.getD2_W());
             mm.write(reg.a5 + W.freqbase, (short) reg.getD0_W());
             reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
-            if (reg.getD0_W() < mm.readShort(reg.a4 + W_L.mokuhyou)) {
+            if (reg.getD0_W() < (mm.readShort(reg.a4 + W_L.mokuhyou) & 0xffff)) {
                 _ch_psg_bend_end();
                 return;
             }
@@ -1989,11 +2003,11 @@ _ch_psg_lfo_end2: {
             return;
         }
 
-        mm.write(reg.a4 + W_L.bendwork, (short) (mm.readShort(reg.a4 + W_L.bendwork) - reg.getD2_W()));
+        mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) - reg.getD2_W()));
         reg.setD0_W(reg.getD0_W() - (int) (short) reg.getD2_W());
         mm.write(reg.a5 + W.freqbase, (short) reg.getD0_W());
         reg.setD0_W(reg.getD0_W() >> reg.getD1_W());
-        if (reg.getD0_W() >= mm.readShort(reg.a4 + W_L.mokuhyou)) {
+        if (reg.getD0_W() >= (mm.readShort(reg.a4 + W_L.mokuhyou) & 0xffff)) {
             _ch_psg_bend_end();
             return;
         }
@@ -2005,7 +2019,7 @@ _ch_psg_lfo_end2: {
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
 
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.key2));
+        reg.setD0_B(mm.readByte(reg.a5 + W.key2) & 0xff);
         mm.write(reg.a5 + W.key, (byte) reg.getD0_B());
         _psg_freq();
     }
@@ -2015,35 +2029,35 @@ _ch_psg_lfo_end2: {
      */
     public void _ch_psg_porta() {
         reg.a4 = reg.a5 + W.p_pattern4;
-        mm.write(reg.a4 + W_L.count, (byte) (mm.readByte(reg.a4 + W_L.count) - 1));
+        mm.write(reg.a4 + W_L.count, (byte) ((mm.readByte(reg.a4 + W_L.count) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_L.count) == 0) {
             mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
             mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfd));
             return;
         }
-        reg.setD2_W(mm.readShort(reg.a4 + W_L.henka));
+        reg.setD2_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
 
-        reg.setD0_W(mm.readShort(reg.a5 + W.keycode));
-        mm.write(reg.a4 + W_L.bendwork, (short) (mm.readShort(reg.a4 + W_L.bendwork) + (short) reg.getD2_W()));
+        reg.setD0_W(mm.readShort(reg.a5 + W.keycode) & 0xffff);
+        mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) + (short) reg.getD2_W()));
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD2_W());
 
         if (mm.readShort(reg.a4 + W_L.henka_work) != 0) { // break _ch_psg_porta_common;
             if (mm.readShort(reg.a4 + W_L.henka_work) >= 0) { // break _ch_psg_porta_minus;
 
-                mm.write(reg.a4 + W_L.henka_work, (short) (mm.readShort(reg.a4 + W_L.henka_work) - 1));
-                mm.write(reg.a4 + W_L.bendwork, (short) (mm.readShort(reg.a4 + W_L.bendwork) + 1));
+                mm.write(reg.a4 + W_L.henka_work, (short) ((mm.readShort(reg.a4 + W_L.henka_work) & 0xffff) - 1));
+                mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) + 1));
                 reg.setD0_W(reg.getD0_W() + 1);
 //                break _ch_psg_porta_common;
             } else {
 // _ch_psg_porta_minus:
-                mm.write(reg.a4 + W_L.henka_work, (short) (mm.readShort(reg.a4 + W_L.henka_work) + 1));
-                mm.write(reg.a4 + W_L.bendwork, (short) (mm.readShort(reg.a4 + W_L.bendwork) - 1));
+                mm.write(reg.a4 + W_L.henka_work, ((short) (mm.readShort(reg.a4 + W_L.henka_work) & 0xffff) + 1));
+                mm.write(reg.a4 + W_L.bendwork, ((short) (mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) - 1));
                 reg.setD0_W(reg.getD0_W() - 1);
             }
         }
 // _ch_psg_porta_common:
         reg.D1_L = 0;
-        reg.setD1_B(mm.readByte(reg.a5 + W.octave));
+        reg.setD1_B(mm.readByte(reg.a5 + W.octave) & 0xff);
         reg.setD2_W(reg.getD0_W());
         reg.setD2_W(reg.getD2_W() << reg.getD1_W());
         mm.write(reg.a5 + W.freqbase, (short) reg.getD2_W());
@@ -2057,24 +2071,24 @@ _ch_psg_lfo_end2: {
      */
     public void _soft2() {
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_p));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_p) & 0xff);
         if (reg.getD0_B() == 0) return;
         reg.D1_L = 0;
-        reg.setD1_B(mm.readByte(reg.a5 + W.vol2));
+        reg.setD1_B(mm.readByte(reg.a5 + W.vol2) & 0xff);
 _soft2_ok: {
         //_soft2_al:
         reg.setD0_B(reg.getD0_B() - 1); //1
         if (reg.getD0_B() == 0) {
-            mm.write(reg.a5 + W.e_alw, (byte) (mm.readByte(reg.a5 + W.e_alw) - 1));
+            mm.write(reg.a5 + W.e_alw, (byte) ((mm.readByte(reg.a5 + W.e_alw) & 0xff) - 1));
             if (mm.readByte(reg.a5 + W.e_alw) != 0) break _soft2_ok;
             mm.write(reg.a5 + W.e_p, 2);
             break _soft2_ok;
         }
         reg.setD0_B(reg.getD0_B() - 1); //2
         if (reg.getD0_B() == 0) {
-            if (mm.readByte(reg.a5 + W.e_dd) == 0) break _soft2_ok; // dr=0 は減衰無し
+            if (mm.readByte(reg.a5 + W.e_dd) == 0) break _soft2_ok; // dr=0 is no attenuation
             mm.write(reg.a5 + W.e_p, 3);
-            reg.setD1_B(reg.getD1_B() + mm.readByte(reg.a5 + W.e_dd));
+            reg.setD1_B(reg.getD1_B() + (mm.readByte(reg.a5 + W.e_dd) & 0xff));
             if ((byte) reg.getD1_B() >= 0) break _soft2_ok;
             reg.D1_L = 0;
             mm.write(reg.a5 + W.e_p, 4);
@@ -2083,7 +2097,7 @@ _soft2_ok: {
         //_soft2_sr:
         reg.setD0_B(reg.getD0_B() - 1); //3
         if (reg.getD0_B() == 0) {
-            mm.write(reg.a5 + W.e_srw, (byte) (mm.readByte(reg.a5 + W.e_srw) - 1));
+            mm.write(reg.a5 + W.e_srw, (byte) ((mm.readByte(reg.a5 + W.e_srw) & 0xff) - 1));
             if (mm.readByte(reg.a5 + W.e_srw) != 0) break _soft2_ok;
             mm.write(reg.a5 + W.e_srw, mm.readByte(reg.a5 + W.e_sr));
             boolean cf = reg.getD1_B() < 1;
@@ -2096,9 +2110,9 @@ _soft2_ok: {
         //_soft2_rr:
         reg.setD0_B(reg.getD0_B() - 1); //4
         if (reg.getD0_B() == 0) {
-            if (mm.readByte(reg.a5 + W.e_rr) != 0) // rr = 0 は消音
+            if (mm.readByte(reg.a5 + W.e_rr) != 0) // rr = 0 is silent
             {
-                mm.write(reg.a5 + W.e_rrw, (byte) (mm.readByte(reg.a5 + W.e_rrw) - 1));
+                mm.write(reg.a5 + W.e_rrw, (byte) ((mm.readByte(reg.a5 + W.e_rrw) & 0xff) - 1));
                 if (mm.readByte(reg.a5 + W.e_rrw) != 0) break _soft2_ok;
                 mm.write(reg.a5 + W.e_rrw, mm.readByte(reg.a5 + W.e_rr));
                 reg.setD1_B(reg.getD1_B() - 1);
@@ -2113,7 +2127,7 @@ _soft2_ok: {
         mm.write(reg.a5 + W.e_alw, mm.readByte(reg.a5 + W.e_al));
         mm.write(reg.a5 + W.e_srw, mm.readByte(reg.a5 + W.e_sr));
         mm.write(reg.a5 + W.e_rrw, mm.readByte(reg.a5 + W.e_rr));
-        reg.setD0_B(mm.readByte(reg.a5 + W.vol));
+        reg.setD0_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         _soft3_0();
         return;
 
@@ -2127,21 +2141,21 @@ _soft2_ok: {
      */
     public void _ex_soft2() {
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_p));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_p) & 0xff);
         if (reg.getD0_B() == 0) return;
         reg.D1_L = 0;
-        reg.setD1_B(mm.readByte(reg.a5 + W.vol2));
+        reg.setD1_B(mm.readByte(reg.a5 + W.vol2) & 0xff);
         //_soft3_ar:
 _soft3_ok: {
         reg.setD0_B(reg.getD0_B() - 1);
         if (reg.getD0_B() == 0) { // break esm_dr_check;
-            reg.setD2_B(mm.readByte(reg.a5 + W.eenv_arc));
+            reg.setD2_B(mm.readByte(reg.a5 + W.eenv_arc) & 0xff);
             reg.setD2_B(reg.getD2_B() - 1);
             if ((byte) reg.getD2_B() >= 0) { // break arc_count_check;
                 reg.setD2_B(reg.getD2_B() + 1);
-                mm.write(reg.a5 + W.eenv_volume, (byte) (mm.readByte(reg.a5 + W.eenv_volume) + (byte) reg.getD2_B()));
-                if (mm.readByte(reg.a5 + W.eenv_volume) < 15) { // break esm_ar_next;
-                    reg.setD2_B(mm.readByte(reg.a5 + W.eenv_ar));
+                mm.write(reg.a5 + W.eenv_volume, (byte) ((mm.readByte(reg.a5 + W.eenv_volume) & 0xff) + (byte) reg.getD2_B()));
+                if ((mm.readByte(reg.a5 + W.eenv_volume) & 0xff) < 15) { // break esm_ar_next;
+                    reg.setD2_B(mm.readByte(reg.a5 + W.eenv_ar) & 0xff);
                     reg.setD2_B(reg.getD2_B() - 16);
                     mm.write(reg.a5 + W.eenv_arc, (byte) reg.getD2_B());
                     break _soft3_ok;
@@ -2149,33 +2163,33 @@ _soft3_ok: {
 //esm_ar_next:
                 mm.write(reg.a5 + W.eenv_volume, 15);
                 mm.write(reg.a5 + W.e_p, 2); //DR
-                if (mm.readByte(reg.a5 + W.eenv_sl) - 15 != 0) break _soft3_ok;
+                if ((mm.readByte(reg.a5 + W.eenv_sl) & 0xff) - 15 != 0) break _soft3_ok;
                 mm.write(reg.a5 + W.e_p, 3); //SR
                 break _soft3_ok;
             }
 //arc_count_check:
             if (mm.readByte(reg.a5 + W.eenv_ar) == 0) break _soft3_ok;
-            mm.write(reg.a5 + W.eenv_arc, (byte) (mm.readByte(reg.a5 + W.eenv_arc) + 1));
+            mm.write(reg.a5 + W.eenv_arc, (byte) ((mm.readByte(reg.a5 + W.eenv_arc) & 0xff) + 1));
             break _soft3_ok;
         }
 //esm_dr_check:
         reg.setD0_B(reg.getD0_B() - 1); //2
         if (reg.getD0_B() == 0) { // break esm_sr_check;
 
-            reg.setD2_B(mm.readByte(reg.a5 + W.eenv_drc));
+            reg.setD2_B(mm.readByte(reg.a5 + W.eenv_drc) & 0xff);
             reg.setD2_B(reg.getD2_B() - 1);
             if ((byte) reg.getD2_B() >= 0) { // break drc_count_check;
                 reg.setD2_B(reg.getD2_B() + 1);
-                boolean cf = mm.readByte(reg.a5 + W.eenv_volume) < reg.getD2_B();
-                mm.write(reg.a5 + W.eenv_volume, (byte) (mm.readByte(reg.a5 + W.eenv_volume) - reg.getD2_B()));
+                boolean cf = (mm.readByte(reg.a5 + W.eenv_volume) & 0xff) < reg.getD2_B();
+                mm.write(reg.a5 + W.eenv_volume, (byte) ((mm.readByte(reg.a5 + W.eenv_volume) & 0xff) - reg.getD2_B()));
                 //int sp = Reg.SR_W;
-                reg.setD2_B(mm.readByte(reg.a5 + W.eenv_sl));
+                reg.setD2_B(mm.readByte(reg.a5 + W.eenv_sl) & 0xff);
                 //Reg.SR_W = (Reg.SR_W & 0xff00) | (sp & 0xff);
                 if (!cf) { // break dr_slset;
-                    reg.setD3_B(mm.readByte(reg.getD5_B() + W.eenv_volume));
+                    reg.setD3_B(mm.readByte(reg.getD5_B() + W.eenv_volume) & 0xff);
                     if (reg.getD3_B() >= reg.getD2_B()) { // break dr_slset;
 
-                        reg.setD2_B(mm.readByte(reg.a5 + W.eenv_dr));
+                        reg.setD2_B(mm.readByte(reg.a5 + W.eenv_dr) & 0xff);
                         reg.setD2_B(reg.getD2_B() - 16);
                         if ((byte) reg.getD2_B() < 0) { // break esm_dr_notx;
                             reg.setD2_B(reg.getD2_B() + (int) (byte) reg.getD2_B());
@@ -2192,19 +2206,19 @@ _soft3_ok: {
             }
 //drc_count_check:
             if (mm.readByte(reg.a5 + W.eenv_dr) == 0) break _soft3_ok;
-            mm.write(reg.a5 + W.eenv_drc, (byte) (mm.readByte(reg.a5 + W.eenv_drc) + 1));
+            mm.write(reg.a5 + W.eenv_drc, (byte) ((mm.readByte(reg.a5 + W.eenv_drc) & 0xff) + 1));
             break _soft3_ok;
         }
 //esm_sr_check:
         reg.setD0_B(reg.getD0_B() - 1); //3
         if (reg.getD0_B() == 0) { // break esm_rr;
 
-            reg.setD2_B(mm.readByte(reg.a5 + W.eenv_src));
+            reg.setD2_B(mm.readByte(reg.a5 + W.eenv_src) & 0xff);
             reg.setD2_B(reg.getD2_B() - 1);
             if ((byte) reg.getD2_B() >= 0) { // break src_count_check;
                 reg.setD2_B(reg.getD2_B() + 1);
-                boolean cf = mm.readByte(reg.a5 + W.eenv_volume) < reg.getD2_B();
-                mm.write(reg.a5 + W.eenv_volume, (byte) (mm.readByte(reg.a5 + W.eenv_volume) - reg.getD2_B()));
+                boolean cf = (mm.readByte(reg.a5 + W.eenv_volume) & 0xff) < reg.getD2_B();
+                mm.write(reg.a5 + W.eenv_volume, (byte) ((mm.readByte(reg.a5 + W.eenv_volume) & 0xff) - reg.getD2_B()));
                 if (cf) { // break esm_sr_exit;
                     mm.write(reg.a5 + W.eenv_volume, 0);
                 }
@@ -2220,22 +2234,22 @@ _soft3_ok: {
             }
 //src_count_check:
             if (mm.readByte(reg.a5 + W.eenv_sr) == 0) break _soft3_ok;
-            mm.write(reg.a5 + W.eenv_src, (byte) (mm.readByte(reg.a5 + W.eenv_src) + 1));
+            mm.write(reg.a5 + W.eenv_src, (byte) ((mm.readByte(reg.a5 + W.eenv_src) & 0xff) + 1));
             break _soft3_ok;
         }
 //esm_rr:
         reg.setD0_B(reg.getD0_B() - 1); //4
         if (reg.getD0_B() == 0) { // break esm_ko;
 
-            reg.setD2_B(mm.readByte(reg.a5 + W.eenv_rrc));
+            reg.setD2_B(mm.readByte(reg.a5 + W.eenv_rrc) & 0xff);
             if (reg.getD2_B() != 0) { // break rrc_count_check;
-                boolean cf = mm.readByte(reg.a5 + W.eenv_volume) < reg.getD2_B();
-                mm.write(reg.a5 + W.eenv_volume, (byte) (mm.readByte(reg.a5 + W.eenv_volume) - reg.getD2_B()));
+                boolean cf = (mm.readByte(reg.a5 + W.eenv_volume) & 0xff) < reg.getD2_B();
+                mm.write(reg.a5 + W.eenv_volume, (byte) ((mm.readByte(reg.a5 + W.eenv_volume) & 0xff) - reg.getD2_B()));
                 if (cf) { // break esm_rr_exit;
                     mm.write(reg.a5 + W.eenv_volume, 0);
                 }
 //esm_rr_exit:
-                reg.setD2_B(mm.readByte(reg.a5 + W.eenv_rr));
+                reg.setD2_B(mm.readByte(reg.a5 + W.eenv_rr) & 0xff);
                 reg.setD2_B(reg.getD2_B() + (int) (byte) reg.getD2_B());
                 reg.setD2_B(reg.getD2_B() - 16);
                 mm.write(reg.a5 + W.eenv_rrc, (byte) reg.getD2_B());
@@ -2243,7 +2257,7 @@ _soft3_ok: {
             }
 //rrc_count_check:
             if (mm.readByte(reg.a5 + W.eenv_rr) == 0) break _soft3_ok;
-            mm.write(reg.a5 + W.eenv_rrc, (byte) (mm.readByte(reg.a5 + W.eenv_rrc) + 1));
+            mm.write(reg.a5 + W.eenv_rrc, (byte) ((mm.readByte(reg.a5 + W.eenv_rrc) & 0xff) + 1));
             break _soft3_ok;
         }
 //esm_ko:
@@ -2253,45 +2267,45 @@ _soft3_ok: {
             return;
         }
 
-        reg.setD2_B(mm.readByte(reg.a5 + W.eenv_ar));
+        reg.setD2_B(mm.readByte(reg.a5 + W.eenv_ar) & 0xff);
         reg.setD2_B(reg.getD2_B() - 16);
         mm.write(reg.a5 + W.eenv_arc, (byte) reg.getD2_B());
-        reg.setD2_B(mm.readByte(reg.a5 + W.eenv_dr));
+        reg.setD2_B(mm.readByte(reg.a5 + W.eenv_dr) & 0xff);
         reg.setD2_B(reg.getD2_B() - 16);
         if ((byte) reg.getD2_B() < 0) { // break eei_dr_notx;
             reg.setD2_B(reg.getD2_B() + (int) (byte) reg.getD2_B());
         }
 // eei_dr_notx:
         mm.write(reg.a5 + W.eenv_drc, (byte) reg.getD2_B());
-        reg.setD2_B(mm.readByte(reg.a5 + W.eenv_sr));
+        reg.setD2_B(mm.readByte(reg.a5 + W.eenv_sr) & 0xff);
         reg.setD2_B(reg.getD2_B() - 16);
         if ((byte) reg.getD2_B() < 0) { // break eei_sr_notx;
             reg.setD2_B(reg.getD2_B() + (int) (byte) reg.getD2_B());
         }
 // eei_sr_notx:
         mm.write(reg.a5 + W.eenv_src, (byte) reg.getD2_B());
-        reg.setD2_B(mm.readByte(reg.a5 + W.eenv_rr));
+        reg.setD2_B(mm.readByte(reg.a5 + W.eenv_rr) & 0xff);
         reg.setD2_B(reg.getD2_B() + (int) (byte) reg.getD2_B());
         reg.setD2_B(reg.getD2_B() - 16);
         mm.write(reg.a5 + W.eenv_rrc, (byte) reg.getD2_B());
-        reg.setD2_B(mm.readByte(reg.a5 + W.eenv_al));
+        reg.setD2_B(mm.readByte(reg.a5 + W.eenv_al) & 0xff);
         mm.write(reg.a5 + W.eenv_volume, (byte) reg.getD2_B());
         mm.write(reg.a5 + W.e_p, 1);
         //mm.Write(Reg.a5 + W.eenv_sl, mm.readByte(Reg.a5 + W.vol));
 
 /*_soft3_ok:*/}
         //
-        // 拡張版 音量=dl*(eenv_vol+1)/16
+        // Extended version volume = dl * (eenv_vol + 1) / 16
         //
         reg.D0_L = 0;
         reg.D1_L = 0;
-        reg.setD1_B(mm.readByte(reg.a5 + W.eenv_volume));
+        reg.setD1_B(mm.readByte(reg.a5 + W.eenv_volume) & 0xff);
         if (reg.getD1_B() == 0) {
             _soft3_0();
             return;
         }
         reg.setD1_B(reg.getD1_B() + 1);
-        reg.setD0_B(mm.readByte(reg.a5 + W.vol));
+        reg.setD0_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD0_W(reg.getD0_W() * reg.getD1_W());
         int f = reg.getD0_B() & 0x8;
         reg.setD0_B(reg.getD0_B() >> 4);
@@ -2303,7 +2317,7 @@ _soft3_ok: {
     }
 
     public void _soft3_0() {
-        reg.setD2_B(mm.readByte(reg.a5 + W.track_vol));
+        reg.setD2_B(mm.readByte(reg.a5 + W.track_vol) & 0xff);
         if ((byte) reg.getD2_B() < 0) {
             reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD2_B());
             if ((byte) reg.getD0_B() < 0) {
@@ -2315,7 +2329,7 @@ _soft3_ok: {
                 reg.D0_L = 15;
             }
         }
-        reg.setD0_B(reg.getD0_B() - mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG));
+        reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG) & 0xff));
         if ((byte) reg.getD0_B() >= 0) {
             _psg_volume_set3();
             return;
@@ -2332,17 +2346,17 @@ _ex_soft4_volume_set: {
 _ex_soft4_end: {
 _ex_soft4_ok: {
         reg.D0_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_p));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_p) & 0xff);
         if (reg.getD0_B() == 0) break _ex_soft4_end;
 
-        //_ex_soft4_ar:				// 1
+        //_ex_soft4_ar:    // 1
         reg.setD0_B(reg.getD0_B() - 1);
         if (reg.getD0_B() == 0) { // break _ex_soft4_dr;
 
-            reg.setD0_B(mm.readByte(reg.a5 + W.e_sub));
-            reg.setD0_B(reg.getD0_B() + mm.readByte(reg.a5 + W.e_ar));
-            if (reg.getD0_B() < mm.readByte(reg.a5 + W.eenv_limit)) break _ex_soft4_ok;
-            reg.setD0_B(mm.readByte(reg.a5 + W.eenv_limit));
+            reg.setD0_B(mm.readByte(reg.a5 + W.e_sub) & 0xff);
+            reg.setD0_B(reg.getD0_B() + (mm.readByte(reg.a5 + W.e_ar) & 0xff));
+            if (reg.getD0_B() < (mm.readByte(reg.a5 + W.eenv_limit) & 0xff)) break _ex_soft4_ok;
+            reg.setD0_B(mm.readByte(reg.a5 + W.eenv_limit) & 0xff);
             mm.write(reg.a5 + W.e_p, 2);
             break _ex_soft4_ok;
         }
@@ -2351,14 +2365,14 @@ _ex_soft4_ok: {
         reg.setD0_B(reg.getD0_B() - 1);
         if (reg.getD0_B() == 0) { // break _ex_soft4_sr;
 
-            reg.setD0_B(mm.readByte(reg.a5 + W.e_sub));
-            boolean cf = reg.getD0_B() < mm.readByte(reg.a5 + W.e_dr);
-            reg.setD0_B(reg.getD0_B() - mm.readByte(reg.a5 + W.e_dr));
+            reg.setD0_B(mm.readByte(reg.a5 + W.e_sub) & 0xff);
+            boolean cf = reg.getD0_B() < (mm.readByte(reg.a5 + W.e_dr) & 0xff);
+            reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a5 + W.e_dr) & 0xff));
             if (!cf) { // break _ex_soft4_dr2;
-                if (reg.getD0_B() >= mm.readByte(reg.a5 + W.e_sl)) break _ex_soft4_ok;
+                if (reg.getD0_B() >= (mm.readByte(reg.a5 + W.e_sl) & 0xff)) break _ex_soft4_ok;
             }
 //_ex_soft4_dr2:
-            reg.setD0_B(mm.readByte(reg.a5 + W.e_sl));
+            reg.setD0_B(mm.readByte(reg.a5 + W.e_sl) & 0xff);
             mm.write(reg.a5 + W.e_p, 3);
             break _ex_soft4_ok;
         }
@@ -2366,9 +2380,9 @@ _ex_soft4_ok: {
         // 3
         reg.setD0_B(reg.getD0_B() - 1);
         if (reg.getD0_B() == 0) { // break _ex_soft4_rr;
-            reg.setD0_B(mm.readByte(reg.a5 + W.e_sub));
-            boolean cf = reg.getD0_B() < mm.readByte(reg.a5 + W.e_sr);
-            reg.setD0_B(reg.getD0_B() - mm.readByte(reg.a5 + W.e_sr));
+            reg.setD0_B(mm.readByte(reg.a5 + W.e_sub) & 0xff);
+            boolean cf = reg.getD0_B() < (mm.readByte(reg.a5 + W.e_sr) & 0xff);
+            reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a5 + W.e_sr) & 0xff));
             if ((byte) reg.getD0_B() == 0) break _ex_soft4_end;
             if (!cf) break _ex_soft4_ok;
             break _ex_soft4_end;
@@ -2377,9 +2391,9 @@ _ex_soft4_ok: {
         // 4
         reg.setD0_B(reg.getD0_B() - 1);
         if (reg.getD0_B() == 0) { // break _ex_soft4_ko;
-            reg.setD0_B(mm.readByte(reg.a5 + W.e_sub));
-            boolean cf = reg.getD0_B() < mm.readByte(reg.a5 + W.e_rr);
-            reg.setD0_B(reg.getD0_B() - mm.readByte(reg.a5 + W.e_rr));
+            reg.setD0_B(mm.readByte(reg.a5 + W.e_sub) & 0xff);
+            boolean cf = reg.getD0_B() < (mm.readByte(reg.a5 + W.e_rr) & 0xff);
+            reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a5 + W.e_rr) & 0xff));
             if ((byte) reg.getD0_B() == 0) break _ex_soft4_end;
             if (!cf) break _ex_soft4_ok;
             if (cf) break _ex_soft4_end;
@@ -2387,9 +2401,9 @@ _ex_soft4_ok: {
 //_ex_soft4_ko:
         // 5
         mm.write(reg.a5 + W.e_p, 1);
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_sv));
-        if (reg.getD0_B() < mm.readByte(reg.a5 + W.eenv_limit)) break _ex_soft4_ok;
-        reg.setD0_B(mm.readByte(reg.a5 + W.eenv_limit));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_sv) & 0xff);
+        if (reg.getD0_B() < (mm.readByte(reg.a5 + W.eenv_limit) & 0xff)) break _ex_soft4_ok;
+        reg.setD0_B(mm.readByte(reg.a5 + W.eenv_limit) & 0xff);
 
 /*_ex_soft4_ok:*/}
         mm.write(reg.a5 + W.e_sub, (byte) reg.getD0_B());
@@ -2403,12 +2417,12 @@ _ex_soft4_ok: {
 /*_ex_soft4_volume_set:*/}
         reg.D0_L = 0;
         reg.D1_L = 0;
-        reg.setD0_B(mm.readByte(reg.a5 + W.e_sub));
+        reg.setD0_B(mm.readByte(reg.a5 + W.e_sub) & 0xff);
         if (reg.getD0_B() == 0) {
             _soft3_0();
             return;
         }
-        reg.setD1_B(mm.readByte(reg.a5 + W.vol));
+        reg.setD1_B(mm.readByte(reg.a5 + W.vol) & 0xff);
         reg.setD1_B(reg.getD1_B() + 1);
         reg.setD0_W(reg.getD0_W() * reg.getD1_W());
         reg.D0_L = reg.getD0_W() >> 8;

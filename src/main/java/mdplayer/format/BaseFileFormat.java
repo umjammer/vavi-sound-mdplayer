@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -99,8 +100,9 @@ public abstract class BaseFileFormat implements FileFormat {
         try {
             if (entry == null) {
                 return BaseFileFormat.getFileSearchPathList(srcFn).stream()
-                        .map(dirPath -> Path.combine(dirPath, extFn).trim())
-                        .filter(File::exists).findFirst()
+                        .map(dirPath -> dirPath.resolve(extFn))
+                        .filter(Files::exists).findFirst()
+                        .map(Object::toString)
                         .map(File::readAllBytes).orElse(null);
             } else {
                 String trgFn = Path.combine(getDirectoryName(srcFn), extFn);
@@ -119,12 +121,13 @@ public abstract class BaseFileFormat implements FileFormat {
         }
     }
 
-    private static List<String> getFileSearchPathList(String srcFn) {
-        List<String> result = new ArrayList<>();
-        result.add(getDirectoryName(srcFn));
+    private static List<java.nio.file.Path> getFileSearchPathList(String srcFn) {
+        List<java.nio.file.Path> result = new ArrayList<>();
+        result.add(java.nio.file.Path.of(srcFn).getParent());
         String fileSearchPathList = Setting.getInstance().getFileSearchPathList() != null ? Setting.getInstance().getFileSearchPathList() : "";
         Arrays.stream(fileSearchPathList.split(";"))
-                .filter(path -> path != null && path.isEmpty())
+                .filter(path -> path != null && !path.isEmpty())
+                .map(java.nio.file.Path::of)
                 .forEach(result::add);
         return result;
     }
@@ -171,7 +174,7 @@ public abstract class BaseFileFormat implements FileFormat {
     }
 
     /**
-     * 汎用
+     * General purpose
      */
     @Override
     public List<PlayList.Music> addFileLoop(PlayList.Music mc, Archive archive, Entry entry/*=null*/) throws IOException {

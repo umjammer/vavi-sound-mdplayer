@@ -31,7 +31,7 @@ public class ComAnalyze {
         }
 
         //─────────────────────────────────────
-        reg.setD4_B(mm.readByte(reg.a5 + W.len));
+        reg.setD4_B(mm.readByte(reg.a5 + W.len) & 0xff);
         reg.setD4_B(reg.getD4_B() - 1);
 
         if ((mm.readByte(reg.a5 + W.flag) & 0x40) != 0) {
@@ -40,7 +40,7 @@ public class ComAnalyze {
         }
 
         reg.D0_L = 3;
-        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.effect));
+        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.effect) & 0xff);
         if (reg.getD0_B() - 2 != 0) {
             _track_ana_echo_atq();
             return;
@@ -56,7 +56,7 @@ public class ComAnalyze {
     }
 
     public void _track_ana_echo_atq() {
-        reg.setD0_B(mm.readByte(reg.a5 + W.at_q_work));
+        reg.setD0_B(mm.readByte(reg.a5 + W.at_q_work) & 0xff);
         if (reg.getD0_B() != 0) { // break L1;
             reg.setD0_B(reg.getD0_B() - 1);
         } else { // if (Reg.getD0_B() != 0) break L2;
@@ -71,7 +71,7 @@ public class ComAnalyze {
     }
 
     public void _track_echo_next() {
-        reg.setD0_B(mm.readByte(reg.a5 + W.reverb_time_work));
+        reg.setD0_B(mm.readByte(reg.a5 + W.reverb_time_work) & 0xff);
         if (reg.getD0_B() != 0) {
             reg.setD0_B(reg.getD0_B() - 1);
             if (reg.getD0_B() == 0) {
@@ -99,14 +99,14 @@ public class ComAnalyze {
 
     //─────────────────────────────────────
     public void _track_ana_normal() {
-        reg.setD4_B(mm.readByte(reg.a5 + W.len));
+        reg.setD4_B(mm.readByte(reg.a5 + W.len) & 0xff);
         reg.setD4_B(reg.getD4_B() - 1);
         if ((mm.readByte(reg.a5 + W.flag) & 0x40) != 0) {
             _track_ana_next();
             return;
         }
         reg.D0_L = 3;
-        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.effect));
+        reg.setD0_B(reg.getD0_B() & mm.readByte(reg.a5 + W.effect) & 0xff);
         if (reg.getD0_B() - 2 != 0) {
             _track_ana_normal_atq();
             return;
@@ -121,7 +121,7 @@ public class ComAnalyze {
     }
 
     public void _track_ana_normal_atq() {
-        reg.setD0_B(mm.readByte(reg.a5 + W.at_q_work));
+        reg.setD0_B(mm.readByte(reg.a5 + W.at_q_work) & 0xff);
         if (reg.getD0_B() != 0) { // break L1;
             reg.setD0_B(reg.getD0_B() - 1);
         } else { // if (Reg.getD0_B() != 0) break L2;
@@ -183,7 +183,7 @@ public class ComAnalyze {
 // L1:
                 dmyFlg = false;
                 reg.D0_L = 0;
-                reg.setD0_B(mm.readByte(reg.a1++));
+                reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
                 if ((byte) reg.getD0_B() >= 0) break; // _track_ana_mml;
 
                 reg.setD0_B(reg.getD0_B() - 0x80);
@@ -202,7 +202,7 @@ public class ComAnalyze {
 
                 if ((byte) (mm.readByte(reg.a6 + Dw.DRV_STATUS) & 0x8) == 0) { // break _track_ana_exit_jump;
 
-                    reg.setD1_B(mm.readByte(reg.a5 + W.key_trans));
+                    reg.setD1_B(mm.readByte(reg.a5 + W.key_trans) & 0xff);
                     if ((byte) reg.getD0_B() < 0) { // break _track_ana_mml_plus;
 
                         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
@@ -221,10 +221,10 @@ public class ComAnalyze {
 // _track_ana_mml_:
                     boolean _track_ana_exit = false;
                     if ((byte) (mm.readByte(reg.a5 + W.flag3) & 0x40) == 0) { // break _track_ana_mml1;
-                        reg.setD1_B(mm.readByte(reg.a5 + W.flag));
+                        reg.setD1_B(mm.readByte(reg.a5 + W.flag) & 0xff);
                         if ((reg.D1_L & 0x40) != 0) { // break _track_ana_mml1;
                             if ((reg.D1_L & 0x02) == 0) { // break _track_ana_mml1;
-                                if (reg.getD0_B() - mm.readByte(reg.a5 + W.key) == 0) { // break _track_ana_exit;
+                                if (reg.getD0_B() - (mm.readByte(reg.a5 + W.key) & 0xff) == 0) { // break _track_ana_exit;
                                     _track_ana_exit = true;
                                 } else {
                                     mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x1));
@@ -246,7 +246,7 @@ public class ComAnalyze {
 // _track_ana_exit_jump:
 
                 reg.D0_L = 0;
-                reg.setD0_B(mm.readByte(reg.a1++));
+                reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
                 if (reg.getD0_B() == 0) {
                     continue; // break _track_loop;
                 }
@@ -264,7 +264,7 @@ public class ComAnalyze {
             }
 // _track_ana_rest_exit:
 
-            reg.setD0_B(mm.readByte(reg.a6 + Dw.DRV_FLAG2));
+            reg.setD0_B(mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0xff);
             if ((byte) reg.getD0_B() >= 0) { // break L1;
                 if ((reg.D0_L & 0x40) == 0) { // break L1;
                     reg.a0 = mm.readInt(reg.a5 + W.keyoff_adrs);
@@ -272,7 +272,7 @@ public class ComAnalyze {
                 }
             }
 // L1:
-            reg.setD0_B(mm.readByte(reg.a1++));
+            reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
             if (reg.getD0_B() == 0) continue; // break _track_loop;
             mm.write(reg.a5 + W.len, (byte) reg.getD0_B());
             reg.a0 = mm.readInt(reg.a6 + Dw.TRKANA_RESTADR);
@@ -286,7 +286,7 @@ public class ComAnalyze {
             _track_ana_exit_atq_new();
             return;
         }
-        reg.setD0_B(reg.getD0_B() - mm.readByte(reg.a5 + W.at_q));
+        reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a5 + W.at_q) & 0xff));
         if (reg.getD0_B() == 0) {
             reg.D0_L = 0xffffffff;
         }
@@ -296,7 +296,7 @@ public class ComAnalyze {
 
     public void _track_ana_exit_atq_new() {
         reg.D1_L = 0;
-        reg.setD1_B(mm.readByte(reg.a5 + W.at_q));
+        reg.setD1_B(mm.readByte(reg.a5 + W.at_q) & 0xff);
         reg.setD0_W(reg.getD0_W() - (int) (short) reg.getD1_W());
         if ((short) reg.getD0_W() > 0) {
             mm.write(reg.a5 + W.at_q_work, (byte) reg.getD0_B());
@@ -314,7 +314,7 @@ public class ComAnalyze {
     }
 
     public void _track_ana_exit_() {
-        if (mm.readByte(reg.a1) - (byte) 0x81 != 0) {
+        if ((mm.readByte(reg.a1) & 0xff) - 0x81 != 0) {
             if ((byte) (mm.readByte(reg.a5 + W.flag3) & 0x40) == 0) {
                 mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0xbf));
             }
@@ -330,7 +330,7 @@ public class ComAnalyze {
         if ((byte) (mm.readByte(reg.a5 + W.flag2) & 0x40) == 0) {
             mm.write(reg.a5 + W.at_q, (byte) 0);
         }
-        if (mm.readByte(reg.a1) - (byte) 0x81 != 0) {
+        if ((mm.readByte(reg.a1) & 0xff) - 0x81 != 0) {
             if ((byte) (mm.readByte(reg.a5 + W.flag3) & 0x40) == 0) {
                 mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0xbf));
             }
@@ -347,7 +347,7 @@ public class ComAnalyze {
             mm.write(reg.a5 + W.at_q, (byte) reg.getD0_B());
             mm.write(reg.a5 + W.at_q_work, (byte) reg.getD0_B());
         }
-        if (mm.readByte(reg.a1) - (byte) 0x81 != 0) {
+        if ((mm.readByte(reg.a1) & 0xff) - 0x81 != 0) {
             if ((byte) (mm.readByte(reg.a5 + W.flag3) & 0x40) == 0) {
                 mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0xbf));
             }

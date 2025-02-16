@@ -394,7 +394,7 @@ public class Ym2608Chip implements Chip {
         _write(chipId, 0, 0x27, 0x30, model); // Timer Control
         _write(chipId, 0, 0x29, 0x80, model); // FM4-6 Enable
 
-        // SSG 音程(2byte*3ch)
+        // SSG Pitch (2byte*3ch)
         for (int i = 0x00; i < 0x05 + 1; i++) {
             _write(chipId, 0, i, 0x00, model);
         }

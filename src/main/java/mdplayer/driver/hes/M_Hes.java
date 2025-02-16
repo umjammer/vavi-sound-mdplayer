@@ -103,8 +103,8 @@ public class M_Hes {
     }
 
     private static final int SHIFT_CPS = 15;
-    private static final int HES_BASECYCLES = (21477270);
-    private static final int HES_TIMERCYCLES = (1024 * 3);
+    private static final int HES_BASECYCLES = 21477270;
+    private static final int HES_TIMERCYCLES = 1024 * 3;
 
     public interface ReadProc extends BiFunction<HESHES, Integer, Integer> {
     }
@@ -171,7 +171,8 @@ public class M_Hes {
 
         private static int getDwordLE(byte[] p, int ptr) {
             if (p.length <= ptr + 3) return 0;
-            return ByteUtil.readLeInt(p, ptr);
+            int r = ByteUtil.readLeInt(p, ptr);
+            return r;
         }
 
         private static int fixDiv(int p1, int p2, int fix) {
@@ -267,7 +268,7 @@ public class M_Hes {
                     this.hesvdcStatus = 0;
                     v = 0x20;
                 }
-                this.ctx.iRequest &= 0xffFF_FFDF;// ~Km6280.IRQ.INT1;
+                this.ctx.iRequest &= 0xffff_ffdf;// ~Km6280.IRQ.INT1;
 //#if 0
 //                v = 0x20;	// Always VSYNC period
 //#endif
@@ -310,7 +311,7 @@ public class M_Hes {
                 return 0x00;
             case 7:
                 a -= this.playerRomAddr;
-                if (a < 0x10) return this.playerRom[a];
+                if (a >= 0 && a < 0x10) return this.playerRom[a] & 0xff; // TODO vavi
                 return 0xff;
             case 6: // CDROM
                 switch (a & 15) {
@@ -391,7 +392,7 @@ public class M_Hes {
         public int readEvent(int a) {
             int page = this.mpr[a >> 13] & 0xff;
             if (this.memMap[page] != null)
-                return this.memMap[page][a & 0x1fff];
+                return this.memMap[page][a & 0x1fff] & 0xff;
             else if (page == 0xff)
                 return readIO(a & 0x1fff);
             else
@@ -408,7 +409,7 @@ public class M_Hes {
 
         public int readMprEvent(int a) {
             int i;
-            for (i = 0; i < 8; i++) if ((a & (1 << i)) != 0) return this.mpr[i];
+            for (i = 0; i < 8; i++) if ((a & (1 << i)) != 0) return this.mpr[i] & 0xff;
             return 0xff;
         }
 
@@ -670,7 +671,7 @@ public class M_Hes {
                 return Error.SHORTOFMEMORY.ordinal();
             if (this.allocPhysicalAddress(0x00 << 13, 0x2000) == 0) // IPL-ROM
                 return Error.SHORTOFMEMORY.ordinal();
-            for (p = 0x10; p + 0x10 < uSize; p += 0x10 + getDwordLE(pData, p + 4)) {
+            for (p = 0x10; p + 0x10 < uSize; p += 0x10 + (getDwordLE(pData, p + 4) > 0 ? getDwordLE(pData, p + 4) : uSize)) {
                 if (getDwordLE(pData, p) == 0x41544144) { // 'DATA'
                     int a, l;
                     l = getDwordLE(pData, p + 4);
@@ -684,11 +685,14 @@ public class M_Hes {
             }
             //this..hessnd = HESSoundAlloc();
             //if (this..hessnd == 0) return NESERR_SHORTOFMEMORY;
-            this.hespcm = (new S_Hesad()).HESAdPcmAlloc();
+            this.s_head = new S_Hesad();
+            this.hespcm = s_head.HESAdPcmAlloc(s_head);
             if (this.hespcm == null) return Error.SHORTOFMEMORY.ordinal();
 
             return Error.NOERROR.ordinal();
         }
+
+        S_Hesad s_head;
     }
 
     // Memory viewer settings from here

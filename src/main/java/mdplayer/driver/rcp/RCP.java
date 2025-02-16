@@ -1516,7 +1516,7 @@ public class RCP extends BaseDriver {
             nowTempo = Tempo;
             oneSyncTime = 60.0 / nowTempo / timeBase;
         } else {
-            // リタルダンド
+            // Ritardando
             int Tempo = (int) (this.tempo * mul);
             double s = (Tempo - this.tempo) * 256.0 / ((256.0 - eve.getMIDIMessages()[0][1]) * timeBase);
             relativeTempoChangeTargetTempo = Tempo;
@@ -1738,8 +1738,8 @@ public class RCP extends BaseDriver {
             j++;
             if ((n & 0xff) == 0xf7) break;
             if (i >= msgBuf.length) {
-                logger.log(Level.TRACE, "sefUserExclusiveN:バッファをオーバーするエクスクルーシブを検知しスキップ。");
-                return; // バッファをオーバーする時はエクスクルーシブを送らない
+                logger.log(Level.TRACE, "sefUserExclusiveN: Detects and skips exclusive requests that exceed the buffer.");
+                return; // Do not send exclusive when buffer is over
             }
         }
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, i);
