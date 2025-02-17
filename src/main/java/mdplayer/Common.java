@@ -165,7 +165,7 @@ public class Common {
         return gd3;
     }
 
-    public static String getNRDString(byte[] buf,/*ref*/ int[] index) {
+    public static String getNRDString(byte[] buf, /* ref */ int[] index) {
         if (buf == null || buf.length < 1 || index[0] < 0 || index[0] >= buf.length) return "";
 
         try {
@@ -188,6 +188,29 @@ public class Common {
 
     public static int range(int n, int min, int max) {
         return (n > max) ? max : Math.max(n, min);
+    }
+
+
+    public static int getVv(byte[] buf, /* ref */ int[] musicPtr) {
+        int s = 0, n = 0;
+
+        do {
+            n |= (buf[musicPtr[0]] & 0x7f) << s;
+            s += 7;
+        } while ((buf[musicPtr[0]++] & 0x80) > 0);
+
+        return n + 2;
+    }
+
+    public static int getV(byte[] buf, /* ref */ int[] musicPtr) {
+        int s = 0, n = 0;
+
+        do {
+            n |= (buf[musicPtr[0]] & 0x7f) << s;
+            s += 7;
+        } while ((buf[musicPtr[0]++] & 0x80) > 0);
+
+        return n;
     }
 
     public static int getDelta(int trkPtr, byte[] bs) {

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mdplayer.Chip;
+import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
 import mdplayer.chips.Ay8910Chip;
@@ -222,7 +223,7 @@ public class S98 extends BaseDriver {
         case 1:
             s98Info.SyncNumerator = ByteUtil.readLeInt(vgmBuf, 4);
             if (s98Info.SyncNumerator == 0) s98Info.SyncNumerator = 10;
-            s98Info.SyncDnumerator = 1000;
+            s98Info.SyncDNumerator = 1000;
             s98Info.Compressing = ByteUtil.readLeInt(vgmBuf, 0xc); // not support
             s98Info.TAGAddress = ByteUtil.readLeInt(vgmBuf, 0x10);
             s98Info.DumpAddress = ByteUtil.readLeInt(vgmBuf, 0x14);
@@ -232,8 +233,8 @@ public class S98 extends BaseDriver {
         case 2:
             s98Info.SyncNumerator = ByteUtil.readLeInt(vgmBuf, 4);
             if (s98Info.SyncNumerator == 0) s98Info.SyncNumerator = 10;
-            s98Info.SyncDnumerator = ByteUtil.readLeInt(vgmBuf, 8);
-            if (s98Info.SyncDnumerator == 0) s98Info.SyncDnumerator = 1000;
+            s98Info.SyncDNumerator = ByteUtil.readLeInt(vgmBuf, 8);
+            if (s98Info.SyncDNumerator == 0) s98Info.SyncDNumerator = 1000;
             s98Info.Compressing = ByteUtil.readLeInt(vgmBuf, 0xc); // not support
             s98Info.TAGAddress = ByteUtil.readLeInt(vgmBuf, 0x10);
             s98Info.DumpAddress = ByteUtil.readLeInt(vgmBuf, 0x14);
@@ -244,8 +245,8 @@ public class S98 extends BaseDriver {
         case 3:
             s98Info.SyncNumerator = ByteUtil.readLeInt(vgmBuf, 4);
             if (s98Info.SyncNumerator == 0) s98Info.SyncNumerator = 10;
-            s98Info.SyncDnumerator = ByteUtil.readLeInt(vgmBuf, 8);
-            if (s98Info.SyncDnumerator == 0) s98Info.SyncDnumerator = 1000;
+            s98Info.SyncDNumerator = ByteUtil.readLeInt(vgmBuf, 8);
+            if (s98Info.SyncDNumerator == 0) s98Info.SyncDNumerator = 1000;
             s98Info.Compressing = ByteUtil.readLeInt(vgmBuf, 0xc);
             s98Info.TAGAddress = ByteUtil.readLeInt(vgmBuf, 0x10);
             s98Info.DumpAddress = ByteUtil.readLeInt(vgmBuf, 0x14);
@@ -269,8 +270,7 @@ public class S98 extends BaseDriver {
         } else {
             if (s98Info.FormatVersion == 2) {
                 int i = 0;
-                while (true) {
-                    if (!(ByteUtil.readLeInt(vgmBuf, 0x20 + i * 0x10) != 0)) break;
+                while (ByteUtil.readLeInt(vgmBuf, 0x20 + i * 0x10) != 0) {
                     S98DevInfo info = new S98DevInfo();
                     info.deviceType = ByteUtil.readLeInt(vgmBuf, 0x20 + i * 0x10);
                     if (devIDs[info.deviceType] > 1) {
@@ -279,21 +279,11 @@ public class S98 extends BaseDriver {
                     }
                     info.clock = ByteUtil.readLeInt(vgmBuf, 0x24 + i * 0x10);
                     switch (info.deviceType) {
-                    case 1:
-                        chips.add("YM2149");
-                        break;
-                    case 2:
-                        chips.add("YM2203");
-                        break;
-                    case 3:
-                        chips.add("Ym2612Inst");
-                        break;
-                    case 4:
-                        chips.add("YM2608");
-                        break;
-                    case 5:
-                        chips.add("YM2151");
-                        break;
+                        case 1 -> chips.add("YM2149");
+                        case 2 -> chips.add("YM2203");
+                        case 3 -> chips.add("Ym2612");
+                        case 4 -> chips.add("YM2608");
+                        case 5 -> chips.add("YM2151");
                     }
 
                     info.chipId = devIDs[info.deviceType]++;
@@ -309,39 +299,17 @@ public class S98 extends BaseDriver {
                     info.clock = ByteUtil.readLeInt(vgmBuf, 0x24 + i * 0x10);
                     info.Pan = ByteUtil.readLeInt(vgmBuf, 0x28 + i * 0x10);
                     switch (info.deviceType) {
-                    case 1:
-                        chips.add("YM2149");
-                        break;
-                    case 2:
-                        chips.add("YM2203");
-                        break;
-                    case 3:
-                        chips.add("Ym2612Inst");
-                        break;
-                    case 4:
-                        chips.add("YM2608");
-                        break;
-                    case 5:
-                        chips.add("YM2151");
-                        break;
-                    case 6:
-                        chips.add("YM2413");
-                        break;
-                    case 7:
-                        chips.add("YM3526");
-                        break;
-                    case 8:
-                        chips.add("YM3812");
-                        break;
-                    case 9:
-                        chips.add("YMF262");
-                        break;
-                    case 15:
-                        chips.add("AY8910");
-                        break;
-                    case 16:
-                        chips.add("SN76489");
-                        break;
+                        case 1 -> chips.add("YM2149");
+                        case 2 -> chips.add("YM2203");
+                        case 3 -> chips.add("Ym2612");
+                        case 4 -> chips.add("YM2608");
+                        case 5 -> chips.add("YM2151");
+                        case 6 -> chips.add("YM2413");
+                        case 7 -> chips.add("YM3526");
+                        case 8 -> chips.add("YM3812");
+                        case 9 -> chips.add("YMF262");
+                        case 15 -> chips.add("AY8910");
+                        case 16 -> chips.add("SN76489");
                     }
 
                     info.chipId = devIDs[info.deviceType]++;
@@ -351,7 +319,7 @@ public class S98 extends BaseDriver {
         }
 
         musicPtr = s98Info.DumpAddress;
-        oneSyncTime = s98Info.SyncNumerator / (double) s98Info.SyncDnumerator;
+        oneSyncTime = s98Info.SyncNumerator / (double) s98Info.SyncDNumerator;
 
         return true;
     }
@@ -359,7 +327,7 @@ public class S98 extends BaseDriver {
     public static class S98Info {
         public int FormatVersion = 0;
         public int SyncNumerator = 0;
-        public int SyncDnumerator = 0;
+        public int SyncDNumerator = 0;
         public int Compressing = 0;
         public int TAGAddress = 0;
         public int DumpAddress = 0;
@@ -369,7 +337,7 @@ public class S98 extends BaseDriver {
     }
 
     public static class S98DevInfo {
-        public byte chipId = 0;
+        public int chipId = 0;
         public int deviceType = 0;
         public int clock = 0;
         public int Pan = 0;
@@ -401,7 +369,7 @@ public class S98 extends BaseDriver {
     private void oneFrameS98() {
         try {
             while (true) {
-                if (vgmBuf == null) {
+                if (vgmBuf == null || musicPtr == vgmBuf.length) {
                     break;
                 }
 
@@ -416,7 +384,9 @@ public class S98 extends BaseDriver {
 
                 // wait nSync
                 if (cmd == 0xfe) {
-                    s98WaitCounter = getVv(vgmBuf, musicPtr);
+                    int[] tmp = new int[] {musicPtr};
+                    s98WaitCounter = Common.getVv(vgmBuf, tmp);
+                    musicPtr = tmp[0];
                     ym2608WaitCounter = 0;
                     break;
                 }
@@ -474,7 +444,7 @@ public class S98 extends BaseDriver {
 //                        }
                     }
 
-                    writeYM2608(s98Info.DeviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr], vgmBuf[musicPtr + 1]);
+                    writeYM2608(s98Info.DeviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     ym2608WaitCounter++;
                     break;
                 case 5:
@@ -546,27 +516,5 @@ public class S98 extends BaseDriver {
 
     private void writeYMF262(int chipId, int port, int adr, int data) {
         plugin.audio.chipRegister.chip(YmF262Chip.class).write(chipId, port, adr, data, model);
-    }
-
-    static int getVv(byte[] buf, int musicPtr) {
-        int s = 0, n = 0;
-
-        do {
-            n |= (buf[musicPtr] & 0x7f) << s;
-            s += 7;
-        } while ((buf[musicPtr++] & 0x80) > 0);
-
-        return n + 2;
-    }
-
-    static int getV(byte[] buf, int musicPtr) {
-        int s = 0, n = 0;
-
-        do {
-            n |= (buf[musicPtr] & 0x7f) << s;
-            s += 7;
-        } while ((buf[musicPtr++] & 0x80) > 0);
-
-        return n;
     }
 }
