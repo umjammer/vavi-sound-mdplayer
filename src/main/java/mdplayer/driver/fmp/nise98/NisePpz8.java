@@ -1,0 +1,212 @@
+package mdplayer.driver.fmp.nise98;
+
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+import java.util.ArrayList;
+import java.util.List;
+
+import dotnet4j.util.compat.TriConsumer;
+import vavi.util.ByteUtil;
+
+import static java.lang.System.getLogger;
+import static mdplayer.Common.charset;
+
+
+public class NisePpz8 {
+
+    private static final Logger logger = getLogger(NisePpz8.class.getName());
+
+    private Register286 regs;
+    private Memory98 mem;
+    private NiseDos dos;
+    private Nise286 cpu;
+    private Nise98 nise98;
+
+    private final byte ppz8Int = 0x7f;
+    private final short ppz8EntryAddressSeg = 0x4000;
+    private final short ppz8EntryAddressOfs = 0x0000;
+
+    private final short ppz8IDOfs = 0x0005;
+    private final short ppz8VerOfs = 0x000a;
+
+    private final short ppz8FIFOAddressOfs = 0x0F00; // Offset to FIFO processing
+    private final short ppz8ReleaseOfs = 0x1000;
+    private final short ppz8ReleaseMessageOfs = 0x1001;
+
+//    private int temporarySeg;
+//    private int temporarySize;
+    private byte emuADPCM;
+    private TriConsumer<Integer, Integer, byte[][]> setPPZ8PCMData;
+    private TriConsumer<Integer, Integer, Integer> setPPZ8Data;
+    private byte[][] pcmData = new byte[2][];
+
+    public NisePpz8(Nise98 nise98) {
+        this.regs = nise98.GetRegisters();
+        this.mem = nise98.GetMem();
+        this.dos = nise98.GetDos();
+        this.cpu = nise98.GetCPU();
+        this.nise98 = nise98;
+
+        mem.PokeW(ppz8Int * 4 + 0, ppz8EntryAddressOfs); // ofs
+        mem.PokeW(ppz8Int * 4 + 2, ppz8EntryAddressSeg); // seg
+
+        // ID
+        int ptr = (ppz8EntryAddressSeg << 4) + ppz8IDOfs;
+        mem.PokeB(ptr + 0x00, (byte) 'P');
+        mem.PokeB(ptr + 0x01, (byte) 'P');
+        mem.PokeB(ptr + 0x02, (byte) 'Z');
+        mem.PokeB(ptr + 0x03, (byte) '8');
+        mem.PokeB(ptr + 0x04, (byte) 0);
+
+        // Version
+        ptr = (ppz8EntryAddressSeg << 4) + ppz8VerOfs;
+        mem.PokeB(ptr + 0x00, (byte) '1');
+        mem.PokeB(ptr + 0x01, (byte) '.');
+        mem.PokeB(ptr + 0x02, (byte) '0');
+        mem.PokeB(ptr + 0x03, (byte) '7');
+
+        // Residency release message
+        byte[] bmsg = "The PPZ8 has been disabled as resident.\n$".getBytes(charset);
+        ptr = (ppz8EntryAddressSeg << 4) + ppz8ReleaseMessageOfs;
+        for (byte ch : bmsg) {
+            mem.PokeB(ptr, ch);
+            ptr++;
+        }
+
+        dos.setHookINT(ppz8Int, this::INT7F);
+        cpu.SetHook(this::Hook);
+    }
+
+    public void FMPRegistPPZ8(/* out */ int[] step, /* out */ Register286[] regs) {
+        regs[0] = nise98.GetRegisters();
+        regs[0].setAX((short) 0x0010);
+        logger.log(Level.DEBUG, "FMPRegistPPZ8");
+        step[0] = 0;
+        regs[0].setDS(ppz8EntryAddressSeg); // 'PPZ8''s seg
+        regs[0].setSI(ppz8IDOfs); // 'PPZ8''s ofs
+        regs[0].setDX(ppz8ReleaseOfs); // Far call when resident is released
+        regs[0].setCL((short) 0x00); // TASK_ASIN
+        nise98.CallRunfunctionCall((byte) 0xd2, true, true, true, 10_000_000_000L, 0_000);
+
+        logger.log(Level.INFO, "set the fake PPZ8 to the FMP task.");
+    }
+
+    public void INT7F() {
+        switch (regs.getAH()) {
+            case 0x00: // Initialization
+                // Work initialization
+                setPPZ8Data.accept(0, 0, 0);
+                setPPZ8Data.accept(10, 0, 1);
+                for (int i = 0; i < 8; i++) {
+                    setPPZ8Data.accept(21, i, 16000);
+//                    setPPZ8Data.accept(0x0e + i * 0x100, 0xffff, 0xffff);
+                }
+                break;
+            case 0x01: // KEY ON PCM
+                setPPZ8Data.accept(1, regs.getAL() & 0xff, regs.getDX() & 0xff);
+                break;
+            case 0x02: // KEY OFF PCM
+                setPPZ8Data.accept(2, regs.getAL() & 0xff, 0);
+                break;
+            case 0x03:
+                List<Byte> lstFN = new ArrayList<>();
+                int ptr = regs.getDS_DX();
+                do {
+                    byte c = mem.PeekB(ptr++);
+                    if (c == 0) break;
+                    lstFN.add(c);
+                } while (true);
+                String fn = new String(ByteUtil.toByteArray(lstFN), charset);
+                boolean refEnv = regs.getAL() == 0;
+                int pcmBufNum = regs.getCL();
+                boolean pcmIsPVI = regs.getCH() == 0;
+                pcmData[pcmBufNum] = dos.loadData(fn);
+                setPPZ8PCMData.accept(pcmBufNum, pcmIsPVI ? 0 : 1, pcmData);
+                regs.setCF(false);
+                break;
+            case 0x04:
+                switch (regs.getAL()) {
+                    case 0x09:
+                        regs.setES(ppz8EntryAddressSeg);
+                        regs.setBX(ppz8FIFOAddressOfs);
+                        break;
+                    default:
+                        throw new UnsupportedOperationException();
+                }
+                setPPZ8Data.accept(4, regs.getAL() & 0xff, 0);
+                break;
+            case 0x07: // change volume
+                setPPZ8Data.accept(7, regs.getAL() & 0xff, (int) Math.min((short) regs.getDX(), (short) 15));// / (emuADPCM != 0 ? 16 : 1));
+                break;
+            case 0x0a: // ADPCM volume adjust
+                setPPZ8Data.accept(10, 0, regs.getDX() & 0xff);
+                break;
+            case 0x0b: // change PCM FNUM
+                setPPZ8Data.accept(11, regs.getAL() & 0xff, ((short) regs.getDX() << 16) + (short) regs.getCX());
+                break;
+            case 0x0e: // set loop point
+                setPPZ8Data.accept(14 + regs.getAL() * 0x100, ((short) regs.getDX() << 16) + (short) regs.getCX(), ((short) regs.getDI() << 16) + (short) regs.getSI());
+                break;
+            case 0x12: // Disable interrupt
+                break;
+            case 0x13: // change pan
+                setPPZ8Data.accept(19, regs.getAL() & 0xff, regs.getDX() & 0xff);
+                break;
+            case 0x14: // Playback Rate Settings
+                break;
+            case 0x15: // Original data frequency setting
+                setPPZ8Data.accept(21, regs.getAL() & 0xff, regs.getDX() & 0xff);
+                break;
+            case 0x16:
+                setPPZ8Data.accept(22, 0, regs.getAL() & 0xff);
+                break;
+            case 0x17:
+//                temporarySeg = (short) regs.ES;
+//                temporarySize = (short) regs.DX;
+                break;
+            case 0x18:
+                setPPZ8Data.accept(24, regs.getAL() & 0xff, 0);
+                emuADPCM = (byte) regs.getAL();
+                break;
+            case 0x19: // Resident disable permission/prohibition setting
+                break;
+            case 0x1a: // Changing the FIFO buffer
+                break;
+            default:
+                throw new UnsupportedOperationException();
+        }
+    }
+
+    public boolean Hook() {
+        if (regs.getCS() != ppz8EntryAddressSeg) return false;
+
+        boolean Cancel = false;
+        switch (regs.IP) {
+            case ppz8ReleaseOfs:
+                regs.setDX(ppz8ReleaseMessageOfs);
+                Cancel = true;
+                break;
+            case ppz8FIFOAddressOfs:
+                // FIFO Processing
+                // The original uses EMS/XMS data transfer processing.
+                // TBD
+                Cancel = true;
+                break;
+        }
+
+        if (Cancel) {
+            regs.IP = mem.PeekW(regs.getSS_SP());
+            regs.addSP(2);
+            regs.setCS(mem.PeekW(regs.getSS_SP()));
+            regs.addSP(2);
+            return true;
+        }
+        logger.log(Level.ERROR, "[NisePPZ8]An unknown address is referenced.IP:%04x".formatted(regs.IP));
+        return false;
+    }
+
+    public void SetCallBack(TriConsumer<Integer, Integer, byte[][]> setPPZ8PCMData, TriConsumer<Integer, Integer, Integer> setPPZ8Data) {
+        this.setPPZ8PCMData = setPPZ8PCMData;
+        this.setPPZ8Data = setPPZ8Data;
+    }
+}
