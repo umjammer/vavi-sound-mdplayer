@@ -42,6 +42,8 @@ public class Ay8910Chip implements Chip {
             {false, false, false}
     };
 
+    public int clock;
+
     private Audio context;
 
     @Override

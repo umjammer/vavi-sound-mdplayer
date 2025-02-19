@@ -25,6 +25,7 @@ import zdream.nsfplayer.nsf.audio.NsfAudioFactory;
 import zdream.nsfplayer.nsf.renderer.NsfRenderer;
 
 import static java.lang.System.getLogger;
+import static mdplayer.Common.charset;
 
 
 /**
@@ -67,7 +68,7 @@ logger.log(Level.WARNING, "no header?");
             if (buf[tagAdr] == 0) break;
             strLst.add(buf[tagAdr++]);
         }
-        title_nsf = new String(ByteUtil.toByteArray(strLst), Charset.forName("MS932"));
+        title_nsf = new String(ByteUtil.toByteArray(strLst), charset);
         title = title_nsf;
 
         strLst.clear();
@@ -76,7 +77,7 @@ logger.log(Level.WARNING, "no header?");
             if (buf[tagAdr] == 0) break;
             strLst.add(buf[tagAdr++]);
         }
-        artist_nsf = new String(ByteUtil.toByteArray(strLst), Charset.forName("MS932"));
+        artist_nsf = new String(ByteUtil.toByteArray(strLst), charset);
         artist = artist_nsf;
 
         //memcpy(copyright_nsf, image + 0x4e, 32);
@@ -87,7 +88,7 @@ logger.log(Level.WARNING, "no header?");
             if (buf[tagAdr] == 0) break;
             strLst.add(buf[tagAdr++]);
         }
-        copyrightNsf = new String(ByteUtil.toByteArray(strLst), Charset.forName("MS932"));
+        copyrightNsf = new String(ByteUtil.toByteArray(strLst), charset);
         copyright = copyrightNsf;
 
         ripper = ""; // NSFe only

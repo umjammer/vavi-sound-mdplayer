@@ -82,7 +82,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             Function<String, Stream> fn = Common::getOPNARyhthmStream;
             chip.option = new Object[] {fn};
             put(Ym2608Chip.class, chip);
-//            audio.clockYM2608 = 8000000;
+            audio.chipRegister.chip(Ym2608Chip.class).clock = 8000000;
         }
 
         if (setting.getYM2608Type()[1].getUseEmu()[0]) {
@@ -94,7 +94,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.clock = 8000000; // 7987200;
             chip.option = new Object[] {Common.getApplicationFolder()};
             put(Ym2608Chip.class, chip);
-//            audio.clockYM2608 = 8000000;
+            audio.chipRegister.chip(Ym2608Chip.class).clock = 8000000;
         }
 
         X68kMPcmInst mpcm = Instrument.getInstrument(X68kMPcmInst.class);

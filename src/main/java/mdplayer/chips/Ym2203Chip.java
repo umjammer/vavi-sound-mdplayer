@@ -39,6 +39,8 @@ public class Ym2203Chip implements Chip {
             {false, false, false, false, false, false, false, false, false}
     };
 
+    public int clock;
+
     private Audio context;
 
     @Override

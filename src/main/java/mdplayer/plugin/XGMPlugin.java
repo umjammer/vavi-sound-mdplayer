@@ -72,7 +72,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Chip.class);
         chip.clock = 7670454;
-//        audio.clockYM2612 = 7670454;
+        audio.chipRegister.chip(Ym2612Chip.class).clock = 7670454;
         audio.chipLED.put("PriOPN2", 1);
         put(Ym2612Chip.class, chip);
 

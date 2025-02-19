@@ -16,12 +16,9 @@ import mdplayer.chips.Ym2610Chip;
 import mdplayer.driver.mucom.MucomJava;
 import mdplayer.driver.mucom.MucomJava.MUCOMFileType;
 import mdplayer.format.FileFormat;
-import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.Ym2151Inst;
 import mdsound.instrument.Ym2608Inst;
 import mdsound.instrument.Ym2610Inst;
-import mdsound.instrument.YmFmYm2608Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -83,7 +80,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             put(Ym2608Chip.class, chip);
 
             audio.chipLED.put("PriOPNA", 1);
-//            audio.clockYM2608 = MucomJava.opnaBaseClock;
+            audio.chipRegister.chip(Ym2608Chip.class).clock = MucomJava.opnaBaseClock;
         }
 
         if (useChipFromMub[1] != Unused.class) {
@@ -121,7 +118,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             }
             chip.option = null;
             put(Ym2610Chip.class, chip);
-//            audio.clockYM2610 = MucomJava.opnbBaseClock;
+            audio.chipRegister.chip(Ym2610Chip.class).clock = MucomJava.opnbBaseClock;
         }
 
         if (useChipFromMub[3] != Unused.class) {

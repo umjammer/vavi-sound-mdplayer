@@ -9,12 +9,7 @@ import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.nrtdrv.NRTDRV;
 import mdplayer.format.FileFormat;
-import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.Ay8910Inst;
-import mdsound.instrument.MameYm2151Inst;
-import mdsound.instrument.X68kYm2151Inst;
-import mdsound.instrument.Ym2151Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -83,7 +78,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
             chip.clock = 2000000 / 2;
-//            audio.clockAY8910 = chip.clock;
+            audio.chipRegister.chip(Ay8910Chip.class).clock = chip.clock;
             chip.option = null;
 
             hiyorimiDeviceFlag |= 0x1;

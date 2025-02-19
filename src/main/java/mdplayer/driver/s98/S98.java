@@ -2,7 +2,6 @@ package mdplayer.driver.s98;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +26,8 @@ import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
+import static mdplayer.Common.charset;
 
 
 public class S98 extends BaseDriver {
@@ -70,7 +69,7 @@ public class S98 extends BaseDriver {
                 while (buf[tagAdr] != 0x0a && buf[tagAdr] != 0x00) {
                     strLst.add(buf[tagAdr++]);
                 }
-                str = new String(toByteArray(strLst), Charset.forName("MS932"));
+                str = new String(ByteUtil.toByteArray(strLst), charset);
                 gd3.trackName = str;
                 gd3.trackNameJ = str;
             } else if (format == 3) {
@@ -92,9 +91,9 @@ public class S98 extends BaseDriver {
                         strLst.add(buf[tagAdr++]);
                     }
                     if (isUTF8) {
-                        str = new String(toByteArray(strLst), StandardCharsets.UTF_8);
+                        str = new String(ByteUtil.toByteArray(strLst), StandardCharsets.UTF_8);
                     } else {
-                        str = new String(toByteArray(strLst), Charset.forName("MS932"));
+                        str = new String(ByteUtil.toByteArray(strLst), charset);
                     }
                     tagAdr++;
 

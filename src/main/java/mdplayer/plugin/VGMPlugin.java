@@ -98,7 +98,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.clock = ((Vgm) audio.driverVirtual).sn76489ClockValue
                         | (((Vgm) audio.driverVirtual).sn76489NGPFlag ? 0x8000_0000 : 0);
 
-//                    audio.clockSN76489 = chip.clock & 0x7fff_ffff;
+                audio.chipRegister.chip(Sn76489Chip.class).clock = chip.clock & 0x7fff_ffff;
 
                 if (i == 0) audio.chipLED.put("PriDCSG", 1);
                 else audio.chipLED.put("SecDCSG", 1);
@@ -137,7 +137,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2612Chip.class);
                 chip.clock = ((Vgm) audio.driverVirtual).ym2612ClockValue;
 
-//                audio.clockYM2612 = ((Vgm) audio.driverVirtual).ym2612ClockValue;
+                audio.chipRegister.chip(Ym2612Chip.class).clock = ((Vgm) audio.driverVirtual).ym2612ClockValue;
 
                 hiyorimiDeviceFlag |= (setting.getYM2612Type()[0].getUseReal()[0]) ? 0x1 : 0x2;
                 hiyorimiDeviceFlag |= (setting.getYM2612Type()[0].getUseReal()[0]
@@ -339,7 +339,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.option = new Object[] {fn};
                 hiyorimiDeviceFlag |= 0x2;
 
-//                audio.clockYM2608 = ((Vgm) audio.driverVirtual).ym2608ClockValue;
+                audio.chipRegister.chip(Ym2608Chip.class).clock = ((Vgm) audio.driverVirtual).ym2608ClockValue;
 
                 if (i == 0) audio.chipLED.put("PriOPNA", 1);
                 else audio.chipLED.put("SecOPNA", 1);
@@ -384,7 +384,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.clock = ((Vgm) audio.driverVirtual).ym2203ClockValue;
                 chip.option = null;
 
-//                audio.clockYM2203 = ((Vgm) audio.driverVirtual).ym2203ClockValue;
+                audio.chipRegister.chip(Ym2203Chip.class).clock = ((Vgm) audio.driverVirtual).ym2203ClockValue;
 
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -527,7 +527,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
                 chip.clock = (((Vgm) audio.driverVirtual).ay8910ClockValue & 0x7fff_ffff) / 2;
-//                    audio.clockAY8910 = chip.clock;
+                audio.chipRegister.chip(Ay8910Chip.class).clock = chip.clock;
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;
@@ -692,7 +692,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     chip.setVolumes.put("Rear", c352::setRearMute);
                 chip.option = new Object[] {(((Vgm) audio.driverVirtual).c352ClockDivider)};
                 int divider = (((Vgm) audio.driverVirtual).c352ClockDivider) != 0 ? (((Vgm) audio.driverVirtual).c352ClockDivider) : 288;
-//                    audio.clockC352 = chip.clock / divider;
+                audio.chipRegister.chip(C352Chip.class).clock = chip.clock / divider;
                 C352.setOptions((((Vgm) audio.driverVirtual).c352ClockValue >> 31));
                 hiyorimiDeviceFlag |= 0x2;
 
@@ -765,7 +765,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, K051649Chip.class);
                 chip.clock = ((Vgm) audio.driverVirtual).k051649ClockValue;
-//                    audio.clockK051649 = chip.clock;
+                audio.chipRegister.chip(K051649Chip.class).clock = chip.clock;
                 chip.option = null;
                 if (i == 0) audio.chipLED.put("PriK051649", 1);
                 else audio.chipLED.put("SecK051649", 1);

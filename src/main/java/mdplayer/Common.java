@@ -34,8 +34,8 @@ import dotnet4j.util.compat.Tuple3;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import vavi.awt.dnd.BasicDTListener;
+import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
 import static java.util.function.Predicate.not;
 
@@ -43,6 +43,8 @@ import static java.util.function.Predicate.not;
 public class Common {
 
     private static final Logger logger = getLogger(Common.class.getName());
+
+    public static final Charset charset = Charset.forName("ms932");
 
     private static String[] args;
 
@@ -104,7 +106,7 @@ public class Common {
         }
         adr[0] += 2;
 
-        return toByteArray(ary);
+        return ByteUtil.toByteArray(ary);
     }
 
     public static Vgm.Gd3 getGD3Info(byte[] buf, int adr) {
@@ -176,7 +178,7 @@ public class Common {
                 lst.add(buf[index[0]]);
             }
 
-            String n = new String(toByteArray(lst), Charset.forName("MS932"));
+            String n = new String(ByteUtil.toByteArray(lst), charset);
             index[0]++;
 
             return n;
@@ -189,7 +191,6 @@ public class Common {
     public static int range(int n, int min, int max) {
         return (n > max) ? max : Math.max(n, min);
     }
-
 
     public static int getVv(byte[] buf, /* ref */ int[] musicPtr) {
         int s = 0, n = 0;

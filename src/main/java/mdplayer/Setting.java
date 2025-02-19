@@ -211,6 +211,17 @@ public class Setting implements Serializable, Cloneable {
         public boolean[] getUseRealChipFreqDiff() { return _useRealChipFreqDiff; }
         public void setUseRealChipFreqDiff(boolean[] value) { _useRealChipFreqDiff = value; }
 
+        // Should I switch to YM2149 mode?
+        private boolean _YM2149mode = false;
+
+        public boolean getYM2149mode() {
+            return _YM2149mode;
+        }
+
+        public void setYM2149mode(boolean value) {
+            _YM2149mode = value;
+        }
+
         @Override
         public ChipType2 clone() {
             ChipType2 ct = new ChipType2();
@@ -2057,6 +2068,10 @@ public class Setting implements Serializable, Cloneable {
         public void setNonRenderingForPause(boolean value) {
             nonRenderingForPause = value;
         }
+
+        private boolean saveCompiledFile = false;
+        public boolean getSaveCompiledFile() { return saveCompiledFile; };
+        public void setSaveCompiledFile(boolean value) { saveCompiledFile = value; };
 
         @Override
         public Other clone() {

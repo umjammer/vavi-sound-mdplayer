@@ -2,7 +2,6 @@ package mdplayer.driver.mid;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,8 +18,8 @@ import mdplayer.driver.rcp.RCP;
 import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
+import static mdplayer.Common.charset;
 
 
 public class MID extends BaseDriver {
@@ -109,14 +108,14 @@ public class MID extends BaseDriver {
                             case 0x01:
                                 //case 0x02:
                                 if (T01TrackName.isEmpty()) {
-                                    T01TrackName = new String(toByteArray(eventData), Charset.forName("MS932")).trim();
+                                    T01TrackName = new String(ByteUtil.toByteArray(eventData), charset).trim();
                                 }
                                 break;
                             case 0x03:
                                 if (gd3.trackName.isEmpty()) {
                                     if (format == 0 || (format == 1 && i == 0)) {
-                                        gd3.trackName = new String(toByteArray(eventData), Charset.forName("MS932")).trim();
-                                        gd3.trackNameJ = new String(toByteArray(eventData), Charset.forName("MS932")).trim();
+                                        gd3.trackName = new String(ByteUtil.toByteArray(eventData), charset).trim();
+                                        gd3.trackNameJ = new String(ByteUtil.toByteArray(eventData), charset).trim();
                                     }
                                 }
                                 break;
@@ -316,7 +315,7 @@ public class MID extends BaseDriver {
                             logger.log(Level.TRACE, "%2x ".formatted(vgmBuf[ptr + j]));
                         }
 
-                        plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, trkPort.get(trk), toByteArray(eventData), vstDelta);
+                        plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, trkPort.get(trk), ByteUtil.toByteArray(eventData), vstDelta);
 
                         ptr = ptr + eventLen;
 
@@ -344,32 +343,32 @@ public class MID extends BaseDriver {
 
                             switch (eventType) {
                             case 0x01:
-                                eventText = new String(toByteArray(eventData), Charset.forName("MS932"));
+                                eventText = new String(ByteUtil.toByteArray(eventData), charset);
                                 logger.log(Level.TRACE, "eventText:%s".formatted(eventText));
                                 break;
                             case 0x02:
-                                eventCopyrightNotice = new String(toByteArray(eventData), Charset.forName("MS932"));
+                                eventCopyrightNotice = new String(ByteUtil.toByteArray(eventData), charset);
                                 logger.log(Level.TRACE, "eventCopyrightNotice:%s".formatted(eventCopyrightNotice));
                                 break;
                             case 0x03:
-                                eventSequenceTrackName = new String(toByteArray(eventData), Charset.forName("MS932"));
+                                eventSequenceTrackName = new String(ByteUtil.toByteArray(eventData), charset);
                                 logger.log(Level.TRACE, "eventSequenceTrackName:%s".formatted(eventSequenceTrackName));
                                 break;
                             case 0x04:
-                                eventInstrumentName = new String(toByteArray(eventData), Charset.forName("MS932"));
+                                eventInstrumentName = new String(ByteUtil.toByteArray(eventData), charset);
                                 logger.log(Level.TRACE, "eventInstrumentName:%s".formatted(eventInstrumentName));
                                 break;
                             case 0x05:
-                                eventLyric = new String(toByteArray(eventData), Charset.forName("MS932"));
+                                eventLyric = new String(ByteUtil.toByteArray(eventData), charset);
                                 logger.log(Level.TRACE, "eventLyric:%s".formatted(eventLyric));
                                 plugin.audio.chipRegister.plugin(MidiPlugin.class).params[trkPort.get(trk)].Lyric = eventLyric;
                                 break;
                             case 0x06:
-                                eventMarker = new String(toByteArray(eventData), Charset.forName("MS932"));
+                                eventMarker = new String(ByteUtil.toByteArray(eventData), charset);
                                 logger.log(Level.TRACE, "eventMarker:%s".formatted(eventMarker));
                                 break;
                             case 0x07:
-                                eventText = new String(toByteArray(eventData), Charset.forName("MS932"));
+                                eventText = new String(ByteUtil.toByteArray(eventData), charset);
                                 logger.log(Level.TRACE, "eventText:%s".formatted(eventText));
                                 break;
                             case 0x21:

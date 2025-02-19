@@ -61,6 +61,8 @@ public class Ym2610Chip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
 
+    public int clock;
+
     private Audio context;
 
     @SuppressWarnings("unchecked")

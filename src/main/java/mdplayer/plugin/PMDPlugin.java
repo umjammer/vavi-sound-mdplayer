@@ -14,11 +14,7 @@ import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.pmd.PMDJava;
 import mdplayer.format.FileFormat;
 import mdplayer.format.MMLFileFormat;
-import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.P86Inst;
-import mdsound.instrument.PpsInst;
-import mdsound.instrument.Ppz8Inst;
 import mdsound.instrument.Ym2608Inst;
 
 import static java.lang.System.getLogger;
@@ -72,7 +68,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
         Function<String, Stream> fn = Common::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         put(Ym2608Chip.class, chip);
-//        audio.clockYM2608 = PMDJava.baseclock;
+        audio.chipRegister.chip(Ym2608Chip.class).clock = PMDJava.baseclock;
         audio.chipLED.put("PriOPNA", 1);
 
         chip = new MDSound.Chip();
