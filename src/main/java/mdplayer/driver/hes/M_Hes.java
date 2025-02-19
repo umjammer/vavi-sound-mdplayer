@@ -454,24 +454,24 @@ public class M_Hes {
             return 1;
         }
 
-        public void copy_physical_address(int a, int l, byte[] p, int pP) {
+        public void copy_physical_address(int a, int l, byte[] p, /* ref */ int[] pP) {
             int page = a >> 13;
             int w;
             if ((a & 0x1fff) != 0) {
                 w = 0x2000 - (a & 0x1fff);
                 if (w > l) w = l;
-                if (w >= 0) System.arraycopy(p, pP, this.memMap[page], a & 0x1fff, w);
+                if (w >= 0) System.arraycopy(p, pP[0], this.memMap[page], a & 0x1fff, w);
                 page++;
                 //p += w;
-                pP += w;
+                pP[0] += w;
                 l -= w;
             }
             while (l != 0) {
                 w = Math.min(l, 0x2000);
-                if (w >= 0) System.arraycopy(p, pP, this.memMap[page], 0, w);
+                if (w >= 0) System.arraycopy(p, pP[0], this.memMap[page], 0, w);
                 page++;
                 //p += w;
-                pP += w;
+                pP[0] += w;
                 l -= w;
             }
         }
@@ -492,13 +492,13 @@ public class M_Hes {
                             THIS_.breaked = 1;
                     }
                 } else {
-                    int nextCount;
+                    int[] nextCount = new int[1];
                     // When you break, advance to the next event in one go.
-                    nextCount = THIS_.kme.item[THIS_.kme.item[0].next].count;
+                    nextCount[0] = THIS_.kme.item[THIS_.kme.item[0].next].count;
                     if (kmEvent.getTimer(THIS_.kme, 0, nextCount) != 0) {
                         // There is an event
-                        if (ctx.clock + nextCount < cycles)
-                            ctx.clock += nextCount; // There will be events during the period
+                        if (ctx.clock + nextCount[0] < cycles)
+                            ctx.clock += nextCount[0]; // There will be events during the period
                         else
                             ctx.clock = cycles; // No events during this period
                     } else {
@@ -678,9 +678,9 @@ public class M_Hes {
                     a = getDwordLE(pData, p + 8);
                     if (this.allocPhysicalAddress(a, l) == 0) return Error.SHORTOFMEMORY.ordinal();
                     if (l > uSize - p - 0x10) l = uSize - p - 0x10;
-                    int q = p + 0x10;
-                    this.copy_physical_address(a, l, pData, q);
-                    p = q;
+                    int[] q = new int[] {p + 0x10};
+                    this.copy_physical_address(a, l, pData, /* ref */ q);
+                    p = q[0];
                 }
             }
             //this..hessnd = HESSoundAlloc();
