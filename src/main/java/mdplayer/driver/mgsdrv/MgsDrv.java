@@ -22,9 +22,9 @@ import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
 
 
-public class MGSDRV extends BaseDriver {
+public class MgsDrv extends BaseDriver {
 
-    private static final Logger logger = getLogger(MGSDRV.class.getName());
+    private static final Logger logger = getLogger(MgsDrv.class.getName());
 
     @Override
     public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
@@ -119,10 +119,10 @@ public class MGSDRV extends BaseDriver {
         z80.setClockSynchronizer(null);
         z80.setAutoStopOnRetWithStackEmpty(true);
         z80.setMemory(new MsxMemory(plugin.audio.chipRegister, model));
-        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, plugin.audio.chipRegister, model));
+        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, plugin.audio.chipRegister, null, model));
         z80.beforeInstructionFetch().addListener(this::Z80OnBeforeInstructionFetch);
 
-        mapper = new Mapper((MapperRAMCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1], (MsxMemory) z80.getMemory());
+        mapper = new Mapper((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1], (MsxMemory) z80.getMemory());
 
         //Stopwatch sw = new Stopwatch();
         //sw.Start();
@@ -146,7 +146,7 @@ public class MGSDRV extends BaseDriver {
 
         // Switch to the segment where MGSDRV exists
         ((MsxMemory) z80.getMemory()).changePage(3, 1, 1); // slot3-1 to Page1
-        ((MapperRAMCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1]).setSegmentToPage(4, 1); // Set segment 0x4 to Page1 of slot3-1
+        ((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1]).setSegmentToPage(4, 1); // Set segment 0x4 to Page1 of slot3-1
 
         logger.log(Level.DEBUG, "\n_SYSCK(0010H)");
         z80.getRegisters().setPC((short) 0x6010);
@@ -163,7 +163,7 @@ public class MGSDRV extends BaseDriver {
         //DebugRegisters(z80);
 
         byte[] mgsdata = vgmBuf;
-        MapperRAMCartridge cart = ((MapperRAMCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1]);
+        MapperRamCartridge cart = ((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1]);
         for (int i = 0; i < mgsdata.length; i++) {
             if (i % 0x4000 == 0) cart.setSegmentToPage(5 + (i / 0x4000), 2); // From segment 5 to page 2
             z80.getMemory().set(0x8000 + (i % 0x4000), mgsdata[i]);

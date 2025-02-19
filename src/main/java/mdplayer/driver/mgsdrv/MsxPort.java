@@ -16,15 +16,17 @@ public class MsxPort implements Memory {
 
     private static final Logger logger = getLogger(MsxPort.class.getName());
 
-    private final MSXSlot slot;
+    private final MsxSlot slot;
     private final ChipRegister chipRegister;
+    private MsxVdp vdp;
     private final Common.EnmModel model;
     private byte opllAdr;
     private byte ay8910Adr;
 
-    public MsxPort(MSXSlot slot, ChipRegister chipRegister, Common.EnmModel model) {
+    public MsxPort(MsxSlot slot, ChipRegister chipRegister, MsxVdp vdp, Common.EnmModel model) {
         this.slot = slot;
         this.chipRegister = chipRegister;
+        this.vdp = vdp;
         this.model = model;
     }
 
@@ -56,6 +58,12 @@ public class MsxPort implements Memory {
     private void outPort(int address, byte value) {
 
         switch (address) {
+        case 0x00:
+        case 0x01:
+        case 0x02:
+        case 0x03:
+            if (vdp != null) vdp.write(address, value);
+            break;
         case 0xa0:
             ay8910Adr = value;
             break;
@@ -84,9 +92,16 @@ public class MsxPort implements Memory {
 
     private byte inPort(int address) {
 
-        if (address == 0xa8) {
-            //logger.log(Level.TRACE, "ChangeSlot Port :  adr:%04x".formatted(address));
-            return readSlot();
+        switch (address) {
+            case 0x00:
+            case 0x01:
+            case 0x02:
+            case 0x03:
+                if (vdp == null) return 0;
+                return vdp.Read(address);
+            case 0xa8:
+                //logger.log(Level.TRACE, "ChangeSlot Port :  adr:%04x".formatted(address));
+                return readSlot();
         }
 
         logger.log(Level.DEBUG, "Port :  adr:%04x".formatted(address));

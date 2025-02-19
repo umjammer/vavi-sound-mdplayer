@@ -4,7 +4,7 @@ package mdplayer.driver.mgsdrv;
 import java.util.Arrays;
 
 
-public class MapperRAMCartridge implements Cartridge, IMapper {
+public class MapperRamCartridge implements Cartridge, IMapper {
 
     private final byte[][] physicalMemory;
     private final boolean[] useFlag;
@@ -16,7 +16,7 @@ public class MapperRAMCartridge implements Cartridge, IMapper {
         return segmentSize;
     }
 
-    public MapperRAMCartridge(int segmentSize) {
+    public MapperRamCartridge(int segmentSize) {
         this.segmentSize = segmentSize;
         physicalMemory = new byte[segmentSize][];
         useFlag = new boolean[segmentSize];

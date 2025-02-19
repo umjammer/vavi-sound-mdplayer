@@ -1,11 +1,11 @@
 
 package mdplayer.driver.mgsdrv;
 
-public class MSXMusicCartridge implements Cartridge {
+public class MsxMusicCartridge implements Cartridge {
 
     private final byte[] memory = new byte[65536];
 
-    public MSXMusicCartridge() {
+    public MsxMusicCartridge() {
         memory[0x4018] = (byte) 'A';
         memory[0x4019] = (byte) 'P';
         memory[0x401a] = (byte) 'R';
