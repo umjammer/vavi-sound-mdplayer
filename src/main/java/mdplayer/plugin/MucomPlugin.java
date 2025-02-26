@@ -68,10 +68,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.id = 0;
             chip.instrument = audio.chipRegister.chip(Ym2608Chip.class).instrument(0);
             if (chip.instrument instanceof Ym2608Inst ym2608) {
-                chip.setVolumes.put("FM", ym2608::setFMVolume);
-                chip.setVolumes.put("PSG", ym2608::setPSGVolume);
-                chip.setVolumes.put("Rhythm", ym2608::setRhythmVolume);
-                chip.setVolumes.put("Adpcm", ym2608::setAdpcmVolume);
+                chip.setVolumes.put("FM", ym2608::setVolume);
+                chip.setVolumes.put("SSG", ym2608::setVolume);
+                chip.setVolumes.put("RHYTHM", ym2608::setVolume);
+                chip.setVolumes.put("ADPCM", ym2608::setVolume);
             }
             chip.samplingRate = 55467;
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
@@ -88,10 +88,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.id = 1;
             chip.instrument = audio.chipRegister.chip(Ym2608Chip.class).instrument(0);
             if (chip.instrument instanceof Ym2608Inst ym2608) {
-                chip.setVolumes.put("FM", ym2608::setFMVolume);
-                chip.setVolumes.put("PSG", ym2608::setPSGVolume);
-                chip.setVolumes.put("Rhythm", ym2608::setRhythmVolume);
-                chip.setVolumes.put("Adpcm", ym2608::setAdpcmVolume);
+                chip.setVolumes.put("FM", ym2608::setVolume);
+                chip.setVolumes.put("SSG", ym2608::setVolume);
+                chip.setVolumes.put("RHYTHM", ym2608::setVolume);
+                chip.setVolumes.put("ADPCM", ym2608::setVolume);
             }
             chip.samplingRate = 55467;
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
@@ -111,10 +111,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Chip.class);
             chip.clock = MucomJava.opnbBaseClock;
             if (chip.instrument instanceof Ym2610Inst ym2610) {
-                chip.setVolumes.put("FM", ym2610::setFMVolume);
-                chip.setVolumes.put("PSG", ym2610::setPSGVolume);
-                chip.setVolumes.put("AdpcmA", ym2610::setAdpcmAVolume);
-                chip.setVolumes.put("AdpcmB", ym2610::setAdpcmBVolume);
+                chip.setVolumes.put("FM", ym2610::setVolume);
+                chip.setVolumes.put("SSG", ym2610::setVolume);
+                chip.setVolumes.put("ADPCMA", ym2610::setVolume);
+                chip.setVolumes.put("ADPCMB", ym2610::setVolume);
             }
             chip.option = null;
             put(Ym2610Chip.class, chip);
@@ -130,10 +130,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2610Chip.class);
             chip.clock = MucomJava.opnbBaseClock;
             if (chip.instrument instanceof Ym2610Inst ym2610) {
-                chip.setVolumes.put("FM", ym2610::setFMVolume);
-                chip.setVolumes.put("PSG", ym2610::setPSGVolume);
-                chip.setVolumes.put("AdpcmA", ym2610::setAdpcmAVolume);
-                chip.setVolumes.put("AdpcmB", ym2610::setAdpcmBVolume);
+                chip.setVolumes.put("FM", ym2610::setVolume);
+                chip.setVolumes.put("PSG", ym2610::setVolume);
+                chip.setVolumes.put("ADPCMA", ym2610::setVolume);
+                chip.setVolumes.put("ADPCMB", ym2610::setVolume);
             }
             chip.option = null;
             put(Ym2610Chip.class, chip);
@@ -155,9 +155,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
         audio.setVolume(MAIN_TAG, Ym2608Chip.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class));
         audio.setVolume("FM", Ym2608Chip.class, true, setting.getBalance().getVolume("FM", Ym2608Chip.class));
-        audio.setVolume("PSG", Ym2608Chip.class, true, setting.getBalance().getVolume("PSG", Ym2608Chip.class));
-        audio.setVolume("Rhythm", Ym2608Chip.class, true, setting.getBalance().getVolume("Rhythm", Ym2608Chip.class));
-        audio.setVolume("Adpcm", Ym2608Chip.class, true, setting.getBalance().getVolume("Adpcm", Ym2608Chip.class));
+        audio.setVolume("SSG", Ym2608Chip.class, true, setting.getBalance().getVolume("SSG", Ym2608Chip.class));
+        audio.setVolume("RHYTHM", Ym2608Chip.class, true, setting.getBalance().getVolume("RHYTHM", Ym2608Chip.class));
+        audio.setVolume("ADPCM", Ym2608Chip.class, true, setting.getBalance().getVolume("ADPCM", Ym2608Chip.class));
 
         audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x2d, 0x00, Common.EnmModel.VirtualModel);
         audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x2d, 0x00, Common.EnmModel.RealModel);

@@ -60,10 +60,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
         chip.clock = PMDJava.baseclock;
         if (chip.instrument instanceof Ym2608Inst ym2608) {
-            chip.setVolumes.put("FM", ym2608::setFMVolume);
-            chip.setVolumes.put("PSG", ym2608::setPSGVolume);
-            chip.setVolumes.put("Rhythm", ym2608::setRhythmVolume);
-            chip.setVolumes.put("Adpcm", ym2608::setAdpcmVolume);
+            chip.setVolumes.put("FM", ym2608::setVolume);
+            chip.setVolumes.put("SSG", ym2608::setVolume);
+            chip.setVolumes.put("RHYTHM", ym2608::setVolume);
+            chip.setVolumes.put("ADPCM", ym2608::setVolume);
         }
         Function<String, Stream> fn = Common::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
@@ -105,9 +105,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
         audio.setVolume(MAIN_TAG, Ym2608Chip.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class));
         audio.setVolume("FM", Ym2608Chip.class, true, setting.getBalance().getVolume("FM", Ym2608Chip.class));
-        audio.setVolume("PSG", Ym2608Chip.class, true, setting.getBalance().getVolume("PSG", Ym2608Chip.class));
-        audio.setVolume("Rhythm", Ym2608Chip.class, true, setting.getBalance().getVolume("Rhythm", Ym2608Chip.class));
-        audio.setVolume("Adpcm", Ym2608Chip.class, true, setting.getBalance().getVolume("Adpcm", Ym2608Chip.class));
+        audio.setVolume("SSG", Ym2608Chip.class, true, setting.getBalance().getVolume("SSG", Ym2608Chip.class));
+        audio.setVolume("RHYTHM", Ym2608Chip.class, true, setting.getBalance().getVolume("RHYTHM", Ym2608Chip.class));
+        audio.setVolume("ADPCM", Ym2608Chip.class, true, setting.getBalance().getVolume("ADPCM", Ym2608Chip.class));
 
         audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x2d, 0x00, Common.EnmModel.VirtualModel);
         audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x2d, 0x00, Common.EnmModel.RealModel);

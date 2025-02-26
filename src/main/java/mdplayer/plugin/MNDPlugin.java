@@ -74,10 +74,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
             chip.clock = 8000000; // 7987200;
             if (chip.instrument instanceof Ym2608Inst opna) {
-                chip.setVolumes.put("FM", opna::setFMVolume);
-                chip.setVolumes.put("PSG", opna::setPSGVolume);
-                chip.setVolumes.put("Rhythm", opna::setRhythmVolume);
-                chip.setVolumes.put("Adpcm", opna::setAdpcmVolume);
+                chip.setVolumes.put("FM", opna::setVolume);
+                chip.setVolumes.put("SSG", opna::setVolume);
+                chip.setVolumes.put("RHYTHM", opna::setVolume);
+                chip.setVolumes.put("ADPCM", opna::setVolume);
             }
             Function<String, Stream> fn = Common::getOPNARyhthmStream;
             chip.option = new Object[] {fn};
@@ -123,9 +123,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
         if (contains(Ym2608Chip.class, 0) || contains(Ym2608Chip.class, 1)) {
             audio.setVolume(MAIN_TAG, Ym2608Chip.class, true, setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class));
             audio.setVolume("FM", Ym2608Chip.class, true, setting.getBalance().getVolume("FM", Ym2608Chip.class));
-            audio.setVolume("PSG", Ym2608Chip.class, true, setting.getBalance().getVolume("PSG", Ym2608Chip.class));
-            audio.setVolume("Rhythm", Ym2608Chip.class, true, setting.getBalance().getVolume("Rhythm", Ym2608Chip.class));
-            audio.setVolume("Adpcm", Ym2608Chip.class, true, setting.getBalance().getVolume("Adpcm", Ym2608Chip.class));
+            audio.setVolume("SSG", Ym2608Chip.class, true, setting.getBalance().getVolume("SSG", Ym2608Chip.class));
+            audio.setVolume("RHYTHM", Ym2608Chip.class, true, setting.getBalance().getVolume("RHYTHM", Ym2608Chip.class));
+            audio.setVolume("ADPCM", Ym2608Chip.class, true, setting.getBalance().getVolume("ADPCM", Ym2608Chip.class));
         }
 
         sleep(500);
