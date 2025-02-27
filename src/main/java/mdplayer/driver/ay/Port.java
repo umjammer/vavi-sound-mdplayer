@@ -22,7 +22,7 @@ public class Port implements Memory {
     EnmModel model;
     private byte ayReg = 0;
     private byte ayDat = 0;
-    private byte[] ayRegMap = new byte[255];
+    private final byte[] ayRegMap = new byte[255];
 
     private int bn = 0;
     private int bp = 0;
@@ -59,8 +59,8 @@ public class Port implements Memory {
             ayReg = value;
         } else if ((address & 0xc002) == 0x8000) {
             ayDat = value;
-            audio.chipRegister.chip(Ay8910Chip.class).write(0, ayReg, ayDat, model);
-            ayRegMap[ayReg] = ayDat;
+            audio.chipRegister.chip(Ay8910Chip.class).write(0, ayReg & 0xff, ayDat & 0xff, model);
+            ayRegMap[ayReg & 0xff] = ayDat;
             //logger.log(Level.TRACE, "AY Reg:%02x Dat:%02x".formatted(ayReg, ayDat));
         } else if ((address & 0x0001) == 0) {
             if ((value & 16) != 0)

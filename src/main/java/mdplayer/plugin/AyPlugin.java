@@ -6,6 +6,9 @@
 
 package mdplayer.plugin;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
 import mdplayer.Audio;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
@@ -15,6 +18,7 @@ import mdplayer.format.FileFormat;
 import mdsound.MDSound;
 import mdsound.instrument.MameAy8910Inst;
 
+import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
@@ -26,6 +30,8 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  */
 public class AyPlugin extends BasePlugin {
 
+    private static final Logger logger = getLogger(AyPlugin.class.getName());
+
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new AY();
@@ -34,10 +40,17 @@ public class AyPlugin extends BasePlugin {
 //            audio.driverReal = new AY();
 //            audio.driverReal.setting = setting;
 //        }
-        return play();
+        prepare();
+        boolean r = _play();
+        if (!r) {
+            logger.log(Level.WARNING, "cannot start: " + this);
+            return false;
+        }
+        super.play();
+        return true;
     }
 
-    public boolean play() {
+    private boolean _play() {
         startTrdVgmReal();
 
         MDSound.Chip chip = new MDSound.Chip();

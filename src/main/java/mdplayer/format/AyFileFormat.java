@@ -1,7 +1,5 @@
 package mdplayer.format;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import mdplayer.Common.EnmArcType;
@@ -27,22 +25,16 @@ public class AyFileFormat extends BaseFileFormat implements FileFormat.SampledFi
 
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
-        List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
         music.format = this;
         music.arcFileName = zipFile;
         music.arcType = EnmArcType.unknown;
-        return Collections.singletonList(music);
+        return List.of(music);
     }
 
     @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */) {
         return getMusicCommon(ms, buf, zipFile);
-    }
-
-    @Override
-    public byte[] getAllBytes(String filename) {
-        return new byte[] {(byte) 'A', (byte) 'I', (byte) 'F', (byte) 'F'};
     }
 
     @Override

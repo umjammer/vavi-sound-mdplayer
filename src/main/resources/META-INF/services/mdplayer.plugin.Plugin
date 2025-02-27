@@ -16,3 +16,6 @@ mdplayer.plugin.SIDPlugin
 mdplayer.plugin.VGMPlugin
 mdplayer.plugin.XGMPlugin
 mdplayer.plugin.ZGMPlugin
+mdplayer.plugin.AyPlugin
+mdplayer.plugin.MuSICAPlugin
+mdplayer.plugin.FMPPlugin

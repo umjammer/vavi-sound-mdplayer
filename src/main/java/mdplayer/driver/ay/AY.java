@@ -32,7 +32,7 @@ public class AY extends BaseDriver {
         public String pMisc;
         public int numOfSongs;
         public int firstSong;
-        public List<SongsStructure> SongsStructure;
+        public List<SongsStructure> songsStructures;
     }
 
     public static class SongsStructure {
@@ -117,14 +117,13 @@ public class AY extends BaseDriver {
     public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         getInformation(buf);
         Vgm.Gd3 ret = new Vgm.Gd3();
-        ret.trackName = information.SongsStructure.get(0).pSongName;
-        ret.trackNameJ = information.SongsStructure.get(0).pSongName;
+        ret.trackName = information.songsStructures.get(0).pSongName;
+        ret.trackNameJ = information.songsStructures.get(0).pSongName;
         return ret;
     }
 
     public void run(byte[] buf) {
         this.buf = buf;
-        //this.mds = mds;
         getInformation(buf);
     }
 
@@ -139,15 +138,15 @@ public class AY extends BaseDriver {
         }
 
         information = new Information();
-        information.fileVersion = buf[8];
-        information.playerVersion = buf[9];
+        information.fileVersion = buf[8] & 0xff;
+        information.playerVersion = buf[9] & 0xff;
         information.pSpecialPlayer = ByteUtil.readBeShort(buf, 10) & 0xffff;
         information.pAuthor = getString(buf, 12);
         information.pMisc = getString(buf, 14);
-        information.numOfSongs = buf[16] + 1;
-        information.firstSong = buf[17];
+        information.numOfSongs = (buf[16] & 0xff) + 1;
+        information.firstSong = buf[17] & 0xff;
         int ptr = (ByteUtil.readBeShort(buf, 18) & 0xffff) + 18;
-        information.SongsStructure = new ArrayList<>();
+        information.songsStructures = new ArrayList<>();
         for (int i = 0; i < information.numOfSongs; i++) {
             SongsStructure ss = new SongsStructure();
             ss.pSongName = getString(buf, ptr);
@@ -156,16 +155,16 @@ public class AY extends BaseDriver {
             ptr += 2;
 
             ss.songData = new SongData();
-            ss.songData.aChan = buf[sptr++];
-            ss.songData.bChan = buf[sptr++];
-            ss.songData.cChan = buf[sptr++];
-            ss.songData.noise = buf[sptr++];
+            ss.songData.aChan = buf[sptr++] & 0xff;
+            ss.songData.bChan = buf[sptr++] & 0xff;
+            ss.songData.cChan = buf[sptr++] & 0xff;
+            ss.songData.noise = buf[sptr++] & 0xff;
             ss.songData.songLength = ByteUtil.readBeShort(buf, sptr) & 0xffff;
             sptr += 2;
             ss.songData.fadeLength = ByteUtil.readBeShort(buf, sptr) & 0xffff;
             sptr += 2;
-            ss.songData.hiReg = buf[sptr++];
-            ss.songData.loReg = buf[sptr++];
+            ss.songData.hiReg = buf[sptr++] & 0xff;
+            ss.songData.loReg = buf[sptr++] & 0xff;
             int pptr = (ByteUtil.readBeShort(buf, sptr) & 0xffff) + sptr;
             sptr += 2;
             int bptr = (ByteUtil.readBeShort(buf, sptr) & 0xffff) + sptr;
@@ -192,7 +191,7 @@ public class AY extends BaseDriver {
                 ss.songData.addresses.add(b);
             }
 
-            information.SongsStructure.add(ss);
+            information.songsStructures.add(ss);
         }
     }
 
@@ -228,15 +227,15 @@ public class AY extends BaseDriver {
         // d) Place to #0038 address #FB value
         z80.getMemory().set(0x0038, (byte) 0xfb);
 
-        // e) if INIT equal to ZERO then place to first CALL instruction address of first AY file block instead of INIT(see next f) and g) steps)
+        // e) if INIT equal to ZERO then place to first CALL instruction address of first AY file block instead of INIT (see next f) and g) steps)
         // f) if INTERRUPT equal to ZERO then place at ZERO address next player:
         // g) if INTERRUPT not equal to ZERO then place at ZERO address next player:
-        if (songNum >= information.SongsStructure.size()) songNum = 0;
-        int init = information.SongsStructure.get(songNum).songData.points.init;
+        if (songNum >= information.songsStructures.size()) songNum = 0;
+        int init = information.songsStructures.get(songNum).songData.points.init;
         if (init == 0) {
-            init = information.SongsStructure.get(songNum).songData.addresses.get(0).address;
+            init = information.songsStructures.get(songNum).songData.addresses.get(0).address;
         }
-        int inter = information.SongsStructure.get(songNum).songData.points.inter;
+        int inter = information.songsStructures.get(songNum).songData.points.inter;
         if (inter == 0) {
             byte[] player = new byte[] {(byte) 0xf3, (byte) 0xcd, 0x00, 0x00, (byte) 0xed, 0x5e, (byte) 0xfb, 0x76, 0x18, (byte) 0xfa};
             for (int i = 0; i < player.length; i++) z80.getMemory().set(i, player[i]);
@@ -250,16 +249,16 @@ public class AY extends BaseDriver {
         z80.getMemory().set(3, (byte) (init >> 8));
 
         // h) Load all blocks for this song
-        for (int i = 0; i < information.SongsStructure.get(songNum).songData.addresses.size(); i++) {
-            Block block = information.SongsStructure.get(songNum).songData.addresses.get(i);
+        for (int i = 0; i < information.songsStructures.get(songNum).songData.addresses.size(); i++) {
+            Block block = information.songsStructures.get(songNum).songData.addresses.get(i);
             for (int j = 0; j < block.length; j++) {
                 if (block.address + j >= 0x1_0000) continue;
                 z80.getMemory().set(block.address + j, buf[block.offset + j]);
             }
         }
 
-        // i) Load all common lower registers with loReg value(including AF register)
-        byte lr = (byte) information.SongsStructure.get(songNum).songData.loReg;
+        // i) Load all common lower registers with loReg value (including AF register)
+        byte lr = (byte) information.songsStructures.get(songNum).songData.loReg;
         z80.getRegisters().setF(lr);
         z80.getRegisters().getAlternate().setF(lr);
         z80.getRegisters().setL(lr);
@@ -272,7 +271,7 @@ public class AY extends BaseDriver {
         z80.getRegisters().setIYL(lr);
 
         // j) Load all common higher registers with hiReg value
-        byte hr = (byte) information.SongsStructure.get(songNum).songData.hiReg;
+        byte hr = (byte) information.songsStructures.get(songNum).songData.hiReg;
         z80.getRegisters().setA(hr);
         z80.getRegisters().getAlternate().setA(hr);
         z80.getRegisters().setH(hr);
@@ -284,20 +283,20 @@ public class AY extends BaseDriver {
         z80.getRegisters().setIXH(hr);
         z80.getRegisters().setIYH(hr);
 
-        //k) Load into I register 3(this player version)
+        // k) Load into I register 3 (this player version)
         z80.getRegisters().setIR((short) 0x0300);
 
-        //l) load to SP stack value from points data of this song
-        z80.getRegisters().setSP((short) information.SongsStructure.get(songNum).songData.points.stack);
+        // l) load to SP stack value from points data of this song
+        z80.getRegisters().setSP((short) information.songsStructures.get(songNum).songData.points.stack);
 
-        //m) Load to PC ZERO value
+        // m) Load to PC ZERO value
         z80.getRegisters().setPC((short) 0);
 
-        //n) Disable Z80 interrupts and set IM0 mode
+        // n) Disable Z80 interrupts and set IM0 mode
         z80.setInterruptMode((byte) 0);
 
-        //o) Emulate resetting of AY chip
-        //p) Start Z80 emulation
+        // o) Emulate resetting of AY chip
+        // p) Start Z80 emulation
     }
 
     public void oneFrame() {
@@ -320,13 +319,13 @@ public class AY extends BaseDriver {
                 palElp -= (zxClock / PAL);
 
                 if (z80.getIsHalted()) {
-                    int pc = z80.getRegisters().getPC();
-                    int sp = z80.getRegisters().getSP();
-                    int af = z80.getRegisters().getAF();
+                    short pc = z80.getRegisters().getPC();
+                    short sp = z80.getRegisters().getSP();
+                    short af = z80.getRegisters().getAF();
                     z80.reset();
-                    z80.getRegisters().setPC((short) pc);
-                    z80.getRegisters().setSP((short) sp);
-                    z80.getRegisters().setAF((short) af);
+                    z80.getRegisters().setPC(pc);
+                    z80.getRegisters().setSP(sp);
+                    z80.getRegisters().setAF(af);
                     brk = true; // The loop is exited only when HALT is reached. (The Z80 needs to rest until the next processing time.)
                 }
 
