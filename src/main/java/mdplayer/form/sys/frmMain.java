@@ -272,14 +272,14 @@ public class frmMain extends JFrame {
     private boolean flgReinit = false;
     public boolean reqAllScreenInit = true;
 
-    private static final String[] modeTip = new String[] {
+    private static final String[] modeTip = {
             "Mode\nNow:Step\nNext:Random",
             "Mode\nNow:Random\nNext:Loop",
             "Mode\nNow:Loop\nNext:LoopOne",
             "Mode\nNow:LoopOne\nNext:Step",
     };
 
-    private static final String[] zoomTip = new String[] {
+    private static final String[] zoomTip = {
             "Zoom\nNow:x1\nNext:x2",
             "Zoom\nNow:x2\nNext:x3",
             "Zoom\nNow:x3\nNext:x4",
@@ -295,8 +295,8 @@ public class frmMain extends JFrame {
     private final List<String[]> remoteReq = new ArrayList<>();
 
     public frmMain() {
-        logger.log(Level.ERROR, "起動処理開始");
-        logger.log(Level.ERROR, "frmMainコンストラクタ):STEP 00");
+        logger.log(Level.ERROR, "Startup process begins");
+        logger.log(Level.ERROR, "frmMain<init>:STEP 00");
 
         initializeComponent();
         DrawBuff.Init();
@@ -330,9 +330,10 @@ public class frmMain extends JFrame {
         lstForm.add(frmVRC6);
         lstForm.add(frmVRC7);
 
-        logger.log(Level.ERROR, "frmMain(コンストラクタ):STEP 01");
+        logger.log(Level.ERROR, "frmMain<init>:STEP 01");
 
-        // 引数が指定されている場合のみプロセスチェックを行い、自分と同じアプリケーションが実行中ならばそちらに引数を渡し終了する
+        // Only if arguments are specified, does a process check, and if the same application as itself is running,
+        // passes the arguments to it and terminates it.
 //        if (Common.getCommandLineArgs().length > 1) {
 //            Process prc = GetPreviousProcess();
 //            if (prc != null) {
@@ -346,17 +347,17 @@ public class frmMain extends JFrame {
 //            }
 //        }
 
-        logger.log(Level.ERROR, "frmMainコンストラクタ):STEP 02");
+        logger.log(Level.ERROR, "frmMain<init>:STEP 02");
 
 //        pbScreen.AllowDrop = true;
 
-        logger.log(Level.ERROR, "frmMainコンストラクタ):STEP 03");
+        logger.log(Level.ERROR, "frmMain<init>:STEP 03");
         if (setting == null) {
-            logger.log(Level.ERROR, "frmMainコンストラクタ):setting instanceof null");
+            logger.log(Level.ERROR, "frmMain<init>:setting instanceof null");
         } else {
 //            if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift) {
 //                int res = JOptionPane.showConfirmDialog(this,
-//                        "ウィンドウの位置情報を初期化しますか？",
+//                        "Do you want to initialize window position information?",
 //                        "MDPlayer",
 //                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 //                if (res == JOptionPane.OK_OPTION) {
@@ -365,7 +366,7 @@ public class frmMain extends JFrame {
 //            }
         }
 
-        logger.log(Level.ERROR, "起動時のAudio初期化処理開始");
+        logger.log(Level.ERROR, "Audio initialization process begins at startup");
 
         plugin.init();
 
@@ -379,11 +380,11 @@ public class frmMain extends JFrame {
         ym2612MIDI.slow = this::slow;
         ym2612MIDI.stop = this::stop;
 
-        logger.log(Level.ERROR, "起動時のAudio初期化処理完了");
+        logger.log(Level.ERROR, "Audio initialization process completed at startup");
 
         StartMIDIInMonitoring();
 
-        logger.log(Level.ERROR, "frmMainコンストラクタ):STEP 04");
+        logger.log(Level.ERROR, "frmMain<init>:STEP 04");
 
 setVisible(true);
     }
@@ -422,7 +423,7 @@ setVisible(true);
         if (!setting.getLocation().getPMain().equals(empty))
             this.setLocation(setting.getLocation().getPMain());
 
-        // DoubleBufferオブジェクトの作成
+        // Creating a DoubleBuffer Object
 
         pbRf5c164Screen = new BufferedImage(320, 72, BufferedImage.TYPE_INT_ARGB);
 
@@ -538,33 +539,33 @@ setVisible(true);
         mmf = new MmfControl(false, "MDPlayer", 1024 * 4);
     }
 
-    //private void startWatch(String opeFolder) {
-    //    if (watcher != null) return;
-
-    //    watcher = new FileSystemWatcher();
-    //    watcher.Path = Path.GetDirectoryName(opeFolder);
-    //    watcher.NotifyFilter = (
-    //        NotifyFilters.LastAccess
-    //        | NotifyFilters.LastWrite
-    //        | NotifyFilters.FileName
-    //        | NotifyFilters.DirectoryName
-    //        | NotifyFilters.CreationTime
-    //        | NotifyFilters.Attributes
-    //        );
-    //    watcher.Filter = ""; //  Path.getFileName(opeFolder);
-    //    watcher.SynchronizingObject = this;
-
-    //    watcher.Changed += new FileSystemEventHandler(watcher_Changed);
-    //    watcher.Created += new FileSystemEventHandler(watcher_Changed);
-
-    //    watcher.EnableRaisingEvents = true;
-    //}
-
-    //private void stopWatch() {
-    //    watcher.EnableRaisingEvents = false;
-    //    watcher.dispose();
-    //    watcher = null;
-    //}
+//    private void startWatch(String opeFolder) {
+//        if (watcher != null) return;
+//
+//        watcher = new FileSystemWatcher();
+//        watcher.Path = Path.GetDirectoryName(opeFolder);
+//        watcher.NotifyFilter = (
+//            NotifyFilters.LastAccess
+//            | NotifyFilters.LastWrite
+//            | NotifyFilters.FileName
+//            | NotifyFilters.DirectoryName
+//            | NotifyFilters.CreationTime
+//            | NotifyFilters.Attributes
+//            );
+//        watcher.Filter = ""; //  Path.getFileName(opeFolder);
+//        watcher.SynchronizingObject = this;
+//
+//        watcher.Changed += new FileSystemEventHandler(watcher_Changed);
+//        watcher.Created += new FileSystemEventHandler(watcher_Changed);
+//
+//        watcher.EnableRaisingEvents = true;
+//    }
+//
+//    private void stopWatch() {
+//        watcher.EnableRaisingEvents = false;
+//        watcher.dispose();
+//        watcher = null;
+//    }
 
     private void watcher_Changed(WatchEvent<?> e) {
         String trgFile = Path.combine(opeFolder, "ope.txt");
@@ -1100,17 +1101,17 @@ setVisible(true);
 
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-            JOptionPane.showMessageDialog(this, "ファイルの読み込みに失敗しました。");
+            JOptionPane.showMessageDialog(this, "Failed to read file.");
         }
 
         logger.log(Level.ERROR, "frmMain_Shown:STEP 11");
-        logger.log(Level.ERROR, "起動処理完了");
+        logger.log(Level.ERROR, "Startup process complete");
     }
 
     private final ComponentListener componentListener = new ComponentAdapter() {
         @Override
         public void componentResized(ComponentEvent e) {
-            // リサイズ時は再確保
+            // Reallocate when resizing
 //            if (screen != null) screen.setVisible(false);
 
             screen = new DoubleBuffer(pbScreen, Resources.getPlaneControl(), setting.getOther().getZoom());
@@ -1123,7 +1124,7 @@ setVisible(true);
     private void frmMain_FormClosing(WindowEvent e) {
         if (forcedExit) return;
 
-        logger.log(Level.ERROR, "終了処理開始");
+        logger.log(Level.ERROR, "Termination process begins");
         logger.log(Level.ERROR, "frmMain_FormClosing:STEP 00");
 
         frmPlayList.stop();
@@ -1136,7 +1137,7 @@ setVisible(true);
         StopMIDIInMonitoring();
         Request req = new Request(enmRequest.Die, null, null);
         OpeManager.requestToAudio(req);
-        while (!req.getEnd()) {  // 自殺リクエストはコールバック無し
+        while (!req.getEnd()) {  // No callbacks for suicide requests
             Thread.yield();
         }
 
@@ -1152,7 +1153,7 @@ setVisible(true);
 
         ym2612MIDI.close();
 
-        // 解放
+        // release
         screen.close();
 
         setting.getLocation().setOInfo(false);
@@ -1392,7 +1393,7 @@ setVisible(true);
 
         mmf.close();
 
-        logger.log(Level.ERROR, "終了処理完了");
+        logger.log(Level.ERROR, "Termination process complete");
     }
 
     private final MouseMotionListener pbScreen_MouseMove = new MouseMotionAdapter() {
@@ -1679,7 +1680,6 @@ setVisible(true);
     }
 
     private void tsmiSPWM_Click(ActionEvent ev) {
-
     }
 
     private void tsmiSOKIM6258_Click(ActionEvent ev) {
@@ -1898,9 +1898,8 @@ setVisible(true);
     }
 
 
-    private void OpenFormYMF271(int chipId, boolean force/* = false*/) {
-        if (frmYMF271[chipId] != null)// && frmInfo.isClosed)
-        {
+    private void OpenFormYMF271(int chipId, boolean force /* = false */) {
+        if (frmYMF271[chipId] != null) { // && frmInfo.isClosed)
             if (!force) {
                 CloseFormYMF271(chipId);
                 return;
@@ -1942,9 +1941,8 @@ setVisible(true);
         frmYMF271[chipId] = null;
     }
 
-    private void OpenFormYM2608(int chipId, boolean force/* = false*/) {
-        if (frmYM2608[chipId] != null)// && frmInfo.isClosed)
-        {
+    private void OpenFormYM2608(int chipId, boolean force /* = false */) {
+        if (frmYM2608[chipId] != null) { // && frmInfo.isClosed)
             if (!force) {
                 CloseFormYM2608(chipId);
                 return;
@@ -1987,8 +1985,7 @@ setVisible(true);
     }
 
     private void OpenFormYM2151(int chipId, boolean force/* = false*/) {
-        if (frmYM2151[chipId] != null)// && frmInfo.isClosed)
-        {
+        if (frmYM2151[chipId] != null) { // && frmInfo.isClosed)
             if (!force) {
                 CloseFormYM2151(chipId);
                 return;
@@ -2281,9 +2278,8 @@ setVisible(true);
         frmC352[chipId] = null;
     }
 
-    private void OpenFormMultiPCM(int chipId, boolean force/* = false*/) {
-        if (frmMultiPCM[chipId] != null)// && frmInfo.isClosed)
-        {
+    private void OpenFormMultiPCM(int chipId, boolean force /* = false */) {
+        if (frmMultiPCM[chipId] != null) { // && frmInfo.isClosed)
             if (!force) {
                 CloseFormMultiPCM(chipId);
                 return;
@@ -2408,7 +2404,7 @@ setVisible(true);
         frmYM2203[chipId] = null;
     }
 
-    private void OpenFormYM2610(int chipId, boolean force/* = false*/) {
+    private void OpenFormYM2610(int chipId, boolean force /* = false */) {
         if (frmYM2610[chipId] != null) {
             if (!force) {
                 CloseFormYM2610(chipId);
@@ -2451,8 +2447,7 @@ setVisible(true);
     }
 
     private void openFormYM2612(int chipId, boolean force/* = false*/) {
-        if (frmYM2612[chipId] != null)// && frmInfo.isClosed)
-        {
+        if (frmYM2612[chipId] != null) { // && frmInfo.isClosed)
             if (!force) {
                 closeFormYM2612(chipId);
                 return;
@@ -2577,7 +2572,7 @@ setVisible(true);
         frmOKIM6295[chipId] = null;
     }
 
-    private void OpenFormSN76489(int chipId, boolean force/* = false*/) {
+    private void OpenFormSN76489(int chipId, boolean force /* = false */) {
         if (frmSN76489[chipId] != null) {
             if (!force) {
                 CloseFormSN76489(chipId);
@@ -2619,7 +2614,7 @@ setVisible(true);
         frmSN76489[chipId] = null;
     }
 
-    private void OpenFormSegaPCM(int chipId, boolean force/* = false*/) {
+    private void OpenFormSegaPCM(int chipId, boolean force /* = false */) {
         if (frmSegaPCM[chipId] != null) {
             if (!force) {
                 CloseFormSegaPCM(chipId);
@@ -2661,8 +2656,7 @@ setVisible(true);
         frmSegaPCM[chipId] = null;
     }
 
-
-    private void OpenFormAY8910(int chipId, boolean force /*= false*/) {
+    private void OpenFormAY8910(int chipId, boolean force /* = false */) {
         if (frmAY8910[chipId] != null) {
             if (!force) {
                 CloseFormAY8910(chipId);
@@ -2704,7 +2698,7 @@ setVisible(true);
         frmAY8910[chipId] = null;
     }
 
-    private void OpenFormHuC6280(int chipId, boolean force/* = false*/) {
+    private void OpenFormHuC6280(int chipId, boolean force /* = false */) {
         if (frmHuC6280[chipId] != null) {
             if (!force) {
                 CloseFormHuC6280(chipId);
@@ -2746,9 +2740,8 @@ setVisible(true);
         frmHuC6280[chipId] = null;
     }
 
-    private void OpenFormK051649(int chipId, boolean force/* = false*/) {
-        if (frmK051649[chipId] != null)// && frmInfo.isClosed)
-        {
+    private void OpenFormK051649(int chipId, boolean force /* = false */) {
+        if (frmK051649[chipId] != null) { // && frmInfo.isClosed)
             if (!force) {
                 CloseFormK051649(chipId);
                 return;
@@ -2831,7 +2824,7 @@ setVisible(true);
         frmYM2413[chipId] = null;
     }
 
-    private void OpenFormYM3526(int chipId, boolean force/* = false*/) {
+    private void OpenFormYM3526(int chipId, boolean force /* = false */) {
         if (frmYM3526[chipId] != null) {
             if (!force) {
                 CloseFormYM3526(chipId);
@@ -2873,7 +2866,7 @@ setVisible(true);
         frmYM3526[chipId] = null;
     }
 
-    private void OpenFormY8950(int chipId, boolean force/* = false*/) {
+    private void OpenFormY8950(int chipId, boolean force /* = false */) {
         if (frmY8950[chipId] != null) {
             if (!force) {
                 CloseFormY8950(chipId);
@@ -2915,7 +2908,7 @@ setVisible(true);
         frmY8950[chipId] = null;
     }
 
-    private void OpenFormYM3812(int chipId, boolean force/* = false*/) {
+    private void OpenFormYM3812(int chipId, boolean force /* = false */) {
         if (frmYM3812[chipId] != null) {
             if (!force) {
                 CloseFormYM3812(chipId);
@@ -2999,7 +2992,7 @@ setVisible(true);
         frmYMF262[chipId] = null;
     }
 
-    private void OpenFormYMF278B(int chipId, boolean force/* = false*/) {
+    private void OpenFormYMF278B(int chipId, boolean force /* = false */) {
         if (frmYMF278B[chipId] != null) {
             if (!force) {
                 CloseFormYMF278B(chipId);
@@ -3041,7 +3034,7 @@ setVisible(true);
         frmYMF278B[chipId] = null;
     }
 
-    private void OpenFormMIDI(int chipId, boolean force/* = false*/) {
+    private void OpenFormMIDI(int chipId, boolean force /* = false */) {
         if (frmMIDI[chipId] != null) {
             if (!force) {
                 closeFormMIDI(chipId);
@@ -3083,7 +3076,7 @@ setVisible(true);
         frmMIDI[chipId] = null;
     }
 
-    private void openFormNESDMC(int chipId, boolean force/* = false*/) {
+    private void openFormNESDMC(int chipId, boolean force /* = false */) {
         if (frmNESDMC[chipId] != null) {
             if (!force) {
                 closeFormNESDMC(chipId);
@@ -3125,7 +3118,7 @@ setVisible(true);
         frmNESDMC[chipId] = null;
     }
 
-    private void openFormFDS(int chipId, boolean force/* = false*/) {
+    private void openFormFDS(int chipId, boolean force /* = false */) {
         if (frmFDS[chipId] != null) {
             if (!force) {
                 closeFormFDS(chipId);
@@ -3167,7 +3160,7 @@ setVisible(true);
         frmFDS[chipId] = null;
     }
 
-    private void openFormVRC6(int chipId, boolean force/* = false*/) {
+    private void openFormVRC6(int chipId, boolean force /* = false */) {
         if (frmVRC6[chipId] != null) {
             if (!force) {
                 closeFormVRC6(chipId);
@@ -3213,9 +3206,8 @@ setVisible(true);
         frmVRC6[chipId] = null;
     }
 
-    private void openFormVRC7(int chipId, boolean force/* = false*/) {
-        if (frmVRC7[chipId] != null)// && frmInfo.isClosed)
-        {
+    private void openFormVRC7(int chipId, boolean force /* = false */) {
+        if (frmVRC7[chipId] != null) { // && frmInfo.isClosed)
             if (!force) {
                 closeFormVRC7(chipId);
                 return;
@@ -3343,7 +3335,7 @@ setVisible(true);
         checkAndSetForm(frmVisWave);
     }
 
-    private void openFormN106(int chipId, boolean force/* = false*/) {
+    private void openFormN106(int chipId, boolean force /* = false */) {
         if (frmN106[chipId] != null) {
             if (!force) {
                 closeFormN106(chipId);
@@ -3564,11 +3556,11 @@ setVisible(true);
         reqAllScreenInit = true;
         //screen.screenInitAll();
 
-        logger.log(Level.ERROR, "設定が変更されたため、再度Audio初期化処理開始");
+        logger.log(Level.ERROR, "The settings have been changed, so the audio initialization process will start again.");
 
         plugin.init();
 
-        logger.log(Level.ERROR, "Audio初期化処理完了");
+        logger.log(Level.ERROR, "Audio initialization process complete");
 
 //        frmVSTeffectList.dispPluginList();
         StartMIDIInMonitoring();
@@ -3663,7 +3655,7 @@ setVisible(true);
             }
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-            JOptionPane.showMessageDialog(null, "ファイルの読み込みに失敗しました。");
+            JOptionPane.showMessageDialog(null, "Failed to read file.");
         }
     }
 
@@ -3718,7 +3710,7 @@ setVisible(true);
     }
 
     /**
-     * ！！このメソッドはメインスレッドで動いていません！！
+     * !!This method is not running on the main thread!!
      */
     private void screenMainLoop() {
         double nextFrame = (double) System.currentTimeMillis();
@@ -3768,7 +3760,7 @@ setVisible(true);
             }
 
             if (getFatalError()) {
-                logger.log(Level.ERROR, "AudioでFatalErrorが発生。再度Audio初期化処理開始");
+                logger.log(Level.ERROR, "A FatalError occurred in audio. Restart audio initialization process.");
 
                 frmPlayList.stop();
                 try {
@@ -3789,7 +3781,7 @@ setVisible(true);
                 setFatalError(false);
                 plugin.init();
 
-                logger.log(Level.ERROR, "Audio初期化処理完了");
+                logger.log(Level.ERROR, "Audio initialization process complete");
             }
         }
 
@@ -3947,7 +3939,7 @@ setVisible(true);
     }
 
     private void screenDrawParams() {
-        // 描画
+        // drawing
 
         for (int i = 0; i < lstOpeButtonActive.length; i++) {
             if (lstOpeButtonActive[i] != lstOpeButtonActiveOld[i]) {
@@ -4429,8 +4421,8 @@ setVisible(true);
             if (setting.getOther().getWavSwitch()) {
                 if (!Directory.exists(setting.getOther().getWavPath())) {
                     int res = JOptionPane.showConfirmDialog(this,
-                            "wavファイル出力先に設定されたパスが存在しません。作成し演奏を続けますか。"
-                            , "パス作成確認"
+                            "The path set for the wav file output destination does not exist. Create it and continue playing?"
+                            , "Confirmation of Path Creation"
                             , JOptionPane.YES_NO_OPTION,
                             JOptionPane.QUESTION_MESSAGE);
                     if (res == JOptionPane.NO_OPTION) {
@@ -4441,8 +4433,8 @@ setVisible(true);
                         Directory.createDirectory(setting.getOther().getWavPath());
                     } catch (Exception e) {
                         JOptionPane.showMessageDialog(this,
-                                "パスの作成に失敗しました。演奏を停止します。"
-                                , "作成失敗"
+                                "Failed to create path. Stop playing."
+                                , "Creation failed"
                                 , JOptionPane.ERROR_MESSAGE);
                         plugin.audio.errMsg = "cancel";
                         return;
@@ -4905,7 +4897,7 @@ setVisible(true);
             }
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
-            JOptionPane.showMessageDialog(this, "音色出力エラー", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Sound output error", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -5059,10 +5051,10 @@ setVisible(true);
             mmf.sendMessage(String.join(":", "SendVoice", n));
         } catch (IndexOutOfBoundsException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
-            logger.log(Level.TRACE, "メッセージが長すぎ");
+            logger.log(Level.TRACE, "Message too long");
         } catch (FileNotFoundException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
-            JOptionPane.showMessageDialog(this, "mml2vgmの共有メモリが見つかりませんでした");
+            JOptionPane.showMessageDialog(this, "Could not find shared memory for mml2vgm");
         }
     }
 
@@ -5679,7 +5671,7 @@ setVisible(true);
 
         JFileChooser sfd = new JFileChooser();
 
-        sfd.setSelectedFile(new java.io.File("音色ファイル.tfi"));
+        sfd.setSelectedFile(new java.io.File("Tone file.tfi"));
         sfd.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(java.io.File f) {
@@ -5688,11 +5680,11 @@ setVisible(true);
 
             @Override
             public String getDescription() {
-                return "TFIファイル(*.tfi)";
+                return "TFI File(*.tfi)";
             }
         });
 //        sfd.FilterIndex = 1;
-        sfd.setDialogTitle("名前を付けて保存");
+        sfd.setDialogTitle("Save As");
 //        sfd.RestoreDirectory = true;
 
         if (sfd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
@@ -5789,7 +5781,7 @@ setVisible(true);
 
         JFileChooser sfd = new JFileChooser();
 
-        sfd.setSelectedFile(new java.io.File("音色ファイル.dmp"));
+        sfd.setSelectedFile(new java.io.File("Tone file.dmp"));
         sfd.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(java.io.File f) {
@@ -5798,11 +5790,11 @@ setVisible(true);
 
             @Override
             public String getDescription() {
-                return "DMPファイル(*.dmp)";
+                return "DMP File(*.dmp)";
             }
         });
 //        sfd.FilterIndex = 1;
-        sfd.setDialogTitle("名前を付けて保存");
+        sfd.setDialogTitle("Save As");
 //        sfd.RestoreDirectory = true;
 
         if (sfd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
@@ -5819,7 +5811,7 @@ setVisible(true);
     }
 
     //
-    //  以下のコードを使用、参考にさせていただいております。ありがとうございます！
+    //  I am using the following code for reference. Thank you!
     //
     //  Title:
     //      mucom88torym2612
@@ -5962,11 +5954,11 @@ setVisible(true);
 
             @Override
             public String getDescription() {
-                return "RYM2612ファイル(*.rym2612";
+                return "RYM2612 File(*.rym2612";
             }
         });
 //        sfd.FilterIndex = 1;
-        sfd.setDialogTitle("名前を付けて保存");
+        sfd.setDialogTitle("Save As");
 //        sfd.RestoreDirectory = true;
 
         if (sfd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
@@ -6048,7 +6040,7 @@ setVisible(true);
 
         JFileChooser sfd = new JFileChooser();
 
-        sfd.setSelectedFile(new java.io.File("音色ファイル.opni"));
+        sfd.setSelectedFile(new java.io.File("Tone file.opni"));
         sfd.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(java.io.File f) {
@@ -6057,11 +6049,11 @@ setVisible(true);
 
             @Override
             public String getDescription() {
-                return "OPNIファイル(*.opni)";
+                return "OPNI File(*.opni)";
             }
         });
 //        sfd.FilterIndex = 1;
-        sfd.setDialogTitle("名前を付けて保存");
+        sfd.setDialogTitle("Save As");
 //        sfd.RestoreDirectory = true;
 
         if (sfd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
@@ -6190,7 +6182,7 @@ setVisible(true);
 
         JFileChooser sfd = new JFileChooser();
 
-        sfd.setSelectedFile(new java.io.File("音色ファイル.opli"));
+        sfd.setSelectedFile(new java.io.File("Tone file.opli"));
         sfd.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(java.io.File f) {
@@ -6199,11 +6191,11 @@ setVisible(true);
 
             @Override
             public String getDescription() {
-                return "OPLIファイル(*.opli)";
+                return "OPLI File(*.opli)";
             }
         });
 //        sfd.FilterIndex = 1;
-        sfd.setDialogTitle("名前を付けて保存");
+        sfd.setDialogTitle("Save As");
 //        sfd.RestoreDirectory = true;
 
         if (sfd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
@@ -6386,7 +6378,7 @@ setVisible(true);
             srcBuf = r.getItem1();
             extFile = r.getItem2();
 
-            // 再生前に音量のバランスを設定する
+            // Set the volume balance before playback
             loadPresetMixerBalance(playingFileName, playingArcFileName, format);
 
             plugin = (BasePlugin) format.getPlugin();
@@ -6403,7 +6395,7 @@ setVisible(true);
             logger.log(Level.ERROR, ex.getMessage(), ex);
             srcBuf = null;
             JOptionPane.showMessageDialog(this,
-                    "ファイルの読み込みに失敗しました。\nメッセージ=%s".formatted(ex.getMessage()),
+                    "Failed to load file.\nMessage=%s".formatted(ex.getMessage()),
                     "MDPlayer", JOptionPane.ERROR_MESSAGE);
             return false;
         }
@@ -6427,7 +6419,7 @@ setVisible(true);
             FileFormat format = FileFormat.getFileFormat(fullPath);
             srcBuf = buf;
 
-            //再生前に音量のバランスを設定する
+            // Set the volume balance before playback
             loadPresetMixerBalance(playingFileName, playingArcFileName, format);
 
             plugin.setVGMBuffer(format, srcBuf, playingFileName, playingArcFileName, 0, 0, extFile);
@@ -6443,7 +6435,7 @@ setVisible(true);
             logger.log(Level.ERROR, ex.getMessage(), ex);
             srcBuf = null;
             JOptionPane.showMessageDialog(this,
-                    "ファイルの読み込みに失敗しました。\nメッセージ=%s".formatted(ex.getMessage()),
+                    "Failed to load file.\nMessage=%s".formatted(ex.getMessage()),
                     "MDPlayer", JOptionPane.ERROR_MESSAGE);
             return false;
         }
@@ -7017,7 +7009,7 @@ setVisible(true);
                 newParam.ym2203[chipId].channels[ch].mask = mask;
                 oldParam.ym2203[chipId].channels[ch].mask = !mask;
 
-                //FM(2ch) FMex
+                // FM(2ch) FMex
                 if ((ch == 2) || (ch >= 6 && ch < 9)) {
                     newParam.ym2203[chipId].channels[2].mask = mask;
                     newParam.ym2203[chipId].channels[6].mask = mask;
@@ -7049,7 +7041,7 @@ setVisible(true);
                 newParam.ym2608[chipId].channels[ch].mask = mask;
                 oldParam.ym2608[chipId].channels[ch].mask = !mask;
 
-                //FM(2ch) FMex
+                // FM(2ch) FMex
                 if ((ch == 2) || (ch >= 9 && ch < 12)) {
                     newParam.ym2608[chipId].channels[2].mask = mask;
                     newParam.ym2608[chipId].channels[9].mask = mask;
@@ -7074,7 +7066,7 @@ setVisible(true);
                 newParam.ym2610[chipId].channels[c].mask = mask;
                 oldParam.ym2610[chipId].channels[c].mask = !mask;
 
-                //FM(2ch) FMex
+                // FM(2ch) FMex
                 if ((ch == 2) || (ch >= 9 && ch < 12)) {
                     newParam.ym2610[chipId].channels[2].mask = mask;
                     newParam.ym2610[chipId].channels[9].mask = mask;
@@ -7096,7 +7088,7 @@ setVisible(true);
                 newParam.ym2612[chipId].channels[ch].mask = mask;
                 oldParam.ym2612[chipId].channels[ch].mask = null;
 
-                //FM(2ch) FMex
+                // FM(2ch) FMex
                 if ((ch == 2) || (ch >= 6 && ch < 9)) {
                     newParam.ym2612[chipId].channels[2].mask = mask;
                     newParam.ym2612[chipId].channels[6].mask = mask;
@@ -7414,7 +7406,7 @@ setVisible(true);
             String fn = "";
             String defMbc = "";
 
-            // 曲ごとのプリセットを読み込むモード
+            // Song-specific preset loading mode
             if (setting.getAutoBalance().getLoadSongBalance()) {
                 if (setting.getAutoBalance().getSamePositionAsSongData()) {
                     fullPath = java.nio.file.Path.of(playingFileName).getParent();
@@ -7436,7 +7428,7 @@ setVisible(true);
                 }
             }
 
-            // ドライバごとのプリセットを読み込むモード
+            // Driver-specific preset loading mode
             if (setting.getAutoBalance().getLoadDriverBalance() && fn.isEmpty()) {
                 String[] fns = format.getPresetMixerBalance();
                 if (fns != null) {
@@ -7449,14 +7441,14 @@ setVisible(true);
 
             if (fn == null || fn.isEmpty()) return;
 
-            // 存在確認。無い場合は作成。
+            // Check for existence. If not, create it.
             if (!Files.exists(fullPath) && !defMbc.isEmpty()) Files.write(fullPath, defMbc.getBytes());
-            // データフォルダに存在するファイルを読み込む
+            // Read files in the data folder
             balance = Setting.Balance.load(fullPath);
 
             if (balance == null) return;
 
-            //  Mixerーバランス変更処理
+            // Mixer - Balance change processing
             setting.setBalance(balance);
             if (frmMixer2 != null) frmMixer2.update();
 //            Application.DoEvents();
@@ -7496,7 +7488,7 @@ setVisible(true);
     public String SaveDriverBalance(Setting.Balance balance) {
         PlayList.Music music = frmPlayList.getPlayingSongInfo();
         if (music == null) {
-            throw new IllegalStateException("演奏情報が取得できませんでした。\n演奏中又は演奏完了直後に再度お試しください。");
+            throw new IllegalStateException("Performance information could not be obtained. Please try again during or immediately after performance has finished.");
         }
 
         FileFormat fmt = music.format;
