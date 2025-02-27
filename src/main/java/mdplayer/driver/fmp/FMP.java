@@ -17,6 +17,7 @@ import mdplayer.driver.Vgm;
 import mdplayer.driver.fmp.nise98.FileTemp;
 import mdplayer.driver.fmp.nise98.Memory98;
 import mdplayer.driver.fmp.nise98.Nise98;
+import mdplayer.driver.fmp.nise98.Nise98.OngenBoardType;
 import mdplayer.driver.fmp.nise98.NiseDos;
 import mdplayer.driver.fmp.nise98.Register286;
 import mdplayer.plugin.BasePlugin;
@@ -150,7 +151,7 @@ public class FMP extends BaseDriver {
                     nise98.CallRunfunctionCall((byte) 0xd2);
                     int ptr = ((short) 0x2000 << 4) + (short) regs.getAX();
                     int FmpSloop_c = nise98.GetMem().PeekB(ptr + 0x17);
-                    int pcmuse = nise98.GetMem().PeekW(ptr + 0x20);
+                    int pcmuse = nise98.GetMem().peekW(ptr + 0x20);
                     if ((pcmuse & 0xff00) != 0) {
                     }
                     vgmCurLoop = (int) FmpSloop_c;
@@ -170,7 +171,7 @@ public class FMP extends BaseDriver {
         Path crntDir = Path.of(System.getProperty("user.dir"));
         Path fileNameFMP = crntDir.resolve("FMP.COM");
         logger.log(Level.WARNING, fileNameFMP);
-        nise98.Init(null, this::OPNAWrite, ft, Nise98.enmOngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.Init(null, this::OPNAWrite, ft, OngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
         nise98.GetDos().setArcFile(playingArcFileName);
         nise98.GetDos().setSearchPath(searchPaths);
 
@@ -179,7 +180,7 @@ public class FMP extends BaseDriver {
         //Log.level = musicDriverInterface.LogLevel.TRACE;
         //musicDriverInterface.Log.writeMethod = logWrite;
         nise98.LoadRun(fileNameFMP.toString(), "s -s -#42", 0x2000); //, true, true, true, 3_000_000, 0);// 108213->wait Loop exit
-        regs = nise98.GetRegisters();
+        regs = nise98.getRegisters();
 
         //nisePPZ8の常駐
         step = 0;
@@ -250,11 +251,11 @@ public class FMP extends BaseDriver {
         var fileNameFMC = "FMC.EXE";
         int rc = 0;
 
-        nise98.Init(null, this::OPNAWrite, ft, Nise98.enmOngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.Init(null, this::OPNAWrite, ft, OngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
 
         // FMP resident
         nise98.LoadRun(fileNameFMP, "s -s", 0x2000);
-        regs = nise98.GetRegisters();
+        regs = nise98.getRegisters();
 
         // Running FMC
         nise98.GetDos().setProgramTerminate(false);

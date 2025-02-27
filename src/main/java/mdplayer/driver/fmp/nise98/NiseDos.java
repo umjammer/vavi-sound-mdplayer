@@ -81,7 +81,7 @@ public class NiseDos {
 
         makeSysVars();
 
-        mem.PokeW(InDOSFLAGAdr, (short) 1); // 0: Can be used! 1: Resident programs cannot use system calls!!
+        mem.pokeW(InDOSFLAGAdr, (short) 1); // 0: Can be used! 1: Resident programs cannot use system calls!!
 
         // mem.PokeW(0xfd802, 0x2a27); // EPSON machine!!
         // mem.PokeB(0xfd804, 6); // EPSON PC-286VE
@@ -126,12 +126,12 @@ public class NiseDos {
 
         // MCB located just before the PSP
         mem.PokeB(PSPAdr - 0x10 + 0, (byte) 'Z');
-        mem.PokeW(PSPAdr - 0x10 + 1, (short) (PSPStartAddress >> 4));
-        mem.PokeW(PSPAdr - 0x10 + 3, (short) 0xffff);
+        mem.pokeW(PSPAdr - 0x10 + 1, (short) (PSPStartAddress >> 4));
+        mem.pokeW(PSPAdr - 0x10 + 3, (short) 0xffff);
 
         // Environment variable segment 0x0100 -> real address 0x0_1000 (arbitrary)
         int envPtr = 0x0_1000;
-        mem.PokeW(PSPAdr + 0x2c, (short) (envPtr >> 4));
+        mem.pokeW(PSPAdr + 0x2c, (short) (envPtr >> 4));
         byte[] env = new byte[] {(byte) 'P', (byte) 'V', (byte) 'I', (byte) '=', (byte) '.', 0, 0, 1, 0};
         int p = 0;
         for (byte c : env) {
@@ -141,11 +141,11 @@ public class NiseDos {
 
     public void makeDummyMCB() {
         mem.PokeB(mcbStartAddress + 0x00, (byte) 'M'); // member of a MCB chain, (not last)
-        mem.PokeW(mcbStartAddress + 0x01, (short) (PSPStartAddress >> 4)); // free PSP segment address of MCB owner (Process Id)
-        mem.PokeW(mcbStartAddress + 0x03, (short) 0);// The size of this mcb
-        mem.PokeW(mcbStartAddress + 0x10, (short) (0x20cd - 1)); // apparently other than 0x20cd is needed
+        mem.pokeW(mcbStartAddress + 0x01, (short) (PSPStartAddress >> 4)); // free PSP segment address of MCB owner (Process Id)
+        mem.pokeW(mcbStartAddress + 0x03, (short) 0);// The size of this mcb
+        mem.pokeW(mcbStartAddress + 0x10, (short) (0x20cd - 1)); // apparently other than 0x20cd is needed
 
-        mem.PokeW(0x0_0000 + 0x00ba, (short) (PSPStartAddress >> 4));
+        mem.pokeW(0x0_0000 + 0x00ba, (short) (PSPStartAddress >> 4));
 
         // Environment variable segment 0x0100 -> real address 0x0_1000 (arbitrary)
         int envPtr = mcbStartAddress + 0x10;
@@ -185,18 +185,18 @@ public class NiseDos {
 
                 logger.log(Level.DEBUG, "<NiseDos>INT%02xh AH:$%02x".formatted(imm8, regs.getAH()));
                 int ptr = imm8 * 4;
-                short ip = (short) mem.PeekW(ptr);
-                short cs = (short) mem.PeekW(ptr + 2);
+                short ip = (short) mem.peekW(ptr);
+                short cs = (short) mem.peekW(ptr + 2);
                 if ((ip | cs) == 0) break;
 
                 regs.subSP(2);
-                mem.PokeW(regs.getSS_SP(), regs.FLAG);
+                mem.pokeW(regs.getSS_SP(), regs.FLAG);
                 // regs.SP -= 2;
                 // mem.PokeW(regs.SS_SP, regs.DS);
                 regs.subSP(2);
-                mem.PokeW(regs.getSS_SP(), regs.getCS());
+                mem.pokeW(regs.getSS_SP(), regs.getCS());
                 regs.subSP(2);
-                mem.PokeW(regs.getSS_SP(), regs.IP);
+                mem.pokeW(regs.getSS_SP(), regs.IP);
                 regs.IP = ip;
                 regs.setCS(cs);
                 // regs.DS = cs;
@@ -234,23 +234,23 @@ public class NiseDos {
             // When exe
 
             ptr += 0x100;
-            short signature = mem.PeekW(ptr + 0x00);
-            int headerSize = mem.PeekW(ptr + 0x08) * 0x10;
-            regs.setSS((short) (mem.PeekW(ptr + 0x0e) + StartSegment + 0x10));
-            regs.setSP(mem.PeekW(ptr + 0x10));
-            regs.IP = mem.PeekW(ptr + 0x14);
-            regs.setDS((short) (mem.PeekW(ptr + 0x16) + StartSegment + 0x10));
+            short signature = mem.peekW(ptr + 0x00);
+            int headerSize = mem.peekW(ptr + 0x08) * 0x10;
+            regs.setSS((short) (mem.peekW(ptr + 0x0e) + StartSegment + 0x10));
+            regs.setSP(mem.peekW(ptr + 0x10));
+            regs.IP = mem.peekW(ptr + 0x14);
+            regs.setDS((short) (mem.peekW(ptr + 0x16) + StartSegment + 0x10));
             regs.setCS(regs.getDS());
             regs.setDS((short) (regs.getDS() - 0x10));
-            int relocOfs = mem.PeekW(ptr + 0x18);
+            int relocOfs = mem.peekW(ptr + 0x18);
             //int relocSize = headerSize - relocOfs;
-            int relocSize = mem.PeekW(ptr + 0x06) * 4; // headerSize - relocOfs - 8;
+            int relocSize = mem.peekW(ptr + 0x06) * 4; // headerSize - relocOfs - 8;
             for (int i = 0; i < relocSize; i += 4) {
-                short rOfs = (short) mem.PeekW(ptr + relocOfs + i + 0);
-                short rSeg = (short) mem.PeekW(ptr + relocOfs + i + 2);
+                short rOfs = (short) mem.peekW(ptr + relocOfs + i + 0);
+                short rSeg = (short) mem.peekW(ptr + relocOfs + i + 2);
                 int rPtr = (rSeg << 4) + rOfs;
-                short val = (short) mem.PeekW(ptr + rPtr + headerSize);
-                mem.PokeW(ptr + rPtr + headerSize, (short) (short) (StartSegment + 0x10 + val));
+                short val = (short) mem.peekW(ptr + rPtr + headerSize);
+                mem.pokeW(ptr + rPtr + headerSize, (short) (short) (StartSegment + 0x10 + val));
             }
             for (int i = 0; i < prog.length - headerSize; i++) {
                 byte b = mem.PeekB(ptr + i + headerSize);
@@ -276,9 +276,9 @@ public class NiseDos {
         // 0x10100
 
         // FCB Start Adr 0x10200
-        mem.PokeW(sysVarsStartAddress - 2, (short) (mcbStartAddress >> 4));
-        mem.PokeW(sysVarsStartAddress + 4, (short) (fcbStartAddress & 0xf));
-        mem.PokeW(sysVarsStartAddress + 6, (short) (fcbStartAddress >> 4));
+        mem.pokeW(sysVarsStartAddress - 2, (short) (mcbStartAddress >> 4));
+        mem.pokeW(sysVarsStartAddress + 4, (short) (fcbStartAddress & 0xf));
+        mem.pokeW(sysVarsStartAddress + 6, (short) (fcbStartAddress >> 4));
     }
 
     private void int18() {
@@ -333,8 +333,8 @@ public class NiseDos {
                 break;
             case 0x25:
                 logger.log(Level.DEBUG, "<NiseDos>  SET INTERRUPT VECTOR");
-                mem.PokeW(regs.getAL() * 4 + 0, regs.getDX());
-                mem.PokeW(regs.getAL() * 4 + 2, regs.getDS());
+                mem.pokeW(regs.getAL() * 4 + 0, regs.getDX());
+                mem.pokeW(regs.getAL() * 4 + 2, regs.getDS());
                 break;
             case 0x30:
                 logger.log(Level.DEBUG, "<NiseDos>  DOS VERSION");
@@ -354,8 +354,8 @@ public class NiseDos {
                 break;
             case 0x35:
                 logger.log(Level.DEBUG, "<NiseDos>  GET INTERRUPT VECTOR");
-                regs.setBX(mem.PeekW(regs.getAL() * 4 + 0));
-                regs.setES(mem.PeekW(regs.getAL() * 4 + 2));
+                regs.setBX(mem.peekW(regs.getAL() * 4 + 0));
+                regs.setES(mem.peekW(regs.getAL() * 4 + 2));
                 break;
             case 0x3c:
                 logger.log(Level.DEBUG, "<NiseDos>  Create File Using Handle");

@@ -336,7 +336,7 @@ public class Register286 {
     public int AuxVal, OverVal, SignVal, ZeroVal, CarryVal, DirVal;      /* 0 or non-0 valued flags */
     public byte ParityVal;
 
-    public void SetSZPFb(byte ans) {
+    public void setSZPFb(byte ans) {
         SignVal = (byte) ans;
         setSF(SignVal < 0);
         ZeroVal = ans;
@@ -345,7 +345,7 @@ public class Register286 {
         setPF(parity_table[ParityVal & 0xff]);
     }
 
-    public void SetSZPFw(short ans) {
+    public void setSZPFw(short ans) {
         SignVal = (short) ans;
         setSF(SignVal < 0);
         ZeroVal = ans;
@@ -354,17 +354,17 @@ public class Register286 {
         setPF(parity_table[ParityVal & 0xff]);
     }
 
-    public void SetCFb(short a) {
+    public void setCFb(short a) {
         CarryVal = (a) & 0x100;
         setCF(CarryVal != 0);
     }
 
-    public void SetCFw(int a) {
+    public void setCFw(int a) {
         CarryVal = (int) ((a) & 0x10000);
         setCF(CarryVal != 0);
     }
 
-    public void SetAF(byte a, byte b, byte ans) {
+    public void setAF(byte a, byte b, byte ans) {
         AuxVal = ((ans) ^ ((a) ^ (b))) & 0x10;
         setAF(AuxVal != 0);
     }
@@ -372,7 +372,7 @@ public class Register286 {
     // ans = a - b
     // の時のOF判定
     // 事前にSFの判定を行っておくこと
-    public void SetOFwSub(short a, short b, short ans) {
+    public void setOFwSub(short a, short b, short ans) {
         // OF = SF
         //    ? ((b > 0 && ans > a) || (b < 0 && ans < a))
         //    : ans > a;
@@ -381,7 +381,7 @@ public class Register286 {
         setOF(OverVal != 0);
     }
 
-    public void SetOFbSub(byte a, byte b, byte ans) {
+    public void setOFbSub(byte a, byte b, byte ans) {
         // OF = SF
         //    ? ((b > 0 && ans > a) || (b < 0 && ans < a))
         //    : ans > a;
@@ -389,7 +389,7 @@ public class Register286 {
         setOF(OverVal != 0);
     }
 
-    public void SetOFwAdd(short a, short b, short ans) {
+    public void setOFwAdd(short a, short b, short ans) {
         // OF = SF
         //    ? ((a >= 0 && ans < b) || (a < 0 && ans > b))
         //    : (ans < a || ans < b);

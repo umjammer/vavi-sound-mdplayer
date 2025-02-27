@@ -16,11 +16,10 @@ public class FileTemp {
 
     private static final Logger logger = getLogger(FileTemp.class.getName());
 
-    private Map<String, byte[]> temp = new HashMap<>();
-    private Setting setting = Setting.getInstance();
+    private final Map<String, byte[]> temp = new HashMap<>();
+    private final Setting setting = Setting.getInstance();
 
-    public FileTemp(Setting setting) {
-        this.setting = setting;
+    public FileTemp() {
     }
 
     public void WriteTemp(String filename, byte[] data) {

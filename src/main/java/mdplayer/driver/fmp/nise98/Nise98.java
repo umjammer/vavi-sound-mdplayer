@@ -41,7 +41,7 @@ public class Nise98 {
     private int step = 0;
     private int functionCallTimes = 0;
 
-    public enum enmOngenBoardType {
+    public enum OngenBoardType {
         None,
         PC9801_26K,
         SpeakBoard,
@@ -67,16 +67,16 @@ public class Nise98 {
         public FMTimer timer = null;
 
         //ongenBoardType
-        public enmOngenBoardType ongen = enmOngenBoardType.SpeakBoard;
+        public OngenBoardType ongen = OngenBoardType.SpeakBoard;
 
-        public fmStatus(enmOngenBoardType ongen) {
+        public fmStatus(OngenBoardType ongen) {
             this.ongen = ongen;
-            if (ongen == enmOngenBoardType.PC9801_26K) {
+            if (ongen == OngenBoardType.PC9801_26K) {
                 regs = new byte[256 * 1];
-            } else if (ongen == enmOngenBoardType.PC9801_86B) {
+            } else if (ongen == OngenBoardType.PC9801_86B) {
                 regs = new byte[256 * 2];
                 AdpcmMem = null;
-            } else if (ongen == enmOngenBoardType.SpeakBoard) {
+            } else if (ongen == OngenBoardType.SpeakBoard) {
                 regs = new byte[256 * 2];
                 AdpcmMem = new byte[256];
             } else {
@@ -88,7 +88,7 @@ public class Nise98 {
         }
     }
 
-    public void Init(Function<String, Object[]> msgWrite, Consumer<ChipDatum> opnaWrite, FileTemp fileTemp, enmOngenBoardType ongen /* = enmOngenBoardType.PC9801_86B */) {
+    public void Init(Function<String, Object[]> msgWrite, Consumer<ChipDatum> opnaWrite, FileTemp fileTemp, OngenBoardType ongen /* = enmOngenBoardType.PC9801_86B */) {
         logger.log(Level.DEBUG, "<Nise98>Init");
 
         this.opnaWrite = opnaWrite;
@@ -100,29 +100,29 @@ public class Nise98 {
         int08Timer = new NiseInt08Timer(cpu, 8);
         ppz8 = new NisePpz8(this);
 
-        if (ongen == enmOngenBoardType.None) {
-            fmReg088 = new fmStatus(enmOngenBoardType.None);
-            fmReg188 = new fmStatus(enmOngenBoardType.None);
-            fmReg288 = new fmStatus(enmOngenBoardType.None);
-            fmReg388 = new fmStatus(enmOngenBoardType.None);
+        if (ongen == OngenBoardType.None) {
+            fmReg088 = new fmStatus(OngenBoardType.None);
+            fmReg188 = new fmStatus(OngenBoardType.None);
+            fmReg288 = new fmStatus(OngenBoardType.None);
+            fmReg388 = new fmStatus(OngenBoardType.None);
             pA460h = (byte) 0xfc;
-        } else if (ongen == enmOngenBoardType.PC9801_26K) {
-            fmReg088 = new fmStatus(enmOngenBoardType.None);
-            fmReg188 = new fmStatus(enmOngenBoardType.PC9801_26K);
-            fmReg288 = new fmStatus(enmOngenBoardType.None);
-            fmReg388 = new fmStatus(enmOngenBoardType.None);
+        } else if (ongen == OngenBoardType.PC9801_26K) {
+            fmReg088 = new fmStatus(OngenBoardType.None);
+            fmReg188 = new fmStatus(OngenBoardType.PC9801_26K);
+            fmReg288 = new fmStatus(OngenBoardType.None);
+            fmReg388 = new fmStatus(OngenBoardType.None);
             pA460h = (byte) 0xfc;
-        } else if (ongen == enmOngenBoardType.PC9801_86B) {
-            fmReg088 = new fmStatus(enmOngenBoardType.None);
-            fmReg188 = new fmStatus(enmOngenBoardType.PC9801_86B);
-            fmReg288 = new fmStatus(enmOngenBoardType.None);
-            fmReg388 = new fmStatus(enmOngenBoardType.None);
+        } else if (ongen == OngenBoardType.PC9801_86B) {
+            fmReg088 = new fmStatus(OngenBoardType.None);
+            fmReg188 = new fmStatus(OngenBoardType.PC9801_86B);
+            fmReg288 = new fmStatus(OngenBoardType.None);
+            fmReg388 = new fmStatus(OngenBoardType.None);
             pA460h = 0b0100_0001;
-        } else if (ongen == enmOngenBoardType.SpeakBoard) {
-            fmReg088 = new fmStatus(enmOngenBoardType.SpeakBoard);
-            fmReg188 = new fmStatus(enmOngenBoardType.None);
-            fmReg288 = new fmStatus(enmOngenBoardType.None);
-            fmReg388 = new fmStatus(enmOngenBoardType.None);
+        } else if (ongen == OngenBoardType.SpeakBoard) {
+            fmReg088 = new fmStatus(OngenBoardType.SpeakBoard);
+            fmReg188 = new fmStatus(OngenBoardType.None);
+            fmReg288 = new fmStatus(OngenBoardType.None);
+            fmReg388 = new fmStatus(OngenBoardType.None);
             pA460h = (byte) 0xfc;
         }
     }
@@ -131,7 +131,7 @@ public class Nise98 {
         return dos;
     }
 
-    public Register286 GetRegisters() {
+    public Register286 getRegisters() {
         return regs;
     }
 
@@ -239,10 +239,10 @@ public class Nise98 {
                 //0b1010_0001　以降、YMF288   0x188h 恐らく後続の処理でさらに調べていると思われる
                 //       ~~~~ここはFMPは完全無視(但し0xffだった場合は判定処理が終わる.恐らく後続の処理でさらに調べていると思われる)
 
-                if (fmReg188.ongen == enmOngenBoardType.None) return (byte) 0xff;
-                else if (fmReg188.ongen == enmOngenBoardType.PC9801_26K) return (byte) 0xff;
-                else if (fmReg188.ongen == enmOngenBoardType.PC9801_86B) return (byte) 0b0100_0001;
-                else if (fmReg088.ongen == enmOngenBoardType.SpeakBoard) return (byte) 0b1000_0001;
+                if (fmReg188.ongen == OngenBoardType.None) return (byte) 0xff;
+                else if (fmReg188.ongen == OngenBoardType.PC9801_26K) return (byte) 0xff;
+                else if (fmReg188.ongen == OngenBoardType.PC9801_86B) return (byte) 0b0100_0001;
+                else if (fmReg088.ongen == OngenBoardType.SpeakBoard) return (byte) 0b1000_0001;
 
                 return (byte) 0xff;
 
@@ -380,7 +380,7 @@ public class Nise98 {
         logger.log(Level.DEBUG, "<Nise98> --- IN  FM Port:$%03x".formatted(port));
         switch (port & 0xff) {
             case 0x88: // FM port
-                if (fs.ongen == enmOngenBoardType.None)
+                if (fs.ongen == OngenBoardType.None)
                     return (byte) 0xff;
 
                 byte ret = (byte) (fs.timer.readStatus() |
@@ -391,22 +391,22 @@ public class Nise98 {
                 return ret;
 
             case 0x8a: // FM port
-                if (fs.ongen == enmOngenBoardType.None)
+                if (fs.ongen == OngenBoardType.None)
                     return (byte) 0xff;
 
                 if (fs.p88lastAdr == 0x0e)
                     return fs.Int;
                 else if (fs.p88lastAdr == (byte) 0xff)
-                    return (byte) (fs.ongen == enmOngenBoardType.PC9801_26K ? 0x00 : 0x01);
+                    return (byte) (fs.ongen == OngenBoardType.PC9801_26K ? 0x00 : 0x01);
                 else
                     return (byte) (fs.regs != null ? fs.regs[fs.p88lastAdr] : 0x00);
 
             case 0x8c: // FM port
                 //fs.AdpcmPtr++;
-                if (fs.ongen == enmOngenBoardType.None
-                        || fs.ongen == enmOngenBoardType.PC9801_26K)
+                if (fs.ongen == OngenBoardType.None
+                        || fs.ongen == OngenBoardType.PC9801_26K)
                     return (byte) 0xff;
-                if (fs.ongen == enmOngenBoardType.PC9801_86B && (pA460h & 3) == 0)
+                if (fs.ongen == OngenBoardType.PC9801_86B && (pA460h & 3) == 0)
                     return (byte) 0xff;
 
                 return (byte) (fs.timer.readStatus() |
@@ -417,10 +417,10 @@ public class Nise98 {
                 );
 
             case 0x8e: // FM port
-                if (fs.ongen == enmOngenBoardType.None
-                        || fs.ongen == enmOngenBoardType.PC9801_26K)
+                if (fs.ongen == OngenBoardType.None
+                        || fs.ongen == OngenBoardType.PC9801_26K)
                     return (byte) 0xff;
-                if (fs.ongen == enmOngenBoardType.PC9801_86B && (pA460h & 3) == 0)
+                if (fs.ongen == OngenBoardType.PC9801_86B && (pA460h & 3) == 0)
                     return (byte) 0xff;
 
                 if (fs.p8clastAdr == 0x08 && fs.AdpcmMem != null)
@@ -435,7 +435,7 @@ public class Nise98 {
 
     private void FMPortOutport(fmStatus fs, short port, byte data) {
         logger.log(Level.DEBUG, "<Nise98> --- OUT FM Port:%03x Dat:$%02x".formatted(port, data));
-        if (fs.ongen == enmOngenBoardType.None) return;
+        if (fs.ongen == OngenBoardType.None) return;
 
         ChipDatum cd;
         switch (port & 0xff) {
@@ -493,7 +493,7 @@ public class Nise98 {
                        long MaxStepCounter /* = 100_000_000 */,
                        long StartStepCounterForDispStep /* = 0 */) {
         dos.loadAndExecuteFile(filename, option, startSegment);
-        Register286 regs = GetRegisters();
+        Register286 regs = getRegisters();
         if (dispReg) DispRegs(regs);
 
         while (((useStepCounter && step < MaxStepCounter) || !useStepCounter) && !dos.getProgramTerminate()) {
@@ -505,7 +505,7 @@ public class Nise98 {
             }
 
             if (dispReg) {
-                regs = GetRegisters();
+                regs = getRegisters();
                 DispRegs(regs);
             }
 
@@ -531,7 +531,7 @@ public class Nise98 {
                                     boolean dispStepCounter /* = false */,
                                     long MaxStepCounter /* = 100_000_000 */,
                                     long StartStepCounterForDispStep /* = 0 */) {
-        Register286 regs = GetRegisters();
+        Register286 regs = getRegisters();
         UserInt ui = new UserInt();
         ui.setIntNum(intnumber);
         UserINT(ui);
@@ -551,7 +551,7 @@ public class Nise98 {
             }
 
             if (dispReg) {
-                regs = GetRegisters();
+                regs = getRegisters();
                 DispRegs(regs);
             }
 

@@ -39,7 +39,7 @@ public class Nise286 {
     private List<Supplier<Boolean>> lstHook = new ArrayList<>();
 
     public Nise286(Nise98 machine) {
-        this.regs = machine.GetRegisters();
+        this.regs = machine.getRegisters();
         this.mem = machine.GetMem();
         this.dos = machine.GetDos();
         this.machine = machine;
@@ -68,7 +68,7 @@ public class Nise286 {
             if (did) return 0;
         }
 
-        byte op = Fetch();
+        byte op = fetch();
         switch (op & 0xff) {
             case 0x00:
                 ADD_EB_GB();
@@ -134,10 +134,10 @@ public class Nise286 {
             case 0x15:
                 throw new UnsupportedOperationException(Integer.toHexString(op));
             case 0x16:
-                PUSH_SS();
+                pushSS();
                 break;
             case 0x17:
-                POP_SS();
+                popSS();
                 break;
             case 0x18:
                 throw new UnsupportedOperationException(Integer.toHexString(op));
@@ -804,17 +804,17 @@ public class Nise286 {
 
         // check mask
         for (int i = 0; i < 8; i++) {
-            if ((w_mmsk & (0x01 << i)) == 0) INTxx(i + 8);
+            if ((w_mmsk & (0x01 << i)) == 0) intXX(i + 8);
         }
         for (int i = 0; i < 8; i++) {
-            if ((w_smsk & (0x01 << i)) == 0) INTxx(i + 10);
+            if ((w_smsk & (0x01 << i)) == 0) intXX(i + 10);
         }
 
         UserInt();
     }
 
     private void UserInt() {
-        if (lstUserInt.size() < 1) return;
+        if (lstUserInt.isEmpty()) return;
 
         UserInt ui = null;
         synchronized (userIntLockObject) {
@@ -822,58 +822,58 @@ public class Nise286 {
             lstUserInt.remove(0);
         }
 
-        short ofs = mem.PeekW(ui.getIntNum() * 4);
-        short seg = mem.PeekW(ui.getIntNum() * 4 + 2);
+        short ofs = mem.peekW(ui.getIntNum() * 4);
+        short seg = mem.peekW(ui.getIntNum() * 4 + 2);
         if (ofs == 0 && seg == 0) return;
 
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.FLAG);
+        mem.pokeW(regs.getSS_SP(), regs.FLAG);
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), (short) 0);
+        mem.pokeW(regs.getSS_SP(), (short) 0);
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), (short) 0);
+        mem.pokeW(regs.getSS_SP(), (short) 0);
         regs.IP = ofs;
         regs.setCS(seg);
 
         logger.log(Level.DEBUG, "Interrupt:UserINT%02xh".formatted(ui.getIntNum()));
     }
 
-    private void INTxx(int i) {
+    private void intXX(int i) {
         if (!interruptTrigger[i]) return;
 
         interruptTrigger[i] = false;
-        short ofs = mem.PeekW(i * 4);
-        short seg = mem.PeekW(i * 4 + 2);
+        short ofs = mem.peekW(i * 4);
+        short seg = mem.peekW(i * 4 + 2);
         if (ofs == 0 && seg == 0) return;
 
         iLevel++;
 
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.FLAG);
+        mem.pokeW(regs.getSS_SP(), regs.FLAG);
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getCS());
+        mem.pokeW(regs.getSS_SP(), regs.getCS());
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.IP);
+        mem.pokeW(regs.getSS_SP(), regs.IP);
         regs.IP = ofs;
         regs.setCS(seg);
 
         logger.log(Level.DEBUG, "Interrupt:INT%02xh".formatted(i));
     }
 
-    private byte Fetch() {
+    private byte fetch() {
         byte op = mem.PeekB(regs.getCS_IP());
         regs.IP++;
         return op;
     }
 
-    private short Fetchw() {
-        short imm16 = Fetch();
-        imm16 |= (short) (Fetch() << 8);
+    private short fetchW() {
+        short imm16 = fetch();
+        imm16 |= (short) (fetch() << 8);
         return imm16;
     }
 
-    private int GetSegment(byte rm, boolean NoSeg, boolean isMod00 /* = false */) {
-        if (NoSeg) return 0;
+    private int getSegment(byte rm, boolean noSeg, boolean isMod00 /* = false */) {
+        if (noSeg) return 0;
 
         if (segPrefSw) {
             segPrefSw = false;
@@ -886,8 +886,8 @@ public class Nise286 {
             return (int) ((short) regs.getSS() << 4);
     }
 
-    private int GetMod00RWADR(byte rm, boolean NoSeg /* = false */) {
-        int seg = GetSegment(rm, NoSeg, true);
+    private int getMod00RwAdr(byte rm, boolean noSeg /* = false */) {
+        int seg = getSegment(rm, noSeg, true);
 
         switch (rm) {
             case 0:
@@ -903,7 +903,7 @@ public class Nise286 {
             case 5:
                 return (int) (seg + (short) regs.getDI());
             case 6:
-                short ptr = Fetchw();
+                short ptr = fetchW();
                 return (int) (seg + (short) ptr);
             case 7:
                 return (int) (seg + (short) regs.getBX());
@@ -912,10 +912,10 @@ public class Nise286 {
         }
     }
 
-    private int GetMod01RWADR(byte rm, boolean NoSeg /* = false */) {
-        int seg = GetSegment(rm, NoSeg, false);
+    private int getMod01RwAdr(byte rm, boolean NoSeg /* = false */) {
+        int seg = getSegment(rm, NoSeg, false);
 
-        byte disp8 = (byte) Fetch();
+        byte disp8 = (byte) fetch();
         switch (rm) {
             case 0:
                 return (int) (seg + (short) (regs.getBX() + regs.getSI() + disp8));
@@ -938,10 +938,10 @@ public class Nise286 {
         }
     }
 
-    private int GetMod02RWADR(byte rm, boolean NoSeg /* = false */) {
-        int seg = GetSegment(rm, NoSeg, false);
+    private int getMod02RwAdr(byte rm, boolean noSeg /* = false */) {
+        int seg = getSegment(rm, noSeg, false);
 
-        short disp16 = (short) Fetchw();
+        short disp16 = (short) fetchW();
         switch (rm) {
             case 0:
                 return (int) (seg + (short) (regs.getBX() + regs.getSI() + disp16));
@@ -964,7 +964,7 @@ public class Nise286 {
         }
     }
 
-    private int GetSegment() {
+    private int getSegment() {
         int seg;
         if (segPrefSw) {
             seg = (int) ((short) regs.sRegs[segPref] << 4);
@@ -976,7 +976,7 @@ public class Nise286 {
 
     // 0x00
     private void ADD_EB_GB() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "ADD EB,GB modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3);
@@ -995,7 +995,7 @@ public class Nise286 {
         int ptr;
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 a = mem.PeekB(ptr);
                 b = GB;
                 c = (short) (a + b);
@@ -1003,7 +1003,7 @@ public class Nise286 {
                 mem.PokeB(ptr, ic);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 a = mem.PeekB(ptr);
                 b = GB;
                 c = (short) (a + b);
@@ -1011,7 +1011,7 @@ public class Nise286 {
                 mem.PokeB(ptr, ic);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 a = mem.PeekB(ptr);
                 b = GB;
                 c = (short) (a + b);
@@ -1029,15 +1029,15 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFb(ic);
+        regs.setSZPFb(ic);
         regs.SetOFbAdd(a, b, ic);
-        regs.SetCFb(c);
-        regs.SetAF(a, b, ic);
+        regs.setCFb(c);
+        regs.setAF(a, b, ic);
     }
 
     // 0x01
     private void ADD_EW_GW() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "ADD EW,GW modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3);
@@ -1054,28 +1054,28 @@ public class Nise286 {
         int ptr;
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
+                ptr = getMod00RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
                 b = GW;
                 c = (int) (a + b);
                 ic = (short) c;
-                mem.PokeW(ptr, (short) ic);
+                mem.pokeW(ptr, (short) ic);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
+                ptr = getMod01RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
                 b = GW;
                 c = (int) (a + b);
                 ic = (short) c;
-                mem.PokeW(ptr, (short) ic);
+                mem.pokeW(ptr, (short) ic);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
+                ptr = getMod02RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
                 b = GW;
                 c = (int) (a + b);
                 ic = (short) c;
-                mem.PokeW(ptr, (short) ic);
+                mem.pokeW(ptr, (short) ic);
                 break;
             case 3:
                 a = (short) regs.eRegs[rm];
@@ -1086,15 +1086,15 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFw(ic);
-        regs.SetOFwAdd(a, b, ic);
-        regs.SetCFw(c);
-        regs.SetAF((byte) a, (byte) b, (byte) ic);
+        regs.setSZPFw(ic);
+        regs.setOFwAdd(a, b, ic);
+        regs.setCFw(c);
+        regs.setAF((byte) a, (byte) b, (byte) ic);
     }
 
     // 0x02
     private void ADD_GB_EB() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "ADD GB,EB modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3);
@@ -1113,7 +1113,7 @@ public class Nise286 {
         switch (mod) {
             case 0:
                 a = GB;
-                b = mem.PeekB(GetMod00RWADR(rm, false));
+                b = mem.PeekB(getMod00RwAdr(rm, false));
                 c = (short) (a + b);
                 ic = (byte) c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
@@ -1121,7 +1121,7 @@ public class Nise286 {
                 break;
             case 1:
                 a = GB;
-                b = mem.PeekB(GetMod01RWADR(rm, false));
+                b = mem.PeekB(getMod01RwAdr(rm, false));
                 c = (short) (a + b);
                 ic = (byte) c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
@@ -1129,7 +1129,7 @@ public class Nise286 {
                 break;
             case 2:
                 a = GB;
-                b = mem.PeekB(GetMod02RWADR(rm, false));
+                b = mem.PeekB(getMod02RwAdr(rm, false));
                 c = (short) (a + b);
                 ic = (byte) c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
@@ -1146,68 +1146,68 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFb(ic);
+        regs.setSZPFb(ic);
         regs.SetOFbAdd(a, b, ic);
-        regs.SetCFb(c);
-        regs.SetAF(a, b, ic);
+        regs.setCFb(c);
+        regs.setAF(a, b, ic);
     }
 
     // 0x03
     private void ADD_GW_EW() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "ADD GW,EW modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "ADD gw,EW modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
-        // short GW = regs.eRegs[reg];
+        // short gw = regs.eRegs[reg];
         short a = 0;
         short b = 0;
         int c = 0;
         short ic = 0;
 
-        short GW = (short) regs.eRegs[reg];
+        short gw = (short) regs.eRegs[reg];
 
         switch (mod) {
             case 0:
-                a = GW;
-                b = (short) mem.PeekW(GetMod00RWADR(rm, false));
+                a = gw;
+                b = (short) mem.peekW(getMod00RwAdr(rm, false));
                 c = (int) (a + b);
                 ic = (short) c;
                 regs.eRegs[reg] = (short) c;
                 break;
             case 1:
-                a = GW;
-                b = (short) mem.PeekW(GetMod01RWADR(rm, false));
+                a = gw;
+                b = (short) mem.peekW(getMod01RwAdr(rm, false));
                 c = (int) (a + b);
                 ic = (short) c;
                 regs.eRegs[reg] = (short) c;
                 break;
             case 2:
-                a = GW;
-                b = (short) mem.PeekW(GetMod02RWADR(rm, false));
+                a = gw;
+                b = (short) mem.peekW(getMod02RwAdr(rm, false));
                 c = (int) (a + b);
                 ic = (short) c;
                 regs.eRegs[reg] = (short) c;
                 break;
             case 3:
-                a = GW;
+                a = gw;
                 b = (short) regs.eRegs[rm];
                 c = (int) (a + b);
                 regs.eRegs[reg] = (short) c;
                 break;
         }
 
-        regs.SetSZPFw(ic);
-        regs.SetOFwAdd(a, b, ic);
-        regs.SetCFw(c);
-        regs.SetAF((byte) a, (byte) b, (byte) ic);
+        regs.setSZPFw(ic);
+        regs.setOFwAdd(a, b, ic);
+        regs.setCFw(c);
+        regs.setAF((byte) a, (byte) b, (byte) ic);
     }
 
     // 0x04
     private void ADD_AL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "ADD AL,$%02x".formatted(imm8));
 
         byte a = 0, b = 0;
@@ -1220,15 +1220,15 @@ public class Nise286 {
         ic = (byte) (c);
         regs.setAL((byte) c);
 
-        regs.SetSZPFb(ic);
+        regs.setSZPFb(ic);
         regs.SetOFbAdd(a, b, ic);
-        regs.SetCFb(c);
-        regs.SetAF(a, b, ic);
+        regs.setCFb(c);
+        regs.setAF(a, b, ic);
     }
 
     // 0x05
     private void ADD_AX_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "ADD AX,$%04x".formatted(imm16));
 
         // short GW = regs.eRegs[reg];
@@ -1242,66 +1242,66 @@ public class Nise286 {
         ic = (short) c;
         regs.setAX((short) ic);
 
-        regs.SetSZPFw(ic);
-        regs.SetOFwAdd(a, b, ic);
-        regs.SetCFw(c);
-        regs.SetAF((byte) a, (byte) b, (byte) ic);
+        regs.setSZPFw(ic);
+        regs.setOFwAdd(a, b, ic);
+        regs.setCFw(c);
+        regs.setAF((byte) a, (byte) b, (byte) ic);
     }
 
     // 0x06
     private void PUSH_ES() {
         logger.log(Level.TRACE, "PUSH ES");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getES());
+        mem.pokeW(regs.getSS_SP(), regs.getES());
     }
 
     // 0x07
     private void POP_ES() {
         logger.log(Level.TRACE, "POP ES");
-        regs.setES(mem.PeekW(regs.getSS_SP()));
+        regs.setES(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
     }
 
     // 0x08
     private void OR_EB_GB() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "OR EB,GB modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "OR EB,gb modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         byte a = 0;
         byte b = 0;
         byte c = 0;
         byte ic = 0;
 
-        byte GB;
-        if (reg < 4) GB = (byte) (byte) regs.eRegs[reg];
-        else GB = (byte) (byte) (regs.eRegs[reg - 4] >> 8);
+        byte gb;
+        if (reg < 4) gb = (byte) (byte) regs.eRegs[reg];
+        else gb = (byte) (byte) (regs.eRegs[reg - 4] >> 8);
 
         int ptr;
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 a = (byte) mem.PeekB(ptr);
-                b = GB;
+                b = gb;
                 c = (byte) (a | b);
                 ic = (byte) c;
                 mem.PokeB(ptr, ic);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 a = (byte) mem.PeekB(ptr);
-                b = GB;
+                b = gb;
                 c = (byte) (a | b);
                 ic = (byte) c;
                 mem.PokeB(ptr, ic);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 a = (byte) mem.PeekB(ptr);
-                b = GB;
+                b = gb;
                 c = (byte) (a | b);
                 ic = (byte) c;
                 mem.PokeB(ptr, ic);
@@ -1309,7 +1309,7 @@ public class Nise286 {
             case 3:
                 if (rm < 4) a = (byte) (byte) regs.eRegs[rm];
                 else a = (byte) (byte) (regs.eRegs[rm - 4] >> 8);
-                b = GB;
+                b = gb;
                 c = (byte) (a | b);
                 ic = (byte) c;
                 if (rm < 4) regs.eRegs[rm] = (short) ((regs.eRegs[rm] & 0xff00) | ic);
@@ -1317,7 +1317,7 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFb(ic);
+        regs.setSZPFb(ic);
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -1325,49 +1325,49 @@ public class Nise286 {
 
     // 0x0a
     private void OR_GB_EB() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "OR GB,EB modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "OR gb,EB modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         byte a = 0;
         byte b = 0;
         byte c = 0;
         byte ic = 0;
 
-        byte GB;
-        if (reg < 4) GB = (byte) (byte) regs.eRegs[reg];
-        else GB = (byte) (byte) (regs.eRegs[reg - 4] >> 8);
+        byte gb;
+        if (reg < 4) gb = (byte) (byte) regs.eRegs[reg];
+        else gb = (byte) (byte) (regs.eRegs[reg - 4] >> 8);
 
         switch (mod) {
             case 0:
-                a = GB;
-                b = (byte) mem.PeekB(GetMod00RWADR(rm, false));
+                a = gb;
+                b = (byte) mem.PeekB(getMod00RwAdr(rm, false));
                 c = (byte) (a | b);
                 ic = (byte) c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
                 else regs.eRegs[reg - 4] = (short) ((byte) regs.eRegs[reg - 4] | (ic << 8));
                 break;
             case 1:
-                a = GB;
-                b = (byte) mem.PeekB(GetMod01RWADR(rm, false));
+                a = gb;
+                b = (byte) mem.PeekB(getMod01RwAdr(rm, false));
                 c = (byte) (a | b);
                 ic = (byte) c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
                 else regs.eRegs[reg - 4] = (short) ((byte) regs.eRegs[reg - 4] | (ic << 8));
                 break;
             case 2:
-                a = GB;
-                b = (byte) mem.PeekB(GetMod02RWADR(rm, false));
+                a = gb;
+                b = (byte) mem.PeekB(getMod02RwAdr(rm, false));
                 c = (byte) (a | b);
                 ic = (byte) c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
                 else regs.eRegs[reg - 4] = (short) ((byte) regs.eRegs[reg - 4] | (ic << 8));
                 break;
             case 3:
-                a = GB;
+                a = gb;
                 if (rm < 4) b = (byte) (byte) regs.eRegs[rm];
                 else b = (byte) (byte) (regs.eRegs[rm - 4] >> 8);
                 c = (byte) (a | b);
@@ -1377,7 +1377,7 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFb(ic);
+        regs.setSZPFb(ic);
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -1385,12 +1385,12 @@ public class Nise286 {
 
     // 0x0b
     private void OR_GW_EW() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "OR GW,EW modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "OR GW,EW modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         int a = 0;
         int b = 0;
@@ -1399,21 +1399,21 @@ public class Nise286 {
         switch (mod & 0xff) {
             case 0:
                 a = regs.eRegs[reg];
-                b = mem.PeekW(GetMod00RWADR(rm, false));
+                b = mem.peekW(getMod00RwAdr(rm, false));
                 c = a | b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
                 break;
             case 1:
                 a = regs.eRegs[reg];
-                b = mem.PeekW(GetMod01RWADR(rm, false));
+                b = mem.peekW(getMod01RwAdr(rm, false));
                 c = a | b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
                 break;
             case 2:
                 a = regs.eRegs[reg];
-                b = mem.PeekW(GetMod02RWADR(rm, false));
+                b = mem.peekW(getMod02RwAdr(rm, false));
                 c = a | b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
@@ -1427,7 +1427,7 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFw((short) c);
+        regs.setSZPFw((short) c);
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -1435,11 +1435,11 @@ public class Nise286 {
 
     // 0x0c
     private void OR_AL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "OR AL,$%02x".formatted(imm8));
         regs.setAL((byte) (regs.getAL() | imm8));
 
-        regs.SetSZPFb(regs.getAL());
+        regs.setSZPFb(regs.getAL());
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -1447,11 +1447,11 @@ public class Nise286 {
 
     // 0x0d
     private void OR_AX_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "OR AX,$%04x".formatted(imm16));
         regs.setAX((short) (regs.getAX() | imm16));
 
-        regs.SetSZPFw((short) regs.getAX());
+        regs.setSZPFw((short) regs.getAX());
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -1461,24 +1461,24 @@ public class Nise286 {
     private void PUSH_CS() {
         logger.log(Level.TRACE, "PUSH CS");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getCS());
+        mem.pokeW(regs.getSS_SP(), regs.getCS());
     }
 
     // 0x0f
     private void POP_CS() {
         logger.log(Level.TRACE, "POP CS");
-        regs.setCS(mem.PeekW(regs.getSS_SP()));
+        regs.setCS(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
     }
 
     // 0x10
     private void ADC_EB_GB() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "ADC EB,GB modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "ADC EB,GB modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         byte a = 0;
         byte b = 0;
@@ -1492,7 +1492,7 @@ public class Nise286 {
         int ptr;
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 a = mem.PeekB(ptr);
                 b = GB;
                 c = (short) (a + b + (regs.getCF() ? 1 : 0));
@@ -1500,7 +1500,7 @@ public class Nise286 {
                 mem.PokeB(ptr, ic);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 a = mem.PeekB(ptr);
                 b = GB;
                 c = (short) (a + b + (regs.getCF() ? 1 : 0));
@@ -1508,7 +1508,7 @@ public class Nise286 {
                 mem.PokeB(ptr, ic);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 a = mem.PeekB(ptr);
                 b = GB;
                 c = (short) (a + b + (regs.getCF() ? 1 : 0));
@@ -1526,68 +1526,68 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFb(ic);
+        regs.setSZPFb(ic);
         regs.SetOFbAdd(a, b, ic);
-        regs.SetCFb(c);
-        regs.SetAF(a, b, ic);
+        regs.setCFb(c);
+        regs.setAF(a, b, ic);
     }
 
     // 0x13
     private void ADC_GW_EW() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "ADC GW,EW modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "ADC gw,EW modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
-        // short GW = regs.eRegs[reg];
+        // short gw = regs.eRegs[reg];
         short a = 0;
         short b = 0;
         int c = 0;
         short ic = 0;
 
-        short GW = (short) regs.eRegs[reg];
+        short gw = (short) regs.eRegs[reg];
 
         switch (mod) {
             case 0:
-                a = GW;
-                b = (short) mem.PeekW(GetMod00RWADR(rm, false));
+                a = gw;
+                b = (short) mem.peekW(getMod00RwAdr(rm, false));
                 c = (int) (a + b + (regs.getCF() ? 1 : 0));
                 ic = (short) c;
                 regs.eRegs[reg] = (short) c;
                 break;
             case 1:
-                a = GW;
-                b = (short) mem.PeekW(GetMod01RWADR(rm, false));
+                a = gw;
+                b = (short) mem.peekW(getMod01RwAdr(rm, false));
                 c = (int) (a + b + (regs.getCF() ? 1 : 0));
                 ic = (short) c;
                 regs.eRegs[reg] = (short) c;
                 break;
             case 2:
-                a = GW;
-                b = (short) mem.PeekW(GetMod02RWADR(rm, false));
+                a = gw;
+                b = (short) mem.peekW(getMod02RwAdr(rm, false));
                 c = (int) (a + b + (regs.getCF() ? 1 : 0));
                 ic = (short) c;
                 regs.eRegs[reg] = (short) c;
                 break;
             case 3:
-                a = GW;
+                a = gw;
                 b = (short) regs.eRegs[rm];
                 c = (int) (a + b + (regs.getCF() ? 1 : 0));
                 regs.eRegs[reg] = (short) c;
                 break;
         }
 
-        regs.SetSZPFw(ic);
-        regs.SetOFwAdd(a, b, ic);
-        regs.SetCFw(c);
-        regs.SetAF((byte) a, (byte) b, (byte) ic);
+        regs.setSZPFw(ic);
+        regs.setOFwAdd(a, b, ic);
+        regs.setCFw(c);
+        regs.setAF((byte) a, (byte) b, (byte) ic);
     }
 
     // 0x14
     private void ADC_AL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "ADC AL,$%02x".formatted(imm8));
 
         byte a = 0, b = 0;
@@ -1600,29 +1600,29 @@ public class Nise286 {
         ic = (byte) (c);
         regs.setAL((byte) c);
 
-        regs.SetSZPFb(ic);
+        regs.setSZPFb(ic);
         regs.SetOFbAdd(a, b, ic);
-        regs.SetCFb(c);
-        regs.SetAF(a, b, ic);
+        regs.setCFb(c);
+        regs.setAF(a, b, ic);
     }
 
     // 0x16
-    private void PUSH_SS() {
+    private void pushSS() {
         logger.log(Level.TRACE, "PUSH SS");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getSS());
+        mem.pokeW(regs.getSS_SP(), regs.getSS());
     }
 
     // 0x17
-    private void POP_SS() {
+    private void popSS() {
         logger.log(Level.TRACE, "POP SS");
-        regs.setSS(mem.PeekW(regs.getSS_SP()));
+        regs.setSS(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
     }
 
     // 0x19
     private void SBB_EW_GW() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "SBB EW,GW modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3);
@@ -1639,28 +1639,28 @@ public class Nise286 {
         int ptr;
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
+                ptr = getMod00RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
                 b = (short) (GW + (regs.getCF() ? 1 : 0));
                 c = a - b;
                 ic = (short) c;
-                mem.PokeW(ptr, (short) ic);
+                mem.pokeW(ptr, (short) ic);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
+                ptr = getMod01RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
                 b = (short) (GW + (regs.getCF() ? 1 : 0));
                 c = a - b;
                 ic = (short) c;
-                mem.PokeW(ptr, (short) ic);
+                mem.pokeW(ptr, (short) ic);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
+                ptr = getMod02RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
                 b = (short) (GW + (regs.getCF() ? 1 : 0));
                 c = a - b;
                 ic = (short) c;
-                mem.PokeW(ptr, (short) ic);
+                mem.pokeW(ptr, (short) ic);
                 break;
             case 3:
                 a = (short) regs.eRegs[rm];
@@ -1671,15 +1671,15 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFw(ic);
-        regs.SetOFwSub(a, b, ic);
-        regs.SetCFw((int) c);
-        regs.SetAF((byte) a, (byte) b, (byte) ic);
+        regs.setSZPFw(ic);
+        regs.setOFwSub(a, b, ic);
+        regs.setCFw((int) c);
+        regs.setAF((byte) a, (byte) b, (byte) ic);
     }
 
     // 0x1c
     private void SBB_AL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "SBB AL,$%02x".formatted(imm8));
 
         byte a = (byte) regs.getAL();
@@ -1688,66 +1688,66 @@ public class Nise286 {
         byte ic = (byte) c;
         regs.setAL(ic);
 
-        regs.SetSZPFb(ic);
-        regs.SetOFbSub((byte) a, (byte) b, ic);
-        regs.SetCFb((short) c);
-        regs.SetAF((byte) a, (byte) b, ic);
+        regs.setSZPFb(ic);
+        regs.setOFbSub((byte) a, (byte) b, ic);
+        regs.setCFb((short) c);
+        regs.setAF((byte) a, (byte) b, ic);
     }
 
     // 0x1e
     private void PUSH_DS() {
         logger.log(Level.TRACE, "PUSH DS");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getDS());
+        mem.pokeW(regs.getSS_SP(), regs.getDS());
     }
 
     // 0x1f
     private void POP_DS() {
         logger.log(Level.TRACE, "POP DS");
-        regs.setDS(mem.PeekW(regs.getSS_SP()));
+        regs.setDS(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
     }
 
     // 0x20
     private void AND_EB_GB() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "AND EB,GB modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "AND EB,gb modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         byte a = 0;
         byte b = 0;
         byte c = 0;
         byte ic = 0;
 
-        byte GB;
-        if (reg < 4) GB = (byte) (byte) regs.eRegs[reg];
-        else GB = (byte) (byte) (regs.eRegs[reg - 4] >> 8);
+        byte gb;
+        if (reg < 4) gb = (byte) (byte) regs.eRegs[reg];
+        else gb = (byte) (byte) (regs.eRegs[reg - 4] >> 8);
         int ptr;
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 a = (byte) mem.PeekB(ptr);
-                b = GB;
+                b = gb;
                 c = (byte) (a & b);
                 ic = (byte) c;
                 mem.PokeB(ptr, ic);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 a = (byte) mem.PeekB(ptr);
-                b = GB;
+                b = gb;
                 c = (byte) (a & b);
                 ic = (byte) c;
                 mem.PokeB(ptr, ic);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 a = (byte) mem.PeekB(ptr);
-                b = GB;
+                b = gb;
                 c = (byte) (a & b);
                 ic = (byte) c;
                 mem.PokeB(ptr, ic);
@@ -1755,7 +1755,7 @@ public class Nise286 {
             case 3:
                 if (rm < 4) a = (byte) (byte) regs.eRegs[rm];
                 else a = (byte) (byte) (regs.eRegs[rm - 4] >> 8);
-                b = GB;
+                b = gb;
                 c = (byte) (a & b);
                 ic = (byte) c;
                 if (rm < 4) regs.eRegs[rm] = (short) ((regs.eRegs[rm] & 0xff00) | ic);
@@ -1763,7 +1763,7 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFb(ic);
+        regs.setSZPFb(ic);
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -1771,57 +1771,57 @@ public class Nise286 {
 
     // 0x21
     private void AND_EW_GW() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "AND EW,GW modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "AND EW,gw modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         short a = 0;
         short b = 0;
         int c = 0;
         short ic = 0;
 
-        short GW;
-        GW = (short) regs.eRegs[reg];
+        short gw;
+        gw = (short) regs.eRegs[reg];
         int ptr;
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
-                b = GW;
+                ptr = getMod00RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
+                b = gw;
                 c = (int) (a & b);
                 ic = (short) c;
-                mem.PokeW(ptr, (short) ic);
+                mem.pokeW(ptr, (short) ic);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
-                b = GW;
+                ptr = getMod01RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
+                b = gw;
                 c = (int) (a & b);
                 ic = (short) c;
-                mem.PokeW(ptr, (short) ic);
+                mem.pokeW(ptr, (short) ic);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
-                b = GW;
+                ptr = getMod02RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
+                b = gw;
                 c = (int) (a & b);
                 ic = (short) c;
-                mem.PokeW(ptr, (short) ic);
+                mem.pokeW(ptr, (short) ic);
                 break;
             case 3:
                 a = (short) regs.eRegs[rm];
-                b = GW;
+                b = gw;
                 c = (int) (a & b);
                 ic = (short) c;
                 regs.eRegs[rm] = (short) ic;
                 break;
         }
 
-        regs.SetSZPFw(ic);
+        regs.setSZPFw(ic);
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -1829,12 +1829,12 @@ public class Nise286 {
 
     // 0x22
     private void AND_GB_EB() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "AND GB,EB modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "AND GB,EB modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         byte a = 0;
         byte b = 0;
@@ -1848,7 +1848,7 @@ public class Nise286 {
         switch (mod) {
             case 0:
                 a = GB;
-                b = (byte) mem.PeekB(GetMod00RWADR(rm, false));
+                b = (byte) mem.PeekB(getMod00RwAdr(rm, false));
                 c = (byte) (a & b);
                 ic = (byte) c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
@@ -1856,7 +1856,7 @@ public class Nise286 {
                 break;
             case 1:
                 a = GB;
-                b = (byte) mem.PeekB(GetMod01RWADR(rm, false));
+                b = (byte) mem.PeekB(getMod01RwAdr(rm, false));
                 c = (byte) (a & b);
                 ic = (byte) c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
@@ -1864,7 +1864,7 @@ public class Nise286 {
                 break;
             case 2:
                 a = GB;
-                b = (byte) mem.PeekB(GetMod02RWADR(rm, false));
+                b = (byte) mem.PeekB(getMod02RwAdr(rm, false));
                 c = (byte) (a & b);
                 ic = (byte) c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
@@ -1881,7 +1881,7 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFb(ic);
+        regs.setSZPFb(ic);
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -1889,12 +1889,12 @@ public class Nise286 {
 
     // 0x23
     private void AND_GW_EW() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "AND GW,EW modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "AND GW,EW modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         int a = 0;
         int b = 0;
@@ -1903,21 +1903,21 @@ public class Nise286 {
         switch (mod) {
             case 0:
                 a = regs.eRegs[reg];
-                b = mem.PeekW(GetMod00RWADR(rm, false));
+                b = mem.peekW(getMod00RwAdr(rm, false));
                 c = a & b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
                 break;
             case 1:
                 a = regs.eRegs[reg];
-                b = mem.PeekW(GetMod01RWADR(rm, false));
+                b = mem.peekW(getMod01RwAdr(rm, false));
                 c = a & b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
                 break;
             case 2:
                 a = regs.eRegs[reg];
-                b = mem.PeekW(GetMod02RWADR(rm, false));
+                b = mem.peekW(getMod02RwAdr(rm, false));
                 c = a & b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
@@ -1931,7 +1931,7 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFw((short) ic);
+        regs.setSZPFw((short) ic);
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -1939,11 +1939,11 @@ public class Nise286 {
 
     // 0x24
     private void AND_AL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "AND AL,$%02x".formatted(imm8));
         regs.setAL((byte) (regs.getAL() & imm8));
 
-        regs.SetSZPFb(regs.getAL());
+        regs.setSZPFb(regs.getAL());
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -1951,11 +1951,11 @@ public class Nise286 {
 
     // 0x25
     private void AND_AX_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "AND AX,$%04x".formatted(imm16));
         regs.setAX((short) (regs.getAX() & imm16));
 
-        regs.SetSZPFw((short) regs.getAX());
+        regs.setSZPFw((short) regs.getAX());
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -1970,44 +1970,44 @@ public class Nise286 {
 
     // 0x28
     private void SUB_EB_GB() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "SUB EB,GB modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "SUB EB,gb modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         byte a = 0;
         byte b = 0;
         int c = 0;
         byte ic = 0;
 
-        byte GB;
-        if (reg < 4) GB = (byte) regs.eRegs[reg];
-        else GB = (byte) (regs.eRegs[reg - 4] >> 8);
+        byte gb;
+        if (reg < 4) gb = (byte) regs.eRegs[reg];
+        else gb = (byte) (regs.eRegs[reg - 4] >> 8);
 
         int ptr;
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 a = mem.PeekB(ptr);
-                b = GB;
+                b = gb;
                 c = a - b;
                 ic = (byte) c;
                 mem.PokeB(ptr, ic);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 a = mem.PeekB(ptr);
-                b = GB;
+                b = gb;
                 c = a - b;
                 ic = (byte) c;
                 mem.PokeB(ptr, ic);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 a = mem.PeekB(ptr);
-                b = GB;
+                b = gb;
                 c = a - b;
                 ic = (byte) c;
                 mem.PokeB(ptr, ic);
@@ -2015,7 +2015,7 @@ public class Nise286 {
             case 3:
                 if (rm < 4) a = (byte) regs.eRegs[rm];
                 else a = (byte) (regs.eRegs[rm - 4] >> 8);
-                b = GB;
+                b = gb;
                 c = a - b;
                 ic = (byte) c;
                 if (rm < 4) regs.eRegs[rm] = (short) ((regs.eRegs[rm] & 0xff00) | ic);
@@ -2023,114 +2023,114 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFb(ic);
-        regs.SetOFbSub((byte) a, (byte) b, ic);
-        regs.SetCFb((short) c);
-        regs.SetAF((byte) a, (byte) b, ic);
+        regs.setSZPFb(ic);
+        regs.setOFbSub((byte) a, (byte) b, ic);
+        regs.setCFb((short) c);
+        regs.setAF((byte) a, (byte) b, ic);
     }
 
     // 0x29
     private void SUB_EW_GW() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "SUB EW,GW modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "SUB EW,gw modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         short a = 0;
         short b = 0;
         int c = 0;
         short ic = 0;
 
-        short GW = (short) regs.eRegs[reg];
+        short gw = (short) regs.eRegs[reg];
 
         int ptr;
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
-                b = GW;
+                ptr = getMod00RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
+                b = gw;
                 c = a - b;
                 ic = (short) c;
-                mem.PokeW(ptr, (short) ic);
+                mem.pokeW(ptr, (short) ic);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
-                b = GW;
+                ptr = getMod01RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
+                b = gw;
                 c = a - b;
                 ic = (short) c;
-                mem.PokeW(ptr, (short) ic);
+                mem.pokeW(ptr, (short) ic);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
-                b = GW;
+                ptr = getMod02RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
+                b = gw;
                 c = a - b;
                 ic = (short) c;
-                mem.PokeW(ptr, (short) ic);
+                mem.pokeW(ptr, (short) ic);
                 break;
             case 3:
                 a = (short) regs.eRegs[rm];
-                b = GW;
+                b = gw;
                 c = a - b;
                 ic = (short) c;
                 regs.eRegs[rm] = (short) ic;
                 break;
         }
 
-        regs.SetSZPFw(ic);
-        regs.SetOFwSub(a, b, ic);
-        regs.SetCFw((int) c);
-        regs.SetAF((byte) a, (byte) b, (byte) ic);
+        regs.setSZPFw(ic);
+        regs.setOFwSub(a, b, ic);
+        regs.setCFw((int) c);
+        regs.setAF((byte) a, (byte) b, (byte) ic);
     }
 
     // 0x2a
     private void SUB_GB_EB() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "SUB GB,EB modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "SUB gb,EB modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         byte a = 0;
         byte b = 0;
         int c = 0;
         byte ic = 0;
 
-        byte GB;
-        if (reg < 4) GB = (byte) regs.eRegs[reg];
-        else GB = (byte) (regs.eRegs[reg - 4] >> 8);
+        byte gb;
+        if (reg < 4) gb = (byte) regs.eRegs[reg];
+        else gb = (byte) (regs.eRegs[reg - 4] >> 8);
 
         switch (mod) {
             case 0:
-                a = GB;
-                b = mem.PeekB(GetMod00RWADR(rm, false));
+                a = gb;
+                b = mem.PeekB(getMod00RwAdr(rm, false));
                 c = a - b;
                 ic = (byte) c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
                 else regs.eRegs[reg - 4] = (short) ((byte) regs.eRegs[reg - 4] | (ic << 8));
                 break;
             case 1:
-                a = GB;
-                b = mem.PeekB(GetMod01RWADR(rm, false));
+                a = gb;
+                b = mem.PeekB(getMod01RwAdr(rm, false));
                 c = a - b;
                 ic = (byte) c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
                 else regs.eRegs[reg - 4] = (short) ((byte) regs.eRegs[reg - 4] | (ic << 8));
                 break;
             case 2:
-                a = GB;
-                b = mem.PeekB(GetMod02RWADR(rm, false));
+                a = gb;
+                b = mem.PeekB(getMod02RwAdr(rm, false));
                 c = a - b;
                 ic = (byte) c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
                 else regs.eRegs[reg - 4] = (short) ((byte) regs.eRegs[reg - 4] | (ic << 8));
                 break;
             case 3:
-                a = GB;
+                a = gb;
                 if (rm < 4) b = (byte) regs.eRegs[rm];
                 else b = (byte) (regs.eRegs[rm - 4] >> 8);
                 c = a - b;
@@ -2140,20 +2140,20 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFb(ic);
-        regs.SetOFbSub((byte) a, (byte) b, ic);
-        regs.SetCFb((short) c);
-        regs.SetAF((byte) a, (byte) b, ic);
+        regs.setSZPFb(ic);
+        regs.setOFbSub((byte) a, (byte) b, ic);
+        regs.setCFb((short) c);
+        regs.setAF((byte) a, (byte) b, ic);
     }
 
     // 0x2b
     private void SUB_GW_EW() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "SUB GW,EW modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "SUB GW,EW modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         short a = 0;
         short b = 0;
@@ -2162,13 +2162,13 @@ public class Nise286 {
         a = (short) regs.eRegs[reg];
         switch (mod) {
             case 0:
-                b = (short) mem.PeekW(GetMod00RWADR(rm, false));
+                b = (short) mem.peekW(getMod00RwAdr(rm, false));
                 break;
             case 1:
-                b = (short) mem.PeekW(GetMod01RWADR(rm, false));
+                b = (short) mem.peekW(getMod01RwAdr(rm, false));
                 break;
             case 2:
-                b = (short) mem.PeekW(GetMod02RWADR(rm, false));
+                b = (short) mem.peekW(getMod02RwAdr(rm, false));
                 break;
             case 3:
                 b = (short) regs.eRegs[rm];
@@ -2178,15 +2178,15 @@ public class Nise286 {
         ic = (short) c;
         regs.eRegs[reg] = (short) ic;
 
-        regs.SetSZPFw(ic);
-        regs.SetOFwSub(a, b, ic);
-        regs.SetCFw((int) c);
-        regs.SetAF((byte) a, (byte) b, (byte) ic);
+        regs.setSZPFw(ic);
+        regs.setOFwSub(a, b, ic);
+        regs.setCFw((int) c);
+        regs.setAF((byte) a, (byte) b, (byte) ic);
     }
 
     // 0x2c
     private void SUB_AL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "SUB AL,$%02x".formatted(imm8));
 
         byte a = (byte) regs.getAL();
@@ -2195,15 +2195,15 @@ public class Nise286 {
         byte ic = (byte) c;
         regs.setAL(ic);
 
-        regs.SetSZPFb(ic);
-        regs.SetOFbSub((byte) a, (byte) b, ic);
-        regs.SetCFb((short) c);
-        regs.SetAF((byte) a, (byte) b, ic);
+        regs.setSZPFb(ic);
+        regs.setOFbSub((byte) a, (byte) b, ic);
+        regs.setCFb((short) c);
+        regs.setAF((byte) a, (byte) b, ic);
     }
 
     // 0x2d
     private void SUB_AX_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "SUB AX,$%04x".formatted(imm16));
 
         // short GW = regs.eRegs[reg];
@@ -2217,10 +2217,10 @@ public class Nise286 {
         ic = (short) c;
         regs.setAX((short) ic);
 
-        regs.SetSZPFw(ic);
-        regs.SetOFwSub(a, b, ic);
-        regs.SetCFw((int) c);
-        regs.SetAF((byte) a, (byte) b, (byte) ic);
+        regs.setSZPFw(ic);
+        regs.setOFwSub(a, b, ic);
+        regs.setCFw((int) c);
+        regs.setAF((byte) a, (byte) b, (byte) ic);
     }
 
     // 0x2e
@@ -2237,44 +2237,44 @@ public class Nise286 {
 
     // 0x30
     private void XOR_EB_GB() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "XOR EB,GB modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "XOR EB,gb modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         byte a = 0;
         byte b = 0;
         byte c = 0;
         byte ic = 0;
 
-        byte GB;
-        if (reg < 4) GB = (byte) (byte) regs.eRegs[reg];
-        else GB = (byte) (byte) (regs.eRegs[reg - 4] >> 8);
+        byte gb;
+        if (reg < 4) gb = (byte) (byte) regs.eRegs[reg];
+        else gb = (byte) (byte) (regs.eRegs[reg - 4] >> 8);
         int ptr;
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 a = (byte) mem.PeekB(ptr);
-                b = GB;
+                b = gb;
                 c = (byte) (a ^ b);
                 ic = (byte) c;
                 mem.PokeB(ptr, ic);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 a = (byte) mem.PeekB(ptr);
-                b = GB;
+                b = gb;
                 c = (byte) (a ^ b);
                 ic = (byte) c;
                 mem.PokeB(ptr, ic);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 a = (byte) mem.PeekB(ptr);
-                b = GB;
+                b = gb;
                 c = (byte) (a ^ b);
                 ic = (byte) c;
                 mem.PokeB(ptr, ic);
@@ -2282,7 +2282,7 @@ public class Nise286 {
             case 3:
                 if (rm < 4) a = (byte) (byte) regs.eRegs[rm];
                 else a = (byte) (byte) (regs.eRegs[rm - 4] >> 8);
-                b = GB;
+                b = gb;
                 c = (byte) (a ^ b);
                 ic = (byte) c;
                 if (rm < 4) regs.eRegs[rm] = (short) ((regs.eRegs[rm] & 0xff00) | ic);
@@ -2290,7 +2290,7 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFb(ic);
+        regs.setSZPFb(ic);
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -2298,12 +2298,12 @@ public class Nise286 {
 
     // 0x32
     private void XOR_GB_EB() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "XOR GB,EB modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "XOR GB,EB modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         // short GW = regs.eRegs[reg];
         byte a = 0;
@@ -2318,13 +2318,13 @@ public class Nise286 {
         a = GB;
         switch (mod) {
             case 0:
-                b = (byte) mem.PeekB(GetMod00RWADR(rm, false));
+                b = (byte) mem.PeekB(getMod00RwAdr(rm, false));
                 break;
             case 1:
-                b = (byte) mem.PeekB(GetMod01RWADR(rm, false));
+                b = (byte) mem.PeekB(getMod01RwAdr(rm, false));
                 break;
             case 2:
-                b = (byte) mem.PeekB(GetMod02RWADR(rm, false));
+                b = (byte) mem.PeekB(getMod02RwAdr(rm, false));
                 break;
             case 3:
                 if (rm < 4) b = (byte) (byte) regs.eRegs[rm];
@@ -2336,7 +2336,7 @@ public class Nise286 {
         if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | ic);
         else regs.eRegs[reg - 4] = (short) ((byte) regs.eRegs[reg - 4] | (ic << 8));
 
-        regs.SetSZPFb(ic);
+        regs.setSZPFb(ic);
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -2344,12 +2344,12 @@ public class Nise286 {
 
     // 0x33
     private void XOR_GW_EW() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "XOR GW,EW modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "XOR GW,EW modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         // short GW = regs.eRegs[reg];
         int a = 0;
@@ -2359,13 +2359,13 @@ public class Nise286 {
         a = regs.eRegs[reg];
         switch (mod) {
             case 0:
-                b = mem.PeekW(GetMod00RWADR(rm, false));
+                b = mem.peekW(getMod00RwAdr(rm, false));
                 break;
             case 1:
-                b = mem.PeekW(GetMod01RWADR(rm, false));
+                b = mem.peekW(getMod01RwAdr(rm, false));
                 break;
             case 2:
-                b = mem.PeekW(GetMod02RWADR(rm, false));
+                b = mem.peekW(getMod02RwAdr(rm, false));
                 break;
             case 3:
                 b = regs.eRegs[rm];
@@ -2375,7 +2375,7 @@ public class Nise286 {
         ic = (short) c;
         regs.eRegs[reg] = ic;
 
-        regs.SetSZPFw((short) ic);
+        regs.setSZPFw((short) ic);
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -2383,11 +2383,11 @@ public class Nise286 {
 
     // 0x34
     private void XOR_AL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "XOR AL,$%02x".formatted(imm8));
         regs.setAL((byte) (regs.getAL() ^ imm8));
 
-        regs.SetSZPFb(regs.getAL());
+        regs.setSZPFb(regs.getAL());
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -2395,11 +2395,11 @@ public class Nise286 {
 
     // 0x35
     private void XOR_AX_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "XOR AX,$%04x".formatted(imm16));
         regs.setAX((short) (regs.getAX() ^ imm16));
 
-        regs.SetSZPFw((short) regs.getAX());
+        regs.setSZPFw((short) regs.getAX());
         regs.setOF(false);
         regs.setCF(false);
         regs.setAF(false); // TBD
@@ -2414,148 +2414,148 @@ public class Nise286 {
 
     // 0x38
     private void CMP_EB_GB() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "CMP EB,GB modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "CMP EB,gb modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         byte a = 0;
         byte b = 0;
         int c = 0;
         byte ic = 0;
 
-        byte GB;
-        if (reg < 4) GB = (byte) regs.eRegs[reg];
-        else GB = (byte) (regs.eRegs[reg - 4] >> 8);
+        byte gb;
+        if (reg < 4) gb = (byte) regs.eRegs[reg];
+        else gb = (byte) (regs.eRegs[reg - 4] >> 8);
 
         switch (mod) {
             case 0:
-                a = mem.PeekB(GetMod00RWADR(rm, false));
-                b = GB;
+                a = mem.PeekB(getMod00RwAdr(rm, false));
+                b = gb;
                 c = a - b;
                 ic = (byte) c;
                 break;
             case 1:
-                a = mem.PeekB(GetMod01RWADR(rm, false));
-                b = GB;
+                a = mem.PeekB(getMod01RwAdr(rm, false));
+                b = gb;
                 c = a - b;
                 ic = (byte) c;
                 break;
             case 2:
-                a = mem.PeekB(GetMod02RWADR(rm, false));
-                b = GB;
+                a = mem.PeekB(getMod02RwAdr(rm, false));
+                b = gb;
                 c = a - b;
                 ic = (byte) c;
                 break;
             case 3:
                 if (rm < 4) a = (byte) regs.eRegs[rm];
                 else a = (byte) (regs.eRegs[rm - 4] >> 8);
-                b = GB;
+                b = gb;
                 c = a - b;
                 ic = (byte) c;
                 break;
         }
 
-        regs.SetSZPFb(ic);
-        regs.SetOFbSub((byte) a, (byte) b, (byte) c);
-        regs.SetCFb((short) c);
-        regs.SetAF((byte) a, (byte) b, (byte) c);
+        regs.setSZPFb(ic);
+        regs.setOFbSub((byte) a, (byte) b, (byte) c);
+        regs.setCFb((short) c);
+        regs.setAF((byte) a, (byte) b, (byte) c);
     }
 
     // 0x39
     private void CMP_EW_GW() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "CMP EW,GW modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "CMP EW,gw modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         short a = 0;
         short b = 0;
         int c = 0;
         short ic = 0;
 
-        short GW = (short) regs.eRegs[reg];
+        short gw = (short) regs.eRegs[reg];
 
         int ptr;
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
-                b = GW;
+                ptr = getMod00RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
+                b = gw;
                 c = (int) (a - b);
                 ic = (short) c;
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
-                b = GW;
+                ptr = getMod01RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
+                b = gw;
                 c = (int) (a - b);
                 ic = (short) c;
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                a = (short) mem.PeekW(ptr);
-                b = GW;
+                ptr = getMod02RwAdr(rm, false);
+                a = (short) mem.peekW(ptr);
+                b = gw;
                 c = (int) (a - b);
                 ic = (short) c;
                 break;
             case 3:
                 a = (short) regs.eRegs[rm];
-                b = GW;
+                b = gw;
                 c = (int) (a - b);
                 ic = (short) c;
                 break;
         }
 
-        regs.SetSZPFw(ic);
-        regs.SetOFwSub(a, b, ic);
-        regs.SetCFw(c);
-        regs.SetAF((byte) a, (byte) b, (byte) ic);
+        regs.setSZPFw(ic);
+        regs.setOFwSub(a, b, ic);
+        regs.setCFw(c);
+        regs.setAF((byte) a, (byte) b, (byte) ic);
     }
 
     // 0x3a
     private void CMP_GB_EB() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "CMP GB,EB modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "CMP gb,EB modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         byte a = 0;
         byte b = 0;
         int c = 0;
         byte ic = 0;
 
-        byte GB;
-        if (reg < 4) GB = (byte) regs.eRegs[reg];
-        else GB = (byte) (regs.eRegs[reg - 4] >> 8);
+        byte gb;
+        if (reg < 4) gb = (byte) regs.eRegs[reg];
+        else gb = (byte) (regs.eRegs[reg - 4] >> 8);
 
         switch (mod) {
             case 0:
-                a = GB;
-                b = mem.PeekB(GetMod00RWADR(rm, false));
+                a = gb;
+                b = mem.PeekB(getMod00RwAdr(rm, false));
                 c = a - b;
                 ic = (byte) c;
                 break;
             case 1:
-                a = GB;
-                b = mem.PeekB(GetMod01RWADR(rm, false));
+                a = gb;
+                b = mem.PeekB(getMod01RwAdr(rm, false));
                 c = a - b;
                 ic = (byte) c;
                 break;
             case 2:
-                a = GB;
-                b = mem.PeekB(GetMod02RWADR(rm, false));
+                a = gb;
+                b = mem.PeekB(getMod02RwAdr(rm, false));
                 c = a - b;
                 ic = (byte) c;
                 break;
             case 3:
-                a = GB;
+                a = gb;
                 if (rm < 4) b = (byte) regs.eRegs[rm];
                 else b = (byte) (regs.eRegs[rm - 4] >> 8);
                 c = a - b;
@@ -2563,20 +2563,20 @@ public class Nise286 {
                 break;
         }
 
-        regs.SetSZPFb(ic);
-        regs.SetOFbSub((byte) a, (byte) b, (byte) c);
-        regs.SetCFb((short) c);
-        regs.SetAF((byte) a, (byte) b, (byte) c);
+        regs.setSZPFb(ic);
+        regs.setOFbSub((byte) a, (byte) b, (byte) c);
+        regs.setCFb((short) c);
+        regs.setAF((byte) a, (byte) b, (byte) c);
     }
 
     // 0x3b
     private void CMP_GW_EW() {
-        byte modrw = Fetch();
-        logger.log(Level.TRACE, "CMP GW,EW modrw:$%02x".formatted(modrw));
+        byte modRw = fetch();
+        logger.log(Level.TRACE, "CMP GW,EW modRw:$%02x".formatted(modRw));
 
-        byte reg = (byte) ((modrw & 0x38) >> 3);
-        byte rm = (byte) (modrw & 7);
-        byte mod = (byte) (modrw >> 6);
+        byte reg = (byte) ((modRw & 0x38) >> 3);
+        byte rm = (byte) (modRw & 7);
+        byte mod = (byte) (modRw >> 6);
 
         // short GW = regs.eRegs[reg];
         short a = 0;
@@ -2585,17 +2585,17 @@ public class Nise286 {
         switch (mod) {
             case 0:
                 a = (short) regs.eRegs[reg];
-                b = (short) mem.PeekW(GetMod00RWADR(rm, false));
+                b = (short) mem.peekW(getMod00RwAdr(rm, false));
                 c = a - b;
                 break;
             case 1:
                 a = (short) regs.eRegs[reg];
-                b = (short) mem.PeekW(GetMod01RWADR(rm, false));
+                b = (short) mem.peekW(getMod01RwAdr(rm, false));
                 c = a - b;
                 break;
             case 2:
                 a = (short) regs.eRegs[reg];
-                b = (short) mem.PeekW(GetMod02RWADR(rm, false));
+                b = (short) mem.peekW(getMod02RwAdr(rm, false));
                 c = a - b;
                 break;
             case 3:
@@ -2606,37 +2606,37 @@ public class Nise286 {
         }
         short ans = (short) c;
 
-        regs.SetSZPFw(ans);
-        regs.SetOFwSub((short) a, (short) b, (short) c);
-        regs.SetCFw((int) c);
-        regs.SetAF((byte) a, (byte) b, (byte) c);
+        regs.setSZPFw(ans);
+        regs.setOFwSub((short) a, (short) b, (short) c);
+        regs.setCFw((int) c);
+        regs.setAF((byte) a, (byte) b, (byte) c);
     }
 
     // 0x3c
     private void CMP_AL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "CMP AL,$%02x".formatted(imm8));
 
         int ians = (byte) regs.getAL() - imm8;
         byte ans = (byte) ians;
 
-        regs.SetSZPFb(ans);
-        regs.SetOFbSub((byte) regs.getAL(), (byte) imm8, (byte) ans);
-        regs.SetCFb((short) ians);
-        regs.SetAF((byte) regs.getAL(), (byte) imm8, (byte) ans);
+        regs.setSZPFb(ans);
+        regs.setOFbSub((byte) regs.getAL(), (byte) imm8, (byte) ans);
+        regs.setCFb((short) ians);
+        regs.setAF((byte) regs.getAL(), (byte) imm8, (byte) ans);
     }
 
     // 0x3d
     private void CMP_AX_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "CMP AX,$%04x".formatted(imm16));
         int ians = (short) regs.getAX() - (short) imm16;
         short ans = (short) ians;
 
-        regs.SetSZPFw(ans);
-        regs.SetOFwSub((short) regs.getAX(), (short) imm16, (short) ans);
-        regs.SetCFw((int) ians);
-        regs.SetAF((byte) regs.getAX(), (byte) imm16, (byte) ans);
+        regs.setSZPFw(ans);
+        regs.setOFwSub((short) regs.getAX(), (short) imm16, (short) ans);
+        regs.setCFw((int) ians);
+        regs.setAF((byte) regs.getAX(), (byte) imm16, (byte) ans);
     }
 
     // 0x3e
@@ -2655,10 +2655,10 @@ public class Nise286 {
         int ans = a + b;
         regs.setAX((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwAdd((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwAdd((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x41
@@ -2670,10 +2670,10 @@ public class Nise286 {
         int ans = a + b;
         regs.setCX((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwAdd((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwAdd((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x42
@@ -2685,10 +2685,10 @@ public class Nise286 {
         int ans = a + b;
         regs.setDX((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwAdd((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwAdd((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x43
@@ -2700,10 +2700,10 @@ public class Nise286 {
         int ans = a + b;
         regs.setBX((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwAdd((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwAdd((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x44
@@ -2715,10 +2715,10 @@ public class Nise286 {
         int ans = a + b;
         regs.setSP((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwAdd((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwAdd((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x45
@@ -2730,10 +2730,10 @@ public class Nise286 {
         int ans = a + b;
         regs.setBP((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwAdd((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwAdd((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x46
@@ -2745,10 +2745,10 @@ public class Nise286 {
         int ans = a + b;
         regs.setSI((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwAdd((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwAdd((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x47
@@ -2760,10 +2760,10 @@ public class Nise286 {
         int ans = a + b;
         regs.setDI((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwAdd((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwAdd((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x48
@@ -2775,10 +2775,10 @@ public class Nise286 {
         int ans = a - b;
         regs.setAX((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwSub((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwSub((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x49
@@ -2790,10 +2790,10 @@ public class Nise286 {
         int ans = a - b;
         regs.setCX((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwSub((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwSub((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x4a
@@ -2805,10 +2805,10 @@ public class Nise286 {
         int ans = a - b;
         regs.setDX((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwSub((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwSub((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x4b
@@ -2820,10 +2820,10 @@ public class Nise286 {
         int ans = a - b;
         regs.setBX((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwSub((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwSub((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x4c
@@ -2835,10 +2835,10 @@ public class Nise286 {
         int ans = a - b;
         regs.setSP((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwSub((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwSub((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x4d
@@ -2850,10 +2850,10 @@ public class Nise286 {
         int ans = a - b;
         regs.setBP((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwSub((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwSub((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x4e
@@ -2865,10 +2865,10 @@ public class Nise286 {
         int ans = a - b;
         regs.setSI((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwSub((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwSub((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x4f
@@ -2880,173 +2880,173 @@ public class Nise286 {
         int ans = a - b;
         regs.setDI((short) ans);
 
-        regs.SetSZPFw((short) ans);
-        regs.SetOFwSub((short) a, (short) b, (short) ans);
-        regs.SetCFw((int) ans);
-        regs.SetAF((byte) a, (byte) b, (byte) ans);
+        regs.setSZPFw((short) ans);
+        regs.setOFwSub((short) a, (short) b, (short) ans);
+        regs.setCFw((int) ans);
+        regs.setAF((byte) a, (byte) b, (byte) ans);
     }
 
     // 0x50
     private void PUSH_AX() {
         logger.log(Level.TRACE, "PUSH AX");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getAX());
+        mem.pokeW(regs.getSS_SP(), regs.getAX());
     }
 
     // 0x51
     private void PUSH_CX() {
         logger.log(Level.TRACE, "PUSH CX");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getCX());
+        mem.pokeW(regs.getSS_SP(), regs.getCX());
     }
 
     // 0x52
     private void PUSH_DX() {
         logger.log(Level.TRACE, "PUSH DX");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getDX());
+        mem.pokeW(regs.getSS_SP(), regs.getDX());
     }
 
     // 0x53
     private void PUSH_BX() {
         logger.log(Level.TRACE, "PUSH BX");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getBX());
+        mem.pokeW(regs.getSS_SP(), regs.getBX());
     }
 
     // 0x54
     private void PUSH_SP() {
         logger.log(Level.TRACE, "PUSH SP");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getSP());
+        mem.pokeW(regs.getSS_SP(), regs.getSP());
     }
 
     // 0x55
     private void PUSH_BP() {
         logger.log(Level.TRACE, "PUSH BP");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getBP());
+        mem.pokeW(regs.getSS_SP(), regs.getBP());
     }
 
     // 0x56
     private void PUSH_SI() {
         logger.log(Level.TRACE, "PUSH SI");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getSI());
+        mem.pokeW(regs.getSS_SP(), regs.getSI());
     }
 
     // 0x57
     private void PUSH_DI() {
         logger.log(Level.TRACE, "PUSH DI");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getDI());
+        mem.pokeW(regs.getSS_SP(), regs.getDI());
     }
 
     // 0x58
     private void POP_AX() {
         logger.log(Level.TRACE, "POP AX");
-        regs.setAX(mem.PeekW(regs.getSS_SP()));
+        regs.setAX(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
     }
 
     // 0x59
     private void POP_CX() {
         logger.log(Level.TRACE, "POP CX");
-        regs.setCX(mem.PeekW(regs.getSS_SP()));
+        regs.setCX(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
     }
 
     // 0x5a
     private void POP_DX() {
         logger.log(Level.TRACE, "POP DX");
-        regs.setDX(mem.PeekW(regs.getSS_SP()));
+        regs.setDX(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
     }
 
     // 0x5b
     private void POP_BX() {
         logger.log(Level.TRACE, "POP BX");
-        regs.setBX(mem.PeekW(regs.getSS_SP()));
+        regs.setBX(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
     }
 
     // 0x5c
     private void POP_SP() {
         logger.log(Level.TRACE, "POP SP");
-        regs.setSP(mem.PeekW(regs.getSS_SP()));
+        regs.setSP(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
     }
 
     // 0x5d
     private void POP_BP() {
         logger.log(Level.TRACE, "POP BP");
-        regs.setBP(mem.PeekW(regs.getSS_SP()));
+        regs.setBP(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
     }
 
     // 0x5e
     private void POP_SI() {
         logger.log(Level.TRACE, "POP SI");
-        regs.setSI(mem.PeekW(regs.getSS_SP()));
+        regs.setSI(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
     }
 
     // 0x5f
     private void POP_DI() {
         logger.log(Level.TRACE, "POP DI");
-        regs.setDI(mem.PeekW(regs.getSS_SP()));
+        regs.setDI(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
     }
 
     // 0x60
     private void PUSHA() {
         logger.log(Level.TRACE, "PUSHA");
-        short SP = regs.getSP();
+        short sp = regs.getSP();
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getAX());
+        mem.pokeW(regs.getSS_SP(), regs.getAX());
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getCX());
+        mem.pokeW(regs.getSS_SP(), regs.getCX());
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getDX());
+        mem.pokeW(regs.getSS_SP(), regs.getDX());
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getBX());
+        mem.pokeW(regs.getSS_SP(), regs.getBX());
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), SP);
+        mem.pokeW(regs.getSS_SP(), sp);
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getBP());
+        mem.pokeW(regs.getSS_SP(), regs.getBP());
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getSI());
+        mem.pokeW(regs.getSS_SP(), regs.getSI());
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.getDI());
+        mem.pokeW(regs.getSS_SP(), regs.getDI());
     }
 
     // 0x61
     private void POPA() {
         logger.log(Level.TRACE, "POPA");
-        short SP;
+        short sp;
 
-        regs.setDI( mem.PeekW(regs.getSS_SP()));
+        regs.setDI( mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
-        regs.setSI( mem.PeekW(regs.getSS_SP()));
+        regs.setSI( mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
-        regs.setBP(mem.PeekW(regs.getSS_SP()));
+        regs.setBP(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
-        SP = mem.PeekW(regs.getSS_SP());
+        sp = mem.peekW(regs.getSS_SP());
         regs.addSP(2);
-        regs.setBX(mem.PeekW(regs.getSS_SP()));
+        regs.setBX(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
-        regs.setDX( mem.PeekW(regs.getSS_SP()));
+        regs.setDX( mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
-        regs.setCX(mem.PeekW(regs.getSS_SP()));
+        regs.setCX(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
-        regs.setAX( mem.PeekW(regs.getSS_SP()));
+        regs.setAX( mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
-        regs.setSP(SP);
+        regs.setSP(sp);
     }
 
     // 0x72
     private void JB_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         logger.log(Level.TRACE, "JB short:$%02x".formatted(imm8));
 
         if (regs.getCF()) {
@@ -3056,7 +3056,7 @@ public class Nise286 {
 
     // 0x73
     private void JNB_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         logger.log(Level.TRACE, "JNB short:$%02x".formatted(imm8));
 
         if (!regs.getCF()) {
@@ -3066,7 +3066,7 @@ public class Nise286 {
 
     // 0x74
     private void JZ_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         logger.log(Level.TRACE, "JZ short:$%02x".formatted(imm8));
 
         if (regs.getZF()) {
@@ -3076,7 +3076,7 @@ public class Nise286 {
 
     // 0x75
     private void JNZ_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         logger.log(Level.TRACE, "JNZ short:$%02x".formatted(imm8));
 
         if (!regs.getZF()) {
@@ -3086,7 +3086,7 @@ public class Nise286 {
 
     // 0x76
     private void JBE_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         logger.log(Level.TRACE, "JBE short:$%02x".formatted(imm8));
 
         if (regs.getCF() || regs.getZF()) {
@@ -3096,7 +3096,7 @@ public class Nise286 {
 
     // 0x77
     private void JNBE_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         logger.log(Level.TRACE, "JNBE short:$%02x".formatted(imm8));
 
         if (!regs.getCF() && !regs.getZF()) // cmp then op1<op2
@@ -3107,7 +3107,7 @@ public class Nise286 {
 
     // 0x78
     private void JS_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         logger.log(Level.TRACE, "JS short:$%02x".formatted(imm8));
 
         if (regs.getSF()) {
@@ -3117,7 +3117,7 @@ public class Nise286 {
 
     // 0x79
     private void JNS_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         logger.log(Level.TRACE, "JNS short:$%02x".formatted(imm8));
 
         if (!regs.getSF()) {
@@ -3127,7 +3127,7 @@ public class Nise286 {
 
     // 0x7d
     private void JNL_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         logger.log(Level.TRACE, "JNL short:$%02x".formatted(imm8));
 
         if (regs.getSF() == regs.getOF()) {
@@ -3137,7 +3137,7 @@ public class Nise286 {
 
     // 0x7e
     private void JNG_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         logger.log(Level.TRACE, "JNG short:$%02x".formatted(imm8));
 
         if (regs.getZF() || regs.getSF() != regs.getOF()) {
@@ -3147,7 +3147,7 @@ public class Nise286 {
 
     // 0x7f
     private void JNLE_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         logger.log(Level.TRACE, "JNLE short:$%02x".formatted(imm8));
 
         if (!regs.getZF() && regs.getSF() == regs.getOF()) {
@@ -3157,7 +3157,7 @@ public class Nise286 {
 
     // 0x80
     private void GRP1B() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
         byte rm = (byte) (modrw & 7);
         byte mod = (byte) (modrw >> 6);
@@ -3169,15 +3169,15 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 3:
@@ -3185,17 +3185,17 @@ public class Nise286 {
                 else EB = (byte) (byte) (regs.eRegs[rm - 4] >> 8);
                 break;
         }
-        IB = Fetch();
+        IB = fetch();
 
         switch (reg) {
             case 0: // ADD EB,IB
                 logger.log(Level.TRACE, "ADD EB,$%02x".formatted(IB));
                 ians = (byte) EB + (byte) IB;
                 ans = (byte) ians;
-                regs.SetSZPFb((byte) ians);
+                regs.setSZPFb((byte) ians);
                 regs.SetOFbAdd((byte) EB, (byte) IB, (byte) ans);
-                regs.SetCFb((short) ians);
-                regs.SetAF((byte) EB, (byte) IB, (byte) ans);
+                regs.setCFb((short) ians);
+                regs.setAF((byte) EB, (byte) IB, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
@@ -3212,7 +3212,7 @@ public class Nise286 {
                 logger.log(Level.TRACE, "OR EB,$%02x".formatted(IB));
                 ians = EB | (byte) IB;
                 ans = (byte) ians;
-                regs.SetSZPFb((byte) ans);
+                regs.setSZPFb((byte) ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -3232,10 +3232,10 @@ public class Nise286 {
                 logger.log(Level.TRACE, "ADC EB,$%02x".formatted(IB));
                 ians = EB + IB + (regs.getCF() ? 1 : 0);
                 ans = (byte) ians;
-                regs.SetSZPFb((byte) ians);
+                regs.setSZPFb((byte) ians);
                 regs.SetOFbAdd((byte) EB, (byte) IB, (byte) ans);
-                regs.SetCFb((short) ians);
-                regs.SetAF((byte) EB, (byte) IB, (byte) ans);
+                regs.setCFb((short) ians);
+                regs.setAF((byte) EB, (byte) IB, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
@@ -3252,10 +3252,10 @@ public class Nise286 {
                 logger.log(Level.TRACE, "SBB EB,$%02x".formatted(IB));
                 ians = EB - (IB + (regs.getCF() ? 1 : 0));
                 ans = (byte) ians;
-                regs.SetSZPFb((byte) ians);
-                regs.SetOFbSub((byte) EB, (byte) IB, (byte) ans);
-                regs.SetCFb((short) ians);
-                regs.SetAF((byte) EB, (byte) IB, (byte) ans);
+                regs.setSZPFb((byte) ians);
+                regs.setOFbSub((byte) EB, (byte) IB, (byte) ans);
+                regs.setCFb((short) ians);
+                regs.setAF((byte) EB, (byte) IB, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
@@ -3272,7 +3272,7 @@ public class Nise286 {
                 logger.log(Level.TRACE, "AND EB,$%02x".formatted(IB));
                 ians = EB & IB;
                 ans = (byte) ians;
-                regs.SetSZPFb((byte) ans);
+                regs.setSZPFb((byte) ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -3292,10 +3292,10 @@ public class Nise286 {
                 logger.log(Level.TRACE, "SUB EB,$%02x".formatted(IB));
                 ians = (byte) EB - (byte) IB;
                 ans = (byte) ians;
-                regs.SetSZPFb((byte) ians);
-                regs.SetOFbSub((byte) EB, (byte) IB, (byte) ans);
-                regs.SetCFb((short) ians);
-                regs.SetAF((byte) EB, (byte) IB, (byte) ans);
+                regs.setSZPFb((byte) ians);
+                regs.setOFbSub((byte) EB, (byte) IB, (byte) ans);
+                regs.setCFb((short) ians);
+                regs.setAF((byte) EB, (byte) IB, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
@@ -3312,7 +3312,7 @@ public class Nise286 {
                 logger.log(Level.TRACE, "XOR EB,$%02x".formatted(IB));
                 ians = EB ^ IB;
                 ans = (byte) ians;
-                regs.SetSZPFb((byte) ans);
+                regs.setSZPFb((byte) ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -3332,17 +3332,17 @@ public class Nise286 {
                 logger.log(Level.TRACE, "CMP EB,$%02x".formatted(IB));
                 ians = (byte) EB - (byte) IB;
                 ans = (byte) ians;
-                regs.SetSZPFb((byte) ans);
-                regs.SetOFbSub((byte) EB, (byte) IB, (byte) ans);
-                regs.SetCFb((short) ians);
-                regs.SetAF((byte) EB, (byte) IB, (byte) ans);
+                regs.setSZPFb((byte) ans);
+                regs.setOFbSub((byte) EB, (byte) IB, (byte) ans);
+                regs.setCFb((short) ians);
+                regs.setAF((byte) EB, (byte) IB, (byte) ans);
                 break;
         }
     }
 
     // 0x81
     private void GRP1W() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
         byte rm = (byte) (modrw & 7);
         byte mod = (byte) (modrw >> 6);
@@ -3354,37 +3354,37 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                EW = mem.PeekW(ptr);
+                ptr = getMod00RwAdr(rm, false);
+                EW = mem.peekW(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                EW = mem.PeekW(ptr);
+                ptr = getMod01RwAdr(rm, false);
+                EW = mem.peekW(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                EW = mem.PeekW(ptr);
+                ptr = getMod02RwAdr(rm, false);
+                EW = mem.peekW(ptr);
                 break;
             case 3:
                 EW = regs.eRegs[rm];
                 break;
         }
-        IW = Fetchw();
+        IW = fetchW();
 
         switch (reg) {
             case 0: // ADD EW,IW
                 logger.log(Level.TRACE, "ADD EW,$%04x".formatted(IW));
                 ians = (short) EW + IW;
                 ans = (short) ians;
-                regs.SetSZPFw((short) ans);
-                regs.SetOFwAdd((short) EW, (short) IW, (short) ans);
-                regs.SetCFw((int) ians);
-                regs.SetAF((byte) EW, (byte) IW, (byte) ans);
+                regs.setSZPFw((short) ans);
+                regs.setOFwAdd((short) EW, (short) IW, (short) ans);
+                regs.setCFw((int) ians);
+                regs.setAF((byte) EW, (byte) IW, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3395,7 +3395,7 @@ public class Nise286 {
                 logger.log(Level.TRACE, "OR EW,$%04x".formatted(IW));
                 ians = EW | (short) IW;
                 ans = (short) ians;
-                regs.SetSZPFw((short) ans);
+                regs.setSZPFw((short) ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -3403,7 +3403,7 @@ public class Nise286 {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3414,15 +3414,15 @@ public class Nise286 {
                 logger.log(Level.TRACE, "ADC EW,$%04x".formatted(IW));
                 ians = EW + IW + (regs.getCF() ? 1 : 0);
                 ans = (short) ians;
-                regs.SetSZPFw((short) ans);
-                regs.SetOFwAdd((short) EW, (short) IW, (short) ans);
-                regs.SetCFw((int) ians);
-                regs.SetAF((byte) EW, (byte) IW, (byte) ans);
+                regs.setSZPFw((short) ans);
+                regs.setOFwAdd((short) EW, (short) IW, (short) ans);
+                regs.setCFw((int) ians);
+                regs.setAF((byte) EW, (byte) IW, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3435,7 +3435,7 @@ public class Nise286 {
                 logger.log(Level.TRACE, "AND EW,$%04x".formatted(IW));
                 ians = EW & IW;
                 ans = (short) ians;
-                regs.SetSZPFw((short) ans);
+                regs.setSZPFw((short) ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -3443,7 +3443,7 @@ public class Nise286 {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3454,15 +3454,15 @@ public class Nise286 {
                 logger.log(Level.TRACE, "SUB EW,$%04x".formatted(IW));
                 ians = (short) EW - IW;
                 ans = (short) ians;
-                regs.SetSZPFw((short) ans);
-                regs.SetOFwSub((short) EW, (short) IW, (short) ans);
-                regs.SetCFw((int) ians);
-                regs.SetAF((byte) EW, (byte) IW, (byte) ans);
+                regs.setSZPFw((short) ans);
+                regs.setOFwSub((short) EW, (short) IW, (short) ans);
+                regs.setCFw((int) ians);
+                regs.setAF((byte) EW, (byte) IW, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3473,7 +3473,7 @@ public class Nise286 {
                 logger.log(Level.TRACE, "XOR EW,$%04x".formatted(IW));
                 ians = EW ^ IW;
                 ans = (short) ians;
-                regs.SetSZPFw((short) ans);
+                regs.setSZPFw((short) ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -3481,7 +3481,7 @@ public class Nise286 {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3492,17 +3492,17 @@ public class Nise286 {
                 logger.log(Level.TRACE, "CMP EW,$%04x", IW);
                 ians = EW - (short) IW;
                 ans = (short) ians;
-                regs.SetSZPFw((short) ans);
-                regs.SetOFwSub((short) EW, (short) IW, (short) ans);
-                regs.SetCFw((int) ians);
-                regs.SetAF((byte) EW, (byte) IW, (byte) ans);
+                regs.setSZPFw((short) ans);
+                regs.setOFwSub((short) EW, (short) IW, (short) ans);
+                regs.setCFw((int) ians);
+                regs.setAF((byte) EW, (byte) IW, (byte) ans);
                 break;
         }
     }
 
     // 0x83
     private void GRP1WB() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
 
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
         byte rm = (byte) (modrw & 7);
@@ -3513,23 +3513,23 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                EW = mem.PeekW(ptr);
+                ptr = getMod00RwAdr(rm, false);
+                EW = mem.peekW(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                EW = mem.PeekW(ptr);
+                ptr = getMod01RwAdr(rm, false);
+                EW = mem.peekW(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                EW = mem.PeekW(ptr);
+                ptr = getMod02RwAdr(rm, false);
+                EW = mem.peekW(ptr);
                 break;
             case 3:
                 EW = regs.eRegs[rm];
                 break;
         }
         byte IB;
-        IB = Fetch();
+        IB = fetch();
         int ians;
         short ans;
 
@@ -3538,15 +3538,15 @@ public class Nise286 {
                 logger.log(Level.TRACE, "ADD EW,$%02x".formatted(IB));
                 ians = (short) EW + (byte) IB;
                 ans = (short) ians;
-                regs.SetSZPFw((short) ians);
-                regs.SetOFwAdd((short) EW, (short) IB, (short) ans);
-                regs.SetCFw((int) ians);
-                regs.SetAF((byte) EW, (byte) IB, (byte) ans);
+                regs.setSZPFw((short) ians);
+                regs.setOFwAdd((short) EW, (short) IB, (short) ans);
+                regs.setCFw((int) ians);
+                regs.setAF((byte) EW, (byte) IB, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3557,7 +3557,7 @@ public class Nise286 {
                 logger.log(Level.TRACE, "OR EW,$%02x".formatted(IB));
                 ians = (short) EW | (byte) IB;
                 ans = (short) ians;
-                regs.SetSZPFw((short) ians);
+                regs.setSZPFw((short) ians);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -3565,7 +3565,7 @@ public class Nise286 {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3576,15 +3576,15 @@ public class Nise286 {
                 logger.log(Level.TRACE, "ADC EW,$%02x".formatted(IB));
                 ians = (short) EW + (byte) (IB + (regs.getCF() ? 1 : 0));
                 ans = (short) ians;
-                regs.SetSZPFw((short) ians);
-                regs.SetOFwAdd((short) EW, (short) IB, (short) ans);
-                regs.SetCFw((int) ians);
-                regs.SetAF((byte) EW, (byte) IB, (byte) ans);
+                regs.setSZPFw((short) ians);
+                regs.setOFwAdd((short) EW, (short) IB, (short) ans);
+                regs.setCFw((int) ians);
+                regs.setAF((byte) EW, (byte) IB, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3595,15 +3595,15 @@ public class Nise286 {
                 logger.log(Level.TRACE, "SBB EW,$%02x".formatted(IB));
                 ians = (short) EW - (byte) (IB + (regs.getCF() ? 1 : 0));
                 ans = (short) ians;
-                regs.SetSZPFw((short) ians);
-                regs.SetOFwSub((short) EW, (short) IB, (short) ans);
-                regs.SetCFw((int) ians);
-                regs.SetAF((byte) EW, (byte) IB, (byte) ans);
+                regs.setSZPFw((short) ians);
+                regs.setOFwSub((short) EW, (short) IB, (short) ans);
+                regs.setCFw((int) ians);
+                regs.setAF((byte) EW, (byte) IB, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3614,7 +3614,7 @@ public class Nise286 {
                 logger.log(Level.TRACE, "AND EW,$%02x".formatted(IB));
                 ians = (short) EW & (byte) IB;
                 ans = (short) ians;
-                regs.SetSZPFw((short) ians);
+                regs.setSZPFw((short) ians);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -3622,7 +3622,7 @@ public class Nise286 {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3633,15 +3633,15 @@ public class Nise286 {
                 logger.log(Level.TRACE, "SUB EW,$%02x".formatted(IB));
                 ians = (short) EW - (byte) IB;
                 ans = (short) ians;
-                regs.SetSZPFw((short) ians);
-                regs.SetOFwSub((short) EW, (short) IB, (short) ans);
-                regs.SetCFw((int) ians);
-                regs.SetAF((byte) EW, (byte) IB, (byte) ans);
+                regs.setSZPFw((short) ians);
+                regs.setOFwSub((short) EW, (short) IB, (short) ans);
+                regs.setCFw((int) ians);
+                regs.setAF((byte) EW, (byte) IB, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3652,7 +3652,7 @@ public class Nise286 {
                 logger.log(Level.TRACE, "XOR EW,$%02x".formatted(IB));
                 ians = (short) EW ^ (byte) IB;
                 ans = (short) ians;
-                regs.SetSZPFw((short) ians);
+                regs.setSZPFw((short) ians);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -3660,7 +3660,7 @@ public class Nise286 {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ans);
+                        mem.pokeW(ptr, ans);
                         break;
                     case 3:
                         regs.eRegs[rm] = ans;
@@ -3671,17 +3671,17 @@ public class Nise286 {
                 logger.log(Level.TRACE, "CMP EW,$%02x".formatted(IB));
                 ians = (short) EW - (byte) IB;
                 ans = (short) ians;
-                regs.SetSZPFw((short) ians);
-                regs.SetOFwSub((short) EW, (short) (byte) IB, (short) ans);
-                regs.SetCFw((int) ians);
-                regs.SetAF((byte) EW, (byte) IB, (byte) ans);
+                regs.setSZPFw((short) ians);
+                regs.setOFwSub((short) EW, (short) (byte) IB, (short) ans);
+                regs.setCFw((int) ians);
+                regs.setAF((byte) EW, (byte) IB, (byte) ans);
                 break;
         }
     }
 
     // 0x84
     private void TEST_EB_GB() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "TEST EB,GB modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3);
@@ -3693,15 +3693,15 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 3:
@@ -3719,7 +3719,7 @@ public class Nise286 {
             case 2:
             case 3:
                 byte ans = (byte) (EB & GB);
-                regs.SetSZPFb(ans);
+                regs.setSZPFb(ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -3729,7 +3729,7 @@ public class Nise286 {
 
     // 0x85
     private void TEST_EW_GW() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "TEST EW,GW modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3);
@@ -3741,16 +3741,16 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                EW = mem.PeekW(ptr);
+                ptr = getMod00RwAdr(rm, false);
+                EW = mem.peekW(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                EW = mem.PeekW(ptr);
+                ptr = getMod01RwAdr(rm, false);
+                EW = mem.peekW(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                EW = mem.PeekW(ptr);
+                ptr = getMod02RwAdr(rm, false);
+                EW = mem.peekW(ptr);
                 break;
             case 3:
                 EW = regs.eRegs[rm];
@@ -3765,7 +3765,7 @@ public class Nise286 {
             case 2:
             case 3:
                 short ans = (short) (EW & GW);
-                regs.SetSZPFw(ans);
+                regs.setSZPFw(ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -3776,7 +3776,7 @@ public class Nise286 {
 
     // 0x86
     private void XCHG_EB_GB() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "XCHG EB,GB modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
@@ -3788,15 +3788,15 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 3:
@@ -3832,7 +3832,7 @@ public class Nise286 {
 
     // 0x87
     private void XCHG_EW_GW() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "XCHG EW,GW modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
@@ -3844,16 +3844,16 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod00RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod01RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod02RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 3:
                 EW = (short) regs.eRegs[rm];
@@ -3872,7 +3872,7 @@ public class Nise286 {
             case 0:
             case 1:
             case 2:
-                mem.PokeW(ptr, (short) EW);
+                mem.pokeW(ptr, (short) EW);
                 break;
             case 3:
                 regs.eRegs[rm] = (short) EW;
@@ -3884,7 +3884,7 @@ public class Nise286 {
 
     // 0x88
     private void MOV_EB_GB() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "MOV EB,GB modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
@@ -3896,15 +3896,15 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 // EB = (byte)mem.PeekB(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 // EB = (byte)mem.PeekB(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 // EB = (byte)mem.PeekB(ptr);
                 break;
             case 3:
@@ -3932,7 +3932,7 @@ public class Nise286 {
 
     // 0x89
     private void MOV_EW_GW() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "MOV EW,GW modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
@@ -3942,13 +3942,13 @@ public class Nise286 {
         short GW = regs.eRegs[reg];
         switch (mod) {
             case 0:
-                mem.PokeW(GetMod00RWADR(rm, false), GW);
+                mem.pokeW(getMod00RwAdr(rm, false), GW);
                 break;
             case 1:
-                mem.PokeW(GetMod01RWADR(rm, false), GW);
+                mem.pokeW(getMod01RwAdr(rm, false), GW);
                 break;
             case 2:
-                mem.PokeW(GetMod02RWADR(rm, false), GW);
+                mem.pokeW(getMod02RwAdr(rm, false), GW);
                 break;
             case 3:
                 regs.eRegs[rm] = GW;
@@ -3958,7 +3958,7 @@ public class Nise286 {
 
     // 0x8a
     private void MOV_GB_EB() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "MOV GB,EB modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3);
@@ -3970,15 +3970,15 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 3:
@@ -4003,7 +4003,7 @@ public class Nise286 {
 
     // 0x8b
     private void MOV_GW_EW() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "MOV GW,EW modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3);
@@ -4012,13 +4012,13 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                regs.eRegs[reg] = mem.PeekW(GetMod00RWADR(rm, false));
+                regs.eRegs[reg] = mem.peekW(getMod00RwAdr(rm, false));
                 break;
             case 1:
-                regs.eRegs[reg] = mem.PeekW(GetMod01RWADR(rm, false));
+                regs.eRegs[reg] = mem.peekW(getMod01RwAdr(rm, false));
                 break;
             case 2:
-                regs.eRegs[reg] = mem.PeekW(GetMod02RWADR(rm, false));
+                regs.eRegs[reg] = mem.peekW(getMod02RwAdr(rm, false));
                 break;
             case 3:
                 regs.eRegs[reg] = regs.eRegs[rm];
@@ -4028,7 +4028,7 @@ public class Nise286 {
 
     // 0x8c
     private void MOV_EW_SW() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "MOV EW,SW modrw:$%02x", modrw);
 
         byte reg = (byte) ((modrw & 0x18) >> 3); // For segment registers, ignore bit 5
@@ -4038,13 +4038,13 @@ public class Nise286 {
         short SW = regs.sRegs[reg];
         switch (mod) {
             case 0:
-                mem.PokeW(GetMod00RWADR(rm, false), SW);
+                mem.pokeW(getMod00RwAdr(rm, false), SW);
                 break;
             case 1:
-                mem.PokeW(GetMod01RWADR(rm, false), SW);
+                mem.pokeW(getMod01RwAdr(rm, false), SW);
                 break;
             case 2:
-                mem.PokeW(GetMod02RWADR(rm, false), SW);
+                mem.pokeW(getMod02RwAdr(rm, false), SW);
                 break;
             case 3:
                 regs.eRegs[rm] = SW;
@@ -4054,7 +4054,7 @@ public class Nise286 {
 
     // 0x8d
     private void LEA_GW_M() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "LEA GW,M modrw:$%02x", modrw);
 
         byte reg = (byte) ((modrw & 0x38) >> 3);
@@ -4063,13 +4063,13 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                regs.eRegs[reg] = (short) GetMod00RWADR(rm, true);
+                regs.eRegs[reg] = (short) getMod00RwAdr(rm, true);
                 break;
             case 1:
-                regs.eRegs[reg] = (short) GetMod01RWADR(rm, true);
+                regs.eRegs[reg] = (short) getMod01RwAdr(rm, true);
                 break;
             case 2:
-                regs.eRegs[reg] = (short) GetMod02RWADR(rm, true);
+                regs.eRegs[reg] = (short) getMod02RwAdr(rm, true);
                 break;
             case 3:
                 throw new UnsupportedOperationException();
@@ -4078,7 +4078,7 @@ public class Nise286 {
 
     // 0x8e
     private void MOV_SW_EW() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "MOV SW,EW modrw:$%02x", modrw);
 
         byte reg = (byte) ((modrw & 0x18) >> 3); // For segment registers, ignore bit 5
@@ -4087,13 +4087,13 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                regs.sRegs[reg] = mem.PeekW(GetMod00RWADR(rm, false));
+                regs.sRegs[reg] = mem.peekW(getMod00RwAdr(rm, false));
                 break;
             case 1:
-                regs.sRegs[reg] = mem.PeekW(GetMod01RWADR(rm, false));
+                regs.sRegs[reg] = mem.peekW(getMod01RwAdr(rm, false));
                 break;
             case 2:
-                regs.sRegs[reg] = mem.PeekW(GetMod02RWADR(rm, false));
+                regs.sRegs[reg] = mem.peekW(getMod02RwAdr(rm, false));
                 break;
             case 3:
                 short r = regs.eRegs[rm];
@@ -4104,7 +4104,7 @@ public class Nise286 {
 
     // 0x8f
     private void POP_EW() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "POP EW modrw:$%02x", modrw);
 
         byte reg = (byte) ((modrw & 0x18) >> 3); // For segment registers, ignore bit 5
@@ -4112,19 +4112,19 @@ public class Nise286 {
         byte mod = (byte) (modrw >> 6);
 
         int ptr;
-        short imm16 = mem.PeekW(regs.getSS_SP());
+        short imm16 = mem.peekW(regs.getSS_SP());
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                mem.PokeW(ptr, imm16);
+                ptr = getMod00RwAdr(rm, false);
+                mem.pokeW(ptr, imm16);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                mem.PokeW(ptr, imm16);
+                ptr = getMod01RwAdr(rm, false);
+                mem.pokeW(ptr, imm16);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                mem.PokeW(ptr, imm16);
+                ptr = getMod02RwAdr(rm, false);
+                mem.pokeW(ptr, imm16);
                 break;
             case 3:
                 regs.eRegs[rm] = imm16;
@@ -4135,7 +4135,7 @@ public class Nise286 {
 
     // 0x84
     private void TEST_AL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "TEST AL,$%02x", imm8);
 
         byte ans = (byte) (regs.getAL() & imm8);
@@ -4214,20 +4214,20 @@ public class Nise286 {
     private void PUSHF() {
         logger.log(Level.TRACE, "PUSHF");
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.FLAG);
+        mem.pokeW(regs.getSS_SP(), regs.FLAG);
     }
 
     // 0x9d
     private void POPF() {
         logger.log(Level.TRACE, "POPF");
-        regs.FLAG = mem.PeekW(regs.getSS_SP());
+        regs.FLAG = mem.peekW(regs.getSS_SP());
         regs.addSP(2);
     }
 
     // 0xa0
     private void MOV_AL_OB() {
-        int seg = GetSegment();
-        short ptr = Fetchw();
+        int seg = getSegment();
+        short ptr = fetchW();
         logger.log(Level.TRACE, "MOV AL,[$%04x]".formatted(ptr));
 
         regs.setAL(mem.PeekB((int) (seg + ptr)));
@@ -4235,17 +4235,17 @@ public class Nise286 {
 
     // 0xa1
     private void MOV_AX_OW() {
-        int seg = GetSegment();
-        short ptr = Fetchw();
+        int seg = getSegment();
+        short ptr = fetchW();
         logger.log(Level.TRACE, "MOV AX,[$%04x]".formatted(ptr));
 
-        regs.setAX(mem.PeekW((int) (seg + ptr)));
+        regs.setAX(mem.peekW((int) (seg + ptr)));
     }
 
     // 0xa2
     private void MOV_OB_AL() {
-        int seg = GetSegment();
-        short ptr = Fetchw();
+        int seg = getSegment();
+        short ptr = fetchW();
         logger.log(Level.TRACE, "MOV [$%04x],AL".formatted(ptr));
 
         mem.PokeB((int) (seg + ptr), regs.getAL());
@@ -4253,11 +4253,11 @@ public class Nise286 {
 
     // 0xa3
     private void MOV_OW_AX() {
-        int seg = GetSegment();
-        short ptr = Fetchw();
+        int seg = getSegment();
+        short ptr = fetchW();
         logger.log(Level.TRACE, "MOV [$%04x],AX".formatted(ptr));
 
-        mem.PokeW((int) (seg + ptr), regs.getAX());
+        mem.pokeW((int) (seg + ptr), regs.getAX());
     }
 
     // 0xa4
@@ -4289,7 +4289,7 @@ public class Nise286 {
     private void MOVSW() {
         if (!repSW || (repSW && regs.getCX() != 0)) {
             logger.log(Level.TRACE, "MOVSW [ES:DI]:%05x [DS:SI]:%05x".formatted(regs.getES_DI(), regs.getDS_SI()));
-            mem.PokeW(regs.getES_DI(), mem.PeekW(regs.getDS_SI()));
+            mem.pokeW(regs.getES_DI(), mem.peekW(regs.getDS_SI()));
             regs.addDI((short) (regs.getDF() ? -2 : 2));
             regs.addSI((short) (regs.getDF() ? -2 : 2));
         }
@@ -4349,8 +4349,8 @@ public class Nise286 {
     // 0xa7
     private void CMPSW() {
         if (!repSW || (repSW && regs.getCX() != 0)) {
-            short dsv = mem.PeekW(regs.getDS_SI());
-            short edv = mem.PeekW(regs.getES_DI());
+            short dsv = mem.peekW(regs.getDS_SI());
+            short edv = mem.peekW(regs.getES_DI());
 
             logger.log(Level.TRACE, "CMPSW [DS:SI] val:%04x [ES:DI] val:%04x".formatted(dsv, edv));
 
@@ -4366,7 +4366,7 @@ public class Nise286 {
                     : ans > dsv);
             regs.setCF((int) ians != (int) ans);
             regs.setZF(ans == 0);
-            regs.SetSZPFw(ans);
+            regs.setSZPFw(ans);
             regs.setAF(false); // TBD
         }
 
@@ -4412,7 +4412,7 @@ public class Nise286 {
     private void STOSW() {
         if (!repSW || (repSW && regs.getCX() != 0)) {
             logger.log(Level.TRACE, "STOSW [ES:DI]:%05x <- AX:%04x", regs.getES_DI(), regs.getAX());
-            mem.PokeW(regs.getES_DI(), regs.getAX());
+            mem.pokeW(regs.getES_DI(), regs.getAX());
             regs.addDI((short) ((regs.getDF()) ? -2 : 2));
         }
 
@@ -4459,7 +4459,7 @@ public class Nise286 {
     private void LODSW() {
         if (!repSW || (repSW && regs.getCX() != 0)) {
             logger.log(Level.TRACE, "LODSW [DS:SI]:%05x -> AX:%04x".formatted(regs.getDS_SI(), regs.getAX()));
-            regs.setAX(mem.PeekW(regs.getDS_SI()));
+            regs.setAX(mem.peekW(regs.getDS_SI()));
             regs.addSI((short) ((regs.getDF()) ? -2 : 2));
         }
 
@@ -4484,7 +4484,7 @@ public class Nise286 {
     private void SCASW() {
         if (!repSW || (repSW && regs.getCX() != 0)) {
             short dsv = regs.getAX();
-            short edv = mem.PeekW(regs.getES_DI());
+            short edv = mem.peekW(regs.getES_DI());
 
             logger.log(Level.TRACE, "SCASW AX:%04x [ES:DI] val:%04x".formatted(dsv, edv));
 
@@ -4500,7 +4500,7 @@ public class Nise286 {
                     : ans > dsv);
             regs.setCF((int) ians != (int) ans);
             regs.setZF(ans == 0);
-            regs.SetSZPFw(ans);
+            regs.setSZPFw(ans);
             regs.setAF(false); // TBD
         }
 
@@ -4519,112 +4519,112 @@ public class Nise286 {
 
     // 0xb0
     private void MOV_AL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "MOV AL,$%02x".formatted(imm8));
         regs.setAL(imm8);
     }
 
     // 0xb1
     private void MOV_CL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "MOV CL,$%02x".formatted(imm8));
         regs.setCL(imm8);
     }
 
     // 0xb2
     private void MOV_DL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "MOV DL,$%02x".formatted(imm8));
         regs.setDL(imm8);
     }
 
     // 0xb3
     private void MOV_BL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "MOV BL,$%02x".formatted(imm8));
         regs.setBL(imm8);
     }
 
     // 0xb4
     private void MOV_AH_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "MOV AH,$%02x".formatted(imm8));
         regs.setAH(imm8);
     }
 
     // 0xb5
     private void MOV_CH_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "MOV CH,$%02x".formatted(imm8));
         regs.setCH(imm8);
     }
 
     // 0xb6
     private void MOV_DH_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "MOV DH,$%02x".formatted(imm8));
         regs.setDH(imm8);
     }
 
     // 0xb7
     private void MOV_BH_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "MOV BH,$%02x".formatted(imm8));
         regs.setBH(imm8);
     }
 
     // 0xb8
     private void MOV_AX_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "MOV AX,$%04x".formatted(imm16));
         regs.setAX((short) imm16);
     }
 
     // 0xb9
     private void MOV_CX_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "MOV CX,$%04x".formatted(imm16));
         regs.setCX((short) imm16);
     }
 
     // 0xba
     private void MOV_DX_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "MOV DX,$%04x".formatted(imm16));
         regs.setDX((short) imm16);
     }
 
     // 0xbb
     private void MOV_BX_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "MOV BX,$%04x".formatted(imm16));
         regs.setBX((short) imm16);
     }
 
     // 0xbc
     private void MOV_SP_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "MOV SP,$%04x".formatted(imm16));
         regs.setSP((short) imm16);
     }
 
     // 0xbd
     private void MOV_BP_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "MOV BP,$%04x".formatted(imm16));
         regs.setBP((short) imm16);
     }
 
     // 0xbe
     private void MOV_SI_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "MOV SI,$%04x".formatted(imm16));
         regs.setSI((short) imm16);
     }
 
     // 0xbf
     private void MOV_DI_IW() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "MOV DI,$%04x".formatted(imm16));
         regs.setDI((short) imm16);
     }
@@ -4635,13 +4635,13 @@ public class Nise286 {
     // 0xc3
     private void RET() {
         logger.log(Level.TRACE, "RET");
-        regs.IP = mem.PeekW(regs.getSS_SP());
+        regs.IP = mem.peekW(regs.getSS_SP());
         regs.addSP(2);
     }
 
     // 0xc4
     private void LES_GW_EP() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "LES GW,EP modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3);
@@ -4654,22 +4654,22 @@ public class Nise286 {
         short v;
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                v = mem.PeekW(ptr);
+                ptr = getMod00RwAdr(rm, false);
+                v = mem.peekW(ptr);
                 regs.eRegs[reg] = v;
-                regs.setES(mem.PeekW(ptr + 2));
+                regs.setES(mem.peekW(ptr + 2));
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                v = mem.PeekW(ptr);
+                ptr = getMod01RwAdr(rm, false);
+                v = mem.peekW(ptr);
                 regs.eRegs[reg] = v;
-                regs.setES(mem.PeekW(ptr + 2));
+                regs.setES(mem.peekW(ptr + 2));
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                v = mem.PeekW(ptr);
+                ptr = getMod02RwAdr(rm, false);
+                v = mem.peekW(ptr);
                 regs.eRegs[reg] = v;
-                regs.setES(mem.PeekW(ptr + 2));
+                regs.setES(mem.peekW(ptr + 2));
                 break;
             case 3:
                 short r = regs.eRegs[rm];
@@ -4680,7 +4680,7 @@ public class Nise286 {
 
     // 0xc5
     private void LDS_GW_EP() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "LDS GW,EP modrw:$%02x".formatted(modrw));
 
         byte reg = (byte) ((modrw & 0x38) >> 3);
@@ -4693,22 +4693,22 @@ public class Nise286 {
         short v;
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                v = mem.PeekW(ptr);
+                ptr = getMod00RwAdr(rm, false);
+                v = mem.peekW(ptr);
                 regs.eRegs[reg] = v;
-                regs.setDS(mem.PeekW(ptr + 2));
+                regs.setDS(mem.peekW(ptr + 2));
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                v = mem.PeekW(ptr);
+                ptr = getMod01RwAdr(rm, false);
+                v = mem.peekW(ptr);
                 regs.eRegs[reg] = v;
-                regs.setDS(mem.PeekW(ptr + 2));
+                regs.setDS(mem.peekW(ptr + 2));
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                v = mem.PeekW(ptr);
+                ptr = getMod02RwAdr(rm, false);
+                v = mem.peekW(ptr);
                 regs.eRegs[reg] = v;
-                regs.setDS(mem.PeekW(ptr + 2));
+                regs.setDS(mem.peekW(ptr + 2));
                 break;
             case 3:
                 short r = regs.eRegs[rm];
@@ -4719,7 +4719,7 @@ public class Nise286 {
 
     // 0xc6
     private void MOV_EB_IB() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         byte reg = (byte) ((modrw & 0x38) >> 3);
         byte rm = (byte) (modrw & 7);
         byte mod = (byte) (modrw >> 6);
@@ -4728,25 +4728,25 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                imm8 = Fetch();
+                ptr = getMod00RwAdr(rm, false);
+                imm8 = fetch();
                 logger.log(Level.TRACE, "MOV EB,$%02x".formatted(imm8));
                 mem.PokeB(ptr, imm8);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                imm8 = Fetch();
+                ptr = getMod01RwAdr(rm, false);
+                imm8 = fetch();
                 logger.log(Level.TRACE, "MOV EB,$%02x".formatted(imm8));
                 mem.PokeB(ptr, imm8);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                imm8 = Fetch();
+                ptr = getMod02RwAdr(rm, false);
+                imm8 = fetch();
                 logger.log(Level.TRACE, "MOV EB,$%02x".formatted(imm8));
                 mem.PokeB(ptr, imm8);
                 break;
             case 3:
-                imm8 = Fetch();
+                imm8 = fetch();
                 logger.log(Level.TRACE, "MOV EB,$%02x".formatted(imm8));
                 // regs.eRegs[reg] = (short)((regs.eRegs[reg] & 0xff00) | imm8);
                 if (rm < 4) regs.eRegs[rm] = (short) ((regs.eRegs[rm] & 0xff00) | imm8);
@@ -4757,7 +4757,7 @@ public class Nise286 {
 
     // 0xc7
     private void MOV_EW_IW() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         byte reg = (byte) ((modrw & 0x38) >> 3);
         byte rm = (byte) (modrw & 7);
         byte mod = (byte) (modrw >> 6);
@@ -4766,25 +4766,25 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                imm16 = Fetchw();
+                ptr = getMod00RwAdr(rm, false);
+                imm16 = fetchW();
                 logger.log(Level.TRACE, "MOV EW,$%04x".formatted(imm16));
-                mem.PokeW(ptr, (short) imm16);
+                mem.pokeW(ptr, (short) imm16);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                imm16 = Fetchw();
+                ptr = getMod01RwAdr(rm, false);
+                imm16 = fetchW();
                 logger.log(Level.TRACE, "MOV EW,$%04x".formatted(imm16));
-                mem.PokeW(ptr, (short) imm16);
+                mem.pokeW(ptr, (short) imm16);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                imm16 = Fetchw();
+                ptr = getMod02RwAdr(rm, false);
+                imm16 = fetchW();
                 logger.log(Level.TRACE, "MOV EW,$%04x".formatted(imm16));
-                mem.PokeW(ptr, (short) imm16);
+                mem.pokeW(ptr, (short) imm16);
                 break;
             case 3:
-                imm16 = Fetchw();
+                imm16 = fetchW();
                 logger.log(Level.TRACE, "MOV EW,$%04x".formatted(imm16));
                 regs.eRegs[reg] = (short) imm16;
                 break;
@@ -4793,7 +4793,7 @@ public class Nise286 {
 
     // 0xcd
     private void INT_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "INT $%02x".formatted(imm8));
         dos.int_(imm8);
     }
@@ -4801,17 +4801,17 @@ public class Nise286 {
     // 0xcf
     private void IRET() {
         logger.log(Level.TRACE, "IRET");
-        regs.IP = mem.PeekW(regs.getSS_SP());
+        regs.IP = mem.peekW(regs.getSS_SP());
         regs.addSP(2);
-        regs.setCS(mem.PeekW(regs.getSS_SP()));
+        regs.setCS(mem.peekW(regs.getSS_SP()));
         regs.addSP(2);
-        regs.FLAG = mem.PeekW(regs.getSS_SP());
+        regs.FLAG = mem.peekW(regs.getSS_SP());
         regs.addSP(2);
     }
 
     // 0xd0
     private void GRP2_EB_1() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
         byte rm = (byte) (modrw & 7);
         byte mod = (byte) (modrw >> 6);
@@ -4823,15 +4823,15 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 3:
@@ -4875,7 +4875,7 @@ public class Nise286 {
                 uans <<= 1;
                 ans = (byte) uans;
                 regs.setOF((ans & 0x8000) != 0);
-                regs.SetSZPFb(uans);
+                regs.setSZPFb(uans);
                 regs.setAF(true); // TBD
                 break;
             case 5: // SHR
@@ -4885,7 +4885,7 @@ public class Nise286 {
                 uans >>= 1;
                 ans = (byte) uans;
                 regs.setOF((ans & 0x8000) != 0);
-                regs.SetSZPFb(uans);
+                regs.setSZPFb(uans);
                 regs.setAF(true); // TBD
                 break;
             case 7: // SAR
@@ -4895,7 +4895,7 @@ public class Nise286 {
                 ans >>= 1;
                 uans = (byte) ans;
                 regs.setOF(false);
-                regs.SetSZPFb(uans);
+                regs.setSZPFb(uans);
                 regs.setAF(true); // TBD
                 break;
         }
@@ -4915,7 +4915,7 @@ public class Nise286 {
 
     // 0xd1
     private void GRP2_EW_1() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
         byte rm = (byte) (modrw & 7);
         byte mod = (byte) (modrw >> 6);
@@ -4927,16 +4927,16 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod00RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod01RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod02RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 3:
                 EW = (short) regs.eRegs[rm];
@@ -4954,7 +4954,7 @@ public class Nise286 {
                 ans = (short) uans;
 
                 regs.setOF((ans & 0x8000) != 0);
-                regs.SetSZPFw((short) ans);
+                regs.setSZPFw((short) ans);
                 regs.setAF(true); // TBD
                 break;
             case 1: // ROR
@@ -4965,7 +4965,7 @@ public class Nise286 {
                 uans = (short) ((uans >> 1) | (regs.getCF() ? 1 : 0));
                 ans = (short) uans;
                 regs.setOF((ans & 0x0001) != 0);
-                regs.SetSZPFw((short) ans);
+                regs.setSZPFw((short) ans);
                 regs.setAF(true); // TBD
                 break;
             case 2: // RCL
@@ -4977,7 +4977,7 @@ public class Nise286 {
                 regs.setCF(newCF);
                 ans = (short) uans;
                 regs.setOF((ans & 0x8000) != 0);
-                regs.SetSZPFw((short) ans);
+                regs.setSZPFw((short) ans);
                 regs.setAF(true); // TBD
                 break;
             case 3: // RCR
@@ -4989,7 +4989,7 @@ public class Nise286 {
                 regs.setCF(newCF);
                 ans = (short) uans;
                 regs.setOF((ans & 0x0001) != 0);
-                regs.SetSZPFw((short) ans);
+                regs.setSZPFw((short) ans);
                 regs.setAF(true); // TBD
                 break;
             case 4: // SHL
@@ -5000,7 +5000,7 @@ public class Nise286 {
                 uans <<= 1;
                 ans = (short) uans;
                 regs.setOF((ans & 0x8000) != 0);
-                regs.SetSZPFw((short) ans);
+                regs.setSZPFw((short) ans);
                 regs.setAF(true); // TBD
                 break;
             case 5: // SHR
@@ -5010,7 +5010,7 @@ public class Nise286 {
                 uans >>= 1;
                 ans = (short) uans;
                 regs.setOF((ans & 0x8000) != 0);
-                regs.SetSZPFw((short) ans);
+                regs.setSZPFw((short) ans);
                 regs.setAF(true); // TBD
                 break;
             case 7: // SAR
@@ -5020,7 +5020,7 @@ public class Nise286 {
                 ans >>= 1;
                 uans = (short) ans;
                 regs.setOF(false);
-                regs.SetSZPFw((short) ans);
+                regs.setSZPFw((short) ans);
                 regs.setAF(true); // TBD
                 break;
         }
@@ -5029,7 +5029,7 @@ public class Nise286 {
             case 0:
             case 1:
             case 2:
-                mem.PokeW(ptr, (short) uans);
+                mem.pokeW(ptr, (short) uans);
                 break;
             case 3:
                 regs.eRegs[rm] = (short) (uans); // (regs.eRegs[rm] & 0xff00) | uans);
@@ -5040,7 +5040,7 @@ public class Nise286 {
 
     // 0xc0 or 0xd2
     private void GRP2_EB_CL(byte op) {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "GRP2_EB_CL op:$%02x modrw:$%02x".formatted(op, modrw));
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
         byte rm = (byte) (modrw & 7);
@@ -5053,15 +5053,15 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 3:
@@ -5070,7 +5070,7 @@ public class Nise286 {
                 break;
         }
 
-        int count = (op == 0xd2 ? regs.getCL() : Fetch()) & 0x1f;
+        int count = (op == 0xd2 ? regs.getCL() : fetch()) & 0x1f;
         if (count == 0) return;
 
         boolean newCF;
@@ -5105,13 +5105,13 @@ public class Nise286 {
                     uans = (byte) EB;
                     regs.setCF((uans & 0x80) != 0);
                     uans <<= 1;
-                    regs.SetSZPFb(uans);
+                    regs.setSZPFb(uans);
                     break;
                 case 5: // SHR
                     uans = (byte) EB;
                     regs.setCF((uans & 1) != 0);
                     uans >>= 1;
-                    regs.SetSZPFb(uans);
+                    regs.setSZPFb(uans);
                     break;
                 case 6: // (SMO)
                     throw new UnsupportedOperationException();
@@ -5120,7 +5120,7 @@ public class Nise286 {
                     regs.setCF((ians & 1) != 0);
                     ians >>= 1;
                     uans = (byte) ians;
-                    regs.SetSZPFb(uans);
+                    regs.setSZPFb(uans);
                     regs.setOF(false);
                     break;
             }
@@ -5151,13 +5151,13 @@ public class Nise286 {
                     uans = (byte) EB;
                     regs.setCF((uans & (0x80 >> (count - 1))) != 0);
                     uans <<= count;
-                    regs.SetSZPFb(uans);
+                    regs.setSZPFb(uans);
                     break;
                 case 5: // SHR論理シフト
                     uans = (byte) EB;
                     regs.setCF((uans & (1 << (count - 1))) != 0);
                     uans >>= count;
-                    regs.SetSZPFb(uans);
+                    regs.setSZPFb(uans);
                     break;
                 case 6: // (SMO)
                     throw new UnsupportedOperationException();
@@ -5166,7 +5166,7 @@ public class Nise286 {
                     regs.setCF((ians & (1 << (count - 1))) != 0);
                     ians >>= count;
                     uans = (byte) ians;
-                    regs.SetSZPFb(uans);
+                    regs.setSZPFb(uans);
                     break;
             }
         }
@@ -5186,7 +5186,7 @@ public class Nise286 {
 
     // 0xc1 or 0xd3
     private void GRP2_EW_CL(byte op) {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "GRP2_EW_CL op:$%02x modrw:$%02x".formatted(op, modrw));
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
         byte rm = (byte) (modrw & 7);
@@ -5199,23 +5199,23 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod00RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod01RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod02RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 3:
                 EW = (short) regs.eRegs[rm];
                 break;
         }
 
-        int count = (op == 0xd3 ? regs.getCL() : Fetch()) & 0x1f;
+        int count = (op == 0xd3 ? regs.getCL() : fetch()) & 0x1f;
         if (count == 0) return;
 
         if (count == 1) {
@@ -5241,7 +5241,7 @@ public class Nise286 {
                     ans = (short) uans;
                     uans = (short) ans;
                     regs.setOF((ans & 0x8000) != 0);
-                    regs.SetSZPFw(uans);
+                    regs.setSZPFw(uans);
                     regs.setAF(true); // TBD
                     break;
                 case 5: // SHR
@@ -5251,7 +5251,7 @@ public class Nise286 {
                     ans = (short) uans;
                     uans = (short) ans;
                     regs.setOF((ans & 0x8000) != 0);
-                    regs.SetSZPFw(uans);
+                    regs.setSZPFw(uans);
                     regs.setAF(true); // TBD
                     break;
                 case 7: // SAR
@@ -5260,7 +5260,7 @@ public class Nise286 {
                     ans >>= 1;
                     uans = (short) ans;
                     regs.setOF(false);
-                    regs.SetSZPFw(uans);
+                    regs.setSZPFw(uans);
                     regs.setAF(true); // TBD
                     break;
             }
@@ -5286,7 +5286,7 @@ public class Nise286 {
                     regs.setCF((uans & 0x8000) != 0);
                     uans <<= 1;
                     ans = (short) uans;
-                    regs.SetSZPFw(uans);
+                    regs.setSZPFw(uans);
                     regs.setAF(true); // TBD
                     break;
                 case 5: // SHR (logical shift right)
@@ -5295,7 +5295,7 @@ public class Nise286 {
                     regs.setCF((uans & 0x01) != 0);
                     uans >>= 1;
                     ans = (short) uans;
-                    regs.SetSZPFw(uans);
+                    regs.setSZPFw(uans);
                     regs.setAF(true); // TBD
                     break;
                 case 7: // SAR
@@ -5304,7 +5304,7 @@ public class Nise286 {
                     regs.setCF((ans & 0x01) != 0);
                     ans >>= 1;
                     uans = (short) ans;
-                    regs.SetSZPFw(uans);
+                    regs.setSZPFw(uans);
                     regs.setAF(true); // TBD
                     break;
             }
@@ -5314,7 +5314,7 @@ public class Nise286 {
             case 0:
             case 1:
             case 2:
-                mem.PokeW(ptr, (short) uans);
+                mem.pokeW(ptr, (short) uans);
                 break;
             case 3:
                 regs.eRegs[rm] = (short) uans;
@@ -5324,39 +5324,39 @@ public class Nise286 {
 
     // 0xd4
     private void AAM() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         byte a = regs.getAL();
         regs.setAH((byte) (a / imm8));
         regs.setAL((byte) (a % imm8));
-        regs.SetSZPFw((short) regs.getAX());
+        regs.setSZPFw((short) regs.getAX());
         regs.setAF(true); // TBD
     }
 
     // 0xd5
     private void AAD() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         if (imm8 != 0x0a) {
             throw new UnsupportedOperationException();
         }
 
         regs.setAL((byte) (regs.getAH() * 0x0a + regs.getAL()));
         regs.setAH((short) 0);
-        regs.SetSZPFb(regs.getAL());
+        regs.setSZPFb(regs.getAL());
         regs.setAF(true); // TBD
     }
 
     // 0xe8
     private void CALL_near() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "CALL near $%04x".formatted(imm16));
         regs.subSP(2);
-        mem.PokeW(regs.getSS_SP(), regs.IP);
+        mem.pokeW(regs.getSS_SP(), regs.IP);
         regs.IP = (short) (regs.IP + imm16);
     }
 
     // 0xe2
     private void LOOP_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         if ((short) regs.getCX() < 100) logger.log(Level.TRACE, "LOOP short $%02x CX:$%04x".formatted(imm8, regs.getCX()));
 
         regs.decCX();
@@ -5367,35 +5367,35 @@ public class Nise286 {
 
     // 0xe4
     private void IN_AL_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "IN AL,$%02x".formatted(imm8));
         regs.setAL(machine.INPb((short) imm8));
     }
 
     // 0xe5
     private void IN_AX_IB() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "IN AX,$%02x".formatted(imm8));
         regs.setAX(machine.INPw((short) imm8));
     }
 
     // 0xe6
     private void OUT_IB_AL() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "OUT $%02x,AL".formatted(imm8));
         machine.OUTPb((short) imm8, regs.getAL());
     }
 
     // 0xe7
     private void OUT_IB_AX() {
-        byte imm8 = Fetch();
+        byte imm8 = fetch();
         logger.log(Level.TRACE, "OUT $%02x,AX".formatted(imm8));
         machine.OUTPw((short) imm8, regs.getAX());
     }
 
     // 0xe9
     private void JMP_near() {
-        short imm16 = Fetchw();
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "JMP near $%04x".formatted(imm16));
 
         regs.IP = (short) (regs.IP + imm16);
@@ -5403,7 +5403,7 @@ public class Nise286 {
 
     // 0xeb
     private void JMP_short() {
-        byte imm8 = (byte) Fetch();
+        byte imm8 = (byte) fetch();
         logger.log(Level.TRACE, "JMP short $%02x".formatted(imm8));
 
         regs.IP = (short) (regs.IP + imm8);
@@ -5455,7 +5455,7 @@ public class Nise286 {
 
     // 0xf6
     private void GRP3B() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "GRP3B modrw:$%02x".formatted(modrw));
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
         byte rm = (byte) (modrw & 7);
@@ -5465,15 +5465,15 @@ public class Nise286 {
         int ptr = 0;
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 3:
@@ -5486,9 +5486,9 @@ public class Nise286 {
         byte ans = 0;
         switch (reg) {
             case 0: // TEST EB,IB
-                IB = (byte) Fetch();
+                IB = (byte) fetch();
                 ans = (byte) (EB & IB);
-                regs.SetSZPFb(ans);
+                regs.setSZPFb(ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -5497,21 +5497,21 @@ public class Nise286 {
                 throw new UnsupportedOperationException();
             case 2: // NOT EB
                 ans = (byte) (~EB);
-                regs.SetSZPFb(ans);
+                regs.setSZPFb(ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
                 break;
             case 3: // NEG EB
                 ans = (byte) (-EB);
-                regs.SetSZPFb(ans);
+                regs.setSZPFb(ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
                 break;
             case 4: // MUL EB
                 int mans = regs.getAL() * (byte) EB;
-                regs.SetSZPFb((byte) EB);
+                regs.setSZPFb((byte) EB);
                 regs.setAX((short) (short) mans);
                 regs.setZF(regs.getAX() == 0);
                 regs.setOF(regs.getAH() != 0);
@@ -5546,7 +5546,7 @@ public class Nise286 {
 
     // 0xf7
     private void GRP3W() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         logger.log(Level.TRACE, "GRP3W modrw:$%02x".formatted(modrw));
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
         byte rm = (byte) (modrw & 7);
@@ -5556,16 +5556,16 @@ public class Nise286 {
         int ptr = 0;
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod00RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod01RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod02RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 3:
                 EW = regs.eRegs[rm];
@@ -5576,9 +5576,9 @@ public class Nise286 {
         short ans = 0;
         switch (reg) {
             case 0: // TEST EW,IW
-                IW = (short) Fetchw();
+                IW = (short) fetchW();
                 ans = (short) (EW & IW);
-                regs.SetSZPFw(ans);
+                regs.setSZPFw(ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -5587,14 +5587,14 @@ public class Nise286 {
                 throw new UnsupportedOperationException();
             case 2: // NOT EW
                 ans = (short) (~EW);
-                regs.SetSZPFw(ans);
+                regs.setSZPFw(ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
                 break;
             case 3: // NEG EW
                 ans = (short) (-EW);
-                regs.SetSZPFw(ans);
+                regs.setSZPFw(ans);
                 regs.setOF(false);
                 regs.setCF(false);
                 regs.setAF(false); // TBD
@@ -5628,7 +5628,7 @@ public class Nise286 {
                 // case 0:
                 case 1:
                 case 2:
-                    mem.PokeW(ptr, (short) ans);
+                    mem.pokeW(ptr, (short) ans);
                     break;
                 case 3:
                     regs.eRegs[rm] = (short) ans;
@@ -5675,7 +5675,7 @@ public class Nise286 {
 
     // 0xfe
     private void GRP4() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
         byte rm = (byte) (modrw & 7);
         byte mod = (byte) (modrw >> 6);
@@ -5685,15 +5685,15 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
+                ptr = getMod00RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
+                ptr = getMod01RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
+                ptr = getMod02RwAdr(rm, false);
                 EB = (byte) mem.PeekB(ptr);
                 break;
             case 3:
@@ -5711,10 +5711,10 @@ public class Nise286 {
                 logger.log(Level.TRACE, "INC EB");
                 ians = (short) (EB + IB);
                 ans = (byte) ians;
-                regs.SetSZPFb(ans);
+                regs.setSZPFb(ans);
                 regs.SetOFbAdd((byte) EB, (byte) IB, (byte) ans);
-                regs.SetCFb((short) ians);
-                regs.SetAF((byte) EB, (byte) IB, (byte) ans);
+                regs.setCFb((short) ians);
+                regs.setAF((byte) EB, (byte) IB, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
@@ -5731,10 +5731,10 @@ public class Nise286 {
                 logger.log(Level.TRACE, "DEC EB");
                 ians = (short) (EB - IB);
                 ans = (byte) ians;
-                regs.SetSZPFb(ans);
-                regs.SetOFbSub((byte) EB, (byte) IB, (byte) ans);
-                regs.SetCFb((short) ians);
-                regs.SetAF((byte) EB, (byte) IB, (byte) ans);
+                regs.setSZPFb(ans);
+                regs.setOFbSub((byte) EB, (byte) IB, (byte) ans);
+                regs.setCFb((short) ians);
+                regs.setAF((byte) EB, (byte) IB, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
@@ -5764,7 +5764,7 @@ public class Nise286 {
 
     // 0xff
     private void GRP5() {
-        byte modrw = Fetch();
+        byte modrw = fetch();
         byte reg = (byte) ((modrw & 0x38) >> 3); // For segment registers, ignore bit 5
         byte rm = (byte) (modrw & 7);
         byte mod = (byte) (modrw >> 6);
@@ -5777,16 +5777,16 @@ public class Nise286 {
 
         switch (mod) {
             case 0:
-                ptr = GetMod00RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod00RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 1:
-                ptr = GetMod01RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod01RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 2:
-                ptr = GetMod02RWADR(rm, false);
-                EW = (short) mem.PeekW(ptr);
+                ptr = getMod02RwAdr(rm, false);
+                EW = (short) mem.peekW(ptr);
                 break;
             case 3:
                 EW = regs.eRegs[rm];
@@ -5802,15 +5802,15 @@ public class Nise286 {
                 logger.log(Level.TRACE, "INC EW");
                 ians = (short) (EW + IW);
                 ans = (short) ians;
-                regs.SetSZPFw(ans);
-                regs.SetOFwAdd((short) EW, (short) IW, (short) ans);
-                regs.SetCFw((int) (EW + IW));
-                regs.SetAF((byte) EW, (byte) IW, (byte) ans);
+                regs.setSZPFw(ans);
+                regs.setOFwAdd((short) EW, (short) IW, (short) ans);
+                regs.setCFw((int) (EW + IW));
+                regs.setAF((byte) EW, (byte) IW, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ians);
+                        mem.pokeW(ptr, ians);
                         break;
                     case 3:
                         regs.eRegs[rm] = ians;
@@ -5821,15 +5821,15 @@ public class Nise286 {
                 logger.log(Level.TRACE, "DEC EW");
                 ians = (short) (EW - IW);
                 ans = (short) ians;
-                regs.SetSZPFw(ans);
-                regs.SetOFwSub((short) EW, (short) IW, (short) ans);
-                regs.SetCFw((int) (EW - IW));
-                regs.SetAF((byte) EW, (byte) IW, (byte) ans);
+                regs.setSZPFw(ans);
+                regs.setOFwSub((short) EW, (short) IW, (short) ans);
+                regs.setCFw((int) (EW - IW));
+                regs.setAF((byte) EW, (byte) IW, (byte) ans);
                 switch (mod) {
                     case 0:
                     case 1:
                     case 2:
-                        mem.PokeW(ptr, ians);
+                        mem.pokeW(ptr, ians);
                         break;
                     case 3:
                         regs.eRegs[rm] = ians;
@@ -5839,7 +5839,7 @@ public class Nise286 {
             case 2: // CALL EW
                 logger.log(Level.TRACE, "CALL EW");
                 regs.subSP(2);
-                mem.PokeW(regs.getSS_SP(), regs.IP);
+                mem.pokeW(regs.getSS_SP(), regs.IP);
                 regs.IP = EW;
                 break;
             case 3: // CALL EP
@@ -5850,12 +5850,12 @@ public class Nise286 {
                 int ptr2;
                 short seg = 0;
                 ptr2 = ptr + 2;
-                seg = (short) mem.PeekW(ptr2);
+                seg = (short) mem.peekW(ptr2);
 
                 regs.subSP(2);
-                mem.PokeW(regs.getSS_SP(), regs.getCS());
+                mem.pokeW(regs.getSS_SP(), regs.getCS());
                 regs.subSP(2);
-                mem.PokeW(regs.getSS_SP(), regs.IP);
+                mem.pokeW(regs.getSS_SP(), regs.IP);
                 regs.IP = EW;
                 regs.setCS(seg);
                 break;
@@ -5868,7 +5868,7 @@ public class Nise286 {
             case 6: // PUSH EW
                 logger.log(Level.TRACE, "PUSH EW");
                 regs.subSP(2);
-                mem.PokeW(regs.getSS_SP(), EW);
+                mem.pokeW(regs.getSS_SP(), EW);
                 break;
             case 7: // ?
                 throw new UnsupportedOperationException();

@@ -16,7 +16,7 @@ public class Memory98 {
         mem[ptr % mem.length] = dat;
     }
 
-    public void PokeW(int ptr, short dat) {
+    public void pokeW(int ptr, short dat) {
         mem[(int) ptr % mem.length] = (byte) dat;
         mem[((int) ptr + 1) % mem.length] = (byte) (dat >> 8);
     }
@@ -25,7 +25,7 @@ public class Memory98 {
         return mem[((int) ptr % mem.length)];
     }
 
-    public short PeekW(int ptr) {
+    public short peekW(int ptr) {
         return (short) (mem[(int) ptr % mem.length]+ (mem[((int) ptr + 1) % mem.length] << 8));
     }
 

@@ -24,3 +24,4 @@ mdplayer.format.XGMFileFormat
 mdplayer.format.ZGMFileFormat
 mdplayer.format.ZIPFileFormat
 mdplayer.format.AyFileFormat
+mdplayer.format.FMPFormat

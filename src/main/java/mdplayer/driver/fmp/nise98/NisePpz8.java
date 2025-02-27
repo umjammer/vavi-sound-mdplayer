@@ -41,14 +41,14 @@ public class NisePpz8 {
     private byte[][] pcmData = new byte[2][];
 
     public NisePpz8(Nise98 nise98) {
-        this.regs = nise98.GetRegisters();
+        this.regs = nise98.getRegisters();
         this.mem = nise98.GetMem();
         this.dos = nise98.GetDos();
         this.cpu = nise98.GetCPU();
         this.nise98 = nise98;
 
-        mem.PokeW(ppz8Int * 4 + 0, ppz8EntryAddressOfs); // ofs
-        mem.PokeW(ppz8Int * 4 + 2, ppz8EntryAddressSeg); // seg
+        mem.pokeW(ppz8Int * 4 + 0, ppz8EntryAddressOfs); // ofs
+        mem.pokeW(ppz8Int * 4 + 2, ppz8EntryAddressSeg); // seg
 
         // ID
         int ptr = (ppz8EntryAddressSeg << 4) + ppz8IDOfs;
@@ -78,7 +78,7 @@ public class NisePpz8 {
     }
 
     public void FMPRegistPPZ8(/* out */ int[] step, /* out */ Register286[] regs) {
-        regs[0] = nise98.GetRegisters();
+        regs[0] = nise98.getRegisters();
         regs[0].setAX((short) 0x0010);
         logger.log(Level.DEBUG, "FMPRegistPPZ8");
         step[0] = 0;
@@ -195,9 +195,9 @@ public class NisePpz8 {
         }
 
         if (Cancel) {
-            regs.IP = mem.PeekW(regs.getSS_SP());
+            regs.IP = mem.peekW(regs.getSS_SP());
             regs.addSP(2);
-            regs.setCS(mem.PeekW(regs.getSS_SP()));
+            regs.setCS(mem.peekW(regs.getSS_SP()));
             regs.addSP(2);
             return true;
         }
