@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -40,7 +41,12 @@ public class MuSICA_K4 extends BaseDriver {
     public Vgm.Gd3 getGD3Info(byte[] buf, byte[] vcdBuf) {
         Vgm.Gd3 ret = new Vgm.Gd3();
         if (buf != null && buf.length > 8) {
-            Run(buf, vcdBuf);
+            try {
+            run(buf, vcdBuf);
+            } catch (Exception e) {
+                logger.log(Level.ERROR, e.getMessage(), e);
+                return null;
+            }
             if (bgmBin == null) return null;
             Vgm.Gd3 gd3 = (new MuSICA()).getGD3Info(bgmBin, null);
             ret.trackName = gd3.trackName;
@@ -53,11 +59,12 @@ public class MuSICA_K4 extends BaseDriver {
 
     public boolean compile(byte[] vgmBuf, byte[] vcdBuf) {
         try {
-            Run(vgmBuf, vcdBuf);
+            run(vgmBuf, vcdBuf);
             if (bgmBin == null) return false;
             //Files.writeAllBytes(Path.of("/Users/kuma/Desktop/test.bgm", bgmBin));
             return true;
         } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
             return false;
         }
     }
@@ -89,13 +96,12 @@ public class MuSICA_K4 extends BaseDriver {
     private byte[] bgmBin = null;
     private static final List<Byte> consoleBuf = new ArrayList<>();
 
-    private void Run(byte[] msdBin, byte[] vcdBin) {
+    private void run(byte[] msdBin, byte[] vcdBin) throws IOException, URISyntaxException {
         this.msdBin = msdBin;
         this.vcdBin = vcdBin;
         this.bgmBin = null;
 
-        Path crntDir = Path.of(System.getProperty("user.dir"));
-        Path fileName = crntDir.resolve("KINROU4.COM");
+        Path fileName = Path.of(MuSICA_K4.class.getResource("KINROU4.COM").toURI());
         DollarCode = '$';
 
         vdp = new MsxVdp();
@@ -109,11 +115,7 @@ public class MuSICA_K4 extends BaseDriver {
         z80.reset();
 
         // Loading a program and setting it in memory
-        try {
-            kinrou4 = Files.readAllBytes(fileName);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        kinrou4 = Files.readAllBytes(fileName);
         z80.getMemory().setContents(0x100, kinrou4, 0, null);
         z80.getRegisters().setPC((short) 0x100);
         z80.getRegisters().setSP((short) 0xf380);
@@ -384,7 +386,7 @@ public class MuSICA_K4 extends BaseDriver {
 
         if (DTAAddress == 0x4000) {
             if (msdBin == null) {
-                z80.getRegisters().setA((byte) 0xFF); // fail
+                z80.getRegisters().setA((byte) 0xff); // fail
                 z80.getRegisters().setHL((short) 0x00); // The number of records that were read
             } else {
                 z80.getMemory().setContents(DTAAddress, msdBin, recordSize * randomRecord, msdBin.length - recordSize * randomRecord);
@@ -393,7 +395,7 @@ public class MuSICA_K4 extends BaseDriver {
             }
         } else if ((DTAAddress & 0xffff) == 0x8000) {
             if (vcdBin == null) {
-                z80.getRegisters().setA((byte) 0xFF); // fail
+                z80.getRegisters().setA((byte) 0xff); // fail
                 z80.getRegisters().setHL((short) 0x00); // The number of records that were read
             } else {
                 z80.getMemory().setContents(DTAAddress, vcdBin, recordSize * randomRecord, vcdBin.length - recordSize * randomRecord);

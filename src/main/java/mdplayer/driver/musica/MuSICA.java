@@ -1,9 +1,9 @@
 package mdplayer.driver.musica;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -37,7 +37,12 @@ public class MuSICA extends BaseDriver {
     public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         Vgm.Gd3 ret = new Vgm.Gd3();
         if (buf != null && buf.length > 8) {
-            run(buf);
+            try {
+                run(buf);
+            } catch (Exception ex) {
+                logger.log(Level.ERROR, ex.getMessage(), ex);
+                return null;
+            }
             ret.trackName = gd3.TrackName;
             ret.trackNameJ = gd3.TrackNameJ;
             ret.notes = gd3.Notes;
@@ -57,6 +62,7 @@ public class MuSICA extends BaseDriver {
         try {
             run(vgmBuf);
         } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
             return false;
         }
 
@@ -119,13 +125,12 @@ public class MuSICA extends BaseDriver {
     private static byte DollarCode;
     private Z80Processor z80;
     private Mapper mapper;
-    static int baseClockAY8910 = 1789773;
-    static int baseClockYM2413 = 3579545;
-    static int baseClockK051649 = 1789773;
+    public static int baseClockAY8910 = 1789773;
+    public static int baseClockYM2413 = 3579545;
+    public static int baseClockK051649 = 1789773;
 
-    private void run(byte[] vgmBuf) {
-        Path crntDir = Path.of(System.getProperty("user.dir"));
-        Path fileName = crntDir.resolve("KINROU5.DRV");
+    private void run(byte[] vgmBuf) throws IOException, URISyntaxException {
+        Path fileName = Path.of(MuSICA.class.getResource("KINROU5.DRV").toURI());
         DollarCode = '$';
 
         z80 = new Z80ProcessorImpl();
@@ -143,11 +148,7 @@ public class MuSICA extends BaseDriver {
         z80.reset();
 
         // Loading a program and setting it in memory
-        try {
-            program = Files.readAllBytes(fileName);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        program = Files.readAllBytes(fileName);
         z80.getMemory().setContents(0x6000 - 7, program, 0, null);
         z80.getRegisters().setPC((short) 0x6000);
 
@@ -160,13 +161,13 @@ public class MuSICA extends BaseDriver {
         logger.log(Level.TRACE, "SCC       slot %02x", z80.getMemory().get(0x6011));
 
         byte[] mgsdata = vgmBuf;
-        short dataAdr = (short) ((vgmBuf[1] & 0xff) + (vgmBuf[2] & 0xff) * 0x100);
+        int dataAdr = ((vgmBuf[1] & 0xff) + (vgmBuf[2] & 0xff) * 0x100) & 0xffff;
         z80.getMemory().setContents(dataAdr - 7, vgmBuf, 0, null);
 
         logger.log(Level.TRACE, "_MPLAY2(6026H)");
         z80.getRegisters().setPC((short) 0x6026);
-        z80.getRegisters().setHL(dataAdr);
-        z80.getRegisters().setDE(dataAdr);
+        z80.getRegisters().setHL((short) dataAdr);
+        z80.getRegisters().setDE((short) dataAdr);
         z80.getRegisters().setA((byte) 0); // Repeat count (0:infinity)
         z80.getRegisters().setSP((short) 0xf380);
         z80.continue_();
@@ -180,7 +181,7 @@ public class MuSICA extends BaseDriver {
         //logger.log(Level.TRACE, "_GETPAR(6047H)");
         z80.getRegisters().setPC((short) 0x6047);
         z80.getRegisters().setSP((short) 0xf380);
-        z80.getRegisters().setHL(dataAdr);
+        z80.getRegisters().setHL((short) dataAdr);
         z80.getRegisters().setC((byte) 2); // title
         z80.continue_();
         if (z80.getRegisters().getCF().intValue() == 0) {
@@ -192,13 +193,14 @@ public class MuSICA extends BaseDriver {
         //logger.log(Level.TRACE, "_GETPAR(6047H)");
         z80.getRegisters().setPC((short) 0x6047);
         z80.getRegisters().setSP((short) 0xf380);
-        z80.getRegisters().setHL(dataAdr);
+        z80.getRegisters().setHL((short) dataAdr);
         z80.getRegisters().setC((byte) 3); // memo
         z80.continue_();
         if (z80.getRegisters().getCF().intValue() == 0) {
             index[0] = z80.getRegisters().getHL() & 0xffff;
             gd3.Notes = Common.getNRDString(z80.getMemory().getContents(0, z80.getMemory().getSize()), /* ref */ index);
         }
+logger.log(Level.INFO, gd3);
     }
 
     private String PlayingFileName;
@@ -208,11 +210,11 @@ public class MuSICA extends BaseDriver {
     }
 
     private void Z80OnBeforeInstructionFetch(BeforeInstructionFetchEvent args) {
-        //Absolutely minimum implementation of CP/M for ZEXALL and ZEXDOC to work
+        // Absolutely minimum implementation of CP/M for ZEXALL and ZEXDOC to work
 
         var z80 = (Z80Processor) args.getSource();
 
-        if (z80.getRegisters().getPC() == 0) {//0:JP WBOOT
+        if (z80.getRegisters().getPC() == 0) { // 0:JP WBOOT
             args.getExecutionStopper().stop(false);
         } else if (z80.getRegisters().getPC() == 0x0005) {
             //logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x", z80.getRegisters().C);
@@ -292,8 +294,8 @@ public class MuSICA extends BaseDriver {
                 EXTBIO_MemoryMapper(args, z80, function);
                 break;
             case 0xf0:
-                // MGSDRV向けファンクションコール
-                z80.getRegisters().setA((byte) 0); // 非常駐時
+                // Function call for MGSDRV
+                z80.getRegisters().setA((byte) 0); // When not present
                 break;
             default:
                 logger.log(Level.TRACE, " EXTBIO Unknown type");
