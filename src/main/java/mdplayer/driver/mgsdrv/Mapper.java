@@ -17,9 +17,9 @@ public class Mapper {
     private byte freeSegment;
     public int tableAddress = 0xf200; // Copycat Nextor
     public int jumpAddress = 0xecb2; // Copycat Nextor
-    private final MapperRAMCartridge crt;
+    private final MapperRamCartridge crt;
 
-    public Mapper(MapperRAMCartridge crt, MsxMemory memory) {
+    public Mapper(MapperRamCartridge crt, MsxMemory memory) {
         this.crt = crt;
         crt.clearUseFlag();
         //freeSegment = (byte)crt.segmentSize;

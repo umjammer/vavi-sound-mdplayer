@@ -10,12 +10,12 @@ public class MsxMemory implements Memory {
 
     private final mdplayer.ChipRegister chipRegister;
     private final EnmModel model;
-    public MSXSlot slot;
+    public MsxSlot slot;
 
     public MsxMemory(ChipRegister chipRegister, EnmModel model) {
         this.chipRegister = chipRegister;
         this.model = model;
-        this.slot = new MSXSlot(chipRegister, model);
+        this.slot = new MsxSlot(chipRegister, model);
     }
 
     @Override

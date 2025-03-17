@@ -114,17 +114,7 @@ public abstract class BasePlugin implements Plugin {
 
     @Override
     public void init() {
-        logger.log(Level.DEBUG, "Audio:Init:Begin");
-
-//        logger.log(Level.DEBUG, "Audio:Init:STEP 02");
-
-        audio.waveWriter = new WaveWriter(setting);
-
-//        logger.log(Level.DEBUG, "Audio:Init:STEP 03");
-
-        setting.init();
-
-        logger.log(Level.DEBUG, "Audio:Init:STEP 05");
+        audio.waveWriter = new WaveWriter();
 
         audio.paused = false;
         audio.stopped = true;
@@ -132,26 +122,10 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
 //        audio._fatalError = false;
         oneTimeReset = false;
 
-//        logger.log(Level.DEBUG, "Audio:Init:STEP 06");
-
-
-//        logger.log(Level.DEBUG, "Audio:Init:STEP 07");
-
         // midi out released
         audio.chipRegister.plugin(MidiPlugin.class).releaseAll();
 
-//        logger.log(Level.DEBUG, "Audio:Init:STEP 08");
-
-
-//        logger.log(Level.DEBUG, "Audio:Init:STEP 09");
-
-        // Dynamic loading of each external dll
-
-//        logger.log(Level.DEBUG, "Audio:Init:STEP 10");
-
         audio.naudioWrap.start();
-
-        logger.log(Level.DEBUG, "Audio:Init:Complete");
     }
 
     protected void trdIF() {

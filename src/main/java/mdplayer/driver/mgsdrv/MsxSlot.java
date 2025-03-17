@@ -4,32 +4,32 @@ import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 
 
-public class MSXSlot extends Slot {
+public class MsxSlot extends Slot {
 
-    public MSXSlot(ChipRegister chipRegister, EnmModel model) {
+    public MsxSlot(ChipRegister chipRegister, EnmModel model) {
         slots = new Cartridge[][] {
             // Slot0 MapperROM 64k
             new Cartridge[] {
-                new MapperRAMCartridge(4)
+                new MapperRamCartridge(4)
             },
             // Slot1 MapperROM 64k
             new Cartridge[] {
-                new MapperRAMCartridge(4)
+                new MapperRamCartridge(4)
             },
             // extSlot2-0 SCC
             // extSlot2-1 MapperROM 64k
             // extSlot2-2 MapperROM 64k
             // extSlot2-3 MapperROM 64k
             new Cartridge[] {
-                new SCCCartridge(chipRegister, model), new MapperRAMCartridge(4), new MapperRAMCartridge(4),
-                new MapperRAMCartridge(4)
+                new SCCCartridge(chipRegister, model), new MapperRamCartridge(4), new MapperRamCartridge(4),
+                new MapperRamCartridge(4)
             },
             // extSlot3-0 MSX Music(Ym2413)
             // extSlot3-1 MapperROM 512k
             // extSlot3-2 MapperROM 64k
             // extSlot3-3 MapperROM 64k
             new Cartridge[] {
-                new MSXMusicCartridge(), new MapperRAMCartridge(32), new MapperRAMCartridge(4), new MapperRAMCartridge(4)
+                new MsxMusicCartridge(), new MapperRamCartridge(32), new MapperRamCartridge(4), new MapperRamCartridge(4)
             }
         };
 

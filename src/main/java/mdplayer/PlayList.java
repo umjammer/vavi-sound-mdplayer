@@ -28,6 +28,7 @@ import vavi.util.archive.Entry;
 import vavi.util.serdes.Serdes;
 
 import static java.lang.System.getLogger;
+import static mdplayer.Common.charset;
 
 
 public class PlayList implements Serializable, Cloneable {
@@ -142,7 +143,7 @@ public class PlayList implements Serializable, Cloneable {
         try {
             PlayList pl = new PlayList();
 
-            try (StreamReader sr = new StreamReader(new FileStream(filename, FileMode.Open), Charset.forName("MS932"))) {
+            try (StreamReader sr = new StreamReader(new FileStream(filename, FileMode.Open), charset)) {
                 String line;
                 while ((line = sr.readLine()) != null) {
                     line = line.trim();

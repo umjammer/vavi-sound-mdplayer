@@ -54,6 +54,8 @@ public class Sn76489Chip implements Chip {
             0, 0
     };
 
+    public int clock;
+
     private Audio context;
 
     @SuppressWarnings("unchecked")

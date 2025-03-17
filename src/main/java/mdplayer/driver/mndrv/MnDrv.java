@@ -4,7 +4,6 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,9 +20,10 @@ import mdplayer.driver.mxdrv.XMemory;
 import mdplayer.plugin.BasePlugin;
 import mdsound.chips.MPcm;
 import mdsound.instrument.X68kMPcmInst;
+import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
+import static mdplayer.Common.charset;
 
 
 // MnDrv is MXDRV (SHARP X68000 series) port for Windows
@@ -163,7 +163,7 @@ public class MnDrv extends BaseDriver {
             lst.add(buf[i]);
             i++;
         }
-        String n = new String(toByteArray(lst), Charset.forName("MS932"));
+        String n = new String(ByteUtil.toByteArray(lst), charset);
         gd3.trackName = n;
         gd3.trackNameJ = n;
 

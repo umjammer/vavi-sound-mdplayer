@@ -6,7 +6,7 @@ import java.util.List;
 
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.mgsdrv.MGSDRV;
+import mdplayer.driver.mgsdrv.MgsDrv;
 import mdplayer.plugin.MGSPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.util.archive.Archive;
@@ -32,7 +32,7 @@ public class MGSFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
         int index = 8;
-        Vgm.Gd3 gd3 = (new MGSDRV()).getGD3Info(buf, index);
+        Vgm.Gd3 gd3 = (new MgsDrv()).getGD3Info(buf, index);
         music.title = gd3.trackName;
         music.titleJ = gd3.trackNameJ;
         music.game = "";
@@ -53,7 +53,7 @@ public class MGSFileFormat extends BaseFileFormat {
 
         music.format = this;
         int index = 8;
-        Vgm.Gd3 gd3 = (new MGSDRV()).getGD3Info(buf, index);
+        Vgm.Gd3 gd3 = (new MgsDrv()).getGD3Info(buf, index);
         music.title = gd3.trackName;
         music.titleJ = gd3.trackNameJ;
         music.game = "";

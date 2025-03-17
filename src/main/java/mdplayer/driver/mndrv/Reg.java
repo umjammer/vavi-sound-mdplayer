@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mdplayer.Common;
-
 
 public class Reg {
     public int D0_L;
@@ -35,7 +33,7 @@ public class Reg {
     }
 
     void setD0_B(int value) {
-        D0_L = (D0_L & 0xffffff00) | (value & 0xff);
+        D0_L = (D0_L & 0xffff_ff00) | (value & 0xff);
     }
 
     public int getD1_B() {
@@ -43,7 +41,7 @@ public class Reg {
     }
 
     void setD1_B(int value) {
-        D1_L = (D1_L & 0xffffff00) | (value & 0xff);
+        D1_L = (D1_L & 0xffff_ff00) | (value & 0xff);
     }
 
     public int getD2_B() {
@@ -51,7 +49,7 @@ public class Reg {
     }
 
     void setD2_B(int value) {
-        D2_L = (D2_L & 0xffffff00) | (value & 0xff);
+        D2_L = (D2_L & 0xffff_ff00) | (value & 0xff);
     }
 
     public int getD3_B() {
@@ -59,7 +57,7 @@ public class Reg {
     }
 
     void setD3_B(int value) {
-        D3_L = (D3_L & 0xffffff00) | (value & 0xff);
+        D3_L = (D3_L & 0xffff_ff00) | (value & 0xff);
     }
 
     public int getD4_B() {
@@ -67,7 +65,7 @@ public class Reg {
     }
 
     void setD4_B(int value) {
-        D4_L = (D4_L & 0xffffff00) | (value & 0xff);
+        D4_L = (D4_L & 0xffff_ff00) | (value & 0xff);
     }
 
     public int getD5_B() {
@@ -75,7 +73,7 @@ public class Reg {
     }
 
     void setD5_B(int value) {
-        D5_L = (D5_L & 0xffffff00) | (value & 0xff);
+        D5_L = (D5_L & 0xffff_ff00) | (value & 0xff);
     }
 
     public int getD6_B() {
@@ -83,7 +81,7 @@ public class Reg {
     }
 
     void setD6_B(int value) {
-        D6_L = (D6_L & 0xffffff00) | (value & 0xff);
+        D6_L = (D6_L & 0xffff_ff00) | (value & 0xff);
     }
 
     public int getD7_B() {
@@ -91,7 +89,7 @@ public class Reg {
     }
 
     void setD7_B(int value) {
-        D7_L = (D7_L & 0xffffff00) | (value & 0xff);
+        D7_L = (D7_L & 0xffff_ff00) | (value & 0xff);
     }
 
     public int getD0_W() {
@@ -99,7 +97,7 @@ public class Reg {
     }
 
     void setD0_W(int value) {
-        D0_L = (D0_L & 0xffff0000) | (value & 0xffff);
+        D0_L = (D0_L & 0xffff_0000) | (value & 0xffff);
     }
 
     public int getD1_W() {
@@ -107,7 +105,7 @@ public class Reg {
     }
 
     void setD1_W(int value) {
-        D1_L = (D1_L & 0xffff0000) | (value & 0xffff);
+        D1_L = (D1_L & 0xffff_0000) | (value & 0xffff);
     }
 
     public int getD2_W() {
@@ -115,7 +113,7 @@ public class Reg {
     }
 
     void setD2_W(int value) {
-        D2_L = (D2_L & 0xffff0000) | (value & 0xffff);
+        D2_L = (D2_L & 0xffff_0000) | (value & 0xffff);
     }
 
     public int getD3_W() {
@@ -123,7 +121,7 @@ public class Reg {
     }
 
     void setD3_W(int value) {
-        D3_L = (D3_L & 0xffff0000) | (value & 0xffff);
+        D3_L = (D3_L & 0xffff_0000) | (value & 0xffff);
     }
 
     public int getD4_W() {
@@ -131,7 +129,7 @@ public class Reg {
     }
 
     void setD4_W(int value) {
-        D4_L = (D4_L & 0xffff0000) | (value & 0xffff);
+        D4_L = (D4_L & 0xffff_0000) | (value & 0xffff);
     }
 
     public int getD5_W() {
@@ -139,7 +137,7 @@ public class Reg {
     }
 
     void setD5_W(int value) {
-        D5_L = (D5_L & 0xffff0000) | (value & 0xffff);
+        D5_L = (D5_L & 0xffff_0000) | (value & 0xffff);
     }
 
     public int getD6_W() {
@@ -147,7 +145,7 @@ public class Reg {
     }
 
     void setD6_W(int value) {
-        D6_L = (D6_L & 0xffff0000) | (value & 0xffff);
+        D6_L = (D6_L & 0xffff_0000) | (value & 0xffff);
     }
 
     public int getD7_W() {
@@ -155,7 +153,7 @@ public class Reg {
     }
 
     void setD7_W(int value) {
-        D7_L = (D7_L & 0xffff0000) | (value & 0xffff);
+        D7_L = (D7_L & 0xffff_0000) | (value & 0xffff);
     }
 
     public int getSR_W() {
@@ -163,7 +161,7 @@ public class Reg {
     }
 
     void setSR_W(int value) {
-        sr = (sr & 0xffff0000) | (value & 0xffff);
+        sr = (sr & 0xffff_0000) | (value & 0xffff);
     }
 
     public int decAfterD0_W() {
@@ -234,12 +232,12 @@ public class Reg {
     }
 
     public boolean cryADD(int a, int b) {
-        return (long) a + (long) b > (long) 0xffffffff;
+        return (long) a + (long) b > (long) 0xffff_ffff;
     }
 }
 
 class Ab {
-    static final int dummyAddress = 0xffffffff;
+    static final int dummyAddress = 0xffff_ffff;
 
     final Map<Integer, Runnable> hlTRKANA_RESTADR = new HashMap<>();
     final Map<Integer, Runnable> hlw_qtjob = new HashMap<>();
@@ -260,116 +258,3 @@ class Ab {
     final Map<Integer, Runnable> hlw_we_pan_adrs = new HashMap<>();
     final Map<Integer, Runnable> hlINTEXECBUF = new HashMap<>();
 }
-
-class FMTimer {
-    // Upper 8 bits of Timer A
-    private int timerAregH;
-    // The lower 2 bits of Timer A
-    private int timerAregL;
-    // Timer A overflow setting
-    private int timerA;
-    // Timer A counter value
-    private double timerACounter;
-    // Timer B overflow setting value
-    private int timerB;
-    // Timer B counter value
-    private double timerBCounter;
-    // Timer control register (lower 4 bits + 7 bits)
-    private int timerReg;
-    // Status register (lowest 2 bits)
-    private int statReg;
-    private final boolean isOPM;
-    private final Runnable csmKeyOn;
-    private final double step;
-    private final double masterClock;
-
-    public FMTimer(boolean isOPM, Runnable csmKeyOn, double masterClock) {
-        this.isOPM = isOPM;
-        this.csmKeyOn = csmKeyOn;
-        this.masterClock = masterClock;
-        if (isOPM) {
-            step = masterClock / 64.0 / 1.0 / (double) Common.VGMProcSampleRate;
-        } else {
-            step = masterClock / 72.0 / 2.0 / (double) Common.VGMProcSampleRate;
-        }
-    }
-
-    public void timer() {
-        int flag_set = 0;
-
-        if ((timerReg & 0x01) != 0) { // TimerA is running
-            timerACounter += step;
-            if (timerACounter >= timerA) {
-                flag_set |= ((timerReg >> 2) & 0x01);
-                timerACounter -= timerA;
-                if ((timerReg & 0x80) != 0) csmKeyOn.run();
-            }
-        }
-
-        if ((timerReg & 0x02) != 0) { // TimerB is running
-            timerBCounter += step;
-            if (timerBCounter >= timerB) {
-                flag_set |= ((timerReg >> 2) & 0x02);
-                timerBCounter -= timerB;
-            }
-        }
-
-        statReg |= flag_set;
-    }
-
-    public void WriteReg(byte adr, byte data) {
-        if (isOPM) WriteRegOPM(adr, data);
-        else WriteRegOPN(adr, data);
-    }
-
-    private void WriteRegOPM(byte adr, byte data) {
-        switch (adr) {
-        case 0x10:
-        case 0x11:
-            // timerA
-            if (adr == 0x10) timerAregH = data;
-            else timerAregL = data & 3;
-            timerA = 1024 - ((timerAregH << 2) + timerAregL);
-            break;
-
-        case 0x12:
-            // timerB
-            timerB = (256 - (int) data) << (10 - 6);
-            break;
-
-        case 0x14:
-            // Timer Control Register
-            timerReg = data & 0x8F;
-            statReg &= 0xff - ((data >> 4) & 3);
-            break;
-        }
-    }
-
-    private void WriteRegOPN(byte adr, byte data) {
-        switch (adr) {
-        case 0x24:
-        case 0x25:
-            // timerA
-            if (adr == 0x24) timerAregH = data;
-            else timerAregL = data & 3;
-            timerA = 1024 - ((timerAregH << 2) + timerAregL);
-            break;
-
-        case 0x26:
-            // timerB
-            timerB = (256 - (int) data) << (10 - 6);
-            break;
-
-        case 0x27:
-            // Timer Control Register
-            timerReg = data & 0x8F;
-            statReg &= 0xff - ((data >> 4) & 3);
-            break;
-        }
-    }
-
-    public int readStatus() {
-        return statReg;
-    }
-}
-

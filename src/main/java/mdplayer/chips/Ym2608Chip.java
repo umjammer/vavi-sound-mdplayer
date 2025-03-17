@@ -26,7 +26,7 @@ public class Ym2608Chip implements Chip {
 
     private final Setting.ChipType2[] chipTypes = setting.getYM2608Type();
 
-    private final RSoundChip[] realChips = {null, null};
+    public final RSoundChip[] realChips = {null, null};
 
     public final int[][][] register = {
             {null, null},
@@ -59,6 +59,8 @@ public class Ym2608Chip implements Chip {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false},
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false}
     };
+
+    public int clock;
 
     private Audio context;
 

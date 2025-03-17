@@ -121,12 +121,12 @@ public class KmEvent {
         if (kme.item[curid].count != 0) insertItem(kme, curid); // sort
     }
 
-    public int getTimer(Event kme, int curid, int time) {
+    public int getTimer(Event kme, int curid, /* ref */ int[] time) {
         int nextcount;
         nextcount = kme.item[curid != 0 ? curid : kme.item[0].next].count;
         if (nextcount == 0) return 0;
         nextcount -= kme.item[0].count;
-        if (time != 0) time = nextcount;
+        if (time[0] != 0) time[0] = nextcount;
         return 1;
     }
 

@@ -2,7 +2,6 @@ package mdplayer.driver.rcp;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,16 +23,15 @@ import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
 import mdplayer.plugin.BasePlugin;
+import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
+import static mdplayer.Common.charset;
 
 
 public class RCP extends BaseDriver {
 
     private static final Logger logger = getLogger(RCP.class.getName());
-
-    public static final Charset CHARSET = Charset.forName("Shift_JIS");
 
     public RCP() {
         musicStep = Common.VGMProcSampleRate / 60.0;
@@ -133,20 +131,20 @@ public class RCP extends BaseDriver {
         if (isG36) {
             ptr += 568;
             // .gsd
-            gsd[0] = new String(buf, ptr, 12, CHARSET).replace("\0", "");
+            gsd[0] = new String(buf, ptr, 12, charset).replace("\0", "");
             ptr += 16;
             // .gsd
-            gsd2[0] = new String(buf, ptr, 12, CHARSET).replace("\0", "");
+            gsd2[0] = new String(buf, ptr, 12, charset).replace("\0", "");
             ptr += 16;
             // .cm6
-            cm6[0] = new String(buf, ptr, 12, CHARSET).replace("\0", "");
+            cm6[0] = new String(buf, ptr, 12, charset).replace("\0", "");
         } else {
             ptr += 358;
             // .cm6
-            cm6[0] = new String(buf, ptr, 12, CHARSET).replace("\0", "");
+            cm6[0] = new String(buf, ptr, 12, charset).replace("\0", "");
             ptr += 16;
             // .gsd
-            gsd[0] = new String(buf, ptr, 12, CHARSET).replace("\0", "");
+            gsd[0] = new String(buf, ptr, 12, charset).replace("\0", "");
         }
     }
 
@@ -166,18 +164,18 @@ public class RCP extends BaseDriver {
             if (buf[ptr + i] == 0) break;
             title.add(buf[ptr + i]);
         }
-        str = new StringBuilder(new String(toByteArray(title), CHARSET).trim());
+        str = new StringBuilder(new String(ByteUtil.toByteArray(title), charset).trim());
         ptr += 64;
         gd3.trackName = str.toString();
         gd3.trackNameJ = str.toString();
 
         if (isG36) {
             ptr += 64;
-            str = new StringBuilder("%s\n".formatted(new String(buf, ptr, 360, CHARSET).replace("\0", "")));
+            str = new StringBuilder("%s\n".formatted(new String(buf, ptr, 360, charset).replace("\0", "")));
         } else {
             str = new StringBuilder();
             for (int i = 0; i < 12; i++) {
-                str.append("%s\n".formatted(new String(buf, ptr + i * 28, 28, CHARSET).replace("\0", "")));
+                str.append("%s\n".formatted(new String(buf, ptr + i * 28, 28, charset).replace("\0", "")));
             }
         }
         gd3.notes = str.toString();
@@ -290,7 +288,7 @@ public class RCP extends BaseDriver {
     private static Boolean checkHeadString(byte[] buf) {
         if (buf == null || buf.length < 32) return null;
 
-        String str = new String(buf, 0, 32, CHARSET);
+        String str = new String(buf, 0, 32, charset);
         if (!str.equals("RCM-PC98V2.0(C)COME ON MUSIC\n\0\0")) {
             if (!str.equals("COME ON MUSIC RECOMPOSER RCP3.0\0")) return null;
             else return true;
@@ -442,17 +440,17 @@ public class RCP extends BaseDriver {
         // dummy Skip
         ptr += 112;
         // .GSD
-        controlFileGSD = new String(vgmBuf, ptr, 12, CHARSET).replace("\0", "");
+        controlFileGSD = new String(vgmBuf, ptr, 12, charset).replace("\0", "");
         ptr += 12;
         // dummy Skip
         ptr += 4;
         // .GSD
-        controlFileGSD2 = new String(vgmBuf, ptr, 12, CHARSET).replace("\0", "");
+        controlFileGSD2 = new String(vgmBuf, ptr, 12, charset).replace("\0", "");
         ptr += 12;
         // dummy Skip
         ptr += 4;
         // .CM6
-        controlFileCM6 = new String(vgmBuf, ptr, 12, CHARSET).replace("\0", "");
+        controlFileCM6 = new String(vgmBuf, ptr, 12, charset).replace("\0", "");
         ptr += 12;
         // dummy Skip
         ptr += 4;
@@ -480,12 +478,12 @@ public class RCP extends BaseDriver {
         // Play BIAS
         playBIAS = vgmBuf[ptr++] & 0xff;
         // .CM6
-        controlFileCM6 = new String(vgmBuf, ptr, 12, CHARSET).replace("\0", "");
+        controlFileCM6 = new String(vgmBuf, ptr, 12, charset).replace("\0", "");
         ptr += 12;
         // dummy Skip
         ptr += 4;
         // .GSD
-        controlFileGSD = new String(vgmBuf, ptr, 12, CHARSET).replace("\0", "");
+        controlFileGSD = new String(vgmBuf, ptr, 12, charset).replace("\0", "");
         ptr += 12;
         // dummy Skip
         ptr += 4;
@@ -520,7 +518,7 @@ public class RCP extends BaseDriver {
 
         for (int i = 0; i < n; i++) {
             MIDIRythm r = new MIDIRythm();
-            r.setName(new String(vgmBuf, ptr, 14, CHARSET).replace("\0", ""));
+            r.setName(new String(vgmBuf, ptr, 14, charset).replace("\0", ""));
             ptr += 14;
             r.key = vgmBuf[ptr++] & 0xff;
             r.gt = vgmBuf[ptr++] & 0xff;
@@ -532,7 +530,7 @@ public class RCP extends BaseDriver {
         userExclusives = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             MIDIUserExclusive ux = new MIDIUserExclusive();
-            ux.setName(new String(vgmBuf, ptr, 24, CHARSET).replace("\0", ""));
+            ux.setName(new String(vgmBuf, ptr, 24, charset).replace("\0", ""));
             ux.memo = ux.name;
             ptr += 24;
             ux.exclusive = new byte[25];
@@ -603,7 +601,7 @@ public class RCP extends BaseDriver {
                 tracks[trkNumber].setSt((tracks[trkNumber].getSt() > 127) ? tracks[trkNumber].getSt() - 256 : tracks[trkNumber].getSt());
             }
             tracks[trkNumber].setMute(vgmBuf[ptr++] == 1);
-            tracks[trkNumber].setName((new String(vgmBuf, ptr, 36, CHARSET)).replace("\0", ""));
+            tracks[trkNumber].setName((new String(vgmBuf, ptr, 36, charset)).replace("\0", ""));
             ptr += 36;
 
             // trkTick = 0;
@@ -726,9 +724,7 @@ public class RCP extends BaseDriver {
                     pEvt,
                     pk[1],
                     MIDISpEventType.ChExclusive,
-                    new byte[][] {
-                            toByteArray(ex)
-                    });
+                    new byte[][] { ByteUtil.toByteArray(ex) });
             break;
         case 0x90: // User Exclusive 1
         case 0x91: // User Exclusive 2
@@ -887,7 +883,7 @@ public class RCP extends BaseDriver {
                         0,
                         MIDISpEventType.Comment,
                         new byte[][] {
-                                toByteArray(ex)
+                                ByteUtil.toByteArray(ex)
                         });
             } else {
                 ex.add((byte) pk[2]);
@@ -902,7 +898,7 @@ public class RCP extends BaseDriver {
                         pk[1],
                         MIDISpEventType.Comment,
                         new byte[][] {
-                                toByteArray(ex)
+                                ByteUtil.toByteArray(ex)
                         });
             }
             break;
@@ -1180,7 +1176,7 @@ public class RCP extends BaseDriver {
             dat.add(pMIDIMessage[i]);
 //            plugin.audio.chipRegister.sendMIDIout(model, n, vv, vstDelta);
         }
-        plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, n, toByteArray(dat), vstDelta);
+        plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, n, ByteUtil.toByteArray(dat), vstDelta);
     }
 
     /**
@@ -1264,7 +1260,7 @@ public class RCP extends BaseDriver {
     }
 
     void efMetaTextEvent(MIDITrack trk, MIDIEvent eve) {
-        trk.setComment(new String(eve.getMIDIMessage(), CHARSET).replace("\0", ""));
+        trk.setComment(new String(eve.getMIDIMessage(), charset).replace("\0", ""));
     }
 
     void efMetaCopyrightNotice(MIDITrack trk, MIDIEvent eve) {
@@ -1272,7 +1268,7 @@ public class RCP extends BaseDriver {
     }
 
     void efMetaTrackName(MIDITrack trk, MIDIEvent eve) {
-        trk.setName(new String(eve.getMIDIMessage(), CHARSET).replace("\0", ""));
+        trk.setName(new String(eve.getMIDIMessage(), charset).replace("\0", ""));
     }
 
     void efMetaInstrumentName(MIDITrack trk, MIDIEvent eve) {
@@ -1609,7 +1605,7 @@ public class RCP extends BaseDriver {
     }
 
     void sefCommentStart(MIDITrack trk, MIDIEvent eve) {
-        trk.setComment(new String(eve.getMIDIMessages()[0], CHARSET).replace("\0", ""));
+        trk.setComment(new String(eve.getMIDIMessages()[0], charset).replace("\0", ""));
         plugin.audio.chipRegister.plugin(MidiPlugin.class).params[0].Lyric = trk.getComment();
     }
 
@@ -1783,7 +1779,7 @@ public class RCP extends BaseDriver {
 
         ret.add((byte) 0xf7);
 
-        return toByteArray(ret);
+        return ByteUtil.toByteArray(ret);
     }
 
     private void getGSD1Buf(List<CtlSysex> dBuf) {
@@ -2184,7 +2180,7 @@ public class RCP extends BaseDriver {
         }
         lst.add((byte) 0x84);
 
-        return toByteArray(lst);
+        return ByteUtil.toByteArray(lst);
     }
 
     private void sendControl() {

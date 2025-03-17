@@ -10,7 +10,6 @@ package mdplayer.driver.mxdrv;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,14 +24,13 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.plugin.BasePlugin;
-import mdsound.chips.Pcm8PP;
 import mdsound.instrument.Pcm8PPInst;
 import mdsound.instrument.X68kYm2151Inst;
 import mdsound.x68sound.X68Sound;
 import vavi.util.ByteUtil;
 
-import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 import static java.lang.System.getLogger;
+import static mdplayer.Common.charset;
 
 
 // 
@@ -256,7 +254,7 @@ public class MXDRV extends BaseDriver {
             lst.add(buf[i]);
             i++;
         }
-        String n = new String(ByteUtil.toByteArray(lst), Charset.forName("MS932"));
+        String n = new String(ByteUtil.toByteArray(lst), charset);
         gd3.trackName = n;
         gd3.trackNameJ = n;
         byte[][] mdx = new byte[1][];
@@ -452,7 +450,7 @@ public class MXDRV extends BaseDriver {
                 lstPdxfileName.add(mdx[0][p2]);
                 p2++;
             }
-            pdxFileName[0] = new String(toByteArray(lstPdxfileName), Charset.forName("MS932"));
+            pdxFileName[0] = new String(ByteUtil.toByteArray(lstPdxfileName), charset);
         }
         p2++;
 
@@ -510,7 +508,7 @@ public class MXDRV extends BaseDriver {
         if (buf[p] == 0) return;
         List<Byte> lstPdxFileName = new ArrayList<>();
         while (buf[p] != 0x00) lstPdxFileName.add(buf[p++]);
-        pdx[0] = new String(ByteUtil.toByteArray(lstPdxFileName), Charset.forName("MS932"));
+        pdx[0] = new String(ByteUtil.toByteArray(lstPdxFileName), charset);
     }
 
     // private double deltaCnt = 0;

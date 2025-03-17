@@ -1,9 +1,8 @@
 package mdplayer;
 
+import java.io.File;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.io.File;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -18,6 +17,7 @@ import vavi.util.archive.Archives;
 import vavi.util.archive.Entry;
 
 import static java.lang.System.getLogger;
+import static mdplayer.Common.charset;
 
 
 public class M3U {
@@ -28,7 +28,7 @@ public class M3U {
         try {
             PlayList pl = new PlayList();
 
-            try (StreamReader sr = new StreamReader(new FileStream(filename, FileMode.Open), Charset.forName("MS932"))) {
+            try (StreamReader sr = new StreamReader(new FileStream(filename, FileMode.Open), charset)) {
                 String line;
                 while ((line = sr.readLine()) != null) {
 
@@ -84,7 +84,7 @@ public class M3U {
             PlayList pl = new PlayList();
             Archive cmd = Archives.getArchive(new File(archiveFile));
             byte[] buf = cmd.getInputStream(cmd.getEntry(fileName)).readAllBytes();
-            String[] text = new String(buf, Charset.forName("MS932")).split("\n");
+            String[] text = new String(buf, charset).split("\n");
 
             for (String txt : text) {
                 String line = txt.trim();

@@ -47,6 +47,8 @@ public class Ym2612Chip implements Chip {
             {false, false, false, false, false, false}
     };
 
+    public int clock;
+
     private Audio context;
 
     @Override

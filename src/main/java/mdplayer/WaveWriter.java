@@ -13,13 +13,9 @@ import static dotnet4j.util.compat.CollectionUtilities.toByteArray;
 
 
 public class WaveWriter {
-    private final Setting setting;
+    private final Setting setting = Setting.getInstance();
     private FileStream dest = null;
     private int len = 0;
-
-    public WaveWriter(Setting setting) {
-        this.setting = setting;
-    }
 
     public void open(String filename) {
         if (!setting.getOther().getWavSwitch()) return;
