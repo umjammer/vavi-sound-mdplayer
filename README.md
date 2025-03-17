@@ -31,15 +31,17 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | WAV      |                 |        ️→        | built-in             | javax.sound.sampled.spi                                        |
 | MP3      |                 |        ️→        | built-in             | mp3spi                                                         |
 | AIF      |                 |        ️→        | built-in             | javax.sound.sampled.spi                                        |
-| AY       | ZX              |       n/a        |                      | libgme                                                         |
+| AY       | ZX              |                  | built-in             | libgme                                                         |
+| FMP      | FM7             |                  | built-in*            |                                                                |
+| MuSICA   | MSX             |                  | built-in*            |                                                                |
 | GBS      | Game Boy        |      n/a →       |                      | vavi-sound-emu                                                 |
 | GYM      | Sega Genesis    |       n/a        |                      | libgme                                                         |
 | KSS      | MSX             |       n/a        |                      | libgme                                                         |
 | SAP      | Atari           |       n/a        |                      | libgme                                                         |
 | SPC      | SNES            |      n/a ️→      |                      | vavi-sound-emu                                                 |
-| YM       | Atari ST        |        ️         |                      | [FastTracker_2](https://en.wikipedia.org/wiki/FastTracker_2)   |
-| HVL      | Hively Tracker  |        ️         |                      | [Hively Tracker](https://github.com/pete-gordon/hivelytracker) |
-| AHX      | AHX Clone       |        ️         |                      | [AHX](http://amigascne.org/abyss/ahx/)                         |
+| YM       | Atari ST        |     n/a    ️     |                      | [FastTracker_2](https://en.wikipedia.org/wiki/FastTracker_2)   |
+| HVL      | Hively Tracker  |     n/a   ️      |                      | [Hively Tracker](https://github.com/pete-gordon/hivelytracker) |
+| AHX      | AHX Clone       |     n/a    ️     |                      | [AHX](http://amigascne.org/abyss/ahx/)                         |
 
  <sub>1. use NsfPlayer instead of built-in np library</sub><br/>
  <sub>2. use JSIDPlay2 instead of built-in sid library</sub>
@@ -76,6 +78,12 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 * https://www.zophar.net/music/hes.html (hes download)
 * https://github.com/vampirefrog/mdxtools (mdx)
 * https://github.com/Kermalis/VGMusicStudio (mp2k, sdat, dse (gba/nds/wii))
+* https://www.zophar.net/music/s98.html (s98)
+* https://github.com/Tennessene/jDOSBox (i386~pentium)
+* https://github.com/trekawek/coffee-gb (z80)
+* vst
+  * https://jvstwrapper.sourceforge.net/
+  * https://github.com/urish/cintie/tree/master/src/main/java/org/urish/jnavst 🎯
 
 ## TODO
 
