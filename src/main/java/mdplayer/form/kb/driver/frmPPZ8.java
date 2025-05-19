@@ -137,9 +137,7 @@ public class frmPPZ8 extends frmBase {
         for (int i = 0; i < 12 * 8; i++) {
             //double a = Math.abs(freq - ((0x0800 << 2) * Tables.pcmMulTbl[i % 12 + 12] * Math.pow(2, ((int)(i / 12) - 4))));
             int a = (int) (
-                    65536.0
-                            / 2.0
-                            / clock
+                    65536.0 / 2.0 / clock
                     //8000.0
                     //Tables.pcmMulTbl[i % 12 + 12]
                     //Math.pow(2, (i / 12 - 3))
@@ -180,9 +178,8 @@ public class frmPPZ8 extends frmBase {
             if (ppz8State.length < ch + 1) continue;
             if (ppz8State[ch] == null) continue;
 
-            newParam.channels[ch].pan =
-                    ((ppz8State[ch].pan < 6) ? 0xf : (4 * (9 - ppz8State[ch].pan)))
-                            | (((ppz8State[ch].pan > 4) ? 0xf : (4 * ppz8State[ch].pan)) * 0x10);
+            newParam.channels[ch].pan = ((ppz8State[ch].pan < 6) ? 0xf : (4 * (9 - ppz8State[ch].pan))) |
+                    (((ppz8State[ch].pan > 4) ? 0xf : (4 * ppz8State[ch].pan)) * 0x10);
 
             if (ppz8State[ch].KeyOn) {
                 newParam.channels[ch].volumeL = Math.min((ppz8State[ch].volume * (newParam.channels[ch].pan & 0xf)) / 8, 19);

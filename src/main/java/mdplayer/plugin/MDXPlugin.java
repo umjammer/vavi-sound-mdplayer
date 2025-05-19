@@ -34,7 +34,7 @@ public class MDXPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MXDRV();
-        ((MXDRV) audio.driverVirtual).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
+        ((MXDRV) audio.driverVirtual).extendFile = (extendFiles != null && !extendFiles.isEmpty()) ? extendFiles.get(0) : null;
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new MXDRV();

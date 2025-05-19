@@ -185,13 +185,8 @@ public class Ym2612Chip implements Chip {
                 for (int slot = 0; slot < 4; slot++) {
                     if ((algM[al] & (1 << slot)) != 0) {
                         int tslot = (slot == 1 ? 2 : (slot == 2 ? 1 : slot)) * 4;
-                        write(
-                                chipId
-                                , port
-                                , 0x40 + ch + tslot
-                                , register[chipId][port][0x40 + ch + tslot]
-                                , model
-                                , frameCounter);
+                        write(chipId, port, 0x40 + ch + tslot,
+                                register[chipId][port][0x40 + ch + tslot], model, frameCounter);
                     }
                 }
             }

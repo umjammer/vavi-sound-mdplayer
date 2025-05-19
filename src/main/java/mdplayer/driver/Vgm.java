@@ -706,21 +706,21 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
     private void vcYMF271() {
         plugin.audio.chipRegister.chip(YmF271Chip.class).write(
-                (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1
-                , vgmBuf[vgmAdr + 1] & 0x7f
-                , vgmBuf[vgmAdr + 2] & 0xff
-                , vgmBuf[vgmAdr + 3] & 0xff
-                , model);
+                (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1,
+                vgmBuf[vgmAdr + 1] & 0x7f,
+                vgmBuf[vgmAdr + 2] & 0xff,
+                vgmBuf[vgmAdr + 3] & 0xff,
+                model);
         vgmAdr += 4;
     }
 
     private void vcYMF278B() {
         plugin.audio.chipRegister.chip(YmF278BChip.class).write(
-                (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1
-                , vgmBuf[vgmAdr + 1] & 0x7f
-                , vgmBuf[vgmAdr + 2] & 0xff
-                , vgmBuf[vgmAdr + 3] & 0xff
-                , model);
+                (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1,
+                vgmBuf[vgmAdr + 1] & 0x7f,
+                vgmBuf[vgmAdr + 2] & 0xff,
+                vgmBuf[vgmAdr + 3] & 0xff,
+                model);
 //logger.log(Level.TRACE, "fm:%02x:%02x:%02x:".formatted(vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3]));
         vgmAdr += 4;
     }

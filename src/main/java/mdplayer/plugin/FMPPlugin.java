@@ -30,7 +30,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * FMPPlugin.
+ * FMP (PC-9801) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>
@@ -49,8 +49,8 @@ public class FMPPlugin extends BasePlugin {
                 //compile
                 if (!(new FMP(ft).Compile(playingFileName))) return false;
                 playingFileName = Path.changeExtension(
-                        playingFileName
-                        , ext.equals(".mpi") ? ".opi" : (ext.equals(".mvi") ? ".ovi" : ".ozi"));
+                        playingFileName,
+                        ext.equals(".mpi") ? ".opi" : (ext.equals(".mvi") ? ".ovi" : ".ozi"));
                 vgmBuf = ft.ReadTemp(playingFileName);
                 //vgmBuf = File.ReadAllBytes(PlayingFileName);
             }

@@ -9,7 +9,6 @@ import dotnet4j.util.compat.Tuple3;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.Setting;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
@@ -24,7 +23,6 @@ public class NRTDRV extends BaseDriver {
     private static final Logger logger = getLogger(NRTDRV.class.getName());
 
     public NRTDRV() {
-        this.setting = Setting.getInstance();
         ctcStep = 4000000.0f / setting.getOutputDevice().getSampleRate();
         ctc1Step = 4000000.0f / setting.getOutputDevice().getSampleRate();
     }
@@ -32,7 +30,7 @@ public class NRTDRV extends BaseDriver {
     private byte[] ram;
     public Work work = new Work();
 
-    private static final byte[] KTABLE = new byte[] {
+    private static final byte[] KTABLE = {
          // C     C+    D     D +   E     F     F+    G     G+    a     a+    B
             0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x04, 0x05, 0x06, 0x08, 0x09, 0x0A, // o0
             0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x14, 0x15, 0x16, 0x18, 0x19, 0x1A, // o1
@@ -46,73 +44,73 @@ public class NRTDRV extends BaseDriver {
             0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F  // o9
     };
 
-    private static final int[] PTABLE = new int[] {
+    private static final int[] PTABLE = {
             // C    C+   D    D+   E    F    F+   G    G+   a    a+   B
-            4095, 4036, 3980, 3978, 3924, 3894, 3868, 3812, 3756, 3700, 3644, 3588 // o0
-            , 3532, 3476, 3420, 3228, 3047, 2876, 2715, 2562, 2419, 2283, 2155, 2034 // o1
-            , 1920, 1812, 1711, 1614, 1524, 1438, 1358, 1281, 1210, 1142, 1078, 1017 // o2
-            , 960, 906, 855, 807, 762, 719, 679, 641, 605, 571, 539, 509 // o3
-            , 480, 453, 428, 404, 381, 360, 339, 320, 302, 285, 269, 254 // o4
-            , 240, 227, 214, 202, 190, 180, 170, 160, 151, 143, 135, 127 // o5
-            , 120, 113, 107, 101, 95, 90, 85, 80, 76, 71, 67, 64 // o6
-            , 60, 57, 53, 50, 48, 45, 42, 40, 38, 36, 34, 32 // o7
-            , 30, 28, 27, 25, 24, 22, 21, 20, 19, 18, 17, 16 // o8
-            , 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4 // o9
+            4095, 4036, 3980, 3978, 3924, 3894, 3868, 3812, 3756, 3700, 3644, 3588, // o0
+            3532, 3476, 3420, 3228, 3047, 2876, 2715, 2562, 2419, 2283, 2155, 2034, // o1
+            1920, 1812, 1711, 1614, 1524, 1438, 1358, 1281, 1210, 1142, 1078, 1017, // o2
+            960, 906, 855, 807, 762, 719, 679, 641, 605, 571, 539, 509,             // o3
+            480, 453, 428, 404, 381, 360, 339, 320, 302, 285, 269, 254,             // o4
+            240, 227, 214, 202, 190, 180, 170, 160, 151, 143, 135, 127,             // o5
+            120, 113, 107, 101, 95, 90, 85, 80, 76, 71, 67, 64,                     // o6
+            60, 57, 53, 50, 48, 45, 42, 40, 38, 36, 34, 32,                         // o7
+            30, 28, 27, 25, 24, 22, 21, 20, 19, 18, 17, 16,                         // o8
+            15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4                                // o9
     };
 
     private static final byte[] PMTBL = new byte[] {
-            0x3f, 0x09 // Ch.1/P0
-            , 0x3e, 0x08 // Ch.1/P1
-            , 0x37, 0x01 // Ch.1/P2
-            , 0x36, 0x00 // Ch.1/P3
+            0x3f, 0x09, // Ch.1/P0
+            0x3e, 0x08, // Ch.1/P1
+            0x37, 0x01, // Ch.1/P2
+            0x36, 0x00, // Ch.1/P3
 
-            , 0x3f, 0x12 // Ch.2/P0
-            , 0x3d, 0x10 // Ch.2/P1
-            , 0x2f, 0x02 // Ch.2/P2
-            , 0x2d, 0x00 // Ch.2/P3
+            0x3f, 0x12, // Ch.2/P0
+            0x3d, 0x10, // Ch.2/P1
+            0x2f, 0x02, // Ch.2/P2
+            0x2d, 0x00, // Ch.2/P3
 
-            , 0x3f, 0x24 // Ch.3/P0
-            , 0x3b, 0x20 // Ch.3/P1
-            , 0x1f, 0x04 // Ch.3/P2
-            , 0x1b, 0x00 // Ch.3/P3
+            0x3f, 0x24, // Ch.3/P0
+            0x3b, 0x20, // Ch.3/P1
+            0x1f, 0x04, // Ch.3/P2
+            0x1b, 0x00  // Ch.3/P3
     };
 
     private static final byte[] TTONE = new byte[] {
-            (byte) 162, 1, 0  // +3
-            , 75, 0, 74, 0, 74, 0, 74, 0    // +8
-            , 74, 0, 74, 0, 74, 0, 74, 0    // +8
-            , 126, 0, 74, 0, 74, 0, 74, 0    // +8
-            , 74, 0, 74, 0, 74, 0, 74, 0    // +8
-            , (byte) 175, 0, 74, 0, 74, 0          // +6
-            , 15, (byte) 255, 2               // +3 PVX
-            , 0x3c                   // +1 FVX
-            , 0x18                   // +1
-            , 0x02, 0x00, 0x01, 0x00    // +4
-            , 0x1c, 0x7f, 0x02, (byte) 0x81    // +4
-            , 0x1e, 0x00, 0x1f, 0x00    // +4
-            , 0x00, 0x00, 0x00, 0x00    // +4
-            , 0x00, 0x00, 0x00, 0x00    // +4
-            , 0x0f, (byte) 0xff, 0x0f, (byte) 0xff    // +4
-            , 0x1c, 0x7f, 0x00, 0x7f    // +4
-            , 126                    // +1 TR0
-            , 3, 125, 14               // +3 TR1
-            , 44, 0                   // +2
-            , (byte) 176, 24, (byte) 178, 24, (byte) 180, 24, (byte) 181, 24, (byte) 183, 24, (byte) 185, 24, (byte) 187, 24, (byte) 188, 24, 0, (byte) 255, (byte) 129, 0, 48 // +21
-            , (byte) 188, 24, (byte) 187, 24, 0, 96, (byte) 178, 24, (byte) 176, 24, 0, 48, (byte) 176, (byte) 192, 0, 48, 25, 6 // +18
-            , (byte) 188, 24, 0, 72, 127        // +5 TR1L
-            , 119, 0                  // +2
-            , 3, 125, 14               // +3 TR2
-            , 44, 0                   // +2
-            , 0, (byte) 255, (byte) 129, (byte) 176, 24, (byte) 178, 24, (byte) 180, 24, (byte) 181, 24, (byte) 183, 24, (byte) 185, 24, (byte) 187, 24, (byte) 188, 24, 0, 48 // +21
-            , 0, 96, (byte) 181, 24, (byte) 180, 24, 0, (byte) 192, (byte) 183, 96, 0, 48, 25, 6 // +14
-            , 0, 48, (byte) 188, 24, 0, 24, 127   // +7 TR2L
-            , (byte) 166, 0                  // +2
-            , 14                     // +1 TR3
-            , 41, 0                   // +2
-            , 19, 112, 0, (byte) 192, (byte) 176, 24, (byte) 178, 24, (byte) 180, 24, (byte) 181, 24, (byte) 183, 24, (byte) 185, 24, (byte) 187, 24, (byte) 188, 24, 0, (byte) 192 // +22
-            , 0, 96, (byte) 185, 24, (byte) 183, 24, 0, (byte) 192, (byte) 180, (byte) 144, 0, 48, 25, 6 // +14
-            , 0, 24, (byte) 188, 24, 0, 48, 127   // +7 TR3L
-            , (byte) 214, 0                  // +2
+            (byte) 162, 1, 0,                      // +3
+            75, 0, 74, 0, 74, 0, 74, 0,            // +8
+            74, 0, 74, 0, 74, 0, 74, 0,            // +8
+            126, 0, 74, 0, 74, 0, 74, 0,           // +8
+            74, 0, 74, 0, 74, 0, 74, 0,            // +8
+            (byte) 175, 0, 74, 0, 74, 0,           // +6
+            15, (byte) 255, 2,                     // +3 PVX
+            0x3c,                                  // +1 FVX
+            0x18,                                  // +1
+            0x02, 0x00, 0x01, 0x00,                // +4
+            0x1c, 0x7f, 0x02, (byte) 0x81,         // +4
+            0x1e, 0x00, 0x1f, 0x00,                // +4
+            0x00, 0x00, 0x00, 0x00,                // +4
+            0x00, 0x00, 0x00, 0x00,                // +4
+            0x0f, (byte) 0xff, 0x0f, (byte) 0xff,  // +4
+            0x1c, 0x7f, 0x00, 0x7f,                // +4
+            126,                                   // +1 TR0
+            3, 125, 14,                            // +3 TR1
+            44, 0,                                 // +2
+            (byte) 176, 24, (byte) 178, 24, (byte) 180, 24, (byte) 181, 24, (byte) 183, 24, (byte) 185, 24, (byte) 187, 24, (byte) 188, 24, 0, (byte) 255, (byte) 129, 0, 48, // +21
+            (byte) 188, 24, (byte) 187, 24, 0, 96, (byte) 178, 24, (byte) 176, 24, 0, 48, (byte) 176, (byte) 192, 0, 48, 25, 6, // +18
+            (byte) 188, 24, 0, 72, 127,            // +5 TR1L
+            119, 0,                                // +2
+            3, 125, 14,                            // +3 TR2
+            44, 0,                                 // +2
+            0, (byte) 255, (byte) 129, (byte) 176, 24, (byte) 178, 24, (byte) 180, 24, (byte) 181, 24, (byte) 183, 24, (byte) 185, 24, (byte) 187, 24, (byte) 188, 24, 0, 48, // +21
+            0, 96, (byte) 181, 24, (byte) 180, 24, 0, (byte) 192, (byte) 183, 96, 0, 48, 25, 6, // +14
+            0, 48, (byte) 188, 24, 0, 24, 127,     // +7 TR2L
+            (byte) 166, 0,                         // +2
+            14,                                    // +1 TR3
+            41, 0,                                 // +2
+            19, 112, 0, (byte) 192, (byte) 176, 24, (byte) 178, 24, (byte) 180, 24, (byte) 181, 24, (byte) 183, 24, (byte) 185, 24, (byte) 187, 24, (byte) 188, 24, 0, (byte) 192, // +22
+            0, 96, (byte) 185, 24, (byte) 183, 24, 0, (byte) 192, (byte) 180, (byte) 144, 0, 48, 25, 6, // +14
+            0, 24, (byte) 188, 24, 0, 48, 127,    // +7 TR3L
+            (byte) 214, 0                         // +2
     };
 
     @Override
@@ -230,10 +228,10 @@ public class NRTDRV extends BaseDriver {
 
         boolean flg = false;
         for (int i = 0; i < 8; i++) {
-            byte l = buf[trkPtr];
-            byte h = buf[trkPtr + 1];
+            int l = buf[trkPtr] & 0xff;
+            int h = buf[trkPtr + 1] & 0xff;
             int hl = (h << 8) + l;
-            byte cmd = buf[hl];
+            int cmd = buf[hl] & 0xff;
             while (cmd != 127) {
                 if ((cmd & 0x80) != 0) {
                     flg = true;
@@ -401,7 +399,7 @@ public class NRTDRV extends BaseDriver {
         }
     }
 
-    public boolean IsPlaying() {
+    public boolean isPlaying() {
         int loop = Integer.MAX_VALUE;
         boolean flg = false;
 
@@ -458,7 +456,7 @@ public class NRTDRV extends BaseDriver {
                     vgmFrameCounter++;
                 }
             }
-            stopped = !IsPlaying();
+            stopped = !isPlaying();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -752,29 +750,29 @@ public class NRTDRV extends BaseDriver {
         if (model == EnmModel.VirtualModel) {
             if (work.opmIo == 0x701) {
                 // Write to a virtual register
-                work.opm1VReg[d] = a;
+                work.opm1VReg[d & 0xff] = a;
                 // Write to real register
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d & 0xff, a & 0xff, EnmModel.VirtualModel, 0, 0);
                 // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
                 // Write to a virtual register
-                work.opm2VReg[d] = a;
+                work.opm2VReg[d & 0xff] = a;
                 // Write to real register
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d & 0xff, a & 0xff, EnmModel.VirtualModel, 0, 0);
                 // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         } else {
             if (work.opmIo == 0x701) {
                 // Write to a virtual register
-                work.opm1VReg[d] = a;
+                work.opm1VReg[d & 0xff] = a;
                 // Write to real register
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d, a, EnmModel.RealModel, ym2151Hosei[0], 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d & 0xff, a & 0xff, EnmModel.RealModel, ym2151Hosei[0], 0);
                 // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
                 // Write to a virtual register
-                work.opm2VReg[d] = a;
+                work.opm2VReg[d & 0xff] = a;
                 // Write to real register
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d, a, EnmModel.RealModel, ym2151Hosei[1], 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d & 0xff, a & 0xff, EnmModel.RealModel, ym2151Hosei[1], 0);
                 // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         }
@@ -1202,12 +1200,12 @@ public class NRTDRV extends BaseDriver {
 
         private int REST(byte e) {
             byte a = ram[this.ptrData];
-            if (a == 255) {
+            if (a == (byte) 255) {
                 this.isCountNext = (byte) 255;
             } else {
                 this.isCountNext = 0;
             }
-            a--;
+            a = (byte) ((a - 1) & 0xff);
             this.Counter = a;
             this.ptrData++;
 
@@ -1226,7 +1224,7 @@ public class NRTDRV extends BaseDriver {
                 this.ptrData++;
                 wopm(d, a);
                 a = work.zCount;
-                a--;
+                a = (byte) ((a - 1) & 0xff);
                 work.zCount = a;
             } while (a != 0);
 
@@ -1373,7 +1371,7 @@ public class NRTDRV extends BaseDriver {
 
         private int CSMCOM(byte e) {
             byte a = 0x40;
-            a += e;
+            a = (byte) ((a + e) & 0xff);
             byte d = a;
             byte c = 0x8;
 
@@ -1534,14 +1532,14 @@ public class NRTDRV extends BaseDriver {
                 if (work.opmFlg != 0) {
                     // Weight
                 }
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d & 0xff, a & 0xff, EnmModel.VirtualModel, 0, 0);
             } else {
                 // OPM2
                 work.opm2VReg[d] = a;
                 if (work.opmFlg != 0) {
                     // Weight
                 }
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d & 0xff, a & 0xff, EnmModel.VirtualModel, 0, 0);
             }
         }
 

@@ -18,7 +18,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * MDRPlugin.
+ * MonDriver (MSX, Local) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
@@ -30,11 +30,11 @@ public class MDRPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MoonDriver();
-        ((MoonDriver) audio.driverVirtual).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
+        ((MoonDriver) audio.driverVirtual).extendFile = (extendFiles != null && !extendFiles.isEmpty()) ? extendFiles.get(0) : null;
         audio.driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
 //            audio.driverReal = new MoonDriver();
-//            ((MoonDriver) audio.driverReal).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
+//            ((MoonDriver) audio.driverReal).extendFiles = (extendFiles != null && !extendFiles.isEmpty()) ? extendFiles.get(0) : null;
 //        }
         boolean r = _play();
         if (!r) {

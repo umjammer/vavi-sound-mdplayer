@@ -206,12 +206,12 @@ public class frmN106 extends frmBase {
             nyc = newParam.channels[ch];
 
             // Enable
-            DrawBuff.drawNESSw(frameBuffer, 6 * 4, ch * 24 + 8
-                    , oldParam.channels[ch].bit[1], newParam.channels[ch].bit[1]);
+            DrawBuff.drawNESSw(frameBuffer, 6 * 4, ch * 24 + 8,
+                    oldParam.channels[ch].bit[1], newParam.channels[ch].bit[1]);
 
             // Key
-            DrawBuff.drawNESSw(frameBuffer, 7 * 4, ch * 24 + 8
-                    , oldParam.channels[ch].bit[0], newParam.channels[ch].bit[0]);
+            DrawBuff.drawNESSw(frameBuffer, 7 * 4, ch * 24 + 8,
+                    oldParam.channels[ch].bit[0], newParam.channels[ch].bit[0]);
 
             // vol
             oyc.volume = DrawBuff.volume(frameBuffer, 256, 8 + ch * 3 * 8, 0, oyc.volume, nyc.volume, 0);

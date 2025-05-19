@@ -224,11 +224,9 @@ public class frmMultiPCM extends frmBase {
 
             if (newParam.channels[ch].bit[0]) {
                 newParam.channels[ch].volumeL =
-                        Math.min((int) (((0x7f - newParam.channels[ch].inst[1]) * ((newParam.channels[ch].pan >> 4) & 0xf) / (double) 0xf) / 4.5)
-                                , 19);
+                        Math.min((int) (((0x7f - newParam.channels[ch].inst[1]) * ((newParam.channels[ch].pan >> 4) & 0xf) / (double) 0xf) / 4.5), 19);
                 newParam.channels[ch].volumeR =
-                        Math.min((int) (((0x7f - newParam.channels[ch].inst[1]) * ((newParam.channels[ch].pan) & 0xf) / (double) 0xf) / 4.5)
-                                , 19);
+                        Math.min((int) (((0x7f - newParam.channels[ch].inst[1]) * ((newParam.channels[ch].pan) & 0xf) / (double) 0xf) / 4.5), 19);
             } else {
                 newParam.channels[ch].note = -1;
                 if (newParam.channels[ch].volumeL > 0) newParam.channels[ch].volumeL--;

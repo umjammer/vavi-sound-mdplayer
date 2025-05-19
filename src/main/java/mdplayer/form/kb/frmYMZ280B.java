@@ -146,22 +146,22 @@ public class frmYMZ280B extends frmBase {
         if (reg == null) return;
 
         for (int ch = 0; ch < 8; ch++) {
-            newParam.channels[ch].freq = (reg[0x0 + ch * 4] & 0xff)
-                    + ((reg[0x1 + ch * 4] & 1) << 8);
+            newParam.channels[ch].freq = (reg[0x0 + ch * 4] & 0xff) +
+                    ((reg[0x1 + ch * 4] & 1) << 8);
             newParam.channels[ch].nfrq = reg[0x2 + ch * 4] & 0xff;
             newParam.channels[ch].pan = reg[0x3 + ch * 4] & 0xf;
-            newParam.channels[ch].sadr = ((reg[0x20 + ch * 4] & 0xff) << 16)
-                    + ((reg[0x40 + ch * 4] & 0xff) << 8)
-                    + (reg[0x60 + ch * 4] & 0xff);
-            newParam.channels[ch].ladr = ((reg[0x21 + ch * 4] & 0xff) << 16)
-                    + ((reg[0x41 + ch * 4] & 0xff) << 8)
-                    + (reg[0x61 + ch * 4] & 0xff);
-            newParam.channels[ch].leadr = ((reg[0x22 + ch * 4] & 0xff) << 16)
-                    + ((reg[0x42 + ch * 4] & 0xff) << 8)
-                    + (reg[0x62 + ch * 4] & 0xff);
-            newParam.channels[ch].eadr = ((reg[0x23 + ch * 4] & 0xff) << 16)
-                    + ((reg[0x43 + ch * 4] & 0xff) << 8)
-                    + (reg[0x63 + ch * 4] & 0xff);
+            newParam.channels[ch].sadr = ((reg[0x20 + ch * 4] & 0xff) << 16) +
+                    ((reg[0x40 + ch * 4] & 0xff) << 8) +
+                    (reg[0x60 + ch * 4] & 0xff);
+            newParam.channels[ch].ladr = ((reg[0x21 + ch * 4] & 0xff) << 16) +
+                    ((reg[0x41 + ch * 4] & 0xff) << 8) +
+                    (reg[0x61 + ch * 4] & 0xff);
+            newParam.channels[ch].leadr = ((reg[0x22 + ch * 4] & 0xff) << 16) +
+                    ((reg[0x42 + ch * 4] & 0xff) << 8) +
+                    (reg[0x62 + ch * 4] & 0xff);
+            newParam.channels[ch].eadr = ((reg[0x23 + ch * 4] & 0xff) << 16) +
+                    ((reg[0x43 + ch * 4] & 0xff) << 8) +
+                    (reg[0x63 + ch * 4] & 0xff);
 
             newParam.channels[ch].dda = (reg[0x1 + ch * 4] & 0x80) != 0;
             newParam.channels[ch].ex = (reg[0x1 + ch * 4] & 0x40) != 0;

@@ -405,30 +405,22 @@ public class Register286 {
 
     @Override
     public String toString() {
-        return String.format(
-                "AX:{0:X04} CX:{1:X04} DX:{2:X04} BX:{3:X04} SP:{4:X04} BP:{5:X04} SI:{6:X04} DI:{7:X04} \r\n"
-                        + "ES:{8:X04} CS:{9:X04} SS:{10:X04} DS:{11:X04} IP:{12:X04} FLAG:{13}",
+        return """
+                AX:%04x CX:%04x DX:%04x BX:%04x SP:%04x BP:%04x SI:%04x DI:%04x\s
+                ES:%04x CS:%04x SS:%04x DS:%04x IP:%04x FLAG:[%s.%s.%s.%s%s%s%s%s%s....%s]
+                """.formatted(
                 getAX(), getCX(), getDX(), getBX(), getSP(), getBP(), getSI(), getDI(),
-                getES(), getCS(), getSS(), getDS(), IP, String.format(
-                        "{16:X04}[{15}{14}{13}{12}{11}{10}{9}{8}{7}{6}{5}{4}{3}{2}{1}{0}]",
-                        getCF() ? "C" : "-",
-                        ".",
-                        getPF() ? "P" : "-",
-                        ".",
-                        getAF() ? "A" : "-",
-                        ".",
-                        getZF() ? "Z" : "-",
-                        getSF() ? "S" : "-",
-                        getTF() ? "T" : "-",
-                        getIF() ? "I" : "-",
-                        getDF() ? "D" : "-",
-                        getOF() ? "O" : "-",
-                        ".",
-                        ".",
-                        ".",
-                        ".",
-                        FLAG
-                )
+                getES(), getCS(), getSS(), getDS(), IP,
+                (getCF() ? "C" : "-"),
+                (getPF() ? "P" : "-"),
+                (getAF() ? "A" : "-"),
+                (getZF() ? "Z" : "-"),
+                (getSF() ? "S" : "-"),
+                (getTF() ? "T" : "-"),
+                (getIF() ? "I" : "-"),
+                (getDF() ? "D" : "-"),
+                (getOF() ? "O" : "-"),
+                FLAG
         );
     }
 
@@ -446,6 +438,5 @@ public class Register286 {
     }
 
     private Stack<Short> regStack = new Stack<>();
-    private boolean[] parity_table;
-
+    private final boolean[] parity_table;
 }

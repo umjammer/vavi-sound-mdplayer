@@ -56,8 +56,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
         chip.instrument = Instrument.getInstrument(audio.chipRegister.chip(Ym2612Chip.class).inst(0));
         if (chip.instrument instanceof Ym2612Inst) {
             chip.option = new Object[] {
-                    (setting.getNukedOPN2().gensDACHPF ? 0x01 : 0x00)
-                            | (setting.getNukedOPN2().gensSSGEG ? 0x02 : 0x00)
+                    (setting.getNukedOPN2().gensDACHPF ? 0x01 : 0x00) |
+                            (setting.getNukedOPN2().gensSSGEG ? 0x02 : 0x00)
             };
         } else if (chip.instrument instanceof Ym3438Inst ym3438) {
             switch (setting.getNukedOPN2().emuType) {

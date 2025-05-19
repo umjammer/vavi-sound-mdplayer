@@ -50,10 +50,10 @@ public class Nise98 {
 
     public static class fmStatus {
 
-        //bit76:11 int 5(IRQ12)(factory)
-        //bit76:10 int 4(IRQ10)
-        //bit76:01 int 6(IRQ13)
-        //bit76:00 int 0(IRQ03)
+        // bit76:11 int 5(IRQ12)(factory)
+        // bit76:10 int 4(IRQ10)
+        // bit76:01 int 6(IRQ13)
+        // bit76:00 int 0(IRQ03)
         public byte Int = (byte) 0b1100_0000;
         public byte p88lastAdr = 0;
         public byte p8clastAdr = 0;
@@ -66,7 +66,7 @@ public class Nise98 {
         public boolean AdpcmReadMode = false;
         public FMTimer timer = null;
 
-        //ongenBoardType
+        // ongenBoardType
         public OngenBoardType ongen = OngenBoardType.SpeakBoard;
 
         public fmStatus(OngenBoardType ongen) {
@@ -155,7 +155,6 @@ public class Nise98 {
         return false;
     }
 
-
     public void Runtimer() {
         fmReg088.timer.timer();
         fmReg188.timer.timer();
@@ -164,14 +163,11 @@ public class Nise98 {
     }
 
     public boolean IntTimer() {
-        return (
-                (fmReg088.timer.readStatus() & 3)
-                        | (fmReg188.timer.readStatus() & 3)
-                        | (fmReg288.timer.readStatus() & 3)
-                        | (fmReg388.timer.readStatus() & 3)
-        ) != 0;
+        return ((fmReg088.timer.readStatus() & 3) |
+                (fmReg188.timer.readStatus() & 3) |
+                (fmReg288.timer.readStatus() & 3) |
+                (fmReg388.timer.readStatus() & 3)) != 0;
     }
-
 
     public int StepExecute() {
         int08Timer.stepExecute();
@@ -183,16 +179,16 @@ public class Nise98 {
     public byte INPb(short port) {
         logger.log(Level.DEBUG, "<Nise98>IN  Port:$%04x", port);
         switch (port & 0xffff) {
-            case 0x0000://Master interrupt Controler
+            case 0x0000: // Master interrupt Controler
                 return 0;
-            case 0x0002://Interrupt controler Master
+            case 0x0002: // Interrupt controler Master
                 return cpu.w_mmsk;
-            case 0x0008://Slave  interrupt Controler
+            case 0x0008: //Slave  interrupt Controler
                 return 0;
-            case 0x000a://Interrupt controler slave
+            case 0x000a: // Interrupt controler slave
                 return cpu.w_smsk;
-            case 0x00a0://graphics GDC status read
-                //bit5:V_SYNC
+            case 0x00a0: // graphics GDC status read
+                 // bit5:V_SYNC
                 V_SYNC_cnt--;
                 if (V_SYNC_cnt == 0) {
                     V_SYNC_cnt = 2;
@@ -200,44 +196,44 @@ public class Nise98 {
                 }
                 return V_SYNC;
 
-            case 0x088://FM port
-            case 0x08a://FM port
-            case 0x08c://FM port
-            case 0x08e://FM port
+            case 0x088: // FM port
+            case 0x08a: // FM port
+            case 0x08c: // FM port
+            case 0x08e: // FM port
                 return FMPortInport(fmReg088, port);
 
-            case 0x188://FM port
-            case 0x18a://FM port
-            case 0x18c://FM port
-            case 0x18e://FM port
+            case 0x188: // FM port
+            case 0x18a: // FM port
+            case 0x18c: // FM port
+            case 0x18e: // FM port
                 return FMPortInport(fmReg188, port);
 
-            case 0x288://FM port
-            case 0x28a://FM port
-            case 0x28c://FM port
-            case 0x28e://FM port
+            case 0x288: // FM port
+            case 0x28a: // FM port
+            case 0x28c: // FM port
+            case 0x28e: // FM port
                 return FMPortInport(fmReg288, port);
 
-            case 0x388://FM port
-            case 0x38a://FM port
-            case 0x38c://FM port
-            case 0x38e://FM port
+            case 0x388: // FM port
+            case 0x38a: // FM port
+            case 0x38c: // FM port
+            case 0x38e: // FM port
                 return FMPortInport(fmReg388, port);
 
             case 0xa460:
-                //FMP の場合
-                //0b0000_0001　DO+      188h
-                //0b0001_0001　73ボード 188h
-                //0b0010_0001　73ボード 188h
-                //0b0011_0001　73ボード 288h
-                //0b0100_0001　86ボード 188h
-                //0b0101_0001　86ボード 288h
-                //0b0110_0001　YMF288   188h(ADPCM有り:SPB 188h
-                //0b0111_0001　YMF288   188h(ADPCM有り:SPB 188h
-                //0b1000_0001　SPB      088h
-                //0b1001_0001　x ハング (もともとこの値を返すことは無いと思われる)
-                //0b1010_0001　以降、YMF288   0x188h 恐らく後続の処理でさらに調べていると思われる
-                //       ~~~~ここはFMPは完全無視(但し0xffだった場合は判定処理が終わる.恐らく後続の処理でさらに調べていると思われる)
+                 // For FMP
+                 // 0b0000_0001　DO+      188h
+                 // 0b0001_0001　73 board 188h
+                 // 0b0010_0001　73 board 188h
+                 // 0b0011_0001　73 board 288h
+                 // 0b0100_0001　86 board 188h
+                 // 0b0101_0001　86 board 288h
+                 // 0b0110_0001　YMF288   188h(With ADPCM:SPB 188h
+                 // 0b0111_0001　YMF288   188h(With ADPCM:SPB 188h
+                 // 0b1000_0001　SPB      088h
+                 // 0b1001_0001　x Hang (this value is never expected to be returned)
+                 // 0b1010_0001　After that, YMF288 0x188h is probably being investigated further in subsequent processing.
+                 //        ~~~~Here, FMP is completely ignored (however, if it is 0xff, the judgment process ends. It is likely that further investigation will be carried out in subsequent processes).
 
                 if (fmReg188.ongen == OngenBoardType.None) return (byte) 0xff;
                 else if (fmReg188.ongen == OngenBoardType.PC9801_26K) return (byte) 0xff;
@@ -257,15 +253,15 @@ public class Nise98 {
     public short INPw(short port) {
         logger.log(Level.DEBUG, "<Nise98>IN  Port:$%04x".formatted(port));
         switch (port) {
-//                case 0xa460:
-//                    return IsOPNA ? 0x00 : 0xff;//0xFF:not OPNA
-//                case 0x088://FM port
-//                    return IsSPB ? 0x01 : 0x00;
-//                case 0x188://FM port
-//                    return IsSPB ? 0x01 : 0x00;
-//                case 0x288://FM port
-//                    return IsSPB ? 0x01 : 0x00;
-//                case 0x388://FM port
+//            case 0xa460:
+//                return IsOPNA ? 0x00 : 0xff; // 0xFF:not OPNA
+//            case 0x088: // FM port
+//                return IsSPB ? 0x01 : 0x00;
+//            case 0x188: // FM port
+//                return IsSPB ? 0x01 : 0x00;
+//            case 0x288: // FM port
+//                return IsSPB ? 0x01 : 0x00;
+//            case 0x388: // FM port
 //                    return IsSPB ? 0x01 : 0x00;
             default:
                 throw new UnsupportedOperationException("Request port:$%04x".formatted(port));
@@ -410,8 +406,8 @@ public class Nise98 {
                     return (byte) 0xff;
 
                 return (byte) (fs.timer.readStatus() |
-                        (fs.IsBusy ? 0x80 : 0x00)
-                        | 0x08 //bit3:BRDY 
+                        (fs.IsBusy ? 0x80 : 0x00) |
+                        0x08 // bit3:BRDY
                         //| (fs.IsTimerBOverFlow ? 0x02 : 00)
                         //| (fs.IsTimerAOverFlow ? 0x01 : 0x00)
                 );
@@ -453,7 +449,7 @@ public class Nise98 {
                 //if (fs.p8clastAdr == 0x08) {
                 //}
                 break;
-            case 0x08e://FM port val
+            case 0x08e: // FM port val
                 if (fs.regs != null && fs.regs.length == 512) {
                     fs.regs[256 + fs.p8clastAdr] = data;
                 }
@@ -555,15 +551,15 @@ public class Nise98 {
                 DispRegs(regs);
             }
 
-            //if (dispStepCounter) logger.log(Level.TRACE, "functionCalls:{0} STEP:{1}\r\n", functionCallTimes, step);
-
-            //if (regs.IP == 0xb01) {
-            //    if(regs.AL==0xf0|| regs.AL == 0xcd)
-            //    ;
-            //}
-            //if (regs.IP == 0x4088)// || regs.IP == 0x19c9 || regs.IP == 0x19d1) {
-            //    ;
-            //}
+//            if (dispStepCounter) logger.log(Level.TRACE, "functionCalls:{0} STEP:{1}\r\n", functionCallTimes, step);
+//
+//            if (regs.IP == 0xb01) {
+//                if(regs.AL==0xf0|| regs.AL == 0xcd)
+//                ;
+//            }
+//            if (regs.IP == 0x4088)// || regs.IP == 0x19c9 || regs.IP == 0x19d1) {
+//                ;
+//            }
 
         } while (regs.getCS() != 0 || regs.IP != 0);
 

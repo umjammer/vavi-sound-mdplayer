@@ -34,7 +34,7 @@ public class FMP extends BaseDriver {
 
     public static final int baseclock = 7987200;
     private int step = 0;
-    private Nise98 nise98 = new Nise98();
+    private final Nise98 nise98 = new Nise98();
     private Register286 regs;
     private String searchPath = "";
     private List<String> searchPaths = null;
@@ -132,13 +132,13 @@ public class FMP extends BaseDriver {
 
                     nise98.Runtimer();
                     if (!nise98.IntTimer()) continue;
-                    regs.setSS((short) 0xE000);
+                    regs.setSS((short) 0xe000);
                     regs.setSP((short) 0x0000);
                     nise98.CallRunfunctionCall((byte) 0x14);
 
                     // Performance Check
                     regs.setAX((short) 0x0004);
-                    regs.setSS((short) 0xE000);
+                    regs.setSS((short) 0xe000);
                     regs.setSP((short) 0x0000);
                     nise98.CallRunfunctionCall((byte) 0xd2);
                     if (regs.getAX() == 0)
@@ -146,7 +146,7 @@ public class FMP extends BaseDriver {
 
                     // Get the internal work address and check the number of times the song has looped
                     regs.setAX((short) 0x1104);
-                    regs.setSS((short) 0xE000);
+                    regs.setSS((short) 0xe000);
                     regs.setSP((short) 0x0000);
                     nise98.CallRunfunctionCall((byte) 0xd2);
                     int ptr = ((short) 0x2000 << 4) + (short) regs.getAX();
@@ -175,14 +175,12 @@ public class FMP extends BaseDriver {
         nise98.GetDos().setArcFile(playingArcFileName);
         nise98.GetDos().setSearchPath(searchPaths);
 
-        //FMPの常駐
+        // FMP Residency
         //nise98.LoadRun(fileNameFMP, "s -s", 0x2000); // , true, true, true, 3_000_000, 108213); // 108213->wait Loop exit
-        //Log.level = musicDriverInterface.LogLevel.TRACE;
-        //musicDriverInterface.Log.writeMethod = logWrite;
         nise98.LoadRun(fileNameFMP.toString(), "s -s -#42", 0x2000); //, true, true, true, 3_000_000, 0);// 108213->wait Loop exit
         regs = nise98.getRegisters();
 
-        //nisePPZ8の常駐
+        // nisePPZ8 resident
         step = 0;
         Memory98 mem = nise98.GetMem();
         int[] tmp1 = new int[] {step};
@@ -192,10 +190,8 @@ public class FMP extends BaseDriver {
         regs = tmp2[0];
         nise98.GetPPZ8().SetCallBack(this::setPPZ8PCMData, this::setPPZ8Data);
 
-        //Song data loading and playback start notification
+        // Song data loading and playback start notification
         //
-        //Log.level = musicDriverInterface.LogLevel.TRACE;
-        //musicDriverInterface.Log.writeMethod = logWrite;
         FMPLoadAndPlayFileAL2(nise98.GetDos(), regs);
     }
 
@@ -209,10 +205,10 @@ public class FMP extends BaseDriver {
 
     private void OPNAWrite(ChipDatum dat) {
         byte cn = (byte) (dat.port >> 8);
-        byte port = (byte) ((byte) dat.port == 0x8a ? 0 : 1);
+        byte port = (byte) (dat.port == 0x8a ? 0 : 1);
         plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, port, (byte) dat.address, (byte) dat.data, model);
 
-        if (port == 1 && (byte) dat.address == 0x8 && model == EnmModel.RealModel) {
+        if (port == 1 && dat.address == 0x8 && model == EnmModel.RealModel) {
             this.isDataBlock = true;
             pcmDataSendCount++;
             plugin.audio.chipRegister.chip(Ym2608Chip.class).setSyncWait(0, 1);
@@ -222,13 +218,13 @@ public class FMP extends BaseDriver {
     private void FMPLoadAndPlayFileAL2(NiseDos dos, Register286 regs) {
         byte[] m = Path.of(playingFileName).getFileName().toString().getBytes(charset);
         dos.setPath(Path.of(playingFileName).getParent());
-        dos.loadImage(m, (0x5000 << 4) + 0x000);
+        dos.loadImage(m, (0x5000 << 4) + 0x0000);
 
         step = 0;
         regs.setAL((short) 0x02);
         regs.setDS((short) 0x5000);
         regs.setDX((short) 0x0000);
-        regs.setSS((short) 0xE000);
+        regs.setSS((short) 0xe000);
         regs.setSP((short) 0x0000);
         nise98.CallRunfunctionCall((byte) 0xd2, true, true, true, 10_000_000_000L, 0_000);
 

@@ -14,7 +14,7 @@ import static java.lang.System.getLogger;
 
 
 /**
- * SIDPlugin.
+ * SID (Commodore) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>

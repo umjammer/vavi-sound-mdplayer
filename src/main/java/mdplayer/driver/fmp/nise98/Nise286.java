@@ -11,11 +11,11 @@ import static java.lang.System.getLogger;
 
 public class Nise286 {
     // x86 general reference sites and sources
-    // https: // qiita.com/hdk_2/items/6f8cb8a7c67342e2a32a
+    // https://qiita.com/hdk_2/items/6f8cb8a7c67342e2a32a
     // mame tabel286.h
 
     // Sites referenced for OF determination processing
-    // https: // hiroyukichishiro.com/arithmetic-overflow-in-c-language/#%E8%B6%B3%E3%81%97%E7%AE%97%E3%81%AE%E4%BA%8B%E5%BE%8C%E6%9D%A1%E4%BB%B6
+    // https://hiroyukichishiro.com/arithmetic-overflow-in-c-language/#%E8%B6%B3%E3%81%97%E7%AE%97%E3%81%AE%E4%BA%8B%E5%BE%8C%E6%9D%A1%E4%BB%B6
     // mame
 
     private static final Logger logger = getLogger(Nise286.class.getName());

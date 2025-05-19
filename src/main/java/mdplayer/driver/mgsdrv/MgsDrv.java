@@ -260,9 +260,9 @@ public class MgsDrv extends BaseDriver {
 
     private static void debugRegisters(Z80Processor z80) {
         logger.log(Level.DEBUG, "Reg pc:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x".formatted(
-                z80.getRegisters().getPC()
-                , z80.getRegisters().getAF(), z80.getRegisters().getBC(), z80.getRegisters().getDE(), z80.getRegisters().getHL()
-                , z80.getRegisters().getIX(), z80.getRegisters().getIY()));
+                z80.getRegisters().getPC(),
+                z80.getRegisters().getAF(), z80.getRegisters().getBC(), z80.getRegisters().getDE(), z80.getRegisters().getHL(),
+                z80.getRegisters().getIX(), z80.getRegisters().getIY()));
     }
 
     private void callEXTBIO(BeforeInstructionFetchEvent args, Z80Processor z80) {

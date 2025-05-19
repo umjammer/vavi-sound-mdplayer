@@ -283,8 +283,8 @@ public class MoonDriverJava extends BaseDriver {
         List<ChipAction> lca = new ArrayList<>();
         ChipAction ca = new MoonDriverChipAction(this::opl4Write, this::opl4WaitSend);
         lca.add(ca);
-        moonDriverDriver.init(lca, buf.toArray(MmlDatum[]::new), this::appendFileReaderCallback
-                , PlayingFileName, (double) 44100, 0);
+        moonDriverDriver.init(lca, buf.toArray(MmlDatum[]::new), this::appendFileReaderCallback,
+                PlayingFileName, (double) 44100, 0);
 
         moonDriverDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YMF278B", 33868800));
         moonDriverDriver.startMusic(0);

@@ -22,7 +22,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * PMDPlugin.
+ * PMD (PC-9801) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
@@ -123,14 +123,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
         audio.chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
         audio.chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
 
-        if (!audio.driverVirtual.init(vgmBuf, fileType, this, Common.EnmModel.VirtualModel, new Class[] {Ym2608Chip.class}
-                , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000
-                , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
+        if (!audio.driverVirtual.init(vgmBuf, fileType, this, Common.EnmModel.VirtualModel, new Class[] {Ym2608Chip.class},
+                setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
+                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
             return false;
         if (audio.driverReal != null) {
-            if (!audio.driverReal.init(vgmBuf, fileType, this, Common.EnmModel.RealModel, new Class[] {Ym2608Chip.class}
-                    , setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000
-                    , setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
+            if (!audio.driverReal.init(vgmBuf, fileType, this, Common.EnmModel.RealModel, new Class[] {Ym2608Chip.class},
+                    setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
+                    setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
                 return false;
         }
 

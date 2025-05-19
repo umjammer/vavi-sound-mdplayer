@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -65,6 +66,36 @@ public class PlayList implements Serializable, Cloneable {
         public int loopCount = -1;
 
         public int songNo = -1;
+
+        @Override public String toString() {
+            return new StringJoiner(", ", Music.class.getSimpleName() + "[", "]")
+                    .add("format=" + format)
+                    .add("playingNow='" + playingNow + "'")
+                    .add("fileName='" + fileName + "'")
+                    .add("arcFileName='" + arcFileName + "'")
+                    .add("arcType=" + arcType)
+                    .add("type='" + type + "'")
+                    .add("title='" + title + "'")
+                    .add("game='" + game + "'")
+                    .add("system='" + system + "'")
+                    .add("composer='" + composer + "'")
+                    .add("titleJ='" + titleJ + "'")
+                    .add("gameJ='" + gameJ + "'")
+                    .add("systemJ='" + systemJ + "'")
+                    .add("composerJ='" + composerJ + "'")
+                    .add("converted='" + converted + "'")
+                    .add("notes='" + notes + "'")
+                    .add("vgmby='" + vgmby + "'")
+                    .add("remark='" + remark + "'")
+                    .add("duration='" + duration + "'")
+                    .add("time='" + time + "'")
+                    .add("loopStartTime='" + loopStartTime + "'")
+                    .add("loopEndTime='" + loopEndTime + "'")
+                    .add("fadeoutTime='" + fadeoutTime + "'")
+                    .add("loopCount=" + loopCount)
+                    .add("songNo=" + songNo)
+                    .toString();
+        }
     }
 
     private List<Music> musics = new ArrayList<>();
@@ -211,9 +242,9 @@ public class PlayList implements Serializable, Cloneable {
 
             addFileLoop(mc, null, null);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Failed to add a file.\nDetail\nMessage=%s".formatted(ex.getMessage())
-                    , "Error"
-                    , JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null,
+                    "Failed to add a file.\nDetail\nMessage=%s".formatted(ex.getMessage()),
+                    "Error", JOptionPane.ERROR_MESSAGE);
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
@@ -228,9 +259,9 @@ public class PlayList implements Serializable, Cloneable {
                 addFileLoop(index, mc, null, null);
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Failed to add a file.\nDetail\nMessage=%s".formatted(ex.getMessage())
-                    , "Error"
-                    , JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null,
+                    "Failed to add a file.\nDetail\nMessage=%s".formatted(ex.getMessage()),
+                    "Error" , JOptionPane.ERROR_MESSAGE);
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }

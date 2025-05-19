@@ -114,10 +114,10 @@ public class frmSetting extends JDialog {
         cbUnuseRealChip.setSelected(setting.getUnuseRealChip());
 
         // Comboboxへデバイスを列挙
-        Mixer.Info [] mixersInfo = AudioSystem.getMixerInfo();
+        Mixer.Info[] mixersInfo = AudioSystem.getMixerInfo();
         for (Mixer.Info mixerInfo : mixersInfo) {
             Mixer mixer = AudioSystem.getMixer(mixerInfo);
-            Line.Info [] sourceLineInfo = mixer.getSourceLineInfo();
+            Line.Info[] sourceLineInfo = mixer.getSourceLineInfo();
             for (Line.Info info : sourceLineInfo) {
                 if (info instanceof DataLine.Info dataLineInfo)
                     cmbDirectSoundDevice.addItem(dataLineInfo.toString());
@@ -136,87 +136,87 @@ public class frmSetting extends JDialog {
             cmbMIDIIN.setSelectedIndex(0);
 
         if (ucSI != null) {
-            setRealCombo(EnmRealChipType.YM2612
-                    , ucSI.cmbYM2612P_SCCI, ucSI.rbYM2612P_SCCI
-                    , ucSI.cmbYM2612S_SCCI, ucSI.rbYM2612S_SCCI
+            setRealCombo(EnmRealChipType.YM2612,
+                    ucSI.cmbYM2612P_SCCI, ucSI.rbYM2612P_SCCI,
+                    ucSI.cmbYM2612S_SCCI, ucSI.rbYM2612S_SCCI
             );
 
-            setRealCombo(EnmRealChipType.YM2413
-                    , ucSI.cmbYM2413P_Real, ucSI.rbYM2413P_Real
-                    , ucSI.cmbYM2413S_Real, ucSI.rbYM2413S_Real
+            setRealCombo(EnmRealChipType.YM2413,
+                    ucSI.cmbYM2413P_Real, ucSI.rbYM2413P_Real,
+                    ucSI.cmbYM2413S_Real, ucSI.rbYM2413S_Real
             );
 
-            setRealCombo(EnmRealChipType.AY8910
-                    , ucSI.cmbAY8910P_Real, ucSI.rbAY8910P_Real
-                    , ucSI.cmbAY8910S_Real, ucSI.rbAY8910S_Real
+            setRealCombo(EnmRealChipType.AY8910,
+                    ucSI.cmbAY8910P_Real, ucSI.rbAY8910P_Real,
+                    ucSI.cmbAY8910S_Real, ucSI.rbAY8910S_Real
             );
 
-            setRealCombo(EnmRealChipType.SN76489
-                    , ucSI.cmbSN76489P_SCCI, ucSI.rbSN76489P_SCCI
-                    , ucSI.cmbSN76489S_SCCI, ucSI.rbSN76489S_SCCI
+            setRealCombo(EnmRealChipType.SN76489,
+                    ucSI.cmbSN76489P_SCCI, ucSI.rbSN76489P_SCCI,
+                    ucSI.cmbSN76489S_SCCI, ucSI.rbSN76489S_SCCI
             );
 
-            setRealCombo(EnmRealChipType.YM2608
-                    , ucSI.cmbYM2608P_SCCI, ucSI.rbYM2608P_SCCI
-                    , ucSI.cmbYM2608S_SCCI, ucSI.rbYM2608S_SCCI
+            setRealCombo(EnmRealChipType.YM2608,
+                    ucSI.cmbYM2608P_SCCI, ucSI.rbYM2608P_SCCI,
+                    ucSI.cmbYM2608S_SCCI, ucSI.rbYM2608S_SCCI
             );
 
-            setRealCombo(EnmRealChipType.YM2610
-                    , ucSI.cmbYM2610BP_SCCI, ucSI.rbYM2610BP_SCCI
-                    , ucSI.cmbYM2610BS_SCCI, ucSI.rbYM2610BS_SCCI
+            setRealCombo(EnmRealChipType.YM2610,
+                    ucSI.cmbYM2610BP_SCCI, ucSI.rbYM2610BP_SCCI,
+                    ucSI.cmbYM2610BS_SCCI, ucSI.rbYM2610BS_SCCI
             );
 
-            setRealCombo(EnmRealChipType.YM2608
-                    , ucSI.cmbYM2610BEP_SCCI, ucSI.rbYM2610BEP_SCCI
-                    , ucSI.cmbYM2610BES_SCCI, ucSI.rbYM2610BES_SCCI
+            setRealCombo(EnmRealChipType.YM2608,
+                    ucSI.cmbYM2610BEP_SCCI, ucSI.rbYM2610BEP_SCCI,
+                    ucSI.cmbYM2610BES_SCCI, ucSI.rbYM2610BES_SCCI
             );
 
-            setRealCombo(EnmRealChipType.SPPCM
-                    , ucSI.cmbSPPCMP_SCCI, null
-                    , ucSI.cmbSPPCMS_SCCI, null
+            setRealCombo(EnmRealChipType.SPPCM,
+                    ucSI.cmbSPPCMP_SCCI, null,
+                    ucSI.cmbSPPCMS_SCCI, null
             );
 
             ucSI.rbYM2610BEP_SCCI.setEnabled((ucSI.cmbYM2610BEP_SCCI.isEnabled() || ucSI.cmbSPPCMP_SCCI.isEnabled()));
             ucSI.rbYM2610BES_SCCI.setEnabled((ucSI.cmbYM2610BES_SCCI.isEnabled() || ucSI.cmbSPPCMS_SCCI.isEnabled()));
 
-            setRealCombo(EnmRealChipType.YM2151
-                    , ucSI.cmbYM2151P_SCCI, ucSI.rbYM2151P_SCCI
-                    , ucSI.cmbYM2151S_SCCI, ucSI.rbYM2151S_SCCI
+            setRealCombo(EnmRealChipType.YM2151,
+                    ucSI.cmbYM2151P_SCCI, ucSI.rbYM2151P_SCCI,
+                    ucSI.cmbYM2151S_SCCI, ucSI.rbYM2151S_SCCI
             );
 
-            setRealCombo(EnmRealChipType.YM2203
-                    , ucSI.cmbYM2203P_SCCI, ucSI.rbYM2203P_SCCI
-                    , ucSI.cmbYM2203S_SCCI, ucSI.rbYM2203S_SCCI
+            setRealCombo(EnmRealChipType.YM2203,
+                    ucSI.cmbYM2203P_SCCI, ucSI.rbYM2203P_SCCI,
+                    ucSI.cmbYM2203S_SCCI, ucSI.rbYM2203S_SCCI
             );
 
-            setRealCombo(EnmRealChipType.C140
-                    , ucSI.cmbC140P_SCCI, ucSI.rbC140P_Real
-                    , ucSI.cmbC140S_SCCI, ucSI.rbC140S_SCCI
+            setRealCombo(EnmRealChipType.C140,
+                    ucSI.cmbC140P_SCCI, ucSI.rbC140P_Real,
+                    ucSI.cmbC140S_SCCI, ucSI.rbC140S_SCCI
             );
 
-            setRealCombo(EnmRealChipType.SEGAPCM
-                    , ucSI.cmbSEGAPCMP_SCCI, ucSI.rbSEGAPCMP_SCCI
-                    , ucSI.cmbSEGAPCMS_SCCI, ucSI.rbSEGAPCMS_SCCI
+            setRealCombo(EnmRealChipType.SEGAPCM,
+                    ucSI.cmbSEGAPCMP_SCCI, ucSI.rbSEGAPCMP_SCCI,
+                    ucSI.cmbSEGAPCMS_SCCI, ucSI.rbSEGAPCMS_SCCI
             );
 
-            setRealCombo(EnmRealChipType.YMF262
-                    , ucSI.cmbYMF262P_SCCI, ucSI.rbYMF262P_SCCI
-                    , ucSI.cmbYMF262S_SCCI, ucSI.rbYMF262S_SCCI
+            setRealCombo(EnmRealChipType.YMF262,
+                    ucSI.cmbYMF262P_SCCI, ucSI.rbYMF262P_SCCI,
+                    ucSI.cmbYMF262S_SCCI, ucSI.rbYMF262S_SCCI
             );
 
-            setRealCombo(EnmRealChipType.YM3526
-                    , ucSI.cmbYM3526P_SCCI, ucSI.rbYM3526P_SCCI
-                    , ucSI.cmbYM3526S_SCCI, ucSI.rbYM3526S_SCCI
+            setRealCombo(EnmRealChipType.YM3526,
+                    ucSI.cmbYM3526P_SCCI, ucSI.rbYM3526P_SCCI,
+                    ucSI.cmbYM3526S_SCCI, ucSI.rbYM3526S_SCCI
             );
 
-            setRealCombo(EnmRealChipType.YM3812
-                    , ucSI.cmbYM3812P_SCCI, ucSI.rbYM3812P_SCCI
-                    , ucSI.cmbYM3812S_SCCI, ucSI.rbYM3812S_SCCI
+            setRealCombo(EnmRealChipType.YM3812,
+                    ucSI.cmbYM3812P_SCCI, ucSI.rbYM3812P_SCCI,
+                    ucSI.cmbYM3812S_SCCI, ucSI.rbYM3812S_SCCI
             );
 
-            setRealCombo(EnmRealChipType.K051649
-                    , ucSI.cmbK051649P_Real, ucSI.rbK051649P_Real
-                    , ucSI.cmbK051649S_Real, ucSI.rbK051649S_Real
+            setRealCombo(EnmRealChipType.K051649,
+                    ucSI.cmbK051649P_Real, ucSI.rbK051649P_Real,
+                    ucSI.cmbK051649S_Real, ucSI.rbK051649S_Real
             );
         }
 
@@ -230,31 +230,31 @@ public class frmSetting extends JDialog {
         copyFromMIDIoutListA(dgvMIDIoutListI);
         copyFromMIDIoutListA(dgvMIDIoutListJ);
 
-        // 設定内容をコントロールへ適用
+        // Applying settings to controls
 
         switch (setting.getOutputDevice().getDeviceType()) {
-        case 0:
-        default:
-            rbWaveOut.setSelected(true);
-            break;
-        case 1:
-            rbDirectSoundOut.setSelected(true);
-            break;
-        case 2:
-            if (wasapiSupported) rbWasapiOut.setSelected(true);
-            else rbWaveOut.setSelected(true);
-            break;
-        case 3:
-            if (asioSupported) rbAsioOut.setSelected(true);
-            else rbWaveOut.setSelected(true);
-            break;
-        case 4:
-            //SSPCM
-            rbWaveOut.setSelected(true);
-            break;
-        case 5:
-            rbNullDevice.setSelected(true);
-            break;
+            case 0:
+            default:
+                rbWaveOut.setSelected(true);
+                break;
+            case 1:
+                rbDirectSoundOut.setSelected(true);
+                break;
+            case 2:
+                if (wasapiSupported) rbWasapiOut.setSelected(true);
+                else rbWaveOut.setSelected(true);
+                break;
+            case 3:
+                if (asioSupported) rbAsioOut.setSelected(true);
+                else rbWaveOut.setSelected(true);
+                break;
+            case 4:
+                // SSPCM
+                rbWaveOut.setSelected(true);
+                break;
+            case 5:
+                rbNullDevice.setSelected(true);
+                break;
         }
 
         if (cmbWaveOutDevice.getItemCount() > 0) {
@@ -318,192 +318,192 @@ public class frmSetting extends JDialog {
         }
 
         if (ucSI != null) {
-            setRealParam(setting.getYM2612Type()[0]
-                    , ucSI.rbYM2612P_Silent
-                    , ucSI.rbYM2612P_Emu
-                    , ucSI.rbYM2612P_SCCI
-                    , ucSI.cmbYM2612P_SCCI
-                    , null, null, null
-                    , ucSI.rbYM2612P_EmuNuked
-                    , ucSI.rbYM2612P_EmuMame);
-            setRealParam(setting.getYM2612Type()[1]
-                    , ucSI.rbYM2612S_Silent
-                    , ucSI.rbYM2612S_Emu
-                    , ucSI.rbYM2612S_SCCI
-                    , ucSI.cmbYM2612S_SCCI
-                    , null, null, null
-                    , ucSI.rbYM2612S_EmuNuked
-                    , ucSI.rbYM2612S_EmuMame);
+            setRealParam(setting.getYM2612Type()[0],
+                    ucSI.rbYM2612P_Silent,
+                    ucSI.rbYM2612P_Emu,
+                    ucSI.rbYM2612P_SCCI,
+                    ucSI.cmbYM2612P_SCCI,
+                    null, null, null,
+                    ucSI.rbYM2612P_EmuNuked,
+                    ucSI.rbYM2612P_EmuMame);
+            setRealParam(setting.getYM2612Type()[1],
+                    ucSI.rbYM2612S_Silent,
+                    ucSI.rbYM2612S_Emu,
+                    ucSI.rbYM2612S_SCCI,
+                    ucSI.cmbYM2612S_SCCI,
+                    null, null, null,
+                    ucSI.rbYM2612S_EmuNuked,
+                    ucSI.rbYM2612S_EmuMame);
 
             ucSI.cbSendWait.setSelected(setting.getYM2612Type()[0].getRealChipInfo()[0].getUseWait());
             ucSI.cbTwice.setSelected(setting.getYM2612Type()[0].getRealChipInfo()[0].getUseWaitBoost());
             ucSI.cbEmulationPCMOnly.setSelected(setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation());
 
-            setRealParam(setting.getYM2610Type()[0]
-                    , ucSI.rbYM2610BP_Silent
-                    , ucSI.rbYM2610BP_Emu
-                    , ucSI.rbYM2610BP_SCCI
-                    , ucSI.cmbYM2610BP_SCCI
-                    , ucSI.rbYM2610BEP_SCCI
-                    , ucSI.cmbYM2610BEP_SCCI
-                    , ucSI.cmbSPPCMP_SCCI
-                    , null, null);
-            setRealParam(setting.getYM2610Type()[1]
-                    , ucSI.rbYM2610BS_Silent
-                    , ucSI.rbYM2610BS_Emu
-                    , ucSI.rbYM2610BS_SCCI
-                    , ucSI.cmbYM2610BS_SCCI
-                    , ucSI.rbYM2610BES_SCCI
-                    , ucSI.cmbYM2610BES_SCCI
-                    , ucSI.cmbSPPCMS_SCCI
-                    , null, null);
+            setRealParam(setting.getYM2610Type()[0],
+                    ucSI.rbYM2610BP_Silent,
+                    ucSI.rbYM2610BP_Emu,
+                    ucSI.rbYM2610BP_SCCI,
+                    ucSI.cmbYM2610BP_SCCI,
+                    ucSI.rbYM2610BEP_SCCI,
+                    ucSI.cmbYM2610BEP_SCCI,
+                    ucSI.cmbSPPCMP_SCCI,
+                    null, null);
+            setRealParam(setting.getYM2610Type()[1],
+                    ucSI.rbYM2610BS_Silent,
+                    ucSI.rbYM2610BS_Emu,
+                    ucSI.rbYM2610BS_SCCI,
+                    ucSI.cmbYM2610BS_SCCI,
+                    ucSI.rbYM2610BES_SCCI,
+                    ucSI.cmbYM2610BES_SCCI,
+                    ucSI.cmbSPPCMS_SCCI,
+                    null, null);
 
-            setRealParam(setting.getSN76489Type()[0]
-                    , ucSI.rbSN76489P_Silent
-                    , ucSI.rbSN76489P_Emu
-                    , ucSI.rbSN76489P_SCCI
-                    , ucSI.cmbSN76489P_SCCI
-                    , null, null, null
-                    , ucSI.rbSN76489P_Emu2, null);
-            setRealParam(setting.getSN76489Type()[1]
-                    , ucSI.rbSN76489S_Silent
-                    , ucSI.rbSN76489S_Emu
-                    , ucSI.rbSN76489S_SCCI
-                    , ucSI.cmbSN76489S_SCCI
-                    , null, null, null
-                    , ucSI.rbSN76489S_Emu2, null);
+            setRealParam(setting.getSN76489Type()[0],
+                    ucSI.rbSN76489P_Silent,
+                    ucSI.rbSN76489P_Emu,
+                    ucSI.rbSN76489P_SCCI,
+                    ucSI.cmbSN76489P_SCCI,
+                    null, null, null,
+                    ucSI.rbSN76489P_Emu2, null);
+            setRealParam(setting.getSN76489Type()[1],
+                    ucSI.rbSN76489S_Silent,
+                    ucSI.rbSN76489S_Emu,
+                    ucSI.rbSN76489S_SCCI,
+                    ucSI.cmbSN76489S_SCCI,
+                    null, null, null,
+                    ucSI.rbSN76489S_Emu2, null);
 
-            setRealParam(setting.getYM2608Type()[0]
-                    , ucSI.rbYM2608P_Silent
-                    , ucSI.rbYM2608P_Emu
-                    , ucSI.rbYM2608P_SCCI
-                    , ucSI.cmbYM2608P_SCCI, null, null, null, null, null);
-            setRealParam(setting.getYM2608Type()[1]
-                    , ucSI.rbYM2608S_Silent
-                    , ucSI.rbYM2608S_Emu
-                    , ucSI.rbYM2608S_SCCI
-                    , ucSI.cmbYM2608S_SCCI, null, null, null, null, null);
+            setRealParam(setting.getYM2608Type()[0],
+                    ucSI.rbYM2608P_Silent,
+                    ucSI.rbYM2608P_Emu,
+                    ucSI.rbYM2608P_SCCI,
+                    ucSI.cmbYM2608P_SCCI, null, null, null, null, null);
+            setRealParam(setting.getYM2608Type()[1],
+                    ucSI.rbYM2608S_Silent,
+                    ucSI.rbYM2608S_Emu,
+                    ucSI.rbYM2608S_SCCI,
+                    ucSI.cmbYM2608S_SCCI, null, null, null, null, null);
 
-            setRealParam(setting.getYM2151Type()[0]
-                    , ucSI.rbYM2151P_Silent
-                    , ucSI.rbYM2151P_Emu
-                    , ucSI.rbYM2151P_SCCI
-                    , ucSI.cmbYM2151P_SCCI
-                    , null, null, null
-                    , ucSI.rbYM2151P_EmuMame
-                    , ucSI.rbYM2151P_EmuX68Sound);
-            setRealParam(setting.getYM2151Type()[1]
-                    , ucSI.rbYM2151S_Silent
-                    , ucSI.rbYM2151S_Emu
-                    , ucSI.rbYM2151S_SCCI
-                    , ucSI.cmbYM2151S_SCCI
-                    , null, null, null
-                    , ucSI.rbYM2151S_EmuMame
-                    , ucSI.rbYM2151S_EmuX68Sound);
+            setRealParam(setting.getYM2151Type()[0],
+                    ucSI.rbYM2151P_Silent,
+                    ucSI.rbYM2151P_Emu,
+                    ucSI.rbYM2151P_SCCI,
+                    ucSI.cmbYM2151P_SCCI,
+                    null, null, null,
+                    ucSI.rbYM2151P_EmuMame,
+                    ucSI.rbYM2151P_EmuX68Sound);
+            setRealParam(setting.getYM2151Type()[1],
+                    ucSI.rbYM2151S_Silent,
+                    ucSI.rbYM2151S_Emu,
+                    ucSI.rbYM2151S_SCCI,
+                    ucSI.cmbYM2151S_SCCI,
+                    null, null, null,
+                    ucSI.rbYM2151S_EmuMame,
+                    ucSI.rbYM2151S_EmuX68Sound);
 
-            setRealParam(setting.getYM2203Type()[0]
-                    , ucSI.rbYM2203P_Silent
-                    , ucSI.rbYM2203P_Emu
-                    , ucSI.rbYM2203P_SCCI
-                    , ucSI.cmbYM2203P_SCCI, null, null, null, null, null);
-            setRealParam(setting.getYM2203Type()[1]
-                    , ucSI.rbYM2203S_Silent
-                    , ucSI.rbYM2203S_Emu
-                    , ucSI.rbYM2203S_SCCI
-                    , ucSI.cmbYM2203S_SCCI, null, null, null, null, null);
+            setRealParam(setting.getYM2203Type()[0],
+                    ucSI.rbYM2203P_Silent,
+                    ucSI.rbYM2203P_Emu,
+                    ucSI.rbYM2203P_SCCI,
+                    ucSI.cmbYM2203P_SCCI, null, null, null, null, null);
+            setRealParam(setting.getYM2203Type()[1],
+                    ucSI.rbYM2203S_Silent,
+                    ucSI.rbYM2203S_Emu,
+                    ucSI.rbYM2203S_SCCI,
+                    ucSI.cmbYM2203S_SCCI, null, null, null, null, null);
 
-            setRealParam(setting.getAY8910Type()[0]
-                    , ucSI.rbAY8910P_Silent
-                    , ucSI.rbAY8910P_Emu
-                    , ucSI.rbAY8910P_Real
-                    , ucSI.cmbAY8910P_Real
-                    , null, null, null
-                    , ucSI.rbAY8910P_Emu2, null);
+            setRealParam(setting.getAY8910Type()[0],
+                    ucSI.rbAY8910P_Silent,
+                    ucSI.rbAY8910P_Emu,
+                    ucSI.rbAY8910P_Real,
+                    ucSI.cmbAY8910P_Real,
+                    null, null, null,
+                    ucSI.rbAY8910P_Emu2, null);
 
-            setRealParam(setting.getAY8910Type()[1]
-                    , ucSI.rbAY8910S_Silent
-                    , ucSI.rbAY8910S_Emu
-                    , ucSI.rbAY8910S_Real
-                    , ucSI.cmbAY8910S_Real
-                    , null, null, null
-                    , ucSI.rbAY8910S_Emu2, null);
+            setRealParam(setting.getAY8910Type()[1],
+                    ucSI.rbAY8910S_Silent,
+                    ucSI.rbAY8910S_Emu,
+                    ucSI.rbAY8910S_Real,
+                    ucSI.cmbAY8910S_Real,
+                    null, null, null,
+                    ucSI.rbAY8910S_Emu2, null);
 
-            setRealParam(setting.getK051649Type()[0]
-                    , ucSI.rbK051649P_Silent
-                    , ucSI.rbK051649P_Emu
-                    , ucSI.rbK051649P_Real
-                    , ucSI.cmbK051649P_Real, null, null, null, null, null);
-            setRealParam(setting.getK051649Type()[1]
-                    , ucSI.rbK051649S_Silent
-                    , ucSI.rbK051649S_Emu
-                    , ucSI.rbK051649S_Real
-                    , ucSI.cmbK051649S_Real, null, null, null, null, null);
+            setRealParam(setting.getK051649Type()[0],
+                    ucSI.rbK051649P_Silent,
+                    ucSI.rbK051649P_Emu,
+                    ucSI.rbK051649P_Real,
+                    ucSI.cmbK051649P_Real, null, null, null, null, null);
+            setRealParam(setting.getK051649Type()[1],
+                    ucSI.rbK051649S_Silent,
+                    ucSI.rbK051649S_Emu,
+                    ucSI.rbK051649S_Real,
+                    ucSI.cmbK051649S_Real, null, null, null, null, null);
 
-            setRealParam(setting.getYM2413Type()[0]
-                    , ucSI.rbYM2413P_Silent
-                    , ucSI.rbYM2413P_Emu
-                    , ucSI.rbYM2413P_Real
-                    , ucSI.cmbYM2413P_Real, null, null, null, null, null);
-            setRealParam(setting.getYM2413Type()[1]
-                    , ucSI.rbYM2413S_Silent
-                    , ucSI.rbYM2413S_Emu
-                    , ucSI.rbYM2413S_Real
-                    , ucSI.cmbYM2413S_Real, null, null, null, null, null);
+            setRealParam(setting.getYM2413Type()[0],
+                    ucSI.rbYM2413P_Silent,
+                    ucSI.rbYM2413P_Emu,
+                    ucSI.rbYM2413P_Real,
+                    ucSI.cmbYM2413P_Real, null, null, null, null, null);
+            setRealParam(setting.getYM2413Type()[1],
+                    ucSI.rbYM2413S_Silent,
+                    ucSI.rbYM2413S_Emu,
+                    ucSI.rbYM2413S_Real,
+                    ucSI.cmbYM2413S_Real, null, null, null, null, null);
 
-            setRealParam(setting.getYM3526Type()[0]
-                    , ucSI.rbYM3526P_Silent
-                    , ucSI.rbYM3526P_Emu
-                    , ucSI.rbYM3526P_SCCI
-                    , ucSI.cmbYM3526P_SCCI, null, null, null, null, null);
-            setRealParam(setting.getYM3526Type()[1]
-                    , ucSI.rbYM3526S_Silent
-                    , ucSI.rbYM3526S_Emu
-                    , ucSI.rbYM3526S_SCCI
-                    , ucSI.cmbYM3526S_SCCI, null, null, null, null, null);
+            setRealParam(setting.getYM3526Type()[0],
+                    ucSI.rbYM3526P_Silent,
+                    ucSI.rbYM3526P_Emu,
+                    ucSI.rbYM3526P_SCCI,
+                    ucSI.cmbYM3526P_SCCI, null, null, null, null, null);
+            setRealParam(setting.getYM3526Type()[1],
+                    ucSI.rbYM3526S_Silent,
+                    ucSI.rbYM3526S_Emu,
+                    ucSI.rbYM3526S_SCCI,
+                    ucSI.cmbYM3526S_SCCI, null, null, null, null, null);
 
-            setRealParam(setting.getYM3812Type()[0]
-                    , ucSI.rbYM3812P_Silent
-                    , ucSI.rbYM3812P_Emu
-                    , ucSI.rbYM3812P_SCCI
-                    , ucSI.cmbYM3812P_SCCI, null, null, null, null, null);
-            setRealParam(setting.getYM3812Type()[1]
-                    , ucSI.rbYM3812S_Silent
-                    , ucSI.rbYM3812S_Emu
-                    , ucSI.rbYM3812S_SCCI
-                    , ucSI.cmbYM3812S_SCCI, null, null, null, null, null);
+            setRealParam(setting.getYM3812Type()[0],
+                    ucSI.rbYM3812P_Silent,
+                    ucSI.rbYM3812P_Emu,
+                    ucSI.rbYM3812P_SCCI,
+                    ucSI.cmbYM3812P_SCCI, null, null, null, null, null);
+            setRealParam(setting.getYM3812Type()[1],
+                    ucSI.rbYM3812S_Silent,
+                    ucSI.rbYM3812S_Emu,
+                    ucSI.rbYM3812S_SCCI,
+                    ucSI.cmbYM3812S_SCCI, null, null, null, null, null);
 
-            setRealParam(setting.getYMF262Type()[0]
-                    , ucSI.rbYMF262P_Silent
-                    , ucSI.rbYMF262P_Emu
-                    , ucSI.rbYMF262P_SCCI
-                    , ucSI.cmbYMF262P_SCCI, null, null, null, null, null);
-            setRealParam(setting.getYMF262Type()[1]
-                    , ucSI.rbYMF262S_Silent
-                    , ucSI.rbYMF262S_Emu
-                    , ucSI.rbYMF262S_SCCI
-                    , ucSI.cmbYMF262S_SCCI, null, null, null, null, null);
+            setRealParam(setting.getYMF262Type()[0],
+                    ucSI.rbYMF262P_Silent,
+                    ucSI.rbYMF262P_Emu,
+                    ucSI.rbYMF262P_SCCI,
+                    ucSI.cmbYMF262P_SCCI, null, null, null, null, null);
+            setRealParam(setting.getYMF262Type()[1],
+                    ucSI.rbYMF262S_Silent,
+                    ucSI.rbYMF262S_Emu,
+                    ucSI.rbYMF262S_SCCI,
+                    ucSI.cmbYMF262S_SCCI, null, null, null, null, null);
 
-            setRealParam(setting.getC140Type()[0]
-                    , ucSI.rbC140P_Silent
-                    , ucSI.rbC140P_Emu
-                    , ucSI.rbC140P_Real
-                    , ucSI.cmbC140P_SCCI, null, null, null, null, null);
-            setRealParam(setting.getC140Type()[1]
-                    , ucSI.rbC140S_Silent
-                    , ucSI.rbC140S_Emu
-                    , ucSI.rbC140S_SCCI
-                    , ucSI.cmbC140S_SCCI, null, null, null, null, null);
+            setRealParam(setting.getC140Type()[0],
+                    ucSI.rbC140P_Silent,
+                    ucSI.rbC140P_Emu,
+                    ucSI.rbC140P_Real,
+                    ucSI.cmbC140P_SCCI, null, null, null, null, null);
+            setRealParam(setting.getC140Type()[1],
+                    ucSI.rbC140S_Silent,
+                    ucSI.rbC140S_Emu,
+                    ucSI.rbC140S_SCCI,
+                    ucSI.cmbC140S_SCCI, null, null, null, null, null);
 
-            setRealParam(setting.getSEGAPCMType()[0]
-                    , ucSI.rbSEGAPCMP_Silent
-                    , ucSI.rbSEGAPCMP_Emu
-                    , ucSI.rbSEGAPCMP_SCCI
-                    , ucSI.cmbSEGAPCMP_SCCI, null, null, null, null, null);
-            setRealParam(setting.getSEGAPCMType()[1]
-                    , ucSI.rbSEGAPCMS_Silent
-                    , ucSI.rbSEGAPCMS_Emu
-                    , ucSI.rbSEGAPCMS_SCCI
-                    , ucSI.cmbSEGAPCMS_SCCI, null, null, null, null, null);
+            setRealParam(setting.getSEGAPCMType()[0],
+                    ucSI.rbSEGAPCMP_Silent,
+                    ucSI.rbSEGAPCMP_Emu,
+                    ucSI.rbSEGAPCMP_SCCI,
+                    ucSI.cmbSEGAPCMP_SCCI, null, null, null, null, null);
+            setRealParam(setting.getSEGAPCMType()[1],
+                    ucSI.rbSEGAPCMS_Silent,
+                    ucSI.rbSEGAPCMS_Emu,
+                    ucSI.rbSEGAPCMS_SCCI,
+                    ucSI.cmbSEGAPCMS_SCCI, null, null, null, null, null);
         }
 
         for (int i = 0; i < cmbSampleRate.getItemCount(); i++) {
@@ -616,47 +616,47 @@ public class frmSetting extends JDialog {
 
                         String stype = "GM";
                         switch (moi.type) {
-                        case 1:
-                            stype = "XG";
-                            break;
-                        case 2:
-                            stype = "GS";
-                            break;
-                        case 3:
-                            stype = "LA";
-                            break;
-                        case 4:
-                            stype = "GS(SC-55_1)";
-                            break;
-                        case 5:
-                            stype = "GS(SC-55_2)";
-                            break;
+                            case 1:
+                                stype = "XG";
+                                break;
+                            case 2:
+                                stype = "GS";
+                                break;
+                            case 3:
+                                stype = "LA";
+                                break;
+                            case 4:
+                                stype = "GS(SC-55_1)";
+                                break;
+                            case 5:
+                                stype = "GS(SC-55_2)";
+                                break;
                         }
 
                         String sbeforeSend = "None";
                         switch (moi.beforeSendType) {
-                        case 1:
-                            sbeforeSend = "GM Reset";
-                            break;
-                        case 2:
-                            sbeforeSend = "XG Reset";
-                            break;
-                        case 3:
-                            sbeforeSend = "GS Reset";
-                            break;
-                        case 4:
-                            sbeforeSend = "Custom";
-                            break;
+                            case 1:
+                                sbeforeSend = "GM Reset";
+                                break;
+                            case 2:
+                                sbeforeSend = "XG Reset";
+                                break;
+                            case 3:
+                                sbeforeSend = "GS Reset";
+                                break;
+                            case 4:
+                                sbeforeSend = "Custom";
+                                break;
                         }
 
                         m.addRow(new Object[] {
-                                moi.id
-                                , moi.isVST
-                                , moi.fileName
-                                , moi.name
-                                , stype
-                                , sbeforeSend
-                                , moi.isVST ? moi.vendor : (moi.manufacturer != -1 ? String.valueOf(moi.manufacturer) : "Unknown")
+                                moi.id,
+                                moi.isVST,
+                                moi.fileName,
+                                moi.name,
+                                stype,
+                                sbeforeSend,
+                                moi.isVST ? moi.vendor : (moi.manufacturer != -1 ? String.valueOf(moi.manufacturer) : "Unknown")
                         });
                     }
                 }
@@ -676,7 +676,7 @@ public class frmSetting extends JDialog {
                 if (device.getMaxReceivers() == 0) {
                     continue;
                 }
-                m.addRow(new Object[] { i++, device.getDeviceInfo().getName(), device.getDeviceInfo().getVendor()});
+                m.addRow(new Object[] {i++, device.getDeviceInfo().getName(), device.getDeviceInfo().getVendor()});
             } catch (MidiUnavailableException e) {
                 logger.log(Level.ERROR, e.getMessage(), e);
             }
@@ -872,18 +872,18 @@ public class frmSetting extends JDialog {
             if (ct == null) continue;
 
             cmbP.addItem("(%s:%s:%s:%s)%s".formatted(
-                    ct.getRealChipInfo()[0].getInterfaceName()
-                    , ct.getRealChipInfo()[0].getSoundLocation()
-                    , ct.getRealChipInfo()[0].getBusID()
-                    , ct.getRealChipInfo()[0].getSoundChip()
-                    , ct.getRealChipInfo()[0].getChipName()));
+                    ct.getRealChipInfo()[0].getInterfaceName(),
+                    ct.getRealChipInfo()[0].getSoundLocation(),
+                    ct.getRealChipInfo()[0].getBusID(),
+                    ct.getRealChipInfo()[0].getSoundChip(),
+                    ct.getRealChipInfo()[0].getChipName()));
 
             cmbS.addItem("(%s:%s:%s:%s)%s".formatted(
-                    ct.getRealChipInfo()[0].getInterfaceName()
-                    , ct.getRealChipInfo()[0].getSoundLocation()
-                    , ct.getRealChipInfo()[0].getBusID()
-                    , ct.getRealChipInfo()[0].getSoundChip()
-                    , ct.getRealChipInfo()[0].getChipName()));
+                    ct.getRealChipInfo()[0].getInterfaceName(),
+                    ct.getRealChipInfo()[0].getSoundLocation(),
+                    ct.getRealChipInfo()[0].getBusID(),
+                    ct.getRealChipInfo()[0].getSoundChip(),
+                    ct.getRealChipInfo()[0].getChipName()));
         }
 
         cmbP.setSelectedIndex(0);
@@ -895,16 +895,24 @@ public class frmSetting extends JDialog {
         cmbS.setEnabled(true);
     }
 
-    private void setRealParam(ChipType2 chipType2, JCheckBox rbSilent, JCheckBox rbEmu, JCheckBox rbReal, JComboBox<String> cmbP
-            , JCheckBox rbReal2 /* = null */, JComboBox<String> cmbP2A /* = null */, JComboBox<String> cmbP2B /* = null */, JCheckBox rbEmu2 /* = null */, JCheckBox rbEmu3/* = null */) {
+    private void setRealParam(ChipType2 chipType2,
+                              JCheckBox rbSilent,
+                              JCheckBox rbEmu,
+                              JCheckBox rbReal,
+                              JComboBox<String> cmbP,
+                              JCheckBox rbReal2 /* = null */,
+                              JComboBox<String> cmbP2A /* = null */,
+                              JComboBox<String> cmbP2B /* = null */,
+                              JCheckBox rbEmu2 /* = null */,
+                              JCheckBox rbEmu3/* = null */) {
         String n = "";
 
         if (chipType2.getRealChipInfo()[0] != null) {
             n = "(%s:%s:%s:%s)".formatted(
-                    chipType2.getRealChipInfo()[0].getInterfaceName()
-                    , chipType2.getRealChipInfo()[0].getSoundLocation()
-                    , chipType2.getRealChipInfo()[0].getBusID()
-                    , chipType2.getRealChipInfo()[0].getSoundChip());
+                    chipType2.getRealChipInfo()[0].getInterfaceName(),
+                    chipType2.getRealChipInfo()[0].getSoundLocation(),
+                    chipType2.getRealChipInfo()[0].getBusID(),
+                    chipType2.getRealChipInfo()[0].getSoundChip());
         }
 
         if (cmbP.getItemCount() > 0) {
@@ -919,10 +927,10 @@ public class frmSetting extends JDialog {
         if (cmbP2A != null) {
             if (chipType2.getRealChipInfo()[1] != null) {
                 n = "(%s:%s:%s:%s)".formatted(
-                        chipType2.getRealChipInfo()[1].getInterfaceName()
-                        , chipType2.getRealChipInfo()[1].getSoundLocation()
-                        , chipType2.getRealChipInfo()[1].getBusID()
-                        , chipType2.getRealChipInfo()[1].getSoundChip());
+                        chipType2.getRealChipInfo()[1].getInterfaceName(),
+                        chipType2.getRealChipInfo()[1].getSoundLocation(),
+                        chipType2.getRealChipInfo()[1].getBusID(),
+                        chipType2.getRealChipInfo()[1].getSoundChip());
             }
 
             if (cmbP2A.getItemCount() > 0) {
@@ -938,10 +946,10 @@ public class frmSetting extends JDialog {
         if (cmbP2B != null) {
             if (chipType2.getRealChipInfo()[2] != null) {
                 n = "(%s:%s:%s:%s)".formatted(
-                        chipType2.getRealChipInfo()[2].getInterfaceName()
-                        , chipType2.getRealChipInfo()[2].getSoundLocation()
-                        , chipType2.getRealChipInfo()[2].getBusID()
-                        , chipType2.getRealChipInfo()[2].getSoundChip());
+                        chipType2.getRealChipInfo()[2].getInterfaceName(),
+                        chipType2.getRealChipInfo()[2].getSoundLocation(),
+                        chipType2.getRealChipInfo()[2].getBusID(),
+                        chipType2.getRealChipInfo()[2].getSoundChip());
             }
 
             if (cmbP2B.getItemCount() > 0) {
@@ -965,7 +973,8 @@ public class frmSetting extends JDialog {
         }
 
         if ((chipType2.getUseReal().length > 0 && !chipType2.getUseReal()[0])
-                && (chipType2.getUseReal().length > 1 && !chipType2.getUseReal()[1]))// rbSCCI2==null) || (!chipType2.UseScci && rbSCCI2 != null && !chipType2.UseScci2))
+                && (chipType2.getUseReal().length > 1 && !chipType2.getUseReal()[1]))
+            // rbSCCI2==null) || (!chipType2.UseScci && rbSCCI2 != null && !chipType2.UseScci2))
         {
             if (chipType2.getUseEmu()[0])
                 rbEmu.setSelected(true);
@@ -975,10 +984,8 @@ public class frmSetting extends JDialog {
             return;
         }
 
-        if (
-                ((chipType2.getUseReal().length > 0 && chipType2.getUseReal()[0]) && !cmbP.isEnabled())
-                        || (
-                        (chipType2.getUseReal().length > 1 && chipType2.getUseReal()[1])
+        if (((chipType2.getUseReal().length > 0 && chipType2.getUseReal()[0]) && !cmbP.isEnabled())
+                        || ((chipType2.getUseReal().length > 1 && chipType2.getUseReal()[1])
                                 && !cmbP2A.isEnabled()
                                 && !cmbP2B.isEnabled())
         ) {
@@ -1020,7 +1027,7 @@ public class frmSetting extends JDialog {
 
         int i;
 
-//#region 出力
+//#region Output
 
         setting.getOutputDevice().setDeviceType(Common.DEV_WaveOut);
         if (rbWaveOut.isSelected()) setting.getOutputDevice().setDeviceType(Common.DEV_WaveOut);
@@ -1047,28 +1054,28 @@ public class frmSetting extends JDialog {
         setting.setUnuseRealChip(cbUnuseRealChip.isSelected());
         setting.getYM2612Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM2612Type()[0]
-                , ucSI.rbYM2612P_SCCI
-                , ucSI.cmbYM2612P_SCCI
-                , ucSI.rbYM2612P_Emu
-                , ucSI.rbYM2612P_EmuNuked
-                , ucSI.rbYM2612P_EmuMame
-                , null
-                , null
-                , null
+                setting.getYM2612Type()[0],
+                ucSI.rbYM2612P_SCCI,
+                ucSI.cmbYM2612P_SCCI,
+                ucSI.rbYM2612P_Emu,
+                ucSI.rbYM2612P_EmuNuked,
+                ucSI.rbYM2612P_EmuMame,
+                null,
+                null,
+                null
         );
 
         setting.getYM2612Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM2612Type()[1]
-                , ucSI.rbYM2612S_SCCI
-                , ucSI.cmbYM2612S_SCCI
-                , ucSI.rbYM2612S_Emu
-                , ucSI.rbYM2612S_EmuNuked
-                , ucSI.rbYM2612S_EmuMame
-                , null
-                , null
-                , null
+                setting.getYM2612Type()[1],
+                ucSI.rbYM2612S_SCCI,
+                ucSI.cmbYM2612S_SCCI,
+                ucSI.rbYM2612S_Emu,
+                ucSI.rbYM2612S_EmuNuked,
+                ucSI.rbYM2612S_EmuMame,
+                null,
+                null,
+                null
         );
         if (setting.getYM2612Type()[0].getRealChipInfo() == null) {
             setting.getYM2612Type()[0].setRealChipInfo(new ChipType2.RealChipInfo[] {new ChipType2.RealChipInfo()});
@@ -1089,28 +1096,28 @@ public class frmSetting extends JDialog {
         setting.setSN76489Type(new ChipType2[2]);
         setting.getSN76489Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getSN76489Type()[0]
-                , ucSI.rbSN76489P_SCCI
-                , ucSI.cmbSN76489P_SCCI
-                , ucSI.rbSN76489P_Emu
-                , ucSI.rbSN76489P_Emu2
-                , null
-                , null
-                , null
-                , null
+                setting.getSN76489Type()[0],
+                ucSI.rbSN76489P_SCCI,
+                ucSI.cmbSN76489P_SCCI,
+                ucSI.rbSN76489P_Emu,
+                ucSI.rbSN76489P_Emu2,
+                null,
+                null,
+                null,
+                null
         );
 
         setting.getSN76489Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getSN76489Type()[1]
-                , ucSI.rbSN76489S_SCCI
-                , ucSI.cmbSN76489S_SCCI
-                , ucSI.rbSN76489S_Emu
-                , ucSI.rbSN76489S_Emu2
-                , null
-                , null
-                , null
-                , null
+                setting.getSN76489Type()[1],
+                ucSI.rbSN76489S_SCCI,
+                ucSI.cmbSN76489S_SCCI,
+                ucSI.rbSN76489S_Emu,
+                ucSI.rbSN76489S_Emu2,
+                null,
+                null,
+                null,
+                null
         );
 
         //setting.SN76489Type.LatencyForEmulation = 0;
@@ -1125,28 +1132,28 @@ public class frmSetting extends JDialog {
         setting.setYM2608Type(new ChipType2[2]);
         setting.getYM2608Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM2608Type()[0]
-                , ucSI.rbYM2608P_SCCI
-                , ucSI.cmbYM2608P_SCCI
-                , ucSI.rbYM2608P_Emu
-                , null
-                , null
-                , null
-                , null
-                , null
+                setting.getYM2608Type()[0],
+                ucSI.rbYM2608P_SCCI,
+                ucSI.cmbYM2608P_SCCI,
+                ucSI.rbYM2608P_Emu,
+                null,
+                null,
+                null,
+                null,
+                null
         );
 
         setting.getYM2608Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM2608Type()[1]
-                , ucSI.rbYM2608S_SCCI
-                , ucSI.cmbYM2608S_SCCI
-                , ucSI.rbYM2608S_Emu
-                , null
-                , null
-                , null
-                , null
-                , null
+                setting.getYM2608Type()[1],
+                ucSI.rbYM2608S_SCCI,
+                ucSI.cmbYM2608S_SCCI,
+                ucSI.rbYM2608S_Emu,
+                null,
+                null,
+                null,
+                null,
+                null
         );
 
         //setting.YM2608Type.UseWaitBoost = cbYM2608UseWaitBoost.isSelected();
@@ -1163,234 +1170,233 @@ public class frmSetting extends JDialog {
         setting.setYM2610Type(new ChipType2[2]);
         setting.getYM2610Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM2610Type()[0]
-                , ucSI.rbYM2610BP_SCCI
-                , ucSI.cmbYM2610BP_SCCI
-                , ucSI.rbYM2610BP_Emu
-                , null
-                , null
-                , ucSI.rbYM2610BEP_SCCI
-                , ucSI.cmbYM2610BEP_SCCI
-                , ucSI.cmbSPPCMP_SCCI
+                setting.getYM2610Type()[0],
+                ucSI.rbYM2610BP_SCCI,
+                ucSI.cmbYM2610BP_SCCI,
+                ucSI.rbYM2610BP_Emu,
+                null,
+                null,
+                ucSI.rbYM2610BEP_SCCI,
+                ucSI.cmbYM2610BEP_SCCI,
+                ucSI.cmbSPPCMP_SCCI
         );
 
         setting.getYM2610Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM2610Type()[1]
-                , ucSI.rbYM2610BS_SCCI
-                , ucSI.cmbYM2610BS_SCCI
-                , ucSI.rbYM2610BS_Emu
-                , null
-                , null
-                , ucSI.rbYM2610BES_SCCI
-                , ucSI.cmbYM2610BES_SCCI
-                , ucSI.cmbSPPCMS_SCCI
+                setting.getYM2610Type()[1],
+                ucSI.rbYM2610BS_SCCI,
+                ucSI.cmbYM2610BS_SCCI,
+                ucSI.rbYM2610BS_Emu,
+                null,
+                null,
+                ucSI.rbYM2610BES_SCCI,
+                ucSI.cmbYM2610BES_SCCI,
+                ucSI.cmbSPPCMS_SCCI
         );
 
         setting.setYM2151Type(new ChipType2[2]);
         setting.getYM2151Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM2151Type()[0]
-                , ucSI.rbYM2151P_SCCI
-                , ucSI.cmbYM2151P_SCCI
-                , ucSI.rbYM2151P_Emu
-                , ucSI.rbYM2151P_EmuMame
-                , ucSI.rbYM2151P_EmuX68Sound
-                , null
-                , null
-                , null
+                setting.getYM2151Type()[0],
+                ucSI.rbYM2151P_SCCI,
+                ucSI.cmbYM2151P_SCCI,
+                ucSI.rbYM2151P_Emu,
+                ucSI.rbYM2151P_EmuMame,
+                ucSI.rbYM2151P_EmuX68Sound,
+                null,
+                null,
+                null
         );
 
         setting.getYM2151Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM2151Type()[1]
-                , ucSI.rbYM2151S_SCCI
-                , ucSI.cmbYM2151S_SCCI
-                , ucSI.rbYM2151S_Emu
-                , ucSI.rbYM2151S_EmuMame
-                , ucSI.rbYM2151S_EmuX68Sound
-                , null
-                , null
-                , null
+                setting.getYM2151Type()[1],
+                ucSI.rbYM2151S_SCCI,
+                ucSI.cmbYM2151S_SCCI,
+                ucSI.rbYM2151S_Emu,
+                ucSI.rbYM2151S_EmuMame,
+                ucSI.rbYM2151S_EmuX68Sound,
+                null,
+                null,
+                null
         );
 
         setting.setYM2203Type(new ChipType2[2]);
         setting.getYM2203Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM2203Type()[0]
-                , ucSI.rbYM2203P_SCCI
-                , ucSI.cmbYM2203P_SCCI
-                , ucSI.rbYM2203P_Emu
-                , null, null, null, null, null
+                setting.getYM2203Type()[0],
+                ucSI.rbYM2203P_SCCI,
+                ucSI.cmbYM2203P_SCCI,
+                ucSI.rbYM2203P_Emu,
+                null, null, null, null, null
         );
 
         setting.getYM2203Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM2203Type()[1]
-                , ucSI.rbYM2203S_SCCI
-                , ucSI.cmbYM2203S_SCCI
-                , ucSI.rbYM2203S_Emu
-                , null, null, null, null, null
+                setting.getYM2203Type()[1],
+                ucSI.rbYM2203S_SCCI,
+                ucSI.cmbYM2203S_SCCI,
+                ucSI.rbYM2203S_Emu,
+                null, null, null, null, null
         );
 
         setting.setAY8910Type(new ChipType2[2]);
         setting.getAY8910Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getAY8910Type()[0]
-                , ucSI.rbAY8910P_Real
-                , ucSI.cmbAY8910P_Real
-                , ucSI.rbAY8910P_Emu
-                , ucSI.rbAY8910P_Emu2
-                , null, null, null, null
+                setting.getAY8910Type()[0],
+                ucSI.rbAY8910P_Real,
+                ucSI.cmbAY8910P_Real,
+                ucSI.rbAY8910P_Emu,
+                ucSI.rbAY8910P_Emu2,
+                null, null, null, null
         );
 
         setting.getAY8910Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getAY8910Type()[1]
-                , ucSI.rbAY8910S_Real
-                , ucSI.cmbAY8910S_Real
-                , ucSI.rbAY8910S_Emu
-                , ucSI.rbAY8910S_Emu2
-                , null, null, null, null
+                setting.getAY8910Type()[1],
+                ucSI.rbAY8910S_Real,
+                ucSI.cmbAY8910S_Real,
+                ucSI.rbAY8910S_Emu,
+                ucSI.rbAY8910S_Emu2,
+                null, null, null, null
         );
 
         setting.setK051649Type(new ChipType2[2]);
         setting.getK051649Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getK051649Type()[0]
-                , ucSI.rbK051649P_Real
-                , ucSI.cmbK051649P_Real
-                , ucSI.rbK051649P_Emu
-                , null, null, null, null, null
+                setting.getK051649Type()[0],
+                ucSI.rbK051649P_Real,
+                ucSI.cmbK051649P_Real,
+                ucSI.rbK051649P_Emu,
+                null, null, null, null, null
         );
 
         setting.getK051649Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getK051649Type()[1]
-                , ucSI.rbK051649S_Real
-                , ucSI.cmbK051649S_Real
-                , ucSI.rbK051649S_Emu
-                , null, null, null, null, null
+                setting.getK051649Type()[1],
+                ucSI.rbK051649S_Real,
+                ucSI.cmbK051649S_Real,
+                ucSI.rbK051649S_Emu,
+                null, null, null, null, null
         );
 
 
         setting.setYM2413Type(new ChipType2[2]);
         setting.getYM2413Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM2413Type()[0]
-                , ucSI.rbYM2413P_Real
-                , ucSI.cmbYM2413P_Real
-                , ucSI.rbYM2413P_Emu
-                , null, null, null, null, null
+                setting.getYM2413Type()[0],
+                ucSI.rbYM2413P_Real,
+                ucSI.cmbYM2413P_Real,
+                ucSI.rbYM2413P_Emu,
+                null, null, null, null, null
         );
 
         setting.getYM2413Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM2413Type()[1]
-                , ucSI.rbYM2413S_Real
-                , ucSI.cmbYM2413S_Real
-                , ucSI.rbYM2413S_Emu
-                , null, null, null, null, null
+                setting.getYM2413Type()[1],
+                ucSI.rbYM2413S_Real,
+                ucSI.cmbYM2413S_Real,
+                ucSI.rbYM2413S_Emu,
+                null, null, null, null, null
         );
 
         setting.setC140Type(new ChipType2[2]);
         setting.getC140Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getC140Type()[0]
-                , ucSI.rbC140P_Real
-                , ucSI.cmbC140P_SCCI
-                , ucSI.rbC140P_Emu
-                , null, null, null, null, null
+                setting.getC140Type()[0],
+                ucSI.rbC140P_Real,
+                ucSI.cmbC140P_SCCI,
+                ucSI.rbC140P_Emu,
+                null, null, null, null, null
         );
 
         setting.getC140Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getC140Type()[1]
-                , ucSI.rbC140S_SCCI
-                , ucSI.cmbC140S_SCCI
-                , ucSI.rbC140S_Emu
-                , null, null, null, null, null
+                setting.getC140Type()[1],
+                ucSI.rbC140S_SCCI,
+                ucSI.cmbC140S_SCCI,
+                ucSI.rbC140S_Emu,
+                null, null, null, null, null
         );
 
 
         setting.setSEGAPCMType(new ChipType2[2]);
         setting.getSEGAPCMType()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getSEGAPCMType()[0]
-                , ucSI.rbSEGAPCMP_SCCI
-                , ucSI.cmbSEGAPCMP_SCCI
-                , ucSI.rbSEGAPCMP_Emu
-                , null, null, null, null, null
+                setting.getSEGAPCMType()[0],
+                ucSI.rbSEGAPCMP_SCCI,
+                ucSI.cmbSEGAPCMP_SCCI,
+                ucSI.rbSEGAPCMP_Emu,
+                null, null, null, null, null
         );
 
         setting.getSEGAPCMType()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getSEGAPCMType()[1]
-                , ucSI.rbSEGAPCMS_SCCI
-                , ucSI.cmbSEGAPCMS_SCCI
-                , ucSI.rbSEGAPCMS_Emu
-                , null, null, null, null, null
+                setting.getSEGAPCMType()[1],
+                ucSI.rbSEGAPCMS_SCCI,
+                ucSI.cmbSEGAPCMS_SCCI,
+                ucSI.rbSEGAPCMS_Emu,
+                null, null, null, null, null
         );
 
         setting.setYM3526Type(new ChipType2[2]);
         setting.getYM3526Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM3526Type()[0]
-                , ucSI.rbYM3526P_SCCI
-                , ucSI.cmbYM3526P_SCCI
-                , ucSI.rbYM3526P_Emu
-                , null, null, null, null, null
+                setting.getYM3526Type()[0],
+                ucSI.rbYM3526P_SCCI,
+                ucSI.cmbYM3526P_SCCI,
+                ucSI.rbYM3526P_Emu,
+                null, null, null, null, null
         );
 
         setting.getYM3526Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM3526Type()[1]
-                , ucSI.rbYM3526S_SCCI
-                , ucSI.cmbYM3526S_SCCI
-                , ucSI.rbYM3526S_Emu
-                , null, null, null, null, null
+                setting.getYM3526Type()[1],
+                ucSI.rbYM3526S_SCCI,
+                ucSI.cmbYM3526S_SCCI,
+                ucSI.rbYM3526S_Emu,
+                null, null, null, null, null
         );
 
         setting.setYM3812Type(new ChipType2[2]);
         setting.getYM3812Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM3812Type()[0]
-                , ucSI.rbYM3812P_SCCI
-                , ucSI.cmbYM3812P_SCCI
-                , ucSI.rbYM3812P_Emu
-                , null, null, null, null, null
+                setting.getYM3812Type()[0],
+                ucSI.rbYM3812P_SCCI,
+                ucSI.cmbYM3812P_SCCI,
+                ucSI.rbYM3812P_Emu,
+                null, null, null, null, null
         );
 
         setting.getYM3812Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getYM3812Type()[1]
-                , ucSI.rbYM3812S_SCCI
-                , ucSI.cmbYM3812S_SCCI
-                , ucSI.rbYM3812S_Emu
-                , null, null, null, null, null
+                setting.getYM3812Type()[1],
+                ucSI.rbYM3812S_SCCI,
+                ucSI.cmbYM3812S_SCCI,
+                ucSI.rbYM3812S_Emu,
+                null, null, null, null, null
         );
 
         setting.setYMF262Type(new ChipType2[2]);
         setting.getYMF262Type()[0] = new ChipType2();
         setChipType2FromControls(
-                setting.getYMF262Type()[0]
-                , ucSI.rbYMF262P_SCCI
-                , ucSI.cmbYMF262P_SCCI
-                , ucSI.rbYMF262P_Emu
-                , null, null, null, null, null
+                setting.getYMF262Type()[0],
+                ucSI.rbYMF262P_SCCI,
+                ucSI.cmbYMF262P_SCCI,
+                ucSI.rbYMF262P_Emu,
+                null, null, null, null, null
         );
 
         setting.getYMF262Type()[1] = new ChipType2();
         setChipType2FromControls(
-                setting.getYMF262Type()[1]
-                , ucSI.rbYMF262S_SCCI
-                , ucSI.cmbYMF262S_SCCI
-                , ucSI.rbYMF262S_Emu
-                , null, null, null, null, null
+                setting.getYMF262Type()[1],
+                ucSI.rbYMF262S_SCCI,
+                ucSI.cmbYMF262S_SCCI,
+                ucSI.rbYMF262S_Emu,
+                null, null, null, null, null
         );
 
 //#endregion
-
 
         setting.getMidiKbd().setMidiInDeviceName(cmbMIDIIN.getSelectedItem() != null ? cmbMIDIIN.getSelectedItem().toString() : "");
         setting.getMidiKbd().getUseChannel()[0] = cbFM1.isSelected();
@@ -1557,7 +1563,7 @@ public class frmSetting extends JDialog {
                     moi.fileName = (String) d.getModel().getValueAt(i, 2);
                     moi.name = (String) d.getModel().getValueAt(i, 3);
                     String stype = (String) d.getModel().getValueAt(i, 4);
-                     // GM / XG / GS / LA / GS(SC - 55_1) / GS(SC - 55_2)
+                    // GM / XG / GS / LA / GS(SC - 55_1) / GS(SC - 55_2)
                     moi.type = 0;
                     if (stype.equals("XG")) moi.type = 1;
                     if (stype.equals("GS")) moi.type = 2;
@@ -1789,15 +1795,15 @@ public class frmSetting extends JDialog {
     }
 
     private static void setChipType2FromControls(
-            ChipType2 ct
-            , JCheckBox rb_SCCI
-            , JComboBox<String> cmb_SCCI
-            , JCheckBox rb_EMU0
-            , JCheckBox rb_EMU1
-            , JCheckBox rb_EMU2
-            , JCheckBox rb_SCCI_E
-            , JComboBox<String> cmb_SCCI_E1
-            , JComboBox<String> cmb_SCCI_E2
+            ChipType2 ct,
+            JCheckBox rb_SCCI,
+            JComboBox<String> cmb_SCCI,
+            JCheckBox rb_EMU0,
+            JCheckBox rb_EMU1,
+            JCheckBox rb_EMU2,
+            JCheckBox rb_SCCI_E,
+            JComboBox<String> cmb_SCCI_E1,
+            JComboBox<String> cmb_SCCI_E2
     ) {
         ct.setUseReal(new boolean[rb_SCCI_E == null ? 1 : 3]);
         ct.getUseReal()[0] = rb_SCCI.isSelected();
@@ -1812,17 +1818,26 @@ public class frmSetting extends JDialog {
                 String[] ns = n.split(":");
                 rci = ct.getRealChipInfo()[0];
                 rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
-                try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) {
+                try {
+                    v = Integer.parseInt(ns[ns.length - 3]);
+                } catch (NumberFormatException e) {
                     logger.log(Level.WARNING, e);
-                    v = 0; }
+                    v = 0;
+                }
                 rci.setSoundLocation(v);
-                try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) {
+                try {
+                    v = Integer.parseInt(ns[ns.length - 2]);
+                } catch (NumberFormatException e) {
                     logger.log(Level.WARNING, e);
-                    v = 0; }
+                    v = 0;
+                }
                 rci.setBusID(v);
-                try { v = Integer.parseInt(ns[ns.length - 1]); } catch (NumberFormatException e) {
+                try {
+                    v = Integer.parseInt(ns[ns.length - 1]);
+                } catch (NumberFormatException e) {
                     logger.log(Level.WARNING, e);
-                    v = 0; }
+                    v = 0;
+                }
                 rci.setSoundChip(v);
             }
         }
@@ -1842,17 +1857,26 @@ public class frmSetting extends JDialog {
                 String[] ns = n.split(":");
                 rci = ct.getRealChipInfo()[1];
                 rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
-                try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) {
+                try {
+                    v = Integer.parseInt(ns[ns.length - 3]);
+                } catch (NumberFormatException e) {
                     logger.log(Level.WARNING, e);
-                    v = 0; }
+                    v = 0;
+                }
                 rci.setSoundLocation(v);
-                try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) {
+                try {
+                    v = Integer.parseInt(ns[ns.length - 2]);
+                } catch (NumberFormatException e) {
                     logger.log(Level.WARNING, e);
-                    v = 0; }
+                    v = 0;
+                }
                 rci.setBusID(v);
-                try { v = Integer.parseInt(ns[ns.length - 1]); } catch (NumberFormatException e) {
+                try {
+                    v = Integer.parseInt(ns[ns.length - 1]);
+                } catch (NumberFormatException e) {
                     logger.log(Level.WARNING, e);
-                    v = 0; }
+                    v = 0;
+                }
                 rci.setSoundChip(v);
             }
             if (cmb_SCCI_E2.getSelectedItem() != null) {
@@ -1861,17 +1885,26 @@ public class frmSetting extends JDialog {
                 String[] ns = n.split(":");
                 rci = ct.getRealChipInfo()[2];
                 rci.setInterfaceName(String.join(":", Arrays.copyOfRange(ns, 0, ns.length - 3)));
-                try { v = Integer.parseInt(ns[ns.length - 3]); } catch (NumberFormatException e) {
+                try {
+                    v = Integer.parseInt(ns[ns.length - 3]);
+                } catch (NumberFormatException e) {
                     logger.log(Level.WARNING, e);
-                    v = 0; }
+                    v = 0;
+                }
                 rci.setSoundLocation(v);
-                try { v = Integer.parseInt(ns[ns.length - 2]); } catch (NumberFormatException e) {
+                try {
+                    v = Integer.parseInt(ns[ns.length - 2]);
+                } catch (NumberFormatException e) {
                     logger.log(Level.WARNING, e);
-                    v = 0; }
+                    v = 0;
+                }
                 rci.setBusID(v);
-                try { v = Integer.parseInt(ns[ns.length - 1]); } catch (NumberFormatException e) {
+                try {
+                    v = Integer.parseInt(ns[ns.length - 1]);
+                } catch (NumberFormatException e) {
                     logger.log(Level.WARNING, e);
-                    v = 0; }
+                    v = 0;
+                }
                 rci.setSoundChip(v);
             }
         }
@@ -2022,10 +2055,8 @@ public class frmSetting extends JDialog {
 
         if (ret) {
             return JOptionPane.showConfirmDialog(null,
-                    "SCCI/GIMICのデバイスが重複して設定されています。強行しますか"
-                    , "警告"
-                    , JOptionPane.YES_NO_OPTION
-                    , JOptionPane.WARNING_MESSAGE
+                    "Duplicate SCCI/GIMIC devices are configured. Do you want to continue?",
+                    "Warning", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE
             ) == JOptionPane.YES_OPTION;
         }
 
@@ -2216,8 +2247,15 @@ public class frmSetting extends JDialog {
     private void btVST_Click(ActionEvent ev) {
         JFileChooser ofd = new JFileChooser();
         ofd.setFileFilter(new FileFilter() {
-            @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".dll"); }
-            @Override public String getDescription() { return "VST Pluginファイル(*.dll)"; }
+            @Override
+            public boolean accept(File f) {
+                return f.getName().toLowerCase().endsWith(".dll");
+            }
+
+            @Override
+            public String getDescription() {
+                return "VST Pluginファイル(*.dll)";
+            }
         });
         ofd.setDialogTitle("Select a file");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
@@ -2326,8 +2364,15 @@ public class frmSetting extends JDialog {
     private void btnAddVST_Click(ActionEvent ev) {
         JFileChooser ofd = new JFileChooser();
         ofd.setFileFilter(new FileFilter() {
-            @Override public boolean accept(File f) { return f.getName().toLowerCase().endsWith(".dll"); }
-            @Override public String getDescription() { return "VST Pluginファイル(*.dll)"; }
+            @Override
+            public boolean accept(File f) {
+                return f.getName().toLowerCase().endsWith(".dll");
+            }
+
+            @Override
+            public String getDescription() {
+                return "VST Pluginファイル(*.dll)";
+            }
         });
         ofd.setDialogTitle("Select a file");
         ofd.setFileFilter(ofd.getChoosableFileFilters()[setting.getOther().getFilterIndex()]);
@@ -7273,6 +7318,7 @@ public class frmSetting extends JDialog {
 
 
 class BindData implements PropertyChangeListener {
+
     public PropertyChangeListener propertyChanged;
 
     @Override

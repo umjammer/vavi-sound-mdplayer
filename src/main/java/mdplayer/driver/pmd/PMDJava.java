@@ -272,17 +272,17 @@ public class PMDJava extends BaseDriver {
         lca.add(ca);
 
         pmdDriver.init(
-                lca
-                //fileName
-                //, oPNAWrite
-                //, oPNAWaitSend
-                , ret
-                , null // This callback is unused
-                , additionalPDDDotNETOption // PMDDotNET option
-                , additionalPMOption // PMD option
-                , (Function<ChipDatum, Integer>) this::writePPZ8
-                , (Function<ChipDatum, Integer>) this::writePPSDRV
-                , (Function<ChipDatum, Integer>) this::writeP86);
+                lca,
+                //fileName,
+                //oPNAWrite,
+                //oPNAWaitSend,
+                ret,
+                null, // This callback is unused
+                additionalPDDDotNETOption, // PMDDotNET option
+                additionalPMOption, // PMD option
+                (Function<ChipDatum, Integer>) this::writePPZ8,
+                (Function<ChipDatum, Integer>) this::writePPSDRV,
+                (Function<ChipDatum, Integer>) this::writeP86);
 
 
         pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseclock));
@@ -312,7 +312,7 @@ public class PMDJava extends BaseDriver {
         }
 
         // Add additional weight based on size and elapsed time.
-        int m = Math.max((int) (size / 20 - elapsed), 0);// 20 Threshold (magic number)
+        int m = Math.max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
         try { Thread.sleep(m); } catch (InterruptedException e) {}
     }
 
@@ -416,7 +416,7 @@ public class PMDJava extends BaseDriver {
         }
 
         // Add additional weight based on size and elapsed time.
-        int m = Math.max((int) (size / 20 - elapsed), 0);// 20 Threshold (magic number)
+        int m = Math.max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
         try { Thread.sleep(m); } catch (InterruptedException e) {}
     }
 

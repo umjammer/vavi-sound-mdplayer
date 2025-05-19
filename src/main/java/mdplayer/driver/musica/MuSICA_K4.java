@@ -222,10 +222,10 @@ public class MuSICA_K4 extends BaseDriver {
     }
 
     private static void debugRegisters(Z80Processor z80) {
-        logger.log(Level.TRACE, "Reg PC:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x"
-                , z80.getRegisters().getPC()
-                , z80.getRegisters().getAF(), z80.getRegisters().getBC(), z80.getRegisters().getDE(), z80.getRegisters().getHL()
-                , z80.getRegisters().getIX(), z80.getRegisters().getIY());
+        logger.log(Level.TRACE, "Reg PC:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x",
+                z80.getRegisters().getPC(),
+                z80.getRegisters().getAF(), z80.getRegisters().getBC(), z80.getRegisters().getDE(), z80.getRegisters().getHL(),
+                z80.getRegisters().getIX(), z80.getRegisters().getIY());
     }
 
     private void callEXTBIO(BeforeInstructionFetchEvent args, Z80Processor z80) {
@@ -307,10 +307,10 @@ public class MuSICA_K4 extends BaseDriver {
                 FCBAddress = (short) z80.getRegisters().getDE();
                 var dummy1 = (short) ((z80.getMemory().get(FCBAddress + 12) & 0xff) + (z80.getMemory().get(FCBAddress + 13) & 0xff) * 0x100); // currentBlock
                 short recordSize = (short) ((z80.getMemory().get(FCBAddress + 14) & 0xff) + (z80.getMemory().get(FCBAddress + 15) & 0xff) * 0x100);
-                var dummy2 = (short) ((z80.getMemory().get(FCBAddress + 16) & 0xff)
-                        + (z80.getMemory().get(FCBAddress + 17) & 0xff) * 0x100
-                        + (z80.getMemory().get(FCBAddress + 18) & 0xff) * 0x1_0000
-                        + (z80.getMemory().get(FCBAddress + 19) & 0xff) * 0x100_0000
+                var dummy2 = (short) ((z80.getMemory().get(FCBAddress + 16) & 0xff) +
+                        (z80.getMemory().get(FCBAddress + 17) & 0xff) * 0x100 +
+                        (z80.getMemory().get(FCBAddress + 18) & 0xff) * 0x1_0000 +
+                        (z80.getMemory().get(FCBAddress + 19) & 0xff) * 0x100_0000
                 ); // fileSize
                 bgmBin = z80.getMemory().getContents(DTAAddress, (z80.getRegisters().getHL() & 0xffff) * recordSize);
                 break;
@@ -378,10 +378,10 @@ public class MuSICA_K4 extends BaseDriver {
 
     private void readRandomBlock(Z80Processor z80) {
         short recordSize = (short) ((z80.getMemory().get(FCBAddress + 14) & 0xff) + (z80.getMemory().get(FCBAddress + 15) & 0xff) * 0x100);
-        short randomRecord = (short) ((z80.getMemory().get(FCBAddress + 33) & 0xff)
-                + (z80.getMemory().get(FCBAddress + 34) & 0xff) * 0x100
-                + (z80.getMemory().get(FCBAddress + 35) & 0xff) * 0x1_0000
-                + (recordSize < 64 ? ((z80.getMemory().get(FCBAddress + 36) & 0xff) * 0x100_0000) : 0)
+        short randomRecord = (short) ((z80.getMemory().get(FCBAddress + 33) & 0xff) +
+                (z80.getMemory().get(FCBAddress + 34) & 0xff) * 0x100 +
+                (z80.getMemory().get(FCBAddress + 35) & 0xff) * 0x1_0000 +
+                (recordSize < 64 ? ((z80.getMemory().get(FCBAddress + 36) & 0xff) * 0x100_0000) : 0)
         );
 
         if (DTAAddress == 0x4000) {

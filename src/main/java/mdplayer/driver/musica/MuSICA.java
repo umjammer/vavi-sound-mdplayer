@@ -157,8 +157,8 @@ public class MuSICA extends BaseDriver {
         z80.getRegisters().setSP((short) 0xf380);
         z80.continue_();
 
-        logger.log(Level.TRACE, "MSX-MUSIC slot %02x", z80.getMemory().get(0x6010));
-        logger.log(Level.TRACE, "SCC       slot %02x", z80.getMemory().get(0x6011));
+        logger.log(Level.TRACE, "MSX-MUSIC slot %02x".formatted(z80.getMemory().get(0x6010)));
+        logger.log(Level.TRACE, "SCC       slot %02x".formatted(z80.getMemory().get(0x6011)));
 
         byte[] mgsdata = vgmBuf;
         int dataAdr = ((vgmBuf[1] & 0xff) + (vgmBuf[2] & 0xff) * 0x100) & 0xffff;
@@ -171,7 +171,7 @@ public class MuSICA extends BaseDriver {
         z80.getRegisters().setA((byte) 0); // Repeat count (0:infinity)
         z80.getRegisters().setSP((short) 0xf380);
         z80.continue_();
-        logger.log(Level.TRACE, "MPLAY2 IsSuccess? RegC=%02x", z80.getRegisters().getC());
+        logger.log(Level.TRACE, "MPLAY2 IsSuccess? RegC=%02x".formatted(z80.getRegisters().getC()));
         if (z80.getRegisters().getCF().intValue() == 0x01) {
             debugRegisters(z80);
             throw new IllegalStateException("MPLAY2 Fail");
@@ -217,10 +217,10 @@ logger.log(Level.INFO, gd3);
         if (z80.getRegisters().getPC() == 0) { // 0:JP WBOOT
             args.getExecutionStopper().stop(false);
         } else if (z80.getRegisters().getPC() == 0x0005) {
-            //logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x", z80.getRegisters().C);
+            //logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().C));
             callBIOS(args, z80);
         } else if (z80.getRegisters().getPC() == 0x000c) {
-            //logger.log(Level.TRACE, "Call RDSLT(0x000c) Reg.A=%02x Reg.HL={1:x04}", z80.getRegisters().A, z80.getRegisters().HL);
+            //logger.log(Level.TRACE, "Call RDSLT(0x000c) Reg.A=%02x Reg.HL=%04x".formatted(z80.getRegisters().A, z80.getRegisters().HL));
 
             int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
             z80.getRegisters().setA(((MsxMemory) z80.getMemory()).readSlotMemoryAdr(
@@ -230,18 +230,18 @@ logger.log(Level.INFO, gd3);
             ));
             z80.executeRet();
         } else if (z80.getRegisters().getPC() == 0x0014) {
-            logger.log(Level.TRACE, "Call WRSLT(0x0014) Reg.A=%02x Reg.HL={1:x04} Reg.E=%02x", z80.getRegisters().getA(), z80.getRegisters().getHL(), z80.getRegisters().getE());
+            logger.log(Level.TRACE, "Call WRSLT(0x0014) Reg.A=%02x Reg.HL=%04x Reg.E=%02x".formatted(z80.getRegisters().getA(), z80.getRegisters().getHL(), z80.getRegisters().getE()));
             throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x001c) {
-            logger.log(Level.TRACE, "Call CALSLT(0x001c) Reg.IY=%04x Reg.IX={1:x04}", z80.getRegisters().getIY(), z80.getRegisters().getIX());
+            logger.log(Level.TRACE, "Call CALSLT(0x001c) Reg.IY=%04x Reg.IX=%04x".formatted(z80.getRegisters().getIY(), z80.getRegisters().getIX()));
             throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x0024) {
-            //logger.log(Level.TRACE, "Call ENASLT(0x0024) Reg.A=%02x Reg.HL={1:x04}", z80.getRegisters().A, z80.getRegisters().HL);
+            // logger.log(Level.TRACE, "Call ENASLT(0x0024) Reg.A=%02x Reg.HL=%04x".formatted(z80.getRegisters().A, z80.getRegisters().HL));
             int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
             ((MsxMemory) z80.getMemory()).changePage(
-                    (slot & 0x03)
-                    , ((slot & 0x0c) >> 2)
-                    , ((z80.getRegisters().getH() & 0xc0) >> 6)
+                    (slot & 0x03),
+                    ((slot & 0x0c) >> 2),
+                    ((z80.getRegisters().getH() & 0xc0) >> 6)
             );
             z80.executeRet();
         } else if (z80.getRegisters().getPC() == 0x0030) {
@@ -262,15 +262,15 @@ logger.log(Level.INFO, gd3);
         } else if (z80.getRegisters().getPC() == 0x4601) {
             logger.log(Level.TRACE, "JP NEWSTT(0x4601) Reg.HL=%04x", z80.getRegisters().getHL());
             String msg = getAsciiz(z80, (short) z80.getRegisters().getHL());
-            logger.log(Level.TRACE, "(HL)={0}", msg);
+            logger.log(Level.TRACE, "(HL)=%s".formatted(msg));
             if (msg.equals(":_SYSTEM")) {
                 args.getExecutionStopper().stop(false);
             }
         } else if (z80.getRegisters().getPC() >= mapper.jumpAddress && z80.getRegisters().getPC() < mapper.jumpAddress + 16) {
-            //logger.log(Level.TRACE, "Call MAPPER PROC(0x%04x～) PC-%04x:{1:x04}", mapper.JumpAddress, z80.getRegisters().PC - mapper.JumpAddress);
+            //logger.log(Level.TRACE, "Call MAPPER PROC(0x%04x～) PC-%04x:%04x".formatted(mapper.JumpAddress, z80.getRegisters().PC - mapper.JumpAddress));
             mapper.CallMapperProc(args, z80, z80.getRegisters().getPC() - mapper.jumpAddress);
         } else if ((z80.getRegisters().getPC() & 0xffff) == 0xffca) {
-            //logger.log(Level.TRACE, "Call EXTBIO(0xffca) Reg.DE=%04x", z80.getRegisters().DE);
+            //logger.log(Level.TRACE, "Call EXTBIO(0xffca) Reg.DE=%04x".formatted(z80.getRegisters().DE));
             callEXTBIO(args, z80);
         }
 
@@ -278,10 +278,10 @@ logger.log(Level.INFO, gd3);
     }
 
     private static void debugRegisters(Z80Processor z80) {
-        logger.log(Level.TRACE, "Reg PC:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x"
-                , z80.getRegisters().getPC()
-                , z80.getRegisters().getAF(), z80.getRegisters().getBC(), z80.getRegisters().getDE(), z80.getRegisters().getHL()
-                , z80.getRegisters().getIX(), z80.getRegisters().getIY());
+        logger.log(Level.TRACE, "Reg PC:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x".formatted(
+                z80.getRegisters().getPC(),
+                z80.getRegisters().getAF(), z80.getRegisters().getBC(), z80.getRegisters().getDE(), z80.getRegisters().getHL(),
+                z80.getRegisters().getIX(), z80.getRegisters().getIY()));
     }
 
     private void callEXTBIO(BeforeInstructionFetchEvent args, Z80Processor z80) {
@@ -290,7 +290,7 @@ logger.log(Level.INFO, gd3);
 
         switch (funcType & 0xff) {
             case 0x04:
-                // logger.log(Level.TRACE, " EXTBIO MemoryMapper");
+                //logger.log(Level.TRACE, " EXTBIO MemoryMapper");
                 EXTBIO_MemoryMapper(args, z80, function);
                 break;
             case 0xf0:
@@ -333,16 +333,16 @@ logger.log(Level.INFO, gd3);
             var byteToPrint = z80.getRegisters().getE();
             System.out.print((char) byteToPrint);
         } else if (function == 0x62) {
-            //_TERM
+            // _TERM
             logger.log(Level.TRACE, "_TERM ErrorCode:%02x".formatted(z80.getRegisters().getB()));
             args.getExecutionStopper().stop(false);
             return;
 
         } else if (function == 0x6b) {
-            //_GENV
-            //logger.log(Level.TRACE, "_GENV HL:%04x DE:%04x B:%02x", z80.getRegisters().HL, z80.getRegisters().DE, z80.getRegisters().B);
+            // _GENV
+            //logger.log(Level.TRACE, "_GENV HL:%04x DE:%04x B:%02x".formatted(z80.getRegisters().HL, z80.getRegisters().DE, z80.getRegisters().B));
             String msg = getAsciiz(z80, z80.getRegisters().getHL());
-            //logger.log(Level.TRACE, "(HL)={0}", msg);
+            //logger.log(Level.TRACE, "(HL)=%s".formatted(msg));
 
             if (msg.equals("PARAMETERS")) {
                 byte[] option = "/z".getBytes();
@@ -362,18 +362,18 @@ logger.log(Level.INFO, gd3);
             z80.getRegisters().setDE((short) 0x00); // value
 
         } else if (function == 0x6c) {
-            //_SENV
-            //logger.log(Level.TRACE, "_SENV HL:%04x DE:%04x", z80.getRegisters().HL, z80.getRegisters().DE);
+            // _SENV
+            //logger.log(Level.TRACE, "_SENV HL:%04x DE:%04x".formatted(z80.getRegisters().HL, z80.getRegisters().DE));
             //String msg = GetASCIIZ(z80, (short)z80.getRegisters().HL);
-            //logger.log(Level.TRACE, "(HL)={0}", msg);
+            //logger.log(Level.TRACE, "(HL)=%s".formatted(msg));
             //msg = GetASCIIZ(z80, (short)z80.getRegisters().DE);
-            //logger.log(Level.TRACE, "(DE)={0}", msg);
-            z80.getRegisters().setA((byte) 0x00);//Error number
+            //logger.log(Level.TRACE, "(DE)=%s".formatted(msg));
+            z80.getRegisters().setA((byte) 0x00); // Error number
         } else if (function == 0x6f) {
-            //_DOSVER
+            // _DOSVER
             z80.getRegisters().setBC((short) 0x0231); // ROM version
             z80.getRegisters().setDE((short) 0x0210); // DISK version
-            //logger.log(Level.TRACE, "_DOSVER ret BC(ROMVer):%04x DE(DISKVer):{1:x04}", z80.getRegisters().BC, z80.getRegisters().DE);
+            //logger.log(Level.TRACE, "_DOSVER ret BC(ROMVer):%04x DE(DISKVer):%04x".formatted(z80.getRegisters().BC, z80.getRegisters().DE));
         } else {
             logger.log(Level.ERROR, "unknown 0x%02x".formatted(function));
             debugRegisters(z80);

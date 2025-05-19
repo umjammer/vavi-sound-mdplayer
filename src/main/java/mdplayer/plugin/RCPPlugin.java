@@ -25,11 +25,11 @@ public class RCPPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new RCP();
-        ((RCP) audio.driverVirtual).ExtendFile = extendFile;
+        ((RCP) audio.driverVirtual).ExtendFile = extendFiles;
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new RCP();
-            ((RCP) audio.driverReal).ExtendFile = extendFile;
+            ((RCP) audio.driverReal).ExtendFile = extendFiles;
         }
         boolean r = _play();
         if (!r) {

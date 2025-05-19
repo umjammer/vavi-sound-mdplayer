@@ -577,10 +577,8 @@ public class YM2612MIDI {
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null,
-                    "Exception:\n%s\nStackTrace:\n%s".formatted(ex.getMessage(), Arrays.toString(ex.getStackTrace()))
-                    , "ERROR"
-                    , JOptionPane.ERROR_MESSAGE
-            );
+                    "Exception:\n%s\nStackTrace:\n%s".formatted(ex.getMessage(), Arrays.toString(ex.getStackTrace())),
+                    "ERROR", JOptionPane.ERROR_MESSAGE);
         }
     }
 

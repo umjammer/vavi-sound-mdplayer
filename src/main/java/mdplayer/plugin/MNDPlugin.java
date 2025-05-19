@@ -23,7 +23,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * MNDPlugin.
+ * MNDRV (X68000) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
@@ -36,11 +36,11 @@ public class MNDPlugin extends BasePlugin {
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MnDrv();
 
-        ((MnDrv) audio.driverVirtual).extendFile = extendFile;
+        ((MnDrv) audio.driverVirtual).extendFile = extendFiles;
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new MnDrv();
-            ((MnDrv) audio.driverReal).extendFile = extendFile;
+            ((MnDrv) audio.driverReal).extendFile = extendFiles;
         }
         boolean r = _play();
         if (!r) {

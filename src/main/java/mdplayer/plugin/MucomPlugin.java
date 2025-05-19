@@ -25,7 +25,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * MucomPlugin.
+ * Mucom88 (PC-8801) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
@@ -181,8 +181,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
 
         if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
-                new Class[] {Ym2608Chip.class}
-                , setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
+                new Class[] {Ym2608Chip.class},
+                setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
             return false;
         if (audio.driverReal != null) {

@@ -165,15 +165,15 @@ public class Sn76489Chip implements Chip {
             // Latch/data byte %1 cc t dddd
             latchedRegister[chipId] = (data >> 4) & 0x07;
             register[chipId][latchedRegister[chipId]] = (register[chipId][latchedRegister[chipId]] &
-                    0x3f0) // zero low 4 bits
-                    | (data & 0xf); // and replace with data
+                    0x3f0) | // zero low 4 bits
+                    (data & 0xf); // and replace with data
         } else {
             // data byte %0 - dddddd
             if ((latchedRegister[chipId] % 2) == 0 && (latchedRegister[chipId] < 5))
                 // Tone register
                 register[chipId][latchedRegister[chipId]] = (register[chipId][latchedRegister[chipId]] &
-                        0x00f) // zero high 6 bits
-                        | ((data & 0x3f) << 4); // and replace with data
+                        0x00f)|  // zero high 6 bits
+                        ((data & 0x3f) << 4); // and replace with data
             else
                 // Other register
                 register[chipId][latchedRegister[chipId]] = data & 0x0f; // Replace with data
@@ -223,11 +223,10 @@ public class Sn76489Chip implements Chip {
 
     protected void sendVolumeForced(int chipId, int ch) {
         Setting.ChipType2 ct = setting.getSN76489Type()[chipId];
-        write(chipId
-                , (0x90
-                        | ((ch & 3) << 5)
-                        | (15 - (Math.max(volumes[chipId][ch][0], volumes[chipId][ch][1]) & 0xf)))
-                , ct.getUseEmu()[0] ? Common.EnmModel.VirtualModel : Common.EnmModel.RealModel);
+        write(chipId, (0x90 |
+                        ((ch & 3) << 5) |
+                        (15 - (Math.max(volumes[chipId][ch][0], volumes[chipId][ch][1]) & 0xf))),
+                ct.getUseEmu()[0] ? Common.EnmModel.VirtualModel : Common.EnmModel.RealModel);
     }
 
     public boolean ngpFlag = false;

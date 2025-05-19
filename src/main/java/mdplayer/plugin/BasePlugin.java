@@ -63,7 +63,7 @@ public abstract class BasePlugin implements Plugin {
     protected String playingArcFileName;
     protected int midiMode = 0;
     protected int songNo = 0;
-    protected List<Tuple<String, byte[]>> extendFile = null;
+    protected List<Tuple<String, byte[]>> extendFiles = null;
 
     protected final long stwh = System.currentTimeMillis();
 
@@ -415,7 +415,7 @@ logger.log(Level.INFO, "dev null:" + getClass().getName());
         this.midiMode = midiMode;
         this.songNo = songNo;
         audio.chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
-        extendFile = extFile; // Additional files
+        extendFiles = extFile; // Additional files
         Common.playingFilePath = Path.of(playingFileName).getParent();
 
         if (audio.naudioFileReader != null) {

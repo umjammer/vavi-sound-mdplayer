@@ -235,8 +235,7 @@ public class frmYMF262 extends frmBase {
             //BL
             nyc.inst[11] = (ymf262Register[p][0xb0 + adr] >> 2) & 7;
             //FNUM
-            nyc.inst[12] = ymf262Register[p][0xa0 + adr]
-                    + ((ymf262Register[p][0xb0 + adr] & 3) << 8);
+            nyc.inst[12] = ymf262Register[p][0xa0 + adr] + ((ymf262Register[p][0xb0 + adr] & 3) << 8);
 
             //FB
             nyc.inst[15] = (ymf262Register[p][0xc0 + adr] >> 1) & 7;

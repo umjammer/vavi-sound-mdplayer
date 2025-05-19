@@ -21,7 +21,7 @@ import vavi.util.archive.Entry;
 
 
 /**
- * MuSICAFormat.
+ * MuSICA (MSX) Format.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>

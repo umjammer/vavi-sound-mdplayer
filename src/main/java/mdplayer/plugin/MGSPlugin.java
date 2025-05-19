@@ -17,7 +17,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * MGSPlugin.
+ * MGSDRV (MSX) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
@@ -57,10 +57,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
         }
         boolean useAY = (trkOffsets[0] + trkOffsets[1] + trkOffsets[2] != 0);
         boolean useSCC = (trkOffsets[3] + trkOffsets[4] + trkOffsets[5] + trkOffsets[6] + trkOffsets[7] != 0);
-        boolean useOPLL = (trkOffsets[8] + trkOffsets[9] + trkOffsets[10]
-                + trkOffsets[11] + trkOffsets[12] + trkOffsets[13]
-                + trkOffsets[14] + trkOffsets[15] + trkOffsets[16]
-                + trkOffsets[17]
+        boolean useOPLL = (trkOffsets[8] + trkOffsets[9] + trkOffsets[10] +
+                trkOffsets[11] + trkOffsets[12] + trkOffsets[13] +
+                trkOffsets[14] + trkOffsets[15] + trkOffsets[16] +
+                trkOffsets[17]
                 != 0);
 
         startTrdVgmReal();

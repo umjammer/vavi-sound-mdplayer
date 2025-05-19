@@ -208,8 +208,7 @@ public class frmY8950 extends frmBase {
             //BL
             nyc.inst[11] = (Y8950Register[0xb0 + c] >> 2) & 7;
             //FNUM
-            nyc.inst[12] = Y8950Register[0xa0 + c]
-                    + ((Y8950Register[0xb0 + c] & 3) << 8);
+            nyc.inst[12] = Y8950Register[0xa0 + c] + ((Y8950Register[0xb0 + c] & 3) << 8);
 
             //FB
             nyc.inst[15] = (Y8950Register[0xc0 + c] >> 1) & 7;
@@ -261,8 +260,7 @@ public class frmY8950 extends frmBase {
 //#region ADPCM
 
         //Delta
-        newParam.channels[14].inst[12] = Y8950Register[0x10]
-                + (Y8950Register[0x11] << 8);
+        newParam.channels[14].inst[12] = Y8950Register[0x10] + (Y8950Register[0x11] << 8);
 
         if (ki.on[14]) {
             //fSample = deltaN * 50KHz / (2^16)

@@ -171,8 +171,7 @@ public class frmYM3526 extends frmBase {
             //BL
             nyc.inst[11] = (ym3526Register[0xb0 + c] >> 2) & 7;
             //FNUM
-            nyc.inst[12] = ym3526Register[0xa0 + c]
-                    + ((ym3526Register[0xb0 + c] & 3) << 8);
+            nyc.inst[12] = ym3526Register[0xa0 + c] + ((ym3526Register[0xb0 + c] & 3) << 8);
 
             //FB
             nyc.inst[15] = (ym3526Register[0xc0 + c] >> 1) & 7;

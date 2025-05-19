@@ -94,8 +94,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 }
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Sn76489Chip.class);
-                chip.clock = ((Vgm) audio.driverVirtual).sn76489ClockValue
-                        | (((Vgm) audio.driverVirtual).sn76489NGPFlag ? 0x8000_0000 : 0);
+                chip.clock = ((Vgm) audio.driverVirtual).sn76489ClockValue |
+                        (((Vgm) audio.driverVirtual).sn76489NGPFlag ? 0x8000_0000 : 0);
 
                 audio.chipRegister.chip(Sn76489Chip.class).clock = chip.clock & 0x7fff_ffff;
 

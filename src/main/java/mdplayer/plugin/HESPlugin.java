@@ -3,8 +3,6 @@ package mdplayer.plugin;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import javax.annotation.RegEx;
-
 import mdplayer.Audio;
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
@@ -18,7 +16,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * HESPlugin.
+ * HES (PC-Engine) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
