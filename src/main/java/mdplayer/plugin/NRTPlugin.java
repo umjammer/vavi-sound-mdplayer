@@ -57,9 +57,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 MDSound.Chip chip = new MDSound.Chip();
                 chip.id = i;
                 chip.instrument = audio.chipRegister.chip(Ym2151Chip.class).instrument(i);
-                chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
                 chip.clock = 4000000;
+                chip.samplingRate = chip.clock / 64;
                 chip.option = null;
 
                 hiyorimiDeviceFlag |= 0x2;

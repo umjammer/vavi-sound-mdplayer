@@ -144,9 +144,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.id = 0;
             audio.chipLED.put("PriOPM", 1);
             chip.instrument = audio.chipRegister.chip(Ym2151Chip.class).instrument(0);
-            chip.samplingRate = 55467; // (int) setting.getoutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
             chip.clock = MucomJava.opmBaseClock;
+            chip.samplingRate = chip.clock / 64;
             chip.option = null;
             put(Ym2151Chip.class, chip);
         }

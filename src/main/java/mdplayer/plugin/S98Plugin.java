@@ -185,9 +185,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     audio.chipLED.put("PriOPM", 1);
                 }
                 chip.instrument = audio.chipRegister.chip(Ym2151Chip.class).instrument(chip.id);
-                chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
                 chip.clock = dInfo.clock;
+                chip.samplingRate = chip.clock / 64;
                 YM2151ClockValue = chip.clock;
                 chip.option = null;
 //                hiyorimiDeviceFlag |= 0x2;
