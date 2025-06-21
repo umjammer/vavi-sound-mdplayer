@@ -7,6 +7,7 @@ import java.util.List;
 
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
+import konamiman.z80.enums.MemoryAccessMode;
 import konamiman.z80.impls.PlainMemory;
 import mdplayer.Chip;
 import mdplayer.Common;
@@ -84,6 +85,7 @@ public class AY extends BaseDriver {
             run(vgmBuf);
             setup(song);
         } catch (Exception e) {
+logger.log(Level.ERROR, e.getMessage(), e);
             return false;
         }
 
@@ -209,6 +211,7 @@ public class AY extends BaseDriver {
         Port port = new Port();
         z80 = new Z80ProcessorImpl();
         z80.setPortsSpace(port);
+        z80.setPortsSpaceAccessMode((byte) 0, port.getSize(), MemoryAccessMode.ReadAndWrite);
         z80.setClockFrequencyInMHz(4);
         z80.setClockSynchronizer(null);
         z80.setAutoStopOnRetWithStackEmpty(true);
@@ -318,7 +321,7 @@ public class AY extends BaseDriver {
             if (zxClock / PAL <= palElp) {
                 palElp -= (zxClock / PAL);
 
-                if (z80.getIsHalted()) {
+                if (z80.isHalted()) {
                     short pc = z80.getRegisters().getPC();
                     short sp = z80.getRegisters().getSP();
                     short af = z80.getRegisters().getAF();
@@ -334,7 +337,7 @@ public class AY extends BaseDriver {
             }
         }
 
-//        if (ps && z80.getIsHalted()) {
+//        if (ps && z80.isHalted()) {
 //            int pc = z80.getRegisters().getPC();
 //            int sp = z80.getRegisters().getSP();
 //            int af = z80.getRegisters().getAF();

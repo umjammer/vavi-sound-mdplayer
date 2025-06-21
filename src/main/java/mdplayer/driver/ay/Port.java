@@ -39,7 +39,7 @@ public class Port implements Memory {
 
     @Override
     public int getSize() {
-        throw new UnsupportedOperationException();
+        return 256;
     }
 
     @Override
