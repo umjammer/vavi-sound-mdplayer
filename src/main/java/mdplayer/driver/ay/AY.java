@@ -106,9 +106,8 @@ logger.log(Level.ERROR, e.getMessage(), e);
                 if (vgmFrameCounter > -1) {
                     oneFrame();
                     counter++;
-                } else {
-                    vgmFrameCounter++;
                 }
+                vgmFrameCounter++;
             }
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
