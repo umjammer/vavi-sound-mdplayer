@@ -20,9 +20,12 @@ public class Port implements Memory {
     Z80Registers registers;
     Audio audio;
     EnmModel model;
+    public AY cpu;
+
     private byte ayReg = 0;
     private byte ayDat = 0;
     private final byte[] ayRegMap = new byte[255];
+    private byte cpcSw = 0;
 
     private int bn = 0;
     private int bp = 0;
@@ -53,6 +56,17 @@ public class Port implements Memory {
     }
 
     private void outPort(int address, byte value) {
+        // CPC
+
+        if (registers.getB() == (byte) 0xf4 || registers.getB() == (byte) 0xf6) {
+            cpu.setCpcClock();
+            cpcOutPort(value);
+            return;
+        }
+
+        // ZX
+
+        cpu.setZxClock();
         address = registers.getB() * 0x100 | (byte) address;
 
         if ((address & 0xc002) == 0xc000) {
@@ -76,9 +90,38 @@ public class Port implements Memory {
         }
     }
 
+    private void cpcOutPort(byte value) {
+        if (registers.getB() == (byte) 0xf4) {
+            ayDat = value;
+            return;
+        }
+
+        if (registers.getB() != (byte) 0xf6) return;
+
+        byte b = (byte) (value & 0xc0);
+
+        if (cpcSw == 0) {
+            cpcSw = b;
+            return;
+        }
+
+        if (b != 0) return;
+
+        if (cpcSw == (byte) 0xc0) {
+            ayReg = (byte) (ayDat & 0xf);
+            cpcSw = 0;
+            return;
+        }
+
+        if (cpcSw == (byte) 0x80) {
+            if (ayReg < 14) audio.chipRegister.chip(Ay8910Chip.class).write(0, ayReg & 0xff, ayDat & 0xff, model);
+            cpcSw = 0;
+        }
+    }
+
     private byte inPort(int address) {
         byte ret = (byte) 255;
-        address = registers.getB() * 0x100 | (byte) address;
+        address = (registers.getB() & 0xff) * 0x100 | (address & 0xff);
         if ((address & 0xc002) == (0xfffd & 0xc002)) {
             if (ayReg < 14) ret = ayRegMap[ayReg];
         }

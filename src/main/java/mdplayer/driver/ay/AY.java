@@ -69,9 +69,11 @@ public class AY extends BaseDriver {
     private Z80Processor z80;
     public int song = 0;
     private static final int zxClock = 3_546_900; // 3.54690MHz
+    private static final int cpcClock = 4_000_000; // 4.000000MHz
     private static final double PAL = 50.0;
     private double clkElp = 0.0;
     private double palElp = 0.0;
+    private int clock = zxClock;
 
     @Override
     public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
@@ -80,6 +82,7 @@ public class AY extends BaseDriver {
         vgmCurLoop = 0;
         this.model = model;
         vgmFrameCounter = -latency - waitTime;
+        clock = zxClock;
 
         try {
             run(vgmBuf);
@@ -126,6 +129,14 @@ logger.log(Level.ERROR, e.getMessage(), e);
     public void run(byte[] buf) {
         this.buf = buf;
         getInformation(buf);
+    }
+
+    public void setCpcClock() {
+        clock = cpcClock;
+    }
+
+    public void setZxClock() {
+        clock = zxClock;
     }
 
     private void getInformation(byte[] buf) {
@@ -219,6 +230,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
         port.registers = z80.getRegisters();
         port.audio = plugin.audio;
         port.model = model;
+        port.cpu = this;
 
         // a) Fill #0000-#00FF range with #C9 value
         for (int i = 0x0000; i < 0x0100; i++) z80.getMemory().set(i, (byte) 0xc9);
