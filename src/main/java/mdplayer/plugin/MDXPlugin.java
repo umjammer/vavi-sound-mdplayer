@@ -36,10 +36,10 @@ public class MDXPlugin extends BasePlugin {
         audio.driverVirtual = new MXDRV();
         ((MXDRV) audio.driverVirtual).extendFile = (extendFiles != null && !extendFiles.isEmpty()) ? extendFiles.get(0) : null;
         audio.driverReal = null;
-        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new MXDRV();
-            ((MXDRV) audio.driverReal).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
-        }
+//        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
+//            audio.driverReal = new MXDRV();
+//            ((MXDRV) audio.driverReal).extendFiles = (extendFiles != null && !extendFiles.isEmpty()) ? extendFiles.get(0) : null;
+//        }
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
@@ -148,6 +148,7 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
 
         if (!retV || !retR) {
             audio.errMsg = !audio.driverVirtual.errMsg.isEmpty() ? audio.driverVirtual.errMsg : (audio.driverReal != null ? audio.driverReal.errMsg : "");
+logger.log(Level.WARNING, "cannot start: " + audio.errMsg);
             return false;
         }
 

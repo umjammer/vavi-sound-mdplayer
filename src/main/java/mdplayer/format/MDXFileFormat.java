@@ -65,6 +65,10 @@ public class MDXFileFormat extends BaseFileFormat {
             buf = getExtendFileAllBytes(fn, PDX[0], archive, entry);
             if (buf == null) {
                 buf = getExtendFileAllBytes(fn, PDX[0] + ".PDX", archive, entry);
+                if (buf == null) {
+                    // TODO try lower case also?
+                    buf = getExtendFileAllBytes(fn, PDX[0].toUpperCase() + ".PDX", archive, entry);
+                }
             }
             if (buf != null) ret.add(new Tuple<>(".PDX", buf));
         }

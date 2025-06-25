@@ -12,7 +12,6 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import dotnet4j.util.compat.Tuple;
@@ -188,11 +187,7 @@ public class MXDRV extends BaseDriver {
         OPM,
         PCM8,
         CREDIT,
-        CALLBACK_OPMINT;
-
-        static MXDRV_WORK valueOf(int v) {
-            return Arrays.stream(values()).filter(e -> e.ordinal() == v).findFirst().get();
-        }
+        CALLBACK_OPMINT
     }
 
     public enum MXDRV_ERR {
@@ -250,7 +245,7 @@ public class MXDRV extends BaseDriver {
 
         List<Byte> lst = new ArrayList<>();
         int i = 0;
-        while ((buf[i] != 0xd && buf[i] != 0xa) && i < buf.length) {
+        while (i < buf.length && (buf[i] != 0xd && buf[i] != 0xa)) {
             lst.add(buf[i]);
             i++;
         }
@@ -311,7 +306,8 @@ public class MXDRV extends BaseDriver {
         String[] pdxFileName = new String[1];
         makeMdxBuf(vgmBuf, mdx, mdxSize, pdxFileName);
         makePdxBuf(pdxFileName[0], pdx, pdxSize);
-        if ((pdxFileName[0] == null || pdxFileName[0].isEmpty()) && pdx[0] == null) {
+        if ((pdxFileName[0] != null && !pdxFileName[0].isEmpty()) && pdx[0] == null) {
+logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], pdx[0]));
             errMsg = "Failed to load PCM file [%s].".formatted(pdxFileName[0]);
             return false;
         }
@@ -465,7 +461,7 @@ public class MXDRV extends BaseDriver {
         mdx[0][1] = 0x00;
         mdx[0][2] = havePdx;
         mdx[0][3] = havePdx;
-        mdx[0][4] = (byte) (mdxBodyPtr >> 8);
+        mdx[0][4] = (byte) (mdxBodyPtr >>> 8);
         mdx[0][5] = (byte) mdxBodyPtr;
         mdx[0][6] = 0x00;
         mdx[0][7] = 0x08;
@@ -476,7 +472,10 @@ public class MXDRV extends BaseDriver {
      * @param pdxSize OUT
      */
     private void makePdxBuf(String pdxFileName, byte[][] pdx, int[] pdxSize) {
-        if (extendFile == null) return;
+        if (extendFile == null) {
+logger.log(Level.DEBUG, "extendFiles is null");
+            return;
+        }
 
         pdx[0] = new byte[extendFile.getItem2().length + pdxFileName.length() + 8 + 1];
         System.arraycopy(pdxFileName.getBytes(StandardCharsets.US_ASCII), 0, pdx[0], 8, pdxFileName.length());
@@ -838,7 +837,7 @@ public class MXDRV extends BaseDriver {
     }
 
     private Object MXDRV_GetWork(int i) {
-        switch (MXDRV_WORK.valueOf(i)) {
+        switch (MXDRV_WORK.values()[i]) {
         case FM:
             return MXWORK_CHBUF_FM[0];
         case PCM:
@@ -1032,7 +1031,7 @@ public class MXDRV extends BaseDriver {
         //logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
 
         mdxPCM.soundIocs[0].opmSet(D1, D2);
-        plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, D1, D2, model, ym2151Hosei[0], 0);
+        plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, D1, D2, model, ym2151Hosei[0], vgmFrameCounter);
 
         if (D1 == 0x10) {
             timerA = (D2 << 2) + (timerA & 0x3);
@@ -1174,7 +1173,7 @@ public class MXDRV extends BaseDriver {
 
     // 
     private void L_14() {
-        D0 = (short) ~(mm.readShort(G + MXWORK_GLOBAL.L001e06) & 0xffff);
+        D0 = (~(mm.readShort(G + MXWORK_GLOBAL.L001e06) & 0xffff)) & 0xffff;
     }
 
     // 
@@ -1452,7 +1451,7 @@ exit:   {
                     a1_w = a2_w;
                     a1_l = a1_w;
                     a2_l = a2_w;
-                    A2 = (byte) a2_l;
+                    A2 = a2_l & 0xff;
                 }
 
                 D4--;
@@ -1465,7 +1464,7 @@ exit:   {
                     mm.write(a1_l, (byte) Depend.CLR);
                 } while (D4-- != 0);
 
-                A1 = (byte) a1_l;
+                A1 = a1_l & 0xff;
                 D5--;
                 d5 = D5;
 
@@ -1479,7 +1478,7 @@ exit:   {
                     }
                     a0_l++;
                 } while (D5-- != 0);
-                A0 = (byte) a0_l;
+                A0 = a0_l & 0xff;
             }
         }
 
@@ -2639,8 +2638,8 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
     // 
     private void L000cdc() {
         D2 = mm.readShort(A6 + MXWORK_CH.S0012) & 0xffff; // note+D
-        D2 = (short) ((short) D2 + (short) (mm.readInt(A6 + MXWORK_CH.S000c) >> 16)); // +bend
-        D2 = (short) ((short) D2 + (short) (mm.readInt(A6 + MXWORK_CH.S0036) >> 16)); // +LfoPitch
+        D2 = (D2 & 0xffff) + ((mm.readInt(A6 + MXWORK_CH.S000c) & 0xffff_0000) >> 16); // +bend
+        D2 = (D2 & 0xffff) + ((mm.readInt(A6 + MXWORK_CH.S0036) & 0xffff_0000) >> 16); // +LfoPitch
         if (D2 != (mm.readShort(A6 + MXWORK_CH.S0014) & 0xffff)) { // Compare if same as previous value
             mm.write(A6 + MXWORK_CH.S0014, (short) D2);
             D1 = 0x17ff;
@@ -2648,15 +2647,15 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
                 if ((short) D2 < 0) {
                     D2 = 0;
                 } else {
-                    D2 = (short) D1;
+                    D2 = D1 & 0xffff;
                 }
             }
-            D2 = (short) (D2 * 4);
+            D2 = (D2 * 4) & 0xffff;
             D1 = 0x30;
             D1 += (mm.readByte(A6 + MXWORK_CH.S0018) & 0xff);
             L_WRITEOPM(); // KF
             D1 -= 8;
-            D2 >>= 8;
+            D2 >>>= 8;
             D2 = KeyCode[D2];
             L_WRITEOPM(); // KC(OCT+NOTE)
         }
