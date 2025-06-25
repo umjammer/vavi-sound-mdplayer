@@ -11,7 +11,7 @@ import vavi.util.archive.Entry;
 
 
 /**
- * MoonDrive (MDI Java) FileFormat.
+ * MoonDrive (MDI, MDL(for compile)) FileFormat.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-07 nsano initial version <br>
@@ -21,7 +21,7 @@ public class MDLFileFormat extends BaseFileFormat {
     // not associated with any extensions
     @Override
     public String[] getExtensions() {
-        return new String[] {};
+        return new String[] { ".mdl" };
     }
 
     @Override

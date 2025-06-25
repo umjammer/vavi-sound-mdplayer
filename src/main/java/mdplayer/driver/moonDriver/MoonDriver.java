@@ -71,7 +71,7 @@ public class MoonDriver extends BaseDriver {
                 if (i % 0x4000 == 0) {
                     int af = a;
                     changePage3();
-                    a = af;
+                    a = (byte) af;
                     a += 2;
                 }
                 writeMemory((0x8000 + (i % 0x4000)) & 0xffff, vgmBuf[i] & 0xff);
@@ -506,199 +506,199 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             0x02  // H
     };
 
-    private static final int[] freq_table = new int[] {
+    private static final int[] freq_table = {
             0x0000, 0x0000, 0x0000, 0x0001, 0x0001, 0x0002, 0x0002, 0x0003, // $00
             0x0003, 0x0004, 0x0004, 0x0005, 0x0005, 0x0006, 0x0006, 0x0006, // $08
-            0x0007, 0x0007, 0x0008, 0x0008, 0x0009, 0x0009, 0x000A, 0x000A, // $10
-            0x000B, 0x000B, 0x000C, 0x000C, 0x000D, 0x000D, 0x000D, 0x000E, // $18
-            0x000E, 0x000F, 0x000F, 0x0010, 0x0010, 0x0011, 0x0011, 0x0012, // $20
+            0x0007, 0x0007, 0x0008, 0x0008, 0x0009, 0x0009, 0x000a, 0x000a, // $10
+            0x000b, 0x000b, 0x000c, 0x000c, 0x000d, 0x000d, 0x000d, 0x000e, // $18
+            0x000e, 0x000f, 0x000f, 0x0010, 0x0010, 0x0011, 0x0011, 0x0012, // $20
             0x0012, 0x0013, 0x0013, 0x0014, 0x0014, 0x0015, 0x0015, 0x0015, // $28
             0x0016, 0x0016, 0x0017, 0x0017, 0x0018, 0x0018, 0x0019, 0x0019, // $30
-            0x001A, 0x001A, 0x001B, 0x001B, 0x001C, 0x001C, 0x001D, 0x001D, // $38
-            0x001E, 0x001E, 0x001E, 0x001F, 0x001F, 0x0020, 0x0020, 0x0021, // $40
+            0x001a, 0x001a, 0x001b, 0x001b, 0x001c, 0x001c, 0x001d, 0x001d, // $38
+            0x001e, 0x001e, 0x001e, 0x001f, 0x001f, 0x0020, 0x0020, 0x0021, // $40
             0x0021, 0x0022, 0x0022, 0x0023, 0x0023, 0x0024, 0x0024, 0x0025, // $48
             0x0025, 0x0026, 0x0026, 0x0027, 0x0027, 0x0028, 0x0028, 0x0029, // $50
-            0x0029, 0x0029, 0x002A, 0x002A, 0x002B, 0x002B, 0x002C, 0x002C, // $58
-            0x002D, 0x002D, 0x002E, 0x002E, 0x002F, 0x002F, 0x0030, 0x0030, // $60
+            0x0029, 0x0029, 0x002a, 0x002a, 0x002b, 0x002b, 0x002c, 0x002c, // $58
+            0x002d, 0x002d, 0x002e, 0x002e, 0x002f, 0x002f, 0x0030, 0x0030, // $60
             0x0031, 0x0031, 0x0032, 0x0032, 0x0033, 0x0033, 0x0034, 0x0034, // $68
             0x0035, 0x0035, 0x0036, 0x0036, 0x0037, 0x0037, 0x0038, 0x0038, // $70
-            0x0038, 0x0039, 0x0039, 0x003A, 0x003A, 0x003B, 0x003B, 0x003C, // $78
-            0x003C, 0x003D, 0x003D, 0x003E, 0x003E, 0x003F, 0x003F, 0x0040, // $80
+            0x0038, 0x0039, 0x0039, 0x003a, 0x003a, 0x003b, 0x003b, 0x003c, // $78
+            0x003c, 0x003d, 0x003d, 0x003e, 0x003e, 0x003f, 0x003f, 0x0040, // $80
             0x0040, 0x0041, 0x0041, 0x0042, 0x0042, 0x0043, 0x0043, 0x0044, // $88
             0x0044, 0x0045, 0x0045, 0x0046, 0x0046, 0x0047, 0x0047, 0x0048, // $90
-            0x0048, 0x0049, 0x0049, 0x004A, 0x004A, 0x004B, 0x004B, 0x004C, // $98
-            0x004C, 0x004D, 0x004D, 0x004E, 0x004E, 0x004F, 0x004F, 0x0050, // $a0
+            0x0048, 0x0049, 0x0049, 0x004a, 0x004a, 0x004b, 0x004b, 0x004c, // $98
+            0x004c, 0x004d, 0x004d, 0x004e, 0x004e, 0x004f, 0x004f, 0x0050, // $a0
             0x0050, 0x0051, 0x0051, 0x0052, 0x0052, 0x0053, 0x0053, 0x0054, // $a8
             0x0054, 0x0055, 0x0055, 0x0056, 0x0056, 0x0057, 0x0057, 0x0058, // $b0
-            0x0058, 0x0059, 0x0059, 0x005A, 0x005A, 0x005B, 0x005B, 0x005C, // $b8
-            0x005C, 0x005D, 0x005D, 0x005E, 0x005E, 0x005F, 0x005F, 0x0060, // $c0
+            0x0058, 0x0059, 0x0059, 0x005a, 0x005a, 0x005b, 0x005b, 0x005c, // $b8
+            0x005c, 0x005d, 0x005d, 0x005e, 0x005e, 0x005f, 0x005f, 0x0060, // $c0
             0x0060, 0x0061, 0x0061, 0x0062, 0x0062, 0x0063, 0x0063, 0x0064, // $c8
             0x0064, 0x0065, 0x0065, 0x0066, 0x0066, 0x0067, 0x0067, 0x0068, // $d0
-            0x0068, 0x0069, 0x0069, 0x006A, 0x006A, 0x006B, 0x006B, 0x006C, // $d8
-            0x006C, 0x006D, 0x006D, 0x006E, 0x006E, 0x006F, 0x006F, 0x0070, // $e0
+            0x0068, 0x0069, 0x0069, 0x006a, 0x006a, 0x006b, 0x006b, 0x006c, // $d8
+            0x006c, 0x006d, 0x006d, 0x006e, 0x006e, 0x006f, 0x006f, 0x0070, // $e0
             0x0071, 0x0071, 0x0072, 0x0072, 0x0073, 0x0073, 0x0074, 0x0074, // $e8
             0x0075, 0x0075, 0x0076, 0x0076, 0x0077, 0x0077, 0x0078, 0x0078, // $f0
-            0x0079, 0x0079, 0x007A, 0x007A, 0x007B, 0x007B, 0x007C, 0x007C, // $f8
-            0x007D, 0x007D, 0x007E, 0x007E, 0x007F, 0x007F, 0x0080, 0x0081, // $100
+            0x0079, 0x0079, 0x007a, 0x007a, 0x007b, 0x007b, 0x007c, 0x007c, // $f8
+            0x007d, 0x007d, 0x007e, 0x007e, 0x007f, 0x007f, 0x0080, 0x0081, // $100
             0x0081, 0x0082, 0x0082, 0x0083, 0x0083, 0x0084, 0x0084, 0x0085, // $108
             0x0085, 0x0086, 0x0086, 0x0087, 0x0087, 0x0088, 0x0088, 0x0089, // $110
-            0x0089, 0x008A, 0x008A, 0x008B, 0x008C, 0x008C, 0x008D, 0x008D, // $118
-            0x008E, 0x008E, 0x008F, 0x008F, 0x0090, 0x0090, 0x0091, 0x0091, // $120
+            0x0089, 0x008a, 0x008a, 0x008b, 0x008c, 0x008c, 0x008d, 0x008d, // $118
+            0x008e, 0x008e, 0x008f, 0x008f, 0x0090, 0x0090, 0x0091, 0x0091, // $120
             0x0092, 0x0092, 0x0093, 0x0093, 0x0094, 0x0094, 0x0095, 0x0096, // $128
-            0x0096, 0x0097, 0x0097, 0x0098, 0x0098, 0x0099, 0x0099, 0x009A, // $130
-            0x009A, 0x009B, 0x009B, 0x009C, 0x009C, 0x009D, 0x009E, 0x009E, // $138
-            0x009F, 0x009F, 0x00A0, 0x00A0, 0x00A1, 0x00A1, 0x00A2, 0x00A2, // $140
-            0x00A3, 0x00A3, 0x00A4, 0x00A4, 0x00A5, 0x00A6, 0x00A6, 0x00A7, // $148
-            0x00A7, 0x00A8, 0x00A8, 0x00A9, 0x00A9, 0x00AA, 0x00AA, 0x00AB, // $150
-            0x00AB, 0x00AC, 0x00AD, 0x00AD, 0x00AE, 0x00AE, 0x00AF, 0x00AF, // $158
-            0x00B0, 0x00B0, 0x00B1, 0x00B1, 0x00B2, 0x00B3, 0x00B3, 0x00B4, // $160
-            0x00B4, 0x00B5, 0x00B5, 0x00B6, 0x00B6, 0x00B7, 0x00B7, 0x00B8, // $168
-            0x00B8, 0x00B9, 0x00BA, 0x00BA, 0x00BB, 0x00BB, 0x00BC, 0x00BC, // $170
-            0x00BD, 0x00BD, 0x00BE, 0x00BF, 0x00BF, 0x00C0, 0x00C0, 0x00C1, // $178
-            0x00C1, 0x00C2, 0x00C2, 0x00C3, 0x00C3, 0x00C4, 0x00C5, 0x00C5, // $180
-            0x00C6, 0x00C6, 0x00C7, 0x00C7, 0x00C8, 0x00C8, 0x00C9, 0x00CA, // $188
-            0x00CA, 0x00CB, 0x00CB, 0x00CC, 0x00CC, 0x00CD, 0x00CD, 0x00CE, // $190
-            0x00CF, 0x00CF, 0x00D0, 0x00D0, 0x00D1, 0x00D1, 0x00D2, 0x00D2, // $198
-            0x00D3, 0x00D4, 0x00D4, 0x00D5, 0x00D5, 0x00D6, 0x00D6, 0x00D7, // $1a0
-            0x00D7, 0x00D8, 0x00D9, 0x00D9, 0x00DA, 0x00DA, 0x00DB, 0x00DB, // $1a8
-            0x00DC, 0x00DC, 0x00DD, 0x00DE, 0x00DE, 0x00DF, 0x00DF, 0x00E0, // $1b0
-            0x00E0, 0x00E1, 0x00E2, 0x00E2, 0x00E3, 0x00E3, 0x00E4, 0x00E4, // $1b8
-            0x00E5, 0x00E5, 0x00E6, 0x00E7, 0x00E7, 0x00E8, 0x00E8, 0x00E9, // $1c0
-            0x00E9, 0x00EA, 0x00EB, 0x00EB, 0x00EC, 0x00EC, 0x00ED, 0x00ED, // $1c8
-            0x00EE, 0x00EF, 0x00EF, 0x00F0, 0x00F0, 0x00F1, 0x00F1, 0x00F2, // $1d0
-            0x00F3, 0x00F3, 0x00F4, 0x00F4, 0x00F5, 0x00F5, 0x00F6, 0x00F7, // $1d8
-            0x00F7, 0x00F8, 0x00F8, 0x00F9, 0x00F9, 0x00FA, 0x00FB, 0x00FB, // $1e0
-            0x00FC, 0x00FC, 0x00FD, 0x00FD, 0x00FE, 0x00FF, 0x00FF, 0x0100, // $1e8
+            0x0096, 0x0097, 0x0097, 0x0098, 0x0098, 0x0099, 0x0099, 0x009a, // $130
+            0x009a, 0x009b, 0x009b, 0x009c, 0x009c, 0x009d, 0x009e, 0x009e, // $138
+            0x009f, 0x009f, 0x00a0, 0x00a0, 0x00a1, 0x00a1, 0x00a2, 0x00a2, // $140
+            0x00a3, 0x00a3, 0x00a4, 0x00a4, 0x00a5, 0x00a6, 0x00a6, 0x00a7, // $148
+            0x00a7, 0x00a8, 0x00a8, 0x00a9, 0x00a9, 0x00aa, 0x00aa, 0x00ab, // $150
+            0x00ab, 0x00ac, 0x00ad, 0x00ad, 0x00ae, 0x00ae, 0x00af, 0x00af, // $158
+            0x00b0, 0x00b0, 0x00b1, 0x00b1, 0x00b2, 0x00b3, 0x00b3, 0x00b4, // $160
+            0x00b4, 0x00b5, 0x00b5, 0x00b6, 0x00b6, 0x00b7, 0x00b7, 0x00b8, // $168
+            0x00b8, 0x00b9, 0x00ba, 0x00ba, 0x00bb, 0x00bb, 0x00bc, 0x00bc, // $170
+            0x00bd, 0x00bd, 0x00be, 0x00bf, 0x00bf, 0x00c0, 0x00c0, 0x00c1, // $178
+            0x00c1, 0x00c2, 0x00c2, 0x00c3, 0x00c3, 0x00c4, 0x00c5, 0x00c5, // $180
+            0x00c6, 0x00c6, 0x00c7, 0x00c7, 0x00c8, 0x00c8, 0x00c9, 0x00ca, // $188
+            0x00ca, 0x00cb, 0x00cb, 0x00cc, 0x00cc, 0x00cd, 0x00cd, 0x00ce, // $190
+            0x00cf, 0x00cf, 0x00d0, 0x00d0, 0x00d1, 0x00d1, 0x00d2, 0x00d2, // $198
+            0x00d3, 0x00d4, 0x00d4, 0x00d5, 0x00d5, 0x00d6, 0x00d6, 0x00d7, // $1a0
+            0x00d7, 0x00d8, 0x00d9, 0x00d9, 0x00da, 0x00da, 0x00db, 0x00db, // $1a8
+            0x00dc, 0x00dc, 0x00dd, 0x00de, 0x00de, 0x00df, 0x00df, 0x00e0, // $1b0
+            0x00e0, 0x00e1, 0x00e2, 0x00e2, 0x00e3, 0x00e3, 0x00e4, 0x00e4, // $1b8
+            0x00e5, 0x00e5, 0x00e6, 0x00e7, 0x00e7, 0x00e8, 0x00e8, 0x00e9, // $1c0
+            0x00e9, 0x00ea, 0x00eb, 0x00eb, 0x00ec, 0x00ec, 0x00ed, 0x00ed, // $1c8
+            0x00ee, 0x00ef, 0x00ef, 0x00f0, 0x00f0, 0x00f1, 0x00f1, 0x00f2, // $1d0
+            0x00f3, 0x00f3, 0x00f4, 0x00f4, 0x00f5, 0x00f5, 0x00f6, 0x00f7, // $1d8
+            0x00f7, 0x00f8, 0x00f8, 0x00f9, 0x00f9, 0x00fa, 0x00fb, 0x00fb, // $1e0
+            0x00fc, 0x00fc, 0x00fd, 0x00fd, 0x00fe, 0x00ff, 0x00ff, 0x0100, // $1e8
             0x0100, 0x0101, 0x0102, 0x0102, 0x0103, 0x0103, 0x0104, 0x0104, // $1f0
             0x0105, 0x0106, 0x0106, 0x0107, 0x0107, 0x0108, 0x0108, 0x0109, // $1f8
-            0x010A, 0x010A, 0x010B, 0x010B, 0x010C, 0x010D, 0x010D, 0x010E, // $200
-            0x010E, 0x010F, 0x010F, 0x0110, 0x0111, 0x0111, 0x0112, 0x0112, // $208
+            0x010a, 0x010a, 0x010b, 0x010b, 0x010c, 0x010d, 0x010d, 0x010e, // $200
+            0x010e, 0x010f, 0x010f, 0x0110, 0x0111, 0x0111, 0x0112, 0x0112, // $208
             0x0113, 0x0114, 0x0114, 0x0115, 0x0115, 0x0116, 0x0117, 0x0117, // $210
-            0x0118, 0x0118, 0x0119, 0x0119, 0x011A, 0x011B, 0x011B, 0x011C, // $218
-            0x011C, 0x011D, 0x011E, 0x011E, 0x011F, 0x011F, 0x0120, 0x0121, // $220
+            0x0118, 0x0118, 0x0119, 0x0119, 0x011a, 0x011b, 0x011b, 0x011c, // $218
+            0x011c, 0x011d, 0x011e, 0x011e, 0x011f, 0x011f, 0x0120, 0x0121, // $220
             0x0121, 0x0122, 0x0122, 0x0123, 0x0124, 0x0124, 0x0125, 0x0125, // $228
-            0x0126, 0x0127, 0x0127, 0x0128, 0x0128, 0x0129, 0x0129, 0x012A, // $230
-            0x012B, 0x012B, 0x012C, 0x012C, 0x012D, 0x012E, 0x012E, 0x012F, // $238
-            0x012F, 0x0130, 0x0131, 0x0131, 0x0132, 0x0132, 0x0133, 0x0134, // $240
+            0x0126, 0x0127, 0x0127, 0x0128, 0x0128, 0x0129, 0x0129, 0x012a, // $230
+            0x012b, 0x012b, 0x012c, 0x012c, 0x012d, 0x012e, 0x012e, 0x012f, // $238
+            0x012f, 0x0130, 0x0131, 0x0131, 0x0132, 0x0132, 0x0133, 0x0134, // $240
             0x0134, 0x0135, 0x0135, 0x0136, 0x0137, 0x0137, 0x0138, 0x0138, // $248
-            0x0139, 0x013A, 0x013A, 0x013B, 0x013C, 0x013C, 0x013D, 0x013D, // $250
-            0x013E, 0x013F, 0x013F, 0x0140, 0x0140, 0x0141, 0x0142, 0x0142, // $258
+            0x0139, 0x013a, 0x013a, 0x013b, 0x013c, 0x013c, 0x013d, 0x013d, // $250
+            0x013e, 0x013f, 0x013f, 0x0140, 0x0140, 0x0141, 0x0142, 0x0142, // $258
             0x0143, 0x0143, 0x0144, 0x0145, 0x0145, 0x0146, 0x0146, 0x0147, // $260
-            0x0148, 0x0148, 0x0149, 0x0149, 0x014A, 0x014B, 0x014B, 0x014C, // $268
-            0x014D, 0x014D, 0x014E, 0x014E, 0x014F, 0x0150, 0x0150, 0x0151, // $270
+            0x0148, 0x0148, 0x0149, 0x0149, 0x014a, 0x014b, 0x014b, 0x014c, // $268
+            0x014d, 0x014d, 0x014e, 0x014e, 0x014f, 0x0150, 0x0150, 0x0151, // $270
             0x0151, 0x0152, 0x0153, 0x0153, 0x0154, 0x0155, 0x0155, 0x0156, // $278
-            0x0156, 0x0157, 0x0158, 0x0158, 0x0159, 0x0159, 0x015A, 0x015B, // $280
-            0x015B, 0x015C, 0x015D, 0x015D, 0x015E, 0x015E, 0x015F, 0x0160, // $288
+            0x0156, 0x0157, 0x0158, 0x0158, 0x0159, 0x0159, 0x015a, 0x015b, // $280
+            0x015b, 0x015c, 0x015d, 0x015d, 0x015e, 0x015e, 0x015f, 0x0160, // $288
             0x0160, 0x0161, 0x0162, 0x0162, 0x0163, 0x0163, 0x0164, 0x0165, // $290
-            0x0165, 0x0166, 0x0167, 0x0167, 0x0168, 0x0168, 0x0169, 0x016A, // $298
-            0x016A, 0x016B, 0x016C, 0x016C, 0x016D, 0x016D, 0x016E, 0x016F, // $2a0
-            0x016F, 0x0170, 0x0171, 0x0171, 0x0172, 0x0172, 0x0173, 0x0174, // $2a8
+            0x0165, 0x0166, 0x0167, 0x0167, 0x0168, 0x0168, 0x0169, 0x016a, // $298
+            0x016a, 0x016b, 0x016c, 0x016c, 0x016d, 0x016d, 0x016e, 0x016f, // $2a0
+            0x016f, 0x0170, 0x0171, 0x0171, 0x0172, 0x0172, 0x0173, 0x0174, // $2a8
             0x0174, 0x0175, 0x0176, 0x0176, 0x0177, 0x0177, 0x0178, 0x0179, // $2b0
-            0x0179, 0x017A, 0x017B, 0x017B, 0x017C, 0x017D, 0x017D, 0x017E, // $2b8
-            0x017E, 0x017F, 0x0180, 0x0180, 0x0181, 0x0182, 0x0182, 0x0183, // $2c0
+            0x0179, 0x017a, 0x017b, 0x017b, 0x017c, 0x017d, 0x017d, 0x017e, // $2b8
+            0x017e, 0x017f, 0x0180, 0x0180, 0x0181, 0x0182, 0x0182, 0x0183, // $2c0
             0x0184, 0x0184, 0x0185, 0x0185, 0x0186, 0x0187, 0x0187, 0x0188, // $2c8
-            0x0189, 0x0189, 0x018A, 0x018B, 0x018B, 0x018C, 0x018C, 0x018D, // $2d0
-            0x018E, 0x018E, 0x018F, 0x0190, 0x0190, 0x0191, 0x0192, 0x0192, // $2d8
+            0x0189, 0x0189, 0x018a, 0x018b, 0x018b, 0x018c, 0x018c, 0x018d, // $2d0
+            0x018e, 0x018e, 0x018f, 0x0190, 0x0190, 0x0191, 0x0192, 0x0192, // $2d8
             0x0193, 0x0194, 0x0194, 0x0195, 0x0195, 0x0196, 0x0197, 0x0197, // $2e0
-            0x0198, 0x0199, 0x0199, 0x019A, 0x019B, 0x019B, 0x019C, 0x019D, // $2e8
-            0x019D, 0x019E, 0x019F, 0x019F, 0x01A0, 0x01A0, 0x01A1, 0x01A2, // $2f0
-            0x01A2, 0x01A3, 0x01A4, 0x01A4, 0x01A5, 0x01A6, 0x01A6, 0x01A7, // $2f8
-            0x01A8, 0x01A8, 0x01A9, 0x01AA, 0x01AA, 0x01AB, 0x01AC, 0x01AC, // $300
-            0x01AD, 0x01AE, 0x01AE, 0x01AF, 0x01B0, 0x01B0, 0x01B1, 0x01B1, // $308
-            0x01B2, 0x01B3, 0x01B3, 0x01B4, 0x01B5, 0x01B5, 0x01B6, 0x01B7, // $310
-            0x01B7, 0x01B8, 0x01B9, 0x01B9, 0x01BA, 0x01BB, 0x01BB, 0x01BC, // $318
-            0x01BD, 0x01BD, 0x01BE, 0x01BF, 0x01BF, 0x01C0, 0x01C1, 0x01C1, // $320
-            0x01C2, 0x01C3, 0x01C3, 0x01C4, 0x01C5, 0x01C5, 0x01C6, 0x01C7, // $328
-            0x01C7, 0x01C8, 0x01C9, 0x01C9, 0x01CA, 0x01CB, 0x01CB, 0x01CC, // $330
-            0x01CD, 0x01CD, 0x01CE, 0x01CF, 0x01CF, 0x01D0, 0x01D1, 0x01D1, // $338
-            0x01D2, 0x01D3, 0x01D3, 0x01D4, 0x01D5, 0x01D5, 0x01D6, 0x01D7, // $340
-            0x01D7, 0x01D8, 0x01D9, 0x01DA, 0x01DA, 0x01DB, 0x01DC, 0x01DC, // $348
-            0x01DD, 0x01DE, 0x01DE, 0x01DF, 0x01E0, 0x01E0, 0x01E1, 0x01E2, // $350
-            0x01E2, 0x01E3, 0x01E4, 0x01E4, 0x01E5, 0x01E6, 0x01E6, 0x01E7, // $358
-            0x01E8, 0x01E8, 0x01E9, 0x01EA, 0x01EB, 0x01EB, 0x01EC, 0x01ED, // $360
-            0x01ED, 0x01EE, 0x01EF, 0x01EF, 0x01F0, 0x01F1, 0x01F1, 0x01F2, // $368
-            0x01F3, 0x01F3, 0x01F4, 0x01F5, 0x01F5, 0x01F6, 0x01F7, 0x01F8, // $370
-            0x01F8, 0x01F9, 0x01FA, 0x01FA, 0x01FB, 0x01FC, 0x01FC, 0x01FD, // $378
-            0x01FE, 0x01FE, 0x01FF, 0x0200, 0x0201, 0x0201, 0x0202, 0x0203, // $380
+            0x0198, 0x0199, 0x0199, 0x019a, 0x019b, 0x019b, 0x019c, 0x019d, // $2e8
+            0x019d, 0x019e, 0x019f, 0x019f, 0x01a0, 0x01a0, 0x01a1, 0x01a2, // $2f0
+            0x01a2, 0x01a3, 0x01a4, 0x01a4, 0x01a5, 0x01a6, 0x01a6, 0x01a7, // $2f8
+            0x01a8, 0x01a8, 0x01a9, 0x01aa, 0x01aa, 0x01ab, 0x01ac, 0x01ac, // $300
+            0x01ad, 0x01ae, 0x01ae, 0x01af, 0x01b0, 0x01b0, 0x01b1, 0x01b1, // $308
+            0x01b2, 0x01b3, 0x01b3, 0x01b4, 0x01b5, 0x01b5, 0x01b6, 0x01b7, // $310
+            0x01b7, 0x01b8, 0x01b9, 0x01b9, 0x01ba, 0x01bb, 0x01bb, 0x01bc, // $318
+            0x01bd, 0x01bd, 0x01be, 0x01bf, 0x01bf, 0x01c0, 0x01c1, 0x01c1, // $320
+            0x01c2, 0x01c3, 0x01c3, 0x01c4, 0x01c5, 0x01c5, 0x01c6, 0x01c7, // $328
+            0x01c7, 0x01c8, 0x01c9, 0x01c9, 0x01ca, 0x01cb, 0x01cb, 0x01cc, // $330
+            0x01cd, 0x01cd, 0x01ce, 0x01cf, 0x01cf, 0x01d0, 0x01d1, 0x01d1, // $338
+            0x01d2, 0x01d3, 0x01d3, 0x01d4, 0x01d5, 0x01d5, 0x01d6, 0x01d7, // $340
+            0x01d7, 0x01d8, 0x01d9, 0x01da, 0x01da, 0x01db, 0x01dc, 0x01dc, // $348
+            0x01dd, 0x01de, 0x01de, 0x01df, 0x01e0, 0x01e0, 0x01e1, 0x01e2, // $350
+            0x01e2, 0x01e3, 0x01e4, 0x01e4, 0x01e5, 0x01e6, 0x01e6, 0x01e7, // $358
+            0x01e8, 0x01e8, 0x01e9, 0x01ea, 0x01eb, 0x01eb, 0x01ec, 0x01ed, // $360
+            0x01ed, 0x01ee, 0x01ef, 0x01ef, 0x01f0, 0x01f1, 0x01f1, 0x01f2, // $368
+            0x01f3, 0x01f3, 0x01f4, 0x01f5, 0x01f5, 0x01f6, 0x01f7, 0x01f8, // $370
+            0x01f8, 0x01f9, 0x01fa, 0x01fa, 0x01fb, 0x01fc, 0x01fc, 0x01fd, // $378
+            0x01fe, 0x01fe, 0x01ff, 0x0200, 0x0201, 0x0201, 0x0202, 0x0203, // $380
             0x0203, 0x0204, 0x0205, 0x0205, 0x0206, 0x0207, 0x0207, 0x0208, // $388
-            0x0209, 0x020A, 0x020A, 0x020B, 0x020C, 0x020C, 0x020D, 0x020E, // $390
-            0x020E, 0x020F, 0x0210, 0x0211, 0x0211, 0x0212, 0x0213, 0x0213, // $398
+            0x0209, 0x020a, 0x020a, 0x020b, 0x020c, 0x020c, 0x020d, 0x020e, // $390
+            0x020e, 0x020f, 0x0210, 0x0211, 0x0211, 0x0212, 0x0213, 0x0213, // $398
             0x0214, 0x0215, 0x0215, 0x0216, 0x0217, 0x0218, 0x0218, 0x0219, // $3a0
-            0x021A, 0x021A, 0x021B, 0x021C, 0x021D, 0x021D, 0x021E, 0x021F, // $3a8
-            0x021F, 0x0220, 0x0221, 0x0221, 0x0222, 0x0223, 0x0224, 0x0224, // $3b0
-            0x0225, 0x0226, 0x0226, 0x0227, 0x0228, 0x0229, 0x0229, 0x022A, // $3b8
-            0x022B, 0x022B, 0x022C, 0x022D, 0x022E, 0x022E, 0x022F, 0x0230, // $3c0
+            0x021a, 0x021a, 0x021b, 0x021c, 0x021d, 0x021d, 0x021e, 0x021f, // $3a8
+            0x021f, 0x0220, 0x0221, 0x0221, 0x0222, 0x0223, 0x0224, 0x0224, // $3b0
+            0x0225, 0x0226, 0x0226, 0x0227, 0x0228, 0x0229, 0x0229, 0x022a, // $3b8
+            0x022b, 0x022b, 0x022c, 0x022d, 0x022e, 0x022e, 0x022f, 0x0230, // $3c0
             0x0230, 0x0231, 0x0232, 0x0233, 0x0233, 0x0234, 0x0235, 0x0235, // $3c8
-            0x0236, 0x0237, 0x0238, 0x0238, 0x0239, 0x023A, 0x023A, 0x023B, // $3d0
-            0x023C, 0x023D, 0x023D, 0x023E, 0x023F, 0x0240, 0x0240, 0x0241, // $3d8
+            0x0236, 0x0237, 0x0238, 0x0238, 0x0239, 0x023a, 0x023a, 0x023b, // $3d0
+            0x023c, 0x023d, 0x023d, 0x023e, 0x023f, 0x0240, 0x0240, 0x0241, // $3d8
             0x0242, 0x0242, 0x0243, 0x0244, 0x0245, 0x0245, 0x0246, 0x0247, // $3e0
-            0x0247, 0x0248, 0x0249, 0x024A, 0x024A, 0x024B, 0x024C, 0x024D, // $3e8
-            0x024D, 0x024E, 0x024F, 0x024F, 0x0250, 0x0251, 0x0252, 0x0252, // $3f0
+            0x0247, 0x0248, 0x0249, 0x024a, 0x024a, 0x024b, 0x024c, 0x024d, // $3e8
+            0x024d, 0x024e, 0x024f, 0x024f, 0x0250, 0x0251, 0x0252, 0x0252, // $3f0
             0x0253, 0x0254, 0x0255, 0x0255, 0x0256, 0x0257, 0x0258, 0x0258, // $3f8
-            0x0259, 0x025A, 0x025A, 0x025B, 0x025C, 0x025D, 0x025D, 0x025E, // $400
-            0x025F, 0x0260, 0x0260, 0x0261, 0x0262, 0x0263, 0x0263, 0x0264, // $408
-            0x0265, 0x0266, 0x0266, 0x0267, 0x0268, 0x0268, 0x0269, 0x026A, // $410
-            0x026B, 0x026B, 0x026C, 0x026D, 0x026E, 0x026E, 0x026F, 0x0270, // $418
+            0x0259, 0x025a, 0x025a, 0x025b, 0x025c, 0x025d, 0x025d, 0x025e, // $400
+            0x025f, 0x0260, 0x0260, 0x0261, 0x0262, 0x0263, 0x0263, 0x0264, // $408
+            0x0265, 0x0266, 0x0266, 0x0267, 0x0268, 0x0268, 0x0269, 0x026a, // $410
+            0x026b, 0x026b, 0x026c, 0x026d, 0x026e, 0x026e, 0x026f, 0x0270, // $418
             0x0271, 0x0271, 0x0272, 0x0273, 0x0274, 0x0274, 0x0275, 0x0276, // $420
-            0x0277, 0x0277, 0x0278, 0x0279, 0x027A, 0x027A, 0x027B, 0x027C, // $428
-            0x027D, 0x027D, 0x027E, 0x027F, 0x0280, 0x0280, 0x0281, 0x0282, // $430
+            0x0277, 0x0277, 0x0278, 0x0279, 0x027a, 0x027a, 0x027b, 0x027c, // $428
+            0x027d, 0x027d, 0x027e, 0x027f, 0x0280, 0x0280, 0x0281, 0x0282, // $430
             0x0283, 0x0283, 0x0284, 0x0285, 0x0286, 0x0286, 0x0287, 0x0288, // $438
-            0x0289, 0x0289, 0x028A, 0x028B, 0x028C, 0x028C, 0x028D, 0x028E, // $440
-            0x028F, 0x028F, 0x0290, 0x0291, 0x0292, 0x0292, 0x0293, 0x0294, // $448
-            0x0295, 0x0296, 0x0296, 0x0297, 0x0298, 0x0299, 0x0299, 0x029A, // $450
-            0x029B, 0x029C, 0x029C, 0x029D, 0x029E, 0x029F, 0x029F, 0x02A0, // $458
-            0x02A1, 0x02A2, 0x02A2, 0x02A3, 0x02A4, 0x02A5, 0x02A6, 0x02A6, // $460
-            0x02A7, 0x02A8, 0x02A9, 0x02A9, 0x02AA, 0x02AB, 0x02AC, 0x02AC, // $468
-            0x02AD, 0x02AE, 0x02AF, 0x02B0, 0x02B0, 0x02B1, 0x02B2, 0x02B3, // $470
-            0x02B3, 0x02B4, 0x02B5, 0x02B6, 0x02B7, 0x02B7, 0x02B8, 0x02B9, // $478
-            0x02BA, 0x02BA, 0x02BB, 0x02BC, 0x02BD, 0x02BE, 0x02BE, 0x02BF, // $480
-            0x02C0, 0x02C1, 0x02C1, 0x02C2, 0x02C3, 0x02C4, 0x02C5, 0x02C5, // $488
-            0x02C6, 0x02C7, 0x02C8, 0x02C8, 0x02C9, 0x02CA, 0x02CB, 0x02CC, // $490
-            0x02CC, 0x02CD, 0x02CE, 0x02CF, 0x02D0, 0x02D0, 0x02D1, 0x02D2, // $498
-            0x02D3, 0x02D3, 0x02D4, 0x02D5, 0x02D6, 0x02D7, 0x02D7, 0x02D8, // $4a0
-            0x02D9, 0x02DA, 0x02DB, 0x02DB, 0x02DC, 0x02DD, 0x02DE, 0x02DF, // $4a8
-            0x02DF, 0x02E0, 0x02E1, 0x02E2, 0x02E3, 0x02E3, 0x02E4, 0x02E5, // $4b0
-            0x02E6, 0x02E7, 0x02E7, 0x02E8, 0x02E9, 0x02EA, 0x02EB, 0x02EB, // $4b8
-            0x02EC, 0x02ED, 0x02EE, 0x02EF, 0x02EF, 0x02F0, 0x02F1, 0x02F2, // $4c0
-            0x02F3, 0x02F3, 0x02F4, 0x02F5, 0x02F6, 0x02F7, 0x02F7, 0x02F8, // $4c8
-            0x02F9, 0x02FA, 0x02FB, 0x02FB, 0x02FC, 0x02FD, 0x02FE, 0x02FF, // $4d0
-            0x02FF, 0x0300, 0x0301, 0x0302, 0x0303, 0x0303, 0x0304, 0x0305, // $4d8
-            0x0306, 0x0307, 0x0308, 0x0308, 0x0309, 0x030A, 0x030B, 0x030C, // $4e0
-            0x030C, 0x030D, 0x030E, 0x030F, 0x0310, 0x0310, 0x0311, 0x0312, // $4e8
+            0x0289, 0x0289, 0x028a, 0x028b, 0x028c, 0x028c, 0x028d, 0x028e, // $440
+            0x028f, 0x028f, 0x0290, 0x0291, 0x0292, 0x0292, 0x0293, 0x0294, // $448
+            0x0295, 0x0296, 0x0296, 0x0297, 0x0298, 0x0299, 0x0299, 0x029a, // $450
+            0x029b, 0x029c, 0x029c, 0x029d, 0x029e, 0x029f, 0x029f, 0x02a0, // $458
+            0x02a1, 0x02a2, 0x02a2, 0x02a3, 0x02a4, 0x02a5, 0x02a6, 0x02a6, // $460
+            0x02a7, 0x02a8, 0x02a9, 0x02a9, 0x02aa, 0x02ab, 0x02ac, 0x02ac, // $468
+            0x02ad, 0x02ae, 0x02af, 0x02b0, 0x02b0, 0x02b1, 0x02b2, 0x02b3, // $470
+            0x02b3, 0x02b4, 0x02b5, 0x02b6, 0x02b7, 0x02b7, 0x02b8, 0x02b9, // $478
+            0x02ba, 0x02ba, 0x02bb, 0x02bc, 0x02bd, 0x02be, 0x02be, 0x02bf, // $480
+            0x02c0, 0x02c1, 0x02c1, 0x02c2, 0x02c3, 0x02c4, 0x02c5, 0x02c5, // $488
+            0x02c6, 0x02c7, 0x02c8, 0x02c8, 0x02c9, 0x02ca, 0x02cb, 0x02cc, // $490
+            0x02cc, 0x02cd, 0x02ce, 0x02cf, 0x02d0, 0x02d0, 0x02d1, 0x02d2, // $498
+            0x02d3, 0x02d3, 0x02d4, 0x02d5, 0x02d6, 0x02d7, 0x02d7, 0x02d8, // $4a0
+            0x02d9, 0x02da, 0x02db, 0x02db, 0x02dc, 0x02dd, 0x02de, 0x02df, // $4a8
+            0x02df, 0x02e0, 0x02e1, 0x02e2, 0x02e3, 0x02e3, 0x02e4, 0x02e5, // $4b0
+            0x02e6, 0x02e7, 0x02e7, 0x02e8, 0x02e9, 0x02ea, 0x02eb, 0x02eb, // $4b8
+            0x02ec, 0x02ed, 0x02ee, 0x02ef, 0x02ef, 0x02f0, 0x02f1, 0x02f2, // $4c0
+            0x02f3, 0x02f3, 0x02f4, 0x02f5, 0x02f6, 0x02f7, 0x02f7, 0x02f8, // $4c8
+            0x02f9, 0x02fa, 0x02fb, 0x02fb, 0x02fc, 0x02fd, 0x02fe, 0x02ff, // $4d0
+            0x02ff, 0x0300, 0x0301, 0x0302, 0x0303, 0x0303, 0x0304, 0x0305, // $4d8
+            0x0306, 0x0307, 0x0308, 0x0308, 0x0309, 0x030a, 0x030b, 0x030c, // $4e0
+            0x030c, 0x030d, 0x030e, 0x030f, 0x0310, 0x0310, 0x0311, 0x0312, // $4e8
             0x0313, 0x0314, 0x0315, 0x0315, 0x0316, 0x0317, 0x0318, 0x0319, // $4f0
-            0x0319, 0x031A, 0x031B, 0x031C, 0x031D, 0x031E, 0x031E, 0x031F, // $4f8
+            0x0319, 0x031a, 0x031b, 0x031c, 0x031d, 0x031e, 0x031e, 0x031f, // $4f8
             0x0320, 0x0321, 0x0322, 0x0323, 0x0323, 0x0324, 0x0325, 0x0326, // $500
-            0x0327, 0x0327, 0x0328, 0x0329, 0x032A, 0x032B, 0x032C, 0x032C, // $508
-            0x032D, 0x032E, 0x032F, 0x0330, 0x0331, 0x0331, 0x0332, 0x0333, // $510
-            0x0334, 0x0335, 0x0336, 0x0336, 0x0337, 0x0338, 0x0339, 0x033A, // $518
-            0x033B, 0x033B, 0x033C, 0x033D, 0x033E, 0x033F, 0x0340, 0x0340, // $520
+            0x0327, 0x0327, 0x0328, 0x0329, 0x032a, 0x032b, 0x032c, 0x032c, // $508
+            0x032d, 0x032e, 0x032f, 0x0330, 0x0331, 0x0331, 0x0332, 0x0333, // $510
+            0x0334, 0x0335, 0x0336, 0x0336, 0x0337, 0x0338, 0x0339, 0x033a, // $518
+            0x033b, 0x033b, 0x033c, 0x033d, 0x033e, 0x033f, 0x0340, 0x0340, // $520
             0x0341, 0x0342, 0x0343, 0x0344, 0x0345, 0x0345, 0x0346, 0x0347, // $528
-            0x0348, 0x0349, 0x034A, 0x034B, 0x034B, 0x034C, 0x034D, 0x034E, // $530
-            0x034F, 0x0350, 0x0350, 0x0351, 0x0352, 0x0353, 0x0354, 0x0355, // $538
-            0x0356, 0x0356, 0x0357, 0x0358, 0x0359, 0x035A, 0x035B, 0x035B, // $540
-            0x035C, 0x035D, 0x035E, 0x035F, 0x0360, 0x0361, 0x0361, 0x0362, // $548
+            0x0348, 0x0349, 0x034a, 0x034b, 0x034b, 0x034c, 0x034d, 0x034e, // $530
+            0x034f, 0x0350, 0x0350, 0x0351, 0x0352, 0x0353, 0x0354, 0x0355, // $538
+            0x0356, 0x0356, 0x0357, 0x0358, 0x0359, 0x035a, 0x035b, 0x035b, // $540
+            0x035c, 0x035d, 0x035e, 0x035f, 0x0360, 0x0361, 0x0361, 0x0362, // $548
             0x0363, 0x0364, 0x0365, 0x0366, 0x0367, 0x0367, 0x0368, 0x0369, // $550
-            0x036A, 0x036B, 0x036C, 0x036D, 0x036D, 0x036E, 0x036F, 0x0370, // $558
+            0x036a, 0x036b, 0x036c, 0x036d, 0x036d, 0x036e, 0x036f, 0x0370, // $558
             0x0371, 0x0372, 0x0373, 0x0373, 0x0374, 0x0375, 0x0376, 0x0377, // $560
-            0x0378, 0x0379, 0x0379, 0x037A, 0x037B, 0x037C, 0x037D, 0x037E, // $568
-            0x037F, 0x0380, 0x0380, 0x0381, 0x0382, 0x0383, 0x0384, 0x0385, // $570
-            0x0386, 0x0386, 0x0387, 0x0388, 0x0389, 0x038A, 0x038B, 0x038C, // $578
-            0x038D, 0x038D, 0x038E, 0x038F, 0x0390, 0x0391, 0x0392, 0x0393, // $580
-            0x0394, 0x0394, 0x0395, 0x0396, 0x0397, 0x0398, 0x0399, 0x039A, // $588
-            0x039B, 0x039B, 0x039C, 0x039D, 0x039E, 0x039F, 0x03A0, 0x03A1, // $590
-            0x03A2, 0x03A2, 0x03A3, 0x03A4, 0x03A5, 0x03A6, 0x03A7, 0x03A8, // $598
-            0x03A9, 0x03AA, 0x03AA, 0x03AB, 0x03AC, 0x03AD, 0x03AE, 0x03AF, // $5a0
-            0x03B0, 0x03B1, 0x03B2, 0x03B2, 0x03B3, 0x03B4, 0x03B5, 0x03B6, // $5a8
-            0x03B7, 0x03B8, 0x03B9, 0x03BA, 0x03BA, 0x03BB, 0x03BC, 0x03BD, // $5b0
-            0x03BE, 0x03BF, 0x03C0, 0x03C1, 0x03C2, 0x03C3, 0x03C3, 0x03C4, // $5b8
-            0x03C5, 0x03C6, 0x03C7, 0x03C8, 0x03C9, 0x03CA, 0x03CB, 0x03CB, // $5c0
-            0x03CC, 0x03CD, 0x03CE, 0x03CF, 0x03D0, 0x03D1, 0x03D2, 0x03D3, // $5c8
-            0x03D4, 0x03D5, 0x03D5, 0x03D6, 0x03D7, 0x03D8, 0x03D9, 0x03DA, // $5d0
-            0x03DB, 0x03DC, 0x03DD, 0x03DE, 0x03DE, 0x03DF, 0x03E0, 0x03E1, // $5d8
-            0x03E2, 0x03E3, 0x03E4, 0x03E5, 0x03E6, 0x03E7, 0x03E8, 0x03E9, // $5e0
-            0x03E9, 0x03EA, 0x03EB, 0x03EC, 0x03ED, 0x03EE, 0x03EF, 0x03F0, // $5e8
-            0x03F1, 0x03F2, 0x03F3, 0x03F4, 0x03F4, 0x03F5, 0x03F6, 0x03F7, // $5f0
-            0x03F8, 0x03F9, 0x03FA, 0x03FB, 0x03FC, 0x03FD, 0x03FE, 0x03FF  // $5f8
+            0x0378, 0x0379, 0x0379, 0x037a, 0x037b, 0x037c, 0x037d, 0x037e, // $568
+            0x037f, 0x0380, 0x0380, 0x0381, 0x0382, 0x0383, 0x0384, 0x0385, // $570
+            0x0386, 0x0386, 0x0387, 0x0388, 0x0389, 0x038a, 0x038b, 0x038c, // $578
+            0x038d, 0x038d, 0x038e, 0x038f, 0x0390, 0x0391, 0x0392, 0x0393, // $580
+            0x0394, 0x0394, 0x0395, 0x0396, 0x0397, 0x0398, 0x0399, 0x039a, // $588
+            0x039b, 0x039b, 0x039c, 0x039d, 0x039e, 0x039f, 0x03a0, 0x03a1, // $590
+            0x03a2, 0x03a2, 0x03a3, 0x03a4, 0x03a5, 0x03a6, 0x03a7, 0x03a8, // $598
+            0x03a9, 0x03aa, 0x03aa, 0x03ab, 0x03ac, 0x03ad, 0x03ae, 0x03af, // $5a0
+            0x03b0, 0x03b1, 0x03b2, 0x03b2, 0x03b3, 0x03b4, 0x03b5, 0x03b6, // $5a8
+            0x03b7, 0x03b8, 0x03b9, 0x03ba, 0x03ba, 0x03bb, 0x03bc, 0x03bd, // $5b0
+            0x03be, 0x03bf, 0x03c0, 0x03c1, 0x03c2, 0x03c3, 0x03c3, 0x03c4, // $5b8
+            0x03c5, 0x03c6, 0x03c7, 0x03c8, 0x03c9, 0x03ca, 0x03cb, 0x03cb, // $5c0
+            0x03cc, 0x03cd, 0x03ce, 0x03cf, 0x03d0, 0x03d1, 0x03d2, 0x03d3, // $5c8
+            0x03d4, 0x03d5, 0x03d5, 0x03d6, 0x03d7, 0x03d8, 0x03d9, 0x03da, // $5d0
+            0x03db, 0x03dc, 0x03dd, 0x03de, 0x03de, 0x03df, 0x03e0, 0x03e1, // $5d8
+            0x03e2, 0x03e3, 0x03e4, 0x03e5, 0x03e6, 0x03e7, 0x03e8, 0x03e9, // $5e0
+            0x03e9, 0x03ea, 0x03eb, 0x03ec, 0x03ed, 0x03ee, 0x03ef, 0x03f0, // $5e8
+            0x03f1, 0x03f2, 0x03f3, 0x03f4, 0x03f4, 0x03f5, 0x03f6, 0x03f7, // $5f0
+            0x03f8, 0x03f9, 0x03fa, 0x03fb, 0x03fc, 0x03fd, 0x03fe, 0x03ff  // $5f8
     };
 
     //
@@ -793,7 +793,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         moon_fm2_out();
 
         // RHYTHM
-        d = 0xbd;
+        d = (byte) 0xbd;
         e = 0;
         moon_fm1_out();
 
@@ -812,7 +812,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      * dest : AF
      */
     private void set_page3_ch() {
-        a = work.ch[ix].bank;
+        a = (byte) work.ch[ix].bank;
         changePage3();
     }
 
@@ -848,7 +848,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      * dest : AF,DE
      */
     private void get_hl_table() {
-        a = work.seq_cur_ch;
+        a = (byte) work.seq_cur_ch;
 
         e = a;
         d = 0x00;
@@ -857,16 +857,16 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void get_table_hl_2de() {
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         hl++;
-        hl = (readMemory(hl) & 0xff) * 0x100 + a;
+        hl = (short) ((readMemory(hl) & 0xff) * 0x100 + (a & 0xff));
 
         hl += e;
         hl += e;
 
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         hl++;
-        hl =(readMemory(hl) & 0xff) * 0x100 + a;
+        hl = (short) ((readMemory(hl) & 0xff) * 0x100 + (a & 0xff));
     }
 
     /**
@@ -876,16 +876,16 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      * dest : HL,DE
      */
     private void get_a_table() {
-        a = work.seq_cur_ch;
+        a = (byte) work.seq_cur_ch;
         e = a;
         d = 0x00;
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         hl++;
 
-        hl = (readMemory(hl) & 0xff) * 0x100 + a;
+        hl = (short) ((readMemory(hl) & 0xff) * 0x100 + (a & 0xff));
         hl += e;
 
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
     }
 
     /**
@@ -899,7 +899,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         work.seq_cur_ch = a;
         changePage3(); // Page to Top
 
-        a = (readMemory(S_DEVICE_FLAGS) & 0xff);
+        a = readMemory(S_DEVICE_FLAGS);
         if (a == 0) a = 1; // OPL4 by default
         b = a;
         iy = 0; // fm_opbtbl;
@@ -964,11 +964,11 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
             // init_tone_fin:
 
-            hl = S_TRACK_TABLE;
+            hl = (short) S_TRACK_TABLE;
             get_hl_table();
             work.ch[ix].addr = hl;
 
-            hl = S_TRACK_BANK;
+            hl = (short) S_TRACK_BANK;
             get_a_table();
             work.ch[ix].bank = a;
 
@@ -979,8 +979,8 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             //next work
             ix++;
 
-            d = db;
-            e = eb;
+            d = (byte) db;
+            e = (byte) eb;
 
             //next channel
             work.seq_cur_ch += 1;
@@ -1001,7 +1001,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         hl = 0; // fm_opbtbl;
         // seq_init_fmbase_lp1:
         do {
-            a = fm_opbtbl[hl];
+            a = (byte) fm_opbtbl[hl];
             work.ch[ix].opsel = a;
             hl++;
             ix++;
@@ -1037,7 +1037,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      */
     private void moon_seq_all_release_fm() {
         // D = $80(Reg adrs) E = (sl = $00, rr = $0f)
-        d = 0x80;
+        d = (byte) 0x80;
         e = 0x0f;
 
         b = 18;
@@ -1048,7 +1048,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // moon_set_rr_ch_lp:
         do {
             // read opsel tbl
-            a = fm_opbtbl[hl];
+            a = (byte) fm_opbtbl[hl];
             work.seq_opsel = a;
             hl++;
 
@@ -1058,12 +1058,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
                 // write fm op
                 int de = d * 0x100 + e;
                 moon_write_fmop();
-                d = de >> 8;
-                e = de & 0xff;
+                d = (byte) (de >> 8);
+                e = (byte) (de & 0xff);
 
                 // add opsel
 
-                a = work.seq_opsel;
+                a = (byte) work.seq_opsel;
                 a += 3;
                 work.seq_opsel = a;
 
@@ -1102,8 +1102,8 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
                     endCnt++;
                     ix++;
                     work.seq_cur_ch++;
-                    a = work.seq_cur_ch;
-                    e = work.seq_use_ch;
+                    a = (byte) work.seq_cur_ch;
+                    e = (byte) work.seq_use_ch;
                     continue;
                 }
 
@@ -1123,9 +1123,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
                 // ld de, SEQ_WORKSIZE
                 ix++; // add ix, de
 
-                a = work.seq_use_ch;
+                a = (byte) work.seq_use_ch;
                 e = a;
-                a = work.seq_cur_ch;
+                a = (byte) work.seq_cur_ch;
                 a++;
 
                 if (CP_CF(e)) {
@@ -1142,7 +1142,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             vgmCurLoop = loop;
 
             //proc_tracks_end:
-            a = work.seq_jump_flag;
+            a = (byte) work.seq_jump_flag;
 
         } while (a != 0);
         // jr moon_proc_tracks
@@ -1156,7 +1156,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         do {
             nextFlg = false;
 
-            a = work.ch[ix].cnt;
+            a = (byte) work.ch[ix].cnt;
 
             if (a != 0) {
                 a--;
@@ -1165,13 +1165,13 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             }
 
             // seq_cnt_zero:
-            hl = work.ch[ix].addr;
+            hl = (short) work.ch[ix].addr;
 
             // seq_track_lp:
             do {
                 // Read command from memory
                 set_page3_ch();
-                a = (readMemory(hl) & 0xff);
+                a = readMemory(hl);
                 hl++;
 
                 if (CP_CF(0xe0)) {
@@ -1194,7 +1194,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
                 // hl = (int)(ReadMemory(hl) * 0x100);
                 // hl = (int)((hl & 0xff00) + a);
 
-                seq_jmptable[a - 0xe0].run();
+                seq_jmptable[(a & 0xff) - 0xe0].run();
                 if (nextFlg) break;
             } while (!work.ch[ix].endFlg);
         } while (nextFlg);
@@ -1224,13 +1224,13 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
         //
         // s eq_repeat_end:
-        a = work.ch[ix].loop;
+        a = (byte) work.ch[ix].loop;
         if (CP_ZF(0x01)) {
             seq_skip_rep_jmp();
             return;
         }
         if (a == 0) {
-            a = (readMemory(hl) & 0xff); // read repeat counter
+            a = readMemory(hl); // read repeat counter
         }
 
         // seq_skip_set_repcnt_end:
@@ -1239,7 +1239,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
     /** */
     private void seq_repeat_esc() {
-        a = work.ch[ix].loop;
+        a = (byte) work.ch[ix].loop;
 
         if (CP_ZF((byte) 0x01)) {
             seq_rep_jmp();
@@ -1247,7 +1247,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         }
 
         if (a == 0) {
-            a = (readMemory(hl) & 0xff); // read repeat counter
+            a = readMemory(hl); // read repeat counter
         }
 
         // seq_skip_set_repcnt_esc:
@@ -1289,14 +1289,14 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         a = 0;
         changePage3();
 
-        a = work.ch[ix].dsel;
+        a = (byte) work.ch[ix].dsel;
         if (a == 0) {
             seq_note_opl4(hlb, af);
             return;
         }
 
         // seq_note_fm:
-        a = af;
+        a = (byte) af;
 
         work.ch[ix].note = a;
         moon_set_fmnote();
@@ -1305,7 +1305,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
     private void seq_note_opl4(int hlb, int af) {
         // seq_note_opl4:
-        a = af;
+        a = (byte) af;
         conv_data_to_midi();
 
         work.ch[ix].note = a;
@@ -1318,11 +1318,11 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         set_page3_ch();
         moon_key_on();
 
-        hl = hlb;
+        hl = (short) hlb;
 
         // note length
 
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
 
         work.ch[ix].cnt = a;
         hl++;
@@ -1331,29 +1331,29 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
     private void read_cmd_length() {
         // pop af
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         work.ch[ix].cnt = a;
         hl++;
         seq_next();
     }
 
     private void start_venv() {
-        a = work.ch[ix].venv;
+        a = (byte) work.ch[ix].venv;
         if (CP_ZF(0xff)) return;
         set_venv_head();
         proc_venv_start();
     }
 
     private void proc_venv() {
-        a = work.ch[ix].venv;
+        a = (byte) work.ch[ix].venv;
         if (CP_ZF(0xff)) return;
         proc_venv_start();
     }
 
     private void proc_venv_start() {
-        hl = work.ch[ix].venv_adr;
-        a = hl & 0xff;
-        a |= hl >> 8;
+        hl = (short) work.ch[ix].venv_adr;
+        a = (byte) (hl & 0xff);
+        a |= (hl & 0xff00) >> 8;
 
         if (a == 0) return;
 
@@ -1370,27 +1370,27 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void proc_venv_reg() {
-        a = work.ch[ix].venv;
+        a = (byte) work.ch[ix].venv;
 
         if (CP_ZF(0xff)) return;
         moon_set_vol_ch();
     }
 
     private void start_penv() {
-        a = work.ch[ix].penv;
+        a = (byte) work.ch[ix].penv;
         if (CP_ZF(0xff)) return;
         set_penv_head();
         proc_penv_start();
     }
 
     private void proc_penv() {
-        a = work.ch[ix].penv;
+        a = (byte) work.ch[ix].penv;
         if (CP_ZF(0xff)) return;
         proc_penv_start();
     }
 
     private void proc_penv_start() {
-        hl = work.ch[ix].penv_adr;
+        hl = (short) work.ch[ix].penv_adr;
         read_effect_value();
 
         if (CP_ZF(0xff)) {
@@ -1403,12 +1403,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         work.ch[ix].penv_adr = hl;
 
         int af = a; //  push    af
-        a = work.ch[ix].dsel;
+        a = (byte) work.ch[ix].dsel;
         if (a == 0) {
             // proc_penv_opl4:
-            a = af;
+            a = (byte) af;
 
-            hl = work.ch[ix].pitch;
+            hl = (short) work.ch[ix].pitch;
             add_freq_offset();
             work.ch[ix].pitch = hl;
 
@@ -1417,12 +1417,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         }
 
         // proc_penv_fm:
-        a = af;
+        a = (byte) af;
 
-        hl = work.ch[ix].fnum;
+        hl = (short) work.ch[ix].fnum;
         add_freq_offset();
 
-        a = hl >> 8;
+        a = (byte) (hl >> 8);
         if (!CP_CF(0x80)) {
             //penv_fm_set_fnum:
             work.ch[ix].fnum = hl;
@@ -1439,14 +1439,14 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             //	; hl < de
             do {
                 work.ch[ix].oct--;
-                hl += (short) ((d << 8) + e);
+                hl += (short) (((d & 0xff) << 8) + (e & 0xff));
 
                 ans = comp_hl_de();
             } while (ans < 0);
 
         } else {
             d = 2;
-            e = 0xb5; // de=693
+            e = (byte) 0xb5; // de=693
 
             ans = comp_hl_de();
             if (ans >= 0) {
@@ -1462,7 +1462,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
                     a = 0;
                     //    sbc hl, bc
-                    hl -= (short) ((b << 8) + c);
+                    hl -= (short) (((b & 0xff) << 8) + (c & 0xff));
                     ans = comp_hl_de();
                 } while (ans >= 0);
             }
@@ -1478,21 +1478,21 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void start_nenv() {
-        a = work.ch[ix].nenv;
+        a = (byte) work.ch[ix].nenv;
         if (CP_ZF(0xff)) return;
         set_nenv_head();
         proc_nenv_start();
     }
 
     private void proc_nenv() {
-        a = work.ch[ix].nenv;
+        a = (byte) work.ch[ix].nenv;
 
         if (CP_ZF(0xff)) return;
         proc_nenv_start();
     }
 
     private void proc_nenv_start() {
-        hl = work.ch[ix].nenv_adr;
+        hl = (short) work.ch[ix].nenv_adr;
         read_effect_value();
 
         if (CP_ZF(0xff)) {
@@ -1504,12 +1504,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         work.ch[ix].nenv_adr = hl;
 
         int af = a; //  push    af
-        a = work.ch[ix].dsel;
+        a = (byte) work.ch[ix].dsel;
         if (a != 0) {
-            a = af;
+            a = (byte) af;
             proc_nenv_fm();
         } else {
-            a = af;
+            a = (byte) af;
             proc_nenv_opl4();
         }
     }
@@ -1524,7 +1524,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             // proc_nenv_nega_opl4:
             a &= 0x7f;
             e = a;
-            a = work.ch[ix].note;
+            a = (byte) work.ch[ix].note;
             a -= e;
             work.ch[ix].note = a;
         }
@@ -1548,7 +1548,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         }
         // proc_nenv_fm_add:
         c = a;// C = (note % 12)
-        a = work.ch[ix].note;
+        a = (byte) work.ch[ix].note;
         a &= 0xf;
         a += c;
 
@@ -1562,13 +1562,13 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
         a = b; // B = oct
 
-        a = (a << 1) + (a >> 7); // rlca
-        a = (a << 1) + (a >> 7);
-        a = (a << 1) + (a >> 7);
-        a = (a << 1) + (a >> 7);
+        a = (byte) (((a & 0xff) << 1) + ((a & 0xff) >> 7)); // rlca
+        a = (byte) (((a & 0xff) << 1) + ((a & 0xff) >> 7));
+        a = (byte) (((a & 0xff) << 1) + ((a & 0xff) >> 7));
+        a = (byte) (((a & 0xff) << 1) + ((a & 0xff) >> 7));
 
         b = a;
-        a = work.ch[ix].note;
+        a = (byte) work.ch[ix].note;
 
         a &= 0xf0;
         a += b;
@@ -1592,10 +1592,10 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // proc_nenv_fm_sub:
         c = a; // C = (note % 12)
 
-        a = work.ch[ix].note;
+        a = (byte) work.ch[ix].note;
         a &= 0xf;
         int ai = a - c;
-        a = ai;
+        a = (byte) ai;
         if (ai < 0) {
             a -= 0x04;
             a &= 0xf;
@@ -1605,13 +1605,13 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         c = a; // C = (note & 0x0f)
         a = b; // B = oct
 
-        a = (a << 1) + (a >> 7); // rlca
-        a = (a << 1) + (a >> 7);
-        a = (a << 1) + (a >> 7);
-        a = (a << 1) + (a >> 7);
+        a = (byte) (((a & 0xff) << 1) + ((a & 0xff) >> 7)); // rlca
+        a = (byte) (((a & 0xff) << 1) + ((a & 0xff) >> 7));
+        a = (byte) (((a & 0xff) << 1) + ((a & 0xff) >> 7));
+        a = (byte) (((a & 0xff) << 1) + ((a & 0xff) >> 7));
 
         b = a;
-        a = work.ch[ix].note;
+        a = (byte) work.ch[ix].note;
         a &= 0xf0;
         a -= b;
         a |= c;
@@ -1625,13 +1625,13 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      * Set frequency to registers actually
      */
     private void proc_freq_reg() {
-        a = work.ch[ix].penv;
+        a = (byte) work.ch[ix].penv;
 
         if (!CP_ZF(0xff)) {
             moon_set_freq_ch();
             return;
         }
-        a = work.ch[ix].nenv;
+        a = (byte) work.ch[ix].nenv;
 
         if (!CP_ZF(0xff)) {
             moon_set_freq_ch();
@@ -1655,12 +1655,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         a = 0;
         changePage3();
 
-        hl = S_LOOP_TABLE;
+        hl = (short) S_LOOP_TABLE;
         get_hl_table();
 
-        int hl1 = hl;
+        short hl1 = hl;
 
-        hl = S_LOOP_BANK;
+        hl = (short) S_LOOP_BANK;
         get_a_table();
 
         work.ch[ix].bank = a;
@@ -1672,7 +1672,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     /** cmd $FD : volume */
     private void seq_volume() {
 
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         work.ch[ix].venv = a;
 
         if ((0x80 & a) == 0) {
@@ -1683,13 +1683,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         a &= 0x7f;
         work.ch[ix].vol = a;
 
-        a = 0xff;
+        a = (byte) 0xff;
         work.ch[ix].venv = a; // venv = off
 
         moon_set_vol_ch();
 
         hl++;
-
     }
 
     private void seq_venv() {
@@ -1702,8 +1701,8 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         read_cmd_length();
 
         if (work.ch[ix].cnt == 255) {
-            int vee = (readMemory(hl) & 0xff);
-            int v00 = (readMemory(hl + 1) & 0xff);
+            int vee = readMemory(hl) & 0xff;
+            int v00 = readMemory(hl + 1) & 0xff;
             int adr = ((readMemory(hl + 2) & 0xff) + (readMemory(hl + 3) & 0xff) * 0x100);
             if (vee == 0xee && v00 == 0x00 && hl - 2 == adr) {
                 work.ch[ix].endFlg = true;
@@ -1712,14 +1711,14 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void seq_detune() {
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
 
         work.ch[ix].detune = a;
         hl++;
     }
 
     private void seq_penv() {
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
 
         hl++;
         work.ch[ix].penv = a;
@@ -1729,7 +1728,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void seq_nenv() {
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
 
         hl++;
         work.ch[ix].nenv = a;
@@ -1739,11 +1738,11 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void seq_data_write() {
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         d = a; // Address Low
         hl++;
 
-        a = (readMemory(hl) & 0xff); // Address High
+        a = readMemory(hl); // Address High
         if (a == 0) {
             write_data_cur_fm(); // (a >> 8) == 0
             return;
@@ -1773,12 +1772,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void write_data_cur_fm() {
         hl++;
 
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
 
         e = a;// data
         hl++;
 
-        a = work.seq_cur_ch;
+        a = (byte) work.seq_cur_ch;
         if (CP_CF(9))
             moon_fm1_out();
         else
@@ -1788,7 +1787,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void write_data_fm1() {
         hl++;
 
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
 
         e = a;// data
         hl++;
@@ -1798,7 +1797,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void write_data_fm2() {
         hl++;
 
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
 
         e = a;// data
         hl++;
@@ -1808,7 +1807,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void write_data_wave() {
         hl++;
 
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
 
         e = a;// data
         hl++;
@@ -1820,20 +1819,20 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void seq_drum() {
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
 
         a &= 0x1f;
 
         e = a;
 
-        a = work.seq_reg_bd;
+        a = (byte) work.seq_reg_bd;
 
         a &= 0xe0;
         a |= e;
 
         work.seq_reg_bd = a;
         e = a;
-        d = 0xbd;
+        d = (byte) 0xbd;
         moon_fm1_out();
         hl++;
     }
@@ -1841,41 +1840,41 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void seq_drumbit() {
         // drums key-off
 
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         a &= 0x1f;
         a ^= 0xff;
 
         // e = mask bits of drums
         e = a;
-        a = work.seq_reg_bd;
+        a = (byte) work.seq_reg_bd;
         a &= e;
 
         work.seq_reg_bd = a;
         e = a;
-        d = 0xbd;
+        d = (byte) 0xbd;
         moon_fm1_out();
 
         // set fNum
         int hlb = hl;
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         a &= 0x1f;
 
         c = 0;
         b = 5;
 
-        a = (a << 1) + ((a & 0x80) != 0 ? 1 : 0); // rlca
-        a = (a << 1) + ((a & 0x80) != 0 ? 1 : 0);
-        a = (a << 1) + ((a & 0x80) != 0 ? 1 : 0);
+        a = (byte) (((a & 0xff) << 1) + ((a & 0x80) != 0 ? 1 : 0)); // rlca
+        a = (byte) (((a & 0xff) << 1) + ((a & 0x80) != 0 ? 1 : 0));
+        a = (byte) (((a & 0xff) << 1) + ((a & 0x80) != 0 ? 1 : 0));
 
         //  a = drum bits, BC = count
         // drumbit_fnum_lp:
         do {
             boolean cry = (a & 0x80) != 0;
-            a = (a << 1) + (cry ? 1 : 0); // rlca
+            a = (byte) (((a & 0xff) << 1) + (cry ? 1 : 0)); // rlca
             if (cry) {
-                int af = a;
-                int bb = b;
-                int cb = c;
+                byte af = a;
+                byte bb = b;
+                byte cb = c;
                 drumbit_set_fnum(); // set Fnum for drums
                 b = bb;
                 c = cb;
@@ -1884,29 +1883,29 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             // drumbit_fnum_next:
             c++;
             b--;
-        } while (b > 0);
+        } while ((b & 0xff) > 0);
 
-        hl = hlb;
+        hl = (short) hlb;
 
         // skip if jump flag instanceof true
-        a = work.seq_jump_flag;
+        a = (byte) work.seq_jump_flag;
         if (a == 0) {
             // drums key-on
-            a = (readMemory(hl) & 0xff);
+            a = readMemory(hl);
             a &= 0x1f;
             e = a;
-            a = work.seq_reg_bd;
+            a = (byte) work.seq_reg_bd;
             a &= 0xe0;
             a |= e;
             work.seq_reg_bd = a;
             e = a;
-            d = 0xbd;
+            d = (byte) 0xbd;
             moon_fm1_out();
         }
 
         // drumbit_skip_keyon:
         //  length check
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         a &= 0x80; // Lxxxxxxx L = the command has length
         if (a != 0) {
             //  drumbit with length
@@ -1941,8 +1940,8 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         moon_key_write_fmfreq_base();
 
         e = a;
-        d = 0xb0;
-        a = work.seq_tmp_ch;
+        d = (byte) 0xb0;
+        a = (byte) work.seq_tmp_ch;
 
         // write FnumH and BLK
         moon_write_fmreg_nch();
@@ -1950,12 +1949,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
     private void seq_drumnote() {
         // set fNum
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         a &= 0x1f;
 
-        int af = a;
+        byte af = a;
         hl++;
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         work.seq_tmp_note = a;
         hl++;
         a = af;
@@ -1964,15 +1963,15 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         c = 0;
         b = 5;
 
-        a = (a << 1) + ((a & 0x80) != 0 ? 1 : 0); //    rlca
-        a = (a << 1) + ((a & 0x80) != 0 ? 1 : 0); //    rlca
-        a = (a << 1) + ((a & 0x80) != 0 ? 1 : 0); //    rlca
+        a = (byte) (((a & 0xff) << 1) + ((a & 0x80) != 0 ? 1 : 0)); //    rlca
+        a = (byte) (((a & 0xff) << 1) + ((a & 0x80) != 0 ? 1 : 0)); //    rlca
+        a = (byte) (((a & 0xff) << 1) + ((a & 0x80) != 0 ? 1 : 0)); //    rlca
 
         //  a = drum bits, BC = count
         // drumnote_lp:
         do {
             boolean cry = (a & 0x80) != 0;
-            a = (byte) ((a << 1) + (cry ? 1 : 0)); //    rlca
+            a = (byte) (((a & 0xff) << 1) + (cry ? 1 : 0)); //    rlca
 
             if (!cry) {
                 // drumnote_next:
@@ -1982,14 +1981,14 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
                 int bb = b;
                 int cb = c;
                 drumnote_fnum(); // set Fnum for drums
-                b = bb;
-                c = cb;
-                a = af;
+                b = (byte) bb;
+                c = (byte) cb;
+                a = (byte) af;
             }
             b--;
         } while (b > 0);
 
-        hl = hlb;
+        hl = (short) (short) hlb;
         hl++;
     }
 
@@ -2000,17 +1999,17 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void drumnote_fnum() {
         int bb = b;
         int cb = c;
-        a = work.seq_tmp_note;
+        a = (byte) work.seq_tmp_note;
         moon_calc_opl3note();
-        b = bb;
-        c = cb;
+        b = (byte) bb;
+        c = (byte) cb;
 
         // oct
         b = 0;
 
         hl = 0; // fm_drum_oct
         hl += c;
-        a = work.seq_tmp_oct;
+        a = (byte) work.seq_tmp_oct;
         fm_drum_oct[hl] = a;
 
         // fNum
@@ -2021,33 +2020,33 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
     private void seq_inst() {
         // pop hl
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         int af = a;
         int hlb;
         a = 0;
         changePage3();
 
         // Device select
-        a = work.ch[ix].dsel;
+        a = (byte) work.ch[ix].dsel;
         if (a == 0) {
             //seq_inst_opl4:
-            a = af;
+            a = (byte) af;
             hlb = hl;
-            hl = S_INST_TABLE;
+            hl = (short) (short) S_INST_TABLE;
             get_table();
             work.ch[ix].tadr = hl;
 
             //seq_inst_fin:
             set_page3_ch();
-            hl = hlb;
+            hl = (short) hlb;
             hl++;
             return;
         }
 
         // Load OPL3 instrument
-        a = af;
+        a = (byte) af;
         hlb = hl;
-        hl = S_OPL3_TABLE;
+        hl = (short) S_OPL3_TABLE;
         get_table();
         work.ch[ix].tadr = hl;
         // set tone to FM
@@ -2055,26 +2054,26 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
         // seq_inst_fin:
         set_page3_ch();
-        hl = hlb;
+        hl = (short) hlb;
         hl++;
     }
 
     private void seq_pan() {
         // Device select
-        a = work.ch[ix].dsel;
+        a = (byte) work.ch[ix].dsel;
 
         if (a == 0) {
             //seq_pan_opl4:
-            a = (readMemory(hl) & 0xff);
+            a = (byte) (readMemory(hl) & 0xff);
             work.ch[ix].pan = a;
         } else {
             // seq_pan_fm:
-            a = (readMemory(hl) & 0xff);
+            a = (byte) (readMemory(hl) & 0xff);
             a &= 0xf;
-            a = (a << 1) + (((a & 0x80) != 0) ? 1 : 0); // rlca
-            a = (a << 1) + (((a & 0x80) != 0) ? 1 : 0); // rlca
-            a = (a << 1) + (((a & 0x80) != 0) ? 1 : 0); // rlca
-            a = (a << 1) + (((a & 0x80) != 0) ? 1 : 0); // rlca
+            a = (byte) (((a & 0xff) << 1) + (((a & 0x80) != 0) ? 1 : 0)); // rlca
+            a = (byte) (((a & 0xff) << 1) + (((a & 0x80) != 0) ? 1 : 0)); // rlca
+            a = (byte) (((a & 0xff) << 1) + (((a & 0x80) != 0) ? 1 : 0)); // rlca
+            a = (byte) (((a & 0xff) << 1) + (((a & 0x80) != 0) ? 1 : 0)); // rlca
 
             work.ch[ix].pan = a; // PPPPxxxx
             moon_write_fmpan(); // Write PAN to FM
@@ -2085,24 +2084,24 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void seq_lfosw() {
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         work.ch[ix].lfo = a;
         hl++;
     }
 
     private void seq_bank() {
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         hl++;
 
-        int af = a;
+        byte af = a;
 
-        a = (readMemory(hl) & 0xff);
+        a = readMemory(hl);
         hl++;
-        hl = ((readMemory(hl) & 0xff) * 0x100 + a);
+        hl = (short) ((readMemory(hl) & 0xff) * 0x100 + (a & 0xff));
 
         a = 0;
         changePage3();
-        int ltbl = (readMemory(S_LOOP_TABLE) & 0xff) + (readMemory((S_LOOP_TABLE + 1) & 0xff)) * 0x100 + ix * 2;
+        int ltbl = (readMemory(S_LOOP_TABLE) & 0xff) + (readMemory((S_LOOP_TABLE + 1) & 0xff)) * 0x100 + (ix & 0xffff) * 2;
         ltbl = (readMemory(ltbl) & 0xff) + (readMemory((ltbl + 1) & 0xff)) * 0x100;
         if (hl == ltbl) {
             work.ch[ix].loopCnt += (work.ch[ix].loopCnt == Integer.MAX_VALUE) ? 0 : 1;
@@ -2116,13 +2115,13 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
     private void seq_damp() {
         // Device select
-        a = work.ch[ix].dsel;
+        a = (byte) work.ch[ix].dsel;
         if (a == 0) {
             // seq_damp_opl4:
-            a = (readMemory(hl) & 0xff);
+            a = (byte) (readMemory(hl) & 0xff);
             work.ch[ix].damp = a;
         } else {
-            a = (readMemory(hl) & 0xff);
+            a = (byte) (readMemory(hl) & 0xff);
             a &= 0x3f;
             e = a;
             d = 0x4;
@@ -2134,7 +2133,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void seq_revbsw() {
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         work.ch[ix].reverb = a;
         hl++;
     }
@@ -2144,27 +2143,27 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void seq_setop() {
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         work.ch[ix].opsel = a;
         hl++;
     }
 
     private void seq_ld2ops() {
-        a = work.ch[ix].dsel;
+        a = (byte) work.ch[ix].dsel;
         if (a == 0) {
             hl++;
             return;
         }
 
         // seq_ld2ops_fm:
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         int af = a;
         a = 0;
         changePage3();
-        a = af;
+        a = (byte) af;
 
         int hlb = hl;
-        hl = S_OPL3_TABLE;
+        hl = (short) S_OPL3_TABLE;
 
         get_table();
 
@@ -2174,39 +2173,39 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         moon_set_fmtone2();
         set_page3_ch();
 
-        hl = hlb;
+        hl = (short) hlb;
 
         hl++;
     }
 
     private void seq_tvp() {
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         a &= 0x7;
 
-        a = (a >> 1) + ((a & 1) != 0 ? 0x80 : 0); // rrca
-        a = (a >> 1) + ((a & 1) != 0 ? 0x80 : 0);
-        a = (a >> 1) + ((a & 1) != 0 ? 0x80 : 0);
+        a = (byte) (((a & 0xff) >> 1) + ((a & 1) != 0 ? 0x80 : 0)); // rrca
+        a = (byte) (((a & 0xff) >> 1) + ((a & 1) != 0 ? 0x80 : 0));
+        a = (byte) (((a & 0xff) >> 1) + ((a & 1) != 0 ? 0x80 : 0));
         e = a;
-        a = work.seq_reg_bd;
+        a = (byte) work.seq_reg_bd;
         a &= 0x1f;
         a |= e;
 
         work.seq_reg_bd = a;
         e = a;
-        d = 0xbd;
+        d = (byte) 0xbd;
         moon_fm1_out();
         hl++;
     }
 
     private void seq_fbs() {
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         a &= 0x7;
 
-        a = (a << 1) + ((a & 0x80) != 0 ? 1 : 0); // rlca
-        a = (a << 1) + ((a & 0x80) != 0 ? 1 : 0);
+        a = (byte) (((a & 0xff) << 1) + ((a & 0x80) != 0 ? 1 : 0)); // rlca
+        a = (byte) (((a & 0xff) << 1) + ((a & 0x80) != 0 ? 1 : 0));
 
         e = a;
-        a = work.ch[ix].synth;
+        a = (byte) work.ch[ix].synth;
         a &= 0xe3;
         a |= e;
 
@@ -2215,7 +2214,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void seq_jump() {
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         work.seq_jump_flag = a;
         hl++;
     }
@@ -2242,7 +2241,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         int af = a;
         a = 0;
         changePage3();
-        a = af;
+        a = (byte) af;
 
         get_table();
 
@@ -2254,31 +2253,31 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void set_venv_loop() {
         int hlb = hl;
 
-        hl = S_VENV_LOOP;
+        hl = (short) S_VENV_LOOP;
 
         // jr set_venv_hl
         // set_venv_hl:
         // de = IDX_VENV_ADR;
 
-        a = work.ch[ix].venv;
+        a = (byte) work.ch[ix].venv;
         a &= 0x7f;
         read_effect_table(work.ch[ix].venv_adr);
 
-        hl = hlb;
+        hl = (short) hlb;
     }
 
     private void set_venv_head() {
         int hlb = hl;
 
-        hl = S_VENV_TABLE;
+        hl = (short) S_VENV_TABLE;
 
         // set_venv_hl:
         // de = IDX_VENV_ADR;
-        a = work.ch[ix].venv;
+        a = (byte) work.ch[ix].venv;
         a &= 0x7f;
         read_effect_table(work.ch[ix].venv_adr);
 
-        hl = hlb;
+        hl = (short) hlb;
     }
 
     /**
@@ -2288,29 +2287,29 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void set_penv_loop() {
         int hlb = hl;
 
-        hl = S_PENV_LOOP;
+        hl = (short) S_PENV_LOOP;
 
         // jr set_penv_hl
         // set_penv_hl:
         // de = IDX_PENV_ADR;
 
-        a = work.ch[ix].penv;
+        a = (byte) work.ch[ix].penv;
         read_effect_table(work.ch[ix].penv_adr);
 
-        hl = hlb;
+        hl = (short) hlb;
     }
 
     private void set_penv_head() {
         int hlb = hl;
 
-        hl = S_PENV_TABLE;
+        hl = (short) S_PENV_TABLE;
 
         // set_penv_hl:
         // de = IDX_PENV_ADR;
-        a = work.ch[ix].penv;
+        a = (byte) work.ch[ix].penv;
         read_effect_table(work.ch[ix].penv_adr);
 
-        hl = hlb;
+        hl = (short) hlb;
     }
 
     /**
@@ -2320,12 +2319,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void set_nenv_loop() {
         //    push hl
         int hl1 = hl;
-        hl = S_NENV_LOOP;
+        hl = (short) S_NENV_LOOP;
         // set_nenv_hl:
         // de = IDX_NENV_ADR;
-        a = work.ch[ix].nenv;
+        a = (byte) work.ch[ix].nenv;
         read_effect_table(work.ch[ix].nenv_adr);
-        hl = hl1;
+        hl = (short) hl1;
     }
 
     /**
@@ -2335,12 +2334,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void set_nenv_head() {
         //    push hl
         int hl1 = hl;
-        hl = S_NENV_TABLE;
+        hl = (short) S_NENV_TABLE;
         // set_nenv_hl:
         // de = IDX_NENV_ADR;
-        a = work.ch[ix].nenv;
+        a = (byte) work.ch[ix].nenv;
         read_effect_table(work.ch[ix].nenv_adr);
-        hl = hl1;
+        hl = (short) hl1;
     }
 
     /**
@@ -2353,10 +2352,10 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         a = 0;
         changePage3();
 
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         int af = a;
         set_page3_ch();
-        a = af;
+        a = (byte) af;
     }
 
     /**
@@ -2401,17 +2400,17 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      * dest : AF
      */
     private void oct_div() {
-        a = hl >> 8;
+        a = (byte) (hl >> 8);
         hl &= 0xff00;
 
         // oct_div_lp:
         do {
             int ac = a + 0xfa;
-            a = ac;
+            a = (byte) ac;
             if (ac < 0x100) return;
             int l = hl & 0xff;
             l++;
-            hl = (hl & 0xff00) + l;
+            hl = (short) ((hl & 0xff00) + (l & 0xff));
         } while (true);
     }
 
@@ -2424,27 +2423,27 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      * dest : AF, DE
      */
     private void make_fnum() {
-        d = 0xfa;
+        d = (byte) 0xfa;
         e = 0;
         // make_fnum_lp:
         int hlc;
         do {
             hlc = hl + ((d << 8) + e);
-            hl = hlc;
+            hl = (short) hlc;
         } while (hlc > 0xffff);
 
         d = 0x06;
         e = 0;
         hl += (d << 8) + e;
         int de = hl;
-        hl = (d << 8) + e;
-        d = de >> 8;
-        e = de & 0xff;
+        hl = (short) (((d & 0xff) << 8) + (e & 0xff));
+        d = (byte) (de >> 8);
+        e = (byte) (de & 0xff);
 
         hl = 0;//    ld hl, freq_table
         hl += (d << 8) + e;
         // hl += (short)((d << 8) + e);
-        hl = freq_table[hl];//    ld a, (hl)
+        hl = (short) freq_table[hl];//    ld a, (hl)
         // hl++;
         //    ld h, (hl)
         //    ld l, a
@@ -2479,28 +2478,28 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void moon_set_fmtone_start_lp(byte rt) {
-        int af = a;
-        int bb = b;
-        int cb = c;
-        int hlb = hl;
+        int af = a & 0xff;
+        int bb = b & 0xff;
+        int cb = c & 0xff;
+        int hlb = hl & 0xffff;
         c = rt;
 
-        hl = work.ch[ix].tadr;
-        a = work.ch[ix].opsel;
+        hl = (short) work.ch[ix].tadr;
+        a = (byte) work.ch[ix].opsel;
         work.seq_opsel = a;
 
         // FBS store to IDX_SYNTH(OxxFFFSS )
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         a &= 0x0e;
-        a = (a << 1) + (((a & 0x80) != 0) ? 1 : 0); //rlca
+        a = (byte) ((a << 1) + (((a & 0x80) != 0) ? 1 : 0)); //rlca
         e = a;
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         a &= 0x01;
         a |= e;
         e = a;
         hl++;
 
-        a = work.ch[ix].synth;
+        a = (byte) work.ch[ix].synth;
         a &= 0xe2;
         a |= e;
         work.ch[ix].synth = a;// xxxFFFxS
@@ -2508,18 +2507,18 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         a = c;
         if (!CP_ZF(0x04)) {
             // fmtone_skip_set_fbs2:
-            a = work.ch[ix].synth;
+            a = (byte) work.ch[ix].synth;
             a &= 0x7f;
             work.ch[ix].synth = a;
             hl++;
         } else {
             // FBS-2  Store SynthType for 4OP
-            a = (readMemory(hl) & 0xff);
+            a = (byte) (readMemory(hl) & 0xff);
             a &= 0x01;
-            a = (a << 1) + (((a & 0x80) != 0) ? 1 : 0); // rlca
+            a = (byte) ((a << 1) + (((a & 0x80) != 0) ? 1 : 0)); // rlca
             a |= 0x80;// 4OP flag
             e = a;
-            a = work.ch[ix].synth;
+            a = (byte) work.ch[ix].synth;
             a &= 0x7d;// mask for 4OP and 2nd SynthType
             a |= e;
 
@@ -2535,7 +2534,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // moon_set_fmtone_lp1:
         do {
             moon_set_fmop();
-            a = work.seq_opsel;
+            a = (byte) work.seq_opsel;
             a += 0x03;
             work.seq_opsel = a;
             c--;
@@ -2543,17 +2542,17 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
         moon_write_fmpan();
 
-        hl = hlb;
-        b = bb;
-        c = cb;
-        a = af;
+        hl = (short) hlb;
+        b = (byte) bb;
+        c = (byte) cb;
+        a = (byte) af;
     }
 
     private void moon_load_fmvol() {
-        int hlb = hl;
-        int bb = b;
-        int cb = c;
-        int ixb = ix;
+        int hlb = hl & 0xffff;
+        int bb = b & 0xff;
+        int cb = c & 0xff;
+        int ixb = ix & 0xff;
 
         hl++; // skip Reg.$20
         d = 0;
@@ -2562,47 +2561,47 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // moon_load_fmvol_lp:
         int i = 0;
         do {
-            a = (readMemory(hl) & 0xff);
-            work.ch[ix].ol[i] = (byte) a; // .ar_d1r = a;
+            a = (byte) (readMemory(hl) & 0xff);
+            work.ch[ix].ol[i] = a; // .ar_d1r = a;
             i++; // ix++;
             hl += (d << 8) + e;
             c--;
         } while (c != 0);
 
-        ix = ixb;
-        b = bb;
-        c = cb;
-        hl = hlb;
+        ix = (short) ixb;
+        b = (byte) bb;
+        c = (byte) cb;
+        hl = (short) hlb;
     }
 
     private void moon_set_fmop() {
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         e = a;
         d = 0x20;
         moon_write_fmop();
         hl++;
 
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         e = a;
         d = 0x40;
         moon_write_fmop(); // OL
         hl++;
 
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         e = a;
         d = 0x60;
         moon_write_fmop();
         hl++;
 
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         e = a;
-        d = 0x80;
+        d = (byte) 0x80;
         moon_write_fmop();
         hl++;
 
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         e = a;
-        d = 0xe0;
+        d = (byte) 0xe0;
         moon_write_fmop();
         hl++;
     }
@@ -2614,26 +2613,26 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      * dest : Flags, HL
      */
     private void moon_tonesel() {
-        hl = work.ch[ix].tadr;
+        hl = (short) work.ch[ix].tadr;
         int af;
         // tonesel_lp01:
         do {
             af = a;
             int hlb = hl;
 
-            a = (readMemory(hl) & 0xff);
+            a = (byte) (readMemory(hl) & 0xff);
             hl++;
             a |= (readMemory(hl) & 0xff);
 
             if (a == 0) {
                 // tonesel_fin();//; if min == 0 && max == 0
-                hl = hlb;
-                a = af;
+                hl = (short) hlb;
+                a = (byte) af;
                 return;
             }
 
-            hl = hlb;
-            a = af;
+            hl = (short) hlb;
+            a = (byte) af;
 
             if (a - (readMemory(hl) & 0xff) < 0) {
                 // tonesel_skip01();// if a<(hl)
@@ -2654,41 +2653,41 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // tonesel_loadtone:
         af = a;
         hl++;
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         work.ch[ix].tone = a;
         hl++;
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         work.ch[ix].tone += a << 8;
         hl++;
 
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         work.ch[ix].p_ofs = a;
         hl++;
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         work.ch[ix].p_ofs += a << 8;
         hl++;
 
-        a = (readMemory(hl) & 0xff);
+        a = (byte) (readMemory(hl) & 0xff);
         work.ch[ix].lfo_vib = a;
         hl++;
 
-        a = (readMemory(hl) & 0xff);
-        work.ch[ix].ol[0] = (byte) a; // .ar_d1r = a;
+        a = (byte) (readMemory(hl) & 0xff);
+        work.ch[ix].ol[0] = a; // .ar_d1r = a;
         hl++;
 
-        a = (readMemory(hl) & 0xff);
-        work.ch[ix].ol[1] = (byte) a; // .dl_d2r = a;
+        a = (byte) (readMemory(hl) & 0xff);
+        work.ch[ix].ol[1] = a; // .dl_d2r = a;
         hl++;
 
-        a = (readMemory(hl) & 0xff);
-        work.ch[ix].ol[2] = (byte) a; // .rc_rr = a;
+        a = (byte) (readMemory(hl) & 0xff);
+        work.ch[ix].ol[2] = a; // .rc_rr = a;
         hl++;
 
-        a = (readMemory(hl) & 0xff);
-        work.ch[ix].ol[3] = (byte) a; // .am = a;
+        a = (byte) (readMemory(hl) & 0xff);
+        work.ch[ix].ol[3] = a; // .am = a;
         hl++;
 
-        a = af;
+        a = (byte) af;
     }
 
     /**
@@ -2700,11 +2699,11 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         int hl1 = hl;
 
         oct_div();
-        a = hl & 0xff;
+        a = (byte) (hl & 0xff);
         a += 0xf8;
         work.ch[ix].oct = a;
 
-        hl = hl1;
+        hl = (short) hl1;
 
         make_fnum();
 
@@ -2723,33 +2722,33 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         hl &= 0xff00;
         boolean cry = (a & 1) != 0;
         a >>= 1;
-        hl = (hl & 0xff) + (a << 8);
+        hl = (short) ((hl & 0xff) + ((a & 0xff) << 8));
         int l = hl & 0xff;
         boolean cry2 = (l & 0x1) != 0;
         l = (l >> 1) + (cry ? 0x80 : 0);
         if (cry2) l |= 0x80;
-        hl = (hl & 0xff00) + l;
+        hl = (short) ((hl & 0xff00) + (l & 0xff));
 
         a &= 0x40;
         if (a != 0) {
-            a = hl >> 8;
+            a = (byte) (hl >> 8);
             a |= 0x80;
-            hl = (hl & 0xff) + (a << 8);
+            hl = (short) ((hl & 0xff) + (a << 8));
         }
         // skip_set_nega; if a >= $80 then it's negative
         d = 0x1e; // 7680
         e = 0;
         hl += (d << 8) + e;
 
-        e = work.ch[ix].p_ofs & 0xff;
-        d = work.ch[ix].p_ofs >> 8;
-        hl += (d << 8) + e;
+        e = (byte) (work.ch[ix].p_ofs & 0xff);
+        d = (byte) (work.ch[ix].p_ofs >> 8);
+        hl += ((d & 0xff) << 8) + (e & 0xff);
 
-        a = work.ch[ix].detune;
+        a = (byte) work.ch[ix].detune;
         add_freq_offset();
 
         // skip_detune:
-        a = hl >> 8;
+        a = (byte) (hl >> 8);
 
         if (!CP_CF((byte) 0x60)) {
             hl = 0x5fff;
@@ -2774,7 +2773,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             d = 0;
             e = a;
             a = 0;
-            int ac = a - e;
+            int ac = (a & 0xff) - (e & 0xff);
             a = (byte) ac;
             if (ac < 0) {
                 d--;
@@ -2786,8 +2785,8 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
         // add_freq_de:
         e = a;
-        hl += (d << 8) + e;
-        hl += (d << 8) + e;
+        hl += ((d & 0xff) << 8) + (e & 0xff);
+        hl += ((d & 0xff) << 8) + (e & 0xff);
     }
 
     /**
@@ -2813,11 +2812,11 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         moon_calc_opl3note();
 
         // oct
-        a = work.seq_tmp_oct;
+        a = (byte) work.seq_tmp_oct;
         work.ch[ix].oct = a;
 
         // Fnum
-        hl = work.seq_tmp_fnum;
+        hl = (short) work.seq_tmp_fnum;
         work.ch[ix].fnum = hl;
     }
 
@@ -2850,7 +2849,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         //  ld  a, (hl)
         //  ld(seq_tmp_fnum + 1), a
 
-        a = af;
+        a = (byte) af;
 
         a >>= 4;
         // boolean cry = false;
@@ -2863,9 +2862,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         work.seq_tmp_oct = a;
 
         // Add detune effect
-        hl = work.seq_tmp_fnum;
+        hl = (short) work.seq_tmp_fnum;
 
-        a = work.ch[ix].detune;
+        a = (byte) work.ch[ix].detune;
         add_freq_offset();
 
         work.seq_tmp_fnum = hl;
@@ -2880,7 +2879,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      */
     private void moon_write_fmop() {
 
-        a = work.seq_opsel;
+        a = (byte) work.seq_opsel;
         if (a >= 0x12) {
             a -= 0x12;
         }
@@ -2890,12 +2889,11 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         hl2 += a;
         // add_hl_fin:
 
-        a = fm_op2reg_tbl[hl2];
+        a = (byte) fm_op2reg_tbl[hl2];
         a += d;
         d = a;
 
-
-        a = work.seq_opsel;
+        a = (byte) work.seq_opsel;
         if (CP_CF(0x12)) {
             moon_fm1_out();
         } else {
@@ -2912,7 +2910,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      * dest : AF, DE
      */
     private void moon_write_fmreg() {
-        a = work.seq_cur_ch;
+        a = (byte) work.seq_cur_ch;
         moon_write_fmreg_nch();
     }
 
@@ -2922,9 +2920,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
         int e1, d1;
         e1 = a;
-        a = work.seq_start_fm;
+        a = (byte) work.seq_start_fm;
         d1 = a;
-        a = e1;
+        a = (byte) e1;
         a -= d1; // a = ch, d = start_fm
 
         // jr moon_write_fm_ch
@@ -2964,9 +2962,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // out	(MOON_DAT1), a
         // ret
         if (isOPL3) {
-            plugin.audio.chipRegister.chip(YmF262Chip.class).write(0, 0, d, e, model);
+            plugin.audio.chipRegister.chip(YmF262Chip.class).write(0, 0, d & 0xff, e & 0xff, model);
         } else {
-            plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, 0, d, e, model);
+            plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, 0, d & 0xff, e & 0xff, model);
             //logger.log(Level.TRACE, "fm1out:%02x:%02x:".formatted(d, e));
         }
     }
@@ -2980,9 +2978,9 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // out	(MOON_DAT2), a
         // ret
         if (isOPL3) {
-            plugin.audio.chipRegister.chip(YmF262Chip.class).write(0, 1, d, e, model);
+            plugin.audio.chipRegister.chip(YmF262Chip.class).write(0, 1, d & 0xff, e & 0xff, model);
         } else {
-            plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, 1, d, e, model);
+            plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, 1, d & 0xff, e & 0xff, model);
         }
         //logger.log(Level.TRACE, "fm2out:%02x:%02x:".formatted(d, e));
     }
@@ -2998,7 +2996,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         if (isOPL3) {
             //plugin.audio.chipRegister.getChip(YmF262Chip.class).setYMF262Register(0, 2, d, e, model);
         } else {
-            plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, 2, d, e, model);
+            plugin.audio.chipRegister.chip(YmF278BChip.class).write(0, 2, d & 0xff, e & 0xff, model);
         }
 
         backDat = e;
@@ -3014,12 +3012,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // call    moon_wait
         // in	a, (MOON_WDAT)
         // ret
-        a = backDat;
+        a = (byte) backDat;
         return a;
     }
 
     private void moon_add_reg_ch() {
-        a = work.seq_cur_ch;
+        a = (byte) work.seq_cur_ch;
         a += d;
         d = a;
     }
@@ -3031,32 +3029,32 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      */
     private void moon_set_freq_ch() {
 
-        a = work.ch[ix].dsel;
+        a = (byte) work.ch[ix].dsel;
         if (a != 0) return;
 
         // set_freq_ch_opl4:
         // ; ocatve and f - number(hi)
-        a = work.ch[ix].fnum >> 8;
+        a = (byte) (work.ch[ix].fnum >> 8);
 
-        a = (a << 1) + (a >> 7); // rlca
+        a = (byte) (((a & 0xff) << 1) + ((a & 0xff) >> 7)); // rlca
         a &= 0x0e;
         e = a;
-        a = work.ch[ix].fnum & 0xff;
-        a = (a << 1) + (a >> 7); // rlca
+        a = (byte) (work.ch[ix].fnum & 0xff);
+        a = (byte) (((a & 0xff) << 1) + ((a & 0xff) >> 7)); // rlca
         a &= 0x01;
         a |= e;
         e = a;
 
-        a = work.ch[ix].oct;
+        a = (byte) work.ch[ix].oct;
         a &= 0xf;
-        a = (a << 1) + (a >> 7);
-        a = (a << 1) + (a >> 7);
-        a = (a << 1) + (a >> 7);
-        a = (a << 1) + (a >> 7);
+        a = (byte) ((a << 1) + ((a & 0xff) >> 7));
+        a = (byte) ((a << 1) + ((a & 0xff) >> 7));
+        a = (byte) ((a << 1) + ((a & 0xff) >> 7));
+        a = (byte) ((a << 1) + ((a & 0xff) >> 7));
         a |= e;
         e = a;
 
-        a = work.ch[ix].reverb;
+        a = (byte) work.ch[ix].reverb;
         if (a != 0) {
             e |= 0x8;
         }
@@ -3067,12 +3065,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         moon_wave_out();
 
         // f - number(lo)
-        a = work.ch[ix].tone >> 8;
+        a = (byte) (work.ch[ix].tone >> 8);
         a &= 1;
         e = a;
 
-        a = work.ch[ix].fnum & 0xff;
-        a = (a << 1) + (a >> 7);
+        a = (byte) (work.ch[ix].fnum & 0xff);
+        a = (byte) (((a & 0xff) << 1) + ((a & 0xff) >> 7));
         a &= 0xfe;
         a |= e;
         e = a;
@@ -3083,14 +3081,14 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void moon_set_vol_ch() {
-        a = work.ch[ix].dsel;
+        a = (byte) work.ch[ix].dsel;
         if (a != 0) {
             moon_set_fmvol_ch();
             return;
         }
-        a = work.ch[ix].vol;
+        a = (byte) work.ch[ix].vol;
         a ^= 0x7f;
-        a = (a << 1) + (a >> 7);
+        a = (byte) (((a & 0xff) << 1) + ((a & 0xff) >> 7));
         a |= 1;
         e = a;
         d = 0x50;
@@ -3104,14 +3102,14 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         int bb = b;
         int cb = c;
 
-        a = work.ch[ix].opsel;
+        a = (byte) work.ch[ix].opsel;
         work.seq_opsel = a;
 
-        b = work.ch[ix].vol;
-        hl = (hl & 0xff) + (work.ch[ix].reverb * 0x100); // .volop;
+        b = (byte) work.ch[ix].vol;
+        hl = (short) ((hl & 0xff) + (work.ch[ix].reverb * 0x100)); // .volop;
 
         c = 0x02;
-        a = work.ch[ix].synth;
+        a = (byte) work.ch[ix].synth;
         a &= 0x80;
         if (a != 0) {
             c = 0x04;
@@ -3124,7 +3122,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             boolean cry = false, cryb;
             cryb = (h & 1) != 0;
             h = (h >> 1) + (cry ? 0x80 : 0x00);
-            hl = (h << 8) + (hl & 0xff);
+            hl = (short) (((h & 0xff) << 8) + (hl & 0xff));
             cry = cryb;
             if (cry) {
                 moon_calc_current_fmvol(i);
@@ -3135,17 +3133,17 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             // skip_set_fmvol:
             i++; // ix++;
 
-            a = work.seq_opsel;
+            a = (byte) work.seq_opsel;
             a += 3;
             work.seq_opsel = a;
 
             c--;
         } while (c != 0);
 
-        b = bb;
-        c = cb;
-        hl = hlb;
-        ix = ixb;
+        b = (byte) bb;
+        c = (byte) cb;
+        hl = (short) hlb;
+        ix = (short) ixb;
     }
 
     private void moon_calc_current_fmvol(int i) {
@@ -3155,7 +3153,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         a &= 0x3f;
         a ^= 0x3f;
         e = a;
-        a = work.ch[ix].ol[i] & 0xff; // .ar_d1r;
+        a = (byte) (work.ch[ix].ol[i] & 0xff); // .ar_d1r;
         a &= 0x3f;
         a += e;
 
@@ -3167,7 +3165,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         }
 
         // set_fmvol_ks:
-        a = work.ch[ix].ol[i] & 0xff; // .ar_d1r;
+        a = (byte) (work.ch[ix].ol[i] & 0xff); // .ar_d1r;
         a &= 0xc0;
         a |= e;
     }
@@ -3178,28 +3176,28 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      * dest : AF,DE
      */
     private void moon_set_adsr() {
-        e = work.ch[ix].lfo_vib;
-        d = 0x80;
+        e = (byte) work.ch[ix].lfo_vib;
+        d = (byte) 0x80;
         moon_add_reg_ch();
         moon_wave_out();
 
-        e = work.ch[ix].ol[0] & 0xff; // .ar_d1r;
-        d = 0x98;
+        e = (byte) (work.ch[ix].ol[0] & 0xff); // .ar_d1r;
+        d = (byte) 0x98;
         moon_add_reg_ch();
         moon_wave_out();
 
-        e = work.ch[ix].ol[1] & 0xff; // .dl_d2r;
-        d = 0xB0;
+        e = (byte) (work.ch[ix].ol[1] & 0xff); // .dl_d2r;
+        d = (byte) 0xB0;
         moon_add_reg_ch();
         moon_wave_out();
 
-        e = work.ch[ix].ol[2] & 0xff; // .rc_rr;
-        d = 0xc8;
+        e = (byte) (work.ch[ix].ol[2] & 0xff); // .rc_rr;
+        d = (byte) 0xc8;
         moon_add_reg_ch();
         moon_wave_out();
 
-        e = work.ch[ix].ol[3] & 0xff; // .am;
-        d = 0xe0;
+        e = (byte) (work.ch[ix].ol[3] & 0xff); // .am;
+        d = (byte) 0xe0;
         moon_add_reg_ch();
         moon_wave_out();
     }
@@ -3212,19 +3210,19 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      * dest : almost all
      */
     private void moon_key_data() {
-        a = work.ch[ix].pan;
+        a = (byte) work.ch[ix].pan;
         a &= 0xf;
 
         // ; ; or  $10; PCM - MIX
         e = a;
-        a = work.ch[ix].lfo;
+        a = (byte) work.ch[ix].lfo;
 
         if (a == 0) {
             e |= 0x20; // LFO deactive
         }
 
         // moon_key_data_lfo_on:
-        a = work.ch[ix].damp;
+        a = (byte) work.ch[ix].damp;
 
         if (a != 0) {
             e |= 0x40; // Damp on
@@ -3241,29 +3239,29 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void moon_key_off() {
 
         // key off
-        a = work.ch[ix].dsel;
+        a = (byte) work.ch[ix].dsel;
         if (a != 0) {
             // moon_key_fmoff:
-            a = work.ch[ix].key;
+            a = (byte) work.ch[ix].key;
             a &= 0x20;
             if (a == 0) return;
-            a = work.ch[ix].key;
+            a = (byte) work.ch[ix].key;
             a &= 0xdf;
             e = a;
-            d = 0xb0;
+            d = (byte) 0xb0;
             work.ch[ix].key = e;
             // skip if jump flag instanceof true
-            a = work.seq_jump_flag;
+            a = (byte) work.seq_jump_flag;
             if (a != 0) return;
             moon_write_fmreg(); // key - off
             return;
         }
 
         // moon_key_opl4off:
-        a = work.ch[ix].key;
+        a = (byte) work.ch[ix].key;
         a &= 0x80;
         if (a == 0) return;
-        a = work.ch[ix].key;
+        a = (byte) work.ch[ix].key;
         a &= 0x7f;
         e = a;
         d = 0x68;
@@ -3274,15 +3272,15 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     /**
-    // moon_write_fmpan
-    // calc and write Reg $Cx
-    // dest AF, DE
+     * moon_write_fmpan
+     * calc and write Reg $Cx
+     * dest AF, DE
      */
     private void moon_write_fmpan() {
-        a = work.ch[ix].synth;
+        a = (byte) work.ch[ix].synth;
         d = a;
         a &= 0x1c; // 000FFF00
-        a = (a >> 1) + ((a & 1) != 0 ? 0x80 : 0); // rrca
+        a = (byte) (((a & 0xff) >> 1) + ((a & 1) != 0 ? 0x80 : 0)); // rrca
         e = a;
         a = d;
         a &= 0x01; // SynthType
@@ -3291,26 +3289,26 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
         // E -> $C0
         e = a;
-        d = 0xc0;
+        d = (byte) (byte) 0xc0;
         moon_write_fmreg();
 
         // 4OP
-        a = work.ch[ix].synth;
+        a = (byte) (byte) work.ch[ix].synth;
         d = a;
         a &= 0x80;
 
         // skip if not 4op
         if (a != 0) {
             a = d;
-            a = (a >> 1) + ((a & 1) != 0 ? 0x80 : 0); // rrca
+            a = (byte) (((a & 0xff) >> 1) + ((a & 1) != 0 ? 0x80 : 0)); // rrca
             a &= 0x01; // 2nd SynthType
 
             a |= work.ch[ix].pan;
             e = a;
-            d = 0xc0;
+            d = (byte) 0xc0;
 
             // E -> $C0 + 3 + ch
-            a = work.seq_cur_ch;
+            a = (byte) (byte) work.seq_cur_ch;
             a += 0x03;
             moon_write_fmreg_nch();
         }
@@ -3319,13 +3317,13 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     /**
-    // moon_key_on
-    // Set tone number, frequency and key-on
-    // :   : work
-    // dest : almost all
+     * moon_key_on
+     * Set tone number, frequency and key-on
+     * :   : work
+     * dest : almost all
      */
     private void moon_key_on() {
-        a = work.ch[ix].dsel;
+        a = (byte) work.ch[ix].dsel;
         if (a == 0) {
             moon_key_opl4on();
             return;
@@ -3345,11 +3343,11 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         a |= 0x20;//  key on
 
         e = a;
-        d = 0xb0;
+        d = (byte) 0xb0;
         work.ch[ix].key = e;
 
         // skip if jump flag instanceof true
-        a = work.seq_jump_flag;
+        a = (byte) work.seq_jump_flag;
         if (a != 0) return;
 
         moon_write_fmreg();// key-on
@@ -3370,7 +3368,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         start_nenv();
 
         // tone number(hi)
-        a = work.ch[ix].tone >> 8;
+        a = (byte) (work.ch[ix].tone >> 8);
         a &= 0x1;
         e = a;
         d = 0x20;
@@ -3379,7 +3377,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         moon_wave_out();
 
         // tone number(lo)
-        e = work.ch[ix].tone & 0xff;
+        e = (byte) (work.ch[ix].tone & 0xff);
         d = 0x08;
 
         moon_add_reg_ch();
@@ -3399,7 +3397,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         //moon_opl4_set_keyreg:
         // OPL4 key-on
         // skip if jump flag instanceof true
-        a = work.seq_jump_flag;
+        a = (byte) (byte) work.seq_jump_flag;
         if (a != 0) return;
 
         moon_key_data();
@@ -3421,58 +3419,58 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
      * dest : almost all
      */
     private void moon_key_write_fmfreq() {
-        a = work.seq_cur_ch;
+        a = (byte) work.seq_cur_ch;
 
         work.seq_tmp_ch = a;
 
-        a = work.ch[ix].oct;
+        a = (byte) work.ch[ix].oct;
         work.seq_tmp_oct = a;
 
-        hl = work.ch[ix].fnum;
+        hl = (short) work.ch[ix].fnum;
         work.seq_tmp_fnum = hl;
 
         moon_key_write_fmfreq_base();
     }
 
     private void moon_key_write_fmfreq_base() {
-        a = work.seq_tmp_fnum;
+        a = (byte) work.seq_tmp_fnum;
         e = a;
-        d = 0xa0;
-        a = work.seq_tmp_ch;
+        d = (byte) 0xa0;
+        a = (byte) work.seq_tmp_ch;
         moon_write_fmreg_nch();
 
-        a = work.seq_tmp_fnum >> 8;
+        a = (byte) (work.seq_tmp_fnum >> 8);
         a &= 0x03;
         e = a;
 
-        a = work.seq_tmp_oct;
+        a = (byte) work.seq_tmp_oct;
 
-        a = (a << 1) + ((a & 0x80) != 0 ? 1 : 0);
-        a = (a << 1) + ((a & 0x80) != 0 ? 1 : 0);
+        a = (byte) ((a << 1) + ((a & 0x80) != 0 ? 1 : 0));
+        a = (byte) ((a << 1) + ((a & 0x80) != 0 ? 1 : 0));
 
         a &= 0x1c; // mask for Octave
         a |= e; // F-Number
     }
 
     /**
-    // moon_key_fmfreq
-    // calculates and writes related regs with keeping key
+     * moon_key_fmfreq
+     * calculates and writes related regs with keeping key
      */
     private void moon_key_fmfreq() {
         moon_key_write_fmfreq();
 
         e = a;
-        a = work.ch[ix].key;
+        a = (byte) work.ch[ix].key;
         a &= 0x20;
         a |= e;
 
         work.ch[ix].key = a;
         e = a;
-        d = 0xb0;
+        d = (byte) (byte) 0xb0;
 
         // skip if jump flag instanceof true
 
-        a = work.seq_jump_flag;
+        a = (byte) (byte) work.seq_jump_flag;
 
         if (a != 0) return;
 
@@ -3490,12 +3488,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     // reset R/W address pointer
     private void moon_reset_sram_adrs() {
 
-        a = (readMemory(MDR_DSTPCM) & 0xff);
+        a = (byte) (readMemory(MDR_DSTPCM) & 0xff);
 
-        MDB_BASE[MDB_ADRHI] = (byte) a;
+        MDB_BASE[MDB_ADRHI] = a;
         a = 0;
-        MDB_BASE[MDB_ADRMI] = (byte) a;
-        MDB_BASE[MDB_ADRLO] = (byte) a;
+        MDB_BASE[MDB_ADRMI] = a;
+        MDB_BASE[MDB_ADRLO] = a;
         moon_set_sram_adrs();
     }
 
@@ -3503,17 +3501,17 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void moon_inc_sram_adrs() {
         a = MDB_BASE[MDB_ADRLO];
         a++;
-        MDB_BASE[MDB_ADRLO] = (byte) a;
+        MDB_BASE[MDB_ADRLO] = a;
         if (a != 0) return;
 
         a = MDB_BASE[MDB_ADRMI];
         a++;
-        MDB_BASE[MDB_ADRMI] = (byte) a;
+        MDB_BASE[MDB_ADRMI] = a;
         if (a != 0) return;
 
         a = MDB_BASE[MDB_ADRHI];
         a++;
-        MDB_BASE[MDB_ADRHI] = (byte) a;
+        MDB_BASE[MDB_ADRHI] = a;
     }
 
     // set SRAM address
@@ -3639,14 +3637,13 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         //return false;
     }
 
-
     // Load User PCM
     private void moon_load_pcm() {
         a = 0;
         changePage3();
 
         // instanceof PCM packed song file?
-        a = (readMemory(MDR_PACKED) & 0xff);
+        a = (byte) (readMemory(MDR_PACKED) & 0xff);
         // Output status for debug
         MDB_BASE[MDB_LDFLAG] = (byte) a;
 
@@ -3673,7 +3670,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
         a = 0x03;
 
-        MDB_BASE[MDB_LDFLAG] = (byte) a;
+        MDB_BASE[MDB_LDFLAG] = a;
         // address reset
 
         moon_reset_sram_adrs();
@@ -3689,11 +3686,11 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         }
 
         // result
-        MDB_BASE[MDB_RESULT] = (byte) a;
+        MDB_BASE[MDB_RESULT] = a;
 
         // SRAM instanceof not found
         a = 0x02;
-        MDB_BASE[MDB_LDFLAG] = (byte) a;
+        MDB_BASE[MDB_LDFLAG] = a;
 
     }
 
@@ -3710,27 +3707,27 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         moon_reset_sram_adrs();
 
         // PCM number of banks
-        a = (readMemory(MDR_PCMBANKS) & 0xff);
+        a = (byte) (readMemory(MDR_PCMBANKS) & 0xff);
 
         moon_pcm_numbanks = a;
         moon_pcm_bank_count = a;
 
         // size of lastbank
-        a = (readMemory(MDR_LASTS) & 0xff);
+        a = (byte) (readMemory(MDR_LASTS) & 0xff);
         moon_pcm_lastsize = a;
 
         // size of start page
-        a = (readMemory(MDR_STPCM) & 0xff);
+        a = (byte) (readMemory(MDR_STPCM) & 0xff);
         moon_pcm_bank = a;
 
         // start of source address
-        hl = 0x8000;
+        hl = (short) 0x8000;
 
         // address = $A000 if (start_bank & 1) != 0
         a &= 1;
         if (a != 0) {
             // bank1 = $A000
-            hl = 0xA000 + (hl & 0xff);
+            hl = (short) (0xa000 + (hl & 0xff));
         }
 
         // RAM to PCM
@@ -3741,34 +3738,34 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             c = 0x00;
 
             // Change to user pcm bank
-            a = moon_pcm_bank;
+            a = (byte) moon_pcm_bank;
             int a1 = a;
             changePage3();
-            a = a1;
+            a = (byte) a1;
 
             a++;
             moon_pcm_bank = a;
 
             // reset address if HL >= $C000
-            a = hl >> 8;
+            a = (byte) (hl >> 8);
             if (!CP_CF(0xc0)) {
                 // reset source address
-                hl = 0x8000;
+                hl = (short) 0x8000;
             }
 
             // instanceof the bank last?
             //pcm_chk_last:
 
-            a = moon_pcm_bank_count;
+            a = (byte) moon_pcm_bank_count;
             if (a == 0) {
                 // use lastsize if the bank instanceof last one.
-                a = moon_pcm_lastsize;
+                a = (byte) moon_pcm_lastsize;
                 b = a;
             }
 
             //pcm_copy_lp:
             do {
-                a = (readMemory(hl) & 0xff);
+                a = (byte) (readMemory(hl) & 0xff);
                 e = a;
                 d = 0x06;
 
@@ -3777,8 +3774,8 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
                 hl++;
                 int bc = (b * 0x100 + c) - 1;
-                b = bc >> 8;
-                c = bc & 0xff;
+                b = (byte) ((bc >> 8) & 0xff);
+                c = (byte) (bc & 0xff);
 
                 // loop if BC > 0
                 a = b;
@@ -3786,7 +3783,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             } while (a != 0);
 
             // end if count instanceof 0
-            a = moon_pcm_bank_count;
+            a = (byte) moon_pcm_bank_count;
             if (a == 0) {
                 break;
                 //    jr z, pcm_copy_end
@@ -3823,14 +3820,14 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private final Byte seg0x4000 = null;
     private Byte seg0x8000 = null;
     private final Byte seg0xc000 = null;
-    private int a = 0;
-    private int b = 0;
-    private int c = 0;
-    private int d = 0;
-    private int e = 0;
-    private int hl = 0;
-    private int ix = 0;
-    private int iy = 0;
+    private byte a = 0;
+    private byte b = 0;
+    private byte c = 0;
+    private byte d = 0;
+    private byte e = 0;
+    private short hl = 0;
+    private short ix = 0;
+    private short iy = 0;
 
     private interface dlgSeqFunc extends Runnable {
     }
@@ -3838,29 +3835,29 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private dlgSeqFunc[] seq_jmptable = null;
 
     private byte readMemory(int adr) {
-        switch (adr >> 14) {
+        switch ((adr & 0xffff) >> 14) {
         case 0://0x0000 - 0x3fff
         default:
             if (seg0x0000 == null)
-                return mem[adr];
+                return mem[adr & 0xffff];
             if (extMem[seg0x0000] == null)
                 extMem[seg0x0000] = new byte[1024 * 16];
             return extMem[seg0x0000][adr & 0x3fff];
         case 1://0x4000 - 0x7fff
             if (seg0x4000 == null)
-                return mem[adr];
+                return mem[adr & 0xffff];
             if (extMem[seg0x4000] == null)
                 extMem[seg0x4000] = new byte[1024 * 16];
             return extMem[seg0x4000][adr & 0x3fff];
         case 2://0x8000 - 0xbfff
             if (seg0x8000 == null || seg0x8000 == 0)
-                return mem[adr];
+                return mem[adr & 0xffff];
             if (extMem[seg0x8000] == null)
                 extMem[seg0x8000] = new byte[1024 * 16];
             return extMem[seg0x8000][adr & 0x3fff];
         case 3://0xc000 - 0xffff
             if (seg0xc000 == null)
-                return mem[adr];
+                return mem[adr & 0xffff];
             if (extMem[seg0xc000] == null)
                 extMem[seg0xc000] = new byte[1024 * 16];
             return extMem[seg0xc000][adr & 0x3fff];
@@ -3868,11 +3865,11 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private void writeMemory(int adr, int dat) {
-        switch (adr >> 14) {
+        switch ((adr & 0xffff) >> 14) {
         case 0: // 0x0000 - 0x3fff
         default:
             if (seg0x0000 == null || seg0x0000 == 0) {
-                mem[adr] = (byte) dat;
+                mem[adr & 0xffff] = (byte) dat;
             } else {
                 if (extMem[seg0x0000] == null)
                     extMem[seg0x0000] = new byte[1024 * 16];
@@ -3881,7 +3878,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             break;
         case 1: // 0x4000 - 0x7fff
             if (seg0x4000 == null || seg0x4000 == 0) {
-                mem[adr] = (byte) dat;
+                mem[adr & 0xffff] = (byte) dat;
             } else {
                 if (extMem[seg0x4000] == null)
                     extMem[seg0x4000] = new byte[1024 * 16];
@@ -3890,7 +3887,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             break;
         case 2: // 0x8000 - 0xbfff
             if (seg0x8000 == null || seg0x8000 == 0) {
-                mem[adr] = (byte) dat;
+                mem[adr & 0xffff] = (byte) dat;
             } else {
                 if (extMem[seg0x8000] == null)
                     extMem[seg0x8000] = new byte[1024 * 16];
@@ -3899,7 +3896,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             break;
         case 3: // 0xc000 - 0xffff
             if (seg0xc000 == null || seg0xc000 == 0) {
-                mem[adr] = (byte) dat;
+                mem[adr & 0xffff] = (byte) dat;
             } else {
                 if (extMem[seg0xc000] == null)
                     extMem[seg0xc000] = new byte[1024 * 16];
@@ -3910,12 +3907,12 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     private boolean CP_CF(int n) {
-        int ans = a - n;
+        int ans = (a & 0xff) - (n & 0xff);
         return ans < 0;
     }
 
     private boolean CP_ZF(int n) {
-        int ans = a - n;
+        int ans = (a & 0xff) - (n & 0xff);
         return ans == 0;
     }
 }

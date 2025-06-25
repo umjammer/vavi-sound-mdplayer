@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import javax.swing.JOptionPane;
 
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
@@ -21,6 +20,7 @@ import dotnet4j.util.compat.Tuple;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
@@ -62,6 +62,7 @@ public class MoonDriverJava extends BaseDriver {
     @Override
     public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         mtype = checkFileType(buf);
+logger.log(Level.DEBUG, "type: " + mtype);
         GD3Tag gt;
 
         if (mtype == MoonDriverFileType.MDL) {
@@ -85,7 +86,7 @@ public class MoonDriverJava extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        gd3 = getGD3Info(vgmBuf);
+        gd3 = getGD3Info(vgmBuf, 0);
 
         this.vgmBuf = vgmBuf;
         this.plugin = plugin;
@@ -125,6 +126,7 @@ public class MoonDriverJava extends BaseDriver {
             return;
         }
 //#endif
+        if (stopped) return;
 
         try {
             vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
@@ -142,9 +144,9 @@ public class MoonDriverJava extends BaseDriver {
             vgmCurLoop = lp;
 
             if (moonDriverDriver.getStatus() < 1) {
-                if (moonDriverDriver.getStatus() == 0) {
-                    Thread.sleep((int) (latency * 2.0)); // Wait for latency*2 until the actual voice is fully pronounced
-                }
+//                if (moonDriverDriver.getStatus() == 0) {
+//                    Thread.sleep((int) (latency * 2.0)); // Wait for latency*2 until the actual voice is fully pronounced
+//                }
                 stopped = true;
             }
         } catch (Exception ex) {
@@ -178,7 +180,7 @@ public class MoonDriverJava extends BaseDriver {
         if (!info.errorList.isEmpty()) {
             if (model == EnmModel.VirtualModel) {
 //                JOptionPane.showMessageDialog(null, "Compile error");
-                throw new IllegalStateException("Compile error");
+                logger.log(Level.ERROR, "Compile error");
             }
             return null;
         }
@@ -233,7 +235,8 @@ public class MoonDriverJava extends BaseDriver {
         if (ret == null || info == null) return false;
         if (!info.errorList.isEmpty()) {
             if (model == EnmModel.VirtualModel) {
-                JOptionPane.showMessageDialog(null, "Compile error");
+//                JOptionPane.showMessageDialog(null, "Compile error");
+                logger.log(Level.ERROR, "Compile error");
             }
             return false;
         }
@@ -278,12 +281,21 @@ public class MoonDriverJava extends BaseDriver {
         if (moonDriverDriver == null) moonDriverDriver = IDriver.factory("moonDriver.driver.Driver");
 
         List<MmlDatum> buf = new ArrayList<>();
-        for (byte b : vgmBuf) buf.add(new MmlDatum(b));
+        for (byte b : vgmBuf) buf.add(new MmlDatum(b & 0xff));
 
         List<ChipAction> lca = new ArrayList<>();
-        ChipAction ca = new MoonDriverChipAction(this::opl4Write, this::opl4WaitSend);
+        ChipAction ca;
+        if (useChip[0] == YmF278BChip.class) {
+            ca = new MoonDriverChipAction(this::opl4Write, this::opl4WaitSend);
+        } else {
+            ca = new MoonDriverChipAction(this::opl3Write, this::opl3WaitSend);
+        }
         lca.add(ca);
-        moonDriverDriver.init(lca, buf.toArray(MmlDatum[]::new), this::appendFileReaderCallback,
+
+        moonDriverDriver.init(
+                lca,
+                buf.toArray(MmlDatum[]::new),
+                this::appendFileReaderCallback,
                 PlayingFileName, (double) 44100, 0);
 
         moonDriverDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YMF278B", 33868800));
@@ -349,11 +361,33 @@ public class MoonDriverJava extends BaseDriver {
 //            JOptionPane.showMessageDialog("elapsed:%d size:%d".formatted(elapsed, size));
 //            int n = Math.max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
 //            Thread.sleep(n);
+        } else {
+//            // Add additional weight based on size and elapsed time.
+//            int m = Math.max((int)(size / 20 - elapsed), 0); // 20 Threshold (magic number)
+//            Thread.sleep(m);
         }
+    }
 
-//        // Add additional weight based on size and elapsed time.
-//        int m = Math.max((int)(size / 20 - elapsed), 0); // 20 Threshold (magic number)
-//        Thread.sleep(m);
+    private void opl3Write(ChipDatum cd) {
+        if (cd == null) return;
+        if (cd.address == -1) return;
+        if (cd.data == -1) return;
+        if (cd.port == -1) return;
+        if (cd.port > 1) return;
+
+        plugin.audio.chipRegister.chip(YmF262Chip.class).write(0, cd.port, cd.address, cd.data, model);
+    }
+
+    private void opl3WaitSend(long size, int elapsed) {
+        if (model == EnmModel.VirtualModel) {
+//            JOptionPane.showMessageDialog("elapsed:%d size:%d".formatted(elapsed, size));
+//            int n = Math.Max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
+//            Thread.Sleep(n);
+        } else {
+//            // Add additional weight based on size and elapsed time.
+//            int m = Math.Max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
+//            Thread.Sleep(m);
+        }
     }
 
     public static class MoonDriverChipAction implements ChipAction {
