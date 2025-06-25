@@ -32,8 +32,8 @@ public class FileTemp {
 
         try {
             Files.write(Path.of(filename), data);
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
         }
     }
 
@@ -44,7 +44,7 @@ public class FileTemp {
         return temp.get(filename.toUpperCase());
     }
 
-    public boolean ExistTemp(String filename) {
+    public boolean existTemp(String filename) {
         return temp.containsKey(filename.toUpperCase());
     }
 }

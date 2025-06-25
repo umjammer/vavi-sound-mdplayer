@@ -54,7 +54,7 @@ public class NiseDos {
 
     private int allocateMemStartAddress = 0x9_0000;
     private int allocateMemSize;
-    private Map<Byte, Runnable> dicHookINT = new HashMap<>();
+    private final Map<Byte, Runnable> dicHookINT = new HashMap<>();
     private String playingArcFile;
     private List<String> searchPath;
 
@@ -88,15 +88,15 @@ public class NiseDos {
     }
 
     public void loadAndExecuteFile(String filename, String option /* = "" */, int startSegment /* = PSPStartAddress >> 4 */) {
-        logger.log(Level.INFO, "niseDOS>%s %s", filename, option);
+        logger.log(Level.INFO, "niseDOS>%s %s".formatted(filename, option));
 
-        byte[] bin = null;
+        byte[] bin;
         try {
             bin = Files.readAllBytes(Path.of(filename));
         } catch (IOException e) {
             throw new UnsupportedOperationException(e);
         }
-        String fext = filename.substring(filename.lastIndexOf('.') + 1).toUpperCase();
+        String fext = filename.substring(filename.lastIndexOf('.')).toUpperCase();
         loadRunner(bin, fext.equals(".COM"), option, startSegment);
 
         // Set FCB
@@ -104,20 +104,20 @@ public class NiseDos {
         // 0x04 number of files
         // 0x06 The location where the actual information is recorded
         // +0x11 file size (dword)
-        mem.PokeB(fcbStartAddress + 0x06 + 0x11 + 0, (byte) bin.length);
-        mem.PokeB(fcbStartAddress + 0x06 + 0x11 + 1, (byte) (bin.length >> 8));
-        mem.PokeB(fcbStartAddress + 0x06 + 0x11 + 2, (byte) (bin.length >> 16));
-        mem.PokeB(fcbStartAddress + 0x06 + 0x11 + 3, (byte) (bin.length >> 24));
+        mem.pokeB(fcbStartAddress + 0x06 + 0x11 + 0, (byte) (bin.length & 0xff));
+        mem.pokeB(fcbStartAddress + 0x06 + 0x11 + 1, (byte) ((bin.length & 0xff00) >> 8));
+        mem.pokeB(fcbStartAddress + 0x06 + 0x11 + 2, (byte) ((bin.length & 0xff_0000) >> 16));
+        mem.pokeB(fcbStartAddress + 0x06 + 0x11 + 3, (byte) ((bin.length & 0xff00_0000) >> 24));
 
         // +0x20 11 byte filename, no path, no period, space padding
         int cnt = 0;
         String fn = Path.of(filename).getFileName().toString().toUpperCase();
         String[] fns = fn.split("\\.");
-        fns[0] = fns[0].replaceFirst("\\s*$", "").substring(0, 8);
-        fns[1] = fns[1].replaceFirst("\\s*$", "").substring(0, 3);
+        fns[0] = (fns[0] + " ".repeat(8)).substring(0, 8);
+        fns[1] = (fns[1] + " ".repeat(3)).substring(0, 3);
         fn = fns[0] + fns[1];
         for (char c : fn.toCharArray()) {
-            mem.PokeB(fcbStartAddress + 0x06 + 0x20 + cnt, (byte) c);
+            mem.pokeB(fcbStartAddress + 0x06 + 0x20 + cnt, (byte) c);
             cnt++;
             if (cnt == 11) break;
         }
@@ -125,22 +125,22 @@ public class NiseDos {
         int PSPAdr = startSegment << 4;
 
         // MCB located just before the PSP
-        mem.PokeB(PSPAdr - 0x10 + 0, (byte) 'Z');
+        mem.pokeB(PSPAdr - 0x10 + 0, (byte) 'Z');
         mem.pokeW(PSPAdr - 0x10 + 1, (short) (PSPStartAddress >> 4));
         mem.pokeW(PSPAdr - 0x10 + 3, (short) 0xffff);
 
         // Environment variable segment 0x0100 -> real address 0x0_1000 (arbitrary)
         int envPtr = 0x0_1000;
         mem.pokeW(PSPAdr + 0x2c, (short) (envPtr >> 4));
-        byte[] env = new byte[] {(byte) 'P', (byte) 'V', (byte) 'I', (byte) '=', (byte) '.', 0, 0, 1, 0};
+        byte[] env = {(byte) 'P', (byte) 'V', (byte) 'I', (byte) '=', (byte) '.', 0, 0, 1, 0};
         int p = 0;
         for (byte c : env) {
-            mem.PokeB(envPtr + p++, c);
+            mem.pokeB(envPtr + p++, c);
         }
     }
 
     public void makeDummyMCB() {
-        mem.PokeB(mcbStartAddress + 0x00, (byte) 'M'); // member of a MCB chain, (not last)
+        mem.pokeB(mcbStartAddress + 0x00, (byte) 'M'); // member of a MCB chain, (not last)
         mem.pokeW(mcbStartAddress + 0x01, (short) (PSPStartAddress >> 4)); // free PSP segment address of MCB owner (Process Id)
         mem.pokeW(mcbStartAddress + 0x03, (short) 0);// The size of this mcb
         mem.pokeW(mcbStartAddress + 0x10, (short) (0x20cd - 1)); // apparently other than 0x20cd is needed
@@ -149,32 +149,32 @@ public class NiseDos {
 
         // Environment variable segment 0x0100 -> real address 0x0_1000 (arbitrary)
         int envPtr = mcbStartAddress + 0x10;
-        byte[] env = new byte[] {(byte) 'P', (byte) 'V', (byte) 'I', (byte) '=', (byte) '.', 0, 0, 1, 0};
+        byte[] env = {(byte) 'P', (byte) 'V', (byte) 'I', (byte) '=', (byte) '.', 0, 0, 1, 0};
         int p = 0;
         for (byte c : env) {
-            mem.PokeB(envPtr + p++, c);
+            mem.pokeB(envPtr + p++, c);
         }
     }
 
-    public void loadImage(byte[] bin, int StartAdr) {
+    public void loadImage(byte[] bin, int startAdr) {
         logger.log(Level.DEBUG, "<NiseDos>LoadImage");
         for (int i = 0; i < bin.length; i++) {
-            mem.PokeB(StartAdr + i, bin[i]);
+            mem.pokeB(startAdr + i, bin[i]);
         }
     }
 
     public void int_(byte imm8) {
         switch (imm8) {
             case 0x18:
-                logger.log(Level.DEBUG, "<NiseDos>INT18h AH:$%02x".formatted(regs.getAH()));
+                logger.log(Level.DEBUG, "<NiseDos>INT18h AH:$%02x".formatted(regs.getAH() & 0xff));
                 int18();
                 break;
             case 0x21:
-                logger.log(Level.DEBUG, "<NiseDos>INT21h AH:$%02x".formatted(regs.getAH()));
+                logger.log(Level.DEBUG, "<NiseDos>INT21h AH:$%02x".formatted(regs.getAH() & 0xff));
                 INT21();
                 break;
             case 0x2f:
-                logger.log(Level.DEBUG, "<NiseDos>INT2fh AX:$%04x".formatted(regs.getAX()));
+                logger.log(Level.DEBUG, "<NiseDos>INT2fh AX:$%04x".formatted(regs.getAX() & 0xff));
                 int2F();
                 break;
             default:
@@ -183,21 +183,21 @@ public class NiseDos {
                     return;
                 }
 
-                logger.log(Level.DEBUG, "<NiseDos>INT%02xh AH:$%02x".formatted(imm8, regs.getAH()));
+                logger.log(Level.DEBUG, "<NiseDos>INT%02xh AH:$%02x".formatted(imm8 & 0xff, regs.getAH() & 0xff));
                 int ptr = imm8 * 4;
-                short ip = (short) mem.peekW(ptr);
-                short cs = (short) mem.peekW(ptr + 2);
+                short ip = mem.peekW(ptr);
+                short cs = mem.peekW(ptr + 2);
                 if ((ip | cs) == 0) break;
 
                 regs.subSP(2);
-                mem.pokeW(regs.getSS_SP(), regs.FLAG);
+                mem.pokeW(regs.getSS_SP(), regs.flag);
                 // regs.SP -= 2;
                 // mem.PokeW(regs.SS_SP, regs.DS);
                 regs.subSP(2);
                 mem.pokeW(regs.getSS_SP(), regs.getCS());
                 regs.subSP(2);
-                mem.pokeW(regs.getSS_SP(), regs.IP);
-                regs.IP = ip;
+                mem.pokeW(regs.getSS_SP(), regs.ip);
+                regs.ip = ip;
                 regs.setCS(cs);
                 // regs.DS = cs;
 
@@ -205,30 +205,30 @@ public class NiseDos {
         }
     }
 
-    private void loadRunner(byte[] prog, boolean IsCom, String option, int StartSegment /* = 0 */) {
+    private void loadRunner(byte[] prog, boolean isCom, String option, int startSegment /* = 0 */) {
         logger.log(Level.DEBUG, "<NiseDos>LoadRunner");
         int ofs;
-        int ptr = (StartSegment << 4);
+        int ptr = (startSegment << 4);
         loadImage(prog, ptr + 0x100);
 
-        if (IsCom) {
-            // Setup PSP http: // programmer.main.jp/assembler2/7_5.html
+        if (isCom) {
+            // Setup PSP https://programmer.main.jp/assembler2/7_5.html
 
             // 0x80 Number of characters in the argument
             if (StringUtilities.isNullOrEmpty(option)) {
-                mem.PokeB(ptr + 0x80, (byte) 0);
+                mem.pokeB(ptr + 0x80, (byte) 0);
             } else {
-                byte[] optAry = (option + "\n").getBytes(charset);
-                mem.PokeB(ptr + 0x80, (byte) optAry.length);
+                byte[] optAry = (option + "\r").getBytes(charset);
+                mem.pokeB(ptr + 0x80, (byte) optAry.length);
 
                 // 0x81～0xff Argument Entities
                 int i = 0;
-                for (byte b : optAry) mem.PokeB(ptr + 0x81 + i++, b);
+                for (byte b : optAry) mem.pokeB(ptr + 0x81 + i++, b);
             }
 
-            regs.setDS((short) StartSegment);
+            regs.setDS((short) startSegment);
             regs.setCS(regs.getDS());
-            regs.IP = 0x100;
+            regs.ip = 0x100;
             programTerminate = false;
         } else {
             // When exe
@@ -236,38 +236,38 @@ public class NiseDos {
             ptr += 0x100;
             short signature = mem.peekW(ptr + 0x00);
             int headerSize = mem.peekW(ptr + 0x08) * 0x10;
-            regs.setSS((short) (mem.peekW(ptr + 0x0e) + StartSegment + 0x10));
+            regs.setSS((short) (mem.peekW(ptr + 0x0e) + startSegment + 0x10));
             regs.setSP(mem.peekW(ptr + 0x10));
-            regs.IP = mem.peekW(ptr + 0x14);
-            regs.setDS((short) (mem.peekW(ptr + 0x16) + StartSegment + 0x10));
+            regs.ip = mem.peekW(ptr + 0x14);
+            regs.setDS((short) (mem.peekW(ptr + 0x16) + startSegment + 0x10));
             regs.setCS(regs.getDS());
-            regs.setDS((short) (regs.getDS() - 0x10));
+            regs.setDS((short) ((regs.getDS() & 0xffff) - 0x10));
             int relocOfs = mem.peekW(ptr + 0x18);
             //int relocSize = headerSize - relocOfs;
             int relocSize = mem.peekW(ptr + 0x06) * 4; // headerSize - relocOfs - 8;
             for (int i = 0; i < relocSize; i += 4) {
-                short rOfs = (short) mem.peekW(ptr + relocOfs + i + 0);
-                short rSeg = (short) mem.peekW(ptr + relocOfs + i + 2);
+                short rOfs = mem.peekW(ptr + relocOfs + i + 0);
+                short rSeg = mem.peekW(ptr + relocOfs + i + 2);
                 int rPtr = (rSeg << 4) + rOfs;
-                short val = (short) mem.peekW(ptr + rPtr + headerSize);
-                mem.pokeW(ptr + rPtr + headerSize, (short) (short) (StartSegment + 0x10 + val));
+                short val = mem.peekW(ptr + rPtr + headerSize);
+                mem.pokeW(ptr + rPtr + headerSize, (short) (startSegment + 0x10 + (val & 0xffff)));
             }
             for (int i = 0; i < prog.length - headerSize; i++) {
-                byte b = mem.PeekB(ptr + i + headerSize);
-                mem.PokeB(ptr + i, b); // prog[headerSize + i]);
+                byte b = mem.peekB(ptr + i + headerSize);
+                mem.pokeB(ptr + i, b); // prog[headerSize + i]);
             }
             ptr -= 0x100;
 
             // 0x80 Number of characters in the argument
             if (StringUtilities.isNullOrEmpty(option)) {
-                mem.PokeB(ptr + 0x80, (byte) 0);
+                mem.pokeB(ptr + 0x80, (byte) 0);
             } else {
                 byte[] optAry = (option + "\n").getBytes(charset);
-                mem.PokeB(ptr + 0x80, (byte) optAry.length);
+                mem.pokeB(ptr + 0x80, (byte) optAry.length);
 
                 // 0x81~0xff Argument Entities
                 int i = 0;
-                for (byte b : optAry) mem.PokeB(ptr + 0x81 + i++, b);
+                for (byte b : optAry) mem.pokeB(ptr + 0x81 + i++, b);
             }
         }
     }
@@ -290,11 +290,11 @@ public class NiseDos {
         switch (regs.getAH()) {
             case 0x04:
                 logger.log(Level.DEBUG, "<NiseDos>  (98)KEY BOARD press check");
-                byte KeyGroup = regs.getAL();
+                byte keyGroup = regs.getAL();
                 regs.setAH((short) 0x00); // Nothing is being pressed
                 break;
             default:
-                throw new UnsupportedOperationException(String.format("AH:$%02x".formatted(regs.getAH())));
+                throw new UnsupportedOperationException("AH:$%02x".formatted(regs.getAH() & 0xff));
         }
     }
 
@@ -309,22 +309,22 @@ public class NiseDos {
 
         switch (regs.getAH()) {
             case 0x02:
-                msg = new ArrayList<Byte>();
+                msg = new ArrayList<>();
                 b = regs.getDL();
                 msg.add(b);
                 text = new String(ByteUtil.toByteArray(msg), charset);
                 System.out.print(text); // Normal console output
                 break;
             case 0x09:
-                msg = new ArrayList<Byte>();
+                msg = new ArrayList<>();
                 cnt = 0;
                 do {
-                    b = mem.PeekB(regs.getDS_DX() + cnt);
+                    b = mem.peekB(regs.getDS_DX() + cnt);
                     if ((char) b == '$') break;
                     msg.add(b);
                     cnt++;
                 } while (true);
-                text = new String(ByteUtil.toByteArray(msg));
+                text = new String(ByteUtil.toByteArray(msg), charset);
                 System.out.print(text); // Normal console output
                 break;
             case 0x19:
@@ -333,8 +333,8 @@ public class NiseDos {
                 break;
             case 0x25:
                 logger.log(Level.DEBUG, "<NiseDos>  SET INTERRUPT VECTOR");
-                mem.pokeW(regs.getAL() * 4 + 0, regs.getDX());
-                mem.pokeW(regs.getAL() * 4 + 2, regs.getDS());
+                mem.pokeW((regs.getAL() & 0xff) * 4 + 0, regs.getDX());
+                mem.pokeW((regs.getAL() & 0xff) * 4 + 2, regs.getDS());
                 break;
             case 0x30:
                 logger.log(Level.DEBUG, "<NiseDos>  DOS VERSION");
@@ -348,14 +348,14 @@ public class NiseDos {
                 programTerminate = true;
                 break;
             case 0x34:
-                logger.log(Level.DEBUG, "<NiseDos>  GET ADDRESS OF INDOS FLAG"); // https: // fd.lod.bz/rbil/interrup/dos_kernel/2134.html#2778
+                logger.log(Level.DEBUG, "<NiseDos>  GET ADDRESS OF INDOS flag"); // https: // fd.lod.bz/rbil/interrup/dos_kernel/2134.html#2778
                 regs.setBX((short) (InDOSFLAGAdr & 0xf));
                 regs.setES((short) (InDOSFLAGAdr >> 4));
                 break;
             case 0x35:
                 logger.log(Level.DEBUG, "<NiseDos>  GET INTERRUPT VECTOR");
-                regs.setBX(mem.peekW(regs.getAL() * 4 + 0));
-                regs.setES(mem.peekW(regs.getAL() * 4 + 2));
+                regs.setBX(mem.peekW((regs.getAL() & 0xff) * 4 + 0));
+                regs.setES(mem.peekW((regs.getAL() & 0xff) * 4 + 2));
                 break;
             case 0x3c:
                 logger.log(Level.DEBUG, "<NiseDos>  Create File Using Handle");
@@ -363,7 +363,7 @@ public class NiseDos {
                 msg = new ArrayList<>();
                 cnt = 0;
                 do {
-                    b = mem.PeekB(regs.getDS_DX() + cnt);
+                    b = mem.peekB(regs.getDS_DX() + cnt);
                     if ((char) b == '\0') break;
                     msg.add(b);
                     cnt++;
@@ -379,7 +379,7 @@ public class NiseDos {
                 fs.path = Path.of(filename).getParent();
                 fs.handle = fileHandler++;
                 fs.mode = 1;
-                fs.lstBuf = new ArrayList<Byte>();
+                fs.lstBuf = new ArrayList<>();
                 setPath(fs.path);
                 makeDummyMCB();
 
@@ -392,7 +392,7 @@ public class NiseDos {
                 msg = new ArrayList<>();
                 cnt = 0;
                 do {
-                    b = mem.PeekB(regs.getDS_DX() + cnt);
+                    b = mem.peekB(regs.getDS_DX() + cnt);
                     if ((char) b == '\0') break;
                     msg.add(b);
                     cnt++;
@@ -419,7 +419,7 @@ public class NiseDos {
                 }
                 break;
             case 0x3e:
-                logger.log(Level.DEBUG, "<NiseDos>  FILE CLOSE handle=%02x", regs.getBX());
+                logger.log(Level.DEBUG, "<NiseDos>  FILE CLOSE handle=%02x".formatted(regs.getBX() & 0xff));
                 fnd = searchFileStatus(regs.getBX());
                 regs.setCF(true);
                 try {
@@ -437,7 +437,7 @@ public class NiseDos {
                 }
                 break;
             case 0x3f:
-                logger.log(Level.DEBUG, "<NiseDos>  FILE READ handle=%02x", regs.getBX());
+                logger.log(Level.DEBUG, "<NiseDos>  FILE READ handle=%02x".formatted(regs.getBX() & 0xff));
 
                 fnd = searchFileStatus(regs.getBX());
                 if (fnd == null) {
@@ -451,7 +451,7 @@ public class NiseDos {
 
                 byte[] buf = readAllByte(fnd);
                 fnd.size = buf.length;
-                int size = Math.min((short) regs.getCX(), buf.length - fnd.ptr);
+                int size = Math.min(regs.getCX() & 0xffff, buf.length - fnd.ptr);
                 byte[] rbuf = new byte[size];
                 System.arraycopy(buf, fnd.ptr, rbuf, 0, size);
                 loadImage(rbuf, regs.getDS_DX());
@@ -474,7 +474,7 @@ public class NiseDos {
                     msg = new ArrayList<>();
                     int c = 0;
                     while (c < regs.getCX()) {
-                        b = mem.PeekB(regs.getDS_DX() + c);
+                        b = mem.peekB(regs.getDS_DX() + c);
                         msg.add(b);
                         c++;
                     }
@@ -490,11 +490,11 @@ public class NiseDos {
                 if (fnd.mode == 1) {
                     int c = 0;
                     while (c < regs.getCX()) {
-                        b = mem.PeekB(regs.getDS_DX() + c);
+                        b = mem.peekB(regs.getDS_DX() + c);
                         fnd.lstBuf.add(b);
                         c++;
                     }
-                    logger.log(Level.DEBUG, "<NiseDos>  WRITE buff length:%d", c);
+                    logger.log(Level.DEBUG, "<NiseDos>  WRITE buff length:%d".formatted(c));
                     regs.setCF(false);
                     break;
                 }
@@ -504,7 +504,7 @@ public class NiseDos {
                 regs.setCF(true);
                 break;
             case 0x42:
-                logger.log(Level.DEBUG, "<NiseDos>  SEEK FILE POINTER handle=%02x".formatted(regs.getBX()));
+                logger.log(Level.DEBUG, "<NiseDos>  SEEK FILE POINTER handle=%02x".formatted(regs.getBX() & 0xff));
                 fnd = searchFileStatus(regs.getBX());
                 if (fnd == null) {
                     regs.setCF(true);
@@ -523,10 +523,10 @@ public class NiseDos {
                 logger.log(Level.DEBUG, "<NiseDos>  Get/Set File Attributes");
                 break;
             case 0x47:
-                logger.log(Level.DEBUG, "<NiseDos>  Get Current Directory DL=%02x DS:SI[%04x:%04x]", regs.getDL(), regs.getDS(), regs.getSI());
+                logger.log(Level.DEBUG, "<NiseDos>  Get Current Directory DL=%02x DS:SI[%04x:%04x]".formatted(regs.getDL() & 0xff, regs.getDS() & 0xffff, regs.getSI() & 0xffff));
                 regs.setCF(false);
-                mem.PokeB(regs.getDS_SI(), (byte) '.');
-                mem.PokeB(regs.getDS_SI() + 1, (byte) 0x00);
+                mem.pokeB(regs.getDS_SI(), (byte) '.');
+                mem.pokeB(regs.getDS_SI() + 1, (byte) 0x00);
                 break;
             case 0x48:
                 regs.setCF(false);
@@ -534,7 +534,7 @@ public class NiseDos {
                 regs.setBX(regs.getBX());
                 allocateMemSize = regs.getBX() * 16;
                 allocateMemStartAddress += allocateMemSize;
-                logger.log(Level.DEBUG, "<NiseDos>  Allocate Memory AX(allocatedStartSeg)=%04x BX(paragraphs size)=%04x", regs.getBX(), regs.getAX());
+                logger.log(Level.DEBUG, "<NiseDos>  Allocate Memory AX(allocatedStartSeg)=%04x BX(paragraphs size)=%04x".formatted(regs.getBX() & 0xffff, regs.getAX() & 0xffff));
                 break;
             case 0x49:
                 logger.log(Level.DEBUG, "<NiseDos>  FREE MEMORY"); // https: // fd.lod.bz/rbil/interrup/dos_kernel/2149.html#sect-2975
@@ -566,7 +566,7 @@ public class NiseDos {
                 }
                 break;
             default:
-                throw new UnsupportedOperationException("AH:$%02x".formatted(regs.getAH()));
+                throw new UnsupportedOperationException("AH:$%02x".formatted(regs.getAH() & 0xff));
         }
     }
 
@@ -612,7 +612,7 @@ public class NiseDos {
     private byte[] readAllByte(FileStatus fs) {
         try {
             Path fn = fs.path.resolve(fs.name);
-            if (fileTemp.ExistTemp(fn.toString()))
+            if (fileTemp.existTemp(fn.toString()))
                 return fileTemp.ReadTemp(fn.toString());
             if (Files.exists(fn))
                 return Files.readAllBytes(fn);
@@ -623,12 +623,12 @@ public class NiseDos {
     }
 
     private boolean checkFileExist(String filename, /* out */ String[] fndFilename) {
-        if (Files.exists(Path.of(filename)) || fileTemp.ExistTemp(filename)) {
+        if (Files.exists(Path.of(filename)) || fileTemp.existTemp(filename)) {
             fndFilename[0] = filename;
             return true;
         }
         Path fn = filePath.resolve(filename);
-        if (Files.exists(fn) || fileTemp.ExistTemp(fn.toString())) {
+        if (Files.exists(fn) || fileTemp.existTemp(fn.toString())) {
             fndFilename[0] = fn.toString();
             return true;
         }
@@ -691,7 +691,7 @@ public class NiseDos {
     public byte[] loadData(String fn) {
         try {
             Path p = filePath.resolve(fn);
-            if (fileTemp.ExistTemp(p.toString()))
+            if (fileTemp.existTemp(p.toString()))
                 return fileTemp.ReadTemp(fn);
 
             if (Files.exists(p))

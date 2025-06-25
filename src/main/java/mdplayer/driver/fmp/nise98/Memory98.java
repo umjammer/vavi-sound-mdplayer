@@ -6,30 +6,30 @@ import java.util.function.Function;
 
 public class Memory98 {
 
-    private byte[] mem;
+    private final byte[] mem;
 
     public Memory98(int size) {
         mem = new byte[size];
     }
 
-    public void PokeB(int ptr, byte dat) {
+    public void pokeB(int ptr, byte dat) {
         mem[ptr % mem.length] = dat;
     }
 
     public void pokeW(int ptr, short dat) {
-        mem[(int) ptr % mem.length] = (byte) dat;
-        mem[((int) ptr + 1) % mem.length] = (byte) (dat >> 8);
+        mem[ptr % mem.length] = (byte) dat;
+        mem[(ptr + 1) % mem.length] = (byte) (dat >> 8);
     }
 
-    public byte PeekB(int ptr) {
-        return mem[((int) ptr % mem.length)];
+    public byte peekB(int ptr) {
+        return mem[ptr % mem.length];
     }
 
     public short peekW(int ptr) {
-        return (short) (mem[(int) ptr % mem.length]+ (mem[((int) ptr + 1) % mem.length] << 8));
+        return (short) ((mem[ptr % mem.length] & 0xff) + ((mem[(ptr + 1) % mem.length] & 0xff) << 8));
     }
 
-    public void SetHookAddress(int startAdr, int endAdr, Function<Integer, Byte> write, Consumer<Integer> read) {
+    public void setHookAddress(int startAdr, int endAdr, Function<Integer, Byte> write, Consumer<Integer> read) {
     }
 }
 

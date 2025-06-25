@@ -3,6 +3,7 @@ package mdplayer.driver.fmp.nise98;
 import java.util.Stack;
 
 
+// TODO c# int16 is signed
 public class Register286 {
 
     // eRegs     sRegs
@@ -16,8 +17,8 @@ public class Register286 {
     // 7 ... DI
     public short[] eRegs = new short[8];
     public short[] sRegs = new short[4];
-    public short IP = 0;
-    public short FLAG = (short) 0x8000;
+    public short ip = 0;
+    public short flag = (short) 0x8000;
 
     public short getES() {
         return sRegs[0];
@@ -64,7 +65,7 @@ public class Register286 {
     }
 
     public void decCX() {
-        setCX((short) (getCX() - 1));
+        setCX((short) ((getCX() & 0xffff) - 1));
     }
 
     public void setCX(short value) {
@@ -92,11 +93,11 @@ public class Register286 {
     }
 
     public void addSP(int value) {
-        setSP((short) (getSP() + value));
+        setSP((short) ((getSP() & 0xffff) + value));
     }
 
     public void subSP(int value) {
-        setSP((short) (getSP() - value));
+        setSP((short) ((getSP() & 0xffff) - value));
     }
 
     public void setSP(short value) {
@@ -116,7 +117,7 @@ public class Register286 {
     }
 
     public void addSI(int value) {
-        setSI((short) (getSI() + value));
+        setSI((short) ((getSI() & 0xffff) + value));
     }
 
     public void setSI(short value) {
@@ -128,7 +129,7 @@ public class Register286 {
     }
 
     public void addDI(int value) {
-        setDI((short) (getDI() + value));
+        setDI((short) ((getDI() & 0xffff) + value));
     }
 
     public void setDI(short value) {
@@ -141,7 +142,7 @@ public class Register286 {
 
     public void setAL(short value) {
         eRegs[0] &= (short) 0xff00;
-        eRegs[0] |= (short) value;
+        eRegs[0] |= (value & 0xff);
     }
 
     public short getAH() {
@@ -150,7 +151,7 @@ public class Register286 {
 
     public void setAH(short value) {
         eRegs[0] &= (short) 0x00ff;
-        eRegs[0] |= (short) (value << 8);
+        eRegs[0] |= (short) ((value & 0x00ff) << 8);
     }
 
     public short getCL() {
@@ -159,268 +160,255 @@ public class Register286 {
 
     public void setCL(short value) {
         eRegs[1] &= (short) 0xff00;
-        eRegs[1] |= (short) value;
+        eRegs[1] |= (value & 0xff);
     }
 
-    public Byte getCH() {
+    public byte getCH() {
         return (byte) (eRegs[1] >> 8);
     }
 
-    public void setCH(Byte value) {
+    public void setCH(byte value) {
         eRegs[1] &= (short) 0x00ff;
-        eRegs[1] |= (short) (value << 8);
+        eRegs[1] |= (short) ((value & 0xff) << 8);
     }
 
-    public Byte getDL() {
+    public byte getDL() {
         return (byte) eRegs[2];
     }
 
-    public void setDL(Byte value) {
+    public void setDL(byte value) {
         eRegs[2] &= (short) 0xff00;
-        eRegs[2] |= (short) value;
+        eRegs[2] |= (short) (value & 0xff);
     }
 
-    public Byte getDH() {
+    public byte getDH() {
         return (byte) (eRegs[2] >> 8);
     }
 
-    public void setDH(Byte value) {
+    public void setDH(byte value) {
         eRegs[2] &= (short) 0x00ff;
-        eRegs[2] |= (short) (value << 8);
+        eRegs[2] |= (short) ((value & 0xff) << 8);
     }
 
-    public Byte getBL() {
+    public byte getBL() {
         return (byte) eRegs[3];
     }
 
-    public void setBL(Byte value) {
+    public void setBL(byte value) {
         eRegs[3] &= (short) 0xff00;
-        eRegs[3] |= (short) value;
+        eRegs[3] |= (short) (value & 0xff);
     }
 
-    public Byte getBH() {
+    public byte getBH() {
         return (byte) (eRegs[3] >> 8);
     }
 
-    public void setBH(Byte value) {
+    public void setBH(byte value) {
         eRegs[3] &= (short) 0x00ff;
-        eRegs[3] |= (short) (value << 8);
+        eRegs[3] |= (short) ((value & 0xff) << 8);
     }
 
     public int getCS_IP() {
-        {
-            return ((short) getCS() << 4) + (short) IP;
-        }
+        return ((getCS() & 0xffff) << 4) + (ip & 0xffff);
     }
 
     public int getDS_DX() {
-        {
-            return ((short) getDS() << 4) + (short) getDX();
-        }
+        return ((getDS() & 0xffff) << 4) + (getDX() & 0xffff);
     }
 
     public int getDS_SI() {
-        {
-            return ((short) getDS() << 4) + (short) getSI();
-        }
+        return ((getDS() & 0xffff) << 4) + (getSI() & 0xffff);
     }
 
     public int getDS_DI() {
-        {
-            return ((short) getDS() << 4) + (short) getDI();
-        }
+        return ((getDS() & 0xffff) << 4) + (getDI() & 0xffff);
     }
 
     public int getES_DI() {
-        {
-            return ((short) getES() << 4) + (short) getDI();
-        }
+        return ((getES() & 0xffff) << 4) + (getDI() & 0xffff);
     }
 
     public int getSS_SP() {
-        {
-            return ((short) getSS() << 4) + (short) getSP();
-        }
+        return ((getSS() & 0xffff) << 4) + (getSP() & 0xffff);
     }
 
     // CF bit0
-    public boolean getCF() {
-        return ((FLAG & (1 << 0)) != 0);
+    public boolean isCF() {
+        return (((flag & 0xffff) & (1 << 0)) != 0);
     }
 
     public void setCF(boolean value) {
-        FLAG &= ~(1 << 0);
-        FLAG |= (short) (value ? (1 << 0) : 0);
+        flag &= ~(1 << 0);
+        flag |= (short) (value ? (1 << 0) : 0);
     }
 
     // PF bit2
-    public boolean getPF() {
-        return ((FLAG & (1 << 2)) != 0);
+    public boolean isPF() {
+        return (((flag & 0xffff) & (1 << 2)) != 0);
     }
 
     public void setPF(boolean value) {
-        FLAG &= ~(1 << 2);
-        FLAG |= (short) (value ? (1 << 2) : 0);
+        flag &= ~(1 << 2);
+        flag |= (short) (value ? (1 << 2) : 0);
     }
 
     // AF bit4
-    public boolean getAF() {
-        return ((FLAG & (1 << 4)) != 0);
+    public boolean isAF() {
+        return (((flag & 0xffff) & (1 << 4)) != 0);
     }
 
     public void setAF(boolean value) {
-        FLAG &= ~(1 << 4);
-        FLAG |= (short) (value ? (1 << 4) : 0);
+        flag &= ~(1 << 4);
+        flag |= (short) (value ? (1 << 4) : 0);
     }
 
     // ZF bit6
-    public boolean getZF() {
-        return ((FLAG & (1 << 6)) != 0);
+    public boolean isZF() {
+        return (((flag & 0xffff) & (1 << 6)) != 0);
     }
 
     public void setZF(boolean value) {
-        FLAG &= ~(1 << 6);
-        FLAG |= (short) (value ? (1 << 6) : 0);
+        flag &= ~(1 << 6);
+        flag |= (short) (value ? (1 << 6) : 0);
     }
 
     // SF bit7
-    public boolean getSF() {
-        return ((FLAG & (1 << 7)) != 0);
+    public boolean isSF() {
+        return (((flag & 0xffff) & (1 << 7)) != 0);
     }
 
     public void setSF(boolean value) {
-        FLAG &= ~(1 << 7);
-        FLAG |= (short) (value ? (1 << 7) : 0);
+        flag &= ~(1 << 7);
+        flag |= (short) (value ? (1 << 7) : 0);
     }
 
     // TF bit8
-    public boolean getTF() {
-        return ((FLAG & (1 << 8)) != 0);
+    public boolean isTF() {
+        return (((flag & 0xffff) & (1 << 8)) != 0);
     }
 
     public void setTF(boolean value) {
-        FLAG &= ~(1 << 8);
-        FLAG |= (short) (value ? (1 << 8) : 0);
+        flag &= ~(1 << 8);
+        flag |= (short) (value ? (1 << 8) : 0);
     }
 
     // IF bit9
-    public boolean getIF() {
-        return ((FLAG & (1 << 9)) != 0);
+    public boolean isIF() {
+        return (((flag & 0xffff) & (1 << 9)) != 0);
     }
 
     public void setIF(boolean value) {
-        FLAG &= ~(1 << 9);
-        FLAG |= (short) (value ? (1 << 9) : 0);
+        flag &= ~(1 << 9);
+        flag |= (short) (value ? (1 << 9) : 0);
     }
 
     // DF bit10
-    public boolean getDF() {
-        return ((FLAG & (1 << 10)) != 0);
+    public boolean isDF() {
+        return (((flag & 0xffff) & (1 << 10)) != 0);
     }
 
     public void setDF(boolean value) {
-        FLAG &= ~(1 << 10);
-        FLAG |= (short) (value ? (1 << 10) : 0);
+        flag &= ~(1 << 10);
+        flag |= (short) (value ? (1 << 10) : 0);
     }
 
     // OF bit11
-    public boolean getOF() {
-        return ((FLAG & (1 << 11)) != 0);
+    public boolean isOF() {
+        return (((flag & 0xffff) & (1 << 11)) != 0);
     }
 
     public void setOF(boolean value) {
-        FLAG &= ~(1 << 11);
-        FLAG |= (short) (value ? (1 << 11) : 0);
+        flag &= ~(1 << 11);
+        flag |= (short) (value ? (1 << 11) : 0);
     }
 
-    public int AuxVal, OverVal, SignVal, ZeroVal, CarryVal, DirVal;      /* 0 or non-0 valued flags */
-    public byte ParityVal;
+    public int auxVal, overVal, signVal, zeroVal, carryVal, dirVal; // 0 or non-0 valued flags
+    public byte parityVal;
 
     public void setSZPFb(byte ans) {
-        SignVal = (byte) ans;
-        setSF(SignVal < 0);
-        ZeroVal = ans;
-        setZF(ZeroVal == 0);
-        ParityVal = ans;
-        setPF(parity_table[ParityVal & 0xff]);
+        signVal = ans;
+        setSF(signVal < 0);
+        zeroVal = ans & 0xffff;
+        setZF(zeroVal == 0);
+        parityVal = ans;
+        setPF(parity_table[parityVal & 0xff]);
     }
 
     public void setSZPFw(short ans) {
-        SignVal = (short) ans;
-        setSF(SignVal < 0);
-        ZeroVal = ans;
-        setZF(ZeroVal == 0);
-        ParityVal = (byte) ans;
-        setPF(parity_table[ParityVal & 0xff]);
+        signVal = ans;
+        setSF(signVal < 0);
+        zeroVal = ans & 0xffff;
+        setZF(zeroVal == 0);
+        parityVal = (byte) ans;
+        setPF(parity_table[parityVal & 0xff]);
     }
 
     public void setCFb(short a) {
-        CarryVal = (a) & 0x100;
-        setCF(CarryVal != 0);
+        carryVal = a & 0x100;
+        setCF(carryVal != 0);
     }
 
     public void setCFw(int a) {
-        CarryVal = (int) ((a) & 0x10000);
-        setCF(CarryVal != 0);
+        carryVal = a & 0x10000;
+        setCF(carryVal != 0);
     }
 
     public void setAF(byte a, byte b, byte ans) {
-        AuxVal = ((ans) ^ ((a) ^ (b))) & 0x10;
-        setAF(AuxVal != 0);
+        auxVal = ((ans & 0xff) ^ ((a & 0xff) ^ (b & 0xff))) & 0x10;
+        setAF(auxVal != 0);
     }
 
-    // ans = a - b
-    // の時のOF判定
-    // 事前にSFの判定を行っておくこと
+    // OF determination when ans = a - b
+    // SF determination must be performed in advanceans = a - b
     public void setOFwSub(short a, short b, short ans) {
         // OF = SF
         //    ? ((b > 0 && ans > a) || (b < 0 && ans < a))
         //    : ans > a;
 
-        OverVal = ((b ^ a) & (b ^ ans) & 0x8000);
-        setOF(OverVal != 0);
+        overVal = (((b & 0xffff) ^ (a & 0xffff)) & ((b & 0xffff) ^ (ans & 0xffff)) & 0x8000);
+        setOF(overVal != 0);
     }
 
     public void setOFbSub(byte a, byte b, byte ans) {
         // OF = SF
         //    ? ((b > 0 && ans > a) || (b < 0 && ans < a))
         //    : ans > a;
-        OverVal = ((b ^ a) & (b ^ ans) & 0x80);
-        setOF(OverVal != 0);
+        overVal = (((b & 0xff) ^ (a & 0xff)) & ((b & 0xff) ^ (ans & 0xff)) & 0x80);
+        setOF(overVal != 0);
     }
 
     public void setOFwAdd(short a, short b, short ans) {
         // OF = SF
         //    ? ((a >= 0 && ans < b) || (a < 0 && ans > b))
         //    : (ans < a || ans < b);
-        OverVal = (((ans) ^ (a)) & ((ans) ^ (b)) & 0x8000);
+        overVal = (((ans & 0xffff) ^ (a & 0xffff)) & ((ans & 0xffff) ^ (b & 0xffff)) & 0x8000);
     }
 
     public void SetOFbAdd(byte a, byte b, byte ans) {
         // OF = SF
         //    ? ((a >= 0 && ans < b) || (a < 0 && ans > b))
         //    : (ans < a || ans < b);
-        OverVal = (((ans) ^ (a)) & ((ans) ^ (b)) & 0x80);
+        overVal = (((ans & 0xff) ^ (a & 0xff)) & ((ans & 0xff) ^ (b & 0xff)) & 0x80);
     }
 
     @Override
     public String toString() {
         return """
-                AX:%04x CX:%04x DX:%04x BX:%04x SP:%04x BP:%04x SI:%04x DI:%04x\s
-                ES:%04x CS:%04x SS:%04x DS:%04x IP:%04x FLAG:[%s.%s.%s.%s%s%s%s%s%s....%s]
+                %nAX:%04x CX:%04x DX:%04x BX:%04x SP:%04x BP:%04x SI:%04x DI:%04x\s
+                ES:%04x CS:%04x SS:%04x DS:%04x IP:%04x FLAG:[%s.%s.%s.%s%s%s%s%s%s....%04x]
                 """.formatted(
                 getAX(), getCX(), getDX(), getBX(), getSP(), getBP(), getSI(), getDI(),
-                getES(), getCS(), getSS(), getDS(), IP,
-                (getCF() ? "C" : "-"),
-                (getPF() ? "P" : "-"),
-                (getAF() ? "A" : "-"),
-                (getZF() ? "Z" : "-"),
-                (getSF() ? "S" : "-"),
-                (getTF() ? "T" : "-"),
-                (getIF() ? "I" : "-"),
-                (getDF() ? "D" : "-"),
-                (getOF() ? "O" : "-"),
-                FLAG
+                getES(), getCS(), getSS(), getDS(), ip,
+                (isCF() ? "C" : "-"),
+                (isPF() ? "P" : "-"),
+                (isAF() ? "A" : "-"),
+                (isZF() ? "Z" : "-"),
+                (isSF() ? "S" : "-"),
+                (isTF() ? "T" : "-"),
+                (isIF() ? "I" : "-"),
+                (isDF() ? "D" : "-"),
+                (isOF() ? "O" : "-"),
+                flag & 0xffff
         );
     }
 
@@ -437,6 +425,6 @@ public class Register286 {
         }
     }
 
-    private Stack<Short> regStack = new Stack<>();
+    private final Stack<Short> regStack = new Stack<>();
     private final boolean[] parity_table;
 }

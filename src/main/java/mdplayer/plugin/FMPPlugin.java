@@ -24,6 +24,7 @@ import mdplayer.driver.fmp.nise98.FileTemp;
 import mdplayer.driver.pmd.PMDJava;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
+import mdsound.instrument.Ym2608Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -60,11 +61,11 @@ public class FMPPlugin extends BasePlugin {
 //        ((FMP)audio.driverVirtual).playingFileName = playingFileName;
 //        ((FMP)audio.driverVirtual).playingArcFileName = playingArcFileName;
         audio.driverReal = null;
-        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
-            audio.driverReal = new FMP(ft);
+//        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
+//            audio.driverReal = new FMP(ft);
 //            ((FMP)audio.driverReal).PlayingFileName = playingFileName;
 //            ((FMP)audio.driverReal).PlayingArcFileName = playingArcFileName;
-        }
+//        }
 
         prepare();
         boolean r = play(ft);
@@ -85,6 +86,12 @@ public class FMPPlugin extends BasePlugin {
         chip.instrument = audio.chipRegister.chip(Ym2608Chip.class).instrument(0);
         chip.samplingRate = 55467; // setting.outputDevice.SampleRate;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
+        if (chip.instrument instanceof Ym2608Inst ym2608) {
+            chip.setVolumes.put("FM", ym2608::setVolume);
+            chip.setVolumes.put("SSG", ym2608::setVolume);
+            chip.setVolumes.put("RHYTHM", ym2608::setVolume);
+            chip.setVolumes.put("ADPCM", ym2608::setVolume);
+        }
         chip.clock = FMP.baseclock;
         Function<String, Stream> fn = Common::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
