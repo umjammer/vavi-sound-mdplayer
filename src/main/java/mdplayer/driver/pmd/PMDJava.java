@@ -273,9 +273,9 @@ public class PMDJava extends BaseDriver {
 
         pmdDriver.init(
                 lca,
-                //fileName,
-                //oPNAWrite,
-                //oPNAWaitSend,
+                // fileName,
+                // oPNAWrite,
+                // oPNAWaitSend,
                 ret,
                 null, // This callback is unused
                 additionalPDDDotNETOption, // PMDDotNET option
@@ -297,7 +297,7 @@ public class PMDJava extends BaseDriver {
             return;
         if (cd.data == -1)
             return;
-        if (cd.port == -1)
+        if (cd.port == -1 || cd.port == 10000) // vavi
             return;
 
         plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, cd.port, cd.address, cd.data, model);
