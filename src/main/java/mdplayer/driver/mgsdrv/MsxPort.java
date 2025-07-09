@@ -18,7 +18,7 @@ public class MsxPort implements Memory {
 
     private final MsxSlot slot;
     private final ChipRegister chipRegister;
-    private MsxVdp vdp;
+    private final MsxVdp vdp;
     private final Common.EnmModel model;
     private byte opllAdr;
     private byte ay8910Adr;
@@ -42,7 +42,7 @@ public class MsxPort implements Memory {
 
     @Override
     public int getSize() {
-        throw new UnsupportedOperationException();
+        return 256;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class MsxPort implements Memory {
             ay8910Adr = value;
             break;
         case 0xa1:
-            chipRegister.chip(Ay8910Chip.class).write(0, ay8910Adr & 0xff, value, model);
+            chipRegister.chip(Ay8910Chip.class).write(0, ay8910Adr & 0xff, value & 0xff, model);
             break;
         case 0xa2:
             //logger.log(Level.TRACE, "Psg Port adr:%04x Dat:%02x".formatted(address, value));
@@ -77,7 +77,7 @@ public class MsxPort implements Memory {
             opllAdr = value;
             break;
         case 0x7d:
-            chipRegister.chip(Ym2413Chip.class).write(0, opllAdr & 0xff, value, model);
+            chipRegister.chip(Ym2413Chip.class).write(0, opllAdr & 0xff, value & 0xff, model);
             //logger.log(Level.TRACE, "Ym2413 Port adr:%04x Dat:%02x".formatted(address, value));
             break;
         case 0xa8:
@@ -85,7 +85,7 @@ public class MsxPort implements Memory {
             changeSlot(value);
             break;
         default:
-            logger.log(Level.DEBUG, "Port  adr:%04x Dat:%02x".formatted(address, value));
+            logger.log(Level.DEBUG, "Port  adr:%04x Dat:%02x".formatted(address, value & 0xff));
             break;
         }
     }
@@ -98,7 +98,7 @@ public class MsxPort implements Memory {
             case 0x02:
             case 0x03:
                 if (vdp == null) return 0;
-                return vdp.Read(address);
+                return vdp.read(address);
             case 0xa8:
                 //logger.log(Level.TRACE, "ChangeSlot Port :  adr:%04x".formatted(address));
                 return readSlot();

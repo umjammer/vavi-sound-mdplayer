@@ -34,7 +34,7 @@ public class Mapper {
         }
     }
 
-    public void CallMapperProc(BeforeInstructionFetchEvent args, Z80Processor z80, int typ) {
+    public void callMapperProc(BeforeInstructionFetchEvent args, Z80Processor z80, int typ) {
         switch (typ) {
         case 0: // adr
 //logger.log(Level.TRACE, " MAPPER PROC ALL_SEG Reg.a=%02x Reg.B=%02x".formatted(z80.getRegisters().getA(), z80.getRegisters().getB()));
@@ -50,7 +50,7 @@ public class Mapper {
             break;
         case 10: // adr:0x1e
 //logger.log(Level.TRACE, " MAPPER PROC PUT_P1 Reg.a=%02x".formatted(z80.getRegisters().getA()));
-            crt.setSegmentToPage(z80.getRegisters().getA(), 1);
+            crt.setSegmentToPage(z80.getRegisters().getA() & 0xff, 1);
             break;
         case 11: // adr:0x21
 //logger.log(Level.TRACE, " MAPPER PROC GET_P1 P1:%02x".formatted(crt.GetSegmentNumberFromPageNumber(1)));
@@ -58,7 +58,7 @@ public class Mapper {
             break;
         case 12: // adr:0x24
 logger.log(Level.DEBUG, " MAPPER PROC PUT_P2 Reg.a=%02x".formatted(z80.getRegisters().getA()));
-            crt.setSegmentToPage(z80.getRegisters().getA(), 2);
+            crt.setSegmentToPage(z80.getRegisters().getA() & 0xff, 2);
             break;
         case 13: // adr:0x27
 logger.log(Level.DEBUG, " MAPPER PROC GET_P1 P2:%02x".formatted(crt.getSegmentNumberFromPageNumber(2)));

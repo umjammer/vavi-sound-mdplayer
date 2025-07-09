@@ -2,6 +2,7 @@
 package mdplayer.driver.mgsdrv;
 
 public interface Cartridge {
+
     byte get(int address);
     void set(int address, byte value);
 

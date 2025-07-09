@@ -72,10 +72,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.instrument = audio.chipRegister.chip(Ay8910Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
-            chip.clock = MgsDrv.baseclockAY8910 / 2;
+            chip.clock = MgsDrv.baseClockAY8910 / 2;
             chip.option = null;
             put(Ay8910Chip.class, chip);
-            audio.chipRegister.chip(Ay8910Chip.class).clock = MgsDrv.baseclockAY8910;
+            audio.chipRegister.chip(Ay8910Chip.class).clock = MgsDrv.baseClockAY8910;
         }
 
         if (useOPLL) {
@@ -85,10 +85,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.instrument = audio.chipRegister.chip(Ym2413Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2413Chip.class);
-            chip.clock = MgsDrv.baseclockYM2413;
+            chip.clock = MgsDrv.baseClockYM2413;
             chip.option = null;
             put(Ym2413Chip.class, chip);
-            audio.chipRegister.chip(Ym2413Chip.class).clock = MgsDrv.baseclockYM2413;
+            audio.chipRegister.chip(Ym2413Chip.class).clock = MgsDrv.baseClockYM2413;
         }
 
         if (useSCC) {
@@ -98,10 +98,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.instrument = audio.chipRegister.chip(K051649Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, K051649Chip.class);
-            chip.clock = MgsDrv.baseclockK051649;
+            chip.clock = MgsDrv.baseClockK051649;
             chip.option = null;
             put(K051649Chip.class, chip);
-            audio.chipRegister.chip(K051649Chip.class).clock = MgsDrv.baseclockK051649;
+            audio.chipRegister.chip(K051649Chip.class).clock = MgsDrv.baseClockK051649;
         }
 
         audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, flatten());
