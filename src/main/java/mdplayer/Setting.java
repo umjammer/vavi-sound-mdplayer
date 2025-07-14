@@ -406,6 +406,26 @@ public class Setting implements Serializable, Cloneable {
     }
 
     public static class Mxdrv implements Serializable, Cloneable {
+    public static class ZMusic implements Serializable, Cloneable {
+        public int compilePriority = 0;
+        public int pcm8Type = 1;
+        public int mpcmType = 1;
+        public int waitNextPlay = 1000;
+        public int pcm8ppsOption = -1;
+
+        @Override
+        public ZMusic clone() {
+            ZMusic p = new ZMusic();
+            p.compilePriority = this.compilePriority;
+            p.pcm8Type = this.pcm8Type;
+            p.mpcmType = this.mpcmType;
+            p.waitNextPlay = this.waitNextPlay;
+            p.pcm8ppsOption =this.pcm8ppsOption;
+
+            return p;
+        }
+    }
+
 
         public int pcm8type = 1;
         public int pcm8ppSoption = -1;
@@ -1520,12 +1540,18 @@ public class Setting implements Serializable, Cloneable {
 
     private PMDDotNET pmdDotNET = new PMDDotNET();
 
+    private ZMusic zMusic = new ZMusic();
+
     public PMDDotNET getPmdDotNET() {
         return pmdDotNET;
+    public ZMusic getZMusic() {
+        return zMusic;
     }
 
     void setPMDDotNET(PMDDotNET value) {
         pmdDotNET = value;
+    public void setZMusic(ZMusic value) {
+        zMusic = value;
     }
 
     private Mxdrv _Mxdrv = new Mxdrv();
