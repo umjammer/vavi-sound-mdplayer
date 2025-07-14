@@ -1030,7 +1030,7 @@ public class Nise286 {
         }
 
         regs.setSZPFb(ic);
-        regs.SetOFbAdd(a, b, ic);
+        regs.setOFbAdd(a, b, ic);
         regs.setCFb(c);
         regs.setAF(a, b, ic);
     }
@@ -1147,7 +1147,7 @@ public class Nise286 {
         }
 
         regs.setSZPFb(ic);
-        regs.SetOFbAdd(a, b, ic);
+        regs.setOFbAdd(a, b, ic);
         regs.setCFb(c);
         regs.setAF(a, b, ic);
     }
@@ -1221,7 +1221,7 @@ public class Nise286 {
         regs.setAL((byte) c);
 
         regs.setSZPFb(ic);
-        regs.SetOFbAdd(a, b, ic);
+        regs.setOFbAdd(a, b, ic);
         regs.setCFb(c);
         regs.setAF(a, b, ic);
     }
@@ -1527,7 +1527,7 @@ public class Nise286 {
         }
 
         regs.setSZPFb(ic);
-        regs.SetOFbAdd(a, b, ic);
+        regs.setOFbAdd(a, b, ic);
         regs.setCFb(c);
         regs.setAF(a, b, ic);
     }
@@ -1601,7 +1601,7 @@ public class Nise286 {
         regs.setAL((byte) c);
 
         regs.setSZPFb(ic);
-        regs.SetOFbAdd(a, b, ic);
+        regs.setOFbAdd(a, b, ic);
         regs.setCFb(c);
         regs.setAF(a, b, ic);
     }
@@ -3192,7 +3192,7 @@ public class Nise286 {
                 ians = (eb & 0xff) + (ib & 0xff);
                 ans = (byte) ians;
                 regs.setSZPFb((byte) ians);
-                regs.SetOFbAdd(eb, (byte) ib, ans);
+                regs.setOFbAdd(eb, (byte) ib, ans);
                 regs.setCFb((short) ians);
                 regs.setAF(eb, (byte) ib, ans);
                 switch (mod) {
@@ -3232,7 +3232,7 @@ public class Nise286 {
                 ians = (eb & 0xff) + (ib & 0xff) + (regs.isCF() ? 1 : 0);
                 ans = (byte) ians;
                 regs.setSZPFb((byte) ians);
-                regs.SetOFbAdd(eb, (byte) ib, ans);
+                regs.setOFbAdd(eb, (byte) ib, ans);
                 regs.setCFb((short) ians);
                 regs.setAF(eb, (byte) ib, ans);
                 switch (mod) {
@@ -5707,7 +5707,7 @@ public class Nise286 {
                 ians = (short) (eb + (ib & 0xff));
                 ans = (byte) ians;
                 regs.setSZPFb(ans);
-                regs.SetOFbAdd(eb, ib, ans);
+                regs.setOFbAdd(eb, ib, ans);
                 regs.setCFb(ians);
                 regs.setAF(eb, ib, ans);
                 switch (mod) {

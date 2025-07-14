@@ -172,7 +172,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
         Path crntDir = Path.of(System.getProperty("mdplayer.fmp.dir", System.getProperty("user.dir")));
         Path fileNameFMP = crntDir.resolve("FMP.COM");
         logger.log(Level.DEBUG, fileNameFMP);
-        nise98.Init(null, this::OPNAWrite, ft, OngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.init(null, this::OPNAWrite, ft, OngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
         nise98.getDos().setArcFile(playingArcFileName);
         nise98.getDos().setSearchPath(searchPaths);
 
@@ -248,7 +248,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
         var fileNameFMC = "FMC.EXE";
         int rc = 0;
 
-        nise98.Init(null, this::OPNAWrite, ft, OngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.init(null, this::OPNAWrite, ft, OngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
 
         // FMP resident
         nise98.loadRun(fileNameFMP, "s -s", 0x2000);

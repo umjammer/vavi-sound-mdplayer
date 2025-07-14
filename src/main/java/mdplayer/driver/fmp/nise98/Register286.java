@@ -384,7 +384,7 @@ public class Register286 {
         overVal = (((ans & 0xffff) ^ (a & 0xffff)) & ((ans & 0xffff) ^ (b & 0xffff)) & 0x8000);
     }
 
-    public void SetOFbAdd(byte a, byte b, byte ans) {
+    public void setOFbAdd(byte a, byte b, byte ans) {
         // OF = SF
         //    ? ((a >= 0 && ans < b) || (a < 0 && ans > b))
         //    : (ans < a || ans < b);

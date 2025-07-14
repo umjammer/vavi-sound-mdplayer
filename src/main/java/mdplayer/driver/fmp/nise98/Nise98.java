@@ -88,7 +88,7 @@ public class Nise98 {
         }
     }
 
-    public void Init(Function<String, Object[]> msgWrite, Consumer<ChipDatum> opnaWrite, FileTemp fileTemp, OngenBoardType ongen /* = enmOngenBoardType.PC9801_86B */) {
+    public void init(Function<String, Object[]> msgWrite, Consumer<ChipDatum> opnaWrite, FileTemp fileTemp, OngenBoardType ongen /* = enmOngenBoardType.PC9801_86B */) {
         logger.log(Level.DEBUG, "<Nise98>Init");
 
         this.opnaWrite = opnaWrite;
@@ -253,7 +253,7 @@ public class Nise98 {
 
     public short inpW(short port) {
         logger.log(Level.DEBUG, "<Nise98>IN  Port:$%04x".formatted(port & 0xffff));
-        switch (port) {
+        switch (port & 0xffff) {
 //            case 0xa460:
 //                return IsOPNA ? 0x00 : 0xff; // 0xFF:not OPNA
 //            case 0x088: // FM port
@@ -375,7 +375,7 @@ public class Nise98 {
 
     private byte fmPortInPort(fmStatus fs, short port) {
         logger.log(Level.DEBUG, "<Nise98> --- IN  FM Port:$%03x".formatted(port & 0xfff));
-        switch (port & 0xff) {
+        switch (port & 0xffff) {
             case 0x88: // FM port
                 if (fs.ongen == OngenBoardType.None)
                     return (byte) 0xff;
@@ -435,13 +435,13 @@ public class Nise98 {
         if (fs.ongen == OngenBoardType.None) return;
 
         ChipDatum cd;
-        switch (port & 0xff) {
+        switch (port & 0xffff) {
             case 0x088: // FM port adr
                 fs.p88lastAdr = data;
                 break;
             case 0x08a: // FM port val
                 if (fs.regs != null) fs.regs[fs.p88lastAdr & 0xff] = data;
-                fs.timer.WriteReg(fs.p88lastAdr, data);
+                fs.timer.writeReg(fs.p88lastAdr, data);
                 cd = new ChipDatum(port, fs.p88lastAdr & 0xff, data);
                 opnaWrite.accept(cd);
                 break;
@@ -526,8 +526,8 @@ public class Nise98 {
                                     boolean dispReg /* = false */,
                                     boolean useStepCounter /* = false */,
                                     boolean dispStepCounter /* = false */,
-                                    long MaxStepCounter /* = 100_000_000 */,
-                                    long StartStepCounterForDispStep /* = 0 */) {
+                                    long maxStepCounter /* = 100_000_000 */,
+                                    long startStepCounterForDispStep /* = 0 */) {
         Register286 regs = getRegisters();
         UserInt ui = new UserInt();
         ui.setIntNum(intNumber & 0xff);
@@ -544,7 +544,7 @@ public class Nise98 {
 
             if (useStepCounter) {
                 step++;
-                if (step < StartStepCounterForDispStep) continue;
+                if (step < startStepCounterForDispStep) continue;
             }
 
             if (dispReg) {
@@ -552,11 +552,11 @@ public class Nise98 {
                 dispRegs(regs);
             }
 
-//            if (dispStepCounter) logger.log(Level.TRACE, "functionCalls:{0} STEP:{1}\r\n", functionCallTimes, step);
+//            if (dispStepCounter) logger.log(Level.TRACE, "functionCalls:%d STEP:%d".formatted(functionCallTimes, step));
 //
 //            if (regs.ip == 0xb01) {
-//                if(regs.AL==0xf0|| regs.AL == 0xcd)
-//                ;
+//                if (regs.AL == 0xf0|| regs.AL == 0xcd)
+//                    ;
 //            }
 //            if (regs.ip == 0x4088)// || regs.ip == 0x19c9 || regs.ip == 0x19d1) {
 //                ;
