@@ -448,6 +448,16 @@ public class Setting implements Serializable, Cloneable {
         public Mndrv clone() {
             Mndrv p = new Mndrv();
             p.mpcmtype = this.mpcmtype;
+        }
+    }
+
+    public static class Rcs implements Serializable, Cloneable {
+        public int pcm8type = 1; // PCM8PPがデフォルト
+
+        @Override
+        public Rcs clone() {
+            Rcs p = new Rcs();
+            p.pcm8type = this.pcm8type;
 
             return p;
         }
