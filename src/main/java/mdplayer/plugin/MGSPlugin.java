@@ -11,6 +11,7 @@ import mdplayer.chips.Ym2413Chip;
 import mdplayer.driver.mgsdrv.MgsDrv;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
+import mdsound.instrument.MameAy8910Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -74,6 +75,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
             chip.clock = MgsDrv.baseClockAY8910 / 2;
             chip.option = null;
+            if (chip.instrument instanceof MameAy8910Inst) {
+                chip.option = new Object[] {
+                        (setting.getAY8910Type()[0].getYM2149mode() ? 0x10 : 0x00), // chip_type 0x10: YM2149, 0x00: AY
+                        0x00 // chip_flag
+                };
+            }
             put(Ay8910Chip.class, chip);
             audio.chipRegister.chip(Ay8910Chip.class).clock = MgsDrv.baseClockAY8910;
         }

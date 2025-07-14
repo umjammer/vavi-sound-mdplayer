@@ -25,6 +25,7 @@ import java.util.function.Consumer;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
+import bsh.commands.dir;
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileShare;
@@ -168,13 +169,22 @@ public class Common {
     }
 
     public static String getNRDString(byte[] buf, /* ref */ int[] index) {
+        return getNRDString(buf, index, (byte) 0);
+    }
+
+    public static String getNRDString(byte[] buf, /* ref */ int[] index, byte del /* = 0 */) {
         if (buf == null || buf.length < 1 || index[0] < 0 || index[0] >= buf.length) return "";
 
         try {
             List<Byte> lst = new ArrayList<>();
             for (; buf[index[0]] != 0; index[0]++) {
-                if (buf.length > index[0] + 1 && buf[index[0]] == 0x1a && buf[index[0] + 1] == 0x00)
-                    break;
+                if (del == 0) {
+                    if (buf.length > index[0] + 1 && buf[index[0]] == 0x1a && buf[index[0] + 1] == 0x00)
+                        break;
+                } else {
+                    if (buf.length > index[0] + 1 && buf[index[0]] == del)
+                        break;
+                }
                 lst.add(buf[index[0]]);
             }
 

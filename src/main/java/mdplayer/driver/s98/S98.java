@@ -73,82 +73,90 @@ public class S98 extends BaseDriver {
                 gd3.trackName = str;
                 gd3.trackNameJ = str;
             } else if (format == 3) {
-                if (buf[tagAdr++] != 0x5b) return null;
-                if (buf[tagAdr++] != 0x53) return null;
-                if (buf[tagAdr++] != 0x39) return null;
-                if (buf[tagAdr++] != 0x38) return null;
-                if (buf[tagAdr++] != 0x5d) return null;
-                boolean isUTF8 = false;
-                if (ByteUtil.readLe24(buf, tagAdr) == FCC_BOM) {
-                    isUTF8 = true;
-                    tagAdr += 3;
+                if (tagAdr != 0) {
+                    if (buf[tagAdr++] != 0x5b) return null;
+                    if (buf[tagAdr++] != 0x53) return null;
+                    if (buf[tagAdr++] != 0x39) return null;
+                    if (buf[tagAdr++] != 0x38) return null;
+                    if (buf[tagAdr++] != 0x5d) return null;
+                    boolean isUTF8 = false;
+                    if (ByteUtil.readLe24(buf, tagAdr) == FCC_BOM) {
+                        isUTF8 = true;
+                        tagAdr += 3;
+                    }
+
+                    while (buf.length > tagAdr && buf[tagAdr] != 0x00) {
+                        List<Byte> strLst = new ArrayList<>();
+                        String str;
+                        while (buf[tagAdr] != 0x0a && buf[tagAdr] != 0x00) {
+                            strLst.add(buf[tagAdr++]);
+                        }
+                        if (isUTF8) {
+                            str = new String(ByteUtil.toByteArray(strLst), StandardCharsets.UTF_8);
+                        } else {
+                            str = new String(ByteUtil.toByteArray(strLst), charset);
+                        }
+                        tagAdr++;
+
+                        if (str.toLowerCase().contains("artist=")) {
+                            try {
+                                gd3.composer = str.substring(str.indexOf("=") + 1);
+                                gd3.composerJ = str.substring(str.indexOf("=") + 1);
+                            } catch (Exception e) {
+                                logger.log(Level.ERROR, e.getMessage(), e);
+
+                            }
+                        }
+                        if (str.toLowerCase().contains("s98by=")) {
+                            try {
+                                gd3.vgmBy = str.substring(str.indexOf("=") + 1);
+                            } catch (Exception e) {
+                                logger.log(Level.ERROR, e.getMessage(), e);
+                            }
+                        }
+                        if (str.toLowerCase().contains("game=")) {
+                            try {
+                                gd3.gameName = str.substring(str.indexOf("=") + 1);
+                                gd3.gameNameJ = str.substring(str.indexOf("=") + 1);
+                            } catch (Exception e) {
+                                logger.log(Level.ERROR, e.getMessage(), e);
+                            }
+                        }
+                        SSGVolumeFromTAG = -1;
+                        if (str.toLowerCase().contains("system=")) {
+                            try {
+                                gd3.systemName = str.substring(str.indexOf("=") + 1);
+                                gd3.systemNameJ = str.substring(str.indexOf("=") + 1);
+
+                                if (gd3.systemName.indexOf("8801") > 0) SSGVolumeFromTAG = 63;
+                                else if (gd3.systemName.indexOf("9801") > 0) SSGVolumeFromTAG = 31;
+                            } catch (Exception e) {
+                                logger.log(Level.ERROR, e.getMessage(), e);
+                            }
+                        }
+                        if (str.toLowerCase().contains("title=")) {
+                            try {
+                                gd3.trackName = str.substring(str.indexOf("=") + 1);
+                                gd3.trackNameJ = str.substring(str.indexOf("=") + 1);
+                            } catch (Exception e) {
+                                logger.log(Level.ERROR, e.getMessage(), e);
+                            }
+                        }
+                        if (str.toLowerCase().contains("year=")) {
+                            try {
+                                gd3.converted = str.substring(str.indexOf("=") + 1);
+                            } catch (Exception e) {
+                                logger.log(Level.ERROR, e.getMessage(), e);
+                            }
+                        }
+                    }
                 }
+            }
 
-                while (buf.length > tagAdr && buf[tagAdr] != 0x00) {
-                    List<Byte> strLst = new ArrayList<>();
-                    String str;
-                    while (buf[tagAdr] != 0x0a && buf[tagAdr] != 0x00) {
-                        strLst.add(buf[tagAdr++]);
-                    }
-                    if (isUTF8) {
-                        str = new String(ByteUtil.toByteArray(strLst), StandardCharsets.UTF_8);
-                    } else {
-                        str = new String(ByteUtil.toByteArray(strLst), charset);
-                    }
-                    tagAdr++;
-
-                    if (str.toLowerCase().contains("artist=")) {
-                        try {
-                            gd3.composer = str.substring(str.indexOf("=") + 1);
-                            gd3.composerJ = str.substring(str.indexOf("=") + 1);
-                        } catch (Exception e) {
-                            logger.log(Level.ERROR, e.getMessage(), e);
-
-                        }
-                    }
-                    if (str.toLowerCase().contains("s98by=")) {
-                        try {
-                            gd3.vgmBy = str.substring(str.indexOf("=") + 1);
-                        } catch (Exception e) {
-                            logger.log(Level.ERROR, e.getMessage(), e);
-                        }
-                    }
-                    if (str.toLowerCase().contains("game=")) {
-                        try {
-                            gd3.gameName = str.substring(str.indexOf("=") + 1);
-                            gd3.gameNameJ = str.substring(str.indexOf("=") + 1);
-                        } catch (Exception e) {
-                            logger.log(Level.ERROR, e.getMessage(), e);
-                        }
-                    }
-                    SSGVolumeFromTAG = -1;
-                    if (str.toLowerCase().contains("system=")) {
-                        try {
-                            gd3.systemName = str.substring(str.indexOf("=") + 1);
-                            gd3.systemNameJ = str.substring(str.indexOf("=") + 1);
-
-                            if (gd3.systemName.indexOf("8801") > 0) SSGVolumeFromTAG = 63;
-                            else if (gd3.systemName.indexOf("9801") > 0) SSGVolumeFromTAG = 31;
-                        } catch (Exception e) {
-                            logger.log(Level.ERROR, e.getMessage(), e);
-                        }
-                    }
-                    if (str.toLowerCase().contains("title=")) {
-                        try {
-                            gd3.trackName = str.substring(str.indexOf("=") + 1);
-                            gd3.trackNameJ = str.substring(str.indexOf("=") + 1);
-                        } catch (Exception e) {
-                            logger.log(Level.ERROR, e.getMessage(), e);
-                        }
-                    }
-                    if (str.toLowerCase().contains("year=")) {
-                        try {
-                            gd3.converted = str.substring(str.indexOf("=") + 1);
-                        } catch (Exception e) {
-                            logger.log(Level.ERROR, e.getMessage(), e);
-                        }
-                    }
-                }
+            this.vgmBuf = buf;
+            getInformationHeader();
+            if (!chips.isEmpty()) {
+                gd3.usedChips = String.join(",", chips);
             }
 
         } catch (Exception e) {

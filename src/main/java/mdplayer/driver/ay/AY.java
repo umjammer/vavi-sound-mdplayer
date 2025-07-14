@@ -323,14 +323,14 @@ logger.log(Level.ERROR, e.getMessage(), e);
             old = z80.getTStatesElapsedSinceReset();
 
             clkElp += step;
-            if (zxClock / setting.getOutputDevice().getSampleRate() <= clkElp) {
-                clkElp -= (zxClock / setting.getOutputDevice().getSampleRate());
+            if (clock / setting.getOutputDevice().getSampleRate() <= clkElp) {
+                clkElp -= (clock / setting.getOutputDevice().getSampleRate());
                 brk = true;
             }
 
             palElp += step;
-            if (zxClock / PAL <= palElp) {
-                palElp -= (zxClock / PAL);
+            if (clock / PAL <= palElp) {
+                palElp -= (clock / PAL);
 
                 if (z80.isHalted()) {
                     short pc = z80.getRegisters().getPC();
