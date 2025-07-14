@@ -26,7 +26,7 @@ import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
 
 
-// MnDrv is MXDRV (SHARP X68000 series) port for Windows
+// MnDrv is MXDRV (SHARP X68000 series) for YMF288
 public class MnDrv extends BaseDriver {
 
     private static final Logger logger = getLogger(MnDrv.class.getName());
@@ -2765,7 +2765,7 @@ public class MnDrv extends BaseDriver {
         switch (reg.a0) {
         case 0xec_c0c1:
             plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, reg.getD1_B(), reg.getD0_B(), model);
-            timerOPN.WriteReg((byte) reg.getD1_B(), (byte) reg.getD0_B());
+            timerOPN.writeReg((byte) reg.getD1_B(), (byte) reg.getD0_B());
             //logger.log(Level.TRACE, "DEV:0 PRT:0 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             //if (reg.getD1_B() < 0x10)
             //{
@@ -2885,7 +2885,7 @@ public class MnDrv extends BaseDriver {
         //mm.Write(Reg.a0, (byte)reg.getD0_B());
         //logger.log(Level.TRACE, "adr:%x dat:%x".formatted(Reg.a0, reg.getD0_B())));
         plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, reg.getD1_B(), reg.getD0_B(), model, ym2151Hosei[0], 0);
-        timerOPM.WriteReg((byte) reg.getD1_B(), (byte) reg.getD0_B());
+        timerOPM.writeReg((byte) reg.getD1_B(), (byte) reg.getD0_B());
     }
 
     /**

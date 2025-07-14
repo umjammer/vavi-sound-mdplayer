@@ -79,9 +79,6 @@ public class AyPlugin extends BasePlugin {
         chip.clock = 1789773 / 2;
         put(ZxBeepChip.class, chip);
 
-        if (hiyorimiNecessary) hiyorimiNecessary = true;
-        else hiyorimiNecessary = false;
-
         audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, flatten());
 
         ((AY) audio.driverVirtual).song = songNo;

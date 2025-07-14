@@ -28,6 +28,7 @@ public class Setting implements Serializable, Cloneable {
     private static final Logger logger = getLogger(Setting.class.getName());
 
     public static class ChipType2 implements Serializable, Cloneable {
+
         private boolean[] useEmu = null;
 
         public boolean[] getUseEmu() {
@@ -365,7 +366,7 @@ public class Setting implements Serializable, Cloneable {
         }
     }
 
-    public static class PMDDotNET implements Serializable, Cloneable {
+    public static class Pmd implements Serializable, Cloneable {
         public String compilerArguments = "/v /C";
         public boolean isAuto = true;
         public int soundBoard = 1;
@@ -383,8 +384,8 @@ public class Setting implements Serializable, Cloneable {
         public int volumeGIMICSSG = 31;
 
         @Override
-        public PMDDotNET clone() {
-            PMDDotNET p = new PMDDotNET();
+        public Pmd clone() {
+            Pmd p = new Pmd();
             p.compilerArguments = this.compilerArguments;
             p.isAuto = this.isAuto;
             p.soundBoard = this.soundBoard;
@@ -405,7 +406,6 @@ public class Setting implements Serializable, Cloneable {
         }
     }
 
-    public static class Mxdrv implements Serializable, Cloneable {
     public static class ZMusic implements Serializable, Cloneable {
         public int compilePriority = 0;
         public int pcm8Type = 1;
@@ -426,28 +426,30 @@ public class Setting implements Serializable, Cloneable {
         }
     }
 
+    public static class MxDrv implements Serializable, Cloneable {
 
-        public int pcm8type = 1;
-        public int pcm8ppSoption = -1;
+        public int pcm8Type = 1;
+        public int pcm8ppsOption = -1;
 
         @Override
-        public Mxdrv clone() {
-            Mxdrv p = new Mxdrv();
-            p.pcm8type = this.pcm8type;
-            p.pcm8ppSoption = this.pcm8ppSoption;
+        public MxDrv clone() {
+            MxDrv p = new MxDrv();
+            p.pcm8Type = this.pcm8Type;
+            p.pcm8ppsOption = this.pcm8ppsOption;
 
             return p;
         }
     }
 
     public static class Mndrv implements Serializable, Cloneable {
-
-        public int mpcmtype = 1;
+        public int mpcmType = 1;
 
         @Override
         public Mndrv clone() {
             Mndrv p = new Mndrv();
-            p.mpcmtype = this.mpcmtype;
+            p.mpcmType = this.mpcmType;
+
+            return p;
         }
     }
 
@@ -1548,28 +1550,49 @@ public class Setting implements Serializable, Cloneable {
         autoBalance = value;
     }
 
-    private PMDDotNET pmdDotNET = new PMDDotNET();
+    private Pmd pmd = new Pmd();
+
+    public Pmd getPmd() {
+        return pmd;
+    }
+
+    void setPmd(Pmd value) {
+        pmd = value;
+    }
 
     private ZMusic zMusic = new ZMusic();
 
-    public PMDDotNET getPmdDotNET() {
-        return pmdDotNET;
     public ZMusic getZMusic() {
         return zMusic;
     }
 
-    void setPMDDotNET(PMDDotNET value) {
-        pmdDotNET = value;
     public void setZMusic(ZMusic value) {
         zMusic = value;
     }
 
-    private Mxdrv _Mxdrv = new Mxdrv();
+    private MxDrv mxDrv = new MxDrv();
 
-    public Mxdrv getMxdrv() { return _Mxdrv; };
-    public void setMxdrv(Mxdrv value) { _Mxdrv = value; };
+    public MxDrv getMxDrv() { return mxDrv; };
 
-    public KeyBoardHook getKeyBoardHook() {
+    public void setMxDrv(MxDrv value) { mxDrv = value; };
+
+    private Mndrv mnDrv = new Mndrv();
+
+    public Mndrv getMnDrv() { return mnDrv; };
+
+    public void setMnDrv(Mndrv value) { mnDrv = value; };
+
+    private Rcs rcs = new Rcs();
+
+    public Rcs getRcs() {
+        return rcs;
+    }
+
+    public void setRcs(Rcs value) {
+        rcs = value;
+    }
+
+    public Setting.KeyBoardHook getKeyboardHook() {
         return _keyBoardHook;
     }
 
@@ -4551,7 +4574,7 @@ public class Setting implements Serializable, Cloneable {
         setting.sid = this.sid.clone();
         setting.nukedOPN2 = this.nukedOPN2.clone();
         setting.autoBalance = this.autoBalance.clone();
-        setting.pmdDotNET = this.pmdDotNET.clone();
+        setting.pmd = this.pmd.clone();
 
         setting._keyBoardHook = this._keyBoardHook.clone();
 

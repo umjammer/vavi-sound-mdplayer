@@ -207,7 +207,7 @@ public class S98 extends BaseDriver {
                     vgmFrameCounter++;
                 }
             }
-            //Stopped = !IsPlaying();
+            //stopped = !isPlaying();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -215,59 +215,58 @@ public class S98 extends BaseDriver {
 
     private boolean getInformationHeader() {
 
-        s98Info.FormatVersion = (vgmBuf[3] & 0xff) - '0';
-        s98Info.DeviceCount = Integer.MAX_VALUE;
-        switch (s98Info.FormatVersion) {
+        s98Info.formatVersion = (vgmBuf[3] & 0xff) - '0';
+        s98Info.deviceCount = Integer.MAX_VALUE;
+        switch (s98Info.formatVersion) {
         case 0:
         case 1:
-            s98Info.SyncNumerator = ByteUtil.readLeInt(vgmBuf, 4);
-            if (s98Info.SyncNumerator == 0) s98Info.SyncNumerator = 10;
-            s98Info.SyncDNumerator = 1000;
-            s98Info.Compressing = ByteUtil.readLeInt(vgmBuf, 0xc); // not support
-            s98Info.TAGAddress = ByteUtil.readLeInt(vgmBuf, 0x10);
-            s98Info.DumpAddress = ByteUtil.readLeInt(vgmBuf, 0x14);
-            s98Info.LoopAddress = ByteUtil.readLeInt(vgmBuf, 0x18);
-            s98Info.DeviceCount = 0;
+            s98Info.syncNumerator = ByteUtil.readLeInt(vgmBuf, 4);
+            if (s98Info.syncNumerator == 0) s98Info.syncNumerator = 10;
+            s98Info.syncDNumerator = 1000;
+            s98Info.compressing = ByteUtil.readLeInt(vgmBuf, 0xc); // not support
+            s98Info.tagAddress = ByteUtil.readLeInt(vgmBuf, 0x10);
+            s98Info.dumpAddress = ByteUtil.readLeInt(vgmBuf, 0x14);
+            s98Info.loopAddress = ByteUtil.readLeInt(vgmBuf, 0x18);
+            s98Info.deviceCount = 0;
             break;
         case 2:
-            s98Info.SyncNumerator = ByteUtil.readLeInt(vgmBuf, 4);
-            if (s98Info.SyncNumerator == 0) s98Info.SyncNumerator = 10;
-            s98Info.SyncDNumerator = ByteUtil.readLeInt(vgmBuf, 8);
-            if (s98Info.SyncDNumerator == 0) s98Info.SyncDNumerator = 1000;
-            s98Info.Compressing = ByteUtil.readLeInt(vgmBuf, 0xc); // not support
-            s98Info.TAGAddress = ByteUtil.readLeInt(vgmBuf, 0x10);
-            s98Info.DumpAddress = ByteUtil.readLeInt(vgmBuf, 0x14);
-            s98Info.LoopAddress = ByteUtil.readLeInt(vgmBuf, 0x18);
+            s98Info.syncNumerator = ByteUtil.readLeInt(vgmBuf, 4);
+            if (s98Info.syncNumerator == 0) s98Info.syncNumerator = 10;
+            s98Info.syncDNumerator = ByteUtil.readLeInt(vgmBuf, 8);
+            if (s98Info.syncDNumerator == 0) s98Info.syncDNumerator = 1000;
+            s98Info.compressing = ByteUtil.readLeInt(vgmBuf, 0xc); // not support
+            s98Info.tagAddress = ByteUtil.readLeInt(vgmBuf, 0x10);
+            s98Info.dumpAddress = ByteUtil.readLeInt(vgmBuf, 0x14);
+            s98Info.loopAddress = ByteUtil.readLeInt(vgmBuf, 0x18);
             //0x1c Compressed data not support
-            if (ByteUtil.readLeInt(vgmBuf, 0x20) == 0) s98Info.DeviceCount = 0;
+            if (ByteUtil.readLeInt(vgmBuf, 0x20) == 0) s98Info.deviceCount = 0;
             break;
         case 3:
-            s98Info.SyncNumerator = ByteUtil.readLeInt(vgmBuf, 4);
-            if (s98Info.SyncNumerator == 0) s98Info.SyncNumerator = 10;
-            s98Info.SyncDNumerator = ByteUtil.readLeInt(vgmBuf, 8);
-            if (s98Info.SyncDNumerator == 0) s98Info.SyncDNumerator = 1000;
-            s98Info.Compressing = ByteUtil.readLeInt(vgmBuf, 0xc);
-            s98Info.TAGAddress = ByteUtil.readLeInt(vgmBuf, 0x10);
-            s98Info.DumpAddress = ByteUtil.readLeInt(vgmBuf, 0x14);
-            s98Info.LoopAddress = ByteUtil.readLeInt(vgmBuf, 0x18);
-            s98Info.DeviceCount = ByteUtil.readLeInt(vgmBuf, 0x1c);
+            s98Info.syncNumerator = ByteUtil.readLeInt(vgmBuf, 4);
+            if (s98Info.syncNumerator == 0) s98Info.syncNumerator = 10;
+            s98Info.syncDNumerator = ByteUtil.readLeInt(vgmBuf, 8);
+            if (s98Info.syncDNumerator == 0) s98Info.syncDNumerator = 1000;
+            s98Info.compressing = ByteUtil.readLeInt(vgmBuf, 0xc);
+            s98Info.tagAddress = ByteUtil.readLeInt(vgmBuf, 0x10);
+            s98Info.dumpAddress = ByteUtil.readLeInt(vgmBuf, 0x14);
+            s98Info.loopAddress = ByteUtil.readLeInt(vgmBuf, 0x18);
+            s98Info.deviceCount = ByteUtil.readLeInt(vgmBuf, 0x1c);
             break;
         }
 
         byte[] devIDs = new byte[256];
-
-        s98Info.DeviceInfos = new ArrayList<>();
-        if (s98Info.DeviceCount == 0) {
+        s98Info.deviceInfos = new ArrayList<>();
+        if (s98Info.deviceCount == 0) {
             S98DevInfo info = new S98DevInfo();
             info.chipId = 0;
             info.deviceType = 4;
             info.clock = 7987200;
-            info.Pan = 3;
-            s98Info.DeviceInfos.add(info);
+            info.pan = 3;
+            s98Info.deviceInfos.add(info);
             chips.add("YM2608");
-            s98Info.DeviceCount = 1;
+            s98Info.deviceCount = 1;
         } else {
-            if (s98Info.FormatVersion == 2) {
+            if (s98Info.formatVersion == 2) {
                 int i = 0;
                 while (ByteUtil.readLeInt(vgmBuf, 0x20 + i * 0x10) != 0) {
                     S98DevInfo info = new S98DevInfo();
@@ -286,17 +285,17 @@ public class S98 extends BaseDriver {
                     }
 
                     info.chipId = devIDs[info.deviceType]++;
-                    s98Info.DeviceInfos.add(info);
+                    s98Info.deviceInfos.add(info);
                 }
-                s98Info.DeviceCount = i;
+                s98Info.deviceCount = i;
             } else {
-                for (int i = 0; i < s98Info.DeviceCount; i++) {
+                for (int i = 0; i < s98Info.deviceCount; i++) {
                     S98DevInfo info = new S98DevInfo();
                     info.deviceType = ByteUtil.readLeInt(vgmBuf, 0x20 + i * 0x10);
                     if (devIDs[info.deviceType] > 1) continue; // Up to 2 of the same chip
 
                     info.clock = ByteUtil.readLeInt(vgmBuf, 0x24 + i * 0x10);
-                    info.Pan = ByteUtil.readLeInt(vgmBuf, 0x28 + i * 0x10);
+                    info.pan = ByteUtil.readLeInt(vgmBuf, 0x28 + i * 0x10);
                     switch (info.deviceType) {
                         case 1 -> chips.add("YM2149");
                         case 2 -> chips.add("YM2203");
@@ -312,34 +311,34 @@ public class S98 extends BaseDriver {
                     }
 
                     info.chipId = devIDs[info.deviceType]++;
-                    s98Info.DeviceInfos.add(info);
+                    s98Info.deviceInfos.add(info);
                 }
             }
         }
 
-        musicPtr = s98Info.DumpAddress;
-        oneSyncTime = s98Info.SyncNumerator / (double) s98Info.SyncDNumerator;
+        musicPtr = s98Info.dumpAddress;
+        oneSyncTime = s98Info.syncNumerator / (double) s98Info.syncDNumerator;
 
         return true;
     }
 
     public static class S98Info {
-        public int FormatVersion = 0;
-        public int SyncNumerator = 0;
-        public int SyncDNumerator = 0;
-        public int Compressing = 0;
-        public int TAGAddress = 0;
-        public int DumpAddress = 0;
-        public int LoopAddress = 0;
-        public int DeviceCount = 0;
-        public List<S98DevInfo> DeviceInfos = null;
+        public int formatVersion = 0;
+        public int syncNumerator = 0;
+        public int syncDNumerator = 0;
+        public int compressing = 0;
+        public int tagAddress = 0;
+        public int dumpAddress = 0;
+        public int loopAddress = 0;
+        public int deviceCount = 0;
+        public List<S98DevInfo> deviceInfos = null;
     }
 
     public static class S98DevInfo {
         public int chipId = 0;
         public int deviceType = 0;
         public int clock = 0;
-        public int Pan = 0;
+        public int pan = 0;
     }
 
     private void oneFrameMain() {
@@ -392,8 +391,8 @@ public class S98 extends BaseDriver {
 
                 // end/loop command
                 if (cmd == 0xfd) {
-                    if (s98Info.LoopAddress != 0) {
-                        musicPtr = s98Info.LoopAddress;
+                    if (s98Info.loopAddress != 0) {
+                        musicPtr = s98Info.loopAddress;
                         vgmCurLoop++;
                         continue;
                     } else {
@@ -403,22 +402,22 @@ public class S98 extends BaseDriver {
                 }
 
                 int devNo = cmd / 2;
-                if (devNo >= s98Info.DeviceInfos.size()) {
+                if (devNo >= s98Info.deviceInfos.size()) {
                     musicPtr += 2;
                     continue;
                 }
 
                 int devPort = cmd % 2;
 
-                switch (s98Info.DeviceInfos.get(devNo).deviceType) {
+                switch (s98Info.deviceInfos.get(devNo).deviceType) {
                 case 1:
-                    writeAY8910(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
+                    writeAY8910(s98Info.deviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 2:
-                    writeYM2203(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
+                    writeYM2203(s98Info.deviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 3:
-                    writeYM2612(s98Info.DeviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
+                    writeYM2612(s98Info.deviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 4:
 
@@ -428,7 +427,7 @@ public class S98 extends BaseDriver {
                             ym2608WaitCounter = 0;
 
                             try { Thread.sleep(10); } catch (InterruptedException ignored) {}
-//                            while ((plugin.audio.chipRegister.getYM2608Register(s98Info.DeviceInfos.get(devNo).chipId, 0x1, 0x00, model) & 0xbf) != 0) {
+//                            while ((plugin.audio.chipRegister.getYM2608Register(s98Info.deviceInfos.get(devNo).chipId, 0x1, 0x00, model) & 0xbf) != 0) {
 //                                Thread.sleep(0);
 //                            }
 
@@ -438,34 +437,34 @@ public class S98 extends BaseDriver {
 //                        if (ym2608WaitCounter > 1000) {
 //                            ym2608WaitSw = true;
 //                        } else if (ym2608WaitSw && ym2608WaitCounter == 1) {
-//                            plugin.audio.chipRegister.sendDataYM2608(s98Info.DeviceInfos.get(devNo).chipId, model);
+//                            plugin.audio.chipRegister.sendDataYM2608(s98Info.deviceInfos.get(devNo).chipId, model);
 //                            ym2608WaitSw = false;
 //                        }
                     }
 
-                    writeYM2608(s98Info.DeviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
+                    writeYM2608(s98Info.deviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     ym2608WaitCounter++;
                     break;
                 case 5:
-                    writeYM2151(s98Info.DeviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
+                    writeYM2151(s98Info.deviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 6:
-                    writeYM2413(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
+                    writeYM2413(s98Info.deviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 7:
-                    writeYM3526(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
+                    writeYM3526(s98Info.deviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 8:
-                    writeYM3812(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
+                    writeYM3812(s98Info.deviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 9:
-                    writeYMF262(s98Info.DeviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
+                    writeYMF262(s98Info.deviceInfos.get(devNo).chipId, devPort, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 15:
-                    writeAY8910(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
+                    writeAY8910(s98Info.deviceInfos.get(devNo).chipId, vgmBuf[musicPtr] & 0xff, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 case 16:
-                    writeSN76489(s98Info.DeviceInfos.get(devNo).chipId, vgmBuf[musicPtr + 1] & 0xff);
+                    writeSN76489(s98Info.deviceInfos.get(devNo).chipId, vgmBuf[musicPtr + 1] & 0xff);
                     break;
                 }
                 musicPtr += 2;

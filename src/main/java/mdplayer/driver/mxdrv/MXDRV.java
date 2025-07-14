@@ -50,7 +50,7 @@ public class MXDRV extends BaseDriver {
 
     private static final Logger logger = getLogger(MXDRV.class.getName());
 
-    static class Pcm8St {
+    public static class Pcm8St {
         public int tablePtr = 0;
         public int mode = 0;
         public int length = 0;
@@ -80,8 +80,8 @@ public class MXDRV extends BaseDriver {
         int S001c = 29; // p + fb + con
         int S001d = 30; // keyon slot
         int S001e = 31; // Q
-        int S001f = 32; // Keyon delay
-        int S0020 = 33; // Keyon delay counter
+        int S001f = 32; // keyOn delay
+        int S0020 = 33; // keyOn delay counter
         int S0021 = 34; // PMS/AMS
         int S0022 = 35; // v
         int S0023 = 36; // v last
@@ -327,7 +327,7 @@ logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], p
         for (int i = 0; i < mdxSize[0]; i++) mm.write(mdxPtr + i, mdx[0][i]);
         for (int i = 0; i < pdxSize[0]; i++) mm.write(pdxPtr + i, pdx[0][i]);
 
-        mdxPCM.chips[0].MountMemory(mm.mm);
+        mdxPCM.chips[0].mountMemory(mm.mm);
         pcm8pp.mountMemory(0, mm.mm);
 
         int playtime = MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr, 1, Depend.TRUE);

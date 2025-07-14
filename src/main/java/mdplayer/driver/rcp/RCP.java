@@ -45,7 +45,7 @@ public class RCP extends BaseDriver {
     private int[] sendControlDelta = null;
     private int[] sendControlIndex = null;
 
-    public static class MIDIRythm {
+    public static class MIDIRhythm {
         private String name = "";
         private int key = 0;
         private int gt = 1;
@@ -258,7 +258,7 @@ public class RCP extends BaseDriver {
     private String controlFileGSD2 = "";
     private String controlFileCM6 = "";
     private int rcpVer = 0;
-    private List<MIDIRythm> rythms;
+    private List<MIDIRhythm> rythms;
     private List<MIDIUserExclusive> userExclusives;
     private MIDITrack[] tracks = null;
     private MIDIPart[] parts = null;
@@ -429,7 +429,7 @@ public class RCP extends BaseDriver {
         beatDen = vgmBuf[ptr++] & 0xff;
         // Beat (Denominator)
         beatMol = vgmBuf[ptr++] & 0xff;
-        // Key
+        // key
         key = vgmBuf[ptr++] & 0xff;
         // Play BIAS
         playBIAS = vgmBuf[ptr++] & 0xff;
@@ -473,7 +473,7 @@ public class RCP extends BaseDriver {
         beatDen = vgmBuf[ptr++] & 0xff;
         // Beat (Denominator)
         beatMol = vgmBuf[ptr++] & 0xff;
-        // Key
+        // key
         key = vgmBuf[ptr++] & 0xff;
         // Play BIAS
         playBIAS = vgmBuf[ptr++] & 0xff;
@@ -517,7 +517,7 @@ public class RCP extends BaseDriver {
         if (isG36) n = 128;
 
         for (int i = 0; i < n; i++) {
-            MIDIRythm r = new MIDIRythm();
+            MIDIRhythm r = new MIDIRhythm();
             r.setName(new String(vgmBuf, ptr, 14, charset).replace("\0", ""));
             ptr += 14;
             r.key = vgmBuf[ptr++] & 0xff;
@@ -852,7 +852,7 @@ public class RCP extends BaseDriver {
             );
             pt += skipPtr;
             break;
-        case 0xf5: // Key Change
+        case 0xf5: // key Change
             trkn.getPart().get(meaInd).insertSpEvent(
                     pEvt,
                     0,
@@ -1149,7 +1149,7 @@ public class RCP extends BaseDriver {
             if (trk.getNoteGateTime()[n] != Integer.MAX_VALUE) {
                 // if (trk.NoteGateTime[n] <= trk.NowTick + trk.getNowPart().StartTick)
                 if (trk.getNoteGateTime()[n] <= trk.getNowTick()) {
-                    // int key = (n + ((trk.Key != null) ? (int)trk.Key : 0));
+                    // int key = (n + ((trk.key != null) ? (int)trk.key : 0));
                     int key = n + trk.getKey();
                     if (key < 0) key = 0;
                     else if (key > 127) key = 127;
@@ -1337,14 +1337,14 @@ public class RCP extends BaseDriver {
     void efNoteOn(MIDITrack trk, MIDIEvent eve) {
         if (eve.getGate() == 0) return;
         int okey = eve.getMIDIMessage()[1];
-        // int key = (okey + ((trk.Key != null) ? (int)trk.Key : 0));
+        // int key = (okey + ((trk.key != null) ? (int)trk.key : 0));
         int key = okey + trk.getKey();
         if (key < 0) key = 0;
         if (key > 127) key = 127;
 
         if (trk.getOutChannel() != null) {
             boolean flg = false;
-            // Key Off
+            // key Off
             // if (trk.NoteGateTime[okey] <= trk.NextEventTick + trk.getNowPart().StartTick)
             if (trk.getNoteGateTime()[okey] <= trk.getNextEventTick()) {
                 msgBuf[0] = (byte) (MIDIEventType.NoteOff.v + trk.getOutChannel());
@@ -1354,7 +1354,7 @@ public class RCP extends BaseDriver {
                 flg = true;
             }
 
-            // Key On
+            // key On
             if (trk.getNoteGateTime()[okey] == Integer.MAX_VALUE || flg) {
                 msgBuf[0] = (byte) ((eve.getMIDIMessage()[0] & 0xf0) + trk.getOutChannel());
                 msgBuf[1] = (byte) key;
@@ -1569,8 +1569,8 @@ public class RCP extends BaseDriver {
     }
 
     void sefRolandPara(MIDITrack trk, MIDIEvent eve) {
-        trk.RolandPara_gt(eve.getMIDIMessages()[0][0]);
-        trk.RolandPara_vel(eve.getMIDIMessages()[0][1]);
+        trk.setRolandPara_gt(eve.getMIDIMessages()[0][0]);
+        trk.setRolandPara_vel(eve.getMIDIMessages()[0][1]);
 
         msgBuf[0] = (byte) 0xF0;
         msgBuf[1] = 0x41;
@@ -1600,8 +1600,8 @@ public class RCP extends BaseDriver {
         sf = vv > 0x07 ? (0x100 - vv) % 0x100 : vv;
         mi = v > 0x0f ? 1 : 0;
 
-        trk.setKeySIG_SF(sf); // Sharp Flat -7:7flats -1:1flat 0:Key of C 1:1sharp 7:7sharp
-        trk.setKeySIG_MI(mi); // Is minor Key
+        trk.setKeySIG_SF(sf); // Sharp Flat -7:7flats -1:1flat 0:key of C 1:1sharp 7:7sharp
+        trk.setKeySIG_MI(mi); // Is minor key
     }
 
     void sefCommentStart(MIDITrack trk, MIDIEvent eve) {

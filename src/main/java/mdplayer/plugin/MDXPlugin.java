@@ -22,7 +22,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * MDXPlugin.
+ * MDXDRV (X68000) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
@@ -86,7 +86,7 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
 
         Pcm8PPInst pcm8pp = Instrument.getInstrument(Pcm8PPInst.class);
         ((MXDRV) audio.driverVirtual).pcm8type = 0;
-        if (setting.getMxdrv().pcm8type == 0) {
+        if (setting.getMxDrv().pcm8Type == 0) {
             // mxdrv is special and requires PCM8
         } else {
             chip = new MDSound.Chip();
@@ -95,7 +95,7 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
             chip.volume = 0;
             chip.clock = 4_000_000;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.option = new Object[] { setting.getMxdrv().pcm8ppSoption };
+            chip.option = new Object[] { setting.getMxDrv().pcm8ppsOption};
             put(Pcm8Chip.class, chip);
             ((MXDRV) audio.driverVirtual).pcm8type = 1;
         }

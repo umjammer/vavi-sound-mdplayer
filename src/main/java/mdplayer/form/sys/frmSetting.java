@@ -768,88 +768,88 @@ public class frmSetting extends JDialog {
         rbAutoBalanceSamePositionAsSongData.setSelected(setting.getAutoBalance().getSamePositionAsSongData());
         rbAutoBalanceNotSamePositionAsSongData.setSelected(!setting.getAutoBalance().getSamePositionAsSongData());
 
-        cbUseKeyBoardHook.setSelected(setting.getKeyBoardHook().getUseKeyBoardHook());
-        gbUseKeyBoardHook.setEnabled(setting.getKeyBoardHook().getUseKeyBoardHook());
+        cbUseKeyBoardHook.setSelected(setting.getKeyboardHook().getUseKeyBoardHook());
+        gbUseKeyBoardHook.setEnabled(setting.getKeyboardHook().getUseKeyBoardHook());
 
-        cbStopShift.setSelected(setting.getKeyBoardHook().getStop().getShift());
-        cbStopCtrl.setSelected(setting.getKeyBoardHook().getStop().getCtrl());
-        cbStopWin.setSelected(setting.getKeyBoardHook().getStop().getWin());
-        cbStopAlt.setSelected(setting.getKeyBoardHook().getStop().getAlt());
-        lblStopKey.setText(setting.getKeyBoardHook().getStop().getKey());
+        cbStopShift.setSelected(setting.getKeyboardHook().getStop().getShift());
+        cbStopCtrl.setSelected(setting.getKeyboardHook().getStop().getCtrl());
+        cbStopWin.setSelected(setting.getKeyboardHook().getStop().getWin());
+        cbStopAlt.setSelected(setting.getKeyboardHook().getStop().getAlt());
+        lblStopKey.setText(setting.getKeyboardHook().getStop().getKey());
         btStopClr.setEnabled((!lblStopKey.getText().equals("(None)") && (lblStopKey.getText() != null && !lblStopKey.getText().isEmpty())));
 
-        cbPauseShift.setSelected(setting.getKeyBoardHook().getPause().getShift());
-        cbPauseCtrl.setSelected(setting.getKeyBoardHook().getPause().getCtrl());
-        cbPauseWin.setSelected(setting.getKeyBoardHook().getPause().getWin());
-        cbPauseAlt.setSelected(setting.getKeyBoardHook().getPause().getAlt());
-        lblPauseKey.setText(setting.getKeyBoardHook().getPause().getKey());
+        cbPauseShift.setSelected(setting.getKeyboardHook().getPause().getShift());
+        cbPauseCtrl.setSelected(setting.getKeyboardHook().getPause().getCtrl());
+        cbPauseWin.setSelected(setting.getKeyboardHook().getPause().getWin());
+        cbPauseAlt.setSelected(setting.getKeyboardHook().getPause().getAlt());
+        lblPauseKey.setText(setting.getKeyboardHook().getPause().getKey());
         btPauseClr.setEnabled((!lblPauseKey.getText().equals("(None)") && (lblPauseKey.getText() != null && !lblPauseKey.getText().isEmpty())));
 
-        cbFadeoutShift.setSelected(setting.getKeyBoardHook().getFadeout().getShift());
-        cbFadeoutCtrl.setSelected(setting.getKeyBoardHook().getFadeout().getCtrl());
-        cbFadeoutWin.setSelected(setting.getKeyBoardHook().getFadeout().getWin());
-        cbFadeoutAlt.setSelected(setting.getKeyBoardHook().getFadeout().getAlt());
-        lblFadeoutKey.setText(setting.getKeyBoardHook().getFadeout().getKey());
+        cbFadeoutShift.setSelected(setting.getKeyboardHook().getFadeout().getShift());
+        cbFadeoutCtrl.setSelected(setting.getKeyboardHook().getFadeout().getCtrl());
+        cbFadeoutWin.setSelected(setting.getKeyboardHook().getFadeout().getWin());
+        cbFadeoutAlt.setSelected(setting.getKeyboardHook().getFadeout().getAlt());
+        lblFadeoutKey.setText(setting.getKeyboardHook().getFadeout().getKey());
         btFadeoutClr.setEnabled((!lblFadeoutKey.getText().equals("(None)") && (lblFadeoutKey.getText() != null && !lblFadeoutKey.getText().isEmpty())));
 
-        cbPrevShift.setSelected(setting.getKeyBoardHook().getPrev().getShift());
-        cbPrevCtrl.setSelected(setting.getKeyBoardHook().getPrev().getCtrl());
-        cbPrevWin.setSelected(setting.getKeyBoardHook().getPrev().getWin());
-        cbPrevAlt.setSelected(setting.getKeyBoardHook().getPrev().getAlt());
-        lblPrevKey.setText(setting.getKeyBoardHook().getPrev().getKey());
+        cbPrevShift.setSelected(setting.getKeyboardHook().getPrev().getShift());
+        cbPrevCtrl.setSelected(setting.getKeyboardHook().getPrev().getCtrl());
+        cbPrevWin.setSelected(setting.getKeyboardHook().getPrev().getWin());
+        cbPrevAlt.setSelected(setting.getKeyboardHook().getPrev().getAlt());
+        lblPrevKey.setText(setting.getKeyboardHook().getPrev().getKey());
         btPrevClr.setEnabled((!lblPrevKey.getText().equals("(None)") && (lblPrevKey.getText() != null && !lblPrevKey.getText().isEmpty())));
 
-        cbSlowShift.setSelected(setting.getKeyBoardHook().getSlow().getShift());
-        cbSlowCtrl.setSelected(setting.getKeyBoardHook().getSlow().getCtrl());
-        cbSlowWin.setSelected(setting.getKeyBoardHook().getSlow().getWin());
-        cbSlowAlt.setSelected(setting.getKeyBoardHook().getSlow().getAlt());
-        lblSlowKey.setText(setting.getKeyBoardHook().getSlow().getKey());
+        cbSlowShift.setSelected(setting.getKeyboardHook().getSlow().getShift());
+        cbSlowCtrl.setSelected(setting.getKeyboardHook().getSlow().getCtrl());
+        cbSlowWin.setSelected(setting.getKeyboardHook().getSlow().getWin());
+        cbSlowAlt.setSelected(setting.getKeyboardHook().getSlow().getAlt());
+        lblSlowKey.setText(setting.getKeyboardHook().getSlow().getKey());
         btSlowClr.setEnabled((!lblSlowKey.getText().equals("(None)") && (lblSlowKey.getText() != null && !lblSlowKey.getText().isEmpty())));
 
-        cbPlayShift.setSelected(setting.getKeyBoardHook().getPlay().getShift());
-        cbPlayCtrl.setSelected(setting.getKeyBoardHook().getPlay().getCtrl());
-        cbPlayWin.setSelected(setting.getKeyBoardHook().getPlay().getWin());
-        cbPlayAlt.setSelected(setting.getKeyBoardHook().getPlay().getAlt());
-        lblPlayKey.setText(setting.getKeyBoardHook().getPlay().getKey());
+        cbPlayShift.setSelected(setting.getKeyboardHook().getPlay().getShift());
+        cbPlayCtrl.setSelected(setting.getKeyboardHook().getPlay().getCtrl());
+        cbPlayWin.setSelected(setting.getKeyboardHook().getPlay().getWin());
+        cbPlayAlt.setSelected(setting.getKeyboardHook().getPlay().getAlt());
+        lblPlayKey.setText(setting.getKeyboardHook().getPlay().getKey());
         btPlayClr.setEnabled((!lblPlayKey.getText().equals("(None)") && (lblPlayKey.getText() != null && !lblPlayKey.getText().isEmpty())));
 
-        cbFastShift.setSelected(setting.getKeyBoardHook().getFast().getShift());
-        cbFastCtrl.setSelected(setting.getKeyBoardHook().getFast().getCtrl());
-        cbFastWin.setSelected(setting.getKeyBoardHook().getFast().getWin());
-        cbFastAlt.setSelected(setting.getKeyBoardHook().getFast().getAlt());
-        lblFastKey.setText(setting.getKeyBoardHook().getFast().getKey());
+        cbFastShift.setSelected(setting.getKeyboardHook().getFast().getShift());
+        cbFastCtrl.setSelected(setting.getKeyboardHook().getFast().getCtrl());
+        cbFastWin.setSelected(setting.getKeyboardHook().getFast().getWin());
+        cbFastAlt.setSelected(setting.getKeyboardHook().getFast().getAlt());
+        lblFastKey.setText(setting.getKeyboardHook().getFast().getKey());
         btFastClr.setEnabled((!lblFastKey.getText().equals("(None)") && (lblFastKey.getText() != null && !lblFastKey.getText().isEmpty())));
 
-        cbNextShift.setSelected(setting.getKeyBoardHook().getNext().getShift());
-        cbNextCtrl.setSelected(setting.getKeyBoardHook().getNext().getCtrl());
-        cbNextWin.setSelected(setting.getKeyBoardHook().getNext().getWin());
-        cbNextAlt.setSelected(setting.getKeyBoardHook().getNext().getAlt());
-        lblNextKey.setText(setting.getKeyBoardHook().getNext().getKey());
+        cbNextShift.setSelected(setting.getKeyboardHook().getNext().getShift());
+        cbNextCtrl.setSelected(setting.getKeyboardHook().getNext().getCtrl());
+        cbNextWin.setSelected(setting.getKeyboardHook().getNext().getWin());
+        cbNextAlt.setSelected(setting.getKeyboardHook().getNext().getAlt());
+        lblNextKey.setText(setting.getKeyboardHook().getNext().getKey());
         btNextClr.setEnabled((!lblNextKey.getText().equals("(None)") && (lblNextKey.getText() != null && !lblNextKey.getText().isEmpty())));
 
         cbExALL.setSelected(setting.getOther().getExAll());
         cbNonRenderingForPause.setSelected(setting.getOther().getNonRenderingForPause());
 
 
-        tbPMDCompilerArguments.setText(setting.getPmdDotNET().compilerArguments);
-        rbPMDAuto.setSelected(setting.getPmdDotNET().isAuto);
-        rbPMDManual.setSelected(!setting.getPmdDotNET().isAuto);
-        rbPMDNrmB.setSelected(setting.getPmdDotNET().soundBoard == 0);
-        rbPMDSpbB.setSelected(setting.getPmdDotNET().soundBoard == 1);
-        rbPMD86B.setSelected(setting.getPmdDotNET().soundBoard == 2);
-        cbPMDSetManualVolume.setSelected(setting.getPmdDotNET().setManualVolume);
-        cbPMDUsePPSDRV.setSelected(setting.getPmdDotNET().usePPSDRV);
-        cbPMDUsePPZ8.setSelected(setting.getPmdDotNET().usePPZ8);
-        tbPMDDriverArguments.setText(setting.getPmdDotNET().driverArguments);
-        rbPMDUsePPSDRVFreqDefault.setSelected(setting.getPmdDotNET().usePPSDRVUseInterfaceDefaultFreq);
-        rbPMDUsePPSDRVManualFreq.setSelected(!setting.getPmdDotNET().usePPSDRVUseInterfaceDefaultFreq);
-        tbPMDPPSDRVFreq.setText(String.valueOf(setting.getPmdDotNET().ppsDrvManualFreq));
-        tbPMDPPSDRVManualWait.setText(String.valueOf(setting.getPmdDotNET().ppsDrvManualWait));
-        tbPMDVolumeFM.setText(String.valueOf(setting.getPmdDotNET().volumeFM));
-        tbPMDVolumeSSG.setText(String.valueOf(setting.getPmdDotNET().volumeSSG));
-        tbPMDVolumeRhythm.setText(String.valueOf(setting.getPmdDotNET().volumeRhythm));
-        tbPMDVolumeAdpcm.setText(String.valueOf(setting.getPmdDotNET().volumeAdpcm));
-        tbPMDVolumeGIMICSSG.setText(String.valueOf(setting.getPmdDotNET().volumeGIMICSSG));
+        tbPMDCompilerArguments.setText(setting.getPmd().compilerArguments);
+        rbPMDAuto.setSelected(setting.getPmd().isAuto);
+        rbPMDManual.setSelected(!setting.getPmd().isAuto);
+        rbPMDNrmB.setSelected(setting.getPmd().soundBoard == 0);
+        rbPMDSpbB.setSelected(setting.getPmd().soundBoard == 1);
+        rbPMD86B.setSelected(setting.getPmd().soundBoard == 2);
+        cbPMDSetManualVolume.setSelected(setting.getPmd().setManualVolume);
+        cbPMDUsePPSDRV.setSelected(setting.getPmd().usePPSDRV);
+        cbPMDUsePPZ8.setSelected(setting.getPmd().usePPZ8);
+        tbPMDDriverArguments.setText(setting.getPmd().driverArguments);
+        rbPMDUsePPSDRVFreqDefault.setSelected(setting.getPmd().usePPSDRVUseInterfaceDefaultFreq);
+        rbPMDUsePPSDRVManualFreq.setSelected(!setting.getPmd().usePPSDRVUseInterfaceDefaultFreq);
+        tbPMDPPSDRVFreq.setText(String.valueOf(setting.getPmd().ppsDrvManualFreq));
+        tbPMDPPSDRVManualWait.setText(String.valueOf(setting.getPmd().ppsDrvManualWait));
+        tbPMDVolumeFM.setText(String.valueOf(setting.getPmd().volumeFM));
+        tbPMDVolumeSSG.setText(String.valueOf(setting.getPmd().volumeSSG));
+        tbPMDVolumeRhythm.setText(String.valueOf(setting.getPmd().volumeRhythm));
+        tbPMDVolumeAdpcm.setText(String.valueOf(setting.getPmd().volumeAdpcm));
+        tbPMDVolumeGIMICSSG.setText(String.valueOf(setting.getPmd().volumeGIMICSSG));
 
         rbPMDManual_CheckedChanged(null);
         cbPMDSetManualVolume_CheckedChanged(null);
@@ -1673,14 +1673,14 @@ public class frmSetting extends JDialog {
         setting.getAutoBalance().setSamePositionAsSongData(rbAutoBalanceSamePositionAsSongData.isSelected());
 
 
-        setting.getPmdDotNET().compilerArguments = tbPMDCompilerArguments.getText();
-        setting.getPmdDotNET().isAuto = rbPMDAuto.isSelected();
-        setting.getPmdDotNET().soundBoard = rbPMDNrmB.isSelected() ? 0 : (rbPMDSpbB.isSelected() ? 1 : 2);
-        setting.getPmdDotNET().setManualVolume = cbPMDSetManualVolume.isSelected();
-        setting.getPmdDotNET().usePPSDRV = cbPMDUsePPSDRV.isSelected();
-        setting.getPmdDotNET().usePPZ8 = cbPMDUsePPZ8.isSelected();
-        setting.getPmdDotNET().driverArguments = tbPMDDriverArguments.getText();
-        setting.getPmdDotNET().usePPSDRVUseInterfaceDefaultFreq = rbPMDUsePPSDRVFreqDefault.isSelected();
+        setting.getPmd().compilerArguments = tbPMDCompilerArguments.getText();
+        setting.getPmd().isAuto = rbPMDAuto.isSelected();
+        setting.getPmd().soundBoard = rbPMDNrmB.isSelected() ? 0 : (rbPMDSpbB.isSelected() ? 1 : 2);
+        setting.getPmd().setManualVolume = cbPMDSetManualVolume.isSelected();
+        setting.getPmd().usePPSDRV = cbPMDUsePPSDRV.isSelected();
+        setting.getPmd().usePPZ8 = cbPMDUsePPZ8.isSelected();
+        setting.getPmd().driverArguments = tbPMDDriverArguments.getText();
+        setting.getPmd().usePPSDRVUseInterfaceDefaultFreq = rbPMDUsePPSDRVFreqDefault.isSelected();
         int nn;
         try {
             nn = Integer.parseInt(tbPMDPPSDRVFreq.getText());
@@ -1688,7 +1688,7 @@ public class frmSetting extends JDialog {
             logger.log(Level.WARNING, e);
             nn = 2000;
         }
-        setting.getPmdDotNET().ppsDrvManualFreq = nn;
+        setting.getPmd().ppsDrvManualFreq = nn;
         try {
             nn = Integer.parseInt(tbPMDPPSDRVManualWait.getText());
         } catch (NumberFormatException e) {
@@ -1696,7 +1696,7 @@ public class frmSetting extends JDialog {
             nn = 1;
         }
         nn = Math.min(Math.max(nn, 0), 100);
-        setting.getPmdDotNET().ppsDrvManualWait = nn;
+        setting.getPmd().ppsDrvManualWait = nn;
         try {
             nn = Integer.parseInt(tbPMDVolumeFM.getText());
         } catch (NumberFormatException e) {
@@ -1704,7 +1704,7 @@ public class frmSetting extends JDialog {
             nn = 0;
         }
         nn = Math.min(Math.max(nn, -191), 20);
-        setting.getPmdDotNET().volumeFM = nn;
+        setting.getPmd().volumeFM = nn;
         try {
             nn = Integer.parseInt(tbPMDVolumeSSG.getText());
         } catch (NumberFormatException e) {
@@ -1712,7 +1712,7 @@ public class frmSetting extends JDialog {
             nn = 0;
         }
         nn = Math.min(Math.max(nn, -191), 20);
-        setting.getPmdDotNET().volumeSSG = nn;
+        setting.getPmd().volumeSSG = nn;
         try {
             nn = Integer.parseInt(tbPMDVolumeRhythm.getText());
         } catch (NumberFormatException e) {
@@ -1720,7 +1720,7 @@ public class frmSetting extends JDialog {
             nn = 0;
         }
         nn = Math.min(Math.max(nn, -191), 20);
-        setting.getPmdDotNET().volumeRhythm = nn;
+        setting.getPmd().volumeRhythm = nn;
         try {
             nn = Integer.parseInt(tbPMDVolumeAdpcm.getText());
         } catch (NumberFormatException e) {
@@ -1728,7 +1728,7 @@ public class frmSetting extends JDialog {
             nn = 0;
         }
         nn = Math.min(Math.max(nn, -191), 20);
-        setting.getPmdDotNET().volumeAdpcm = nn;
+        setting.getPmd().volumeAdpcm = nn;
         try {
             nn = Integer.parseInt(tbPMDVolumeGIMICSSG.getText());
         } catch (NumberFormatException e) {
@@ -1736,58 +1736,58 @@ public class frmSetting extends JDialog {
             nn = 31;
         }
         nn = Math.min(Math.max(nn, 0), 127);
-        setting.getPmdDotNET().volumeGIMICSSG = nn;
+        setting.getPmd().volumeGIMICSSG = nn;
 
 
-        setting.getKeyBoardHook().setUseKeyBoardHook(cbUseKeyBoardHook.isSelected());
+        setting.getKeyboardHook().setUseKeyBoardHook(cbUseKeyBoardHook.isSelected());
 
-        setting.getKeyBoardHook().getStop().setShift(cbStopShift.isSelected());
-        setting.getKeyBoardHook().getStop().setCtrl(cbStopCtrl.isSelected());
-        setting.getKeyBoardHook().getStop().setWin(cbStopWin.isSelected());
-        setting.getKeyBoardHook().getStop().setAlt(cbStopAlt.isSelected());
-        setting.getKeyBoardHook().getStop().setKey(lblStopKey.getText() == null || lblStopKey.getText().isEmpty() ? "(None)" : lblStopKey.getText());
+        setting.getKeyboardHook().getStop().setShift(cbStopShift.isSelected());
+        setting.getKeyboardHook().getStop().setCtrl(cbStopCtrl.isSelected());
+        setting.getKeyboardHook().getStop().setWin(cbStopWin.isSelected());
+        setting.getKeyboardHook().getStop().setAlt(cbStopAlt.isSelected());
+        setting.getKeyboardHook().getStop().setKey(lblStopKey.getText() == null || lblStopKey.getText().isEmpty() ? "(None)" : lblStopKey.getText());
 
-        setting.getKeyBoardHook().getPause().setShift(cbPauseShift.isSelected());
-        setting.getKeyBoardHook().getPause().setCtrl(cbPauseCtrl.isSelected());
-        setting.getKeyBoardHook().getPause().setWin(cbPauseWin.isSelected());
-        setting.getKeyBoardHook().getPause().setAlt(cbPauseAlt.isSelected());
-        setting.getKeyBoardHook().getPause().setKey(lblPauseKey.getText() == null || lblPauseKey.getText().isEmpty() ? "(None)" : lblPauseKey.getText());
+        setting.getKeyboardHook().getPause().setShift(cbPauseShift.isSelected());
+        setting.getKeyboardHook().getPause().setCtrl(cbPauseCtrl.isSelected());
+        setting.getKeyboardHook().getPause().setWin(cbPauseWin.isSelected());
+        setting.getKeyboardHook().getPause().setAlt(cbPauseAlt.isSelected());
+        setting.getKeyboardHook().getPause().setKey(lblPauseKey.getText() == null || lblPauseKey.getText().isEmpty() ? "(None)" : lblPauseKey.getText());
 
-        setting.getKeyBoardHook().getFadeout().setShift(cbFadeoutShift.isSelected());
-        setting.getKeyBoardHook().getFadeout().setCtrl(cbFadeoutCtrl.isSelected());
-        setting.getKeyBoardHook().getFadeout().setWin(cbFadeoutWin.isSelected());
-        setting.getKeyBoardHook().getFadeout().setAlt(cbFadeoutAlt.isSelected());
-        setting.getKeyBoardHook().getFadeout().setKey(lblFadeoutKey.getText() == null || lblFadeoutKey.getText().isEmpty() ? "(None)" : lblFadeoutKey.getText());
+        setting.getKeyboardHook().getFadeout().setShift(cbFadeoutShift.isSelected());
+        setting.getKeyboardHook().getFadeout().setCtrl(cbFadeoutCtrl.isSelected());
+        setting.getKeyboardHook().getFadeout().setWin(cbFadeoutWin.isSelected());
+        setting.getKeyboardHook().getFadeout().setAlt(cbFadeoutAlt.isSelected());
+        setting.getKeyboardHook().getFadeout().setKey(lblFadeoutKey.getText() == null || lblFadeoutKey.getText().isEmpty() ? "(None)" : lblFadeoutKey.getText());
 
-        setting.getKeyBoardHook().getPrev().setShift(cbPrevShift.isSelected());
-        setting.getKeyBoardHook().getPrev().setCtrl(cbPrevCtrl.isSelected());
-        setting.getKeyBoardHook().getPrev().setWin(cbPrevWin.isSelected());
-        setting.getKeyBoardHook().getPrev().setAlt(cbPrevAlt.isSelected());
-        setting.getKeyBoardHook().getPrev().setKey(lblPrevKey.getText() == null || lblPrevKey.getText().isEmpty() ? "(None)" : lblPrevKey.getText());
+        setting.getKeyboardHook().getPrev().setShift(cbPrevShift.isSelected());
+        setting.getKeyboardHook().getPrev().setCtrl(cbPrevCtrl.isSelected());
+        setting.getKeyboardHook().getPrev().setWin(cbPrevWin.isSelected());
+        setting.getKeyboardHook().getPrev().setAlt(cbPrevAlt.isSelected());
+        setting.getKeyboardHook().getPrev().setKey(lblPrevKey.getText() == null || lblPrevKey.getText().isEmpty() ? "(None)" : lblPrevKey.getText());
 
-        setting.getKeyBoardHook().getSlow().setShift(cbSlowShift.isSelected());
-        setting.getKeyBoardHook().getSlow().setCtrl(cbSlowCtrl.isSelected());
-        setting.getKeyBoardHook().getSlow().setWin(cbSlowWin.isSelected());
-        setting.getKeyBoardHook().getSlow().setAlt(cbSlowAlt.isSelected());
-        setting.getKeyBoardHook().getSlow().setKey(lblSlowKey.getText() == null || lblSlowKey.getText().isEmpty() ? "(None)" : lblSlowKey.getText());
+        setting.getKeyboardHook().getSlow().setShift(cbSlowShift.isSelected());
+        setting.getKeyboardHook().getSlow().setCtrl(cbSlowCtrl.isSelected());
+        setting.getKeyboardHook().getSlow().setWin(cbSlowWin.isSelected());
+        setting.getKeyboardHook().getSlow().setAlt(cbSlowAlt.isSelected());
+        setting.getKeyboardHook().getSlow().setKey(lblSlowKey.getText() == null || lblSlowKey.getText().isEmpty() ? "(None)" : lblSlowKey.getText());
 
-        setting.getKeyBoardHook().getPlay().setShift(cbPlayShift.isSelected());
-        setting.getKeyBoardHook().getPlay().setCtrl(cbPlayCtrl.isSelected());
-        setting.getKeyBoardHook().getPlay().setWin(cbPlayWin.isSelected());
-        setting.getKeyBoardHook().getPlay().setAlt(cbPlayAlt.isSelected());
-        setting.getKeyBoardHook().getPlay().setKey(lblPlayKey.getText() == null || lblPlayKey.getText().isEmpty() ? "(None)" : lblPlayKey.getText());
+        setting.getKeyboardHook().getPlay().setShift(cbPlayShift.isSelected());
+        setting.getKeyboardHook().getPlay().setCtrl(cbPlayCtrl.isSelected());
+        setting.getKeyboardHook().getPlay().setWin(cbPlayWin.isSelected());
+        setting.getKeyboardHook().getPlay().setAlt(cbPlayAlt.isSelected());
+        setting.getKeyboardHook().getPlay().setKey(lblPlayKey.getText() == null || lblPlayKey.getText().isEmpty() ? "(None)" : lblPlayKey.getText());
 
-        setting.getKeyBoardHook().getFast().setShift(cbFastShift.isSelected());
-        setting.getKeyBoardHook().getFast().setCtrl(cbFastCtrl.isSelected());
-        setting.getKeyBoardHook().getFast().setWin(cbFastWin.isSelected());
-        setting.getKeyBoardHook().getFast().setAlt(cbFastAlt.isSelected());
-        setting.getKeyBoardHook().getFast().setKey(lblFastKey.getText() == null || lblFastKey.getText().isEmpty() ? "(None)" : lblFastKey.getText());
+        setting.getKeyboardHook().getFast().setShift(cbFastShift.isSelected());
+        setting.getKeyboardHook().getFast().setCtrl(cbFastCtrl.isSelected());
+        setting.getKeyboardHook().getFast().setWin(cbFastWin.isSelected());
+        setting.getKeyboardHook().getFast().setAlt(cbFastAlt.isSelected());
+        setting.getKeyboardHook().getFast().setKey(lblFastKey.getText() == null || lblFastKey.getText().isEmpty() ? "(None)" : lblFastKey.getText());
 
-        setting.getKeyBoardHook().getNext().setShift(cbNextShift.isSelected());
-        setting.getKeyBoardHook().getNext().setCtrl(cbNextCtrl.isSelected());
-        setting.getKeyBoardHook().getNext().setWin(cbNextWin.isSelected());
-        setting.getKeyBoardHook().getNext().setAlt(cbNextAlt.isSelected());
-        setting.getKeyBoardHook().getNext().setKey(lblNextKey.getText() == null || lblNextKey.getText().isEmpty() ? "(None)" : lblNextKey.getText());
+        setting.getKeyboardHook().getNext().setShift(cbNextShift.isSelected());
+        setting.getKeyboardHook().getNext().setCtrl(cbNextCtrl.isSelected());
+        setting.getKeyboardHook().getNext().setWin(cbNextWin.isSelected());
+        setting.getKeyboardHook().getNext().setAlt(cbNextAlt.isSelected());
+        setting.getKeyboardHook().getNext().setKey(lblNextKey.getText() == null || lblNextKey.getText().isEmpty() ? "(None)" : lblNextKey.getText());
 
 
         this.dialogResult = JFileChooser.APPROVE_OPTION;

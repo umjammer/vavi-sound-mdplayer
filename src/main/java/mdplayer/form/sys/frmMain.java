@@ -7524,49 +7524,49 @@ public class frmMain extends JFrame {
             boolean alt = (e.getModifiers() & NativeKeyEvent.ALT_MASK) != 0;
             Setting.KeyBoardHook.HookKeyInfo info;
 
-            info = setting.getKeyBoardHook().getStop();
+            info = setting.getKeyboardHook().getStop();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 stop();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getPause();
+            info = setting.getKeyboardHook().getPause();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 pause();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getFadeout();
+            info = setting.getKeyboardHook().getFadeout();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 fadeout();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getPrev();
+            info = setting.getKeyboardHook().getPrev();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 prev();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getSlow();
+            info = setting.getKeyboardHook().getSlow();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 slow();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getPlay();
+            info = setting.getKeyboardHook().getPlay();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 play();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getNext();
+            info = setting.getKeyboardHook().getNext();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 next();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getFast();
+            info = setting.getKeyboardHook().getFast();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 ff();
             }

@@ -22,6 +22,9 @@ public interface FileFormat {
 
     List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */);
 
+    /**
+     * @see "frmMain#getExtendFile"
+     */
     List<Tuple<String, byte[]>> getExtendFile(String fn, byte[] srcBuf, Archive archive /* = null */, Entry entry /* = null */);
 
     String[] getPresetMixerBalance();

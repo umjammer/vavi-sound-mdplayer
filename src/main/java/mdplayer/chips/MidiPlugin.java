@@ -170,7 +170,7 @@ public class MidiPlugin implements Plugin {
 //        vstMng.sendMIDIout(model, num, cmd, prm1, deltaFrames);
     }
 
-    public void send(EnmModel model, int num, byte[] data, int deltaFrames/* = 0*/) {
+    public void send(EnmModel model, int num, byte[] data, int deltaFrames /* = 0 */) {
         if (model == EnmModel.RealModel) {
             if (outs == null) return;
             if (num >= outs.size()) return;

@@ -74,7 +74,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 return false;
         }
 
-        List<S98.S98DevInfo> s98DInfo = ((S98) audio.driverVirtual).s98Info.DeviceInfos;
+        List<S98.S98DevInfo> s98DInfo = ((S98) audio.driverVirtual).s98Info.deviceInfos;
 
         int YM2151ClockValue = 4000000;
         int YM2203ClockValue = 4000000;

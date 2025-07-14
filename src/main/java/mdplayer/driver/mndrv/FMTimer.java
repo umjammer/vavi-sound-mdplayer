@@ -6,9 +6,9 @@ import mdplayer.Common;
 public class FMTimer {
 
     /** Upper 8 bits of Timer A */
-    private int timerAregH;
+    private int timerARegH;
     /** The lower 2 bits of Timer A */
-    private int timerAregL;
+    private int timerARegL;
     /** Timer A overflow setting */
     private int timerA;
     /** Timer A counter value */
@@ -60,19 +60,19 @@ public class FMTimer {
         statReg |= flag_set;
     }
 
-    public void WriteReg(byte adr, byte data) {
-        if (isOPM) WriteRegOPM(adr, data);
-        else WriteRegOPN(adr, data);
+    public void writeReg(byte adr, byte data) {
+        if (isOPM) writeRegOPM(adr, data);
+        else writeRegOPN(adr, data);
     }
 
-    private void WriteRegOPM(byte adr, byte data) {
+    private void writeRegOPM(byte adr, byte data) {
         switch (adr) {
             case 0x10:
             case 0x11:
                 // timerA
-                if (adr == 0x10) timerAregH = data;
-                else timerAregL = data & 3;
-                timerA = 1024 - ((timerAregH << 2) + timerAregL);
+                if (adr == 0x10) timerARegH = data;
+                else timerARegL = data & 3;
+                timerA = 1024 - ((timerARegH << 2) + timerARegL);
                 break;
 
             case 0x12:
@@ -88,14 +88,14 @@ public class FMTimer {
         }
     }
 
-    private void WriteRegOPN(byte adr, byte data) {
+    private void writeRegOPN(byte adr, byte data) {
         switch (adr) {
             case 0x24:
             case 0x25:
                 // timerA
-                if (adr == 0x24) timerAregH = data;
-                else timerAregL = data & 3;
-                timerA = 1024 - ((timerAregH << 2) + timerAregL);
+                if (adr == 0x24) timerARegH = data;
+                else timerARegL = data & 3;
+                timerA = 1024 - ((timerARegH << 2) + timerARegL);
                 break;
 
             case 0x26:
