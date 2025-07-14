@@ -5,6 +5,7 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
 
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
@@ -2420,6 +2421,25 @@ logger.log(Level.INFO, "usedChips: " + usedChips);
         public String usedChips = "";
 
         public List<Tuple3<Integer, Integer, String>> lyrics = null;
+
+        @Override public String toString() {
+            return new StringJoiner(", ", Gd3.class.getSimpleName() + "[", "]")
+                    .add("trackName='" + trackName + "'")
+                    .add("trackNameJ='" + trackNameJ + "'")
+                    .add("gameName='" + gameName + "'")
+                    .add("gameNameJ='" + gameNameJ + "'")
+                    .add("systemName='" + systemName + "'")
+                    .add("systemNameJ='" + systemNameJ + "'")
+                    .add("composer='" + composer + "'")
+                    .add("composerJ='" + composerJ + "'")
+                    .add("converted='" + converted + "'")
+                    .add("notes='" + notes + "'")
+                    .add("vgmBy='" + vgmBy + "'")
+                    .add("version='" + version + "'")
+                    .add("usedChips='" + usedChips + "'")
+                    .add("lyrics=" + lyrics)
+                    .toString();
+        }
     }
 
     @Override

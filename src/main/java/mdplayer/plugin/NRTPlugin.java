@@ -29,9 +29,9 @@ public class NRTPlugin extends BasePlugin {
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new NRTDRV();
         audio.driverReal = null;
-        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new NRTDRV();
-        }
+//        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
+//            audio.driverReal = new NRTDRV();
+//        }
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
@@ -44,6 +44,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
     /** */
     private boolean _play() {
         int r = ((NRTDRV) audio.driverVirtual).checkUseChip(vgmBuf);
+logger.log(Level.DEBUG, "used chip: %02x".formatted(r));
 
         audio.chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);
         audio.chipRegister.chip(Ym2151Chip.class).setFadeout(1, 0);

@@ -7,11 +7,14 @@
 import java.io.IOException;
 import java.io.Reader;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import vavix.util.screenscrape.annotation.InputHandler;
 import vavix.util.screenscrape.annotation.Target;
 import vavix.util.screenscrape.annotation.WebScraper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
@@ -59,5 +62,26 @@ public class ResxTest {
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test() throws Exception {
         main(null);
+    }
+
+    @Test
+    @Disabled
+    void testF() throws Exception {
+        byte a = 100;
+        byte b = 100;
+        a += b;
+        byte c = a;
+        assertEquals((byte) 200, c);
+
+        a = (byte) 128;
+        b = (byte) 128;
+        a += b;
+        c = a;
+        assertEquals((byte) 256, c);
+
+        a = (byte) 128;
+        b = (byte) 128;
+        c = (byte) (a + b);
+        assertEquals(c, (byte) ((a & 0xff) + (b & 0xff)));
     }
 }
