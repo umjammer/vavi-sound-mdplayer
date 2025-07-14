@@ -2,7 +2,6 @@ package mdplayer.driver.zms;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,13 +33,12 @@ import mdsound.instrument.X68kMPcmInst;
 import mdsound.instrument.X68kYm2151Inst;
 
 import static java.lang.System.getLogger;
+import static mdplayer.Common.charset;
 
 
 public class Zms extends BaseDriver {
 
     private static final Logger logger = getLogger(Zms.class.getName());
-
-    public static final String encoding = "Windows-31J";
 
     private Nise68 nise68;
     private FileMng fileMng;
@@ -124,7 +122,7 @@ public class Zms extends BaseDriver {
     }
 
     private Gd3 getGD3InfoZMS(byte[] buf) {
-        String text = new String(buf, Charset.forName(encoding));
+        String text = new String(buf, charset);
         String[] texts = text.split("\r\n");
         String cmt = "";
         String comment = ".COMMENT";
@@ -168,7 +166,7 @@ public class Zms extends BaseDriver {
                     ePtr++;
                 }
 
-                cmt = new String(buf, ptr, ePtr - ptr, Charset.forName(encoding));
+                cmt = new String(buf, ptr, ePtr - ptr, charset);
             }
         } catch (Exception e) {
             // Do nothing

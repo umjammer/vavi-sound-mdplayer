@@ -2,7 +2,6 @@ package mdplayer.driver.rcp;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,13 +32,12 @@ import mdsound.instrument.X68kYm2151Inst;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
+import static mdplayer.Common.charset;
 
 
 public class RCS extends BaseDriver {
 
     private static final Logger logger = getLogger(RCS.class.getName());
-
-    static final String encoding = "Windows-31J";
 
     public RCS() {
         musicStep = Common.VGMProcSampleRate / 60.0;
@@ -107,20 +105,20 @@ public class RCS extends BaseDriver {
         if (IsG36) {
             ptr += 568;
             //.GSD
-            GSD[0] = new String(rcpBuf[0], ptr, 12, Charset.forName(encoding)).replace("\u0000", "");
+            GSD[0] = new String(rcpBuf[0], ptr, 12, charset).replace("\u0000", "");
             ptr += 16;
             //.GSD
-            GSD2[0] = new String(rcpBuf[0], ptr, 12, Charset.forName(encoding)).replace("\u0000", "");
+            GSD2[0] = new String(rcpBuf[0], ptr, 12, charset).replace("\u0000", "");
             ptr += 16;
             //.CM6
-            CM6[0] = new String(rcpBuf[0], ptr, 12, Charset.forName(encoding)).replace("\u0000", "");
+            CM6[0] = new String(rcpBuf[0], ptr, 12, charset).replace("\u0000", "");
         } else {
             ptr += 358;
             //.CM6
-            CM6[0] = new String(rcpBuf[0], ptr, 12, Charset.forName(encoding)).replace("\u0000", "");
+            CM6[0] = new String(rcpBuf[0], ptr, 12, charset).replace("\u0000", "");
             ptr += 16;
             //.GSD
-            GSD[0] = new String(rcpBuf[0], ptr, 12, Charset.forName(encoding)).replace("\u0000", "");
+            GSD[0] = new String(rcpBuf[0], ptr, 12, charset).replace("\u0000", "");
         }
     }
 

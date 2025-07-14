@@ -2,7 +2,6 @@ package mdplayer.driver.zms.nise68;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,13 +12,12 @@ import dotnet4j.io.SeekOrigin;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
+import static mdplayer.Common.charset;
 
 
 public class NiseHuman {
 
     private static final Logger logger = getLogger(NiseHuman.class.getName());
-
-    public static final String encoding = "Windows-31J";
 
     public static int mpcmPtr = 0xfe_9000; // MPCMの常駐位置(仮)
 
@@ -279,7 +277,7 @@ public class NiseHuman {
         } else {
             mem.pokeB(stackPtr++, (byte) ' ');
         }
-        byte[] opAry = option.getBytes(Charset.forName(encoding));
+        byte[] opAry = option.getBytes(charset);
         for (byte op : opAry) {
             mem.pokeB(stackPtr++, op);
         }
@@ -379,7 +377,7 @@ public class NiseHuman {
 
         consoleTextBuf.add((byte) code);
         if (code == 0x0d && !consoleTextBuf.isEmpty()) {
-            logger.log(Level.INFO, new String(ByteUtil.toByteArray(consoleTextBuf), Charset.forName(encoding)));
+            logger.log(Level.INFO, new String(ByteUtil.toByteArray(consoleTextBuf), charset));
             consoleTextBuf.clear();
         }
     }
@@ -401,9 +399,9 @@ public class NiseHuman {
             msg.add(b);
             cnt++;
         } while (true);
-        String text = new String(ByteUtil.toByteArray(msg), Charset.forName(encoding));
+        String text = new String(ByteUtil.toByteArray(msg), charset);
         if (!consoleTextBuf.isEmpty()) {
-            logger.log(Level.INFO, new String(ByteUtil.toByteArray(consoleTextBuf), Charset.forName(encoding)));
+            logger.log(Level.INFO, new String(ByteUtil.toByteArray(consoleTextBuf), charset));
             consoleTextBuf.clear();
         }
         text = text.replace("{", "{{");
@@ -442,10 +440,10 @@ public class NiseHuman {
             cnt++;
         } while (true);
         if (consoleTextBuf.size() > 0) {
-            logger.log(Level.INFO, new String(ByteUtil.toByteArray(consoleTextBuf), Charset.forName(encoding)));
+            logger.log(Level.INFO, new String(ByteUtil.toByteArray(consoleTextBuf), charset));
             consoleTextBuf.clear();
         }
-        String text = new String(ByteUtil.toByteArray(msg), Charset.forName(encoding));
+        String text = new String(ByteUtil.toByteArray(msg), charset);
         logger.log(Level.INFO, text); // 通常のコンソール出力
     }
 
@@ -517,7 +515,7 @@ public class NiseHuman {
             msg.add(b);
             cnt++;
         } while (true);
-        String fn = new String(ByteUtil.toByteArray(msg), Charset.forName(encoding));
+        String fn = new String(ByteUtil.toByteArray(msg), charset);
         logger.log(Level.TRACE, "Filename:[%s]", fn);
         fn = fileMng.vGetFullFilename(fn);
         try {
@@ -578,7 +576,7 @@ public class NiseHuman {
             msg.add(b);
             cnt++;
         } while (true);
-        String fn = new String(ByteUtil.toByteArray(msg), Charset.forName(encoding));
+        String fn = new String(ByteUtil.toByteArray(msg), charset);
         logger.log(Level.TRACE, "Filename:[%s] ATR:%d", fn, atr & 0xffff);
 
         //String physicalFn = getPhysicalFn(fn);
@@ -638,7 +636,7 @@ public class NiseHuman {
             msg.add(b);
             cnt++;
         } while (true);
-        String fn = new String(ByteUtil.toByteArray(msg), Charset.forName(encoding));
+        String fn = new String(ByteUtil.toByteArray(msg), charset);
         logger.log(Level.TRACE, "Filename:[%s] Mode:%d", fn, mode & 0xffff);
 
         //String physicalFn = getPhysicalFn(fn);
@@ -891,7 +889,7 @@ public class NiseHuman {
             msg.add(b);
             cnt++;
         } while (true);
-        String fn = new String(ByteUtil.toByteArray(msg), Charset.forName(encoding));
+        String fn = new String(ByteUtil.toByteArray(msg), charset);
         msg = new ArrayList<>();
         cnt = 0;
         do {
@@ -900,7 +898,7 @@ public class NiseHuman {
             msg.add(b);
             cnt++;
         } while (true);
-        String op = new String(ByteUtil.toByteArray(msg), Charset.forName(encoding));
+        String op = new String(ByteUtil.toByteArray(msg), charset);
 
         switch (md) {
             case 0:
@@ -941,7 +939,7 @@ public class NiseHuman {
                     msg.add(b);
                     cnt++;
                 } while (true);
-                fn = new String(ByteUtil.toByteArray(msg), Charset.forName(encoding));
+                fn = new String(ByteUtil.toByteArray(msg), charset);
                 msg = new ArrayList<>();
                 cnt = 0;
                 do {
@@ -950,7 +948,7 @@ public class NiseHuman {
                     msg.add(b);
                     cnt++;
                 } while (true);
-                op = new String(ByteUtil.toByteArray(msg), Charset.forName(encoding));
+                op = new String(ByteUtil.toByteArray(msg), charset);
                 logger.log(Level.TRACE, "<NiseHuman>out: md:2 fil:%s op:%s p2:%08x ", fn, op, p2);
 
                 reg.getD()[0] = 0x0000_0000;
@@ -982,7 +980,7 @@ public class NiseHuman {
             msg.add(b);
             cnt++;
         } while (true);
-        String fn = new String(ByteUtil.toByteArray(msg), Charset.forName(encoding));
+        String fn = new String(ByteUtil.toByteArray(msg), charset);
         logger.log(Level.TRACE, "Filename:[%s] Atr:%04x".formatted(fn, atr & 0xffff));
         //String physicalFn = getPhysicalFn(fn);
 
@@ -1050,7 +1048,7 @@ public class NiseHuman {
             msg.add(b);
             cnt++;
         } while (true);
-        String fn = new String(ByteUtil.toByteArray(msg), Charset.forName(encoding));
+        String fn = new String(ByteUtil.toByteArray(msg), charset);
         logger.log(Level.TRACE, "SRC Filename:[%s] Atr:%04x".formatted(fn, atr & 0xffff));
 
         // ???? を数字に置き換え、指定パスに存在しないファイル名であることを確認する
@@ -1134,7 +1132,7 @@ public class NiseHuman {
 
         int val = reg.getDl(0);
         int dadr = reg.getA().get(0);
-        byte[] dat = "%d".formatted(val).getBytes(Charset.forName(encoding));
+        byte[] dat = "%d".formatted(val).getBytes(charset);
         for (byte d : dat) {
             mem.pokeB(dadr++, d);
         }
