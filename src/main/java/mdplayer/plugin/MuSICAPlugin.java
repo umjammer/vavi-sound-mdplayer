@@ -16,6 +16,7 @@ import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.K051649Chip;
 import mdplayer.chips.Ym2413Chip;
 import mdplayer.driver.musica.MuSICA;
+import mdplayer.driver.musica.MuSICA_K4;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
 import mdsound.instrument.MameAy8910Inst;
@@ -36,13 +37,16 @@ public class MuSICAPlugin extends BasePlugin {
 
     @Override
     public boolean play(String playingFileName, FileFormat format) {
-        audio.driverVirtual = new MuSICA();
+        if (playingFileName.toLowerCase().endsWith(".bgm"))
+            audio.driverVirtual = new MuSICA();
+        else
+            audio.driverVirtual = new MuSICA_K4();
 //        ((MuSICA)audio.driverVirtual).playingFileName = PlayingFileName;
         audio.driverReal = null;
-        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new MuSICA();
+//        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
+//            audio.driverReal = new MuSICA();
 //            ((MuSICA) audio.driverReal).playingFileName = PlayingFileName;
-        }
+//        }
         prepare();
         boolean r = _play();
         if (!r) {
