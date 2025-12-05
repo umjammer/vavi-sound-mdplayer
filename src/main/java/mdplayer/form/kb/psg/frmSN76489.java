@@ -261,7 +261,7 @@ public class frmSN76489 extends frmBase {
                 return;
             }
 
-            //鍵盤
+            // keyboard
             if (py < 5 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;

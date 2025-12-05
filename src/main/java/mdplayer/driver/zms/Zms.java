@@ -2,6 +2,8 @@ package mdplayer.driver.zms;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +38,10 @@ import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
 
 
+/**
+ * env
+ * <li>"zmusic_ZPD" ...  </li>
+ */
 public class Zms extends BaseDriver {
 
     private static final Logger logger = getLogger(Zms.class.getName());
@@ -253,20 +259,20 @@ public class Zms extends BaseDriver {
                             preData.remove(0);
                             byte[] zmd = null;
                             if (preData.isEmpty()) {
-                                //if (nise68.hmn.fb.ContainsKey(fnZMD)) zmd = nise68.hmn.fb[fnZMD];
+                                //if (nise68.hmn.fb.containsKey(fnZMD)) zmd = nise68.hmn.fb[fnZMD];
                                 if (fileMng.existsFile(fnZMD)) zmd = fileMng.vReadAllBytes(fnZMD);
                             } else {
-                                //if (nise68.hmn.fb.ContainsKey(preData[0])) zmd = nise68.hmn.fb[preData[0]];
+                                //if (nise68.hmn.fb.containsKey(preData[0])) zmd = nise68.hmn.fb[preData[0]];
                                 if (fileMng.existsFile(preData.get(0))) zmd = fileMng.vReadAllBytes(preData.get(0));
                             }
-                            int fileSize = (int) zmd.length;
-                            int filePtr = (int) nise68.hmn.memMng.malloc(fileSize);
+                            int fileSize = zmd.length;
+                            int filePtr = nise68.hmn.memMng.malloc(fileSize);
                             for (int i = 0; i < zmd.length; i++) {
-                                nise68.mem.pokeB((int) (filePtr + i), zmd[i]);
+                                nise68.mem.pokeB(filePtr + i, zmd[i]);
                             }
 
                             nise68.reg.setDl(1, 0x11); // play_cnv_data
-                            nise68.reg.setDl(2, (int) (zmd.length - 7));
+                            nise68.reg.setDl(2, zmd.length - 7);
                             nise68.reg.setAl(1, filePtr + 7);
                             nise68.trap(trp); // , true, true, true);
                             waitNextPlay = (int) (setting.getOutputDevice().getSampleRate() * (double) setting.getZMusic().waitNextPlay / 1000.0);
@@ -296,13 +302,13 @@ public class Zms extends BaseDriver {
                     vgmCurLoop = d0 - 1;
                 }
             }
-            //vgmCurLoop = mm.Readshort(reg.a6 + dw.LOOP_COUNTER);
+            //vgmCurLoop = mm.readShort(reg.a6 + dw.LOOP_COUNTER);
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
-    private void run(byte[] vgmBuf) {
+    private void run(byte[] vgmBuf) throws URISyntaxException {
         //if (model == EnmModel.RealModel) { return; }
 
         String fn = playingFileName;
@@ -317,8 +323,8 @@ public class Zms extends BaseDriver {
         nise68 = new Nise68();
         nise68.setMPcm(version == 2 ? this::pcm8CallBack : this::mPcmCallBack);
         nise68.setOpm(this::opmCallBack);
-        nise68.setMidi(this::midiCallBack, (int) Common.VGMProcSampleRate);
-        nise68.setSCC_A(this::sccCallBack, (int) Common.VGMProcSampleRate);
+        nise68.setMidi(this::midiCallBack, Common.VGMProcSampleRate);
+        nise68.setSCC_A(this::sccCallBack, Common.VGMProcSampleRate);
         if (playingArcFileName != null && !playingArcFileName.isEmpty()) {
             if (playingFileName.toUpperCase().endsWith(".ZDF")) {
                 UnZDF cmd = new UnZDF();
@@ -335,7 +341,7 @@ public class Zms extends BaseDriver {
         //if (format == EnmFileFormat.ZMD) nise68.hmn.fb.add(fnZMD, vgmBuf);
         //else {
         //    // compile
-        //    if (model != EnmModel.RealModel || compiledData == null) Compile(vgmBuf);
+        //    if (model != EnmModel.RealModel || compiledData == null) compile(vgmBuf);
         //    else {
         //        // Real receives the compilation result of virtual
         //        nise68.hmn.fb.add(fnZMS, vgmBuf);
@@ -351,7 +357,7 @@ public class Zms extends BaseDriver {
     private int trp = 3 + 32;
     private int waitNextPlay = 0;
 
-    private void play() {
+    private void play() throws URISyntaxException {
         String fn = playingFileName;
         String withoutExtFn;
         String dn = Path.getDirectoryName(fn);
@@ -360,17 +366,17 @@ public class Zms extends BaseDriver {
         fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
         String crntDir = Path.getDirectoryName(System.getProperty("user.dir"));
 
-        String zmsc3 = Path.combine(crntDir, "ZMSC3.X");
-        if (!File.exists(zmsc3)) {
-            logger.log(Level.INFO, "File not found : %s", zmsc3);
-            throw new FileNotFoundException(zmsc3);
+        java.nio.file.Path zmsc3 = java.nio.file.Path.of(Zms.class.getResource("ZMSC3.X").toURI());
+        if (!Files.exists(zmsc3)) {
+            logger.log(Level.INFO, "File not found : %s".formatted(zmsc3));
+            throw new FileNotFoundException(zmsc3.toString());
         }
-        fileMng.setVFile(zmsc3);
-        zmsc3 = Path.getFileName(zmsc3);
+        fileMng.setVFile(zmsc3.toString());
+        zmsc3 = zmsc3.getFileName();
 
         String zmusic = Path.combine(crntDir, "ZMUSIC.X"); // ver2
         if (!File.exists(zmusic)) {
-            logger.log(Level.INFO, "File not found : %s", zmusic);
+            logger.log(Level.INFO, "File not found : %s".formatted(zmusic));
             throw new FileNotFoundException(zmusic);
         }
         fileMng.setVFile(zmusic);
@@ -406,13 +412,13 @@ public class Zms extends BaseDriver {
                 }
             }
 
-            nise68.hmn.memMng = new MemMng((int) (0x0001_2000 + (9212 + 2048) * 1024 + File.readAllBytes(zmusic).length));
+            nise68.hmn.memMng = new MemMng(0x0001_2000 + (9212 + 2048) * 1024 + File.readAllBytes(zmusic).length);
 
-            //if (nise68.LoadRun(zmusic, "-P9212 -T2048" + optionZpd + optionZmd, Path.GetDirectoryName(fnZMD), 0x00012000,
+            //if (nise68.loadRun(zmusic, "-P9212 -T2048" + optionZpd + optionZmd, Path.GetDirectoryName(fnZMD), 0x00012000,
             // true, true, true
             //) != 0) throw new Exception("zmusic regident Error");
-            if (nise68.loadRun(zmusic, "-P9212 -T2048" + optionZpd + optionZmd, 0x0001_2000
-                    , true, true, true,
+            if (nise68.loadRun(zmusic, "-P9212 -T2048" + optionZpd + optionZmd, 0x0001_2000,
+                    true, true, true,
                     100_000_000, 0
             ) != 0) throw new IllegalStateException("zmusic regident Error");
 
@@ -424,14 +430,14 @@ public class Zms extends BaseDriver {
             if (preData.isEmpty()) {
                 if (File.exists(fnZMD)) {
                     zmd = File.readAllBytes(fnZMD);
-                    //if (!nise68.hmn.fb.ContainsKey(fnZMD)) {
+                    //if (!nise68.hmn.fb.containsKey(fnZMD)) {
                     //    nise68.hmn.fb.add(fnZMD, zmd);
                     //}
                     if (!fileMng.existsFile(fnZMD)) {
                         fileMng.setVFile(fnZMD, zmd);
                     }
                 } else {
-                    //if (nise68.hmn.fb.ContainsKey(fnZMD)) {
+                    //if (nise68.hmn.fb.containsKey(fnZMD)) {
                     //    zmd = nise68.hmn.fb[fnZMD];
                     //}
                     if (fileMng.existsFile(Path.getFileName(fnZMD))) {
@@ -439,7 +445,7 @@ public class Zms extends BaseDriver {
                     }
                 }
             } else {
-                //if (nise68.hmn.fb.ContainsKey(preData[0])) {
+                //if (nise68.hmn.fb.containsKey(preData[0])) {
                 //    zmd = nise68.hmn.fb[preData[0]];
                 //}
                 if (fileMng.existsFile(preData.get(0))) {
@@ -449,8 +455,8 @@ public class Zms extends BaseDriver {
             if (zmd == null) {
                 throw new IllegalStateException("Zmd[%s] file not found. ".formatted(fnZMD));
             }
-            int fileSize = (int) zmd.length;
-            int filePtr = (int) nise68.hmn.memMng.malloc(fileSize);
+            int fileSize = zmd.length;
+            int filePtr = nise68.hmn.memMng.malloc(fileSize);
             for (int i = 0; i < zmd.length; i++) {
                 nise68.mem.pokeB((int) (filePtr + i), zmd[i]);
             }
@@ -466,13 +472,13 @@ public class Zms extends BaseDriver {
         // zmsc3 resident
         nise68.hmn.memMng = new MemMng(0x0004_0000);
 
-        //if (nise68.LoadRun(zmsc3, "-w", Path.GetDirectoryName(fnZMD), 0x00012000,
+        //if (nise68.loadRun(zmsc3, "-w", Path.GetDirectoryName(fnZMD), 0x00012000,
         // true, true, true
-        //) != 0) throw new Exception("zmsc3 regident Error");
-        if (nise68.loadRun(zmsc3, "-w", 0x0001_2000
+        //) != 0) throw new Exception("zmsc3 resident Error");
+        if (nise68.loadRun(zmsc3.toString(), "-w", 0x0001_2000
                 , true, true, true,
                 100_000_000, 0
-        ) != 0) throw new IllegalStateException("zmsc3 regident Error");
+        ) != 0) throw new IllegalStateException("zmsc3 resident Error");
 
         // play
         //logger.log(Level.INFO, "");
@@ -509,8 +515,8 @@ public class Zms extends BaseDriver {
         {
             // play
             byte[] zmd = fileMng.vReadAllBytes(Path.getFileName(fnZMD)); // nise68.hmn.fb[fnZMD];
-            int fileSize = (int) zmd.length;
-            int filePtr = (int) nise68.hmn.memMng.malloc(fileSize);
+            int fileSize = zmd.length;
+            int filePtr = nise68.hmn.memMng.malloc(fileSize);
             for (int i = 0; i < zmd.length; i++) {
                 nise68.mem.pokeB((int) (filePtr + i), zmd[i]);
             }
@@ -529,7 +535,7 @@ public class Zms extends BaseDriver {
         }
     }
 
-    public boolean compile(byte[] vgmBuf, String fn) {
+    public boolean compile(byte[] vgmBuf, String fn) throws URISyntaxException {
         String withoutExtFn;
         String dn = Path.getDirectoryName(fn);
         if (dn != null && !dn.isEmpty()) withoutExtFn = Path.combine(dn, Path.getFileNameWithoutExtension(fn));
@@ -537,19 +543,19 @@ public class Zms extends BaseDriver {
         String fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
         String fnZMS = Path.getFileName(withoutExtFn + ".ZMS");
         String crntDir = Path.getDirectoryName(System.getProperty("user.dir"));
-        String zmc = Path.combine(crntDir, "ZMC.X");
-        if (!File.exists(zmc)) {
-            logger.log(Level.INFO, "File not found : %s", zmc);
+        java.nio.file.Path zmc = java.nio.file.Path.of(Zms.class.getResource("ZMC.X").toURI());
+        if (!Files.exists(zmc)) {
+            logger.log(Level.INFO, "File not found : %s".formatted(zmc));
             return false; // throw new FileNotFoundException(zmc);
         }
-        fileMng.setVFile(zmc);
-        zmc = Path.getFileName(zmc);
+        fileMng.setVFile(zmc.toString());
+        zmc = zmc.getFileName();
 
         nise68 = new Nise68();
         nise68.setMPcm(this::mPcmCallBack);
         nise68.setOpm(this::opmCallBack);
-        nise68.setMidi(this::midiCallBack, (int) Common.VGMProcSampleRate);
-        nise68.setSCC_A(this::sccCallBack, (int) Common.VGMProcSampleRate);
+        nise68.setMidi(this::midiCallBack, Common.VGMProcSampleRate);
+        nise68.setSCC_A(this::sccCallBack, Common.VGMProcSampleRate);
         nise68.init(null, false, fileMng);
 
         // compile
@@ -558,11 +564,11 @@ public class Zms extends BaseDriver {
         //if (nise68.LoadRun(zmc, Path.GetFileName(fnZMS), Path.GetDirectoryName(fnZMS), 0x00012000,
         // true, true, true
         // ) != 0)
-        if (nise68.loadRun(zmc, Path.getFileName(fnZMS), 0x00012000,
+        if (nise68.loadRun(zmc.toString(), Path.getFileName(fnZMS), 0x0001_2000,
                 true, true, true,
                 100_000_000, 0
         ) != 0) {
-            logger.log(Level.INFO, "v3 Compile Error", zmc);
+            logger.log(Level.INFO, "v3 Compile Error " + zmc);
             return false;
         }
         //compiledData = nise68.hmn.fb[fnZMD];
@@ -570,7 +576,7 @@ public class Zms extends BaseDriver {
         return true;
     }
 
-    public boolean compileV2(byte[] vgmBuf, String fn) {
+    public boolean compileV2(byte[] vgmBuf, String fn) throws URISyntaxException {
         //String fn = playingFileName;
         String withoutExtFn;
         String dn = Path.getDirectoryName(fn);
@@ -579,31 +585,31 @@ public class Zms extends BaseDriver {
         String fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
         String fnZMS = Path.getFileName(withoutExtFn + ".ZMS");
         String crntDir = Path.getDirectoryName(System.getProperty("user.dir"));
-        String zmusic = Path.combine(crntDir, "ZMUSIC.X");
-        if (!File.exists(zmusic)) {
-            logger.log(Level.INFO, "File not found : %s", zmusic);
+        java.nio.file.Path zmusic = java.nio.file.Path.of(Zms.class.getResource("ZMUSIC.X").toURI());
+        if (!Files.exists(zmusic)) {
+            logger.log(Level.INFO, "File not found : %s".formatted(zmusic));
             return false; // throw new FileNotFoundException(zmc);
         }
 
         nise68 = new Nise68();
         nise68.setMPcm(this::pcm8CallBack);
         nise68.setOpm(this::opmCallBack);
-        nise68.setMidi(this::midiCallBack, (int) Common.VGMProcSampleRate);
-        nise68.setSCC_A(this::sccCallBack, (int) Common.VGMProcSampleRate);
+        nise68.setMidi(this::midiCallBack, Common.VGMProcSampleRate);
+        nise68.setSCC_A(this::sccCallBack, Common.VGMProcSampleRate);
 
         fileMng = new FileMng(dn, "C:"); // Set the path of the music file to the current physical drive. The current virtual drive is "C:" (default).
-        fileMng.setVFile(zmusic);
-        zmusic = Path.getFileName(zmusic);
+        fileMng.setVFile(zmusic.toString());
+        zmusic = zmusic.getFileName();
 
         nise68.init(null, false, fileMng);
 
         // compile
         //nise68.hmn.fb.add(fnZMS, vgmBuf);
         fileMng.setVFile(fnZMS, vgmBuf);
-        //if (nise68.LoadRun(zmusic, "-C " + Path.GetFileName(fnZMS), Path.GetDirectoryName(fnZMS), 0x00012000
-        // , true, true, true
+        //if (nise68.loadRun(zmusic, "-C " + Path.getFileName(fnZMS), Path.getDirectoryName(fnZMS), 0x00012000,
+        // true, true, true
         //) != 0)
-        if (nise68.loadRun(zmusic, "-C " + fnZMS, 0x00012000,
+        if (nise68.loadRun(zmusic.toString(), "-C " + fnZMS, 0x00012000,
                 true, true, true,
                 100_000_000, 0
         ) != 0) {
@@ -620,19 +626,19 @@ public class Zms extends BaseDriver {
         int ch = n & 0xf;
         switch (n & 0xfff0) {
             case 0x0000:
-                //logger.log(Level.TRACE, "MPCM #M_KEY_ON($%04x)", n);
+                //logger.log(Level.TRACE, "MPCM #M_KEY_ON($%04x)".formatted(n));
                 if (mpcmType == 0) if (mpcm != null) mpcm.keyOn(0, ch);
                 else if (mpcmpp != null) mpcmpp.keyOn(0, ch);
                 mpcmSt[ch].keyOn = true;
                 break;
             case 0x0100:
-                //logger.log(Level.TRACE, "MPCM #M_KEY_OFF($%04x)", n);
+                //logger.log(Level.TRACE, "MPCM #M_KEY_OFF($%04x)".formatted(n));
                 if (mpcmType == 0) if (mpcm != null) mpcm.keyOff(0, ch);
                 else if (mpcmpp != null) mpcmpp.keyOff(0, ch);
                 mpcmSt[ch].keyOff = true;
                 break;
             case 0x0200:
-                //logger.log(Level.TRACE, "MPCM #M_SET_PCM($%04x)", n);
+                //logger.log(Level.TRACE, "MPCM #M_SET_PCM($%04x)".formatted(n));
                 if (mpcmType == 0) {
                     MPcm.PCM ptr = new MPcm.PCM();
                     ptr.adrsBuf = nise68.mem.mem;
@@ -649,7 +655,7 @@ public class Zms extends BaseDriver {
                         mpcmSt[ch].base_ = mpcm.chips[0].base;
                     }
 
-                    //nise68.DumpMemory((int)ptr.adrs_ptr, (int)(ptr.adrs_ptr + ptr.size));
+                    //nise68.dumpMemory((int) ptr.adrs_ptr, (int) (ptr.adrs_ptr + ptr.size));
                     if (mpcm != null) mpcm.writePcm(0, ch, ptr);
                 } else {
                     SETPCM ptr = new SETPCM();
@@ -667,30 +673,30 @@ public class Zms extends BaseDriver {
                         mpcmSt[ch].base_ = mpcmpp.chips[0].base;
                     }
 
-                    //nise68.DumpMemory((int)ptr.adrs_ptr, (int)(ptr.adrs_ptr + ptr.size));
+                    //nise68.dumpMemory((int) ptr.adrs_ptr, (int) (ptr.adrs_ptr + ptr.size));
                     if (mpcmpp != null) mpcmpp.setPcm(0, ch, ptr);
                 }
                 break;
             case 0x0300:
-                //logger.log(Level.TRACE, "MPCM #M_SET_FRQ($%04x) D1$%08x", n, nise68.reg.GetDl(1));
+                //logger.log(Level.TRACE, "MPCM #M_SET_FRQ($%04x) D1$%08x".formatted(n, nise68.reg.GetDl(1)));
                 if (mpcmType == 0) if (mpcm != null) mpcm.setFreq(0, ch, (int) nise68.reg.getDl(1));
                 else if (mpcmpp != null) mpcmpp.setFreq(0, ch, (int) nise68.reg.getDl(1));
                 mpcmSt[ch].frq = (int) nise68.reg.getDl(1);
                 break;
             case 0x0400:
-                //logger.log(Level.TRACE, "MPCM #M_SET_PITCH($%04x) D1$%04x", n, nise68.reg.GetDl(1));
+                //logger.log(Level.TRACE, "MPCM #M_SET_PITCH($%04x) D1$%04x".formatted(n, nise68.reg.GetDl(1)));
                 if (mpcmType == 0) if (mpcm != null) mpcm.setPitch(0, ch, (int) nise68.reg.getDl(1));
                 else if (mpcmpp != null) mpcmpp.setPitch(0, ch, (int) nise68.reg.getDl(1));
                 mpcmSt[ch].pitch = (int) nise68.reg.getDl(1);
                 break;
             case 0x0500:
-                //logger.log(Level.TRACE, "MPCM #M_SET_VOL($%04x) = $%02x", n, nise68.reg.GetDb(1));
+                //logger.log(Level.TRACE, "MPCM #M_SET_VOL($%04x) = $%02x".formatted(n, nise68.reg.GetDb(1)));
                 if (mpcmType == 0) if (mpcm != null) mpcm.setVol(0, ch, (int) nise68.reg.getDb(1));
                 else if (mpcmpp != null) mpcmpp.setVol(0, ch, (int) nise68.reg.getDb(1));
                 mpcmSt[n & 0xf].volume = (int) nise68.reg.getDb(1);
                 break;
             case 0x0600:
-                //logger.log(Level.TRACE, "MPCM #M_SET_PAN($%04x) = $%02x", n, nise68.reg.GetDb(1));
+                //logger.log(Level.TRACE, "MPCM #M_SET_PAN($%04x) = $%02x".formatted(n, nise68.reg.GetDb(1)));
                 if (mpcmType == 0) if (mpcm != null) mpcm.setPan(0, ch, (int) nise68.reg.getDb(1));
                 else if (mpcmpp != null) mpcmpp.setPan(0, ch, (int) nise68.reg.getDb(1));
                 mpcmSt[n & 0xf].pan = (int) nise68.reg.getDb(1);
@@ -698,15 +704,15 @@ public class Zms extends BaseDriver {
             case 0x8000: //
                 switch (n & 0x000f) {
                     case 0x0:
-                        //logger.log(Level.TRACE, "MPCM #M_LOCK($%04x)", n);
+                        //logger.log(Level.TRACE, "MPCM #M_LOCK($%04x)".formatted(n));
                         break;
                     case 0x2: //
-                        //logger.log(Level.TRACE, "MPCM #M_INIT($%04x)", n);
+                        //logger.log(Level.TRACE, "MPCM #M_INIT($%04x)".formatted(n));
                         if (mpcmType == 0) if (mpcm != null) mpcm.reset(0);
                         else if (mpcmpp != null) mpcmpp.reset(0);
                         break;
                     case 0x5: //
-                        //logger.log(Level.TRACE, "MPCM #M_SET_VOLTBL($%04x)", n);
+                        //logger.log(Level.TRACE, "MPCM #M_SET_VOLTBL($%04x)".formatted(n));
                         int[] vtbl = new int[128];
                         for (int i = 0; i < 128; i++) {
                             vtbl[i] = (int) (nise68.mem.peekW((int) (nise68.reg.getAl(1) + (i * 2))));
@@ -732,8 +738,8 @@ public class Zms extends BaseDriver {
                     if (opmPCM != null)
                         opmPCM.chips[0].pcm8Out((int) n & 0xff, null, nise68.reg.getAl(1), (int) nise68.reg.getDl(1), (int) nise68.reg.getDl(2)); // Start of specified channel sound
                     else if (pcm8pp != null)
-                        pcm8pp.keyOn(0, (int) n & 0xff, nise68.reg.getAl(1), (int) nise68.reg.getDl(1), (int) nise68.reg.getDl(2), 0); // Start of specified channel sound // TODO vavi check args
-                //logger.log(Level.TRACE, "%s adrsPtr = 0x%08x;  mode = 0x%08x; len = 0x%08x;", nise68.reg.GetAl(1), (int)nise68.reg.GetDl(1), (int)nise68.reg.GetDl(2), (int)n & 0xff);
+                        pcm8pp.keyOn(0, (int) n & 0xff, nise68.reg.getAl(1), (int) nise68.reg.getDl(1), (int) nise68.reg.getDl(2)); // Start of specified channel sound // TODO vavi check args
+                //logger.log(Level.TRACE, "%s adrsPtr = 0x%08x;  mode = 0x%08x; len = 0x%08x;".formatted(nise68.reg.getAl(1), (int)nise68.reg.getDl(1), (int) nise68.reg.getDl(2), (int) n & 0xff));
                 ch = (int) ((n & 0xff) % 8);
                 pcm8St[ch].tablePtr = nise68.reg.getAl(1);
                 pcm8St[ch].mode = nise68.reg.getDl(1);

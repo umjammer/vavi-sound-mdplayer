@@ -127,9 +127,9 @@ public class Register68 {
                 // + "A0:%08x A1:%08x A2:%08x A3:%08x A4:%08x A5:%08x A6:%08x A7:%08x\n"
                 // + "PC:%08x USP:%08x SSP:%08x SR:%04x  X:%s N:%s Z:%s V:%s C:%s %s %s",
                 """
-                D0-D7=%08x,%08x,%08x,%08x,%08x,%08x,%08x,%08x
-                A0-A7=%08x,%08x,%08x,%08x,%08x,%08x,%08x,%08x
-                  PC=%08x    SR=%04x""".formatted(
+                D0-D7=%1$08x,%2$08x,%3$08x,%4$08x,%5$08x,%6$08x,%7$08x,%8$08x
+                A0-A7=%9$08x,%10$08x,%11$08x,%12$08x,%13$08x,%14$08x,%15$08x,%16$08x
+                  PC=%17$08x    SR=%20$04x""".formatted(
                         d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],
                         a.get(0), a.get(1), a.get(2), a.get(3), a.get(4), a.get(5), a.get(6), a.get(7),
                         pc, getUSP(), getSSP(), getSR(),
@@ -148,7 +148,7 @@ public class Register68 {
     }
 
     public void setC(int before, int after) {
-        setC((before & 0xffff0000) != (after & 0xffff0000));
+        setC((before & 0xffff_0000) != (after & 0xffff_0000));
     }
 
     public void setC(long before, long after) {

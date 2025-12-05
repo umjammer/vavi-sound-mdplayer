@@ -55,7 +55,7 @@ public class SccA {
                     dat = 4; // 4 TxBufferEmpty
                     break;
                 case 1:
-                    dat = 1; // 1 AllSent完了
+                    dat = 1; // 1 AllSent completed
                     break;
                 case 2:
                     dat = vect;
@@ -74,7 +74,7 @@ public class SccA {
                 case 15:
                     throw new UnsupportedOperationException();
             }
-            currentReg = 0; // 何かするとレジスタは0にリセットされる
+            currentReg = 0; // Anything you do resets the register to 0.
         } else {
             return dat;
 //            throw new UnsupportedOperationException();

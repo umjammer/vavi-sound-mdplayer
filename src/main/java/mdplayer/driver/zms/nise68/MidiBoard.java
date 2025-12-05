@@ -15,7 +15,7 @@ public class MidiBoard {
 
     private static final Logger logger = getLogger(MidiBoard.class.getName());
 
-    private int num = 0; // インターフェイス番号
+    private int num = 0; // Interface Number
     private BiFunction<Integer, Byte, Integer> midi;
     private byte group = 0;
     private byte interrupt = 0;
@@ -146,12 +146,12 @@ public class MidiBoard {
             // R17,27,67,77,87
             int r = (group << 4) + ((c - 1) >> 1);
             if (cmdr[r] != null) dat = cmdr[r].get();
-            else throw new UnsupportedOperationException();
+            else throw new UnsupportedOperationException("not implemented yet R%02x".formatted(r));
         } else {
             return dat;
 //            throw new UnsupportedOperationException();
         }
-        logger.log(Level.TRACE, "Read CZ-6BM1 %s Adr:$00ea_fa%02x Dat:$%02x", ptr & 0xff, dat & 0xff, num == 0 ? "Pri" : "Sec");
+        logger.log(Level.TRACE, "Read CZ-6BM1 %s Adr:$00ea_fa%02x Dat:$%02x".formatted(num == 0 ? "Pri" : "Sec", ptr & 0xff, dat & 0xff));
         return dat;
     }
 
@@ -161,8 +161,8 @@ public class MidiBoard {
             throw new IndexOutOfBoundsException();
         }
 
-        int c = (int) (ptr & 0xf);
-        //logger.log(Level.TRACE, "Write CZ-6BM1 %s Adr:$%08x Dat:$%02x", n == 0 ? "Pri" : "Sec", ptr & 0xff, dat & 0xff);
+        int c = ptr & 0xf;
+        //logger.log(Level.TRACE, "Write CZ-6BM1 %s Adr:$%08x Dat:$%02x".formatted(n == 0 ? "Pri" : "Sec", ptr & 0xff, dat & 0xff);
 
         if (c == 0x1) { // R00
             throw new IllegalStateException(); // R00 is read only.
@@ -183,7 +183,7 @@ public class MidiBoard {
             int r = (group << 4) + ((c - 1) >> 1);
             reg[r] = dat;
             if (cmdw[r] != null) cmdw[r].accept(dat);
-            else throw new UnsupportedOperationException("未実装 R%02x : %02x".formatted(r, dat));
+            else throw new UnsupportedOperationException("not implemented yet R%02x : %02x".formatted(r, dat & 0xff));
         } else {
             throw new UnsupportedOperationException();
         }
@@ -198,7 +198,7 @@ public class MidiBoard {
         generalTimerValueWrk -= stepM; // / clickCounter;
         boolean ret = false;
         while (generalTimerValueWrk <= 0.0) {
-            generalTimerValueWrk += (double) ((generalTimerValue & 0x3fff) << 3);
+            generalTimerValueWrk += (generalTimerValue & 0x3fff) << 3;
             ret = true;
         }
         return ret;
@@ -294,7 +294,7 @@ public class MidiBoard {
     // R67
     private void setClickCounter(byte dat) {
         // Ignore for now
-        clickCounter = dat & 0x7f; // 関係なさそう...
+        clickCounter = dat & 0x7f; // It doesn't seem related...
     }
 
     // R94
@@ -303,8 +303,8 @@ public class MidiBoard {
     }
 
     private byte getFIFI_TxStatus() {
-        // bit 7: 1 送信FIFOは空
-        // bit 6: 1 送信FIFOは空きあり
+        // bit 7: 1 Transmit FIFO is empty
+        // bit 6: 1 Transmit FIFO is free
         return (byte) 0b1100_0000;
     }
 }

@@ -8,6 +8,7 @@ import mdplayer.Common;
 import mdplayer.chips.Sn76489Chip;
 import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.Xgm;
+import mdplayer.driver.Xgm2;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
@@ -17,6 +18,7 @@ import mdsound.instrument.Ym2612Inst;
 import mdsound.instrument.Ym3438Inst;
 
 import static java.lang.System.getLogger;
+import static mdplayer.driver.Xgm2.checkXGM2;
 import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
@@ -32,11 +34,14 @@ public class XGMPlugin extends BasePlugin {
 
     @Override
     public boolean play(String playingFileName, FileFormat format) {
-        audio.driverVirtual = new Xgm();
+        if (!checkXGM2(vgmBuf))
+            audio.driverVirtual = new Xgm();
+        else
+            audio.driverVirtual = new Xgm2();
         audio.driverReal = null;
-        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new Xgm();
-        }
+//        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
+//            audio.driverReal = new Xgm();
+//        }
 
         boolean r = _play();
         if (!r) {

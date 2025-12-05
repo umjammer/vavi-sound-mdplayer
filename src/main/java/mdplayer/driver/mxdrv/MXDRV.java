@@ -437,16 +437,16 @@ logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], p
 
         // Load PDX
         byte havePdx = (byte) 0xff;
-        List<Byte> lstPdxfileName;
+        List<Byte> lstPdxFileName;
         while (mdx[0][p2++] != 0x1a) ;
         if (mdx[0][p2] != 0) {
             havePdx = 0x00;
-            lstPdxfileName = new ArrayList<>();
+            lstPdxFileName = new ArrayList<>();
             while (mdx[0][p2] != 0x00) {
-                lstPdxfileName.add(mdx[0][p2]);
+                lstPdxFileName.add(mdx[0][p2]);
                 p2++;
             }
-            pdxFileName[0] = new String(ByteUtil.toByteArray(lstPdxfileName), charset);
+            pdxFileName[0] = new String(ByteUtil.toByteArray(lstPdxFileName), charset);
         }
         p2++;
 
@@ -1016,7 +1016,7 @@ logger.log(Level.DEBUG, "extendFiles is null");
             break;
         case 0x01f0:
             switch (D0 & 0xffff) {
-            case 0x01FC:
+            case 0x01fc:
                 D0 = 1;
                 break;
             }
@@ -2547,7 +2547,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
         D7 = 0x00;
 
         do {
-            //logger.log(Level.TRACE, "Ch%02d adr:%04x".formatted(D7,mm.Readint(A6+MXWORK_CH.S0000)));
+            //logger.log(Level.TRACE, "Ch%02d adr:%04x".formatted(D7, mm.readInt(A6 + MXWORK_CH.S0000)));
             L001050();
             L0011b4();
             D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c) & 0xffff;
@@ -2575,7 +2575,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
 /*IL_9C4:*/}
         L000756();
 
-        //L000c44:;
+//L000c44:
         D1 = 0x14;
         D2 = 0x1b;
         L_WRITEOPM();
@@ -3127,23 +3127,26 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
 
 exit:   {
             while (true) {
+//L0011dc:
                 D0 = 0x00;
                 D1 = 0x00;
                 D0 = mm.readByte(A4++) & 0xff;
                 D1 = D0;
-                if ((byte) D1 >= 0) {
+                if ((byte) D1 >= 0) { // goto L001216;
                     break exit;
                 }
-                if (D0 < 0xe0) {
+                if (D0 < 0xe0) { // goto L00122e;
                     break;
                 }
 
+//L00122e:
                 D0 ^= 0xff;
                 DisposeStack_L00122e = Depend.FALSE;
                 L001252[D0 & 0xff].run();
                 if (DisposeStack_L00122e != Depend.FALSE) {
                     return;
                 }
+//                goto L0011dc;
             }
             D0 &= 0x007f;
             D0 <<= 6;
@@ -3324,7 +3327,7 @@ exit:   {
         D0 = Depend.getBWord(mm, A4) & 0xffff;
         A4 += 2;
         A0 = A4 + D0;
-        D0 = 0xffffffff;
+        D0 = 0xffff_ffff;
         D0 = Depend.getBWord(mm, A0) & 0xffff;
         A0 += 2;
         D0 = (D0 ^ 0xffff) + 1;

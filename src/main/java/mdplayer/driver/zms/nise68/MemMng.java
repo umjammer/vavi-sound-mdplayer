@@ -53,7 +53,7 @@ public class MemMng {
         return ret;
     }
 
-    public int Mfree(int ptr) {
+    public int mfree(int ptr) {
         if (!dicMng.containsKey(ptr))
             return -1;
         //dicMng.remove(ptr);

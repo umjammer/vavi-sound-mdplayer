@@ -454,7 +454,7 @@ public class Setting implements Serializable, Cloneable {
     }
 
     public static class Rcs implements Serializable, Cloneable {
-        public int pcm8type = 1; // PCM8PPがデフォルト
+        public int pcm8type = 1; // PCM8PP is the default
 
         @Override
         public Rcs clone() {

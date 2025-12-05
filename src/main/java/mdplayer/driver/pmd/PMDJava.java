@@ -70,7 +70,7 @@ public class PMDJava extends BaseDriver {
     public String getPlayingFileName() { return playingFileName; }
     public void setPlayingFileName(String value) { playingFileName = value; }
 
-    public static final int baseclock = 7987200;
+    public static final int baseClock = 7987200;
 
     private PMDFileType mtype;
 
@@ -188,7 +188,7 @@ public class PMDJava extends BaseDriver {
         M
     }
 
-    private PMDFileType CheckFileType(byte[] buf) {
+    private PMDFileType checkFileType(byte[] buf) {
         if (buf == null || buf.length < 4) {
             return PMDFileType.unknown;
         }
@@ -285,7 +285,7 @@ public class PMDJava extends BaseDriver {
                 (Function<ChipDatum, Integer>) this::writeP86);
 
 
-        pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseclock));
+        pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
         pmdDriver.startMusic(0);
         return true;
     }
@@ -401,7 +401,7 @@ public class PMDJava extends BaseDriver {
                 (Function<ChipDatum, Integer>) this::writePPSDRV,
                 (Function<ChipDatum, Integer>) this::writeP86);
 
-        pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseclock));
+        pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
         pmdDriver.startMusic(0);
 
         return true;

@@ -239,7 +239,7 @@ public class frmHuC6280 extends frmBase {
                 return;
             }
 
-            //鍵盤
+            // keyboard
             if (py < 7 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
@@ -255,10 +255,10 @@ public class frmHuC6280 extends frmBase {
                 return;
             }
 
-            //音色で右クリックした場合は何もしない
+            // Right-clicking on a tone does nothing
             if (ev.getButton() == MouseEvent.BUTTON2) return;
 
-            // 音色表示欄の判定
+            // Judgment of tone display column
             int h = (py - 7 * 8) / (5 * 8);
             int w = Math.min(px / (13 * 8), 2);
             int instCh = h * 3 + w;

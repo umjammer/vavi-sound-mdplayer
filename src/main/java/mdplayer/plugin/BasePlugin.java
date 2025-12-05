@@ -118,7 +118,7 @@ public abstract class BasePlugin implements Plugin {
 
         audio.paused = false;
         audio.stopped = true;
-logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
+logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
 //        audio._fatalError = false;
         oneTimeReset = false;
 

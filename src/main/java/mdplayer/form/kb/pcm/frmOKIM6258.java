@@ -195,13 +195,13 @@ public class frmOKIM6258 extends frmBase {
                 return;
             }
 
-            // 鍵盤
+            // keyboard
             if (py < 2 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    // マスク
+                    // mask
                     parent.setChannelMask(OkiM6258Chip.class, chipId, 0);
                     return;
                 }

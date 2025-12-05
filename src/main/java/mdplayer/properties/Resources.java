@@ -563,20 +563,20 @@ public class Resources {
      * MDPlayer
      * Player for VGM files (a performance tool that emulates the Mega Drive sound chip, etc.)
      * <p>
-     * [概要]
+     * [Summary]
      * This tool plays VGM files while displaying a keyboard.
-     * (NRD,XGM,S98,MID,RCP,NSF,HES,Sid,MDR,MDX,MND,MUC(TBD),MUB(TBD)ファイルにも対応。)
+     * (Compatible with NRD, XGM, S98, MID, RCP, NSF, HES, Sid, MDR, MDX, MND, MUC(TBD), MUB(TBD) files.)
      * <p>
-     * [注意]
-     * ・再生時の音量に注意してください。バグによる雑音が大音量で再生される場合もあります。
-     * (特に再生したことのないファイルを試す場合や、プログラムを更新した場合。)
+     * [Caution]
+     * - Please be careful of the volume when playing. There may be cases where noise caused by a bug is played at a loud volume.
+     * (Especially when trying a file that has never been played before or when updating the program.)
      * <p>
-     * ・使用中に不具合を見つけた場合はお手数ですがTwitter(@kumakumakumaT_T)までご連絡ください。
-     * (VGMPlayやNRTDRV、その他素晴らしいソフトウェアの作者様方に、
-     * 直接MDPlayerについての連絡がいくことの無い様にお願いします。)
-     * できるかぎり対応させていただくつもりですが、ご希望に添えないことも多々あります。ご了承ください。
+     * - If you find any problems while using the tool, please contact us on Twitter (@kumakumakumaT_T).
+     * (Please do not contact the creators of VGMPlay, NRTDRV, and other great software
+     * about MDPlayer directly.)
+     * We will do our best to accommodate your requests, but there are many cases where we cannot meet your requests. Thank you for your understanding.
      * <p>
-     * [対応フォーマ [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
+     * [The remaining string has been truncated]&quot;; Finds a localized string similar to ←.
      */
     public static String getCntDescription() {
 
@@ -907,7 +907,6 @@ public class Resources {
     }
 
     /**
-     * (アイコン) に類似した型 Icon のローカライズされたリソースを検索します。
      */
     public static Icon getFeli128() {
 
@@ -924,7 +923,6 @@ public class Resources {
     }
 
     /**
-     * (アイコン) に類似した型 Icon のローカライズされたリソースを検索します。
      */
     public static Icon getFeliTop() {
 
@@ -1322,9 +1320,7 @@ public class Resources {
         return getImage("rChipName_03");
     }
 
-    /**
-     * 型 System.Byte[] のローカライズされたリソースを検索します。
-     */
+    /** */
     public static byte[] getREADME() {
 
         Object obj = resourceMan.getObject("README");

@@ -26,10 +26,10 @@ public class Nise98 {
     private NisePpz8 ppz8 = null;
     private FileTemp fileTemp = null;
 
-    private fmStatus fmReg088 = null;
-    private fmStatus fmReg188 = null;
-    private fmStatus fmReg288 = null;
-    private fmStatus fmReg388 = null;
+    private FmStatus fmReg088 = null;
+    private FmStatus fmReg188 = null;
+    private FmStatus fmReg288 = null;
+    private FmStatus fmReg388 = null;
     private int vSyncCnt = 2;
     private byte vSync = 0;
     private short mojiCode;
@@ -48,7 +48,7 @@ public class Nise98 {
         PC9801_86B
     }
 
-    public static class fmStatus {
+    public static class FmStatus {
 
         // bit76:11 int 5(IRQ12)(factory)
         // bit76:10 int 4(IRQ10)
@@ -69,7 +69,7 @@ public class Nise98 {
         // ongenBoardType
         public OngenBoardType ongen = OngenBoardType.SpeakBoard;
 
-        public fmStatus(OngenBoardType ongen) {
+        public FmStatus(OngenBoardType ongen) {
             this.ongen = ongen;
             if (ongen == OngenBoardType.PC9801_26K) {
                 regs = new byte[256 * 1];
@@ -101,28 +101,28 @@ public class Nise98 {
         ppz8 = new NisePpz8(this);
 
         if (ongen == OngenBoardType.None) {
-            fmReg088 = new fmStatus(OngenBoardType.None);
-            fmReg188 = new fmStatus(OngenBoardType.None);
-            fmReg288 = new fmStatus(OngenBoardType.None);
-            fmReg388 = new fmStatus(OngenBoardType.None);
+            fmReg088 = new FmStatus(OngenBoardType.None);
+            fmReg188 = new FmStatus(OngenBoardType.None);
+            fmReg288 = new FmStatus(OngenBoardType.None);
+            fmReg388 = new FmStatus(OngenBoardType.None);
             pA460h = (byte) 0xfc;
         } else if (ongen == OngenBoardType.PC9801_26K) {
-            fmReg088 = new fmStatus(OngenBoardType.None);
-            fmReg188 = new fmStatus(OngenBoardType.PC9801_26K);
-            fmReg288 = new fmStatus(OngenBoardType.None);
-            fmReg388 = new fmStatus(OngenBoardType.None);
+            fmReg088 = new FmStatus(OngenBoardType.None);
+            fmReg188 = new FmStatus(OngenBoardType.PC9801_26K);
+            fmReg288 = new FmStatus(OngenBoardType.None);
+            fmReg388 = new FmStatus(OngenBoardType.None);
             pA460h = (byte) 0xfc;
         } else if (ongen == OngenBoardType.PC9801_86B) {
-            fmReg088 = new fmStatus(OngenBoardType.None);
-            fmReg188 = new fmStatus(OngenBoardType.PC9801_86B);
-            fmReg288 = new fmStatus(OngenBoardType.None);
-            fmReg388 = new fmStatus(OngenBoardType.None);
+            fmReg088 = new FmStatus(OngenBoardType.None);
+            fmReg188 = new FmStatus(OngenBoardType.PC9801_86B);
+            fmReg288 = new FmStatus(OngenBoardType.None);
+            fmReg388 = new FmStatus(OngenBoardType.None);
             pA460h = 0b0100_0001;
         } else if (ongen == OngenBoardType.SpeakBoard) {
-            fmReg088 = new fmStatus(OngenBoardType.SpeakBoard);
-            fmReg188 = new fmStatus(OngenBoardType.None);
-            fmReg288 = new fmStatus(OngenBoardType.None);
-            fmReg388 = new fmStatus(OngenBoardType.None);
+            fmReg088 = new FmStatus(OngenBoardType.SpeakBoard);
+            fmReg188 = new FmStatus(OngenBoardType.None);
+            fmReg288 = new FmStatus(OngenBoardType.None);
+            fmReg388 = new FmStatus(OngenBoardType.None);
             pA460h = (byte) 0xfc;
         }
     }
@@ -373,7 +373,7 @@ public class Nise98 {
         }
     }
 
-    private byte fmPortInPort(fmStatus fs, short port) {
+    private byte fmPortInPort(FmStatus fs, short port) {
         logger.log(Level.DEBUG, "<Nise98> --- IN  FM Port:$%03x".formatted(port & 0xfff));
         switch (port & 0xffff) {
             case 0x88: // FM port
@@ -430,7 +430,7 @@ public class Nise98 {
         }
     }
 
-    private void fmPortOutPort(fmStatus fs, short port, byte data) {
+    private void fmPortOutPort(FmStatus fs, short port, byte data) {
         logger.log(Level.DEBUG, "<Nise98> --- OUT FM Port:%03x Dat:$%02x".formatted(port & 0xfff, data & 0xff));
         if (fs.ongen == OngenBoardType.None) return;
 

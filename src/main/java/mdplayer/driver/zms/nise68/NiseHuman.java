@@ -19,7 +19,7 @@ public class NiseHuman {
 
     private static final Logger logger = getLogger(NiseHuman.class.getName());
 
-    public static int mpcmPtr = 0xfe_9000; // MPCMの常駐位置(仮)
+    public static int mpcmPtr = 0xfe_9000; // MPCM permanent location (tentative)
 
     private final Memory68 mem;
     private final Register68 reg;
@@ -41,7 +41,7 @@ public class NiseHuman {
     private int execPtr;
     private int fileHandle = 0;
     private final FileIni[] fi = new FileIni[256];
-    private String currentWorkPath = "C:\\"; // niseHuman に C:\\ と思わせる実際のパス
+    private String currentWorkPath = "C:\\"; // The actual path that makes niseHuman think it is C:\\
     //public Dictionary<String, byte[]> fb = new Dictionary<String, byte[]>();
     private final List<String> envZPDs;
     private final FileMng fileMng;
@@ -142,8 +142,8 @@ public class NiseHuman {
     }
 
     public void loadAndExecuteFile(String filename, String option, int startAddress) {
-        logger.log(Level.INFO, "niseHuman>%s %s", filename, option);
-        logger.log(Level.INFO, "CurrentWorkPath>%s", currentWorkPath);
+        logger.log(Level.INFO, "niseHuman>%s %s".formatted(filename, option));
+        logger.log(Level.INFO, "CurrentWorkPath>%s".formatted(currentWorkPath));
 
         currentWorkPath = fileMng.VCurrentPath;
         if (currentWorkPath == null || currentWorkPath.isEmpty()) currentWorkPath = "C:\\";
@@ -220,27 +220,27 @@ public class NiseHuman {
 
         memMng.set(startAddress + 0x10, prog.length);
 
-        // memory セットアップ
-        // XC20プログラマーズマニュアル メモリマップ P697 参考
+        // memory set up
+        // XC20 Programmer's Manual Memory Map P.697 Reference
 
         // Interrupt Vector $00 ($00_0000) - $ff ($00_03ff)
-        //    $2c  TRAP12 COPYキーによる処理
-        mem.pokeL(0x02c * 4, 0x00fe_002c); // dummy値
-        //    $58  SCCA RS232C送信
-        mem.pokeL(0x058 * 4, 0x00fe_0000); // dummy値
+        //    $2c  TRAP12 Processing with the COPY key
+        mem.pokeL(0x02c * 4, 0x00fe_002c); // Dummy value
+        //    $58  SCCA RS232C transmission
+        mem.pokeL(0x058 * 4, 0x00fe_0000); // Dummy value
 
         // IOCS Vector      $100($00_0400) - $1ff($00_07ff)
-        //    $1ff Abort処理(?)
-        mem.pokeL(0x1ff * 4, 0x0012_1212); // dummy値
+        //    $1ff Abort processing(?)
+        mem.pokeL(0x1ff * 4, 0x0012_1212); // Dummy value
 
         // debug
-        //int zmusicPtr = 0xfe1000; // zmusicの常駐位置(仮)
-        //mem.PokeL(0x8c, zmusicPtr); // Trapの位置が書いてあるんかな？
+        //int zmusicPtr = 0xfe1000; // zmusic's permanent location (tentative)
+        //mem.PokeL(0x8c, zmusicPtr); // Does it say where the traps are located?
         //mem.PokeL(zmusicPtr - 0x8, 0x5a6d7553); // 'ZmuS'
         //mem.PokeW(zmusicPtr - 0x4, 0x6943); // 'iC'
-        //mem.PokeB(zmusicPtr - 0x2, 0x31); // version 0x30以上ならOK
+        //mem.PokeB(zmusicPtr - 0x2, 0x31); // Version 0x30 or higher is OK
 
-        // デバイス名(?)
+        // Device name(?)
         mem.pokeL(0x67f2, 0xffff_ffff); // EOF
         mem.pokeW(0x67f6, (short) 0x8024); // ?
         mem.pokeL(0x6800, 0x4e55_4c20); // 'NUL '
@@ -248,8 +248,8 @@ public class NiseHuman {
     }
 
     /**
-     * .x形式のリロケート処理
-     * run68 より
+     * Relocate .x format
+     * from run68
      */
     private boolean relocate(int reloc_adr, int reloc_size, int read_top) {
         int prog_adr;
@@ -263,7 +263,7 @@ public class NiseHuman {
                 return false;
             prog_adr += disp & 0xffff;
             data = mem.peekL(prog_adr) + read_top;
-            // logger.log(Level.TRACE, "progAdr:[%08x] relocAdr:[%08x]", prog_adr, data);
+            //logger.log(Level.TRACE, "progAdr:[%08x] relocAdr:[%08x]".formatted(prog_adr, data));
             mem.pokeL(prog_adr, data);
         }
 
@@ -285,20 +285,20 @@ public class NiseHuman {
     }
 
     /**
-     * 環境変数を指定アドレスへ作成する
+     * Create an environment variable at the specified address
      */
     private void makeEnv(int envAddress, int envSize) {
-        mem.pokeL(envAddress + 0x00, envSize); // サイズ格納
-        mem.pokeB(envAddress + 0x04, (byte) 0); // 終端
+        mem.pokeL(envAddress + 0x00, envSize); // Size Storage
+        mem.pokeB(envAddress + 0x04, (byte) 0); // termination
     }
 
     private void makePSP(int startAddress, int length, int processID, int progSize) {
         mem.pokeL(startAddress + 0x00, beforePSP);
-        // mem.PokeL(startAddress + 0x04, startAddress + length);
-        // mem.PokeB(startAddress + 0x04, 0x00); // 0x00:normal memBlock 0xff:regidentProc memBlock
+        //mem.PokeL(startAddress + 0x04, startAddress + length);
+        //mem.PokeB(startAddress + 0x04, 0x00); // 0x00:normal memBlock 0xff:regidentProc memBlock
         mem.pokeL(startAddress + 0x04, processID);
         mem.pokeL(startAddress + 0x08, length);
-        mem.pokeL(startAddress + 0x08, 0xb0_0000); // startAddress + PSPSize + progSize); // てけとー (for lzz.r)
+        mem.pokeL(startAddress + 0x08, 0xb0_0000); // startAddress + PSPSize + progSize); // lax (for lzz.r)
         mem.pokeL(startAddress + 0x0c, 0); // nextProcPSP);
 
         if (beforePSP != 0) {
@@ -331,9 +331,9 @@ public class NiseHuman {
         // unuse 0x64
         mem.pokeL(startAddress + 0x68, 0); // c Proc. PSPAddress(0: none)
         // unuse 0x6c - 0x7f
-        mem.pokeB(startAddress + 0x80, (byte) 'C'); // Procの存在するドライブ
-        mem.pokeB(startAddress + 0x81, (byte) ':'); // Procの存在するドライブ
-        // Procのパス  0x82 - (max: 0xff)
+        mem.pokeB(startAddress + 0x80, (byte) 'C'); // Drive where Proc exists
+        mem.pokeB(startAddress + 0x81, (byte) ':'); // Drive where Proc exists
+        // Proc Path  0x82 - (max: 0xff)
 
     }
 
@@ -406,7 +406,7 @@ public class NiseHuman {
         }
         text = text.replace("{", "{{");
         text = text.replace("}", "}}");
-        logger.log(Level.INFO, text); // 通常のコンソール出力
+        System.out.print(text); // Normal console output
     }
 
     private void drvctrl() {
@@ -421,8 +421,8 @@ public class NiseHuman {
             // throw new UnsupportedOperationException();
         }
 
-        // 無条件で準備万端
-        // b1:メディア挿入
+        // Unconditionally ready
+        // b1: Media insertion
         reg.getD()[0] = 0b0000_0010;
     }
 
@@ -439,12 +439,12 @@ public class NiseHuman {
             msg.add(b);
             cnt++;
         } while (true);
-        if (consoleTextBuf.size() > 0) {
+        if (!consoleTextBuf.isEmpty()) {
             logger.log(Level.INFO, new String(ByteUtil.toByteArray(consoleTextBuf), charset));
             consoleTextBuf.clear();
         }
         String text = new String(ByteUtil.toByteArray(msg), charset);
-        logger.log(Level.INFO, text); // 通常のコンソール出力
+        System.out.print(text); // Normal console output
     }
 
     private void super_() {
@@ -523,11 +523,11 @@ public class NiseHuman {
             String filename = Path.getFileNameWithoutExtension(fn);
             String extension = Path.getExtension(fn);
 
-            // ドライブレター(dummy)
+            // Drive Letter (dummy)
             mem.pokeB(buffer + 0, (byte) path.charAt(0));
             mem.pokeB(buffer + 1, (byte) path.charAt(1));
 
-            // パスネーム MAX:64byte + endMark:$00
+            // Pathname MAX:64byte + endMark:$00
             cnt = -2;
             for (char c : path.toCharArray()) {
                 if (cnt < 0) {
@@ -540,7 +540,7 @@ public class NiseHuman {
             }
             mem.pokeB(buffer + 2 + cnt, (byte) 0x00);
 
-            // ファイルネーム MAX:18byte + endMark:$00
+            // File Name MAX:18byte + endMark:$00
             cnt = 0;
             for (char c : filename.toCharArray()) {
                 mem.pokeB(buffer + 67 + cnt, (byte) c);
@@ -549,7 +549,7 @@ public class NiseHuman {
             }
             mem.pokeB(buffer + 67 + cnt, (byte) 0x00);
 
-            // 拡張子 MAX:4byte + endMark:$00
+            // Extension MAX:4byte + endMark:$00
             cnt = 0;
             for (char c : extension.toCharArray()) {
                 mem.pokeB(buffer + 86 + cnt, (byte) c);
@@ -558,7 +558,7 @@ public class NiseHuman {
             }
             mem.pokeB(buffer + 86 + cnt, (byte) 0x00);
 
-            reg.getD()[0] = 0; // ワイルドカード指定なし
+            reg.getD()[0] = 0; // No wildcard specified
         } catch (Exception e) {
             reg.getD()[0] = -1; // error
         }
@@ -584,11 +584,11 @@ public class NiseHuman {
         reg.getD()[0] = -1;
 
         if (atr != 0x20) {
-            // 読み込みのみサポート失敗
+            // Read-only support failure
             return;
         }
 
-        // 空いているファイル情報を見つける
+        // Find free file information
         fileHandle = -1;
         for (int i = 0; i < fi.length; i++) {
             if (fi[i] == null) fi[i] = new FileIni();
@@ -644,11 +644,11 @@ public class NiseHuman {
         reg.getD()[0] = -1;
 
         if (mode != 0 && mode != 1) {
-            // 読み込みのみサポート失敗
+            // Read-only support failure
             return;
         }
 
-        // 空いているファイル情報を見つける
+        // Find free file information
         fileHandle = -1;
         for (int i = 0; i < fi.length; i++) {
             if (fi[i] == null) fi[i] = new FileIni();
@@ -801,7 +801,7 @@ public class NiseHuman {
         logger.log(Level.TRACE, "Filename:[%s]", fn);
         String physicalFn = getPhysicalFn(fn);
 
-        reg.getD()[0] = 0x0000_0000; // 無条件に成功
+        reg.getD()[0] = 0x0000_0000; // Unconditional success
     }
 
     private void seek() {
@@ -842,8 +842,8 @@ public class NiseHuman {
         int ptr = memMng.malloc(byteSize + 16);
 
         if (ptr < 0) {
-            reg.getD()[0] = 0x8100_0000 + byteSize + 16; // 確保できない
-            reg.getD()[0] = 0x8200_0000; // 待ったく確保できない
+            reg.getD()[0] = 0x8100_0000 + byteSize + 16; // Unable to secure
+            reg.getD()[0] = 0x8200_0000; // Not at all secure
             return;
         }
 
@@ -854,7 +854,7 @@ public class NiseHuman {
         logger.log(Level.TRACE, "<NiseHuman>dos call $FF49 mfree");
         int memPtr = mem.peekL(reg.getA().get(7) + 0);
 
-        int ret = memMng.Mfree(memPtr - 16);
+        int ret = memMng.mfree(memPtr - 16);
 
         reg.getD()[0] = ret;
     }
@@ -866,8 +866,8 @@ public class NiseHuman {
         boolean ret = memMng.Change(newPtr, newLen);
 
         if (!ret) {
-            reg.getD()[0] = 0x8100_0000 + newLen; // 確保できない
-            reg.getD()[0] = 0x8200_0000; // 待ったく確保できない
+            reg.getD()[0] = 0x8100_0000 + newLen; // Unable to secure
+            reg.getD()[0] = 0x8200_0000; // Not at all secure
             return;
         }
 
@@ -904,12 +904,12 @@ public class NiseHuman {
             case 0:
                 logger.log(Level.TRACE, "<NiseHuman>in:  md:0 fil:%s op:%s p2:%08x ", fn, op, p2);
                 if (!fn.equalsIgnoreCase("ZMC")) {
-                    throw new UnsupportedOperationException(); // ZMC以外受け付けない!
+                    throw new UnsupportedOperationException(); // We do not accept anything other than ZMC!
                 }
 
                 // TBD
-                reg.getD()[0] = 0x0000_0000; // プロセス終了コード
-                reg.getD()[1] = 0x0000_0000; // エラーコード
+                reg.getD()[0] = 0x0000_0000; // Process Exit Codes
+                reg.getD()[1] = 0x0000_0000; // Error Codes
 
                 break;
             case 2:
@@ -1005,14 +1005,14 @@ public class NiseHuman {
             for (int i = 0; i < 23; i++)
                 mem.pokeB(filBuf + 30 + i, (byte) 0x00); // PACKEDNAME
 
-            reg.getD()[0] = 0x0000_0000; // 負の場合はエラー
+            reg.getD()[0] = 0x0000_0000; // If negative, it is an error.
         }
     }
 
     private void getPsp() {
         logger.log(Level.TRACE, "<NiseHuman>dos call $FF51 getpsp");
         // reg.getD()[0] = (int)(currentProc.startAddress - 0xf0);
-        reg.getD()[0] = beforePSP + 0x10; // 環境変数のアドレス
+        reg.getD()[0] = beforePSP + 0x10; // Address of the environment variable
     }
 
     private void fileDate() {
@@ -1021,11 +1021,11 @@ public class NiseHuman {
         int datetime = mem.peekL(reg.getA().get(7) + 2);
 
         if (datetime == 0) {
-            // 日付時刻の読み出し
+            // Reading the date and time
             reg.setDl(0, fi[fileNo].datetime);
             return;
         } else {
-            // 日付時刻の設定
+            // Date and time settings
             fi[fileNo].datetime = datetime;
         }
 
@@ -1051,10 +1051,10 @@ public class NiseHuman {
         String fn = new String(ByteUtil.toByteArray(msg), charset);
         logger.log(Level.TRACE, "SRC Filename:[%s] Atr:%04x".formatted(fn, atr & 0xffff));
 
-        // ???? を数字に置き換え、指定パスに存在しないファイル名であることを確認する
+        // Replace ???? with numbers and check that the file name does not exist in the specified path.
         // TBD
 
-        // 空いているファイル情報を見つける
+        // Find free file information
         fileHandle = -1;
         for (int i = 0; i < fi.length; i++) {
             if (fi[i] != null) continue;
@@ -1085,8 +1085,8 @@ public class NiseHuman {
         int ptr = memMng.malloc(len + 16);
 
         if (ptr < 0) {
-            reg.getD()[0] = 0x8100_0000 + len + 16; // 確保できない
-            reg.getD()[0] = 0x8200_0000; // 待ったく確保できない
+            reg.getD()[0] = 0x8100_0000 + len + 16; // Unable to secure
+            reg.getD()[0] = 0x8200_0000; //Not at all secure
             return;
         }
 
@@ -1097,7 +1097,7 @@ public class NiseHuman {
         logger.log(Level.TRACE, "<NiseHuman>dos call $FFAE s_mfree");
         int memPtr = mem.peekL(reg.getA().get(7) + 0);
 
-        int ret = memMng.Mfree(memPtr - 16);
+        int ret = memMng.mfree(memPtr - 16);
 
         reg.getD()[0] = ret;
     }
@@ -1124,7 +1124,7 @@ public class NiseHuman {
                 throw new UnsupportedOperationException();
         }
 
-        reg.getD()[0] = 0x0000_0000; // 0:読み書き可能 1,2,-1:エラー
+        reg.getD()[0] = 0x0000_0000; // 0: Read/write possible 1,2,-1: Error
     }
 
     private void ltos() {

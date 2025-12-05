@@ -7,21 +7,20 @@ import java.util.List;
 import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.ndp.Ndp;
 import mdplayer.driver.zms.Zms;
-import mdplayer.plugin.NDPPlugin;
 import mdplayer.plugin.Plugin;
+import mdplayer.plugin.ZMSPlugin;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
 
 /**
- * ZMD (X68000) FileFormat.
+ * ZMS (X68000) FileFormat.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-07-11 nsano initial version <br>
  */
-public class ZMDFileFormat extends BaseFileFormat {
+public class ZMSFileFormat extends BaseFileFormat {
 
     @Override
     public String[] getExtensions() {
@@ -73,6 +72,6 @@ public class ZMDFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return Plugin.getPlugin(NDPPlugin.class);
+        return Plugin.getPlugin(ZMSPlugin.class);
     }
 }

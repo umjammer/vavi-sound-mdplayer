@@ -114,7 +114,7 @@ public class RCP extends BaseDriver {
 
     private final Tick tick = new Tick();
 
-    public List<Tuple<String, byte[]>> ExtendFile = null;
+    public List<Tuple<String, byte[]>> extendFile = null;
 
     /**
      *
@@ -226,7 +226,6 @@ public class RCP extends BaseDriver {
 
     @Override
     public void processOneFrame() {
-
         try {
             vstDelta++;
             vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
@@ -238,7 +237,7 @@ public class RCP extends BaseDriver {
                     vgmFrameCounter++;
                 }
             }
-            // Stopped = !IsPlaying();
+            //stopped = !isPlaying();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -621,10 +620,9 @@ public class RCP extends BaseDriver {
                 int ofsMea;
                 if (isG36) {
                     ofsMea = (evt.getMIDIMessages()[0][0] & 0xff) + (evt.getMIDIMessages()[0][2] & 0xff) * 0x100;
-                    // if (trkLen == 36)
-                    // {
+                    //if (trkLen == 36) {
                     //    ofsMea = ofsMea * 6 - 242;
-                    // }
+                    //}
                 } else {
                     ofsMea = (evt.getMIDIMessages()[0][0] & 0xff) + (evt.getMIDIMessages()[0][1] & 3) * 0x100;
                 }
@@ -701,8 +699,8 @@ public class RCP extends BaseDriver {
         case 0x98: // CH Exclusive
             pt += skipPtr;
             ex = new ArrayList<>();
-            ex.add((byte) 0xF0);
             while (ebs[pt] == 0xf7) {
+            ex.add((byte) 0xf0);
                 if (isG36) {
                     pt++;
                     ex.add(ebs[pt++]);
@@ -762,7 +760,7 @@ public class RCP extends BaseDriver {
                     pk[1],
                     MIDISpEventType.values()[pk[0]],
                     new byte[][] {
-                            new byte[] {(byte) pk[2], (byte) pk[3]}
+                            {(byte) pk[2], (byte) pk[3]}
                     });
             pt += skipPtr;
             break;
@@ -772,8 +770,8 @@ public class RCP extends BaseDriver {
                     pk[1],
                     MIDISpEventType.BankProgram,
                     new byte[][] {
-                            new byte[] {(byte) MIDIEventType.ProgramChange.ordinal(), (byte) pk[2]},
-                            new byte[] {(byte) MIDIEventType.ControlChange.ordinal(), 0x00, (byte) pk[3]}
+                            {(byte) MIDIEventType.ProgramChange.ordinal(), (byte) pk[2]},
+                            {(byte) MIDIEventType.ControlChange.ordinal(), 0x00, (byte) pk[3]}
                     });
             pt += skipPtr;
             break;
@@ -783,7 +781,7 @@ public class RCP extends BaseDriver {
                     pk[1],
                     MIDISpEventType.KeyScan,
                     new byte[][] {
-                            new byte[] {(byte) pk[2]}
+                            {(byte) pk[2]}
                     });
             pt += skipPtr;
             break;
@@ -793,7 +791,7 @@ public class RCP extends BaseDriver {
                     pk[1],
                     MIDISpEventType.MIDICh,
                     new byte[][] {
-                            new byte[] {(byte) pk[2], (byte) pk[3]}
+                            {(byte) pk[2], (byte) pk[3]}
                     });
             pt += skipPtr;
             break;
@@ -803,7 +801,7 @@ public class RCP extends BaseDriver {
                     pk[1],
                     MIDISpEventType.TempoChange,
                     new byte[][] {
-                            new byte[] {(byte) pk[2], (byte) pk[3]}
+                            {(byte) pk[2], (byte) pk[3]}
                     });
             pt += skipPtr;
             break;
@@ -857,7 +855,7 @@ public class RCP extends BaseDriver {
                     pEvt,
                     0,
                     MIDISpEventType.KeyChange,
-                    new byte[][] {new byte[] {(byte) pk[0]}}
+                    new byte[][] {{(byte) pk[0]}}
             );
             pt += skipPtr;
             break;
@@ -916,7 +914,7 @@ public class RCP extends BaseDriver {
                     pEvt,
                     0,
                     MIDISpEventType.LoopStart,
-                    new byte[][] {new byte[] {0}}
+                    new byte[][] {{0}}
             );
             pt += skipPtr;
             break;
@@ -926,14 +924,14 @@ public class RCP extends BaseDriver {
                         pEvt,
                         0,
                         MIDISpEventType.SameMeasure,
-                        new byte[][] {new byte[] {(byte) pk[1], (byte) (pk[3] & 0xff), (byte) (pk[3] / 0x100)}}
+                        new byte[][] {{(byte) pk[1], (byte) (pk[3] & 0xff), (byte) (pk[3] / 0x100)}}
                 );
             } else {
                 trkn.getPart().get(meaInd).insertSpEvent(
                         pEvt,
                         0,
                         MIDISpEventType.SameMeasure,
-                        new byte[][] {new byte[] {(byte) pk[1], (byte) pk[2], (byte) pk[3]}}
+                        new byte[][] {{(byte) pk[1], (byte) pk[2], (byte) pk[3]}}
                 );
             }
             pt += skipPtr;
@@ -953,7 +951,7 @@ public class RCP extends BaseDriver {
                     0,
                     MIDISpEventType.EndOfTrack,
                     new byte[][] {
-                            new byte[] {(byte) pk[1], (byte) pk[2], (byte) pk[3]}
+                            {(byte) pk[1], (byte) pk[2], (byte) pk[3]}
                     }
             );
             pt += skipPtr;
@@ -1038,7 +1036,6 @@ public class RCP extends BaseDriver {
         //MIDIClock.Start();
     }
 
-
     private void oneFrameMain() {
         try {
 
@@ -1079,7 +1076,6 @@ public class RCP extends BaseDriver {
             }
 
             oneSyncTime = 60.0 / nowTempo / timeBase;
-
         }
 
         boolean endMark = true;
@@ -1224,7 +1220,7 @@ public class RCP extends BaseDriver {
     private void sendEvent(MIDITrack trk, MIDIEvent eve) {
         if (trk.getOutDeviceNumber() == null) return;
         if (trk.getOutUserDeviceNumber() == null) return;
-        // if (!Config.MIDIOutDeviceList[(int)trk.OutUserDeviceNumber].DevAlive) return;
+        //if (!Config.MIDIOutDeviceList[(int)trk.OutUserDeviceNumber].DevAlive) return;
         if (eve.getEventType() == MIDIEventType.NoteON && trk.getMute()) return;
 
         eventFunc[eve.getEventType().v].accept(trk, eve);
@@ -1784,7 +1780,7 @@ public class RCP extends BaseDriver {
 
     private void getGSD1Buf(List<CtlSysex> dBuf) {
         byte[] buf = null;
-        for (Tuple<String, byte[]> trg : ExtendFile) {
+        for (Tuple<String, byte[]> trg : extendFile) {
             if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
                 buf = trg.getItem2();
                 break;
@@ -1795,7 +1791,7 @@ public class RCP extends BaseDriver {
 
     private void getGSD2Buf(List<CtlSysex> DBuf) {
         byte[] buf = null;
-        for (Tuple<String, byte[]> trg : ExtendFile) {
+        for (Tuple<String, byte[]> trg : extendFile) {
             if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
                 buf = trg.getItem2();
             }
@@ -1896,22 +1892,22 @@ public class RCP extends BaseDriver {
         makeGSDBufPtn_3(dBuf, buf, adr, 0x10);
     }
 
-    private void makeGSDBufPtn_0(List<CtlSysex> DBuf, byte[] buf, int adr, byte ch) {
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x00, buf[adr + 0x00]})); // Bank mm
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x20, 0})); // Bank ll
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xc0 + ch), buf[adr + 0x01]})); // Program Change
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x07, buf[adr + 0x19]})); // Volume
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x65, 0})); // RPN PITCH BEND
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x64, 0})); //
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x06, 2})); // ?
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x26, 0})); // ?
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x5b, buf[adr + 0x22]})); // Reverb Send Level
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x5d, buf[adr + 0x21]})); // Chorus Send Level
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x0a, buf[adr + 0x1c]})); // Panpot
+    private void makeGSDBufPtn_0(List<CtlSysex> dBuf, byte[] buf, int adr, byte ch) {
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x00, buf[adr + 0x00]})); // Bank mm
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x20, 0})); // Bank ll
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xc0 + ch), buf[adr + 0x01]})); // Program Change
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x07, buf[adr + 0x19]})); // Volume
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x65, 0})); // RPN PITCH BEND
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x64, 0})); //
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x06, 2})); // ?
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x26, 0})); // ?
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x5b, buf[adr + 0x22]})); // Reverb Send Level
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x5d, buf[adr + 0x21]})); // Chorus Send Level
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x0a, buf[adr + 0x1c]})); // Panpot
     }
 
-    private void makeGSDBufPtn_1(List<CtlSysex> DBuf, byte[] buf, int adr, byte iAdrMm, byte iAdrLl) {
-        DBuf.add(new CtlSysex(5, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte) 0x83,
+    private void makeGSDBufPtn_1(List<CtlSysex> dBuf, byte[] buf, int adr, byte iAdrMm, byte iAdrLl) {
+        dBuf.add(new CtlSysex(5, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte) 0x83,
                 0x48, iAdrMm, iAdrLl,
                 (byte) (buf[adr + 0x00] >> 4), (byte) (buf[adr + 0x00] & 0xf), // BANK(LSB) 0 1
                 (byte) (buf[adr + 0x01] >> 4), (byte) (buf[adr + 0x01] & 0xf), // PROGRAM CHANGE 2 3
@@ -1987,8 +1983,8 @@ public class RCP extends BaseDriver {
                 (byte) 0x84})));
     }
 
-    private void makeGSDBufPtn_2(List<CtlSysex> DBuf, byte[] buf, int adr, byte iAdrMm, byte iAdrLl) {
-        DBuf.add(new CtlSysex(4, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte) 0x83,
+    private void makeGSDBufPtn_2(List<CtlSysex> dBuf, byte[] buf, int adr, byte iAdrMm, byte iAdrLl) {
+        dBuf.add(new CtlSysex(4, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte) 0x83,
                 0x48, iAdrMm, iAdrLl,
                 (byte) (buf[adr + 0x4d] >> 4), (byte) (buf[adr + 0x4d] & 0xf), // CAf  PITCH CONTROL      0,1
                 (byte) (buf[adr + 0x4e] >> 4), (byte) (buf[adr + 0x4e] & 0xf), // CAf  TVF CUTOFF CONTROL 2,3
@@ -2130,7 +2126,7 @@ public class RCP extends BaseDriver {
     private void getCM6Buf(List<CtlSysex> dBuf) {
 
         byte[] buf = null;
-        for (Tuple<String, byte[]> trg : ExtendFile) {
+        for (Tuple<String, byte[]> trg : extendFile) {
             if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".CM6")) {
                 buf = trg.getItem2();
             }
@@ -2234,27 +2230,26 @@ public class RCP extends BaseDriver {
 
                 // Generate Reset
                 switch (infos[i].beforeSendType) {
-                case 0:// None
+                case 0: // None
                     break;
-                case 1:// GM Reset
+                case 1: // GM Reset
                     getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getGMReset());
                     break;
-                case 2:// XG Reset
+                case 2: // XG Reset
                     getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getXGReset());
                     break;
-                case 3:// GS Reset
+                case 3: // GS Reset
                     getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getGSReset());
                     break;
-                case 4:// Custom
+                case 4: // Custom
                     getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getCustom());
                     break;
                 }
 
                 // If the file path is set, the process to read the control file is performed.
-                if (ExtendFile != null) {
+                if (extendFile != null) {
                     getControlFile(beforeSend[i], infos[i].type);
                 }
-
             }
 
             return true;
@@ -2285,22 +2280,22 @@ public class RCP extends BaseDriver {
 
         // GM / XG / GS / LA / GS(SC - 55_1) / GS(SC - 55_2)
         switch (instType) {
-        case 0:// GM
-        case 1:// XG
-        case 2:// GS
+        case 0: // GM
+        case 1: // XG
+        case 2: // GS
             // no Control
             break;
-        case 3:// LA
+        case 3: // LA
             if (!controlFileCM6.isEmpty()) {
                 getCM6Buf(buf);
             }
             break;
-        case 4:// GS(SC - 55_1)
+        case 4: // GS(SC - 55_1)
             if (!controlFileGSD.isEmpty()) {
                 getGSD1Buf(buf);
             }
             break;
-        case 5:// GS(SC - 55_2)
+        case 5: // GS(SC - 55_2)
             if (!controlFileGSD2.isEmpty()) {
                 getGSD2Buf(buf);
             }

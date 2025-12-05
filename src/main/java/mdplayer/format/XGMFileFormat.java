@@ -8,6 +8,7 @@ import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Xgm;
+import mdplayer.driver.Xgm2;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.XGMPlugin;
 import mdplayer.properties.Resources;
@@ -30,7 +31,12 @@ public class XGMFileFormat extends BaseFileFormat {
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
-        Vgm.Gd3 gd3 = new Xgm().getGD3Info(buf);
+        Vgm.Gd3 gd3;
+        if (!Xgm2.checkXGM2(buf)) {
+            gd3 = new Xgm().getGD3Info(buf, 0);
+        } else {
+            gd3 = new Xgm2().getGD3Info(buf, 0);
+        }
         music.title = gd3.trackName;
         music.titleJ = gd3.trackNameJ;
         music.game = gd3.gameName;
@@ -54,7 +60,12 @@ public class XGMFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        Vgm.Gd3 gd3 = new Xgm().getGD3Info(buf);
+        Vgm.Gd3 gd3;
+        if (!Xgm2.checkXGM2(buf)) {
+            gd3 = new Xgm().getGD3Info(buf, 0);
+        } else {
+            gd3 = new Xgm2().getGD3Info(buf, 0);
+        }
         music.title = gd3.trackName;
         music.titleJ = gd3.trackNameJ;
         music.game = gd3.gameName;

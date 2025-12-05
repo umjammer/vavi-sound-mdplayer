@@ -56,23 +56,23 @@ public class Nise68 {
         mem.pokeL(0x2b0, IOCSCallAddress);
 
         if (isVer2) {
-            // ZMUSIC v2 向け
+            // for ZMUSIC v2
             mem.pokeL(0x10c, 0xfe_0004);
             mem.pokeL(0x7c0, 0xfe_0004);
             mem.pokeL(0x1a8, 0xfe_0004);
             mem.pokeL(0x088, NiseHuman.mpcmPtr);
             mem.pokeL(NiseHuman.mpcmPtr - 0x08, 0x5043_4d00);
         } else {
-            // MPCM関連
-            mem.pokeL(0x84, NiseHuman.mpcmPtr); // Trapの位置が書いてあるんかな？
+            // MPCM related
+            mem.pokeL(0x84, NiseHuman.mpcmPtr); // Does it say where the traps are located?
             mem.pokeL(NiseHuman.mpcmPtr - 0x8, 0x4d50_434d); // 'MPCM'
         }
 
         mem.hookList.add(new MemHook(0xe8_8001, 0xe8_8001, this::hkVsync, null)); // vsync?
         mem.hookList.add(new MemHook(0xe9_0001, 0xe9_0003, this::hkOPMr, this::hkOPMw)); // opm
         mem.hookList.add(new MemHook(0xea_fa00, 0xea_fa1f, this::hkCZ6BM1fr, this::hkCZ6BM1fw)); // 1st/2nd CZ-6BM1(MIDI)
-        //mem.hookList.add(new memhook(0xe9a001, 0xe9a001, hkDummy, null)); // midiwait向け
-        mem.hookList.add(new MemHook(0xe9_8005, 0xe9_8007, this::hkSCC_Ar, this::hkSCC_Aw)); // SCC(シリアルコミュニケーションコントローラ) ChA(RS-232C)
+        //mem.hookList.add(new memhook(0xe9a001, 0xe9a001, hkDummy, null)); // for midiwait
+        mem.hookList.add(new MemHook(0xe9_8005, 0xe9_8007, this::hkSCC_Ar, this::hkSCC_Aw)); // SCC(Serial Communication Controller) ChA(RS-232C)
 
         step = 0;
         run = 0;
@@ -113,9 +113,9 @@ public class Nise68 {
 
             if (reg.pc == 0x0002_2968) {
             }
-            if (reg.pc == 0x000_0002_2982) { // コメント読みこみ完了
+            if (reg.pc == 0x000_0002_2982) { // Comments loaded
             }
-            //if (reg.pc == 0x000_0002_22e2) { // (で始まるコマンドの処理へ
+            //if (reg.pc == 0x000_0002_22e2) { // Processing commands beginning with '('
             //}
 
             //if ((reg.pc & 0xffff_fff0) == reg.pc) {
@@ -178,11 +178,11 @@ public class Nise68 {
                 ;
             }
 
-            //// コマンド毎のデバッグ向け
-            //if (run > 0 && reg.pc == 0x0003_07ba) { // D7->コマンド番号
+            //// For command-by-command debugging
+            //if (run > 0 && reg.pc == 0x0003_07ba) { // D7 -> Command number
             //    cmd++;
             //}
-            //if (cmd >= 14 && cmd != ocmd) { // D7->コマンド番号
+            //if (cmd >= 14 && cmd != ocmd) { // D7 -> Command number
             //    ;
             //    ocmd = cmd;
             //}
@@ -243,11 +243,11 @@ public class Nise68 {
             //    ;
             //}
 
-            //// コマンド毎のデバッグ向け
-            // if (run > 0 && reg.PC == 0x0003_07ba) { // D7->コマンド番号
+            //// For command-by-command debugging
+            // if (run > 0 && reg.PC == 0x0003_07ba) { D7 -> Command number
             //    cmd++;
             //}
-            //if (cmd >= 14 && cmd != ocmd) { // D7->コマンド番号
+            //if (cmd >= 14 && cmd != ocmd) { D7 -> Command number
             //    ;
             //    ocmd = cmd;
             //}

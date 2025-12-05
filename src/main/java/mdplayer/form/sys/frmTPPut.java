@@ -330,7 +330,7 @@ public class frmTPPut extends JFrame {
         this.btApply.setName("btApply");
         this.btApply.setPreferredSize(new Dimension(75, 23));
         // this.btApply.TabIndex = 5
-        this.btApply.setText("適用");
+        this.btApply.setText("Apply");
         // this.btApply.UseVisualStyl.setBackground(true);
         this.btApply.addActionListener(this::btApply_Click);
         //

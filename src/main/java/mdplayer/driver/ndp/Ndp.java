@@ -121,20 +121,20 @@ logger.log(Level.ERROR, e.getMessage(), e);
     }
 
     private void interrupt() {
-        //logger.log(Level.TRACE, "\r\n INTRPT(C009H)");
+        //logger.log(Level.TRACE, " INTRPT(C009H)");
         z80.getRegisters().setPC((short) 0xc009);
         z80.getRegisters().setSP((short) 0xf380);
         z80.continue_();
-        //DebugRegisters(z80);
+        //debugRegisters(z80);
 
-        //logger.log(Level.TRACE, "\r\n RDSTAT(C033H)");
+        //logger.log(Level.TRACE, " RDSTAT(C033H)");
         z80.getRegisters().setPC((short) 0xc033);
         z80.getRegisters().setSP((short) 0xf380);
         z80.continue_();
         byte playFG = (byte) (z80.getRegisters().getA() & 0xf);
         if (playFG == 0x0) stopped = true;
 
-        //logger.log(Level.TRACE, "\r\n RDENDT(C036H)");
+        //logger.log(Level.TRACE, " RDENDT(C036H)");
         z80.getRegisters().setPC((short) 0xc036);
         z80.getRegisters().setSP((short) 0xf380);
         z80.continue_();
@@ -146,7 +146,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
         );
         if (playFG == 0xf) stopped = true;
 
-        //logger.log(Level.TRACE, "\r\n RDLOOP(C039H)");
+        //logger.log(Level.TRACE, " RDLOOP(C039H)");
         z80.getRegisters().setPC((short) 0xc039);
         z80.getRegisters().setSP((short) 0xf380);
         z80.continue_();
@@ -174,8 +174,8 @@ logger.log(Level.ERROR, e.getMessage(), e);
 
         mapper = new Mapper((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1], (MsxMemory) z80.getMemory());
 
-        //Stopwatch sw = new Stopwatch();
-        //sw.Start();
+        //StopWatch sw = new StopWatch();
+        //sw.start();
 
         z80.reset();
 
@@ -201,7 +201,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
         z80.continue_();
         //logger.log(Level.TRACE, "MPLAY2 IsSuccess? RegC=%02x".formatted(z80.getRegisters().getC() & 0xff));
         //if (z80.getRegisters().getCF().intValue() == 0x01) {
-        //    DebugRegisters(z80);
+        //    debugRegisters(z80);
         //    throw new Exception("MPLAY2 Fail");
         //}
 

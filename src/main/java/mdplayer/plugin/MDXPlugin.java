@@ -71,7 +71,7 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
         chip.samplingRate = chip.clock / 64;
         put(Ym2151Chip.class, chip);
 
-        X68kYm2151Inst mdxPCM_V = Instrument.getInstrument(X68kYm2151Inst.class);
+        X68kYm2151Inst mdxPCM_V = Instrument.getInstrument(X68kYm2151Inst.class); // virtual
         mdxPCM_V.soundIocs[0] = new SoundIocs(mdxPCM_V.chips[0]);
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -81,8 +81,10 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
         chip.samplingRate = setting.getOutputDevice().getSampleRate(); // TODO vavi
         put(Ym2151Chip.class, chip);
 
-        X68kYm2151Inst mdxPCM_R = Instrument.getInstrument(X68kYm2151Inst.class);
+        X68kYm2151Inst mdxPCM_R = Instrument.getInstrument(X68kYm2151Inst.class); // real
         mdxPCM_R.soundIocs[0] = new SoundIocs(mdxPCM_R.chips[0]);
+        X68kYm2151Inst mdxPCM_P = Instrument.getInstrument(X68kYm2151Inst.class); // piano roll
+        mdxPCM_P.soundIocs[0] = new SoundIocs(mdxPCM_P.chips[0]);
 
         Pcm8PPInst pcm8pp = Instrument.getInstrument(Pcm8PPInst.class);
         ((MXDRV) audio.driverVirtual).pcm8type = 0;
@@ -95,7 +97,7 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
             chip.volume = 0;
             chip.clock = 4_000_000;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.option = new Object[] { setting.getMxDrv().pcm8ppsOption};
+            chip.option = new Object[] {setting.getMxDrv().pcm8ppsOption};
             put(Pcm8Chip.class, chip);
             ((MXDRV) audio.driverVirtual).pcm8type = 1;
         }

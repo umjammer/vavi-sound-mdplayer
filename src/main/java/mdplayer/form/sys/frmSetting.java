@@ -104,7 +104,7 @@ public class frmSetting extends JDialog {
     public void init() {
 
         this.labelProductName.setText(getAssemblyProduct());
-        this.labelVersion.setText("バージョン %s".formatted(getAssemblyVersion()));
+        this.labelVersion.setText("version %s".formatted(getAssemblyVersion()));
         this.labelCopyright.setText(getAssemblyCopyright());
         this.labelCompanyName.setText(getAssemblyCompany());
         this.textBoxDescription.setText(Resources.getCntDescription());
@@ -113,7 +113,7 @@ public class frmSetting extends JDialog {
         this.cmbWaitTime.setSelectedIndex(0);
         cbUnuseRealChip.setSelected(setting.getUnuseRealChip());
 
-        // Comboboxへデバイスを列挙
+        // Enumerate devices in the Combobox
         Mixer.Info[] mixersInfo = AudioSystem.getMixerInfo();
         for (Mixer.Info mixerInfo : mixersInfo) {
             Mixer mixer = AudioSystem.getMixer(mixerInfo);
@@ -1911,13 +1911,13 @@ public class frmSetting extends JDialog {
     }
 
     /**
-     * 入力値チェック
+     * Input value check
      */
     private boolean checkSetting() {
         HashSet<String> hsSCCIs = new HashSet<>();
         boolean ret = false;
 
-        // SCCI重複設定チェック
+        // SCCI duplicate setting check
 
         if (ucSI.rbYM2612P_SCCI.isSelected())
             if (ucSI.cmbYM2612P_SCCI.getSelectedItem() != null)
@@ -2161,7 +2161,7 @@ public class frmSetting extends JDialog {
     private void btnDataPath_Click(ActionEvent ev) {
         JFileChooser fbd = new JFileChooser();
         fbd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fbd.setDialogTitle("フォルダーを指定してください。");
+        fbd.setDialogTitle("Please specify a folder.");
 
         if (fbd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
@@ -2173,7 +2173,7 @@ public class frmSetting extends JDialog {
     private void btnSearchPath_Click(ActionEvent ev) {
         JFileChooser fbd = new JFileChooser();
         fbd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fbd.setDialogTitle("フォルダーを指定してください。");
+        fbd.setDialogTitle("Please specify a folder.");
 
         if (fbd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
@@ -2194,7 +2194,7 @@ public class frmSetting extends JDialog {
     private void btnDumpPath_Click(ActionEvent ev) {
         JFileChooser fbd = new JFileChooser();
         fbd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fbd.setDialogTitle("フォルダーを指定してください。");
+        fbd.setDialogTitle("Please specify a folder.");
 
         if (fbd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
@@ -2219,7 +2219,7 @@ public class frmSetting extends JDialog {
     private void btnMIDIOutputPath_Click(ActionEvent ev) {
         JFileChooser fbd = new JFileChooser();
         fbd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fbd.setDialogTitle("フォルダーを指定してください。");
+        fbd.setDialogTitle("Please specify a folder.");
 
         if (fbd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
@@ -2231,7 +2231,7 @@ public class frmSetting extends JDialog {
     private void btnWavPath_Click(ActionEvent ev) {
         JFileChooser fbd = new JFileChooser();
         fbd.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fbd.setDialogTitle("フォルダーを指定してください。");
+        fbd.setDialogTitle("Please specify a folder.");
 
         if (fbd.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;

@@ -59,7 +59,7 @@ public class NiseIOCS {
         if (cmdTbl[n] != null) {
             cmdTbl[n].run();
         } else {
-            throw new UnsupportedOperationException("IOCS 未実装!! [%04x]".formatted(n));
+            throw new UnsupportedOperationException("IOCS is not implemented!! [%04x]".formatted(n));
         }
     }
 
@@ -110,7 +110,7 @@ public class NiseIOCS {
 
         short settingNumber = reg.getDw(1);
 
-        reg.setDl(0, 0x0000_0000); // 以前の設定値を返す
+        reg.setDl(0, 0x0000_0000); // Returns the previous setting
     }
 
     private void _ADPCMOUT() {
@@ -157,7 +157,7 @@ public class NiseIOCS {
         reg.pc = mem.peekL(reg.getSSP());
         reg.setSSP(reg.getSSP() + 4);
 
-        // マウスの初期化
+        // Mouse initialization
     }
 
     private void _B_INTVCS() {

@@ -171,7 +171,7 @@ public class frmOKIM6295 extends frmBase {
                 return;
             }
 
-            //鍵盤
+            // keyboard
             if (py < 7 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;

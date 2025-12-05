@@ -20,6 +20,7 @@ public class Register286 {
     public short ip = 0;
     public short flag = (short) 0x8000;
 
+    // es: 0
     public short getES() {
         return sRegs[0];
     }
@@ -28,6 +29,7 @@ public class Register286 {
         sRegs[0] = value;
     }
 
+    // cs: 1
     public short getCS() {
         return sRegs[1];
     }
@@ -36,6 +38,7 @@ public class Register286 {
         sRegs[1] = value;
     }
 
+    // ss: 2
     public short getSS() {
         return sRegs[2];
     }
@@ -44,6 +47,9 @@ public class Register286 {
         sRegs[2] = value;
     }
 
+    // ----
+
+    // ds: 3
     public short getDS() {
         return sRegs[3];
     }
@@ -52,6 +58,7 @@ public class Register286 {
         sRegs[3] = value;
     }
 
+    // ax: 0
     public short getAX() {
         return eRegs[0];
     }
@@ -60,6 +67,7 @@ public class Register286 {
         eRegs[0] = value;
     }
 
+    // cx: 1
     public short getCX() {
         return eRegs[1];
     }
@@ -72,6 +80,7 @@ public class Register286 {
         eRegs[1] = value;
     }
 
+    // dx: 2
     public short getDX() {
         return eRegs[2];
     }
@@ -80,6 +89,7 @@ public class Register286 {
         eRegs[2] = value;
     }
 
+    // bx: 3
     public short getBX() {
         return eRegs[3];
     }
@@ -88,6 +98,7 @@ public class Register286 {
         eRegs[3] = value;
     }
 
+    // sp: 4
     public short getSP() {
         return eRegs[4];
     }
@@ -104,6 +115,7 @@ public class Register286 {
         eRegs[4] = value;
     }
 
+    // bp: 5
     public short getBP() {
         return eRegs[5];
     }
@@ -112,6 +124,7 @@ public class Register286 {
         eRegs[5] = value;
     }
 
+    // si: 6
     public short getSI() {
         return eRegs[6];
     }
@@ -124,6 +137,7 @@ public class Register286 {
         eRegs[6] = value;
     }
 
+    // di: 7
     public short getDI() {
         return eRegs[7];
     }
@@ -136,6 +150,9 @@ public class Register286 {
         eRegs[7] = value;
     }
 
+    // ----
+
+    //
     public byte getAL() {
         return (byte) eRegs[0];
     }
@@ -155,6 +172,7 @@ public class Register286 {
     }
 
     public short getCL() {
+    //
         return (byte) eRegs[1];
     }
 
@@ -172,6 +190,7 @@ public class Register286 {
         eRegs[1] |= (short) ((value & 0xff) << 8);
     }
 
+    //
     public byte getDL() {
         return (byte) eRegs[2];
     }
@@ -190,6 +209,7 @@ public class Register286 {
         eRegs[2] |= (short) ((value & 0xff) << 8);
     }
 
+    //
     public byte getBL() {
         return (byte) eRegs[3];
     }
@@ -207,6 +227,8 @@ public class Register286 {
         eRegs[3] &= (short) 0x00ff;
         eRegs[3] |= (short) ((value & 0xff) << 8);
     }
+
+    // ----
 
     public int getCS_IP() {
         return ((getCS() & 0xffff) << 4) + (ip & 0xffff);
@@ -231,6 +253,8 @@ public class Register286 {
     public int getSS_SP() {
         return ((getSS() & 0xffff) << 4) + (getSP() & 0xffff);
     }
+
+    // ----
 
     // CF bit0
     public boolean isCF() {
@@ -349,7 +373,7 @@ public class Register286 {
     }
 
     public void setCFw(int a) {
-        carryVal = a & 0x10000;
+        carryVal = a & 0x1_0000;
         setCF(carryVal != 0);
     }
 
@@ -365,7 +389,7 @@ public class Register286 {
         //    ? ((b > 0 && ans > a) || (b < 0 && ans < a))
         //    : ans > a;
 
-        overVal = (((b & 0xffff) ^ (a & 0xffff)) & ((b & 0xffff) ^ (ans & 0xffff)) & 0x8000);
+        overVal = ((b & 0xffff) ^ (a & 0xffff)) & ((b & 0xffff) ^ (ans & 0xffff)) & 0x8000;
         setOF(overVal != 0);
     }
 
@@ -373,7 +397,7 @@ public class Register286 {
         // OF = SF
         //    ? ((b > 0 && ans > a) || (b < 0 && ans < a))
         //    : ans > a;
-        overVal = (((b & 0xff) ^ (a & 0xff)) & ((b & 0xff) ^ (ans & 0xff)) & 0x80);
+        overVal = ((b & 0xff) ^ (a & 0xff)) & ((b & 0xff) ^ (ans & 0xff)) & 0x80;
         setOF(overVal != 0);
     }
 
@@ -381,14 +405,14 @@ public class Register286 {
         // OF = SF
         //    ? ((a >= 0 && ans < b) || (a < 0 && ans > b))
         //    : (ans < a || ans < b);
-        overVal = (((ans & 0xffff) ^ (a & 0xffff)) & ((ans & 0xffff) ^ (b & 0xffff)) & 0x8000);
+        overVal = ((ans & 0xffff) ^ (a & 0xffff)) & ((ans & 0xffff) ^ (b & 0xffff)) & 0x8000;
     }
 
     public void setOFbAdd(byte a, byte b, byte ans) {
         // OF = SF
         //    ? ((a >= 0 && ans < b) || (a < 0 && ans > b))
         //    : (ans < a || ans < b);
-        overVal = (((ans & 0xff) ^ (a & 0xff)) & ((ans & 0xff) ^ (b & 0xff)) & 0x80);
+        overVal = ((ans & 0xff) ^ (a & 0xff)) & ((ans & 0xff) ^ (b & 0xff)) & 0x80;
     }
 
     @Override
@@ -421,7 +445,7 @@ public class Register286 {
                     c++;
             }
 
-            parity_table[i] = ((c & 1) == 0);
+            parity_table[i] = (c & 1) == 0;
         }
     }
 

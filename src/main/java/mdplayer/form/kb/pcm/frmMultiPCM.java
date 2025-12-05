@@ -163,18 +163,16 @@ public class frmMultiPCM extends frmBase {
         //int clock = audio.clockMultiPCM;
 
         int n = 0;
-        //for (int i = 0; i < 12 * 8; i++)
-        //{
+        //for (int i = 0; i < 12 * 8; i++) {
         //    int a = (int)(
-        //        0x10000 //1sample進むのに必要なカウント数
+        //        0x10000 // Number of counts required to advance 1 sample
         //        * 8000.0
         //        * Tables.pcmMulTbl[i % 12 + 12]
         //        * Math.pow(2, (i / 12 - 3 + 2))
         //        / clock
         //        );
 
-        //    if (freq > a)
-        //    {
+        //    if (freq > a) {
         //        m = a;
         //        n = i;
         //    }
@@ -189,7 +187,7 @@ public class frmMultiPCM extends frmBase {
         for (int ch = 0; ch < 28; ch++) {
             int oct = ((multiPCMRegister.getSlot(ch).regs[3] >> 4) - 1) & 0xf;
             oct = ((oct & 0x8) != 0) ? (oct - 16) : oct;
-            oct = oct + 4; // 基音を o5 にしてます
+            oct = oct + 4; // The fundamental tone is o5.
             int pitch = ((multiPCMRegister.getSlot(ch).regs[3] & 0xf) << 6) | (multiPCMRegister.getSlot(ch).regs[2] >> 2);
 
             int nt = Math.max(Math.min(oct * 12 + pitch / 85, 7 * 12), 0);

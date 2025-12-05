@@ -32,10 +32,10 @@ public class NiseDos {
     private short paragraphsSizeSeg;
     private short freeBlockSeg;
     private static final int sysVarsStartAddress = 0x10100;
-    private static final int fcbStartAddress = 0x10200;
-    private static final int mcbStartAddress = 0x10300;
-    private static final int PSPStartAddress = 0x20000;
-    private static final int InDOSFLAGAdr = 0x11000;
+    private static final int fcbStartAddress = 0x1_0200;
+    private static final int mcbStartAddress = 0x1_0300;
+    private static final int pspStartAddress = 0x2_0000;
+    private static final int inDOSFLAGAdr = 0x1_1000;
 
     public static class FileStatus {
 
@@ -81,20 +81,20 @@ public class NiseDos {
 
         makeSysVars();
 
-        mem.pokeW(InDOSFLAGAdr, (short) 1); // 0: Can be used! 1: Resident programs cannot use system calls!!
+        mem.pokeW(inDOSFLAGAdr, (short) 1); // 0: Can be used! 1: Resident programs cannot use system calls!!
 
         // mem.PokeW(0xfd802, 0x2a27); // EPSON machine!!
         // mem.PokeB(0xfd804, 6); // EPSON PC-286VE
     }
 
-    public void loadAndExecuteFile(String filename, String option /* = "" */, int startSegment /* = PSPStartAddress >> 4 */) {
+    public void loadAndExecuteFile(String filename, String option /* = "" */, int startSegment /* = pspStartAddress >> 4 */) {
         logger.log(Level.INFO, "niseDOS>%s %s".formatted(filename, option));
 
         byte[] bin;
         try {
             bin = Files.readAllBytes(Path.of(filename));
         } catch (IOException e) {
-            throw new UnsupportedOperationException(e);
+            throw new IllegalArgumentException(e);
         }
         String fext = filename.substring(filename.lastIndexOf('.')).toUpperCase();
         loadRunner(bin, fext.equals(".COM"), option, startSegment);
@@ -122,16 +122,16 @@ public class NiseDos {
             if (cnt == 11) break;
         }
 
-        int PSPAdr = startSegment << 4;
+        int pspAdr = startSegment << 4;
 
         // MCB located just before the PSP
-        mem.pokeB(PSPAdr - 0x10 + 0, (byte) 'Z');
-        mem.pokeW(PSPAdr - 0x10 + 1, (short) (PSPStartAddress >> 4));
-        mem.pokeW(PSPAdr - 0x10 + 3, (short) 0xffff);
+        mem.pokeB(pspAdr - 0x10 + 0, (byte) 'Z');
+        mem.pokeW(pspAdr - 0x10 + 1, (short) (pspStartAddress >> 4));
+        mem.pokeW(pspAdr - 0x10 + 3, (short) 0xffff);
 
         // Environment variable segment 0x0100 -> real address 0x0_1000 (arbitrary)
         int envPtr = 0x0_1000;
-        mem.pokeW(PSPAdr + 0x2c, (short) (envPtr >> 4));
+        mem.pokeW(pspAdr + 0x2c, (short) (envPtr >> 4));
         byte[] env = {(byte) 'P', (byte) 'V', (byte) 'I', (byte) '=', (byte) '.', 0, 0, 1, 0};
         int p = 0;
         for (byte c : env) {
@@ -141,11 +141,11 @@ public class NiseDos {
 
     public void makeDummyMCB() {
         mem.pokeB(mcbStartAddress + 0x00, (byte) 'M'); // member of a MCB chain, (not last)
-        mem.pokeW(mcbStartAddress + 0x01, (short) (PSPStartAddress >> 4)); // free PSP segment address of MCB owner (Process Id)
+        mem.pokeW(mcbStartAddress + 0x01, (short) (pspStartAddress >> 4)); // free PSP segment address of MCB owner (Process Id)
         mem.pokeW(mcbStartAddress + 0x03, (short) 0);// The size of this mcb
         mem.pokeW(mcbStartAddress + 0x10, (short) (0x20cd - 1)); // apparently other than 0x20cd is needed
 
-        mem.pokeW(0x0_0000 + 0x00ba, (short) (PSPStartAddress >> 4));
+        mem.pokeW(0x0_0000 + 0x00ba, (short) (pspStartAddress >> 4));
 
         // Environment variable segment 0x0100 -> real address 0x0_1000 (arbitrary)
         int envPtr = mcbStartAddress + 0x10;
@@ -171,7 +171,7 @@ public class NiseDos {
                 break;
             case 0x21:
                 logger.log(Level.DEBUG, "<NiseDos>INT21h AH:$%02x".formatted(regs.getAH() & 0xff));
-                INT21();
+                int21();
                 break;
             case 0x2f:
                 logger.log(Level.DEBUG, "<NiseDos>INT2fh AX:$%04x".formatted(regs.getAX() & 0xff));
@@ -291,14 +291,14 @@ public class NiseDos {
             case 0x04:
                 logger.log(Level.DEBUG, "<NiseDos>  (98)KEY BOARD press check");
                 byte keyGroup = regs.getAL();
-                regs.setAH((short) 0x00); // Nothing is being pressed
+                regs.setAH((byte) 0x00); // Nothing is being pressed
                 break;
             default:
                 throw new UnsupportedOperationException("AH:$%02x".formatted(regs.getAH() & 0xff));
         }
     }
 
-    private void INT21() {
+    private void int21() {
         List<Byte> msg;
         String text;
         byte b = 0;
@@ -348,9 +348,9 @@ public class NiseDos {
                 programTerminate = true;
                 break;
             case 0x34:
-                logger.log(Level.DEBUG, "<NiseDos>  GET ADDRESS OF INDOS flag"); // https: // fd.lod.bz/rbil/interrup/dos_kernel/2134.html#2778
-                regs.setBX((short) (InDOSFLAGAdr & 0xf));
-                regs.setES((short) (InDOSFLAGAdr >> 4));
+                logger.log(Level.DEBUG, "<NiseDos>  GET ADDRESS OF INDOS flag"); // https://fd.lod.bz/rbil/interrup/dos_kernel/2134.html#2778
+                regs.setBX((short) (inDOSFLAGAdr & 0xf));
+                regs.setES((short) (inDOSFLAGAdr >> 4));
                 break;
             case 0x35:
                 logger.log(Level.DEBUG, "<NiseDos>  GET INTERRUPT VECTOR");
@@ -537,18 +537,18 @@ public class NiseDos {
                 logger.log(Level.DEBUG, "<NiseDos>  Allocate Memory AX(allocatedStartSeg)=%04x BX(paragraphs size)=%04x".formatted(regs.getBX() & 0xffff, regs.getAX() & 0xffff));
                 break;
             case 0x49:
-                logger.log(Level.DEBUG, "<NiseDos>  FREE MEMORY"); // https: // fd.lod.bz/rbil/interrup/dos_kernel/2149.html#sect-2975
+                logger.log(Level.DEBUG, "<NiseDos>  FREE MEMORY"); // https://fd.lod.bz/rbil/interrup/dos_kernel/2149.html#sect-2975
                 regs.setCF(false);
                 freeBlockSeg = regs.getES();
                 break;
             case 0x4A:
-                logger.log(Level.DEBUG, "<NiseDos>  RESIZE MEMORY BLOCK"); // https: // fd.lod.bz/rbil/interrup/dos_kernel/214a.html
+                logger.log(Level.DEBUG, "<NiseDos>  RESIZE MEMORY BLOCK"); // https://fd.lod.bz/rbil/interrup/dos_kernel/214a.html
                 regs.setCF(false);
                 paragraphsSize = regs.getBX();
                 paragraphsSizeSeg = regs.getES();
                 break;
             case 0x4c:
-                logger.log(Level.DEBUG, "<NiseDos>  TERMINATE WITH RETURN CODE"); // https: // fd.lod.bz/rbil/interrup/dos_kernel/214c.html#sect-3014
+                logger.log(Level.DEBUG, "<NiseDos>  TERMINATE WITH RETURN CODE"); // https://fd.lod.bz/rbil/interrup/dos_kernel/214c.html#sect-3014
                 returnCode = regs.getAL();
                 programTerminate = true;
                 break;
@@ -580,7 +580,7 @@ public class NiseDos {
         }
 
         if (regs.getAX() == 0x4300) {
-            regs.setAL((byte) 0x80); // XMS ドライバ有り
+            regs.setAL((byte) 0x80); // XMS driver available
             return;
         }
         if (regs.getAX() == 0x4310) {

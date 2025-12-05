@@ -110,73 +110,73 @@ public class frmVRC7 extends frmBase {
         int[] vrc7Register = audio.chipRegister.chip(NesChip.class).readVrc7(chipId);
         if (vrc7Register == null) return;
 
-        //キーオン(ワンショット)があったかを取得する
+        // Get whether there was a key-on (one-shot)
         ChipKeyInfo ki = audio.chipRegister.chip(NesChip.class).getVRC7KeyInfo(chipId);
 
         for (int ch = 0; ch < 6; ch++) {
             MDChipParams.Channel nyc = newParam.channels[ch];
 
-            //音色番号
+            // Tone Number
             nyc.inst[0] = (vrc7Register[0x30 + ch] & 0xf0) >> 4;
-            //サスティンの取得
+            // Get sustain
             nyc.inst[1] = (vrc7Register[0x20 + ch] & 0x20) >> 5;
-            //現在のキーオン状態
+            // Current key-on state
             nyc.inst[2] = (vrc7Register[0x20 + ch] & 0x10) >> 4;
-            //ボリューム
+            // Volume
             nyc.inst[3] = (vrc7Register[0x30 + ch] & 0x0f);
 
-            //再生周波数
+            // Playback frequency
             int freq = vrc7Register[0x10 + ch] + ((vrc7Register[0x20 + ch] & 0x1) << 8);
-            //オクターブ
+            // Octave
             int oct = ((vrc7Register[0x20 + ch] & 0xe) >> 1);
-            //周波数とオクターブ情報から近似する音程を取得する
+            // Get the approximate pitch from the frequency and octave information
             nyc.note = mdplayer.Common.searchSegaPCMNote(freq / 172.0) + (oct - 4) * 12;
 
 
-            //ワンショット(前回の処理から比較してキーオンが1度以上発生している状態)の場合
+            // In case of one-shot (a state where key-on has occurred at least once since the last process)
             if (ki.on[ch]) {
-                //ボリュームメーターを振る
+                // Swing the volume meter
                 nyc.volumeL = (19 - nyc.inst[3]);
             } else {
-                //ワンショットが無く、現在もキーオンしていない場合は音程を無しにする。
-                //ワンショットが無くても、キーオン状態ならば音程をリセットしない。
-                //(持続している場合やベンドやスラーをしていることが考えられる為。)
-                //また、この処理はワンショットが発生しているときは実施しない。
-                //ワンショットが有り、現在はキーオンしていない場合に対応するため。
-                //上記ケースは、ボリュームメータを振り、音程表示は一瞬だけ表示する動きになる
+                // If there is no one-shot and the key is not currently on, set the pitch to none.
+                // Even if there is no one-shot, if the key is on, do not reset the pitch.
+                // (Because it may be sustained, bent, or slurred.)
+                // Also, this process is not performed when a one-shot has occurred.
+                // This is to handle the case where there was a one-shot but the key is not currently on.
+                // In the above case, the volume meter will swing and the pitch display will be shown for a moment.
                 if (nyc.inst[2] == 0) nyc.note = -1;
 
-                //ボリュームメータの減衰処理(音色設定を無視し常に一定)
+                // Volume meter decay process (ignores tone settings and is always constant)
                 nyc.volumeL--;
                 if (nyc.volumeL < 0) nyc.volumeL = 0;
             }
         }
 
-        newParam.channels[0].inst[4] = (vrc7Register[0x02] & 0x3f);//TL
-        newParam.channels[0].inst[5] = (vrc7Register[0x03] & 0x07);//FB
+        newParam.channels[0].inst[4] = (vrc7Register[0x02] & 0x3f); // TL
+        newParam.channels[0].inst[5] = (vrc7Register[0x03] & 0x07); // FB
 
-        newParam.channels[0].inst[6] = (vrc7Register[0x04] & 0xf0) >> 4;//AR
-        newParam.channels[0].inst[7] = (vrc7Register[0x04] & 0x0f);//DR
-        newParam.channels[0].inst[8] = (vrc7Register[0x06] & 0xf0) >> 4;//SL
-        newParam.channels[0].inst[9] = (vrc7Register[0x06] & 0x0f);//RR
-        newParam.channels[0].inst[10] = (vrc7Register[0x02] & 0x80) >> 7;//KL
-        newParam.channels[0].inst[11] = (vrc7Register[0x00] & 0x0f);//MT
-        newParam.channels[0].inst[12] = (vrc7Register[0x00] & 0x80) >> 7;//AM
-        newParam.channels[0].inst[13] = (vrc7Register[0x00] & 0x40) >> 6;//VB
-        newParam.channels[0].inst[14] = (vrc7Register[0x00] & 0x20) >> 5;//EG
-        newParam.channels[0].inst[15] = (vrc7Register[0x00] & 0x10) >> 4;//KR
-        newParam.channels[0].inst[16] = (vrc7Register[0x03] & 0x08) >> 3;//DM
-        newParam.channels[0].inst[17] = (vrc7Register[0x05] & 0xf0) >> 4;//AR
-        newParam.channels[0].inst[18] = (vrc7Register[0x05] & 0x0f);//DR
-        newParam.channels[0].inst[19] = (vrc7Register[0x07] & 0xf0) >> 4;//SL
-        newParam.channels[0].inst[20] = (vrc7Register[0x07] & 0x0f);//RR
-        newParam.channels[0].inst[21] = (vrc7Register[0x03] & 0x80) >> 7;//KL
-        newParam.channels[0].inst[22] = (vrc7Register[0x01] & 0x0f);//MT
-        newParam.channels[0].inst[23] = (vrc7Register[0x01] & 0x80) >> 7;//AM
-        newParam.channels[0].inst[24] = (vrc7Register[0x01] & 0x40) >> 6;//VB
-        newParam.channels[0].inst[25] = (vrc7Register[0x01] & 0x20) >> 5;//EG
-        newParam.channels[0].inst[26] = (vrc7Register[0x01] & 0x10) >> 4;//KR
-        newParam.channels[0].inst[27] = (vrc7Register[0x03] & 0x10) >> 4;//DC
+        newParam.channels[0].inst[6] = (vrc7Register[0x04] & 0xf0) >> 4;  // AR
+        newParam.channels[0].inst[7] = (vrc7Register[0x04] & 0x0f);       // DR
+        newParam.channels[0].inst[8] = (vrc7Register[0x06] & 0xf0) >> 4;  // SL
+        newParam.channels[0].inst[9] = (vrc7Register[0x06] & 0x0f);       // RR
+        newParam.channels[0].inst[10] = (vrc7Register[0x02] & 0x80) >> 7; // KL
+        newParam.channels[0].inst[11] = (vrc7Register[0x00] & 0x0f);      // MT
+        newParam.channels[0].inst[12] = (vrc7Register[0x00] & 0x80) >> 7; // AM
+        newParam.channels[0].inst[13] = (vrc7Register[0x00] & 0x40) >> 6; // VB
+        newParam.channels[0].inst[14] = (vrc7Register[0x00] & 0x20) >> 5; // EG
+        newParam.channels[0].inst[15] = (vrc7Register[0x00] & 0x10) >> 4; // KR
+        newParam.channels[0].inst[16] = (vrc7Register[0x03] & 0x08) >> 3; // DM
+        newParam.channels[0].inst[17] = (vrc7Register[0x05] & 0xf0) >> 4; // AR
+        newParam.channels[0].inst[18] = (vrc7Register[0x05] & 0x0f);      // DR
+        newParam.channels[0].inst[19] = (vrc7Register[0x07] & 0xf0) >> 4; // SL
+        newParam.channels[0].inst[20] = (vrc7Register[0x07] & 0x0f);      // RR
+        newParam.channels[0].inst[21] = (vrc7Register[0x03] & 0x80) >> 7; // KL
+        newParam.channels[0].inst[22] = (vrc7Register[0x01] & 0x0f);      // MT
+        newParam.channels[0].inst[23] = (vrc7Register[0x01] & 0x80) >> 7; // AM
+        newParam.channels[0].inst[24] = (vrc7Register[0x01] & 0x40) >> 6; // VB
+        newParam.channels[0].inst[25] = (vrc7Register[0x01] & 0x20) >> 5; // EG
+        newParam.channels[0].inst[26] = (vrc7Register[0x01] & 0x10) >> 4; // KR
+        newParam.channels[0].inst[27] = (vrc7Register[0x03] & 0x10) >> 4; // DC
     }
 
     public void screenDrawParams() {
@@ -268,7 +268,7 @@ public class frmVRC7 extends frmBase {
                 return;
             }
 
-            //鍵盤
+            // keyboard
             if (py < 7 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
@@ -292,7 +292,7 @@ public class frmVRC7 extends frmBase {
                 return;
             }
 
-            //音色欄
+            // Tone column
             if (py < 15 * 8 && px < 16 * 8) {
                 // Copying a tone to the clipboard
                 parent.getInstCh(Vrc7Chip.class, 0, chipId);

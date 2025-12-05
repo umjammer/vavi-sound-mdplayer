@@ -28,7 +28,7 @@ public class Xgm extends BaseDriver {
     public static final int FCC_XGM = 0x204d4758; // "XGM "
     public static final int FCC_GD3 = 0x20336447; // "Gd3 "
 
-    private static class XGMSampleID {
+    public static class XGMSampleID {
         public int addr = 0;
         public int size = 0;
     }
@@ -63,7 +63,10 @@ public class Xgm extends BaseDriver {
         vgmSpeed = 1;
         vgmSpeedCounter = 0;
 
-        if (!getXGMInfo(vgmBuf)) return false;
+        if (!getXGMInfo(vgmBuf)) {
+logger.log(Level.WARNING, "getXGMInfo");
+            return false;
+        }
 
         if (model == EnmModel.RealModel) {
             plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 0, 1);
@@ -174,7 +177,6 @@ public class Xgm extends BaseDriver {
         return true;
     }
 
-
     private double musicStep;// setting.getoutputDevice().SampleRate / 60.0;
     private final double pcmStep;// setting.getoutputDevice().SampleRate / 14000.0;
     private double musicDownCounter = 0.0;
@@ -207,7 +209,6 @@ public class Xgm extends BaseDriver {
 
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
-
         }
     }
 
