@@ -18,7 +18,7 @@ public class Memory98 {
 
     public void pokeW(int ptr, short dat) {
         mem[ptr % mem.length] = (byte) dat;
-        mem[(ptr + 1) % mem.length] = (byte) (dat >>> 8);
+        mem[(ptr + 1) % mem.length] = (byte) ((dat & 0xff00) >>> 8);
     }
 
     public byte peekB(int ptr) {

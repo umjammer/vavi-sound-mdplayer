@@ -174,7 +174,7 @@ public class NiseDos {
                 int21();
                 break;
             case 0x2f:
-                logger.log(Level.DEBUG, "<NiseDos>INT2fh AX:$%04x".formatted(regs.getAX() & 0xff));
+                logger.log(Level.DEBUG, "<NiseDos>INT2fh AX:$%04x".formatted(regs.getAX() & 0xffff));
                 int2F();
                 break;
             default:
@@ -248,7 +248,7 @@ public class NiseDos {
             for (int i = 0; i < relocSize; i += 4) {
                 short rOfs = mem.peekW(ptr + relocOfs + i + 0);
                 short rSeg = mem.peekW(ptr + relocOfs + i + 2);
-                int rPtr = (rSeg << 4) + rOfs;
+                int rPtr = ((rSeg & 0xffff) << 4) + (rOfs & 0xffff);
                 short val = mem.peekW(ptr + rPtr + headerSize);
                 mem.pokeW(ptr + rPtr + headerSize, (short) (startSegment + 0x10 + (val & 0xffff)));
             }
@@ -262,7 +262,7 @@ public class NiseDos {
             if (StringUtilities.isNullOrEmpty(option)) {
                 mem.pokeB(ptr + 0x80, (byte) 0);
             } else {
-                byte[] optAry = (option + "\n").getBytes(charset);
+                byte[] optAry = (option + "\r").getBytes(charset);
                 mem.pokeB(ptr + 0x80, (byte) optAry.length);
 
                 // 0x81~0xff Argument Entities
@@ -329,7 +329,7 @@ public class NiseDos {
                 break;
             case 0x19:
                 logger.log(Level.DEBUG, "<NiseDos>  Get Current Default Drive");
-                regs.setAL((short) 2); // 2 => C: drive
+                regs.setAL((byte) 2); // 2 => C: drive
                 break;
             case 0x25:
                 logger.log(Level.DEBUG, "<NiseDos>  SET INTERRUPT VECTOR");
@@ -478,6 +478,7 @@ public class NiseDos {
                         msg.add(b);
                         c++;
                     }
+logger.log(Level.TRACE, "error message from program");
                     text = new String(ByteUtil.toByteArray(msg), charset);
                     System.out.print(text); // Normal console output
 
@@ -573,9 +574,9 @@ public class NiseDos {
     private void int2F() {
         if (regs.getAX() == 0x1600) {
             // major version
-            regs.setAL((short) 0);
+            regs.setAL((byte) 0);
             // minor version
-            regs.setAH((short) 0);
+            regs.setAH((byte) 0);
             return;
         }
 
@@ -678,7 +679,9 @@ public class NiseDos {
         try {
             Archive archive = Archives.getArchive(playingArcFile);
             for (Entry ent : archive.entries()) {
-                if (!ent.getName().equals(Path.of(fs).getFileName().toString())) continue;
+                String entryFileName = Path.of(ent.getName()).getFileName().toString();
+                String targetFileName = Path.of(fs).getFileName().toString();
+                if (!entryFileName.equalsIgnoreCase(targetFileName)) continue;
                 return archive.getInputStream(ent).readAllBytes();
             }
         } catch (Exception e) {

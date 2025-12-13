@@ -73,7 +73,7 @@ public class Register286 {
     }
 
     public void decCX() {
-        setCX((short) ((getCX() & 0xffff) - 1));
+        eRegs[1]--;
     }
 
     public void setCX(short value) {
@@ -104,11 +104,11 @@ public class Register286 {
     }
 
     public void addSP(int value) {
-        setSP((short) ((getSP() & 0xffff) + value));
+        eRegs[4] += value;
     }
 
     public void subSP(int value) {
-        setSP((short) ((getSP() & 0xffff) - value));
+        eRegs[4] -= value;
     }
 
     public void setSP(short value) {
@@ -130,7 +130,7 @@ public class Register286 {
     }
 
     public void addSI(int value) {
-        setSI((short) ((getSI() & 0xffff) + value));
+        eRegs[6] += value;
     }
 
     public void setSI(short value) {
@@ -143,7 +143,7 @@ public class Register286 {
     }
 
     public void addDI(int value) {
-        setDI((short) ((getDI() & 0xffff) + value));
+        eRegs[7] += value;
     }
 
     public void setDI(short value) {
@@ -157,26 +157,26 @@ public class Register286 {
         return (byte) eRegs[0];
     }
 
-    public void setAL(short value) {
+    public void setAL(byte value) {
         eRegs[0] &= (short) 0xff00;
         eRegs[0] |= (value & 0xff);
     }
 
-    public short getAH() {
+    public byte getAH() {
         return (byte) (eRegs[0] >> 8);
     }
 
-    public void setAH(short value) {
+    public void setAH(byte value) {
         eRegs[0] &= (short) 0x00ff;
         eRegs[0] |= (short) ((value & 0x00ff) << 8);
     }
 
-    public short getCL() {
     //
+    public byte getCL() {
         return (byte) eRegs[1];
     }
 
-    public void setCL(short value) {
+    public void setCL(byte value) {
         eRegs[1] &= (short) 0xff00;
         eRegs[1] |= (value & 0xff);
     }
@@ -258,7 +258,7 @@ public class Register286 {
 
     // CF bit0
     public boolean isCF() {
-        return (((flag & 0xffff) & (1 << 0)) != 0);
+        return (flag & (1 << 0)) != 0;
     }
 
     public void setCF(boolean value) {
@@ -268,7 +268,7 @@ public class Register286 {
 
     // PF bit2
     public boolean isPF() {
-        return (((flag & 0xffff) & (1 << 2)) != 0);
+        return (flag & (1 << 2)) != 0;
     }
 
     public void setPF(boolean value) {
@@ -278,7 +278,7 @@ public class Register286 {
 
     // AF bit4
     public boolean isAF() {
-        return (((flag & 0xffff) & (1 << 4)) != 0);
+        return (flag & (1 << 4)) != 0;
     }
 
     public void setAF(boolean value) {
@@ -288,7 +288,7 @@ public class Register286 {
 
     // ZF bit6
     public boolean isZF() {
-        return (((flag & 0xffff) & (1 << 6)) != 0);
+        return (flag & (1 << 6)) != 0;
     }
 
     public void setZF(boolean value) {
@@ -298,7 +298,7 @@ public class Register286 {
 
     // SF bit7
     public boolean isSF() {
-        return (((flag & 0xffff) & (1 << 7)) != 0);
+        return (flag & (1 << 7)) != 0;
     }
 
     public void setSF(boolean value) {
@@ -308,7 +308,7 @@ public class Register286 {
 
     // TF bit8
     public boolean isTF() {
-        return (((flag & 0xffff) & (1 << 8)) != 0);
+        return (flag & (1 << 8)) != 0;
     }
 
     public void setTF(boolean value) {
@@ -318,7 +318,7 @@ public class Register286 {
 
     // IF bit9
     public boolean isIF() {
-        return (((flag & 0xffff) & (1 << 9)) != 0);
+        return (flag & (1 << 9)) != 0;
     }
 
     public void setIF(boolean value) {
@@ -328,7 +328,7 @@ public class Register286 {
 
     // DF bit10
     public boolean isDF() {
-        return (((flag & 0xffff) & (1 << 10)) != 0);
+        return (flag & (1 << 10)) != 0;
     }
 
     public void setDF(boolean value) {
@@ -338,7 +338,7 @@ public class Register286 {
 
     // OF bit11
     public boolean isOF() {
-        return (((flag & 0xffff) & (1 << 11)) != 0);
+        return (flag & (1 << 11)) != 0;
     }
 
     public void setOF(boolean value) {
@@ -352,7 +352,7 @@ public class Register286 {
     public void setSZPFb(byte ans) {
         signVal = ans;
         setSF(signVal < 0);
-        zeroVal = ans & 0xffff;
+        zeroVal = ans & 0xff;
         setZF(zeroVal == 0);
         parityVal = ans;
         setPF(parity_table[parityVal & 0xff]);

@@ -178,7 +178,10 @@ logger.log(Level.ERROR, e.getMessage(), e);
 
         // FMP Residency
         //nise98.LoadRun(fileNameFMP, "s -s", 0x2000); // , true, true, true, 3_000_000, 108213); // 108213->wait Loop exit
-        nise98.loadRun(fileNameFMP.toString(), "s -s -#42", 0x2000); //, true, true, true, 3_000_000, 0);// 108213->wait Loop exit
+        int r = nise98.loadRun(fileNameFMP.toString(), "s -s -#42", 0x2000); //, true, true, true, 3_000_000, 0);// 108213->wait Loop exit
+        if (r != 0) {
+            throw new IllegalStateException("exec " + fileNameFMP + " returns " + r);
+        }
         regs = nise98.getRegisters();
 
         // nisePPZ8 resident
@@ -206,7 +209,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
 
     private void opnaWrite(ChipDatum dat) {
         byte cn = (byte) (dat.port >> 8);
-        int port = dat.port == 0x8a ? 0 : 1;
+        int port = (dat.port & 0xff) == 0x8a ? 0 : 1;
         plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, port, dat.address, dat.data, model);
 
         if (port == 1 && dat.address == 0x8 && model == EnmModel.RealModel) {
@@ -222,7 +225,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
         dos.loadImage(m, (0x5000 << 4) + 0x0000);
 
         step = 0;
-        regs.setAL((short) 0x02);
+        regs.setAL((byte) 0x02);
         regs.setDS((short) 0x5000);
         regs.setDX((short) 0x0000);
         regs.setSS((short) 0xe000);
@@ -258,7 +261,10 @@ logger.log(Level.ERROR, e.getMessage(), e);
         nise98.getDos().setProgramTerminate(false);
         if ((rc = nise98.loadRun(fileNameFMC, playingFileName, 0x3000
                 //, true, true, true, 3_000_000, 0
-        )) != 0) return false;
+        )) != 0) {
+            logger.log(Level.DEBUG, "return %d", rc);
+            return false;
+        }
 
         return true;
     }

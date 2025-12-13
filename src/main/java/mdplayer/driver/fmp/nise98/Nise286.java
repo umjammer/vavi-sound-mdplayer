@@ -800,7 +800,7 @@ public class Nise286 {
     private void interrupt() {
         if (segPrefSw) return;
         if (repSW) return;
-        if (!regs.isIF()) return;// IF is false and not allowed
+        if (!regs.isIF()) return; // IF is false and not allowed
 
         // check mask
         for (int i = 0; i < 8; i++) {
@@ -877,13 +877,13 @@ public class Nise286 {
 
         if (segPrefSw) {
             segPrefSw = false;
-            return ((regs.sRegs[segPref] & 0xffff) << 4) & 0xffff;
+            return (regs.sRegs[segPref] & 0xffff) << 4;
         } else if (rm != 2 && rm != 3 && rm != 6) // When the specified register is other than BP, DS is used as the default segment.
-            return ((regs.getDS() & 0xffff) << 4) & 0xffff;
+            return (regs.getDS() & 0xffff) << 4;
         else if (rm == 6 && isMod00) // When the specified register is other than BP, DS is used as the default segment.
-            return ((regs.getDS() & 0xffff) << 4) & 0xffff;
+            return (regs.getDS() & 0xffff) << 4;
         else // When the specified register is BP, SS is used as the default segment.
-            return ((regs.getSS() & 0xffff) << 4) & 0xffff;
+            return (regs.getSS() & 0xffff) << 4;
     }
 
     private int getMod00RwAdr(byte rm, boolean noSeg /* = false */) {
@@ -915,7 +915,7 @@ public class Nise286 {
     private int getMod01RwAdr(byte rm, boolean noSeg /* = false */) {
         int seg = getSegment(rm, noSeg, false);
 
-        int disp8 = fetch();
+        byte disp8 = fetch();
         switch (rm) {
             case 0:
                 return seg + ((regs.getBX() + regs.getSI() + disp8) & 0xffff);
@@ -941,7 +941,7 @@ public class Nise286 {
     private int getMod02RwAdr(byte rm, boolean noSeg /* = false */) {
         int seg = getSegment(rm, noSeg, false);
 
-        int disp16 = fetchW();
+        short disp16 = fetchW();
         switch (rm) {
             case 0:
                 return seg + ((regs.getBX() + regs.getSI() + disp16) & 0xffff);
@@ -1271,9 +1271,9 @@ public class Nise286 {
         byte rm = (byte) (modRw & 7);
         int mod = (modRw & 0xff) >> 6;
 
-        byte a;
-        byte b;
-        byte c;
+        byte a; // signed
+        byte b; // signed
+        byte c; // signed
         byte ic = 0;
 
         byte gb;
@@ -1332,9 +1332,9 @@ public class Nise286 {
         byte rm = (byte) (modRw & 7);
         int mod = (modRw & 0xff) >> 6;
 
-        byte a;
-        byte b;
-        byte c;
+        byte a; // signed
+        byte b; // signed
+        byte c; // signed
         byte ic = 0;
 
         byte gb;
@@ -1398,29 +1398,29 @@ public class Nise286 {
         short ic;
         switch (mod) {
             case 0:
-                a = regs.eRegs[reg] & 0xffff;
-                b = mem.peekW(getMod00RwAdr(rm, false)) & 0xffff;
+                a = regs.eRegs[reg];
+                b = mem.peekW(getMod00RwAdr(rm, false));
                 c = a | b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
                 break;
             case 1:
-                a = regs.eRegs[reg] & 0xffff;
-                b = mem.peekW(getMod01RwAdr(rm, false)) & 0xffff;
+                a = regs.eRegs[reg];
+                b = mem.peekW(getMod01RwAdr(rm, false));
                 c = a | b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
                 break;
             case 2:
-                a = regs.eRegs[reg] & 0xffff;
-                b = mem.peekW(getMod02RwAdr(rm, false)) & 0xffff;
+                a = regs.eRegs[reg];
+                b = mem.peekW(getMod02RwAdr(rm, false));
                 c = a | b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
                 break;
             case 3:
-                a = regs.eRegs[reg] & 0xffff;
-                b = regs.eRegs[rm] & 0xffff;
+                a = regs.eRegs[reg];
+                b = regs.eRegs[rm];
                 c = a | b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
@@ -1449,7 +1449,7 @@ public class Nise286 {
     private void OR_AX_IW() {
         short imm16 = fetchW(); // signed
         logger.log(Level.TRACE, "OR AX,$%04x".formatted(imm16 & 0xffff));
-        regs.setAX((short) ((regs.getAX() & 0xffff) | imm16));
+        regs.setAX((short) (regs.getAX() | imm16));
 
         regs.setSZPFw(regs.getAX());
         regs.setOF(false);
@@ -1902,29 +1902,29 @@ public class Nise286 {
         short ic = 0;
         switch (mod) {
             case 0:
-                a = regs.eRegs[reg] & 0xffff;
-                b = mem.peekW(getMod00RwAdr(rm, false)) & 0xffff;
+                a = regs.eRegs[reg];
+                b = mem.peekW(getMod00RwAdr(rm, false));
                 c = a & b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
                 break;
             case 1:
-                a = regs.eRegs[reg] & 0xffff;
-                b = mem.peekW(getMod01RwAdr(rm, false)) & 0xffff;
+                a = regs.eRegs[reg];
+                b = mem.peekW(getMod01RwAdr(rm, false));
                 c = a & b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
                 break;
             case 2:
-                a = regs.eRegs[reg] & 0xffff;
-                b = mem.peekW(getMod02RwAdr(rm, false)) & 0xffff;
+                a = regs.eRegs[reg];
+                b = mem.peekW(getMod02RwAdr(rm, false));
                 c = a & b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
                 break;
             case 3:
-                a = regs.eRegs[reg] & 0xffff;
-                b = regs.eRegs[rm] & 0xffff;
+                a = regs.eRegs[reg];
+                b = regs.eRegs[rm];
                 c = a & b;
                 ic = (short) c;
                 regs.eRegs[reg] = ic;
@@ -1951,9 +1951,9 @@ public class Nise286 {
 
     // 0x25
     private void AND_AX_IW() {
-        short imm16 = fetchW(); // signed
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "AND AX,$%04x".formatted(imm16 & 0xffff));
-        regs.setAX((short) ((regs.getAX() & 0xffff) & imm16));
+        regs.setAX((short) (regs.getAX() & imm16)); // signed
 
         regs.setSZPFw(regs.getAX());
         regs.setOF(false);
@@ -2351,21 +2351,21 @@ public class Nise286 {
         byte rm = (byte) (modRw & 7);
         int mod = (modRw & 0xff) >> 6;
 
-        // short GW = regs.eRegs[reg];
+        //short gw = regs.eRegs[reg];
         int a;
         int b = 0;
         int c;
         short ic;
-        a = regs.eRegs[reg] & 0xffff;
+        a = regs.eRegs[reg];
         switch (mod) {
             case 0:
-                b = mem.peekW(getMod00RwAdr(rm, false)) & 0xffff;
+                b = mem.peekW(getMod00RwAdr(rm, false));
                 break;
             case 1:
-                b = mem.peekW(getMod01RwAdr(rm, false)) & 0xffff;
+                b = mem.peekW(getMod01RwAdr(rm, false));
                 break;
             case 2:
-                b = mem.peekW(getMod02RwAdr(rm, false)) & 0xffff;
+                b = mem.peekW(getMod02RwAdr(rm, false));
                 break;
             case 3:
                 b = regs.eRegs[rm];
@@ -2395,9 +2395,9 @@ public class Nise286 {
 
     // 0x35
     private void XOR_AX_IW() {
-        short imm16 = fetchW(); // signed
+        short imm16 = fetchW();
         logger.log(Level.TRACE, "XOR AX,$%04x".formatted(imm16 & 0xffff));
-        regs.setAX((short) ((regs.getAX() & 0xffff) ^ imm16));
+        regs.setAX((short) (regs.getAX() ^ imm16)); // signed
 
         regs.setSZPFw(regs.getAX());
         regs.setOF(false);
@@ -3046,7 +3046,7 @@ public class Nise286 {
 
     // 0x72
     private void JB_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         logger.log(Level.TRACE, "JB short:$%02x".formatted(imm8 & 0xff));
 
         if (regs.isCF()) {
@@ -3056,7 +3056,7 @@ public class Nise286 {
 
     // 0x73
     private void JNB_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         logger.log(Level.TRACE, "JNB short:$%02x".formatted(imm8 & 0xff));
 
         if (!regs.isCF()) {
@@ -3066,7 +3066,7 @@ public class Nise286 {
 
     // 0x74
     private void JZ_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         logger.log(Level.TRACE, "JZ short:$%02x".formatted(imm8 & 0xff));
 
         if (regs.isZF()) {
@@ -3076,7 +3076,7 @@ public class Nise286 {
 
     // 0x75
     private void JNZ_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         logger.log(Level.TRACE, "JNZ short:$%02x".formatted(imm8 & 0xff));
 
         if (!regs.isZF()) {
@@ -3086,7 +3086,7 @@ public class Nise286 {
 
     // 0x76
     private void JBE_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         logger.log(Level.TRACE, "JBE short:$%02x".formatted(imm8 & 0xff));
 
         if (regs.isCF() || regs.isZF()) {
@@ -3096,7 +3096,7 @@ public class Nise286 {
 
     // 0x77
     private void JNBE_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         logger.log(Level.TRACE, "JNBE short:$%02x".formatted(imm8 & 0xff));
 
         if (!regs.isCF() && !regs.isZF()) { // cmp then op1<op2
@@ -3106,7 +3106,7 @@ public class Nise286 {
 
     // 0x78
     private void JS_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         logger.log(Level.TRACE, "JS short:$%02x".formatted(imm8 & 0xff));
 
         if (regs.isSF()) {
@@ -3116,7 +3116,7 @@ public class Nise286 {
 
     // 0x79
     private void JNS_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         logger.log(Level.TRACE, "JNS short:$%02x".formatted(imm8 & 0xff));
 
         if (!regs.isSF()) {
@@ -3126,7 +3126,7 @@ public class Nise286 {
 
     // 0x7d
     private void JNL_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         logger.log(Level.TRACE, "JNL short:$%02x".formatted(imm8 & 0xff));
 
         if (regs.isSF() == regs.isOF()) {
@@ -3136,7 +3136,7 @@ public class Nise286 {
 
     // 0x7e
     private void JNG_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         logger.log(Level.TRACE, "JNG short:$%02x".formatted(imm8 & 0xff));
 
         if (regs.isZF() || regs.isSF() != regs.isOF()) {
@@ -3146,7 +3146,7 @@ public class Nise286 {
 
     // 0x7f
     private void JNLE_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         logger.log(Level.TRACE, "JNLE short:$%02x".formatted(imm8 & 0xff));
 
         if (!regs.isZF() && regs.isSF() == regs.isOF()) {
@@ -3162,8 +3162,8 @@ public class Nise286 {
         int mod = (modRw & 0xff) >> 6;
         short ib;
         int ians;
-        byte ans;
-        byte eb = 0;
+        byte ans; // signed
+        byte eb = 0; // signed
         int ptr = 0;
 
         switch (mod) {
@@ -3209,7 +3209,7 @@ public class Nise286 {
                 break;
             case 1: // OR EB,IB
                 logger.log(Level.TRACE, "OR EB,$%02x".formatted(ib));
-                ians = (eb & 0xff) | (ib & 0xff);
+                ians = eb | (ib & 0xff); // byte size
                 ans = (byte) ians;
                 regs.setSZPFb(ans);
                 regs.setOF(false);
@@ -3229,7 +3229,7 @@ public class Nise286 {
                 break;
             case 2: // ADC EB,IB
                 logger.log(Level.TRACE, "ADC EB,$%02x".formatted(ib));
-                ians = (eb & 0xff) + (ib & 0xff) + (regs.isCF() ? 1 : 0);
+                ians = eb + (ib & 0xffff) + (regs.isCF() ? 1 : 0);
                 ans = (byte) ians;
                 regs.setSZPFb((byte) ians);
                 regs.setOFbAdd(eb, (byte) ib, ans);
@@ -3249,7 +3249,7 @@ public class Nise286 {
                 break;
             case 3: // SBB
                 logger.log(Level.TRACE, "SBB EB,$%02x".formatted(ib));
-                ians = (eb & 0xff) - ((ib & 0xff) + (regs.isCF() ? 1 : 0));
+                ians = eb - ((ib & 0xffff) + (regs.isCF() ? 1 : 0));
                 ans = (byte) ians;
                 regs.setSZPFb((byte) ians);
                 regs.setOFbSub(eb, (byte) ib, ans);
@@ -3269,7 +3269,7 @@ public class Nise286 {
                 break;
             case 4: // AND EB,IB
                 logger.log(Level.TRACE, "AND EB,$%02x".formatted(ib));
-                ians = (eb & 0xff) & (ib & 0xff);
+                ians = eb & (ib & 0xffff);
                 ans = (byte) ians;
                 regs.setSZPFb(ans);
                 regs.setOF(false);
@@ -3309,7 +3309,7 @@ public class Nise286 {
                 break;
             case 6:
                 logger.log(Level.TRACE, "XOR EB,$%02x".formatted(ib));
-                ians = (eb & 0xff) ^ (ib & 0xff);
+                ians = eb ^ (ib & 0xffff);
                 ans = (byte) ians;
                 regs.setSZPFb(ans);
                 regs.setOF(false);
@@ -3319,7 +3319,7 @@ public class Nise286 {
                     case 0:
                     case 1:
                     case 2:
-                        mem.pokeB(ptr, (byte) ans);
+                        mem.pokeB(ptr, ans);
                         break;
                     case 3:
                         if (rm < 4) regs.eRegs[rm] = (short) ((regs.eRegs[rm] & 0xff00) | (ans & 0xff));
@@ -3535,7 +3535,7 @@ public class Nise286 {
         switch (reg) {
             case 0: // ADD EW,IB
                 logger.log(Level.TRACE, "ADD EW,$%02x".formatted(ib & 0xff));
-                ians = (ew & 0xffff) + ib;
+                ians = (ew & 0xffff) + ib; // signed
                 ans = (short) ians;
                 regs.setSZPFw((short) ians);
                 regs.setOFwAdd(ew, ib, ans);
@@ -3554,7 +3554,7 @@ public class Nise286 {
                 break;
             case 1: // OR EW,IB
                 logger.log(Level.TRACE, "OR EW,$%02x".formatted(ib & 0xff));
-                ians = (ew & 0xffff) | ib;
+                ians = (ew & 0xffff) | ib; // signed
                 ans = (short) ians;
                 regs.setSZPFw((short) ians);
                 regs.setOF(false);
@@ -3611,7 +3611,7 @@ public class Nise286 {
                 break;
             case 4: // AND EW,IB
                 logger.log(Level.TRACE, "AND EW,$%02x".formatted(ib & 0xff));
-                ians = (ew & 0xffff) & ib;
+                ians = (ew & 0xffff) & ib; // signed
                 ans = (short) ians;
                 regs.setSZPFw((short) ians);
                 regs.setOF(false);
@@ -3630,7 +3630,7 @@ public class Nise286 {
                 break;
             case 5: // SUB EW,IB
                 logger.log(Level.TRACE, "SUB EW,$%02x".formatted(ib));
-                ians = (ew & 0xffff) - ib;
+                ians = (ew & 0xffff) - ib; // signed
                 ans = (short) ians;
                 regs.setSZPFw((short) ians);
                 regs.setOFwSub(ew, (short) (ib & 0xff), ans);
@@ -3649,7 +3649,7 @@ public class Nise286 {
                 break;
             case 6: // XOR EW,IB
                 logger.log(Level.TRACE, "XOR EW,$%02x".formatted(ib));
-                ians = (ew & 0xffff) ^ ib;
+                ians = (ew & 0xffff) ^ ib; // signed
                 ans = (short) ians;
                 regs.setSZPFw((short) ians);
                 regs.setOF(false);
@@ -3668,7 +3668,7 @@ public class Nise286 {
                 break;
             case 7: // CMP EW,IB
                 logger.log(Level.TRACE, "CMP EW,$%02x".formatted(ib));
-                ians = (ew & 0xffff) - ib;
+                ians = (ew & 0xffff) - ib; // signed
                 ans = (short) ians;
                 regs.setSZPFw((short) ians);
                 regs.setOFwSub(ew, (short) (ib & 0xff), ans);
@@ -4313,17 +4313,17 @@ public class Nise286 {
 
             logger.log(Level.TRACE, "CMPSB [DS:SI] val:%02x'%c' [ES:DI] val:%02x'%c'".formatted(dsv & 0xff, (char) dsv, edv & 0xff, (char) edv));
 
-            regs.addSI((short) ((regs.isDF()) ? -1 : 1));
-            regs.addDI((short) ((regs.isDF()) ? -1 : 1));
+            regs.addSI(regs.isDF() ? -1 : 1);
+            regs.addDI(regs.isDF() ? -1 : 1);
 
             int ians = (dsv & 0xff) - (edv & 0xff);
             byte ans = (byte) ians;
 
             regs.setSF((ans & 0x80) != 0);
             regs.setOF(regs.isSF()
-                    ? ((edv > 0 && ans > dsv) || (edv < 0 && ans < dsv))
-                    : ans > dsv);
-            regs.setCF((short) ians != ans);
+                    ? (((edv & 0xff) > 0 && (ans & 0xff) > (dsv & 0xff)) || ((edv & 0xff) < 0 && (ans & 0xff) < (dsv & 0xff)))
+                    : (ans & 0xff) > (dsv & 0xff));
+            regs.setCF((ians & 0xffff) != (ans & 0xff));
             regs.setZF(ans == 0);
             regs.setPF((ans & 0x01) != 0);
             regs.setAF(false); // TBD
@@ -4345,8 +4345,8 @@ public class Nise286 {
     // 0xa7
     private void CMPSW() {
         if (!repSW || (repSW && regs.getCX() != 0)) {
-            short dsv = mem.peekW(regs.getDS_SI());
-            short edv = mem.peekW(regs.getES_DI());
+            short dsv = mem.peekW(regs.getDS_SI()); // signed
+            short edv = mem.peekW(regs.getES_DI()); // signed
 
             logger.log(Level.TRACE, "CMPSW [DS:SI] val:%04x [ES:DI] val:%04x".formatted(dsv & 0xffff, edv & 0xffff));
 
@@ -4384,7 +4384,7 @@ public class Nise286 {
         if (!repSW || (repSW && regs.getCX() != 0)) {
             logger.log(Level.TRACE, "STOSB [ES:DI]:%05x AL:%02x'%c'".formatted(regs.getES_DI(), regs.getAL() & 0xff, (char) regs.getAL()));
             mem.pokeB(regs.getES_DI(), regs.getAL());
-            regs.addDI((short) ((regs.isDF()) ? -1 : 1));
+            regs.addDI(regs.isDF() ? -1 : 1);
         }
 
         if (repSW) {
@@ -4395,8 +4395,7 @@ public class Nise286 {
                 repSW = false;
             } else {
                 regs.decCX();
-                if (regs.getCX() == 0)// || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
-                {
+                if (regs.getCX() == 0 /* || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)) */) {
                     repSW = false;
                 } else
                     regs.ip--;
@@ -4409,7 +4408,7 @@ public class Nise286 {
         if (!repSW || (repSW && regs.getCX() != 0)) {
             logger.log(Level.TRACE, "STOSW [ES:DI]:%05x <- AX:%04x", regs.getES_DI(), regs.getAX() & 0xffff);
             mem.pokeW(regs.getES_DI(), regs.getAX());
-            regs.addDI((short) ((regs.isDF()) ? -2 : 2));
+            regs.addDI(regs.isDF() ? -2 : 2);
         }
 
         if (repSW) {
@@ -4420,7 +4419,7 @@ public class Nise286 {
                 repSW = false;
             } else {
                 regs.decCX();
-                if (regs.getCX() == 0) { // || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
+                if (regs.getCX() == 0 /* || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)) */) {
                     repSW = false;
                 } else
                     regs.ip--;
@@ -4433,7 +4432,7 @@ public class Nise286 {
         if (!repSW || (repSW && regs.getCX() != 0)) {
             regs.setAL(mem.peekB(regs.getDS_SI()));
             logger.log(Level.TRACE, "LODSB [DS:SI]:%05x AL:%02x'%c'".formatted(regs.getDS_SI(), regs.getAL() & 0xff, Character.isISOControl((char) regs.getAL()) ? '.' : (char) regs.getAL()));
-            regs.addSI((short) ((regs.isDF()) ? -1 : 1));
+            regs.addSI(regs.isDF() ? -1 : 1);
         }
 
         if (repSW) {
@@ -4456,7 +4455,7 @@ public class Nise286 {
         if (!repSW || (repSW && regs.getCX() != 0)) {
             logger.log(Level.TRACE, "LODSW [DS:SI]:%05x -> AX:%04x".formatted(regs.getDS_SI(), regs.getAX() & 0xffff));
             regs.setAX(mem.peekW(regs.getDS_SI()));
-            regs.addSI((short) ((regs.isDF()) ? -2 : 2));
+            regs.addSI(regs.isDF() ? -2 : 2);
         }
 
         if (repSW) {
@@ -4467,8 +4466,7 @@ public class Nise286 {
                 repSW = false;
             } else {
                 regs.decCX();
-                if (regs.getCX() == 0)// || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)))
-                {
+                if (regs.getCX() == 0 /* || ((repType == 0 && !regs.ZF) || (repType != 0 && regs.ZF)) */) {
                     repSW = false;
                 } else
                     regs.ip--;
@@ -4479,13 +4477,13 @@ public class Nise286 {
     // 0xaf
     private void SCASW() {
         if (!repSW || (repSW && regs.getCX() != 0)) {
-            short dsv = regs.getAX();
-            short edv = mem.peekW(regs.getES_DI());
+            short dsv = regs.getAX(); // singed
+            short edv = mem.peekW(regs.getES_DI()); // signed
 
             logger.log(Level.TRACE, "SCASW AX:%04x [ES:DI] val:%04x".formatted(dsv & 0xffff, edv & 0xffff));
 
-            regs.addSI((short) ((regs.isDF()) ? -2 : 2));
-            regs.addDI((short) ((regs.isDF()) ? -2 : 2));
+            regs.addSI(regs.isDF() ? -2 : 2);
+            regs.addDI(regs.isDF() ? -2 : 2);
 
             int ians = dsv - edv;
             short ans = (short) (ians & 0xffff);
@@ -4726,25 +4724,25 @@ public class Nise286 {
             case 0:
                 ptr = getMod00RwAdr(rm, false);
                 imm8 = fetch();
-                logger.log(Level.TRACE, "MOV EB,$%02x".formatted(imm8));
+                logger.log(Level.TRACE, "MOV EB,$%02x".formatted(imm8 & 0xff));
                 mem.pokeB(ptr, imm8);
                 break;
             case 1:
                 ptr = getMod01RwAdr(rm, false);
                 imm8 = fetch();
-                logger.log(Level.TRACE, "MOV EB,$%02x".formatted(imm8));
+                logger.log(Level.TRACE, "MOV EB,$%02x".formatted(imm8 & 0xff));
                 mem.pokeB(ptr, imm8);
                 break;
             case 2:
                 ptr = getMod02RwAdr(rm, false);
                 imm8 = fetch();
-                logger.log(Level.TRACE, "MOV EB,$%02x".formatted(imm8));
+                logger.log(Level.TRACE, "MOV EB,$%02x".formatted(imm8 & 0xff));
                 mem.pokeB(ptr, imm8);
                 break;
             case 3:
                 imm8 = fetch();
-                logger.log(Level.TRACE, "MOV EB,$%02x".formatted(imm8));
-                // regs.eRegs[reg] = (short)((regs.eRegs[reg] & 0xff00) | imm8);
+                logger.log(Level.TRACE, "MOV EB,$%02x".formatted(imm8 & 0xff));
+                //regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | (imm8 & 0xff));
                 if (rm < 4) regs.eRegs[rm] = (short) ((regs.eRegs[rm] & 0xff00) | (imm8 & 0xff));
                 else regs.eRegs[rm - 4] = (short) ((regs.eRegs[rm - 4] & 0xff) | ((imm8 & 0xff) << 8));
                 break;
@@ -4764,24 +4762,24 @@ public class Nise286 {
             case 0:
                 ptr = getMod00RwAdr(rm, false);
                 imm16 = fetchW();
-                logger.log(Level.TRACE, "MOV EW,$%04x".formatted(imm16));
+                logger.log(Level.TRACE, "MOV EW,$%04x".formatted(imm16 & 0xffff));
                 mem.pokeW(ptr, imm16);
                 break;
             case 1:
                 ptr = getMod01RwAdr(rm, false);
                 imm16 = fetchW();
-                logger.log(Level.TRACE, "MOV EW,$%04x".formatted(imm16));
+                logger.log(Level.TRACE, "MOV EW,$%04x".formatted(imm16 & 0xffff));
                 mem.pokeW(ptr, imm16);
                 break;
             case 2:
                 ptr = getMod02RwAdr(rm, false);
                 imm16 = fetchW();
-                logger.log(Level.TRACE, "MOV EW,$%04x".formatted(imm16));
+                logger.log(Level.TRACE, "MOV EW,$%04x".formatted(imm16 & 0xffff));
                 mem.pokeW(ptr, imm16);
                 break;
             case 3:
                 imm16 = fetchW();
-                logger.log(Level.TRACE, "MOV EW,$%04x".formatted(imm16));
+                logger.log(Level.TRACE, "MOV EW,$%04x".formatted(imm16 & 0xffff));
                 regs.eRegs[reg] = imm16;
                 break;
         }
@@ -4838,7 +4836,7 @@ public class Nise286 {
 
         switch (reg) {
             case 0: // ROL
-                logger.log(Level.TRACE, "ROL EB,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "ROL EB,1 modrw:$%02x".formatted(modRw));
                 uans = eb;
                 uans = (byte) (((uans & 0xff) << 1) | ((uans & 0x80) == 0 ? 0 : 1));
                 ans = uans;
@@ -4846,7 +4844,7 @@ public class Nise286 {
                 // regs.OF = (ans & 0x8000) != 0;
                 break;
             case 1: // ROR
-                logger.log(Level.TRACE, "ROR EB,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "ROR EB,1 modrw:$%02x".formatted(modRw));
                 uans = eb;
                 uans = (byte) (((uans & 0xff) >> 1) | ((uans & 0x01) == 0 ? 0 : 0x80));
                 ans = uans;
@@ -4856,7 +4854,7 @@ public class Nise286 {
             case 2: // RCL
                 throw new UnsupportedOperationException();
             case 3: // RCR
-                logger.log(Level.TRACE, "RCR EB,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "RCR EB,1 modrw:$%02x".formatted(modRw));
                 uans = eb;
                 boolean newCF = (uans & 1) != 0;
                 uans = (byte) (((uans & 0xff) >> 1) | (regs.isCF() ? 0x80 : 0x00));
@@ -4865,7 +4863,7 @@ public class Nise286 {
                 break;
             case 4: // SHL
             case 6: // same SHL
-                logger.log(Level.TRACE, "SHL EB,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "SHL EB,1 modrw:$%02x".formatted(modRw));
                 uans = eb;
                 regs.setCF((uans & 0x80) != 0);
                 uans <<= 1;
@@ -4875,20 +4873,20 @@ public class Nise286 {
                 regs.setAF(true); // TBD
                 break;
             case 5: // SHR
-                logger.log(Level.TRACE, "SHR EB,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "SHR EB,1 modrw:$%02x".formatted(modRw));
                 uans = eb;
                 regs.setCF((uans & 0x01) != 0);
-                uans >>>= 1;
+                uans = (byte) ((uans & 0xff) >>> 1);
                 ans = uans;
                 regs.setOF((ans & 0x8000) != 0);
                 regs.setSZPFb(uans);
                 regs.setAF(true); // TBD
                 break;
             case 7: // SAR
-                logger.log(Level.TRACE, "SAR EB,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "SAR EB,1 modrw:$%02x".formatted(modRw));
                 ans = eb;
                 regs.setCF((ans & 0x01) != 0);
-                ans >>>= 1;
+                ans >>= 1;
                 uans = ans;
                 regs.setOF(false);
                 regs.setSZPFb(uans);
@@ -4942,7 +4940,7 @@ public class Nise286 {
         boolean newCF;
         switch (reg) {
             case 0: // ROL
-                logger.log(Level.TRACE, "ROL EW,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "ROL EW,1 modrw:$%02x".formatted(modRw));
 
                 uans = ew;
                 regs.setCF((uans & 0x8000) != 0);
@@ -4954,7 +4952,7 @@ public class Nise286 {
                 regs.setAF(true); // TBD
                 break;
             case 1: // ROR
-                logger.log(Level.TRACE, "ROR EW,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "ROR EW,1 modrw:$%02x".formatted(modRw));
 
                 uans = ew;
                 regs.setCF((uans & 0x0001) != 0);
@@ -4965,7 +4963,7 @@ public class Nise286 {
                 regs.setAF(true); // TBD
                 break;
             case 2: // RCL
-                logger.log(Level.TRACE, "RCL EW,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "RCL EW,1 modrw:$%02x".formatted(modRw));
 
                 uans = ew;
                 newCF = (uans & 0x8000) != 0;
@@ -4977,7 +4975,7 @@ public class Nise286 {
                 regs.setAF(true); // TBD
                 break;
             case 3: // RCR
-                logger.log(Level.TRACE, "RCR EW,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "RCR EW,1 modrw:$%02x".formatted(modRw));
 
                 uans = ew;
                 newCF = (uans & 0x0001) != 0;
@@ -4990,7 +4988,7 @@ public class Nise286 {
                 break;
             case 4: // SHL
             case 6: // same SHL
-                logger.log(Level.TRACE, "SHL EW,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "SHL EW,1 modrw:$%02x".formatted(modRw));
                 uans = ew;
                 regs.setCF((uans & 0x8000) != 0);
                 uans <<= 1;
@@ -5000,20 +4998,20 @@ public class Nise286 {
                 regs.setAF(true); // TBD
                 break;
             case 5: // SHR
-                logger.log(Level.TRACE, "SHR EW,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "SHR EW,1 modrw:$%02x".formatted(modRw));
                 uans = ew;
                 regs.setCF((uans & 0x0001) != 0);
-                uans >>>= 1;
+                uans = (short) ((uans & 0xffff) >>> 1);
                 ans = uans;
                 regs.setOF((ans & 0x8000) != 0);
                 regs.setSZPFw(ans);
                 regs.setAF(true); // TBD
                 break;
             case 7: // SAR
-                logger.log(Level.TRACE, "SAR EW,1 modrw:$%02x".formatted(modRw & 0xffff));
+                logger.log(Level.TRACE, "SAR EW,1 modrw:$%02x".formatted(modRw));
                 ans = ew;
                 regs.setCF((ans & 0x01) != 0);
-                ans >>>= 1;
+                ans >>= 1;
                 uans = ans;
                 regs.setOF(false);
                 regs.setSZPFw(ans);
@@ -5105,7 +5103,7 @@ public class Nise286 {
                 case 5: // SHR
                     uans = eb;
                     regs.setCF((uans & 1) != 0);
-                    uans >>>= 1;
+                    uans = (byte) ((uans & 0xff) >>> 1);
                     regs.setSZPFb(uans);
                     break;
                 case 6: // (SMO)
@@ -5113,7 +5111,7 @@ public class Nise286 {
                 case 7: // SAR
                     int ians = eb;
                     regs.setCF((ians & 1) != 0);
-                    ians >>>= 1;
+                    ians >>= 1;
                     uans = (byte) ians;
                     regs.setSZPFb(uans);
                     regs.setOF(false);
@@ -5151,7 +5149,7 @@ public class Nise286 {
                 case 5: // SHR Logical Shift
                     uans = eb;
                     regs.setCF(((uans & 0xff) & (1 << (count - 1))) != 0);
-                    uans >>>= count;
+                    uans = (byte) ((uans & 0xff) >>> count);
                     regs.setSZPFb(uans);
                     break;
                 case 6: // (SMO)
@@ -5159,7 +5157,7 @@ public class Nise286 {
                 case 7: // SAR Arithmetic shift
                     int ians = eb & 0xff;
                     regs.setCF((ians & (1 << (count - 1))) != 0);
-                    ians >>>= count;
+                    ians >>= count;
                     uans = (byte) ians;
                     regs.setSZPFb(uans);
                     break;
@@ -5242,7 +5240,7 @@ public class Nise286 {
                 case 5: // SHR
                     uans = ew;
                     regs.setCF((ans & 0x01) != 0);
-                    uans >>>= 1;
+                    uans = (short) ((uans & 0xffff) >>> 1);
                     ans = uans;
                     uans = ans;
                     regs.setOF((ans & 0x8000) != 0);
@@ -5252,7 +5250,7 @@ public class Nise286 {
                 case 7: // SAR
                     ans = ew;
                     regs.setCF((ans & 0x01) != 0);
-                    ans >>>= 1;
+                    ans >>= 1;
                     uans = ans;
                     regs.setOF(false);
                     regs.setSZPFw(uans);
@@ -5286,18 +5284,18 @@ public class Nise286 {
                     break;
                 case 5: // SHR (logical shift right)
                     uans = ew;
-                    uans >>>= count - 1;
+                    uans = (short) ((uans & 0xffff) >>> (count - 1));
                     regs.setCF((uans & 0x01) != 0);
-                    uans >>>= 1;
+                    uans = (short) ((uans & 0xffff) >>> 1);
                     ans = uans;
                     regs.setSZPFw(uans);
                     regs.setAF(true); // TBD
                     break;
                 case 7: // SAR
                     ans = ew;
-                    ans >>>= count - 1;
+                    ans >>= count - 1;
                     regs.setCF((ans & 0x01) != 0);
-                    ans >>>= 1;
+                    ans >>= 1;
                     uans = ans;
                     regs.setSZPFw(uans);
                     regs.setAF(true); // TBD
@@ -5335,7 +5333,7 @@ public class Nise286 {
         }
 
         regs.setAL((byte) ((regs.getAH() & 0xff) * 0x0a + (regs.getAL() & 0xff)));
-        regs.setAH((short) 0);
+        regs.setAH((byte) 0);
         regs.setSZPFb(regs.getAL());
         regs.setAF(true); // TBD
     }
@@ -5346,17 +5344,17 @@ public class Nise286 {
         logger.log(Level.TRACE, "CALL near $%04x".formatted(imm16 & 0xffff));
         regs.subSP(2);
         mem.pokeW(regs.getSS_SP(), regs.ip);
-        regs.ip = (short) ((regs.ip & 0xffff) + (imm16 & 0xffff));
+        regs.ip = (short) (regs.ip + (imm16 & 0xffff));
     }
 
     // 0xe2
     private void LOOP_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         if ((regs.getCX() & 0xffff) < 100) logger.log(Level.TRACE, "LOOP short $%02x CX:$%04x".formatted(imm8 & 0xff, regs.getCX() & 0xffff));
 
         regs.decCX();
         if (regs.getCX() != 0) {
-            regs.ip = (short) ((regs.ip & 0xffff) + imm8);
+            regs.ip = (short) (regs.ip + imm8);
         }
     }
 
@@ -5393,15 +5391,15 @@ public class Nise286 {
         short imm16 = fetchW();
         logger.log(Level.TRACE, "JMP near $%04x".formatted(imm16 & 0xffff));
 
-        regs.ip = (short) ((regs.ip & 0xffff) + (imm16 & 0xffff));
+        regs.ip = (short) (regs.ip + (imm16 & 0xffff));
     }
 
     // 0xeb
     private void JMP_short() {
-        byte imm8 = fetch();
+        byte imm8 = fetch(); // signed
         logger.log(Level.TRACE, "JMP short $%02x".formatted(imm8 & 0xff));
 
-        regs.ip = (short) ((regs.ip & 0xffff) + imm8);
+        regs.ip = (short) (regs.ip + imm8);
     }
 
     // 0xec
@@ -5451,12 +5449,12 @@ public class Nise286 {
     // 0xf6
     private void GRP3B() {
         byte modRw = fetch();
-        logger.log(Level.TRACE, "GRP3B modrw:$%02x".formatted(modRw));
+        logger.log(Level.TRACE, "GRP3B modrw:$%02x".formatted(modRw & 0xff));
         byte reg = (byte) ((modRw & 0x38) >> 3); // For segment registers, ignore bit 5
         byte rm = (byte) (modRw & 7);
         int mod = (modRw & 0xff) >> 6;
 
-        byte eb = 0;
+        byte eb = 0; // signed
         int ptr = 0;
         switch (mod) {
             case 0:
@@ -5477,12 +5475,12 @@ public class Nise286 {
                 break;
         }
 
-        byte ib;
+        byte ib; // signed
         byte ans = 0;
         switch (reg) {
             case 0: // TEST EB,IB
                 ib = fetch();
-                ans = (byte) (eb & (ib & 0xff));
+                ans = (byte) (eb & ib);
                 regs.setSZPFb(ans);
                 regs.setOF(false);
                 regs.setCF(false);
@@ -5518,7 +5516,7 @@ public class Nise286 {
                 ans = (byte) ((regs.getAX() & 0xffff) / (eb & 0xff));
                 mod = (byte) ((regs.getAX() & 0xffff) % (eb & 0xff));
                 regs.setAL(ans);
-                regs.setAH((short) mod);
+                regs.setAH((byte) mod);
                 break;
             case 7: // IDIV EB
                 throw new UnsupportedOperationException();
@@ -5605,13 +5603,13 @@ public class Nise286 {
                 regs.setDX((short) ((ians32 & 0xffff_0000) >> 16));
                 break;
             case 6: // DIV EW
-                int ans32d = (((regs.getDX() & 0xffff) << 16) + (regs.getAX() & 0xffff)) / (ew & 0xffff);
+                int ans32d = (int) ((((regs.getDX() & 0xffffL) << 16) + (regs.getAX() & 0xffff)) / (ew & 0xffff));
                 int modud = (((regs.getDX() & 0xffff) << 16) + (regs.getAX() & 0xffff)) % (ew & 0xffff);
                 regs.setAX((short) ans32d);
                 regs.setDX((short) modud);
                 break;
             case 7: // IDIV EB
-                int ians32d = (((regs.getDX() & 0xffff) << 16) + (regs.getAX() & 0xffff)) / (ew & 0xffff);
+                int ians32d = (int) ((((regs.getDX() & 0xffffL) << 16) + (regs.getAX() & 0xffff)) / ew);
                 int modu = (((regs.getDX() & 0xffff) << 16) + (regs.getAX() & 0xffff)) % (ew & 0xffff);
                 regs.setAX((short) ians32d);
                 regs.setDX((short) modu);
@@ -5675,7 +5673,7 @@ public class Nise286 {
         byte rm = (byte) (modRw & 7);
         int mod = (modRw & 0xff) >> 6;
 
-        byte eb = 0;
+        byte eb = 0; // signed
         int ptr = 0;
 
         switch (mod) {

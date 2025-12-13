@@ -70,20 +70,20 @@ public class FMTimer {
             case 0x10:
             case 0x11:
                 // timerA
-                if (adr == 0x10) timerARegH = data;
+                if (adr == 0x10) timerARegH = data & 0xff;
                 else timerARegL = data & 3;
                 timerA = 1024 - ((timerARegH << 2) + timerARegL);
                 break;
 
             case 0x12:
                 // timerB
-                timerB = (256 - (int) data) << (10 - 6);
+                timerB = (256 - (data & 0xff)) << (10 - 6);
                 break;
 
             case 0x14:
                 // Timer Control Register
                 timerReg = data & 0x8F;
-                statReg &= 0xff - ((data >> 4) & 3);
+                statReg &= 0xff - ((data >>> 4) & 3);
                 break;
         }
     }
@@ -93,20 +93,20 @@ public class FMTimer {
             case 0x24:
             case 0x25:
                 // timerA
-                if (adr == 0x24) timerARegH = data;
+                if (adr == 0x24) timerARegH = data & 0xff;
                 else timerARegL = data & 3;
                 timerA = 1024 - ((timerARegH << 2) + timerARegL);
                 break;
 
             case 0x26:
                 // timerB
-                timerB = (256 - (int) data) << (10 - 6);
+                timerB = (256 - (data & 0xff)) << (10 - 6);
                 break;
 
             case 0x27:
                 // Timer Control Register
                 timerReg = data & 0x8F;
-                statReg &= 0xff - ((data >> 4) & 3);
+                statReg &= 0xff - ((data >>> 4) & 3);
                 break;
         }
     }

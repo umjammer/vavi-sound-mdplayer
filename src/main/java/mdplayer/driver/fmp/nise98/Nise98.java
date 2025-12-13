@@ -177,7 +177,7 @@ public class Nise98 {
     }
 
     public byte inpB(short port) {
-        logger.log(Level.DEBUG, "<Nise98>IN  Port:$%04x", port);
+        logger.log(Level.DEBUG, "<Nise98>IN  Port:$%04x".formatted(port & 0xffff));
         switch (port & 0xffff) {
             case 0x0000: // Master interrupt Controller
                 return 0;
@@ -236,6 +236,7 @@ public class Nise98 {
                  //        ~~~~ Here, FMP is completely ignored (however, if it is 0xff, the judgment process ends.
                 //              It is likely that further investigation will be carried out in subsequent processes).
 
+logger.log(Level.INFO, "fmReg188.ongen: " + fmReg188.ongen);
                 if (fmReg188.ongen == OngenBoardType.None) return (byte) 0xff;
                 else if (fmReg188.ongen == OngenBoardType.PC9801_26K) return (byte) 0xff;
                 else if (fmReg188.ongen == OngenBoardType.PC9801_86B) return (byte) 0b0100_0001;
@@ -375,7 +376,7 @@ public class Nise98 {
 
     private byte fmPortInPort(FmStatus fs, short port) {
         logger.log(Level.DEBUG, "<Nise98> --- IN  FM Port:$%03x".formatted(port & 0xfff));
-        switch (port & 0xffff) {
+        switch (port & 0xff) { // byte size
             case 0x88: // FM port
                 if (fs.ongen == OngenBoardType.None)
                     return (byte) 0xff;
@@ -435,14 +436,14 @@ public class Nise98 {
         if (fs.ongen == OngenBoardType.None) return;
 
         ChipDatum cd;
-        switch (port & 0xffff) {
+        switch (port & 0xff) { // byte size
             case 0x088: // FM port adr
                 fs.p88lastAdr = data;
                 break;
             case 0x08a: // FM port val
                 if (fs.regs != null) fs.regs[fs.p88lastAdr & 0xff] = data;
                 fs.timer.writeReg(fs.p88lastAdr, data);
-                cd = new ChipDatum(port, fs.p88lastAdr & 0xff, data);
+                cd = new ChipDatum(port, fs.p88lastAdr & 0xff, data & 0xff);
                 opnaWrite.accept(cd);
                 break;
             case 0x08c: // FM port val
@@ -465,15 +466,15 @@ public class Nise98 {
                     if (fs.adpcmReadMode) fs.adpcmPtr -= 2;
                     //fs.adpcmPtr = data;
                 } else if (fs.p8clastAdr == 0x08) {
-                    if (fs.adpcmMem != null) fs.adpcmMem[fs.adpcmPtr++] = data;
+                    if (fs.adpcmMem != null) fs.adpcmMem[fs.adpcmPtr++ & 0xff] = data;
                 } else if (fs.p8clastAdr == 0x10) {
                     //if (data == 0x13) fs.adpcmPtr++;
                 }
-                cd = new ChipDatum(port, fs.p8clastAdr & 0xff, data);
+                cd = new ChipDatum(port, fs.p8clastAdr & 0xff, data & 0xff);
                 opnaWrite.accept(cd);
                 break;
             default:
-                throw new UnsupportedOperationException("<Nise98>Request port:$%04x".formatted(port));
+                throw new UnsupportedOperationException("<Nise98>Request port:$%04x".formatted(port & 0xffff));
         }
     }
 
