@@ -3,6 +3,7 @@ package mdplayer.driver.moonDriver;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -46,14 +47,14 @@ public class MoonDriverJava extends BaseDriver {
     private IDriver moonDriverDriver = null;
     private MoonDriverFileType mtype;
 
-    private String PlayingFileName;
+    private String playingFileName;
 
     public String getPlayingFileName() {
-        return PlayingFileName;
+        return playingFileName;
     }
 
     public void setPlayingFileName(String value) {
-        PlayingFileName = value;
+        playingFileName = value;
     }
 
     public MoonDriverJava() {
@@ -104,8 +105,8 @@ logger.log(Level.DEBUG, "type: " + mtype);
         vgmSpeed = 1;
 
 //#if DEBUG
-        // The actual chip thread skips processing (for debugging)
-        if (model == EnmModel.RealModel) return true;
+//        // The actual chip thread skips processing (for debugging)
+//        if (model == EnmModel.RealModel) return true;
 //#endif
 
         if (mtype == MoonDriverFileType.MDL) return initMDL();
@@ -120,11 +121,11 @@ logger.log(Level.DEBUG, "type: " + mtype);
     @Override
     public void processOneFrame() {
 //#if DEBUG
-        // The actual chip thread skips processing (for debugging)
-        if (model == EnmModel.RealModel) {
-            stopped = true;
-            return;
-        }
+//        // The actual chip thread skips processing (for debugging)
+//        if (model == EnmModel.RealModel) {
+//            stopped = true;
+//            return;
+//        }
 //#endif
         if (stopped) return;
 
@@ -159,7 +160,7 @@ logger.log(Level.DEBUG, "type: " + mtype);
         moonDriverCompiler.init();
         moonDriverCompiler.setCompileSwitch("SRC");
         moonDriverCompiler.setCompileSwitch("MoonDriverOption=-i");
-        moonDriverCompiler.setCompileSwitch("MoonDriverOption=%s".formatted(PlayingFileName));
+        moonDriverCompiler.setCompileSwitch("MoonDriverOption=%s".formatted(playingFileName));
 
         MmlDatum[] ret;
         CompilerInfo info;
@@ -285,6 +286,7 @@ logger.log(Level.DEBUG, "type: " + mtype);
 
         List<ChipAction> lca = new ArrayList<>();
         ChipAction ca;
+logger.log(Level.INFO, "useChip: " + Arrays.toString(useChip));
         if (useChip[0] == YmF278BChip.class) {
             ca = new MoonDriverChipAction(this::opl4Write, this::opl4WaitSend);
         } else {
@@ -296,7 +298,7 @@ logger.log(Level.DEBUG, "type: " + mtype);
                 lca,
                 buf.toArray(MmlDatum[]::new),
                 this::appendFileReaderCallback,
-                PlayingFileName, (double) 44100, 0);
+                playingFileName, (double) 44100, 0);
 
         moonDriverDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YMF278B", 33868800));
         moonDriverDriver.startMusic(0);
@@ -306,7 +308,7 @@ logger.log(Level.DEBUG, "type: " + mtype);
 
     private Stream appendFileReaderCallback(String arg) {
 
-        String fn = Path.combine(Path.getDirectoryName(PlayingFileName), arg);
+        String fn = Path.combine(Path.getDirectoryName(playingFileName), arg);
 
         if (!File.exists(fn)) return null;
 

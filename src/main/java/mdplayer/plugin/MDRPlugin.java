@@ -4,12 +4,11 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
 import mdplayer.Audio;
-import mdplayer.Chip.Unused;
+import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
-import mdplayer.driver.moonDriver.MoonDriver;
 import mdplayer.driver.moonDriver.MoonDriverJava;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
@@ -61,13 +60,14 @@ logger.log(Level.WARNING, "cannot start: " + this);
         byte sndgen = vgmBuf[7];
         boolean EX_OPL3 = ((sndgen & 2) != 0);
         boolean OPL4_NOUSE = ((sndgen & 1) == 0);
+        Class<? extends Chip>[] useChipFromMdr = new Class[1];
 
         if (OPL4_NOUSE && !EX_OPL3) {
             logger.log(Level.WARNING, "The combination of OPL4_NOUSE and EX_OPL3 is invalid.");
             return false;
         }
 
-        if (EX_OPL3 &&OPL4_NOUSE ) {
+        if (EX_OPL3 && OPL4_NOUSE) {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
             chip.instrument = audio.chipRegister.chip(YmF262Chip.class).instrument(0);
@@ -81,6 +81,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipLED.put("PriOPL3", 1);
 
             put(YmF262Chip.class, chip);
+            useChipFromMdr[0] = YmF262Chip.class;
         } else {
             MDSound.Chip chip = new MDSound.Chip();
             chip.id = 0;
@@ -95,6 +96,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipLED.put("PriOPL4", 1);
 
             put(YmF278BChip.class, chip);
+            useChipFromMdr[0] = YmF278BChip.class;
         }
 
         if (hiyorimiDeviceFlag == 0x3 && hiyorimiNecessary) hiyorimiNecessary = true;
@@ -109,11 +111,11 @@ logger.log(Level.WARNING, "cannot start: " + this);
 //        audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), RnmModel.RealModel);
 //        audio.chipRegister.chip(Ym2203Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
-        audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
+        audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, useChipFromMdr,
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (audio.driverReal != null) {
-            audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
+            audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, useChipFromMdr,
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }
