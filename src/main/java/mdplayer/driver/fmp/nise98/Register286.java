@@ -104,7 +104,7 @@ public class Register286 {
     }
 
     public void addSP(int value) {
-        eRegs[4] += value;
+        eRegs[4] = (short) (eRegs[4] + value);
     }
 
     public void subSP(int value) {
