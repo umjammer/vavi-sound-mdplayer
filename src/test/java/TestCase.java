@@ -5,12 +5,23 @@
  */
 
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.github.kwhat.jnativehook.GlobalScreen;
+import com.github.kwhat.jnativehook.NativeHookException;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
+import mdplayer.PlayList.Music;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import vavi.util.Debug;
@@ -37,37 +48,113 @@ public class TestCase {
     @Property
     String file;
 
+    @Property
+    String fmpDir;
+
+    @Property
+    String dir;
+
+    @Property
+    String ext;
+
     @BeforeEach
     void setup() throws Exception {
         if (localPropertiesExists()) {
             PropsEntity.Util.bind(this);
         }
 
+        System.setProperty("mdplayer.fmp.dir", fmpDir);
         System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
 Debug.println("volume: " + volume + ", " + System.getProperty("mdplayer.volume") + ", " + System.getProperty("user.dir") + ", " + System.getProperty("mdplayer.variant.ymf262"));
+    }
+
+    private BasePlugin plugin;
+
+    /** */
+    void play() throws Exception {
+Debug.println("filename: " + file);
+        FileFormat format = FileFormat.getFileFormat(file);
+Debug.println("format: " + format.getClass().getSimpleName());
+        var r = format.load(null, file);
+        plugin = (BasePlugin) format.getPlugin();
+        plugin.setVGMBuffer(format, r.getItem1(), file, null, 0, 0, r.getItem2());
+Debug.println("plugin: " +plugin.getClass().getSimpleName());
+        plugin.play(file, format);
+    }
+
+    @Test
+    @DisplayName("play one in local.properties")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    void test1() throws Exception {
+        play();
+
+        CountDownLatch cdl = new CountDownLatch(1);
+        cdl.await();
+    }
+
+    @Test
+    @DisplayName("play random one in local.properties")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    void test2() throws Exception {
+        List<String> files = new ArrayList<>();
+        Files.readAllLines(Paths.get("local.properties")).forEach(line -> {
+            if (line.matches("^#?file\\s*?=.*$")) {
+                String file = line.substring(line.indexOf("=") + 1);
+System.err.println(file);
+                Path path = Path.of(file);
+                if (Files.exists(path) && !Files.isDirectory(path))
+                    files.add(file);
+            }
+        });
+
+        Random random = new Random(System.currentTimeMillis());
+
+        GlobalScreen.registerNativeHook();
+        GlobalScreen.addNativeKeyListener(new NativeKeyListener() {
+            @Override public void nativeKeyReleased(NativeKeyEvent event) {
+                int keyCode = event.getKeyCode();
+Debug.println("keyTyped: " + keyCode);
+                if ((event.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0 && keyCode == NativeKeyEvent.VC_N) {
+                    plugin.stop();
+                    plugin.close(); // TODO doesn't work well
+                }
+            }
+        });
+
+        while (true) {
+            this.file = files.get(random.nextInt(files.size()));
+            play();
+        }
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    void test3() throws Exception {
+        List<Path> paths = Files.walk(Paths.get(dir))
+                .filter(p -> p.getFileName().toString().toUpperCase().endsWith(ext))
+                .toList();
+        paths.forEach(p -> {
+            try {
+                FileFormat format = FileFormat.getFileFormat(p.toString());
+Debug.println(p);
+                var r = format.load(null, p.toString());
+                Music music = format.getMusic(null, r.getItem1(), null, null, null).get(0);
+Debug.println(music);
+            } catch (Exception e) {
+            }
+        });
     }
 
     /**
      * @param args 0: audio file
      */
     public static void main(String[] args) throws Exception {
-        String filename = args[0];
-Debug.println("filename: " + filename);
-        FileFormat format = FileFormat.getFileFormat(filename);
-Debug.println(format.getClass().getName());
-        var r = format.load(null, filename);
-        BasePlugin plugin = (BasePlugin) format.getPlugin();
-        plugin.setVGMBuffer(format, r.getItem1(), filename, null, 0, 0, r.getItem2());
-Debug.println(plugin.getClass().getName());
-        plugin.play(filename, format);
-    }
+        TestCase app = new TestCase();
+        if (args.length == 1)
+            app.file = args[0];
+        else
+            app.setup();
 
-    @Test
-    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
-    void test1() throws Exception {
-        main(new String[] {file});
-
-        CountDownLatch cdl = new CountDownLatch(1);
-        cdl.await();
+        app.play();
     }
 }

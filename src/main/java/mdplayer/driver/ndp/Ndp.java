@@ -35,10 +35,6 @@ public class Ndp extends BaseDriver {
 
     @Override
     public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        throw new UnsupportedOperationException();
-    }
-
-    public Vgm.Gd3 getGD3Info(byte[] buf, int vgmGd3) {
         Gd3 ret = new Gd3();
         if (buf != null && buf.length > 8) {
             if (buf.length > 7 + 0x0b && (buf[7 + 0x0b] & 2) != 0) {
@@ -139,10 +135,10 @@ logger.log(Level.ERROR, e.getMessage(), e);
         z80.getRegisters().setSP((short) 0xf380);
         z80.continue_();
         playFG = (byte) (z80.getRegisters().getA() & 0xf);
-        playFG = (byte) (((z80.getMemory().get(0x4000) | z80.getMemory().get(0x4001)) == 0 ? 1 : (playFG & 1)) |
-                        ((z80.getMemory().get(0x4002) | z80.getMemory().get(0x4003)) == 0 ? 2 : (playFG & 2)) |
-                        ((z80.getMemory().get(0x4004) | z80.getMemory().get(0x4005)) == 0 ? 4 : (playFG & 4)) |
-                        ((z80.getMemory().get(0x4006) | z80.getMemory().get(0x4007)) == 0 ? 8 : (playFG & 8))
+        playFG = (byte) ((((z80.getMemory().get(0x4000) & 0xff) | (z80.getMemory().get(0x4001) & 0xff)) == 0 ? 1 : (playFG & 1)) |
+                        (((z80.getMemory().get(0x4002) & 0xff) | (z80.getMemory().get(0x4003) & 0xff)) == 0 ? 2 : (playFG & 2)) |
+                        (((z80.getMemory().get(0x4004) & 0xff) | (z80.getMemory().get(0x4005) & 0xff)) == 0 ? 4 : (playFG & 4)) |
+                        (((z80.getMemory().get(0x4006) & 0xff) | (z80.getMemory().get(0x4007) & 0xff)) == 0 ? 8 : (playFG & 8))
         );
         if (playFG == 0xf) stopped = true;
 

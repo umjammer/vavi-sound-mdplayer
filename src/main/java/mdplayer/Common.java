@@ -94,9 +94,15 @@ public class Common {
         return dat;
     }
 
-    /** find an asciiz string from a byte array */
+    /**
+     * find an asciiz string from a byte array
+     * @return nullable
+     */
     public static byte[] getByteArray(byte[] buf, int[] adr) {
-        if (adr[0] >= buf.length) throw new IndexOutOfBoundsException(adr[0] + " > " + buf.length);
+        if (adr[0] >= buf.length) {
+            logger.log(Level.WARNING, adr[0] + " > " + buf.length);
+            return null;
+        }
 
         List<Byte> ary = new ArrayList<>();
         while (buf[adr[0]] != 0 || buf[adr[0] + 1] != 0) {
@@ -129,36 +135,40 @@ public class Common {
 
         try {
             int[] adr_ = new int[] {adr};
-            gd3.trackName = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
-            gd3.trackNameJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
-            gd3.gameName = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
-            gd3.gameNameJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
-            gd3.systemName = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
-            gd3.systemNameJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
-            gd3.composer = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
-            gd3.composerJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
-            gd3.converted = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
-            gd3.vgmBy = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
-            gd3.notes = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8);
+            try { gd3.trackName = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.trackName = null; }
+            try { gd3.trackNameJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.trackNameJ = null; }
+            try { gd3.gameName = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.gameName = null; }
+            try { gd3.gameNameJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.gameNameJ = null; }
+            try { gd3.systemName = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.systemName = null; }
+            try { gd3.systemNameJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.systemNameJ = null; }
+            try { gd3.composer = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.composer = null; }
+            try { gd3.composerJ = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.composerJ = null; }
+            try { gd3.converted = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.converted = null; }
+            try { gd3.vgmBy = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.vgmBy = null; }
+            try { gd3.notes = new String(Common.getByteArray(buf, adr_), StandardCharsets.UTF_8); } catch (Exception e) { gd3.notes = null; }
             // Lyric(Custom extensions)
             byte[] bLyric = Common.getByteArray(buf, adr_);
-            gd3.lyrics = new ArrayList<>();
-            int i = 0;
-            int st = 0;
-            while (i < bLyric.length) {
-                int h = bLyric[i] & 0xff;
-                int l = bLyric[i + 1] & 0xff;
-                if ((h == 0x5b && l == 0x00 && i != 0) || i >= bLyric.length - 2) {
-                    if ((i >= bLyric.length - 2) || (bLyric[i + 2] != 0x5b || bLyric[i + 3] != 0x00)) {
-                        String m = new String(bLyric, st, i - st + ((i >= bLyric.length - 2) ? 2 : 0), StandardCharsets.UTF_8);
-                        st = i;
+            if (bLyric != null) {
+                gd3.lyrics = new ArrayList<>();
+                int i = 0;
+                int st = 0;
+                while (i < bLyric.length) {
+                    int h = bLyric[i] & 0xff;
+                    int l = bLyric[i + 1] & 0xff;
+                    if ((h == 0x5b && l == 0x00 && i != 0) || i >= bLyric.length - 2) {
+                        if ((i >= bLyric.length - 2) || (bLyric[i + 2] != 0x5b || bLyric[i + 3] != 0x00)) {
+                            String m = new String(bLyric, st, i - st + ((i >= bLyric.length - 2) ? 2 : 0), StandardCharsets.UTF_8);
+                            st = i;
 
-                        int cnt = Integer.parseInt(m.substring(1, m.indexOf("]") - 1));
-                        m = m.substring(m.indexOf("]") + 1);
-                        gd3.lyrics.add(new Tuple3<>(cnt, cnt, m));
+                            int cnt = Integer.parseInt(m.substring(1, m.indexOf("]") - 1));
+                            m = m.substring(m.indexOf("]") + 1);
+                            gd3.lyrics.add(new Tuple3<>(cnt, cnt, m));
+                        }
                     }
+                    i += 2;
                 }
-                i += 2;
+            } else {
+                gd3.lyrics = null;
             }
 
         } catch (Exception ex) {

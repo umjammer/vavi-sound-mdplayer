@@ -334,6 +334,7 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
             return false;
         }
 
+logger.log(Level.DEBUG, "driver: " + audio.driverVirtual.getClass().getSimpleName());
         while (true) {
 //logger.log(Level.TRACE, "loop HERE");
             short[] buffer = new short[4];

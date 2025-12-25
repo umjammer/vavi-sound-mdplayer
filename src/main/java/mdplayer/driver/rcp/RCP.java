@@ -699,8 +699,8 @@ public class RCP extends BaseDriver {
         case 0x98: // CH Exclusive
             pt += skipPtr;
             ex = new ArrayList<>();
-            while (ebs[pt] == 0xf7) {
             ex.add((byte) 0xf0);
+            while (ebs[pt] == (byte) 0xf7) {
                 if (isG36) {
                     pt++;
                     ex.add(ebs[pt++]);
@@ -868,7 +868,7 @@ public class RCP extends BaseDriver {
                 ex.add((byte) (pk[1] / 0x100));
                 ex.add((byte) (pk[2] & 0xff));
                 ex.add((byte) (pk[2] / 0x100));
-                while (ebs[pt] == 0xf7) {
+                while (ebs[pt] == (byte) 0xf7) {
                     pt++;
                     ex.add(ebs[pt++]);
                     ex.add(ebs[pt++]);
@@ -886,7 +886,7 @@ public class RCP extends BaseDriver {
             } else {
                 ex.add((byte) pk[2]);
                 ex.add((byte) pk[3]);
-                while (ebs[pt] == 0xf7) {
+                while (ebs[pt] == (byte) 0xf7) {
                     pt += 2;
                     ex.add(ebs[pt++]);
                     ex.add(ebs[pt++]);
@@ -905,7 +905,7 @@ public class RCP extends BaseDriver {
                     pEvt,
                     0,
                     MIDISpEventType.LoopEnd,
-                    new byte[][] {new byte[] {(byte) pk[1]}}
+                    new byte[][] {{(byte) pk[1]}}
             );
             pt += skipPtr;
             break;
@@ -1435,7 +1435,7 @@ public class RCP extends BaseDriver {
 
         while (j < eve.getMIDIMessages()[0].length - 2) {
             Byte n = eve.getMIDIMessages()[0][j];
-            switch ((int) n) {
+            switch (n & 0xff) {
             case 0x80:
                 n = eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 2];
                 break;
@@ -1459,7 +1459,7 @@ public class RCP extends BaseDriver {
                 i++;
             }
             j++;
-            if (n == 0xf7) break;
+            if (n == (byte) 0xf7) break;
             if (i >= msgBuf.length) {
                 logger.log(Level.TRACE, "sefChExclusive:Detects and skips exclusives that exceed the buffer.");
                 return; // Do not send exclusive when buffer is over
@@ -1473,11 +1473,11 @@ public class RCP extends BaseDriver {
     }
 
     void sefBankProgram(MIDITrack trk, MIDIEvent eve) {
-        msgBuf[0] = (byte) (eve.getMIDIMessages()[1][0] + (trk.getOutChannel() % 16));
+        msgBuf[0] = (byte) ((eve.getMIDIMessages()[1][0] & 0xff) + (trk.getOutChannel() % 16));
         msgBuf[1] = eve.getMIDIMessages()[1][1];
         msgBuf[2] = eve.getMIDIMessages()[1][2];
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 3);
-        msgBuf[0] = (byte) (eve.getMIDIMessages()[0][0] + (trk.getOutChannel() % 16));
+        msgBuf[0] = (byte) ((eve.getMIDIMessages()[0][0] & 0xff) + (trk.getOutChannel() % 16));
         msgBuf[1] = eve.getMIDIMessages()[0][1];
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 2);
     }
@@ -1487,7 +1487,7 @@ public class RCP extends BaseDriver {
     }
 
     void sefMIDIChChange(MIDITrack trk, MIDIEvent eve) {
-        int ch = eve.getMIDIMessages()[0][0];
+        int ch = eve.getMIDIMessages()[0][0] & 0xff;
         if (ch == 0) {
             trk.setMute(true);
             return;
@@ -1499,7 +1499,7 @@ public class RCP extends BaseDriver {
     }
 
     void sefTempoChange(MIDITrack trk, MIDIEvent eve) {
-        double mul = eve.getMIDIMessages()[0][0] / 64.0;
+        double mul = (eve.getMIDIMessages()[0][0] & 0xff) / 64.0;
 
         if (eve.getMIDIMessages()[0][1] == 0) {
             int Tempo = (int) (this.tempo * mul);
@@ -1608,7 +1608,7 @@ public class RCP extends BaseDriver {
     void sefLoopEnd(MIDITrack trk, MIDIEvent eve) {
         if (trk.getLoopTargetEvents().isEmpty()) return;
         MIDIEvent evt = trk.getLoopTargetEvents().pop();
-        if (evt.getMIDIMessages()[0][0] < eve.getMIDIMessages()[0][0] - 1) {
+        if ((evt.getMIDIMessages()[0][0] & 0xff) < (eve.getMIDIMessages()[0][0] & 0xff) - 1) {
             evt.getMIDIMessages()[0][0]++;
             trk.getLoopTargetEvents().push(evt);
             trk.setLoopOrSameTargetEventIndex(trk.getNowPart().getNextEvent(evt).getNumber());
@@ -1728,7 +1728,7 @@ public class RCP extends BaseDriver {
                 i++;
             }
             j++;
-            if ((n & 0xff) == 0xf7) break;
+            if (n == (byte) 0xf7) break;
             if (i >= msgBuf.length) {
                 logger.log(Level.TRACE, "sefUserExclusiveN: Detects and skips exclusive requests that exceed the buffer.");
                 return; // Do not send exclusive when buffer is over
@@ -2056,13 +2056,13 @@ public class RCP extends BaseDriver {
         }
 
         for (int i = 0; i < 82; i++) {
-            level.add((byte) (buf[adr + i * 4 + 0] >> 4));
+            level.add((byte) (buf[adr + i * 4 + 0] >>> 4));
             level.add((byte) (buf[adr + i * 4 + 0] & 0xf));
-            panpot.add((byte) (buf[adr + i * 4 + 1] >> 4));
+            panpot.add((byte) (buf[adr + i * 4 + 1] >>> 4));
             panpot.add((byte) (buf[adr + i * 4 + 1] & 0xf));
-            reverb.add((byte) (buf[adr + i * 4 + 2] >> 4));
+            reverb.add((byte) (buf[adr + i * 4 + 2] >>> 4));
             reverb.add((byte) (buf[adr + i * 4 + 2] & 0xf));
-            chorus.add((byte) (buf[adr + i * 4 + 3] >> 4));
+            chorus.add((byte) (buf[adr + i * 4 + 3] >>> 4));
             chorus.add((byte) (buf[adr + i * 4 + 3] & 0xf));
         }
 
