@@ -69,10 +69,10 @@ public class Memory68 {
     }
 
     public int peekL(int ptr) { // BE
-        int adr1 = ptr % mem.length;
-        int adr2 = (ptr + 1) % mem.length;
-        int adr3 = (ptr + 2) % mem.length;
-        int adr4 = (ptr + 3) % mem.length;
+        int adr1 = (int) (((ptr + 0) & 0xffff_ffffL) % mem.length);
+        int adr2 = (int) (((ptr + 1) & 0xffff_ffffL) % mem.length);
+        int adr3 = (int) (((ptr + 2) & 0xffff_ffffL) % mem.length);
+        int adr4 = (int) (((ptr + 3) & 0xffff_ffffL) % mem.length);
         int[] m = new int[1];
         if (checkAndReadHookAddressLong(adr1, /* out */ m)) {
             return m[0];

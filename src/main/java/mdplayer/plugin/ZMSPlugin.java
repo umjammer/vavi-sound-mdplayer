@@ -2,6 +2,7 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.Audio;
+import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.OkiM6258Chip;
@@ -41,12 +43,18 @@ public class ZMSPlugin extends BasePlugin {
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new Zms();
 
-//        audio.driverReal = null;
-//        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            audio.driverReal = new Zms();
-//        }
-        boolean r = _play();
-        if (!r) {
+        audio.driverReal = null;
+        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
+            audio.driverReal = new Zms();
+        }
+        boolean r = false;
+        try {
+            r = _play();
+            if (!r) {
+                logger.log(Level.WARNING, "cannot start: " + this);
+                return false;
+            }
+        } catch (URISyntaxException e) {
             logger.log(Level.WARNING, "cannot start: " + this);
             return false;
         }
@@ -59,7 +67,7 @@ public class ZMSPlugin extends BasePlugin {
     private String errMsg;
 
     /** */
-    private boolean _play() {
+    private boolean _play() throws URISyntaxException {
         startTrdVgmReal();
 
         hiyorimiNecessary = setting.getHiyorimiMode();
@@ -134,7 +142,7 @@ public class ZMSPlugin extends BasePlugin {
 
         audio.chipRegister.plugin(MidiPlugin.class).releaseAll();
         audio.chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
-        audio.chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode)); // , midiOuts, midiOutsType);
+//        audio.chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode)); // , midiOuts, midiOutsType);
 
         if (contains(Ym2151Chip.class, 0))
             audio.chipRegister.chip(Ym2151Chip.class).writeClock(0, 4000000, EnmModel.RealModel);
@@ -230,7 +238,7 @@ public class ZMSPlugin extends BasePlugin {
                         vgmBuf = ((Zms) audio.driverReal).getCompiledData();
                         audio.chipLED.put("PriMPCMX68k", 1);
                     } else {
-                        //compile error
+                        // compile error
                         errMsg = "Compile Error.Check console log.";
                         return false;
                     }
@@ -243,7 +251,7 @@ public class ZMSPlugin extends BasePlugin {
                         audio.chipLED.put("PriMPCMX68k", 1);
                         //File.WriteAllBytes("c:\\temp\\ge.zmd", vgmBuf);
                     } else {
-                        //compile error
+                        // compile error
                         errMsg = "Compile Error.Check console log.";
                         return false;
                     }

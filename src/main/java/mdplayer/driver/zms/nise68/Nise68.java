@@ -313,7 +313,7 @@ public class Nise68 {
 
     private int hkVsync(int ptr) {
         hkVsyncVal ^= (byte) 0x90;
-        return hkVsyncVal;
+        return hkVsyncVal & 0xff;
     }
 
     private int hkOPMr(int ptr) {
@@ -347,7 +347,7 @@ public class Nise68 {
 
     private int hkCZ6BM1fr(int ptr) {
         int n = (ptr & 0x10) != 0 ? 1 : 0;
-        return midiBoard[n].read((byte) ptr);
+        return midiBoard[n].read((byte) ptr) & 0xff;
     }
 
     private boolean hkCZ6BM1fw(int ptr, byte dat) {

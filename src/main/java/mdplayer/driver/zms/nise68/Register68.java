@@ -192,11 +192,11 @@ public class Register68 {
     }
 
     public void setDb(int n, byte val) {
-        d[n] = (d[n] & 0xffff_ff00) | val;
+        d[n] = (d[n] & 0xffff_ff00) | (val & 0xff);
     }
 
     public void setDw(int n, short val) {
-        d[n] = (d[n] & 0xffff_0000) | val;
+        d[n] = (d[n] & 0xffff_0000) | (val & 0xffff);
     }
 
     public void setDl(int n, int val) {

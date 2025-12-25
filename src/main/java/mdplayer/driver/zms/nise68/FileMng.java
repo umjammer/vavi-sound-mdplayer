@@ -1,13 +1,19 @@
 package mdplayer.driver.zms.nise68;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.HashMap;
 import java.util.Map;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 
+import static java.lang.System.getLogger;
+
 
 public class FileMng {
+
+    private static final Logger logger = getLogger(FileMng.class.getName());
 
     public String VCurrentPath;
     private final String pDir;
@@ -24,13 +30,13 @@ public class FileMng {
      */
     public FileMng(String physicalPath, String virtualPath /* = "C:" */) {
 
-        String p = physicalPath.toUpperCase();
-        String v = virtualPath.toUpperCase();
-        if (p.charAt(p.length() - 1) == '\\') p = p.substring(0, p.length() - 1);
-        if (v.charAt(v.length() - 1) == '\\') v = v.substring(0, v.length() - 1);
+        String p = physicalPath;
+        String v = virtualPath;
+        if (p.charAt(p.length() - 1) == java.io.File.separatorChar) p = p.substring(0, p.length() - 1);
+        if (v.charAt(v.length() - 1) == java.io.File.separatorChar) v = v.substring(0, v.length() - 1);
 
-        this.pDir = p; // .split('\\');
-        this.vDir = v; // .split('\\');
+        this.pDir = p; // .split(java.io.File.separatorChar);
+        this.vDir = v; // .split(java.io.File.separatorChar);
         this.VCurrentPath = v;
         vDrive.clear();
     }
@@ -88,7 +94,7 @@ public class FileMng {
      */
     public byte[] vReadAllBytes(String vFilename) {
         // Check if there are files in the virtual drive
-        String vFull = Path.combine(VCurrentPath, vFilename).toUpperCase();
+        String vFull = Path.combine(VCurrentPath, vFilename);
         if (vDrive.containsKey(vFull)) return vDrive.get(vFull).body;
 
         try {
@@ -96,13 +102,15 @@ public class FileMng {
             String pFull = convertPhysicalFileName(vFull);
             byte[] body;
             try {
-                body = File.readAllBytes(pFull);
+                body = File.readAllBytes(pFull.replace("\\", java.io.File.separator));
             } catch (Exception e) {
+logger.log(Level.ERROR, e.getMessage(), e);
                 body = null;
             }
             setVFile(vFilename, body);
             return body;
         } catch (Exception e) {
+logger.log(Level.ERROR, e.getMessage(), e);
             return null;
         }
     }

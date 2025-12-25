@@ -148,11 +148,11 @@ public class NiseM68 {
 
         switch (m) {
             case 0: // Dn
-                before = reg.getDb(r);
-                after = (short) (val | before);
+                before = (short) (reg.getDb(r) & 0xff);
+                after = (short) ((val & 0xff) | (before & 0xffff));
                 reg.setDb(r, (byte) after);
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 cycle = Cycle.Ori_b[0];
@@ -160,23 +160,23 @@ public class NiseM68 {
             case 1:
                 throw new UnsupportedOperationException();
             case 2: // (An)
-                before = mem.peekB(reg.getA().get(r));
-                after = (short) (val | before);
+                before = (short) (mem.peekB(reg.getA().get(r)) & 0xff);
+                after = (short) ((val & 0xff) | (before & 0xffff));
                 mem.pokeB(reg.getA().get(r), (byte) after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Ori_b[1];
                 break;
             case 3: // (An)+
-                before = mem.peekB(reg.getA().get(r));
-                after = (short) (val | before);
+                before = (short) (mem.peekB(reg.getA().get(r)) & 0xff);
+                after = (short) ((val & 0xff) | (before & 0xffff));
                 mem.pokeB(reg.getA().get(r), (byte) after);
                 reg.getA().set(r, reg.getA().get(r) + 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Ori_b[2];
@@ -184,22 +184,22 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) - 1);
-                before = mem.peekB(reg.getA().get(r));
-                after = (short) (val | before);
+                before = (short) (mem.peekB(reg.getA().get(r)) & 0xff);
+                after = (short) ((val & 0xff) | (before & 0xffff));
                 mem.pokeB(reg.getA().get(r), (byte) after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Ori_b[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekB((int) (reg.getA().get(r) + d16));
-                after = (short) (val | before);
-                mem.pokeB((int) (reg.getA().get(r) + d16), (byte) after);
+                short d16 = fetchW();
+                before = (short) (mem.peekB(reg.getA().get(r) + d16) & 0xff);
+                after = (short) ((val & 0xff) | (before & 0xffff));
+                mem.pokeB(reg.getA().get(r) + d16, (byte) after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.Ori_b[4];
@@ -211,37 +211,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + vw + IX;
+                else ptr = reg.getA().get(r) + vw + (IX & 0xffff);
                 before = mem.peekB(ptr);
-                after = (short) (val | before);
+                after = (short) ((val & 0xff) | (before & 0xffff));
                 mem.pokeB(ptr, (byte) after);
                 cycle = Cycle.Ori_b[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr & 0xffff);
 //#endif
 
-                        before = mem.peekB(ptr);
-                        after = (short) (val | before);
+                        before = (short) (mem.peekB(ptr) & 0xff);
+                        after = (short) ((val & 0xff) | (before & 0xffff));
                         mem.pokeB(ptr, (byte) after);
                         cycle = Cycle.Ori_b[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        before = mem.peekB(ptr);
-                        after = (short) (val | before);
+                        before = (short) (mem.peekB(ptr) & 0xff);
+                        after = (short) ((val & 0xff) | (before & 0xffff));
                         mem.pokeB(ptr, (byte) after);
                         cycle = Cycle.Ori_b[7];
                         break;
@@ -291,31 +291,31 @@ public class NiseM68 {
         switch (m) {
             case 0: // Dn
                 before = reg.getDw(r);
-                after = (short) (val | before);
+                after = (short) ((val & 0xffff) | (before & 0xffff));
                 reg.setDw(r, after);
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 cycle = Cycle.Ori_w[0];
                 break;
             case 2: // (An)
                 before = mem.peekW(reg.getA().get(r));
-                after = (short) (val | before);
+                after = (short) ((val & 0xffff) | (before & 0xffff));
                 mem.pokeW(reg.getA().get(r), after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Ori_w[1];
                 break;
             case 3: // (An)+
                 before = mem.peekW(reg.getA().get(r));
-                after = (short) (val | before);
+                after = (short) ((val & 0xffff) | (before & 0xffff));
                 mem.pokeW(reg.getA().get(r), after);
                 reg.getA().set(r, reg.getA().get(r) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Ori_w[2];
@@ -323,21 +323,21 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 2);
                 before = mem.peekW(reg.getA().get(r));
-                after = (short) (val | before);
+                after = (short) ((val & 0xffff) | (before & 0xffff));
                 mem.pokeW(reg.getA().get(r), after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Ori_w[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekW((int) (reg.getA().get(r) + d16));
-                after = (short) (val | before);
-                mem.pokeW((int) (reg.getA().get(r) + d16), after);
+                short d16 = fetchW();
+                before = mem.peekW(reg.getA().get(r) + d16);
+                after = (short) ((val & 0xffff) | (before & 0xffff));
+                mem.pokeW(reg.getA().get(r) + d16, after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.Ori_w[4];
@@ -349,37 +349,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) (vw & 0xff) + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) (vw & 0xff) + IX; // TODO ix
                 before = mem.peekW(ptr);
-                after = (short) (val | before);
+                after = (short) ((val & 0xffff) | (before & 0xffff));
                 mem.pokeW(ptr, after);
                 cycle = Cycle.Ori_w[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         before = mem.peekW(ptr);
-                        after = (short) (val | before);
+                        after = (short) ((val & 0xffff) | (before & 0xffff));
                         mem.pokeW(ptr, after);
                         cycle = Cycle.Ori_w[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         before = mem.peekW(ptr);
-                        after = (short) (val | before);
+                        after = (short) ((val & 0xffff) | (before & 0xffff));
                         mem.pokeW(ptr, after);
                         cycle = Cycle.Ori_w[7];
                         break;
@@ -431,7 +431,7 @@ public class NiseM68 {
                 after = val | before;
                 reg.getD()[r] = after;
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 cycle = Cycle.Ori_l[0];
@@ -441,7 +441,7 @@ public class NiseM68 {
                 after = val | before;
                 mem.pokeL(reg.getA().get(r), after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Ori_l[1];
@@ -452,7 +452,7 @@ public class NiseM68 {
                 mem.pokeL(reg.getA().get(r), after);
                 reg.getA().set(r, reg.getA().get(r) + 4);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Ori_l[2];
@@ -463,18 +463,18 @@ public class NiseM68 {
                 after = val | before;
                 mem.pokeL(reg.getA().get(r), after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Ori_l[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekL((int) (reg.getA().get(r) + d16));
+                short d16 = fetchW();
+                before = mem.peekL(reg.getA().get(r) + d16);
                 after = val | before;
-                mem.pokeL((int) (reg.getA().get(r) + d16), after);
+                mem.pokeL(reg.getA().get(r) + d16, after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16 & 0xffff, r);
 //#endif
 
                 cycle = Cycle.Ori_l[4];
@@ -486,11 +486,11 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX; // TODO ix
                 before = mem.peekL(ptr);
                 after = val | before;
                 mem.pokeL(ptr, after);
@@ -499,9 +499,9 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr & 0xffff);
 //#endif
 
                         before = mem.peekL(ptr);
@@ -512,7 +512,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         before = mem.peekL(ptr);
@@ -545,22 +545,22 @@ public class NiseM68 {
 
         short val = fetchW();
 //#if DEBUG
-        nimo += "#$%04x,sr".formatted(val);
+        nimo += "#$%04x,sr".formatted(val & 0xffff);
 //#endif
 
 
-        reg.setSR((short) (reg.getSR() | (val & 0b1010_0111_0001_1111)));
+        reg.setSR((short) ((reg.getSR() & 0xffff) | (val & 0b1010_0111_0001_1111)));
 
-        // if ((val & 0b1000_0000_0000_0000) != 0) reg.T = true;
-        // if ((val & 0b0010_0000_0000_0000) != 0) reg.S = true;
-        // if ((val & 0b0000_0100_0000_0000) != 0) reg.SR|= 0b0000_0100_0000_0000; // I2 flag
-        // if ((val & 0b0000_0010_0000_0000) != 0) reg.SR|= 0b0000_0010_0000_0000; // I1 flag
-        // if ((val & 0b0000_0001_0000_0000) != 0) reg.SR|= 0b0000_0001_0000_0000; // I0 flag
-        // if ((val & 0b0000_0000_0001_0000) != 0) reg.X = true;
-        // if ((val & 0b0000_0000_0000_1000) != 0) reg.setN(true);
-        // if ((val & 0b0000_0000_0000_0100) != 0) reg.setZ(true);
-        // if ((val & 0b0000_0000_0000_0010) != 0) reg.V = true;
-        // if ((val & 0b0000_0000_0000_0001) != 0) reg.C = true;
+        //if ((val & 0b1000_0000_0000_0000) != 0) reg.T = true;
+        //if ((val & 0b0010_0000_0000_0000) != 0) reg.S = true;
+        //if ((val & 0b0000_0100_0000_0000) != 0) reg.SR|= 0b0000_0100_0000_0000; // I2 flag
+        //if ((val & 0b0000_0010_0000_0000) != 0) reg.SR|= 0b0000_0010_0000_0000; // I1 flag
+        //if ((val & 0b0000_0001_0000_0000) != 0) reg.SR|= 0b0000_0001_0000_0000; // I0 flag
+        //if ((val & 0b0000_0000_0001_0000) != 0) reg.X = true;
+        //if ((val & 0b0000_0000_0000_1000) != 0) reg.setN(true);
+        //if ((val & 0b0000_0000_0000_0100) != 0) reg.setZ(true);
+        //if ((val & 0b0000_0000_0000_0010) != 0) reg.V = true;
+        //if ((val & 0b0000_0000_0000_0001) != 0) reg.C = true;
 
 //#if DEBUG
         logger.log(Level.TRACE, nimo);
@@ -593,7 +593,7 @@ public class NiseM68 {
 
         byte val = (byte) fetchW();
 //#if DEBUG
-        nimo += "#$%02x,".formatted(val);
+        nimo += "#$%02x,".formatted(val & 0xff);
 //#endif
 
         short after = 0;
@@ -609,10 +609,10 @@ public class NiseM68 {
         switch (m) {
             case 0: // Dn
                 before = reg.getDb(r);
-                after = (short) (val & before);
+                after = (short) ((val & 0xff) & (before & 0xffff));
                 reg.setDb(r, (byte) after);
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 cycle = Cycle.Andi_b[0];
@@ -620,23 +620,23 @@ public class NiseM68 {
             case 1:
                 throw new UnsupportedOperationException();
             case 2: // (An)
-                before = mem.peekB(reg.getA().get(r));
-                after = (short) (val & before);
+                before = (short) (mem.peekB(reg.getA().get(r)) & 0xff);
+                after = (short) ((val & 0xff) & (before & 0xffff));
                 mem.pokeB(reg.getA().get(r), (byte) after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Andi_b[1];
                 break;
             case 3: // (An)+
-                before = mem.peekB(reg.getA().get(r));
-                after = (short) (val & before);
+                before = (short) (mem.peekB(reg.getA().get(r)) & 0xff);
+                after = (short) ((val & 0xff) & (before & 0xffff));
                 mem.pokeB(reg.getA().get(r), (byte) after);
                 reg.getA().set(r, reg.getA().get(r) + 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Andi_b[2];
@@ -644,22 +644,22 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) - 1);
-                before = mem.peekB(reg.getA().get(r));
-                after = (short) (val & before);
+                before = (short) (mem.peekB(reg.getA().get(r)) & 0xff);
+                after = (short) ((val & 0xff) & (before & 0xffff));
                 mem.pokeB(reg.getA().get(r), (byte) after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Andi_b[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekB((int) (reg.getA().get(r) + d16));
-                after = (short) (val & before);
-                mem.pokeB((int) (reg.getA().get(r) + d16), (byte) after);
+                short d16 = fetchW();
+                before = mem.peekB(reg.getA().get(r) + d16);
+                after = (short) ((val & 0xff) & (before & 0xffff));
+                mem.pokeB(reg.getA().get(r) + d16, (byte) after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.Andi_b[4];
@@ -671,37 +671,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 before = mem.peekB(ptr);
-                after = (short) (val & before);
+                after = (short) ((val & 0xff) & (before & 0xffff));
                 mem.pokeB(ptr, (byte) after);
                 cycle = Cycle.Andi_b[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         before = mem.peekB(ptr);
-                        after = (short) (val & before);
+                        after = (short) ((val & 0xff) & (before & 0xffff));
                         mem.pokeB(ptr, (byte) after);
                         cycle = Cycle.Andi_b[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        before = mem.peekB(ptr);
-                        after = (short) (val & before);
+                        before = (short) (mem.peekB(ptr) & 0xff);
+                        after = (short) ((val & 0xff) & (before & 0xffff));
                         mem.pokeB(ptr, (byte) after);
                         cycle = Cycle.Andi_b[7];
                         break;
@@ -734,7 +734,7 @@ public class NiseM68 {
 
         short val = fetchW();
 //#if DEBUG
-        nimo += "#$%04x,".formatted(val);
+        nimo += "#$%04x,".formatted(val & 0xffff);
 //#endif
 
 
@@ -751,31 +751,31 @@ public class NiseM68 {
         switch (m) {
             case 0: // Dn
                 before = reg.getDw(r);
-                after = (short) (val & before);
+                after = (short) ((val & 0xffff) & (before & 0xffff));
                 reg.setDw(r, after);
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 cycle = Cycle.Andi_w[0];
                 break;
             case 2: // (An)
                 before = mem.peekW(reg.getA().get(r));
-                after = (short) (val & before);
+                after = (short) ((val & 0xffff) & (before & 0xffff));
                 mem.pokeW(reg.getA().get(r), after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Andi_w[1];
                 break;
             case 3: // (An)+
                 before = mem.peekW(reg.getA().get(r));
-                after = (short) (val & before);
+                after = (short) ((val & 0xffff) & (before & 0xffff));
                 mem.pokeW(reg.getA().get(r), after);
                 reg.getA().set(r, reg.getA().get(r) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Andi_w[2];
@@ -783,21 +783,21 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 2);
                 before = mem.peekW(reg.getA().get(r));
-                after = (short) (val & before);
+                after = (short) ((val & 0xffff) & (before & 0xffff));
                 mem.pokeW(reg.getA().get(r), after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Andi_w[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekW((int) (reg.getA().get(r) + d16));
-                after = (short) (val & before);
-                mem.pokeW((int) (reg.getA().get(r) + d16), after);
+                short d16 = fetchW();
+                before = mem.peekW(reg.getA().get(r) + d16);
+                after = (short) ((val & 0xffff) & (before & 0xffff));
+                mem.pokeW(reg.getA().get(r) + d16, after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.Andi_w[4];
@@ -809,37 +809,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 before = mem.peekW(ptr);
-                after = (short) (val & before);
+                after = (short) ((val & 0xffff) & (before & 0xffff));
                 mem.pokeW(ptr, after);
                 cycle = Cycle.Andi_w[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         before = mem.peekW(ptr);
-                        after = (short) (val & before);
+                        after = (short) ((val & 0xffff) & (before & 0xffff));
                         mem.pokeW(ptr, after);
                         cycle = Cycle.Andi_w[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         before = mem.peekW(ptr);
-                        after = (short) (val & before);
+                        after = (short) ((val & 0xffff) & (before & 0xffff));
                         mem.pokeW(ptr, after);
                         cycle = Cycle.Andi_w[7];
                         break;
@@ -892,7 +892,7 @@ public class NiseM68 {
                 after = val & before;
                 reg.getD()[r] = after;
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 cycle = Cycle.Andi_l[0];
@@ -902,7 +902,7 @@ public class NiseM68 {
                 after = val & before;
                 mem.pokeL(reg.getA().get(r), after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Andi_l[1];
@@ -913,7 +913,7 @@ public class NiseM68 {
                 mem.pokeL(reg.getA().get(r), after);
                 reg.getA().set(r, reg.getA().get(r) + 4);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Andi_l[2];
@@ -924,18 +924,18 @@ public class NiseM68 {
                 after = val & before;
                 mem.pokeL(reg.getA().get(r), after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Andi_l[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekL((int) (reg.getA().get(r) + d16));
+                short d16 = fetchW();
+                before = mem.peekL(reg.getA().get(r) + d16);
                 after = val & before;
-                mem.pokeL((int) (reg.getA().get(r) + d16), after);
+                mem.pokeL(reg.getA().get(r) + d16, after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.Andi_l[4];
@@ -947,11 +947,11 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 before = mem.peekL(ptr);
                 after = val & before;
                 mem.pokeL(ptr, after);
@@ -960,9 +960,9 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         before = mem.peekL(ptr);
@@ -973,7 +973,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         before = mem.peekL(ptr);
@@ -1037,7 +1037,7 @@ public class NiseM68 {
 
         byte val = reg.getDb(sr);
 //#if DEBUG
-        nimo += "D%s,".formatted(sr);
+        nimo += "D%d,".formatted(sr);
 //#endif
 
 
@@ -1056,23 +1056,23 @@ public class NiseM68 {
             case 1:
                 throw new UnsupportedOperationException();
             case 2: // (An)
-                before = mem.peekB(reg.getA().get(r));
-                after = (short) (val & before);
+                before = (short) (mem.peekB(reg.getA().get(r)) & 0xff);
+                after = (short) ((val & 0xff) & (before & 0xffff));
                 mem.pokeB(reg.getA().get(r), (byte) after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.And_bDnEA[0];
                 break;
             case 3: // (An)+
-                before = mem.peekB(reg.getA().get(r));
-                after = (short) (val & before);
+                before = (short) (mem.peekB(reg.getA().get(r)) & 0xff);
+                after = (short) ((val & 0xff) & (before & 0xffff));
                 mem.pokeB(reg.getA().get(r), (byte) after);
                 reg.getA().set(r, reg.getA().get(r) + 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.And_bDnEA[1];
@@ -1081,21 +1081,21 @@ public class NiseM68 {
                 reg.getA().set(r, reg.getA().get(r) - 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) - 1);
                 before = mem.peekB(reg.getA().get(r));
-                after = (short) (val & before);
+                after = (short) ((val & 0xff) & (before & 0xffff));
                 mem.pokeB(reg.getA().get(r), (byte) after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.And_bDnEA[2];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekB((int) (reg.getA().get(r) + d16));
-                after = (short) (val & before);
-                mem.pokeB((int) (reg.getA().get(r) + d16), (byte) after);
+                short d16 = fetchW(); // signed
+                before = mem.peekB(reg.getA().get(r) + d16);
+                after = (short) ((val & 0xff) & (before & 0xffff));
+                mem.pokeB(reg.getA().get(r) + d16, (byte) after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.And_bDnEA[3];
@@ -1107,37 +1107,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 before = mem.peekB(ptr);
-                after = (short) (val & before);
+                after = (short) ((val & 0xff) & (before & 0xffff));
                 mem.pokeB(ptr, (byte) after);
                 cycle = Cycle.And_bDnEA[4];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        before = mem.peekB(ptr);
-                        after = (short) (val & before);
+                        before = (short) (mem.peekB(ptr) & 0xff);
+                        after = (short) ((val & 0xff) & (before & 0xffff));
                         mem.pokeB(ptr, (byte) after);
                         cycle = Cycle.And_bDnEA[5];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        before = mem.peekB(ptr);
-                        after = (short) (val & before);
+                        before = (short) (mem.peekB(ptr) & 0xff);
+                        after = (short) ((val & 0xff) & (before & 0xffff));
                         mem.pokeB(ptr, (byte) after);
                         cycle = Cycle.And_bDnEA[6];
                         break;
@@ -1173,7 +1173,7 @@ public class NiseM68 {
 
         short val = reg.getDw(sr);
 //#if DEBUG
-        nimo += "D%s,".formatted(sr);
+        nimo += "D%d,".formatted(sr);
 //#endif
 
 
@@ -1193,21 +1193,21 @@ public class NiseM68 {
                 throw new UnsupportedOperationException();
             case 2: // (An)
                 before = mem.peekW(reg.getA().get(r));
-                after = (short) (val & before);
+                after = (short) ((val & 0xffff) & (before & 0xffff));
                 mem.pokeW(reg.getA().get(r), after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.And_wDnEA[0];
                 break;
             case 3: // (An)+
                 before = mem.peekW(reg.getA().get(r));
-                after = (short) (val & before);
+                after = (short) ((val & 0xffff) & (before & 0xffff));
                 mem.pokeW(reg.getA().get(r), after);
                 reg.getA().set(r, reg.getA().get(r) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.And_wDnEA[1];
@@ -1215,21 +1215,21 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 2);
                 before = mem.peekW(reg.getA().get(r));
-                after = (short) (val & before);
+                after = (short) ((val & 0xffff) & (before & 0xffff));
                 mem.pokeW(reg.getA().get(r), after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.And_wDnEA[2];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekW((int) (reg.getA().get(r) + d16));
-                after = (short) (val & before);
-                mem.pokeW((int) (reg.getA().get(r) + d16), after);
+                short d16 = fetchW(); // singed
+                before = mem.peekW(reg.getA().get(r) + d16);
+                after = (short) ((val & 0xffff) & (before & 0xffff));
+                mem.pokeW(reg.getA().get(r) + d16, after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.And_wDnEA[3];
@@ -1241,37 +1241,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 before = mem.peekW(ptr);
-                after = (short) (val & before);
+                after = (short) ((val & 0xffff) & (before & 0xffff));
                 mem.pokeW(ptr, after);
                 cycle = Cycle.And_wDnEA[4];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         before = mem.peekW(ptr);
-                        after = (short) (val & before);
+                        after = (short) ((val & 0xffff) & (before & 0xffff));
                         mem.pokeW(ptr, after);
                         cycle = Cycle.And_wDnEA[5];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         before = mem.peekW(ptr);
-                        after = (short) (val & before);
+                        after = (short) ((val & 0xffff) & (before & 0xffff));
                         mem.pokeW(ptr, after);
                         cycle = Cycle.And_wDnEA[6];
                         break;
@@ -1307,7 +1307,7 @@ public class NiseM68 {
 
         int val = reg.getDl(sr);
 //#if DEBUG
-        nimo += "D{0:d},".formatted(sr);
+        nimo += "D%d,".formatted(sr);
 //#endif
 
         int after = 0;
@@ -1329,7 +1329,7 @@ public class NiseM68 {
                 after = val & before;
                 mem.pokeL(reg.getA().get(r), after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.And_lDnEA[0];
@@ -1340,7 +1340,7 @@ public class NiseM68 {
                 mem.pokeL(reg.getA().get(r), after);
                 reg.getA().set(r, reg.getA().get(r) + 4);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.And_lDnEA[1];
@@ -1351,18 +1351,18 @@ public class NiseM68 {
                 after = val & before;
                 mem.pokeL(reg.getA().get(r), after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.And_lDnEA[2];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
+                short d16 = fetchW(); // signed
                 before = mem.peekL((int) (reg.getA().get(r) + d16));
                 after = val & before;
                 mem.pokeL((int) (reg.getA().get(r) + d16), after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.And_lDnEA[3];
@@ -1374,11 +1374,11 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = (int) (reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff));
+                else ptr = (int) (reg.getA().get(r) + (byte) vw + IX);
                 before = mem.peekL(ptr);
                 after = val & before;
                 mem.pokeL(ptr, after);
@@ -1387,9 +1387,9 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         before = mem.peekL(ptr);
@@ -1400,7 +1400,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         before = mem.peekL(ptr);
@@ -1455,7 +1455,7 @@ public class NiseM68 {
                 after = (byte) (src & dst);
                 reg.setDb(sr, after);
 //#if DEBUG
-                nimo += "D%s,D%s".formatted(r, sr);
+                nimo += "D%d,D%d".formatted(r, sr);
 //#endif
 
                 cycle = Cycle.And_bEADn[0];
@@ -1467,7 +1467,7 @@ public class NiseM68 {
                 after = (byte) (src & dst);
                 reg.setDb(sr, after);
 //#if DEBUG
-                nimo += "(A%s),D%s".formatted(r, sr);
+                nimo += "(A%d),D%d".formatted(r, sr);
 //#endif
 
                 cycle = Cycle.And_bEADn[1];
@@ -1479,7 +1479,7 @@ public class NiseM68 {
                 reg.getA().set(r, reg.getA().get(r) + 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) + 1);
 //#if DEBUG
-                nimo += "(A%s)+,D%s".formatted(r, sr);
+                nimo += "(A%d)+,D%d".formatted(r, sr);
 //#endif
 
                 cycle = Cycle.And_bEADn[2];
@@ -1491,18 +1491,18 @@ public class NiseM68 {
                 after = (byte) (src & dst);
                 reg.setDb(sr, after);
 //#if DEBUG
-                nimo += "-(A%s),D%s".formatted(r, sr);
+                nimo += "-(A%d),D%d".formatted(r, sr);
 //#endif
 
                 cycle = Cycle.And_bEADn[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                src = mem.peekB((int) (reg.getA().get(r) + d16));
+                short d16 = fetchW(); // signed
+                src = mem.peekB(reg.getA().get(r) + d16);
                 after = (byte) (src & dst);
                 reg.setDb(sr, after);
 //#if DEBUG
-                nimo += "$%04x(A%s),D%s".formatted(d16, r, sr);
+                nimo += "$%04x(A%d),D%d".formatted(d16, r, sr);
 //#endif
 
                 cycle = Cycle.And_bEADn[4];
@@ -1514,11 +1514,11 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s),D%s".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w", sr);
+                nimo += "$%02x(A%d,%s%d.%s),D%d".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w", sr);
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 src = mem.peekB(ptr);
                 after = (byte) (src & dst);
                 reg.setDb(sr, after);
@@ -1527,9 +1527,9 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x,D%s".formatted((short) ptr, sr);
+                        nimo += "$%04x,D%d".formatted(ptr, sr);
 //#endif
 
                         src = mem.peekB(ptr);
@@ -1540,7 +1540,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x,D%s".formatted((int) ptr, sr);
+                        nimo += "$%08x,D%d".formatted(ptr, sr);
 //#endif
 
                         src = mem.peekB(ptr);
@@ -1549,9 +1549,9 @@ public class NiseM68 {
                         cycle = Cycle.And_bEADn[7];
                         break;
                     case 2: // d16(PC)
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x(PC),D%s".formatted((short) ptr, sr);
+                        nimo += "$%04x(PC),D%d".formatted(ptr, sr);
 //#endif
 
                         src = mem.peekB(ptr + reg.pc - 2);
@@ -1565,15 +1565,15 @@ public class NiseM68 {
                         ni = (vw & 0x7000) >> 12;
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
-                        nimo += "$%02x(PC,%s%s.%s),D%s".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w", sr);
+                        nimo += "$%02x(PC,%s%d.%s),D%d".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w", sr);
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
                         src = mem.peekB(ptr);
                         after = (byte) (src & dst);
@@ -1583,7 +1583,7 @@ public class NiseM68 {
                     case 4: // #Imm
                         src = (byte) fetchW();
 //#if DEBUG
-                        nimo += "$%02x,D%s".formatted((int) src, sr);
+                        nimo += "$%02x,D%d".formatted(src & 0xff, sr);
 //#endif
 
                         after = (byte) (src & dst);
@@ -1637,7 +1637,7 @@ public class NiseM68 {
                 after = (short) (src & dst);
                 reg.setDw(sr, after);
 //#if DEBUG
-                nimo += "D%s,D%s".formatted(r, sr);
+                nimo += "D%d,D%d".formatted(r, sr);
 //#endif
 
                 cycle = Cycle.And_wEADn[0];
@@ -1649,7 +1649,7 @@ public class NiseM68 {
                 after = (short) (src & dst);
                 reg.setDw(sr, after);
 //#if DEBUG
-                nimo += "(A%s),D%s".formatted(r, sr);
+                nimo += "(A%d),D%d".formatted(r, sr);
 //#endif
 
                 cycle = Cycle.And_wEADn[1];
@@ -1660,7 +1660,7 @@ public class NiseM68 {
                 reg.setDw(sr, after);
                 reg.getA().set(r, reg.getA().get(r) + 2);
 //#if DEBUG
-                nimo += "(A%s)+,D%s".formatted(r, sr);
+                nimo += "(A%d)+,D%d".formatted(r, sr);
 //#endif
 
                 cycle = Cycle.And_wEADn[2];
@@ -1671,18 +1671,18 @@ public class NiseM68 {
                 after = (short) (src & dst);
                 reg.setDw(sr, after);
 //#if DEBUG
-                nimo += "-(A%s),D%s".formatted(r, sr);
+                nimo += "-(A%d),D%d".formatted(r, sr);
 //#endif
 
                 cycle = Cycle.And_wEADn[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                src = mem.peekW((int) (reg.getA().get(r) + d16));
+                short d16 = fetchW(); // signed
+                src = mem.peekW(reg.getA().get(r) + d16);
                 after = (short) (src & dst);
                 reg.setDw(sr, after);
 //#if DEBUG
-                nimo += "$%04x(A%s),D%s".formatted(d16, r, sr);
+                nimo += "$%04x(A%d),D%d".formatted(d16, r, sr);
 //#endif
 
                 cycle = Cycle.And_wEADn[4];
@@ -1694,11 +1694,11 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s),D%s".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w", sr);
+                nimo += "$%02x(A%d,%s%d.%s),D%d".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w", sr);
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 src = mem.peekW(ptr);
                 after = (short) (src & dst);
                 reg.setDw(sr, after);
@@ -1707,9 +1707,9 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x,D%s".formatted((short) ptr, sr);
+                        nimo += "$%04x,D%d".formatted(ptr, sr);
 //#endif
 
                         src = mem.peekW(ptr);
@@ -1720,7 +1720,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x,D%s".formatted((int) ptr, sr);
+                        nimo += "$%08x,D%d".formatted(ptr, sr);
 //#endif
 
                         src = mem.peekW(ptr);
@@ -1729,9 +1729,9 @@ public class NiseM68 {
                         cycle = Cycle.And_wEADn[7];
                         break;
                     case 2: // d16(PC)
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x(PC),D%s".formatted((short) ptr, sr);
+                        nimo += "$%04x(PC),D%d".formatted(ptr, sr);
 //#endif
 
                         src = mem.peekW(ptr + reg.pc - 2);
@@ -1745,15 +1745,15 @@ public class NiseM68 {
                         ni = (vw & 0x7000) >> 12;
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
-                        nimo += "$%02x(PC,%s%s.%s),D%s".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w", sr);
+                        nimo += "$%02x(PC,%s%s.%s),D%d".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w", sr);
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
                         src = mem.peekW(ptr);
                         after = (short) (src & dst);
@@ -1763,7 +1763,7 @@ public class NiseM68 {
                     case 4: // #Imm
                         src = fetchW();
 //#if DEBUG
-                        nimo += "$%02x,D%s".formatted((int) src, sr);
+                        nimo += "$%02x,D%d".formatted((int) src, sr);
 //#endif
 
                         after = (short) (src & dst);
@@ -1818,7 +1818,7 @@ public class NiseM68 {
                 after = (src & dst);
                 reg.setDl(sr, after);
 //#if DEBUG
-                nimo += "D%s,D%s".formatted(r, sr);
+                nimo += "D%d,D%d".formatted(r, sr);
 //#endif
 
                 cycle = Cycle.And_lEADn[0];
@@ -1830,7 +1830,7 @@ public class NiseM68 {
                 after = (src & dst);
                 reg.setDl(sr, after);
 //#if DEBUG
-                nimo += "(A%s),D%s".formatted(r, sr);
+                nimo += "(A%d),D%d".formatted(r, sr);
 //#endif
 
                 cycle = Cycle.And_lEADn[1];
@@ -1841,7 +1841,7 @@ public class NiseM68 {
                 reg.setDl(sr, after);
                 reg.getA().set(r, reg.getA().get(r) + 4);
 //#if DEBUG
-                nimo += "(A%s)+,D%s".formatted(r, sr);
+                nimo += "(A%d)+,D%d".formatted(r, sr);
 //#endif
 
                 cycle = Cycle.And_lEADn[2];
@@ -1852,18 +1852,18 @@ public class NiseM68 {
                 after = (src & dst);
                 reg.setDl(sr, after);
 //#if DEBUG
-                nimo += "-(A%s),D%s".formatted(r, sr);
+                nimo += "-(A%d),D%d".formatted(r, sr);
 //#endif
 
                 cycle = Cycle.And_lEADn[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                src = mem.peekL((int) (reg.getA().get(r) + d16));
+                short d16 = fetchW(); // signed
+                src = mem.peekL(reg.getA().get(r) + d16);
                 after = (src & dst);
                 reg.setDl(sr, after);
 //#if DEBUG
-                nimo += "$%04x(A%s),D%s".formatted(d16, r, sr);
+                nimo += "$%04x(A%d),D%d".formatted(d16, r, sr);
 //#endif
 
                 cycle = Cycle.And_lEADn[4];
@@ -1875,11 +1875,11 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s),D%s".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w", sr);
+                nimo += "$%02x(A%d,%s%d.%s),D%d".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w", sr);
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 src = mem.peekL(ptr);
                 after = (src & dst);
                 reg.setDl(sr, after);
@@ -1888,9 +1888,9 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x,D%s".formatted((short) ptr, sr);
+                        nimo += "$%04x,D%d".formatted(ptr, sr);
 //#endif
 
                         src = mem.peekL(ptr);
@@ -1901,7 +1901,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x,D%s".formatted((int) ptr, sr);
+                        nimo += "$%08x,D%d".formatted(ptr, sr);
 //#endif
 
                         src = mem.peekL(ptr);
@@ -1910,9 +1910,9 @@ public class NiseM68 {
                         cycle = Cycle.And_lEADn[7];
                         break;
                     case 2: // d16(PC)
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x(PC),D%s".formatted((short) ptr, sr);
+                        nimo += "$%04x(PC),D%d".formatted((short) ptr, sr);
 //#endif
 
                         src = mem.peekL(ptr + reg.pc - 2);
@@ -1926,15 +1926,15 @@ public class NiseM68 {
                         ni = (vw & 0x7000) >> 12;
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
-                        nimo += "$%02x(PC,%s%s.%s),D%s".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w", sr);
+                        nimo += "$%02x(PC,%s%d.%s),D%d".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w", sr);
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
                         src = mem.peekL(ptr);
                         after = (src & dst);
@@ -1944,7 +1944,7 @@ public class NiseM68 {
                     case 4: // #Imm
                         src = fetchL();
 //#if DEBUG
-                        nimo += "$%02x,D%s".formatted((int) src, sr);
+                        nimo += "$%02x,D%d".formatted(src, sr);
 //#endif
 
                         after = (src & dst);
@@ -2050,7 +2050,7 @@ public class NiseM68 {
 
         int val = reg.getDb(sr);
 //#if DEBUG
-        nimo += "D%s,".formatted(sr);
+        nimo += "D%d,".formatted(sr);
 //#endif
 
         int after = 0;
@@ -2065,23 +2065,23 @@ public class NiseM68 {
 
         switch (dm) {
             case 2: // (An)
-                before = mem.peekB(reg.getA().get(dr));
+                before = mem.peekB(reg.getA().get(dr)) & 0xff;
                 after = val | before;
                 mem.pokeB(reg.getA().get(dr), (byte) after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Or_b[0];
                 break;
             case 3: // (An)+
-                before = mem.peekB(reg.getA().get(dr));
+                before = mem.peekB(reg.getA().get(dr)) & 0xff;
                 after = val | before;
                 mem.pokeB(reg.getA().get(dr), (byte) after);
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Or_b[1];
@@ -2093,18 +2093,18 @@ public class NiseM68 {
                 after = val | before;
                 mem.pokeB(reg.getA().get(dr), (byte) after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Or_b[2];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekB((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                before = mem.peekB(reg.getA().get(dr) + d16);
                 after = val | before;
-                mem.pokeB((int) (reg.getA().get(dr) + d16), (byte) after);
+                mem.pokeB(reg.getA().get(dr) + d16, (byte) after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Or_b[3];
@@ -2116,11 +2116,11 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 before = mem.peekB(ptr);
                 after = val | before;
                 mem.pokeB(ptr, (byte) after);
@@ -2129,9 +2129,9 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         before = mem.peekB(ptr);
@@ -2142,7 +2142,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         before = mem.peekB(ptr);
@@ -2178,9 +2178,9 @@ public class NiseM68 {
         int dr = (n & 0x0007);
         int sr = (n & 0x0e00) >> 9;
 
-        int val = reg.getDw(sr);
+        int val = reg.getDw(sr) & 0xffff;
 //#if DEBUG
-        nimo += "D%s,".formatted(sr);
+        nimo += "D%d,".formatted(sr);
 //#endif
 
         int after = 0;
@@ -2195,22 +2195,22 @@ public class NiseM68 {
 
         switch (dm) {
             case 2: // (An)
-                before = mem.peekW(reg.getA().get(dr));
+                before = mem.peekW(reg.getA().get(dr)) & 0xffff;
                 after = val | before;
                 mem.pokeW(reg.getA().get(dr), (short) after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Or_w[0];
                 break;
             case 3: // (An)+
-                before = mem.peekW(reg.getA().get(dr));
+                before = mem.peekW(reg.getA().get(dr)) & 0xffff;
                 after = val | before;
                 mem.pokeW(reg.getA().get(dr), (short) after);
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Or_w[1];
@@ -2221,18 +2221,18 @@ public class NiseM68 {
                 after = val | before;
                 mem.pokeW(reg.getA().get(dr), (short) after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Or_w[2];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekW((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                before = mem.peekW(reg.getA().get(dr) + d16);
                 after = val | before;
-                mem.pokeW((int) (reg.getA().get(dr) + d16), (short) after);
+                mem.pokeW(reg.getA().get(dr) + d16, (short) after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Or_w[3];
@@ -2244,11 +2244,11 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 before = mem.peekW(ptr);
                 after = val | before;
                 mem.pokeW(ptr, (short) after);
@@ -2257,9 +2257,9 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         before = mem.peekW(ptr);
@@ -2270,7 +2270,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         before = mem.peekW(ptr);
@@ -2316,16 +2316,15 @@ public class NiseM68 {
         byte after = 0;
         byte before;
 
-        // if (sm == 7 && sr == 4)
-        // {
-        //    throw new UnsupportedOperationException("OR <ea>,Dnの#Immのパターンは未実装");
-        // }
+        //if (sm == 7 && sr == 4) {
+        //    throw new UnsupportedOperationException("OR <ea>,Dn #Imm pattern is not implemented yet");
+        //}
         before = (byte) srcAddressingByte(/* ref */ nimo, /* ref */ cycle, sm, sr, 0b1111_1111_1101, true);
 
         cycle[0] = Cycle.OrEaDn_b[cycle[0]];
         after = (byte) (val | before);
 //#if DEBUG
-        nimo[0] += ",D%s".formatted(dr);
+        nimo[0] += ",D%d".formatted(dr);
 //#endif
 
         reg.setDb(dr, after);
@@ -2333,7 +2332,7 @@ public class NiseM68 {
         // flag
         // reg.X
         reg.setN((after & 0x800) != 0);
-        reg.setZ((byte) after);
+        reg.setZ(after);
         reg.setV(false);
         reg.setC(false);
 
@@ -2365,7 +2364,7 @@ public class NiseM68 {
         cycle[0] = Cycle.OrEaDn_w[cycle[0]];
         after = val | before;
 //#if DEBUG
-        nimo[0] += ",D%s".formatted(dr);
+        nimo[0] += ",D%d".formatted(dr);
 //#endif
 
         reg.setDw(dr, (short) after);
@@ -2404,10 +2403,10 @@ public class NiseM68 {
         cycle[0] = Cycle.OrEaDn_l[cycle[0]];
         after = val | before;
 //#if DEBUG
-        nimo[0] += ",D%s".formatted(dr);
+        nimo[0] += ",D%d".formatted(dr);
 //#endif
 
-        reg.setDl(dr, (int) after);
+        reg.setDl(dr, after);
 
         // flag
         // reg.X
@@ -2454,9 +2453,8 @@ public class NiseM68 {
 
         int val = reg.getDb(sr);
 //#if DEBUG
-        nimo += "D%s,".formatted(sr);
+        nimo += "D%d,".formatted(sr);
 //#endif
-
 
         int after = 0;
         int before;
@@ -2470,33 +2468,33 @@ public class NiseM68 {
 
         switch (dm) {
             case 0: // Dn
-                before = reg.getDb(dr);
+                before = reg.getDb(dr) & 0xff;
                 after = val ^ before;
                 reg.setDb(dr, (byte) after);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eor_b[0];
                 break;
             case 2: // (An)
-                before = mem.peekB(reg.getA().get(dr));
+                before = mem.peekB(reg.getA().get(dr)) & 0xff;
                 after = val ^ before;
                 mem.pokeB(reg.getA().get(dr), (byte) after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eor_b[1];
                 break;
             case 3: // (An)+
-                before = mem.peekB(reg.getA().get(dr));
+                before = mem.peekB(reg.getA().get(dr)) & 0xff;
                 after = val ^ before;
                 mem.pokeB(reg.getA().get(dr), (byte) after);
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eor_b[2];
@@ -2504,22 +2502,22 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) - 1);
-                before = mem.peekB(reg.getA().get(dr));
+                before = mem.peekB(reg.getA().get(dr)) & 0xff;
                 after = val ^ before;
                 mem.pokeB(reg.getA().get(dr), (byte) after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eor_b[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekB((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                before = mem.peekB(reg.getA().get(dr) + d16);
                 after = val ^ before;
-                mem.pokeB((int) (reg.getA().get(dr) + d16), (byte) after);
+                mem.pokeB(reg.getA().get(dr) + d16, (byte) after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Eor_b[4];
@@ -2531,12 +2529,12 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                before = mem.peekB(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                before = mem.peekB(ptr) & 0xff;
                 after = val ^ before;
                 mem.pokeB(ptr, (byte) after);
                 cycle = Cycle.Eor_b[5];
@@ -2544,12 +2542,12 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        before = mem.peekB(ptr);
+                        before = mem.peekB(ptr) & 0xff;
                         after = val ^ before;
                         mem.pokeB(ptr, (byte) after);
                         cycle = Cycle.Eor_b[6];
@@ -2557,10 +2555,10 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        before = mem.peekB(ptr);
+                        before = mem.peekB(ptr) & 0xff;
                         after = val ^ before;
                         mem.pokeB(ptr, (byte) after);
                         cycle = Cycle.Eor_b[7];
@@ -2593,9 +2591,9 @@ public class NiseM68 {
         int dr = (n & 0x0007);
         int sr = (n & 0x0e00) >> 9;
 
-        int val = reg.getDw(sr);
+        int val = reg.getDw(sr) & 0xffff;
 //#if DEBUG
-        nimo += "D%s,".formatted(sr);
+        nimo += "D%d,".formatted(sr);
 //#endif
 
 
@@ -2611,54 +2609,54 @@ public class NiseM68 {
 
         switch (dm) {
             case 0: // Dn
-                before = reg.getDw(dr);
+                before = reg.getDw(dr) & 0xffff;
                 after = val ^ before;
                 reg.setDw(dr, (short) after);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eor_w[0];
                 break;
             case 2: // (An)
-                before = mem.peekW(reg.getA().get(dr));
+                before = mem.peekW(reg.getA().get(dr)) & 0xffff;
                 after = val ^ before;
                 mem.pokeW(reg.getA().get(dr), (short) after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eor_w[1];
                 break;
             case 3: // (An)+
-                before = mem.peekW(reg.getA().get(dr));
+                before = mem.peekW(reg.getA().get(dr)) & 0xffff;
                 after = val ^ before;
                 mem.pokeW(reg.getA().get(dr), (short) after);
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eor_w[2];
                 break;
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
-                before = mem.peekW(reg.getA().get(dr));
+                before = mem.peekW(reg.getA().get(dr)) & 0xffff;
                 after = val ^ before;
                 mem.pokeW(reg.getA().get(dr), (short) after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eor_w[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekW((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                before = mem.peekW(reg.getA().get(dr) + d16) & 0xffff;
                 after = val ^ before;
-                mem.pokeW((int) (reg.getA().get(dr) + d16), (short) after);
+                mem.pokeW(reg.getA().get(dr) + d16, (short) after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Eor_w[4];
@@ -2670,12 +2668,12 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                before = mem.peekW(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                before = mem.peekW(ptr) & 0xffff;
                 after = val ^ before;
                 mem.pokeW(ptr, (short) after);
                 cycle = Cycle.Eor_w[5];
@@ -2683,12 +2681,12 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        before = mem.peekW(ptr);
+                        before = mem.peekW(ptr) & 0xffff;
                         after = val ^ before;
                         mem.pokeW(ptr, (short) after);
                         cycle = Cycle.Eor_w[6];
@@ -2696,10 +2694,10 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        before = mem.peekW(ptr);
+                        before = mem.peekW(ptr) & 0xffff;
                         after = val ^ before;
                         mem.pokeW(ptr, (short) after);
                         cycle = Cycle.Eor_w[7];
@@ -2734,7 +2732,7 @@ public class NiseM68 {
 
         int val = reg.getDl(sr);
 //#if DEBUG
-        nimo += "D%s,".formatted(sr);
+        nimo += "D%d,".formatted(sr);
 //#endif
 
 
@@ -2754,7 +2752,7 @@ public class NiseM68 {
                 after = val ^ before;
                 reg.getD()[dr] = after;
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eor_l[0];
@@ -2764,7 +2762,7 @@ public class NiseM68 {
                 after = val ^ before;
                 mem.pokeL(reg.getA().get(dr), after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eor_l[1];
@@ -2775,7 +2773,7 @@ public class NiseM68 {
                 mem.pokeL(reg.getA().get(dr), after);
                 reg.getA().set(dr, reg.getA().get(dr) + 4);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eor_l[2];
@@ -2786,18 +2784,18 @@ public class NiseM68 {
                 after = val ^ before;
                 mem.pokeL(reg.getA().get(dr), after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eor_l[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = mem.peekL((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                before = mem.peekL(reg.getA().get(dr) + d16);
                 after = val ^ before;
-                mem.pokeL((int) (reg.getA().get(dr) + d16), after);
+                mem.pokeL(reg.getA().get(dr) + d16, after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Eor_l[4];
@@ -2809,11 +2807,11 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 before = mem.peekL(ptr);
                 after = val ^ before;
                 mem.pokeL(ptr, after);
@@ -2822,9 +2820,9 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         before = mem.peekL(ptr);
@@ -2835,7 +2833,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         before = mem.peekL(ptr);
@@ -2911,7 +2909,7 @@ public class NiseM68 {
                 ans = (short) (src ^ dst);
                 reg.setDw(dr, ans);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eori_w[0];
@@ -2919,9 +2917,9 @@ public class NiseM68 {
             case 2: // (An)
                 dst = mem.peekW(reg.getA().get(dr));
                 ans = (short) (src ^ dst);
-                mem.pokeW(reg.getA().get(dr), (short) ans);
+                mem.pokeW(reg.getA().get(dr), ans);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eori_w[1];
@@ -2929,10 +2927,10 @@ public class NiseM68 {
             case 3: // (An)+
                 dst = mem.peekW(reg.getA().get(dr));
                 ans = (short) (src ^ dst);
-                mem.pokeW(reg.getA().get(dr), (short) ans);
+                mem.pokeW(reg.getA().get(dr), ans);
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eori_w[2];
@@ -2941,20 +2939,20 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
                 dst = mem.peekW(reg.getA().get(dr));
                 ans = (short) (src ^ dst);
-                mem.pokeW(reg.getA().get(dr), (short) ans);
+                mem.pokeW(reg.getA().get(dr), ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Eori_w[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                dst = mem.peekW((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                dst = mem.peekW(reg.getA().get(dr) + d16);
                 ans = (short) (src ^ dst);
-                mem.pokeW((int) (reg.getA().get(dr) + d16), (short) ans);
+                mem.pokeW(reg.getA().get(dr) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Eori_w[4];
@@ -2966,11 +2964,11 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 dst = mem.peekW(ptr);
                 ans = (short) (src ^ dst);
                 mem.pokeW(ptr, (short) ans);
@@ -2979,25 +2977,25 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         dst = mem.peekW(ptr);
                         ans = (short) (src ^ dst);
-                        mem.pokeW(ptr, (short) ans);
+                        mem.pokeW(ptr, ans);
                         cycle = Cycle.Eori_w[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         dst = mem.peekW(ptr);
                         ans = (short) (src ^ dst);
-                        mem.pokeW(ptr, (short) ans);
+                        mem.pokeW(ptr, ans);
                         cycle = Cycle.Eori_w[7];
                         break;
                 }
@@ -3007,7 +3005,7 @@ public class NiseM68 {
         // flag
         // reg.X
         reg.setN((ans & 0x8000) != 0);
-        reg.setZ((short) ans);
+        reg.setZ(ans);
         reg.setV(false);
         reg.setC(false);
 
@@ -3036,7 +3034,7 @@ public class NiseM68 {
         }
 
         int cycle = 10;
-        int data = fetchW() & 0xff;
+        int data = fetchW() & 0xff; // byte size
 //#if DEBUG
         String nimo = "BTST";
 //#endif
@@ -3058,7 +3056,6 @@ public class NiseM68 {
         nimo += " #$%02x,".formatted(data);
 //#endif
 
-
         int dst = 0;
 
         short vw;
@@ -3073,25 +3070,25 @@ public class NiseM68 {
             case 0: // Dn
                 dst = reg.getD()[r];
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 cycle = Cycle.Btst08[0];
                 break;
             case 2: // (An)
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Btst08[1];
                 break;
             case 3: // (An)+
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
                 reg.getA().set(r, reg.getA().get(r) + 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Btst08[2];
@@ -3099,18 +3096,18 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) - 1);
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Btst08[3];
                 break;
             case 5: // d16(An)
-                d16 = (short) fetchW();
-                dst = mem.peekB((int) (reg.getA().get(r) + d16));
+                d16 = fetchW(); // signed
+                dst = mem.peekB(reg.getA().get(r) + d16);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.Btst08[4];
@@ -3122,37 +3119,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
-                dst = mem.peekB(ptr);
+                if (!isL) ptr = (int) (reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff));
+                else ptr = (int) (reg.getA().get(r) + (byte) vw + IX);
+                dst = mem.peekB(ptr) & 0xff;
                 cycle = Cycle.Btst08[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        dst = mem.peekB(ptr);
+                        dst = mem.peekB(ptr) & 0xff;
                         cycle = Cycle.Btst08[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        dst = (short) (short) (byte) mem.peekB(ptr);
+                        dst = mem.peekB(ptr) & 0xff;
                         cycle = Cycle.Btst08[7];
                         break;
                     case 2: // d16(PC)
-                        d16 = (short) fetchW();
-                        dst = mem.peekB((int) (reg.pc + d16 - 2));
+                        d16 = fetchW(); // signed
+                        dst = mem.peekB(reg.pc + d16 - 2);
 //#if DEBUG
                         nimo += "$%04x(PC)".formatted(d16);
 //#endif
@@ -3165,15 +3162,15 @@ public class NiseM68 {
                         ni = (vw & 0x7000) >> 12;
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
-                        nimo += "$%02x(PC,%s%s.%s)".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w");
+                        nimo += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
                         dst = mem.peekB(ptr);
                         cycle = Cycle.Btst08[9];
@@ -3233,11 +3230,10 @@ public class NiseM68 {
         else nimo += ".b ";
 //#endif
 
-        int data = (int) reg.getDl(sr);
+        int data = reg.getDl(sr);
 //#if DEBUG
-        nimo += "D{0:d},".formatted(sr);
+        nimo += "D%d,".formatted(sr);
 //#endif
-
 
         int dst = 0;
 
@@ -3258,7 +3254,7 @@ public class NiseM68 {
             case 0: // Dn
                 dst = reg.getD()[r];
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
@@ -3266,23 +3262,23 @@ public class NiseM68 {
                 cycle = Cycle.Btst[0];
                 break;
             case 2: // (An)
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                // mem.PokeB(reg.getA().get(r), (byte)(dst | (byte)(1 << data)));
+                //mem.pokeB(reg.getA().get(r), (byte) (dst | ((1 << data) & 0xff)));
                 cycle = Cycle.Btst[1];
                 break;
             case 3: // (An)+
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                // mem.PokeB(reg.getA().get(r), (byte)(dst | (byte)(1 << data)));
+                //mem.pokeB(reg.getA().get(r), (byte) (dst | ((1 << data) & 0xff)));
                 reg.getA().set(r, reg.getA().get(r) + 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) + 1);
                 cycle = Cycle.Btst[2];
@@ -3290,24 +3286,24 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) - 1);
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                // mem.PokeB(reg.getA().get(r), (byte)(dst | (byte)(1 << data)));
+                //mem.pokeB(reg.getA().get(r), (byte) (dst | ((1 << data) & 0xff)));
                 cycle = Cycle.Btst[3];
                 break;
             case 5: // d16(An)
-                d16 = (short) fetchW();
-                dst = mem.peekB((int) (reg.getA().get(r) + d16));
+                d16 = fetchW(); // signed
+                dst = mem.peekB(reg.getA().get(r) + d16) & 0xff;
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                // mem.PokeB((int)(reg.getA().get(r) + d16), (byte)(dst | (byte)(1 << data)));
+                //mem.pokeB(reg.getA().get(r) + d16, (byte) (dst | ((1 << data) & 0xff)));
                 cycle = Cycle.Btst[4];
                 break;
             case 6: // d8(An,IX)
@@ -3317,49 +3313,49 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
-                dst = mem.peekB(ptr);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
+                dst = mem.peekB(ptr) & 0xff;
                 ans = (dst & (1 << data)) == 0;
-                // mem.PokeB(ptr, (byte)(dst | (byte)(1 << data)));
+                //mem.pokeB(ptr, (byte) (dst | ((1 << data) & 0xff)));
                 cycle = Cycle.Btst[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        dst = mem.peekB(ptr);
+                        dst = mem.peekB(ptr) & 0xff;
                         ans = (dst & (1 << data)) == 0;
-                        // mem.PokeB(ptr, (byte)(dst | (byte)(1 << data)));
+                        //mem.pokeB(ptr, (byte) (dst | ((1 << data) & 0xff)));
                         cycle = Cycle.Btst[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        dst = (short) (short) (byte) mem.peekB(ptr);
+                        dst = mem.peekB(ptr) & 0xff;
                         ans = (dst & (1 << data)) == 0;
-                        // mem.PokeB(ptr, (byte)(dst | (byte)(1 << data)));
+                        //mem.pokeB(ptr, (byte) (dst | ((1 << data) & 0xff)));
                         cycle = Cycle.Btst[7];
                         break;
                     case 2: // d16(PC)
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x(PC)".formatted((short) ptr);
+                        nimo += "$%04x(PC)".formatted(ptr);
 //#endif
 
-                        dst = (short) (short) (byte) mem.peekB(ptr + reg.pc - 2);
+                        dst = mem.peekB(ptr + reg.pc - 2) & 0xff;
                         ans = (dst & (1 << data)) == 0;
-                        // mem.PokeB(ptr + reg.PC - 2, (byte)(dst | (byte)(1 << data)));
+                        //mem.pokeB(ptr + reg.PC - 2, (byte) (dst | ((1 << data) & 0xff)));
                         cycle = Cycle.Btst[8];
                         break;
                     case 3: // d8(PC,IX)
@@ -3368,20 +3364,20 @@ public class NiseM68 {
                         ni = (vw & 0x7000) >> 12;
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
-                        nimo += "$%02x(PC,%s%s.%s)".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w");
+                        nimo += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
 
-                        dst = (short) (short) (byte) mem.peekB(ptr);
+                        dst = mem.peekB(ptr) & 0xff;
                         ans = (dst & (1 << data)) == 0;
-                        // mem.PokeB(ptr + reg.PC - 2, (byte)(dst | (byte)(1 << data)));
+                        //mem.pokeB(ptr + reg.PC - 2, (byte) (dst | ((1 << data) & 0xff)));
                         cycle = Cycle.Btst[9];
                         break;
                     default:
@@ -3412,7 +3408,6 @@ public class NiseM68 {
         String nimo = "BSET";
 //#endif
 
-
         int sr = (n & 0x0e00) >> 9;
         int m = (n & 0x0038) >> 3;
         int r = (n & 0x0007);
@@ -3426,11 +3421,10 @@ public class NiseM68 {
 //#endif
 
 
-        int data = (int) reg.getDl(sr);
+        int data = reg.getDl(sr);
 //#if DEBUG
-        nimo += "D{0:d},".formatted(sr);
+        nimo += "D%d,".formatted(sr);
 //#endif
-
 
         int dst = 0;
 
@@ -3451,31 +3445,31 @@ public class NiseM68 {
             case 0: // Dn
                 dst = reg.getD()[r];
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                reg.getD()[r] = dst | (int) (1 << data);
+                reg.getD()[r] = dst | (1 << data);
                 cycle = Cycle.Bset[0];
                 break;
             case 2: // (An)
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(reg.getA().get(r), (byte) (dst | (byte) (1 << data)));
+                mem.pokeB(reg.getA().get(r), (byte) (dst | ((1 << data) & 0xff)));
                 cycle = Cycle.Bset[1];
                 break;
             case 3: // (An)+
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(reg.getA().get(r), (byte) (dst | (byte) (1 << data)));
+                mem.pokeB(reg.getA().get(r), (byte) (dst | ((1 << data) & 0xff)));
                 reg.getA().set(r, reg.getA().get(r) + 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) + 1);
                 cycle = Cycle.Bset[2];
@@ -3483,24 +3477,24 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) - 1);
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(reg.getA().get(r), (byte) (dst | (byte) (1 << data)));
+                mem.pokeB(reg.getA().get(r), (byte) (dst | ((1 << data) & 0xff)));
                 cycle = Cycle.Bset[3];
                 break;
             case 5: // d16(An)
-                d16 = (short) fetchW();
-                dst = mem.peekB((int) (reg.getA().get(r) + d16));
+                d16 = fetchW(); // signed
+                dst = mem.peekB(reg.getA().get(r) + d16) & 0xff;
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB((int) (reg.getA().get(r) + d16), (byte) (dst | (byte) (1 << data)));
+                mem.pokeB(reg.getA().get(r) + d16, (byte) (dst | ((1 << data) & 0xff)));
                 cycle = Cycle.Bset[4];
                 break;
             case 6: // d8(An,IX)
@@ -3510,38 +3504,38 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
-                dst = mem.peekB(ptr);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
+                dst = mem.peekB(ptr) & 0xff;
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(ptr, (byte) (dst | (byte) (1 << data)));
+                mem.pokeB(ptr, (byte) (dst | ((1 << data) & 0xff)));
                 cycle = Cycle.Bset[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        dst = mem.peekB(ptr);
+                        dst = mem.peekB(ptr) & 0xff;
                         ans = (dst & (1 << data)) == 0;
-                        mem.pokeB(ptr, (byte) (dst | (byte) (1 << data)));
+                        mem.pokeB(ptr, (byte) (dst | ((1 << data) & 0xff)));
                         cycle = Cycle.Bset[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        dst = (short) (short) (byte) mem.peekB(ptr);
+                        dst = mem.peekB(ptr) & 0xff;
                         ans = (dst & (1 << data)) == 0;
-                        mem.pokeB(ptr, (byte) (dst | (byte) (1 << data)));
+                        mem.pokeB(ptr, (byte) (dst | ((1 << data) & 0xff)));
                         cycle = Cycle.Bset[7];
                         break;
                     default:
@@ -3607,31 +3601,31 @@ public class NiseM68 {
             case 0: // Dn
                 dst = reg.getD()[r];
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                reg.getD()[r] = dst | (int) (1 << data);
+                reg.getD()[r] = dst | (1 << data);
                 cycle = Cycle.Bset_i[0];
                 break;
             case 2: // (An)
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(reg.getA().get(r), (byte) (dst | (byte) (1 << data)));
+                mem.pokeB(reg.getA().get(r), (byte) (dst | ((1 << data) & 0xff)));
                 cycle = Cycle.Bset_i[1];
                 break;
             case 3: // (An)+
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(reg.getA().get(r), (byte) (dst | (byte) (1 << data)));
+                mem.pokeB(reg.getA().get(r), (byte) (dst | ((1 << data) & 0xff)));
                 reg.getA().set(r, reg.getA().get(r) + 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) + 1);
                 cycle = Cycle.Bset_i[2];
@@ -3639,24 +3633,24 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) - 1);
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(reg.getA().get(r), (byte) (dst | (byte) (1 << data)));
+                mem.pokeB(reg.getA().get(r), (byte) (dst | ((1 << data) & 0xff)));
                 cycle = Cycle.Bset_i[3];
                 break;
             case 5: // d16(An)
-                d16 = (short) fetchW();
-                dst = mem.peekB((int) (reg.getA().get(r) + d16));
+                d16 = fetchW(); // signed
+                dst = mem.peekB(reg.getA().get(r) + d16);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB((int) (reg.getA().get(r) + d16), (byte) (dst | (byte) (1 << data)));
+                mem.pokeB(reg.getA().get(r) + d16, (byte) (dst | ((1 << data) & 0xff)));
                 cycle = Cycle.Bset_i[4];
                 break;
             case 6: // d8(An,IX)
@@ -3666,38 +3660,38 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 dst = mem.peekB(ptr);
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(ptr, (byte) (dst | (byte) (1 << data)));
+                mem.pokeB(ptr, (byte) (dst | ((1 << data) & 0xff)));
                 cycle = Cycle.Bset_i[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        dst = mem.peekB(ptr);
+                        dst = mem.peekB(ptr) & 0xff;
                         ans = (dst & (1 << data)) == 0;
-                        mem.pokeB(ptr, (byte) (dst | (byte) (1 << data)));
+                        mem.pokeB(ptr, (byte) (dst | ((1 << data) & 0xff)));
                         cycle = Cycle.Bset_i[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        dst = (short) (short) (byte) mem.peekB(ptr);
+                        dst = mem.peekB(ptr) & 0xff;
                         ans = (dst & (1 << data)) == 0;
-                        mem.pokeB(ptr, (byte) (dst | (byte) (1 << data)));
+                        mem.pokeB(ptr, (byte) (dst | ((1 << data) & 0xff)));
                         cycle = Cycle.Bset_i[7];
                         break;
                     default:
@@ -3707,7 +3701,6 @@ public class NiseM68 {
             default:
                 throw new UnsupportedOperationException();
         }
-
 
         // flag
         // reg.X
@@ -3729,7 +3722,6 @@ public class NiseM68 {
         String nimo = "BCLR";
 //#endif
 
-
         int sr = (n & 0x0e00) >> 9;
         int data = (int) reg.getDl(sr);
         int m = (n & 0x0038) >> 3;
@@ -3745,9 +3737,8 @@ public class NiseM68 {
 
 
 //#if DEBUG
-        nimo += "D%s,".formatted(sr);
+        nimo += "D%d,".formatted(sr);
 //#endif
-
 
         int dst = 0;
 
@@ -3768,31 +3759,31 @@ public class NiseM68 {
             case 0: // Dn
                 dst = reg.getD()[r];
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                reg.getD()[r] = dst & (int) ~(1 << data);
+                reg.getD()[r] = dst & ~(1 << data);
                 cycle = Cycle.Bclr_i[0];
                 break;
             case 2: // (An)
                 dst = mem.peekB(reg.getA().get(r));
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(reg.getA().get(r), (byte) (dst & (byte) ~(1 << data)));
+                mem.pokeB(reg.getA().get(r), (byte) (dst & (~(1 << data) & 0xff)));
                 cycle = Cycle.Bclr_i[1];
                 break;
             case 3: // (An)+
                 dst = mem.peekB(reg.getA().get(r));
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(reg.getA().get(r), (byte) (dst & (byte) ~(1 << data)));
+                mem.pokeB(reg.getA().get(r), (byte) (dst & (~(1 << data) & 0xff)));
                 reg.getA().set(r, reg.getA().get(r) + 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) + 1);
                 cycle = Cycle.Bclr_i[2];
@@ -3800,24 +3791,24 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) - 1);
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(reg.getA().get(r), (byte) (dst & (byte) ~(1 << data)));
+                mem.pokeB(reg.getA().get(r), (byte) (dst & (~(1 << data) & 0xff)));
                 cycle = Cycle.Bclr_i[3];
                 break;
             case 5: // d16(An)
-                d16 = (short) fetchW();
-                dst = mem.peekB((int) (reg.getA().get(r) + d16));
+                d16 = fetchW(); // signed
+                dst = mem.peekB(reg.getA().get(r) + d16) & 0xff;
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB((int) (reg.getA().get(r) + d16), (byte) (dst & (byte) ~(1 << data)));
+                mem.pokeB(reg.getA().get(r) + d16, (byte) (dst & (~(1 << data) & 0xff)));
                 cycle = Cycle.Bclr_i[4];
                 break;
             case 6: // d8(An,IX)
@@ -3827,38 +3818,38 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
-                dst = mem.peekB(ptr);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
+                dst = mem.peekB(ptr) & 0xff;
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(ptr, (byte) (dst & (byte) ~(1 << data)));
+                mem.pokeB(ptr, (byte) (dst & (~(1 << data) & 0xff)));
                 cycle = Cycle.Bclr_i[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         dst = mem.peekB(ptr);
                         ans = (dst & (1 << data)) == 0;
-                        mem.pokeB(ptr, (byte) (dst & (byte) ~(1 << data)));
+                        mem.pokeB(ptr, (byte) (dst & (~(1 << data) & 0xff)));
                         cycle = Cycle.Bclr_i[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        dst = (short) (short) (byte) mem.peekB(ptr);
+                        dst = mem.peekB(ptr) & 0xff;
                         ans = (dst & (1 << data)) == 0;
-                        mem.pokeB(ptr, (byte) (dst & (byte) ~(1 << data)));
+                        mem.pokeB(ptr, (byte) (dst & (~(1 << data) & 0xff)));
                         cycle = Cycle.Bclr_i[7];
                         break;
                     default:
@@ -3868,7 +3859,6 @@ public class NiseM68 {
             default:
                 throw new UnsupportedOperationException();
         }
-
 
         // flag
         // reg.X
@@ -3925,31 +3915,31 @@ public class NiseM68 {
             case 0: // Dn
                 dst = reg.getD()[r];
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                reg.getD()[r] = dst & (int) ~(1 << data);
+                reg.getD()[r] = dst & ~(1 << data);
                 cycle = Cycle.Bclr_i[0];
                 break;
             case 2: // (An)
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(reg.getA().get(r), (byte) (dst & (byte) ~(1 << data)));
+                mem.pokeB(reg.getA().get(r), (byte) (dst & (~(1 << data) & 0xff)));
                 cycle = Cycle.Bclr_i[1];
                 break;
             case 3: // (An)+
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(reg.getA().get(r), (byte) (dst & (byte) ~(1 << data)));
+                mem.pokeB(reg.getA().get(r), (byte) (dst & (~(1 << data) & 0xff)));
                 reg.getA().set(r, reg.getA().get(r) + 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) + 1);
                 cycle = Cycle.Bclr_i[2];
@@ -3957,24 +3947,24 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) - 1);
-                dst = mem.peekB(reg.getA().get(r));
+                dst = mem.peekB(reg.getA().get(r)) & 0xff;
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB(reg.getA().get(r), (byte) (dst & (byte) ~(1 << data)));
+                mem.pokeB(reg.getA().get(r), (byte) (dst & (~(1 << data) & 0xff)));
                 cycle = Cycle.Bclr_i[3];
                 break;
             case 5: // d16(An)
-                d16 = (short) fetchW();
-                dst = mem.peekB((int) (reg.getA().get(r) + d16));
+                d16 = fetchW(); // signed
+                dst = mem.peekB(reg.getA().get(r) + d16);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 ans = (dst & (1 << data)) == 0;
-                mem.pokeB((int) (reg.getA().get(r) + d16), (byte) (dst & (byte) ~(1 << data)));
+                mem.pokeB(reg.getA().get(r) + d16, (byte) (dst & (~(1 << data) & 0xff)));
                 cycle = Cycle.Bclr_i[4];
                 break;
             case 6: // d8(An,IX)
@@ -3984,12 +3974,12 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
-                dst = mem.peekB(ptr);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
+                dst = mem.peekB(ptr) & 0xff;
                 ans = (dst & (1 << data)) == 0;
                 mem.pokeB(ptr, (byte) (dst & (byte) ~(1 << data)));
                 cycle = Cycle.Bclr_i[5];
@@ -3997,25 +3987,25 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        dst = mem.peekB(ptr);
+                        dst = mem.peekB(ptr) & 0xff;
                         ans = (dst & (1 << data)) == 0;
-                        mem.pokeB(ptr, (byte) (dst & (byte) ~(1 << data)));
+                        mem.pokeB(ptr, (byte) (dst & (~(1 << data) & 0xff)));
                         cycle = Cycle.Bclr_i[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        dst = (short) (short) (byte) mem.peekB(ptr);
+                        dst = mem.peekB(ptr) & 0xff;
                         ans = (dst & (1 << data)) == 0;
-                        mem.pokeB(ptr, (byte) (dst & (byte) ~(1 << data)));
+                        mem.pokeB(ptr, (byte) (dst & (~(1 << data) & 0xff)));
                         cycle = Cycle.Bclr_i[7];
                         break;
                     default:
@@ -4064,9 +4054,9 @@ public class NiseM68 {
         int m = (n & 0x0038) >> 3;
         int r = (n & 0x0007);
 
-        short val = (short) (short) (byte) fetchW();
+        short val = (short) (fetchW() & 0xff);
 //#if DEBUG
-        nimo += "#$%02x,".formatted((byte) val);
+        nimo += "#$%02x,".formatted(val & 0xff);
 //#endif
 
         short after = 0;
@@ -4081,30 +4071,30 @@ public class NiseM68 {
 
         switch (m) {
             case 0: // Dn
-                before = (short) (short) (byte) reg.getD()[r];
-                after = (short) ((short) before - (short) val);
+                before = (short) (reg.getD()[r] & 0xff);
+                after = (short) ((before - val) & 0xffff);
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 cycle = Cycle.Cmpi_b[0];
                 break;
             case 2: // (An)
-                before = (short) (short) (byte) mem.peekB(reg.getA().get(r));
-                after = (short) ((short) before - (short) val);
+                before = (short) (mem.peekB(reg.getA().get(r)) & 0xff);
+                after = (short) ((before - val) & 0xffff);
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Cmpi_b[1];
                 break;
             case 3: // (An)+
-                before = (short) (short) (byte) mem.peekB(reg.getA().get(r));
-                after = (short) ((short) before - (short) val);
+                before = (short) (mem.peekB(reg.getA().get(r)) & 0xff);
+                after = (short) ((before - val) & 0xffff);
                 reg.getA().set(r, reg.getA().get(r) + 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Cmpi_b[2];
@@ -4112,20 +4102,20 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) - 1);
-                before = (short) (short) (byte) mem.peekB(reg.getA().get(r));
-                after = (short) ((short) before - (short) val);
+                before = (short) (mem.peekB(reg.getA().get(r)) & 0xff);
+                after = (short) ((before - val) & 0xffff);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Cmpi_b[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = (short) (short) (byte) mem.peekB((int) (reg.getA().get(r) + d16));
-                after = (short) ((short) before - (short) val);
+                short d16 = fetchW(); // signed
+                before = (short) (mem.peekB((int) (reg.getA().get(r) + d16)) & 0xff);
+                after = (short) ((before - val) & 0xffff);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.Cmpi_b[4];
@@ -4137,35 +4127,35 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
-                before = (short) (short) (byte) mem.peekB(ptr);
-                after = (short) ((short) before - (short) val);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
+                before = (short) (mem.peekB(ptr) & 0xff);
+                after = (short) ((before - val) & 0xffff);
                 cycle = Cycle.Cmpi_b[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        before = (short) (short) (byte) mem.peekB(ptr);
-                        after = (short) ((short) before - (short) val);
+                        before = (short) (mem.peekB(ptr) & 0xff);
+                        after = (short) ((before - val) & 0xffff);
                         cycle = Cycle.Cmpi_b[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        before = (short) (short) (byte) mem.peekB(ptr);
-                        after = (short) ((short) before - (short) val);
+                        before = (short) (mem.peekB(ptr) & 0xff);
+                        after = (short) ((before - val) & 0xffff);
                         cycle = Cycle.Cmpi_b[7];
                         break;
                 }
@@ -4198,9 +4188,9 @@ public class NiseM68 {
         int m = (n & 0x0038) >> 3;
         int r = (n & 0x0007);
 
-        int val = (int) (int) (short) fetchW();
+        int val = fetchW() & 0xffff;
 //#if DEBUG
-        nimo += "#$%04x,".formatted((short) val);
+        nimo += "#$%04x,".formatted(val);
 //#endif
 
         int after = 0;
@@ -4215,49 +4205,49 @@ public class NiseM68 {
 
         switch (m) {
             case 0: // Dn
-                before = (int) (int) (short) reg.getDw(r);
-                after = (int) ((int) before - (int) val);
+                before = reg.getDw(r) & 0xffff;
+                after = before - val;
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 cycle = Cycle.Cmpi_w[0];
                 break;
             case 2: // (An)
-                before = (int) (int) (short) mem.peekW(reg.getA().get(r));
-                after = (int) ((int) before - (int) val);
+                before = mem.peekW(reg.getA().get(r)) & 0xffff;
+                after = before - val;
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Cmpi_w[1];
                 break;
             case 3: // (An)+
-                before = (int) (int) (short) mem.peekW(reg.getA().get(r));
-                after = (int) ((int) before - (int) val);
+                before = mem.peekW(reg.getA().get(r)) & 0xffff;
+                after = before - val;
                 reg.getA().set(r, reg.getA().get(r) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Cmpi_w[2];
                 break;
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 2);
-                before = (int) (int) (short) mem.peekW(reg.getA().get(r));
-                after = (int) ((int) before - (int) val);
+                before = mem.peekW(reg.getA().get(r)) & 0xffff;
+                after = before - val;
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Cmpi_w[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = (int) (int) (short) mem.peekW((int) (reg.getA().get(r) + d16));
-                after = (int) ((int) before - (int) val);
+                short d16 = fetchW(); // signed
+                before = mem.peekW(reg.getA().get(r) + d16) & 0xffff;
+                after = before - val;
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.Cmpi_w[4];
@@ -4269,35 +4259,35 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
-                before = (int) (int) (short) mem.peekW(ptr);
-                after = (int) ((int) before - (int) val);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
+                before = mem.peekW(ptr) & 0xffff;
+                after = before - val;
                 cycle = Cycle.Cmpi_w[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        before = (int) (int) (short) mem.peekW(ptr);
-                        after = (int) ((int) before - (int) val);
+                        before = mem.peekW(ptr) & 0xffff;
+                        after = before - val;
                         cycle = Cycle.Cmpi_w[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        before = (int) (int) (short) mem.peekW(ptr);
-                        after = (int) ((int) before - (int) val);
+                        before = mem.peekW(ptr) & 0xffff;
+                        after = before - val;
                         cycle = Cycle.Cmpi_w[7];
                         break;
                 }
@@ -4325,17 +4315,15 @@ public class NiseM68 {
         String nimo = "CMPI.l ";
 //#endif
 
-
         int cycle = 0;
 
         int m = (n & 0x0038) >> 3;
         int r = (n & 0x0007);
 
-        long val = (long) (long) (int) fetchL();
+        long val = fetchL();
 //#if DEBUG
         nimo += "#$%08x,".formatted(val);
 //#endif
-
 
         long after = 0;
         long before = 0;
@@ -4349,49 +4337,49 @@ public class NiseM68 {
 
         switch (m) {
             case 0: // Dn
-                before = (long) (long) (int) reg.getD()[r];
-                after = (long) ((long) before - (long) val);
+                before = reg.getD()[r];
+                after = before - val;
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 cycle = Cycle.Cmpi_l[0];
                 break;
             case 2: // (An)
-                before = (long) (long) (int) mem.peekL(reg.getA().get(r));
-                after = (long) ((long) before - (long) val);
+                before = mem.peekL(reg.getA().get(r));
+                after = before - val;
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Cmpi_l[1];
                 break;
             case 3: // (An)+
-                before = (long) (long) (int) mem.peekL(reg.getA().get(r));
-                after = (long) ((long) before - (long) val);
+                before = mem.peekL(reg.getA().get(r));
+                after = before - val;
                 reg.getA().set(r, reg.getA().get(r) + 4);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Cmpi_l[2];
                 break;
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 4);
-                before = (long) (long) (int) mem.peekL(reg.getA().get(r));
-                after = (long) ((long) before - (long) val);
+                before = mem.peekL(reg.getA().get(r));
+                after = before - val;
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Cmpi_l[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = (long) (long) (int) mem.peekL((int) (reg.getA().get(r) + d16));
-                after = (long) ((long) before - (long) val);
+                short d16 = fetchW(); // signed
+                before = mem.peekL(reg.getA().get(r) + d16);
+                after = before - val;
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.Cmpi_l[4];
@@ -4403,35 +4391,35 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
-                before = (long) (long) (int) mem.peekL(ptr);
-                after = (long) ((long) before - (long) val);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
+                before = mem.peekL(ptr);
+                after = before - val;
                 cycle = Cycle.Cmpi_l[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        before = (long) (long) (int) mem.peekL(ptr);
-                        after = (long) ((long) before - (long) val);
+                        before = mem.peekL(ptr);
+                        after = before - val;
                         cycle = Cycle.Cmpi_l[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        before = (long) (long) (int) mem.peekL(ptr);
-                        after = (long) ((long) before - (long) val);
+                        before = mem.peekL(ptr);
+                        after = before - val;
                         cycle = Cycle.Cmpi_l[7];
                         break;
                 }
@@ -4477,7 +4465,7 @@ public class NiseM68 {
         int m = (n & 0x0038) >> 3;
         int r = (n & 0x0007);
 
-        byte src = (byte) fetchW();
+        byte src = (byte) (fetchW() & 0xff);
 //#if DEBUG
         nimo += "#$%02x,".formatted(src);
 //#endif
@@ -4495,9 +4483,9 @@ public class NiseM68 {
         switch (m) {
             case 0: // Dn
                 dst = reg.getDb(r);
-                ans = (byte) ((byte) dst - (byte) src);
+                ans = (byte) (dst - src);
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 reg.setDb(r, ans);
@@ -4505,9 +4493,9 @@ public class NiseM68 {
                 break;
             case 2: // (An)
                 dst = mem.peekB(reg.getA().get(r));
-                ans = (byte) ((byte) dst - (byte) src);
+                ans = (byte) (dst - src);
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 mem.pokeB(reg.getA().get(r), ans);
@@ -4515,12 +4503,12 @@ public class NiseM68 {
                 break;
             case 3: // (An)+
                 dst = mem.peekB(reg.getA().get(r));
-                ans = (byte) ((byte) dst - (byte) src);
+                ans = (byte) (dst - src);
                 mem.pokeB(reg.getA().get(r), ans);
                 reg.getA().set(r, reg.getA().get(r) + 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Subi_b[2];
@@ -4529,21 +4517,21 @@ public class NiseM68 {
                 reg.getA().set(r, reg.getA().get(r) - 1);
                 if (r == 7) reg.getA().set(r, reg.getA().get(r) - 1);
                 dst = mem.peekB(reg.getA().get(r));
-                ans = (byte) ((byte) dst - (byte) src);
+                ans = (byte) (dst - src);
                 mem.pokeB(reg.getA().get(r), ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Subi_b[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                dst = mem.peekB((int) (reg.getA().get(r) + d16));
-                ans = (byte) ((byte) dst - (byte) src);
-                mem.pokeB((int) (reg.getA().get(r) + d16), ans);
+                short d16 = fetchW(); // signed
+                dst = mem.peekB(reg.getA().get(r) + d16);
+                ans = (byte) (dst - src);
+                mem.pokeB(reg.getA().get(r) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.Subi_b[4];
@@ -4555,37 +4543,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 dst = mem.peekB(ptr);
-                ans = (byte) ((byte) dst - (byte) src);
+                ans = (byte) (dst - src);
                 mem.pokeB(ptr, ans);
                 cycle = Cycle.Subi_b[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         dst = mem.peekB(ptr);
-                        ans = (byte) ((byte) dst - (byte) src);
+                        ans = (byte) (dst - src);
                         mem.pokeB(ptr, ans);
                         cycle = Cycle.Subi_b[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         dst = mem.peekB(ptr);
-                        ans = (byte) ((byte) dst - (byte) src);
+                        ans = (byte) (dst - src);
                         mem.pokeB(ptr, ans);
                         cycle = Cycle.Subi_b[7];
                         break;
@@ -4595,10 +4583,10 @@ public class NiseM68 {
 
         // flag
         // reg.X
-        reg.setN((byte) ans);
-        reg.setZ((byte) ans);
-        reg.setVcmp((byte) src, (byte) dst, (byte) ans);
-        reg.setCcmp((byte) src, (byte) dst, (byte) ans);
+        reg.setN(ans);
+        reg.setZ(ans);
+        reg.setVcmp(src, dst, ans);
+        reg.setCcmp(src, dst, ans);
 
 //#if DEBUG
         logger.log(Level.TRACE, nimo);
@@ -4617,7 +4605,7 @@ public class NiseM68 {
         int m = (n & 0x0038) >> 3;
         int r = (n & 0x0007);
 
-        short src = (short) fetchW();
+        short src = fetchW();
 //#if DEBUG
         nimo += "#$%04x,".formatted(src);
 //#endif
@@ -4635,9 +4623,9 @@ public class NiseM68 {
         switch (m) {
             case 0: // Dn
                 dst = reg.getDw(r);
-                ans = (short) ((short) dst - (short) src);
+                ans = (short) ((dst - src) & 0xffff);
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 reg.setDw(r, ans);
@@ -4645,9 +4633,9 @@ public class NiseM68 {
                 break;
             case 2: // (An)
                 dst = mem.peekW(reg.getA().get(r));
-                ans = (short) ((short) dst - (short) src);
+                ans = (short) ((dst - src) & 0xffff);
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 mem.pokeW(reg.getA().get(r), ans);
@@ -4655,11 +4643,11 @@ public class NiseM68 {
                 break;
             case 3: // (An)+
                 dst = mem.peekW(reg.getA().get(r));
-                ans = (short) ((short) dst - (short) src);
+                ans = (short) ((dst - src) & 0xffff);
                 mem.pokeW(reg.getA().get(r), ans);
                 reg.getA().set(r, reg.getA().get(r) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Subi_w[2];
@@ -4667,21 +4655,21 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 2);
                 dst = mem.peekW(reg.getA().get(r));
-                ans = (short) ((short) dst - (short) src);
+                ans = (short) ((dst - src) & 0xffff);
                 mem.pokeW(reg.getA().get(r), ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Subi_w[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                dst = mem.peekW((int) (reg.getA().get(r) + d16));
-                ans = (short) ((short) dst - (short) src);
-                mem.pokeW((int) (reg.getA().get(r) + d16), ans);
+                short d16 = fetchW(); // signed
+                dst = mem.peekW(reg.getA().get(r) + d16);
+                ans = (short) ((dst - src) & 0xffff);
+                mem.pokeW(reg.getA().get(r) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.Subi_w[4];
@@ -4693,37 +4681,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 dst = mem.peekW(ptr);
-                ans = (short) ((short) dst - (short) src);
+                ans = (short) ((dst - src) & 0xffff);
                 mem.pokeW(ptr, ans);
                 cycle = Cycle.Subi_w[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         dst = mem.peekW(ptr);
-                        ans = (short) ((short) dst - (short) src);
+                        ans = (short) ((dst - src) & 0xffff);
                         mem.pokeW(ptr, ans);
                         cycle = Cycle.Subi_w[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         dst = mem.peekW(ptr);
-                        ans = (short) ((short) dst - (short) src);
+                        ans = (short) ((dst - src) & 0xffff);
                         mem.pokeW(ptr, ans);
                         cycle = Cycle.Subi_w[7];
                         break;
@@ -4755,7 +4743,7 @@ public class NiseM68 {
         int m = (n & 0x0038) >> 3;
         int r = (n & 0x0007);
 
-        int src = (int) fetchL();
+        int src = fetchL();
 //#if DEBUG
         nimo += "#$%08x,".formatted(src);
 //#endif
@@ -4773,9 +4761,9 @@ public class NiseM68 {
         switch (m) {
             case 0: // Dn
                 dst = reg.getDl(r);
-                ans = (int) ((int) dst - (int) src);
+                ans = dst - src;
 //#if DEBUG
-                nimo += "D%s".formatted(r);
+                nimo += "D%d".formatted(r);
 //#endif
 
                 reg.setDl(r, ans);
@@ -4783,9 +4771,9 @@ public class NiseM68 {
                 break;
             case 2: // (An)
                 dst = mem.peekL(reg.getA().get(r));
-                ans = (int) ((int) dst - (int) src);
+                ans = dst - src;
 //#if DEBUG
-                nimo += "(A%s)".formatted(r);
+                nimo += "(A%d)".formatted(r);
 //#endif
 
                 mem.pokeL(reg.getA().get(r), ans);
@@ -4793,11 +4781,11 @@ public class NiseM68 {
                 break;
             case 3: // (An)+
                 dst = mem.peekL(reg.getA().get(r));
-                ans = (int) ((int) dst - (int) src);
+                ans = dst - src;
                 mem.pokeL(reg.getA().get(r), ans);
                 reg.getA().set(r, reg.getA().get(r) + 4);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(r);
+                nimo += "(A%d)+".formatted(r);
 //#endif
 
                 cycle = Cycle.Subi_l[2];
@@ -4805,21 +4793,21 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(r, reg.getA().get(r) - 4);
                 dst = mem.peekL(reg.getA().get(r));
-                ans = (int) ((int) dst - (int) src);
+                ans = dst - src;
                 mem.pokeL(reg.getA().get(r), ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(r);
+                nimo += "-(A%d)".formatted(r);
 //#endif
 
                 cycle = Cycle.Subi_l[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                dst = mem.peekL((int) (reg.getA().get(r) + d16));
-                ans = (int) ((int) dst - (int) src);
-                mem.pokeL((int) (reg.getA().get(r) + d16), ans);
+                short d16 = fetchW(); // signed
+                dst = mem.peekL(reg.getA().get(r) + d16);
+                ans = dst - src;
+                mem.pokeL(reg.getA().get(r) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, r);
+                nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
 
                 cycle = Cycle.Subi_l[4];
@@ -4831,37 +4819,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, r, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 dst = mem.peekL(ptr);
-                ans = (int) ((int) dst - (int) src);
+                ans = dst - src;
                 mem.pokeL(ptr, ans);
                 cycle = Cycle.Subi_l[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         dst = mem.peekL(ptr);
-                        ans = (int) ((int) dst - (int) src);
+                        ans = dst - src;
                         mem.pokeL(ptr, ans);
                         cycle = Cycle.Subi_l[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         dst = mem.peekL(ptr);
-                        ans = (int) ((int) dst - (int) src);
+                        ans = dst - src;
                         mem.pokeL(ptr, ans);
                         cycle = Cycle.Subi_l[7];
                         break;
@@ -4918,7 +4906,7 @@ public class NiseM68 {
         cycle[0] = Cycle.Movea_w[cycle[0]];
 
         // flag
-        // 全て変化せず
+        // Everything remains unchanged
 
 //#if DEBUG
         logger.log(Level.TRACE, nimo);
@@ -4950,7 +4938,7 @@ public class NiseM68 {
         cycle[0] = Cycle.Movea_l[cycle[0]];
 
         // flag
-        // 全て変化せず
+        // Everything remains unchanged
 
 //#if DEBUG
         logger.log(Level.TRACE, nimo);
@@ -4977,49 +4965,49 @@ public class NiseM68 {
         int ptr;
 
         // src
-        short val = (short) reg.getSR();
+        short val = reg.getSR();
 
         // dst
         switch (dm) {
             case 0: // Dn
-                reg.setDw(dr, (short) val);
+                reg.setDw(dr, val);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.MoveFromSr_w[0];
                 break;
             case 2: // (An)
-                mem.pokeW(reg.getA().get(dr), (short) val);
+                mem.pokeW(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.MoveFromSr_w[1];
                 break;
             case 3: // (An)+
-                mem.pokeW(reg.getA().get(dr), (short) val);
+                mem.pokeW(reg.getA().get(dr), val);
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.MoveFromSr_w[2];
                 break;
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
-                mem.pokeW(reg.getA().get(dr), (short) val);
+                mem.pokeW(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.MoveFromSr_w[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                mem.pokeW((int) (reg.getA().get(dr) + d16), (short) val);
+                short d16 = fetchW(); // signed
+                mem.pokeW(reg.getA().get(dr) + d16, val);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.MoveFromSr_w[4];
@@ -5031,32 +5019,32 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                mem.pokeW(ptr, (short) val);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                mem.pokeW(ptr, val);
                 cycle = Cycle.MoveFromSr_w[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        mem.pokeW(ptr, (short) val);
+                        mem.pokeW(ptr, val);
                         cycle = Cycle.MoveFromSr_w[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        mem.pokeW(ptr, (short) val);
+                        mem.pokeW(ptr, val);
                         cycle = Cycle.MoveFromSr_w[7];
                         break;
                 }
@@ -5098,7 +5086,7 @@ public class NiseM68 {
 
         // dst
         // flag
-        reg.setSR((short) ((reg.getSR() & 0b1010_0111_0001_1111) | (short) val));
+        reg.setSR((short) ((reg.getSR() & 0b1010_0111_0001_1111) | val));
 
 //#if DEBUG
         logger.log(Level.TRACE, nimo);
@@ -5119,10 +5107,9 @@ public class NiseM68 {
         }
 
         if ((n & 0x3000) == 0x00) {
-            // MOVE以外の命令っぽい
-            throw new UnsupportedOperationException("未実装!! [%04x]".formatted(n));
+            // It looks like a command other than MOVE
+            throw new UnsupportedOperationException("Not implemented!! [%04x]".formatted(n));
         }
-
 
         switch (size) {
             case 1: // byte
@@ -5163,31 +5150,30 @@ public class NiseM68 {
         nimo[0] += ",";
 //#endif
 
-
         // dst
         switch (dm) {
             case 0: // Dn
-                reg.setDb(dr, (byte) val);
+                reg.setDb(dr, val);
 //#if DEBUG
-                nimo[0] += "D%s".formatted(dr);
+                nimo[0] += "D%d".formatted(dr);
 //#endif
 
                 cycle[0] = Cycle.Move_b[cycle[0]][0];
                 break;
             case 2: // (An)
-                mem.pokeB(reg.getA().get(dr), (byte) val);
+                mem.pokeB(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo[0] += "(A%s)".formatted(dr);
+                nimo[0] += "(A%d)".formatted(dr);
 //#endif
 
                 cycle[0] = Cycle.Move_b[cycle[0]][1];
                 break;
             case 3: // (An)+
-                mem.pokeB(reg.getA().get(dr), (byte) val);
+                mem.pokeB(reg.getA().get(dr), val);
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo[0] += "(A%s)+".formatted(dr);
+                nimo[0] += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle[0] = Cycle.Move_b[cycle[0]][2];
@@ -5195,18 +5181,18 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) - 1);
-                mem.pokeB(reg.getA().get(dr), (byte) val);
+                mem.pokeB(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo[0] += "-(A%s)".formatted(dr);
+                nimo[0] += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle[0] = Cycle.Move_b[cycle[0]][3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                mem.pokeB((int) (reg.getA().get(dr) + d16), (byte) val);
+                short d16 = fetchW(); // signed
+                mem.pokeB((int) (reg.getA().get(dr) + d16), val);
 //#if DEBUG
-                nimo[0] += "$%04x(A%s)".formatted(d16, dr);
+                nimo[0] += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle[0] = Cycle.Move_b[cycle[0]][4];
@@ -5218,32 +5204,32 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo[0] += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                mem.pokeB(ptr, (byte) val);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                mem.pokeB(ptr, val);
                 cycle[0] = Cycle.Move_b[cycle[0]][5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo[0] += "$%04x".formatted((short) ptr);
+                        nimo[0] += "$%04x".formatted(ptr);
 //#endif
 
-                        mem.pokeB(ptr, (byte) val);
+                        mem.pokeB(ptr, val);
                         cycle[0] = Cycle.Move_b[cycle[0]][6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo[0] += "$%08x".formatted((int) ptr);
+                        nimo[0] += "$%08x".formatted(ptr);
 //#endif
 
-                        mem.pokeB(ptr, (byte) val);
+                        mem.pokeB(ptr, val);
                         cycle[0] = Cycle.Move_b[cycle[0]][7];
                         break;
                 }
@@ -5251,8 +5237,8 @@ public class NiseM68 {
         }
 
         // flag
-        reg.setN((byte) val);
-        reg.setZ((byte) val);
+        reg.setN(val);
+        reg.setZ(val);
         reg.setV(false);
         reg.setC(false);
 
@@ -5293,44 +5279,44 @@ public class NiseM68 {
         // dst
         switch (dm) {
             case 0: // Dn
-                reg.setDw(dr, (short) val);
+                reg.setDw(dr, val);
 //#if DEBUG
-                nimo[0] += "D%s".formatted(dr);
+                nimo[0] += "D%d".formatted(dr);
 //#endif
 
                 cycle[0] = Cycle.Move_w[cycle[0]][0];
                 break;
             case 2: // (An)
-                mem.pokeW(reg.getA().get(dr), (short) val);
+                mem.pokeW(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo[0] += "(A%s)".formatted(dr);
+                nimo[0] += "(A%d)".formatted(dr);
 //#endif
 
                 cycle[0] = Cycle.Move_w[cycle[0]][1];
                 break;
             case 3: // (An)+
-                mem.pokeW(reg.getA().get(dr), (short) val);
+                mem.pokeW(reg.getA().get(dr), val);
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo[0] += "(A%s)+".formatted(dr);
+                nimo[0] += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle[0] = Cycle.Move_w[cycle[0]][2];
                 break;
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
-                mem.pokeW(reg.getA().get(dr), (short) val);
+                mem.pokeW(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo[0] += "-(A%s)".formatted(dr);
+                nimo[0] += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle[0] = Cycle.Move_w[cycle[0]][3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                mem.pokeW((int) (reg.getA().get(dr) + d16), (short) val);
+                short d16 = fetchW(); // signed
+                mem.pokeW(reg.getA().get(dr) + d16, val);
 //#if DEBUG
-                nimo[0] += "$%04x(A%s)".formatted(d16, dr);
+                nimo[0] += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle[0] = Cycle.Move_w[cycle[0]][4];
@@ -5342,32 +5328,32 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo[0] += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                mem.pokeW(ptr, (short) val);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                mem.pokeW(ptr, val);
                 cycle[0] = Cycle.Move_w[cycle[0]][5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo [0]+= "$%04x".formatted((short) ptr);
+                        nimo [0]+= "$%04x".formatted(ptr);
 //#endif
 
-                        mem.pokeW(ptr, (short) val);
+                        mem.pokeW(ptr, val);
                         cycle[0] = Cycle.Move_w[cycle[0]][6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo[0] += "$%08x".formatted((int) ptr);
+                        nimo[0] += "$%08x".formatted(ptr);
 //#endif
 
-                        mem.pokeW(ptr, (short) val);
+                        mem.pokeW(ptr, val);
                         cycle[0] = Cycle.Move_w[cycle[0]][7];
                         break;
                 }
@@ -5375,8 +5361,8 @@ public class NiseM68 {
         }
 
         // flag
-        reg.setN((short) val);
-        reg.setZ((short) val);
+        reg.setN(val);
+        reg.setZ(val);
         reg.setV(false);
         reg.setC(false);
 
@@ -5392,7 +5378,6 @@ public class NiseM68 {
 //#if DEBUG
         nimo[0] = "MOVE.l ";
 //#endif
-
 
         int[] cycle = new int[] {0};
 
@@ -5415,13 +5400,12 @@ public class NiseM68 {
         nimo[0] += ",";
 //#endif
 
-
         // dst
         switch (dm) {
             case 0: // Dn
                 reg.getD()[dr] = val;
 //#if DEBUG
-                nimo[0] += "D%s".formatted(dr);
+                nimo[0] += "D%d".formatted(dr);
 //#endif
 
                 cycle[0] = Cycle.Move_l[cycle[0]][0];
@@ -5429,7 +5413,7 @@ public class NiseM68 {
             case 2: // (An)
                 mem.pokeL(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo[0] += "(A%s)".formatted(dr);
+                nimo[0] += "(A%d)".formatted(dr);
 //#endif
 
                 cycle[0] = Cycle.Move_l[cycle[0]][1];
@@ -5438,7 +5422,7 @@ public class NiseM68 {
                 mem.pokeL(reg.getA().get(dr), val);
                 reg.getA().set(dr, reg.getA().get(dr) + 4);
 //#if DEBUG
-                nimo[0] += "(A%s)+".formatted(dr);
+                nimo[0] += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle[0] = Cycle.Move_l[cycle[0]][2];
@@ -5447,16 +5431,16 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) - 4);
                 mem.pokeL(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo[0] += "-(A%s)".formatted(dr);
+                nimo[0] += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle[0] = Cycle.Move_l[cycle[0]][3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                mem.pokeL((int) (reg.getA().get(dr) + d16), val);
+                short d16 = fetchW(); // signed
+                mem.pokeL(reg.getA().get(dr) + d16, val);
 //#if DEBUG
-                nimo[0] += "$%04x(A%s)".formatted(d16, dr);
+                nimo[0] += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle[0] = Cycle.Move_l[cycle[0]][4];
@@ -5468,20 +5452,20 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo[0] += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 mem.pokeL(ptr, val);
                 cycle[0] = Cycle.Move_l[cycle[0]][5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo[0] += "($%04x)".formatted((short) ptr);
+                        nimo[0] += "($%04x)".formatted(ptr);
 //#endif
 
                         mem.pokeL(ptr, val);
@@ -5490,7 +5474,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo[0] += "($%08x)".formatted((int) ptr);
+                        nimo[0] += "($%08x)".formatted(ptr);
 //#endif
 
                         mem.pokeL(ptr, val);
@@ -5501,8 +5485,8 @@ public class NiseM68 {
         }
 
         // flag
-        reg.setN((int) val);
-        reg.setZ((int) val);
+        reg.setN(val);
+        reg.setZ(val);
         reg.setV(false);
         reg.setC(false);
 
@@ -5517,8 +5501,8 @@ public class NiseM68 {
         int cycle = 0;
 
         if ((n & 0xc0) != 0xc0) {
-            // LEA以外の命令っぽい
-            throw new UnsupportedOperationException("未実装!! [%04x]".formatted(n));
+            // Looks like a non-LEA order
+            throw new UnsupportedOperationException("Not implemented!! [%04x]".formatted(n));
         }
 
         int a = (n & 0x0e00) >> 9;
@@ -5536,21 +5520,21 @@ public class NiseM68 {
             case 1:
             case 3:
             case 4:
-                throw new UnsupportedOperationException("LEA 不正なアドレッシングモード %04x".formatted(n));
+                throw new UnsupportedOperationException("LEA Invalid Addressing Mode %04x".formatted(n));
             case 2: // (An)
 //#if DEBUG
-                logger.log(Level.TRACE, "LEA (A%s),A%s", r, a);
+                logger.log(Level.TRACE, "LEA (A%d),A%s", r, a);
 //#endif
                 reg.getA().set(a, reg.getA().get(r));
                 cycle = 4;
                 break;
             case 5: // d16(An)
-                vw = (short) (short) fetchW();
+                vw = fetchW();
 //#if DEBUG
-                logger.log(Level.TRACE, "LEA $%04x(A%s),A%s ; d16+A%s=$%08x",
-                        vw, r, a, (int) (reg.getA().get(r) + (short) vw));
+                logger.log(Level.TRACE, "LEA $%04x(A%d),A%s ; d16+A%s=$%08x",
+                        vw, r, a, reg.getA().get(r) + (vw & 0xffff));
 //#endif
-                reg.getA().set(a, (int) (reg.getA().get(r) + (short) vw));
+                reg.getA().set(a, reg.getA().get(r) + (vw & 0xffff));
                 cycle = 8;
                 break;
             case 6: // d8(An,IX)
@@ -5559,53 +5543,49 @@ public class NiseM68 {
                 ni = (vw & 0x7000) >> 12;
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
-                if (!isL) ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(r) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
 //#if DEBUG
                 logger.log(Level.TRACE, "LEA $%02x(A%s,%s),A%s ; d8+A%s+IX=$%08x",
-                        vw, r, isA ? "A%s".formatted(ni) : "D%s".formatted(ni), a, ptr);
+                        vw, r, isA ? "A%s".formatted(ni) : "D%d".formatted(ni), a, ptr);
 //#endif
                 reg.getA().set(a, ptr);
                 cycle = 12;
                 break;
             case 7: // etc
-                if (r == 0) // Abs.W
-                {
-                    ptr = (int) (short) fetchW();
+                if (r == 0) { // Abs.W
+                    ptr = fetchW() & 0xffff;
 //#if DEBUG
                     logger.log(Level.TRACE, "LEA $%08x,A%s".formatted(ptr, a));
 //#endif
                     reg.getA().set(a, ptr);
                     cycle = 8;
-                } else if (r == 1) // Abs.L
-                {
+                } else if (r == 1) { // Abs.L
                     ptr = fetchL();
 //#if DEBUG
                     logger.log(Level.TRACE, "LEA $%08x,A%s".formatted(ptr, a));
 //#endif
                     reg.getA().set(a, ptr);
                     cycle = 12;
-                } else if (r == 2) // d16(PC)
-                {
-                    ptr = (int) (short) fetchW();
+                } else if (r == 2) { // d16(PC)
+                    ptr = fetchW() & 0xffff;
 //#if DEBUG
                     logger.log(Level.TRACE, "LEA $%04x(PC),A%s ; d16+PC=$%08x", ptr, a, ptr + reg.pc);
 //#endif
                     reg.getA().set(a, ptr + reg.pc - 2);
                     cycle = 8;
-                } else if (r == 3) // d8(PC,IX)
-                {
+                } else if (r == 3) { // d8(PC,IX)
                     vw = fetchW();
                     isA = (vw & 0x8000) != 0;
                     ni = (vw & 0x7000) >> 12;
                     isL = (vw & 0x0800) != 0;
                     IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
-                    if (!isL) ptr = (int) (reg.pc - 2 + ((byte) (byte) vw) + (short) (short) IX);
-                    else ptr = (int) (reg.pc - 2 + ((byte) (byte) vw) + IX);
+                    if (!isL) ptr = reg.pc - 2 + (byte) vw + (short) (IX & 0xffff);
+                    else ptr = reg.pc - 2 + (byte) vw + IX;
 //#if DEBUG
                     logger.log(Level.TRACE, "LEA $%02x(PC,%s.%s),A%s ; d8+PC+%s.%s=$%08x",
                             vw,
-                            isA ? "A%s".formatted(ni) : "D%s".formatted(ni),
+                            isA ? "A%s".formatted(ni) : "D%d".formatted(ni),
                             a,
                             ptr,
                             isL ? "l" : "w");
@@ -5660,7 +5640,7 @@ public class NiseM68 {
                 ans = (byte) ~ans;
                 reg.setDb(dr, ans);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Not_b[0];
@@ -5670,7 +5650,7 @@ public class NiseM68 {
                 ans = (byte) ~ans;
                 mem.pokeB(reg.getA().get(dr), ans);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Not_b[1];
@@ -5682,7 +5662,7 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Not_b[2];
@@ -5694,18 +5674,18 @@ public class NiseM68 {
                 ans = (byte) ~ans;
                 mem.pokeB(reg.getA().get(dr), ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Not_b[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                ans = mem.peekB((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                ans = mem.peekB(reg.getA().get(dr) + d16);
                 ans = (byte) ~ans;
-                mem.pokeB((int) (reg.getA().get(dr) + d16), ans);
+                mem.pokeB(reg.getA().get(dr) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Not_b[4];
@@ -5717,11 +5697,11 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 ans = mem.peekB(ptr);
                 ans = (byte) ~ans;
                 mem.pokeB(ptr, ans);
@@ -5730,9 +5710,9 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         ans = mem.peekB(ptr);
@@ -5743,7 +5723,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         ans = mem.peekB(ptr);
@@ -5788,7 +5768,7 @@ public class NiseM68 {
                 return cclr_l(n);
         }
 
-        throw new IndexOutOfBoundsException("CLRが扱える範囲エラー");
+        throw new IndexOutOfBoundsException("CLR-handled range error");
     }
 
     private int cclr_b(short n) {
@@ -5813,7 +5793,7 @@ public class NiseM68 {
             case 0: // Dn
                 reg.setDb(dr, (byte) 0);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Clr_b[0];
@@ -5821,7 +5801,7 @@ public class NiseM68 {
             case 2: // (An)
                 mem.pokeB(reg.getA().get(dr), (byte) 0);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Clr_b[1];
@@ -5831,7 +5811,7 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Clr_b[2];
@@ -5841,16 +5821,16 @@ public class NiseM68 {
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) - 1);
                 mem.pokeB(reg.getA().get(dr), (byte) 0);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Clr_b[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                mem.pokeB((int) (reg.getA().get(dr) + d16), (byte) 0);
+                short d16 = fetchW(); // signed
+                mem.pokeB(reg.getA().get(dr) + d16, (byte) 0);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Clr_b[4];
@@ -5862,20 +5842,20 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 mem.pokeB(ptr, (byte) 0);
                 cycle = Cycle.Clr_b[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         mem.pokeB(ptr, (byte) 0);
@@ -5884,7 +5864,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         mem.pokeB(ptr, (byte) 0);
@@ -5913,7 +5893,6 @@ public class NiseM68 {
         String nimo = "CLR.w ";
 //#endif
 
-
         int cycle = 0;
 
         int dm = (n & 0x0038) >> 3;
@@ -5931,7 +5910,7 @@ public class NiseM68 {
             case 0: // Dn
                 reg.setDw(dr, (short) 0);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Clr_w[0];
@@ -5939,7 +5918,7 @@ public class NiseM68 {
             case 2: // (An)
                 mem.pokeW(reg.getA().get(dr), (short) 0);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Clr_w[1];
@@ -5948,7 +5927,7 @@ public class NiseM68 {
                 mem.pokeW(reg.getA().get(dr), (short) 0);
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Clr_w[2];
@@ -5957,16 +5936,16 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
                 mem.pokeW(reg.getA().get(dr), (short) 0);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Clr_w[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                mem.pokeW((int) (reg.getA().get(dr) + d16), (short) 0);
+                short d16 = fetchW(); // signed
+                mem.pokeW(reg.getA().get(dr) + d16, (short) 0);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Clr_w[4];
@@ -5978,20 +5957,20 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 mem.pokeW(ptr, (short) 0);
                 cycle = Cycle.Clr_w[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         mem.pokeW(ptr, (short) 0);
@@ -6000,7 +5979,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         mem.pokeW(ptr, (short) 0);
@@ -6029,7 +6008,6 @@ public class NiseM68 {
         String nimo = "CLR.l ";
 //#endif
 
-
         int cycle = 0;
 
         int dm = (n & 0x0038) >> 3;
@@ -6047,7 +6025,7 @@ public class NiseM68 {
             case 0: // Dn
                 reg.getD()[dr] = 0;
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Clr_l[0];
@@ -6055,7 +6033,7 @@ public class NiseM68 {
             case 2: // (An)
                 mem.pokeL(reg.getA().get(dr), 0);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Clr_l[1];
@@ -6064,7 +6042,7 @@ public class NiseM68 {
                 mem.pokeL(reg.getA().get(dr), 0);
                 reg.getA().set(dr, reg.getA().get(dr) + 4);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Clr_l[2];
@@ -6073,16 +6051,16 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) - 4);
                 mem.pokeL(reg.getA().get(dr), 0);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Clr_l[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                mem.pokeL((int) (reg.getA().get(dr) + d16), 0);
+                short d16 = fetchW(); // signed
+                mem.pokeL(reg.getA().get(dr) + d16, 0);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Clr_l[4];
@@ -6094,20 +6072,20 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 mem.pokeL(ptr, 0);
                 cycle = Cycle.Clr_l[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         mem.pokeL(ptr, 0);
@@ -6116,7 +6094,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         mem.pokeL(ptr, 0);
@@ -6182,13 +6160,13 @@ public class NiseM68 {
         }
 
         if ((n & 0xc0) != 0x40) {
-            // PEA以外の命令っぽい
+            // Looks like a non-PEA command
 
             if ((n & 0x0b80) == 0x0880) {
                 return cmovem(n);
             }
 
-            throw new UnsupportedOperationException("未実装!! [%04x]".formatted(n));
+            throw new UnsupportedOperationException("Not implemented!! [%04x]".formatted(n));
         }
 
         String[] nimo = new String[] {""};
@@ -6222,16 +6200,16 @@ public class NiseM68 {
     private int cswap(short n) {
         int r = n & 0x0007;
 //#if DEBUG
-        String nimo = "SWAP D%s".formatted(r);
+        String nimo = "SWAP D%d".formatted(r);
 //#endif
 
         // compute
         int a = reg.getDl(r);
-        a = (int) ((a << 16) | (a >> 16));
+        a = (a << 16) | (a >> 16);
         reg.setDl(r, a);
 
         // flag
-        // X変化なし
+        // X unchanged
         reg.setN((a & 0x8000_0000) != 0);
         reg.setZ(a == 0);
         reg.setV(false);
@@ -6251,20 +6229,20 @@ public class NiseM68 {
         int r = n & 0x0007;
         int op = (n & 0x01c0) >> 6;
 //#if DEBUG
-        String nimo = "EXT.%s D%s".formatted(op == 2 ? "w" : "l", r);
+        String nimo = "EXT.%s D%d".formatted(op == 2 ? "w" : "l", r);
 //#endif
 
         int a;
         // compute
         switch (op) {
             case 2:
-                a = reg.getDb(r);
-                a = (int) (int) (byte) a;
+                a = reg.getDb(r) & 0xff;
+                a = (byte) a;
                 reg.setDw(r, (short) a);
                 break;
             case 3:
-                a = reg.getDw(r);
-                a = (int) (int) (short) a;
+                a = reg.getDw(r) & 0xffff;
+                a = (short) a;
                 reg.setDl(r, a);
                 break;
             default:
@@ -6272,7 +6250,7 @@ public class NiseM68 {
         }
 
         // flag
-        // X変化なし
+        // X unchanged
         reg.setN((a & 0x8000_0000) != 0);
         reg.setZ(a == 0);
         reg.setV(false);
@@ -6334,31 +6312,31 @@ public class NiseM68 {
             int val;
             if (rb > 0xff) {
                 if (dm == 4) {
-                    // プリデクリメントモード
+                    // Pre-decrement mode
                     val = reg.getD()[i % 8];
 //#if DEBUG
-                    nimo += "D%s".formatted(i % 8);
+                    nimo += "D%d".formatted(i % 8);
 //#endif
 
                 } else {
                     val = reg.getA().get(7 - (i % 8));
 //#if DEBUG
-                    nimo += "A%s".formatted(7 - (i % 8));
+                    nimo += "A%d".formatted(7 - (i % 8));
 //#endif
 
                 }
             } else {
                 if (dm == 4) {
-                    // プリデクリメントモード
+                    // Pre-decrement mode
                     val = reg.getA().get(i % 8);
 //#if DEBUG
-                    nimo += "A%s".formatted(i % 8);
+                    nimo += "A%d".formatted(i % 8);
 //#endif
 
                 } else {
                     val = reg.getD()[7 - (i % 8)];
 //#if DEBUG
-                    nimo += "D%s".formatted(7 - (i % 8));
+                    nimo += "D%d".formatted(7 - (i % 8));
 //#endif
 
                 }
@@ -6367,9 +6345,9 @@ public class NiseM68 {
             // dst
             switch (dm) {
                 case 2: // (An)
-                    mem.pokeW((int) (reg.getA().get(dr) + shift), (short) val);
+                    mem.pokeW(reg.getA().get(dr) + shift, (short) val);
 //#if DEBUG
-                    dnimo = "(A%s)".formatted(dr);
+                    dnimo = "(A%d)".formatted(dr);
 //#endif
 
                     cyc = 4;
@@ -6379,7 +6357,7 @@ public class NiseM68 {
                     reg.getA().set(dr, reg.getA().get(dr) - 2);
                     mem.pokeW(reg.getA().get(dr), (short) val);
 //#if DEBUG
-                    dnimo = "-(A%s)".formatted(dr);
+                    dnimo = "-(A%d)".formatted(dr);
 //#endif
 
                     cyc = 4;
@@ -6387,12 +6365,12 @@ public class NiseM68 {
                     break;
                 case 5: // d16(An)
                     if (!ff) {
-                        d16 = (short) fetchW();
+                        d16 = fetchW(); // signed
                         ff = true;
                     }
-                    mem.pokeW((int) (reg.getA().get(dr) + d16 + shift), (short) val);
+                    mem.pokeW(reg.getA().get(dr) + d16 + shift, (short) val);
 //#if DEBUG
-                    dnimo = "$%04x(A%s)".formatted(d16, dr);
+                    dnimo = "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                     cyc = 6;
@@ -6408,12 +6386,12 @@ public class NiseM68 {
                     isL = (vw & 0x0800) != 0;
                     IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                    dnimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                    dnimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                    if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                    else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                    mem.pokeW((int) (ptr + shift), (short) val);
+                    if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                    else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                    mem.pokeW(ptr + shift, (short) val);
                     cyc = 6;
                     cycle += Cycle.MovemFromReg_w[3];
                     break;
@@ -6421,14 +6399,14 @@ public class NiseM68 {
                     switch (dr) {
                         case 0: // Abs.W
                             if (!ff) {
-                                ptr = (int) (short) fetchW();
+                                ptr = fetchW() & 0xffff;
                                 ff = true;
                             }
 //#if DEBUG
-                            dnimo = "$%04x".formatted((short) ptr);
+                            dnimo = "$%04x".formatted(ptr);
 //#endif
 
-                            mem.pokeW((int) (ptr + shift), (short) val);
+                            mem.pokeW(ptr + shift, (short) val);
                             cyc = 6;
                             cycle += Cycle.MovemFromReg_w[4];
                             break;
@@ -6438,10 +6416,10 @@ public class NiseM68 {
                                 ff = true;
                             }
 //#if DEBUG
-                            dnimo = "$%08x".formatted((int) ptr);
+                            dnimo = "$%08x".formatted(ptr);
 //#endif
 
-                            mem.pokeW((int) (ptr + shift), (short) val);
+                            mem.pokeW(ptr + shift, (short) val);
                             cyc = 8;
                             cycle += Cycle.MovemFromReg_w[5];
                             break;
@@ -6450,7 +6428,6 @@ public class NiseM68 {
             }
 
             shift += 2;
-
         }
 
 //#if DEBUG
@@ -6500,10 +6477,10 @@ public class NiseM68 {
             int val;
             if (rb > 0xff) {
                 if (dm == 4) {
-                    // プリデクリメントモード
+                    // Pre-decrement mode
                     val = reg.getD()[i % 8];
 //#if DEBUG
-                    nimo += "D%s".formatted(i % 8);
+                    nimo += "D%d".formatted(i % 8);
 //#endif
 
                 } else {
@@ -6515,27 +6492,25 @@ public class NiseM68 {
                 }
             } else {
                 if (dm == 4) {
-                    // プリデクリメントモード
+                    // Pre-decrement mode
                     val = reg.getA().get(i % 8);
 //#if DEBUG
                     nimo += "A%s".formatted(i % 8);
 //#endif
-
                 } else {
                     val = reg.getD()[7 - (i % 8)];
 //#if DEBUG
-                    nimo += "D%s".formatted(7 - (i % 8));
+                    nimo += "D%d".formatted(7 - (i % 8));
 //#endif
-
                 }
             }
 
             // dst
             switch (dm) {
                 case 2: // (An)
-                    mem.pokeL((int) (reg.getA().get(dr) + shift), val);
+                    mem.pokeL(reg.getA().get(dr) + shift, val);
 //#if DEBUG
-                    dnimo = "(A%s)".formatted(dr);
+                    dnimo = "(A%d)".formatted(dr);
 //#endif
 
                     cyc = 4;
@@ -6545,7 +6520,7 @@ public class NiseM68 {
                     reg.getA().set(dr, reg.getA().get(dr) - 4);
                     mem.pokeL(reg.getA().get(dr), val);
 //#if DEBUG
-                    dnimo = "-(A%s)".formatted(dr);
+                    dnimo = "-(A%d)".formatted(dr);
 //#endif
 
                     cyc = 4;
@@ -6553,12 +6528,12 @@ public class NiseM68 {
                     break;
                 case 5: // d16(An)
                     if (!ff) {
-                        d16 = (short) fetchW();
+                        d16 = fetchW(); // signed
                         ff = true;
                     }
-                    mem.pokeL((int) (reg.getA().get(dr) + d16 + shift), val);
+                    mem.pokeL(reg.getA().get(dr) + d16 + shift, val);
 //#if DEBUG
-                    dnimo = "$%04x(A%s)".formatted(d16, dr);
+                    dnimo = "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                     cyc = 6;
@@ -6574,12 +6549,12 @@ public class NiseM68 {
                     isL = (vw & 0x0800) != 0;
                     IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                    dnimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                    dnimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                    if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                    else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                    mem.pokeL((int) (ptr + shift), val);
+                    if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                    else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                    mem.pokeL(ptr + shift, val);
                     cyc = 6;
                     cycle += Cycle.MovemFromReg_l[3];
                     break;
@@ -6587,14 +6562,14 @@ public class NiseM68 {
                     switch (dr) {
                         case 0: // Abs.W
                             if (!ff) {
-                                ptr = (int) (short) fetchW();
+                                ptr = fetchW() & 0xffff;
                                 ff = true;
                             }
 //#if DEBUG
-                            dnimo = "$%04x".formatted((short) ptr);
+                            dnimo = "$%04x".formatted(ptr);
 //#endif
 
-                            mem.pokeL((int) (ptr + shift), val);
+                            mem.pokeL(ptr + shift, val);
                             cyc = 6;
                             cycle += Cycle.MovemFromReg_l[4];
                             break;
@@ -6604,10 +6579,10 @@ public class NiseM68 {
                                 ff = true;
                             }
 //#if DEBUG
-                            dnimo = "$%08x".formatted((int) ptr);
+                            dnimo = "$%08x".formatted(ptr);
 //#endif
 
-                            mem.pokeL((int) (ptr + shift), val);
+                            mem.pokeL(ptr + shift, val);
                             cyc = 8;
                             cycle += Cycle.MovemFromReg_l[5];
                             break;
@@ -6693,12 +6668,11 @@ public class NiseM68 {
                 // dst
                 reg.getD()[7 - (i % 8)] = val;
 //#if DEBUG
-                dnimo += "D%s".formatted(7 - (i % 8));
+                dnimo += "D%d".formatted(7 - (i % 8));
 //#endif
 
                 cyc += Cycle.MovemToReg_l1[cycle[0]];
             }
-
         }
 
         if (shift != 0) {
@@ -6760,10 +6734,10 @@ public class NiseM68 {
             case 0: // Dn
                 val = reg.getDb(dr);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
-                ans = (byte) -(byte) val;
+                ans = (byte) (-val & 0xff);
                 reg.setDb(dr, ans);
                 cycle = Cycle.Neg_b[0];
                 break;
@@ -6772,21 +6746,21 @@ public class NiseM68 {
             case 2: // (An)
                 val = mem.peekB(reg.getA().get(dr));
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
-                ans = (byte) -(byte) val;
+                ans = (byte) (-val & 0xff);
                 mem.pokeB(reg.getA().get(dr), ans);
                 cycle = Cycle.Neg_b[1];
                 break;
             case 3: // (An)+
                 val = mem.peekB(reg.getA().get(dr));
-                ans = (byte) -(byte) val;
+                ans = (byte) (-val & 0xff);
                 mem.pokeB(reg.getA().get(dr), ans);
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Neg_b[2];
@@ -6795,21 +6769,21 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) - 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) - 1);
                 val = mem.peekB(reg.getA().get(dr));
-                ans = (byte) -(byte) val;
+                ans = (byte) (-val & 0xff);
                 mem.pokeB(reg.getA().get(dr), ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Neg_b[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                val = mem.peekB((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                val = mem.peekB(reg.getA().get(dr) + d16);
                 ans = (byte) -(byte) val;
-                mem.pokeB((int) (reg.getA().get(dr) + d16), ans);
+                mem.pokeB(reg.getA().get(dr) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Neg_b[4];
@@ -6821,11 +6795,11 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 val = mem.peekB(ptr);
                 ans = (byte) -(byte) val;
                 mem.pokeB(ptr, ans);
@@ -6834,9 +6808,9 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "($%04x)".formatted((short) ptr);
+                        nimo += "($%04x)".formatted(ptr);
 //#endif
 
                         val = mem.peekB(ptr);
@@ -6847,7 +6821,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted((int) ptr);
+                        nimo += "($%08x)".formatted(ptr);
 //#endif
 
                         val = mem.peekB(ptr);
@@ -6897,10 +6871,10 @@ public class NiseM68 {
             case 0: // Dn
                 val = reg.getDw(dr);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
-                ans = (short) -(short) val;
+                ans = (short) (-val & 0xffff);
                 reg.setDw(dr, ans);
                 cycle = Cycle.Neg_w[0];
                 break;
@@ -6909,20 +6883,20 @@ public class NiseM68 {
             case 2: // (An)
                 val = mem.peekW(reg.getA().get(dr));
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
-                ans = (short) -(short) val;
+                ans = (short) (-val & 0xffff);
                 mem.pokeW(reg.getA().get(dr), ans);
                 cycle = Cycle.Neg_w[1];
                 break;
             case 3: // (An)+
                 val = mem.peekW(reg.getA().get(dr));
-                ans = (short) -(short) val;
+                ans = (short) (-val & 0xffff);
                 mem.pokeW(reg.getA().get(dr), ans);
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Neg_w[2];
@@ -6930,21 +6904,21 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
                 val = mem.peekW(reg.getA().get(dr));
-                ans = (short) -(short) val;
+                ans = (short) (-val & 0xffff);
                 mem.pokeW(reg.getA().get(dr), ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Neg_w[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                val = mem.peekW((int) (reg.getA().get(dr) + d16));
-                ans = (short) -(short) val;
-                mem.pokeW((int) (reg.getA().get(dr) + d16), ans);
+                short d16 = fetchW(); // signed
+                val = mem.peekW(reg.getA().get(dr) + d16);
+                ans = (short) (-val & 0xffff);
+                mem.pokeW(reg.getA().get(dr) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Neg_w[4];
@@ -6956,37 +6930,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 val = mem.peekW(ptr);
-                ans = (short) -(short) val;
+                ans = (short) (-val & 0xffff);
                 mem.pokeW(ptr, ans);
                 cycle = Cycle.Neg_w[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "($%04x)".formatted((short) ptr);
+                        nimo += "($%04x)".formatted(ptr);
 //#endif
 
                         val = mem.peekW(ptr);
-                        ans = (short) -(short) val;
+                        ans = (short) (-val & 0xffff);
                         mem.pokeW(ptr, ans);
                         cycle = Cycle.Neg_w[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted((int) ptr);
+                        nimo += "($%08x)".formatted(ptr);
 //#endif
 
                         val = mem.peekW(ptr);
-                        ans = (short) -(short) val;
+                        ans = (short) (-val & 0xffff);
                         mem.pokeW(ptr, ans);
                         cycle = Cycle.Neg_w[7];
                         break;
@@ -7031,10 +7005,10 @@ public class NiseM68 {
             case 0: // Dn
                 val = reg.getD()[dr];
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
-                reg.setDl(dr, (int) -val);
+                reg.setDl(dr, -val);
                 cycle = Cycle.Neg_l[0];
                 break;
             case 1:
@@ -7042,18 +7016,18 @@ public class NiseM68 {
             case 2: // (An)
                 val = mem.peekL(reg.getA().get(dr));
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
-                mem.pokeL(reg.getA().get(dr), (int) -val);
+                mem.pokeL(reg.getA().get(dr), -val);
                 cycle = Cycle.Neg_l[1];
                 break;
             case 3: // (An)+
                 val = mem.peekL(reg.getA().get(dr));
-                mem.pokeL(reg.getA().get(dr), (int) -val);
+                mem.pokeL(reg.getA().get(dr), -val);
                 reg.getA().set(dr, reg.getA().get(dr) + 4);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Neg_l[2];
@@ -7061,19 +7035,19 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 4);
                 val = mem.peekL(reg.getA().get(dr));
-                mem.pokeL(reg.getA().get(dr), (int) -val);
+                mem.pokeL(reg.getA().get(dr), -val);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Neg_l[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                val = mem.peekL((int) (reg.getA().get(dr) + d16));
-                mem.pokeL((int) (reg.getA().get(dr) + d16), (int) -val);
+                short d16 = fetchW(); // signed
+                val = mem.peekL(reg.getA().get(dr) + d16);
+                mem.pokeL(reg.getA().get(dr) + d16, -val);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Neg_l[4];
@@ -7085,35 +7059,35 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 val = mem.peekL(ptr);
-                mem.pokeL(ptr, (int) -val);
+                mem.pokeL(ptr, -val);
                 cycle = Cycle.Neg_l[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "($%04x)".formatted((short) ptr);
+                        nimo += "($%04x)".formatted(ptr);
 //#endif
 
                         val = mem.peekL(ptr);
-                        mem.pokeL(ptr, (int) -val);
+                        mem.pokeL(ptr, -val);
                         cycle = Cycle.Neg_l[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted((int) ptr);
+                        nimo += "($%08x)".formatted(ptr);
 //#endif
 
                         val = mem.peekL(ptr);
-                        mem.pokeL(ptr, (int) -val);
+                        mem.pokeL(ptr, -val);
                         cycle = Cycle.Neg_l[7];
                         break;
                 }
@@ -7121,10 +7095,10 @@ public class NiseM68 {
         }
 
         // flag
-        reg.setN((int) -val);
-        reg.setZ((int) -val);
-        reg.setVneg(val, (int) -val);
-        reg.setCneg(val, (int) -val);
+        reg.setN(-val);
+        reg.setZ(-val);
+        reg.setVneg(val, -val);
+        reg.setCneg(val, -val);
         reg.setX(reg.getC());
 
 //#if DEBUG
@@ -7176,25 +7150,25 @@ public class NiseM68 {
             case 0: // Dn
                 val = reg.getD()[dr];
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tst_b[0];
                 break;
             case 2: // (An)
-                val = mem.peekB(reg.getA().get(dr));
+                val = mem.peekB(reg.getA().get(dr)) & 0xff;
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tst_b[1];
                 break;
             case 3: // (An)+
-                val = mem.peekB(reg.getA().get(dr));
+                val = mem.peekB(reg.getA().get(dr)) & 0xff;
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tst_b[2];
@@ -7202,18 +7176,18 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) - 1);
-                val = mem.peekB(reg.getA().get(dr));
+                val = mem.peekB(reg.getA().get(dr)) & 0xff;
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tst_b[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                val = mem.peekB((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                val = mem.peekB(reg.getA().get(dr) + d16) & 0xff;
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Tst_b[4];
@@ -7225,32 +7199,32 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                val = mem.peekB(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                val = mem.peekB(ptr) & 0xff;
                 cycle = Cycle.Tst_b[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "($%04x)".formatted((short) ptr);
+                        nimo += "($%04x)".formatted(ptr);
 //#endif
 
-                        val = mem.peekB(ptr);
+                        val = mem.peekB(ptr) & 0xff;
                         cycle = Cycle.Tst_b[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted((int) ptr);
+                        nimo += "($%08x)".formatted(ptr);
 //#endif
 
-                        val = mem.peekB(ptr);
+                        val = mem.peekB(ptr) & 0xff;
                         cycle = Cycle.Tst_b[7];
                         break;
                 }
@@ -7294,42 +7268,42 @@ public class NiseM68 {
             case 0: // Dn
                 val = reg.getD()[dr];
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tst_w[0];
                 break;
             case 2: // (An)
-                val = mem.peekW(reg.getA().get(dr));
+                val = mem.peekW(reg.getA().get(dr)) & 0xffff;
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tst_w[1];
                 break;
             case 3: // (An)+
-                val = mem.peekW(reg.getA().get(dr));
+                val = mem.peekW(reg.getA().get(dr)) & 0xffff;
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tst_w[2];
                 break;
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
-                val = mem.peekW(reg.getA().get(dr));
+                val = mem.peekW(reg.getA().get(dr)) & 0xffff;
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tst_w[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                val = mem.peekW((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                val = mem.peekW(reg.getA().get(dr) + d16) & 0xffff;
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Tst_w[4];
@@ -7341,32 +7315,32 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                val = mem.peekW(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                val = mem.peekW(ptr) & 0xffff;
                 cycle = Cycle.Tst_w[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "($%04x)".formatted((short) ptr);
+                        nimo += "($%04x)".formatted(ptr);
 //#endif
 
-                        val = mem.peekW(ptr);
+                        val = mem.peekW(ptr) & 0xffff;
                         cycle = Cycle.Tst_w[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted((int) ptr);
+                        nimo += "($%08x)".formatted(ptr);
 //#endif
 
-                        val = mem.peekW(ptr);
+                        val = mem.peekW(ptr) & 0xffff;
                         cycle = Cycle.Tst_w[7];
                         break;
                 }
@@ -7410,7 +7384,7 @@ public class NiseM68 {
             case 0: // Dn
                 val = reg.getD()[dr];
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tst_l[0];
@@ -7418,7 +7392,7 @@ public class NiseM68 {
             case 2: // (An)
                 val = mem.peekL(reg.getA().get(dr));
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tst_l[1];
@@ -7427,7 +7401,7 @@ public class NiseM68 {
                 val = mem.peekL(reg.getA().get(dr));
                 reg.getA().set(dr, reg.getA().get(dr) + 4);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tst_l[2];
@@ -7436,16 +7410,16 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) - 4);
                 val = mem.peekL(reg.getA().get(dr));
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tst_l[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                val = mem.peekL((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                val = mem.peekL(reg.getA().get(dr) + d16);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Tst_l[4];
@@ -7457,20 +7431,20 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 val = mem.peekL(ptr);
                 cycle = Cycle.Tst_l[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "($%04x)".formatted((short) ptr);
+                        nimo += "($%04x)".formatted(ptr);
 //#endif
 
                         val = mem.peekL(ptr);
@@ -7479,7 +7453,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted((int) ptr);
+                        nimo += "($%08x)".formatted(ptr);
 //#endif
 
                         val = mem.peekL(ptr);
@@ -7524,9 +7498,9 @@ public class NiseM68 {
         // dst
         switch (dm) {
             case 0: // Dn
-                val = reg.getDb(dr);
+                val = reg.getDb(dr) & 0xff;
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tas[0];
@@ -7535,21 +7509,21 @@ public class NiseM68 {
             case 1:
                 throw new IndexOutOfBoundsException();
             case 2: // (An)
-                val = mem.peekB(reg.getA().get(dr));
+                val = mem.peekB(reg.getA().get(dr)) & 0xff;
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tas[1];
                 mem.pokeB(reg.getA().get(dr), (byte) (val | 0x80));
                 break;
             case 3: // (An)+
-                val = mem.peekB(reg.getA().get(dr));
+                val = mem.peekB(reg.getA().get(dr)) & 0xff;
                 mem.pokeB(reg.getA().get(dr), (byte) (val | 0x80));
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tas[2];
@@ -7557,20 +7531,20 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) - 1);
-                val = mem.peekB(reg.getA().get(dr));
+                val = mem.peekB(reg.getA().get(dr)) & 0xff;
                 mem.pokeB(reg.getA().get(dr), (byte) (val | 0x80));
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Tas[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                val = mem.peekB((int) (reg.getA().get(dr) + d16));
-                mem.pokeB((int) (reg.getA().get(dr) + d16), (byte) (val | 0x80));
+                short d16 = fetchW(); // signed
+                val = mem.peekB(reg.getA().get(dr) + d16) & 0xff;
+                mem.pokeB(reg.getA().get(dr) + d16, (byte) (val | 0x80));
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Tas[4];
@@ -7582,34 +7556,34 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                val = mem.peekB(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                val = mem.peekB(ptr) & 0xff;
                 mem.pokeB(ptr, (byte) (val | 0x80));
                 cycle = Cycle.Tas[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "($%04x)".formatted((short) ptr);
+                        nimo += "($%04x)".formatted(ptr);
 //#endif
 
-                        val = mem.peekB(ptr);
+                        val = mem.peekB(ptr) & 0xff;
                         mem.pokeB(ptr, (byte) (val | 0x80));
                         cycle = Cycle.Tas[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted((int) ptr);
+                        nimo += "($%08x)".formatted(ptr);
 //#endif
 
-                        val = mem.peekB(ptr);
+                        val = mem.peekB(ptr) & 0xff;
                         mem.pokeB(ptr, (byte) (val | 0x80));
                         cycle = Cycle.Tas[7];
                         break;
@@ -7661,7 +7635,7 @@ public class NiseM68 {
         }
 
         if (n != 0x4e75) {
-            throw new UnsupportedOperationException("未実装!");
+            throw new UnsupportedOperationException("Not implemented!");
         }
 
 //#if DEBUG
@@ -7679,9 +7653,9 @@ public class NiseM68 {
     }
 
     public int ctrap(short n) {
-        int t = (int) (n & 0xf);
+        int t = n & 0xf;
 //#if DEBUG
-        logger.log(Level.TRACE, "TRAP #%02x", t);
+        logger.log(Level.TRACE, "TRAP #%02x".formatted(t));
 //#endif
         t += 32; // vector32～
         t *= 4; // 4byte
@@ -7689,7 +7663,7 @@ public class NiseM68 {
         reg.setS(true);
         reg.setT(false);
         pushSSPw((short) reg.pc);
-        pushSSPw((short) (reg.pc >> 16));
+        pushSSPw((short) (reg.pc >>> 16));
         pushSSPw(reg.getSRbk());
         reg.pc = mem.peekL(t);
 
@@ -7697,16 +7671,16 @@ public class NiseM68 {
     }
 
     public int ctrap2(short n) {
-        int t = (int) (n & 0xff);
+        int t = n & 0xff;
 //#if DEBUG
-        logger.log(Level.TRACE, "TRAP #%02x", t);
+        logger.log(Level.TRACE, "TRAP #%02x".formatted(t));
 //#endif
         t *= 4; // 4byte
         reg.setSRbk(reg.getSR());
         reg.setS(true);
         reg.setT(false);
         pushSSPw((short) reg.pc);
-        pushSSPw((short) (reg.pc >> 16));
+        pushSSPw((short) (reg.pc >>> 16));
         pushSSPw(reg.getSRbk());
         reg.pc = mem.peekL(t);
 
@@ -7715,13 +7689,13 @@ public class NiseM68 {
 
     public int ctrapPtr(int n) {
 //#if DEBUG
-        logger.log(Level.TRACE, "TRAP $%08x", n);
+        logger.log(Level.TRACE, "TRAP $%08x".formatted(n));
 //#endif
         reg.setSRbk(reg.getSR());
         reg.setS(true);
         reg.setT(false);
         pushSSPw((short) reg.pc);
-        pushSSPw((short) (reg.pc >> 16));
+        pushSSPw((short) (reg.pc >>> 16));
         pushSSPw(reg.getSRbk());
         reg.pc = n;
 
@@ -7753,12 +7727,12 @@ public class NiseM68 {
         int dr = (n & 0x7);
         int cycle = 10;
 //#if DEBUG
-        String nimo = "DB%s.w D%s,#$%04x";
+        String nimo = "DB%s.w D%d,#$%04x";
 //#endif
 
         String[] cs = new String[1];
         boolean v = getCond(cnd, /* out */ cs);
-        short ptr = (short) fetchW();
+        short ptr = fetchW();
 //#if DEBUG
         nimo = nimo.formatted(cs[0].equals("f") ? "ra" : cs[0], dr, ptr);
 //#endif
@@ -7767,8 +7741,8 @@ public class NiseM68 {
             short d = reg.getDw(dr);
             d--;
             reg.setDw(dr, d);
-            if (d != 0xffff) {
-                reg.pc = (int) (reg.pc + (int) (ptr - 2));
+            if (d != (short) 0xffff) {
+                reg.pc = reg.pc + (ptr - 2);
             } else {
                 cycle = 14;
             }
@@ -7819,14 +7793,14 @@ public class NiseM68 {
             case 0: // Dn
                 reg.setDb(dr, val);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 break;
             case 2: // (An)
                 mem.pokeB(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 break;
@@ -7835,7 +7809,7 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 break;
@@ -7844,15 +7818,15 @@ public class NiseM68 {
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) - 1);
                 mem.pokeB(reg.getA().get(dr), val);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                mem.pokeB((int) (reg.getA().get(dr) + d16), val);
+                short d16 = fetchW(); // signed
+                mem.pokeB(reg.getA().get(dr) + d16, val);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 break;
@@ -7863,19 +7837,19 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 mem.pokeB(ptr, val);
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "($%04x)".formatted((short) ptr);
+                        nimo += "($%04x)".formatted(ptr);
 //#endif
 
                         mem.pokeB(ptr, val);
@@ -7883,7 +7857,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted((int) ptr);
+                        nimo += "($%08x)".formatted(ptr);
 //#endif
 
                         mem.pokeB(ptr, val);
@@ -7893,7 +7867,7 @@ public class NiseM68 {
         }
 
         // flag
-        // 変化なし
+        // no change
 
 //#if DEBUG
         logger.log(Level.TRACE, nimo);
@@ -7922,7 +7896,7 @@ public class NiseM68 {
 
     private int caddqb(short n, int data) {
 //#if DEBUG
-        String nimo = "ADDQ.b #{0:x},".formatted(data);
+        String nimo = "ADDQ.b #%x,".formatted(data);
 //#endif
 
         int cycle = 0;
@@ -7937,18 +7911,18 @@ public class NiseM68 {
         int IX;
         int ptr;
 
-        int src = 0;
-        int dst = (int) data;
+        int src = 0; // signed
+        int dst = data; // signed
         int ans = 0;
 
         // dst
         switch (dm) {
             case 0: // Dn
-                src = (byte) reg.getDb(dr);
+                src = reg.getDb(dr);
                 ans = src + dst;
                 reg.setDb(dr, (byte) ans);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addq_b[0];
@@ -7956,23 +7930,23 @@ public class NiseM68 {
             case 1: // An
                 throw new IndexOutOfBoundsException();
             case 2: // (An)
-                src = (byte) mem.peekB(reg.getA().get(dr));
+                src = mem.peekB(reg.getA().get(dr));
                 ans = src + dst;
                 mem.pokeB(reg.getA().get(dr), (byte) ans);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addq_b[2];
                 break;
             case 3: // (An)+
-                src = (byte) mem.peekB(reg.getA().get(dr));
+                src = mem.peekB(reg.getA().get(dr));
                 ans = src + dst;
                 mem.pokeB(reg.getA().get(dr), (byte) ans);
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addq_b[3];
@@ -7980,22 +7954,22 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) - 1);
-                src = (byte) mem.peekB(reg.getA().get(dr));
+                src = mem.peekB(reg.getA().get(dr));
                 ans = src + dst;
                 mem.pokeB(reg.getA().get(dr), (byte) ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addq_b[4];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                src = (byte) mem.peekB((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                src = mem.peekB(reg.getA().get(dr) + d16);
                 ans = src + dst;
-                mem.pokeB((int) (reg.getA().get(dr) + d16), (byte) ans);
+                mem.pokeB(reg.getA().get(dr) + d16, (byte) ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Addq_b[5];
@@ -8007,12 +7981,12 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                src = (byte) mem.peekB(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                src = mem.peekB(ptr);
                 ans = src + dst;
                 mem.pokeB(ptr, (byte) ans);
                 cycle = Cycle.Addq_b[6];
@@ -8020,12 +7994,12 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        src = (byte) mem.peekB(ptr);
+                        src = mem.peekB(ptr);
                         ans = src + dst;
                         mem.pokeB(ptr, (byte) ans);
                         cycle = Cycle.Addq_b[7];
@@ -8033,10 +8007,10 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        src = (byte) mem.peekB(ptr);
+                        src = mem.peekB(ptr);
                         ans = src + dst;
                         mem.pokeB(ptr, (byte) ans);
                         cycle = Cycle.Addq_b[8];
@@ -8046,7 +8020,7 @@ public class NiseM68 {
         }
 
         // flag
-        if (dm != 1) { // Anの場合はCCRに影響を与えない!!
+        if (dm != 1) { // In the case of An, it does not affect CCR!!
             reg.setN((byte) ans);
             reg.setZ((byte) ans);
             reg.setV((byte) src, (byte) ans);
@@ -8063,7 +8037,7 @@ public class NiseM68 {
 
     private int caddqw(short n, int data) {
 //#if DEBUG
-        String nimo = "ADDQ.w #{0:x},".formatted(data);
+        String nimo = "ADDQ.w #%x,".formatted(data);
 //#endif
 
         int cycle = 0;
@@ -8078,26 +8052,26 @@ public class NiseM68 {
         int IX;
         int ptr;
 
-        int src = 0;
+        int src = 0; // signed
         int dst = (int) data;
         int ans = 0;
 
         // dst
         switch (dm) {
             case 0: // Dn
-                src = (short) reg.getDw(dr);
+                src = reg.getDw(dr);
                 ans = src + dst;
                 reg.setDw(dr, (short) ans);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addq_w[0];
                 break;
             case 1: // An
-                src = (int) reg.getAl(dr); // An の場合は32bit演算
+                src = reg.getAl(dr); // An is 32-bit operation
                 ans = src + dst;
-                reg.setAl(dr, (int) ans);
+                reg.setAl(dr, ans);
 //#if DEBUG
                 nimo += "A%s".formatted(dr);
 //#endif
@@ -8105,44 +8079,44 @@ public class NiseM68 {
                 cycle = Cycle.Addq_w[1];
                 break;
             case 2: // (An)
-                src = (short) mem.peekW(reg.getA().get(dr));
+                src = mem.peekW(reg.getA().get(dr));
                 ans = src + dst;
                 mem.pokeW(reg.getA().get(dr), (short) ans);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addq_w[2];
                 break;
             case 3: // (An)+
-                src = (short) mem.peekW(reg.getA().get(dr));
+                src = mem.peekW(reg.getA().get(dr));
                 ans = src + dst;
                 mem.pokeW(reg.getA().get(dr), (short) ans);
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addq_w[3];
                 break;
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
-                src = (short) mem.peekW(reg.getA().get(dr));
+                src = mem.peekW(reg.getA().get(dr));
                 ans = src + dst;
                 mem.pokeW(reg.getA().get(dr), (short) ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addq_w[4];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                src = (short) mem.peekW((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                src = mem.peekW(reg.getA().get(dr) + d16);
                 ans = src + dst;
-                mem.pokeW((int) (reg.getA().get(dr) + d16), (short) ans);
+                mem.pokeW(reg.getA().get(dr) + d16, (short) ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Addq_w[5];
@@ -8154,12 +8128,12 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                src = (short) mem.peekW(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                src = mem.peekW(ptr);
                 ans = src + dst;
                 mem.pokeW(ptr, (short) ans);
                 cycle = Cycle.Addq_w[6];
@@ -8167,12 +8141,12 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        src = (short) mem.peekW(ptr);
+                        src = mem.peekW(ptr);
                         ans = src + dst;
                         mem.pokeW(ptr, (short) ans);
                         cycle = Cycle.Addq_w[7];
@@ -8180,10 +8154,10 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        src = (short) mem.peekW(ptr);
+                        src = mem.peekW(ptr);
                         ans = src + dst;
                         mem.pokeW(ptr, (short) ans);
                         cycle = Cycle.Addq_w[8];
@@ -8193,7 +8167,7 @@ public class NiseM68 {
         }
 
         // flag
-        if (dm != 1) { // Anの場合はCCRに影響を与えない!!
+        if (dm != 1) { // In the case of An, it does not affect CCR!!
             reg.setN((short) ans);
             reg.setZ((short) ans);
             reg.setV((short) src, (short) ans);
@@ -8232,19 +8206,19 @@ public class NiseM68 {
         // dst
         switch (dm) {
             case 0: // Dn
-                src = (int) reg.getDl(dr);
+                src = reg.getDl(dr);
                 ans = src + dst;
-                reg.setDl(dr, (int) ans);
+                reg.setDl(dr, ans);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addq_l[0];
                 break;
             case 1: // An
-                src = (int) reg.getAl(dr); // An の場合は32bit演算
+                src = reg.getAl(dr); // An is 32-bit operation
                 ans = src + dst;
-                reg.setAl(dr, (int) ans);
+                reg.setAl(dr, ans);
 //#if DEBUG
                 nimo += "A%s".formatted(dr);
 //#endif
@@ -8252,44 +8226,44 @@ public class NiseM68 {
                 cycle = Cycle.Addq_l[1];
                 break;
             case 2: // (An)
-                src = (int) mem.peekL(reg.getA().get(dr));
+                src = mem.peekL(reg.getA().get(dr));
                 ans = src + dst;
-                mem.pokeL(reg.getA().get(dr), (int) ans);
+                mem.pokeL(reg.getA().get(dr), ans);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addq_l[2];
                 break;
             case 3: // (An)+
-                src = (int) mem.peekL(reg.getA().get(dr));
+                src = mem.peekL(reg.getA().get(dr));
                 ans = src + dst;
-                mem.pokeL(reg.getA().get(dr), (int) ans);
+                mem.pokeL(reg.getA().get(dr), ans);
                 reg.getA().set(dr, reg.getA().get(dr) + 4);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addq_l[3];
                 break;
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 4);
-                src = (int) mem.peekL(reg.getA().get(dr));
+                src = mem.peekL(reg.getA().get(dr));
                 ans = src + dst;
-                mem.pokeL(reg.getA().get(dr), (int) ans);
+                mem.pokeL(reg.getA().get(dr), ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addq_l[4];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                src = (int) mem.peekL((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                src = mem.peekL(reg.getA().get(dr) + d16);
                 ans = src + dst;
-                mem.pokeL((int) (reg.getA().get(dr) + d16), (int) ans);
+                mem.pokeL(reg.getA().get(dr) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Addq_l[5];
@@ -8301,38 +8275,38 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                src = (int) mem.peekL(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                src = mem.peekL(ptr);
                 ans = src + dst;
-                mem.pokeL(ptr, (int) ans);
+                mem.pokeL(ptr, ans);
                 cycle = Cycle.Addq_l[6];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        src = (int) mem.peekL(ptr);
+                        src = mem.peekL(ptr);
                         ans = src + dst;
-                        mem.pokeL(ptr, (int) ans);
+                        mem.pokeL(ptr, ans);
                         cycle = Cycle.Addq_l[7];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        src = (int) mem.peekL(ptr);
+                        src = mem.peekL(ptr);
                         ans = src + dst;
-                        mem.pokeL(ptr, (int) ans);
+                        mem.pokeL(ptr, ans);
                         cycle = Cycle.Addq_l[8];
                         break;
                 }
@@ -8340,12 +8314,12 @@ public class NiseM68 {
         }
 
         // flag
-        if (dm != 1) // Anの場合はCCRに影響を与えない!!
+        if (dm != 1) // In the case of An, it does not affect CCR!!
         {
-            reg.setN((int) ans);
-            reg.setZ((int) ans);
-            reg.setV((int) src, (int) ans);
-            reg.setC((int) src, (int) ans);
+            reg.setN(ans);
+            reg.setZ(ans);
+            reg.setV(src, ans);
+            reg.setC(src, ans);
             reg.setX(reg.getC());
         }
 
@@ -8375,7 +8349,7 @@ public class NiseM68 {
         int imm = (n & 0x0e00) >> 9;
         if (imm == 0) imm = 8;
 //#if DEBUG
-        String nimo = "SUBQ.b #{0:x},".formatted(imm);
+        String nimo = "SUBQ.b #%x,".formatted(imm);
 //#endif
 
         int cycle = 0;
@@ -8389,18 +8363,18 @@ public class NiseM68 {
         int IX;
         int ptr;
 
-        int src = 0;
-        int dst = (int) imm;
+        int src = 0; // signed
+        int dst = imm; // signed
         int ans = 0;
 
         // dst
         switch (dm) {
             case 0: // Dn
-                src = (byte) reg.getDb(dr);
+                src = reg.getDb(dr);
                 ans = src - dst;
                 reg.setDb(dr, (byte) ans);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Subq_b[0];
@@ -8408,23 +8382,23 @@ public class NiseM68 {
             case 1: // An
                 throw new UnsupportedOperationException();
             case 2: // (An)
-                src = (byte) mem.peekB(reg.getA().get(dr));
+                src = mem.peekB(reg.getA().get(dr));
                 ans = src - dst;
                 mem.pokeB(reg.getA().get(dr), (byte) ans);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Subq_b[2];
                 break;
             case 3: // (An)+
-                src = (byte) mem.peekB(reg.getA().get(dr));
+                src = mem.peekB(reg.getA().get(dr));
                 ans = src - dst;
                 mem.pokeB(reg.getA().get(dr), (byte) ans);
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Subq_b[3];
@@ -8432,22 +8406,22 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) - 1);
-                src = (byte) mem.peekB(reg.getA().get(dr));
+                src = mem.peekB(reg.getA().get(dr));
                 ans = src - dst;
                 mem.pokeB(reg.getA().get(dr), (byte) ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Subq_b[4];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                src = (byte) mem.peekB((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                src = mem.peekB(reg.getA().get(dr) + d16);
                 ans = src - dst;
-                mem.pokeB((int) (reg.getA().get(dr) + d16), (byte) ans);
+                mem.pokeB(reg.getA().get(dr) + d16, (byte) ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Subq_b[5];
@@ -8459,12 +8433,12 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                src = (byte) mem.peekB(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                src = mem.peekB(ptr);
                 ans = src - dst;
                 mem.pokeB(ptr, (byte) ans);
                 cycle = Cycle.Subq_b[6];
@@ -8472,12 +8446,12 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        src = (byte) mem.peekB(ptr);
+                        src = mem.peekB(ptr);
                         ans = src - dst;
                         mem.pokeB(ptr, (byte) ans);
                         cycle = Cycle.Subq_b[7];
@@ -8485,10 +8459,10 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        src = (byte) mem.peekB(ptr);
+                        src = mem.peekB(ptr);
                         ans = src - dst;
                         mem.pokeB(ptr, (byte) ans);
                         cycle = Cycle.Subq_b[8];
@@ -8498,7 +8472,7 @@ public class NiseM68 {
         }
 
         // flag
-        if (dm != 1) { // Anの場合はCCRに影響を与えない!!
+        if (dm != 1) { // In the case of An, it does not affect CCR!!
             reg.setN((byte) ans);
             reg.setZ((byte) ans);
             reg.setV((byte) src, (byte) ans);
@@ -8517,7 +8491,7 @@ public class NiseM68 {
         int imm = (n & 0x0e00) >> 9;
         if (imm == 0) imm = 8;
 //#if DEBUG
-        String nimo = "SUBQ.w #{0:x},".formatted(imm);
+        String nimo = "SUBQ.w #%x,".formatted(imm);
 //#endif
 
         int cycle = 0;
@@ -8531,26 +8505,26 @@ public class NiseM68 {
         int IX;
         int ptr;
 
-        int src = 0;
-        int dst = (int) imm;
+        int src = 0; // signed
+        int dst = imm; // signed
         int ans = 0;
 
         // dst
         switch (dm) {
             case 0: // Dn
-                src = (short) reg.getDw(dr);
+                src = reg.getDw(dr);
                 ans = src - dst;
                 reg.setDw(dr, (short) ans);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Subq_w[0];
                 break;
             case 1: // An
-                src = (int) reg.getAl(dr); // Anの場合は32bit演算が行われる!!
+                src = reg.getAl(dr); // In the case of An, 32-bit calculations are performed!!
                 ans = src - dst;
-                reg.setAl(dr, (int) ans);
+                reg.setAl(dr, ans);
 //#if DEBUG
                 nimo += "A%s".formatted(dr);
 //#endif
@@ -8558,44 +8532,44 @@ public class NiseM68 {
                 cycle = Cycle.Subq_w[1];
                 break;
             case 2: // (An)
-                src = (short) mem.peekW(reg.getA().get(dr));
+                src = mem.peekW(reg.getA().get(dr));
                 ans = src - dst;
                 mem.pokeW(reg.getA().get(dr), (short) ans);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Subq_w[2];
                 break;
             case 3: // (An)+
-                src = (short) mem.peekW(reg.getA().get(dr));
+                src = mem.peekW(reg.getA().get(dr));
                 ans = src - dst;
                 mem.pokeW(reg.getA().get(dr), (short) ans);
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Subq_w[3];
                 break;
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
-                src = (short) mem.peekW(reg.getA().get(dr));
+                src = mem.peekW(reg.getA().get(dr));
                 ans = src - dst;
                 mem.pokeW(reg.getA().get(dr), (short) ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Subq_w[4];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                src = (short) mem.peekW((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                src = mem.peekW(reg.getA().get(dr) + d16);
                 ans = src - dst;
-                mem.pokeW((int) (reg.getA().get(dr) + d16), (short) ans);
+                mem.pokeW(reg.getA().get(dr) + d16, (short) ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Subq_w[5];
@@ -8607,12 +8581,12 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                src = (short) mem.peekW(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                src = mem.peekW(ptr);
                 ans = src - dst;
                 mem.pokeW(ptr, (short) ans);
                 cycle = Cycle.Subq_w[6];
@@ -8620,12 +8594,12 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        src = (short) mem.peekW(ptr);
+                        src = mem.peekW(ptr);
                         ans = src - dst;
                         mem.pokeW(ptr, (short) ans);
                         cycle = Cycle.Subq_w[7];
@@ -8633,10 +8607,10 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        src = (short) mem.peekW(ptr);
+                        src = mem.peekW(ptr);
                         ans = src - dst;
                         mem.pokeW(ptr, (short) ans);
                         cycle = Cycle.Subq_w[8];
@@ -8646,7 +8620,7 @@ public class NiseM68 {
         }
 
         // flag
-        if (dm != 1) { // Anの場合はCCRに影響を与えない!!
+        if (dm != 1) { // In the case of An, it does not affect CCR!!
             reg.setN((short) ans);
             reg.setZ((short) ans);
             reg.setV((short) src, (short) ans);
@@ -8665,7 +8639,7 @@ public class NiseM68 {
         int imm = (n & 0x0e00) >> 9;
         if (imm == 0) imm = 8;
 //#if DEBUG
-        String nimo = "SUBQ.l #{0:x},".formatted(imm);
+        String nimo = "SUBQ.l #%x,".formatted(imm);
 //#endif
 
         int cycle = 0;
@@ -8680,25 +8654,25 @@ public class NiseM68 {
         int ptr;
 
         int src = 0;
-        int dst = (int) imm;
+        int dst = imm;
         int ans = 0;
 
         // dst
         switch (dm) {
             case 0: // Dn
-                src = (int) reg.getDl(dr);
+                src = reg.getDl(dr);
                 ans = src - dst;
-                reg.setDl(dr, (int) ans);
+                reg.setDl(dr, ans);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Subq_l[0];
                 break;
             case 1: // An
-                src = (int) reg.getAl(dr);
+                src = reg.getAl(dr);
                 ans = src - dst;
-                reg.setAl(dr, (int) ans);
+                reg.setAl(dr, ans);
 //#if DEBUG
                 nimo += "A%s".formatted(dr);
 //#endif
@@ -8706,44 +8680,44 @@ public class NiseM68 {
                 cycle = Cycle.Subq_l[1];
                 break;
             case 2: // (An)
-                src = (int) mem.peekL(reg.getA().get(dr));
+                src = mem.peekL(reg.getA().get(dr));
                 ans = src - dst;
-                mem.pokeL(reg.getA().get(dr), (int) ans);
+                mem.pokeL(reg.getA().get(dr), ans);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Subq_l[2];
                 break;
             case 3: // (An)+
-                src = (int) mem.peekL(reg.getA().get(dr));
+                src = mem.peekL(reg.getA().get(dr));
                 ans = src - dst;
-                mem.pokeL(reg.getA().get(dr), (int) ans);
+                mem.pokeL(reg.getA().get(dr), ans);
                 reg.getA().set(dr, reg.getA().get(dr) + 4);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Subq_l[3];
                 break;
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 4);
-                src = (int) mem.peekL(reg.getA().get(dr));
+                src = mem.peekL(reg.getA().get(dr));
                 ans = src - dst;
-                mem.pokeL(reg.getA().get(dr), (int) ans);
+                mem.pokeL(reg.getA().get(dr), ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Subq_l[4];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                src = (int) mem.peekL((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                src = mem.peekL(reg.getA().get(dr) + d16);
                 ans = src - dst;
-                mem.pokeL((int) (reg.getA().get(dr) + d16), (int) ans);
+                mem.pokeL(reg.getA().get(dr) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Subq_l[5];
@@ -8755,38 +8729,38 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                src = (int) mem.peekL(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                src = mem.peekL(ptr);
                 ans = src - dst;
-                mem.pokeL(ptr, (int) ans);
+                mem.pokeL(ptr, ans);
                 cycle = Cycle.Subq_l[6];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        src = (int) mem.peekL(ptr);
+                        src = mem.peekL(ptr);
                         ans = src - dst;
-                        mem.pokeL(ptr, (int) ans);
+                        mem.pokeL(ptr, ans);
                         cycle = Cycle.Subq_l[7];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        src = (int) mem.peekL(ptr);
+                        src = mem.peekL(ptr);
                         ans = src - dst;
-                        mem.pokeL(ptr, (int) ans);
+                        mem.pokeL(ptr, ans);
                         cycle = Cycle.Subq_l[8];
                         break;
                 }
@@ -8794,11 +8768,11 @@ public class NiseM68 {
         }
 
         // flag
-        if (dm != 1) { // Anの場合はCCRに影響を与えない!!
-            reg.setN((int) ans);
-            reg.setZ((int) ans);
-            reg.setV((int) src, (int) ans);
-            reg.setCcmp((int) src, (int) dst, (int) ans);
+        if (dm != 1) { // In the case of An, it does not affect CCR!!
+            reg.setN(ans);
+            reg.setZ(ans);
+            reg.setV(src, ans);
+            reg.setCcmp(src, dst, ans);
             reg.setX(reg.getC());
         }
 
@@ -8814,7 +8788,7 @@ public class NiseM68 {
         short ptr = (byte) n;
         int size = 0;
         if (ptr == 0) {
-            ptr = (short) fetchW();
+            ptr = fetchW();
             size = 2;
         }
 
@@ -8823,7 +8797,7 @@ public class NiseM68 {
 //#endif
 
         push(reg.pc);
-        reg.pc += (int) (ptr - size);
+        reg.pc += ptr - size;
 
         return cycle;
     }
@@ -8850,16 +8824,16 @@ public class NiseM68 {
             case 2: // (An)
                 val = reg.getA().get(dr);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Jsr_l[0];
                 break;
             case 5: // d16(An)
-                int d16 = (int) (short) fetchW();
-                val = (int) (reg.getA().get(dr) + d16);
+                int d16 = fetchW(); // signed
+                val = reg.getA().get(dr) + d16;
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted((short) d16, dr);
+                nimo += "$%04x(A%d)".formatted((short) d16, dr);
 //#endif
 
                 cycle = Cycle.Jsr_l[1];
@@ -8871,20 +8845,20 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 val = ptr;
                 cycle = Cycle.Jsr_l[2];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "($%04x)".formatted((short) ptr);
+                        nimo += "($%04x)".formatted(ptr);
 //#endif
 
                         val = ptr;
@@ -8893,15 +8867,15 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted((int) ptr);
+                        nimo += "($%08x)".formatted(ptr);
 //#endif
 
                         val = ptr;
                         cycle = Cycle.Jsr_l[4];
                         break;
                     case 2:
-                        int ed16 = (int) (short) fetchW();
-                        val = (int) (reg.pc + ed16 - 2);
+                        int ed16 = fetchW(); // signed
+                        val = reg.pc + ed16 - 2;
 //#if DEBUG
                         nimo += "$%04x(PC)".formatted((short) ed16);
 //#endif
@@ -8914,15 +8888,15 @@ public class NiseM68 {
                         ni = (vw & 0x7000) >> 12;
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
-                        nimo += "$%02x(PC,%s%s.%s)".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w");
+                        nimo += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
                         val = ptr;
                         cycle = Cycle.Jsr_l[6];
@@ -8970,16 +8944,16 @@ public class NiseM68 {
             case 2: // (An)
                 val = reg.getA().get(dr);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Jmp[0];
                 break;
             case 5: // d16(An)
-                int d16 = (int) (short) fetchW();
-                val = (int) (reg.getA().get(dr) + d16);
+                int d16 = fetchW(); // signed
+                val = reg.getA().get(dr) + d16;
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted((short) d16, dr);
+                nimo += "$%04x(A%d)".formatted((short) d16, dr);
 //#endif
 
                 cycle = Cycle.Jmp[1];
@@ -8991,20 +8965,20 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 val = ptr;
                 cycle = Cycle.Jmp[2];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "($%04x)".formatted((short) ptr);
+                        nimo += "($%04x)".formatted(ptr);
 //#endif
 
                         val = ptr;
@@ -9013,17 +8987,17 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted((int) ptr);
+                        nimo += "($%08x)".formatted(ptr);
 //#endif
 
                         val = ptr;
                         cycle = Cycle.Jmp[4];
                         break;
                     case 2:
-                        int ed16 = (int) (short) fetchW();
-                        val = (int) (reg.pc + ed16 - 2);
+                        int ed16 = fetchW(); // signed
+                        val = reg.pc + ed16 - 2;
 //#if DEBUG
-                        nimo += "$%04x(PC)".formatted((short) ed16);
+                        nimo += "$%04x(PC)".formatted(ed16 & 0xffff);
 //#endif
 
                         cycle = Cycle.Jmp[5];
@@ -9034,15 +9008,15 @@ public class NiseM68 {
                         ni = (vw & 0x7000) >> 12;
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
-                        nimo += "$%02x(PC,%s%s.%s)".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w");
+                        nimo += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
                         val = ptr;
                         cycle = Cycle.Jmp[6];
@@ -9055,7 +9029,6 @@ public class NiseM68 {
         logger.log(Level.TRACE, nimo);
 //#endif
 
-
         reg.pc = val;
 
         return cycle;
@@ -9067,7 +9040,7 @@ public class NiseM68 {
         short ptr = (byte) n;
         int size = 0;
         if ((byte) n == 0) {
-            ptr = (short) (((short) fetchW()));
+            ptr = fetchW(); // signed
             cycle = 8;
             size = 2;
         }
@@ -9077,21 +9050,21 @@ public class NiseM68 {
 
 //#if DEBUG
         logger.log(Level.TRACE, "B%s $%04x ; ptr+PC=$%08x",
-                cs[0].equals("t") ? "ra" : cs[0], ptr, (int) (reg.pc + ptr - size));
+                cs[0].equals("t") ? "ra" : cs[0], ptr, reg.pc + ptr - size);
 //#endif
-        if (v) reg.pc = (int) (reg.pc + ptr - size);
+        if (v) reg.pc = reg.pc + ptr - size;
 
         return cycle;
     }
 
     private int cmoveq(short n) {
         int dr = (n & 0x0e00) >> 9;
-        byte val = (byte) (byte) n;
+        byte val = (byte) n;
 
-        reg.getD()[dr] = (int) (int) val;
+        reg.getD()[dr] = val;
 
 //#if DEBUG
-        logger.log(Level.TRACE, "MOVEQ.l #$%02x,D%s", val, dr);
+        logger.log(Level.TRACE, "MOVEQ.l #$%02x,D%d".formatted(val, dr));
 //#endif
 
         reg.setN((reg.getD()[dr] & 0x8000_000) != 0);
@@ -9123,8 +9096,8 @@ public class NiseM68 {
             case 0x07:
                 return csubal(n);
             default:
-                // SUBA以外の命令っぽい
-                throw new UnsupportedOperationException("未実装!! [%04x]".formatted(n));
+                // It looks like a command other than SUBA
+                throw new UnsupportedOperationException("Not implemented!! [%04x]".formatted(n));
         }
     }
 
@@ -9142,7 +9115,7 @@ public class NiseM68 {
         // src
         int src = reg.getDb(dr);
 //#if DEBUG
-        nimo += "D%s,".formatted(dr);
+        nimo += "D%d,".formatted(dr);
 //#endif
 
         int dst = 0;
@@ -9159,7 +9132,7 @@ public class NiseM68 {
         switch (sm) {
             case 2: // (An)
 //#if DEBUG
-                nimo += "(A%s)".formatted(sr);
+                nimo += "(A%d)".formatted(sr);
 //#endif
 
                 dst = (int) (short) mem.peekB(reg.getA().get(sr));
@@ -9168,35 +9141,35 @@ public class NiseM68 {
                 break;
             case 3: // (An)+
 //#if DEBUG
-                nimo += "(A%s)+".formatted(sr);
+                nimo += "(A%d)+".formatted(sr);
 //#endif
 
-                dst = (int) (short) mem.peekB(reg.getA().get(sr));
-                ans = (int) ((int) (byte) (byte) dst - (int) (byte) (byte) src);
+                dst = ((short) mem.peekB(reg.getA().get(sr))) & 0xffff;
+                ans = (byte) dst - (byte) src;
                 mem.pokeB(reg.getA().get(sr), (byte) ans);
                 reg.getA().set(sr, reg.getA().get(sr) + 1);
                 if (sr == 7) reg.getA().set(sr, reg.getA().get(sr) + 1);
                 break;
             case 4: // -(An)
 //#if DEBUG
-                nimo += "-(A%s)".formatted(sr);
+                nimo += "-(A%d)".formatted(sr);
 //#endif
 
                 reg.getA().set(sr, reg.getA().get(sr) - 1);
                 if (sr == 7) reg.getA().set(sr, reg.getA().get(sr) - 1);
-                dst = (int) (short) mem.peekB(reg.getA().get(sr));
-                ans = (int) ((int) (byte) (byte) dst - (int) (byte) (byte) src);
+                dst = ((short) mem.peekB(reg.getA().get(sr)) & 0xffff);
+                ans = (byte) dst - (byte) src;
                 mem.pokeB(reg.getA().get(sr), (byte) ans);
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
+                short d16 = fetchW(); // signed
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, sr);
+                nimo += "$%04x(A%d)".formatted(d16, sr);
 //#endif
 
-                dst = (int) (short) mem.peekB((int) (reg.getA().get(sr) + d16));
-                ans = (int) ((int) (byte) (byte) dst - (int) (byte) (byte) src);
-                mem.pokeB((int) (reg.getA().get(sr) + d16), (byte) ans);
+                dst = ((short) mem.peekB(reg.getA().get(sr) + d16)) & 0xffff;
+                ans = (byte) dst - (byte) src;
+                mem.pokeB(reg.getA().get(sr) + d16, (byte) ans);
                 break;
             case 6: // d8(An,IX)
                 vw = fetchW();
@@ -9205,35 +9178,35 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + IX);
-                dst = (int) (short) mem.peekB(ptr);
-                ans = (int) ((int) (byte) (byte) dst - (int) (byte) (byte) src);
+                if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(sr) + (byte) vw + IX;
+                dst = ((short) mem.peekB(ptr)) & 0xffff;
+                ans = (byte) dst - (byte) src;
                 mem.pokeB(ptr, (byte) ans);
                 break;
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        dst = (int) (short) mem.peekB(ptr);
-                        ans = (int) ((int) (byte) (byte) dst - (int) (byte) (byte) src);
+                        dst = ((short) mem.peekB(ptr)) & 0xffff;
+                        ans = (byte) dst - (byte) src;
                         mem.pokeB(ptr, (byte) ans);
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        dst = (int) (short) mem.peekB(ptr);
-                        ans = (int) ((int) (byte) (byte) dst - (int) (byte) (byte) src);
+                        dst = ((short) mem.peekB(ptr)) & 0xffff;
+                        ans = (byte) dst - (byte) src;
                         mem.pokeB(ptr, (byte) ans);
                         cycle = 8;
                         break;
@@ -9272,7 +9245,7 @@ public class NiseM68 {
         // src
         int src = reg.getDw(dr);
 //#if DEBUG
-        nimo += "D%s,".formatted(dr);
+        nimo += "D%d,".formatted(dr);
 //#endif
 
         int dst = 0;
@@ -9289,42 +9262,42 @@ public class NiseM68 {
         switch (sm) {
             case 2: // (An)
 //#if DEBUG
-                nimo += "(A%s)".formatted(sr);
+                nimo += "(A%d)".formatted(sr);
 //#endif
 
-                dst = (int) (short) mem.peekW(reg.getA().get(sr));
-                ans = (int) ((int) (short) dst - (int) (short) src);
+                dst = mem.peekW(reg.getA().get(sr));
+                ans = (short) dst - (short) src;
                 mem.pokeW(reg.getA().get(sr), (short) ans);
                 break;
             case 3: // (An)+
 //#if DEBUG
-                nimo += "(A%s)+".formatted(sr);
+                nimo += "(A%d)+".formatted(sr);
 //#endif
 
-                dst = (int) (short) mem.peekW(reg.getA().get(sr));
-                ans = (int) ((int) (short) dst - (int) (short) src);
+                dst = mem.peekW(reg.getA().get(sr));
+                ans = (short) dst - (short) src;
                 mem.pokeW(reg.getA().get(sr), (short) ans);
                 reg.getA().set(sr, reg.getA().get(sr) + 2);
                 break;
             case 4: // -(An)
 //#if DEBUG
-                nimo += "-(A%s)".formatted(sr);
+                nimo += "-(A%d)".formatted(sr);
 //#endif
 
                 reg.getA().set(sr, reg.getA().get(sr) - 2);
-                dst = (int) (short) mem.peekW(reg.getA().get(sr));
-                ans = (int) ((int) (short) dst - (int) (short) src);
+                dst = mem.peekW(reg.getA().get(sr));
+                ans = (short) dst - (short) src;
                 mem.pokeW(reg.getA().get(sr), (short) ans);
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
+                short d16 = fetchW(); // signed
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, sr);
+                nimo += "$%04x(A%d)".formatted(d16, sr);
 //#endif
 
-                dst = (int) (short) mem.peekW((int) (reg.getA().get(sr) + d16));
-                ans = (int) ((int) (short) dst - (int) (short) src);
-                mem.pokeW((int) (reg.getA().get(sr) + d16), (short) ans);
+                dst = mem.peekW(reg.getA().get(sr) + d16);
+                ans = (short) dst - (short) src;
+                mem.pokeW(reg.getA().get(sr) + d16, (short) ans);
                 break;
             case 6: // d8(An,IX)
                 vw = fetchW();
@@ -9333,35 +9306,35 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + IX);
-                dst = (int) (short) mem.peekW(ptr);
-                ans = (int) ((int) (short) dst - (int) (short) src);
+                if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(sr) + (byte) vw + IX;
+                dst = mem.peekW(ptr);
+                ans = (short) dst - (short) src;
                 mem.pokeW(ptr, (short) ans);
                 break;
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        dst = (int) (short) mem.peekW(ptr);
-                        ans = (int) ((int) (short) dst - (int) (short) src);
+                        dst = mem.peekW(ptr);
+                        ans = (short) dst - (short) src;
                         mem.pokeW(ptr, (short) ans);
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        dst = (int) (short) mem.peekW(ptr);
-                        ans = (int) ((int) (short) dst - (int) (short) src);
+                        dst = mem.peekW(ptr);
+                        ans = (short) dst - (short) src;
                         mem.pokeW(ptr, (short) ans);
                         cycle = 8;
                         break;
@@ -9396,7 +9369,6 @@ public class NiseM68 {
         nimo[0] = "SUB.b ";
 //#endif
 
-
         int[] cycle = new int[] {0};
 
         int dr = (n & 0x0e00) >> 9;
@@ -9410,16 +9382,14 @@ public class NiseM68 {
         nimo[0] += ",";
 //#endif
 
-
         // dst
-        short dst = reg.getDb(dr);
+        short dst = (short) (reg.getDb(dr) & 0xff);
 //#if DEBUG
-        nimo[0] += "D%s".formatted(dr);
+        nimo[0] += "D%d".formatted(dr);
 //#endif
 
-
         // compute
-        short ans = (short) ((short) (byte) dst - (short) (byte) src);
+        short ans = (short) ((dst - (short) src) & 0xffff);
         reg.setDb(dr, (byte) ans);
 
         // flag
@@ -9459,13 +9429,13 @@ public class NiseM68 {
 //#endif
 
         // dst
-        int dst = reg.getDw(dr);
+        int dst = reg.getDw(dr) & 0xffff;
 //#if DEBUG
-        nimo[0] += "D%s".formatted(dr);
+        nimo[0] += "D%d".formatted(dr);
 //#endif
 
         // compute
-        int ans = (int) ((int) (short) dst - (int) (short) src);
+        int ans = dst - src;
         reg.setDw(dr, (short) ans);
 
         // flag
@@ -9503,21 +9473,21 @@ public class NiseM68 {
 //#endif
 
         // dst
-        long dst = reg.getD()[dr];
+        long dst = reg.getD()[dr] & 0xffff_ffffL;
 //#if DEBUG
-        nimo[0] += "D%s".formatted(dr);
+        nimo[0] += "D%d".formatted(dr);
 //#endif
 
 
         // compute
-        long ans = (long) ((long) (int) dst - (long) (int) src);
+        long ans = dst - (long) src;
         reg.setDl(dr, (int) ans);
 
         // flag
         reg.setN((int) ans);
         reg.setZ((int) ans);
-        reg.setVcmp((int) src, (int) dst, (int) ans);
-        reg.setCcmp((int) src, (int) dst, (int) ans);
+        reg.setVcmp(src, (int) dst, (int) ans);
+        reg.setCcmp(src, (int) dst, (int) ans);
         reg.setX(reg.getC());
 
         // cycle
@@ -9543,14 +9513,14 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
         // src
-        int val = (int) (short) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
+        int val = (short) (srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true) & 0xffff);
 
 //#if DEBUG
         nimo[0] += ",";
 //#endif
 
         // compute
-        reg.getA().set(dr, (int) (reg.getA().get(dr) - val));
+        reg.getA().set(dr, reg.getA().get(dr) - val);
 //#if DEBUG
         nimo[0] += "A%s".formatted(dr);
 //#endif
@@ -9656,9 +9626,9 @@ public class NiseM68 {
         // dst
         switch (dm) {
             case 0: // Dn
-                src = (short) (short) (byte) reg.getDb(dr);
+                src = (short) (reg.getDb(dr) & 0xff);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Cmp_b[0];
@@ -9666,19 +9636,19 @@ public class NiseM68 {
             case 1: // An
                 throw new UnsupportedOperationException();
             case 2: // (An)
-                src = (short) (short) (byte) mem.peekB(reg.getA().get(dr));
+                src = (short) (mem.peekB(reg.getA().get(dr)) & 0xff);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Cmp_b[2];
                 break;
             case 3: // (An)+
-                src = (short) (short) (byte) mem.peekB(reg.getA().get(dr));
+                src = (short) (mem.peekB(reg.getA().get(dr)) & 0xff);
                 reg.getA().set(dr, reg.getA().get(dr) + 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Cmp_b[3];
@@ -9686,18 +9656,18 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) - 1);
-                src = (short) (short) (byte) mem.peekB(reg.getA().get(dr));
+                src = (short) (mem.peekB(reg.getA().get(dr)) & 0xff);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Cmp_b[4];
                 break;
             case 5: // d16(An)
-                int d16 = (int) (short) fetchW();
-                src = (short) (short) (byte) mem.peekB((int) (reg.getA().get(dr) + d16));
+                int d16 = fetchW(); // signed
+                src = (short) (mem.peekB(reg.getA().get(dr) + d16) & 0xff);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted((short) d16, dr);
+                nimo += "$%04x(A%d)".formatted((short) d16, dr);
 //#endif
 
                 cycle = Cycle.Cmp_b[5];
@@ -9709,37 +9679,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                src = (short) (short) (byte) mem.peekB(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                src = (short) (mem.peekB(ptr) & 0xff);
                 cycle = Cycle.Cmp_b[6];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "($%04x)".formatted((short) ptr);
+                        nimo += "($%04x)".formatted(ptr);
 //#endif
 
-                        src = (short) (short) (byte) mem.peekB(ptr);
+                        src = (short) (mem.peekB(ptr) & 0xff);
                         cycle = Cycle.Cmp_b[7];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted((int) ptr);
+                        nimo += "($%08x)".formatted(ptr);
 //#endif
 
-                        src = (short) (short) (byte) mem.peekB(ptr);
+                        src = (short) (mem.peekB(ptr) & 0xff);
                         cycle = Cycle.Cmp_b[8];
                         break;
                     case 2:
-                        int ed16 = (int) (short) fetchW();
-                        src = (short) (short) (byte) mem.peekB((int) (reg.pc + ed16 - 2));
+                        int ed16 = fetchW(); // signed
+                        src = (short) (mem.peekB((int) (reg.pc + ed16 - 2)) & 0xff);
 //#if DEBUG
                         nimo += "$%04x(PC)".formatted((short) ed16);
 //#endif
@@ -9753,18 +9723,18 @@ public class NiseM68 {
                         isL = (vw & 0x0800) != 0;
 
 //#if DEBUG
-                        nimo += "$%02x(PC,%s%s.%s)".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w");
+                        nimo += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
 
-                        src = (short) (short) (byte) mem.peekB(ptr);
+                        src = (short) (mem.peekB(ptr) & 0xff);
                         cycle = Cycle.Cmp_b[10];
                         break;
                     case 4:
@@ -9779,17 +9749,17 @@ public class NiseM68 {
                 break;
         }
 
-        after = (short) ((short) dst - (short) src);
+        after = (short) ((dst - src) & 0xffff);
 
 //#if DEBUG
-        nimo += ",D%s".formatted(rn);
+        nimo += ",D%d".formatted(rn);
 //#endif
 
         // flag
         reg.setN((byte) after);
         reg.setZ((byte) after);
-        reg.setVcmp((byte) src, (byte) dst, (byte) after);
-        reg.setCcmp((byte) src, (byte) dst, (byte) after);
+        reg.setVcmp((byte) src, dst, (byte) after);
+        reg.setCcmp((byte) src, dst, (byte) after);
 
 //#if DEBUG
         logger.log(Level.TRACE, nimo);
@@ -9825,7 +9795,7 @@ public class NiseM68 {
             case 0: // Dn
                 src = reg.getDw(dr);
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 cycle = Cycle.Cmp_w[0];
@@ -9841,7 +9811,7 @@ public class NiseM68 {
             case 2: // (An)
                 src = mem.peekW(reg.getA().get(dr));
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Cmp_w[2];
@@ -9850,7 +9820,7 @@ public class NiseM68 {
                 src = mem.peekW(reg.getA().get(dr));
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 cycle = Cycle.Cmp_w[3];
@@ -9859,16 +9829,16 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
                 src = mem.peekW(reg.getA().get(dr));
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Cmp_w[4];
                 break;
             case 5: // d16(An)
-                int d16 = (int) (short) fetchW();
-                src = mem.peekW((int) (reg.getA().get(dr) + d16));
+                int d16 = fetchW();
+                src = mem.peekW(reg.getA().get(dr) + d16);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted((short) d16, dr);
+                nimo += "$%04x(A%d)".formatted((short) d16, dr);
 //#endif
 
                 cycle = Cycle.Cmp_w[5];
@@ -9880,18 +9850,18 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 src = mem.peekW(ptr);
                 cycle = Cycle.Cmp_w[6];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
                         nimo += "($%04x)".formatted((short) ptr);
 //#endif
@@ -9909,8 +9879,8 @@ public class NiseM68 {
                         cycle = Cycle.Cmp_w[8];
                         break;
                     case 2:
-                        int ed16 = (int) (short) fetchW();
-                        src = mem.peekW((int) (reg.pc + ed16 - 2));
+                        int ed16 = fetchW();
+                        src = mem.peekW(reg.pc + ed16 - 2);
 //#if DEBUG
                         nimo += "$%04x(PC)".formatted((short) ed16);
 //#endif
@@ -9923,15 +9893,15 @@ public class NiseM68 {
                         ni = (vw & 0x7000) >> 12;
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
-                        nimo += "$%02x(PC,%s%s.%s)".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w");
+                        nimo += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
 
                         src = mem.peekW(ptr);
@@ -9949,11 +9919,11 @@ public class NiseM68 {
                 break;
         }
 
-        // after = ( short)((short)before - (short)val);
-        after = (short) ((short) dst - (short) src);
+        //after = (short) ((short)before - (short) val);
+        after = (short) ((dst - src) & 0xffff);
 
 //#if DEBUG
-        nimo += ",D%s".formatted(rn);
+        nimo += ",D%d".formatted(rn);
 //#endif
 
         // flag
@@ -9988,10 +9958,10 @@ public class NiseM68 {
         int dst = reg.getDl(rn);
         cycle[0] = Cycle.Cmp_l[cycle[0]];
 
-        after = (int) ((int) dst - (int) src);
+        after = dst - src;
 
 //#if DEBUG
-        nimo[0] += ",D%s".formatted(rn);
+        nimo[0] += ",D%d".formatted(rn);
 //#endif
 
         // flag
@@ -10031,7 +10001,7 @@ public class NiseM68 {
 
         cycle[0] = Cycle.Cmpa_l[cycle[0]];
 
-        after = (int) ((int) val - (int) before);
+        after = val - before;
 
 //#if DEBUG
         nimo[0] += ",A%s".formatted(rn);
@@ -10040,8 +10010,8 @@ public class NiseM68 {
         // flag
         reg.setN(after);
         reg.setZ(after);
-        reg.setVcmp((int) val, (int) before, (int) after);
-        reg.setCcmp((int) val, (int) before, (int) after);
+        reg.setVcmp(val, before, after);
+        reg.setCcmp(val, before, after);
 
 //#if DEBUG
         logger.log(Level.TRACE, nimo);
@@ -10062,21 +10032,21 @@ public class NiseM68 {
 
         dst = (short) (short) (byte) vald;
 //#if DEBUG
-        String nimo = "CMPM.b (A%s)+,(A%s)+".formatted(sr, dr);
+        String nimo = "CMPM.b (A%d)+,(A%d)+".formatted(sr, dr);
 //#endif
 
         reg.getA().set(dr, reg.getA().get(dr) + 1);
         reg.getA().set(sr, reg.getA().get(sr) + 1);
 
-        after = (short) ((short) dst - (byte) src);
+        after = (short) (dst - src); // signed
 
         // flag
         reg.setN((byte) after);
         reg.setZ((byte) after);
         // reg.SetVcmp((byte)before, (byte)vals, (byte)after);
         // reg.SetCcmp((byte)before, (byte)vals, (byte)after);
-        reg.setVcmp((byte) src, (byte) dst, (byte) after);
-        reg.setCcmp((byte) src, (byte) dst, (byte) after);
+        reg.setVcmp(src, (byte) dst, (byte) after);
+        reg.setCcmp(src, (byte) dst, (byte) after);
 
 //#if DEBUG
         logger.log(Level.TRACE, nimo);
@@ -10107,7 +10077,7 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
         // src
-        int sval = (int) (short) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
+        int sval = srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
         nimo[0] += ",";
@@ -10118,10 +10088,10 @@ public class NiseM68 {
 
         // compute
         int ans = dval * sval;
-        reg.getD()[dr] = (int) (ans & 0xffff_ffff);
+        reg.getD()[dr] = ans;
 
 //#if DEBUG
-        nimo[0] += "D%s".formatted(dr);
+        nimo[0] += "D%d".formatted(dr);
 //#endif
 
         cycle[0] = Cycle.Muls_w[cycle[0]];
@@ -10159,21 +10129,21 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
         // src
-        int sval = (int) (short) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
+        int sval = srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true) & 0xffff;
 
 //#if DEBUG
         nimo[0] += ",";
 //#endif
 
         // dst
-        int dval = (short) reg.getD()[dr];
+        int dval = reg.getD()[dr] & 0xffff;
 
         // compute
         int ans = dval * sval;
-        reg.getD()[dr] = (int) ans;
+        reg.getD()[dr] = ans;
 
 //#if DEBUG
-        nimo[0] += "D%s".formatted(dr);
+        nimo[0] += "D%d".formatted(dr);
 //#endif
 
         cycle[0] = Cycle.Mulu_w[cycle[0]];
@@ -10207,7 +10177,7 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
         // src
-        int sval = (int) (short) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
+        int sval = srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
         nimo[0] += ",";
@@ -10231,7 +10201,7 @@ public class NiseM68 {
         reg.getD()[dr] = (int) ((ans & 0xffff) | ((mod & 0xffff) * 0x10000));
 
 //#if DEBUG
-        nimo[0] += "D%s".formatted(dr);
+        nimo[0] += "D%d".formatted(dr);
 //#endif
 
         cycle[0] = Cycle.Divs_w[cycle[0]];
@@ -10265,14 +10235,14 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
         // src
-        int sval = (int) (short) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
+        int sval = srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true) & 0xffff;
 
 //#if DEBUG
         nimo[0] += ",";
 //#endif
 
         // dst
-        int dval = (int) reg.getD()[dr];
+        int dval = reg.getD()[dr];
 
         // check TBD
         if (sval == 0) {
@@ -10286,10 +10256,10 @@ public class NiseM68 {
             return Cycle.Divs_w[cycle[0]];
         }
 
-        reg.getD()[dr] = (int) ((ans & 0xffff) | ((mod & 0xffff) * 0x10000));
+        reg.getD()[dr] = (ans & 0xffff) | ((mod & 0xffff) * 0x10000);
 
 //#if DEBUG
-        nimo[0] += "D%s".formatted(dr);
+        nimo[0] += "D%d".formatted(dr);
 //#endif
 
         cycle[0] = Cycle.Divu_w[cycle[0]];
@@ -10350,9 +10320,9 @@ public class NiseM68 {
         switch (dm) {
             case 0: // Dn
                 dst = reg.getDb(dr);
-                ans = (byte) ((byte) dst + (byte) src);
+                ans = (byte) (dst + src); // signed
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 reg.setDb(dr, ans);
@@ -10360,9 +10330,9 @@ public class NiseM68 {
                 break;
             case 2: // (An)
                 dst = mem.peekB(reg.getA().get(dr));
-                ans = (byte) ((byte) dst + (byte) src);
+                ans = (byte) (dst + src);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 mem.pokeB(reg.getA().get(dr), ans);
@@ -10370,9 +10340,9 @@ public class NiseM68 {
                 break;
             case 3: // (An)+
                 dst = mem.peekB(reg.getA().get(dr));
-                ans = (byte) ((byte) dst + (byte) src);
+                ans = (byte) (dst +  src);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 mem.pokeB(reg.getA().get(dr), ans);
@@ -10384,21 +10354,21 @@ public class NiseM68 {
                 reg.getA().set(dr, reg.getA().get(dr) - 1);
                 if (dr == 7) reg.getA().set(dr, reg.getA().get(dr) + 1);
                 dst = mem.peekB(reg.getA().get(dr));
-                ans = (byte) ((byte) dst + (byte) src);
+                ans = (byte) (dst + src);
                 mem.pokeB(reg.getA().get(dr), ans);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 cycle = Cycle.Addi_b[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                dst = mem.peekB((int) (reg.getA().get(dr) + d16));
-                ans = (byte) ((byte) dst + (byte) src);
-                mem.pokeB((int) (reg.getA().get(dr) + d16), ans);
+                short d16 = fetchW(); // signed
+                dst = mem.peekB(reg.getA().get(dr) + d16);
+                ans = (byte) (dst + src);
+                mem.pokeB(reg.getA().get(dr) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Addi_b[4];
@@ -10410,37 +10380,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 dst = mem.peekB(ptr);
-                ans = (byte) ((byte) dst + (byte) src);
+                ans = (byte) (dst + src);
                 mem.pokeB(ptr, ans);
                 cycle = Cycle.Addi_b[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         dst = mem.peekB(ptr);
-                        ans = (byte) ((byte) dst + (byte) src);
+                        ans = (byte) (dst + src);
                         mem.pokeB(ptr, ans);
                         cycle = Cycle.Addi_b[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         dst = mem.peekB(ptr);
-                        ans = (byte) ((byte) dst + (byte) src);
+                        ans = (byte) (dst + src);
                         mem.pokeB(ptr, ans);
                         cycle = Cycle.Addi_b[7];
                         break;
@@ -10490,9 +10460,9 @@ public class NiseM68 {
         switch (dm) {
             case 0: // Dn
                 dst = reg.getDw(dr);
-                ans = (short) ((short) dst + (short) src);
+                ans = (short) (dst + src); // signed
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 reg.setDw(dr, ans);
@@ -10500,9 +10470,9 @@ public class NiseM68 {
                 break;
             case 2: // (An)
                 dst = mem.peekW(reg.getA().get(dr));
-                ans = (short) ((short) dst + (short) src);
+                ans = (short) (dst + src);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 mem.pokeW(reg.getA().get(dr), ans);
@@ -10510,9 +10480,9 @@ public class NiseM68 {
                 break;
             case 3: // (An)+
                 dst = mem.peekW(reg.getA().get(dr));
-                ans = (short) ((short) dst + (short) src);
+                ans = (short) (dst + src);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 mem.pokeW(reg.getA().get(dr), ans);
@@ -10522,21 +10492,21 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
                 dst = mem.peekW(reg.getA().get(dr));
-                ans = (short) ((short) dst + (short) src);
+                ans = (short) (dst + src);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 mem.pokeW(reg.getA().get(dr), ans);
                 cycle = Cycle.Addi_w[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                dst = mem.peekW((int) (reg.getA().get(dr) + d16));
-                ans = (short) ((short) dst + (short) src);
-                mem.pokeW((int) (reg.getA().get(dr) + d16), ans);
+                short d16 = fetchW(); // signed
+                dst = mem.peekW(reg.getA().get(dr) + d16);
+                ans = (short) (dst + src);
+                mem.pokeW(reg.getA().get(dr) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Addi_w[4];
@@ -10548,37 +10518,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 dst = mem.peekW(ptr);
-                ans = (short) ((short) dst + (short) src);
+                ans = (short) (dst + src);
                 mem.pokeW(ptr, ans);
                 cycle = Cycle.Addi_w[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         dst = mem.peekW(ptr);
-                        ans = (short) ((short) dst + (short) src);
+                        ans = (short) (dst + src);
                         mem.pokeW(ptr, ans);
                         cycle = Cycle.Addi_w[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         dst = mem.peekW(ptr);
-                        ans = (short) ((short) dst + (short) src);
+                        ans = (short) (dst + src);
                         mem.pokeW(ptr, ans);
                         cycle = Cycle.Addi_w[7];
                         break;
@@ -10610,7 +10580,7 @@ public class NiseM68 {
         int dm = (n & 0x0038) >> 3;
         int dr = (n & 0x0007);
 
-        int src = (int) fetchL();
+        int src = fetchL();
 //#if DEBUG
         nimo += "#$%08x,".formatted(src);
 //#endif
@@ -10628,9 +10598,9 @@ public class NiseM68 {
         switch (dm) {
             case 0: // Dn
                 dst = reg.getDl(dr);
-                ans = (int) ((int) dst + (int) src);
+                ans = dst + src;
 //#if DEBUG
-                nimo += "D%s".formatted(dr);
+                nimo += "D%d".formatted(dr);
 //#endif
 
                 reg.setDl(dr, ans);
@@ -10638,9 +10608,9 @@ public class NiseM68 {
                 break;
             case 2: // (An)
                 dst = mem.peekL(reg.getA().get(dr));
-                ans = (int) ((int) dst + (int) src);
+                ans = dst + src;
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
 
                 mem.pokeL(reg.getA().get(dr), ans);
@@ -10648,9 +10618,9 @@ public class NiseM68 {
                 break;
             case 3: // (An)+
                 dst = mem.peekL(reg.getA().get(dr));
-                ans = (int) ((int) dst + (int) src);
+                ans = dst + src;
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
 
                 mem.pokeL(reg.getA().get(dr), ans);
@@ -10660,21 +10630,21 @@ public class NiseM68 {
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 4);
                 dst = mem.peekL(reg.getA().get(dr));
-                ans = (int) ((int) dst + (int) src);
+                ans = dst + src;
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
 
                 mem.pokeL(reg.getA().get(dr), ans);
                 cycle = Cycle.Addi_l[3];
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                dst = mem.peekL((int) (reg.getA().get(dr) + d16));
-                ans = (int) ((int) dst + (int) src);
-                mem.pokeL((int) (reg.getA().get(dr) + d16), ans);
+                short d16 = fetchW(); // signed
+                dst = mem.peekL(reg.getA().get(dr) + d16);
+                ans = dst + src;
+                mem.pokeL(reg.getA().get(dr) + d16, ans);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
 
                 cycle = Cycle.Addi_l[4];
@@ -10686,37 +10656,37 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 dst = mem.peekL(ptr);
-                ans = (int) ((int) dst + (int) src);
+                ans = dst + src;
                 mem.pokeL(ptr, ans);
                 cycle = Cycle.Addi_l[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
                         dst = mem.peekL(ptr);
-                        ans = (int) ((int) dst + (int) src);
+                        ans = dst + src;
                         mem.pokeL(ptr, ans);
                         cycle = Cycle.Addi_l[6];
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
                         dst = mem.peekL(ptr);
-                        ans = (int) ((int) dst + (int) src);
+                        ans = dst + src;
                         mem.pokeL(ptr, ans);
                         cycle = Cycle.Addi_l[7];
                         break;
@@ -10813,18 +10783,18 @@ public class NiseM68 {
         int sval = reg.getDb(sr);
 
 //#if DEBUG
-        nimo += "D%s,".formatted(sr);
+        nimo += "D%d,".formatted(sr);
 //#endif
 
         // dst
-        int dval = (int) reg.getDb(dr);
+        int dval = reg.getDb(dr);
 
         // compute
         int ans = dval + sval + (reg.getX() ? 1 : 0);
         reg.setDb(dr, (byte) ans);
 
 //#if DEBUG
-        nimo += "D%s".formatted(dr);
+        nimo += "D%d".formatted(dr);
 //#endif
 
         // flag
@@ -10875,7 +10845,7 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
         // src
-        int sval = (int) (byte) srcAddressingByte(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
+        int sval = srcAddressingByte(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
         nimo[0] += ",";
@@ -10883,14 +10853,14 @@ public class NiseM68 {
 
 
         // dst
-        int dval = (int) reg.getDb(dr);
+        int dval = reg.getDb(dr);
 
         // compute
         int ans = dval + sval;
         reg.setDb(dr, (byte) ans);
 
 //#if DEBUG
-        nimo[0] += "D%s".formatted(dr);
+        nimo[0] += "D%d".formatted(dr);
 //#endif
 
         cycle[0] = Cycle.Add0_b[cycle[0]];
@@ -10923,7 +10893,7 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
         // src
-        int sval = (int) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
+        int sval = srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
         nimo[0] += ",";
@@ -10937,7 +10907,7 @@ public class NiseM68 {
         reg.setDw(dr, (short) ans);
 
 //#if DEBUG
-        nimo[0] += "D%s".formatted(dr);
+        nimo[0] += "D%d".formatted(dr);
 //#endif
 
         cycle[0] = Cycle.Add0_w[cycle[0]];
@@ -10970,21 +10940,21 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
         // src
-        long sval = (long) srcAddressingLong(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true, 0);
+        long sval = srcAddressingLong(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true, 0);
 
 //#if DEBUG
         nimo[0] += ",";
 //#endif
 
         // dst
-        long dval = (long) reg.getD()[dr];
+        long dval = reg.getD()[dr];
 
         // compute
         long ans = dval + sval;
         reg.getD()[dr] = (int) ans;
 
 //#if DEBUG
-        nimo[0] += "D%s".formatted(dr);
+        nimo[0] += "D%d".formatted(dr);
 //#endif
 
         cycle[0] = Cycle.Add0_l[cycle[0]];
@@ -11016,13 +10986,13 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
 //#if DEBUG
-        nimo += "D%s,".formatted(dr);
+        nimo += "D%d,".formatted(dr);
 //#endif
 
         // src
-        byte sval = (byte) reg.getDb(dr);
+        byte sval = reg.getDb(dr); // signed
         // dst
-        byte dval = 0;
+        byte dval = 0; // signed
 
         byte ans = 0;
 
@@ -11036,47 +11006,47 @@ public class NiseM68 {
         switch (sm) {
             case 2: // (An)
 //#if DEBUG
-                nimo += "(A%s)".formatted(sr);
+                nimo += "(A%d)".formatted(sr);
 //#endif
 
-                dval = (byte) mem.peekB(reg.getA().get(sr));
+                dval = mem.peekB(reg.getA().get(sr));
                 ans = (byte) (dval + sval);
-                mem.pokeB(reg.getA().get(sr), (byte) ans);
+                mem.pokeB(reg.getA().get(sr), ans);
                 cycle = 0;
                 break;
             case 3: // (An)+
 //#if DEBUG
-                nimo += "(A%s)+".formatted(sr);
+                nimo += "(A%d)+".formatted(sr);
 //#endif
 
-                dval = (byte) mem.peekB(reg.getA().get(sr));
+                dval = mem.peekB(reg.getA().get(sr));
                 ans = (byte) (dval + sval);
-                mem.pokeB(reg.getA().get(sr), (byte) ans);
+                mem.pokeB(reg.getA().get(sr), ans);
                 reg.getA().set(sr, reg.getA().get(sr) + 1);
                 if (sr == 7) reg.getA().set(sr, reg.getA().get(sr) + 1);
                 cycle = 1;
                 break;
             case 4: // -(An)
 //#if DEBUG
-                nimo += "-(A%s)".formatted(sr);
+                nimo += "-(A%d)".formatted(sr);
 //#endif
 
                 reg.getA().set(sr, reg.getA().get(sr) - 1);
                 if (sr == 7) reg.getA().set(sr, reg.getA().get(sr) - 1);
-                dval = (byte) mem.peekB(reg.getA().get(sr));
+                dval = mem.peekB(reg.getA().get(sr));
                 ans = (byte) (dval + sval);
-                mem.pokeB(reg.getA().get(sr), (byte) ans);
+                mem.pokeB(reg.getA().get(sr), ans);
                 cycle = 2;
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
+                short d16 = fetchW(); // signed
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, sr);
+                nimo += "$%04x(A%d)".formatted(d16, sr);
 //#endif
 
-                dval = (byte) mem.peekB((int) (reg.getA().get(sr) + d16));
+                dval = mem.peekB(reg.getA().get(sr) + d16);
                 ans = (byte) (dval + sval);
-                mem.pokeB((int) (reg.getA().get(sr) + d16), (byte) ans);
+                mem.pokeB((int) (reg.getA().get(sr) + d16), ans);
                 cycle = 3;
                 break;
             case 6: // d8(An,IX)
@@ -11086,38 +11056,38 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + IX);
-                dval = (byte) mem.peekB(ptr);
+                if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(sr) + (byte) vw + IX;
+                dval = mem.peekB(ptr);
                 ans = (byte) (dval + sval);
-                mem.pokeB(ptr, (byte) ans);
+                mem.pokeB(ptr, ans);
                 cycle = 4;
                 break;
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        dval = (byte) mem.peekB(ptr);
+                        dval = mem.peekB(ptr);
                         ans = (byte) (dval + sval);
-                        mem.pokeB(ptr, (byte) ans);
+                        mem.pokeB(ptr, ans);
                         cycle = 5;
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        dval = (byte) mem.peekB(ptr);
+                        dval = mem.peekB(ptr);
                         ans = (byte) (dval + sval);
-                        mem.pokeB(ptr, (byte) ans);
+                        mem.pokeB(ptr, ans);
                         cycle = 6;
                         break;
                 }
@@ -11127,10 +11097,10 @@ public class NiseM68 {
         cycle = Cycle.Add1_b[cycle];
 
         // flag
-        reg.setN((byte) ans);
-        reg.setZ((byte) ans);
-        reg.setVadd((byte) sval, (byte) dval, (byte) ans);
-        reg.setCadd((byte) sval, (byte) dval, (byte) ans);
+        reg.setN(ans);
+        reg.setZ(ans);
+        reg.setVadd(sval, dval, ans);
+        reg.setCadd(sval, dval, ans);
         reg.setX(reg.getC());
 
 //#if DEBUG
@@ -11153,7 +11123,7 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
 //#if DEBUG
-        nimo += "D%s,".formatted(dr);
+        nimo += "D%d,".formatted(dr);
 //#endif
 
         // src
@@ -11174,20 +11144,20 @@ public class NiseM68 {
         switch (sm) {
             case 2: // (An)
 //#if DEBUG
-                nimo += "(A%s)".formatted(sr);
+                nimo += "(A%d)".formatted(sr);
 //#endif
 
-                dval = (short) mem.peekW(reg.getA().get(sr));
+                dval = mem.peekW(reg.getA().get(sr));
                 ans = dval + sval;
                 mem.pokeW(reg.getA().get(sr), (short) ans);
                 cycle = 0;
                 break;
             case 3: // (An)+
 //#if DEBUG
-                nimo += "(A%s)+".formatted(sr);
+                nimo += "(A%d)+".formatted(sr);
 //#endif
 
-                dval = (short) mem.peekW(reg.getA().get(sr));
+                dval = mem.peekW(reg.getA().get(sr));
                 ans = dval + sval;
                 mem.pokeW(reg.getA().get(sr), (short) ans);
                 reg.getA().set(sr, reg.getA().get(sr) + 2);
@@ -11195,24 +11165,24 @@ public class NiseM68 {
                 break;
             case 4: // -(An)
 //#if DEBUG
-                nimo += "-(A%s)".formatted(sr);
+                nimo += "-(A%d)".formatted(sr);
 //#endif
 
                 reg.getA().set(sr, reg.getA().get(sr) - 2);
-                dval = (short) mem.peekW(reg.getA().get(sr));
+                dval = mem.peekW(reg.getA().get(sr));
                 ans = dval + sval;
                 mem.pokeW(reg.getA().get(sr), (short) ans);
                 cycle = 2;
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
+                short d16 = fetchW(); // signed
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, sr);
+                nimo += "$%04x(A%d)".formatted(d16, sr);
 //#endif
 
-                dval = (short) mem.peekW((int) (reg.getA().get(sr) + d16));
+                dval = mem.peekW(reg.getA().get(sr) + d16);
                 ans = dval + sval;
-                mem.pokeW((int) (reg.getA().get(sr) + d16), (short) ans);
+                mem.pokeW(reg.getA().get(sr) + d16, (short) ans);
                 cycle = 3;
                 break;
             case 6: // d8(An,IX)
@@ -11222,12 +11192,12 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + IX);
-                dval = (short) mem.peekW(ptr);
+                if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(sr) + (byte) vw + IX;
+                dval = mem.peekW(ptr);
                 ans = dval + sval;
                 mem.pokeW(ptr, (short) ans);
                 cycle = 4;
@@ -11235,12 +11205,12 @@ public class NiseM68 {
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        dval = (short) mem.peekW(ptr);
+                        dval = mem.peekW(ptr);
                         ans = dval + sval;
                         mem.pokeW(ptr, (short) ans);
                         cycle = 5;
@@ -11248,10 +11218,10 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        dval = (short) mem.peekW(ptr);
+                        dval = mem.peekW(ptr);
                         ans = dval + sval;
                         mem.pokeW(ptr, (short) ans);
                         cycle = 6;
@@ -11289,11 +11259,11 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
 //#if DEBUG
-        nimo += "D%s,".formatted(dr);
+        nimo += "D%d,".formatted(dr);
 //#endif
 
         // src
-        int sval = (int) reg.getDl(dr);
+        int sval = reg.getDl(dr);
 
         // dst
         int dval = 0;
@@ -11310,45 +11280,45 @@ public class NiseM68 {
         switch (sm) {
             case 2: // (An)
 //#if DEBUG
-                nimo += "(A%s)".formatted(sr);
+                nimo += "(A%d)".formatted(sr);
 //#endif
 
-                dval = (int) mem.peekL(reg.getA().get(sr));
+                dval = mem.peekL(reg.getA().get(sr));
                 ans = dval + sval;
-                mem.pokeL(reg.getA().get(sr), (int) ans);
+                mem.pokeL(reg.getA().get(sr), ans);
                 cycle = 0;
                 break;
             case 3: // (An)+
 //#if DEBUG
-                nimo += "(A%s)+".formatted(sr);
+                nimo += "(A%d)+".formatted(sr);
 //#endif
 
-                dval = (int) mem.peekL(reg.getA().get(sr));
+                dval = mem.peekL(reg.getA().get(sr));
                 ans = dval + sval;
-                mem.pokeL(reg.getA().get(sr), (int) ans);
+                mem.pokeL(reg.getA().get(sr), ans);
                 reg.getA().set(sr, reg.getA().get(sr) + 4);
                 cycle = 1;
                 break;
             case 4: // -(An)
 //#if DEBUG
-                nimo += "-(A%s)".formatted(sr);
+                nimo += "-(A%d)".formatted(sr);
 //#endif
 
                 reg.getA().set(sr, reg.getA().get(sr) - 4);
-                dval = (int) mem.peekL(reg.getA().get(sr));
+                dval = mem.peekL(reg.getA().get(sr));
                 ans = dval + sval;
-                mem.pokeL(reg.getA().get(sr), (int) ans);
+                mem.pokeL(reg.getA().get(sr), ans);
                 cycle = 2;
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
+                short d16 = fetchW(); // signed
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, sr);
+                nimo += "$%04x(A%d)".formatted(d16, sr);
 //#endif
 
-                dval = (int) mem.peekL((int) (reg.getA().get(sr) + d16));
+                dval = mem.peekL(reg.getA().get(sr) + d16);
                 ans = dval + sval;
-                mem.pokeL((int) (reg.getA().get(sr) + d16), (int) ans);
+                mem.pokeL(reg.getA().get(sr) + d16, (int) ans);
                 cycle = 3;
                 break;
             case 6: // d8(An,IX)
@@ -11358,12 +11328,12 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + IX);
-                dval = (int) mem.peekL(ptr);
+                if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(sr) + (byte) vw + IX;
+                dval = mem.peekL(ptr);
                 ans = dval + sval;
                 mem.pokeL(ptr, (int) ans);
                 cycle = 4;
@@ -11371,25 +11341,25 @@ public class NiseM68 {
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        dval = (int) mem.peekL(ptr);
+                        dval = mem.peekL(ptr);
                         ans = dval + sval;
-                        mem.pokeL(ptr, (int) ans);
+                        mem.pokeL(ptr, ans);
                         cycle = 5;
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        dval = (int) mem.peekL(ptr);
+                        dval = mem.peekL(ptr);
                         ans = dval + sval;
-                        mem.pokeL(ptr, (int) ans);
+                        mem.pokeL(ptr, ans);
                         cycle = 6;
                         break;
                 }
@@ -11399,10 +11369,10 @@ public class NiseM68 {
         cycle = Cycle.Add1_l[cycle];
 
         // flag
-        reg.setN((int) ans);
-        reg.setZ((int) ans);
-        reg.setVadd((int) sval, (int) dval, (int) ans);
-        reg.setCadd((int) sval, (int) dval, (int) ans);
+        reg.setN(ans);
+        reg.setZ(ans);
+        reg.setVadd(sval, dval, ans);
+        reg.setCadd(sval, dval, ans);
         reg.setX(reg.getC());
 
 //#if DEBUG
@@ -11426,18 +11396,18 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
         // src
-        int sval = (int) srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
+        int sval = srcAddressingWord(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true);
 
 //#if DEBUG
         nimo[0] += ",";
 //#endif
 
         // dst
-        int dval = (int) reg.getA().get(dr);
+        int dval = reg.getA().get(dr);
 
         // compute
         int ans = dval + sval;
-        reg.getA().set(dr, (int) ans);
+        reg.getA().set(dr, ans);
 
 //#if DEBUG
         nimo[0] += "A%s".formatted(dr);
@@ -11472,14 +11442,14 @@ public class NiseM68 {
         int sr = (n & 0x0007);
 
         // src
-        long sval = (long) srcAddressingLong(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true, 0);
+        long sval = srcAddressingLong(/* ref */ nimo, /* ref */ cycle, sm, sr, 0xfff, true, 0);
 
 //#if DEBUG
         nimo[0] += ",";
 //#endif
 
         // dst
-        long dval = (long) reg.getA().get(dr);
+        long dval = reg.getA().get(dr);
 
         // compute
         long ans = dval + sval;
@@ -11606,22 +11576,22 @@ public class NiseM68 {
         int cycle = 6;
         int sr = (n & 0x0e00) >> 9;
         int dr = (n & 0x0007);
-        int cnt = (int) (reg.getDl(sr) % 64);
+        int cnt = reg.getDl(sr) % 64;
 
 //#if DEBUG
-        nimo = "ASL.b D%s,D%s".formatted(sr, dr);
+        nimo = "ASL.b D%d,D%d".formatted(sr, dr);
 //#endif
 
         cycle += 2 * cnt;
 
-        byte bv = (byte) reg.getDb(dr);
-        byte av = (byte) (bv << cnt);
-        reg.setDb(dr, (byte) av);
+        byte bv = reg.getDb(dr); // signed
+        byte av = (byte) (bv << cnt); // signed
+        reg.setDb(dr, av);
 
         reg.setC((bv & (0x80 >> (cnt - 1))) != 0);
         if (cnt != 0) reg.setX(reg.getC());
-        reg.setN((byte) av);
-        reg.setZ((byte) av);
+        reg.setN(av);
+        reg.setZ(av);
         reg.setV((bv & (0xff << cnt)) != 0);
 
 //#if DEBUG
@@ -11642,18 +11612,18 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ASL.b #{0:d},D%s".formatted(cnt, d);
+        nimo = "ASL.b #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
-        byte bv = (byte) reg.getDb(d); // 算術シフトは符号有りの型でシフトを行う
-        byte av = (byte) (bv << cnt);
+        byte bv = reg.getDb(d); // signed, Arithmetic shifts are done on signed types
+        byte av = (byte) (bv << cnt); // signed
 
-        reg.setDb(d, (byte) av);
+        reg.setDb(d, av);
         reg.setX(((bv & (0x80 >> (cnt - 1))) != 0));
         reg.setC(reg.getX());
-        reg.setN((byte) av);
-        reg.setZ((byte) av);
+        reg.setN(av);
+        reg.setZ(av);
         reg.setV((bv & (0xff << cnt)) != 0);
 
 //#if DEBUG
@@ -11671,22 +11641,22 @@ public class NiseM68 {
         int cycle = 6;
         int sr = (n & 0x0e00) >> 9;
         int dr = (n & 0x0007);
-        int cnt = (int) (reg.getDl(sr) % 64);
+        int cnt = reg.getDl(sr) % 64;
 
 //#if DEBUG
-        nimo = "ASL.w D%s,D%s".formatted(sr, dr);
+        nimo = "ASL.w D%d,D%d".formatted(sr, dr);
 //#endif
 
         cycle += 2 * cnt;
 
-        short bv = (short) reg.getDw(dr);
+        short bv = reg.getDw(dr);
         short av = (short) (bv << cnt);
-        reg.setDw(dr, (short) av);
+        reg.setDw(dr, av);
 
         reg.setC((bv & (0x8000 >> (cnt - 1))) != 0);
         if (cnt != 0) reg.setX(reg.getC());
-        reg.setN((short) av);
-        reg.setZ((short) av);
+        reg.setN(av);
+        reg.setZ(av);
         reg.setV((bv & (0xffff << cnt)) != 0);
 
 //#if DEBUG
@@ -11707,18 +11677,18 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ASL.w #{0:d},D%s".formatted(cnt, d);
+        nimo = "ASL.w #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
-        short bv = (short) reg.getDw(d); // 算術シフトは符号有りの型でシフトを行う
+        short bv = reg.getDw(d); // Arithmetic shifts are done on signed types
         short av = (short) (bv << cnt);
 
-        reg.setDw(d, (short) av);
+        reg.setDw(d, av);
         reg.setX(((bv & (0x8000 >> (cnt - 1))) != 0));
         reg.setC(reg.getX());
-        reg.setN((short) av);
-        reg.setZ((short) av);
+        reg.setN(av);
+        reg.setZ(av);
         reg.setV((bv & (0xffff << cnt)) != 0);
 
 //#if DEBUG
@@ -11739,19 +11709,19 @@ public class NiseM68 {
         int cnt = (int) (reg.getDl(sr) % 64);
 
 //#if DEBUG
-        nimo = "ASL.l D%s,D%s".formatted(sr, dr);
+        nimo = "ASL.l D%d,D%d".formatted(sr, dr);
 //#endif
 
         cycle += 2 * cnt;
 
-        int bv = (int) reg.getDl(dr);
+        int bv = reg.getDl(dr);
         int av = bv << cnt;
-        reg.setDl(dr, (int) av);
+        reg.setDl(dr, av);
 
-        reg.setC((bv & (0x8000_0000 >> (cnt - 1))) != 0);
+        reg.setC((bv & (0x8000_0000 >>> (cnt - 1))) != 0);
         if (cnt != 0) reg.setX(reg.getC());
-        reg.setN((int) av);
-        reg.setZ((int) av);
+        reg.setN(av);
+        reg.setZ(av);
         reg.setV((bv & (0xffff_ffff << cnt)) != 0);
 
 //#if DEBUG
@@ -11772,18 +11742,18 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ASL.l #{0:d},D%s".formatted(cnt, d);
+        nimo = "ASL.l #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
-        int bv = (int) reg.getDl(d); // 算術シフトは符号有りの型でシフトを行う
+        int bv = reg.getDl(d); // Arithmetic shifts are done on signed types
         int av = bv << cnt;
-        reg.setDl(d, (int) av);
+        reg.setDl(d, av);
 
-        reg.setX(((bv & (0x8000_0000 >> (cnt - 1))) != 0));
+        reg.setX(((bv & (0x8000_0000 >>> (cnt - 1))) != 0));
         reg.setC(reg.getX());
-        reg.setN((int) av);
-        reg.setZ((int) av);
+        reg.setN(av);
+        reg.setZ(av);
         reg.setV((bv & (0xffff_ffff << cnt)) != 0);
 
 //#if DEBUG
@@ -11816,41 +11786,41 @@ public class NiseM68 {
 
         switch (dm) {
             case 2: // (An)
-                before = (short) mem.peekW(reg.getA().get(dr));
+                before = mem.peekW(reg.getA().get(dr));
                 after = (short) (before << 1);
-                mem.pokeW(reg.getA().get(dr), (short) after);
+                mem.pokeW(reg.getA().get(dr), after);
 //#if DEBUG
-                nimo += "(A%s)".formatted(dr);
+                nimo += "(A%d)".formatted(dr);
 //#endif
                 cycle = 12;
                 break;
             case 3: // (An)+
-                before = (short) mem.peekW(reg.getA().get(dr));
+                before = mem.peekW(reg.getA().get(dr));
                 after = (short) (before << 1);
-                mem.pokeW(reg.getA().get(dr), (short) after);
+                mem.pokeW(reg.getA().get(dr), after);
                 reg.getA().set(dr, reg.getA().get(dr) + 2);
 //#if DEBUG
-                nimo += "(A%s)+".formatted(dr);
+                nimo += "(A%d)+".formatted(dr);
 //#endif
                 cycle = 12;
                 break;
             case 4: // -(An)
                 reg.getA().set(dr, reg.getA().get(dr) - 2);
-                before = (short) mem.peekW(reg.getA().get(dr));
+                before = mem.peekW(reg.getA().get(dr));
                 after = (short) (before << 1);
-                mem.pokeW(reg.getA().get(dr), (short) after);
+                mem.pokeW(reg.getA().get(dr), after);
 //#if DEBUG
-                nimo += "-(A%s)".formatted(dr);
+                nimo += "-(A%d)".formatted(dr);
 //#endif
                 cycle = 14;
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
-                before = (short) mem.peekW((int) (reg.getA().get(dr) + d16));
+                short d16 = fetchW(); // signed
+                before = mem.peekW(reg.getA().get(dr) + d16);
                 after = (short) (before << 1);
-                mem.pokeW((int) (reg.getA().get(dr) + d16), (short) after);
+                mem.pokeW(reg.getA().get(dr) + d16, after);
 //#if DEBUG
-                nimo += "$%04x(A%s)".formatted(d16, dr);
+                nimo += "$%04x(A%d)".formatted(d16, dr);
 //#endif
                 cycle = 16;
                 break;
@@ -11861,38 +11831,38 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, dr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(dr) + ((byte) (byte) vw) + IX);
-                before = (short) mem.peekW(ptr);
+                if (!isL) ptr = reg.getA().get(dr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(dr) + (byte) vw + IX;
+                before = mem.peekW(ptr);
                 after = (short) (before << 1);
-                mem.pokeW(ptr, (short) after);
+                mem.pokeW(ptr, after);
                 cycle = 18;
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo += "$%04x".formatted((short) ptr);
+                        nimo += "$%04x".formatted(ptr);
 //#endif
 
-                        before = (short) mem.peekW(ptr);
+                        before = mem.peekW(ptr);
                         after = (short) (before << 1);
-                        mem.pokeW(ptr, (short) after);
+                        mem.pokeW(ptr, after);
                         cycle = 16;
                         break;
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "$%08x".formatted((int) ptr);
+                        nimo += "$%08x".formatted(ptr);
 //#endif
 
-                        before = (short) mem.peekW(ptr);
+                        before = mem.peekW(ptr);
                         after = (short) (before << 1);
-                        mem.pokeW(ptr, (short) after);
+                        mem.pokeW(ptr, after);
                         cycle = 20;
                         break;
                 }
@@ -11903,8 +11873,8 @@ public class NiseM68 {
 
         reg.setX(((before & 0x8000) != 0));
         reg.setC(reg.getX());
-        reg.setN((short) after);
-        reg.setZ((short) after);
+        reg.setN(after);
+        reg.setZ(after);
         reg.setV((before & 0xffff) != 0);
 
 //#if DEBUG
@@ -11922,20 +11892,20 @@ public class NiseM68 {
         int cycle = 6;
         int sr = (n & 0x0e00) >> 9;
         int dr = (n & 0x0007);
-        int cnt = (int) (reg.getDl(sr) % 64);
+        int cnt = reg.getDl(sr) % 64;
 //#if DEBUG
-        nimo = "ASR.b D%s,D%s".formatted(sr, dr);
+        nimo = "ASR.b D%d,D%d".formatted(sr, dr);
 //#endif
 
         cycle += 2 * cnt;
-        byte bv = (byte) reg.getDb(dr); // 算術シフトは符号有りの型でシフトを行う
+        byte bv = reg.getDb(dr); // Arithmetic shifts are done on signed types
         byte av = (byte) (bv >> cnt);
         reg.setDb(dr, (byte) av);
 
         reg.setC((bv & (0x01 << (cnt - 1))) != 0);
         if (cnt != 0) reg.setX(reg.getC());
-        reg.setN((byte) av);
-        reg.setZ((byte) av);
+        reg.setN(av);
+        reg.setZ(av);
         reg.setV(false);
 
 //#if DEBUG
@@ -11956,18 +11926,18 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ASR.b #{0:d},D%s".formatted(cnt, d);
+        nimo = "ASR.b #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
-        byte bv = (byte) reg.getDb(d); // 算術シフトは符号有りの型でシフトを行う
+        byte bv = reg.getDb(d); // Arithmetic shifts are done on signed types
         byte av = (byte) (bv >> cnt);
-        reg.setDb(d, (byte) av);
+        reg.setDb(d, av);
 
         reg.setX(((bv & (0x01 << (cnt - 1))) != 0));
         reg.setC(reg.getX());
-        reg.setN((byte) av);
-        reg.setZ((byte) av);
+        reg.setN(av);
+        reg.setZ(av);
         reg.setV(false);
 
 //#if DEBUG
@@ -11985,20 +11955,20 @@ public class NiseM68 {
         int cycle = 6;
         int sr = (n & 0x0e00) >> 9;
         int dr = (n & 0x0007);
-        int cnt = (int) (reg.getDl(sr) % 64);
+        int cnt = reg.getDl(sr) % 64;
 //#if DEBUG
-        nimo = "ASR.w D%s,D%s".formatted(sr, dr);
+        nimo = "ASR.w D%d,D%d".formatted(sr, dr);
 //#endif
 
         cycle += 2 * cnt;
-        short bv = (short) reg.getDw(dr); // 算術シフトは符号有りの型でシフトを行う
+        short bv = reg.getDw(dr); // Arithmetic shifts are done on signed types
         short av = (short) (bv >> cnt);
-        reg.setDw(dr, (short) av);
+        reg.setDw(dr, av);
 
         reg.setC((bv & (0x0001 << (cnt - 1))) != 0);
         if (cnt != 0) reg.setX(reg.getC());
-        reg.setN((short) av);
-        reg.setZ((short) av);
+        reg.setN(av);
+        reg.setZ(av);
         reg.setV(false);
 
 //#if DEBUG
@@ -12019,18 +11989,18 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ASR.w #{0:d},D%s".formatted(cnt, d);
+        nimo = "ASR.w #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
-        short bv = (short) reg.getDw(d); // 算術シフトは符号有りの型でシフトを行う
+        short bv = reg.getDw(d); // Arithmetic shifts are done on signed types
         short av = (short) (bv >> cnt);
-        reg.setDw(d, (short) av);
+        reg.setDw(d, av);
 
         reg.setX((bv & (0x0001 << (cnt - 1))) != 0);
         reg.setC(reg.getX());
-        reg.setN((short) av);
-        reg.setZ((short) av);
+        reg.setN(av);
+        reg.setZ(av);
         reg.setV(false);
 
 //#if DEBUG
@@ -12048,20 +12018,20 @@ public class NiseM68 {
         int cycle = 8;
         int sr = (n & 0x0e00) >> 9;
         int dr = (n & 0x0007);
-        int cnt = (int) (reg.getDl(sr) % 64);
+        int cnt = reg.getDl(sr) % 64;
 //#if DEBUG
-        nimo = "ASR.l D%s,D%s".formatted(sr, dr);
+        nimo = "ASR.l D%d,D%d".formatted(sr, dr);
 //#endif
 
         cycle += 2 * cnt;
-        int bv = (int) reg.getDl(dr); // 算術シフトは符号有りの型でシフトを行う
-        int av = (int) (bv >> cnt);
-        reg.setDl(dr, (int) av);
+        int bv = reg.getDl(dr); // Arithmetic shifts are done on signed types
+        int av = bv >> cnt;
+        reg.setDl(dr, av);
 
         reg.setC(((bv & (0x0000_0001 << (cnt - 1))) != 0));
         if (cnt != 0) reg.setX(reg.getC());
-        reg.setN((int) av);
-        reg.setZ((int) av);
+        reg.setN(av);
+        reg.setZ(av);
         reg.setV(false);
 
 //#if DEBUG
@@ -12082,18 +12052,18 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ASR.l #{0:d},D%s".formatted(cnt, d);
+        nimo = "ASR.l #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
-        int bv = (int) reg.getDl(d); // 算術シフトは符号有りの型でシフトを行う
+        int bv = reg.getDl(d); // Arithmetic shifts are done on signed types
         int av = bv >> cnt;
-        reg.setDl(d, (int) av);
+        reg.setDl(d, av);
 
         reg.setX(((bv & (0x0000_0001 << (cnt - 1))) != 0));
         reg.setC(reg.getX());
-        reg.setN((int) av);
-        reg.setZ((int) av);
+        reg.setN(av);
+        reg.setZ(av);
         reg.setV(false);
 
 //#if DEBUG
@@ -12115,17 +12085,17 @@ public class NiseM68 {
         int cycle = 6;
         int sr = (n & 0x0e00) >> 9;
         int dr = (n & 0x0007);
-        int cnt = (int) (reg.getDl(sr) % 64);
+        int cnt = reg.getDl(sr) % 64;
 
 //#if DEBUG
-        nimo = "LSL.b D%s,D%s".formatted(sr, dr);
+        nimo = "LSL.b D%d,D%d".formatted(sr, dr);
 //#endif
 
         cycle += 2 * cnt;
 
         int bv = reg.getDb(dr);
         int av = bv << cnt;
-        reg.setDb(dr, (byte) av); // >>論理シフト >>=算術シフト
+        reg.setDb(dr, (byte) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setC((cnt == 0) ? false : ((bv & (0x80 >> cnt)) != 0));
         if (cnt != 0) reg.setX(reg.getC());
@@ -12151,13 +12121,13 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "LSL.b #{0:d},D%s".formatted(cnt, d);
+        nimo = "LSL.b #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
         int bv = reg.getDb(d);
         int av = bv << cnt;
-        reg.setDb(d, (byte) av); // >>論理シフト >>=算術シフト
+        reg.setDb(d, (byte) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setX((bv & (0x80 >> cnt)) != 0);
         reg.setC(reg.getX());
@@ -12183,14 +12153,14 @@ public class NiseM68 {
         int cnt = (int) (reg.getDl(sr) % 64);
 
 //#if DEBUG
-        nimo = "LSL.w D%s,D%s".formatted(sr, dr);
+        nimo = "LSL.w D%d,D%d".formatted(sr, dr);
 //#endif
 
         cycle += 2 * cnt;
 
         int bv = reg.getDw(dr);
         int av = bv << cnt;
-        reg.setDw(dr, (short) av); // >>論理シフト >>=算術シフト
+        reg.setDw(dr, (short) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setC((cnt == 0) ? false : ((bv & (0x8000 >> cnt)) != 0));
         if (cnt != 0) reg.setX(reg.getC());
@@ -12216,13 +12186,13 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "LSL.w #{0:d},D%s".formatted(cnt, d);
+        nimo = "LSL.w #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
         int bv = reg.getDw(d);
         int av = bv << cnt;
-        reg.setDw(d, (short) av); // >>論理シフト >>=算術シフト
+        reg.setDw(d, (short) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setX((bv & (0x8000 >> cnt)) != 0);
         reg.setC(reg.getX());
@@ -12245,19 +12215,19 @@ public class NiseM68 {
         int cycle = 8;
         int sr = (n & 0x0e00) >> 9;
         int dr = (n & 0x0007);
-        int cnt = (int) (reg.getDl(sr) % 64);
+        int cnt = reg.getDl(sr) % 64;
 
 //#if DEBUG
-        nimo = "LSL.l D%s,D%s".formatted(sr, dr);
+        nimo = "LSL.l D%d,D%d".formatted(sr, dr);
 //#endif
 
         cycle += 2 * cnt;
 
         int bv = reg.getDl(dr);
         int av = bv << cnt;
-        reg.setDl(dr, av); // >>論理シフト >>=算術シフト
+        reg.setDl(dr, av); // >> Logical shift >>= Arithmetic shift
 
-        reg.setC((cnt == 0) ? false : ((bv & (0x8000_0000 >> cnt)) != 0));
+        reg.setC((cnt == 0) ? false : ((bv & (0x8000_0000 >>> cnt)) != 0));
         if (cnt != 0) reg.setX(reg.getC());
         reg.setN(av);
         reg.setZ(av);
@@ -12281,15 +12251,15 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "LSL.l #{0:d},D%s".formatted(cnt, d);
+        nimo = "LSL.l #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
         int bv = reg.getDl(d);
         int av = bv << cnt;
-        reg.setDl(d, av); // >>論理シフト >>=算術シフト
+        reg.setDl(d, av); // >> Logical shift >>= Arithmetic shift
 
-        reg.setX((bv & (0x8000_0000 >> cnt)) != 0);
+        reg.setX((bv & (0x8000_0000 >>> cnt)) != 0);
         reg.setC(reg.getX());
         reg.setN(av);
         reg.setZ(av);
@@ -12319,7 +12289,7 @@ public class NiseM68 {
 
         cycle[0] = Cycle.Clsrlsl_wea[cycle[0]];
         int av = before << cnt;
-        reg.setDw(dr, (short) av); // >>論理シフト >>=算術シフト
+        reg.setDw(dr, (short) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setX((before & (0x8000 >> cnt)) != 0);
         reg.setC(reg.getX());
@@ -12342,17 +12312,17 @@ public class NiseM68 {
         int cycle = 6;
         int sr = (n & 0x0e00) >> 9;
         int dr = (n & 0x0007);
-        int cnt = (int) (reg.getDl(sr) % 64);
+        int cnt = reg.getDl(sr) % 64;
 
 //#if DEBUG
-        nimo = "LSR.b D%s,D%s".formatted(sr, dr);
+        nimo = "LSR.b D%d,D%d".formatted(sr, dr);
 //#endif
 
         cycle += 2 * cnt;
 
-        int bv = reg.getDb(dr);
+        int bv = reg.getDb(dr) & 0xff;
         int av = bv >> cnt;
-        reg.setDb(dr, (byte) av); // >>論理シフト >>=算術シフト
+        reg.setDb(dr, (byte) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setC((cnt == 0) ? false : ((bv & (0x01 << (cnt - 1))) != 0));
         if (cnt != 0) reg.setX(reg.getC());
@@ -12378,13 +12348,13 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "LSR.b #{0:d},D%s".formatted(cnt, d);
+        nimo = "LSR.b #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
-        int bv = reg.getDb(d);
-        int av = bv >> cnt;
-        reg.setDb(d, (byte) av); // >>論理シフト >>=算術シフト
+        int bv = reg.getDb(d) & 0xff;
+        int av = bv >>> cnt;
+        reg.setDb(d, (byte) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setX((bv & (0x01 << (cnt - 1))) != 0);
         reg.setC(reg.getX());
@@ -12407,17 +12377,17 @@ public class NiseM68 {
         int cycle = 6;
         int sr = (n & 0x0e00) >> 9;
         int dr = (n & 0x0007);
-        int cnt = (int) (reg.getDl(sr) % 64);
+        int cnt = reg.getDl(sr) % 64;
 
 //#if DEBUG
-        nimo = "LSR.w D%s,D%s".formatted(sr, dr);
+        nimo = "LSR.w D%d,D%d".formatted(sr, dr);
 //#endif
 
         cycle += 2 * cnt;
 
-        int bv = reg.getDw(dr);
+        int bv = reg.getDw(dr) & 0xffff;
         int av = bv >> cnt;
-        reg.setDw(dr, (short) av); // >>論理シフト >>=算術シフト
+        reg.setDw(dr, (short) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setC((cnt == 0) ? false : ((bv & (0x0001 << (cnt - 1))) != 0));
         if (cnt != 0) reg.setX(reg.getC());
@@ -12443,13 +12413,13 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "LSR.w #{0:d},D%s".formatted(cnt, d);
+        nimo = "LSR.w #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
-        int bv = reg.getDw(d);
-        int av = bv >> cnt;
-        reg.setDw(d, (short) av); // >>論理シフト >>=算術シフト
+        int bv = reg.getDw(d) & 0xffff;
+        int av = bv >>> cnt;
+        reg.setDw(d, (short) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setX((bv & (0x0001 << (cnt - 1))) != 0);
         reg.setC(reg.getX());
@@ -12472,17 +12442,17 @@ public class NiseM68 {
         int cycle = 8;
         int sr = (n & 0x0e00) >> 9;
         int dr = (n & 0x0007);
-        int cnt = (int) (reg.getDl(sr) % 64);
+        int cnt = reg.getDl(sr) % 64;
 
 //#if DEBUG
-        nimo = "LSR.l D%s,D%s".formatted(sr, dr);
+        nimo = "LSR.l D%d,D%d".formatted(sr, dr);
 //#endif
 
         cycle += 2 * cnt;
 
         int bv = reg.getDl(dr);
         int av = bv >> cnt;
-        reg.setDl(dr, av); // >>論理シフト >>=算術シフト
+        reg.setDl(dr, av); // >> Logical shift >>= Arithmetic shift
 
         reg.setC((cnt == 0) ? false : ((bv & (0x0000_0001 << (cnt - 1))) != 0));
         if (cnt != 0) reg.setX(reg.getC());
@@ -12508,13 +12478,13 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "LSR.l #{0:d},D%s".formatted(cnt, d);
+        nimo = "LSR.l #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
         int bv = reg.getDl(d);
         int av = bv >> cnt;
-        reg.setDl(d, av); // >>論理シフト >>=算術シフト
+        reg.setDl(d, av); // >> Logical shift >>= Arithmetic shift
 
         reg.setX((bv & (0x0000_0001 << (cnt - 1))) != 0);
         reg.setC(reg.getX());
@@ -12546,8 +12516,8 @@ public class NiseM68 {
 
         cycle[0] = Cycle.Clsrlsl_wea[cycle[0]];
 
-        int av = before >> cnt;
-        reg.setDw(dr, (short) av); // >>論理シフト >>=算術シフト
+        int av = before >>> cnt;
+        reg.setDw(dr, (short) av); // >> Logical shift >>= Arithmetic shift
 
         reg.setX((before & (0x0001 << (cnt - 1))) != 0);
         reg.setC(reg.getX());
@@ -12577,16 +12547,16 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ROL.b #{0:d},D%s".formatted(cnt, d);
+        nimo = "ROL.b #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
-        int bv = reg.getDb(d);
+        int bv = reg.getDb(d) & 0xff;
         // int av = (bv >> cnt) | (bv << (32 - cnt)); // RLR
-        int av = (bv << cnt) | (bv >> (8 - cnt));
+        int av = (bv << cnt) | (bv >>> (8 - cnt));
         reg.setDb(d, (byte) av);
 
-        // reg.X 変化なし
+        // reg.X no change
         reg.setC(((av & 0x1) != 0));
         reg.setN((byte) av);
         reg.setZ((byte) av);
@@ -12614,15 +12584,15 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ROL.w #{0:d},D%s".formatted(cnt, d);
+        nimo = "ROL.w #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
-        int bv = reg.getDw(d);
-        int av = (bv << cnt) | (bv >> (16 - cnt));
-        reg.setDw(d, (short) av); // >>論理シフト >>=算術シフト
+        int bv = reg.getDw(d) & 0xffff;
+        int av = (bv << cnt) | (bv >>> (16 - cnt));
+        reg.setDw(d, (short) av); // >> Logical shift >>= Arithmetic shift
 
-        // reg.X 変化なし
+        // reg.X no change
         reg.setC(((av & 0x1) != 0));
         reg.setN((short) av);
         reg.setZ((short) av);
@@ -12650,16 +12620,16 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ROL.l #{0:d},D%s".formatted(cnt, d);
+        nimo = "ROL.l #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
         int bv = reg.getDl(d);
         // int av = (bv >> cnt) | (bv << (32 - cnt)); // RLR
-        int av = (bv << cnt) | (bv >> (32 - cnt));
-        reg.setDl(d, (int) av); // >>論理シフト >>=算術シフト
+        int av = (bv << cnt) | (bv >>> (32 - cnt));
+        reg.setDl(d, av); // >> Logical shift >>= Arithmetic shift
 
-        // reg.X 変化なし
+        // reg.X no change
         reg.setC(((av & 0x1) != 0));
         reg.setN(av);
         reg.setZ(av);
@@ -12691,16 +12661,16 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ROR.b #{0:d},D%s".formatted(cnt, d);
+        nimo = "ROR.b #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
         byte bv = reg.getDb(d);
-        byte av = (byte) ((bv >> cnt) | (bv << (8 - cnt)));
-        // int av = (bv << cnt) | (bv >> (16 - cnt));
-        reg.setDb(d, (byte) av);
+        byte av = (byte) ((bv >>> cnt) | (bv << (8 - cnt)));
+        // int av = (bv << cnt) | (bv >>> (16 - cnt));
+        reg.setDb(d, av);
 
-        // reg.X 変化なし
+        // reg.X no change
         reg.setC(((av & 0x80) != 0));
         reg.setN(av);
         reg.setZ(av);
@@ -12728,16 +12698,16 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ROR.w #{0:d},D%s".formatted(cnt, d);
+        nimo = "ROR.w #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
         short bv = reg.getDw(d);
-        short av = (short) ((bv >> cnt) | (bv << (16 - cnt)));
-        // int av = (bv << cnt) | (bv >> (16 - cnt));
-        reg.setDw(d, (short) av);
+        short av = (short) ((bv >>> cnt) | (bv << (16 - cnt)));
+        // int av = (bv << cnt) | (bv >>> (16 - cnt));
+        reg.setDw(d, av);
 
-        // reg.X 変化なし
+        // reg.X no change
         reg.setC(((av & 0x8000) != 0));
         reg.setN(av);
         reg.setZ(av);
@@ -12765,15 +12735,15 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ROR.l #{0:d},D%s".formatted(cnt, d);
+        nimo = "ROR.l #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
         int bv = reg.getDl(d);
-        int av = (bv >> cnt) | (bv << (32 - cnt)); // ROR
-        reg.setDw(d, (short) av); // >>論理シフト >>=算術シフト
+        int av = (bv >>> cnt) | (bv << (32 - cnt)); // ROR
+        reg.setDw(d, (short) av); // >> Logical shift >>= Arithmetic shift
 
-        // reg.X 変化なし
+        // reg.X no change
         reg.setC(((av & 0x8000_0000) != 0));
         reg.setN((short) av);
         reg.setZ((short) av);
@@ -12805,13 +12775,13 @@ public class NiseM68 {
         cnt = (cnt == 0) ? 8 : cnt;
         int d = (n & 0x0007);
 //#if DEBUG
-        nimo = "ROXL.b #{0:d},D%s".formatted(cnt, d);
+        nimo = "ROXL.b #%d,D%d".formatted(cnt, d);
 //#endif
 
         cycle += 2 * cnt;
-        int bv = reg.getDb(d);
-        // int av = (bv >> cnt) | (bv << (32 - cnt)); // RLR
-        int av = (int) ((bv << cnt) | (((int) (reg.getX() ? 0x100 : 0x000) | bv) >> (9 - cnt)));
+        int bv = reg.getDb(d) & 0xff;
+        //int av = (bv >>> cnt) | (bv << (32 - cnt)); // RLR
+        int av = (bv << cnt) | (((reg.getX() ? 0x100 : 0x000) | bv) >>> (9 - cnt));
         reg.setDb(d, (byte) av);
 
         reg.setC(((bv << cnt) & 0x100) != 0);
@@ -12892,7 +12862,7 @@ public class NiseM68 {
         String nimo = "LINK A%s, #${1:d}";
 //#endif
 
-        short ptr = (short) fetchW();
+        short ptr = fetchW();
 //#if DEBUG
         nimo = nimo.formatted(dr, ptr);
 //#endif
@@ -12900,7 +12870,7 @@ public class NiseM68 {
         reg.getA().set(7, reg.getA().get(7) - 4);
         mem.pokeL(reg.getA().get(7), reg.getA().get(dr));
         reg.getA().set(dr, reg.getA().get(7));
-        reg.getA().set(7, (int) (reg.getA().get(7) + (int) ptr));
+        reg.getA().set(7, reg.getA().get(7) + (int) ptr);
 
 //#if DEBUG
         logger.log(Level.TRACE, nimo);
@@ -12945,14 +12915,14 @@ public class NiseM68 {
             case 0: // Dn
                 if ((support & (1 << 0)) == 0) throw new UnsupportedOperationException();
 //#if DEBUG
-                if (nimoSw) nimo[0] += "D%s".formatted(sr);
+                if (nimoSw) nimo[0] += "D%d".formatted(sr);
 //#endif
 
                 val = (byte) reg.getD()[sr];
                 break;
             case 1: // An
                 if ((support & (1 << 1)) == 1) throw new UnsupportedOperationException();
-                throw new IndexOutOfBoundsException("対応していないアドレッシング");
+                throw new IndexOutOfBoundsException("Unsupported addressing");
 //#if DEBUG
                 // nimo += "A%s".formatted(sr);
 //#endif
@@ -12962,7 +12932,7 @@ public class NiseM68 {
             case 2: // (An)
                 if ((support & (1 << 2)) == 0) throw new UnsupportedOperationException();
 //#if DEBUG
-                if (nimoSw) nimo[0] += "(A%s)".formatted(sr);
+                if (nimoSw) nimo[0] += "(A%d)".formatted(sr);
 //#endif
 
                 val = (byte) mem.peekB(reg.getA().get(sr));
@@ -12970,7 +12940,7 @@ public class NiseM68 {
             case 3: // (An)+
                 if ((support & (1 << 3)) == 0) throw new UnsupportedOperationException();
 //#if DEBUG
-                if (nimoSw) nimo[0] += "(A%s)+".formatted(sr);
+                if (nimoSw) nimo[0] += "(A%d)+".formatted(sr);
 //#endif
 
                 val = (byte) mem.peekB(reg.getA().get(sr));
@@ -12980,21 +12950,21 @@ public class NiseM68 {
             case 4: // -(An)
                 if ((support & (1 << 4)) == 0) throw new UnsupportedOperationException();
 //#if DEBUG
-                if (nimoSw) nimo[0] += "-(A%s)".formatted(sr);
+                if (nimoSw) nimo[0] += "-(A%d)".formatted(sr);
 //#endif
 
                 reg.getA().set(sr, reg.getA().get(sr) - 1);
                 if (sr == 7) reg.getA().set(sr, reg.getA().get(sr) - 1);
-                val = (byte) mem.peekB(reg.getA().get(sr));
+                val = mem.peekB(reg.getA().get(sr));
                 break;
             case 5: // d16(An)
                 if ((support & (1 << 5)) == 0) throw new UnsupportedOperationException();
-                short d16 = (short) fetchW();
+                short d16 = fetchW(); // signed
 //#if DEBUG
-                if (nimoSw) nimo[0] += "$%04x(A%s)".formatted(d16, sr);
+                if (nimoSw) nimo[0] += "$%04x(A%d)".formatted(d16, sr);
 //#endif
 
-                val = (byte) mem.peekB((int) (reg.getA().get(sr) + d16));
+                val = mem.peekB(reg.getA().get(sr) + d16);
                 break;
             case 6: // d8(An,IX)
                 if ((support & (1 << 6)) == 0) throw new UnsupportedOperationException();
@@ -13005,42 +12975,42 @@ public class NiseM68 {
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
                 if (nimoSw)
-                    nimo[0] += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                    nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + IX);
-                val = (byte) mem.peekB(ptr);
+                if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(sr) + (byte) vw + IX;
+                val = mem.peekB(ptr);
                 break;
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
                         if ((support & (1 << 7)) == 0) throw new UnsupportedOperationException();
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%04x".formatted((short) ptr);
+                        if (nimoSw) nimo[0] += "$%04x".formatted(ptr);
 //#endif
 
-                        val = (byte) mem.peekB(ptr);
+                        val = mem.peekB(ptr);
                         break;
                     case 1: // Abs.L
                         if ((support & (1 << 8)) == 0) throw new UnsupportedOperationException();
                         ptr = fetchL();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%08x".formatted((int) ptr);
+                        if (nimoSw) nimo[0] += "$%08x".formatted(ptr);
 //#endif
 
-                        val = (byte) mem.peekB(ptr);
+                        val = mem.peekB(ptr);
                         cycle[0] = 8;
                         break;
                     case 2: // d16(PC)
                         if ((support & (1 << 9)) == 0) throw new UnsupportedOperationException();
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%04x(PC)".formatted((short) ptr);
+                        if (nimoSw) nimo[0] += "$%04x(PC)".formatted(ptr);
 //#endif
 
-                        val = (byte) mem.peekB(ptr + reg.pc - 2);
+                        val = mem.peekB(ptr + reg.pc - 2);
                         cycle[0] = 9;
                         break;
                     case 3: // d8(PC,IX)
@@ -13050,18 +13020,18 @@ public class NiseM68 {
                         ni = (vw & 0x7000) >> 12;
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
-                        nimo[0] += "$%02x(PC,%s%s.%s)".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w");
+                        nimo[0] += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
 
-                        val = (byte) mem.peekB(ptr);
+                        val = mem.peekB(ptr);
                         cycle[0] = 10;
                         break;
                     case 4: // #Imm
@@ -13077,7 +13047,7 @@ public class NiseM68 {
                 break;
         }
 
-        return (int) val;
+        return val & 0xff;
     }
 
     private int srcAddressingWord(/* ref */ String[] nimo, /* ref */ int[] cycle, int sm, int sr, int support /* = 0xfff */, boolean nimoSw /* = true */) {
@@ -13094,7 +13064,7 @@ public class NiseM68 {
             case 0: // Dn
                 if ((support & (1 << 0)) == 0) throw new UnsupportedOperationException();
 //#if DEBUG
-                if (nimoSw) nimo[0] += "D%s".formatted(sr);
+                if (nimoSw) nimo[0] += "D%d".formatted(sr);
 //#endif
 
                 val = (short) reg.getD()[sr];
@@ -13110,37 +13080,37 @@ public class NiseM68 {
             case 2: // (An)
                 if ((support & (1 << 2)) == 0) throw new UnsupportedOperationException();
 //#if DEBUG
-                if (nimoSw) nimo[0] += "(A%s)".formatted(sr);
+                if (nimoSw) nimo[0] += "(A%d)".formatted(sr);
 //#endif
 
-                val = (short) mem.peekW(reg.getA().get(sr));
+                val = mem.peekW(reg.getA().get(sr));
                 break;
             case 3: // (An)+
                 if ((support & (1 << 3)) == 0) throw new UnsupportedOperationException();
 //#if DEBUG
-                if (nimoSw) nimo[0] += "(A%s)+".formatted(sr);
+                if (nimoSw) nimo[0] += "(A%d)+".formatted(sr);
 //#endif
 
-                val = (short) mem.peekW(reg.getA().get(sr));
+                val = mem.peekW(reg.getA().get(sr));
                 reg.getA().set(sr, reg.getA().get(sr) + 2);
                 break;
             case 4: // -(An)
                 if ((support & (1 << 4)) == 0) throw new UnsupportedOperationException();
 //#if DEBUG
-                if (nimoSw) nimo[0] += "-(A%s)".formatted(sr);
+                if (nimoSw) nimo[0] += "-(A%d)".formatted(sr);
 //#endif
 
                 reg.getA().set(sr, reg.getA().get(sr) - 2);
-                val = (short) mem.peekW(reg.getA().get(sr));
+                val = mem.peekW(reg.getA().get(sr));
                 break;
             case 5: // d16(An)
                 if ((support & (1 << 5)) == 0) throw new UnsupportedOperationException();
-                short d16 = (short) fetchW();
+                short d16 = fetchW(); // signed
 //#if DEBUG
-                if (nimoSw) nimo[0] += "$%04x(A%s)".formatted(d16, sr);
+                if (nimoSw) nimo[0] += "$%04x(A%d)".formatted(d16, sr);
 //#endif
 
-                val = (short) mem.peekW((int) (reg.getA().get(sr) + d16));
+                val = mem.peekW(reg.getA().get(sr) + d16);
                 break;
             case 6: // d8(An,IX)
                 if ((support & (1 << 6)) == 0) throw new UnsupportedOperationException();
@@ -13151,42 +13121,42 @@ public class NiseM68 {
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
                 if (nimoSw)
-                    nimo[0] += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                    nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + IX);
-                val = (short) mem.peekW(ptr);
+                if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(sr) + (byte) vw + IX;
+                val = mem.peekW(ptr);
                 break;
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
                         if ((support & (1 << 7)) == 0) throw new UnsupportedOperationException();
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%04x".formatted((short) ptr);
+                        if (nimoSw) nimo[0] += "$%04x".formatted(ptr);
 //#endif
 
-                        val = (short) mem.peekW(ptr);
+                        val = mem.peekW(ptr);
                         break;
                     case 1: // Abs.L
                         if ((support & (1 << 8)) == 0) throw new UnsupportedOperationException();
                         ptr = fetchL();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%08x".formatted((int) ptr);
+                        if (nimoSw) nimo[0] += "$%08x".formatted(ptr);
 //#endif
 
-                        val = (short) mem.peekW(ptr);
+                        val = mem.peekW(ptr);
                         cycle[0] = 8;
                         break;
                     case 2: // d16(PC)
                         if ((support & (1 << 9)) == 0) throw new UnsupportedOperationException();
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%04x(PC)".formatted((short) ptr);
+                        if (nimoSw) nimo[0] += "$%04x(PC)".formatted(ptr);
 //#endif
 
-                        val = (short) mem.peekW(ptr + reg.pc - 2);
+                        val = mem.peekW(ptr + reg.pc - 2);
                         cycle[0] = 9;
                         break;
                     case 3: // d8(PC,IX)
@@ -13196,15 +13166,15 @@ public class NiseM68 {
                         ni = (vw & 0x7000) >> 12;
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
-                        nimo[0] += "$%02x(PC,%s%s.%s)".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w");
+                        nimo[0] += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
 
                         val = (short) mem.peekW(ptr);
@@ -13223,7 +13193,7 @@ public class NiseM68 {
                 break;
         }
 
-        return (int) val;
+        return val & 0xffff;
     }
 
     private int srcAddressingLong(/* ref */ String[] nimo, /* ref */ int[] cycle, int sm, int sr, int support /* = 0xfff */, boolean nimoSw /* = true */, int shift /* = 0 */) {
@@ -13240,7 +13210,7 @@ public class NiseM68 {
             case 0: // Dn
                 if ((support & (1 << 0)) == 0) throw new UnsupportedOperationException();
 //#if DEBUG
-                if (nimoSw) nimo[0] += "D%s".formatted(sr);
+                if (nimoSw) nimo[0] += "D%d".formatted(sr);
 //#endif
 
                 val = reg.getD()[sr];
@@ -13256,15 +13226,15 @@ public class NiseM68 {
             case 2: // (An)
                 if ((support & (1 << 2)) == 0) throw new UnsupportedOperationException();
 //#if DEBUG
-                if (nimoSw) nimo[0] += "(A%s)".formatted(sr);
+                if (nimoSw) nimo[0] += "(A%d)".formatted(sr);
 //#endif
 
-                val = mem.peekL((int) (reg.getA().get(sr) + shift));
+                val = mem.peekL(reg.getA().get(sr) + shift);
                 break;
             case 3: // (An)+
                 if ((support & (1 << 3)) == 0) throw new UnsupportedOperationException();
 //#if DEBUG
-                if (nimoSw) nimo[0] += "(A%s)+".formatted(sr);
+                if (nimoSw) nimo[0] += "(A%d)+".formatted(sr);
 //#endif
 
                 val = mem.peekL(reg.getA().get(sr));
@@ -13273,7 +13243,7 @@ public class NiseM68 {
             case 4: // -(An)
                 if ((support & (1 << 4)) == 0) throw new UnsupportedOperationException();
 //#if DEBUG
-                if (nimoSw) nimo[0] += "-(A%s)".formatted(sr);
+                if (nimoSw) nimo[0] += "-(A%d)".formatted(sr);
 //#endif
 
                 reg.getA().set(sr, reg.getA().get(sr) - 4);
@@ -13281,12 +13251,12 @@ public class NiseM68 {
                 break;
             case 5: // d16(An)
                 if ((support & (1 << 5)) == 0) throw new UnsupportedOperationException();
-                short d16 = (short) fetchW();
+                short d16 = fetchW(); // signed
 //#if DEBUG
-                if (nimoSw) nimo[0] += "$%04x(A%s)".formatted(d16, sr);
+                if (nimoSw) nimo[0] += "$%04x(A%d)".formatted(d16, sr);
 //#endif
 
-                val = mem.peekL((int) (reg.getA().get(sr) + d16 + shift));
+                val = mem.peekL(reg.getA().get(sr) + d16 + shift);
                 break;
             case 6: // d8(An,IX)
                 if ((support & (1 << 6)) == 0) throw new UnsupportedOperationException();
@@ -13297,42 +13267,42 @@ public class NiseM68 {
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
                 if (nimoSw)
-                    nimo[0] += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                    nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + IX);
-                val = mem.peekL((int) (ptr + shift));
+                if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(sr) + (byte) vw + IX;
+                val = mem.peekL(ptr + shift);
                 break;
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
                         if ((support & (1 << 7)) == 0) throw new UnsupportedOperationException();
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "($%04x)".formatted((short) ptr);
+                        if (nimoSw) nimo[0] += "($%04x)".formatted(ptr);
 //#endif
 
-                        val = mem.peekL((int) (ptr + shift));
+                        val = mem.peekL(ptr + shift);
                         break;
                     case 1: // Abs.L
                         if ((support & (1 << 8)) == 0) throw new UnsupportedOperationException();
                         ptr = fetchL();
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "($%08x)".formatted((int) ptr);
+                        if (nimoSw) nimo[0] += "($%08x)".formatted(ptr);
 //#endif
 
-                        val = mem.peekL((int) (ptr + shift));
+                        val = mem.peekL(ptr + shift);
                         cycle[0] = 8;
                         break;
                     case 2: // d16(PC)
                         if ((support & (1 << 9)) == 0) throw new UnsupportedOperationException();
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        if (nimoSw) nimo[0] += "$%04x(PC)".formatted((short) ptr);
+                        if (nimoSw) nimo[0] += "$%04x(PC)".formatted(ptr);
 //#endif
 
-                        val = mem.peekL((int) (ptr + reg.pc - 2 + shift));
+                        val = mem.peekL(ptr + reg.pc - 2 + shift);
                         cycle[0] = 9;
                         break;
                     case 3: // d8(PC,IX)
@@ -13343,17 +13313,17 @@ public class NiseM68 {
                         isL = (vw & 0x0800) != 0;
 //#if DEBUG
                         if (nimoSw)
-                            nimo[0] += "$%02x(PC,%s%s.%s)".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w");
+                            nimo[0] += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
-                        val = mem.peekL((int) (ptr + shift));
+                        val = mem.peekL(ptr + shift);
                         cycle[0] = 10;
                         break;
                     case 4: // #Imm
@@ -13387,21 +13357,21 @@ public class NiseM68 {
             case 1:
             case 3:
             case 4:
-                throw new UnsupportedOperationException("LEA 不正なアドレッシングモード %04x".formatted(sm));
+                throw new UnsupportedOperationException("LEA Invalid addressing mode %04x".formatted(sm));
             case 2: // (An)
 //#if DEBUG
-                nimo[0] += "(A%s)".formatted(sr);
+                nimo[0] += "(A%d)".formatted(sr);
 //#endif
 
                 val = reg.getA().get(sr);
                 break;
             case 5: // d16(An)
-                short d16 = (short) fetchW();
+                short d16 = fetchW(); // signed
 //#if DEBUG
-                nimo[0] += "$%04x(A%s)".formatted(d16, sr);
+                nimo[0] += "$%04x(A%d)".formatted(d16, sr);
 //#endif
 
-                val = (int) (reg.getA().get(sr) + d16);
+                val = reg.getA().get(sr) + d16;
                 break;
             case 6: // d8(An,IX)
                 vw = fetchW();
@@ -13410,19 +13380,19 @@ public class NiseM68 {
                 isL = (vw & 0x0800) != 0;
                 IX = (isA ? reg.getA().get(ni) : reg.getD()[ni]);
 //#if DEBUG
-                nimo[0] += "$%02x(A%s,%s%s.%s)".formatted((byte) vw, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
+                nimo[0] += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, sr, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + (short) (short) IX);
-                else ptr = (int) (reg.getA().get(sr) + ((byte) (byte) vw) + IX);
+                if (!isL) ptr = reg.getA().get(sr) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(sr) + (byte) vw + IX;
                 val = ptr;
                 break;
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo[0] += "$%04x".formatted((short) ptr);
+                        nimo[0] += "$%04x".formatted(ptr);
 //#endif
 
                         val = ptr;
@@ -13430,16 +13400,16 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo[0] += "$%08x".formatted((int) ptr);
+                        nimo[0] += "$%08x".formatted(ptr);
 //#endif
 
                         val = ptr;
                         cycle[0] = 8;
                         break;
                     case 2: // d16(PC)
-                        ptr = (int) (short) fetchW();
+                        ptr = fetchW() & 0xffff;
 //#if DEBUG
-                        nimo[0] += "$%04x(PC)".formatted((short) ptr);
+                        nimo[0] += "$%04x(PC)".formatted(ptr);
 //#endif
 
                         val = ptr + reg.pc - 2;
@@ -13452,22 +13422,22 @@ public class NiseM68 {
                         isL = (vw & 0x0800) != 0;
 
 //#if DEBUG
-                        nimo[0] += "$%02x(PC,%s%s.%s)".formatted((byte) vw, isA ? "A" : "D", ni, isL ? "l" : "w");
+                        nimo[0] += "$%02x(PC,%s%s.%s)".formatted(vw & 0xff, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
                         if (isL) {
                             IX = (isA ? reg.getAl(ni) : reg.getDl(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (int) (int) IX - 2);
+                            ptr = reg.pc + (byte) vw + IX - 2;
                         } else {
                             IX = (isA ? reg.getAw(ni) : reg.getDw(ni));
-                            ptr = (int) (reg.pc + ((byte) (byte) vw) + (short) (short) IX - 2);
+                            ptr = reg.pc + (byte) vw + (short) (IX & 0xffff) - 2;
                         }
 
                         val = ptr;
                         cycle[0] = 10;
                         break;
                     default:
-                        throw new UnsupportedOperationException("LEA 知らないモード %04x".formatted(sm));
+                        throw new UnsupportedOperationException("LEA Unknown mode %04x".formatted(sm));
                 }
                 break;
         }
