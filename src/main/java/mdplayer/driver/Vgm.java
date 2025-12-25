@@ -5,6 +5,7 @@ import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
 
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
@@ -706,21 +707,21 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
     private void vcYMF271() {
         plugin.audio.chipRegister.chip(YmF271Chip.class).write(
-                (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1
-                , vgmBuf[vgmAdr + 1] & 0x7f
-                , vgmBuf[vgmAdr + 2] & 0xff
-                , vgmBuf[vgmAdr + 3] & 0xff
-                , model);
+                (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1,
+                vgmBuf[vgmAdr + 1] & 0x7f,
+                vgmBuf[vgmAdr + 2] & 0xff,
+                vgmBuf[vgmAdr + 3] & 0xff,
+                model);
         vgmAdr += 4;
     }
 
     private void vcYMF278B() {
         plugin.audio.chipRegister.chip(YmF278BChip.class).write(
-                (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1
-                , vgmBuf[vgmAdr + 1] & 0x7f
-                , vgmBuf[vgmAdr + 2] & 0xff
-                , vgmBuf[vgmAdr + 3] & 0xff
-                , model);
+                (vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1,
+                vgmBuf[vgmAdr + 1] & 0x7f,
+                vgmBuf[vgmAdr + 2] & 0xff,
+                vgmBuf[vgmAdr + 3] & 0xff,
+                model);
 //logger.log(Level.TRACE, "fm:%02x:%02x:%02x:".formatted(vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2], vgmBuf[vgmAdr + 3]));
         vgmAdr += 4;
     }
@@ -2420,6 +2421,25 @@ logger.log(Level.INFO, "usedChips: " + usedChips);
         public String usedChips = "";
 
         public List<Tuple3<Integer, Integer, String>> lyrics = null;
+
+        @Override public String toString() {
+            return new StringJoiner(", ", Gd3.class.getSimpleName() + "[", "]")
+                    .add("trackName='" + trackName + "'")
+                    .add("trackNameJ='" + trackNameJ + "'")
+                    .add("gameName='" + gameName + "'")
+                    .add("gameNameJ='" + gameNameJ + "'")
+                    .add("systemName='" + systemName + "'")
+                    .add("systemNameJ='" + systemNameJ + "'")
+                    .add("composer='" + composer + "'")
+                    .add("composerJ='" + composerJ + "'")
+                    .add("converted='" + converted + "'")
+                    .add("notes='" + notes + "'")
+                    .add("vgmBy='" + vgmBy + "'")
+                    .add("version='" + version + "'")
+                    .add("usedChips='" + usedChips + "'")
+                    .add("lyrics=" + lyrics)
+                    .toString();
+        }
     }
 
     @Override

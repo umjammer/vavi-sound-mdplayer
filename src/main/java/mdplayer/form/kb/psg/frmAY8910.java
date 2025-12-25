@@ -234,14 +234,14 @@ public class frmAY8910 extends frmChipBase {
                 return;
             }
 
-            // 鍵盤
+            // keyboard
             if (py < 4 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0)
                     return;
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
-                    // マスク
+                    // mask
                     parent.setChannelMask(Ay8910Chip.class, chipId, ch);
                     return;
                 }

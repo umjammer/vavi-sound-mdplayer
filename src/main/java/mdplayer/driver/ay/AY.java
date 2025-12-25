@@ -7,6 +7,7 @@ import java.util.List;
 
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
+import konamiman.z80.enums.MemoryAccessMode;
 import konamiman.z80.impls.PlainMemory;
 import mdplayer.Chip;
 import mdplayer.Common;
@@ -68,9 +69,11 @@ public class AY extends BaseDriver {
     private Z80Processor z80;
     public int song = 0;
     private static final int zxClock = 3_546_900; // 3.54690MHz
+    private static final int cpcClock = 4_000_000; // 4.000000MHz
     private static final double PAL = 50.0;
     private double clkElp = 0.0;
     private double palElp = 0.0;
+    private int clock = zxClock;
 
     @Override
     public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
@@ -79,11 +82,13 @@ public class AY extends BaseDriver {
         vgmCurLoop = 0;
         this.model = model;
         vgmFrameCounter = -latency - waitTime;
+        clock = zxClock;
 
         try {
             run(vgmBuf);
             setup(song);
         } catch (Exception e) {
+logger.log(Level.ERROR, e.getMessage(), e);
             return false;
         }
 
@@ -104,9 +109,8 @@ public class AY extends BaseDriver {
                 if (vgmFrameCounter > -1) {
                     oneFrame();
                     counter++;
-                } else {
-                    vgmFrameCounter++;
                 }
+                vgmFrameCounter++;
             }
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
@@ -125,6 +129,14 @@ public class AY extends BaseDriver {
     public void run(byte[] buf) {
         this.buf = buf;
         getInformation(buf);
+    }
+
+    public void setCpcClock() {
+        clock = cpcClock;
+    }
+
+    public void setZxClock() {
+        clock = zxClock;
     }
 
     private void getInformation(byte[] buf) {
@@ -209,6 +221,7 @@ public class AY extends BaseDriver {
         Port port = new Port();
         z80 = new Z80ProcessorImpl();
         z80.setPortsSpace(port);
+        z80.setPortsSpaceAccessMode((byte) 0, port.getSize(), MemoryAccessMode.ReadAndWrite);
         z80.setClockFrequencyInMHz(4);
         z80.setClockSynchronizer(null);
         z80.setAutoStopOnRetWithStackEmpty(true);
@@ -217,6 +230,7 @@ public class AY extends BaseDriver {
         port.registers = z80.getRegisters();
         port.audio = plugin.audio;
         port.model = model;
+        port.cpu = this;
 
         // a) Fill #0000-#00FF range with #C9 value
         for (int i = 0x0000; i < 0x0100; i++) z80.getMemory().set(i, (byte) 0xc9);
@@ -309,16 +323,16 @@ public class AY extends BaseDriver {
             old = z80.getTStatesElapsedSinceReset();
 
             clkElp += step;
-            if (zxClock / setting.getOutputDevice().getSampleRate() <= clkElp) {
-                clkElp -= (zxClock / setting.getOutputDevice().getSampleRate());
+            if (clock / setting.getOutputDevice().getSampleRate() <= clkElp) {
+                clkElp -= (clock / setting.getOutputDevice().getSampleRate());
                 brk = true;
             }
 
             palElp += step;
-            if (zxClock / PAL <= palElp) {
-                palElp -= (zxClock / PAL);
+            if (clock / PAL <= palElp) {
+                palElp -= (clock / PAL);
 
-                if (z80.getIsHalted()) {
+                if (z80.isHalted()) {
                     short pc = z80.getRegisters().getPC();
                     short sp = z80.getRegisters().getSP();
                     short af = z80.getRegisters().getAF();
@@ -334,7 +348,7 @@ public class AY extends BaseDriver {
             }
         }
 
-//        if (ps && z80.getIsHalted()) {
+//        if (ps && z80.isHalted()) {
 //            int pc = z80.getRegisters().getPC();
 //            int sp = z80.getRegisters().getSP();
 //            int af = z80.getRegisters().getAF();

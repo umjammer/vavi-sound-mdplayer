@@ -16,6 +16,7 @@ import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.K051649Chip;
 import mdplayer.chips.Ym2413Chip;
 import mdplayer.driver.musica.MuSICA;
+import mdplayer.driver.musica.MuSICA_K4;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
 import mdsound.instrument.MameAy8910Inst;
@@ -25,7 +26,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * MuSICAPlugin.
+ * MuSICA (MSX) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>
@@ -36,13 +37,16 @@ public class MuSICAPlugin extends BasePlugin {
 
     @Override
     public boolean play(String playingFileName, FileFormat format) {
-        audio.driverVirtual = new MuSICA();
+        if (playingFileName.toLowerCase().endsWith(".bgm"))
+            audio.driverVirtual = new MuSICA();
+        else
+            audio.driverVirtual = new MuSICA_K4();
 //        ((MuSICA)audio.driverVirtual).playingFileName = PlayingFileName;
         audio.driverReal = null;
-        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new MuSICA();
+//        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
+//            audio.driverReal = new MuSICA();
 //            ((MuSICA) audio.driverReal).playingFileName = PlayingFileName;
-        }
+//        }
         prepare();
         boolean r = _play();
         if (!r) {
@@ -60,9 +64,9 @@ public class MuSICAPlugin extends BasePlugin {
         }
         boolean useAY = ((trkOffsets[9] + trkOffsets[10] + trkOffsets[11]) != 0);
         boolean useSCC = ((trkOffsets[12] + trkOffsets[13] + trkOffsets[14] + trkOffsets[15] + trkOffsets[16]) != 0);
-        boolean useOPLL = ((trkOffsets[0] + trkOffsets[1] + trkOffsets[2]
-                + trkOffsets[3] + trkOffsets[4] + trkOffsets[5]
-                + trkOffsets[6] + trkOffsets[7] + trkOffsets[8]
+        boolean useOPLL = ((trkOffsets[0] + trkOffsets[1] + trkOffsets[2] +
+                trkOffsets[3] + trkOffsets[4] + trkOffsets[5] +
+                trkOffsets[6] + trkOffsets[7] + trkOffsets[8]
         ) != 0);
 
         startTrdVgmReal();

@@ -230,7 +230,7 @@ public class frmInfo extends JFrame {
         this.lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblTitle.setVerticalAlignment(SwingConstants.TOP);
         this.lblTitle.setBackground(Color.black);
-        this.lblTitle.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblTitle.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblTitle.setForeground(new Color(192, 192, 255));
         this.lblTitle.setLocation(new Point(40, 0));
         this.lblTitle.setName("lblTitle");
@@ -243,7 +243,7 @@ public class frmInfo extends JFrame {
         this.lblTitleJ.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblTitleJ.setVerticalAlignment(SwingConstants.TOP);
         this.lblTitleJ.setBackground(Color.black);
-        this.lblTitleJ.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblTitleJ.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblTitleJ.setForeground(new Color(192, 192, 255));
         this.lblTitleJ.setLocation(new Point(40, 16));
         this.lblTitleJ.setName("lblTitleJ");
@@ -256,7 +256,7 @@ public class frmInfo extends JFrame {
         this.lblGame.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblGame.setVerticalAlignment(SwingConstants.TOP);
         this.lblGame.setBackground(Color.black);
-        this.lblGame.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblGame.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblGame.setForeground(new Color(192, 192, 255));
         this.lblGame.setLocation(new Point(40, 32));
         this.lblGame.setName("lblGame");
@@ -269,7 +269,7 @@ public class frmInfo extends JFrame {
         this.lblGameJ.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblGameJ.setVerticalAlignment(SwingConstants.TOP);
         this.lblGameJ.setBackground(Color.black);
-        this.lblGameJ.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblGameJ.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblGameJ.setForeground(new Color(192, 192, 255));
         this.lblGameJ.setLocation(new Point(40, 48));
         this.lblGameJ.setName("lblGameJ");
@@ -282,7 +282,7 @@ public class frmInfo extends JFrame {
         this.lblSystem.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblSystem.setVerticalAlignment(SwingConstants.TOP);
         this.lblSystem.setBackground(Color.black);
-        this.lblSystem.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblSystem.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblSystem.setForeground(new Color(192, 192, 255));
         this.lblSystem.setLocation(new Point(40, 64));
         this.lblSystem.setName("lblSystem");
@@ -295,7 +295,7 @@ public class frmInfo extends JFrame {
         this.lblComposer.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblComposer.setVerticalAlignment(SwingConstants.TOP);
         this.lblComposer.setBackground(Color.black);
-        this.lblComposer.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblComposer.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblComposer.setForeground(new Color(192, 192, 255));
         this.lblComposer.setLocation(new Point(40, 96));
         this.lblComposer.setName("lblComposer");
@@ -308,7 +308,7 @@ public class frmInfo extends JFrame {
         this.lblRelease.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblRelease.setVerticalAlignment(SwingConstants.TOP);
         this.lblRelease.setBackground(Color.black);
-        this.lblRelease.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblRelease.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblRelease.setForeground(new Color(192, 192, 255));
         this.lblRelease.setLocation(new Point(40, 128));
         this.lblRelease.setName("lblRelease");
@@ -321,7 +321,7 @@ public class frmInfo extends JFrame {
         this.lblVersion.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblVersion.setVerticalAlignment(SwingConstants.TOP);
         this.lblVersion.setBackground(Color.black);
-        this.lblVersion.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblVersion.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblVersion.setForeground(new Color(192, 192, 255));
         this.lblVersion.setLocation(new Point(40, 144));
         this.lblVersion.setName("lblVersion");
@@ -334,7 +334,7 @@ public class frmInfo extends JFrame {
         this.lblVGMBy.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblVGMBy.setVerticalAlignment(SwingConstants.TOP);
         this.lblVGMBy.setBackground(Color.black);
-        this.lblVGMBy.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblVGMBy.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblVGMBy.setForeground(new Color(192, 192, 255));
         this.lblVGMBy.setLocation(new Point(40, 160));
         this.lblVGMBy.setName("lblVGMBy");
@@ -347,7 +347,7 @@ public class frmInfo extends JFrame {
         this.lblNotes.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblNotes.setVerticalAlignment(SwingConstants.TOP);
         this.lblNotes.setBackground(Color.black);
-        this.lblNotes.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblNotes.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblNotes.setForeground(new Color(192, 192, 255));
         this.lblNotes.setLocation(new Point(40, 176));
         this.lblNotes.setName("lblNotes");
@@ -360,7 +360,7 @@ public class frmInfo extends JFrame {
         this.lblUsedChips.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblUsedChips.setVerticalAlignment(SwingConstants.TOP);
         this.lblUsedChips.setBackground(Color.black);
-        this.lblUsedChips.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblUsedChips.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblUsedChips.setForeground(new Color(192, 192, 255));
         this.lblUsedChips.setLocation(new Point(40, 192));
         this.lblUsedChips.setName("lblUsedChips");
@@ -373,7 +373,7 @@ public class frmInfo extends JFrame {
         this.lblSystemJ.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblSystemJ.setVerticalAlignment(SwingConstants.TOP);
         this.lblSystemJ.setBackground(Color.black);
-        this.lblSystemJ.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblSystemJ.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblSystemJ.setForeground(new Color(192, 192, 255));
         this.lblSystemJ.setLocation(new Point(40, 80));
         this.lblSystemJ.setName("lblSystemJ");
@@ -386,7 +386,7 @@ public class frmInfo extends JFrame {
         this.lblComposerJ.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblComposerJ.setVerticalAlignment(SwingConstants.TOP);
         this.lblComposerJ.setBackground(Color.black);
-        this.lblComposerJ.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.lblComposerJ.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.lblComposerJ.setForeground(new Color(192, 192, 255));
         this.lblComposerJ.setLocation(new Point(40, 112));
         this.lblComposerJ.setName("lblComposerJ");
@@ -407,7 +407,7 @@ public class frmInfo extends JFrame {
         this.rtbLyrics.setBorder(null);
 //        this.rtbLyrics.Cursor = Cursor.Arrow;
 //        this.rtbLyrics.DetectUrls = false;
-        this.rtbLyrics.setFont(new Font("メイリオ", Font.BOLD, 9));
+        this.rtbLyrics.setFont(new Font("Meyryo", Font.BOLD, 9));
         this.rtbLyrics.setForeground(new Color(192, 192, 255));
         this.rtbLyrics.setLocation(new Point(41, 209));
 //        this.rtbLyrics.Multiline = false;

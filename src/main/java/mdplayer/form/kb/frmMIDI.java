@@ -265,8 +265,8 @@ public class frmMIDI extends frmBase {
 
             notes = "";
             for (int n = 0; n < 120; n++) {
-                oldParam.note[ch][n] = DrawBuff.drawMIDILCD_Kbd(frameBuffer, 108
-                        , ch * 16 + 16, n, oldParam.note[ch][n], newParam.note[ch][n]);
+                oldParam.note[ch][n] = DrawBuff.drawMIDILCD_Kbd(frameBuffer, 108,
+                        ch * 16 + 16, n, oldParam.note[ch][n], newParam.note[ch][n]);
 
                 if (newParam.note[ch][n] > 0) {
                     notes = notes + "%s%d ".formatted(Tables.kbns[n % 12], n / 12);
@@ -281,14 +281,14 @@ public class frmMIDI extends frmBase {
 
              // L1:
             if (newParam.LCDDisplayTime == 0 && newParam.LCD8850DisplayTime == 0 && newParam.LCDDisplayTimeXG == 0) {
-                DrawBuff.VolumeLCDToMIDILCD(frameBuffer
-                        , module
-                        , 5 + ch * 10 + (ch > 3 ? 1 : 0) + (ch > 11 ? 1 : 0)
-                        , 341
-                        , oldParam.level[ch][1]
-                        , newParam.level[ch][1]
-                        , oldParam.level[ch][3]
-                        , newParam.level[ch][3]);
+                DrawBuff.VolumeLCDToMIDILCD(frameBuffer,
+                        module,
+                        5 + ch * 10 + (ch > 3 ? 1 : 0) + (ch > 11 ? 1 : 0),
+                        341,
+                        oldParam.level[ch][1],
+                        newParam.level[ch][1],
+                        oldParam.level[ch][3],
+                        newParam.level[ch][3]);
             } else {
                 int s;
                 for (int n = 0; n < 16; n++) {
@@ -302,27 +302,22 @@ public class frmMIDI extends frmBase {
                         s = newParam.LCDDisplay[n];
                         int x = n / 16;
                         int y = n % 16;
-                        frameBuffer.drawByteArray(
-                                x * 50 + 5 + 0 + (x > 0 ? 1 : 0) + (x > 2 ? 1 : 0)
-                                , 288 + y * 3 + (y + 1) / 2
-                                , DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x10) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
+                        frameBuffer.drawByteArray(x * 50 + 5 + 0 + (x > 0 ? 1 : 0) + (x > 2 ? 1 : 0),
+                                288 + y * 3 + (y + 1) / 2,
+                                DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x10) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
                         if (n > 47) continue;
-                        frameBuffer.drawByteArray(
-                                x * 50 + 5 + 10 + (x > 0 ? 1 : 0)
-                                , 288 + y * 3 + (y + 1) / 2
-                                , DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x08) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
-                        frameBuffer.drawByteArray(
-                                x * 50 + 5 + 20 + (x > 0 ? 1 : 0) + (x > 1 ? 1 : 0)
-                                , 288 + y * 3 + (y + 1) / 2
-                                , DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x04) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
-                        frameBuffer.drawByteArray(
-                                x * 50 + 5 + 30 + (x > 0 ? 1 : 0) + (x > 1 ? 1 : 0)
-                                , 288 + y * 3 + (y + 1) / 2
-                                , DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x02) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
-                        frameBuffer.drawByteArray(
-                                x * 50 + 5 + 41 + (x > 1 ? 1 : 0)
-                                , 288 + y * 3 + (y + 1) / 2
-                                , DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x01) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
+                        frameBuffer.drawByteArray(x * 50 + 5 + 10 + (x > 0 ? 1 : 0),
+                                288 + y * 3 + (y + 1) / 2,
+                                DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x08) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
+                        frameBuffer.drawByteArray(x * 50 + 5 + 20 + (x > 0 ? 1 : 0) + (x > 1 ? 1 : 0),
+                                288 + y * 3 + (y + 1) / 2,
+                                DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x04) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
+                        frameBuffer.drawByteArray(x * 50 + 5 + 30 + (x > 0 ? 1 : 0) + (x > 1 ? 1 : 0),
+                                288 + y * 3 + (y + 1) / 2,
+                                DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x02) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
+                        frameBuffer.drawByteArray(x * 50 + 5 + 41 + (x > 1 ? 1 : 0),
+                                288 + y * 3 + (y + 1) / 2,
+                                DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x01) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
                     }
                 } else if (newParam.LCD8850DisplayTime == 400) {
                     for (int y = 0; y < 64; y++) {
@@ -347,37 +342,30 @@ public class frmMIDI extends frmBase {
                         s = newParam.LCDDisplay[n];
                         int x = n / 16;
                         int y = n % 16;
-                        frameBuffer.drawByteArray(
-                                x * 70 + 5 + 0 + (x > 0 ? 1 : 0) + (x > 1 ? 1 : 0)
-                                , 288 + y * 3 + (y + 1) / 2
-                                , DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x40) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
-                        frameBuffer.drawByteArray(
-                                x * 70 + 5 + 10 + (x > 0 ? 1 : 0) + (x > 1 ? 1 : 0)
-                                , 288 + y * 3 + (y + 1) / 2
-                                , DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x20) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
+                        frameBuffer.drawByteArray(x * 70 + 5 + 0 + (x > 0 ? 1 : 0) + (x > 1 ? 1 : 0),
+                                288 + y * 3 + (y + 1) / 2,
+                                DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x40) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
+                        frameBuffer.drawByteArray(x * 70 + 5 + 10 + (x > 0 ? 1 : 0) + (x > 1 ? 1 : 0),
+                                288 + y * 3 + (y + 1) / 2,
+                                DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x20) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
 
                         if (n > 31) continue;
 
-                        frameBuffer.drawByteArray(
-                                x * 70 + 5 + 20 + (x > 0 ? 1 : 0)
-                                , 288 + y * 3 + (y + 1) / 2
-                                , DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x10) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
-                        frameBuffer.drawByteArray(
-                                x * 70 + 5 + 30 + (x > 0 ? 1 : 0)
-                                , 288 + y * 3 + (y + 1) / 2
-                                , DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x08) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
-                        frameBuffer.drawByteArray(
-                                x * 70 + 5 + 41
-                                , 288 + y * 3 + (y + 1) / 2
-                                , DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x04) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
-                        frameBuffer.drawByteArray(
-                                x * 70 + 5 + 51 + (x > 0 ? 1 : 0)
-                                , 288 + y * 3 + (y + 1) / 2
-                                , DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x02) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
-                        frameBuffer.drawByteArray(
-                                x * 70 + 5 + 61 + (x > 0 ? 1 : 0)
-                                , 288 + y * 3 + (y + 1) / 2
-                                , DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x01) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
+                        frameBuffer.drawByteArray(x * 70 + 5 + 20 + (x > 0 ? 1 : 0),
+                                288 + y * 3 + (y + 1) / 2,
+                                DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x10) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
+                        frameBuffer.drawByteArray(x * 70 + 5 + 30 + (x > 0 ? 1 : 0),
+                                288 + y * 3 + (y + 1) / 2,
+                                DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x08) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
+                        frameBuffer.drawByteArray(x * 70 + 5 + 41,
+                                288 + y * 3 + (y + 1) / 2,
+                                DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x04) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
+                        frameBuffer.drawByteArray(x * 70 + 5 + 51 + (x > 0 ? 1 : 0),
+                                288 + y * 3 + (y + 1) / 2,
+                                DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x02) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
+                        frameBuffer.drawByteArray(x * 70 + 5 + 61 + (x > 0 ? 1 : 0),
+                                288 + y * 3 + (y + 1) / 2,
+                                DrawBuff.rMIDILCD[module], 136, 8 * 16, ((s & 0x01) != 0) ? 0 : 8, 8, (y % 2 == 0 || y == 15) ? 3 : 2);
                     }
                 }
             }
@@ -409,7 +397,6 @@ public class frmMIDI extends frmBase {
             DrawBuff.drawFont4IntMIDI(frameBuffer, 4 * 67, ch * 16 + 24, 2 + module, oldParam.nrpnEQTrebleFrq[ch], newParam.nrpnEQTrebleFrq[ch]);
         }
     }
-
 
     private final MouseListener pbScreen_MouseClick = new MouseAdapter() {
         @Override public void mouseClicked(MouseEvent ev) {

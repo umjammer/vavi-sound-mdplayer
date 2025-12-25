@@ -63,7 +63,7 @@ public abstract class BasePlugin implements Plugin {
     protected String playingArcFileName;
     protected int midiMode = 0;
     protected int songNo = 0;
-    protected List<Tuple<String, byte[]>> extendFile = null;
+    protected List<Tuple<String, byte[]>> extendFiles = null;
 
     protected final long stwh = System.currentTimeMillis();
 
@@ -118,7 +118,7 @@ public abstract class BasePlugin implements Plugin {
 
         audio.paused = false;
         audio.stopped = true;
-logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
+logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
 //        audio._fatalError = false;
         oneTimeReset = false;
 
@@ -334,6 +334,7 @@ logger.log(Level.DEBUG, "stop: " + audio.stopped + ", " + audio.hashCode());
             return false;
         }
 
+logger.log(Level.DEBUG, "driver: " + audio.driverVirtual.getClass().getSimpleName());
         while (true) {
 //logger.log(Level.TRACE, "loop HERE");
             short[] buffer = new short[4];
@@ -415,7 +416,7 @@ logger.log(Level.INFO, "dev null:" + getClass().getName());
         this.midiMode = midiMode;
         this.songNo = songNo;
         audio.chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
-        extendFile = extFile; // Additional files
+        extendFiles = extFile; // Additional files
         Common.playingFilePath = Path.of(playingFileName).getParent();
 
         if (audio.naudioFileReader != null) {

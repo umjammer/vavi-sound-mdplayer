@@ -452,9 +452,9 @@ public class Sid {
             state.sidRegister[j + 2] = (byte) (wave.pw & 0xff);
             state.sidRegister[j + 3] = (byte) (wave.pw >> 8);
             state.sidRegister[j + 4] = (byte) (
-                    (byte) (wave.waveform << 4) | (byte) (wave.test != 0 ? 0x08 : 0)
-                            | (byte) (wave.ringMod != 0 ? 0x04 : 0) | (byte) (wave.sync != 0 ? 0x02 : 0)
-                            | (byte) (envelope.gate != 0 ? 0x01 : 0));
+                    (byte) (wave.waveform << 4) | (byte) (wave.test != 0 ? 0x08 : 0) |
+                            (byte) (wave.ringMod != 0 ? 0x04 : 0) | (byte) (wave.sync != 0 ? 0x02 : 0) |
+                            (byte) (envelope.gate != 0 ? 0x01 : 0));
             state.sidRegister[j + 5] = (byte) ((envelope.attack << 4) | envelope.decay);
             state.sidRegister[j + 6] = (byte) ((envelope.sustain << 4) | envelope.release);
         }

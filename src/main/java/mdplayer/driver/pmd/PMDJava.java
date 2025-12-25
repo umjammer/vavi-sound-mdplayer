@@ -70,7 +70,7 @@ public class PMDJava extends BaseDriver {
     public String getPlayingFileName() { return playingFileName; }
     public void setPlayingFileName(String value) { playingFileName = value; }
 
-    public static final int baseclock = 7987200;
+    public static final int baseClock = 7987200;
 
     private PMDFileType mtype;
 
@@ -188,7 +188,7 @@ public class PMDJava extends BaseDriver {
         M
     }
 
-    private PMDFileType CheckFileType(byte[] buf) {
+    private PMDFileType checkFileType(byte[] buf) {
         if (buf == null || buf.length < 4) {
             return PMDFileType.unknown;
         }
@@ -210,7 +210,7 @@ public class PMDJava extends BaseDriver {
         CompilerInfo info;
         try {
             pmdCompiler.setCompileSwitch("PmdOption=%s \"%s\"".formatted(
-                    setting.getPmdDotNET().compilerArguments, playingFileName));
+                    setting.getPmd().compilerArguments, playingFileName));
             try (MemoryStream sourceMML = new MemoryStream(vgmBuf)) {
                 ret = pmdCompiler.compile(sourceMML, this::appendFileReaderCallback);// wrkMUCFullPath, disp);
             }
@@ -237,11 +237,11 @@ public class PMDJava extends BaseDriver {
         boolean isLoadADPCM = true;
         boolean loadADPCMOnly = false;
 
-        isNRM = setting.getPmdDotNET().soundBoard == 0;
-        isSPB = setting.getPmdDotNET().soundBoard == 1;
+        isNRM = setting.getPmd().soundBoard == 0;
+        isSPB = setting.getPmd().soundBoard == 1;
         isVA = false;
-        usePPS = setting.getPmdDotNET().usePPSDRV;
-        usePPZ = setting.getPmdDotNET().usePPZ8;
+        usePPS = setting.getPmd().usePPSDRV;
+        usePPZ = setting.getPmd().usePPZ8;
 
         EnvironmentE env = new EnvironmentE();
         env.addEnv("pmd");
@@ -252,7 +252,7 @@ public class PMDJava extends BaseDriver {
         Object[] additionalPDDDotNETOption = new Object[] {
                 isLoadADPCM, // bool
                 loadADPCMOnly, // bool
-                setting.getPmdDotNET().isAuto, // boolean isAUTO;
+                setting.getPmd().isAuto, // boolean isAUTO;
                 isVA, // bool
                 isNRM, // bool
                 usePPS, // bool
@@ -272,20 +272,20 @@ public class PMDJava extends BaseDriver {
         lca.add(ca);
 
         pmdDriver.init(
-                lca
-                //fileName
-                //, oPNAWrite
-                //, oPNAWaitSend
-                , ret
-                , null // This callback is unused
-                , additionalPDDDotNETOption // PMDDotNET option
-                , additionalPMOption // PMD option
-                , (Function<ChipDatum, Integer>) this::writePPZ8
-                , (Function<ChipDatum, Integer>) this::writePPSDRV
-                , (Function<ChipDatum, Integer>) this::writeP86);
+                lca,
+                // fileName,
+                // oPNAWrite,
+                // oPNAWaitSend,
+                ret,
+                null, // This callback is unused
+                additionalPDDDotNETOption, // PMDDotNET option
+                additionalPMOption, // PMD option
+                (Function<ChipDatum, Integer>) this::writePPZ8,
+                (Function<ChipDatum, Integer>) this::writePPSDRV,
+                (Function<ChipDatum, Integer>) this::writeP86);
 
 
-        pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseclock));
+        pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
         pmdDriver.startMusic(0);
         return true;
     }
@@ -297,7 +297,7 @@ public class PMDJava extends BaseDriver {
             return;
         if (cd.data == -1)
             return;
-        if (cd.port == -1)
+        if (cd.port == -1 || cd.port == 10000) // vavi
             return;
 
         plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, cd.port, cd.address, cd.data, model);
@@ -312,7 +312,7 @@ public class PMDJava extends BaseDriver {
         }
 
         // Add additional weight based on size and elapsed time.
-        int m = Math.max((int) (size / 20 - elapsed), 0);// 20 Threshold (magic number)
+        int m = Math.max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
         try { Thread.sleep(m); } catch (InterruptedException e) {}
     }
 
@@ -358,11 +358,11 @@ public class PMDJava extends BaseDriver {
         for (byte b : vgmBuf)
             buf.add(new MmlDatum(b & 0xff));
 
-        isNRM = setting.getPmdDotNET().soundBoard == 0;
-        isSPB = setting.getPmdDotNET().soundBoard == 1;
+        isNRM = setting.getPmd().soundBoard == 0;
+        isSPB = setting.getPmd().soundBoard == 1;
         isVA = false;
-        usePPS = setting.getPmdDotNET().usePPSDRV;
-        usePPZ = setting.getPmdDotNET().usePPZ8;
+        usePPS = setting.getPmd().usePPSDRV;
+        usePPZ = setting.getPmd().usePPZ8;
 
         EnvironmentE env = new EnvironmentE();
         env.addEnv("pmd");
@@ -373,7 +373,7 @@ public class PMDJava extends BaseDriver {
         Object[] additionalPDDDotNETOption = new Object[] {
             isLoadADPCM, // bool
             loadADPCMOnly, // bool
-            setting.getPmdDotNET().isAuto, // boolean isAUTO;
+            setting.getPmd().isAuto, // boolean isAUTO;
             isVA, // bool
             isNRM, // bool
             usePPS, // bool
@@ -401,7 +401,7 @@ public class PMDJava extends BaseDriver {
                 (Function<ChipDatum, Integer>) this::writePPSDRV,
                 (Function<ChipDatum, Integer>) this::writeP86);
 
-        pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseclock));
+        pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
         pmdDriver.startMusic(0);
 
         return true;
@@ -416,7 +416,7 @@ public class PMDJava extends BaseDriver {
         }
 
         // Add additional weight based on size and elapsed time.
-        int m = Math.max((int) (size / 20 - elapsed), 0);// 20 Threshold (magic number)
+        int m = Math.max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
         try { Thread.sleep(m); } catch (InterruptedException e) {}
     }
 
@@ -560,7 +560,7 @@ public class PMDJava extends BaseDriver {
             op.addAll(Arrays.asList(envPmdOpt));
 
         // Arguments (optional in the IDE)
-        String[] drvArgs = setting.getPmdDotNET().driverArguments.split(" ");
+        String[] drvArgs = setting.getPmd().driverArguments.split(" ");
         if (drvArgs != null && drvArgs.length > 0)
             op.addAll(Arrays.asList(drvArgs));
 

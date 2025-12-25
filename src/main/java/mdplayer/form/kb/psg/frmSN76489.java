@@ -147,8 +147,8 @@ public class frmSN76489 extends frmBase {
 
                         newParam.channels[ch].volumeL = Math.min(Math.max((int) ((psgVol[ch][0]) / (15.0 / 19.0)), 0), 19);
                         newParam.channels[ch].volumeR = Math.min(Math.max((int) ((psgVol1[ch][0]) / (15.0 / 19.0)), 0), 19);
-                        newParam.channels[ch].pan = Math.min(Math.max(newParam.channels[ch].volumeR, 0), 15) * 0x10
-                                + Math.min(Math.max(newParam.channels[ch].volumeL, 0), 15);
+                        newParam.channels[ch].pan = Math.min(Math.max(newParam.channels[ch].volumeR, 0), 15) * 0x10 +
+                                Math.min(Math.max(newParam.channels[ch].volumeL, 0), 15);
                     }
 
                     //Noise Ch
@@ -156,8 +156,8 @@ public class frmSN76489 extends frmBase {
                     newParam.channels[3].freq = psgRegister1[4];//ch3Freq
                     newParam.channels[3].volumeL = Math.min(Math.max((int) ((psgVol[3][0]) / (15.0 / 19.0)), 0), 19);
                     newParam.channels[3].volumeR = Math.min(Math.max((int) ((psgVol1[3][0]) / (15.0 / 19.0)), 0), 19);
-                    newParam.channels[3].pan = Math.min(Math.max(newParam.channels[3].volumeR, 0), 15) * 0x10
-                            + Math.min(Math.max(newParam.channels[3].volumeL, 0), 15);
+                    newParam.channels[3].pan = Math.min(Math.max(newParam.channels[3].volumeR, 0), 15) * 0x10 +
+                            Math.min(Math.max(newParam.channels[3].volumeL, 0), 15);
                 } else {
                     //Tone Ch
                     for (int ch = 0; ch < 3; ch++) {
@@ -261,7 +261,7 @@ public class frmSN76489 extends frmBase {
                 return;
             }
 
-            //鍵盤
+            // keyboard
             if (py < 5 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;

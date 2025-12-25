@@ -1,6 +1,7 @@
 package mdplayer.driver.rcp;
 
 import java.io.Serializable;
+import java.util.NoSuchElementException;
 
 
 public class MIDIEvent implements Serializable {
@@ -27,7 +28,7 @@ public class MIDIEvent implements Serializable {
         afterIndex = value;
     }
 
-    Integer getAfterIndex() {
+    public Integer getAfterIndex() {
         return afterIndex;
     }
 
@@ -35,7 +36,7 @@ public class MIDIEvent implements Serializable {
         number = value;
     }
 
-    int getNumber() {
+    public int getNumber() {
         return number;
     }
 
@@ -43,7 +44,7 @@ public class MIDIEvent implements Serializable {
         sameMeasureIndex = value;
     }
 
-    Integer getSameMeasureIndex() {
+    public Integer getSameMeasureIndex() {
         return sameMeasureIndex;
     }
 
@@ -51,7 +52,7 @@ public class MIDIEvent implements Serializable {
         step = value;
     }
 
-    int getStep() {
+    public int getStep() {
         return step;
     }
 
@@ -59,7 +60,7 @@ public class MIDIEvent implements Serializable {
         eventType = value;
     }
 
-    MIDIEventType getEventType() {
+    public MIDIEventType getEventType() {
         return eventType;
     }
 
@@ -67,7 +68,7 @@ public class MIDIEvent implements Serializable {
         midiMessage = value;
     }
 
-    byte[] getMIDIMessage() {
+    public byte[] getMIDIMessage() {
         return midiMessage;
     }
 
@@ -75,7 +76,7 @@ public class MIDIEvent implements Serializable {
         midiMessages = value;
     }
 
-    byte[][] getMIDIMessages() {
+    public byte[][] getMIDIMessages() {
         return midiMessages;
     }
 
@@ -83,7 +84,7 @@ public class MIDIEvent implements Serializable {
         gate = value;
     }
 
-    int getGate() {
+    public int getGate() {
         return gate;
     }
 
@@ -123,7 +124,7 @@ public class MIDIEvent implements Serializable {
         PitchBend(0xE0),
         SysExF0(0xF0),
         SysExF7(0xF7);
-        final int v;
+        public final int v;
 
         MIDIEventType(int v) {
             this.v = v;
@@ -155,10 +156,17 @@ public class MIDIEvent implements Serializable {
         SameMeasure(0xFC),
         MeasureEnd(0xFD),
         EndOfTrack(0xFE);
-        final int v;
+        public final int v;
 
         MIDISpEventType(int v) {
             this.v = v;
+        }
+
+        public static MIDISpEventType valueOf(int v) {
+            for (MIDISpEventType c : values()) {
+                if (c.v == v) return c;
+            }
+            throw new NoSuchElementException(String.valueOf(v));
         }
     }
 

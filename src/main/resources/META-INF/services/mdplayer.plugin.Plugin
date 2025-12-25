@@ -19,3 +19,5 @@ mdplayer.plugin.ZGMPlugin
 mdplayer.plugin.AyPlugin
 mdplayer.plugin.MuSICAPlugin
 mdplayer.plugin.FMPPlugin
+mdplayer.plugin.NDPPlugin
+mdplayer.plugin.ZMSPlugin

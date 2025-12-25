@@ -83,7 +83,7 @@ public class MIDITrack implements Serializable {
         number = value;
     }
 
-    int getNumber() {
+    public int getNumber() {
         return number;
     }
 
@@ -107,7 +107,7 @@ public class MIDITrack implements Serializable {
         comment = value;
     }
 
-    String getComment() {
+    public String getComment() {
         return comment;
     }
 
@@ -115,7 +115,7 @@ public class MIDITrack implements Serializable {
         outDeviceNumber = value;
     }
 
-    Integer getOutDeviceNumber() {
+    public Integer getOutDeviceNumber() {
         return outDeviceNumber;
     }
 
@@ -147,7 +147,7 @@ public class MIDITrack implements Serializable {
         outChannel = value;
     }
 
-    Integer getOutChannel() {
+    public Integer getOutChannel() {
         return outChannel;
     }
 
@@ -203,7 +203,7 @@ public class MIDITrack implements Serializable {
         mute = value;
     }
 
-    boolean getMute() {
+    public boolean getMute() {
         return mute;
     }
 
@@ -219,7 +219,7 @@ public class MIDITrack implements Serializable {
         parts = value;
     }
 
-    List<MIDIPart> getPart() {
+    public List<MIDIPart> getPart() {
         return parts;
     }
 
@@ -243,7 +243,7 @@ public class MIDITrack implements Serializable {
         key = value;
     }
 
-    int getKey() {
+    public int getKey() {
         return key;
     }
 
@@ -251,7 +251,7 @@ public class MIDITrack implements Serializable {
         st = value;
     }
 
-    int getSt() {
+    public int getSt() {
         return st;
     }
 
@@ -296,7 +296,7 @@ public class MIDITrack implements Serializable {
         nowPart = value;
     }
 
-    MIDIPart getNowPart() {
+    public MIDIPart getNowPart() {
         return nowPart;
     }
 
@@ -307,7 +307,7 @@ public class MIDITrack implements Serializable {
         nowTick = value;
     }
 
-    int getNowTick() {
+    public int getNowTick() {
         return nowTick;
     }
 
@@ -318,7 +318,7 @@ public class MIDITrack implements Serializable {
         nextEventTick = value;
     }
 
-    int getNextEventTick() {
+    public int getNextEventTick() {
         return nextEventTick;
     }
 
@@ -329,7 +329,7 @@ public class MIDITrack implements Serializable {
         endMark = value;
     }
 
-    boolean getEndMark() {
+    public boolean getEndMark() {
         return endMark;
     }
 
@@ -340,7 +340,7 @@ public class MIDITrack implements Serializable {
         loopTargetEvents = value;
     }
 
-    Stack<MIDIEvent> getLoopTargetEvents() {
+    public Stack<MIDIEvent> getLoopTargetEvents() {
         return loopTargetEvents;
     }
 
@@ -351,7 +351,7 @@ public class MIDITrack implements Serializable {
         loopOrSameTargetEventIndex = value;
     }
 
-    Integer getLoopOrSameTargetEventIndex() {
+    public Integer getLoopOrSameTargetEventIndex() {
         return loopOrSameTargetEventIndex;
     }
 
@@ -362,7 +362,7 @@ public class MIDITrack implements Serializable {
         sameMeasure = value;
     }
 
-    Integer getSameMeasure() {
+    public Integer getSameMeasure() {
         return sameMeasure;
     }
 
@@ -373,7 +373,7 @@ public class MIDITrack implements Serializable {
         rolandBaseGt = value;
     }
 
-    byte getRolandBase_gt() {
+    public byte getRolandBase_gt() {
         return rolandBaseGt;
     }
 
@@ -384,7 +384,7 @@ public class MIDITrack implements Serializable {
         rolandBaseVel = value;
     }
 
-    byte getRolandBase_vel() {
+    public byte getRolandBase_vel() {
         return rolandBaseVel;
     }
 
@@ -395,7 +395,7 @@ public class MIDITrack implements Serializable {
         rolandDevGt = value;
     }
 
-    byte getRolandDev_gt() {
+    public byte getRolandDev_gt() {
         return rolandDevGt;
     }
 
@@ -406,29 +406,29 @@ public class MIDITrack implements Serializable {
         rolandDevVel = value;
     }
 
-    byte getRolandDev_vel() {
+    public byte getRolandDev_vel() {
         return rolandDevVel;
     }
 
     /**
      * This is for performance use only and cannot be used for any other purpose.
      */
-    public void RolandPara_gt(byte value) {
+    public void setRolandPara_gt(byte value) {
         rolandParaGt = value;
     }
 
-    byte getRolandPara_gt() {
+    public byte getRolandPara_gt() {
         return rolandParaGt;
     }
 
     /**
      * This is for performance use only and cannot be used for any other purpose.
      */
-    public void RolandPara_vel(byte value) {
+    public void setRolandPara_vel(byte value) {
         rolandParaVel = value;
     }
 
-    byte getRolandPara_vel() {
+    public byte getRolandPara_vel() {
         return rolandParaVel;
     }
 
@@ -439,7 +439,7 @@ public class MIDITrack implements Serializable {
         noteGateTime = value;
     }
 
-    int[] getNoteGateTime() {
+    public int[] getNoteGateTime() {
         return noteGateTime;
     }
 
@@ -447,7 +447,7 @@ public class MIDITrack implements Serializable {
         return yamahaBaseGt;
     }
 
-    void setYAMAHABase_gt(byte value) {
+    public void setYAMAHABase_gt(byte value) {
         yamahaBaseGt = value;
     }
 
@@ -455,7 +455,7 @@ public class MIDITrack implements Serializable {
         return yamahaBaseVel;
     }
 
-    void setYAMAHABase_vel(byte value) {
+    public void setYAMAHABase_vel(byte value) {
         yamahaBaseVel = value;
     }
 
@@ -463,7 +463,7 @@ public class MIDITrack implements Serializable {
         return yamahaDev;
     }
 
-    void setYAMAHA_dev(byte value) {
+    public void setYAMAHA_dev(byte value) {
         yamahaDev = value;
     }
 
@@ -471,7 +471,7 @@ public class MIDITrack implements Serializable {
         return yamahaModel;
     }
 
-    void setYAMAHA_model(byte value) {
+    public void setYAMAHA_model(byte value) {
         yamahaModel = value;
     }
 
@@ -479,7 +479,7 @@ public class MIDITrack implements Serializable {
         return yamahaParagt;
     }
 
-    void setYAMAHAPara_gt(byte value) {
+    public void setYAMAHAPara_gt(byte value) {
         yamahaParagt = value;
     }
 
@@ -487,7 +487,7 @@ public class MIDITrack implements Serializable {
         return yamahaParaVel;
     }
 
-    void setYAMAHAPara_vel(byte value) {
+    public void setYAMAHAPara_vel(byte value) {
         yamahaParaVel = value;
     }
 
@@ -495,7 +495,7 @@ public class MIDITrack implements Serializable {
         return keySigSf;
     }
 
-    void setKeySIG_SF(int value) {
+    public void setKeySIG_SF(int value) {
         keySigSf = value;
     }
 
@@ -503,7 +503,7 @@ public class MIDITrack implements Serializable {
         return keySigMi;
     }
 
-    void setKeySIG_MI(int value) {
+    public void setKeySIG_MI(int value) {
         keySigMi = value;
     }
 

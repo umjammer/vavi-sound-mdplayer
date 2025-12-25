@@ -790,48 +790,48 @@ public class frmMixer2 extends JFrame {
 
     private void drawVolAndFader(int num, MDChipParams.Mixer.VolumeInfo oVI, MDChipParams.Mixer.VolumeInfo nVI) {
         DrawBuff.drawFader(
-                frameBuffer
-                , 5 + (num % 16) * 20
-                , 16 + (num / 16) * 8 * 9
-                , num == 0 ? 0 : 1
-                , oVI.Volume
-                , nVI.Volume);
+                frameBuffer,
+                5 + (num % 16) * 20,
+                16 + (num / 16) * 8 * 9,
+                num == 0 ? 0 : 1,
+                oVI.Volume,
+                nVI.Volume);
         nVI.VisVol2Cnt--;
         if (nVI.VisVol2Cnt == 0) {
             nVI.VisVol2Cnt = 1;
             if (nVI.VisVolume2 > 0) nVI.VisVolume2--;
         }
         DrawBuff.MixerVolume(
-                frameBuffer
-                , 2 + (num % 16) * 20
-                , 10 + (num / 16) * 8 * 9
-                , oVI.VisVolume1
-                , nVI.VisVolume1
-                , oVI.VisVolume2
-                , nVI.VisVolume2);
+                frameBuffer,
+                2 + (num % 16) * 20,
+                10 + (num / 16) * 8 * 9,
+                oVI.VisVolume1,
+                nVI.VisVolume1,
+                oVI.VisVolume2,
+                nVI.VisVolume2);
     }
 
     private void drawGVolAndFader(int num, MDChipParams.Mixer.VolumeInfo oVI, MDChipParams.Mixer.VolumeInfo nVI) {
         DrawBuff.drawGFader(
-                frameBuffer
-                , 5 + (num % 16) * 20
-                , 16 + (num / 16) * 8 * 9
-                , num == 0 ? 0 : 1
-                , oVI.Volume
-                , nVI.Volume);
+                frameBuffer,
+                5 + (num % 16) * 20,
+                16 + (num / 16) * 8 * 9,
+                num == 0 ? 0 : 1,
+                oVI.Volume,
+                nVI.Volume);
         nVI.VisVol2Cnt--;
         if (nVI.VisVol2Cnt == 0) {
             nVI.VisVol2Cnt = 1;
             if (nVI.VisVolume2 > 0) nVI.VisVolume2--;
         }
         DrawBuff.MixerVolume(
-                frameBuffer
-                , 2 + (num % 16) * 20
-                , 10 + (num / 16) * 8 * 9
-                , oVI.VisVolume1
-                , nVI.VisVolume1
-                , oVI.VisVolume2
-                , nVI.VisVolume2);
+                frameBuffer,
+                2 + (num % 16) * 20,
+                10 + (num / 16) * 8 * 9,
+                oVI.VisVolume1,
+                nVI.VisVolume1,
+                oVI.VisVolume2,
+                nVI.VisVolume2);
     }
 
     public void screenInit() {

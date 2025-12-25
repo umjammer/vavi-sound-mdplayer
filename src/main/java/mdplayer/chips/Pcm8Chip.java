@@ -10,13 +10,12 @@ import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
-import mdsound.chips.PPZ8;
 import mdsound.instrument.Pcm8PPInst;
 import mdsound.instrument.Ppz8Inst;
 
 
 /**
- * Pcm8Chip.
+ * Pcm8 (MSX).
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-09 nsano initial version <br>

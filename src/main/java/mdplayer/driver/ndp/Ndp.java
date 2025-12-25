@@ -1,0 +1,429 @@
+package mdplayer.driver.ndp;
+
+import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+
+import konamiman.z80.Z80Processor;
+import konamiman.z80.Z80ProcessorImpl;
+import konamiman.z80.events.BeforeInstructionFetchEvent;
+import mdplayer.Chip;
+import mdplayer.Common;
+import mdplayer.Common.EnmModel;
+import mdplayer.driver.BaseDriver;
+import mdplayer.driver.Vgm;
+import mdplayer.driver.Vgm.Gd3;
+import mdplayer.driver.mgsdrv.Mapper;
+import mdplayer.driver.mgsdrv.MapperRamCartridge;
+import mdplayer.driver.mgsdrv.MsxMemory;
+import mdplayer.driver.mgsdrv.MsxPort;
+import mdplayer.driver.mgsdrv.Z80Opcode;
+import mdplayer.plugin.BasePlugin;
+import vavi.util.ByteUtil;
+
+import static java.lang.System.getLogger;
+
+
+public class Ndp extends BaseDriver {
+
+    private static final Logger logger = getLogger(Ndp.class.getName());
+
+    @Override
+    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+        Gd3 ret = new Gd3();
+        if (buf != null && buf.length > 8) {
+            if (buf.length > 7 + 0x0b && (buf[7 + 0x0b] & 2) != 0) {
+                int[] index = new int[] {7 + 0xe};
+                String TITLE = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
+                gd3.trackName = gd3.trackNameJ = TITLE;
+                String COMPOSER = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
+                gd3.composer = gd3.composerJ = COMPOSER;
+                String ARRANGER = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
+                gd3.systemName = ARRANGER;
+                String PROGRAMMER = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
+                gd3.converted = PROGRAMMER;
+                String MEMO = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
+                gd3.notes = MEMO;
+            }
+            ret.trackName = gd3.trackName;
+            ret.trackNameJ = gd3.trackNameJ;
+            ret.composer = gd3.composer;
+            ret.composerJ = gd3.composerJ;
+            ret.systemName = gd3.systemName;
+            ret.converted = gd3.converted;
+            ret.notes = gd3.notes;
+        }
+
+        return ret;
+    }
+
+    @Override
+    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
+        this.plugin = plugin;
+        loopCounter = 0;
+        vgmCurLoop = 0;
+        this.model = model;
+        vgmFrameCounter = -latency - waitTime;
+
+        try {
+            run(vgmBuf);
+        } catch (Exception e) {
+logger.log(Level.ERROR, e.getMessage(), e);
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void processOneFrame() {
+        try {
+            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
+            while (vgmSpeedCounter >= 1.0) {
+                vgmSpeedCounter -= 1.0;
+                if (vgmFrameCounter > -1) {
+                    oneFrameMain();
+                } else {
+                    vgmFrameCounter++;
+                }
+            }
+            //stopped = !isPlaying();
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+    }
+
+    private void oneFrameMain() {
+        try {
+            counter++;
+            vgmFrameCounter++;
+
+            if (vgmFrameCounter % (Common.VGMProcSampleRate / 60) == 0) {
+                interrupt();
+            }
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+    }
+
+    private void interrupt() {
+        //logger.log(Level.TRACE, " INTRPT(C009H)");
+        z80.getRegisters().setPC((short) 0xc009);
+        z80.getRegisters().setSP((short) 0xf380);
+        z80.continue_();
+        //debugRegisters(z80);
+
+        //logger.log(Level.TRACE, " RDSTAT(C033H)");
+        z80.getRegisters().setPC((short) 0xc033);
+        z80.getRegisters().setSP((short) 0xf380);
+        z80.continue_();
+        byte playFG = (byte) (z80.getRegisters().getA() & 0xf);
+        if (playFG == 0x0) stopped = true;
+
+        //logger.log(Level.TRACE, " RDENDT(C036H)");
+        z80.getRegisters().setPC((short) 0xc036);
+        z80.getRegisters().setSP((short) 0xf380);
+        z80.continue_();
+        playFG = (byte) (z80.getRegisters().getA() & 0xf);
+        playFG = (byte) ((((z80.getMemory().get(0x4000) & 0xff) | (z80.getMemory().get(0x4001) & 0xff)) == 0 ? 1 : (playFG & 1)) |
+                        (((z80.getMemory().get(0x4002) & 0xff) | (z80.getMemory().get(0x4003) & 0xff)) == 0 ? 2 : (playFG & 2)) |
+                        (((z80.getMemory().get(0x4004) & 0xff) | (z80.getMemory().get(0x4005) & 0xff)) == 0 ? 4 : (playFG & 4)) |
+                        (((z80.getMemory().get(0x4006) & 0xff) | (z80.getMemory().get(0x4007) & 0xff)) == 0 ? 8 : (playFG & 8))
+        );
+        if (playFG == 0xf) stopped = true;
+
+        //logger.log(Level.TRACE, " RDLOOP(C039H)");
+        z80.getRegisters().setPC((short) 0xc039);
+        z80.getRegisters().setSP((short) 0xf380);
+        z80.continue_();
+        int a = z80.getRegisters().getA() & 0xff;
+        vgmCurLoop = (a == 255) ? 0 : a;
+    }
+
+    private static byte[] program = null;
+    private static final byte DollarCode = '$';
+    private Z80Processor z80;
+    private Mapper mapper;
+    public static final int baseClockAY8910 = 1789773;
+    public static final int baseClockYM2413 = 3579545;
+    public static final int baseClockK051649 = 1789773;
+
+    private void run(byte[] vgmBuf) throws IOException, URISyntaxException {
+        Path fileName = Path.of(Ndp.class.getResource("NDP.BIN").toURI());
+
+        z80 = new Z80ProcessorImpl();
+        z80.setClockSynchronizer(null);
+        z80.setAutoStopOnRetWithStackEmpty(true);
+        z80.setMemory(new MsxMemory(plugin.audio.chipRegister, model));
+        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, plugin.audio.chipRegister, null, model));
+        z80.beforeInstructionFetch().addListener(this::z80OnBeforeInstructionFetch);
+
+        mapper = new Mapper((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1], (MsxMemory) z80.getMemory());
+
+        //StopWatch sw = new StopWatch();
+        //sw.start();
+
+        z80.reset();
+
+        // Loading a program and setting it in memory
+        program = Files.readAllBytes(fileName);
+        z80.getMemory().setContents(0xc000 - 7, program, 0, null); // -7 Binary file header information
+        z80.getMemory().setContents(0x4000 - 7, vgmBuf, 0, null);
+
+        logger.log(Level.TRACE, "NDPINI(C000H)");
+        z80.getRegisters().setPC((short) 0xc000);
+        z80.getRegisters().setSP((short) 0xf380);
+        z80.continue_();
+
+        //logger.log(Level.TRACE, "MSX-MUSIC slot %02x".formatted(z80.getMemory().get(0x6010) & 0xff));
+        //logger.log(Level.TRACE, "SCC       slot %02x".formatted(z80.getMemory().get(0x6011) & 0xff));
+
+        //byte[] mgsdata = vgmBuf;
+        //short dataAdr = 0x4000;
+
+        logger.log(Level.TRACE, "KSSPLY(C051H)");
+        z80.getRegisters().setPC((short) 0xc051);
+        z80.getRegisters().setSP((short) 0xf380);
+        z80.continue_();
+        //logger.log(Level.TRACE, "MPLAY2 IsSuccess? RegC=%02x".formatted(z80.getRegisters().getC() & 0xff));
+        //if (z80.getRegisters().getCF().intValue() == 0x01) {
+        //    debugRegisters(z80);
+        //    throw new Exception("MPLAY2 Fail");
+        //}
+
+        //int index;
+        ////logger.log(Level.TRACE, "_GETPAR(6047H)");
+        //z80.getRegisters().setPC((short) 0x6047);
+        //z80.getRegisters().setSP((short) 0xf380);
+        //z80.getRegisters().setHL((short) dataAdr);
+        //z80.getRegisters().setC((byte) 2); // title
+        //z80.continue_();
+        //if (z80.getRegisters().getCF().intValue() == 0) {
+        //    index = z80.getRegisters().getHL() & 0xffff;
+        //    gd3.trackName = Common.getNRDString(z80.getMemory(), /* ref */ index);
+        //    gd3.trackNameJ = gd3.trackName;
+        //}
+
+        ////logger.log(Level.TRACE, "_GETPAR(6047H)");
+        //z80.getRegisters().setPC((short) 0x6047);
+        //z80.getRegisters().setSP((short) 0xf380);
+        //z80.getRegisters().setHL((short) dataAdr);
+        //z80.getRegisters().setC((byte) 3); // memo
+        //z80.continue_();
+        //if (z80.getRegisters().getCF().intValue() == 0) {
+        //    index = z80.getRegisters().getHL() & 0xffff;
+        //    gd3.notes = Common.getNRDString(z80.getMemory(), /* ref */ index);
+        //}
+    }
+
+    private String playingFileName;
+
+    public String getPlayingFileName() {
+        return playingFileName;
+    }
+
+    private void z80OnBeforeInstructionFetch(BeforeInstructionFetchEvent args) {
+        // Absolutely minimum implementation of CP/M for ZEXALL and ZEXDOC to work
+
+        var z80 = (Z80Processor) args.getSource();
+
+        if (z80.getRegisters().getPC() == 0) { // 0:JP WBOOT
+            args.getExecutionStopper().stop(false);
+            return;
+        } else if (z80.getRegisters().getPC() == 0x0005) {
+            //logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC() & 0xff));
+            callBIOS(args, z80);
+        } else if (z80.getRegisters().getPC() == 0x000c) {
+            //logger.log(Level.TRACE, "Call RDSLT(0x000c) Reg.A=%02x Reg.HL=%04x".formatted(z80.getRegisters().getA() & 0xff, z80.getRegisters().HL & 0xffff));
+
+            int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
+            z80.getRegisters().setA(((MsxMemory) z80.getMemory()).readSlotMemoryAdr(
+                    slot & 0x03,
+                    (slot & 0x0c) >> 2,
+                    z80.getRegisters().getHL() & 0xffff
+            ));
+            z80.executeRet();
+        } else if (z80.getRegisters().getPC() == 0x0014) {
+            logger.log(Level.TRACE, "Call WRSLT(0x0014) Reg.A=%02x Reg.HL=%04x Reg.E=%02x".formatted(z80.getRegisters().getA() & 0xff, z80.getRegisters().getHL() & 0xffff, z80.getRegisters().getE() & 0xff));
+            throw new UnsupportedOperationException();
+        } else if (z80.getRegisters().getPC() == 0x001c) {
+            logger.log(Level.TRACE, "Call CALSLT(0x001c) Reg.IY=%04x Reg.IX=%04x".formatted(z80.getRegisters().getIY() & 0xffff, z80.getRegisters().getIX() & 0xffff));
+            throw new UnsupportedOperationException();
+        } else if (z80.getRegisters().getPC() == 0x0024) {
+            //logger.log(Level.TRACE, "Call ENASLT(0x0024) Reg.A=%02x Reg.HL=%04x".formatted(z80.getRegisters().getA() & 0xff, z80.getRegisters().getHL() & 0xffff));
+            int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
+            ((MsxMemory) z80.getMemory()).changePage(
+                    slot & 0x03,
+                    (slot & 0x0c) >> 2,
+                    (z80.getRegisters().getH() & 0xc0) >> 6
+            );
+            z80.executeRet();
+        } else if (z80.getRegisters().getPC() == 0x0030) {
+            logger.log(Level.TRACE, "Call CALLF(0x0030)");
+            throw new UnsupportedOperationException();
+        } else if (z80.getRegisters().getPC() == 0x0090) {
+            logger.log(Level.TRACE, "Call GICINI (0090H/MAIN)");
+            //throw new UnsupportedOperationException();
+        } else if (z80.getRegisters().getPC() == 0x0093) {
+            logger.log(Level.TRACE, "Call WRTPSG (0093H/MAIN)");
+            //throw new UnsupportedOperationException();
+        } else if (z80.getRegisters().getPC() == 0x0096) {
+            logger.log(Level.TRACE, "Call RDPSG (0096H/MAIN)");
+            //throw new UnsupportedOperationException();
+        } else if (z80.getRegisters().getPC() == 0x0138 || z80.getRegisters().getPC() == 0x013B || z80.getRegisters().getPC() == 0x015C || z80.getRegisters().getPC() == 0x015f) {
+            logger.log(Level.TRACE, "Call InterSlot");
+            //throw new UnsupportedOperationException();
+        } else if (z80.getRegisters().getPC() == 0x4601) {
+            logger.log(Level.TRACE, "JP NEWSTT(0x4601) Reg.HL=%04x".formatted(z80.getRegisters().getHL() & 0xffff));
+            String msg = getAsciiZ(z80, z80.getRegisters().getHL());
+            logger.log(Level.TRACE, "(HL)=%s".formatted(msg));
+            if (msg.equals(":_SYSTEM")) {
+                args.getExecutionStopper().stop(false);
+            }
+        } else if ((z80.getRegisters().getPC() & 0xffff) >= mapper.jumpAddress && (z80.getRegisters().getPC() & 0xffff) < mapper.jumpAddress + 16) {
+            //logger.log(Level.TRACE, "Call MAPPER PROC(0x%04x~) PC-%04x:%04x".formatted(mapper.jumpAddress, (z80.getRegisters().getPC() & 0xffff) - mapper.jumpAddress));
+            mapper.callMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - mapper.jumpAddress);
+        } else if ((z80.getRegisters().getPC() & 0xffff) == 0xffca) {
+            //logger.log(Level.TRACE, "Call EXTBIO(0xffca) Reg.DE=%04x".formatted(z80.getRegisters().getDE() & 0xffff));
+            callExtBio(args, z80);
+        }
+
+        //debugRegisters(z80);
+    }
+
+    private static void debugRegisters(Z80Processor z80) {
+        String nimo = Z80Opcode.GetNimo(z80.getMemory().get(z80.getRegisters().getPC() & 0xffff), z80.getMemory().get((z80.getRegisters().getPC() & 0xffff) + 1), z80.getMemory().get((z80.getRegisters().getPC() & 0xffff) + 2));
+        logger.log(Level.TRACE, "nimo:%7s Reg PC:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x".formatted(nimo,
+                z80.getRegisters().getPC() & 0xffff,
+                z80.getRegisters().getAF() & 0xffff, z80.getRegisters().getBC() & 0xffff, z80.getRegisters().getDE() & 0xffff, z80.getRegisters().getHL() & 0xffff,
+                z80.getRegisters().getIX() & 0xffff, z80.getRegisters().getIY() & 0xffff));
+    }
+
+    private void callExtBio(BeforeInstructionFetchEvent args, Z80Processor z80) {
+        byte funcType = z80.getRegisters().getD();
+        byte function = z80.getRegisters().getA();
+
+        switch (funcType & 0xff) {
+            case 0x00:
+                //logger.log(Level.TRACE, " EXTBIO broadcast");
+                switch (function) {
+                    case 0:
+                        break;
+                    default:
+                        logger.log(Level.TRACE, " EXTBIO broadcast Unknown function: %02x".formatted(function & 0xff) );
+                        break;
+                }
+                break;
+            case 0x04:
+                //logger.log(Level.TRACE, " EXTBIO MemoryMapper");
+                extBio_MemoryMapper(args, z80, function);
+                break;
+            case 0xf0:
+                // Function call for MGSDRV
+                z80.getRegisters().setA((byte) 0); // Non-stationed
+                break;
+            default:
+                logger.log(Level.TRACE, " EXTBIO Unknown type: %02x".formatted(funcType & 0xff));
+                break;
+        }
+        z80.executeRet();
+    }
+
+    private void extBio_MemoryMapper(BeforeInstructionFetchEvent args, Z80Processor z80, byte function) {
+        switch (function) {
+            case 0x02:
+                z80.getRegisters().setA((byte) 0);
+                z80.getRegisters().setBC((short) 0);
+                z80.getRegisters().setHL((short) mapper.tableAddress);
+                break;
+        }
+    }
+
+    private static void callBIOS(BeforeInstructionFetchEvent args, Z80Processor z80) {
+        byte function = z80.getRegisters().getC();
+
+        if (function == 9) {
+            var messageAddress = z80.getRegisters().getDE();
+            var bytesToPrint = new ArrayList<Byte>();
+            byte byteToPrint;
+            while ((byteToPrint = z80.getMemory().get(messageAddress & 0xffff)) != DollarCode) {
+                bytesToPrint.add(byteToPrint);
+                messageAddress++;
+            }
+
+            var stringToPrint = new String(ByteUtil.toByteArray(bytesToPrint));
+            System.out.print(stringToPrint);
+        } else if (function == 2) {
+            var byteToPrint = z80.getRegisters().getE();
+            System.out.print((char) byteToPrint);
+        } else if (function == 0x62) {
+            // _TERM
+            logger.log(Level.TRACE, "_TERM ErrorCode:%02x".formatted(z80.getRegisters().getB() & 0xff));
+            args.getExecutionStopper().stop(false);
+            return;
+
+        } else if (function == 0x6b) {
+            // _GENV
+            //logger.log(Level.TRACE, "_GENV HL:%04x DE:%04x B:%02x".formatted(z80.getRegisters().getHL() & 0xffff, z80.getRegisters().getDE() & 0xffff, z80.getRegisters().getB() & 0xff));
+            String msg = getAsciiZ(z80, z80.getRegisters().getHL());
+            //logger.log(Level.TRACE, "(HL)=%s".formatted(msg));
+
+            if (msg.equals("PARAMETERS")) {
+                byte[] option = "/z".getBytes(StandardCharsets.US_ASCII);
+                for (int i = 0; i < option.length; i++)
+                    z80.getMemory().set((z80.getRegisters().getDE() & 0xffff) + i, option[i]);
+                z80.getMemory().set((z80.getRegisters().getDE() & 0xffff) + option.length, (byte) 0);
+            } else if (msg.equals("SHELL")) {
+                //byte[] option = "c:\\dummy".getBytes(StandardCharsets.US_ASCII);
+                //for (int i = 0; i < option.length; i++) z80.getMemory().set((z80.getRegisters().getDE() & 0xffff) + i, option[i]);
+                //z80.getMemory().set((z80.getRegisters().getDE() & 0xffff) + option.length, 0);
+                z80.getMemory().set(z80.getRegisters().getDE() & 0xffff, (byte) 0);
+            } else {
+                z80.getMemory().set(z80.getRegisters().getDE() & 0xffff, (byte) 0);
+            }
+
+            z80.getRegisters().setA((byte) 0x00); // Error number
+            z80.getRegisters().setDE((short) 0x00); // value
+
+        } else if (function == 0x6c) {
+            // _SENV
+            //logger.log(Level.TRACE, "_SENV HL:%04x DE:%04x".formatted(z80.getRegisters().getHL() & 0xffff, z80.getRegisters().getDE() & 0xffff));
+            //String msg = getAsciiZ(z80, z80.getRegisters().getHL());
+            //logger.log(Level.TRACE, "(HL)=%s".formatted(msg));
+            //msg = getAsciiZ(z80, z80.getRegisters().getDE());
+            //logger.log(Level.TRACE, "(DE)=%s".formatted(msg));
+            z80.getRegisters().setA((byte) 0x00); // Error number
+        } else if (function == 0x6f) {
+            // _DOSVER
+            z80.getRegisters().setBC((short) 0x0231); // ROM version
+            z80.getRegisters().setDE((short) 0x0210); // DISK version
+            //logger.log(Level.TRACE, "_DOSVER ret BC(ROMVer):%04x DE(DISKVer):%04x".formatted(z80.getRegisters().getBC() & 0xffff, z80.getRegisters().getDE() & 0xffff));
+        } else {
+            logger.log(Level.WARNING, "unknown 0x%02x".formatted(function));
+            debugRegisters(z80);
+        }
+
+        z80.executeRet();
+    }
+
+    private static String getAsciiZ(Z80Processor z80, short reg) {
+        var messageAddress = reg;
+        var bytesToPrint = new ArrayList<Byte>();
+        byte byteToPrint;
+        while ((byteToPrint = z80.getMemory().get(messageAddress & 0xffff)) != 0) {
+            bytesToPrint.add(byteToPrint);
+            messageAddress++;
+        }
+        return new String(ByteUtil.toByteArray(bytesToPrint), StandardCharsets.US_ASCII);
+    }
+}

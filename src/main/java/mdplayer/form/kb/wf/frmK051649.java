@@ -207,7 +207,7 @@ public class frmK051649 extends frmBase {
                 return;
             }
 
-            //鍵盤
+            // keyboard
             if (py < 6 * 8) {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
@@ -223,10 +223,10 @@ public class frmK051649 extends frmBase {
                 return;
             }
 
-            //音色で右クリックした場合は何もしない
+            // Right-clicking on a tone does nothing
             if (ev.getButton() == MouseEvent.BUTTON2) return;
 
-            // 音色表示欄の判定
+            // Judgment of tone display column
             int instCh = ((py < 12 * 8) ? 0 : 3) + px / (8 * 13);
 
             if (instCh < 5) {

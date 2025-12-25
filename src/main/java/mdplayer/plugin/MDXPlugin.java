@@ -22,7 +22,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * MDXPlugin.
+ * MDXDRV (X68000) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
@@ -34,12 +34,12 @@ public class MDXPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MXDRV();
-        ((MXDRV) audio.driverVirtual).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
+        ((MXDRV) audio.driverVirtual).extendFile = (extendFiles != null && !extendFiles.isEmpty()) ? extendFiles.get(0) : null;
         audio.driverReal = null;
-        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new MXDRV();
-            ((MXDRV) audio.driverReal).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
-        }
+//        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
+//            audio.driverReal = new MXDRV();
+//            ((MXDRV) audio.driverReal).extendFiles = (extendFiles != null && !extendFiles.isEmpty()) ? extendFiles.get(0) : null;
+//        }
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
@@ -71,7 +71,7 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
         chip.samplingRate = chip.clock / 64;
         put(Ym2151Chip.class, chip);
 
-        X68kYm2151Inst mdxPCM_V = Instrument.getInstrument(X68kYm2151Inst.class);
+        X68kYm2151Inst mdxPCM_V = Instrument.getInstrument(X68kYm2151Inst.class); // virtual
         mdxPCM_V.soundIocs[0] = new SoundIocs(mdxPCM_V.chips[0]);
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -81,12 +81,14 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
         chip.samplingRate = setting.getOutputDevice().getSampleRate(); // TODO vavi
         put(Ym2151Chip.class, chip);
 
-        X68kYm2151Inst mdxPCM_R = Instrument.getInstrument(X68kYm2151Inst.class);
+        X68kYm2151Inst mdxPCM_R = Instrument.getInstrument(X68kYm2151Inst.class); // real
         mdxPCM_R.soundIocs[0] = new SoundIocs(mdxPCM_R.chips[0]);
+        X68kYm2151Inst mdxPCM_P = Instrument.getInstrument(X68kYm2151Inst.class); // piano roll
+        mdxPCM_P.soundIocs[0] = new SoundIocs(mdxPCM_P.chips[0]);
 
         Pcm8PPInst pcm8pp = Instrument.getInstrument(Pcm8PPInst.class);
         ((MXDRV) audio.driverVirtual).pcm8type = 0;
-        if (setting.getMxdrv().pcm8type == 0) {
+        if (setting.getMxDrv().pcm8Type == 0) {
             // mxdrv is special and requires PCM8
         } else {
             chip = new MDSound.Chip();
@@ -95,7 +97,7 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
             chip.volume = 0;
             chip.clock = 4_000_000;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.option = new Object[] { setting.getMxdrv().pcm8ppSoption };
+            chip.option = new Object[] {setting.getMxDrv().pcm8ppsOption};
             put(Pcm8Chip.class, chip);
             ((MXDRV) audio.driverVirtual).pcm8type = 1;
         }
@@ -148,6 +150,7 @@ logger.log(Level.WARNING, "sample rate: " + setting.getOutputDevice().getSampleR
 
         if (!retV || !retR) {
             audio.errMsg = !audio.driverVirtual.errMsg.isEmpty() ? audio.driverVirtual.errMsg : (audio.driverReal != null ? audio.driverReal.errMsg : "");
+logger.log(Level.WARNING, "cannot start: " + audio.errMsg);
             return false;
         }
 

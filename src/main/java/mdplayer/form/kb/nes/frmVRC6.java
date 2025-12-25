@@ -197,22 +197,21 @@ public class frmVRC6 extends frmBase {
             } else {
                 DrawBuff.font4Int2(frameBuffer, 9 * 4, ch * 16 + 16, 0, 3, oyc.volumeL, nyc.volumeL);
                 oyc.volume = DrawBuff.volume(frameBuffer, 256, 8 + ch * 2 * 8, 0, oyc.volume, nyc.volume, 0);
-                DrawBuff.drawNESSw(frameBuffer, 55 * 4, ch * 16 + 16
-                        , oldParam.channels[ch].bit[1], newParam.channels[ch].bit[1]);
+                DrawBuff.drawNESSw(frameBuffer, 55 * 4, ch * 16 + 16,
+                        oldParam.channels[ch].bit[1], newParam.channels[ch].bit[1]);
                 DrawBuff.font4Int1(frameBuffer, 62 * 4, ch * 16 + 16, 0, oyc.sadr, nyc.sadr);
                 DrawBuff.chVRC6(frameBuffer, ch, oldParam.channels[ch].mask, newParam.channels[ch].mask, 0);
             }
 
-            DrawBuff.drawNESSw(frameBuffer, 13 * 4, ch * 16 + 16
-                    , oldParam.channels[ch].bit[0], newParam.channels[ch].bit[0]);
+            DrawBuff.drawNESSw(frameBuffer, 13 * 4, ch * 16 + 16,
+                    oldParam.channels[ch].bit[0], newParam.channels[ch].bit[0]);
 
             DrawBuff.font4Hex12Bit(frameBuffer, 16 * 4, ch * 16 + 16, 0, oyc.freq, nyc.freq);
-
         }
     }
 
     private void initializeComponent() {
-//            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmVRC6));
+//        System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmVRC6));
         this.pbScreen = new JPanel();
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
@@ -229,8 +228,8 @@ public class frmVRC6 extends frmBase {
         //
         // frmVRC6
         //
-//            this.AutoScaleDimensions = new DimensionF(6F, 12F);
-//            this.AutoScaleMode = JAutoScaleMode.Font;
+//        this.AutoScaleDimensions = new DimensionF(6F, 12F);
+//        this.AutoScaleMode = JAutoScaleMode.Font;
         //this.setBackground(Color.ControlDarkDark);
         this.setPreferredSize(new Dimension(320, 56));
         this.getContentPane().add(this.pbScreen);
@@ -242,7 +241,7 @@ public class frmVRC6 extends frmBase {
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
-//            this.ResumeLayout(false);
+//        this.ResumeLayout(false);
     }
 
     BufferedImage image;

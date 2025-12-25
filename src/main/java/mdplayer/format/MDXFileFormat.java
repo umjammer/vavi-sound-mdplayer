@@ -19,7 +19,7 @@ import vavi.util.archive.Entry;
 
 
 /**
- * MDXFileFormat.
+ * MXDRV (X68000) FileFormat.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-07 nsano initial version <br>
@@ -65,6 +65,10 @@ public class MDXFileFormat extends BaseFileFormat {
             buf = getExtendFileAllBytes(fn, PDX[0], archive, entry);
             if (buf == null) {
                 buf = getExtendFileAllBytes(fn, PDX[0] + ".PDX", archive, entry);
+                if (buf == null) {
+                    // TODO try lower case also?
+                    buf = getExtendFileAllBytes(fn, PDX[0].toUpperCase() + ".PDX", archive, entry);
+                }
             }
             if (buf != null) ret.add(new Tuple<>(".PDX", buf));
         }

@@ -2,7 +2,7 @@ package mdplayer.driver.fmp.nise98;
 
 class NiseInt08Timer {
 
-    private Nise286 cpu;
+    private final Nise286 cpu;
     private boolean enable = false;
     private int counter = 0;
     private int wCounter = 300;

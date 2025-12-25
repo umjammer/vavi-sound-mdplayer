@@ -280,8 +280,7 @@ public class Km6280 {
         public void KM_ALUADDER(int src) {
             int w = this.a + src + (this.p & C_FLAG);
             this.p &= ~(N_FLAG | V_FLAG | Z_FLAG | C_FLAG | T_FLAG);
-            this.p += FLAG_NZC(w)
-                    + ((((~this.a ^ src) & (this.a ^ w)) >> 1) & V_FLAG);
+            this.p += FLAG_NZC(w) + ((((~this.a ^ src) & (this.a ^ w)) >> 1) & V_FLAG);
             this.p &= 0xff;
             this.a = w & 0xff;
         }

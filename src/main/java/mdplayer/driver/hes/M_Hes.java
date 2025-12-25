@@ -650,15 +650,15 @@ public class M_Hes {
                             "First Mapper 5 : %2x" +
                             "First Mapper 6 : %2x" +
                             "First Mapper 7 : %2x".formatted(
-                    pData[5], this.initAddr
-                    , pData[0x8]
-                    , pData[0x9]
-                    , pData[0xa]
-                    , pData[0xb]
-                    , pData[0xc]
-                    , pData[0xd]
-                    , pData[0xe]
-                    , pData[0xf]
+                                    pData[5], this.initAddr,
+                                    pData[0x8],
+                                    pData[0x9],
+                                    pData[0xa],
+                                    pData[0xb],
+                                    pData[0xc],
+                                    pData[0xd],
+                                    pData[0xe],
+                                    pData[0xf]
             );
 
             if (this.allocPhysicalAddress(0xf8 << 13, 0x2000) == 0) // RAM

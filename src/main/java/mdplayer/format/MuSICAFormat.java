@@ -21,7 +21,7 @@ import vavi.util.archive.Entry;
 
 
 /**
- * MuSICAFormat.
+ * MuSICA (MSX) Format.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>
@@ -37,7 +37,7 @@ public class MuSICAFormat extends BaseFileFormat implements FileFormat.SampledFi
     public List<Music> getMusic(String file, byte[] buf, String zipFile, Archive archive, Entry entry) {
         Music music = new Music();
         String ext = file.substring(file.lastIndexOf('.'));
-        if (ext.equals(".bgm")) {
+        if (ext.equalsIgnoreCase(".bgm")) {
             music.format = this;
             Vgm.Gd3 gd3 = (new MuSICA()).getGD3Info(buf, null);
             music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
@@ -50,7 +50,7 @@ public class MuSICAFormat extends BaseFileFormat implements FileFormat.SampledFi
             music.converted = "";
             music.notes = gd3.notes.isEmpty() ? "" : gd3.notes;
 
-        } else if (ext.equals(".msd")) {
+        } else if (ext.equalsIgnoreCase(".msd")) {
             music.format = this;
             String vcd = Path.changeExtension(music.fileName, ".vcd");
             byte[] vcdBuf = null;

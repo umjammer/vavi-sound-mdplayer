@@ -9,7 +9,6 @@ import dotnet4j.util.compat.Tuple3;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.Setting;
 import mdplayer.chips.Ay8910Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
@@ -24,7 +23,6 @@ public class NRTDRV extends BaseDriver {
     private static final Logger logger = getLogger(NRTDRV.class.getName());
 
     public NRTDRV() {
-        this.setting = Setting.getInstance();
         ctcStep = 4000000.0f / setting.getOutputDevice().getSampleRate();
         ctc1Step = 4000000.0f / setting.getOutputDevice().getSampleRate();
     }
@@ -32,87 +30,87 @@ public class NRTDRV extends BaseDriver {
     private byte[] ram;
     public Work work = new Work();
 
-    private static final byte[] KTABLE = new byte[] {
-         // C     C+    D     D +   E     F     F+    G     G+    a     a+    B
-            0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x04, 0x05, 0x06, 0x08, 0x09, 0x0A, // o0
-            0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x14, 0x15, 0x16, 0x18, 0x19, 0x1A, // o1
-            0x1C, 0x1D, 0x1E, 0x20, 0x21, 0x22, 0x24, 0x25, 0x26, 0x28, 0x29, 0x2A, // o2
-            0x2C, 0x2D, 0x2E, 0x30, 0x31, 0x32, 0x34, 0x35, 0x36, 0x38, 0x39, 0x3A, // o3
-            0x3C, 0x3D, 0x3E, 0x40, 0x41, 0x42, 0x44, 0x45, 0x46, 0x48, 0x49, 0x4A, // o4
-            0x4C, 0x4D, 0x4E, 0x50, 0x51, 0x52, 0x54, 0x55, 0x56, 0x58, 0x59, 0x5A, // o5
-            0x5C, 0x5D, 0x5E, 0x60, 0x61, 0x62, 0x64, 0x65, 0x66, 0x68, 0x69, 0x6A, // o6
-            0x6C, 0x6D, 0x6E, 0x70, 0x71, 0x72, 0x74, 0x75, 0x76, 0x78, 0x79, 0x7A, // o7
-            0x7C, 0x7D, 0x7E, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, // o8
-            0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F, 0x7F  // o9
+    private static final byte[] KTABLE = {
+            // C     C+    D     D +   E     F     F+    G     G+    a     a+    B
+            0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x04, 0x05, 0x06, 0x08, 0x09, 0x0a, // o0
+            0x0c, 0x0d, 0x0e, 0x10, 0x11, 0x12, 0x14, 0x15, 0x16, 0x18, 0x19, 0x1a, // o1
+            0x1c, 0x1d, 0x1e, 0x20, 0x21, 0x22, 0x24, 0x25, 0x26, 0x28, 0x29, 0x2a, // o2
+            0x2c, 0x2d, 0x2e, 0x30, 0x31, 0x32, 0x34, 0x35, 0x36, 0x38, 0x39, 0x3a, // o3
+            0x3c, 0x3d, 0x3e, 0x40, 0x41, 0x42, 0x44, 0x45, 0x46, 0x48, 0x49, 0x4a, // o4
+            0x4c, 0x4d, 0x4e, 0x50, 0x51, 0x52, 0x54, 0x55, 0x56, 0x58, 0x59, 0x5a, // o5
+            0x5c, 0x5d, 0x5e, 0x60, 0x61, 0x62, 0x64, 0x65, 0x66, 0x68, 0x69, 0x6a, // o6
+            0x6c, 0x6d, 0x6e, 0x70, 0x71, 0x72, 0x74, 0x75, 0x76, 0x78, 0x79, 0x7a, // o7
+            0x7c, 0x7d, 0x7e, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, // o8
+            0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f, 0x7f  // o9
     };
 
-    private static final int[] PTABLE = new int[] {
+    private static final int[] PTABLE = {
             // C    C+   D    D+   E    F    F+   G    G+   a    a+   B
-            4095, 4036, 3980, 3978, 3924, 3894, 3868, 3812, 3756, 3700, 3644, 3588 // o0
-            , 3532, 3476, 3420, 3228, 3047, 2876, 2715, 2562, 2419, 2283, 2155, 2034 // o1
-            , 1920, 1812, 1711, 1614, 1524, 1438, 1358, 1281, 1210, 1142, 1078, 1017 // o2
-            , 960, 906, 855, 807, 762, 719, 679, 641, 605, 571, 539, 509 // o3
-            , 480, 453, 428, 404, 381, 360, 339, 320, 302, 285, 269, 254 // o4
-            , 240, 227, 214, 202, 190, 180, 170, 160, 151, 143, 135, 127 // o5
-            , 120, 113, 107, 101, 95, 90, 85, 80, 76, 71, 67, 64 // o6
-            , 60, 57, 53, 50, 48, 45, 42, 40, 38, 36, 34, 32 // o7
-            , 30, 28, 27, 25, 24, 22, 21, 20, 19, 18, 17, 16 // o8
-            , 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4 // o9
+            4095, 4036, 3980, 3978, 3924, 3894, 3868, 3812, 3756, 3700, 3644, 3588, // o0
+            3532, 3476, 3420, 3228, 3047, 2876, 2715, 2562, 2419, 2283, 2155, 2034, // o1
+            1920, 1812, 1711, 1614, 1524, 1438, 1358, 1281, 1210, 1142, 1078, 1017, // o2
+            960, 906, 855, 807, 762, 719, 679, 641, 605, 571, 539, 509,             // o3
+            480, 453, 428, 404, 381, 360, 339, 320, 302, 285, 269, 254,             // o4
+            240, 227, 214, 202, 190, 180, 170, 160, 151, 143, 135, 127,             // o5
+            120, 113, 107, 101, 95, 90, 85, 80, 76, 71, 67, 64,                     // o6
+            60, 57, 53, 50, 48, 45, 42, 40, 38, 36, 34, 32,                         // o7
+            30, 28, 27, 25, 24, 22, 21, 20, 19, 18, 17, 16,                         // o8
+            15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4                                // o9
     };
 
-    private static final byte[] PMTBL = new byte[] {
-            0x3f, 0x09 // Ch.1/P0
-            , 0x3e, 0x08 // Ch.1/P1
-            , 0x37, 0x01 // Ch.1/P2
-            , 0x36, 0x00 // Ch.1/P3
+    private static final byte[] PMTBL = {
+            0x3f, 0x09, // Ch.1/P0
+            0x3e, 0x08, // Ch.1/P1
+            0x37, 0x01, // Ch.1/P2
+            0x36, 0x00, // Ch.1/P3
 
-            , 0x3f, 0x12 // Ch.2/P0
-            , 0x3d, 0x10 // Ch.2/P1
-            , 0x2f, 0x02 // Ch.2/P2
-            , 0x2d, 0x00 // Ch.2/P3
+            0x3f, 0x12, // Ch.2/P0
+            0x3d, 0x10, // Ch.2/P1
+            0x2f, 0x02, // Ch.2/P2
+            0x2d, 0x00, // Ch.2/P3
 
-            , 0x3f, 0x24 // Ch.3/P0
-            , 0x3b, 0x20 // Ch.3/P1
-            , 0x1f, 0x04 // Ch.3/P2
-            , 0x1b, 0x00 // Ch.3/P3
+            0x3f, 0x24, // Ch.3/P0
+            0x3b, 0x20, // Ch.3/P1
+            0x1f, 0x04, // Ch.3/P2
+            0x1b, 0x00  // Ch.3/P3
     };
 
-    private static final byte[] TTONE = new byte[] {
-            (byte) 162, 1, 0  // +3
-            , 75, 0, 74, 0, 74, 0, 74, 0    // +8
-            , 74, 0, 74, 0, 74, 0, 74, 0    // +8
-            , 126, 0, 74, 0, 74, 0, 74, 0    // +8
-            , 74, 0, 74, 0, 74, 0, 74, 0    // +8
-            , (byte) 175, 0, 74, 0, 74, 0          // +6
-            , 15, (byte) 255, 2               // +3 PVX
-            , 0x3c                   // +1 FVX
-            , 0x18                   // +1
-            , 0x02, 0x00, 0x01, 0x00    // +4
-            , 0x1c, 0x7f, 0x02, (byte) 0x81    // +4
-            , 0x1e, 0x00, 0x1f, 0x00    // +4
-            , 0x00, 0x00, 0x00, 0x00    // +4
-            , 0x00, 0x00, 0x00, 0x00    // +4
-            , 0x0f, (byte) 0xff, 0x0f, (byte) 0xff    // +4
-            , 0x1c, 0x7f, 0x00, 0x7f    // +4
-            , 126                    // +1 TR0
-            , 3, 125, 14               // +3 TR1
-            , 44, 0                   // +2
-            , (byte) 176, 24, (byte) 178, 24, (byte) 180, 24, (byte) 181, 24, (byte) 183, 24, (byte) 185, 24, (byte) 187, 24, (byte) 188, 24, 0, (byte) 255, (byte) 129, 0, 48 // +21
-            , (byte) 188, 24, (byte) 187, 24, 0, 96, (byte) 178, 24, (byte) 176, 24, 0, 48, (byte) 176, (byte) 192, 0, 48, 25, 6 // +18
-            , (byte) 188, 24, 0, 72, 127        // +5 TR1L
-            , 119, 0                  // +2
-            , 3, 125, 14               // +3 TR2
-            , 44, 0                   // +2
-            , 0, (byte) 255, (byte) 129, (byte) 176, 24, (byte) 178, 24, (byte) 180, 24, (byte) 181, 24, (byte) 183, 24, (byte) 185, 24, (byte) 187, 24, (byte) 188, 24, 0, 48 // +21
-            , 0, 96, (byte) 181, 24, (byte) 180, 24, 0, (byte) 192, (byte) 183, 96, 0, 48, 25, 6 // +14
-            , 0, 48, (byte) 188, 24, 0, 24, 127   // +7 TR2L
-            , (byte) 166, 0                  // +2
-            , 14                     // +1 TR3
-            , 41, 0                   // +2
-            , 19, 112, 0, (byte) 192, (byte) 176, 24, (byte) 178, 24, (byte) 180, 24, (byte) 181, 24, (byte) 183, 24, (byte) 185, 24, (byte) 187, 24, (byte) 188, 24, 0, (byte) 192 // +22
-            , 0, 96, (byte) 185, 24, (byte) 183, 24, 0, (byte) 192, (byte) 180, (byte) 144, 0, 48, 25, 6 // +14
-            , 0, 24, (byte) 188, 24, 0, 48, 127   // +7 TR3L
-            , (byte) 214, 0                  // +2
+    private static final byte[] TTONE = {
+            (byte) 162, 1, 0,                      // +3
+            75, 0, 74, 0, 74, 0, 74, 0,            // +8
+            74, 0, 74, 0, 74, 0, 74, 0,            // +8
+            126, 0, 74, 0, 74, 0, 74, 0,           // +8
+            74, 0, 74, 0, 74, 0, 74, 0,            // +8
+            (byte) 175, 0, 74, 0, 74, 0,           // +6
+            15, (byte) 255, 2,                     // +3 PVX
+            0x3c,                                  // +1 FVX
+            0x18,                                  // +1
+            0x02, 0x00, 0x01, 0x00,                // +4
+            0x1c, 0x7f, 0x02, (byte) 0x81,         // +4
+            0x1e, 0x00, 0x1f, 0x00,                // +4
+            0x00, 0x00, 0x00, 0x00,                // +4
+            0x00, 0x00, 0x00, 0x00,                // +4
+            0x0f, (byte) 0xff, 0x0f, (byte) 0xff,  // +4
+            0x1c, 0x7f, 0x00, 0x7f,                // +4
+            126,                                   // +1 TR0
+            3, 125, 14,                            // +3 TR1
+            44, 0,                                 // +2
+            (byte) 176, 24, (byte) 178, 24, (byte) 180, 24, (byte) 181, 24, (byte) 183, 24, (byte) 185, 24, (byte) 187, 24, (byte) 188, 24, 0, (byte) 255, (byte) 129, 0, 48, // +21
+            (byte) 188, 24, (byte) 187, 24, 0, 96, (byte) 178, 24, (byte) 176, 24, 0, 48, (byte) 176, (byte) 192, 0, 48, 25, 6, // +18
+            (byte) 188, 24, 0, 72, 127,            // +5 TR1L
+            119, 0,                                // +2
+            3, 125, 14,                            // +3 TR2
+            44, 0,                                 // +2
+            0, (byte) 255, (byte) 129, (byte) 176, 24, (byte) 178, 24, (byte) 180, 24, (byte) 181, 24, (byte) 183, 24, (byte) 185, 24, (byte) 187, 24, (byte) 188, 24, 0, 48, // +21
+            0, 96, (byte) 181, 24, (byte) 180, 24, 0, (byte) 192, (byte) 183, 96, 0, 48, 25, 6, // +14
+            0, 48, (byte) 188, 24, 0, 24, 127,     // +7 TR2L
+            (byte) 166, 0,                         // +2
+            14,                                    // +1 TR3
+            41, 0,                                 // +2
+            19, 112, 0, (byte) 192, (byte) 176, 24, (byte) 178, 24, (byte) 180, 24, (byte) 181, 24, (byte) 183, 24, (byte) 185, 24, (byte) 187, 24, (byte) 188, 24, 0, (byte) 192, // +22
+            0, 96, (byte) 185, 24, (byte) 183, 24, 0, (byte) 192, (byte) 180, (byte) 144, 0, 48, 25, 6, // +14
+            0, 24, (byte) 188, 24, 0, 48, 127,    // +7 TR3L
+            (byte) 214, 0                         // +2
     };
 
     @Override
@@ -193,7 +191,7 @@ public class NRTDRV extends BaseDriver {
             }
         }
 
-        if ((((buf[2] & 0x80) != 0) && buf[41] != 2) || (buf[2] & 0x80) == 0) {
+        if ((((buf[2] & (byte) 0x80) != 0) && buf[41] != 2) || (buf[2] & 0x80) == 0) {
             gd3.notes = "!!Warning!! This data version instanceof older/newer.";
         }
 
@@ -230,10 +228,10 @@ public class NRTDRV extends BaseDriver {
 
         boolean flg = false;
         for (int i = 0; i < 8; i++) {
-            byte l = buf[trkPtr];
-            byte h = buf[trkPtr + 1];
+            int l = buf[trkPtr] & 0xff;
+            int h = buf[trkPtr + 1] & 0xff;
             int hl = (h << 8) + l;
-            byte cmd = buf[hl];
+            int cmd = buf[hl] & 0xff;
             while (cmd != 127) {
                 if ((cmd & 0x80) != 0) {
                     flg = true;
@@ -268,7 +266,7 @@ public class NRTDRV extends BaseDriver {
                 if (flg) break;
 
                 hl++;
-                cmd = buf[hl];
+                cmd = buf[hl] & 0xff;
             }
 
             if (flg) break;
@@ -279,10 +277,10 @@ public class NRTDRV extends BaseDriver {
         trkPtr = 3 + 2 * 8;
         flg = false;
         for (int i = 0; i < 8; i++) {
-            byte l = buf[trkPtr];
-            byte h = buf[trkPtr + 1];
+            int l = buf[trkPtr] & 0xff;
+            int h = buf[trkPtr + 1] & 0xff;
             int hl = (h << 8) + l;
-            byte cmd = buf[hl];
+            int cmd = buf[hl] & 0xff;
             while (cmd != 127) {
                 if ((cmd & 0x80) != 0) {
                     flg = true;
@@ -317,7 +315,7 @@ public class NRTDRV extends BaseDriver {
                 if (flg) break;
 
                 hl++;
-                cmd = buf[hl];
+                cmd = buf[hl] & 0xff;
             }
 
             if (flg) break;
@@ -328,10 +326,10 @@ public class NRTDRV extends BaseDriver {
         trkPtr = 3 + 2 * 16;
         flg = false;
         for (int i = 0; i < 3; i++) {
-            byte l = buf[trkPtr];
-            byte h = buf[trkPtr + 1];
+            int l = buf[trkPtr] & 0xff;
+            int h = buf[trkPtr + 1] & 0xff;
             int hl = (h << 8) + l;
-            byte cmd = buf[hl];
+            int cmd = buf[hl] & 0xff;
             while (cmd != 127) {
                 if ((cmd & 0x80) != 0) {
                     flg = true;
@@ -366,7 +364,7 @@ public class NRTDRV extends BaseDriver {
                 if (flg) break;
 
                 hl++;
-                cmd = buf[hl];
+                cmd = buf[hl] & 0xff;
             }
 
             if (flg) break;
@@ -401,32 +399,32 @@ public class NRTDRV extends BaseDriver {
         }
     }
 
-    public boolean IsPlaying() {
+    public boolean isPlaying() {
         int loop = Integer.MAX_VALUE;
         boolean flg = false;
 
         for (Ch c : work.opm1Chs) {
-            // if (c.TrackStopFlg == 255)
+            //if (c.TrackStopFlg == 255)
             if (c.trackStopFlg != 0) {
                 continue;
             }
-            loop = Math.min(c.loopCounter, loop);
+            loop = Math.min(c.loopCounter & 0xff, loop);
             flg = true;
         }
         for (Ch c : work.opm2Chs) {
-            // if (c.TrackStopFlg == 255)
+            //if (c.TrackStopFlg == 255)
             if (c.trackStopFlg != 0) {
                 continue;
             }
-            loop = Math.min(c.loopCounter, loop);
+            loop = Math.min(c.loopCounter & 0xff, loop);
             flg = true;
         }
         for (Ch c : work.psgChs) {
-            // if (c.TrackStopFlg == 255)
+            //if (c.TrackStopFlg == 255)
             if (c.trackStopFlg != 0) {
                 continue;
             }
-            loop = Math.min(c.loopCounter, loop);
+            loop = Math.min(c.loopCounter & 0xff, loop);
             flg = true;
         }
 
@@ -434,15 +432,15 @@ public class NRTDRV extends BaseDriver {
         return flg;
     }
 
-    private float CTC0DownCounter = 0.0f;
-    private float CTC0DownCounterMAX = 0.0f;
-    private boolean CTC0Paluse = false;
-    private float CTC1DownCounter = 0.0f;
-    private float CTC1DownCounterMAX = 0.0f;
-    // private boolean CTC1Paluse = false;
-    private float CTC3DownCounter = 0.0f;
-    private float CTC3DownCounterMAX = 0.0f;
-    // private boolean CTC3Paluse = false;
+    private float ctc0DownCounter = 0.0f;
+    private float ctc0DownCounterMAX = 0.0f;
+    private boolean ctc0Paluse = false;
+    private float ctc1DownCounter = 0.0f;
+    private float ctc1DownCounterMAX = 0.0f;
+    //private boolean ctc1Paluse = false;
+    private float ctc3DownCounter = 0.0f;
+    private float ctc3DownCounterMAX = 0.0f;
+    //private boolean ctc3Paluse = false;
     private final float ctcStep; // sampleRate;
     private final float ctc1Step; // sampleRate;
 
@@ -458,7 +456,7 @@ public class NRTDRV extends BaseDriver {
                     vgmFrameCounter++;
                 }
             }
-            stopped = !IsPlaying();
+            stopped = !isPlaying();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -470,67 +468,66 @@ public class NRTDRV extends BaseDriver {
             vgmFrameCounter++;
 
             // KUMA: (CTC0 & 0x40)==0 is always true
-            // CTC0DownCounterMAX = (work.ctc0timeconstant == 0 ? 0x100 : work.ctc0timeconstant) * ((work.ctc0 & 0x40) == 0 ? ((work.ctc0 & 0x20) != 0 ? 256.0f : 16.0f) : 1);
-            CTC0DownCounterMAX = (work.ctc0TimeConstant == 0 ? 0x100 : work.ctc0TimeConstant) * ((work.ctc0 & 0x20) != 0 ? 256.0f : 16.0f);
+            //ctc0DownCounterMAX = (work.ctc0TimeConstant == 0 ? 0x100 : work.ctc0TimeConstant & 0xff) * ((work.ctc0 & 0x40) == 0 ? ((work.ctc0 & 0x20) != 0 ? 256.0f : 16.0f) : 1);
+            ctc0DownCounterMAX = (work.ctc0TimeConstant == 0 ? 0x100 : work.ctc0TimeConstant & 0xff) * ((work.ctc0 & 0x20) != 0 ? 256.0f : 16.0f);
             // KUMA: (CTC1 & 0x40)==0 is always true
-            // CTC1DownCounterMAX = (work.ctc1timeconstant == 0 ? 0x100 : work.ctc1timeconstant) * ((work.ctc1 & 0x40) == 0 ? ((work.ctc1 & 0x20) != 0 ? 256.0f : 16.0f) : 1);
-            CTC1DownCounterMAX = (work.ctc1TimeConstant == 0 ? 0x100 : work.ctc1TimeConstant) * ((work.ctc1 & 0x20) != 0 ? 256.0f : 16.0f);
-            CTC3DownCounterMAX = (work.ctc3TimeConstant == 0 ? 0x100 : work.ctc3TimeConstant) * ((work.ctc3 & 0x40) == 0 ? ((work.ctc3 & 0x20) != 0 ? 256.0f : 16.0f) : 1);
-            CTC0Paluse = false;
-            // CTC3Paluse = false;
+            //ctc1DownCounterMAX = (work.ctc1TimeConstant == 0 ? 0x100 : work.ctc1TimeConstant & 0xff) * ((work.ctc1 & 0x40) == 0 ? ((work.ctc1 & 0x20) != 0 ? 256.0f : 16.0f) : 1);
+            ctc1DownCounterMAX = (work.ctc1TimeConstant == 0 ? 0x100 : work.ctc1TimeConstant & 0xff) * ((work.ctc1 & 0x20) != 0 ? 256.0f : 16.0f);
+            ctc3DownCounterMAX = (work.ctc3TimeConstant == 0 ? 0x100 : work.ctc3TimeConstant & 0xff) * ((work.ctc3 & 0x40) == 0 ? ((work.ctc3 & 0x20) != 0 ? 256.0f : 16.0f) : 1);
+            ctc0Paluse = false;
+            //ctc3Paluse = false;
 
             // KUMA: (CTC0 & 0x40)==0 is always true
             // ctc0
-            // if ((work.ctc0 & 0x40) == 0) {
-            // Timer Mode
-            CTC0DownCounter -= ctcStep;
-            // } else {
-            // CounterMode None
-            // ;
-            // }
+            //if ((work.ctc0 & 0x40) == 0) {
+            //    // Timer Mode
+            ctc0DownCounter -= ctcStep;
+            //} else {
+            //    // CounterMode None
+            //    ;
+            //}
 
-            if (CTC0DownCounter <= 0.0f) {
-                CTC0Paluse = true;
-                // if ((work.ctc0 & 0x80) != 0) {
-                // Parse();
-                // }
-                CTC0DownCounter += CTC0DownCounterMAX;
+            if (ctc0DownCounter <= 0.0f) {
+                ctc0Paluse = true;
+                //if ((work.ctc0 & 0x80) != 0) {
+                //    parse();
+                //}
+                ctc0DownCounter += ctc0DownCounterMAX;
             }
 
             // KUMA: (CTC1 & 0x40)==0 is always true
             // ctc1
-            // if ((work.ctc1 & 0x40) == 0) {
-            // Timer Mode
-            CTC1DownCounter -= ctc1Step;
-            // } else {
-            // CounterMode None
-            // ;
-            // }
+            //if ((work.ctc1 & 0x40) == 0) {
+            //    // Timer Mode
+            ctc1DownCounter -= ctc1Step;
+            //} else {
+            //    // CounterMode None
+            //    ;
+            //}
 
-            if (CTC1DownCounter <= 0.0f) {
-                // CTC1Paluse = true;
+            if (ctc1DownCounter <= 0.0f) {
+                // ctc1Paluse = true;
                 if ((work.ctc1 & 0x80) != 0) {
                     work.int2();
                 }
-                CTC1DownCounter += CTC1DownCounterMAX;
+                ctc1DownCounter += ctc1DownCounterMAX;
             }
-
 
             // ctc3
             if ((work.ctc3 & 0x40) == 0) {
                 // Timer Mode
-                CTC3DownCounter -= 1.0f;
-            } else if (CTC0Paluse) {
+                ctc3DownCounter -= 1.0f;
+            } else if (ctc0Paluse) {
                 // Counter Mode(Counting the pulses of ctc0)
-                CTC3DownCounter -= 1.0f;
+                ctc3DownCounter -= 1.0f;
             }
 
-            if (CTC3DownCounter <= 0.0f) {
+            if (ctc3DownCounter <= 0.0f) {
                 // CTC3Paluse = true;
                 if ((work.ctc3 & 0x80) != 0) {
                     work.imain();
                 }
-                CTC3DownCounter = CTC3DownCounterMAX;
+                ctc3DownCounter = ctc3DownCounterMAX;
             }
 
         } catch (Exception ex) {
@@ -553,7 +550,7 @@ public class NRTDRV extends BaseDriver {
 
         // DI
 
-        work.ctc0 = 0x27; // TimerMode PreScal=256
+        work.ctc0 = 0x27; // TimerMode PreScal = 256
         work.ctc0TimeConstant = ram[work.bgmAdr];
         work.ctc1 = (byte) 0xb7;
         work.ctc1TimeConstant = 0;
@@ -562,36 +559,35 @@ public class NRTDRV extends BaseDriver {
         work.mVol = 0;
         work.ffFlg = 0;
         work.fSpeed = 5;
-        work.OPMT02_LightMode = true;
-        work.OPMT14_MVMode = false;
+        work.opmT02_LightMode = true;
+        work.opmT14_MVMode = false;
         work.plyFlg &= 0xc0;
         work.plyFlg |= 0x01;
-        work.OPMKeyONEnable = false;
-        work.OPMRestEnable = false;
-        work.OPMT19Enable = false;
-        work.PSGKeyONEnable = false;
-        work.PSGRestEnable = false;
+        work.opmKeyONEnable = false;
+        work.opmRestEnable = false;
+        work.opmT19Enable = false;
+        work.psgKeyONEnable = false;
+        work.psgRestEnable = false;
 
         // EI at the end of interrupt routine is invalid
 
         work.imain();
         if (model == EnmModel.RealModel) {
-            // plugin.audio.chipRegister.sendDataYM2151(0, model);
-            // plugin.audio.chipRegister.setYM2151SyncWait(0, 1);
-            // plugin.audio.chipRegister.sendDataYM2151(1, model);
-            // plugin.audio.chipRegister.setYM2151SyncWait(1, 1);
+            //plugin.audio.chipRegister.sendDataYM2151(0, model);
+            //plugin.audio.chipRegister.setYM2151SyncWait(0, 1);
+            //plugin.audio.chipRegister.sendDataYM2151(1, model);
+            //plugin.audio.chipRegister.setYM2151SyncWait(1, 1);
         }
 
-        work.OPMKeyONEnable = true;
-        work.PSGKeyONEnable = true;
-        work.OPMRestEnable = true;
-        work.PSGRestEnable = true;
-        work.OPMT19Enable = true;
+        work.opmKeyONEnable = true;
+        work.psgKeyONEnable = true;
+        work.opmRestEnable = true;
+        work.psgRestEnable = true;
+        work.opmT19Enable = true;
 
         // EI valid at the end of interrupt routine
 
         // EI
-
     }
 
     private void mstop() {
@@ -665,7 +661,7 @@ public class NRTDRV extends BaseDriver {
 
     private void pinit(int hl) {
         Ch[] wChs = work.psgChs;
-        for (byte b = 0; b < 3; b++) {
+        for (int b = 0; b < 3; b++) {
             int de = (ram[hl] & 0xff) + (ram[hl + 1] & 0xff) * 0x100;
             hl += 2;
             wChs[b].ptrData = de + work.bgmAdr;
@@ -683,7 +679,7 @@ public class NRTDRV extends BaseDriver {
         }
 
         work.pFlg = 0x38;
-        // byte[] psrtbl = new byte[] { 0xe0, 1, 0xe0, 1, 0xe0, 1, 0, 0x38, 0, 0, 0, 0, 0x10, 0 };
+        //byte[] psrtbl = new byte[] { 0xe0, 1, 0xe0, 1, 0xe0, 1, 0, 0x38, 0, 0, 0, 0, 0x10, 0 };
         for (byte d = 0; d < psrtbl.length; d++) {
             wpsg(d, psrtbl[d]);
         }
@@ -752,29 +748,29 @@ public class NRTDRV extends BaseDriver {
         if (model == EnmModel.VirtualModel) {
             if (work.opmIo == 0x701) {
                 // Write to a virtual register
-                work.opm1VReg[d] = a;
+                work.opm1VReg[d & 0xff] = a;
                 // Write to real register
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d & 0xff, a & 0xff, EnmModel.VirtualModel, 0, 0);
                 // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
                 // Write to a virtual register
-                work.opm2VReg[d] = a;
+                work.opm2VReg[d & 0xff] = a;
                 // Write to real register
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d & 0xff, a & 0xff, EnmModel.VirtualModel, 0, 0);
                 // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         } else {
             if (work.opmIo == 0x701) {
                 // Write to a virtual register
-                work.opm1VReg[d] = a;
+                work.opm1VReg[d & 0xff] = a;
                 // Write to real register
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d, a, EnmModel.RealModel, ym2151Hosei[0], 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d & 0xff, a & 0xff, EnmModel.RealModel, ym2151Hosei[0], 0);
                 // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
                 // Write to a virtual register
-                work.opm2VReg[d] = a;
+                work.opm2VReg[d & 0xff] = a;
                 // Write to real register
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d, a, EnmModel.RealModel, ym2151Hosei[1], 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d & 0xff, a & 0xff, EnmModel.RealModel, ym2151Hosei[1], 0);
                 // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         }
@@ -782,12 +778,11 @@ public class NRTDRV extends BaseDriver {
 
     private void wpsg(byte d, byte a) {
         if (model == EnmModel.VirtualModel) {
-            // Out(0x1c00, d); // Psg register
-            // Out(0x1b00, a); // Psg data
-            plugin.audio.chipRegister.chip(Ay8910Chip.class).write(0, d, a, EnmModel.VirtualModel);
+            //out(0x1c00, d); // Psg register
+            //out(0x1b00, a); // Psg data
+            plugin.audio.chipRegister.chip(Ay8910Chip.class).write(0, d & 0xff, a & 0xff, EnmModel.VirtualModel);
+//        } else {
         }
-        // else {
-        // }
     }
 
     public class Work {
@@ -832,13 +827,13 @@ public class NRTDRV extends BaseDriver {
         public boolean PENVF_VOL0 = false;
         public boolean KEYON_LightMode = false;
         public boolean PKEYON_LightMode = false;
-        public boolean OPMT02_LightMode = true;
-        public boolean OPMT14_MVMode = false;
-        public boolean OPMKeyONEnable = true;
-        public boolean OPMRestEnable = true;
-        public boolean OPMT19Enable = true;
-        public boolean PSGKeyONEnable = true;
-        public boolean PSGRestEnable = true;
+        public boolean opmT02_LightMode = true;
+        public boolean opmT14_MVMode = false;
+        public boolean opmKeyONEnable = true;
+        public boolean opmRestEnable = true;
+        public boolean opmT19Enable = true;
+        public boolean psgKeyONEnable = true;
+        public boolean psgRestEnable = true;
 
         private void imain() {
             if ((this.plyFlg & 0x40) != 0) {
@@ -868,7 +863,7 @@ public class NRTDRV extends BaseDriver {
 
             this.fCount++;
 
-            if (this.fSpeed >= this.fCount) return;
+            if ((this.fSpeed & 0xff) >= (this.fCount & 0xff)) return;
 
             this.fCount = 0;
 
@@ -912,8 +907,8 @@ public class NRTDRV extends BaseDriver {
 
         private void MFADE1(byte a) {
             this.fSpeed = a;
-            this.OPMT02_LightMode = true;
-            this.OPMT14_MVMode = true;
+            this.opmT02_LightMode = true;
+            this.opmT14_MVMode = true;
             a = this.plyFlg;
             a &= 0xc0;
             a |= 2;
@@ -930,8 +925,8 @@ public class NRTDRV extends BaseDriver {
 
         public int ptrData = 0; // (IX,IX+1)
         public byte loopCounter = 0; // IX+2
-        public byte Counter = 0; // IX+3
-        public byte Detune = 0; // IX+4
+        public byte counter = 0; // IX+3
+        public byte detune = 0; // IX+4
         public int macroReturnAdr = 0; // IX+5,IX+6
         public byte panAlgFb = (byte) 0xc0; // (IX+7)
         public byte op1Tl = 0; // IX+8
@@ -1000,8 +995,8 @@ public class NRTDRV extends BaseDriver {
             this.op4Tls = (byte) 255;
             this.psgRrLevel = 15;
             this.loopCounter = 0;
-            this.Counter = 0;
-            this.Detune = 0;
+            this.counter = 0;
+            this.detune = 0;
             this.macroReturnAdr = 0;
             this.legartFlg = 0;
             this.nestCount = 0;
@@ -1041,7 +1036,7 @@ public class NRTDRV extends BaseDriver {
                 this.ptrData++;
 
                 if ((cmdno & 0x80) != 0) {
-                    if (work.OPMKeyONEnable) {
+                    if (work.opmKeyONEnable) {
                         // KEYON
                         if (work.KEYON_LightMode) {
                             throw new UnsupportedOperationException();
@@ -1055,7 +1050,7 @@ public class NRTDRV extends BaseDriver {
                 } else if (cmdno == 127) {
                     // Track End
                     trkend();
-                } else if (cmdno < 38) {
+                } else if ((cmdno & 0xff) < 38) {
                     if (comck0(e, cmdno) == 1) return;
                 } else if (cmdno == 125) {
                     // Track Pause
@@ -1072,7 +1067,7 @@ public class NRTDRV extends BaseDriver {
             int r = 0;
             switch (cmdno) {
             case 0:
-                if (work.OPMRestEnable) r = REST(e);
+                if (work.opmRestEnable) r = REST(e);
                 else {
                     r = 1;
                     this.ptrData--;
@@ -1082,7 +1077,7 @@ public class NRTDRV extends BaseDriver {
                 r = ZCOM(e);
                 break;
             case 2:
-                if (work.OPMT02_LightMode) r = VSETL(e);
+                if (work.opmT02_LightMode) r = VSETL(e);
                 else r = VSET(e);
                 break;
             case 3:
@@ -1119,7 +1114,7 @@ public class NRTDRV extends BaseDriver {
                 r = REST(e);
                 break;
             case 14:
-                if (work.OPMT14_MVMode) r = VSETMV(e);
+                if (work.opmT14_MVMode) r = VSETMV(e);
                 else r = VSET(e);
                 break;
             case 15:
@@ -1135,7 +1130,7 @@ public class NRTDRV extends BaseDriver {
                 r = LEGOFF(e);
                 break;
             case 19:
-                if (work.OPMT19Enable) r = VOLUME(e);
+                if (work.opmT19Enable) r = VOLUME(e);
                 else {
                     r = 1;
                     this.ptrData--;
@@ -1202,13 +1197,13 @@ public class NRTDRV extends BaseDriver {
 
         private int REST(byte e) {
             byte a = ram[this.ptrData];
-            if (a == 255) {
+            if (a == (byte) 255) {
                 this.isCountNext = (byte) 255;
             } else {
                 this.isCountNext = 0;
             }
-            a--;
-            this.Counter = a;
+            a = (byte) ((a & 0xff) - 1);
+            this.counter = a;
             this.ptrData++;
 
             return 1;
@@ -1226,7 +1221,7 @@ public class NRTDRV extends BaseDriver {
                 this.ptrData++;
                 wopm(d, a);
                 a = work.zCount;
-                a--;
+                a = (byte) ((a & 0xff) - 1);
                 work.zCount = a;
             } while (a != 0);
 
@@ -1250,14 +1245,14 @@ public class NRTDRV extends BaseDriver {
         }
 
         private void VSETJ(byte e, int hl) {
-            byte d = (byte) (0x40 + e);
+            byte d = (byte) (0x40 + (e & 0xff));
             byte a;
 
             for (int i = 0; i < 24; i++) {
                 a = ram[hl];
                 hl++;
                 wopm(d, a);
-                d += (byte) (d < 248 ? 8 : 0);
+                d += (byte) ((d & 0xff) < 248 ? 8 : 0);
             }
             this.op1Tl = ram[hl];
             hl++;
@@ -1341,7 +1336,7 @@ public class NRTDRV extends BaseDriver {
                 a = work.mVol;
                 c = ram[hl];
                 a += c;
-                if (a > 127) a = 127;
+                if ((a & 0xff) > 127) a = 127;
                 hl++;
                 wopm(d, a);
                 d += 8;
@@ -1373,7 +1368,7 @@ public class NRTDRV extends BaseDriver {
 
         private int CSMCOM(byte e) {
             byte a = 0x40;
-            a += e;
+            a = (byte) ((a & 0xff) + (e & 0xff));
             byte d = a;
             byte c = 0x8;
 
@@ -1389,7 +1384,7 @@ public class NRTDRV extends BaseDriver {
                 }
                 a = ram[this.ptrData];
                 this.ptrData++;
-                if (a < 127) {
+                if ((a & 0xff) < 127) {
                     d |= 0x20;
                     wopm(d, a);
                     d &= 0xdf;
@@ -1534,19 +1529,19 @@ public class NRTDRV extends BaseDriver {
                 if (work.opmFlg != 0) {
                     // Weight
                 }
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d & 0xff, a & 0xff, EnmModel.VirtualModel, 0, 0);
             } else {
                 // OPM2
                 work.opm2VReg[d] = a;
                 if (work.opmFlg != 0) {
                     // Weight
                 }
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d, a, EnmModel.VirtualModel, 0, 0);
+                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d & 0xff, a & 0xff, EnmModel.VirtualModel, 0, 0);
             }
         }
 
         private int DETUNE(byte e) {
-            this.Detune = ram[this.ptrData];
+            this.detune = ram[this.ptrData];
             this.ptrData++; // CCRET
 
             return 0;
@@ -1752,12 +1747,12 @@ public class NRTDRV extends BaseDriver {
             this.ptrData++;
 
             Ch c;
-            if (b < 8) c = work.opm1Chs[b];
-            else if (b < 16) c = work.opm2Chs[b - 8];
+            if ((b & 0xff) < 8) c = work.opm1Chs[b];
+            else if ((b & 0xff) < 16) c = work.opm2Chs[b - 8];
             else c = work.psgChs[b - 16];
 
             byte a = c.trackStopFlg;
-            if (a != 255) {
+            if (a != (byte) 255) {
                 c.trackStopFlg = 0;
             }
 
@@ -1827,7 +1822,7 @@ public class NRTDRV extends BaseDriver {
             mvwr(e, 3); // OP4
 
             byte a = (byte) (this.panAlgFb & 0x7);
-            if (a < 4) return;
+            if ((a & 0xff) < 4) return;
 
             mvwr(e, 2); // OP2
 
@@ -1841,28 +1836,28 @@ public class NRTDRV extends BaseDriver {
         }
 
         private void mvwr(byte e, int op) {
-            byte d = (byte) (0x60 + e + op * 8);
+            byte d = (byte) (0x60 + (e & 0xff) + op * 8);
             byte a = (byte) (this.volume ^ 127);
 
             switch (op) {
             case 0:
-                a += (byte) (work.mVol + this.op1Tl);
-                a = (byte) ((a > 127) ? 127 : a);
+                a += (byte) ((work.mVol & 0xff) + (this.op1Tl & 0xff));
+                a = (byte) (((a & 0xff) > 127) ? 127 : a);
                 this.op1Tls = a;
                 break;
             case 1:
-                a += (byte) (work.mVol + this.op3Tl);
-                a = (byte) ((a > 127) ? 127 : a);
+                a += (byte) ((work.mVol & 0xff) + (this.op3Tl & 0xff));
+                a = (byte) (((a & 0xff) > 127) ? 127 : a);
                 this.op3Tls = a;
                 break;
             case 2:
-                a += (byte) (work.mVol + this.op2Tl);
-                a = (byte) ((a > 127) ? 127 : a);
+                a += (byte) ((work.mVol & 0xff) + (this.op2Tl & 0xff));
+                a = (byte) (((a & 0xff) > 127) ? 127 : a);
                 this.op2Tls = a;
                 break;
             case 3:
                 a += (byte) (work.mVol + this.op4Tl);
-                a = (byte) ((a > 127) ? 127 : a);
+                a = (byte) (((a & 0xff) > 127) ? 127 : a);
                 this.op4Tls = a;
                 break;
             }
@@ -1878,11 +1873,11 @@ public class NRTDRV extends BaseDriver {
 
             a = ram[this.ptrData];
 
-            if (a == 255) this.isCountNext = a;
+            if (a == (byte) 255) this.isCountNext = a;
             else this.isCountNext = 0;
 
             a--;
-            this.Counter = a;
+            this.counter = a;
 
             if (a == 0) {
                 if (this.legartFlg == 0) {
@@ -1892,22 +1887,22 @@ public class NRTDRV extends BaseDriver {
 
             this.ptrData++;
 
-            int bc = a * 0x100;
+            int bc = (a & 0xff) * 0x100;
             bc = bc / 8;
 
             a = this.q;
             if (a == 8) {
                 a = 0;
             } else {
-                a = (byte) (((8 - a) * bc) / 0x100);
+                a = (byte) (((8 - (a & 0xff)) * bc) / 0x100);
             }
             a += this.Q;
             a++;
             this.gatetime = a;
 
             byte b = this.workForPlayer;
-            byte d = (byte) (0x30 + e);
-            int ia = this.Detune;
+            byte d = (byte) (0x30 + (e & 0xff));
+            int ia = this.detune & 0xff;
             if (ia >= 128) {
                 while (ia < 256) {
                     b--;
@@ -1923,13 +1918,13 @@ public class NRTDRV extends BaseDriver {
 
             byte c = (byte) ia;
             a = this.glideFlg;
-            boolean KEYONE = false;
+boolean KEYONE = false;
             if (a != 0) {
                 this.portaFlg = a;
-                this.portaTone = b * 0x100 + c;
+                this.portaTone = (b & 0xff) * 0x100 + (c & 0xff);
                 this.portaStartFlg = a;
 
-                int hl = b * 0x100 + c;
+                int hl = (b & 0xff) * 0x100 + (c & 0xff);
                 bc = this.glide;
                 hl += bc;
                 b = (byte) (hl / 0x100);
@@ -1938,20 +1933,20 @@ public class NRTDRV extends BaseDriver {
                 a = this.portaFlg;
                 if (a != 0) {
                     this.portaStartFlg = a;
-                    this.portaTone = b * 0x100 + c;
-                    /*break*/
-                    KEYONE = true;
+                    this.portaTone = (b & 0xff) * 0x100 + (c & 0xff);
+                    //break
+KEYONE = true;
                 }
             }
-            if (!KEYONE) {
-                this.noteNumber = b;
-                this.kf = c;
-                a = c;
-                wopm(d, a);
-                d -= 8;
-                a = KTABLE[this.noteNumber];
-                wopm(d, a);
-            }
+if (!KEYONE) {
+            this.noteNumber = b;
+            this.kf = c;
+            a = c;
+            wopm(d, a);
+            d -= 8;
+            a = KTABLE[this.noteNumber & 0xff];
+            wopm(d, a);
+}
 // KEYONE:
             a = this.legartDelayFlg;
             c = a;
@@ -1985,7 +1980,7 @@ public class NRTDRV extends BaseDriver {
                 this.softPMStepCount = this.softPMStep;
             }
             if ((this.softAMSelOP & 0x80) != 0) {
-                this.softAMStepCount = (byte) (this.softAMStep + 1);
+                this.softAMStepCount = (byte) ((this.softAMStep & 0xff) + 1);
                 a = c;
                 if (c != 0) {
                     a = 1;
@@ -2099,8 +2094,8 @@ public class NRTDRV extends BaseDriver {
                 a = this.op4Tl;
                 break;
             }
-            a += (byte) (c + b);
-            if (a > 127) a = 127;
+            a += (byte) ((c & 0xff) + (b & 0xff));
+            if ((a & 0xff) > 127) a = 127;
             switch (op) {
             case 8:
                 this.op1Tls = a;
@@ -2118,8 +2113,6 @@ public class NRTDRV extends BaseDriver {
             wopm(d, a);
         }
 
-
-
         private void PSGRR() {
 
             if (this.psgRrCounter != 0) {
@@ -2129,22 +2122,21 @@ public class NRTDRV extends BaseDriver {
 
             this.psgRrCounter = this.psgRr;
             this.psgRrVolOffset++;
-            if (this.psgRrVolOffset < 16) return;
+            if ((this.psgRrVolOffset & 0xff) < 16) return;
 
             this.psgToneAdr = 0;
             this.keyOffFlg = 0;
             this.workForPlayer = 0;
-
         }
 
         private void RRST(byte e) {
             byte a = this.psgHardEnvelopeType;
-            if (a - 16 < 0) {
+            if ((a & 0xff) - 16 < 0) {
                 // RRST1:
                 this.psgToneAdr = 0;
                 this.keyOffFlg = 0;
                 this.workForPlayer = 0;
-                wpsg((byte) (8 + e), (byte) 0);
+                wpsg((byte) (8 + (e & 0xff)), (byte) 0);
                 return;
             }
 
@@ -2158,7 +2150,7 @@ public class NRTDRV extends BaseDriver {
                 this.ptrData++;
 
                 if ((cmdno & 0x80) != 0) {
-                    if (work.PSGKeyONEnable) {
+                    if (work.psgKeyONEnable) {
                         if (work.PKEYON_LightMode) {
                             throw new UnsupportedOperationException();
                         } else {
@@ -2172,7 +2164,7 @@ public class NRTDRV extends BaseDriver {
                     // Track End
                     this.trkend();
                     // return;
-                } else if (cmdno < 38) {
+                } else if ((cmdno & 0xff) < 38) {
                     if (PCOM0(e, cmdno) == 1) return;
                 } else {
                     this.trackStopFlg = (byte) 255;
@@ -2185,7 +2177,7 @@ public class NRTDRV extends BaseDriver {
             int r = 0;
             switch (cmdno) {
             case 0:
-                if (work.PSGRestEnable) r = REST(e);
+                if (work.psgRestEnable) r = REST(e);
                 else {
                     r = 1;
                     this.ptrData--;
@@ -2315,53 +2307,53 @@ public class NRTDRV extends BaseDriver {
                 a = ram[hl];
                 hl++;
                 int bc;
-                if (a == 255) {
-                    bc = ram[hl];
+                if (a == (byte) 255) {
+                    bc = ram[hl] & 0xff;
                     hl -= bc;
                     a = ram[hl];
                 }
                 // PENV1:
-                if (a - 16 < 0) {
+                if ((a & 0xff) - 16 < 0) {
                     break;
                 }
-                if (a - 48 < 0) {
-                    wpsg((byte) 6, (byte) (a - 16));
+                if ((a & 0xff) - 48 < 0) {
+                    wpsg((byte) 6, (byte) ((a & 0xff) - 16));
                     continue;
                 }
                 a -= 48;
                 a *= 2;
-                bc = a;
+                bc = a & 0xff;
 
                 a = work.pFlg;
-                c = PMTBL[e * 8 + bc];
+                c = PMTBL[(e & 0xff) * 8 + bc];
                 a &= c;
-                c = PMTBL[e * 8 + bc + 1];
+                c = PMTBL[(e & 0xff) * 8 + bc + 1];
                 a |= c;
                 work.pFlg = a;
                 wpsg((byte) 7, a);
             }
-            // PENV4:
+//PENV4:
             this.psgToneAdr = hl;
             a ^= 15;
             c = a;
-            byte d = (byte) (8 + e);
+            byte d = (byte) (8 + (e & 0xff));
             byte b = work.mVol;
-            // PENVF2:
+//PENVF2:
             if ((this.lfoFlags & 0x80) == 0) {
                 if (work.PENVF_VOL0) a = 0;
                 else a = this.volume;
 
-                if (a - b < 0) {
+                if ((a & 0xff) - (b & 0xff) < 0) {
                     a = 0;
                 } else {
                     a -= b;
-                    a = (byte) (a >> 3);
+                    a = (byte) (a >>> 3);
                     b = this.psgRrVolOffset;
-                    if (a - b < 0) {
+                    if ((a & 0xff) - (b & 0xff) < 0) {
                         a = 0;
                     } else {
                         a -= b;
-                        if (a - c < 0) {
+                        if ((a & 0xff) - (c & 0xff) < 0) {
                             a = 0;
                         } else {
                             a -= c;
@@ -2371,7 +2363,7 @@ public class NRTDRV extends BaseDriver {
             } else {
                 a = 0;
             }
-            // PENV5:
+//PENV5:
             wpsg(d, a);
         }
 
@@ -2387,7 +2379,7 @@ public class NRTDRV extends BaseDriver {
             else this.isCountNext = 0;
 
             a--;
-            this.Counter = a;
+            this.counter = a;
 
             if (a == 0) {
                 if (this.legartFlg == 0) {
@@ -2399,42 +2391,42 @@ public class NRTDRV extends BaseDriver {
 
             this.ptrData++;
 
-            int bc = a * 0x100;
+            int bc = (a & 0xff) * 0x100;
             bc = bc / 8;
 
             a = this.q;
             if (a == 8) {
                 a = 0;
             } else {
-                a = (byte) (((8 - a) * bc) / 0x100);
+                a = (byte) (((8 - (a & 0xff)) * bc) / 0x100);
             }
             a += this.Q;
             a++;
             this.gatetime = a;
 
             // PKONR
-            bc = this.workForPlayer; // 2x Not required
+            bc = this.workForPlayer & 0xff; // 2x Not required
             byte d = (byte) (e << 1);
 
             byte b = 0;
             byte c;
             if (bc < PTABLE.length) { // In versions earlier than 180303, the array may be exceeded. Therefore, a code to check the index has been added.
-                c = (byte) (PTABLE[bc]);
+                c = (byte) PTABLE[bc];
             } else {
                 c = 0;
             }
-            a = this.Detune;
+            a = this.detune;
             a = (byte) (~a + 1); // NEG
             if ((a & 0xff) - 129 < 0) {
                 // PKON6
-                if ((a & 0xff) + c <= 255) {
+                if ((a & 0xff) + (c & 0xff) <= 255) {
                     a += c;
                 } else {
                     a += c;
                     b++;
                 }
             } else {
-                if ((a & 0xff) + c > 255) {
+                if ((a & 0xff) + (c & 0xff) > 255) {
                     a += c;
                 } else {
                     a += c;
@@ -2444,58 +2436,59 @@ public class NRTDRV extends BaseDriver {
             // PKON5
             c = a;
             if (bc < PTABLE.length) { // In versions earlier than 180303, the array may be exceeded. Therefore, a code to check the index has been added.
-                a = (byte) (PTABLE[bc] >> 8);
+                a = (byte) (PTABLE[bc] >>> 8);
             } else {
                 a = 0;
             }
             b += a;
 
             a = this.glideFlg;
-            boolean PKON9 = false;
+boolean PKON9 = false;
+boolean PKONE = false;
             if (a != 0) {
                 this.portaFlg = a;
-                this.portaTone = b * 0x100 + c;
+                this.portaTone = (b & 0xff) * 0x100 + (c & 0xff);
                 this.portaStartFlg = a;
 
-                int hl = b * 0x100 + c;
+                int hl = (b & 0xff) * 0x100 + (c & 0xff);
                 bc = this.glide;
                 hl += bc;
                 b = (byte) (hl / 0x100);
                 c = (byte) (hl & 0xff);
-//            break PKON8;
+//                break PKON8;
             } else {
-                // PKON11:
+//PKON11:
                 a = this.portaFlg;
                 if (a != 0) {
                     this.portaStartFlg = a;
-                    this.portaTone = b * 0x100 + c;
-                    PKON9 = true; // break PKON9;
+                    this.portaTone = (b & 0xff) * 0x100 + (c & 0xff);
+                    //break PKON9;
+PKON9 = true;
                 }
             }
-// PKON8:
-            if (!PKON9) {
-                this.psgTone = b * 0x100 + c;
-                wpsg(d, c);
-                d++;
-                wpsg(d, b);
-            }
-// PKON9:
-            while (true) {
-                a = this.legartDelayFlg;
-                c = a;
-                this.legartDelayFlg = this.legartFlg;
-                if (a != 0) {
-                    if (this.psgToneAdr != 0) {
-                        continue; // break PKON9;
-                    }
-                    break;
+//PKON8:
+if (!PKON9) {
+            this.psgTone = (b & 0xff) * 0x100 + (c & 0xff);
+            wpsg(d, c);
+            d++;
+            wpsg(d, b);
+}
+//PKON9:
+            a = this.legartDelayFlg;
+            c = a;
+            this.legartDelayFlg = this.legartFlg;
+            if (a != 0) {
+                if (this.psgToneAdr != 0) {
+                    //break PKONE;
+PKONE = true;
                 }
             }
+if (!PKONE) {
             // PKON10
             a = this.psgHardEnvelopeType;
-            if (a - 16 < 0) {
+            if ((a & 0xff) - 16 < 0) {
                 wpsg((byte) 13, a);
-                d = (byte) (8 + e);
+                d = (byte) (8 + (e & 0xff));
                 a = this.lfoFlags;
                 if ((a & 0x80) == 0) {
                     a = 16;
@@ -2503,9 +2496,9 @@ public class NRTDRV extends BaseDriver {
                     a = 0;
                 }
                 wpsg(d, a);
-//            break PKONE;
+//                break PKONE;
             } else {
-                // PKSENV:
+//PKSENV:
                 a = this.lfoFlags;
                 if ((a & 0x80) != 0) {
                     d = 8;
@@ -2517,7 +2510,8 @@ public class NRTDRV extends BaseDriver {
                 this.psgRrVolOffset = a;
                 this.psgToneAdr = this.psgToneStartAdr;
             }
-// PKONE:
+}
+//PKONE:
             a = this.softPMType;
             if ((a & 0x80) != 0) {
                 this.softPMProcCount = (byte) (((a & 0x7f) * 2) ^ 2);
@@ -2579,8 +2573,8 @@ public class NRTDRV extends BaseDriver {
         private int PMODE(byte e) {
             byte a = ram[this.ptrData];
             a += a;
-            int bc = a;
-            int hl = e;
+            int bc = a & 0xff;
+            int hl = e & 0xff;
             hl = hl * 8;
             hl += bc;
             a = work.pFlg;
@@ -2613,7 +2607,7 @@ public class NRTDRV extends BaseDriver {
             this.psgToneAdr = 0;
             this.legartDelayFlg = 0;
             this.workForPlayer = 0;
-            wpsg((byte) (8 + e), (byte) 0);
+            wpsg((byte) (8 + (e & 0xff)), (byte) 0);
             return 0;
         }
 
@@ -2630,7 +2624,7 @@ public class NRTDRV extends BaseDriver {
 
             byte l = this.kf;
             byte h = this.noteNumber;
-            byte b = (byte) (this.portaTone >> 8);
+            byte b = (byte) (this.portaTone >>> 8);
             byte c = (byte) (this.portaTone & 0xff);
             byte a = h;
 
@@ -2641,39 +2635,39 @@ public class NRTDRV extends BaseDriver {
                 if (a == c) {
                     this.portaStartFlg = 0;
                     return;
-                } else if (a < c) neg = false;
-            } else if (a < b) neg = false;
+                } else if ((a & 0xff) < (c & 0xff)) neg = false;
+            } else if ((a & 0xff) < (b & 0xff)) neg = false;
 
             //
             if (neg) {
                 // Subtraction
-                int p = this.portaFlg * 4;
-                int hl = (h * 0x100) + l - p;
+                int p = (this.portaFlg & 0xff) * 4;
+                int hl = ((h & 0xff) * 0x100) + (l & 0xff) - p;
                 if (hl < 0) {
                     h = b;
                     l = c;
                 } else {
-                    a = (byte) ((hl >> 8) - b);
-                    if (((hl & 0xff) - c) < 0) {
+                    a = (byte) ((hl >>> 8) - (b & 0xff));
+                    if (((hl & 0xff) - (c & 0xff)) < 0) {
                         a--;
                     }
-                    h = (byte) (hl >> 8);
+                    h = (byte) (hl >>> 8);
                     l = (byte) (hl & 0xff);
                 }
             } else {
                 // Addition
-                int p = this.portaFlg * 4;
-                int hl = (h * 0x100) + l + p;
-                h = (byte) (hl >> 8);
+                int p = (this.portaFlg & 0xff) * 4;
+                int hl = ((h & 0xff) * 0x100) + (l & 0xff) + p;
+                h = (byte) (hl >>> 8);
                 l = (byte) (hl & 0xff);
 
-//                a = (byte) ((hl >> 8) - b);
-//                if (((hl & 0xff) - c) < 0) {
+//                a = (byte) ((hl >>> 8) - (b & 0xff));
+//                if (((hl & 0xff) - (c & 0xff)) < 0) {
 //                    a--;
-//                    h = (byte) (hl >> 8);
+//                    h = (byte) (hl >>> 8);
 //                    l = (byte) (hl & 0xff);
 //                }
-                if (hl > b * 0x100 + c) {
+                if (hl > (b & 0xff) * 0x100 + (c & 0xff)) {
                     h = b;
                     l = c;
                 }
@@ -2681,11 +2675,10 @@ public class NRTDRV extends BaseDriver {
 
             this.kf = l;
             this.noteNumber = h;
-            wopm((byte) (0x30 + e), l);
-            wopm((byte) (0x28 + e), KTABLE[h]);
+            wopm((byte) (0x30 + (e & 0xff)), l);
+            wopm((byte) (0x28 + (e & 0xff)), KTABLE[h]);
 //logger.log(Level.TRACE, "opmout Reg%02x dat%02x".formatted(l, KTABLE[h]));
         }
-
 
         private void EPM(byte e) {
             if (this.portaStartFlg != 0) return;
@@ -2711,8 +2704,8 @@ public class NRTDRV extends BaseDriver {
             if (a != 0) {
                 this.softPMStepCount = a;
                 a = this.softPMProcCount;
-                if (a >= 8) return;
-                if (a >= 4) EPMH1(a, h, e);
+                if ((a & 0xff) >= 8) return;
+                if ((a & 0xff) >= 4) EPMH1(a, h, e);
                 else if (a == 0 || a == 3) {
                     EPMM(a, h, l, e);
                 } else {
@@ -2720,17 +2713,17 @@ public class NRTDRV extends BaseDriver {
                 }
                 return;
             }
-            // EPMS:
+//EPMS:
             a = this.softPMStep;
             this.softPMStepCount = a;
 
             a = this.softPMProcCount;
-            if (a - 8 < 0) {
-                // EPMS0:
-                if (a >= 4) {
-                    // EPMH:
+            if ((a & 0xff) - 8 < 0) {
+//EPMS0:
+                if ((a & 0xff) >= 4) {
+//EPMH:
                     a++;
-                    if (a >= 8) a = 4;
+                    if ((a & 0xff) >= 8) a = 4;
                     this.softPMProcCount = a;
                     EPMH1(a, h, e);
                     return;
@@ -2738,28 +2731,27 @@ public class NRTDRV extends BaseDriver {
                 a++;
                 a &= 3;
                 this.softPMProcCount = a;
-                // EPMS1:
-                if (a == 0 || a >= 3) {
+//EPMS1:
+                if (a == 0 || (a & 0xff) >= 3) {
                     EPMM(a, h, l, e);
                 } else {
                     EPMP(a, h, l, e);
                 }
                 return;
             }
-            // EPMQ:
+//EPMQ:
             a++;
-            if (a == 10 || a > 12) {
+            if (a == 10 || (a & 0xff) > 12) {
                 a--;
                 a--;
             }
-            // EPMQ1:
+//EPMQ1:
             this.softPMProcCount = a;
-            if (a == 8 || a >= 11) {
+            if (a == 8 || (a & 0xff) >= 11) {
                 EPMP(a, h, l, e);
             } else {
                 EPMM(a, h, l, e);
             }
-
         }
 
         private void EPMH1(byte a, byte h, byte e) {
@@ -2767,52 +2759,50 @@ public class NRTDRV extends BaseDriver {
             byte c = 0;
 
             if (a == 4 || a == 7) {
-                if (h - b >= 0) {
-                    c = (byte) (h - b);
+                if ((h & 0xff) - (b & 0xff) >= 0) {
+                    c = (byte) ((h & 0xff) - (b & 0xff));
                 }
             } else {
                 c = 97;
-                if (h + b <= 97) {
-                    c = (byte) (h + b);
+                if ((h & 0xff) + (b & 0xff) <= 97) {
+                    c = (byte) ((h & 0xff) + (b & 0xff));
                 }
             }
 
-            // EPM2H:
+//EPM2H:
             this.noteNumber = c;
-            wopm((byte) (0x28 + e), KTABLE[c]);
-
+            wopm((byte) (0x28 + (e & 0xff)), KTABLE[c & 0xff]);
         }
 
         private void EPMM(byte a, byte h, byte l, byte e) {
-            int p = this.softPMPitch * 4;
-            int hl = h * 0x100 + l;
+            int p = (this.softPMPitch & 0xff) * 4;
+            int hl = (h & 0xff) * 0x100 + (l & 0xff);
             hl = Math.max(hl - p, 0);
-            h = (byte) (hl >> 8);
+            h = (byte) (hl >>> 8);
             l = (byte) (hl & 0xff);
 
             this.kf = l;
             this.noteNumber = h;
 
-            wopm((byte) (0x30 + e), l);
-            wopm((byte) (0x28 + e), KTABLE[h]);
+            wopm((byte) (0x30 + (e & 0xff)), l);
+            wopm((byte) (0x28 + (e & 0xff)), KTABLE[h & 0xff]);
         }
 
         private void EPMP(byte a, byte h, byte l, byte e) {
-            int p = this.softPMPitch * 4;
-            int hl = h * 0x100 + l;
-            if ((byte) ((hl + p) >> 8) >= 120) {
+            int p = (this.softPMPitch & 0xff) * 4;
+            int hl = (h & 0xff) * 0x100 + (l & 0xff);
+            if ((((hl + p) >>> 8) & 0xff) >= 120) {
                 hl = 0x77fc;
             } else hl = hl + p;
-            h = (byte) (hl >> 8);
+            h = (byte) (hl >>> 8);
             l = (byte) (hl & 0xff);
 
             this.kf = l;
             this.noteNumber = h;
 
-            wopm((byte) (0x30 + e), l);
-            wopm((byte) (0x28 + e), KTABLE[h]);
+            wopm((byte) (0x30 + (e & 0xff)), l);
+            wopm((byte) (0x28 + (e & 0xff)), KTABLE[h & 0xff]);
         }
-
 
         private void EAM(byte e) {
 
@@ -2826,15 +2816,15 @@ public class NRTDRV extends BaseDriver {
                 return;
             }
 
-            // EAM1:
+//EAM1:
             this.softAMStepCount--;
             if (this.softAMStepCount == 0) {
-                // EAMS:
+//EAMS:
                 this.softAMStepCount = this.softAMStep;
                 this.softAMProcCount ^= 1;
             }
 
-            // EAML:
+// EAML:
             for (int b = 0; b < 4; b++) {
                 if ((byte) (this.softAMSelOP & (1 << b)) == 0) continue;
 
@@ -2842,28 +2832,26 @@ public class NRTDRV extends BaseDriver {
                 case 0:
                     if (this.softAMProcCount == 0) this.op1Tls += this.softAMDepth;
                     else this.op1Tls -= this.softAMDepth;
-                    wopm((byte) (0x60 + e), this.op1Tls);
+                    wopm((byte) (0x60 + (e & 0xff)), this.op1Tls);
                     break;
                 case 1:
                     if (this.softAMProcCount == 0) this.op2Tls += this.softAMDepth;
                     else this.op2Tls -= this.softAMDepth;
-                    wopm((byte) (0x70 + e), this.op2Tls);
+                    wopm((byte) (0x70 + (e & 0xff)), this.op2Tls);
                     break;
                 case 2:
                     if (this.softAMProcCount == 0) this.op3Tls += this.softAMDepth;
                     else this.op3Tls -= this.softAMDepth;
-                    wopm((byte) (0x68 + e), this.op3Tls);
+                    wopm((byte) (0x68 + (e & 0xff)), this.op3Tls);
                     break;
                 case 3:
                     if (this.softAMProcCount == 0) this.op4Tls += this.softAMDepth;
                     else this.op4Tls -= this.softAMDepth;
-                    wopm((byte) (0x78 + e), this.op4Tls);
+                    wopm((byte) (0x78 + (e & 0xff)), this.op4Tls);
                     break;
                 }
             }
-
         }
-
 
         private void EPOP(byte e) {
             if (this.portaStartFlg == 0) return;
@@ -2871,7 +2859,7 @@ public class NRTDRV extends BaseDriver {
             byte b = this.op1Tls;
             byte a = this.op2Tls;
             a += b;
-            if (a - 100 >= 0) {
+            if ((a & 0xff) - 100 >= 0) {
                 a -= 100;
                 this.op2Tls = a;
                 a = this.portaFlg;
@@ -2885,8 +2873,8 @@ public class NRTDRV extends BaseDriver {
             this.op3Tls = a;
 
             byte l = (byte) this.psgTone;
-            byte h = (byte) (this.psgTone >> 8);
-            b = (byte) (this.portaTone >> 8);
+            byte h = (byte) (this.psgTone >>> 8);
+            b = (byte) (this.portaTone >>> 8);
             byte c = (byte) (this.portaTone & 0xff);
 
             a = h;
@@ -2901,33 +2889,32 @@ public class NRTDRV extends BaseDriver {
             //
             if (neg) {
                 // Subtraction
-                int p = this.op3Tls;
-                int hl = (h * 0x100) + l - p;
-                h = (byte) (hl >> 8);
+                int p = this.op3Tls & 0xff;
+                int hl = ((h & 0xff) * 0x100) + (l & 0xff) - p;
+                h = (byte) (hl >>> 8);
                 l = (byte) (hl & 0xff);
 
-                if (hl < b * 0x100 + c) {
+                if (hl < (b & 0xff) * 0x100 + (c & 0xff)) {
                     h = b;
                     l = c;
                 }
             } else {
                 // Addition
-                int p = this.op3Tls;
-                int hl = (h * 0x100) + l + p;
-                h = (byte) (hl >> 8);
+                int p = this.op3Tls & 0xff;
+                int hl = ((h & 0xff) * 0x100) + (l & 0xff) + p;
+                h = (byte) (hl >>> 8);
                 l = (byte) (hl & 0xff);
 
-                if (hl > b * 0x100 + c) {
+                if (hl > (b & 0xff) * 0x100 + (c & 0xff)) {
                     h = b;
                     l = c;
                 }
             }
 
-            this.psgTone = (h * 0x100) + l;
+            this.psgTone = ((h & 0xff) * 0x100) + (l & 0xff);
 
-            wpsg((byte) (e * 2), l);
-            wpsg((byte) (e * 2 + 1), h);
-
+            wpsg((byte) ((e & 0xff) * 2), l);
+            wpsg((byte) ((e & 0xff) * 2 + 1), h);
         }
 
         private void PEPM(byte e) {
@@ -2945,17 +2932,17 @@ public class NRTDRV extends BaseDriver {
                 return;
             }
 
-            // PEPM1:
+//PEPM1:
             byte l = (byte) (this.psgTone);
-            byte h = (byte) (this.psgTone >> 8);
+            byte h = (byte) (this.psgTone >>> 8);
 
             byte a = this.softPMStepCount;
             a--;
             if (a != 0) {
                 this.softPMStepCount = a;
                 a = this.softPMProcCount;
-                if (a >= 8) return;
-                if (a >= 4) PEPMH1(a, h, l, e);
+                if ((a & 0xff) >= 8) return;
+                if ((a & 0xff) >= 4) PEPMH1(a, h, l, e);
                     // PEPMS1
                 else if (a == 0 || a == 3) {
                     PEPMM(a, h, l, e);
@@ -2964,17 +2951,17 @@ public class NRTDRV extends BaseDriver {
                 }
                 return;
             }
-            // PEPMS:
+//PEPMS:
             a = this.softPMStep;
             this.softPMStepCount = a;
 
             a = this.softPMProcCount;
-            if (a - 8 < 0) {
-                // PEPMS0:
-                if (a >= 4) {
-                    // PEPMH:
+            if ((a & 0xff) - 8 < 0) {
+//PEPMS0:
+                if ((a & 0xff) >= 4) {
+//PEPMH:
                     a++;
-                    if (a >= 8) a = 4;
+                    if ((a & 0xff) >= 8) a = 4;
                     this.softPMProcCount = a;
                     EPMH1(a, h, e);
                     return;
@@ -2982,24 +2969,24 @@ public class NRTDRV extends BaseDriver {
                 a++;
                 a &= 3;
                 this.softPMProcCount = a;
-                // `EPMS1:
-                if (a == 0 || a >= 3) {
+//EPMS1:
+                if (a == 0 || (a & 0xff) >= 3) {
                     PEPMM(a, h, l, e);
                 } else {
                     PEPMP(a, h, l, e);
                 }
                 return;
             }
-            // PEPMQ:
+//PEPMQ:
             a++;
-            if (a == 10 || a > 12) {
+            if (a == 10 || (a & 0xff) > 12) {
                 // PEPMQ0
                 a--;
                 a--;
             }
-            // PEPMQ1:
+//PEPMQ1:
             this.softPMProcCount = a;
-            if (a == 8 || a >= 11) {
+            if (a == 8 || (a & 0xff) >= 11) {
                 PEPMP(a, h, l, e);
             } else {
                 PEPMM(a, h, l, e);
@@ -3013,14 +3000,14 @@ public class NRTDRV extends BaseDriver {
 
             if (a == 4 || a == 7) {
                 // PEPMMH
-                hl = this.softPMPitch * 64;
-                int x = (h * 0x100 + l) - hl;
+                hl = (this.softPMPitch & 0xff) * 64;
+                int x = ((h & 0xff) * 0x100 + (l & 0xff)) - hl;
 
                 hl = Math.max(x, 0);
             } else {
                 // PEPMPH
-                hl = this.softPMPitch * 64;
-                int x = (h * 0x100 + l) + hl;
+                hl = (this.softPMPitch & 0xff) * 64;
+                int x = ((h & 0xff) * 0x100 + (l & 0xff)) + hl;
 
                 if ((x >> 8) >= 16) {
                     hl = 4095;
@@ -3029,38 +3016,38 @@ public class NRTDRV extends BaseDriver {
                 }
             }
 
-            // PEPM2H:
+//PEPM2H:
             this.psgTone = hl;
-            wpsg((byte) (e * 2), (byte) hl);
-            wpsg((byte) (e * 2 + 1), (byte) (hl >> 8));
+            wpsg((byte) ((e & 0xff) * 2), (byte) hl);
+            wpsg((byte) ((e & 0xff) * 2 + 1), (byte) (hl >>> 8));
         }
 
         private void PEPMM(byte a, byte h, byte l, byte e) {
-            int p = this.softPMPitch;
-            int hl = h * 0x100 + l;
+            int p = this.softPMPitch & 0xff;
+            int hl = (h & 0xff) * 0x100 + (l & 0xff);
             hl = Math.max(hl - p, 0);
-            h = (byte) (hl >> 8);
+            h = (byte) (hl >>> 8);
             l = (byte) (hl & 0xff);
 
-            this.psgTone = h * 0x100 + l;
+            this.psgTone = (h & 0xff) * 0x100 + (l & 0xff);
 
-            wpsg((byte) (e * 2), l);
-            wpsg((byte) (e * 2 + 1), h);
+            wpsg((byte) ((e & 0xff) * 2), l);
+            wpsg((byte) ((e & 0xff) * 2 + 1), h);
         }
 
         private void PEPMP(byte a, byte h, byte l, byte e) {
             int p = this.softPMPitch;
-            int hl = h * 0x100 + l;
-            if ((byte) ((hl + p) >> 8) >= 16) {
+            int hl = (h & 0xff) * 0x100 + (l & 0xff);
+            if ((((hl + p) >> 8) & 0xff) >= 16) {
                 hl = 4095;
             } else hl = hl + p;
-            h = (byte) (hl >> 8);
+            h = (byte) (hl >>> 8);
             l = (byte) (hl & 0xff);
 
-            this.psgTone = h * 0x100 + l;
+            this.psgTone = (h & 0xff) * 0x100 + (l & 0xff);
 
-            wpsg((byte) (e * 2), l);
-            wpsg((byte) (e * 2 + 1), h);
+            wpsg((byte) ((e & 0xff) * 2), l);
+            wpsg((byte) ((e & 0xff) * 2 + 1), h);
         }
 
         public void efx(byte e) {
@@ -3086,32 +3073,31 @@ MAINL:
                     wopm((byte) 8, e); // Key off
                 }
 
-                if (this.Counter == 0) {
+                if (this.counter == 0) {
                     if (this.isCountNext == 0) {
                         this.comchk(e);
                         break MAINL;
                     }
                     byte d = ram[this.ptrData];
                     this.ptrData++;
-                    if (d != 0xff) {
+                    if (d != (byte) 0xff) {
                         if (d == 0) {
                             this.comchk(e);
                             break MAINL;
                         }
                         this.isCountNext = 0;
                     }
-                    this.Counter = d;
+                    this.counter = d;
                 }
-                this.Counter--;
+                this.counter--;
 
-                if (this.gatetime > this.Counter) {
+                if ((this.gatetime & 0xff) > (this.counter & 0xff)) {
                     if (this.legartFlg == 0) {
                         if (this.isCountNext == 0) {
                             this.keyOffFlg = 1;
                         }
                     }
                 }
-
             }
             if ((work.plyFlg & 0x3) > 1) {
                 this.mvset(e);
@@ -3125,12 +3111,12 @@ MAINL:
                 this.RRST(e);
             }
 
-            // PMAIN2:
+//PMAIN2:
             byte a = this.trackStopFlg;
 PMAINL:
             if (a == 0) {
-                // PMAIN3:
-                byte c = this.Counter;
+//PMAIN3:
+                byte c = this.counter;
                 if (c == 0) {
                     if (this.isCountNext == 0) {
                         this.PCOM(e);
@@ -3138,19 +3124,19 @@ PMAINL:
                     }
                     a = ram[this.ptrData];
                     this.ptrData++;
-                    if (a != 255) {
+                    if (a != (byte) 255) {
                         if (a == 0) {
                             this.PCOM(e);
                             break PMAINL;
                         }
                         this.isCountNext = 0;
                     }
-                    this.Counter = a;
+                    this.counter = a;
                 }
-                // PMAIN1:
-                this.Counter--;
+//PMAIN1:
+                this.counter--;
 
-                if (this.Counter - this.gatetime < 0) {
+                if ((this.counter & 0xff) - (this.gatetime & 0xff) < 0) {
                     if (this.legartFlg == 0) {
                         if (this.isCountNext == 0) {
                             if (this.keyOffFlg == 0)
@@ -3158,7 +3144,6 @@ PMAINL:
                         }
                     }
                 }
-
             }
 
             if (this.psgToneAdr != 0) {

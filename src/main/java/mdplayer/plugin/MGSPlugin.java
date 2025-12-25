@@ -11,13 +11,14 @@ import mdplayer.chips.Ym2413Chip;
 import mdplayer.driver.mgsdrv.MgsDrv;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
+import mdsound.instrument.MameAy8910Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * MGSPlugin.
+ * MGSDRV (MSX) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
@@ -57,10 +58,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
         }
         boolean useAY = (trkOffsets[0] + trkOffsets[1] + trkOffsets[2] != 0);
         boolean useSCC = (trkOffsets[3] + trkOffsets[4] + trkOffsets[5] + trkOffsets[6] + trkOffsets[7] != 0);
-        boolean useOPLL = (trkOffsets[8] + trkOffsets[9] + trkOffsets[10]
-                + trkOffsets[11] + trkOffsets[12] + trkOffsets[13]
-                + trkOffsets[14] + trkOffsets[15] + trkOffsets[16]
-                + trkOffsets[17]
+        boolean useOPLL = (trkOffsets[8] + trkOffsets[9] + trkOffsets[10] +
+                trkOffsets[11] + trkOffsets[12] + trkOffsets[13] +
+                trkOffsets[14] + trkOffsets[15] + trkOffsets[16] +
+                trkOffsets[17]
                 != 0);
 
         startTrdVgmReal();
@@ -72,10 +73,16 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.instrument = audio.chipRegister.chip(Ay8910Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ay8910Chip.class);
-            chip.clock = MgsDrv.baseclockAY8910 / 2;
+            chip.clock = MgsDrv.baseClockAY8910 / 2;
             chip.option = null;
+            if (chip.instrument instanceof MameAy8910Inst) {
+                chip.option = new Object[] {
+                        (setting.getAY8910Type()[0].getYM2149mode() ? 0x10 : 0x00), // chip_type 0x10: YM2149, 0x00: AY
+                        0x00 // chip_flag
+                };
+            }
             put(Ay8910Chip.class, chip);
-            audio.chipRegister.chip(Ay8910Chip.class).clock = MgsDrv.baseclockAY8910;
+            audio.chipRegister.chip(Ay8910Chip.class).clock = MgsDrv.baseClockAY8910;
         }
 
         if (useOPLL) {
@@ -85,10 +92,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.instrument = audio.chipRegister.chip(Ym2413Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2413Chip.class);
-            chip.clock = MgsDrv.baseclockYM2413;
+            chip.clock = MgsDrv.baseClockYM2413;
             chip.option = null;
             put(Ym2413Chip.class, chip);
-            audio.chipRegister.chip(Ym2413Chip.class).clock = MgsDrv.baseclockYM2413;
+            audio.chipRegister.chip(Ym2413Chip.class).clock = MgsDrv.baseClockYM2413;
         }
 
         if (useSCC) {
@@ -98,10 +105,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.instrument = audio.chipRegister.chip(K051649Chip.class).instrument(0);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.volume = setting.getBalance().getVolume(MAIN_TAG, K051649Chip.class);
-            chip.clock = MgsDrv.baseclockK051649;
+            chip.clock = MgsDrv.baseClockK051649;
             chip.option = null;
             put(K051649Chip.class, chip);
-            audio.chipRegister.chip(K051649Chip.class).clock = MgsDrv.baseclockK051649;
+            audio.chipRegister.chip(K051649Chip.class).clock = MgsDrv.baseClockK051649;
         }
 
         audio.mds.init(setting.getOutputDevice().getSampleRate(), Audio.BUFFER_SIZE, flatten());

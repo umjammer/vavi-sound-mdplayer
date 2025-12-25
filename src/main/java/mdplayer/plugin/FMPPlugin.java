@@ -24,13 +24,14 @@ import mdplayer.driver.fmp.nise98.FileTemp;
 import mdplayer.driver.pmd.PMDJava;
 import mdplayer.format.FileFormat;
 import mdsound.MDSound;
+import mdsound.instrument.Ym2608Inst;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * FMPPlugin.
+ * FMP (PC-9801) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>
@@ -47,10 +48,10 @@ public class FMPPlugin extends BasePlugin {
             ext = ext.toLowerCase();
             if (ext.length() > 3 && ext.charAt(1) == 'm') {
                 //compile
-                if (!(new FMP(ft).Compile(playingFileName))) return false;
+                if (!(new FMP(ft).compile(playingFileName))) return false;
                 playingFileName = Path.changeExtension(
-                        playingFileName
-                        , ext.equals(".mpi") ? ".opi" : (ext.equals(".mvi") ? ".ovi" : ".ozi"));
+                        playingFileName,
+                        ext.equals(".mpi") ? ".opi" : (ext.equals(".mvi") ? ".ovi" : ".ozi"));
                 vgmBuf = ft.ReadTemp(playingFileName);
                 //vgmBuf = File.ReadAllBytes(PlayingFileName);
             }
@@ -60,11 +61,11 @@ public class FMPPlugin extends BasePlugin {
 //        ((FMP)audio.driverVirtual).playingFileName = playingFileName;
 //        ((FMP)audio.driverVirtual).playingArcFileName = playingArcFileName;
         audio.driverReal = null;
-        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
-            audio.driverReal = new FMP(ft);
+//        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
+//            audio.driverReal = new FMP(ft);
 //            ((FMP)audio.driverReal).PlayingFileName = playingFileName;
 //            ((FMP)audio.driverReal).PlayingArcFileName = playingArcFileName;
-        }
+//        }
 
         prepare();
         boolean r = play(ft);
@@ -85,19 +86,25 @@ public class FMPPlugin extends BasePlugin {
         chip.instrument = audio.chipRegister.chip(Ym2608Chip.class).instrument(0);
         chip.samplingRate = 55467; // setting.outputDevice.SampleRate;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2608Chip.class);
-        chip.clock = FMP.baseclock;
+        if (chip.instrument instanceof Ym2608Inst ym2608) {
+            chip.setVolumes.put("FM", ym2608::setVolume);
+            chip.setVolumes.put("SSG", ym2608::setVolume);
+            chip.setVolumes.put("RHYTHM", ym2608::setVolume);
+            chip.setVolumes.put("ADPCM", ym2608::setVolume);
+        }
+        chip.clock = FMP.baseClock;
         Function<String, Stream> fn = Common::getOPNARyhthmStream;
         chip.option = new Object[] {fn};
         audio.chipLED.put("PriOPNA", 1);
         put(Ym2608Chip.class, chip);
-        audio.chipRegister.chip(Ym2608Chip.class).clock = FMP.baseclock;
+        audio.chipRegister.chip(Ym2608Chip.class).clock = FMP.baseClock;
 
         chip = new MDSound.Chip();
         chip.id = 0;
         chip.instrument = audio.chipRegister.chip(Ppz8Chip.class).instrument(0);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ppz8Chip.class);
-        chip.clock = FMP.baseclock;
+        chip.clock = FMP.baseClock;
         chip.option = null;
         audio.chipLED.put("PriPPZ8", 1);
         put(Ppz8Chip.class, chip);
@@ -122,14 +129,14 @@ public class FMPPlugin extends BasePlugin {
         audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, EnmModel.VirtualModel); // reset PSG TONE
         audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, EnmModel.RealModel);
 
-        audio.chipRegister.chip(Ym2608Chip.class).writeClock(0, PMDJava.baseclock, EnmModel.RealModel);
-        audio.chipRegister.chip(Ym2608Chip.class).writeClock(1, PMDJava.baseclock, EnmModel.RealModel);
+        audio.chipRegister.chip(Ym2608Chip.class).writeClock(0, PMDJava.baseClock, EnmModel.RealModel);
+        audio.chipRegister.chip(Ym2608Chip.class).writeClock(1, PMDJava.baseClock, EnmModel.RealModel);
         audio.chipRegister.chip(Ym2608Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
         audio.chipRegister.chip(Ym2608Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
-        ((FMP) audio.driverVirtual).SetSearchPath(setting.getFileSearchPathList());
+        ((FMP) audio.driverVirtual).setSearchPath(setting.getFileSearchPathList());
         if (audio.driverReal != null) {
-            ((FMP) audio.driverReal).SetSearchPath(setting.getFileSearchPathList());
+            ((FMP) audio.driverReal).setSearchPath(setting.getFileSearchPathList());
         }
 
         if (!audio.driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,

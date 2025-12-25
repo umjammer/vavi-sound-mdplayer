@@ -12,7 +12,7 @@ public class ComAnalyze {
     public Ab ab;
 
     public void _track_ana_quit() {
-        //	rts
+        // rts
     }
 
     public void _track_analyze() {
@@ -30,7 +30,7 @@ public class ComAnalyze {
             return;
         }
 
-        //─────────────────────────────────────
+        // ----
         reg.setD4_B(mm.readByte(reg.a5 + W.len) & 0xff);
         reg.setD4_B(reg.getD4_B() - 1);
 
@@ -60,12 +60,12 @@ public class ComAnalyze {
         if (reg.getD0_B() != 0) { // break L1;
             reg.setD0_B(reg.getD0_B() - 1);
         } else { // if (Reg.getD0_B() != 0) break L2;
-// L1:
+//L1:
             reg.a0 = mm.readInt(reg.a5 + W.echo_adrs);
             ab.hlw_echo_adrs.get(reg.a5).run();
             reg.D0_L = 0xffffffff;
         }
-// L2:
+//L2:
         mm.write(reg.a5 + W.at_q_work, (byte) reg.getD0_B());
         _track_echo_next();
     }
@@ -97,7 +97,7 @@ public class ComAnalyze {
         _track_ana_fetch();
     }
 
-    //─────────────────────────────────────
+    // ----
     public void _track_ana_normal() {
         reg.setD4_B(mm.readByte(reg.a5 + W.len) & 0xff);
         reg.setD4_B(reg.getD4_B() - 1);
@@ -125,12 +125,12 @@ public class ComAnalyze {
         if (reg.getD0_B() != 0) { // break L1;
             reg.setD0_B(reg.getD0_B() - 1);
         } else { // if (Reg.getD0_B() != 0) break L2;
-// L1:
+//L1:
             reg.a0 = mm.readInt(reg.a5 + W.keyoff_adrs);
             ab.hlw_keyoff_adrs.get(reg.a5).run();
             reg.D0_L = 0xffffffff;
         }
-// L2:
+//L2:
         mm.write(reg.a5 + W.at_q_work, (byte) reg.getD0_B());
         _track_ana_next();
     }
@@ -150,7 +150,7 @@ public class ComAnalyze {
             _track_ana_fetch();
             return;
         }
-// L1:
+//L1:
         if ((mm.readByte(reg.a5 + W.flag) & 0x40) != 0) {
             _track_ana_fetch();
             return;
@@ -167,7 +167,7 @@ public class ComAnalyze {
         // break _track_ana_fetch_L1;
         boolean dmyFlg = true;
 
-// _track_loop:
+//_track_loop:
         boolean _track_ana_rest_exit = false;
         while (true) {
             do {
@@ -180,7 +180,7 @@ public class ComAnalyze {
                     }
                 }
 
-// L1:
+//L1:
                 dmyFlg = false;
                 reg.D0_L = 0;
                 reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
@@ -198,7 +198,7 @@ public class ComAnalyze {
             //_track_loop();
 
             if (!_track_ana_rest_exit) {
-// _track_ana_mml:
+//_track_ana_mml:
 
                 if ((byte) (mm.readByte(reg.a6 + Dw.DRV_STATUS) & 0x8) == 0) { // break _track_ana_exit_jump;
 
@@ -211,14 +211,14 @@ public class ComAnalyze {
 //                        break _track_ana_mml_;
                         }
                     } else {
-// _track_ana_mml_plus:
+//_track_ana_mml_plus:
 
                         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
                         if ((byte) reg.getD0_B() < 0) { // break _track_ana_mml_;
                             reg.D0_L = 0x7f;
                         }
                     }
-// _track_ana_mml_:
+//_track_ana_mml_:
                     boolean _track_ana_exit = false;
                     if ((byte) (mm.readByte(reg.a5 + W.flag3) & 0x40) == 0) { // break _track_ana_mml1;
                         reg.setD1_B(mm.readByte(reg.a5 + W.flag) & 0xff);
@@ -232,18 +232,18 @@ public class ComAnalyze {
                             }
                         }
                     }
-// _track_ana_mml1:
+//_track_ana_mml1:
                     if (!_track_ana_exit) {
                         reg.a0 = mm.readInt(reg.a5 + W.setnote_adrs);
                         ab.hlw_setnote_adrs.get(reg.a5).run();
                     }
 
-// _track_ana_exit:
+//_track_ana_exit:
 
                     reg.a0 = mm.readInt(reg.a5 + W.inithlfo_adrs);
                     ab.hlw_inithlfo_adrs.get(reg.a5).run();
                 }
-// _track_ana_exit_jump:
+//_track_ana_exit_jump:
 
                 reg.D0_L = 0;
                 reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
@@ -262,7 +262,7 @@ public class ComAnalyze {
 
                 return;
             }
-// _track_ana_rest_exit:
+//_track_ana_rest_exit:
 
             reg.setD0_B(mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 0xff);
             if ((byte) reg.getD0_B() >= 0) { // break L1;
@@ -271,7 +271,7 @@ public class ComAnalyze {
                     ab.hlw_keyoff_adrs.get(reg.a5).run();
                 }
             }
-// L1:
+//L1:
             reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
             if (reg.getD0_B() == 0) continue; // break _track_loop;
             mm.write(reg.a5 + W.len, (byte) reg.getD0_B());

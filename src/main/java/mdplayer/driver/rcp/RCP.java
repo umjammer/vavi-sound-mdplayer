@@ -45,7 +45,7 @@ public class RCP extends BaseDriver {
     private int[] sendControlDelta = null;
     private int[] sendControlIndex = null;
 
-    public static class MIDIRythm {
+    public static class MIDIRhythm {
         private String name = "";
         private int key = 0;
         private int gt = 1;
@@ -114,7 +114,7 @@ public class RCP extends BaseDriver {
 
     private final Tick tick = new Tick();
 
-    public List<Tuple<String, byte[]>> ExtendFile = null;
+    public List<Tuple<String, byte[]>> extendFile = null;
 
     /**
      *
@@ -226,7 +226,6 @@ public class RCP extends BaseDriver {
 
     @Override
     public void processOneFrame() {
-
         try {
             vstDelta++;
             vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
@@ -238,7 +237,7 @@ public class RCP extends BaseDriver {
                     vgmFrameCounter++;
                 }
             }
-            // Stopped = !IsPlaying();
+            //stopped = !isPlaying();
         } catch (Exception ex) {
             logger.log(Level.ERROR, ex.getMessage(), ex);
         }
@@ -258,7 +257,7 @@ public class RCP extends BaseDriver {
     private String controlFileGSD2 = "";
     private String controlFileCM6 = "";
     private int rcpVer = 0;
-    private List<MIDIRythm> rythms;
+    private List<MIDIRhythm> rythms;
     private List<MIDIUserExclusive> userExclusives;
     private MIDITrack[] tracks = null;
     private MIDIPart[] parts = null;
@@ -429,7 +428,7 @@ public class RCP extends BaseDriver {
         beatDen = vgmBuf[ptr++] & 0xff;
         // Beat (Denominator)
         beatMol = vgmBuf[ptr++] & 0xff;
-        // Key
+        // key
         key = vgmBuf[ptr++] & 0xff;
         // Play BIAS
         playBIAS = vgmBuf[ptr++] & 0xff;
@@ -473,7 +472,7 @@ public class RCP extends BaseDriver {
         beatDen = vgmBuf[ptr++] & 0xff;
         // Beat (Denominator)
         beatMol = vgmBuf[ptr++] & 0xff;
-        // Key
+        // key
         key = vgmBuf[ptr++] & 0xff;
         // Play BIAS
         playBIAS = vgmBuf[ptr++] & 0xff;
@@ -517,7 +516,7 @@ public class RCP extends BaseDriver {
         if (isG36) n = 128;
 
         for (int i = 0; i < n; i++) {
-            MIDIRythm r = new MIDIRythm();
+            MIDIRhythm r = new MIDIRhythm();
             r.setName(new String(vgmBuf, ptr, 14, charset).replace("\0", ""));
             ptr += 14;
             r.key = vgmBuf[ptr++] & 0xff;
@@ -621,10 +620,9 @@ public class RCP extends BaseDriver {
                 int ofsMea;
                 if (isG36) {
                     ofsMea = (evt.getMIDIMessages()[0][0] & 0xff) + (evt.getMIDIMessages()[0][2] & 0xff) * 0x100;
-                    // if (trkLen == 36)
-                    // {
+                    //if (trkLen == 36) {
                     //    ofsMea = ofsMea * 6 - 242;
-                    // }
+                    //}
                 } else {
                     ofsMea = (evt.getMIDIMessages()[0][0] & 0xff) + (evt.getMIDIMessages()[0][1] & 3) * 0x100;
                 }
@@ -701,8 +699,8 @@ public class RCP extends BaseDriver {
         case 0x98: // CH Exclusive
             pt += skipPtr;
             ex = new ArrayList<>();
-            ex.add((byte) 0xF0);
-            while (ebs[pt] == 0xf7) {
+            ex.add((byte) 0xf0);
+            while (ebs[pt] == (byte) 0xf7) {
                 if (isG36) {
                     pt++;
                     ex.add(ebs[pt++]);
@@ -762,7 +760,7 @@ public class RCP extends BaseDriver {
                     pk[1],
                     MIDISpEventType.values()[pk[0]],
                     new byte[][] {
-                            new byte[] {(byte) pk[2], (byte) pk[3]}
+                            {(byte) pk[2], (byte) pk[3]}
                     });
             pt += skipPtr;
             break;
@@ -772,8 +770,8 @@ public class RCP extends BaseDriver {
                     pk[1],
                     MIDISpEventType.BankProgram,
                     new byte[][] {
-                            new byte[] {(byte) MIDIEventType.ProgramChange.ordinal(), (byte) pk[2]},
-                            new byte[] {(byte) MIDIEventType.ControlChange.ordinal(), 0x00, (byte) pk[3]}
+                            {(byte) MIDIEventType.ProgramChange.ordinal(), (byte) pk[2]},
+                            {(byte) MIDIEventType.ControlChange.ordinal(), 0x00, (byte) pk[3]}
                     });
             pt += skipPtr;
             break;
@@ -783,7 +781,7 @@ public class RCP extends BaseDriver {
                     pk[1],
                     MIDISpEventType.KeyScan,
                     new byte[][] {
-                            new byte[] {(byte) pk[2]}
+                            {(byte) pk[2]}
                     });
             pt += skipPtr;
             break;
@@ -793,7 +791,7 @@ public class RCP extends BaseDriver {
                     pk[1],
                     MIDISpEventType.MIDICh,
                     new byte[][] {
-                            new byte[] {(byte) pk[2], (byte) pk[3]}
+                            {(byte) pk[2], (byte) pk[3]}
                     });
             pt += skipPtr;
             break;
@@ -803,7 +801,7 @@ public class RCP extends BaseDriver {
                     pk[1],
                     MIDISpEventType.TempoChange,
                     new byte[][] {
-                            new byte[] {(byte) pk[2], (byte) pk[3]}
+                            {(byte) pk[2], (byte) pk[3]}
                     });
             pt += skipPtr;
             break;
@@ -852,12 +850,12 @@ public class RCP extends BaseDriver {
             );
             pt += skipPtr;
             break;
-        case 0xf5: // Key Change
+        case 0xf5: // key Change
             trkn.getPart().get(meaInd).insertSpEvent(
                     pEvt,
                     0,
                     MIDISpEventType.KeyChange,
-                    new byte[][] {new byte[] {(byte) pk[0]}}
+                    new byte[][] {{(byte) pk[0]}}
             );
             pt += skipPtr;
             break;
@@ -870,7 +868,7 @@ public class RCP extends BaseDriver {
                 ex.add((byte) (pk[1] / 0x100));
                 ex.add((byte) (pk[2] & 0xff));
                 ex.add((byte) (pk[2] / 0x100));
-                while (ebs[pt] == 0xf7) {
+                while (ebs[pt] == (byte) 0xf7) {
                     pt++;
                     ex.add(ebs[pt++]);
                     ex.add(ebs[pt++]);
@@ -888,7 +886,7 @@ public class RCP extends BaseDriver {
             } else {
                 ex.add((byte) pk[2]);
                 ex.add((byte) pk[3]);
-                while (ebs[pt] == 0xf7) {
+                while (ebs[pt] == (byte) 0xf7) {
                     pt += 2;
                     ex.add(ebs[pt++]);
                     ex.add(ebs[pt++]);
@@ -907,7 +905,7 @@ public class RCP extends BaseDriver {
                     pEvt,
                     0,
                     MIDISpEventType.LoopEnd,
-                    new byte[][] {new byte[] {(byte) pk[1]}}
+                    new byte[][] {{(byte) pk[1]}}
             );
             pt += skipPtr;
             break;
@@ -916,7 +914,7 @@ public class RCP extends BaseDriver {
                     pEvt,
                     0,
                     MIDISpEventType.LoopStart,
-                    new byte[][] {new byte[] {0}}
+                    new byte[][] {{0}}
             );
             pt += skipPtr;
             break;
@@ -926,14 +924,14 @@ public class RCP extends BaseDriver {
                         pEvt,
                         0,
                         MIDISpEventType.SameMeasure,
-                        new byte[][] {new byte[] {(byte) pk[1], (byte) (pk[3] & 0xff), (byte) (pk[3] / 0x100)}}
+                        new byte[][] {{(byte) pk[1], (byte) (pk[3] & 0xff), (byte) (pk[3] / 0x100)}}
                 );
             } else {
                 trkn.getPart().get(meaInd).insertSpEvent(
                         pEvt,
                         0,
                         MIDISpEventType.SameMeasure,
-                        new byte[][] {new byte[] {(byte) pk[1], (byte) pk[2], (byte) pk[3]}}
+                        new byte[][] {{(byte) pk[1], (byte) pk[2], (byte) pk[3]}}
                 );
             }
             pt += skipPtr;
@@ -953,7 +951,7 @@ public class RCP extends BaseDriver {
                     0,
                     MIDISpEventType.EndOfTrack,
                     new byte[][] {
-                            new byte[] {(byte) pk[1], (byte) pk[2], (byte) pk[3]}
+                            {(byte) pk[1], (byte) pk[2], (byte) pk[3]}
                     }
             );
             pt += skipPtr;
@@ -1038,7 +1036,6 @@ public class RCP extends BaseDriver {
         //MIDIClock.Start();
     }
 
-
     private void oneFrameMain() {
         try {
 
@@ -1079,7 +1076,6 @@ public class RCP extends BaseDriver {
             }
 
             oneSyncTime = 60.0 / nowTempo / timeBase;
-
         }
 
         boolean endMark = true;
@@ -1149,7 +1145,7 @@ public class RCP extends BaseDriver {
             if (trk.getNoteGateTime()[n] != Integer.MAX_VALUE) {
                 // if (trk.NoteGateTime[n] <= trk.NowTick + trk.getNowPart().StartTick)
                 if (trk.getNoteGateTime()[n] <= trk.getNowTick()) {
-                    // int key = (n + ((trk.Key != null) ? (int)trk.Key : 0));
+                    // int key = (n + ((trk.key != null) ? (int)trk.key : 0));
                     int key = n + trk.getKey();
                     if (key < 0) key = 0;
                     else if (key > 127) key = 127;
@@ -1224,7 +1220,7 @@ public class RCP extends BaseDriver {
     private void sendEvent(MIDITrack trk, MIDIEvent eve) {
         if (trk.getOutDeviceNumber() == null) return;
         if (trk.getOutUserDeviceNumber() == null) return;
-        // if (!Config.MIDIOutDeviceList[(int)trk.OutUserDeviceNumber].DevAlive) return;
+        //if (!Config.MIDIOutDeviceList[(int)trk.OutUserDeviceNumber].DevAlive) return;
         if (eve.getEventType() == MIDIEventType.NoteON && trk.getMute()) return;
 
         eventFunc[eve.getEventType().v].accept(trk, eve);
@@ -1337,14 +1333,14 @@ public class RCP extends BaseDriver {
     void efNoteOn(MIDITrack trk, MIDIEvent eve) {
         if (eve.getGate() == 0) return;
         int okey = eve.getMIDIMessage()[1];
-        // int key = (okey + ((trk.Key != null) ? (int)trk.Key : 0));
+        // int key = (okey + ((trk.key != null) ? (int)trk.key : 0));
         int key = okey + trk.getKey();
         if (key < 0) key = 0;
         if (key > 127) key = 127;
 
         if (trk.getOutChannel() != null) {
             boolean flg = false;
-            // Key Off
+            // key Off
             // if (trk.NoteGateTime[okey] <= trk.NextEventTick + trk.getNowPart().StartTick)
             if (trk.getNoteGateTime()[okey] <= trk.getNextEventTick()) {
                 msgBuf[0] = (byte) (MIDIEventType.NoteOff.v + trk.getOutChannel());
@@ -1354,7 +1350,7 @@ public class RCP extends BaseDriver {
                 flg = true;
             }
 
-            // Key On
+            // key On
             if (trk.getNoteGateTime()[okey] == Integer.MAX_VALUE || flg) {
                 msgBuf[0] = (byte) ((eve.getMIDIMessage()[0] & 0xf0) + trk.getOutChannel());
                 msgBuf[1] = (byte) key;
@@ -1439,7 +1435,7 @@ public class RCP extends BaseDriver {
 
         while (j < eve.getMIDIMessages()[0].length - 2) {
             Byte n = eve.getMIDIMessages()[0][j];
-            switch ((int) n) {
+            switch (n & 0xff) {
             case 0x80:
                 n = eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 2];
                 break;
@@ -1463,7 +1459,7 @@ public class RCP extends BaseDriver {
                 i++;
             }
             j++;
-            if (n == 0xf7) break;
+            if (n == (byte) 0xf7) break;
             if (i >= msgBuf.length) {
                 logger.log(Level.TRACE, "sefChExclusive:Detects and skips exclusives that exceed the buffer.");
                 return; // Do not send exclusive when buffer is over
@@ -1477,11 +1473,11 @@ public class RCP extends BaseDriver {
     }
 
     void sefBankProgram(MIDITrack trk, MIDIEvent eve) {
-        msgBuf[0] = (byte) (eve.getMIDIMessages()[1][0] + (trk.getOutChannel() % 16));
+        msgBuf[0] = (byte) ((eve.getMIDIMessages()[1][0] & 0xff) + (trk.getOutChannel() % 16));
         msgBuf[1] = eve.getMIDIMessages()[1][1];
         msgBuf[2] = eve.getMIDIMessages()[1][2];
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 3);
-        msgBuf[0] = (byte) (eve.getMIDIMessages()[0][0] + (trk.getOutChannel() % 16));
+        msgBuf[0] = (byte) ((eve.getMIDIMessages()[0][0] & 0xff) + (trk.getOutChannel() % 16));
         msgBuf[1] = eve.getMIDIMessages()[0][1];
         putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 2);
     }
@@ -1491,7 +1487,7 @@ public class RCP extends BaseDriver {
     }
 
     void sefMIDIChChange(MIDITrack trk, MIDIEvent eve) {
-        int ch = eve.getMIDIMessages()[0][0];
+        int ch = eve.getMIDIMessages()[0][0] & 0xff;
         if (ch == 0) {
             trk.setMute(true);
             return;
@@ -1503,7 +1499,7 @@ public class RCP extends BaseDriver {
     }
 
     void sefTempoChange(MIDITrack trk, MIDIEvent eve) {
-        double mul = eve.getMIDIMessages()[0][0] / 64.0;
+        double mul = (eve.getMIDIMessages()[0][0] & 0xff) / 64.0;
 
         if (eve.getMIDIMessages()[0][1] == 0) {
             int Tempo = (int) (this.tempo * mul);
@@ -1569,8 +1565,8 @@ public class RCP extends BaseDriver {
     }
 
     void sefRolandPara(MIDITrack trk, MIDIEvent eve) {
-        trk.RolandPara_gt(eve.getMIDIMessages()[0][0]);
-        trk.RolandPara_vel(eve.getMIDIMessages()[0][1]);
+        trk.setRolandPara_gt(eve.getMIDIMessages()[0][0]);
+        trk.setRolandPara_vel(eve.getMIDIMessages()[0][1]);
 
         msgBuf[0] = (byte) 0xF0;
         msgBuf[1] = 0x41;
@@ -1600,8 +1596,8 @@ public class RCP extends BaseDriver {
         sf = vv > 0x07 ? (0x100 - vv) % 0x100 : vv;
         mi = v > 0x0f ? 1 : 0;
 
-        trk.setKeySIG_SF(sf); // Sharp Flat -7:7flats -1:1flat 0:Key of C 1:1sharp 7:7sharp
-        trk.setKeySIG_MI(mi); // Is minor Key
+        trk.setKeySIG_SF(sf); // Sharp Flat -7:7flats -1:1flat 0:key of C 1:1sharp 7:7sharp
+        trk.setKeySIG_MI(mi); // Is minor key
     }
 
     void sefCommentStart(MIDITrack trk, MIDIEvent eve) {
@@ -1612,7 +1608,7 @@ public class RCP extends BaseDriver {
     void sefLoopEnd(MIDITrack trk, MIDIEvent eve) {
         if (trk.getLoopTargetEvents().isEmpty()) return;
         MIDIEvent evt = trk.getLoopTargetEvents().pop();
-        if (evt.getMIDIMessages()[0][0] < eve.getMIDIMessages()[0][0] - 1) {
+        if ((evt.getMIDIMessages()[0][0] & 0xff) < (eve.getMIDIMessages()[0][0] & 0xff) - 1) {
             evt.getMIDIMessages()[0][0]++;
             trk.getLoopTargetEvents().push(evt);
             trk.setLoopOrSameTargetEventIndex(trk.getNowPart().getNextEvent(evt).getNumber());
@@ -1732,7 +1728,7 @@ public class RCP extends BaseDriver {
                 i++;
             }
             j++;
-            if ((n & 0xff) == 0xf7) break;
+            if (n == (byte) 0xf7) break;
             if (i >= msgBuf.length) {
                 logger.log(Level.TRACE, "sefUserExclusiveN: Detects and skips exclusive requests that exceed the buffer.");
                 return; // Do not send exclusive when buffer is over
@@ -1784,7 +1780,7 @@ public class RCP extends BaseDriver {
 
     private void getGSD1Buf(List<CtlSysex> dBuf) {
         byte[] buf = null;
-        for (Tuple<String, byte[]> trg : ExtendFile) {
+        for (Tuple<String, byte[]> trg : extendFile) {
             if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
                 buf = trg.getItem2();
                 break;
@@ -1795,7 +1791,7 @@ public class RCP extends BaseDriver {
 
     private void getGSD2Buf(List<CtlSysex> DBuf) {
         byte[] buf = null;
-        for (Tuple<String, byte[]> trg : ExtendFile) {
+        for (Tuple<String, byte[]> trg : extendFile) {
             if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".GSD")) {
                 buf = trg.getItem2();
             }
@@ -1817,7 +1813,9 @@ public class RCP extends BaseDriver {
 
         // Master Volume
         dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte) 0x83, 0x40, 0x00, 0x04, buf[0x24], (byte) 0x84})));
-        dBuf.add(new CtlSysex(4, getSysEx(new byte[] {(byte) 0x7F, (byte) 0x7F, 0x04, 0x01, (byte) (((buf[0x24] & 0xff) * 0x81) & 0x7F), (byte) ((((buf[0x24] & 0xff) * 0x81) >> 7) & 0x7f)})));
+        dBuf.add(new CtlSysex(4, getSysEx(new byte[] {
+                (byte) 0x7F, (byte) 0x7F, 0x04, 0x01, (byte) (((buf[0x24] & 0xff) * 0x81) & 0x7F),
+                (byte) ((((buf[0x24] & 0xff) * 0x81) >> 7) & 0x7f)})));
 
         for (int ch = 0; ch < 16; ch++) {
             dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x65, 0x00})); // RPN Master Coarse tuning
@@ -1828,30 +1826,31 @@ public class RCP extends BaseDriver {
         // Master Pan
         dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte)0x83, 0x40, 0x00, 0x06, buf[0x26], (byte)0x84})));
         // Master Balance
-        dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x7f, 0x7f, 0x04, 0x02, (byte) (((buf[0x26] & 0xff) * 0x80) & 0x7F), (byte) ((((buf[0x26] & 0xff) * 0x80) >> 7) & 0x7f)})));
+        dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x7f, 0x7f, 0x04, 0x02,
+                (byte) (((buf[0x26] & 0xff) * 0x80) & 0x7F), (byte) ((((buf[0x26] & 0xff) * 0x80) >> 7) & 0x7f)})));
 
         // Voice Reserve Loc:Ch partdata - 1 Len:1
-        dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte)0x83
-                , 0x40, 0x01, 0x10
-                , buf[0x4f9], buf[0x0af], buf[0x129], buf[0x1a3] // 10ch  1ch  2ch  3ch
-                , buf[0x21d], buf[0x297], buf[0x311], buf[0x38b] // 4ch  5ch  6ch  7ch
-                , buf[0x405], buf[0x47f], buf[0x573], buf[0x5ed] // 8ch  9ch 11ch 12ch
-                , buf[0x667], buf[0x6e1], buf[0x75b], buf[0x7d5] // 13ch 14ch 15ch 16ch
-                , (byte) 0x84})));
+        dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte)0x83     ,
+                0x40, 0x01, 0x10,
+                buf[0x4f9], buf[0x0af], buf[0x129], buf[0x1a3], // 10ch  1ch  2ch  3ch
+                buf[0x21d], buf[0x297], buf[0x311], buf[0x38b], // 4ch  5ch  6ch  7ch
+                buf[0x405], buf[0x47f], buf[0x573], buf[0x5ed], // 8ch  9ch 11ch 12ch
+                buf[0x667], buf[0x6e1], buf[0x75b], buf[0x7d5], // 13ch 14ch 15ch 16ch
+                (byte) 0x84})));
 
         // Reverb Loc:0x27 Len:7
-        dBuf.add(new CtlSysex(1, getSysEx(new byte[]{0x41, 0x10, 0x42, 0x12, (byte)0x83
-                , 0x40, 0x01, 0x30
-                , buf[0x27], buf[0x28], buf[0x29], buf[0x2a]
-                , buf[0x2b], buf[0x2c], buf[0x2d]
-                , (byte)0x84})));
+        dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte) 0x83,
+                0x40, 0x01, 0x30,
+                buf[0x27], buf[0x28], buf[0x29], buf[0x2a],
+                buf[0x2b], buf[0x2c], buf[0x2d],
+                (byte) 0x84})));
 
         // Chorus Loc:0x2E Len:8
-        dBuf.add(new CtlSysex(1, getSysEx(new byte[]{0x41, 0x10, 0x42, 0x12, (byte)0x83
-                , 0x40, 0x01, 0x38
-                , buf[0x2e], buf[0x2f], buf[0x30], buf[0x31]
-                , buf[0x32], buf[0x33], buf[0x34], buf[0x35]
-                , (byte)0x84})));
+        dBuf.add(new CtlSysex(1, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte) 0x83,
+                0x40, 0x01, 0x38,
+                buf[0x2e], buf[0x2f], buf[0x30], buf[0x31],
+                buf[0x32], buf[0x33], buf[0x34], buf[0x35],
+                (byte) 0x84})));
 
         for (int i = 0; i < 16; i++) {
             adr = i * 0x7a + 0x36;
@@ -1893,150 +1892,150 @@ public class RCP extends BaseDriver {
         makeGSDBufPtn_3(dBuf, buf, adr, 0x10);
     }
 
-    private void makeGSDBufPtn_0(List<CtlSysex> DBuf, byte[] buf, int adr, byte ch) {
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x00, buf[adr + 0x00]})); // Bank mm
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x20, 0})); // Bank ll
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xc0 + ch), buf[adr + 0x01]})); // Program Change
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x07, buf[adr + 0x19]})); // Volume
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x65, 0})); // RPN PITCH BEND
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x64, 0})); //
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x06, 2})); // ?
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x26, 0})); // ?
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x5b, buf[adr + 0x22]})); // Reverb Send Level
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x5d, buf[adr + 0x21]})); // Chorus Send Level
-        DBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x0a, buf[adr + 0x1c]})); // Panpot
+    private void makeGSDBufPtn_0(List<CtlSysex> dBuf, byte[] buf, int adr, byte ch) {
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x00, buf[adr + 0x00]})); // Bank mm
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x20, 0})); // Bank ll
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xc0 + ch), buf[adr + 0x01]})); // Program Change
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x07, buf[adr + 0x19]})); // Volume
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x65, 0})); // RPN PITCH BEND
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x64, 0})); //
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x06, 2})); // ?
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x26, 0})); // ?
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x5b, buf[adr + 0x22]})); // Reverb Send Level
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x5d, buf[adr + 0x21]})); // Chorus Send Level
+        dBuf.add(new CtlSysex(1, new byte[] {(byte) (0xb0 + ch), 0x0a, buf[adr + 0x1c]})); // Panpot
     }
 
-    private void makeGSDBufPtn_1(List<CtlSysex> DBuf, byte[] buf, int adr, byte iAdrMm, byte iAdrLl) {
-        DBuf.add(new CtlSysex(5, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte)0x83
-                , 0x48, iAdrMm, iAdrLl
-                , (byte) (buf[adr + 0x00] >> 4), (byte) (buf[adr + 0x00] & 0xf) // BANK(LSB) 0 1
-                , (byte) (buf[adr + 0x01] >> 4), (byte) (buf[adr + 0x01] & 0xf) // PROGRAM CHANGE 2 3
-                , (byte) (((buf[adr + 0x03] & 1) << 3) | ((buf[adr + 0x04] & 1) << 2) | ((buf[adr + 0x05] & 1) << 1) | ((buf[adr + 0x06] & 1) << 0)) // PITCH BEND + CH PRESSURE + PROGRAM CHANGE + CONTROL CHANGE 4
-                , (byte) (((buf[adr + 0x07] & 1) << 3) | ((buf[adr + 0x08] & 1) << 2) | ((buf[adr + 0x09] & 1) << 1) | ((buf[adr + 0x0a] & 1) << 0)) // POLY PRESSURE + NOTE MESSAGE + RPN + NRPN 5
-                , (byte) (((buf[adr + 0x0b] & 1) << 3) | ((buf[adr + 0x0c] & 1) << 2) | ((buf[adr + 0x0d] & 1) << 1) | ((buf[adr + 0x0e] & 1) << 0)) // MODURATION + volume + PANPOT + EXPRESSION 6
-                , (byte) (((buf[adr + 0x0f] & 1) << 3) | ((buf[adr + 0x10] & 1) << 2) | ((buf[adr + 0x11] & 1) << 1) | ((buf[adr + 0x12] & 1) << 0)) // HOLD1 + PORTMENT + SOSTENUTE + SOFT 7
-                , (byte) (buf[adr + 0x02] >> 4), (byte) (buf[adr + 0x02] & 0xf) // MIDI CH 8 9
-                , (byte) (((buf[adr + 0x13] & 1) << 3) | ((buf[adr + 0x15] & 3) << 1) | ((buf[adr + 0x15] & 3) != 0 ? 1 : 0)) // MONO/PORY MODE + ASSIGN MODE  10
-                , (byte) (((buf[adr + 0x14] & 3))) // USE FOR RHYTHM PART 11
-                , (byte) (buf[adr + 0x16] >> 4), (byte) (buf[adr + 0x16] & 0xf) // PITCH KEY SHIFT 12,13
-                , buf[adr + 0x17] // PITCH OFFSET FINE              14
-                , buf[adr + 0x18] // PITCH OFFSET FINE  (NIBBLIZED) 15
-                , (byte) (buf[adr + 0x19] >> 4), (byte) (buf[adr + 0x19] & 0xf) // PART LEVEL 16,17
-                , (byte) (buf[adr + 0x1c] >> 4), (byte) (buf[adr + 0x1c] & 0xf) // PART PANPOT 18,19
-                , (byte) (buf[adr + 0x1a] >> 4), (byte) (buf[adr + 0x1a] & 0xf) // VELOCITY SENSE DEPTH 22,23 (20,21 ?)
-                , (byte) (buf[adr + 0x1b] >> 4), (byte) (buf[adr + 0x1b] & 0xf) // VELOCITY SENSE OFFSET 20,21 (22,23 ?)
-                , (byte) (buf[adr + 0x1d] >> 4), (byte) (buf[adr + 0x1d] & 0xf) // KEY RANGE LOW 24,25
-                , (byte) (buf[adr + 0x1e] >> 4), (byte) (buf[adr + 0x1e] & 0xf) // KEY RANGE HIGH 26,27
-                , (byte) (buf[adr + 0x21] >> 4), (byte) (buf[adr + 0x21] & 0xf) // CHOURS SEND DEPTH 28,29
-                , (byte) (buf[adr + 0x22] >> 4), (byte) (buf[adr + 0x22] & 0xf) // REVERB SEND DEPTH 30,31
+    private void makeGSDBufPtn_1(List<CtlSysex> dBuf, byte[] buf, int adr, byte iAdrMm, byte iAdrLl) {
+        dBuf.add(new CtlSysex(5, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte) 0x83,
+                0x48, iAdrMm, iAdrLl,
+                (byte) (buf[adr + 0x00] >> 4), (byte) (buf[adr + 0x00] & 0xf), // BANK(LSB) 0 1
+                (byte) (buf[adr + 0x01] >> 4), (byte) (buf[adr + 0x01] & 0xf), // PROGRAM CHANGE 2 3
+                (byte) (((buf[adr + 0x03] & 1) << 3) | ((buf[adr + 0x04] & 1) << 2) | ((buf[adr + 0x05] & 1) << 1) | ((buf[adr + 0x06] & 1) << 0)), // PITCH BEND + CH PRESSURE + PROGRAM CHANGE + CONTROL CHANGE 4
+                (byte) (((buf[adr + 0x07] & 1) << 3) | ((buf[adr + 0x08] & 1) << 2) | ((buf[adr + 0x09] & 1) << 1) | ((buf[adr + 0x0a] & 1) << 0)), // POLY PRESSURE + NOTE MESSAGE + RPN + NRPN 5
+                (byte) (((buf[adr + 0x0b] & 1) << 3) | ((buf[adr + 0x0c] & 1) << 2) | ((buf[adr + 0x0d] & 1) << 1) | ((buf[adr + 0x0e] & 1) << 0)), // MODURATION + volume + PANPOT + EXPRESSION 6
+                (byte) (((buf[adr + 0x0f] & 1) << 3) | ((buf[adr + 0x10] & 1) << 2) | ((buf[adr + 0x11] & 1) << 1) | ((buf[adr + 0x12] & 1) << 0)), // HOLD1 + PORTMENT + SOSTENUTE + SOFT 7
+                (byte) (buf[adr + 0x02] >> 4), (byte) (buf[adr + 0x02] & 0xf),  // MIDI CH 8 9
+                (byte) (((buf[adr + 0x13] & 1) << 3) | ((buf[adr + 0x15] & 3) << 1) | ((buf[adr + 0x15] & 3) != 0 ? 1 : 0)), // MONO/PORY MODE + ASSIGN MODE  10
+                (byte) (((buf[adr + 0x14] & 3))), // USE FOR RHYTHM PART 11
+                (byte) (buf[adr + 0x16] >> 4), (byte) (buf[adr + 0x16] & 0xf), // PITCH KEY SHIFT 12,13
+                buf[adr + 0x17], // PITCH OFFSET FINE              14
+                buf[adr + 0x18], // PITCH OFFSET FINE  (NIBBLIZED) 15
+                (byte) (buf[adr + 0x19] >> 4), (byte) (buf[adr + 0x19] & 0xf), // PART LEVEL 16,17
+                (byte) (buf[adr + 0x1c] >> 4), (byte) (buf[adr + 0x1c] & 0xf), // PART PANPOT 18,19
+                (byte) (buf[adr + 0x1a] >> 4), (byte) (buf[adr + 0x1a] & 0xf), // VELOCITY SENSE DEPTH 22,23 (20,21 ?)
+                (byte) (buf[adr + 0x1b] >> 4), (byte) (buf[adr + 0x1b] & 0xf), // VELOCITY SENSE OFFSET 20,21 (22,23 ?)
+                (byte) (buf[adr + 0x1d] >> 4), (byte) (buf[adr + 0x1d] & 0xf), // KEY RANGE LOW 24,25
+                (byte) (buf[adr + 0x1e] >> 4), (byte) (buf[adr + 0x1e] & 0xf), // KEY RANGE HIGH 26,27
+                (byte) (buf[adr + 0x21] >> 4), (byte) (buf[adr + 0x21] & 0xf), // CHOURS SEND DEPTH 28,29
+                (byte) (buf[adr + 0x22] >> 4), (byte) (buf[adr + 0x22] & 0xf), // REVERB SEND DEPTH 30,31
 
-                , (byte) (buf[adr + 0x23] >> 4), (byte) (buf[adr + 0x23] & 0xf) // TONE MODEFY 1 32,33
-                , (byte) (buf[adr + 0x24] >> 4), (byte) (buf[adr + 0x24] & 0xf) // TONE MODEFY 2 34,35
-                , (byte) (buf[adr + 0x25] >> 4), (byte) (buf[adr + 0x25] & 0xf) // TONE MODEFY 3 36,37
-                , (byte) (buf[adr + 0x26] >> 4), (byte) (buf[adr + 0x26] & 0xf) // TONE MODEFY 4 38,39
-                , (byte) (buf[adr + 0x27] >> 4), (byte) (buf[adr + 0x27] & 0xf) // TONE MODEFY 5 40,41
-                , (byte) (buf[adr + 0x28] >> 4), (byte) (buf[adr + 0x28] & 0xf) // TONE MODEFY 6 42,43
-                , (byte) (buf[adr + 0x29] >> 4), (byte) (buf[adr + 0x29] & 0xf) // TONE MODEFY 7 44,45
-                , (byte) (buf[adr + 0x2a] >> 4), (byte) (buf[adr + 0x2a] & 0xf) // TONE MODEFY 8 46,47
-                , 0, 0, 0, 0 // (The value of DATA 48, 49, 50, 51 is 0)
-                , (byte) (buf[adr + 0x2b] >> 4), (byte) (buf[adr + 0x2b] & 0xf) // SCALE TUNIG C  52,53
-                , (byte) (buf[adr + 0x2c] >> 4), (byte) (buf[adr + 0x2c] & 0xf) // SCALE TUNIG C# 54,55
-                , (byte) (buf[adr + 0x2d] >> 4), (byte) (buf[adr + 0x2d] & 0xf) // SCALE TUNIG D  56,57
-                , (byte) (buf[adr + 0x2e] >> 4), (byte) (buf[adr + 0x2e] & 0xf) // SCALE TUNIG D# 58,59
-                , (byte) (buf[adr + 0x2f] >> 4), (byte) (buf[adr + 0x2f] & 0xf) // SCALE TUNIG E  60,61
-                , (byte) (buf[adr + 0x30] >> 4), (byte) (buf[adr + 0x30] & 0xf) // SCALE TUNIG F  62,63
-                , (byte) (buf[adr + 0x31] >> 4), (byte) (buf[adr + 0x31] & 0xf) // SCALE TUNIG F# 64,65
-                , (byte) (buf[adr + 0x32] >> 4), (byte) (buf[adr + 0x32] & 0xf) // SCALE TUNIG G  66,67
-                , (byte) (buf[adr + 0x33] >> 4), (byte) (buf[adr + 0x33] & 0xf) // SCALE TUNIG G# 68,69
-                , (byte) (buf[adr + 0x34] >> 4), (byte) (buf[adr + 0x34] & 0xf) // SCALE TUNIG a  70,71
-                , (byte) (buf[adr + 0x35] >> 4), (byte) (buf[adr + 0x35] & 0xf) // SCALE TUNIG a# 72,73
-                , (byte) (buf[adr + 0x36] >> 4), (byte) (buf[adr + 0x36] & 0xf) // SCALE TUNIG B  74,75
+                (byte) (buf[adr + 0x23] >> 4), (byte) (buf[adr + 0x23] & 0xf), // TONE MODEFY 1 32,33
+                (byte) (buf[adr + 0x24] >> 4), (byte) (buf[adr + 0x24] & 0xf), // TONE MODEFY 2 34,35
+                (byte) (buf[adr + 0x25] >> 4), (byte) (buf[adr + 0x25] & 0xf), // TONE MODEFY 3 36,37
+                (byte) (buf[adr + 0x26] >> 4), (byte) (buf[adr + 0x26] & 0xf), // TONE MODEFY 4 38,39
+                (byte) (buf[adr + 0x27] >> 4), (byte) (buf[adr + 0x27] & 0xf), // TONE MODEFY 5 40,41
+                (byte) (buf[adr + 0x28] >> 4), (byte) (buf[adr + 0x28] & 0xf), // TONE MODEFY 6 42,43
+                (byte) (buf[adr + 0x29] >> 4), (byte) (buf[adr + 0x29] & 0xf), // TONE MODEFY 7 44,45
+                (byte) (buf[adr + 0x2a] >> 4), (byte) (buf[adr + 0x2a] & 0xf), // TONE MODEFY 8 46,47
+                0, 0, 0, 0, // (The value of DATA 48, 49, 50, 51 is 0)
+                (byte) (buf[adr + 0x2b] >> 4), (byte) (buf[adr + 0x2b] & 0xf), // SCALE TUNIG C  52,53
+                (byte) (buf[adr + 0x2c] >> 4), (byte) (buf[adr + 0x2c] & 0xf), // SCALE TUNIG C# 54,55
+                (byte) (buf[adr + 0x2d] >> 4), (byte) (buf[adr + 0x2d] & 0xf), // SCALE TUNIG D  56,57
+                (byte) (buf[adr + 0x2e] >> 4), (byte) (buf[adr + 0x2e] & 0xf), // SCALE TUNIG D# 58,59
+                (byte) (buf[adr + 0x2f] >> 4), (byte) (buf[adr + 0x2f] & 0xf), // SCALE TUNIG E  60,61
+                (byte) (buf[adr + 0x30] >> 4), (byte) (buf[adr + 0x30] & 0xf), // SCALE TUNIG F  62,63
+                (byte) (buf[adr + 0x31] >> 4), (byte) (buf[adr + 0x31] & 0xf), // SCALE TUNIG F# 64,65
+                (byte) (buf[adr + 0x32] >> 4), (byte) (buf[adr + 0x32] & 0xf), // SCALE TUNIG G  66,67
+                (byte) (buf[adr + 0x33] >> 4), (byte) (buf[adr + 0x33] & 0xf), // SCALE TUNIG G# 68,69
+                (byte) (buf[adr + 0x34] >> 4), (byte) (buf[adr + 0x34] & 0xf), // SCALE TUNIG a  70,71
+                (byte) (buf[adr + 0x35] >> 4), (byte) (buf[adr + 0x35] & 0xf), // SCALE TUNIG a# 72,73
+                (byte) (buf[adr + 0x36] >> 4), (byte) (buf[adr + 0x36] & 0xf), // SCALE TUNIG B  74,75
 
-                , (byte) (buf[adr + 0x1f] >> 4), (byte) (buf[adr + 0x1f] & 0xf) // CC1 CONTROLLER NUMBER 76,77
-                , (byte) (buf[adr + 0x20] >> 4), (byte) (buf[adr + 0x20] & 0xf) // CC2 CONTROLLER NUMBER 78,79
+                (byte) (buf[adr + 0x1f] >> 4), (byte) (buf[adr + 0x1f] & 0xf), // CC1 CONTROLLER NUMBER 76,77
+                (byte) (buf[adr + 0x20] >> 4), (byte) (buf[adr + 0x20] & 0xf), // CC2 CONTROLLER NUMBER 78,79
 
-                , (byte) (buf[adr + 0x37] >> 4), (byte) (buf[adr + 0x37] & 0xf) // MOD  PITCH CONTROL      80,81
-                , (byte) (buf[adr + 0x38] >> 4), (byte) (buf[adr + 0x38] & 0xf) // MOD  TVF CUTOFF CONTROL 82,83
-                , (byte) (buf[adr + 0x39] >> 4), (byte) (buf[adr + 0x39] & 0xf) // MOD  AMPLITUDE CONTROL  84,85
-                , 0, 0 // (The value of DATA 86 and 87 is 0)
-                , (byte) (buf[adr + 0x3a] >> 4), (byte) (buf[adr + 0x3a] & 0xf) // MOD  LFO1 RATE CONTROL  90,91
-                , (byte) (buf[adr + 0x3b] >> 4), (byte) (buf[adr + 0x3b] & 0xf) // MOD  LFO1 PITCH DEPTH   92,93
-                , (byte) (buf[adr + 0x3c] >> 4), (byte) (buf[adr + 0x3c] & 0xf) // MOD  LFO1 TVF DEPTH     94,95
-                , (byte) (buf[adr + 0x3d] >> 4), (byte) (buf[adr + 0x3d] & 0xf) // MOD  LFO2 TVA DEPTH     96,97
-                , (byte) (buf[adr + 0x3e] >> 4), (byte) (buf[adr + 0x3e] & 0xf) // MOD  LFO2 RATE CONTROL  98,99
-                , (byte) (buf[adr + 0x3f] >> 4), (byte) (buf[adr + 0x3f] & 0xf) // MOD  LFO2 PITCH DEPTH   100,101
-                , (byte) (buf[adr + 0x40] >> 4), (byte) (buf[adr + 0x40] & 0xf) // MOD  LFO2 TVF DEPTH     102,103
-                , (byte) (buf[adr + 0x41] >> 4), (byte) (buf[adr + 0x41] & 0xf) // MOD  LFO2 TVA DEPTH     104,105
-                , (byte) (buf[adr + 0x42] >> 4), (byte) (buf[adr + 0x42] & 0xf) // BEND PITCH CONTROL      106,107
-                , (byte) (buf[adr + 0x43] >> 4), (byte) (buf[adr + 0x43] & 0xf) // BEND TVF CUTOFF CONTROL 108,109
-                , (byte) (buf[adr + 0x44] >> 4), (byte) (buf[adr + 0x44] & 0xf) // BEND AMPLITUDE CONTROL  110,111
-                , 0, 0 // (The value of DATA 112,113 is 0)
-                , (byte) (buf[adr + 0x45] >> 4), (byte) (buf[adr + 0x45] & 0xf) // BEND LFO1 RATE CONTROL  114,115
-                , (byte) (buf[adr + 0x46] >> 4), (byte) (buf[adr + 0x46] & 0xf) // BEND LFO1 PITCH DEPTH   116,117
-                , (byte) (buf[adr + 0x47] >> 4), (byte) (buf[adr + 0x47] & 0xf) // BEND LFO1 TVF DEPTH     118,119
-                , (byte) (buf[adr + 0x48] >> 4), (byte) (buf[adr + 0x48] & 0xf) // BEND LFO1 TVA DEPTH     120,121
-                , (byte) (buf[adr + 0x49] >> 4), (byte) (buf[adr + 0x49] & 0xf) // BEND LFO2 RATE CONTROL  122,123
-                , (byte) (buf[adr + 0x4a] >> 4), (byte) (buf[adr + 0x4a] & 0xf) // BEND LFO2 PITCH DEPTH   124,125
-                , (byte) (buf[adr + 0x4b] >> 4), (byte) (buf[adr + 0x4b] & 0xf) // BEND LFO2 TVF DEPTH     126,127
-                , (byte) (buf[adr + 0x4c] >> 4), (byte) (buf[adr + 0x4c] & 0xf) // BEND LFO2 TVA DEPTH     126,127
+                (byte) (buf[adr + 0x37] >> 4), (byte) (buf[adr + 0x37] & 0xf), // MOD  PITCH CONTROL      80,81
+                (byte) (buf[adr + 0x38] >> 4), (byte) (buf[adr + 0x38] & 0xf), // MOD  TVF CUTOFF CONTROL 82,83
+                (byte) (buf[adr + 0x39] >> 4), (byte) (buf[adr + 0x39] & 0xf), // MOD  AMPLITUDE CONTROL  84,85
+                0, 0, // (The value of DATA 86 and 87 is 0)
+                (byte) (buf[adr + 0x3a] >> 4), (byte) (buf[adr + 0x3a] & 0xf), // MOD  LFO1 RATE CONTROL  90,91
+                (byte) (buf[adr + 0x3b] >> 4), (byte) (buf[adr + 0x3b] & 0xf), // MOD  LFO1 PITCH DEPTH   92,93
+                (byte) (buf[adr + 0x3c] >> 4), (byte) (buf[adr + 0x3c] & 0xf), // MOD  LFO1 TVF DEPTH     94,95
+                (byte) (buf[adr + 0x3d] >> 4), (byte) (buf[adr + 0x3d] & 0xf), // MOD  LFO2 TVA DEPTH     96,97
+                (byte) (buf[adr + 0x3e] >> 4), (byte) (buf[adr + 0x3e] & 0xf), // MOD  LFO2 RATE CONTROL  98,99
+                (byte) (buf[adr + 0x3f] >> 4), (byte) (buf[adr + 0x3f] & 0xf), // MOD  LFO2 PITCH DEPTH   100,101
+                (byte) (buf[adr + 0x40] >> 4), (byte) (buf[adr + 0x40] & 0xf), // MOD  LFO2 TVF DEPTH     102,103
+                (byte) (buf[adr + 0x41] >> 4), (byte) (buf[adr + 0x41] & 0xf), // MOD  LFO2 TVA DEPTH     104,105
+                (byte) (buf[adr + 0x42] >> 4), (byte) (buf[adr + 0x42] & 0xf), // BEND PITCH CONTROL      106,107
+                (byte) (buf[adr + 0x43] >> 4), (byte) (buf[adr + 0x43] & 0xf), // BEND TVF CUTOFF CONTROL 108,109
+                (byte) (buf[adr + 0x44] >> 4), (byte) (buf[adr + 0x44] & 0xf), // BEND AMPLITUDE CONTROL  110,111
+                0, 0, // (The value of DATA 112,113 is 0)
+                (byte) (buf[adr + 0x45] >> 4), (byte) (buf[adr + 0x45] & 0xf), // BEND LFO1 RATE CONTROL  114,115
+                (byte) (buf[adr + 0x46] >> 4), (byte) (buf[adr + 0x46] & 0xf), // BEND LFO1 PITCH DEPTH   116,117
+                (byte) (buf[adr + 0x47] >> 4), (byte) (buf[adr + 0x47] & 0xf), // BEND LFO1 TVF DEPTH     118,119
+                (byte) (buf[adr + 0x48] >> 4), (byte) (buf[adr + 0x48] & 0xf), // BEND LFO1 TVA DEPTH     120,121
+                (byte) (buf[adr + 0x49] >> 4), (byte) (buf[adr + 0x49] & 0xf), // BEND LFO2 RATE CONTROL  122,123
+                (byte) (buf[adr + 0x4a] >> 4), (byte) (buf[adr + 0x4a] & 0xf), // BEND LFO2 PITCH DEPTH   124,125
+                (byte) (buf[adr + 0x4b] >> 4), (byte) (buf[adr + 0x4b] & 0xf), // BEND LFO2 TVF DEPTH     126,127
+                (byte) (buf[adr + 0x4c] >> 4), (byte) (buf[adr + 0x4c] & 0xf), // BEND LFO2 TVA DEPTH     126,127
 
-                , (byte)0x84})));
+                (byte) 0x84})));
     }
 
-    private void makeGSDBufPtn_2(List<CtlSysex> DBuf, byte[] buf, int adr, byte iAdrMm, byte iAdrLl) {
-        DBuf.add(new CtlSysex(4, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte)0x83
-                , 0x48, iAdrMm, iAdrLl
-                , (byte) (buf[adr + 0x4d] >> 4), (byte) (buf[adr + 0x4d] & 0xf) // CAf  PITCH CONTROL      0,1
-                , (byte) (buf[adr + 0x4e] >> 4), (byte) (buf[adr + 0x4e] & 0xf) // CAf  TVF CUTOFF CONTROL 2,3
-                , (byte) (buf[adr + 0x4f] >> 4), (byte) (buf[adr + 0x4f] & 0xf) // CAf  AMPLITUDE CONTROL  4,5
-                , (byte) (buf[adr + 0x50] >> 4), (byte) (buf[adr + 0x50] & 0xf) // CAf  LFO1 RATE CONTROL  6,7
-                , 4, 0// 8, 9
-                , (byte) (buf[adr + 0x51] >> 4), (byte) (buf[adr + 0x51] & 0xf) // CAf  LFO1 PITCH DEPTH   10,11
-                , (byte) (buf[adr + 0x52] >> 4), (byte) (buf[adr + 0x52] & 0xf) // CAf  LFO1 TVF DEPTH     12,13
-                , (byte) (buf[adr + 0x53] >> 4), (byte) (buf[adr + 0x53] & 0xf) // CAf  LFO1 TVA DEPTH     14,15
-                , (byte) (buf[adr + 0x54] >> 4), (byte) (buf[adr + 0x54] & 0xf) // CAf  LFO2 RATE CONTROL  16,17
-                , (byte) (buf[adr + 0x55] >> 4), (byte) (buf[adr + 0x55] & 0xf) // CAf  LFO2 PITCH DEPTH   18,19
-                , (byte) (buf[adr + 0x56] >> 4), (byte) (buf[adr + 0x56] & 0xf) // CAf  LFO2 TVF DEPTH     20,21
-                , (byte) (buf[adr + 0x57] >> 4), (byte) (buf[adr + 0x57] & 0xf) // CAf  LFO2 TVA DEPTH     22,23
-                , (byte) (buf[adr + 0x58] >> 4), (byte) (buf[adr + 0x58] & 0xf) // PAf  PITCH CONTROL      24,25
-                , (byte) (buf[adr + 0x59] >> 4), (byte) (buf[adr + 0x59] & 0xf) // PAf  TVF CUTOFF CONTROL 26,27
-                , (byte) (buf[adr + 0x5a] >> 4), (byte) (buf[adr + 0x5a] & 0xf) // PAf  AMPLITUDE CONTROL  28,29
-                , (byte) (buf[adr + 0x5b] >> 4), (byte) (buf[adr + 0x5b] & 0xf) // PAf  LFO1 RATE CONTROL  30,31
-                , 4, 0// 32,33
-                , (byte) (buf[adr + 0x5c] >> 4), (byte) (buf[adr + 0x5c] & 0xf) // PAf  LFO1 PITCH DEPTH   34,35
-                , (byte) (buf[adr + 0x5d] >> 4), (byte) (buf[adr + 0x5d] & 0xf) // PAf  LFO1 TVF DEPTH     36,37
-                , (byte) (buf[adr + 0x5e] >> 4), (byte) (buf[adr + 0x5e] & 0xf) // PAf  LFO1 TVA DEPTH     38,39
-                , (byte) (buf[adr + 0x5f] >> 4), (byte) (buf[adr + 0x5f] & 0xf) // PAf  LFO2 RATE CONTROL  40,41
-                , (byte) (buf[adr + 0x60] >> 4), (byte) (buf[adr + 0x60] & 0xf) // PAf  LFO2 PITCH DEPTH   42,43
-                , (byte) (buf[adr + 0x61] >> 4), (byte) (buf[adr + 0x61] & 0xf) // PAf  LFO2 TVF DEPTH     44,45
-                , (byte) (buf[adr + 0x62] >> 4), (byte) (buf[adr + 0x62] & 0xf) // PAf  LFO2 TVA DEPTH     46,47
-                , (byte) (buf[adr + 0x63] >> 4), (byte) (buf[adr + 0x63] & 0xf) // CC1  PITCH CONTROL      48,49
-                , (byte) (buf[adr + 0x64] >> 4), (byte) (buf[adr + 0x64] & 0xf) // CC1  TVF CUTOFF CONTROL 50,51
-                , (byte) (buf[adr + 0x65] >> 4), (byte) (buf[adr + 0x65] & 0xf) // CC1  AMPLITUDE CONTROL  52,53
-                , 0, 0// 54,55
-                , (byte) (buf[adr + 0x66] >> 4), (byte) (buf[adr + 0x66] & 0xf) // CC1  LFO1 RATE CONTROL  56,57
-                , (byte) (buf[adr + 0x67] >> 4), (byte) (buf[adr + 0x67] & 0xf) // CC1  LFO1 PITCH DEPTH   58,59
-                , (byte) (buf[adr + 0x68] >> 4), (byte) (buf[adr + 0x68] & 0xf) // CC1  LFO1 TVF DEPTH     60,61
-                , (byte) (buf[adr + 0x69] >> 4), (byte) (buf[adr + 0x69] & 0xf) // CC1  LFO1 TVA DEPTH     62,63
-                , (byte) (buf[adr + 0x6a] >> 4), (byte) (buf[adr + 0x6a] & 0xf) // CC1  LFO2 RATE CONTROL  64,65
-                , (byte) (buf[adr + 0x6b] >> 4), (byte) (buf[adr + 0x6b] & 0xf) // CC1  LFO2 PITCH DEPTH   66,67
-                , (byte) (buf[adr + 0x6c] >> 4), (byte) (buf[adr + 0x6c] & 0xf) // CC1  LFO2 TVF DEPTH     68,69
-                , (byte) (buf[adr + 0x6d] >> 4), (byte) (buf[adr + 0x6d] & 0xf) // CC1  LFO2 TVA DEPTH     70,71
-                , (byte) (buf[adr + 0x6e] >> 4), (byte) (buf[adr + 0x6e] & 0xf) // CC2  PITCH CONTROL      72,73
-                , (byte) (buf[adr + 0x6f] >> 4), (byte) (buf[adr + 0x6f] & 0xf) // CC2  TVF CUTOFF CONTROL 74,75
-                , (byte) (buf[adr + 0x70] >> 4), (byte) (buf[adr + 0x70] & 0xf) // CC2  AMPLITUDE CONTROL  76,77
-                , 0, 0// 78,79
-                , (byte) (buf[adr + 0x71] >> 4), (byte) (buf[adr + 0x71] & 0xf) // CC2  LFO1 RATE CONTROL  80,81
-                , (byte) (buf[adr + 0x72] >> 4), (byte) (buf[adr + 0x72] & 0xf) // CC2  LFO1 PITCH DEPTH   82,83
-                , (byte) (buf[adr + 0x73] >> 4), (byte) (buf[adr + 0x73] & 0xf) // CC2  LFO1 TVF DEPTH     84,85
-                , (byte) (buf[adr + 0x74] >> 4), (byte) (buf[adr + 0x74] & 0xf) // CC2  LFO1 TVA DEPTH     86,87
-                , (byte) (buf[adr + 0x75] >> 4), (byte) (buf[adr + 0x75] & 0xf) // CC2  LFO2 RATE CONTROL  88,89
-                , (byte) (buf[adr + 0x76] >> 4), (byte) (buf[adr + 0x76] & 0xf) // CC2  LFO2 PITCH DEPTH   90,91
-                , (byte) (buf[adr + 0x77] >> 4), (byte) (buf[adr + 0x77] & 0xf) // CC2  LFO2 TVF DEPTH     92,93
-                , (byte) (buf[adr + 0x78] >> 4), (byte) (buf[adr + 0x78] & 0xf) // CC2  LFO2 TVA DEPTH     94,95
+    private void makeGSDBufPtn_2(List<CtlSysex> dBuf, byte[] buf, int adr, byte iAdrMm, byte iAdrLl) {
+        dBuf.add(new CtlSysex(4, getSysEx(new byte[] {0x41, 0x10, 0x42, 0x12, (byte) 0x83,
+                0x48, iAdrMm, iAdrLl,
+                (byte) (buf[adr + 0x4d] >> 4), (byte) (buf[adr + 0x4d] & 0xf), // CAf  PITCH CONTROL      0,1
+                (byte) (buf[adr + 0x4e] >> 4), (byte) (buf[adr + 0x4e] & 0xf), // CAf  TVF CUTOFF CONTROL 2,3
+                (byte) (buf[adr + 0x4f] >> 4), (byte) (buf[adr + 0x4f] & 0xf), // CAf  AMPLITUDE CONTROL  4,5
+                (byte) (buf[adr + 0x50] >> 4), (byte) (buf[adr + 0x50] & 0xf), // CAf  LFO1 RATE CONTROL  6,7
+                4, 0, // 8, 9
+                (byte) (buf[adr + 0x51] >> 4), (byte) (buf[adr + 0x51] & 0xf), // CAf  LFO1 PITCH DEPTH   10,11
+                (byte) (buf[adr + 0x52] >> 4), (byte) (buf[adr + 0x52] & 0xf), // CAf  LFO1 TVF DEPTH     12,13
+                (byte) (buf[adr + 0x53] >> 4), (byte) (buf[adr + 0x53] & 0xf), // CAf  LFO1 TVA DEPTH     14,15
+                (byte) (buf[adr + 0x54] >> 4), (byte) (buf[adr + 0x54] & 0xf), // CAf  LFO2 RATE CONTROL  16,17
+                (byte) (buf[adr + 0x55] >> 4), (byte) (buf[adr + 0x55] & 0xf), // CAf  LFO2 PITCH DEPTH   18,19
+                (byte) (buf[adr + 0x56] >> 4), (byte) (buf[adr + 0x56] & 0xf), // CAf  LFO2 TVF DEPTH     20,21
+                (byte) (buf[adr + 0x57] >> 4), (byte) (buf[adr + 0x57] & 0xf), // CAf  LFO2 TVA DEPTH     22,23
+                (byte) (buf[adr + 0x58] >> 4), (byte) (buf[adr + 0x58] & 0xf), // PAf  PITCH CONTROL      24,25
+                (byte) (buf[adr + 0x59] >> 4), (byte) (buf[adr + 0x59] & 0xf), // PAf  TVF CUTOFF CONTROL 26,27
+                (byte) (buf[adr + 0x5a] >> 4), (byte) (buf[adr + 0x5a] & 0xf), // PAf  AMPLITUDE CONTROL  28,29
+                (byte) (buf[adr + 0x5b] >> 4), (byte) (buf[adr + 0x5b] & 0xf), // PAf  LFO1 RATE CONTROL  30,31
+                4, 0, // 32, 33
+                (byte) (buf[adr + 0x5c] >> 4), (byte) (buf[adr + 0x5c] & 0xf), // PAf  LFO1 PITCH DEPTH   34,35
+                (byte) (buf[adr + 0x5d] >> 4), (byte) (buf[adr + 0x5d] & 0xf), // PAf  LFO1 TVF DEPTH     36,37
+                (byte) (buf[adr + 0x5e] >> 4), (byte) (buf[adr + 0x5e] & 0xf), // PAf  LFO1 TVA DEPTH     38,39
+                (byte) (buf[adr + 0x5f] >> 4), (byte) (buf[adr + 0x5f] & 0xf), // PAf  LFO2 RATE CONTROL  40,41
+                (byte) (buf[adr + 0x60] >> 4), (byte) (buf[adr + 0x60] & 0xf), // PAf  LFO2 PITCH DEPTH   42,43
+                (byte) (buf[adr + 0x61] >> 4), (byte) (buf[adr + 0x61] & 0xf), // PAf  LFO2 TVF DEPTH     44,45
+                (byte) (buf[adr + 0x62] >> 4), (byte) (buf[adr + 0x62] & 0xf), // PAf  LFO2 TVA DEPTH     46,47
+                (byte) (buf[adr + 0x63] >> 4), (byte) (buf[adr + 0x63] & 0xf), // CC1  PITCH CONTROL      48,49
+                (byte) (buf[adr + 0x64] >> 4), (byte) (buf[adr + 0x64] & 0xf), // CC1  TVF CUTOFF CONTROL 50,51
+                (byte) (buf[adr + 0x65] >> 4), (byte) (buf[adr + 0x65] & 0xf), // CC1  AMPLITUDE CONTROL  52,53
+                0, 0, // 54, 55
+                (byte) (buf[adr + 0x66] >> 4), (byte) (buf[adr + 0x66] & 0xf), // CC1  LFO1 RATE CONTROL  56,57
+                (byte) (buf[adr + 0x67] >> 4), (byte) (buf[adr + 0x67] & 0xf), // CC1  LFO1 PITCH DEPTH   58,59
+                (byte) (buf[adr + 0x68] >> 4), (byte) (buf[adr + 0x68] & 0xf), // CC1  LFO1 TVF DEPTH     60,61
+                (byte) (buf[adr + 0x69] >> 4), (byte) (buf[adr + 0x69] & 0xf), // CC1  LFO1 TVA DEPTH     62,63
+                (byte) (buf[adr + 0x6a] >> 4), (byte) (buf[adr + 0x6a] & 0xf), // CC1  LFO2 RATE CONTROL  64,65
+                (byte) (buf[adr + 0x6b] >> 4), (byte) (buf[adr + 0x6b] & 0xf), // CC1  LFO2 PITCH DEPTH   66,67
+                (byte) (buf[adr + 0x6c] >> 4), (byte) (buf[adr + 0x6c] & 0xf), // CC1  LFO2 TVF DEPTH     68,69
+                (byte) (buf[adr + 0x6d] >> 4), (byte) (buf[adr + 0x6d] & 0xf), // CC1  LFO2 TVA DEPTH     70,71
+                (byte) (buf[adr + 0x6e] >> 4), (byte) (buf[adr + 0x6e] & 0xf), // CC2  PITCH CONTROL      72,73
+                (byte) (buf[adr + 0x6f] >> 4), (byte) (buf[adr + 0x6f] & 0xf), // CC2  TVF CUTOFF CONTROL 74,75
+                (byte) (buf[adr + 0x70] >> 4), (byte) (buf[adr + 0x70] & 0xf), // CC2  AMPLITUDE CONTROL  76,77
+                0, 0, // 78, 79
+                (byte) (buf[adr + 0x71] >> 4), (byte) (buf[adr + 0x71] & 0xf), // CC2  LFO1 RATE CONTROL  80,81
+                (byte) (buf[adr + 0x72] >> 4), (byte) (buf[adr + 0x72] & 0xf), // CC2  LFO1 PITCH DEPTH   82,83
+                (byte) (buf[adr + 0x73] >> 4), (byte) (buf[adr + 0x73] & 0xf), // CC2  LFO1 TVF DEPTH     84,85
+                (byte) (buf[adr + 0x74] >> 4), (byte) (buf[adr + 0x74] & 0xf), // CC2  LFO1 TVA DEPTH     86,87
+                (byte) (buf[adr + 0x75] >> 4), (byte) (buf[adr + 0x75] & 0xf), // CC2  LFO2 RATE CONTROL  88,89
+                (byte) (buf[adr + 0x76] >> 4), (byte) (buf[adr + 0x76] & 0xf), // CC2  LFO2 PITCH DEPTH   90,91
+                (byte) (buf[adr + 0x77] >> 4), (byte) (buf[adr + 0x77] & 0xf), // CC2  LFO2 TVF DEPTH     92,93
+                (byte) (buf[adr + 0x78] >> 4), (byte) (buf[adr + 0x78] & 0xf), // CC2  LFO2 TVA DEPTH     94,95
 
-                , (byte)0x84})));
+                (byte) 0x84})));
     }
 
     private void makeGSDBufPtn_3(List<CtlSysex> DBuf, byte[] buf, int adr, int adr2) {
@@ -2057,13 +2056,13 @@ public class RCP extends BaseDriver {
         }
 
         for (int i = 0; i < 82; i++) {
-            level.add((byte) (buf[adr + i * 4 + 0] >> 4));
+            level.add((byte) (buf[adr + i * 4 + 0] >>> 4));
             level.add((byte) (buf[adr + i * 4 + 0] & 0xf));
-            panpot.add((byte) (buf[adr + i * 4 + 1] >> 4));
+            panpot.add((byte) (buf[adr + i * 4 + 1] >>> 4));
             panpot.add((byte) (buf[adr + i * 4 + 1] & 0xf));
-            reverb.add((byte) (buf[adr + i * 4 + 2] >> 4));
+            reverb.add((byte) (buf[adr + i * 4 + 2] >>> 4));
             reverb.add((byte) (buf[adr + i * 4 + 2] & 0xf));
-            chorus.add((byte) (buf[adr + i * 4 + 3] >> 4));
+            chorus.add((byte) (buf[adr + i * 4 + 3] >>> 4));
             chorus.add((byte) (buf[adr + i * 4 + 3] & 0xf));
         }
 
@@ -2127,7 +2126,7 @@ public class RCP extends BaseDriver {
     private void getCM6Buf(List<CtlSysex> dBuf) {
 
         byte[] buf = null;
-        for (Tuple<String, byte[]> trg : ExtendFile) {
+        for (Tuple<String, byte[]> trg : extendFile) {
             if (Path.getExtension(trg.getItem1()).equalsIgnoreCase(".CM6")) {
                 buf = trg.getItem2();
             }
@@ -2231,27 +2230,26 @@ public class RCP extends BaseDriver {
 
                 // Generate Reset
                 switch (infos[i].beforeSendType) {
-                case 0:// None
+                case 0: // None
                     break;
-                case 1:// GM Reset
+                case 1: // GM Reset
                     getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getGMReset());
                     break;
-                case 2:// XG Reset
+                case 2: // XG Reset
                     getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getXGReset());
                     break;
-                case 3:// GS Reset
+                case 3: // GS Reset
                     getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getGSReset());
                     break;
-                case 4:// Custom
+                case 4: // Custom
                     getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getCustom());
                     break;
                 }
 
                 // If the file path is set, the process to read the control file is performed.
-                if (ExtendFile != null) {
+                if (extendFile != null) {
                     getControlFile(beforeSend[i], infos[i].type);
                 }
-
             }
 
             return true;
@@ -2282,22 +2280,22 @@ public class RCP extends BaseDriver {
 
         // GM / XG / GS / LA / GS(SC - 55_1) / GS(SC - 55_2)
         switch (instType) {
-        case 0:// GM
-        case 1:// XG
-        case 2:// GS
+        case 0: // GM
+        case 1: // XG
+        case 2: // GS
             // no Control
             break;
-        case 3:// LA
+        case 3: // LA
             if (!controlFileCM6.isEmpty()) {
                 getCM6Buf(buf);
             }
             break;
-        case 4:// GS(SC - 55_1)
+        case 4: // GS(SC - 55_1)
             if (!controlFileGSD.isEmpty()) {
                 getGSD1Buf(buf);
             }
             break;
-        case 5:// GS(SC - 55_2)
+        case 5: // GS(SC - 55_2)
             if (!controlFileGSD2.isEmpty()) {
                 getGSD2Buf(buf);
             }

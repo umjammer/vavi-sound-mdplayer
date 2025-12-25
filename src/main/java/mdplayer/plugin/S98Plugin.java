@@ -74,7 +74,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 return false;
         }
 
-        List<S98.S98DevInfo> s98DInfo = ((S98) audio.driverVirtual).s98Info.DeviceInfos;
+        List<S98.S98DevInfo> s98DInfo = ((S98) audio.driverVirtual).s98Info.deviceInfos;
 
         int YM2151ClockValue = 4000000;
         int YM2203ClockValue = 4000000;
@@ -132,8 +132,8 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 chip.instrument = audio.chipRegister.chip(Ym2612Chip.class).instrument(chip.id);
                 if (chip.instrument instanceof Ym2612Inst) {
                     chip.option = new Object[] {
-                            (setting.getNukedOPN2().gensDACHPF ? 0x01 : 0x00)
-                                    | (setting.getNukedOPN2().gensSSGEG ? 0x02 : 0x00)
+                            (setting.getNukedOPN2().gensDACHPF ? 0x01 : 0x00) |
+                                    (setting.getNukedOPN2().gensSSGEG ? 0x02 : 0x00)
                     };
                 } else if (chip.instrument instanceof Ym3438Inst ym3438) {
                     switch (setting.getNukedOPN2().emuType) {
@@ -185,9 +185,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
                     audio.chipLED.put("PriOPM", 1);
                 }
                 chip.instrument = audio.chipRegister.chip(Ym2151Chip.class).instrument(chip.id);
-                chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
                 chip.clock = dInfo.clock;
+                chip.samplingRate = chip.clock / 64;
                 YM2151ClockValue = chip.clock;
                 chip.option = null;
 //                hiyorimiDeviceFlag |= 0x2;

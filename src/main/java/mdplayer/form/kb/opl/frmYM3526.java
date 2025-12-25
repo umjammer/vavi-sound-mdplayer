@@ -171,8 +171,7 @@ public class frmYM3526 extends frmBase {
             //BL
             nyc.inst[11] = (ym3526Register[0xb0 + c] >> 2) & 7;
             //FNUM
-            nyc.inst[12] = ym3526Register[0xa0 + c]
-                    + ((ym3526Register[0xb0 + c] & 3) << 8);
+            nyc.inst[12] = ym3526Register[0xa0 + c] + ((ym3526Register[0xb0 + c] & 3) << 8);
 
             //FB
             nyc.inst[15] = (ym3526Register[0xc0 + c] >> 1) & 7;
@@ -202,13 +201,13 @@ public class frmYM3526 extends frmBase {
         newParam.channels[9].dda = ((ym3526Register[0xbd] >> 7) & 0x01) != 0;//DA
         newParam.channels[10].dda = ((ym3526Register[0xbd] >> 6) & 0x01) != 0;//DV
 
-        // //#region リズム情報の取得
+//#region Acquisition of rhythm information
 
-        //slot14 TL 0x51 HH
-        //slot15 TL 0x52 TOM
-        //slot16 TL 0x53 BD
-        //slot17 TL 0x54 SD
-        //slot18 TL 0x55 CYM
+        // slot14 TL 0x51 HH
+        // slot15 TL 0x52 TOM
+        // slot16 TL 0x53 BD
+        // slot17 TL 0x54 SD
+        // slot18 TL 0x55 CYM
 
         for (int i = 0; i < 5; i++) {
             if (ki.on[i + 9]) {
@@ -219,7 +218,7 @@ public class frmYM3526 extends frmBase {
             }
         }
 
-        // //#endregion
+//#endregion
     }
 
     public void screenDrawParams() {
@@ -233,7 +232,7 @@ public class frmYM3526 extends frmBase {
         MDChipParams.Channel oyc;
         MDChipParams.Channel nyc;
 
-        //FM
+        // FM
         for (int c = 0; c < 9; c++) {
 
             oyc = oldParam.channels[c];
@@ -295,7 +294,7 @@ public class frmYM3526 extends frmBase {
                 return;
             }
 
-            //鍵盤 FM & RHM
+            // keyboard FM & RHM
             ch = (py / 8) - 1;
             if (ch < 0) return;
 

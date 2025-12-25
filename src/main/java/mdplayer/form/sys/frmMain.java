@@ -185,6 +185,7 @@ import static java.lang.System.getLogger;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
+
 public class frmMain extends JFrame {
 
     private static final Logger logger = getLogger(frmMain.class.getName());
@@ -386,7 +387,7 @@ public class frmMain extends JFrame {
 
         logger.log(Level.ERROR, "frmMain<init>:STEP 04");
 
-setVisible(true);
+        setVisible(true);
     }
 
     private void ClearWindowPos() {
@@ -508,32 +509,32 @@ setVisible(true);
         changeZoom();
         opeButtonMode.setToolTipText(modeTip[newButtonMode[9]]);
         lstOpeButtonControl = new JButton[] {
-                        opeButtonSetting,
-                        opeButtonStop,
-                        opeButtonPause,
-                        opeButtonFadeout,
-                        opeButtonPrevious,
-                        opeButtonSlow,
-                        opeButtonPlay,
-                        opeButtonFast,
-                        opeButtonNext,
-                        opeButtonMode,
-                        opeButtonOpen,
-                        opeButtonPlayList,
-                        opeButtonInformation,
-                        opeButtonMixer,
-                        opeButtonKBD,
-//                        opeButtonVST,
-                        opeButtonMIDIKBD,
-                        opeButtonZoom,
-                        opeButtonMode,
-                        opeButtonMode,
-                        opeButtonMode
-                };
+                opeButtonSetting,
+                opeButtonStop,
+                opeButtonPause,
+                opeButtonFadeout,
+                opeButtonPrevious,
+                opeButtonSlow,
+                opeButtonPlay,
+                opeButtonFast,
+                opeButtonNext,
+                opeButtonMode,
+                opeButtonOpen,
+                opeButtonPlayList,
+                opeButtonInformation,
+                opeButtonMixer,
+                opeButtonKBD,
+//                opeButtonVST,
+                opeButtonMIDIKBD,
+                opeButtonZoom,
+                opeButtonMode,
+                opeButtonMode,
+                opeButtonMode
+        };
 
         logger.log(Level.ERROR, "frmMain_Load:STEP 09");
 
-         // //operationフォルダクリア
+        // //operationフォルダクリア
         //opeFolder = mdplayer.Common.GetOperationFolder(true);
         //startWatch(opeFolder);
         mmf = new MmfControl(false, "MDPlayer", 1024 * 4);
@@ -1145,7 +1146,7 @@ setVisible(true);
 
         isRunning = false;
         while (!stopped) {
-                Thread.yield();
+            Thread.yield();
 //            Application.DoEvents();
         }
 
@@ -3534,13 +3535,13 @@ setVisible(true);
         Request req = new Request(enmRequest.Stop, null, null);
         OpeManager.requestToAudio(req);
         while (!req.getEnd()) {
-                Thread.yield();
+            Thread.yield();
         }
 
         req = new Request(enmRequest.Die, null, null);
         OpeManager.requestToAudio(req);
         while (!req.getEnd()) {
-                Thread.yield();
+            Thread.yield();
         }
 
         //audio.audio.Stop();
@@ -3637,7 +3638,7 @@ setVisible(true);
         String filename = files.get(0).getPath();
 
         try {
-             // 曲を停止
+            // 曲を停止
             frmPlayList.stop();
             this.stop();
 //            while (!audio.audio.isStopped())
@@ -3944,9 +3945,8 @@ setVisible(true);
         for (int i = 0; i < lstOpeButtonActive.length; i++) {
             if (lstOpeButtonActive[i] != lstOpeButtonActiveOld[i]) {
                 lstOpeButtonActiveOld[i] = lstOpeButtonActive[i];
-                RedrawButton(lstOpeButtonControl[i]
-                        , setting.getOther().getZoom()
-                        , lstOpeButtonActive[i] ? lstOpeButtonActiveImage[i] : lstOpeButtonLeaveImage[i]
+                RedrawButton(lstOpeButtonControl[i], setting.getOther().getZoom(),
+                        lstOpeButtonActive[i] ? lstOpeButtonActiveImage[i] : lstOpeButtonLeaveImage[i]
                 );
             }
         }
@@ -4421,10 +4421,9 @@ setVisible(true);
             if (setting.getOther().getWavSwitch()) {
                 if (!Directory.exists(setting.getOther().getWavPath())) {
                     int res = JOptionPane.showConfirmDialog(this,
-                            "The path set for the wav file output destination does not exist. Create it and continue playing?"
-                            , "Confirmation of Path Creation"
-                            , JOptionPane.YES_NO_OPTION,
-                            JOptionPane.QUESTION_MESSAGE);
+                            "The path set for the wav file output destination does not exist. Create it and continue playing?",
+                            "Confirmation of Path Creation",
+                            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                     if (res == JOptionPane.NO_OPTION) {
                         plugin.audio.errMsg = "cancel";
                         return;
@@ -4433,9 +4432,7 @@ setVisible(true);
                         Directory.createDirectory(setting.getOther().getWavPath());
                     } catch (Exception e) {
                         JOptionPane.showMessageDialog(this,
-                                "Failed to create path. Stop playing."
-                                , "Creation failed"
-                                , JOptionPane.ERROR_MESSAGE);
+                                "Failed to create path. Stop playing.", "Creation failed", JOptionPane.ERROR_MESSAGE);
                         plugin.audio.errMsg = "cancel";
                         return;
                     }
@@ -4634,9 +4631,11 @@ setVisible(true);
                 else closeFormMIDI(0);
                 //if (audio.audio.chipLED.get("SecMID") != 0) OpenFormMIDI(1, true); else CloseFormMIDI(1);
 
-                if (plugin.audio.chipLED.get("PriNES") != 0 || plugin.audio.chipLED.get("PriDMC") != 0) openFormNESDMC(0, true);
+                if (plugin.audio.chipLED.get("PriNES") != 0 || plugin.audio.chipLED.get("PriDMC") != 0)
+                    openFormNESDMC(0, true);
                 else closeFormNESDMC(0);
-                if (plugin.audio.chipLED.get("SecNES") != 0 || plugin.audio.chipLED.get("SecDMC") != 0) openFormNESDMC(1, true);
+                if (plugin.audio.chipLED.get("SecNES") != 0 || plugin.audio.chipLED.get("SecDMC") != 0)
+                    openFormNESDMC(1, true);
                 else closeFormNESDMC(1);
 
                 if (plugin.audio.chipLED.get("PriFDS") != 0) openFormFDS(0, true);
@@ -4716,7 +4715,7 @@ setVisible(true);
         Request req = new Request(enmRequest.Stop, null, null);
         OpeManager.requestToAudio(req);
         while (!req.getEnd()) {
-                Thread.yield();
+            Thread.yield();
         }
         //audio.audio.Stop();
 
@@ -4848,51 +4847,51 @@ setVisible(true);
                 getInstChForMCK(chip, ch, chipId);
             } else {
                 switch (setting.getOther().getInstFormat()) {
-                case FMP7:
-                    getInstChForFMP7(chip, ch, chipId);
-                    break;
-                case MDX:
-                    getInstChForMDX(chip, ch, chipId);
-                    break;
-                case MML2VGM:
-                    getInstChForMML2VGM(chip, ch, chipId);
-                    break;
-                case MUCOM88:
-                    getInstChForMucom88(chip, ch, chipId);
-                    break;
-                case MUSICLALF:
-                    getInstChForMUSICLALF(chip, ch, chipId);
-                    break;
-                case MUSICLALF2:
-                    getInstChForMUSICLALF2(chip, ch, chipId);
-                    break;
-                case TFI:
-                    getInstChForTFI(chip, ch, chipId);
-                    break;
-                case NRTDRV:
-                    getInstChForNRTDRV(chip, ch, chipId);
-                    break;
-                case HUSIC:
-                    getInstChForHuSIC(chip, ch, chipId);
-                    break;
-                case VOPM:
-                    getInstChForVOPM(chip, ch, chipId);
-                    break;
-                case PMD:
-                    getInstChForPMD(chip, ch, chipId);
-                    break;
-                case DMP:
-                    getInstChForDMP(chip, ch, chipId);
-                    break;
-                case OPNI:
-                    getInstChForOPNI(chip, ch, chipId);
-                    break;
-                case RYM2612:
-                    getInstChForRYM2612(chip, ch, chipId);
-                    break;
-                case SendMML2VGM:
-                    getInstChForSendMML2VGM(chip, ch, chipId);
-                    break;
+                    case FMP7:
+                        getInstChForFMP7(chip, ch, chipId);
+                        break;
+                    case MDX:
+                        getInstChForMDX(chip, ch, chipId);
+                        break;
+                    case MML2VGM:
+                        getInstChForMML2VGM(chip, ch, chipId);
+                        break;
+                    case MUCOM88:
+                        getInstChForMucom88(chip, ch, chipId);
+                        break;
+                    case MUSICLALF:
+                        getInstChForMUSICLALF(chip, ch, chipId);
+                        break;
+                    case MUSICLALF2:
+                        getInstChForMUSICLALF2(chip, ch, chipId);
+                        break;
+                    case TFI:
+                        getInstChForTFI(chip, ch, chipId);
+                        break;
+                    case NRTDRV:
+                        getInstChForNRTDRV(chip, ch, chipId);
+                        break;
+                    case HUSIC:
+                        getInstChForHuSIC(chip, ch, chipId);
+                        break;
+                    case VOPM:
+                        getInstChForVOPM(chip, ch, chipId);
+                        break;
+                    case PMD:
+                        getInstChForPMD(chip, ch, chipId);
+                        break;
+                    case DMP:
+                        getInstChForDMP(chip, ch, chipId);
+                        break;
+                    case OPNI:
+                        getInstChForOPNI(chip, ch, chipId);
+                        break;
+                    case RYM2612:
+                        getInstChForRYM2612(chip, ch, chipId);
+                        break;
+                    case SendMML2VGM:
+                        getInstChForSendMML2VGM(chip, ch, chipId);
+                        break;
                 }
             }
         } catch (Exception e) {
@@ -4921,22 +4920,22 @@ setVisible(true);
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
                 n.append("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
-                        fmRegister[p][0x50 + ops + c] & 0x1f  // AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f  // DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f  // SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f  // RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
-                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7 // AM
+                        fmRegister[p][0x50 + ops + c] & 0x1f, // AR
+                        fmRegister[p][0x60 + ops + c] & 0x1f,        // DR
+                        fmRegister[p][0x70 + ops + c] & 0x1f,        // SR
+                        fmRegister[p][0x80 + ops + c] & 0x0f,        // RR
+                        (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4, // SL
+                        fmRegister[p][0x40 + ops + c] & 0x7f,        // TL
+                        (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6, // KS
+                        fmRegister[p][0x30 + ops + c] & 0x0f,        // ML
+                        (fmRegister[p][0x30 + ops + c] & 0x70) >> 4, // DT
+                        (fmRegister[p][0x60 + ops + c] & 0x80) >> 7  // AM
                 ));
             }
             n.append("   ALG FB\n");
             n.append("'@ %3d,%3d\n".formatted(
-                    fmRegister[p][0xb0 + c] & 0x07 // AL
-                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
+                    fmRegister[p][0xb0 + c] & 0x07, // AL
+                    (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
             ));
         } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
@@ -4945,23 +4944,23 @@ setVisible(true);
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
                 n.append("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
-                        ym2151Register[0x80 + ops + ch] & 0x1f  // AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f  // DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f  // SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f  // RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4  // SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f  // TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6  // KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f  // ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4  // DT
-                        , (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6  // DT2
-                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7  // AM
+                        ym2151Register[0x80 + ops + ch] & 0x1f, // AR
+                        ym2151Register[0xa0 + ops + ch] & 0x1f,        // DR
+                        ym2151Register[0xc0 + ops + ch] & 0x1f,        // SR
+                        ym2151Register[0xe0 + ops + ch] & 0x0f,        // RR
+                        (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4, // SL
+                        ym2151Register[0x60 + ops + ch] & 0x7f,        // TL
+                        (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6, // KS
+                        ym2151Register[0x40 + ops + ch] & 0x0f,        // ML
+                        (ym2151Register[0x40 + ops + ch] & 0x70) >> 4, // DT
+                        (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6, // DT2
+                        (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7  // AM
                 ));
             }
             n.append("   ALG FB\n");
             n.append("'@ %3d,%3d\n".formatted(
-                    ym2151Register[0x20 + ch] & 0x07  // AL
-                    , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
+                    ym2151Register[0x20 + ch] & 0x07,  // AL
+                    (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
             ));
         }
 
@@ -4988,23 +4987,23 @@ setVisible(true);
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
                 n.append("   %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
-                        fmRegister[p][0x50 + ops + c] & 0x1f  // AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f  // DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f  // SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f  // RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
-                        , 0
-                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7 // AM
+                        fmRegister[p][0x50 + ops + c] & 0x1f, // AR
+                        fmRegister[p][0x60 + ops + c] & 0x1f,        // DR
+                        fmRegister[p][0x70 + ops + c] & 0x1f,        // SR
+                        fmRegister[p][0x80 + ops + c] & 0x0f,        // RR
+                        (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4, // SL
+                        fmRegister[p][0x40 + ops + c] & 0x7f,        // TL
+                        (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6, // KS
+                        fmRegister[p][0x30 + ops + c] & 0x0f,        // ML
+                        (fmRegister[p][0x30 + ops + c] & 0x70) >> 4, // DT
+                        0,
+                        (fmRegister[p][0x60 + ops + c] & 0x80) >> 7  // AM
                 ));
             }
             n.append("/* ALG FB  OP\n");
             n.append("   %3d,%3d,15\n}}\n".formatted(
-                    fmRegister[p][0xb0 + c] & 0x07 //AL
-                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3 //FB
+                    fmRegister[p][0xb0 + c] & 0x07, // AL
+                    (fmRegister[p][0xb0 + c] & 0x38) >> 3  // FB
             ));
         } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
@@ -5014,23 +5013,23 @@ setVisible(true);
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
                 n.append("   %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
-                        ym2151Register[0x80 + ops + ch] & 0x1f // AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f // DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f // SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f // RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 // SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f // TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 // KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f // ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT
-                        , (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 // DT2
-                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7 // AM
+                        ym2151Register[0x80 + ops + ch] & 0x1f, // AR
+                        ym2151Register[0xa0 + ops + ch] & 0x1f,        // DR
+                        ym2151Register[0xc0 + ops + ch] & 0x1f,        // SR
+                        ym2151Register[0xe0 + ops + ch] & 0x0f,        // RR
+                        (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4, // SL
+                        ym2151Register[0x60 + ops + ch] & 0x7f,        // TL
+                        (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6, // KS
+                        ym2151Register[0x40 + ops + ch] & 0x0f,        // ML
+                        (ym2151Register[0x40 + ops + ch] & 0x70) >> 4, // DT
+                        (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6, // DT2
+                        (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7  // AM
                 ));
             }
             n.append("/* ALG FB  OP\n");
             n.append("   %3d,%3d,15\n}}\n".formatted(
-                    ym2151Register[0x20 + ch] & 0x07 // AL
-                    , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
+                    ym2151Register[0x20 + ch] & 0x07, // AL
+                    (ym2151Register[0x20 + ch] & 0x38) >> 3  // FB
             ));
         }
 
@@ -5081,23 +5080,23 @@ setVisible(true);
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
                 n.append("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
-                        fmRegister[p][0x50 + ops + c] & 0x1f // AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f // DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f // SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f // RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
-                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7 // AM
-                        , fmRegister[p][0x90 + ops + c] & 0x0f // SG
+                        fmRegister[p][0x50 + ops + c] & 0x1f, // AR
+                        fmRegister[p][0x60 + ops + c] & 0x1f,        // DR
+                        fmRegister[p][0x70 + ops + c] & 0x1f,        // SR
+                        fmRegister[p][0x80 + ops + c] & 0x0f,        // RR
+                        (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4, // SL
+                        fmRegister[p][0x40 + ops + c] & 0x7f,        // TL
+                        (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6, // KS
+                        fmRegister[p][0x30 + ops + c] & 0x0f,        // ML
+                        (fmRegister[p][0x30 + ops + c] & 0x70) >> 4, // DT
+                        (fmRegister[p][0x60 + ops + c] & 0x80) >> 7, // AM
+                        fmRegister[p][0x90 + ops + c] & 0x0f         // SG
                 ));
             }
             n.append("   ALG FB\n");
             n.append("'@ %3d,%3d\n".formatted(
-                    fmRegister[p][0xb0 + c] & 0x07//AL
-                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
+                    fmRegister[p][0xb0 + c] & 0x07, // AL
+                    (fmRegister[p][0xb0 + c] & 0x38) >> 3  // FB
             ));
         } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
@@ -5106,23 +5105,23 @@ setVisible(true);
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
                 n.append("'@ %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
-                        ym2151Register[0x80 + ops + ch] & 0x1f // AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f // DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f // SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f // RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 // SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f // TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 // KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f // ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT1
-                        , (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 // DT2
-                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7 // AM
+                        ym2151Register[0x80 + ops + ch] & 0x1f, // AR
+                        ym2151Register[0xa0 + ops + ch] & 0x1f,        // DR
+                        ym2151Register[0xc0 + ops + ch] & 0x1f,        // SR
+                        ym2151Register[0xe0 + ops + ch] & 0x0f,        // RR
+                        (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4, // SL
+                        ym2151Register[0x60 + ops + ch] & 0x7f,        // TL
+                        (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6, // KS
+                        ym2151Register[0x40 + ops + ch] & 0x0f,        // ML
+                        (ym2151Register[0x40 + ops + ch] & 0x70) >> 4, // DT1
+                        (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6, // DT2
+                        (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7  // AM
                 ));
             }
             n.append("   ALG FB\n");
             n.append("'@ %3d,%3d\n".formatted(
-                    ym2151Register[0x20 + ch] & 0x07 // AL
-                    , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
+                    ym2151Register[0x20 + ch] & 0x07, // AL
+                    (ym2151Register[0x20 + ch] & 0x38) >> 3  // FB
             ));
         } else if (chip == HuC6280Chip.class) {
             OotakeHuC6280 huc6280Register = plugin.audio.chipRegister.chip(HuC6280Chip.class).getChip(chipId);
@@ -5136,25 +5135,25 @@ setVisible(true);
 
             for (int i = 0; i < 32; i += 8) {
                 n.append("'@ %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d\n".formatted(
-                        (17 - psg.wave[i + 0])
-                        , (17 - psg.wave[i + 1])
-                        , (17 - psg.wave[i + 2])
-                        , (17 - psg.wave[i + 3])
-                        , (17 - psg.wave[i + 4])
-                        , (17 - psg.wave[i + 5])
-                        , (17 - psg.wave[i + 6])
-                        , (17 - psg.wave[i + 7])
+                        (17 - psg.wave[i + 0]),
+                        (17 - psg.wave[i + 1]),
+                        (17 - psg.wave[i + 2]),
+                        (17 - psg.wave[i + 3]),
+                        (17 - psg.wave[i + 4]),
+                        (17 - psg.wave[i + 5]),
+                        (17 - psg.wave[i + 6]),
+                        (17 - psg.wave[i + 7])
                 ));
             }
         } else if (chip == Ym2413Chip.class) {
-            //Ym2413
+            // Ym2413
             int[] regs = plugin.audio.chipRegister.chip(Ym2413Chip.class).read(chipId);
         } else if (chip == Ym3812Chip.class) {
-            //OPL2
-            //'@ L No "Name"
-            //'@ AR DR SL RR KSL TL MT AM VIB EGT KSR WS
-            //'@ AR DR SL RR KSL TL MT AM VIB EGT KSR WS
-            //'@ CNT FB
+            // OPL2
+            // '@ L No "Name"
+            // '@ AR DR SL RR KSL TL MT AM VIB EGT KSR WS
+            // '@ AR DR SL RR KSL TL MT AM VIB EGT KSR WS
+            // '@ CNT FB
 
             int[] regs = plugin.audio.chipRegister.chip(Ym3812Chip.class).read(chipId);
             int slot;
@@ -5167,23 +5166,23 @@ setVisible(true);
 
                 slot = (slot % 6) + 8 * (slot / 6);
                 n.append("'@ %2d,%2d,%2d,%2d, %2d,%2d,%2d,%2d, %2d, %2d, %2d,%2d\n".formatted(
-                        regs[0x60 + slot] >> 4
-                        , regs[0x60 + slot] & 0xf
-                        , regs[0x80 + slot] >> 4
-                        , regs[0x80 + slot] & 0xf
-                        , regs[0x40 + slot] >> 6
-                        , regs[0x40 + slot] & 0x3f
-                        , regs[0x20 + slot] & 0xf
-                        , regs[0x20 + slot] >> 7
-                        , (regs[0x20 + slot] >> 6) & 1
-                        , (regs[0x20 + slot] >> 5) & 1
-                        , (regs[0x20 + slot] >> 4) & 1
-                        , (regs[0xe0 + slot] & 3)
+                        regs[0x60 + slot] >> 4,
+                        regs[0x60 + slot] & 0xf,
+                        regs[0x80 + slot] >> 4,
+                        regs[0x80 + slot] & 0xf,
+                        regs[0x40 + slot] >> 6,
+                        regs[0x40 + slot] & 0x3f,
+                        regs[0x20 + slot] & 0xf,
+                        regs[0x20 + slot] >> 7,
+                        (regs[0x20 + slot] >> 6) & 1,
+                        (regs[0x20 + slot] >> 5) & 1,
+                        (regs[0x20 + slot] >> 4) & 1,
+                        (regs[0xe0 + slot] & 3)
                 ));
             }
             n.append("   CNT FB\n'@  %2d,%2d\n".formatted(
-                    (regs[0xc0 + ch] & 1)
-                    , (regs[0xc0 + ch] >> 1) & 7
+                    (regs[0xc0 + ch] & 1),
+                    (regs[0xc0 + ch] >> 1) & 7
             ));
         }
 
@@ -5206,22 +5205,22 @@ setVisible(true);
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
             n.append("  @xx:{{\n  %3d %3d\n".formatted(
-                    (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
-                    , fmRegister[p][0xb0 + c] & 0x07//AL
+                    (fmRegister[p][0xb0 + c] & 0x38) >> 3, // FB
+                    fmRegister[p][0xb0 + c] & 0x07 // AL
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
                 n.append("  %3d %3d %3d %3d %3d %3d %3d %3d %3d\n".formatted(
-                        fmRegister[p][0x50 + ops + c] & 0x1f //A R
-                        , fmRegister[p][0x60 + ops + c] & 0x1f // DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f // SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f // RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
+                        fmRegister[p][0x50 + ops + c] & 0x1f, //A R
+                        fmRegister[p][0x60 + ops + c] & 0x1f, // DR
+                        fmRegister[p][0x70 + ops + c] & 0x1f, // SR
+                        fmRegister[p][0x80 + ops + c] & 0x0f, // RR
+                        (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4, // SL
+                        fmRegister[p][0x40 + ops + c] & 0x7f, // TL
+                        (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6, // KS
+                        fmRegister[p][0x30 + ops + c] & 0x0f, // ML
+                        (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
                 ));
             }
             n.append("  }\n");
@@ -5229,22 +5228,22 @@ setVisible(true);
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
 
             n.append("  @xx:{{\n  %3d %3d\n".formatted(
-                    (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
-                    , ym2151Register[0x20 + ch] & 0x07 // AL
+                    (ym2151Register[0x20 + ch] & 0x38) >> 3, // FB
+                    ym2151Register[0x20 + ch] & 0x07 // AL
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
                 n.append("  %3d %3d %3d %3d %3d %3d %3d %3d %3d\n".formatted(
-                        ym2151Register[0x80 + ops + ch] & 0x1f // AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f // DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f // SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f // RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 // SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f // TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 // KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f // ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT
+                        ym2151Register[0x80 + ops + ch] & 0x1f, // AR
+                        ym2151Register[0xa0 + ops + ch] & 0x1f, // DR
+                        ym2151Register[0xc0 + ops + ch] & 0x1f, // SR
+                        ym2151Register[0xe0 + ops + ch] & 0x0f, // RR
+                        (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4, // SL
+                        ym2151Register[0x60 + ops + ch] & 0x7f, // TL
+                        (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6, // KS
+                        ym2151Register[0x40 + ops + ch] & 0x0f, // ML
+                        (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT
                 ));
             }
             n.append("  }\n");
@@ -5269,22 +5268,22 @@ setVisible(true);
                     : plugin.audio.chipRegister.chip(Ym2610Chip.class).read(chipId)));
 
             n.append("  @xx:{{\n  %3d, %3d\n".formatted(
-                    (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
-                    , fmRegister[p][0xb0 + c] & 0x07 // AL
+                    (fmRegister[p][0xb0 + c] & 0x38) >> 3, // FB
+                    fmRegister[p][0xb0 + c] & 0x07 // AL
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
                 n.append(("  %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d" + (i != 3 ? "\n" : "")).formatted(
-                        fmRegister[p][0x50 + ops + c] & 0x1f // AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f // DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f // SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f // RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
+                        fmRegister[p][0x50 + ops + c] & 0x1f, // AR
+                        fmRegister[p][0x60 + ops + c] & 0x1f, // DR
+                        fmRegister[p][0x70 + ops + c] & 0x1f, // SR
+                        fmRegister[p][0x80 + ops + c] & 0x0f, // RR
+                        (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4, // SL
+                        fmRegister[p][0x40 + ops + c] & 0x7f, // TL
+                        (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6, // KS
+                        fmRegister[p][0x30 + ops + c] & 0x0f, // ML
+                        (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
                 ));
             }
             n.append(",\"MDP\"  }\n");
@@ -5292,22 +5291,22 @@ setVisible(true);
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
 
             n.append("  @xx:{{\n  %3d, %3d\n".formatted(
-                    (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
-                    , ym2151Register[0x20 + ch] & 0x07 // AL
+                    (ym2151Register[0x20 + ch] & 0x38) >> 3, // FB
+                    ym2151Register[0x20 + ch] & 0x07 // AL
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
                 n.append(("  %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d, %3d" + (i != 3 ? "\n" : "")).formatted(
-                        ym2151Register[0x80 + ops + ch] & 0x1f // AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f // DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f // SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f // RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 // SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f // TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 // KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f // ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT
+                        ym2151Register[0x80 + ops + ch] & 0x1f, // AR
+                        ym2151Register[0xa0 + ops + ch] & 0x1f, // DR
+                        ym2151Register[0xc0 + ops + ch] & 0x1f, // SR
+                        ym2151Register[0xe0 + ops + ch] & 0x0f, // RR
+                        (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4, // SL
+                        ym2151Register[0x60 + ops + ch] & 0x7f, // TL
+                        (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6, // KS
+                        ym2151Register[0x40 + ops + ch] & 0x0f, // ML
+                        (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT
                 ));
             }
             n.append(",\"MDP\"  }\n");
@@ -5335,10 +5334,10 @@ setVisible(true);
 
             for (int i = 0; i < 6; i++) {
                 n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
-                        fmRegister[p][0x30 + 0 + c + i * 0x10] & 0xff
-                        , fmRegister[p][0x30 + 8 + c + i * 0x10] & 0xff
-                        , fmRegister[p][0x30 + 16 + c + i * 0x10] & 0xff
-                        , fmRegister[p][0x30 + 24 + c + i * 0x10] & 0xff
+                        fmRegister[p][0x30 + 0 + c + i * 0x10] & 0xff,
+                        fmRegister[p][0x30 + 8 + c + i * 0x10] & 0xff,
+                        fmRegister[p][0x30 + 16 + c + i * 0x10] & 0xff,
+                        fmRegister[p][0x30 + 24 + c + i * 0x10] & 0xff
                 ));
             }
             n.append("$%3x\n".formatted(
@@ -5350,40 +5349,40 @@ setVisible(true);
             n.append("@%xxx\n");
 
             n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
-                    (ym2151Register[0x40 + 0 + ch] & 0x7f)    // DT/ML
-                    , (ym2151Register[0x40 + 8 + ch] & 0x7f)  // DT/ML
-                    , (ym2151Register[0x40 + 16 + ch] & 0x7f) // DT/ML
-                    , (ym2151Register[0x40 + 24 + ch] & 0x7f) // DT/ML
+                    (ym2151Register[0x40 + 0 + ch] & 0x7f),  // DT/ML
+                    (ym2151Register[0x40 + 8 + ch] & 0x7f),  // DT/ML
+                    (ym2151Register[0x40 + 16 + ch] & 0x7f), // DT/ML
+                    (ym2151Register[0x40 + 24 + ch] & 0x7f)  // DT/ML
             ));
             n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
-                    (ym2151Register[0x60 + 0 + ch] & 0x7f)    // TL
-                    , (ym2151Register[0x60 + 8 + ch] & 0x7f)  // TL
-                    , (ym2151Register[0x60 + 16 + ch] & 0x7f) // TL
-                    , (ym2151Register[0x60 + 24 + ch] & 0x7f) // TL
+                    (ym2151Register[0x60 + 0 + ch] & 0x7f),  // TL
+                    (ym2151Register[0x60 + 8 + ch] & 0x7f),  // TL
+                    (ym2151Register[0x60 + 16 + ch] & 0x7f), // TL
+                    (ym2151Register[0x60 + 24 + ch] & 0x7f)  // TL
             ));
             n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
-                    (ym2151Register[0x80 + 0 + ch] & 0xdf)    // KS/AR
-                    , (ym2151Register[0x80 + 8 + ch] & 0xdf)  // KS/AR
-                    , (ym2151Register[0x80 + 16 + ch] & 0xdf) // KS/AR
-                    , (ym2151Register[0x80 + 24 + ch] & 0xdf) // KS/AR
+                    (ym2151Register[0x80 + 0 + ch] & 0xdf),  // KS/AR
+                    (ym2151Register[0x80 + 8 + ch] & 0xdf),  // KS/AR
+                    (ym2151Register[0x80 + 16 + ch] & 0xdf), // KS/AR
+                    (ym2151Register[0x80 + 24 + ch] & 0xdf)  // KS/AR
             ));
             n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
-                    (ym2151Register[0xa0 + 0 + ch] & 0x9f)    // AM/DR
-                    , (ym2151Register[0xa0 + 8 + ch] & 0x9f)  // AM/DR
-                    , (ym2151Register[0xa0 + 16 + ch] & 0x9f) // AM/DR
-                    , (ym2151Register[0xa0 + 24 + ch] & 0x9f) // AM/DR
+                    (ym2151Register[0xa0 + 0 + ch] & 0x9f),  // AM/DR
+                    (ym2151Register[0xa0 + 8 + ch] & 0x9f),  // AM/DR
+                    (ym2151Register[0xa0 + 16 + ch] & 0x9f), // AM/DR
+                    (ym2151Register[0xa0 + 24 + ch] & 0x9f)  // AM/DR
             ));
             n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
-                    (ym2151Register[0xc0 + 0 + ch] & 0x1f)    // SR
-                    , (ym2151Register[0xc0 + 8 + ch] & 0x1f)  // SR
-                    , (ym2151Register[0xc0 + 16 + ch] & 0x1f) // SR
-                    , (ym2151Register[0xc0 + 24 + ch] & 0x1f) // SR
+                    (ym2151Register[0xc0 + 0 + ch] & 0x1f),  // SR
+                    (ym2151Register[0xc0 + 8 + ch] & 0x1f),  // SR
+                    (ym2151Register[0xc0 + 16 + ch] & 0x1f), // SR
+                    (ym2151Register[0xc0 + 24 + ch] & 0x1f)  // SR
             ));
             n.append("$%3x,$%3x,$%3x,$%3x\n".formatted(
-                    (ym2151Register[0xe0 + 0 + ch] & 0xff)    // SL/RR
-                    , (ym2151Register[0xe0 + 8 + ch] & 0xff)  // SL/RR
-                    , (ym2151Register[0xe0 + 16 + ch] & 0xff) // SL/RR
-                    , (ym2151Register[0xe0 + 24 + ch] & 0xff) // SL/RR
+                    (ym2151Register[0xe0 + 0 + ch] & 0xff),  // SL/RR
+                    (ym2151Register[0xe0 + 8 + ch] & 0xff),  // SL/RR
+                    (ym2151Register[0xe0 + 16 + ch] & 0xff), // SL/RR
+                    (ym2151Register[0xe0 + 24 + ch] & 0xff)  // SL/RR
             ));
 
             n.append("$%3x\n".formatted(ym2151Register[0x20 + ch])); // FB/AL
@@ -5409,24 +5408,24 @@ setVisible(true);
 
             n.append("@ xxxx {\n");
             n.append("000,%3d,%3d,015\n".formatted(
-                    fmRegister[p][0xb0 + c] & 0x07//AL
-                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3//FB
+                    fmRegister[p][0xb0 + c] & 0x07, // AL
+                    (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
                 n.append(" %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
-                        fmRegister[p][0x50 + ops + c] & 0x1f // AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f // DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f // SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f // RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
-                        , 0
-                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7 // AM
+                        fmRegister[p][0x50 + ops + c] & 0x1f, // AR
+                        fmRegister[p][0x60 + ops + c] & 0x1f,        // DR
+                        fmRegister[p][0x70 + ops + c] & 0x1f,        // SR
+                        fmRegister[p][0x80 + ops + c] & 0x0f,        // RR
+                        (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4, // SL
+                        fmRegister[p][0x40 + ops + c] & 0x7f,        // TL
+                        (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6, // KS
+                        fmRegister[p][0x30 + ops + c] & 0x0f,        // ML
+                        (fmRegister[p][0x30 + ops + c] & 0x70) >> 4, // DT
+                        0,
+                        (fmRegister[p][0x60 + ops + c] & 0x80) >> 7  // AM
                 ));
             }
             n.append("}\n");
@@ -5435,24 +5434,24 @@ setVisible(true);
 
             n.append("@ xxxx {\n");
             n.append("000,%3d,%3d,015\n".formatted(
-                    ym2151Register[0x20 + ch] & 0x07 // AL
-                    , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
+                    ym2151Register[0x20 + ch] & 0x07, // AL
+                    (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
                 n.append(" %3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d\n".formatted(
-                        ym2151Register[0x80 + ops + ch] & 0x1f //AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f //DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f //SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f //RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 //SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f //TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 //KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f //ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 //DT
-                        , (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 //DT2
-                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7 //AM
+                        ym2151Register[0x80 + ops + ch] & 0x1f, // AR
+                        ym2151Register[0xa0 + ops + ch] & 0x1f,        // DR
+                        ym2151Register[0xc0 + ops + ch] & 0x1f,        // SR
+                        ym2151Register[0xe0 + ops + ch] & 0x0f,        // RR
+                        (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4, // SL
+                        ym2151Register[0x60 + ops + ch] & 0x7f,        // TL
+                        (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6, // KS
+                        ym2151Register[0x40 + ops + ch] & 0x0f,        // ML
+                        (ym2151Register[0x40 + ops + ch] & 0x70) >> 4, // DT
+                        (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6, // DT2
+                        (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7  // AM
                 ));
             }
             n.append("}\n");
@@ -5477,14 +5476,14 @@ setVisible(true);
 
             for (int i = 0; i < 32; i += 8) {
                 n.append("$%2x,$%2x,$%2x,$%2x,$%2x,$%2x,$%2x,$%2x,\n".formatted(
-                        (17 - psg.wave[i + 0])
-                        , (17 - psg.wave[i + 1])
-                        , (17 - psg.wave[i + 2])
-                        , (17 - psg.wave[i + 3])
-                        , (17 - psg.wave[i + 4])
-                        , (17 - psg.wave[i + 5])
-                        , (17 - psg.wave[i + 6])
-                        , (17 - psg.wave[i + 7])
+                        (17 - psg.wave[i + 0]),
+                        (17 - psg.wave[i + 1]),
+                        (17 - psg.wave[i + 2]),
+                        (17 - psg.wave[i + 3]),
+                        (17 - psg.wave[i + 4]),
+                        (17 - psg.wave[i + 5]),
+                        (17 - psg.wave[i + 6]),
+                        (17 - psg.wave[i + 7])
                 ));
             }
 
@@ -5516,38 +5515,35 @@ setVisible(true);
         if (register == null) return;
         n.append("@vXX = { \n");
         n.append("   ;       TL FB\n");
-        n.append("           %2d,%2d,\n".formatted(
-                register[0x02] & 0x3f
-                , register[0x03] & 0x7
-        ));
+        n.append("           %2d,%2d,\n".formatted(register[0x02] & 0x3f, register[0x03] & 0x7));
         n.append("   ;       AR DR SL RR KL MT AM VB EG KR DT\n");
 
         n.append("           %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,\n".formatted(
-                (register[0x04] & 0xf0) >> 4
-                , (register[0x04] & 0x0f)
-                , (register[0x06] & 0xf0) >> 4
-                , (register[0x06] & 0x0f)
-                , (register[0x02] & 0xc0) >> 6
-                , (register[0x00] & 0x0f)
-                , (register[0x00] & 0x80) >> 7
-                , (register[0x00] & 0x40) >> 6
-                , (register[0x00] & 0x20) >> 5
-                , (register[0x00] & 0x10) >> 4
-                , (register[0x03] & 0x08) >> 3
+                (register[0x04] & 0xf0) >> 4,
+                (register[0x04] & 0x0f),
+                (register[0x06] & 0xf0) >> 4,
+                (register[0x06] & 0x0f),
+                (register[0x02] & 0xc0) >> 6,
+                (register[0x00] & 0x0f),
+                (register[0x00] & 0x80) >> 7,
+                (register[0x00] & 0x40) >> 6,
+                (register[0x00] & 0x20) >> 5,
+                (register[0x00] & 0x10) >> 4,
+                (register[0x03] & 0x08) >> 3
         ));
 
         n.append("           %2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d,%2d }}\n".formatted(
-                (register[0x05] & 0xf0) >> 4
-                , (register[0x05] & 0x0f)
-                , (register[0x07] & 0xf0) >> 4
-                , (register[0x07] & 0x0f)
-                , (register[0x03] & 0xc0) >> 6
-                , (register[0x01] & 0x0f)
-                , (register[0x01] & 0x80) >> 7
-                , (register[0x01] & 0x40) >> 6
-                , (register[0x01] & 0x20) >> 5
-                , (register[0x01] & 0x10) >> 4
-                , (register[0x03] & 0x10) >> 4
+                (register[0x05] & 0xf0) >> 4,
+                (register[0x05] & 0x0f),
+                (register[0x07] & 0xf0) >> 4,
+                (register[0x07] & 0x0f),
+                (register[0x03] & 0xc0) >> 6,
+                (register[0x01] & 0x0f),
+                (register[0x01] & 0x80) >> 7,
+                (register[0x01] & 0x40) >> 6,
+                (register[0x01] & 0x20) >> 5,
+                (register[0x01] & 0x10) >> 4,
+                (register[0x03] & 0x10) >> 4
         ));
 
         Common.setClipboard(n.toString());
@@ -5802,9 +5798,9 @@ setVisible(true);
         }
 
         try (FileStream fs = new FileStream(
-            sfd.getSelectedFile().getName(),
-            FileMode.Create,
-            FileAccess.Write)) {
+                sfd.getSelectedFile().getName(),
+                FileMode.Create,
+                FileAccess.Write)) {
 
             fs.write(n, 0, n.length);
         }
@@ -6229,26 +6225,26 @@ setVisible(true);
             n.append("@: n MDPlayer\n");
             n.append("LFO:  0   0   0   0   0\n");
             n.append("CH: 64  %2d  %2d   0   0 120   0\n".formatted(
-                    (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
-                    , fmRegister[p][0xb0 + c] & 0x07 // AL
+                    (fmRegister[p][0xb0 + c] & 0x38) >> 3, // FB
+                    fmRegister[p][0xb0 + c] & 0x07 // AL
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
                 n.append("%s:%3d %3d %3d %3d %3d ".formatted(
-                        "M1C1M2C2".substring(i * 2, 2)
-                        , fmRegister[p][0x50 + ops + c] & 0x1f // AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f // DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f // SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f // RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
+                        "M1C1M2C2".substring(i * 2, 2),
+                        fmRegister[p][0x50 + ops + c] & 0x1f,       // AR
+                        fmRegister[p][0x60 + ops + c] & 0x1f,       // DR
+                        fmRegister[p][0x70 + ops + c] & 0x1f,       // SR
+                        fmRegister[p][0x80 + ops + c] & 0x0f,       // RR
+                        (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
                 ));
                 n.append("%3d %3d %3d %3d   0 %3d\n".formatted(
-                        fmRegister[p][0x40 + ops + c] & 0x7f // TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 //DT
-                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7 //AM
+                        fmRegister[p][0x40 + ops + c] & 0x7f, // TL
+                        (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6, // KS
+                        fmRegister[p][0x30 + ops + c] & 0x0f,        // ML
+                        (fmRegister[p][0x30 + ops + c] & 0x70) >> 4, // DT
+                        (fmRegister[p][0x60 + ops + c] & 0x80) >> 7  // AM
                 ));
             }
         } else if (chip == Ym2151Chip.class) {
@@ -6257,27 +6253,27 @@ setVisible(true);
             n.append("@: n MDPlayer\n");
             n.append("LFO:  0   0   0   0   0\n");
             n.append("CH: 64  %2d  %2d   0   0 120   0\n".formatted(
-                    (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
-                    , ym2151Register[0x20 + ch] & 0x07 // AL
+                    (ym2151Register[0x20 + ch] & 0x38) >> 3, // FB
+                    ym2151Register[0x20 + ch] & 0x07 // AL
             ));
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
                 n.append("%s:%3d %3d %3d %3d %3d ".formatted(
-                        "M1C1M2C2".substring(i * 2, 2)
-                        , ym2151Register[0x80 + ops + ch] & 0x1f // AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f // DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f // SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f // RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 // SL
+                        "M1C1M2C2".substring(i * 2, 2),
+                        ym2151Register[0x80 + ops + ch] & 0x1f,       // AR
+                        ym2151Register[0xa0 + ops + ch] & 0x1f,       // DR
+                        ym2151Register[0xc0 + ops + ch] & 0x1f,       // SR
+                        ym2151Register[0xe0 + ops + ch] & 0x0f,       // RR
+                        (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 // SL
                 ));
                 n.append("%3d %3d %3d %3d %3d %3d\n".formatted(
-                        ym2151Register[0x60 + ops + ch] & 0x7f // TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 // KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f // ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT
-                        , (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 // DT2
-                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7 // AM
+                        ym2151Register[0x60 + ops + ch] & 0x7f, // TL
+                        (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6, // KS
+                        ym2151Register[0x40 + ops + ch] & 0x0f,        // ML
+                        (ym2151Register[0x40 + ops + ch] & 0x70) >> 4, // DT
+                        (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6, // DT2
+                        (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7  // AM
                 ));
             }
         }
@@ -6302,51 +6298,51 @@ setVisible(true);
 
             n.append("; nm alg fbl\n");
             n.append("@xxx %3d %3d                            =      MDPlayer\n".formatted(
-                    fmRegister[p][0xb0 + c] & 0x07 // AL
-                    , (fmRegister[p][0xb0 + c] & 0x38) >> 3 // FB
+                    fmRegister[p][0xb0 + c] & 0x07, // AL
+                    (fmRegister[p][0xb0 + c] & 0x38) >> 3  // FB
             ));
             n.append("; ar  dr  sr  rr  sl  tl  ks  ml  dt ams   seg\n");
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 8 : ((i == 2) ? 4 : 12));
                 n.append(" %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d ; %3d\n".formatted(
-                        fmRegister[p][0x50 + ops + c] & 0x1f // AR
-                        , fmRegister[p][0x60 + ops + c] & 0x1f // DR
-                        , fmRegister[p][0x70 + ops + c] & 0x1f // SR
-                        , fmRegister[p][0x80 + ops + c] & 0x0f // RR
-                        , (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4 // SL
-                        , fmRegister[p][0x40 + ops + c] & 0x7f // TL
-                        , (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6 // KS
-                        , fmRegister[p][0x30 + ops + c] & 0x0f // ML
-                        , (fmRegister[p][0x30 + ops + c] & 0x70) >> 4 // DT
-                        , (fmRegister[p][0x60 + ops + c] & 0x80) >> 7 // AM
-                        , fmRegister[p][0x90 + ops + c] & 0x0f // SG
+                        fmRegister[p][0x50 + ops + c] & 0x1f, // AR
+                        fmRegister[p][0x60 + ops + c] & 0x1f,        // DR
+                        fmRegister[p][0x70 + ops + c] & 0x1f,        // SR
+                        fmRegister[p][0x80 + ops + c] & 0x0f,        // RR
+                        (fmRegister[p][0x80 + ops + c] & 0xf0) >> 4, // SL
+                        fmRegister[p][0x40 + ops + c] & 0x7f,        // TL
+                        (fmRegister[p][0x50 + ops + c] & 0xc0) >> 6, // KS
+                        fmRegister[p][0x30 + ops + c] & 0x0f,        // ML
+                        (fmRegister[p][0x30 + ops + c] & 0x70) >> 4, // DT
+                        (fmRegister[p][0x60 + ops + c] & 0x80) >> 7, // AM
+                        fmRegister[p][0x90 + ops + c] & 0x0f         // SG
                 ));
             }
         } else if (chip == Ym2151Chip.class) {
             int[] ym2151Register = plugin.audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
             n.append("; nm alg fbl\n");
             n.append("@xxx %3d %3d                            =      MDPlayer\n".formatted(
-                    ym2151Register[0x20 + ch] & 0x07 // AL
-                    , (ym2151Register[0x20 + ch] & 0x38) >> 3 // FB
+                    ym2151Register[0x20 + ch] & 0x07, // AL
+                    (ym2151Register[0x20 + ch] & 0x38) >> 3  // FB
             ));
             n.append("; ar  dr  sr  rr  sl  tl  ks  ml  dt ams   seg\n");
 
             for (int i = 0; i < 4; i++) {
                 int ops = (i == 0) ? 0 : ((i == 1) ? 16 : ((i == 2) ? 8 : 24));
                 n.append(" %3d %3d %3d %3d %3d %3d %3d %3d %3d %3d ; %3d\n".formatted(
-                        ym2151Register[0x80 + ops + ch] & 0x1f // AR
-                        , ym2151Register[0xa0 + ops + ch] & 0x1f // DR
-                        , ym2151Register[0xc0 + ops + ch] & 0x1f // SR
-                        , ym2151Register[0xe0 + ops + ch] & 0x0f // RR
-                        , (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4 // SL
-                        , ym2151Register[0x60 + ops + ch] & 0x7f // TL
-                        , (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6 // KS
-                        , ym2151Register[0x40 + ops + ch] & 0x0f // ML
-                        , (ym2151Register[0x40 + ops + ch] & 0x70) >> 4 // DT
-                        //, (ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6 // DT2
-                        , (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7 // AM
-                        , 0
+                        ym2151Register[0x80 + ops + ch] & 0x1f,   // AR
+                        ym2151Register[0xa0 + ops + ch] & 0x1f,          // DR
+                        ym2151Register[0xc0 + ops + ch] & 0x1f,          // SR
+                        ym2151Register[0xe0 + ops + ch] & 0x0f,          // RR
+                        (ym2151Register[0xe0 + ops + ch] & 0xf0) >> 4,   // SL
+                        ym2151Register[0x60 + ops + ch] & 0x7f,          // TL
+                        (ym2151Register[0x80 + ops + ch] & 0xc0) >> 6,   // KS
+                        ym2151Register[0x40 + ops + ch] & 0x0f,          // ML
+                        (ym2151Register[0x40 + ops + ch] & 0x70) >> 4,   // DT
+                        //(ym2151Register[0xc0 + ops + ch] & 0xc0) >> 6, // DT2
+                        (ym2151Register[0xa0 + ops + ch] & 0x80) >> 7,   // AM
+                        0
                 ));
             }
         }
@@ -7528,49 +7524,49 @@ setVisible(true);
             boolean alt = (e.getModifiers() & NativeKeyEvent.ALT_MASK) != 0;
             Setting.KeyBoardHook.HookKeyInfo info;
 
-            info = setting.getKeyBoardHook().getStop();
+            info = setting.getKeyboardHook().getStop();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 stop();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getPause();
+            info = setting.getKeyboardHook().getPause();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 pause();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getFadeout();
+            info = setting.getKeyboardHook().getFadeout();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 fadeout();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getPrev();
+            info = setting.getKeyboardHook().getPrev();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 prev();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getSlow();
+            info = setting.getKeyboardHook().getSlow();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 slow();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getPlay();
+            info = setting.getKeyboardHook().getPlay();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 play();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getNext();
+            info = setting.getKeyboardHook().getNext();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 next();
                 return;
             }
 
-            info = setting.getKeyBoardHook().getFast();
+            info = setting.getKeyboardHook().getFast();
             if (info.getKey().equals(k) && info.getShift() == shift && info.getCtrl() == ctrl && info.getAlt() == alt) {
                 ff();
             }

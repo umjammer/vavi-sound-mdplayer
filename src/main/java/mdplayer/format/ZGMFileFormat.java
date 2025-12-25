@@ -8,6 +8,8 @@ import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.zgm.Zgm;
 import mdplayer.plugin.Plugin;
+import mdplayer.plugin.ZGMPlugin;
+import mdplayer.plugin.ZMSPlugin;
 import mdplayer.properties.Resources;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
@@ -63,6 +65,6 @@ public class ZGMFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return null;
+        return Plugin.getPlugin(ZGMPlugin.class);
     }
 }

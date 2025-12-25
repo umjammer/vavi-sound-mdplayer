@@ -1,20 +1,20 @@
 package mdplayer.driver.musica;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
 import mdplayer.Chip;
+import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
@@ -29,6 +29,7 @@ import vavi.util.ByteUtil;
 import static java.lang.System.getLogger;
 
 
+// MSD
 public class MuSICA_K4 extends BaseDriver {
 
     private static final Logger logger = getLogger(MuSICA_K4.class.getName());
@@ -71,7 +72,20 @@ public class MuSICA_K4 extends BaseDriver {
 
     @Override
     public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException();
+        this.plugin = plugin;
+        loopCounter = 0;
+        vgmCurLoop = 0;
+        this.model = model;
+        vgmFrameCounter = -latency - waitTime;
+
+        try {
+            run(vgmBuf, null);
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+            return false;
+        }
+
+        return true;
     }
 
     @Override
@@ -81,11 +95,10 @@ public class MuSICA_K4 extends BaseDriver {
 
     @Override
     public void processOneFrame() {
-        throw new UnsupportedOperationException();
     }
 
     private static byte[] kinrou4 = null;
-    private static byte DollarCode;
+    private static final byte DollarCode = '$';
     private Z80Processor z80;
     private Mapper mapper;
     private MsxVdp vdp;
@@ -102,7 +115,6 @@ public class MuSICA_K4 extends BaseDriver {
         this.bgmBin = null;
 
         Path fileName = Path.of(MuSICA_K4.class.getResource("KINROU4.COM").toURI());
-        DollarCode = '$';
 
         vdp = new MsxVdp();
         z80 = new Z80ProcessorImpl();
@@ -121,20 +133,20 @@ public class MuSICA_K4 extends BaseDriver {
         z80.getRegisters().setSP((short) 0xf380);
 
         //boolean existVCD = false;
-        //if(vcdBin != null && vcdBin.Length > 0) existVCD = true;
+        //if (vcdBin != null && vcdBin.length > 0) existVCD = true;
 
         // A set of command line arguments
-        byte[] option = " DUMMY.MSD DUMMY.VCD".getBytes();
+        byte[] option = " DUMMY.MSD DUMMY.VCD".getBytes(StandardCharsets.US_ASCII);
         z80.getMemory().set(0x80, (byte) option.length);
         for (int p = 0; p < option.length; p++) z80.getMemory().set(0x81 + p, option[p]);
-        option = " DUMMY   MSD     DUMMY   VCD".getBytes();
+        option = " DUMMY   MSD     DUMMY   VCD".getBytes(StandardCharsets.US_ASCII);
         for (int p = 0; p < option.length; p++) z80.getMemory().set(0x5c + p, option[p]);
-        z80.getMemory().set(0x5, (byte) 0x00);
+        z80.getMemory().set(0x5c, (byte) 0x00);
         z80.getMemory().set(0x68, (byte) 0x00);
         z80.getMemory().set(0x69, (byte) 0x00);
         z80.getMemory().set(0x6a, (byte) 0x00);
         z80.getMemory().set(0x6b, (byte) 0x00);
-        z80.getMemory().set(0x6, (byte) 0x00);
+        z80.getMemory().set(0x6c, (byte) 0x00);
 
         z80.getMemory().set(0x06, vdp.m); // V9938 base Address m port0/1   read
         z80.getMemory().set(0x07, vdp.n); // V9938 base Address n port0/1/3 write   port2 read
@@ -163,10 +175,13 @@ public class MuSICA_K4 extends BaseDriver {
             //logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC()));
             callBIOS(args, z80);
         } else if (z80.getRegisters().getPC() == 0x000c) {
-            logger.log(Level.TRACE, "Call RDSLT(0x000c) Reg.A=%02x Reg.HL=%04x", z80.getRegisters().getA(), z80.getRegisters().getHL());
+            logger.log(Level.TRACE, "Call RDSLT(0x000c) Reg.A=%02x Reg.HL=%04x", z80.getRegisters().getA() & 0xff, z80.getRegisters().getHL() & 0xffff);
 
             int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
-            z80.getRegisters().setA(((MsxMemory) z80.getMemory()).readSlotMemoryAdr((slot & 0x03),(slot & 0x0c) >> 2, z80.getRegisters().getHL()));
+            z80.getRegisters().setA(((MsxMemory) z80.getMemory()).readSlotMemoryAdr(
+                    slot & 0x03,
+                    (slot & 0x0c) >> 2,
+                    z80.getRegisters().getHL() & 0xffff));
             z80.executeRet();
         } else if (z80.getRegisters().getPC() == 0x0014) {
             logger.log(Level.TRACE, "Call WRSLT(0x0014) Reg.A=%02x Reg.HL=%04x Reg.E=%02x".formatted(z80.getRegisters().getA(), z80.getRegisters().getHL(), z80.getRegisters().getE()));
@@ -175,9 +190,12 @@ public class MuSICA_K4 extends BaseDriver {
             logger.log(Level.TRACE, "Call CALSLT(0x001c) Reg.IY=%04x Reg.IX=%04x".formatted(z80.getRegisters().getIY(), z80.getRegisters().getIX()));
             throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x0024) {
-            //logger.log(Level.TRACE, "\r\nCall ENASLT(0x0024) Reg.A=%02x Reg.HL=%04x".formatted(z80.getRegisters().getA(), z80.getRegisters().getHL()));
+            //logger.log(Level.TRACE, "\r\nCall ENASLT(0x0024) Reg.A=%02x Reg.HL=%04x".formatted(z80.getRegisters().getA() & 0xff, z80.getRegisters().getHL() & 0xffff));
             int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
-            ((MsxMemory) z80.getMemory()).changePage((slot & 0x03), ((slot & 0x0c) >> 2), ((z80.getRegisters().getH() & 0xc0) >> 6));
+            ((MsxMemory) z80.getMemory()).changePage(
+                    slot & 0x03,
+                    (slot & 0x0c) >> 2,
+                    (z80.getRegisters().getH() & 0xc0) >> 6);
             z80.executeRet();
         } else if (z80.getRegisters().getPC() == 0x0030) {
             logger.log(Level.TRACE, "Call CALLF(0x0030)");
@@ -204,15 +222,15 @@ public class MuSICA_K4 extends BaseDriver {
             logger.log(Level.TRACE, "Call EXTROM(015FH/MAIN)");
             //throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x4601) {
-            logger.log(Level.TRACE, "JP NEWSTT(0x4601) Reg.HL=%04x", z80.getRegisters().getHL());
-            String msg = getAsciiz(z80, (short) z80.getRegisters().getHL());
-            logger.log(Level.TRACE, "(HL)=%s", msg);
-            if (Objects.equals(msg, ":_SYSTEM")) {
+            logger.log(Level.TRACE, "JP NEWSTT(0x4601) Reg.HL=%04x", z80.getRegisters().getHL() & 0xffff);
+            String msg = getAsciiz(z80, z80.getRegisters().getHL());
+            logger.log(Level.TRACE, "(HL)=%s".formatted(msg));
+            if (msg.equals(":_SYSTEM")) {
                 args.getExecutionStopper().stop(false);
             }
         } else if ((z80.getRegisters().getPC() & 0xffff) >= mapper.jumpAddress && (z80.getRegisters().getPC() & 0xffff) < mapper.jumpAddress + 16) {
             //logger.log(Level.TRACE, "\r\nCall MAPPER PROC(0x%04x～) PC-%04x:%04x".formatted(mapper.JumpAddress, (z80.getRegisters().getPC() & 0xffff) - mapper.JumpAddress));
-            mapper.CallMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - mapper.jumpAddress);
+            mapper.callMapperProc(args, z80, (z80.getRegisters().getPC() & 0xffff) - mapper.jumpAddress);
         } else if ((z80.getRegisters().getPC() & 0xffff) == 0xffca) {
             //logger.log(Level.TRACE, "\r\nCall EXTBIO(0xffca) Reg.DE=%04x".formatted(z80.getRegisters().getDE()));
             callEXTBIO(args, z80);
@@ -222,10 +240,10 @@ public class MuSICA_K4 extends BaseDriver {
     }
 
     private static void debugRegisters(Z80Processor z80) {
-        logger.log(Level.TRACE, "Reg PC:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x"
-                , z80.getRegisters().getPC()
-                , z80.getRegisters().getAF(), z80.getRegisters().getBC(), z80.getRegisters().getDE(), z80.getRegisters().getHL()
-                , z80.getRegisters().getIX(), z80.getRegisters().getIY());
+        logger.log(Level.TRACE, "Reg PC:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x",
+                z80.getRegisters().getPC() & 0xffff,
+                z80.getRegisters().getAF() & 0xffff, z80.getRegisters().getBC() & 0xffff, z80.getRegisters().getDE() & 0xffff, z80.getRegisters().getHL() & 0xffff,
+                z80.getRegisters().getIX() & 0xffff, z80.getRegisters().getIY() & 0xffff);
     }
 
     private void callEXTBIO(BeforeInstructionFetchEvent args, Z80Processor z80) {
@@ -242,7 +260,7 @@ public class MuSICA_K4 extends BaseDriver {
                 z80.getRegisters().setA((byte) 0); // When not present
                 break;
             default:
-                logger.log(Level.TRACE, " EXTBIO Unknown type");
+                logger.log(Level.TRACE, " EXTBIO Unknown type: %02x".formatted(funcType & 0xff));
                 break;
         }
 
@@ -271,7 +289,7 @@ public class MuSICA_K4 extends BaseDriver {
             case 9:
                 var messageAddress = z80.getRegisters().getDE();
                 var bytesToPrint = new ArrayList<Byte>();
-                while ((byteToPrint = z80.getMemory().get(messageAddress)) != DollarCode) {
+                while ((byteToPrint = z80.getMemory().get(messageAddress & 0xffff)) != DollarCode) {
                     bytesToPrint.add(byteToPrint);
                     messageAddress++;
                 }
@@ -279,67 +297,67 @@ public class MuSICA_K4 extends BaseDriver {
                 conWrite(StringToPrint);
                 break;
             case 0x0f:
-                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC()));
-                logger.log(Level.TRACE, "File Open FCB Address:%04x".formatted(z80.getRegisters().getDE()));
+                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC() & 0xff));
+                logger.log(Level.TRACE, "File Open FCB Address:%04x".formatted(z80.getRegisters().getDE() & 0xffff));
                 z80.getRegisters().setA((byte) 0x00); // success
                 FCBAddress = z80.getRegisters().getDE();
                 break;
             case 0x10:
-                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC()));
-                logger.log(Level.TRACE, "File Close FCB Address:%04x".formatted(z80.getRegisters().getDE()));
+                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC() & 0xff));
+                logger.log(Level.TRACE, "File Close FCB Address:%04x".formatted(z80.getRegisters().getDE() & 0xffff));
                 z80.getRegisters().setA((byte) 0x00); // success
                 break;
             case 0x16:
-                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC()));
-                logger.log(Level.TRACE, "File Create FCB Address:%04x".formatted(z80.getRegisters().getDE()));
+                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC() & 0xff));
+                logger.log(Level.TRACE, "File Create FCB Address:%04x".formatted(z80.getRegisters().getDE() & 0xffff));
                 z80.getRegisters().setA((byte) 0x00); // success
                 FCBAddress = z80.getRegisters().getDE();
                 break;
             case 0x1a:
-                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC()));
-                logger.log(Level.TRACE, "DTA Address:%04x".formatted(z80.getRegisters().getDE()));
-                DTAAddress = (short) z80.getRegisters().getDE();
+                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC() & 0xff));
+                logger.log(Level.TRACE, "DTA Address:%04x".formatted(z80.getRegisters().getDE() & 0xffff));
+                DTAAddress = z80.getRegisters().getDE();
                 break;
             case 0x26:
-                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC()));
-                logger.log(Level.TRACE, "Write random block: FCB Adr(DE):%04x Write Record(HL):%04x".formatted(z80.getRegisters().getDE(), z80.getRegisters().getHL()));
+                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC() & 0xff));
+                logger.log(Level.TRACE, "Write random block: FCB Adr(DE):%04x Write Record(HL):%04x".formatted(z80.getRegisters().getDE() & 0xffff, z80.getRegisters().getHL() & 0xffff));
                 z80.getRegisters().setA((byte) 0x00); // success
-                FCBAddress = (short) z80.getRegisters().getDE();
-                var dummy1 = (short) ((z80.getMemory().get(FCBAddress + 12) & 0xff) + (z80.getMemory().get(FCBAddress + 13) & 0xff) * 0x100); // currentBlock
-                short recordSize = (short) ((z80.getMemory().get(FCBAddress + 14) & 0xff) + (z80.getMemory().get(FCBAddress + 15) & 0xff) * 0x100);
-                var dummy2 = (short) ((z80.getMemory().get(FCBAddress + 16) & 0xff)
-                        + (z80.getMemory().get(FCBAddress + 17) & 0xff) * 0x100
-                        + (z80.getMemory().get(FCBAddress + 18) & 0xff) * 0x1_0000
-                        + (z80.getMemory().get(FCBAddress + 19) & 0xff) * 0x100_0000
+                FCBAddress = z80.getRegisters().getDE();
+                var dummy1 = (short) ((z80.getMemory().get((FCBAddress & 0xffff) + 12) & 0xff) + (z80.getMemory().get((FCBAddress & 0xffff) + 13) & 0xff) * 0x100); // currentBlock
+                short recordSize = (short) ((z80.getMemory().get((FCBAddress & 0xffff) + 14) & 0xff) + (z80.getMemory().get((FCBAddress & 0xffff) + 15) & 0xff) * 0x100);
+                var dummy2 = (short) ((z80.getMemory().get((FCBAddress & 0xffff) + 16) & 0xff) +
+                        (z80.getMemory().get((FCBAddress & 0xffff) + 17) & 0xff) * 0x100 +
+                        (z80.getMemory().get((FCBAddress & 0xffff) + 18) & 0xff) * 0x1_0000 +
+                        (z80.getMemory().get((FCBAddress & 0xffff) + 19) & 0xff) * 0x100_0000
                 ); // fileSize
-                bgmBin = z80.getMemory().getContents(DTAAddress, (z80.getRegisters().getHL() & 0xffff) * recordSize);
+                bgmBin = z80.getMemory().getContents(DTAAddress & 0xffff, (z80.getRegisters().getHL() & 0xffff) * (recordSize & 0xffff));
                 break;
             case 0x27:
-                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC()));
-                logger.log(Level.TRACE, "Read random block: FCB Adr(DE):%04x Read Record(HL):%04x".formatted(z80.getRegisters().getDE(), z80.getRegisters().getHL()));
+                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC() & 0xff));
+                logger.log(Level.TRACE, "Read random block: FCB Adr(DE):%04x Read Record(HL):%04x".formatted(z80.getRegisters().getDE() & 0xffff, z80.getRegisters().getHL() & 0xffff));
                 readRandomBlock(z80);
                 break;
             case 0x62:
-                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC()));
-                logger.log(Level.TRACE, "_TERM ErrorCode:%02x".formatted(z80.getRegisters().getB()));
+                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC() & 0xff));
+                logger.log(Level.TRACE, "_TERM ErrorCode:%02x".formatted(z80.getRegisters().getB() & 0xff));
                 args.getExecutionStopper().stop(false);
                 return;
             case 0x6b:
-                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC()));
+                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC() & 0xff));
                 //_GENV
-                //logger.log(Level.TRACE, "_GENV HL:%04x DE:%04x B:%02x".formatted(z80.getRegisters().getHL(), z80.getRegisters().getDE(), z80.getRegisters().getB()));
-                msg = getAsciiz(z80, (short) z80.getRegisters().getHL());
-                //logger.log(Level.TRACE, "(HL)=%s", msg);
+                //logger.log(Level.TRACE, "_GENV HL:%04x DE:%04x B:%02x".formatted(z80.getRegisters().getHL() & 0xffff, z80.getRegisters().getDE() & 0xffff, z80.getRegisters().getB() & 0xff));
+                msg = getAsciiz(z80, z80.getRegisters().getHL());
+                //logger.log(Level.TRACE, "(HL)=%s".formatted(msg));
 
                 if (msg.equals("PARAMETERS")) {
-                    byte[] option = "/z".getBytes();
+                    byte[] option = "/z".getBytes(StandardCharsets.US_ASCII);
                     for (int i = 0; i < option.length; i++)
                         z80.getMemory().set((z80.getRegisters().getDE() & 0xffff) + i, option[i]);
                     z80.getMemory().set((z80.getRegisters().getDE() & 0xffff) + option.length, (byte) 0);
                 } else if (msg.equals("SHELL")) {
                     //byte[] option = Encoding.ASCII.GetBytes("c:\\dummy");
                     //for (int i = 0; i < option.Length; i++) z80.getMemory().set((z80.getRegisters().getDE() & 0xffff) + i) & 0xffff, option[i]);
-                    //z80.getMemory().set(((z80.getRegisters().getDE() & 0xffff) + option.Length) & 0xffff, (byte) 0);
+                    //z80.getMemory().set(((z80.getRegisters().getDE() & 0xffff) + option.length) & 0xffff, (byte) 0);
                     z80.getMemory().set(z80.getRegisters().getDE() & 0xffff, (byte) 0);
                 } else {
                     z80.getMemory().set(z80.getRegisters().getDE() & 0xffff, (byte) 0);
@@ -349,25 +367,25 @@ public class MuSICA_K4 extends BaseDriver {
                 z80.getRegisters().setDE((short) 0x00); // value
                 break;
             case 0x6c:
-                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x", z80.getRegisters().getC());
+                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x", z80.getRegisters().getC() & 0xff);
                 //_SENV
-                //logger.log(Level.TRACE, "_SENV HL:%04x DE:%04x".formatted(z80.getRegisters().getHL(), z80.getRegisters().getDE()));
-                //msg = getAsciiz(z80, (short) z80.getRegisters().getHL());
+                //logger.log(Level.TRACE, "_SENV HL:%04x DE:%04x".formatted(z80.getRegisters().getHL() & 0xffff, z80.getRegisters().getDE() & 0xffff));
+                //msg = getAsciiz(z80, (short) z80.getRegisters().getHL() & 0xffff);
                 //logger.log(Level.TRACE, "(HL)=%s".formatted(msg));
-                //msg = getAsciiz(z80, (short) z80.getRegisters().getDE());
+                //msg = getAsciiz(z80, (short) z80.getRegisters().getDE() & 0xffff);
                 //logger.log(Level.TRACE, "(DE)=%s".formatted(msg));
 
                 z80.getRegisters().setA((byte) 0x00); // Error number
                 break;
             case 0x6f:
-                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x", z80.getRegisters().getC());
+                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x", z80.getRegisters().getC() & 0xff);
                 //_DOSVER
                 z80.getRegisters().setBC((short) 0x0231); // ROM version
                 z80.getRegisters().setDE((short) 0x0210); // DISK version
                 //logger.log(Level.TRACE, "_DOSVER ret BC(ROMVer):%04x DE(DISKVer):%04x".formatted(z80.getRegisters().getBC(), z80.getRegisters().getDE()));
                 break;
             default:
-                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC()));
+                logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC() & 0xff));
                 logger.log(Level.WARNING, "unknown 0x%02x".formatted(function));
                 debugRegisters(z80);
                 break;
@@ -377,11 +395,11 @@ public class MuSICA_K4 extends BaseDriver {
     }
 
     private void readRandomBlock(Z80Processor z80) {
-        short recordSize = (short) ((z80.getMemory().get(FCBAddress + 14) & 0xff) + (z80.getMemory().get(FCBAddress + 15) & 0xff) * 0x100);
-        short randomRecord = (short) ((z80.getMemory().get(FCBAddress + 33) & 0xff)
-                + (z80.getMemory().get(FCBAddress + 34) & 0xff) * 0x100
-                + (z80.getMemory().get(FCBAddress + 35) & 0xff) * 0x1_0000
-                + (recordSize < 64 ? ((z80.getMemory().get(FCBAddress + 36) & 0xff) * 0x100_0000) : 0)
+        short recordSize = (short) ((z80.getMemory().get((FCBAddress & 0xffff) + 14) & 0xff) + (z80.getMemory().get((FCBAddress & 0xffff) + 15) & 0xff) * 0x100);
+        short randomRecord = (short) ((z80.getMemory().get((FCBAddress & 0xffff) + 33) & 0xff) +
+                (z80.getMemory().get((FCBAddress & 0xffff) + 34) & 0xff) * 0x100 +
+                (z80.getMemory().get((FCBAddress & 0xffff) + 35) & 0xff) * 0x1_0000 +
+                ((recordSize & 0xffff) < 64 ? ((z80.getMemory().get((FCBAddress & 0xffff) + 36) & 0xff) * 0x100_0000) : 0)
         );
 
         if (DTAAddress == 0x4000) {
@@ -389,7 +407,7 @@ public class MuSICA_K4 extends BaseDriver {
                 z80.getRegisters().setA((byte) 0xff); // fail
                 z80.getRegisters().setHL((short) 0x00); // The number of records that were read
             } else {
-                z80.getMemory().setContents(DTAAddress, msdBin, recordSize * randomRecord, msdBin.length - recordSize * randomRecord);
+                z80.getMemory().setContents(DTAAddress & 0xffff, msdBin, (recordSize & 0xffff) * (randomRecord & 0xffff), msdBin.length - (recordSize & 0xffff) * (randomRecord & 0xffff));
                 z80.getRegisters().setA((byte) 0x00); // success
                 z80.getRegisters().setHL((short) 0x00); // The number of records that were read
             }
@@ -398,7 +416,7 @@ public class MuSICA_K4 extends BaseDriver {
                 z80.getRegisters().setA((byte) 0xff); // fail
                 z80.getRegisters().setHL((short) 0x00); // The number of records that were read
             } else {
-                z80.getMemory().setContents(DTAAddress, vcdBin, recordSize * randomRecord, vcdBin.length - recordSize * randomRecord);
+                z80.getMemory().setContents(DTAAddress & 0xffff, vcdBin, (recordSize & 0xffff) * (randomRecord & 0xffff), vcdBin.length - (recordSize & 0xffff) * (randomRecord & 0xffff));
                 z80.getRegisters().setA((byte) 0x00); // success
                 z80.getRegisters().setHL((short) 0x00); // The number of records that were read
             }
@@ -419,7 +437,7 @@ public class MuSICA_K4 extends BaseDriver {
         if (consoleBuf.size() <= 0) return;
         String msg = new String(ByteUtil.toByteArray(consoleBuf));
 
-        logger.log(Level.TRACE, "[MuSICA]%s", msg);
+        System.out.printf("[MuSICA]%s", msg);
         consoleBuf.clear();
     }
 
@@ -427,7 +445,7 @@ public class MuSICA_K4 extends BaseDriver {
         var messageAddress = reg;
         var bytesToPrint = new ArrayList<Byte>();
         byte byteToPrint;
-        while ((byteToPrint = z80.getMemory().get(messageAddress)) != 0) {
+        while ((byteToPrint = z80.getMemory().get(messageAddress & 0xffff)) != 0) {
             bytesToPrint.add(byteToPrint);
             messageAddress++;
         }

@@ -98,24 +98,24 @@ public class MucomJava extends BaseDriver {
         chips.add(Unused.class);
 
         // Standard mub files
-        if (buf[0] == 0x4d
-                && buf[1] == 0x55
-                && buf[2] == 0x43
-                && buf[3] == 0x38) {
+        if (buf[0] == 0x4d &&
+                buf[1] == 0x55 &&
+                buf[2] == 0x43 &&
+                buf[3] == 0x38) {
             return chips.toArray(Class[]::new);
         }
         // Standard mub files
-        if (buf[0] == 0x4d
-                && buf[1] == 0x55
-                && buf[2] == 0x42
-                && buf[3] == 0x38) {
+        if (buf[0] == 0x4d &&
+                buf[1] == 0x55 &&
+                buf[2] == 0x42 &&
+                buf[3] == 0x38) {
             return chips.toArray(Class[]::new);
         }
         // Extended mub file?
-        if (buf[0] != 'm'
-                || buf[1] != 'u'
-                || buf[2] != 'P'
-                || buf[3] != 'b') {
+        if (buf[0] != 'm' ||
+                buf[1] != 'u' ||
+                buf[2] != 'P' ||
+                buf[3] != 'b') {
             // Unknown files
 logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
             return null;
@@ -328,22 +328,22 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
             return MUCOMFileType.unknown;
         }
 
-        if (buf[0] == 0x4d
-                && buf[1] == 0x55
-                && buf[2] == 0x43
-                && buf[3] == 0x38) {
+        if (buf[0] == 0x4d &&
+                buf[1] == 0x55 &&
+                buf[2] == 0x43 &&
+                buf[3] == 0x38) {
             return MUCOMFileType.MUB;
         }
-        if (buf[0] == 0x4d
-                && buf[1] == 0x55
-                && buf[2] == 0x42
-                && buf[3] == 0x38) {
+        if (buf[0] == 0x4d &&
+                buf[1] == 0x55 &&
+                buf[2] == 0x42 &&
+                buf[3] == 0x38) {
             return MUCOMFileType.MUB;
         }
-        if (buf[0] == 'm'
-                && buf[1] == 'u'
-                && buf[2] == 'P'
-                && buf[3] == 'b') {
+        if (buf[0] == 'm' &&
+                buf[1] == 'u' &&
+                buf[2] == 'P' &&
+                buf[3] == 'b') {
             return MUCOMFileType.MUB;
         }
 

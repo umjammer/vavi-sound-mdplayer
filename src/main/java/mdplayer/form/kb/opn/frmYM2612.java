@@ -62,8 +62,8 @@ public class frmYM2612 extends frmBase {
         int tp = YM2612Type ? 1 : 0;
         DrawBuff.screenInitYM2612(frameBuffer, tp, (chipId == 0)
                         ? parent.setting.getYM2612Type()[0].getRealChipInfo()[0].getOnlyPCMEmulation()
-                        : parent.setting.getYM2612Type()[1].getRealChipInfo()[0].getOnlyPCMEmulation()
-                , newParam.fileFormat instanceof XGMFileFormat);
+                        : parent.setting.getYM2612Type()[1].getRealChipInfo()[0].getOnlyPCMEmulation(),
+                newParam.fileFormat instanceof XGMFileFormat);
         newParam.channels[5].pcmBuff = 100;
     }
 

@@ -1,6 +1,5 @@
 package mdplayer;
 
-
 import mdplayer.format.FileFormat;
 
 
@@ -18,7 +17,6 @@ public class MDChipParams {
     public int LCmillisecond = -1;
 
     public ChipLEDs chipLED = new ChipLEDs();
-
 
     public static class Channel {
 
@@ -237,11 +235,13 @@ public class MDChipParams {
         public int amd = -1;
         public int waveform = -1;
         public int lfosync = -1;
-        public Channel[] channels = new Channel[] {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
-
+        public Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel()
+        };
     }
 
-    public YM2151[] ym2151 = new YM2151[] {new YM2151(), new YM2151()};
+    public YM2151[] ym2151 = {new YM2151(), new YM2151()};
 
     public static class YM2608 {
         public boolean lfoSw = false;
@@ -254,13 +254,12 @@ public class MDChipParams {
         public int rhythmTotalLevel = -1;
         public int adpcmLevel = -1;
 
-        public Channel[] channels = new Channel[] {
-                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // FM 0
-                , new Channel(), new Channel(), new Channel() // SSG 9
-                , new Channel() // ADPCM 12
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // RHYTHM 13
+        public Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), // FM 0
+                new Channel(), new Channel(), new Channel(), // SSG 9
+                new Channel(), // ADPCM 12
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // RHYTHM 13
         };
-
     }
 
     public YM2608[] ym2608 = new YM2608[] {new YM2608(), new YM2608()};
@@ -272,16 +271,15 @@ public class MDChipParams {
         public int efrq = -1;
         public int etype = -1;
 
-        public Channel[] channels = new Channel[] {
-                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // FM 0
-                , new Channel(), new Channel(), new Channel() // SSG 9
-                , new Channel() // ADPCM 12
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // RHYTHM 13
+        public Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), // FM 0
+                new Channel(), new Channel(), new Channel(), // SSG 9
+                new Channel(), // ADPCM 12
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // RHYTHM 13
         };
-
     }
 
-    public YM2610[] ym2610 = new YM2610[] {new YM2610(), new YM2610()};
+    public YM2610[] ym2610 = {new YM2610(), new YM2610()};
 
     public static class HuC6280 {
         public int mvolL = -1;
@@ -289,28 +287,27 @@ public class MDChipParams {
         public int LfoCtrl = -1;
         public int LfoFrq = -1;
 
-        public Channel[] channels = new Channel[] {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
+        public Channel[] channels = {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
     }
 
-    public HuC6280[] huc6280 = new HuC6280[] {new HuC6280(), new HuC6280()};
+    public HuC6280[] huc6280 = {new HuC6280(), new HuC6280()};
 
     public static class K051649 {
 
-        public Channel[] channels = new Channel[] {new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
+        public Channel[] channels = {new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
     }
 
     public K051649[] k051649 = new K051649[] {new K051649(), new K051649()};
 
     public static class YM2413 {
 
-        public Channel[] channels = new Channel[] {
-                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // FM 9
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Ryhthm 5
+        public Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), // FM 9
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Rhythm 5
         };
-
     }
 
-    public YM2413[] ym2413 = new YM2413[] {new YM2413(), new YM2413()};
+    public YM2413[] ym2413 = {new YM2413(), new YM2413()};
 
     public static class YM2612MIDI {
         public boolean lfoSw = false;
@@ -320,19 +317,19 @@ public class MDChipParams {
         public int selectCh = -1;
         public int selectParam = -1;
 
-        public Channel[] channels = new Channel[] {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
+        public Channel[] channels = {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
 
-        public int[][] noteLog = new int[][] {new int[10], new int[10], new int[10], new int[10], new int[10], new int[10]};
-        public boolean[] useChannel = new boolean[] {false, false, false, false, false, false};
+        public int[][] noteLog = {new int[10], new int[10], new int[10], new int[10], new int[10], new int[10]};
+        public boolean[] useChannel = {false, false, false, false, false, false};
     }
 
     public YM2612MIDI ym2612Midi = new YM2612MIDI();
 
     public static class YM3526 {
-        public Channel[] channels = new Channel[] {
-                new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel() // FM 9
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Ryhthm 5
+        public Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), // FM 9
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Rhythm 5
         };
 
     }
@@ -340,36 +337,36 @@ public class MDChipParams {
     public YM3526[] ym3526 = new YM3526[] {new YM3526(), new YM3526()};
 
     public static class Y8950 {
-        public Channel[] channels = new Channel[] {
-                new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel() // FM 9
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Ryhthm 5
-                , new Channel() // ADPCM
+        public Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), // FM 9
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), // Rhythm 5
+                new Channel() // ADPCM
         };
 
     }
 
-    public Y8950[] y8950 = new Y8950[] {new Y8950(), new Y8950()};
+    public Y8950[] y8950 = {new Y8950(), new Y8950()};
 
     public static class YM3812 {
-        public Channel[] channels = new Channel[] {
-                new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel() // FM 9
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Ryhthm 5
+        public Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), // FM 9
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Rhythm 5
         };
 
     }
 
-    public YM3812[] ym3812 = new YM3812[] {new YM3812(), new YM3812()};
+    public YM3812[] ym3812 = {new YM3812(), new YM3812()};
 
     public static class YMF262 {
 
-        public Channel[] channels = new Channel[] {
-                new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel() // FM 18
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Ryhthm 5
+        public Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), // FM 18
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Rhythm 5
         };
 
     }
@@ -377,47 +374,46 @@ public class MDChipParams {
     public YMF262[] ymf262 = new YMF262[] {new YMF262(), new YMF262()};
 
     public static class YMF271 {
-        public Channel[] channels = new Channel[] {
+        public Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
         };
     }
 
-    public YMF271[] ymf271 = new YMF271[] {new YMF271(), new YMF271()};
+    public YMF271[] ymf271 = {new YMF271(), new YMF271()};
 
     public static class YMF278B {
 
-        public Channel[] channels = new Channel[] {
-                new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel() // FM 18
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // Ryhthm 5
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel() // PCM 24
+        public Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), // FM 18
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), // Rhythm 5
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel() // PCM 24
         };
-
     }
 
-    public YMF278B[] ymf278b = new YMF278B[] {new YMF278B(), new YMF278B()};
+    public YMF278B[] ymf278b = {new YMF278B(), new YMF278B()};
 
-    public MIDIParam[] midi = new MIDIParam[] {new MIDIParam(), new MIDIParam()};
+    public MIDIParam[] midi = {new MIDIParam(), new MIDIParam()};
 
     public static class NESDMC {
-        public Channel[] sqrChannels = new Channel[] {new Channel(), new Channel()};
+        public Channel[] sqrChannels = {new Channel(), new Channel()};
         public Channel triChannel = new Channel();
         public Channel noiseChannel = new Channel();
         public Channel dmcChannel = new Channel();
     }
 
-    public NESDMC[] nesdmc = new NESDMC[] {new NESDMC(), new NESDMC()};
+    public NESDMC[] nesdmc = {new NESDMC(), new NESDMC()};
 
     public static class FDS {
         public Channel channel = new Channel();
@@ -446,52 +442,51 @@ public class MDChipParams {
         public boolean WE = false;
     }
 
-    public FDS[] fds = new FDS[] {new FDS(), new FDS()};
+    public FDS[] fds = {new FDS(), new FDS()};
 
     public static class MMC5 {
-        public Channel[] sqrChannels = new Channel[] {new Channel(), new Channel()};
+        public Channel[] sqrChannels = {new Channel(), new Channel()};
         public Channel pcmChannel = new Channel();
     }
 
-    public MMC5[] mmc5 = new MMC5[] {new MMC5(), new MMC5()};
+    public MMC5[] mmc5 = {new MMC5(), new MMC5()};
 
     public static class VRC6 {
 
-        public Channel[] channels = new Channel[] {
+        public Channel[] channels = {
                 new Channel(), new Channel(), new Channel()
         };
-
     }
 
-    public VRC6[] vrc6 = new VRC6[] {new VRC6(), new VRC6()};
+    public VRC6[] vrc6 = {new VRC6(), new VRC6()};
 
     public static class VRC7 {
 
-        public Channel[] channels = new Channel[] {
+        public Channel[] channels = {
                 new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel() // FM 6
         };
-
     }
 
-    public VRC7[] vrc7 = new VRC7[] {new VRC7(), new VRC7()};
+    public VRC7[] vrc7 = {new VRC7(), new VRC7()};
 
     public static class N106 {
 
-        public Channel[] channels = new Channel[] {
+        public Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(),
                 new Channel(), new Channel(), new Channel(), new Channel()
-                , new Channel(), new Channel(), new Channel(), new Channel()
         };
-
     }
 
-    public N106[] n106 = new N106[] {new N106(), new N106()};
+    public N106[] n106 = {new N106(), new N106()};
 
     public static class PPZ8 {
-        public Channel[] channels = new Channel[] {new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel(), new Channel()};
+        public Channel[] channels = {
+                new Channel(), new Channel(), new Channel(), new Channel(),
+                new Channel(), new Channel(), new Channel(), new Channel()
+        };
     }
 
-    public PPZ8[] ppz8 = new PPZ8[] {new PPZ8(), new PPZ8()};
-
+    public PPZ8[] ppz8 = {new PPZ8(), new PPZ8()};
 
     public static class Mixer {
         public static class VolumeInfo {

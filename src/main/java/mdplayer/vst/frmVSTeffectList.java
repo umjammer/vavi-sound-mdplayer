@@ -249,7 +249,7 @@ public class frmVSTeffectList extends JFrame {
 //        this.dgvList.CellBorderStyle = JListCellBorderStyle.None;
 //        JListCellStyle1.Alignment = JListContentAlignment.MiddleLeft;
         JListCellStyle1.setBackground(Color.black);
-//        JListCellStyle1.setFont(new Font("メイリオ", 8.25F, Font.PLAIN, ((byte) (128))));
+//        JListCellStyle1.setFont(new Font("Meyryo", 8.25F, Font.PLAIN, ((byte) (128))));
 //        JListCellStyle1.ForeColor = Color.MenuHighlight;
 //        JListCellStyle1.SelectionColor.setBackground(Color.Highlight);
 //        JListCellStyle1.SelectionForeColor = Color.HighlightText;
@@ -272,7 +272,7 @@ public class frmVSTeffectList extends JFrame {
 //        this.dgvList.RowHeadersBorderStyle = JListHeaderBorderStyle.None;
 //        JListCellStyle3.Alignment = JListContentAlignment.MiddleLeft;
         JListCellStyle3.setBackground(Color.black);
-//        JListCellStyle3.setFont(new Font("メイリオ", Font.BOLD, 8.25F));
+//        JListCellStyle3.setFont(new Font("Meyryo", Font.BOLD, 8.25F));
 //        JListCellStyle3.ForeColor = Color.Window;
 //        JListCellStyle3.SelectionColor(Color.Highlight);
 //        JListCellStyle3.SelectionForeColor = Color.HighlightText;
@@ -280,7 +280,7 @@ public class frmVSTeffectList extends JFrame {
 //        this.dgvList.RowHeadersDefaultCellStyle = JListCellStyle3;
 //        this.dgvList.RowHeadersVisible = false;
         JListCellStyle4.setBackground(Color.black);
-//        JListCellStyle4.setFont(new Font("メイリオ", 8.25F, Font.BOLD, ((byte) (128))));
+//        JListCellStyle4.setFont(new Font("Meyryo", 8.25F, Font.BOLD, ((byte) (128))));
 //        JListCellStyle4.ForeColor = new Color(((byte) (192)), ((byte) (192)), ((byte) (255)));
 //        this.dgvList.RowsDefaultCellStyle = JListCellStyle4;
 //        this.dgvList.RowTemplate.DefaultCellStyle.Alignment = JListContentAlignment.MiddleLeft;

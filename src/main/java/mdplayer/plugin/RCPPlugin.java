@@ -25,12 +25,12 @@ public class RCPPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new RCP();
-        ((RCP) audio.driverVirtual).ExtendFile = extendFile;
+        ((RCP) audio.driverVirtual).extendFile = extendFiles;
         audio.driverReal = null;
-        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new RCP();
-            ((RCP) audio.driverReal).ExtendFile = extendFile;
-        }
+//        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
+//            audio.driverReal = new RCP();
+//            ((RCP) audio.driverReal).extendFile = extendFiles;
+//        }
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
@@ -49,7 +49,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
         audio.chipRegister.plugin(MidiPlugin.class).releaseAll();
         audio.chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
-        audio.chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
+//        audio.chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
 
         if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,

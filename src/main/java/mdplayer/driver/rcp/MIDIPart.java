@@ -33,7 +33,7 @@ public class MIDIPart implements Serializable {
         afterIndex = value;
     }
 
-    Integer getAfterIndex() {
+    public Integer getAfterIndex() {
         return afterIndex;
     }
 
@@ -57,7 +57,7 @@ public class MIDIPart implements Serializable {
         startTick = value;
     }
 
-    int getStartTick() {
+    public int getStartTick() {
         return startTick;
     }
 
@@ -68,7 +68,7 @@ public class MIDIPart implements Serializable {
         events = value;
     }
 
-    List<MIDIEvent> getEvents() {
+    public List<MIDIEvent> getEvents() {
         return events;
     }
 
@@ -95,7 +95,7 @@ public class MIDIPart implements Serializable {
         eStartIndex = value;
     }
 
-    Integer getEStartIndex() {
+    public Integer getEStartIndex() {
         return eStartIndex;
     }
 
@@ -117,7 +117,7 @@ public class MIDIPart implements Serializable {
         eNowIndex = value;
     }
 
-    Integer getENowIndex() {
+    public Integer getENowIndex() {
         return eNowIndex;
     }
 

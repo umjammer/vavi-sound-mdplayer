@@ -12,9 +12,11 @@ import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.mndrv.MnDrv;
+import mdplayer.driver.zms.Zms;
 import mdplayer.format.FileFormat;
 import mdsound.Instrument;
 import mdsound.MDSound;
+import mdsound.instrument.MPcmPPInst;
 import mdsound.instrument.X68kMPcmInst;
 import mdsound.instrument.Ym2608Inst;
 
@@ -23,7 +25,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * MNDPlugin.
+ * MNDRV (X68000) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
@@ -36,11 +38,11 @@ public class MNDPlugin extends BasePlugin {
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new MnDrv();
 
-        ((MnDrv) audio.driverVirtual).extendFile = extendFile;
+        ((MnDrv) audio.driverVirtual).extendFile = extendFiles;
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             audio.driverReal = new MnDrv();
-            ((MnDrv) audio.driverReal).extendFile = extendFile;
+            ((MnDrv) audio.driverReal).extendFile = extendFiles;
         }
         boolean r = _play();
         if (!r) {
@@ -60,9 +62,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
         MDSound.Chip chip = new MDSound.Chip();
         chip.id = 0;
         chip.instrument = audio.chipRegister.chip(Ym2151Chip.class).instrument(0);
-        chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
         chip.clock = 4000000;
+        chip.samplingRate = chip.clock / 64;
         chip.option = null;
         put(Ym2151Chip.class, chip);
 
@@ -97,15 +99,33 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.chipRegister.chip(Ym2608Chip.class).clock = 8000000;
         }
 
-        X68kMPcmInst mpcm = Instrument.getInstrument(X68kMPcmInst.class);
-        chip = new MDSound.Chip();
-        chip.id = 0;
-        chip.instrument = mpcm;
-        chip.samplingRate = setting.getOutputDevice().getSampleRate();
-        chip.volume = setting.getBalance().getVolume(MAIN_TAG, OkiM6258Chip.class);
-        chip.clock = 15600;
-        chip.option = new Object[] {Common.getApplicationFolder()};
-        put(OkiM6258Chip.class, chip);
+        if (setting.getMnDrv().mpcmType == 0) {
+            X68kMPcmInst mpcm = Instrument.getInstrument(X68kMPcmInst.class);
+            chip = new MDSound.Chip();
+            chip.id = 0;
+            chip.instrument = mpcm;
+            chip.samplingRate = (int) setting.getOutputDevice().getSampleRate();
+            chip.clock = 15600;
+            chip.volume = 0;
+            chip.option = null;
+            //audio.chipLED.put("PriMPCM", 1);
+            put(OkiM6258Chip.class, chip); // not use mds, via driver direct
+            ((Zms) audio.driverVirtual).mpcm = mpcm;
+            ((Zms) audio.driverVirtual).mpcmType = 0;
+        } else {
+            MPcmPPInst mpcmpp = Instrument.getInstrument(MPcmPPInst.class);
+            chip = new MDSound.Chip();
+            chip.id = 0;
+            chip.instrument = mpcmpp;
+            chip.samplingRate = (int) setting.getOutputDevice().getSampleRate();
+            chip.clock = 15600;
+            chip.volume = 0;
+            chip.option = null;
+            //audio.chipLED.put("PriMPCM", 1);
+            put(OkiM6258Chip.class, chip); // not use mds, via driver direct
+            ((Zms) audio.driverVirtual).mpcmpp = mpcmpp;
+            ((Zms) audio.driverVirtual).mpcmType = 1;
+        }
 
         audio.chipLED.put("PriOPM", 1);
         audio.chipLED.put("PriOPNA", 1);
@@ -182,8 +202,6 @@ logger.log(Level.WARNING, "cannot start: " + this);
             audio.errMsg = !audio.driverVirtual.errMsg.isEmpty() ? audio.driverVirtual.errMsg : (audio.driverReal != null ? audio.driverReal.errMsg : "");
             return false;
         }
-
-        ((MnDrv) audio.driverVirtual).mpcm = mpcm;
 
         return true;
     }

@@ -49,6 +49,8 @@ public class Ym2151Chip implements Chip {
 
     public boolean[] getUse4MYM2151scci() { return use4MYM2151scci; };
 
+    public int[] hosei = new int[] { 0, 0 };
+
     private Audio context;
 
     @Override

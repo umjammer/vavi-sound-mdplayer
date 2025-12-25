@@ -9,7 +9,7 @@ public class MsxVdp {
     private boolean adrCounterSet = false;
     private int adrCounter = 0;
     private boolean adrCounterIsWrite = false;
-    private final byte[] memory = new byte[0x2_00_00];
+    private final byte[] memory = new byte[0x2_0000];
 
     public byte m = 0;
     public byte n = 0;
@@ -17,14 +17,14 @@ public class MsxVdp {
     public MsxVdp() {
     }
 
-    public byte Read(int address) {
+    public byte read(int address) {
 
         byte value = 0;
 
         switch (address) {
             case 0:
                 if (!adrCounterIsWrite) {
-                    //logger.log(Level.TRACE, "VDP.Read:memory[{0:X05}]=Val:{1:X02}", adrCounter, memory[adrCounter]);
+                    //logger.log(Level.TRACE, "VDP.Read:memory[%05x]=Val:%02x".formatted(adrCounter, memory[adrCounter]));
                     value = memory[adrCounter++];
                 }
                 break;
@@ -34,17 +34,17 @@ public class MsxVdp {
                 throw new UnsupportedOperationException();
         }
 
-        //logger.log(Level.TRACE, "VDP.Read:Port:{0:X} Val:{1:X02}", address, value);
+        //logger.log(Level.TRACE, "VDP.Read:Port:%x Val:%02x".formatted(address, value));
         return value;
     }
 
     public void write(int address, byte value) {
-        //logger.log(Level.TRACE, "VDP.Write:Port:{0:X} Val:{1:X02}", address, value);
+        //logger.log(Level.TRACE, "VDP.Write:Port:%x Val:%02x".formatted(address, value));
 
         switch (address) {
             case 0:
                 if (adrCounterIsWrite) {
-                    //logger.log(Level.TRACE, "VDP.Write:memory[{0:X05}]=Val:{1:X02}", adrCounter, value);
+                    //logger.log(Level.TRACE, "VDP.Write:memory[%05x]=Val:%02x".formatted(adrCounter, value));
                     memory[adrCounter++] = value;
                 }
                 break;
@@ -63,7 +63,7 @@ public class MsxVdp {
                     } else if ((value & 0x80) == 0x00) {
                         if (adrCounterSet) {
                             adrCounter &= 0x1_ff_00;
-                            adrCounter |= port1Data;
+                            adrCounter |= port1Data & 0xff;
 
                             adrCounterIsWrite = (value & 0x40) != 0;
                             adrCounter &= 0x1_c0_ff;
@@ -80,6 +80,5 @@ public class MsxVdp {
             case 3:
                 throw new UnsupportedOperationException();
         }
-
     }
 }

@@ -32,9 +32,9 @@ public class FMP extends BaseDriver {
 
     private static final Logger logger = getLogger(FMP.class.getName());
 
-    public static final int baseclock = 7987200;
+    public static final int baseClock = 7987200;
     private int step = 0;
-    private Nise98 nise98 = new Nise98();
+    private final Nise98 nise98 = new Nise98();
     private Register286 regs;
     private String searchPath = "";
     private List<String> searchPaths = null;
@@ -77,7 +77,7 @@ public class FMP extends BaseDriver {
         return ret;
     }
 
-    public void SetSearchPath(String searchPath) {
+    public void setSearchPath(String searchPath) {
         try {
             this.searchPath = searchPath;
             // Get the environment variable "PVI"
@@ -91,7 +91,7 @@ public class FMP extends BaseDriver {
             searchPaths = Arrays.stream(this.searchPath.split(";"))
                     .filter(path -> !StringUtilities.isNullOrEmpty(path)).toList();
             for (String path : searchPaths)
-                logger.log(Level.INFO, "Search Path:{0}", path);
+                logger.log(Level.INFO, "Search Path:%s".formatted(path));
         } catch (Exception e) {
             this.searchPath = searchPath;
         }
@@ -109,6 +109,7 @@ public class FMP extends BaseDriver {
         try {
             run(vgmBuf);
         } catch (Exception e) {
+logger.log(Level.ERROR, e.getMessage(), e);
             return false;
         }
 
@@ -130,31 +131,31 @@ public class FMP extends BaseDriver {
                 if (vgmFrameCounter > -1) {
                     counter++;
 
-                    nise98.Runtimer();
-                    if (!nise98.IntTimer()) continue;
-                    regs.setSS((short) 0xE000);
+                    nise98.runTimer();
+                    if (!nise98.intTimer()) continue;
+                    regs.setSS((short) 0xe000);
                     regs.setSP((short) 0x0000);
-                    nise98.CallRunfunctionCall((byte) 0x14);
+                    nise98.callRunFunctionCall((byte) 0x14);
 
                     // Performance Check
                     regs.setAX((short) 0x0004);
-                    regs.setSS((short) 0xE000);
+                    regs.setSS((short) 0xe000);
                     regs.setSP((short) 0x0000);
-                    nise98.CallRunfunctionCall((byte) 0xd2);
+                    nise98.callRunFunctionCall((byte) 0xd2);
                     if (regs.getAX() == 0)
                         stopped = true;
 
                     // Get the internal work address and check the number of times the song has looped
                     regs.setAX((short) 0x1104);
-                    regs.setSS((short) 0xE000);
+                    regs.setSS((short) 0xe000);
                     regs.setSP((short) 0x0000);
-                    nise98.CallRunfunctionCall((byte) 0xd2);
-                    int ptr = ((short) 0x2000 << 4) + (short) regs.getAX();
-                    int FmpSloop_c = nise98.GetMem().PeekB(ptr + 0x17);
-                    int pcmuse = nise98.GetMem().peekW(ptr + 0x20);
-                    if ((pcmuse & 0xff00) != 0) {
+                    nise98.callRunFunctionCall((byte) 0xd2);
+                    int ptr = (0x2000 << 4) + (regs.getAX() & 0xffff);
+                    int fmpSloop_c = nise98.getMem().peekB(ptr + 0x17) & 0xff;
+                    int pcmUse = nise98.getMem().peekW(ptr + 0x20) & 0xffff;
+                    if ((pcmUse & 0xff00) != 0) {
                     }
-                    vgmCurLoop = (int) FmpSloop_c;
+                    vgmCurLoop = fmpSloop_c;
                 }
                 vgmFrameCounter++;
             }
@@ -168,100 +169,102 @@ public class FMP extends BaseDriver {
     private void run(byte[] vgmBuf) {
         //var fileNameFMP = "FMP.COM";
         //var fileNamePPZ8 = "PPZ8.COM";
-        Path crntDir = Path.of(System.getProperty("user.dir"));
+        Path crntDir = Path.of(System.getProperty("mdplayer.fmp.dir", System.getProperty("user.dir")));
         Path fileNameFMP = crntDir.resolve("FMP.COM");
-        logger.log(Level.WARNING, fileNameFMP);
-        nise98.Init(null, this::OPNAWrite, ft, OngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
-        nise98.GetDos().setArcFile(playingArcFileName);
-        nise98.GetDos().setSearchPath(searchPaths);
+        logger.log(Level.DEBUG, fileNameFMP);
+        nise98.init(null, this::opnaWrite, ft, OngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.getDos().setArcFile(playingArcFileName);
+        nise98.getDos().setSearchPath(searchPaths);
 
-        //FMPの常駐
+        // FMP Residency
         //nise98.LoadRun(fileNameFMP, "s -s", 0x2000); // , true, true, true, 3_000_000, 108213); // 108213->wait Loop exit
-        //Log.level = musicDriverInterface.LogLevel.TRACE;
-        //musicDriverInterface.Log.writeMethod = logWrite;
-        nise98.LoadRun(fileNameFMP.toString(), "s -s -#42", 0x2000); //, true, true, true, 3_000_000, 0);// 108213->wait Loop exit
+        int r = nise98.loadRun(fileNameFMP.toString(), "s -s -#42", 0x2000); //, true, true, true, 3_000_000, 0);// 108213->wait Loop exit
+        if (r != 0) {
+            throw new IllegalStateException("exec " + fileNameFMP + " returns " + r);
+        }
         regs = nise98.getRegisters();
 
-        //nisePPZ8の常駐
+        // nisePPZ8 resident
         step = 0;
-        Memory98 mem = nise98.GetMem();
+        Memory98 mem = nise98.getMem();
         int[] tmp1 = new int[] {step};
         Register286[] tmp2 = new Register286[1];
-        nise98.GetPPZ8().FMPRegistPPZ8(/* out */ tmp1, /* out */ tmp2);
+        nise98.getPPZ8().fmpRegisterPPZ8(/* out */ tmp1, /* out */ tmp2);
         step = tmp1[0];
         regs = tmp2[0];
-        nise98.GetPPZ8().SetCallBack(this::setPPZ8PCMData, this::setPPZ8Data);
+        nise98.getPPZ8().setCallBack(this::setPPZ8PCMData, this::setPPZ8Data);
 
-        //Song data loading and playback start notification
+        // Song data loading and playback start notification
         //
-        //Log.level = musicDriverInterface.LogLevel.TRACE;
-        //musicDriverInterface.Log.writeMethod = logWrite;
-        FMPLoadAndPlayFileAL2(nise98.GetDos(), regs);
+        fmpLoadAndPlayFileAL2(nise98.getDos(), regs);
     }
 
-    private void setPPZ8PCMData(int bank, int mode, byte[][] pcmdata) {
-        plugin.audio.chipRegister.chip(Ppz8Chip.class).writePcm(0, (byte) bank, (byte) mode, pcmdata, model);
+    private void setPPZ8PCMData(int bank, int mode, byte[][] pcmData) {
+        plugin.audio.chipRegister.chip(Ppz8Chip.class).writePcm(0, bank, mode, pcmData, model);
     }
 
     private void setPPZ8Data(int port, int adr, int data) {
         plugin.audio.chipRegister.chip(Ppz8Chip.class).write(0, port, adr, data, model);
     }
 
-    private void OPNAWrite(ChipDatum dat) {
+    private void opnaWrite(ChipDatum dat) {
         byte cn = (byte) (dat.port >> 8);
-        byte port = (byte) ((byte) dat.port == 0x8a ? 0 : 1);
-        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, port, (byte) dat.address, (byte) dat.data, model);
+        int port = (dat.port & 0xff) == 0x8a ? 0 : 1;
+        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, port, dat.address, dat.data, model);
 
-        if (port == 1 && (byte) dat.address == 0x8 && model == EnmModel.RealModel) {
+        if (port == 1 && dat.address == 0x8 && model == EnmModel.RealModel) {
             this.isDataBlock = true;
             pcmDataSendCount++;
             plugin.audio.chipRegister.chip(Ym2608Chip.class).setSyncWait(0, 1);
         }
     }
 
-    private void FMPLoadAndPlayFileAL2(NiseDos dos, Register286 regs) {
+    private void fmpLoadAndPlayFileAL2(NiseDos dos, Register286 regs) {
         byte[] m = Path.of(playingFileName).getFileName().toString().getBytes(charset);
         dos.setPath(Path.of(playingFileName).getParent());
-        dos.loadImage(m, (0x5000 << 4) + 0x000);
+        dos.loadImage(m, (0x5000 << 4) + 0x0000);
 
         step = 0;
-        regs.setAL((short) 0x02);
+        regs.setAL((byte) 0x02);
         regs.setDS((short) 0x5000);
         regs.setDX((short) 0x0000);
-        regs.setSS((short) 0xE000);
+        regs.setSS((short) 0xe000);
         regs.setSP((short) 0x0000);
-        nise98.CallRunfunctionCall((byte) 0xd2, true, true, true, 10_000_000_000L, 0_000);
+        nise98.callRunFunctionCall((byte) 0xd2, true, true, true, 10_000_000_000L, 0_000);
 
         if (pcmDataSendCount != 0) {
             this.isDataBlock = true;
             // Add additional weight based on size and elapsed time.
             try {
-                Thread.sleep(Math.max((int) (pcmDataSendCount / 20), 0));
+                Thread.sleep(Math.max(pcmDataSendCount / 20, 0));
             } catch (InterruptedException ignore) {
             }
             this.isDataBlock = false;
             pcmDataSendCount = 0;
         }
 
-        logger.log(Level.DEBUG, "return CF=%d code=%02x", regs.getCF(), regs.getAL());
+        logger.log(Level.DEBUG, "return CF=%s code=%02x", regs.isCF(), regs.getAL() & 0xff);
     }
 
-    public boolean Compile(String playingFileName) {
+    public boolean compile(String playingFileName) {
         var fileNameFMP = "FMP.COM";
         var fileNameFMC = "FMC.EXE";
         int rc = 0;
 
-        nise98.Init(null, this::OPNAWrite, ft, OngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
+        nise98.init(null, this::opnaWrite, ft, OngenBoardType.SpeakBoard); // .PC9801_86B); // .SpeakBoard); // .PC9801_26K);
 
         // FMP resident
-        nise98.LoadRun(fileNameFMP, "s -s", 0x2000);
+        nise98.loadRun(fileNameFMP, "s -s", 0x2000);
         regs = nise98.getRegisters();
 
         // Running FMC
-        nise98.GetDos().setProgramTerminate(false);
-        if ((rc = nise98.LoadRun(fileNameFMC, playingFileName, 0x3000
+        nise98.getDos().setProgramTerminate(false);
+        if ((rc = nise98.loadRun(fileNameFMC, playingFileName, 0x3000
                 //, true, true, true, 3_000_000, 0
-        )) != 0) return false;
+        )) != 0) {
+            logger.log(Level.DEBUG, "return %d", rc);
+            return false;
+        }
 
         return true;
     }

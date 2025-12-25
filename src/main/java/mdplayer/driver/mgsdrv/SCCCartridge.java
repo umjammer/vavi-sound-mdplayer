@@ -40,29 +40,29 @@ public class SCCCartridge implements Cartridge {
                 byte scc1Offset = (byte) address;
                 byte rDat = data;
                 byte scc1ChipId = 0;
-                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x00, scc1Offset, model);
-                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x01, rDat, model);
+                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x00, scc1Offset & 0xff, model);
+                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x01, rDat & 0xff, model);
             } else if (address < 0x988a) {
                 int scc1Port = 1;
                 byte scc1Offset = (byte) (address - 0x9880);
                 byte rDat = data;
                 byte scc1ChipId = 0;
-                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x00, scc1Offset, model);
-                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x01, rDat, model);
+                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x00, scc1Offset & 0xff, model);
+                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x01, rDat & 0xff, model);
             } else if (address < 0x988f) {
                 int scc1Port = 2;
                 byte scc1Offset = (byte) (address - 0x988a);
                 byte rDat = data;
                 byte scc1ChipId = 0;
-                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x00, scc1Offset, model);
-                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x01, rDat, model);
+                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x00, scc1Offset & 0xff, model);
+                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x01, rDat & 0xff, model);
             } else if (address == 0x988f) {
                 int scc1Port = 3;
                 byte scc1Offset = (byte) (address - 0x988f);
                 byte rDat = data;
                 byte scc1ChipId = 0;
-                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x00, scc1Offset, model);
-                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x01, rDat, model);
+                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x00, scc1Offset & 0xff, model);
+                chipRegister.chip(K051649Chip.class).write(scc1ChipId, (scc1Port << 1) | 0x01, rDat & 0xff, model);
             }
         }
 

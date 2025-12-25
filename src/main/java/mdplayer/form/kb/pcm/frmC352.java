@@ -170,7 +170,8 @@ public class frmC352 extends frmBase {
                     //8000.0
                     //Tables.pcmMulTbl[i % 12 + 12]
                     //Math.pow(2, (i / 12 - 3 + 2))
-                    / clock;
+                    /
+                    clock;
 
             if (freq > a) {
                 m = a;
@@ -250,8 +251,8 @@ public class frmC352 extends frmBase {
             DrawBuff.VolumeXY(frameBuffer, 115, ch * 2 + 2, 1, oyc.volumeRL, nyc.volumeRL, 0);//Rear
             DrawBuff.VolumeXY(frameBuffer, 115, ch * 2 + 3, 1, oyc.volumeRR, nyc.volumeRR, 0);//Rear
             for (int b = 0; b < 16; b++) {
-                DrawBuff.drawNESSw(frameBuffer, 64 * 4 + b * 4, ch * 8 + 8
-                        , oldParam.channels[ch].bit[b], newParam.channels[ch].bit[b]);
+                DrawBuff.drawNESSw(frameBuffer, 64 * 4 + b * 4, ch * 8 + 8,
+                        oldParam.channels[ch].bit[b], newParam.channels[ch].bit[b]);
             }
             DrawBuff.font4Hex16Bit(frameBuffer, 4 * 81, ch * 8 + 8, 0, oyc.freq, nyc.freq);
             DrawBuff.font4Hex16Bit(frameBuffer, 4 * 86, ch * 8 + 8, 0, oyc.bank, nyc.bank);
