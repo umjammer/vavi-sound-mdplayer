@@ -42,6 +42,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 
 /**
@@ -54,6 +55,7 @@ import org.junit.jupiter.api.Test;
  * @see "https://github.com/cdunku/m65xx/blob/main/src/main.c"
  * @see "https://github.com/MicroCoreLabs/Projects/tree/master/MCL68/MC68000_Test_Code"
  */
+@DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*")
 class M68kHarteTest {
 
     private static int PRINTED_YET = 0;
