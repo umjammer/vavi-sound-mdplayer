@@ -143,7 +143,7 @@ public class Register286 {
     }
 
     public void addDI(int value) {
-        eRegs[7] += value;
+        eRegs[7] = (short) (eRegs[7] + value);
     }
 
     public void setDI(short value) {
