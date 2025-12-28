@@ -119,7 +119,7 @@ public class NiseM68 {
             case 2: // long
                 return coril(n);
         }
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(Integer.toHexString(size));
     }
 
     private int corib(short n) {

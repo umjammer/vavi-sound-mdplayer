@@ -52,6 +52,9 @@ public class TestCase {
     String fmpDir;
 
     @Property
+    String zmsDir;
+
+    @Property
     String dir;
 
     @Property
@@ -67,9 +70,13 @@ public class TestCase {
         }
 
         System.setProperty("mdplayer.fmp.dir", fmpDir);
+        // zms
+        System.setProperty("mdplayer.zms.dir", zmsDir);
+        System.setProperty("mdplayer.zms.dir", zmsDir);
         System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
 Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("mdplayer.volume") + ", cwd: " + System.getProperty("user.dir") + ", time: " + time);
-Debug.println("ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
+Debug.println("mdplayer.fmp.dir: " + System.getProperty("mdplayer.fmp.dir"));
+Debug.println("mdplayer.zms.dir: " + System.getProperty("mdplayer.zms.dir"));
     }
 
     private BasePlugin plugin;

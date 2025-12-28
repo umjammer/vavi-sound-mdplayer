@@ -39,15 +39,21 @@ import static mdplayer.Common.charset;
 
 
 /**
- * env
- * <li>"zmusic_ZPD" ...  </li>
+ * <pre>
+ *               | source | compiled
+ * --------------+--------+----------
+ * play data	 |  ZMS   |   ZMD
+ * sampling data |  CNF   |   ZPD
+ * </pre>
+ * system property
+ * <li>"mdplayer.zms.zpd" ...  </li>
  */
 public class Zms extends BaseDriver {
 
     private static final Logger logger = getLogger(Zms.class.getName());
 
     private Nise68 nise68;
-    private FileMng fileMng;
+    private FileMng fileMng = new FileMng(System.setProperty("mdplayer.zms.dir", System.getProperty("user.dir")), "C:");
     public X68kMPcmInst mpcm;
     public MPcmPPInst mpcmpp;
     public int mpcmType = 0;
@@ -679,27 +685,27 @@ public class Zms extends BaseDriver {
                 break;
             case 0x0300:
                 //logger.log(Level.TRACE, "MPCM #M_SET_FRQ($%04x) D1$%08x".formatted(n, nise68.reg.GetDl(1)));
-                if (mpcmType == 0) if (mpcm != null) mpcm.setFreq(0, ch, (int) nise68.reg.getDl(1));
-                else if (mpcmpp != null) mpcmpp.setFreq(0, ch, (int) nise68.reg.getDl(1));
+                if (mpcmType == 0) if (mpcm != null) mpcm.setFreq(0, ch, nise68.reg.getDl(1) & 0xff);
+                else if (mpcmpp != null) mpcmpp.setFreq(0, ch, nise68.reg.getDl(1) & 0xff);
                 mpcmSt[ch].frq = (int) nise68.reg.getDl(1);
                 break;
             case 0x0400:
                 //logger.log(Level.TRACE, "MPCM #M_SET_PITCH($%04x) D1$%04x".formatted(n, nise68.reg.GetDl(1)));
-                if (mpcmType == 0) if (mpcm != null) mpcm.setPitch(0, ch, (int) nise68.reg.getDl(1));
-                else if (mpcmpp != null) mpcmpp.setPitch(0, ch, (int) nise68.reg.getDl(1));
+                if (mpcmType == 0) if (mpcm != null) mpcm.setPitch(0, ch, nise68.reg.getDl(1) & 0xff);
+                else if (mpcmpp != null) mpcmpp.setPitch(0, ch, nise68.reg.getDl(1) & 0xff);
                 mpcmSt[ch].pitch = (int) nise68.reg.getDl(1);
                 break;
             case 0x0500:
                 //logger.log(Level.TRACE, "MPCM #M_SET_VOL($%04x) = $%02x".formatted(n, nise68.reg.GetDb(1)));
-                if (mpcmType == 0) if (mpcm != null) mpcm.setVol(0, ch, (int) nise68.reg.getDb(1));
-                else if (mpcmpp != null) mpcmpp.setVol(0, ch, (int) nise68.reg.getDb(1));
-                mpcmSt[n & 0xf].volume = (int) nise68.reg.getDb(1);
+                if (mpcmType == 0) if (mpcm != null) mpcm.setVol(0, ch, nise68.reg.getDb(1) & 0xff);
+                else if (mpcmpp != null) mpcmpp.setVol(0, ch, nise68.reg.getDb(1) & 0xff);
+                mpcmSt[n & 0xf].volume = nise68.reg.getDb(1) & 0xff;
                 break;
             case 0x0600:
                 //logger.log(Level.TRACE, "MPCM #M_SET_PAN($%04x) = $%02x".formatted(n, nise68.reg.GetDb(1)));
-                if (mpcmType == 0) if (mpcm != null) mpcm.setPan(0, ch, (int) nise68.reg.getDb(1));
-                else if (mpcmpp != null) mpcmpp.setPan(0, ch, (int) nise68.reg.getDb(1));
-                mpcmSt[n & 0xf].pan = (int) nise68.reg.getDb(1);
+                if (mpcmType == 0) if (mpcm != null) mpcm.setPan(0, ch, nise68.reg.getDb(1) & 0xff);
+                else if (mpcmpp != null) mpcmpp.setPan(0, ch, nise68.reg.getDb(1) & 0xff);
+                mpcmSt[n & 0xf].pan = nise68.reg.getDb(1) & 0xff;
                 break;
             case 0x8000: //
                 switch (n & 0x000f) {
@@ -715,9 +721,9 @@ public class Zms extends BaseDriver {
                         //logger.log(Level.TRACE, "MPCM #M_SET_VOLTBL($%04x)".formatted(n));
                         int[] vtbl = new int[128];
                         for (int i = 0; i < 128; i++) {
-                            vtbl[i] = (int) (nise68.mem.peekW((int) (nise68.reg.getAl(1) + (i * 2))));
+                            vtbl[i] = nise68.mem.peekW(nise68.reg.getAl(1) + (i * 2)) & 0xffff;
                         }
-                        if (mpcmType == 0) if (mpcm != null) mpcm.setVolTableZms(0, (int) nise68.reg.getDl(1), vtbl);
+                        if (mpcmType == 0) if (mpcm != null) mpcm.setVolTableZms(0, nise68.reg.getDl(1), vtbl);
                         else if (mpcmpp != null) mpcmpp.setVolTableZms(0, (int) nise68.reg.getDl(1), vtbl);
                         break;
                 }
@@ -808,7 +814,7 @@ public class Zms extends BaseDriver {
             // Get the environment variable "ZPD"
             String envZPD = "";
             try {
-                envZPD = System.getenv("zmusic_ZPD");
+                envZPD = System.getProperty("mdplayer.zms.zpd");
             } catch (Exception e) {
             }
             if (envZPD != null && !envZPD.isEmpty()) {
