@@ -57,6 +57,9 @@ public class TestCase {
     @Property
     String ext;
 
+    static boolean onIde = System.getProperty("vavi.test", "").equals("ide");
+    static long time = onIde ? 1000 * 1000 : 10 * 1000;
+
     @BeforeEach
     void setup() throws Exception {
         if (localPropertiesExists()) {
@@ -65,7 +68,8 @@ public class TestCase {
 
         System.setProperty("mdplayer.fmp.dir", fmpDir);
         System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
-Debug.println("volume: " + volume + ", " + System.getProperty("mdplayer.volume") + ", " + System.getProperty("user.dir") + ", " + System.getProperty("mdplayer.variant.ymf262"));
+Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("mdplayer.volume") + ", cwd: " + System.getProperty("user.dir") + ", time: " + time);
+Debug.println("ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
     }
 
     private BasePlugin plugin;
@@ -89,7 +93,12 @@ Debug.println("plugin: " +plugin.getClass().getSimpleName());
         play();
 
         CountDownLatch cdl = new CountDownLatch(1);
+if (!onIde) {
+ Thread.sleep(time);
+Debug.println("not on ide");
+} else {
         cdl.await();
+}
     }
 
     @Test
