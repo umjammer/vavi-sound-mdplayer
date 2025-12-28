@@ -243,7 +243,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
             pcmDataSendCount = 0;
         }
 
-        logger.log(Level.DEBUG, "return CF=%s code=%02x", regs.isCF(), regs.getAL() & 0xff);
+        logger.log(Level.DEBUG, "return CF=%s code=%02x".formatted(regs.isCF(), regs.getAL() & 0xff));
     }
 
     public boolean compile(String playingFileName) {

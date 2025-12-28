@@ -437,7 +437,7 @@ public class NiseDos {
                 }
                 break;
             case 0x3f:
-                logger.log(Level.DEBUG, "<NiseDos>  FILE READ handle=%02x".formatted(regs.getBX() & 0xff));
+                logger.log(Level.TRACE, "<NiseDos>  FILE READ handle=%02x".formatted(regs.getBX() & 0xff));
 
                 fnd = searchFileStatus(regs.getBX());
                 if (fnd == null) {
@@ -463,7 +463,7 @@ public class NiseDos {
 
                 break;
             case 0x40:
-                logger.log(Level.DEBUG, "<NiseDos>  'WRITE'-WRITE TO FILE OR DEVICE");
+                logger.log(Level.TRACE, "<NiseDos>  'WRITE'-WRITE TO FILE OR DEVICE");
                 // input:
                 // BX = file handle
                 // CX = number of bytes to write

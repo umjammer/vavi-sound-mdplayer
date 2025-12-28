@@ -180,21 +180,21 @@ public class NisePpz8 {
     public boolean hook() {
         if (regs.getCS() != ppz8EntryAddressSeg) return false;
 
-        boolean Cancel = false;
+        boolean cancel = false;
         switch (regs.ip) {
             case ppz8ReleaseOfs:
                 regs.setDX(ppz8ReleaseMessageOfs);
-                Cancel = true;
+                cancel = true;
                 break;
             case ppz8FIFOAddressOfs:
                 // FIFO Processing
                 // The original uses EMS/XMS data transfer processing.
                 // TBD
-                Cancel = true;
+                cancel = true;
                 break;
         }
 
-        if (Cancel) {
+        if (cancel) {
             regs.ip = mem.peekW(regs.getSS_SP());
             regs.addSP(2);
             regs.setCS(mem.peekW(regs.getSS_SP()));

@@ -43,7 +43,7 @@ public class FMPPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         FileTemp ft = new FileTemp();
-        String ext = playingFileName.substring(playingFileName.lastIndexOf('.' + 1));
+        String ext = playingFileName.substring(playingFileName.lastIndexOf('.') + 1);
         if (!StringUtilities.isNullOrEmpty(ext)) {
             ext = ext.toLowerCase();
             if (ext.length() > 3 && ext.charAt(1) == 'm') {
