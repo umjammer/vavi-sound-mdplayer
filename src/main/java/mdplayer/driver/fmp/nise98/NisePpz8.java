@@ -121,7 +121,7 @@ public class NisePpz8 {
                 int pcmBufNum = regs.getCL() & 0xff;
                 boolean pcmIsPVI = regs.getCH() == 0;
                 pcmData[pcmBufNum] = dos.loadData(fn);
-                setPPZ8PCMData.accept(pcmBufNum, pcmIsPVI ? 0 : 1, pcmData);
+                if (setPPZ8PCMData != null) setPPZ8PCMData.accept(pcmBufNum, pcmIsPVI ? 0 : 1, pcmData);
                 regs.setCF(false);
                 break;
             case 0x04:
@@ -133,7 +133,7 @@ public class NisePpz8 {
                     default:
                         throw new UnsupportedOperationException();
                 }
-                setPPZ8Data.accept(4, regs.getAL() & 0xff, 0);
+                if (setPPZ8PCMData != null) setPPZ8Data.accept(4, regs.getAL() & 0xff, 0);
                 break;
             case 0x07: // change volume
                 setPPZ8Data.accept(7, regs.getAL() & 0xff, Math.min(regs.getDX() & 0xffff, 15));// / (emuADPCM != 0 ? 16 : 1));
