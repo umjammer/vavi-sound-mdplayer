@@ -973,10 +973,10 @@ public class Nise286 {
     private int getSegment() {
         int seg;
         if (segPrefSw) {
-            seg = ((regs.sRegs[segPref] & 0xffff) << 4) & 0xffff;
+            seg = (regs.sRegs[segPref] & 0xffff) << 4;
             segPrefSw = false;
         } else
-            seg = ((regs.getDS() & 0xffff) << 4) & 0xffff;
+            seg = (regs.getDS() & 0xffff) << 4;
         return seg;
     }
 
