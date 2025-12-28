@@ -58,8 +58,8 @@ public class FMPPlugin extends BasePlugin {
         }
 
         audio.driverVirtual = new FMP(ft);
-//        ((FMP)audio.driverVirtual).playingFileName = playingFileName;
-//        ((FMP)audio.driverVirtual).playingArcFileName = playingArcFileName;
+        ((FMP) audio.driverVirtual).setPlayingFileName(playingFileName);
+        ((FMP) audio.driverVirtual).setPlayingArcFileName(playingArcFileName);
         audio.driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
 //            audio.driverReal = new FMP(ft);

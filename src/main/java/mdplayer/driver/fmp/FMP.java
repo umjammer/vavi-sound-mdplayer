@@ -47,7 +47,15 @@ public class FMP extends BaseDriver {
         return playingFileName;
     }
 
+    public void setPlayingFileName(String playingFileName) {
+        this.playingFileName = playingFileName;
+    }
+
     private String playingArcFileName;
+
+    public void setPlayingArcFileName(String playingArcFileName) {
+        this.playingArcFileName = playingArcFileName;
+    }
 
     public String getPlayingArcFileName() {
         return playingArcFileName;

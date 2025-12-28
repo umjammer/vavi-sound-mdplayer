@@ -50,13 +50,13 @@ public class NiseDos {
 
     private final List<FileStatus> files = new ArrayList<>();
     private int fileHandler = 10;
-    private Path filePath;
+    private Path filePath = Path.of(".");
 
     private int allocateMemStartAddress = 0x9_0000;
     private int allocateMemSize;
     private final Map<Byte, Runnable> dicHookINT = new HashMap<>();
-    private String playingArcFile;
-    private List<String> searchPath;
+    private String playingArcFile = "";
+    private List<String> searchPath = new ArrayList<>();
 
     private byte returnCode = 0x00;
 
@@ -729,10 +729,14 @@ logger.log(Level.TRACE, "error message from program");
     }
 
     public void setArcFile(String playingArcFileName) {
-        this.playingArcFile = playingArcFileName;
+        if (playingArcFileName != null) {
+            this.playingArcFile = playingArcFileName;
+        }
     }
 
     public void setSearchPath(List<String> searchPaths) {
-        this.searchPath = searchPaths;
+        if (searchPaths != null) {
+            this.searchPath = searchPaths;
+        }
     }
 }
