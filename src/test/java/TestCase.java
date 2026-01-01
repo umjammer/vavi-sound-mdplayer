@@ -11,22 +11,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
-import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import mdplayer.PlayList.Music;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
+import vavi.util.Debug;
+import vavi.util.properties.annotation.Property;
+import vavi.util.properties.annotation.PropsEntity;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-import vavi.util.Debug;
-import vavi.util.properties.annotation.Property;
-import vavi.util.properties.annotation.PropsEntity;
 
 
 /**
@@ -95,6 +94,7 @@ Debug.println("mdplayer.fmp.pvi: " + System.getProperty("mdplayer.fmp.pvi"));
 Debug.println("mdplayer.zms.dir: " + System.getProperty("mdplayer.zms.dir"));
 Debug.println("muap.dir.dta: " + System.getProperty("muap.dir.dta"));
 Debug.println("muap.dir.pcm: " + System.getProperty("muap.dir.pcm"));
+Debug.println("mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
     }
 
     private BasePlugin plugin;
