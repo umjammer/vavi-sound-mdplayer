@@ -28,3 +28,5 @@ mdplayer.format.MuSICAFormat
 mdplayer.format.FMPFormat
 mdplayer.format.NDPFileFormat
 mdplayer.format.ZMSFileFormat
+mdplayer.format.MusFileFormat
+mdplayer.format.OFileFormat

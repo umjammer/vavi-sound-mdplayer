@@ -1,0 +1,63 @@
+/*
+ * Copyright (c) 2025 by Naohide Sano, All rights reserved.
+ *
+ * Programmed by Naohide Sano
+ */
+
+package mdplayer.format;
+
+import java.util.List;
+
+import dotnet4j.io.Path;
+import mdplayer.PlayList;
+import mdplayer.PlayList.Music;
+import mdplayer.driver.Vgm.Gd3;
+import mdplayer.driver.muap.MuapJava;
+import mdplayer.plugin.MuapPlugin;
+import mdplayer.plugin.Plugin;
+import vavi.util.archive.Archive;
+import vavi.util.archive.Entry;
+
+
+/**
+ * Muap Compiled.
+ *
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
+ * @version 0.00 2025-12-29 nsano initial version <br>
+ */
+public class OFileFormat extends BaseFileFormat {
+
+    @Override
+    public String[] getExtensions() {
+        return new String[] {".o", ".ox", ".oy"};
+    }
+
+    @Override
+    public List<Music> getMusic(String file, byte[] buf, String zipFile, Archive archive, Entry entry) {
+        PlayList.Music music = new PlayList.Music();
+        music.format = this;
+        int index = 0;
+        Gd3 gd3 = new MuapJava().getGD3Info(buf, index);
+        music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
+        music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
+        music.game = gd3.gameName;
+        music.gameJ = gd3.gameNameJ;
+        music.composer = gd3.composer;
+        music.composerJ = gd3.composerJ;
+        music.vgmby = gd3.vgmBy;
+
+        music.converted = gd3.converted;
+        music.notes = gd3.notes;
+        return List.of(music);
+    }
+
+    @Override
+    public List<Music> getMusic(Music ms, byte[] buf, String zipFile) {
+        return getMusicCommon(ms, buf, zipFile);
+    }
+
+    @Override
+    public Plugin getPlugin() {
+        return Plugin.getPlugin(MuapPlugin.class);
+    }
+}

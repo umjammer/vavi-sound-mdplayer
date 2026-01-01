@@ -60,6 +60,11 @@ public class TestCase {
     @Property
     String ext;
 
+    @Property(name = "muap.dir.dta")
+    String muapDirDta;
+    @Property(name = "muap.dir.pcm")
+    String muapDirPcm;
+
     static boolean onIde = System.getProperty("vavi.test", "").equals("ide");
     static long time = onIde ? 1000 * 1000 : 10 * 1000;
 
@@ -72,11 +77,19 @@ public class TestCase {
         System.setProperty("mdplayer.fmp.dir", fmpDir);
         // zms
         System.setProperty("mdplayer.zms.dir", zmsDir);
+        // muap
+        System.setProperty("muap.dir.dta", muapDirDta);
+        System.setProperty("muap.dir.pcm", muapDirPcm);
+//        System.setProperty("muap.dir.udp", muapDirUdp);
+//        System.setProperty("muap.dir.sud", muapDirSud);
+
         System.setProperty("mdplayer.zms.dir", zmsDir);
         System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
 Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("mdplayer.volume") + ", cwd: " + System.getProperty("user.dir") + ", time: " + time);
 Debug.println("mdplayer.fmp.dir: " + System.getProperty("mdplayer.fmp.dir"));
 Debug.println("mdplayer.zms.dir: " + System.getProperty("mdplayer.zms.dir"));
+Debug.println("muap.dir.dta: " + System.getProperty("muap.dir.dta"));
+Debug.println("muap.dir.pcm: " + System.getProperty("muap.dir.pcm"));
     }
 
     private BasePlugin plugin;
