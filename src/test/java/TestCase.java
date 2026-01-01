@@ -50,6 +50,8 @@ public class TestCase {
 
     @Property
     String fmpDir;
+    @Property
+    String fmpPvi;
 
     @Property
     String zmsDir;
@@ -74,7 +76,9 @@ public class TestCase {
             PropsEntity.Util.bind(this);
         }
 
+        // fmp
         System.setProperty("mdplayer.fmp.dir", fmpDir);
+        System.setProperty("mdplayer.fmp.pvi", fmpPvi);
         // zms
         System.setProperty("mdplayer.zms.dir", zmsDir);
         // muap
@@ -87,6 +91,7 @@ public class TestCase {
         System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
 Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("mdplayer.volume") + ", cwd: " + System.getProperty("user.dir") + ", time: " + time);
 Debug.println("mdplayer.fmp.dir: " + System.getProperty("mdplayer.fmp.dir"));
+Debug.println("mdplayer.fmp.pvi: " + System.getProperty("mdplayer.fmp.pvi"));
 Debug.println("mdplayer.zms.dir: " + System.getProperty("mdplayer.zms.dir"));
 Debug.println("muap.dir.dta: " + System.getProperty("muap.dir.dta"));
 Debug.println("muap.dir.pcm: " + System.getProperty("muap.dir.pcm"));
