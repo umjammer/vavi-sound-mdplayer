@@ -148,8 +148,9 @@ public class MidiBoard {
             if (cmdr[r] != null) dat = cmdr[r].get();
             else throw new UnsupportedOperationException("not implemented yet R%02x".formatted(r));
         } else {
-            return dat;
-//            throw new UnsupportedOperationException();
+            // R00,10,20,30,40,50,60,70,80,90
+            int r = (group << 4) + ((c >> 1));
+            throw new UnsupportedOperationException("not implemented yet R%02x".formatted(r));
         }
         logger.log(Level.TRACE, "Read CZ-6BM1 %s Adr:$00ea_fa%02x Dat:$%02x".formatted(num == 0 ? "Pri" : "Sec", ptr & 0xff, dat & 0xff));
         return dat;

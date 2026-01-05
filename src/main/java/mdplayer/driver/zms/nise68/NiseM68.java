@@ -6205,7 +6205,7 @@ public class NiseM68 {
 
         // compute
         int a = reg.getDl(r);
-        a = (a << 16) | (a >> 16);
+        a = (a << 16) | (a >>> 16);
         reg.setDl(r, a);
 
         // flag
