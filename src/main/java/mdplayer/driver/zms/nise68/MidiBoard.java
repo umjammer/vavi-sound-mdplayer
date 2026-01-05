@@ -25,8 +25,8 @@ public class MidiBoard {
     private byte[] reg = new byte[0x100];
     private Consumer<Byte>[] cmdw = null;
     private Supplier<Byte>[] cmdr = null;
-    private short generalTimerValue = 0;
-    private short midiClockTimerValue = 0;
+    private int generalTimerValue = 0;
+    private int midiClockTimerValue = 0;
     private int renderingFreq;
     // private double clkM = 4_915_200.0 / 8.0;// 1_000_000.0;
     private double clkM = 1_000_000.0;
@@ -162,7 +162,7 @@ public class MidiBoard {
         }
 
         int c = ptr & 0xf;
-        //logger.log(Level.TRACE, "Write CZ-6BM1 %s Adr:$%08x Dat:$%02x".formatted(n == 0 ? "Pri" : "Sec", ptr & 0xff, dat & 0xff);
+        //logger.log(Level.TRACE, "Write CZ-6BM1 %s Adr:$%08x Dat:$%02x".formatted(n == 0 ? "Pri" : "Sec", ptr & 0xff, dat & 0xff));
 
         if (c == 0x1) { // R00
             throw new IllegalStateException(); // R00 is read only.
@@ -205,23 +205,23 @@ public class MidiBoard {
     }
 
     private void setGeneralTimerValueL(byte obj) {
-        generalTimerValue &= (short) 0b1011_1111_0000_0000;
+        generalTimerValue &= 0b1011_1111_0000_0000;
         generalTimerValue |= obj & 0xff;
     }
 
     private void setGeneralTimerValueH(byte obj) {
         generalTimerValue &= 0b0000_0000_1111_1111;
-        generalTimerValue |= (short) (((obj & 0xff) << 8) & 0b1011_1111_0000_0000);
+        generalTimerValue |= ((obj & 0xff) << 8) & 0b1011_1111_0000_0000;
     }
 
     private void setMIDIClockTimerValueL(byte obj) {
-        midiClockTimerValue &= (short) 0b1011_1111_0000_0000;
+        midiClockTimerValue &= 0b1011_1111_0000_0000;
         midiClockTimerValue |= obj & 0xff;
     }
 
     private void setMIDIClockTimerValueH(byte obj) {
         midiClockTimerValue &= 0b0000_0000_1111_1111;
-        midiClockTimerValue |= (short) (((obj & 0xff) << 8) & 0b1011_1111_0000_0000);
+        midiClockTimerValue |= ((obj & 0xff) << 8) & 0b1011_1111_0000_0000;
     }
 
     private void reset() {

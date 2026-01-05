@@ -2,6 +2,7 @@ package mdplayer.driver.zms.nise68;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.SeekOrigin;
 import vavi.util.ByteUtil;
+import vavi.util.StringUtil;
 
 import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
@@ -153,7 +155,7 @@ public class NiseHuman {
         loadRunner(bin, fext.equals(".R"), option, startAddress);
     }
 
-    private void loadRunner(byte[] prog, boolean isR, String option, int startAddress /* = 0 s*/) {
+    private void loadRunner(byte[] prog, boolean isR, String option, int startAddress /* = 0 */) {
 
         //startAddress = (int) memMng.Malloc((int) prog.length + 0x10);
 
@@ -340,7 +342,7 @@ public class NiseHuman {
     public void loadImage(byte[] bin, int startAdr) {
         logger.log(Level.TRACE, "<NiseHuman>LoadImage");
         for (int i = 0; i < bin.length; i++) {
-            mem.pokeB((int) (startAdr + i), bin[i]);
+            mem.pokeB(startAdr + i, bin[i]);
         }
     }
 
@@ -394,9 +396,9 @@ public class NiseHuman {
         List<Byte> msg = new ArrayList<>();
         int cnt = 0;
         do {
-            byte b = mem.peekB((int) (mesPtr + cnt));
+            byte b = mem.peekB(mesPtr + cnt);
             if ((char) b == '\0') break;
-            msg.add(b);
+            if ((b & 0xff) < 0xf0) msg.add(b); // skip half tall character prefix
             cnt++;
         } while (true);
         String text = new String(ByteUtil.toByteArray(msg), charset);
@@ -436,9 +438,10 @@ public class NiseHuman {
         do {
             byte b = mem.peekB(mesPtr + cnt);
             if ((char) b == '\0') break;
-            msg.add(b);
+            if ((b & 0xff) < 0xf0) msg.add(b); // skip half tall character prefix
             cnt++;
         } while (true);
+//logger.log(Level.INFO, "\n" + StringUtil.getDump(ByteUtil.toByteArray(msg)));
         if (!consoleTextBuf.isEmpty()) {
             logger.log(Level.INFO, new String(ByteUtil.toByteArray(consoleTextBuf), charset));
             consoleTextBuf.clear();
@@ -571,13 +574,13 @@ public class NiseHuman {
         List<Byte> msg = new ArrayList<>();
         int cnt = 0;
         do {
-            byte b = mem.peekB((int) (namePtr + cnt));
+            byte b = mem.peekB(namePtr + cnt);
             if ((char) b == '\0') break;
             msg.add(b);
             cnt++;
         } while (true);
         String fn = new String(ByteUtil.toByteArray(msg), charset);
-        logger.log(Level.TRACE, "Filename:[%s] ATR:%d", fn, atr & 0xffff);
+        logger.log(Level.DEBUG, "Filename:[%s] ATR:%d", fn, atr & 0xffff);
 
         //String physicalFn = getPhysicalFn(fn);
 
@@ -631,13 +634,13 @@ public class NiseHuman {
         List<Byte> msg = new ArrayList<>();
         int cnt = 0;
         do {
-            byte b = mem.peekB((int) (namePtr + cnt));
+            byte b = mem.peekB(namePtr + cnt);
             if ((char) b == '\0') break;
             msg.add(b);
             cnt++;
         } while (true);
         String fn = new String(ByteUtil.toByteArray(msg), charset);
-        logger.log(Level.TRACE, "Filename:[%s] Mode:%d", fn, mode & 0xffff);
+        logger.log(Level.DEBUG, "Filename:[%s] Mode:%d", fn, mode & 0xffff);
 
         //String physicalFn = getPhysicalFn(fn);
 
@@ -654,7 +657,10 @@ public class NiseHuman {
             if (fi[i] == null) fi[i] = new FileIni();
             if (fi[i].isopen) continue;
             //if (!File.exists(physicalFn)) continue;
-            if (!fileMng.existsFile(fn)) continue;
+            if (!fileMng.existsFile(fn)) {
+logger.log(Level.INFO, "file not found: %s".formatted(fn));
+                continue;
+            }
 
             fileHandle = i;
             fi[i].isTemp = false;
@@ -689,7 +695,10 @@ public class NiseHuman {
             if (Path.getExtension(physicalFn).equalsIgnoreCase(".ZPD") && envZPDs != null && !envZPDs.isEmpty()) {
                 String f = Path.getFileName(physicalFn);
                 for (String s : envZPDs) {
-                    if (!File.exists(Path.combine(s, f))) continue;
+                    if (!File.exists(Path.combine(s, f))) {
+logger.log(Level.INFO, "file not found: %s".formatted(fn));
+                        continue;
+                    }
                     physicalFn = Path.combine(s, f);
                 }
             }
@@ -833,7 +842,6 @@ public class NiseHuman {
         }
         reg.getD()[0] = fi[fileNo].ptr;
     }
-
 
     private void malloc() {
         logger.log(Level.TRACE, "<NiseHuman>dos call $FF48 malloc");

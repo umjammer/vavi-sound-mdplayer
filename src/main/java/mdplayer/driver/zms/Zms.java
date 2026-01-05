@@ -1,11 +1,13 @@
 package mdplayer.driver.zms;
 
+import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import dotnet4j.io.File;
@@ -53,7 +55,7 @@ public class Zms extends BaseDriver {
     private static final Logger logger = getLogger(Zms.class.getName());
 
     private Nise68 nise68;
-    private FileMng fileMng = new FileMng(System.setProperty("mdplayer.zms.dir", System.getProperty("user.dir")), "C:");
+    private FileMng fileMng = new FileMng(System.getProperty("user.dir"), "C:");
     public X68kMPcmInst mpcm;
     public MPcmPPInst mpcmpp;
     public int mpcmType = 0;
@@ -111,6 +113,10 @@ public class Zms extends BaseDriver {
         return playingArcFileName;
     }
 
+    public void setPlayingArcFileName(String value) {
+        playingArcFileName = value;
+    }
+
     public List<Tuple<byte[], String>> supportFileBinaryAndName;
     private byte[] compiledData;
 
@@ -157,10 +163,12 @@ public class Zms extends BaseDriver {
         if (buf.length < 8) {
             throw new IllegalArgumentException("Unknown zmd file");
         } else {
-            int chkID1 = buf[0] * 0x100_0000 + buf[1] * 0x1_0000 + buf[2] * 0x100 + buf[3] * 0x1;
-            int chkID2 = buf[4] * 0x100_0000 + buf[5] * 0x1_0000 + buf[6] * 0x100 + buf[7] * 0x1;
+            int chkID1 = (buf[0] & 0xFF) * 0x100_0000 + (buf[1] & 0xFF) * 0x1_0000 + (buf[2] & 0xFF) * 0x100 + (buf[3] & 0xFF);
+            int chkID2 = (buf[4] & 0xFF) * 0x100_0000 + (buf[5] & 0xFF) * 0x1_0000 + (buf[6] & 0xFF) * 0x100 + (buf[7] & 0xFF);
+logger.log(Level.TRACE, "Zms Version Check: chkID1=%08x, chkID2=%08x%n".formatted(chkID1, chkID2));
             if (chkID1 == 0x1a5a_6d75 && chkID2 == 0x5369_4330) version = 3;
             if (chkID1 == 0x105a_6d75 && chkID2 != 0x5369_4330) version = 2;
+logger.log(Level.TRACE, "Zms Version Detected: " + version);
 
             if (version == 0) {
                 throw new IllegalArgumentException("Version check error");
@@ -170,8 +178,8 @@ public class Zms extends BaseDriver {
         String cmt = "";
         try {
             if (version == 3) {
-                int ptr = buf[9 * 4 + 0] * 0x100_0000 + buf[9 * 4 + 1] * 0x1_0000 +
-                        buf[9 * 4 + 2] * 0x100 + buf[9 * 4 + 3] * 0x1 + 40;
+                int ptr = (buf[9 * 4 + 0] & 0xFF) * 0x100_0000 + (buf[9 * 4 + 1] & 0xFF) * 0x1_0000 +
+                        (buf[9 * 4 + 2] & 0xFF) * 0x100 + (buf[9 * 4 + 3] & 0xFF) + 40;
                 int ePtr = ptr;
                 while (buf[ePtr] != 0x00) {
                     if (buf[ePtr] == 0x0d && buf[ePtr + 1] == 0x0a) break;
@@ -205,7 +213,8 @@ public class Zms extends BaseDriver {
         try {
             run(vgmBuf);
         } catch (Exception e) {
-            return false;
+            logger.log(Level.ERROR, e.getMessage(), e);
+            throw new IllegalStateException(e);
         }
 
         return true;
@@ -314,12 +323,12 @@ public class Zms extends BaseDriver {
         }
     }
 
-    private void run(byte[] vgmBuf) throws URISyntaxException {
+    private void run(byte[] vgmBuf) throws Exception {
         //if (model == EnmModel.RealModel) { return; }
 
         String fn = playingFileName;
         String withoutExtFn;
-        String dn = Path.getDirectoryName(fn);
+        String dn = java.nio.file.Path.of(fn).getParent() != null ? java.nio.file.Path.of(fn).getParent().toString() : null;
         if (dn == null || dn.isEmpty()) dn = Path.getDirectoryName(System.getProperty("user.dir"));
         if (dn != null && !dn.isEmpty()) withoutExtFn = Path.combine(dn, Path.getFileNameWithoutExtension(fn));
         else withoutExtFn = Path.getFileNameWithoutExtension(fn);
@@ -362,31 +371,30 @@ public class Zms extends BaseDriver {
     private String fnZMD;
     private int trp = 3 + 32;
     private int waitNextPlay = 0;
+    private int rc;
 
-    private void play() throws URISyntaxException {
+    private void play() throws URISyntaxException, IOException {
         String fn = playingFileName;
         String withoutExtFn;
         String dn = Path.getDirectoryName(fn);
         if (dn != null && !dn.isEmpty()) withoutExtFn = Path.combine(dn, Path.getFileNameWithoutExtension(fn));
         else withoutExtFn = Path.getFileNameWithoutExtension(fn);
         fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
-        String crntDir = Path.getDirectoryName(System.getProperty("user.dir"));
+        java.nio.file.Path crntDir = java.nio.file.Path.of(System.getProperty("mdplayer.zms.dir", System.getProperty("user.dir")));
 
-        java.nio.file.Path zmsc3 = java.nio.file.Path.of(Zms.class.getResource("ZMSC3.X").toURI());
+        java.nio.file.Path zmsc3 = crntDir.resolve("ZMSC3.X");
         if (!Files.exists(zmsc3)) {
             logger.log(Level.INFO, "File not found : %s".formatted(zmsc3));
             throw new FileNotFoundException(zmsc3.toString());
         }
         fileMng.setVFile(zmsc3.toString());
-        zmsc3 = zmsc3.getFileName();
 
-        String zmusic = Path.combine(crntDir, "ZMUSIC.X"); // ver2
-        if (!File.exists(zmusic)) {
+        java.nio.file.Path zmusic = crntDir.resolve("ZMUSIC.X"); // ver2
+        if (!Files.exists(zmusic)) {
             logger.log(Level.INFO, "File not found : %s".formatted(zmusic));
-            throw new FileNotFoundException(zmusic);
+            throw new FileNotFoundException(zmusic.toString());
         }
-        fileMng.setVFile(zmusic);
-        zmusic = Path.getFileName(zmusic);
+        fileMng.setVFile(zmusic.toString());
 
         trp = 3 + 32;
 
@@ -418,15 +426,15 @@ public class Zms extends BaseDriver {
                 }
             }
 
-            nise68.hmn.memMng = new MemMng(0x0001_2000 + (9212 + 2048) * 1024 + File.readAllBytes(zmusic).length);
+            nise68.hmn.memMng = new MemMng(0x0001_2000 + (9212 + 2048) * 1024 + Files.readAllBytes(zmusic).length);
 
             //if (nise68.loadRun(zmusic, "-P9212 -T2048" + optionZpd + optionZmd, Path.GetDirectoryName(fnZMD), 0x00012000,
             // true, true, true
             //) != 0) throw new Exception("zmusic regident Error");
-            if (nise68.loadRun(zmusic, "-P9212 -T2048" + optionZpd + optionZmd, 0x0001_2000,
+            if ((rc = nise68.loadRun(zmusic.toString(), "-P9212 -T2048" + optionZpd + optionZmd, 0x0001_2000,
                     true, true, true,
                     100_000_000, 0
-            ) != 0) throw new IllegalStateException("zmusic regident Error");
+            )) != 0) throw new IllegalStateException("zmusic resident Error: " + rc);
 
             if (pcm8type == 0) if (opmPCM != null) opmPCM.chips[0].mountMemory(nise68.mem.mem);
             else if (pcm8pp != null) pcm8pp.mountMemory(0, nise68.mem.mem);
@@ -481,10 +489,10 @@ public class Zms extends BaseDriver {
         //if (nise68.loadRun(zmsc3, "-w", Path.GetDirectoryName(fnZMD), 0x00012000,
         // true, true, true
         //) != 0) throw new Exception("zmsc3 resident Error");
-        if (nise68.loadRun(zmsc3.toString(), "-w", 0x0001_2000
+        if ((rc = nise68.loadRun(zmsc3.toString(), "-w", 0x0001_2000
                 , true, true, true,
                 100_000_000, 0
-        ) != 0) throw new IllegalStateException("zmsc3 resident Error");
+        )) != 0) throw new IllegalStateException("zmsc3 resident Error: " + rc);
 
         // play
         //logger.log(Level.INFO, "");
@@ -548,14 +556,14 @@ public class Zms extends BaseDriver {
         else withoutExtFn = Path.getFileNameWithoutExtension(fn);
         String fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
         String fnZMS = Path.getFileName(withoutExtFn + ".ZMS");
-        String crntDir = Path.getDirectoryName(System.getProperty("user.dir"));
-        java.nio.file.Path zmc = java.nio.file.Path.of(Zms.class.getResource("ZMC.X").toURI());
+        String crntDir = System.getProperty("mdplayer.zms.dir", System.getProperty("user.dir"));
+        java.nio.file.Path zmc = java.nio.file.Path.of(crntDir, "ZMUSIC.X");
         if (!Files.exists(zmc)) {
             logger.log(Level.INFO, "File not found : %s".formatted(zmc));
             return false; // throw new FileNotFoundException(zmc);
         }
+        fileMng = new FileMng(dn, "C:"); // Set the path of the music file to the current physical drive. The current virtual drive is "C:" (default).
         fileMng.setVFile(zmc.toString());
-        zmc = zmc.getFileName();
 
         nise68 = new Nise68();
         nise68.setMPcm(this::mPcmCallBack);
@@ -590,8 +598,8 @@ public class Zms extends BaseDriver {
         else withoutExtFn = Path.getFileNameWithoutExtension(fn);
         String fnZMD = Path.getFileName(withoutExtFn + ".ZMD");
         String fnZMS = Path.getFileName(withoutExtFn + ".ZMS");
-        String crntDir = Path.getDirectoryName(System.getProperty("user.dir"));
-        java.nio.file.Path zmusic = java.nio.file.Path.of(Zms.class.getResource("ZMUSIC.X").toURI());
+        String crntDir = System.getProperty("mdplayer.zms.dir", System.getProperty("user.dir"));
+        java.nio.file.Path zmusic = java.nio.file.Path.of(crntDir, "ZMUSIC.X");
         if (!Files.exists(zmusic)) {
             logger.log(Level.INFO, "File not found : %s".formatted(zmusic));
             return false; // throw new FileNotFoundException(zmc);
@@ -605,7 +613,6 @@ public class Zms extends BaseDriver {
 
         fileMng = new FileMng(dn, "C:"); // Set the path of the music file to the current physical drive. The current virtual drive is "C:" (default).
         fileMng.setVFile(zmusic.toString());
-        zmusic = zmusic.getFileName();
 
         nise68.init(null, false, fileMng);
 
@@ -650,7 +657,7 @@ public class Zms extends BaseDriver {
                     ptr.adrsBuf = nise68.mem.mem;
                     mpcmSt[ch].type = ptr.type = nise68.mem.peekB(0x00 + nise68.reg.getAl(1));
                     mpcmSt[ch].orig = ptr.orig = nise68.mem.peekB(0x01 + nise68.reg.getAl(1));
-                    mpcmSt[ch].adrs_ptr = ptr.adrsPtr = (int) nise68.mem.peekL(0x04 + nise68.reg.getAl(1));
+                    mpcmSt[ch].adrs_ptr = ptr.adrsPtr = nise68.mem.peekL(0x04 + nise68.reg.getAl(1));
                     mpcmSt[ch].size = ptr.size = nise68.mem.peekL(0x08 + nise68.reg.getAl(1));
                     mpcmSt[ch].start = ptr.start = nise68.mem.peekL(0x0c + nise68.reg.getAl(1));
                     mpcmSt[ch].end = ptr.end = nise68.mem.peekL(0x10 + nise68.reg.getAl(1));
@@ -668,7 +675,7 @@ public class Zms extends BaseDriver {
                     ptr.adrs_buf = nise68.mem.mem;
                     mpcmSt[ch].type = ptr.type = nise68.mem.peekB(0x00 + nise68.reg.getAl(1));
                     mpcmSt[ch].orig = ptr.orig = nise68.mem.peekB(0x01 + nise68.reg.getAl(1));
-                    mpcmSt[ch].adrs_ptr = ptr.adrs_ptr = (int) nise68.mem.peekL(0x04 + nise68.reg.getAl(1));
+                    mpcmSt[ch].adrs_ptr = ptr.adrs_ptr = nise68.mem.peekL(0x04 + nise68.reg.getAl(1));
                     mpcmSt[ch].size = ptr.size = nise68.mem.peekL(0x08 + nise68.reg.getAl(1));
                     mpcmSt[ch].start = ptr.start = nise68.mem.peekL(0x0c + nise68.reg.getAl(1));
                     mpcmSt[ch].end = ptr.end = nise68.mem.peekL(0x10 + nise68.reg.getAl(1));
@@ -821,7 +828,7 @@ public class Zms extends BaseDriver {
                 envZPDs = Arrays.asList(envZPD.split(";"));
             }
         } catch (Exception e) {
-            envZPDs = new ArrayList<>();
+            envZPDs = Collections.emptyList();
         }
     }
 }

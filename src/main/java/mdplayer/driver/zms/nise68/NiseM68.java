@@ -15,7 +15,7 @@ public class NiseM68 {
     private final Memory68 mem;
     private final Register68 reg;
     public NiseHuman hmn;
-    private Function<Short, Integer>[] cmdTbl = null;
+    private final Function<Short, Integer>[] cmdTbl;
 
     @SuppressWarnings("unchecked")
     public NiseM68(Memory68 mem, Register68 reg) {
