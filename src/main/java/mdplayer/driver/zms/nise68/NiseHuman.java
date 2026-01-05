@@ -463,7 +463,7 @@ public class NiseHuman {
         switch (md) {
             case 0:
                 byte code = (byte) mem.peekW(reg.getA().get(7) + 2);
-                if (code < 0x20) {
+                if ((code & 0xff) < 0x20) {
                     if (code != 0x07)
                         logger.log(Level.INFO, "ascii code %02x", code);
                     else
@@ -482,8 +482,8 @@ public class NiseHuman {
         short intNo = mem.peekW(reg.getA().get(7) + 0);
         int jobAdr = mem.peekL(reg.getA().get(7) + 2);
 
-        if (intNo < 0x100) {
-            reg.getD()[0] = mem.peekL((int) (intNo * 4));
+        if ((intNo & 0xffff) < 0x100) {
+            reg.getD()[0] = mem.peekL((intNo & 0xffff) * 4);
             mem.pokeL((intNo & 0xffff) * 4, jobAdr);
         } else {
             throw new UnsupportedOperationException();
@@ -911,8 +911,8 @@ logger.log(Level.INFO, "file not found: %s".formatted(fn));
         switch (md) {
             case 0:
                 logger.log(Level.TRACE, "<NiseHuman>in:  md:0 fil:%s op:%s p2:%08x ", fn, op, p2);
-                if (!fn.equalsIgnoreCase("ZMC")) {
-                    throw new UnsupportedOperationException(); // We do not accept anything other than ZMC!
+                if (!Path.getFileNameWithoutExtension(fn).equalsIgnoreCase("ZMC")) {
+                    throw new UnsupportedOperationException("Only ZMC is supported in exec, got: " + fn);
                 }
 
                 // TBD

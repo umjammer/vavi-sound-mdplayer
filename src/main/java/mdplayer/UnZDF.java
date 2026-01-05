@@ -53,11 +53,11 @@ public class UnZDF {
         nise68 = new Nise68();
         nise68.init(null, false, fileMng);
 
-        int rc;
-        if ((rc = nise68.loadRun(lzz, "-E " + Path.getFileName(arcFile), 0x0003_3c00,
+        int rc = nise68.loadRun(lzz, "-E " + Path.getFileName(arcFile), 0x0003_3c00,
                 true, true, true,
                 100_000_000, 0
-        )) != 0) return null;
+        );
+        if (rc != 0) return null;
 
         return fileMng;
     }

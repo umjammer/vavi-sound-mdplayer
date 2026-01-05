@@ -61,7 +61,7 @@ public class Register68 {
     }
 
     public void setCCR(byte value) {
-        a.sr = (short) ((a.sr & 0xffe0) | (byte) (value & 0x1f));
+        a.sr = (short) ((a.sr & 0xffe0) | (value & 0x1f));
     }
 
     public boolean getX() {
@@ -129,10 +129,10 @@ public class Register68 {
                 """
                 D0-D7=%1$08x,%2$08x,%3$08x,%4$08x,%5$08x,%6$08x,%7$08x,%8$08x
                 A0-A7=%9$08x,%10$08x,%11$08x,%12$08x,%13$08x,%14$08x,%15$08x,%16$08x
-                  PC=%17$08x    SR=%20$04x""".formatted(
+                  PC=%17$08x   USP=%18$08x   SSP=%19$08x    SR=%20$04x""".formatted(
                         d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7],
                         a.get(0), a.get(1), a.get(2), a.get(3), a.get(4), a.get(5), a.get(6), a.get(7),
-                        pc, getUSP(), getSSP(), getSR(),
+                        pc, getUSP(), getSSP(), getSR() & 0xffff,
                         ((getSR() & 0x8000) != 0 ? "[Trace]" : ""),
                         ((getSR() & 0x2000) != 0 ? "[Super]" : "[User]"),
                         getX() ? "*" : ".",
@@ -216,11 +216,11 @@ public class Register68 {
     }
 
     public void setAb(int n, byte val) {
-        a.set(n, (int) (int) (byte) val);
+        a.set(n, (int) val);
     }
 
     public void setAw(int n, short val) {
-        a.set(n, (int) (int) (short) val);
+        a.set(n, (int) val);
     }
 
     public void setAl(int n, int val) {

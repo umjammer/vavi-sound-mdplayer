@@ -22,7 +22,7 @@ public class Memory68 {
         //    ;
         //}
 //#endif
-        int adr = ptr % mem.length;
+        int adr = (int) ((ptr & 0xffff_ffffL) % mem.length);
         if (checkAndWriteHookAddressByte(adr, dat)) return;
         mem[adr] = dat;
     }
@@ -33,8 +33,9 @@ public class Memory68 {
         //    ;
         //}
 //#endif
-        mem[ptr % mem.length] = (byte) (dat >>> 8);
-        mem[(ptr + 1) % mem.length] = (byte) dat;
+        int adr = (int) ((ptr & 0xffff_ffffL) % mem.length);
+        mem[adr] = (byte) (dat >>> 8);
+        mem[(adr + 1) % mem.length] = (byte) dat;
     }
 
     public void pokeL(int ptr, int dat) { // BE
@@ -43,14 +44,15 @@ public class Memory68 {
         //    ;
         //}
 //#endif
-        mem[ptr % mem.length] = (byte) (dat >>> 24);
-        mem[(ptr + 1) % mem.length] = (byte) (dat >>> 16);
-        mem[(ptr + 2) % mem.length] = (byte) (dat >>> 8);
-        mem[(ptr + 3) % mem.length] = (byte) dat;
+        int adr = (int) ((ptr & 0xffff_ffffL) % mem.length);
+        mem[adr] = (byte) (dat >>> 24);
+        mem[(adr + 1) % mem.length] = (byte) (dat >>> 16);
+        mem[(adr + 2) % mem.length] = (byte) (dat >>> 8);
+        mem[(adr + 3) % mem.length] = (byte) dat;
     }
 
     public byte peekB(int ptr) {
-        int adr = ptr % mem.length;
+        int adr = (int) ((ptr & 0xffff_ffffL) % mem.length);
         byte[] m = new byte[1];
         if (checkAndReadHookAddressByte(adr, /* out */ m)) {
             return m[0];
@@ -59,8 +61,8 @@ public class Memory68 {
     }
 
     public short peekW(int ptr) { // BE
-        int adr1 = ptr % mem.length;
-        int adr2 = (ptr + 1) % mem.length;
+        int adr1 = (int) ((ptr & 0xffff_ffffL) % mem.length);
+        int adr2 = (adr1 + 1) % mem.length;
         short[] m = new short[1];
         if (checkAndReadHookAddressWord(adr1, /* out */ m)) {
             return m[0];
