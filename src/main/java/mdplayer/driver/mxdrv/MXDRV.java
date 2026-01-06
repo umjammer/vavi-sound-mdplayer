@@ -3822,7 +3822,7 @@ exit:   {
 //        vstDelta = 0;
         int cnt;
         for (int i = 0; i < sampleCount; i += 2) {
-            cnt = render_(buffer, offset + i, 2);
+            cnt = render_(buffer, offset + i, 1);
             plugin.audio.mds.update(buffer, offset + i, 2, null);
         }
         //cnt = (int)((MXDRV.MXDRV) driverVirtual).render(buffer, offset , sampleCount);
