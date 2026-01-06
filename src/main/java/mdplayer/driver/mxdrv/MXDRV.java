@@ -1030,15 +1030,15 @@ logger.log(Level.DEBUG, "extendFiles is null");
 
         //logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
 
-        mdxPCM.soundIocs[0].opmSet(D1, D2);
+        mdxPCM.soundIocs[0].opmSet(D1 & 0xff, D2 & 0xff);
         plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, D1, D2, model, ym2151Hosei[0], vgmFrameCounter);
 
         if (D1 == 0x10) {
-            timerA = (D2 << 2) + (timerA & 0x3);
+            timerA = ((D2 & 0xff) << 2) + (timerA & 0x3);
         } else if (D1 == 0x11) {
             timerA = (D2 & 0x3) + (timerA & 0x3fc);
         } else if (D1 == 0x12) {
-            timerB = D2;
+            timerB = D2 & 0xff;
         } else if (D1 == 0x14) {
             //timerABFlag = (byte) D2;
         }
@@ -2347,6 +2347,7 @@ exit:   {
         a5 = A5;
         a6 = A6;
         mm.write(G + MXWORK_GLOBAL.L002245, (byte) Depend.SET);
+        boolean executeLoops = true;
 
 exit: {
         if (mm.readByte(G + MXWORK_GLOBAL.L001e12) == 0) {
@@ -2359,7 +2360,7 @@ exit: {
                 }
 
                 if (mm.readShort(a0_w + 2) >= 0) {
-                    mm.write(a0_w + 2, (short) (mm.readShort(a0_w + 2) - 2));
+                    mm.write(a0_w + 2, (short) ((mm.readShort(a0_w + 2) - 2) & 0xffff));
                 } else {
                     A1 = G + MXWORK_GLOBAL.L001e14;
                     if (/* signed */ mm.readByte(A1) >= 0x0a) {
@@ -2371,6 +2372,7 @@ exit: {
                     } else {
                         if (mm.readByte(G + MXWORK_GLOBAL.L001e18) != 0) {
                             L00077a();
+                            executeLoops = false;
                             break exit;
                         }
                         mm.write(A1, (byte) 0x7f);
@@ -2511,6 +2513,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
                 }
 /*IL_7BF:*/}
                 mm.write(G + MXWORK_GLOBAL.L001e10, (byte) Depend.SET);
+                executeLoops = false;
                 break exit;
 /*IL_7E5:*/}
                 mm.write(G + MXWORK_GLOBAL.L001e10, (byte) Depend.SET);
@@ -2529,40 +2532,43 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             D2 = 0x00;
             mm.write(G + MXWORK_GLOBAL.MUSICTIMER, (byte) D2);
             L_WRITEOPM();
+            executeLoops = false;
             break exit;
         }
 /*IL_892:*/}
         //G.MUSICTIMER = D2; // You can't enter here
-        L_WRITEOPM();
-        mm.write(G + MXWORK_GLOBAL.L001ba6, (short) (mm.readShort(G + MXWORK_GLOBAL.L001ba6) + 1));
-        A6 = MXWORK_CHBUF_FM[0];
-        D7 = 0x00;
-
-        do {
-            //logger.log(Level.TRACE, "Ch%02d adr:%04x".formatted(D7, mm.readInt(A6 + MXWORK_CH.S0000)));
-            L001050();
-            L0011b4();
-            D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c) & 0xffff;
-            if ((D0 & (1 << D7)) == 0) {
-                L000c66();
-            }
-            A6 += MXWORK_CH.Length;
-            D7++;
-        } while (D7 < 0x0009);
-        if (mm.readByte(G + MXWORK_GLOBAL.L001df4) != 0) {
-            A6 = MXWORK_CHBUF_PCM[0];
+        if (executeLoops) {
+            L_WRITEOPM();
+            mm.write(G + MXWORK_GLOBAL.L001ba6, (short) ((mm.readShort(G + MXWORK_GLOBAL.L001ba6) + 1) & 0xffff));
+            A6 = MXWORK_CHBUF_FM[0];
+            D7 = 0x00;
 
             do {
+                //logger.log(Level.TRACE, "Ch%02d adr:%04x".formatted(D7, mm.readInt(A6 + MXWORK_CH.S0000)));
                 L001050();
                 L0011b4();
                 D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c) & 0xffff;
                 if ((D0 & (1 << D7)) == 0) {
                     L000c66();
                 }
-
                 A6 += MXWORK_CH.Length;
                 D7++;
-            } while (D7 < 0x0010);
+            } while (D7 < 0x0009);
+            if (mm.readByte(G + MXWORK_GLOBAL.L001df4) != 0) {
+                A6 = MXWORK_CHBUF_PCM[0];
+
+                do {
+                    L001050();
+                    L0011b4();
+                    D0 = mm.readShort(G + MXWORK_GLOBAL.L001e1c) & 0xffff;
+                    if ((D0 & (1 << D7)) == 0) {
+                        L000c66();
+                    }
+
+                    A6 += MXWORK_CH.Length;
+                    D7++;
+                } while (D7 < 0x0010);
+            }
         }
 /*IL_9C4:*/}
         L000756();
@@ -2630,8 +2636,8 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
     // 
     private void L000cdc() {
         D2 = mm.readShort(A6 + MXWORK_CH.S0012) & 0xffff; // note+D
-        D2 = (D2 & 0xffff) + ((mm.readInt(A6 + MXWORK_CH.S000c) & 0xffff_0000) >>> 16); // +bend
-        D2 = (D2 & 0xffff) + ((mm.readInt(A6 + MXWORK_CH.S0036) & 0xffff_0000) >>> 16); // +LfoPitch
+        D2 = ((D2 & 0xffff) + ((mm.readInt(A6 + MXWORK_CH.S000c) & 0xffff_0000) >>> 16)) & 0xffff; // +bend
+        D2 = ((D2 & 0xffff) + ((mm.readInt(A6 + MXWORK_CH.S0036) & 0xffff_0000) >>> 16)) & 0xffff; // +LfoPitch
         if (D2 != (mm.readShort(A6 + MXWORK_CH.S0014) & 0xffff)) { // Compare if same as previous value
             mm.write(A6 + MXWORK_CH.S0014, (short) D2);
             D1 = 0x17ff;
@@ -2732,7 +2738,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
 
     private void L000e28() {
         mm.write(A6 + MXWORK_CH.S0023, (byte) D0);
-        A0 = mm.readInt(A6 + MXWORK_CH.S0004) & 0xff;
+        A0 = mm.readInt(A6 + MXWORK_CH.S0004);
         if (A0 == 0) {
             A0 = FAKEA6S0004 + 0;
         }
@@ -2935,22 +2941,25 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
         }
         if (mm.readByte(A6 + MXWORK_CH.S0024) != 0) {
             if (mm.readByte(A6 + MXWORK_CH.S0020) != 0) {
-                if (mm.readByte(A6 + MXWORK_CH.S0025) != 0) {
-                    L001094();
-                }
+                return;
             }
-        } else {
-            if ((mm.readByte(A6 + MXWORK_CH.S0016) & (1 << 5)) != 0) {
-                L0010b4();
+            if (mm.readByte(A6 + MXWORK_CH.S0025) != 0) {
+                L001094();
+                return;
             }
-            if ((mm.readByte(A6 + MXWORK_CH.S0016) & (1 << 6)) != 0) {
-                L001116();
-            }
+        }
+
+//L00107c:
+        if ((mm.readByte(A6 + MXWORK_CH.S0016) & (1 << 5)) != 0) {
+            L0010b4();
+        }
+        if ((mm.readByte(A6 + MXWORK_CH.S0016) & (1 << 6)) != 0) {
+            L001116();
         }
     }
 
     private void L001094() {
-        mm.write(A6 + MXWORK_CH.S0025, (byte) (mm.readByte(A6 + MXWORK_CH.S0025) - 1));
+        mm.write(A6 + MXWORK_CH.S0025, (byte) ((mm.readByte(A6 + MXWORK_CH.S0025) - 1) & 0xff));
         if (mm.readByte(A6 + MXWORK_CH.S0025) == 0) {
             if ((mm.readByte(A6 + MXWORK_CH.S0016) & (1 << 5)) != 0) {
                 mm.write(A6 + MXWORK_CH.S003e, mm.readShort(A6 + MXWORK_CH.S003a));
@@ -3073,7 +3082,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
         D0 *= 0xc549;
         D0 += 0x0c;
         L001190 = (short) D0;
-        D0 >>= 8;
+        D0 >>>= 8;
     }
 
     // 
@@ -3096,7 +3105,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
         } else if ((mm.readByte(A6 + MXWORK_CH.S0016) & (1 << 2)) != 0) {
             L0011ce();
         } else {
-            mm.write(A6 + MXWORK_CH.S001b, (byte) (mm.readByte(A6 + MXWORK_CH.S001b) - 1));
+            mm.write(A6 + MXWORK_CH.S001b, (byte) ((mm.readByte(A6 + MXWORK_CH.S001b) - 1) & 0xff));
             if (mm.readByte(A6 + MXWORK_CH.S001b) != 0) {
                 L0011ce();
             } else {
@@ -3108,7 +3117,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
 
     // 
     private void L0011ce() {
-        mm.write(A6 + MXWORK_CH.S001a, (byte) (mm.readByte(A6 + MXWORK_CH.S001a) - 1));
+        mm.write(A6 + MXWORK_CH.S001a, (byte) ((mm.readByte(A6 + MXWORK_CH.S001a) - 1) & 0xff));
         if (mm.readByte(A6 + MXWORK_CH.S001a) != 0) return;
         L0011d4();
     }
@@ -3205,7 +3214,7 @@ exit:   {
             A0 = mm.readInt(G + MXWORK_GLOBAL.L002228);
             // checker
             while (A0 < mm.readInt(G + MXWORK_GLOBAL.L001e34) + mm.readInt(G + MXWORK_GLOBAL.L002220)) {
-                if (mm.readByte(A0++) != (byte) D0) {
+                if (mm.readByte(A0++) == (byte) D0) {
                     mm.write(A6 + MXWORK_CH.S0004, A0);
                     mm.write(A6 + MXWORK_CH.S0017, (byte) (mm.readByte(A6 + MXWORK_CH.S0017) | 0x02));
                     break;
@@ -3247,12 +3256,12 @@ exit:   {
         D2 = mm.readByte(A6 + MXWORK_CH.S0022) & 0xff;
         if (/* signed */ (byte) D2 >= 0) {
             if (D2 != 0) {
-                mm.write(A6 + MXWORK_CH.S0022, (byte) (mm.readByte(A6 + MXWORK_CH.S0022) - 1));
+                mm.write(A6 + MXWORK_CH.S0022, (byte) ((mm.readByte(A6 + MXWORK_CH.S0022) - 1) & 0xff));
                 mm.write(A6 + MXWORK_CH.S0017, (byte) (mm.readByte(A6 + MXWORK_CH.S0017) | 0x01));
             }
         } else {
             if (D2 != (byte) 0xff) {
-                mm.write(A6 + MXWORK_CH.S0022, (byte) (mm.readByte(A6 + MXWORK_CH.S0022) + 1));
+                mm.write(A6 + MXWORK_CH.S0022, (byte) ((mm.readByte(A6 + MXWORK_CH.S0022) + 1) & 0xff));
                 mm.write(A6 + MXWORK_CH.S0017, (byte) (mm.readByte(A6 + MXWORK_CH.S0017) | 0x01));
             }
         }
@@ -3260,7 +3269,7 @@ exit:   {
 
     // 
     private void L001330() {
-        mm.write(A6 + MXWORK_CH.S0022, (byte) (mm.readByte(A6 + MXWORK_CH.S0022) - 1));
+        mm.write(A6 + MXWORK_CH.S0022, (byte) ((mm.readByte(A6 + MXWORK_CH.S0022) - 1) & 0xff));
         mm.write(A6 + MXWORK_CH.S0017, (byte) (mm.readByte(A6 + MXWORK_CH.S0017) | 0x17)); // 01?
     }
 
@@ -3269,7 +3278,7 @@ exit:   {
         D2 = mm.readByte(A6 + MXWORK_CH.S0022) & 0xff;
         if (/* signed */ (byte) D2 >= 0) {
             if (D2 != 0x0f) {
-                mm.write(A6 + MXWORK_CH.S0022, (byte) (mm.readByte(A6 + MXWORK_CH.S0022) + 1));
+                mm.write(A6 + MXWORK_CH.S0022, (byte) ((mm.readByte(A6 + MXWORK_CH.S0022) + 1) & 0xff));
                 mm.write(A6 + MXWORK_CH.S0017, (byte) (mm.readByte(A6 + MXWORK_CH.S0017) | 0x01));
             }
         } else {
