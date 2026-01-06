@@ -530,7 +530,7 @@ public class RCS extends BaseDriver {
 
         if (model == EnmModel.VirtualModel) {
             if (pcm8type == 0) if (opmPCM != null) opmPCM.chips[0].mountMemory(pcmData[0]);
-            else if (pcm8pp != null) pcm8pp.mountMemory(0, pcmData[0]);
+            else if (pcm8pp != null) pcm8pp.writePcm(0, pcmData[0], 0,pcmData[0].length);
         }
         initPCM8ch();
 

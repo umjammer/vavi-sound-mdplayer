@@ -437,7 +437,7 @@ logger.log(Level.TRACE, "Zms Version Detected: " + version);
             )) != 0) throw new IllegalStateException("zmusic resident Error: " + rc);
 
             if (pcm8type == 0) if (opmPCM != null) opmPCM.chips[0].mountMemory(nise68.mem.mem);
-            else if (pcm8pp != null) pcm8pp.mountMemory(0, nise68.mem.mem);
+            else if (pcm8pp != null) pcm8pp.writePcm(0, nise68.mem.mem, 0, nise68.mem.mem.length);
 
             // play
             byte[] zmd = null;

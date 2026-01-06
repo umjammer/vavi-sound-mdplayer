@@ -10,8 +10,10 @@ import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdsound.Instrument;
+import mdsound.Instrument.PcmEnabledInstrument;
 import mdsound.instrument.Pcm8PPInst;
 import mdsound.instrument.Ppz8Inst;
+import mdsound.x68sound.Pcm8;
 
 
 /**
@@ -48,7 +50,7 @@ public class Pcm8Chip implements Chip {
     public void updateVol() {
     }
 
-    public void writePcm(int chipId, int bank, int mode, byte[][] pcmData, EnmModel model) {
+    public void writePcm(int chipId, int bank, int mode, byte[] pcmData, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -57,7 +59,7 @@ public class Pcm8Chip implements Chip {
         else
             context.chipLED.put("SecPCM8", 2);
 
-        context.mds.inst(Ppz8Inst.class).writePcm(chipId, bank, mode, pcmData);
+        context.mds.inst((Class<PcmEnabledInstrument>) inst(chipId)).writePcm(chipId, pcmData, 0, pcmData.length);
     }
 
     public void write(int chipId, int dPort, int dAddr, int dData, EnmModel model) {

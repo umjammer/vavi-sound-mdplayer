@@ -328,7 +328,7 @@ logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], p
         for (int i = 0; i < pdxSize[0]; i++) mm.write(pdxPtr + i, pdx[0][i]);
 
         mdxPCM.chips[0].mountMemory(mm.mm);
-        pcm8pp.mountMemory(0, mm.mm);
+        pcm8pp.writePcm(0, mm.mm, 0, mm.mm.length);
 
         int playtime = MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr, 1, Depend.TRUE);
 //logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
