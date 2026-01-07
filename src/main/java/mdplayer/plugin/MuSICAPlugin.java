@@ -9,7 +9,10 @@ package mdplayer.plugin;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
+import dotnet4j.io.File;
+import dotnet4j.io.Path;
 import mdplayer.Audio;
+import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
@@ -37,15 +40,27 @@ public class MuSICAPlugin extends BasePlugin {
 
     @Override
     public boolean play(String playingFileName, FileFormat format) {
-        if (playingFileName.toLowerCase().endsWith(".bgm"))
-            audio.driverVirtual = new MuSICA();
-        else
+        if (playingFileName.toLowerCase().endsWith(".msd")) {
+
+            String vcd = Path.changeExtension(playingFileName, ".vcd");
+            byte[] vcdBuf = null;
+            if (File.exists(vcd)) {
+                vcdBuf = File.readAllBytes(vcd);
+            }
+
             audio.driverVirtual = new MuSICA_K4();
-//        ((MuSICA)audio.driverVirtual).playingFileName = PlayingFileName;
+            audio.driverVirtual.init(vgmBuf, this, null, null, -1, -1);
+            boolean ret = ((MuSICA_K4) audio.driverVirtual).compile(vgmBuf, vcdBuf);
+            if (!ret) return false;
+
+            vgmBuf = ((MuSICA_K4) audio.driverVirtual).getBgmBin();
+        }
+
+        audio.driverVirtual = new MuSICA();
         audio.driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
 //            audio.driverReal = new MuSICA();
-//            ((MuSICA) audio.driverReal).playingFileName = PlayingFileName;
+//            ((MuSICA) audio.driverReal).setPlayingFileName(playingFileName);
 //        }
         prepare();
         boolean r = _play();

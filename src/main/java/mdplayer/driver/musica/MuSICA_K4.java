@@ -14,7 +14,6 @@ import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
 import mdplayer.Chip;
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
@@ -25,6 +24,7 @@ import mdplayer.driver.mgsdrv.MsxPort;
 import mdplayer.driver.mgsdrv.MsxVdp;
 import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
+import vavi.util.StringUtil;
 
 import static java.lang.System.getLogger;
 
@@ -59,9 +59,13 @@ public class MuSICA_K4 extends BaseDriver {
     }
 
     public boolean compile(byte[] vgmBuf, byte[] vcdBuf) {
+logger.log(Level.INFO, "\n" + StringUtil.getDump(vgmBuf, 128));
         try {
             run(vgmBuf, vcdBuf);
-            if (bgmBin == null) return false;
+            if (bgmBin == null) {
+logger.log(Level.WARNING, "bgmBin is null");
+                return false;
+            }
             //Files.writeAllBytes(Path.of("/Users/kuma/Desktop/test.bgm", bgmBin));
             return true;
         } catch (Exception e) {
@@ -73,18 +77,6 @@ public class MuSICA_K4 extends BaseDriver {
     @Override
     public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
         this.plugin = plugin;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        this.model = model;
-        vgmFrameCounter = -latency - waitTime;
-
-        try {
-            run(vgmBuf, null);
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-            return false;
-        }
-
         return true;
     }
 
@@ -95,6 +87,7 @@ public class MuSICA_K4 extends BaseDriver {
 
     @Override
     public void processOneFrame() {
+        throw new UnsupportedOperationException();
     }
 
     private static byte[] kinrou4 = null;
@@ -162,7 +155,11 @@ public class MuSICA_K4 extends BaseDriver {
         logger.log(Level.TRACE, "Compile Success. Length = %04x", bgmBin.length);
     }
 
-    //public String PlayingFileName { get; internal set; }
+//    private String playingFileName;
+//
+//    public void setPlayingFileName(String playingFileName) {
+//        this.playingFileName = playingFileName;
+//    }
 
     private void Z80OnBeforeInstructionFetch(BeforeInstructionFetchEvent args) {
         //Absolutely minimum implementation of CP/M for ZEXALL and ZEXDOC to work
@@ -173,9 +170,9 @@ public class MuSICA_K4 extends BaseDriver {
             args.getExecutionStopper().stop(false);
         } else if (z80.getRegisters().getPC() == 0x0005) {
             //logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC()));
-            callBIOS(args, z80);
+            callBIOS(args);
         } else if (z80.getRegisters().getPC() == 0x000c) {
-            logger.log(Level.TRACE, "Call RDSLT(0x000c) Reg.A=%02x Reg.HL=%04x", z80.getRegisters().getA() & 0xff, z80.getRegisters().getHL() & 0xffff);
+            logger.log(Level.TRACE, "Call RDSLT(0x000c) Reg.A=%02x Reg.HL=%04x".formatted(z80.getRegisters().getA() & 0xff, z80.getRegisters().getHL() & 0xffff));
 
             int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
             z80.getRegisters().setA(((MsxMemory) z80.getMemory()).readSlotMemoryAdr(
@@ -222,7 +219,7 @@ public class MuSICA_K4 extends BaseDriver {
             logger.log(Level.TRACE, "Call EXTROM(015FH/MAIN)");
             //throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x4601) {
-            logger.log(Level.TRACE, "JP NEWSTT(0x4601) Reg.HL=%04x", z80.getRegisters().getHL() & 0xffff);
+            logger.log(Level.TRACE, "JP NEWSTT(0x4601) Reg.HL=%04x".formatted(z80.getRegisters().getHL() & 0xffff));
             String msg = getAsciiz(z80, z80.getRegisters().getHL());
             logger.log(Level.TRACE, "(HL)=%s".formatted(msg));
             if (msg.equals(":_SYSTEM")) {
@@ -240,10 +237,10 @@ public class MuSICA_K4 extends BaseDriver {
     }
 
     private static void debugRegisters(Z80Processor z80) {
-        logger.log(Level.TRACE, "Reg PC:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x",
+        logger.log(Level.TRACE, "Reg PC:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x".formatted(
                 z80.getRegisters().getPC() & 0xffff,
                 z80.getRegisters().getAF() & 0xffff, z80.getRegisters().getBC() & 0xffff, z80.getRegisters().getDE() & 0xffff, z80.getRegisters().getHL() & 0xffff,
-                z80.getRegisters().getIX() & 0xffff, z80.getRegisters().getIY() & 0xffff);
+                z80.getRegisters().getIX() & 0xffff, z80.getRegisters().getIY() & 0xffff));
     }
 
     private void callEXTBIO(BeforeInstructionFetchEvent args, Z80Processor z80) {
@@ -253,7 +250,7 @@ public class MuSICA_K4 extends BaseDriver {
         switch (funcType & 0xff) {
             case 0x04:
                 //logger.log(Level.TRACE, " EXTBIO MemoryMapper");
-                EXTBIO_MemoryMapper(args, z80, function);
+                EXTBIO_MemoryMapper(args, function);
                 break;
             case 0xf0:
                 // Function call for MGSDRV
@@ -267,7 +264,9 @@ public class MuSICA_K4 extends BaseDriver {
         z80.executeRet();
     }
 
-    private void EXTBIO_MemoryMapper(BeforeInstructionFetchEvent args, Z80Processor z80, byte function) {
+    private void EXTBIO_MemoryMapper(BeforeInstructionFetchEvent args, byte function) {
+        Z80Processor z80 = (Z80Processor) args.getSource();
+
         switch (function) {
             case 0x02:
                 z80.getRegisters().setA((byte) 0);
@@ -277,11 +276,13 @@ public class MuSICA_K4 extends BaseDriver {
         }
     }
 
-    private void callBIOS(BeforeInstructionFetchEvent args, Z80Processor z80) {
+    private void callBIOS(BeforeInstructionFetchEvent args) {
+        Z80Processor z80 = (Z80Processor) args.getSource();
+
         byte function = z80.getRegisters().getC();
         byte byteToPrint;
         String msg;
-        switch (function) {
+        switch (function & 0xff) {
             case 2:
                 byteToPrint = z80.getRegisters().getE();
                 System.out.print((char) byteToPrint);
@@ -425,7 +426,7 @@ public class MuSICA_K4 extends BaseDriver {
 
     private static void conWrite(String v) {
         for (byte c : v.getBytes()) {
-            if (c == '\n') {
+            if (c == (byte) '\n') {
                 conFlash();
                 continue;
             }
@@ -442,7 +443,7 @@ public class MuSICA_K4 extends BaseDriver {
     }
 
     private static String getAsciiz(Z80Processor z80, short reg) {
-        var messageAddress = reg;
+        var messageAddress = reg & 0xffff;
         var bytesToPrint = new ArrayList<Byte>();
         byte byteToPrint;
         while ((byteToPrint = z80.getMemory().get(messageAddress & 0xffff)) != 0) {
