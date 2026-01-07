@@ -14,7 +14,6 @@ public class DevOpnEmu {
     public DevOpn devopn;
     public DevOpm devopm;
 
-
     //
     // part of YM2608 - FM emulation
     //

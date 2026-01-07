@@ -82,8 +82,8 @@ public class DevPsgEmu {
         reg.setD0_W(reg.getD0_W() + (short) reg.getD0_W());
         reg.setD0_W(reg.getD0_W() + (short) reg.getD0_W());
         reg.a0 = reg.a6 + Dw.FREQ_KC_TABLE;
-        reg.setD2_B((mm.readByte(reg.a0 & 0xff) + (short) (reg.getD0_W() + 1)));
-        reg.setD0_B((mm.readByte(reg.a0 & 0xff) + (short) reg.getD0_W()));
+        reg.setD2_B(mm.readByte(reg.a0 + (int) (short) reg.getD0_W() + 1));
+        reg.setD0_B(mm.readByte(reg.a0 + (int) (short) reg.getD0_W()));
         reg.D1_L = 0x28;
         mndrv._OPM_WRITE4();
         reg.D1_L = 0x30;

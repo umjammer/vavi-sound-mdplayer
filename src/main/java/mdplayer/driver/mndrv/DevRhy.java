@@ -47,7 +47,7 @@ public class DevRhy {
                 }
             }
         }
-// _rhythm_next:
+//_rhythm_next:
 
         mm.write(reg.a5 + W.len, (byte) reg.getD4_B());
         if (reg.getD4_B() != 0) return;
@@ -57,19 +57,19 @@ public class DevRhy {
             reg.D1_L = 0x98;
             mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & reg.getD1_B()));
         }
-// _rhythm_fetch:
+//_rhythm_fetch:
         reg.a1 = mm.readInt(reg.a5 + W.dataptr);
         boolean L1 = true;
 //        break L1;
 
-// _rhythm_loop:
+//_rhythm_loop:
         while (true) {
             if (!L1) {
                 if (mm.readByte(reg.a5 + W.flag4) < 0) return;
                 if (mm.readByte(reg.a5 + W.flag) >= 0) return;
                 L1 = false;
             }
-// L1:
+//L1:
             reg.D0_L = 0;
             reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
             if ((byte) reg.getD0_B() < 0) { // break _rhythm_mml;
@@ -80,7 +80,7 @@ public class DevRhy {
                     continue; // break _rhythm_loop;
                 }
             } else {
-// _rhythm_mml:
+//_rhythm_mml:
                 mm.write(reg.a5 + W.key, (byte) reg.getD0_B());
                 if (mm.readByte(reg.a5 + W.flag2) >= 0) { // break _rhythm_exit;
                     mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x20));
@@ -549,7 +549,7 @@ public class DevRhy {
                 reg.D0_L = 0x3f;
             }
         }
-// L2:
+//L2:
         reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a6 + Dw.MASTER_VOL_RHY) & 0xff));
         if ((byte) reg.getD0_B() < 0) {
             reg.D0_L = 0;
@@ -726,7 +726,7 @@ public class DevRhy {
                 reg.setD0_W(reg.getD0_W() - 1);
             } while (reg.getD0_W() != 0);
         }
-// L3:
+//L3:
         reg.setD0_W(mm.readShort(reg.a1) & 0xffff); reg.a1 += 2;
         if (reg.getD0_W() != 0) {
             if (reg.getD0_W() - 0xffff != 0) { // break L2;
@@ -740,7 +740,7 @@ public class DevRhy {
             comcmds._all_end_check();
             return;
         }
-// L2:
+//L2:
         reg.a1 = mm.readInt(reg.a5 + W.loop);
     }
 }

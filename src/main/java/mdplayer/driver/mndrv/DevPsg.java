@@ -1089,7 +1089,7 @@ public class DevPsg {
             mm.write(reg.a0, mm.readByte(reg.a2));
             reg.a2++;
             reg.a0++;
-        } while (reg.decAfterD0_W() != 0);
+        } while (reg.getAndDecD0_W() != 0);
 
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) | 0x80));
 
@@ -1197,7 +1197,7 @@ public class DevPsg {
             mm.write(reg.a2, _psg_env_default[reg.a0]);
             reg.a2++;
             reg.a0++;
-        } while (reg.decAfterD0_W() != 0);
+        } while (reg.getAndDecD0_W() != 0);
 
         reg.a0 = mm.readInt(reg.a5 + W.psgenv_adrs);
         reg.a2 = 0; // _psg_env_default;
@@ -1207,7 +1207,7 @@ public class DevPsg {
             mm.write(reg.a0, _psg_env_default[reg.a2]);
             reg.a2++;
             reg.a0++;
-        } while (reg.decAfterD0_W() != 0);
+        } while (reg.getAndDecD0_W() != 0);
 
         mm.write(reg.a5 + W.e_sw, (byte) (mm.readByte(reg.a5 + W.e_sw) | 0x80));
         reg.a0 = mm.readInt(reg.a5 + W.psgenv_adrs);
@@ -1251,7 +1251,7 @@ public class DevPsg {
             mm.write(reg.a0, _psg_env_default[reg.a2]);
             reg.a2++;
             reg.a0++;
-        } while (reg.decAfterD0_W() != 0);
+        } while (reg.getAndDecD0_W() != 0);
 
         mm.write(reg.a5 + W.e_sw, 0x80);
         reg.a0 = mm.readInt(reg.a5 + W.psgenv_adrs);

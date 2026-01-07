@@ -29,7 +29,7 @@ public class Reg {
     public List<Integer> arg = new ArrayList<>();
 
     public int getD0_B() {
-        return (byte) D0_L;
+        return D0_L & 0xff;
     }
 
     void setD0_B(int value) {
@@ -37,7 +37,7 @@ public class Reg {
     }
 
     public int getD1_B() {
-        return (byte) D1_L;
+        return D1_L & 0xff;
     }
 
     void setD1_B(int value) {
@@ -45,7 +45,7 @@ public class Reg {
     }
 
     public int getD2_B() {
-        return (byte) D2_L;
+        return D2_L & 0xff;
     }
 
     void setD2_B(int value) {
@@ -53,7 +53,7 @@ public class Reg {
     }
 
     public int getD3_B() {
-        return (byte) D3_L;
+        return D3_L & 0xff;
     }
 
     void setD3_B(int value) {
@@ -61,7 +61,7 @@ public class Reg {
     }
 
     public int getD4_B() {
-        return (byte) D4_L;
+        return D4_L & 0xff;
     }
 
     void setD4_B(int value) {
@@ -69,7 +69,7 @@ public class Reg {
     }
 
     public int getD5_B() {
-        return (byte) D5_L;
+        return D5_L & 0xff;
     }
 
     void setD5_B(int value) {
@@ -77,7 +77,7 @@ public class Reg {
     }
 
     public int getD6_B() {
-        return (byte) D6_L;
+        return D6_L & 0xff;
     }
 
     void setD6_B(int value) {
@@ -85,7 +85,7 @@ public class Reg {
     }
 
     public int getD7_B() {
-        return (byte) D7_L;
+        return D7_L & 0xff;
     }
 
     void setD7_B(int value) {
@@ -93,7 +93,7 @@ public class Reg {
     }
 
     public int getD0_W() {
-        return D0_L;
+        return D0_L & 0xffff;
     }
 
     void setD0_W(int value) {
@@ -101,7 +101,7 @@ public class Reg {
     }
 
     public int getD1_W() {
-        return D1_L;
+        return D1_L & 0xffff;
     }
 
     void setD1_W(int value) {
@@ -109,7 +109,7 @@ public class Reg {
     }
 
     public int getD2_W() {
-        return D2_L;
+        return D2_L & 0xffff;
     }
 
     void setD2_W(int value) {
@@ -117,7 +117,7 @@ public class Reg {
     }
 
     public int getD3_W() {
-        return D3_L;
+        return D3_L & 0xffff;
     }
 
     void setD3_W(int value) {
@@ -125,7 +125,7 @@ public class Reg {
     }
 
     public int getD4_W() {
-        return D4_L;
+        return D4_L & 0xffff;
     }
 
     void setD4_W(int value) {
@@ -133,7 +133,7 @@ public class Reg {
     }
 
     public int getD5_W() {
-        return D5_L;
+        return D5_L & 0xffff;
     }
 
     void setD5_W(int value) {
@@ -141,7 +141,7 @@ public class Reg {
     }
 
     public int getD6_W() {
-        return D6_L;
+        return D6_L & 0xffff;
     }
 
     void setD6_W(int value) {
@@ -149,7 +149,7 @@ public class Reg {
     }
 
     public int getD7_W() {
-        return D7_L;
+        return D7_L & 0xffff;
     }
 
     void setD7_W(int value) {
@@ -157,34 +157,64 @@ public class Reg {
     }
 
     public int getSR_W() {
-        return sr;
+        return sr & 0xffff;
     }
 
     void setSR_W(int value) {
         sr = (sr & 0xffff_0000) | (value & 0xffff);
     }
 
-    public int decAfterD0_W() {
-        return D0_L--;
+    public int getAndDecD0_W() {
+        int v = D0_L & 0xffff;
+        try {
+            return v;
+        } finally {
+            D0_L = (D0_L & 0xffff0000) | ((v - 1) & 0xffff);
+        }
     }
 
-    public int decAfterD1_W() {
-        return D1_L--;
+    public int getAndDecD1_W() {
+        int v = D1_L & 0xffff;
+        try {
+            return v;
+        } finally {
+            D1_L = (D1_L & 0xffff0000) | ((v - 1) & 0xffff);
+        }
     }
 
-    public int decAfterD2_W() {
-        return D2_L--;
+    public int getAndDecD2_W() {
+        int v = D2_L & 0xffff;
+        try {
+            return v;
+        } finally {
+            D2_L = (D2_L & 0xffff0000) | ((v - 1) & 0xffff);
+        }
     }
 
-    public int decAfterD4_W() {
-        return D4_L--;
+    public int getAndDecD4_W() {
+        int v = D4_L & 0xffff;
+        try {
+            return v;
+        } finally {
+            D4_L = (D4_L & 0xffff0000) | ((v - 1) & 0xffff);
+        }
     }
-    public int decAfterD5_W() {
-        return D5_L--;
+    public int getAndDecD5_W() {
+        int v = D5_L & 0xffff;
+        try {
+            return v;
+        } finally {
+            D5_L = (D5_L & 0xffff0000) | ((v - 1) & 0xffff);
+        }
     }
 
-    public int decAfterD7_W() {
-        return D7_L--;
+    public int getAndDecD7_W() {
+        int v = D7_L & 0xffff;
+        try {
+            return v;
+        } finally {
+            D7_L = (D7_L & 0xffff0000) | ((v - 1) & 0xffff);
+        }
     }
 
     public void setD0_L(int v) {
@@ -232,7 +262,7 @@ public class Reg {
     }
 
     public boolean cryADD(int a, int b) {
-        return (long) a + (long) b > (long) 0xffff_ffff;
+        return (a & 0xffff_ffffL) + (b & 0xffff_ffffL) > 0xffff_ffffL;
     }
 }
 
