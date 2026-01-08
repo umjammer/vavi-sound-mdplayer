@@ -22,7 +22,6 @@ import mdplayer.driver.mgsdrv.MapperRamCartridge;
 import mdplayer.driver.mgsdrv.MsxMemory;
 import mdplayer.driver.mgsdrv.MsxPort;
 import mdplayer.plugin.BasePlugin;
-import mdplayer.driver.Vgm.Gd3;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -108,7 +107,7 @@ public class MuSICA extends BaseDriver {
     private void interrupt() {
         //logger.log(Level.TRACE, "\r\n_INTER(001FH)");
         z80.getRegisters().setPC((short) 0x6029);
-        z80.getRegisters().setPC((short) 0xf380);
+        z80.getRegisters().setSP((short) 0xf380);
         z80.continue_();
         //debugRegisters(z80);
 
@@ -374,7 +373,7 @@ logger.log(Level.INFO, gd3);
             z80.getRegisters().setDE((short) 0x0210); // DISK version
             //logger.log(Level.TRACE, "_DOSVER ret BC(ROMVer):%04x DE(DISKVer):%04x".formatted(z80.getRegisters().getBC() & 0xffff, z80.getRegisters().getDE() & 0xffff));
         } else {
-            logger.log(Level.ERROR, "unknown 0x%02x".formatted(function));
+            logger.log(Level.ERROR, "unknown 0x%02x".formatted(function & 0xff));
             debugRegisters(z80);
         }
 
@@ -382,7 +381,7 @@ logger.log(Level.INFO, gd3);
     }
 
     private static String getAsciiZ(Z80Processor z80, short reg) {
-        var messageAddress = reg;
+        var messageAddress = reg & 0xffff;
         var bytesToPrint = new ArrayList<Byte>();
         byte byteToPrint;
         while ((byteToPrint = z80.getMemory().get(messageAddress & 0xffff)) != 0) {

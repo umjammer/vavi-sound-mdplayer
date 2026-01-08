@@ -118,10 +118,10 @@ logger.log(Level.WARNING, "cannot start: " + this);
         audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, Common.EnmModel.VirtualModel); // Reset with Psg TONE
         audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, 0x07, 0x38, Common.EnmModel.RealModel);
 
-        audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 0, PMDJava.baseClock, Common.EnmModel.RealModel);
-        audio.chipRegister.chip(Ym2608Chip.class).writeClock((byte) 1, PMDJava.baseClock, Common.EnmModel.RealModel);
-        audio.chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
-        audio.chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
+        audio.chipRegister.chip(Ym2608Chip.class).writeClock(0, PMDJava.baseClock, Common.EnmModel.RealModel);
+        audio.chipRegister.chip(Ym2608Chip.class).writeClock(1, PMDJava.baseClock, Common.EnmModel.RealModel);
+        audio.chipRegister.chip(Ym2608Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
+        audio.chipRegister.chip(Ym2608Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), Common.EnmModel.RealModel);
 
         if (!audio.driverVirtual.init(vgmBuf, fileType, this, Common.EnmModel.VirtualModel, new Class[] {Ym2608Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,

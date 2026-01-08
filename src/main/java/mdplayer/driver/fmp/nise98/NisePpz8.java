@@ -121,7 +121,7 @@ public class NisePpz8 {
                 int pcmBufNum = regs.getCL() & 0xff;
                 boolean pcmIsPVI = regs.getCH() == 0;
                 pcmData[pcmBufNum] = dos.loadData(fn);
-                setPPZ8PCMData.accept(pcmBufNum, pcmIsPVI ? 0 : 1, pcmData);
+                if (setPPZ8PCMData != null) setPPZ8PCMData.accept(pcmBufNum, pcmIsPVI ? 0 : 1, pcmData);
                 regs.setCF(false);
                 break;
             case 0x04:
@@ -133,7 +133,7 @@ public class NisePpz8 {
                     default:
                         throw new UnsupportedOperationException();
                 }
-                setPPZ8Data.accept(4, regs.getAL() & 0xff, 0);
+                if (setPPZ8PCMData != null) setPPZ8Data.accept(4, regs.getAL() & 0xff, 0);
                 break;
             case 0x07: // change volume
                 setPPZ8Data.accept(7, regs.getAL() & 0xff, Math.min(regs.getDX() & 0xffff, 15));// / (emuADPCM != 0 ? 16 : 1));
@@ -180,21 +180,21 @@ public class NisePpz8 {
     public boolean hook() {
         if (regs.getCS() != ppz8EntryAddressSeg) return false;
 
-        boolean Cancel = false;
+        boolean cancel = false;
         switch (regs.ip) {
             case ppz8ReleaseOfs:
                 regs.setDX(ppz8ReleaseMessageOfs);
-                Cancel = true;
+                cancel = true;
                 break;
             case ppz8FIFOAddressOfs:
                 // FIFO Processing
                 // The original uses EMS/XMS data transfer processing.
                 // TBD
-                Cancel = true;
+                cancel = true;
                 break;
         }
 
-        if (Cancel) {
+        if (cancel) {
             regs.ip = mem.peekW(regs.getSS_SP());
             regs.addSP(2);
             regs.setCS(mem.peekW(regs.getSS_SP()));

@@ -124,8 +124,8 @@ public class Nise68 {
 //#endif
         }
 
-        logger.log(Level.DEBUG, "Terminate program. return code=$%02x", hmn.returnCode);
-        logger.log(Level.DEBUG, "  alloc count ={0:d}", hmn.memMng.getAllocCount());
+        logger.log(Level.DEBUG, "Terminate program. return code=$%02x".formatted(hmn.returnCode));
+        logger.log(Level.DEBUG, "  alloc count =%d".formatted(hmn.memMng.getAllocCount()));
         logger.log(Level.DEBUG, "");
 
         return hmn.returnCode;
@@ -190,7 +190,7 @@ public class Nise68 {
         }
 
 //#if DEBUG
-        logger.log(Level.DEBUG, "Terminate program. return code=$%02x runs=%s", hmn.returnCode, run);
+        logger.log(Level.DEBUG, "Terminate program. return code=$%02x runs=%s".formatted(hmn.returnCode, run));
         // logger.log(Level.DEBUG, "  alloc count ={0:d}", hmn.memMng.allocCount);
         // logger.log(Level.DEBUG, "");
 //#endif
@@ -364,7 +364,7 @@ public class Nise68 {
     }
 
     private void writeOpm(byte hkOPMAdr, byte hkOPMDat) {
-        logger.log(Level.TRACE, "Write OPM Adr:$%02x Dat:$%02x", hkOPMAdr & 0xff, hkOPMDat & 0xff);
+        logger.log(Level.TRACE, "Write OPM Adr:$%02x Dat:$%02x".formatted(hkOPMAdr & 0xff, hkOPMDat & 0xff));
         opm.apply(hkOPMAdr & 0xff, hkOPMDat & 0xff);
     }
 

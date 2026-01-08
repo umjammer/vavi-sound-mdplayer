@@ -1,39 +1,43 @@
+/*
+ * Copyright (c) 2025 by Naohide Sano, All rights reserved.
+ *
+ * Programmed by Naohide Sano
+ */
+
 package mdplayer.format;
 
-import java.util.Collections;
 import java.util.List;
 
 import dotnet4j.io.Path;
 import mdplayer.PlayList;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.pmd.PMDJava;
-import mdplayer.plugin.PMDPlugin;
+import mdplayer.PlayList.Music;
+import mdplayer.driver.Vgm.Gd3;
+import mdplayer.driver.muap.MuapJava;
+import mdplayer.plugin.MuapPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
 
 /**
- * MML (PMD).
+ * Muap MML.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
- * @version 0.00 2022-07-07 nsano initial version <br>
+ * @version 0.00 2025-12-29 nsano initial version <br>
  */
-public class MMLFileFormat extends BaseFileFormat {
+public class MusFileFormat extends BaseFileFormat {
 
     @Override
     public String[] getExtensions() {
-        return new String[] {".mml"};
+        return new String[] {".mus"};
     }
 
     @Override
-    public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
+    public List<Music> getMusic(String file, byte[] buf, String zipFile, Archive archive, Entry entry) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
         int index = 0;
-        PMDJava pmd = new PMDJava();
-        pmd.setPlayingFileName(file);
-        Vgm.Gd3 gd3 = pmd.getGD3Info(buf, index, PMDJava.PMDFileType.MML);
+        Gd3 gd3 = new MuapJava().getGD3Info(buf, index);
         music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
         music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
         music.game = gd3.gameName;
@@ -44,16 +48,16 @@ public class MMLFileFormat extends BaseFileFormat {
 
         music.converted = gd3.converted;
         music.notes = gd3.notes;
-        return Collections.singletonList(music);
+        return List.of(music);
     }
 
     @Override
-    public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */) {
+    public List<Music> getMusic(Music ms, byte[] buf, String zipFile) {
         return getMusicCommon(ms, buf, zipFile);
     }
 
     @Override
     public Plugin getPlugin() {
-        return Plugin.getPlugin(PMDPlugin.class);
+        return Plugin.getPlugin(MuapPlugin.class);
     }
 }

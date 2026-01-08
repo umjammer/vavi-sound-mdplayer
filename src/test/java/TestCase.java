@@ -11,22 +11,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
-import com.github.kwhat.jnativehook.NativeHookException;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import mdplayer.PlayList.Music;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
+import vavi.util.Debug;
+import vavi.util.properties.annotation.Property;
+import vavi.util.properties.annotation.PropsEntity;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
-import vavi.util.Debug;
-import vavi.util.properties.annotation.Property;
-import vavi.util.properties.annotation.PropsEntity;
 
 
 /**
@@ -50,6 +49,11 @@ public class TestCase {
 
     @Property
     String fmpDir;
+    @Property
+    String fmpPvi;
+
+    @Property
+    String zmsDir;
 
     @Property
     String dir;
@@ -57,15 +61,40 @@ public class TestCase {
     @Property
     String ext;
 
+    @Property(name = "muap.dir.dta")
+    String muapDirDta;
+    @Property(name = "muap.dir.pcm")
+    String muapDirPcm;
+
+    static boolean onIde = System.getProperty("vavi.test", "").equals("ide");
+    static long time = onIde ? 1000 * 1000 : 10 * 1000;
+
     @BeforeEach
     void setup() throws Exception {
         if (localPropertiesExists()) {
             PropsEntity.Util.bind(this);
         }
 
+        // fmp
         System.setProperty("mdplayer.fmp.dir", fmpDir);
+        System.setProperty("mdplayer.fmp.pvi", fmpPvi);
+        // zms
+        System.setProperty("mdplayer.zms.dir", zmsDir);
+        // muap
+        System.setProperty("muap.dir.dta", muapDirDta);
+        System.setProperty("muap.dir.pcm", muapDirPcm);
+//        System.setProperty("muap.dir.udp", muapDirUdp);
+//        System.setProperty("muap.dir.sud", muapDirSud);
+
+        System.setProperty("mdplayer.zms.dir", zmsDir);
         System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
-Debug.println("volume: " + volume + ", " + System.getProperty("mdplayer.volume") + ", " + System.getProperty("user.dir") + ", " + System.getProperty("mdplayer.variant.ymf262"));
+Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("mdplayer.volume") + ", cwd: " + System.getProperty("user.dir") + ", time: " + time);
+Debug.println("mdplayer.fmp.dir: " + System.getProperty("mdplayer.fmp.dir"));
+Debug.println("mdplayer.fmp.pvi: " + System.getProperty("mdplayer.fmp.pvi"));
+Debug.println("mdplayer.zms.dir: " + System.getProperty("mdplayer.zms.dir"));
+Debug.println("muap.dir.dta: " + System.getProperty("muap.dir.dta"));
+Debug.println("muap.dir.pcm: " + System.getProperty("muap.dir.pcm"));
+Debug.println("mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
     }
 
     private BasePlugin plugin;
@@ -89,7 +118,12 @@ Debug.println("plugin: " +plugin.getClass().getSimpleName());
         play();
 
         CountDownLatch cdl = new CountDownLatch(1);
+if (!onIde) {
+ Thread.sleep(time);
+Debug.println("not on ide");
+} else {
         cdl.await();
+}
     }
 
     @Test

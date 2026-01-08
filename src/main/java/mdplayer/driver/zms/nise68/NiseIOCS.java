@@ -32,7 +32,7 @@ public class NiseIOCS {
                 // 50
                 null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
                 // 60
-                this::_ADPCMOUT, null, null, null, null, null, null, this::_ADPCMMOD, null, null, this::_OPMINTST, null, null, null, null, null,
+                this::_ADPCMOUT, null, null, null, null, null, null, this::_ADPCMMOD, this::_OPMSET, null, this::_OPMINTST, null, null, null, null, null,
                 // 70
                 this::_MS_INIT, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
                 // 80
@@ -135,6 +135,18 @@ public class NiseIOCS {
         reg.setSSP(reg.getSSP() + 4);
 
         int mode = reg.getDl(1); // 0 stop 1 pause 2 resume
+    }
+
+    private void _OPMSET() {
+        logger.log(Level.TRACE, "IOCS _OPMSET");
+
+        reg.setSR(mem.peekW(reg.getSSP()));
+        reg.setSSP(reg.getSSP() + 2);
+        reg.pc = mem.peekL(reg.getSSP());
+        reg.setSSP(reg.getSSP() + 4);
+
+        byte rAdr = reg.getDb(1);
+        byte rDat = reg.getDb(2);
     }
 
     private void _OPMINTST() {

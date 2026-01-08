@@ -2,7 +2,6 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,20 +41,21 @@ public class ZMSPlugin extends BasePlugin {
     @Override
     public boolean play(String playingFileName, FileFormat format) {
         audio.driverVirtual = new Zms();
+        ((Zms) audio.driverVirtual).setPlayingFileName(playingFileName);
+        ((Zms) audio.driverVirtual).setPlayingArcFileName(playingArcFileName);
 
         audio.driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new Zms();
+//            audio.driverReal = new Zms();
         }
-        boolean r = false;
         try {
-            r = _play();
+            boolean r = _play();
             if (!r) {
                 logger.log(Level.WARNING, "cannot start: " + this);
                 return false;
             }
-        } catch (URISyntaxException e) {
-            logger.log(Level.WARNING, "cannot start: " + this);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "cannot start: " + this, e);
             return false;
         }
         super.play();
@@ -64,10 +64,9 @@ public class ZMSPlugin extends BasePlugin {
 
     private String[] supportFile = null;
     private String useCompiler = null;
-    private String errMsg;
 
     /** */
-    private boolean _play() throws URISyntaxException {
+    private boolean _play() throws Exception {
         startTrdVgmReal();
 
         hiyorimiNecessary = setting.getHiyorimiMode();
@@ -166,33 +165,31 @@ public class ZMSPlugin extends BasePlugin {
                 byte[] buf;
                 if (isExt(sf, ".ZMS")) {
                     buf = File.readAllBytes(sf);
-                    errMsg = "";
                     switch (compilePriority) {
                         case 0:
                             // Version 3 is preferred
                             if (((Zms) audio.driverVirtual).compile(buf, sf)) buf = ((Zms) audio.driverVirtual).getCompiledData();
                             else if (((Zms) audio.driverVirtual).compileV2(buf, sf)) buf = ((Zms) audio.driverVirtual).getCompiledData();
-                            else errMsg = "Compile Error.Check console log.";
+                            else throw new IllegalArgumentException("Compile Error.Check console log.");
                             break;
                         case 1:
                             // Version 2 is preferred
                             if (((Zms) audio.driverVirtual).compileV2(buf, sf)) buf = ((Zms) audio.driverVirtual).getCompiledData();
                             else if (((Zms) audio.driverVirtual).compile(vgmBuf, sf))
                                 buf = ((Zms) audio.driverVirtual).getCompiledData();
-                            else errMsg = "Compile Error.Check console log.";
+                            else throw new IllegalArgumentException("Compile Error.Check console log.");
                             break;
                         case 2:
                             // Version 3 only
                             if (((Zms) audio.driverVirtual).compile(buf, sf)) buf = ((Zms) audio.driverVirtual).getCompiledData();
-                            else errMsg = "Compile Error.Check console log.";
+                            else throw new IllegalArgumentException("Compile Error.Check console log.");
                             break;
                         case 3:
                             // Version 2 only
                             if (((Zms) audio.driverVirtual).compileV2(buf, sf)) buf = ((Zms) audio.driverVirtual).getCompiledData();
-                            else errMsg = "Compile Error.Check console log.";
+                            else throw new IllegalArgumentException("Compile Error.Check console log.");
                             break;
                     }
-                    if (errMsg != null && !errMsg.isEmpty()) return false;
                     supportFileBinaly.add(new Tuple<>(buf, Path.getFileName(sf)));
                     continue;
                 }
@@ -200,9 +197,10 @@ public class ZMSPlugin extends BasePlugin {
                 supportFileBinaly.add(new Tuple<>(buf, Path.getFileName(sf)));
             }
         }
-        ((Zms) audio.driverReal).supportFileBinaryAndName =
-                ((Zms) audio.driverVirtual).supportFileBinaryAndName =
-                        supportFileBinaly;
+
+        ((Zms) audio.driverVirtual).supportFileBinaryAndName = supportFileBinaly;
+        if (audio.driverReal != null) ((Zms) audio.driverReal).supportFileBinaryAndName = supportFileBinaly;
+//        if (audio.driverPianoRoll != null) ((Zms) audio.driverPianoRoll).supportFileBinaryAndName = supportFileBinaly;
 
         // In the case of ZMS, compilation is performed in advance
         if (isExt(playingFileName, ".ZMS")) {
@@ -210,64 +208,48 @@ public class ZMSPlugin extends BasePlugin {
                 case 0:
                     // Version 3 is preferred
                     if (((Zms) audio.driverVirtual).compile(vgmBuf, playingFileName)) {
-                        ((Zms) audio.driverReal).setCompiledData(((Zms) audio.driverVirtual).getCompiledData());
-                        vgmBuf = ((Zms) audio.driverReal).getCompiledData();
+                        setVgmBufV3();
                         audio.chipLED.put("PriMPCMX68k", 1);
                     } else if (((Zms) audio.driverVirtual).compileV2(vgmBuf, playingFileName)) {
-                        ((Zms) audio.driverReal).setCompiledData(((Zms) audio.driverVirtual).getCompiledData());
-                        vgmBuf = ((Zms) audio.driverReal).getCompiledData();
-                        ((Zms) audio.driverVirtual).version = 2;
-                        ((Zms) audio.driverReal).version = 2;
+                        setVgmBufV2();
                         audio.chipLED.put("PriPCM8", 1);
                     } else {
                         // compile error
-                        errMsg = "Compile Error.Check console log.";
-                        return false;
+                        throw new IllegalArgumentException("Compile Error.Check console log.");
                     }
                     break;
                 case 1:
                     // Version 2 is preferred
                     if (((Zms) audio.driverVirtual).compileV2(vgmBuf, playingFileName)) {
-                        ((Zms) audio.driverReal).setCompiledData(((Zms) audio.driverVirtual).getCompiledData());
-                        vgmBuf = ((Zms) audio.driverReal).getCompiledData();
-                        ((Zms) audio.driverVirtual).version = 2;
-                        ((Zms) audio.driverReal).version = 2;
+                        setVgmBufV2();
                         audio.chipLED.put("PriPCM8", 1);
                     } else if (((Zms) audio.driverVirtual).compile(vgmBuf, playingFileName)) {
-                        ((Zms) audio.driverReal).setCompiledData(((Zms) audio.driverVirtual).getCompiledData());
-                        vgmBuf = ((Zms) audio.driverReal).getCompiledData();
+                        setVgmBufV3();
                         audio.chipLED.put("PriMPCMX68k", 1);
                     } else {
                         // compile error
-                        errMsg = "Compile Error.Check console log.";
-                        return false;
+                        throw new IllegalArgumentException("Compile Error.Check console log.");
                     }
                     break;
                 case 2:
                     // Version 3 only
                     if (((Zms) audio.driverVirtual).compile(vgmBuf, playingFileName)) {
-                        ((Zms) audio.driverReal).setCompiledData(((Zms) audio.driverVirtual).getCompiledData());
-                        vgmBuf = ((Zms) audio.driverReal).getCompiledData();
+                        setVgmBufV3();
                         audio.chipLED.put("PriMPCMX68k", 1);
-                        //File.WriteAllBytes("c:\\temp\\ge.zmd", vgmBuf);
+                        //logger.log("c:\\temp\\ge.zmd", vgmBuf);
                     } else {
                         // compile error
-                        errMsg = "Compile Error.Check console log.";
-                        return false;
+                        throw new IllegalArgumentException("Compile Error.Check console log.");
                     }
                     break;
                 case 3:
                     // Version 2 only
                     if (((Zms) audio.driverVirtual).compileV2(vgmBuf, playingFileName)) {
-                        ((Zms) audio.driverReal).setCompiledData(((Zms) audio.driverVirtual).getCompiledData());
-                        vgmBuf = ((Zms) audio.driverReal).getCompiledData();
-                        ((Zms) audio.driverVirtual).version = 2;
-                        ((Zms) audio.driverReal).version = 2;
+                        setVgmBufV2();
                         audio.chipLED.put("PriPCM8", 1);
                     } else {
                         // compile error
-                        errMsg = "Compile Error.Check console log.";
-                        return false;
+                        throw new IllegalArgumentException("Compile Error.Check console log.");
                     }
                     break;
             }
@@ -306,6 +288,25 @@ public class ZMSPlugin extends BasePlugin {
         }
 
         return true;
+    }
+
+    private void setVgmBufV3() {
+        vgmBuf = ((Zms) audio.driverVirtual).getCompiledData();
+        if (audio.driverReal != null) ((Zms) audio.driverReal).setCompiledData(vgmBuf);
+//        if (audio.driverPianoRoll != null) ((Zms) audio.driverPianoRoll).compiledData = vgmBuf;
+    }
+
+    private void setVgmBufV2() {
+        vgmBuf = ((Zms) audio.driverVirtual).getCompiledData();
+        ((Zms) audio.driverVirtual).version = 2;
+        if (audio.driverReal != null) {
+            ((Zms) audio.driverReal).setCompiledData(vgmBuf);
+            ((Zms) audio.driverReal).version = 2;
+        }
+//        if (audio.driverPianoRoll != null) {
+//            ((Zms) audio.driverPianoRoll).compiledData = vgmBuf;
+//            ((Zms) audio.driverPianoRoll).version = 2;
+//        }
     }
 
     static boolean isExt(String filename, String ext) {

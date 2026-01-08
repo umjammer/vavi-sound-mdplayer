@@ -11,6 +11,7 @@ import musicDriverInterface.ChipDatum;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,10 +23,10 @@ import static org.junit.jupiter.api.Assertions.*;
  * @version 0.00 2025-07-21 nsano initial version <br>
  * @see "https://github.com/jeffpar/pcjs/blob/master/software/pcx86/test/cpu/bin/test386.com"
  */
-@DisabledIfEnvironmentVariable(named = "GITHUB_WORKFLOW", matches = ".*")
 class Nise286Test {
 
     @Test
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test1() throws Exception {
         Nise98 nise98 = new Nise98();
         nise98.init(null, this::nop, null, OngenBoardType.SpeakBoard);

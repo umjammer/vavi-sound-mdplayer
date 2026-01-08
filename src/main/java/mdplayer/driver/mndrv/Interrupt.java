@@ -19,11 +19,11 @@ public class Interrupt {
     public FMTimer timerOPN;
 
     /** */
-    public static final byte[] _opn_irq = new byte[] {
+    public static final byte[] _opn_irq = {
             0x30, 0x1F, 0x2F, 0x3F
     };
 
-    public static final short[] _opn_intmask = new short[] {
+    public static final short[] _opn_intmask = {
             0x200, 0x200, 0x200, 0x300, 0x400, 0x500, 0x600, 0x700
     };
 
@@ -64,7 +64,7 @@ public class Interrupt {
         reg.D0_L = 3;
         do {
             reg.setD3_B((byte) timerOPN.readStatus());
-        } while ((byte) reg.getD3_B() < 0);
+        } while (/* signed */ (byte) reg.getD3_B() < 0);
 
         reg.setD3_W(reg.getD3_W() & reg.getD0_W());
 
@@ -137,7 +137,7 @@ _opn_recall:
                     reg.D7_L = spReg2.D7_L;
                     reg.a0 = spReg2.a0;
                     reg.a6 = spReg2.a6;
-                } while (reg.decAfterD7_W() != 0);
+                } while (reg.getAndDecD7_W() != 0);
             }
             break;
         }
@@ -161,11 +161,11 @@ _opn_recall:
 
     //
 
-    public static final short[] _intmask = new short[] {
+    public static final short[] _intmask = {
             0x200, 0x200, 0x200, 0x300, 0x400, 0x500, 0x600, 0x700
     };
 
-    public static final byte[] _dev_irq = new byte[] {
+    public static final byte[] _dev_irq = {
             0x30, 0x1F, 0x2F, 0x3F
     };
 
@@ -274,10 +274,10 @@ _opm_recall:
                     reg.D7_L = spReg2.D7_L;
                     reg.a0 = spReg2.a0;
                     reg.a6 = spReg2.a6;
-                } while (reg.decAfterD7_W() != 0);
+                } while (reg.getAndDecD7_W() != 0);
             }
         }
-// _opm_entry_exit:
+//_opm_entry_exit:
 
         reg.D0_L = spReg.D0_L;
         reg.D1_L = spReg.D1_L;
@@ -326,7 +326,7 @@ _opm_recall:
     }
 
     /**
-    //	TIMER-B JOB
+     * TIMER-B JOB
      */
     private void _timer_b_job() {
         reg.setD1_B(mm.readByte(reg.a6 + Dw.DRV_STATUS) & 0xff);
@@ -338,7 +338,7 @@ _opm_recall:
                 } while ((mm.readByte(reg.a6 + Dw.DRV_STATUS) & 0x08) != 0);
             }
         }
-// _timer_b_job_pause:
+//_timer_b_job_pause:
         reg.D3_L = 0;
         reg.setD0_B(mm.readByte(reg.a6 + Dw.TEMPO) & 0xff);
 
@@ -410,7 +410,7 @@ _opm_recall:
             reg.D1_L = 0x10;
             mndrv._OPN_WRITE();
         }
-// _timer_b_job_exit:
+//_timer_b_job_exit:
     }
 
     /** */
@@ -474,7 +474,7 @@ _opm_recall:
             _key_OPT2_XF5();
             return;
         }
-        if ((mm.readByte(0x80b) & 0x2) < 0) {
+        if (/* signed */ (byte) (mm.readByte(0x80b) & 0x2) < 0) {
             _key_OPT2_XF3();
             return;
         }
@@ -587,7 +587,7 @@ _opm_recall:
         reg.setD1_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
         do {
             reg.setD0_B(mm.readByte(reg.a0++) & 0xff);
-            mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) | reg.getD0_B()));
+            mm.write(reg.a5 + W.flag2, (byte) ((mm.readByte(reg.a5 + W.flag2) & 0xff) | reg.getD0_B()));
             reg.a5 = reg.a5 + W._track_work_size;
             reg.setD1_W(reg.getD1_W() - 1);
         } while (reg.getD1_W() != 0);
@@ -635,7 +635,7 @@ _opm_recall:
         if (reg.getD1_B() == 0) return;
 
         if ((mm.readByte(reg.a6 + Dw.DRV_STATUS) & 0x40) != 0) return;
-        mm.write(reg.a6 + Dw.FADESPEED_WORK, (byte) (mm.readByte(reg.a6 + Dw.FADESPEED_WORK) - 1));
+        mm.write(reg.a6 + Dw.FADESPEED_WORK, (byte) ((mm.readByte(reg.a6 + Dw.FADESPEED_WORK) & 0xff) - 1));
         if (mm.readByte(reg.a6 + Dw.FADESPEED_WORK) != 0) return;
 
         mm.write(reg.a6 + Dw.FADESPEED_WORK, mm.readByte(reg.a6 + Dw.FADESPEED));
@@ -674,15 +674,15 @@ _opm_recall:
      * @since Mon Aug 14 17:34 JST 2000 (saori)
      */
     private void _ch_fadeout_calc() {
-        mm.write(reg.a6 + Dw.MASTER_VOL_FM, (byte) ((mm.readByte(reg.a6 + Dw.MASTER_VOL_FM) & 0xff) + 1));
-        mm.write(reg.a6 + Dw.MASTER_VOL_PCM, (byte) ((mm.readByte(reg.a6 + Dw.MASTER_VOL_PCM) & 0xff) + 1));
-        mm.write(reg.a6 + Dw.MASTER_VOL_RHY, (byte) ((mm.readByte(reg.a6 + Dw.MASTER_VOL_RHY) & 0xff) + 1));
+        mm.write(reg.a6 + Dw.MASTER_VOL_FM, (byte) ((mm.readByte(reg.a6 + Dw.MASTER_VOL_FM) + 1) & 0xff));
+        mm.write(reg.a6 + Dw.MASTER_VOL_PCM, (byte) ((mm.readByte(reg.a6 + Dw.MASTER_VOL_PCM) + 1) & 0xff));
+        mm.write(reg.a6 + Dw.MASTER_VOL_RHY, (byte) ((mm.readByte(reg.a6 + Dw.MASTER_VOL_RHY) + 1) & 0xff));
 
         mm.write(reg.a6 + Dw.FADECOUNT, (byte) (mm.readByte(reg.a6 + Dw.FADECOUNT) - 1));
         if (mm.readByte(reg.a6 + Dw.FADECOUNT) != 0) return;
         mm.write(reg.a6 + Dw.FADECOUNT, 3);
 
-        mm.write(reg.a6 + Dw.MASTER_VOL_PCM, (byte) ((mm.readByte(reg.a6 + Dw.MASTER_VOL_PCM) & 0xff) + 2));
+        mm.write(reg.a6 + Dw.MASTER_VOL_PCM, (byte) ((mm.readByte(reg.a6 + Dw.MASTER_VOL_PCM) + 2) & 0xff));
 
         reg.setD0_B(mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG) & 0xff);
         reg.setD0_B(reg.getD0_B() + 1);
@@ -715,7 +715,7 @@ _opm_recall:
         }
         mm.write(reg.a6 + Dw.MASTER_VOL_RHY, (byte) reg.getD0_B());
 
-        mm.write(reg.a6 + Dw.FADECOUNT, (byte) ((mm.readByte(reg.a6 + Dw.FADECOUNT) & 0xff) - 1));
+        mm.write(reg.a6 + Dw.FADECOUNT, (byte) ((mm.readByte(reg.a6 + Dw.FADECOUNT) - 1) & 0xff));
         if (mm.readByte(reg.a6 + Dw.FADECOUNT) != 0) return;
 
         mm.write(reg.a6 + Dw.FADECOUNT, 3);
@@ -731,7 +731,7 @@ _opm_recall:
     private void _ch_fade() {
         reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
         reg.a5 = reg.a6 + Dw.TRACKWORKADR;
-// _ch_fade_loop:
+//_ch_fade_loop:
         do {
             reg.setD0_B(mm.readByte(reg.a5 + W.ch) & 0xff);
             if ((byte) reg.getD0_B() >= 0) { // break _ch_fade_loop_check;
@@ -739,7 +739,7 @@ _opm_recall:
                 if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 1) == 0) { // break _ch_fade_next;
 
                     if (reg.getD0_B() >= 0x40) { // break _ch_fade_loop_rhythm;
-// _ch_fade_loop_rhythm:
+//_ch_fade_loop_rhythm:
                         reg.setD0_B(mm.readByte(reg.a6 + Dw.RHY_TV) & 0xff);
                         reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a6 + Dw.MASTER_VOL_RHY) & 0xff));
                         if ((byte) reg.getD0_B() < 0) {
@@ -748,22 +748,22 @@ _opm_recall:
                         reg.D1_L = 0x11;
                         mndrv._OPN_WRITE2();
                         reg.a5 = reg.a5 + W._track_work_size;
-                        if (reg.decAfterD7_W() != 0) continue; // break _ch_fade_loop;
+                        if (reg.getAndDecD7_W() != 0) continue; // break _ch_fade_loop;
                         return;
                     }
                     if (reg.getD0_B() >= 0x20) { // break _ch_fade_loop_psg;
-// _ch_fade_loop_psg:
+//_ch_fade_loop_psg:
                         if (mm.readByte(reg.a5 + W.e_sw) >= 0) {
 
                             reg.setD0_B(mm.readByte(reg.a5 + W.vol) & 0xff);
-                            reg.setD0_B(reg.getD0_B() - mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG) & 0xff);
+                            reg.setD0_B(reg.getD0_B() - (mm.readByte(reg.a6 + Dw.MASTER_VOL_PSG) & 0xff));
                             if ((byte) reg.getD0_B() < 0) {
                                 reg.D0_L = 0;
                             }
                             devpsg._psg_lfo();
                         }
                         reg.a5 = reg.a5 + W._track_work_size;
-                        if (reg.decAfterD7_W() != 0) continue; // break _ch_fade_loop;
+                        if (reg.getAndDecD7_W() != 0) continue; // break _ch_fade_loop;
                         return;
                     }
 
@@ -779,16 +779,16 @@ _opm_recall:
                     } else {
                         reg.D4_L = 0x7f;
                     }
-// L2:
+//L2:
                     devopn._FM_F2_softenv();
                 }
-// _ch_fade_next:
+//_ch_fade_next:
                 reg.a5 = reg.a5 + W._track_work_size;
                 reg.setD7_W(reg.getD7_W() - 1);
                 if (reg.getD7_W() != 0) continue; // break _ch_fade_loop;
                 return;
             }
-// _ch_fade_loop_check:
+//_ch_fade_loop_check:
             if (reg.getD0_B() < 0xa0) { // break _ch_fade_loop_pcm;
 
                 reg.setD4_B(mm.readByte(reg.a6 + Dw.MUTE) & 0xff);
@@ -803,13 +803,13 @@ _opm_recall:
                 } else {
                     reg.D4_L = 0x7f;
                 }
-// L2b:
+//L2b:
                 devopm._OPM_F2_softenv();
                 reg.a5 = reg.a5 + W._track_work_size;
-                if (reg.decAfterD7_W() != 0) continue; // break _ch_fade_loop;
+                if (reg.getAndDecD7_W() != 0) continue; // break _ch_fade_loop;
                 return;
             }
-// _ch_fade_loop_pcm:
+//_ch_fade_loop_pcm:
             if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x40) != 0) { // break L9;
 
                 reg.setD4_B(mm.readByte(reg.a6 + Dw.MUTE) & 0xff);
@@ -824,12 +824,12 @@ _opm_recall:
                 } else {
                     reg.D4_L = 0;
                 }
-// L2c:
+//L2c:
                 devmpcm._MPCM_F2_softenv();
             }
-// L9:
+//L9:
             reg.a5 = reg.a5 + W._track_work_size;
-        } while (reg.decAfterD7_W() != 0); // break _ch_fade_loop;
+        } while (reg.getAndDecD7_W() != 0); // break _ch_fade_loop;
     }
 
     /** */
@@ -837,7 +837,7 @@ _opm_recall:
         reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
         reg.a5 = reg.a6 + Dw.TRACKWORKADR;
 
-// _ch_ana_loop:
+//_ch_ana_loop:
         do {
             reg.a0 = mm.readInt(reg.a5 + W.mmljob_adrs);
             ab.hlw_mmljob_adrs.get(reg.a5).run();
@@ -855,7 +855,7 @@ _opm_recall:
                     }
                 }
             }
-            reg.a5 = reg.a5 + W._track_work_size;// Dw._trackworksize;
+            reg.a5 = reg.a5 + W._track_work_size; // Dw._trackworksize;
 
             reg.setD7_W(reg.getD7_W() - 1);
         } while (reg.getD7_W() != 0); // break _ch_ana_loop;
@@ -868,7 +868,7 @@ _opm_recall:
         reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
         reg.a5 = reg.a6 + Dw.TRACKWORKADR;
 
-// _ch_ana_tma_lfo_loop:
+//_ch_ana_tma_lfo_loop:
         do {
             reg.a0 = mm.readInt(reg.a5 + W.lfojob_adrs);
             ab.hlw_lfojob_adrs.get(reg.a5).run();
@@ -883,7 +883,7 @@ _opm_recall:
     private void _ch_ana_tma_env() {
         reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
         reg.a5 = reg.a6 + Dw.TRACKWORKADR;
-// _ch_ana_tma_env_loop:
+//_ch_ana_tma_env_loop:
         do {
             if (mm.readByte(reg.a5 + W.revexec) >= 0) {
                 if (mm.readByte(reg.a5 + W.e_sw) < 0) {
@@ -891,7 +891,7 @@ _opm_recall:
                     ab.hlw_softenv_adrs.get(reg.a5).run();
                 }
             }
-            reg.a5 = reg.a5 + W._track_work_size;// Dw._trackworksize;
+            reg.a5 = reg.a5 + W._track_work_size; // Dw._trackworksize;
             reg.setD7_W(reg.getD7_W() - 1);
         } while (reg.getD7_W() != 0); // break _ch_ana_tma_env_loop;
     }

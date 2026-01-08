@@ -1,0 +1,16 @@
+vavi.test.volume=0.2
+
+dir=/Users/foo/data
+ext=.M
+
+fmpDir=bar/fmp/samples
+fmpPvi=bar/fmp/PVI
+zmsDir=bar/driver/zms
+muap.dir.dta=/Users/foo/MUAP/IV
+muap.dir.pcm=/Users/foo/MUAP/PCM
+
+mdsound.pcm.path=data/ym2608/
+
+mdplayer.variant.ymf262=2
+
+file=data/sample.vgm

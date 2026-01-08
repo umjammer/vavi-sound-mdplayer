@@ -86,7 +86,7 @@ public class Zgm extends BaseDriver {
         vgmEof = ByteUtil.readLeInt(vgmBuf, (byte) 0x04);
 
         int version = ByteUtil.readLeInt(vgmBuf, 0x08);
-         // Version Check
+        // Version Check
         if (version < 10) return false;
         this.version = "%d.%d%d".formatted((version & 0xf00) / 0x100, (version & 0xf0) / 0x10, (version & 0xf));
 
@@ -97,7 +97,7 @@ public class Zgm extends BaseDriver {
 
         int defineAddress = ByteUtil.readLeInt(vgmBuf, 0x1c);
         int defineCount = ByteUtil.readLeShort(vgmBuf, 0x24);
-         // Check number of sound source definitions
+        // Check number of sound source definitions
         if (defineCount < 1) return false;
 
         chipCommandSize = (defineCount > 128) ? 2 : 1;
@@ -120,8 +120,12 @@ public class Zgm extends BaseDriver {
         for (int i = 0; i < defineCount; i++) {
             fcc = ByteUtil.readLe24(vgmBuf, pos);
             if (fcc != FCC_DEF) return false;
-            ZgmChip chip = (new ChipFactory()).Create(ByteUtil.readLeInt(vgmBuf, pos + 0x4), plugin.audio.chipRegister, setting, vgmBuf);
-            if (chip == null) return false;//non support
+            int chipNum = ByteUtil.readLeInt(vgmBuf, pos + 0x4);
+            ZgmChip chip = (new ChipFactory()).create(chipNum, plugin.audio.chipRegister, setting, vgmBuf);
+            if (chip == null) {
+logger.log(Level.WARNING, "not supported chip: " + chipNum);
+                return false; // non support
+            }
 
             if (!chipCount.containsKey(chip.name)) chipCount.put(chip.name, -1);
             chipCount.put(chip.name, chipCount.get(chip.name) + 1);

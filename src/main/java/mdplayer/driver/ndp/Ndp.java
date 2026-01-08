@@ -117,37 +117,38 @@ logger.log(Level.ERROR, e.getMessage(), e);
     }
 
     private void interrupt() {
-        //logger.log(Level.TRACE, " INTRPT(C009H)");
-        z80.getRegisters().setPC((short) 0xc009);
-        z80.getRegisters().setSP((short) 0xf380);
-        z80.continue_();
-        //debugRegisters(z80);
+        byte playFG = 0;
+        try {
+            z80.getRegisters().setPC((short) 0xc009);
+            z80.getRegisters().setSP((short) 0xf380);
+            z80.continue_();
 
-        //logger.log(Level.TRACE, " RDSTAT(C033H)");
-        z80.getRegisters().setPC((short) 0xc033);
-        z80.getRegisters().setSP((short) 0xf380);
-        z80.continue_();
-        byte playFG = (byte) (z80.getRegisters().getA() & 0xf);
-        if (playFG == 0x0) stopped = true;
+            z80.getRegisters().setPC((short) 0xc033);
+            z80.getRegisters().setSP((short) 0xf380);
+            z80.continue_();
+            playFG = (byte) (z80.getRegisters().getA() & 0xf);
+            if (playFG == 0x0) stopped = true;
 
-        //logger.log(Level.TRACE, " RDENDT(C036H)");
-        z80.getRegisters().setPC((short) 0xc036);
-        z80.getRegisters().setSP((short) 0xf380);
-        z80.continue_();
-        playFG = (byte) (z80.getRegisters().getA() & 0xf);
-        playFG = (byte) ((((z80.getMemory().get(0x4000) & 0xff) | (z80.getMemory().get(0x4001) & 0xff)) == 0 ? 1 : (playFG & 1)) |
-                        (((z80.getMemory().get(0x4002) & 0xff) | (z80.getMemory().get(0x4003) & 0xff)) == 0 ? 2 : (playFG & 2)) |
-                        (((z80.getMemory().get(0x4004) & 0xff) | (z80.getMemory().get(0x4005) & 0xff)) == 0 ? 4 : (playFG & 4)) |
-                        (((z80.getMemory().get(0x4006) & 0xff) | (z80.getMemory().get(0x4007) & 0xff)) == 0 ? 8 : (playFG & 8))
-        );
-        if (playFG == 0xf) stopped = true;
+            z80.getRegisters().setPC((short) 0xc036);
+            z80.getRegisters().setSP((short) 0xf380);
+            z80.continue_();
+            playFG = (byte) (z80.getRegisters().getA() & 0xf);
+            playFG = (byte) ((((z80.getMemory().get(0x4000) & 0xff) | (z80.getMemory().get(0x4001) & 0xff)) == 0 ? 1 : (playFG & 1)) |
+                            (((z80.getMemory().get(0x4002) & 0xff) | (z80.getMemory().get(0x4003) & 0xff)) == 0 ? 2 : (playFG & 2)) |
+                            (((z80.getMemory().get(0x4004) & 0xff) | (z80.getMemory().get(0x4005) & 0xff)) == 0 ? 4 : (playFG & 4)) |
+                            (((z80.getMemory().get(0x4006) & 0xff) | (z80.getMemory().get(0x4007) & 0xff)) == 0 ? 8 : (playFG & 8))
+            );
+            if (playFG == 0xf) stopped = true;
 
-        //logger.log(Level.TRACE, " RDLOOP(C039H)");
-        z80.getRegisters().setPC((short) 0xc039);
-        z80.getRegisters().setSP((short) 0xf380);
-        z80.continue_();
-        int a = z80.getRegisters().getA() & 0xff;
-        vgmCurLoop = (a == 255) ? 0 : a;
+            z80.getRegisters().setPC((short) 0xc039);
+            z80.getRegisters().setSP((short) 0xf380);
+            z80.continue_();
+            int a = z80.getRegisters().getA() & 0xff;
+            vgmCurLoop = (a == 255) ? 0 : a;
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, "Exception in interrupt: " + ex.getMessage(), ex);
+            stopped = true;
+        }
     }
 
     private static byte[] program = null;
@@ -180,22 +181,28 @@ logger.log(Level.ERROR, e.getMessage(), e);
         z80.getMemory().setContents(0xc000 - 7, program, 0, null); // -7 Binary file header information
         z80.getMemory().setContents(0x4000 - 7, vgmBuf, 0, null);
 
+        // Initialize HTIMI (timer interrupt hook) at 0xFD9F with RET (0xC9)
+        // The NDP driver copies the old hook content and calls it during interrupt processing
+        // If this contains NOPs (0x00), the code will fall through and crash
+        z80.getMemory().set(0xFD9F, (byte) 0xC9); // RET
+
         logger.log(Level.TRACE, "NDPINI(C000H)");
         z80.getRegisters().setPC((short) 0xc000);
         z80.getRegisters().setSP((short) 0xf380);
         z80.continue_();
 
-        //logger.log(Level.TRACE, "MSX-MUSIC slot %02x".formatted(z80.getMemory().get(0x6010) & 0xff));
-        //logger.log(Level.TRACE, "SCC       slot %02x".formatted(z80.getMemory().get(0x6011) & 0xff));
+        // Start playback (MSTART C003) - This sets STATS=1 enabling the driver
+        // MSTART internally uses BGMADR which defaults to 0x4000
+        logger.log(Level.TRACE, "MSTART(C003H)");
+        z80.getRegisters().setPC((short) 0xc003);
+        z80.getRegisters().setSP((short) 0xf380);
+        z80.continue_();
 
-        //byte[] mgsdata = vgmBuf;
-        //short dataAdr = 0x4000;
-
-        logger.log(Level.TRACE, "KSSPLY(C051H)");
+        // IMAIN direct call (C051) - process one frame
+        logger.log(Level.TRACE, "IMAIN(C051H)");
         z80.getRegisters().setPC((short) 0xc051);
         z80.getRegisters().setSP((short) 0xf380);
         z80.continue_();
-        //logger.log(Level.TRACE, "MPLAY2 IsSuccess? RegC=%02x".formatted(z80.getRegisters().getC() & 0xff));
         //if (z80.getRegisters().getCF().intValue() == 0x01) {
         //    debugRegisters(z80);
         //    throw new Exception("MPLAY2 Fail");
@@ -244,7 +251,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
             //logger.log(Level.TRACE, "Call BDOS(0x0005) Reg.C=%02x".formatted(z80.getRegisters().getC() & 0xff));
             callBIOS(args, z80);
         } else if (z80.getRegisters().getPC() == 0x000c) {
-            //logger.log(Level.TRACE, "Call RDSLT(0x000c) Reg.A=%02x Reg.HL=%04x".formatted(z80.getRegisters().getA() & 0xff, z80.getRegisters().HL & 0xffff));
+            //logger.log(Level.TRACE, "Call RDSLT(0x000c) Reg.A=%02x Reg.HL=%04x".formatted(z80.getRegisters().getA() & 0xff, z80.getRegisters().getHL() & 0xffff));
 
             int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
             z80.getRegisters().setA(((MsxMemory) z80.getMemory()).readSlotMemoryAdr(
@@ -261,11 +268,19 @@ logger.log(Level.ERROR, e.getMessage(), e);
             throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x0024) {
             //logger.log(Level.TRACE, "Call ENASLT(0x0024) Reg.A=%02x Reg.HL=%04x".formatted(z80.getRegisters().getA() & 0xff, z80.getRegisters().getHL() & 0xffff));
-            int slot = z80.getRegisters().getA() & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
+            int page = (z80.getRegisters().getH() & 0xc0) >> 6;
+            if (page == 3) {
+                // NDP.BIN seems to fail detecting its own slot (3-1) and tries to map Slot 0 to Page 3 (Code)
+                // We force Slot 3-1 (0x87) if target is Page 3.
+                if ((z80.getRegisters().getA() & 0xff) != 0x87) {
+                    z80.getRegisters().setA((byte) 0x87);
+                }
+            }
+            int slot = (z80.getRegisters().getA() & 0xff) & ((z80.getRegisters().getA() & 0x80) != 0 ? 0xf : 0x3);
             ((MsxMemory) z80.getMemory()).changePage(
                     slot & 0x03,
                     (slot & 0x0c) >> 2,
-                    (z80.getRegisters().getH() & 0xc0) >> 6
+                    page
             );
             z80.executeRet();
         } else if (z80.getRegisters().getPC() == 0x0030) {
@@ -311,7 +326,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
 
     private void callExtBio(BeforeInstructionFetchEvent args, Z80Processor z80) {
         byte funcType = z80.getRegisters().getD();
-        byte function = z80.getRegisters().getA();
+        byte function = z80.getRegisters().getE();
 
         switch (funcType & 0xff) {
             case 0x00:
@@ -352,13 +367,17 @@ logger.log(Level.ERROR, e.getMessage(), e);
     private static void callBIOS(BeforeInstructionFetchEvent args, Z80Processor z80) {
         byte function = z80.getRegisters().getC();
 
-        if (function == 9) {
-            var messageAddress = z80.getRegisters().getDE();
+        if (function == 0) {
+            // _TERM0 - Terminate program (no error code)
+            args.getExecutionStopper().stop(false);
+            return;
+        } else if (function == 9) {
+            var messageAddress = z80.getRegisters().getDE() & 0xffff;
             var bytesToPrint = new ArrayList<Byte>();
             byte byteToPrint;
             while ((byteToPrint = z80.getMemory().get(messageAddress & 0xffff)) != DollarCode) {
                 bytesToPrint.add(byteToPrint);
-                messageAddress++;
+                messageAddress = (short) ((messageAddress + 1) & 0xffff);
             }
 
             var stringToPrint = new String(ByteUtil.toByteArray(bytesToPrint));
@@ -417,7 +436,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
     }
 
     private static String getAsciiZ(Z80Processor z80, short reg) {
-        var messageAddress = reg;
+        var messageAddress = reg & 0xffff;
         var bytesToPrint = new ArrayList<Byte>();
         byte byteToPrint;
         while ((byteToPrint = z80.getMemory().get(messageAddress & 0xffff)) != 0) {

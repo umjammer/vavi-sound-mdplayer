@@ -406,6 +406,19 @@ public class Setting implements Serializable, Cloneable {
         }
     }
 
+    public static class MuapJava implements Serializable, Cloneable {
+
+        public int soundDeviceMode = 0;
+
+        @Override
+        public MuapJava clone() {
+            MuapJava p = new MuapJava();
+            p.soundDeviceMode = this.soundDeviceMode;
+
+            return p;
+        }
+    }
+
     public static class ZMusic implements Serializable, Cloneable {
         public int compilePriority = 0;
         public int pcm8Type = 1;
@@ -1558,6 +1571,16 @@ public class Setting implements Serializable, Cloneable {
 
     void setPmd(Pmd value) {
         pmd = value;
+    }
+
+    private MuapJava _muapJava = new MuapJava();
+
+    public MuapJava getMuapJava() {
+        return _muapJava;
+    }
+
+    public void setMuapJava(MuapJava value) {
+        _muapJava = value;
     }
 
     private ZMusic zMusic = new ZMusic();

@@ -29,9 +29,8 @@ public class FileMng {
      * @param virtualPath  virtual Path
      */
     public FileMng(String physicalPath, String virtualPath /* = "C:" */) {
-
         String p = physicalPath;
-        String v = virtualPath;
+        String v = virtualPath.toUpperCase();
         if (p.charAt(p.length() - 1) == java.io.File.separatorChar) p = p.substring(0, p.length() - 1);
         if (v.charAt(v.length() - 1) == java.io.File.separatorChar) v = v.substring(0, v.length() - 1);
 
@@ -80,7 +79,13 @@ public class FileMng {
      *                 as the current file on the virtual drive
      */
     public void setVFile(String pFilename) {
-        byte[] body = File.readAllBytes(pFilename);
+        byte[] body = null;
+        try {
+            if (File.exists(pFilename)) body = File.readAllBytes(pFilename);
+            else body = null;
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
         setVFile(Path.getFileName(pFilename), body);
     }
 
@@ -94,7 +99,7 @@ public class FileMng {
      */
     public byte[] vReadAllBytes(String vFilename) {
         // Check if there are files in the virtual drive
-        String vFull = Path.combine(VCurrentPath, vFilename);
+        String vFull = Path.combine(VCurrentPath, vFilename).toUpperCase();
         if (vDrive.containsKey(vFull)) return vDrive.get(vFull).body;
 
         try {
@@ -123,9 +128,16 @@ logger.log(Level.ERROR, e.getMessage(), e);
     private String convertPhysicalFileName(String vFull) {
         String vPath = Path.getDirectoryName(vFull);
         if (vPath.indexOf(vDir) != 0) {
-            throw new IndexOutOfBoundsException("Referencing an out of range path");
+            if (!vPath.equals("\\")) {
+                throw new IndexOutOfBoundsException("Referencing an out of range path");
+            }
         }
-        String pFull = Path.combine(vPath.replace(vDir, pDir), Path.getFileName(vFull));
+        String pFull;
+        if (!vPath.equals("\\")) {
+            pFull = Path.combine(vPath.replace(vDir, pDir), Path.getFileName(vFull));
+        } else {
+            pFull = Path.combine(pDir, Path.getFileName(vFull));
+        }
 
         return pFull;
     }

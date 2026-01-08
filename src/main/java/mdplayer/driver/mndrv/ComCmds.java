@@ -219,7 +219,7 @@ public class ComCmds {
 
     public void _atq_11() {
         reg.setD1_W(reg.getD0_W());
-        reg.D0_L = (reg.D0_L >> 16) + (reg.D0_L << 16);
+        reg.D0_L = (reg.D0_L >>> 16) + (reg.D0_L << 16);
         reg.setD0_W(reg.getD1_W());
         reg.setD1_W(reg.getD1_W() << 4);
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
@@ -239,7 +239,7 @@ public class ComCmds {
 
     public void _atq_13() {
         reg.setD1_W(reg.getD0_W());
-        reg.D0_L = (reg.D0_L >> 16) + (reg.D0_L << 16);
+        reg.D0_L = (reg.D0_L >>> 16) + (reg.D0_L << 16);
         reg.setD0_W(reg.getD1_W());
         reg.setD1_W(reg.getD1_W() << 4);
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
@@ -277,7 +277,7 @@ public class ComCmds {
             reg.setD3_B(reg.getD3_B() >> 4);
             do {
                 reg.setD2_B(reg.getD2_B() + (int) (byte) reg.getD3_B());
-            } while (reg.decAfterD1_W() != 0);
+            } while (reg.getAndDecD1_W() != 0);
         }
         reg.setD0_B(reg.getD0_B() - (int) (byte) reg.getD2_B());
         mm.write(reg.a5 + W.at_q, (byte) reg.getD0_B());
@@ -340,7 +340,7 @@ public class ComCmds {
     public void _COM_98() {
         reg.D0_L = 0;
         reg.setD0_B(mm.readByte(reg.a1++) & 0xff);
-        if ((byte) reg.getD0_B() >= 0) {
+        if (/* signed */ (byte) reg.getD0_B() >= 0) {
             mm.write(reg.a5 + W.reverb, (byte) (mm.readByte(reg.a5 + W.reverb) & 0x10));
             reg.setD0_B(reg.getD0_B() + 1);
             reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD0_B());
@@ -476,7 +476,7 @@ public class ComCmds {
         reg.a2 = reg.D0_L;
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L << 16) | (reg.D0_L >> 16);
+        reg.D0_L = (reg.D0_L << 16) | (reg.D0_L >>> 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D2_L = reg.D0_L;
@@ -514,7 +514,7 @@ public class ComCmds {
             mm.write(reg.a0, mm.readByte(reg.a2));
             reg.a0++;
             reg.a2++;
-        } while (reg.decAfterD0_W() != 0);
+        } while (reg.getAndDecD0_W() != 0);
     }
 
     /** Relative Volume Mode */
@@ -1002,7 +1002,7 @@ public class ComCmds {
 
         reg.setD1_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D1_L = (reg.D1_L << 16) + (reg.D1_L >> 16);
+        reg.D1_L = (reg.D1_L << 16) + (reg.D1_L >>> 16);
         reg.setD1_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         if (reg.D1_L == 0) {
@@ -1024,7 +1024,7 @@ public class ComCmds {
             reg.setD2_W(mm.readShort(reg.a2 + 2) & 0xffff);
             if (mm.readShort(reg.a2 + 4) != 0) {
                 reg.a2 = (reg.a2 + reg.D2_L) & 0xff_ffff;
-                if (reg.decAfterD1_W() != 0) continue; // break _com_e2_wm10;
+                if (reg.getAndDecD1_W() != 0) continue; // break _com_e2_wm10;
                 reg.D2_L = 0xffff_ffff; // -1;
                 return;
             } else {
@@ -2080,7 +2080,7 @@ public class ComCmds {
 
         reg.setD1_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D1_L = (reg.D1_L >> 16) + (reg.D1_L << 16);
+        reg.D1_L = (reg.D1_L >>> 16) + (reg.D1_L << 16);
         reg.setD1_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         if (reg.D1_L == 0) {
@@ -2105,7 +2105,7 @@ public class ComCmds {
                 return;
             }
             reg.a2 = mm.readInt(reg.a2 + reg.D2_L);
-        } while (reg.decAfterD1_W() != 0);
+        } while (reg.getAndDecD1_W() != 0);
         _com_ed_wm_err_exit();
     }
 
@@ -2123,7 +2123,7 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L >> 16) + (reg.D0_L << 16);
+        reg.D0_L = (reg.D0_L >>> 16) + (reg.D0_L << 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
@@ -2131,7 +2131,7 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L >> 16) + (reg.D0_L << 16);
+        reg.D0_L = (reg.D0_L >>> 16) + (reg.D0_L << 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
@@ -2139,7 +2139,7 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L >> 16) + (reg.D0_L << 16);
+        reg.D0_L = (reg.D0_L >>> 16) + (reg.D0_L << 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
@@ -2147,14 +2147,14 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L >> 16) + (reg.D0_L << 16);
+        reg.D0_L = (reg.D0_L >>> 16) + (reg.D0_L << 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         mm.write(reg.a3 + W_We.loop_count, reg.D0_L);
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L >> 16) + (reg.D0_L << 16);
+        reg.D0_L = (reg.D0_L >>> 16) + (reg.D0_L << 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
@@ -2162,7 +2162,7 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L >> 16) + (reg.D0_L << 16);
+        reg.D0_L = (reg.D0_L >>> 16) + (reg.D0_L << 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
@@ -2170,7 +2170,7 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L >> 16) + (reg.D0_L << 16);
+        reg.D0_L = (reg.D0_L >>> 16) + (reg.D0_L << 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
@@ -2178,7 +2178,7 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L >> 16) + (reg.D0_L << 16);
+        reg.D0_L = (reg.D0_L >>> 16) + (reg.D0_L << 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         mm.write(reg.a3 + W_We.ko_loop_count, reg.D0_L);

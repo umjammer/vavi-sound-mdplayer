@@ -28,6 +28,12 @@ import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
 
 
+/**
+ *
+ * system properties:
+ * <li>{@code mdplayer.fmp.dir} ... location for fmp.com </li>
+ * <li>{@code mdplayer.fmp.pvi} ... location for (.pvi) pcm files </li>
+ */
 public class FMP extends BaseDriver {
 
     private static final Logger logger = getLogger(FMP.class.getName());
@@ -36,7 +42,6 @@ public class FMP extends BaseDriver {
     private int step = 0;
     private final Nise98 nise98 = new Nise98();
     private Register286 regs;
-    private String searchPath = "";
     private List<String> searchPaths = null;
     private FileTemp ft = null;
     private int pcmDataSendCount;
@@ -47,7 +52,15 @@ public class FMP extends BaseDriver {
         return playingFileName;
     }
 
+    public void setPlayingFileName(String playingFileName) {
+        this.playingFileName = playingFileName;
+    }
+
     private String playingArcFileName;
+
+    public void setPlayingArcFileName(String playingArcFileName) {
+        this.playingArcFileName = playingArcFileName;
+    }
 
     public String getPlayingArcFileName() {
         return playingArcFileName;
@@ -79,21 +92,22 @@ public class FMP extends BaseDriver {
 
     public void setSearchPath(String searchPath) {
         try {
-            this.searchPath = searchPath;
+            searchPath = searchPath != null ? searchPath : "";
             // Get the environment variable "PVI"
             String pvi = "";
             try {
-                pvi = System.getenv("PVI");
-                if (!StringUtilities.isNullOrEmpty(pvi)) this.searchPath += ";" + pvi;
+                pvi = System.getProperty("mdplayer.fmp.pvi");
+                if (!StringUtilities.isNullOrEmpty(pvi)) searchPath += (searchPath.isEmpty() ? "" : ";") + pvi;
             } catch (Exception e) {
-                this.searchPath = searchPath;
+logger.log(Level.ERROR, e.getMessage());
             }
-            searchPaths = Arrays.stream(this.searchPath.split(";"))
+            searchPaths = Arrays.stream(searchPath.split(";"))
                     .filter(path -> !StringUtilities.isNullOrEmpty(path)).toList();
             for (String path : searchPaths)
-                logger.log(Level.INFO, "Search Path:%s".formatted(path));
+                logger.log(Level.INFO, "Search Path: %s".formatted(path));
         } catch (Exception e) {
-            this.searchPath = searchPath;
+logger.log(Level.ERROR, e.getMessage());
+            this.searchPaths = List.of(searchPath);
         }
     }
 
@@ -243,7 +257,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
             pcmDataSendCount = 0;
         }
 
-        logger.log(Level.DEBUG, "return CF=%s code=%02x", regs.isCF(), regs.getAL() & 0xff);
+        logger.log(Level.DEBUG, "return CF=%s code=%02x".formatted(regs.isCF(), regs.getAL() & 0xff));
     }
 
     public boolean compile(String playingFileName) {

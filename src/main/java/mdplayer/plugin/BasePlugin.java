@@ -339,10 +339,13 @@ logger.log(Level.DEBUG, "driver: " + audio.driverVirtual.getClass().getSimpleNam
 //logger.log(Level.TRACE, "loop HERE");
             short[] buffer = new short[4];
 
-            audio.update(buffer, 0, buffer.length);
+            int r = audio.update(buffer, 0, buffer.length);
+            if (r == -1) break;
             audio.naudioWrap.write(buffer, 0, buffer.length);
             Thread.yield();
         }
+
+        return false;
     }
 
     public void startTrdVgmReal() {

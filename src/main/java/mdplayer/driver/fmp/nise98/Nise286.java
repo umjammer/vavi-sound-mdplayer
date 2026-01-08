@@ -495,12 +495,14 @@ public class Nise286 {
                 XCHG_SP_AX();
                 break;
             case 0x95:
-                throw new UnsupportedOperationException(Integer.toHexString(op & 0xff));
+                XCHG_BP_AX();
+                break;
             case 0x96:
                 XCHG_SI_AX();
                 break;
             case 0x97:
-                throw new UnsupportedOperationException(Integer.toHexString(op & 0xff));
+                XCHG_DI_AX();
+                break;
             case 0x98:
                 CBW();
                 break;
@@ -508,9 +510,11 @@ public class Nise286 {
                 CWD();
                 break;
             case 0x9a:
-                throw new UnsupportedOperationException(Integer.toHexString(op & 0xff));
+                CALL_CP();
+                break;
             case 0x9b:
-                throw new UnsupportedOperationException(Integer.toHexString(op & 0xff));
+                NOP(); // FWAIT
+                break;
             case 0x9c:
                 PUSHF();
                 break;
@@ -518,9 +522,11 @@ public class Nise286 {
                 POPF();
                 break; // x286
             case 0x9e:
-                throw new UnsupportedOperationException(Integer.toHexString(op & 0xff));
+                SAHF();
+                break;
             case 0x9f:
-                throw new UnsupportedOperationException(Integer.toHexString(op & 0xff));
+                LAHF();
+                break;
 
             case 0xa0:
                 MOV_AL_OB();
@@ -835,7 +841,7 @@ public class Nise286 {
         regs.ip = ofs;
         regs.setCS(seg);
 
-        logger.log(Level.DEBUG, "Interrupt:UserINT%02xh".formatted(ui.getIntNum()));
+        logger.log(Level.TRACE, "Interrupt:UserINT%02xh".formatted(ui.getIntNum()));
     }
 
     private void intXX(int i) {
@@ -857,7 +863,7 @@ public class Nise286 {
         regs.ip = ofs;
         regs.setCS(seg);
 
-        logger.log(Level.DEBUG, "Interrupt:INT%02xh".formatted(i));
+        logger.log(Level.TRACE, "Interrupt:INT%02xh at %04x:%04x".formatted(i, regs.getCS(), regs.ip));
     }
 
     private byte fetch() {
@@ -967,10 +973,10 @@ public class Nise286 {
     private int getSegment() {
         int seg;
         if (segPrefSw) {
-            seg = ((regs.sRegs[segPref] & 0xffff) << 4) & 0xffff;
+            seg = (regs.sRegs[segPref] & 0xffff) << 4;
             segPrefSw = false;
         } else
-            seg = ((regs.getDS() & 0xffff) << 4) & 0xffff;
+            seg = (regs.getDS() & 0xffff) << 4;
         return seg;
     }
 
@@ -1356,7 +1362,7 @@ public class Nise286 {
                 c = (byte) (a | b);
                 ic = c;
                 if (reg < 4) regs.eRegs[reg] = (short) ((regs.eRegs[reg] & 0xff00) | (ic & 0xff));
-                else regs.eRegs[reg - 4] = (short) ((regs.eRegs[reg - 4]) | ((ic & 0xff) << 8));
+                else regs.eRegs[reg - 4] = (short) ((regs.eRegs[reg - 4] & 0xff) | ((ic & 0xff) << 8));
                 break;
             case 2:
                 a = gb;
@@ -4192,6 +4198,52 @@ public class Nise286 {
         short v = regs.getAX();
         regs.setAX(regs.getSI());
         regs.setSI(v);
+    }
+
+    // 0x95
+    private void XCHG_BP_AX() {
+        logger.log(Level.TRACE, "XCHG_BP_AX");
+
+        short v = regs.getAX();
+        regs.setAX(regs.getBP());
+        regs.setBP(v);
+    }
+
+    // 0x97
+    private void XCHG_DI_AX() {
+        logger.log(Level.TRACE, "XCHG_DI_AX");
+
+        short v = regs.getAX();
+        regs.setAX(regs.getDI());
+        regs.setDI(v);
+    }
+
+    // 0x9a
+    private void CALL_CP() {
+        short offset = fetchW();
+        short segment = fetchW();
+        logger.log(Level.TRACE, "CALL $%04x:$%04x".formatted(segment & 0xffff, offset & 0xffff));
+
+        regs.subSP(2);
+        mem.pokeW(regs.getSS_SP(), regs.getCS());
+        regs.subSP(2);
+        mem.pokeW(regs.getSS_SP(), regs.ip);
+
+        regs.setCS(segment);
+        regs.ip = offset;
+    }
+
+    // 0x9e
+    private void SAHF() {
+        logger.log(Level.TRACE, "SAHF");
+        byte ah = regs.getAH();
+        regs.flag = (short) ((regs.flag & 0xff00) | (ah & 0xff));
+    }
+
+    // 0x9f
+    private void LAHF() {
+        logger.log(Level.TRACE, "LAHF");
+        regs.setAH((byte) (regs.flag & 0xff));
     }
 
     // 0x98
