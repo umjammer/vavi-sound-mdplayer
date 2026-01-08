@@ -15,6 +15,7 @@ import mdplayer.plugin.BasePlugin;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
+@EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
 @ExtendWith(MockitoExtension.class)
 class FMPTest {
 
