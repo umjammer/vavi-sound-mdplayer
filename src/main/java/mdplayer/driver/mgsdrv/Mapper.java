@@ -38,14 +38,18 @@ public class Mapper {
         switch (typ) {
         case 0: // adr
 //logger.log(Level.TRACE, " MAPPER PROC ALL_SEG Reg.a=%02x Reg.B=%02x".formatted(z80.getRegisters().getA(), z80.getRegisters().getB()));
-            if (z80.getRegisters().getB() != 0) throw new UnsupportedOperationException();
+            if (z80.getRegisters().getB() != 0) { z80.getRegisters().setCF(Bit.ON); z80.executeRet(); return; }
             if (freeSegment == 0) {
                 z80.getRegisters().setCF(Bit.ON);
+                z80.executeRet();
                 return;
             }
             z80.getRegisters().setA(freeSegment++); // Segment Number 1c 1b
 //logger.log(Level.TRACE, "   Allocate Reg.a=%02x ".formatted(z80.getRegisters().getA()));
             z80.getRegisters().setB((byte) 0x00); // Slot number
+            z80.getRegisters().setCF(Bit.OFF); // 1 on allocation failure
+            break;
+        case 1:
             z80.getRegisters().setCF(Bit.OFF); // 1 on allocation failure
             break;
         case 10: // adr:0x1e
@@ -65,8 +69,9 @@ logger.log(Level.DEBUG, " MAPPER PROC GET_P1 P2:%02x".formatted(crt.getSegmentNu
             z80.getRegisters().setA((byte) crt.getSegmentNumberFromPageNumber(2));
             break;
         default:
-logger.log(Level.DEBUG, " MAPPER PROC Unknown type");
-            throw new UnsupportedOperationException();
+logger.log(Level.DEBUG, " MAPPER PROC Unknown type: " + typ);
+            // Don't throw - just return cleanly for unhandled calls
+            break;
         }
 
         z80.executeRet();
