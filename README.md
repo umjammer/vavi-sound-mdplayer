@@ -13,47 +13,48 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 
 ### Status
 
-| type      | description      |      status      | type                 | alternative                                                    | comment        |
-|-----------|------------------|:----------------:|----------------------|----------------------------------------------------------------|----------------|
-| VGM/VGZ   | video game music |       ✅️ ️       | built-in             | vavi-sound-emu                                                 |
-| XGM       | mega drive       |        ✅️        | built-in             |                                                                |
-| XGM2      | mega drive       |        ✅️        | built-in             |                                                                |
-| MDS       | mega drive       |        →         |                      | [MDSDRV](https://github.com/superctr/MDSDRV)                   |
-| ZGM       | mml2vgm          |                  | built-in             |                                                                |
-| S98       | PC98             |        ✅️        | built-in             |                                                                |
-| MUC/MUB   | PC88 MUCOM88     |      ✅️ 🚧       | driver               |                                                                | compiler wip   |
-| M/M2/MZ   | PC98 PMD         |        ✅️        | driver               |                                                                | for commercial |
-| M\*I/O\*I | PC98 FMP         |        🚧        | built-in*            |                                                                | for freeware   |
-| MDX       | X68k MXDRV       |        🚧        | built-in             |                                                                |
-| MND       | X68k MNDRV       |                  | built-in             |                                                                |
-| ZMD/ZMS   | X68k ZMusic      |                  | built-in*            |                                                                |
-| NRD       | X1 NRTDRV        |        ✅️        | built-in             |                                                                |
-| MDR       | MSX MoonDriver   |       ✅️ ️       | ~~built-in~~, driver |                                                                |
-| MGS       | MSX MGSDRV       |        ✅️        | built-in             |                                                                |
-| NDP       | MSX NDP          |                  | built-in*            |                                                                |
-| BGM/MSD   | MSX MuSICA       |                  | built-in*            |                                                                |
-| SID       | commodore        | ✅️️ <sup>2</sup> | built-in             | [JSIDPlay2](https://github.com/umjammer/JSIDPlay2)             |
-| NSF/NSFE  | NES              | ✅️️ <sup>1</sup> | built-in,            | [NsfPlayer](https://github.com/umjammer/NsfPlayer)             |
-| AY        | ZX               |      ✅️ 🚧       | built-in             | libgme                                                         |
-| HES       | PC Engine        |       ✅️?        | built-in             | libgme                                                         |
-| GBS       | Game Boy         |        →         | built-in             | vavi-sound-emu                                                 |
-| GYM       | Sega Genesis     |       n/a        |                      | libgme                                                         |
-| KSS       | MSX              |       n/a        |                      | libgme                                                         |
-| SAP       | Atari            |       n/a        |                      | libgme                                                         |
-| SPC       | SNES             |      n/a ️→      |                      | vavi-sound-emu                                                 |
-| YM        | Atari ST         |     n/a    ️     |                      | [FastTracker_2](https://en.wikipedia.org/wiki/FastTracker_2)   |
-| HVL       | Hively Tracker   |     n/a   ️      |                      | [Hively Tracker](https://github.com/pete-gordon/hivelytracker) |
-| AHX       | AHX Clone        |     n/a    ️     |                      | [AHX](http://amigascne.org/abyss/ahx/)                         |
-| MID       | midi             |        ️→        | built-in             | javax.sound.midi.spi                                           |
-| RCP       | recomposer       |        🚫        | built-in             |                                                                |
-| RCS       | RCP + PCM8       |                  | built-in             |                                                                |
-| WAV       |                  |        ️→        | built-in             | javax.sound.sampled.spi                                        |
-| MP3       |                  |        ️→        | built-in             | mp3spi                                                         |
-| AIF       |                  |        ️→        | built-in             | javax.sound.sampled.spi                                        |
+| type                            | description      |      status      | type                 | alternative                                                    | comment                                              |
+|---------------------------------|------------------|:----------------:|----------------------|----------------------------------------------------------------|------------------------------------------------------|
+| VGM/VGZ                         | video game music |       ✅️ ️       | built-in             | vavi-sound-emu                                                 |                                                      |
+| XGM                             | mega drive       |        ✅️        | built-in             |                                                                |                                                      |
+| XGM2                            | mega drive       |        ✅️        | built-in             |                                                                |                                                      |
+| MDS                             | mega drive       |       ⏳️ →       |                      | [MDSDRV](https://github.com/superctr/MDSDRV)                   |                                                      |
+| ZGM                             | mml2vgm          |       n/a        | built-in             |                                                                | currently support only YM2609                        |
+| S98                             | PC98             |        ✅️        | built-in             |                                                                |                                                      |
+| MUC/MUB                         | PC88 MUCOM88     |  ✅️<sup>*</sup>  | driver               |                                                                | (*) compiler wip                                     |
+| M/M2/MZ                         | PC98 PMD         |  ✅️<sup>*</sup>  | driver               |                                                                | for commercial<br/> (*) compiler wip                 |
+| MPZ/OPI</br>MVI/OVI</br>MZI/OZI | PC98 FMP         |        ✅️        | built-in*            |                                                                | for freeware<br/> (*) compiler wip                   |
+| MUS/O/OX/OY                     | PC98 muap98      |  ✅<sup>*</sup>   | driver               |                                                                | (*) compiler wip                                     |
+| MDX                             | X68k MXDRV       |        ✅️        | built-in             |                                                                |                                                      |
+| MND                             | X68k MNDRV       |        ⏳️        | built-in             |                                                                |                                                      |
+| ZMD/ZMS                         | X68k ZMusic      |  ✅️<sup>*</sup>  | built-in*            |                                                                | (*) compiler wip                                     |
+| NRD                             | X1 NRTDRV        |        ✅️        | built-in             |                                                                |                                                      |
+| MDR                             | MSX MoonDriver   |  ✅️<sup>*</sup>  | ~~built-in~~, driver |                                                                | (*) compiler wip                                     |
+| MGS                             | MSX MGSDRV       |        ✅️        | built-in             |                                                                |                                                      |
+| NDP                             | MSX NDP          |        ✅️        | built-in*            |                                                                |                                                      |
+| BGM/MSD                         | MSX MuSICA       |        ✅️        | built-in*            |                                                                | (*) compiler (v4) wip<br/> original also often fails |
+| SID                             | commodore        | ✅️️ <sup>2</sup> | built-in             | [JSIDPlay2](https://github.com/umjammer/JSIDPlay2)             |                                                      |
+| NSF/NSFE                        | NES              | ✅️️ <sup>1</sup> | built-in,            | [NsfPlayer](https://github.com/umjammer/NsfPlayer)             |                                                      |
+| AY                              | ZX               |      ✅️ 🚧       | built-in             | libgme                                                         |                                                      |
+| HES                             | PC Engine        |       ✅️?        | built-in             | libgme                                                         |                                                      |
+| GBS                             | Game Boy         |        →         | built-in             | vavi-sound-emu                                                 |                                                      |
+| GYM                             | Sega Genesis     |       n/a        |                      | libgme                                                         |                                                      |
+| KSS                             | MSX              |       n/a        |                      | libgme                                                         |                                                      |
+| SAP                             | Atari            |       n/a        |                      | libgme                                                         |                                                      |
+| SPC                             | SNES             |      n/a ️→      |                      | vavi-sound-emu                                                 |                                                      |
+| YM                              | Atari ST         |     n/a    ️     |                      | [FastTracker_2](https://en.wikipedia.org/wiki/FastTracker_2)   |                                                      |
+| HVL                             | Hively Tracker   |     n/a   ️      |                      | [Hively Tracker](https://github.com/pete-gordon/hivelytracker) |                                                      |
+| AHX                             | AHX Clone        |     n/a    ️     |                      | [AHX](http://amigascne.org/abyss/ahx/)                         |                                                      |
+| MID                             | midi             |        ️→        | built-in             | javax.sound.midi.spi                                           |                                                      |
+| RCP                             | recomposer       |        🚫        | built-in             |                                                                |                                                      |
+| RCS                             | RCP + PCM8       |        ⏳️        | built-in             |                                                                |                                                      |
+| WAV                             |                  |        ️→        | built-in             | javax.sound.sampled.spi                                        |                                                      |
+| MP3                             |                  |        ️→        | built-in             | mp3spi                                                         |                                                      |
+| AIF                             |                  |        ️→        | built-in             | javax.sound.sampled.spi                                        |                                                      |
 
- <sub>1. use NsfPlayer instead of built-in np library</sub><br/>
+<sub>1. use NsfPlayer instead of built-in np library</sub><br/>
  <sub>2. use JSIDPlay2 instead of built-in sid library</sub><br/>
- <sub>* driver uses emulator</sub>
+ <sub>* at type: driver uses emulator</sub>
 
 ## Install
 
@@ -83,7 +84,9 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 * https://github.com/GhostSonic21/Java_VGMPlayer
 * https://github.com/kwhat/jnativehook
 * https://github.com/waynetam/JavaSSRC/tree/master (fft)
+* https://github.com/kg68k/zmusic3 (zms)
 * https://github.com/myon98/98fmplayer (fmp, pmd)
+* https://ndp.squares.net/web/ (ndp)
 * s98
   * https://www.zophar.net/music/s98.html (s98)
   * https://github.com/niara3/s98txt/blob/master/src/com/niara3/s98txt/Main.java (s98)
@@ -95,10 +98,11 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
   * https://github.com/vampirefrog/mdxtools (mdx)
   * https://github.com/Kermalis/VGMusicStudio (mp2k, sdat, dse (gba/nds/wii))
   * https://hoot.joshw.info/pc98/ (hoot)
-  * https://github.com/uniskie/msx_music_data (musica, msx)
+  * https://github.com/uniskie/msx_music_data (musica, msx, ndp)
   * https://github.com/kg68k/zmusic3 (zms v3)
   * http://retropc.net/x68000/software/sound/zmusic/zmusic2 (zms v2)
   * https://archive.org/details/sound_canvas_midi_collection (rcp)
+  * http://www.os.rim.or.jp/~terada/contents/data.htm (zms)
 * processor
   * z80 
     * https://github.com/trekawek/coffee-gb (z80)
@@ -124,13 +128,14 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
       * ~~some timing is wrong for "Out_Run_(Arcade)/01 Magical Sound Shower.vgz"~~
         * ~~3 alter chips reproduce same glitch, so vgm driver is wrong?~~ ... yes it's unsigned short problem
     * ~~mucom: some are ok and some are not~~
-    * mxdrv: luck of fm channel
+    * ~~mxdrv: luck of fm channel~~
+    * mxdrv: plugin: reject `mdplayer.variant.ym2151=3`, cause frequency mismatch (ym2151:x68sound is already in use).
     * hes: volume related???
     * ay: zxbeep ???
-    * fmp: fmp not resident
+    * ~~fmp: fmp not resident~~
     * zms: wip signed byte related
     * rcs: wip
-
+ 
 ---
 
 # [Original](https://github.com/kuma4649/MDPlayer)

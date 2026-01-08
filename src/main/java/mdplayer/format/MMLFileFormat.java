@@ -14,7 +14,7 @@ import vavi.util.archive.Entry;
 
 
 /**
- * MMLFileFormat.
+ * MML (PMD).
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-07 nsano initial version <br>
