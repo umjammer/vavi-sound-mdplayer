@@ -81,10 +81,9 @@ logger.log(Level.WARNING, "cannot start: " + this);
         audio.chipLED.put("PriOPN2", 1);
         put(Ym2612Chip.class, chip);
 
-        Sn76489Inst sn76489 = Instrument.getInstrument(Sn76489Inst.class);
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = sn76489;
+        chip.instrument = Instrument.getInstrument(Sn76489Inst.class);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Sn76489Chip.class);
         chip.clock = 3579545;

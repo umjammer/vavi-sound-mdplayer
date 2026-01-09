@@ -4,6 +4,8 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -16,6 +18,7 @@ import dotnet4j.io.IOException;
 import dotnet4j.io.MemoryStream;
 import dotnet4j.io.Path;
 import dotnet4j.io.Stream;
+import dotnet4j.util.compat.TriConsumer;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.Chip;
 import mdplayer.Common;
@@ -26,7 +29,6 @@ import mdplayer.chips.Ym2612Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mucom.MucomJava;
-import mdplayer.driver.mucom.MucomJava.mucomChipAction;
 import mdplayer.plugin.BasePlugin;
 import muap.driver.Ems.EMS_AllocMemory;
 import muap.driver.Ems.EMS_GetHandleName;
@@ -220,12 +222,12 @@ public class MuapJava extends BaseDriver {
         for (byte b : vgmBuf) buf.add(new MmlDatum(b & 0xff));
 
         List<ChipAction> lca = new ArrayList<>();
-        mucomChipAction ca;
-        ca = new mucomChipAction(this::OPNAWriteP, null, null);
+        MuapChipAction ca;
+        ca = new MuapChipAction(this::OPNAWriteP, null, null);
         lca.add(ca);
-        ca = new mucomChipAction(this::OPN2WriteP, null, null);
+        ca = new MuapChipAction(this::OPN2WriteP, null, null);
         lca.add(ca);
-        ca = new mucomChipAction(this::CS4231Write, null, null);
+        ca = new MuapChipAction(this::CS4231Write, null, null);
         lca.add(ca);
         String[] pfn = new String[1], x = new String[1];
         plugin.audio.getPlayingFileName(pfn, x);
@@ -258,6 +260,38 @@ public class MuapJava extends BaseDriver {
         //chipRegister.setCS4231Int0bEnt(0, (Action)work[1], model);
 
         return true;
+    }
+
+    private static class MuapChipAction implements ChipAction {
+        private final Consumer<ChipDatum> write;
+        private final TriConsumer<byte[], Integer, Integer> writePCMData;
+        private final BiConsumer<Long, Integer> sendWait;
+
+        public MuapChipAction(Consumer<ChipDatum> write, TriConsumer<byte[], Integer, Integer> writePCMData, BiConsumer<Long, Integer> sendWait) {
+            this.write = write;
+            this.writePCMData = writePCMData;
+            this.sendWait = sendWait;
+        }
+
+        @Override
+        public String getChipName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void waitSend(long t1, int t2) {
+            sendWait.accept(t1, t2);
+        }
+
+        @Override
+        public void writePCMData(byte[] data, int startAddress, int endAddress) {
+            writePCMData.accept(data, startAddress, endAddress);
+        }
+
+        @Override
+        public void writeRegister(ChipDatum cd) {
+            write.accept(cd);
+        }
     }
 
     void OPNAWriteP(ChipDatum dat) {

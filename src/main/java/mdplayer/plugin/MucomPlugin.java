@@ -9,7 +9,6 @@ import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
-import mdplayer.Setting;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2610Chip;
@@ -43,7 +42,7 @@ public class MucomPlugin extends BasePlugin {
             audio.driverReal = new MucomJava();
             ((MucomJava) audio.driverReal).setPlayingFileName(playingFileName);
         }
-        boolean r = _play(setting, MUCOMFileType.MUB); // MucomDotNET.MUCOMFileType.MUC
+        boolean r = _play(MUCOMFileType.MUB); // MucomDotNET.MUCOMFileType.MUC
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);
             return false;
@@ -53,7 +52,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
     }
 
     /** */
-    private boolean _play(Setting setting, MUCOMFileType fileType) {
+    private boolean _play(MUCOMFileType fileType) {
         if (fileType == MUCOMFileType.MUC) {
             vgmBuf = ((MucomJava) audio.driverVirtual).compile(vgmBuf);
         }

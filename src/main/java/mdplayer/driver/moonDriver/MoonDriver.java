@@ -3836,26 +3836,26 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
 
     private byte readMemory(int adr) {
         switch ((adr & 0xffff) >> 14) {
-        case 0://0x0000 - 0x3fff
+        case 0: // 0x0000 - 0x3fff
         default:
             if (seg0x0000 == null)
                 return mem[adr & 0xffff];
             if (extMem[seg0x0000] == null)
                 extMem[seg0x0000] = new byte[1024 * 16];
             return extMem[seg0x0000][adr & 0x3fff];
-        case 1://0x4000 - 0x7fff
+        case 1: // 0x4000 - 0x7fff
             if (seg0x4000 == null)
                 return mem[adr & 0xffff];
             if (extMem[seg0x4000] == null)
                 extMem[seg0x4000] = new byte[1024 * 16];
             return extMem[seg0x4000][adr & 0x3fff];
-        case 2://0x8000 - 0xbfff
+        case 2: // 0x8000 - 0xbfff
             if (seg0x8000 == null || seg0x8000 == 0)
                 return mem[adr & 0xffff];
             if (extMem[seg0x8000] == null)
                 extMem[seg0x8000] = new byte[1024 * 16];
             return extMem[seg0x8000][adr & 0x3fff];
-        case 3://0xc000 - 0xffff
+        case 3: // 0xc000 - 0xffff
             if (seg0xc000 == null)
                 return mem[adr & 0xffff];
             if (extMem[seg0xc000] == null)

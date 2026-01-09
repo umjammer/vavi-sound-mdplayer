@@ -15,6 +15,9 @@ import vavi.util.ByteUtil;
 import static java.lang.System.getLogger;
 
 
+/**
+ * MegaDrive SGDK XGM
+ */
 public class Xgm extends BaseDriver {
 
     private static final Logger logger = getLogger(Xgm.class.getName());
