@@ -1,0 +1,72 @@
+/*
+ * Copyright (c) 2026 by Naohide Sano, All rights reserved.
+ *
+ * Programmed by Naohide Sano
+ */
+
+package mdplayer.format;
+
+import java.util.Collections;
+import java.util.List;
+
+import dotnet4j.io.Path;
+import mdplayer.PlayList;
+import mdplayer.driver.Vgm;
+import mdplayer.driver.mucom.MucomJava;
+import mdplayer.plugin.MdsPlugin;
+import mdplayer.plugin.MucomPlugin;
+import mdplayer.plugin.Plugin;
+import mdplayer.properties.Resources;
+import vavi.util.archive.Archive;
+import vavi.util.archive.Entry;
+
+
+/**
+ * MDSDRV (Mega Drive) FileFormat.
+ *
+ * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
+ * @version 0.00 2026-01-08 nsano initial version <br>
+ */
+public class MdsFileFormat extends BaseFileFormat {
+
+    @Override
+    public String[] getExtensions() {
+        return new String[] {".mds"};
+    }
+
+    @Override
+    public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
+        PlayList.Music music = new PlayList.Music();
+        music.format = this;
+        Vgm.Gd3 gd3 = new MucomJava().getGD3Info(buf);
+        music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
+        music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
+        music.game = gd3.gameName;
+        music.gameJ = gd3.gameNameJ;
+        music.composer = gd3.composer;
+        music.composerJ = gd3.composerJ;
+        music.vgmby = gd3.vgmBy;
+
+        music.converted = gd3.converted;
+        music.notes = gd3.notes;
+        return Collections.singletonList(music);
+    }
+
+    @Override
+    public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */) {
+        return getMusicCommon(ms, buf, zipFile);
+    }
+
+    @Override
+    public String[] getPresetMixerBalance() {
+        return new String[] {
+                "DriverBalance_MUB.mbc",
+                Resources.getDefaultVolumeBalance_MUB()
+        };
+    }
+
+    @Override
+    public Plugin getPlugin() {
+        return Plugin.getPlugin(MdsPlugin.class);
+    }
+}
