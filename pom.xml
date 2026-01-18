@@ -214,7 +214,7 @@
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-mdsound</artifactId>
-      <version>0.0.11</version>
+      <version>0.0.12</version>
     </dependency>
     <dependency>
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
@@ -240,6 +240,11 @@
       <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
       <artifactId>vavi-sound-muap</artifactId>
       <version>0.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.umjammer</groupId> <!-- vavi / com.github.umjammer -->
+      <artifactId>vavi-sound-mdsdrv</artifactId>
+      <version>0.4.1</version>
     </dependency>
 
     <dependency>
