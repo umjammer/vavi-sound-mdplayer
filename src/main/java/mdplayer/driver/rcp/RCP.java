@@ -22,8 +22,10 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
+import mdplayer.driver.rcp.RCS.CtlSysex;
 import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
+import vavi.util.StringUtil;
 
 import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
@@ -206,10 +208,16 @@ public class RCP extends BaseDriver {
         gd3 = getGD3Info(vgmBuf);
         //if (Gd3 == null) return false;
 
-        if (!getInformationHeader()) return false;
+        if (!getInformationHeader()) {
+logger.log(Level.INFO, "getInformationHeader");
+            return false;
+        }
 
         // Create a command to send in advance for each port
-        if (!makeBeforeSendCommand()) return false;
+        if (!makeBeforeSendCommand()) {
+logger.log(Level.INFO, "makeBeforeSendCommand");
+            return false;
+        }
 
         if (model == EnmModel.RealModel) {
             plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 0, 1);
@@ -285,20 +293,32 @@ public class RCP extends BaseDriver {
 
     /** @return tri-state (nullable boolean) */
     private static Boolean checkHeadString(byte[] buf) {
-        if (buf == null || buf.length < 32) return null;
-
-        String str = new String(buf, 0, 32, charset);
-        if (!str.equals("RCM-PC98V2.0(C)COME ON MUSIC\n\0\0")) {
-            if (!str.equals("COME ON MUSIC RECOMPOSER RCP3.0\0")) return null;
-            else return true;
+        if (buf == null || buf.length < 32) {
+logger.log(Level.INFO, "buf is null or buf.length < 32");
+            return null;
         }
 
+        String str = new String(buf, 0, 32, charset);
+        if (!str.equals("RCM-PC98V2.0(C)COME ON MUSIC\r\n\0\0")) {
+            if (!str.equals("COME ON MUSIC RECOMPOSER RCP3.0\0")) {
+logger.log(Level.INFO, "magic not match\n" + StringUtil.getDump(buf, 32));
+                return null;
+            } else {
+logger.log(Level.INFO, "rcp v2");
+                return true;
+            }
+        }
+
+logger.log(Level.INFO, "rcp v3");
         return false;
     }
 
     private boolean getInformationHeader() {
         Boolean ret = checkHeadString(vgmBuf);
-        if (ret == null) return false;
+        if (ret == null) {
+logger.log(Level.INFO, "checkHeadString");
+            return false;
+        }
         isG36 = ret;
 
         ptr = 32;
@@ -758,7 +778,7 @@ public class RCP extends BaseDriver {
             trkn.getPart().get(meaInd).insertSpEvent(
                     pEvt,
                     pk[1],
-                    MIDISpEventType.values()[pk[0]],
+                    MIDISpEventType.valueOf(pk[0]),
                     new byte[][] {
                             {(byte) pk[2], (byte) pk[3]}
                     });

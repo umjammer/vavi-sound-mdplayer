@@ -383,16 +383,16 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
         boolean loadADPCMOnly = false;
 
         List<ChipAction> actions = new ArrayList<>();
-        mucomChipAction action;
-        action = new mucomChipAction(this::writeOPNA1, null, this::sendOPNAWait);
+        MucomChipAction action;
+        action = new MucomChipAction(this::writeOPNA1, null, this::sendOPNAWait);
         actions.add(action);
-        action = new mucomChipAction(this::writeOPNA2, null, null);
+        action = new MucomChipAction(this::writeOPNA2, null, null);
         actions.add(action);
-        action = new mucomChipAction(this::writeOPNB1, this::writeOPNB1PCMData, null);
+        action = new MucomChipAction(this::writeOPNB1, this::writeOPNB1PCMData, null);
         actions.add(action);
-        action = new mucomChipAction(this::writeOPNB2, this::writeOPNB2PCMData, null);
+        action = new MucomChipAction(this::writeOPNB2, this::writeOPNB2PCMData, null);
         actions.add(action);
-        action = new mucomChipAction(this::writeOPM1, null, null);
+        action = new MucomChipAction(this::writeOPM1, null, null);
         actions.add(action);
         mucomDriver.init(actions, ret, null,
                 notSoundBoard2, isLoadADPCM, loadADPCMOnly, PlayingFileName);
@@ -413,16 +413,16 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
         for (byte b : vgmBuf) buf.add(new MmlDatum(b & 0xff));
 
         List<ChipAction> actions = new ArrayList<>();
-        mucomChipAction action;
-        action = new mucomChipAction(this::writeOPNA1, null, this::sendOPNAWait);
+        MucomChipAction action;
+        action = new MucomChipAction(this::writeOPNA1, null, this::sendOPNAWait);
         actions.add(action);
-        action = new mucomChipAction(this::writeOPNA2, null, null);
+        action = new MucomChipAction(this::writeOPNA2, null, null);
         actions.add(action);
-        action = new mucomChipAction(this::writeOPNB1, this::writeOPNB1PCMData, null);
+        action = new MucomChipAction(this::writeOPNB1, this::writeOPNB1PCMData, null);
         actions.add(action);
-        action = new mucomChipAction(this::writeOPNB2, this::writeOPNB2PCMData, null);
+        action = new MucomChipAction(this::writeOPNB2, this::writeOPNB2PCMData, null);
         actions.add(action);
-        action = new mucomChipAction(this::writeOPM1, null, null);
+        action = new MucomChipAction(this::writeOPM1, null, null);
         actions.add(action);
         mucomDriver.init(actions, buf.toArray(MmlDatum[]::new),null,
                 notSoundBoard2, isLoadADPCM, loadADPCMOnly, PlayingFileName);
@@ -504,12 +504,12 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
         try { Thread.sleep(m); } catch (InterruptedException e) {}
     }
 
-    public static class mucomChipAction implements ChipAction {
+    private static class MucomChipAction implements ChipAction {
         private final Consumer<ChipDatum> write;
         private final TriConsumer<byte[], Integer, Integer> writePCMData;
         private final BiConsumer<Long, Integer> sendWait;
 
-        public mucomChipAction(Consumer<ChipDatum> write, TriConsumer<byte[], Integer, Integer> writePCMData, BiConsumer<Long, Integer> sendWait) {
+        public MucomChipAction(Consumer<ChipDatum> write, TriConsumer<byte[], Integer, Integer> writePCMData, BiConsumer<Long, Integer> sendWait) {
             this.write = write;
             this.writePCMData = writePCMData;
             this.sendWait = sendWait;

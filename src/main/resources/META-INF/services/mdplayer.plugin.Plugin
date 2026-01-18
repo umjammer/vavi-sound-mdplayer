@@ -22,3 +22,4 @@ mdplayer.plugin.FMPPlugin
 mdplayer.plugin.NDPPlugin
 mdplayer.plugin.ZMSPlugin
 mdplayer.plugin.MuapPlugin
+mdplayer.plugin.MdsPlugin
