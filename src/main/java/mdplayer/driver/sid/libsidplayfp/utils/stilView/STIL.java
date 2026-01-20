@@ -190,8 +190,8 @@ public class STIL {
     private String bugbuf;
 
     // Buffers to hold the resulting Strings
-    private final String resultEntry = null;
-    private final String resultBug = null;
+    private final String[] resultEntry = {null};
+    private final String[] resultBug = {null};
 
     // final ios_base::openmode STILopenFlags = ios::in | ios::binary;
     public FileMode STILopenFlags = FileMode.Open; // | ios::binary;
@@ -459,11 +459,7 @@ public class STIL {
         if (a.length() < len) return false;
         if (b.length() < len) return false;
 
-        for (int i = 0; i < len; i++) {
-            if (a.charAt(i) != b.charAt(i)) return false;
-        }
-
-        return true;
+        return a.substring(0, len).equalsIgnoreCase(b.substring(0, len));
     }
 
     /**
@@ -600,7 +596,7 @@ public class STIL {
                 lastError = Error.NOT_IN_STIL;
             } else {
                 entrybuf = "";
-                readEntry(stilFile, entrybuf);
+                entrybuf = readEntry(stilFile, entrybuf);
                 logger.fine("getEntry() entry read" + "\n");
             }
 
@@ -609,7 +605,7 @@ public class STIL {
         }
 
         // Put the requested field into the result String.
-        return getField(resultEntry, entrybuf, tuneNo, field) ? resultEntry : null;
+        return getField(resultEntry, entrybuf, tuneNo, field) ? resultEntry[0] : null;
     }
 
     /**
@@ -719,14 +715,14 @@ public class STIL {
                 lastError = Error.NOT_IN_BUG;
             } else {
                 bugbuf = "";
-                readEntry(bugFile, bugbuf);
+                bugbuf = readEntry(bugFile, bugbuf);
                 logger.fine("getBug() entry read" + "\n");
             }
             if (bugFile != null) bugFile.close();
         }
 
         // Put the requested field into the result String.
-        return getField(resultBug, bugbuf, tuneNo, Field.All) ? resultBug : null;
+        return getField(resultBug, bugbuf, tuneNo, Field.All) ? resultBug[0] : null;
     }
 
     /**
@@ -832,7 +828,7 @@ public class STIL {
                 lastError = Error.NOT_IN_STIL;
             } else {
                 globalbuf = "";
-                readEntry(stilFile, globalbuf);
+                globalbuf = readEntry(stilFile, globalbuf);
                 logger.fine("getGC() entry read" + "\n");
             }
 
@@ -918,9 +914,7 @@ public class STIL {
         inFile.seek(0, SeekOrigin.Begin);
 
         while (inFile != null) {
-            String line = "";
-
-            getStilLine(inFile, line);
+            String line = getStilLine(inFile);
 
             if (!isSTILFile) {
                 logger.fine(line + '\n');
@@ -1052,7 +1046,7 @@ public class STIL {
         String line = null;
 
         do {
-            getStilLine(inFile, line);
+            line = getStilLine(inFile);
 
             if (inFile.getLength() == inFile.position()) {
                 break;
@@ -1102,12 +1096,12 @@ public class STIL {
      * @param inFile filehandle of file to read from
      * @param buffer where to put the result to TODO OUT
      */
-    private void readEntry(FileStream inFile, String buffer) {
+    private String readEntry(FileStream inFile, String buffer) {
         String line = "";
 
         StringBuilder bufferBuilder = new StringBuilder(buffer);
         for (; ; ) {
-            getStilLine(inFile, line);
+            line = getStilLine(inFile);
 
             if (line.isEmpty())
                 break;
@@ -1115,7 +1109,7 @@ public class STIL {
             bufferBuilder.append(line);
             bufferBuilder.append("\n");
         }
-        buffer = bufferBuilder.toString();
+        return bufferBuilder.toString();
     }
 
     /**
@@ -1134,11 +1128,11 @@ public class STIL {
      * @return - false - if nothing was put into 'result'
      * - true  - 'result' has the resulting field
      */
-    private boolean getField(String result, String buffer, int tuneNo/* = 0*/, Field field/* = Field.all*/) {
+    private boolean getField(String[] result, String buffer, int tuneNo /* = 0 */, Field field /* = Field.all */) {
         logger.fine("getField() called, buffer=" + buffer + ", rest=" + tuneNo + "," + field + "\n");
 
         // Clean  the result buffer first.
-        result = "";
+        result[0] = "";
 
         // Position pointer to the first char beyond the file designation.
 
@@ -1195,12 +1189,12 @@ public class STIL {
 
                 if ((tuneNo == 0) && ((field == Field.All) || ((field == Field.Comment) && (temp2 == null)))) {
                     // Simply copy the stuff in.
-                    result += start;
+                    result[0] += start;
                     logger.fine("getField() copied to resultbuf" + "\n");
                     return true;
                 } else if ((tuneNo == 0) && (field == Field.Comment)) {
                     // Copy just the comment.
-                    result += new String(start.array()) + (temp2.position() - start.position());
+                    result[0] += new String(start.array()) + (temp2.position() - start.position());
                     logger.fine("getField() copied to just the COMMENT to resultbuf" + "\n");
                     return true;
                 } else if ((tuneNo == 1) && (temp2 != null)) {
@@ -1226,7 +1220,7 @@ public class STIL {
 
                 if ((field == Field.All) && ((tuneNo == 0) || (tuneNo == 1))) {
                     // The complete entry was asked for. Simply copy the stuff in.
-                    result += start;
+                    result[0] += start;
                     logger.fine("getField() copied to resultbuf" + "\n");
                     return true;
                 } else if (tuneNo == 1) {
@@ -1259,7 +1253,7 @@ public class STIL {
                 switch (field) {
                 case All:
                     // Yes. Simply copy the stuff in.
-                    result += start;
+                    result[0] += start;
                     logger.fine("getField() copied all to resultbuf" + "\n");
                     return true;
 
@@ -1333,7 +1327,7 @@ public class STIL {
     }
 
     /**
-     * @param result where to put the resulting String to (if any) TODO OUT
+     * @param result where to put the resulting String to (if any)
      * @param start  pointer to the first char of what to search for
      *               the field. Should be a buffer : standard STIL
      *               format.
@@ -1343,7 +1337,7 @@ public class STIL {
      * @return false: if nothing was put into 'result',
      * true: 'result' has the resulting field
      */
-    private boolean getOneField(String result, String src, int start, int end, Field field) {
+    private boolean getOneField(String[] result, String src, int start, int end, Field field) {
         // Sanity checking
 
         if ((end < start) || (src.charAt(end - 1) != '\n')) {
@@ -1358,7 +1352,7 @@ public class STIL {
 
         switch (field) {
         case All:
-            result += src.substring(start, end - start);
+            result[0] += src.substring(start, end - start);
             return true;
 
         case Name:
@@ -1465,7 +1459,7 @@ public class STIL {
         // Now nextField points to the last+1 char that should be copied to
         // result. Do that.
 
-        result += temp.substring(0, nextFieldInd);
+        result[0] += temp.substring(0, nextFieldInd);
         return true;
     }
 
@@ -1476,9 +1470,9 @@ public class STIL {
      *
      * @param infile filehandle (streampos should already be positioned
      *               to the start of the desired line)
-     * @param line   char array to put the line into TODO OUT
+     * @return line char array to put the line into
      */
-    private void getStilLine(FileStream infile, String line) {
+    private String getStilLine(FileStream infile) {
         if (STIL_EOL2 != '\0') {
             // If there was a remaining EOL char from the previous read, eat it up.
 
@@ -1492,12 +1486,13 @@ public class STIL {
         }
 
         // getline(infile,line, STIL_EOL);
-        line = "";
+        String line = "";
         int ch = 0;
         StringBuilder lineBuilder = new StringBuilder(line);
-        while ((ch = infile.readByte()) != STIL_EOL) {
+        while ((ch = infile.readByte()) != -1 && ch != STIL_EOL) {
             lineBuilder.append((char) ch);
         }
         line = lineBuilder.toString();
+        return line;
     }
 }

@@ -35,7 +35,8 @@ public class StringUtils {
      * @return true if Strings are equal.
      */
     public static boolean equal(String s1, String s2) {
-        return s1.equals(s2);
+        if (s1 == null || s2 == null) return s1 == s2;
+        return s1.equalsIgnoreCase(s2);
     }
 
     /**
@@ -47,17 +48,13 @@ public class StringUtils {
         if (s1 == null || s2 == null)
             return false;
 
-        if (s1.equals(s2) || n == 0)
+        if (s1.equalsIgnoreCase(s2) || n == 0)
             return true;
 
-        int i = 0;
-        while (n-- != 0 && ((s1.charAt(i) != '\0') || (s2.charAt(i) != '\0'))) {
-            if (!casecompare(s1.charAt(i), s2.charAt(i)))
-                return false;
-            i++;
-        }
+        if (s1.length() < n) n = s1.length();
+        if (s2.length() < n) n = s2.length();
 
-        return true;
+        return s1.substring(0, n).equalsIgnoreCase(s2.substring(0, n));
     }
 }
 

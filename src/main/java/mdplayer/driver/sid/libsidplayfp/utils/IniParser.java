@@ -49,7 +49,7 @@ public class IniParser {
             throw new ParseError();
         }
 
-        return buffer.substring(1, pos - 1);
+        return buffer.substring(1, pos);
     }
 
     private Tuple<String, String> parseKey(String buffer) {
@@ -59,8 +59,8 @@ public class IniParser {
             throw new ParseError();
         }
 
-        String key = buffer.substring(0, buffer.lastIndexOf(' ', pos - 1) + 1);
-        String value = buffer.substring(pos + 1);
+        String key = buffer.substring(0, pos).trim();
+        String value = buffer.substring(pos + 1).trim();
         return new Tuple<>(key, value);
     }
 
@@ -71,10 +71,9 @@ public class IniParser {
             try (StreamReader iniFile = new StreamReader(new FileStream(fileName, FileMode.Open))) {
 
                 String buffer;
-                while (iniFile.read() >= 0) {
-                    buffer = iniFile.readLine();
+                while ((buffer = iniFile.readLine()) != null) {
 
-                    if (buffer.isEmpty())
+                    if (buffer.trim().isEmpty())
                         continue;
 
                     switch (buffer.charAt(0)) {
@@ -85,16 +84,17 @@ public class IniParser {
                     case '[':
                         try {
                             String section = parseSection(buffer);
-                            List<Tuple<String, String>> keys = null;
-                            sections.add(new Tuple<>(section, keys));
-                            it = sections.get(0);
+                            List<Tuple<String, String>> keys = new ArrayList<>();
+                            it = new Tuple<>(section, keys);
+                            sections.add(it);
                         } catch (ParseError e) {
                             logger.log(Level.WARNING, e);
                         }
                         break;
                     default:
                         try {
-                            it.getItem2().add(parseKey(buffer));
+                            if (it != null)
+                                it.getItem2().add(parseKey(buffer));
                         } catch (ParseError e) {
                             logger.log(Level.WARNING, e);
                         }
@@ -123,17 +123,17 @@ public class IniParser {
                 break;
             }
         }
-        return (curSection != sections.get(sections.size() - 1));
+        return (curSection != null);
     }
 
     public String getValue(byte[] key) {
-        Tuple<String, String> keyIt = null;
+        if (curSection == null) return null;
+        String sKey = new String(key, StandardCharsets.US_ASCII).trim();
         for (Tuple<String, String> c : curSection.getItem2()) {
-            if (c.getItem1().equals(new String(key, StandardCharsets.US_ASCII))) {
-                keyIt = c;
-                break;
+            if (c.getItem1().equals(sKey)) {
+                return c.getItem2();
             }
         }
-        return (keyIt != curSection.getItem2().get(curSection.getItem2().size() - 1)) ? keyIt.getItem2() : null;
+        return null;
     }
 }

@@ -174,13 +174,13 @@ public class Timer extends Event {
             // ensure that all of them are set indicating steady state operation.
 
             final int wanted = CIAT_CR_START | CIAT_PHI2IN | CIAT_COUNT2 | CIAT_COUNT3;
-            if (timer > 2 && (state & wanted) == wanted) {
+            if (Short.toUnsignedInt(timer) > 2 && (state & wanted) == wanted) {
                 // we executed this cycle, therefore the pauseTime instanceof +1. If we are called
                 // to execute on the very next clock, we need to get 0 because there's
                 // another timer-- : it.
                 ciaEventPauseTime = eventScheduler.getTime(EventPhase.CLOCK_PHI1) + 1;
                 // execute event slightly before the next underflow.
-                eventScheduler.schedule(m_cycleSkippingEvent, timer - 1);
+                eventScheduler.schedule(m_cycleSkippingEvent, Short.toUnsignedInt(timer) - 1);
                 return;
             }
 
@@ -227,7 +227,7 @@ public class Timer extends Event {
             // cycle, and then have its plans aborted by CPU. Thus, we must avoid modifying
             // the CIA state if the first sleep clock was still : the future.
             if (elapsed >= 0) {
-                timer -= (short) elapsed;
+                timer -= (short) Short.toUnsignedInt((short) elapsed);
                 clock();
             }
         }
@@ -262,7 +262,7 @@ public class Timer extends Event {
     private void cycleSkippingEvent() {
         long elapsed = eventScheduler.getTime(EventPhase.CLOCK_PHI1) - ciaEventPauseTime;
         ciaEventPauseTime = 0;
-        timer -= (short) elapsed;
+        timer -= (short) Short.toUnsignedInt((short) elapsed);
         this.event();
     }
 
@@ -343,7 +343,7 @@ public class Timer extends Event {
      * @param data high byte of latch
      */
     public void latchHi(byte data) {
-        SidEndian.to16hi8(latch, data);
+        latch = SidEndian.to16hi8(latch, data);
         // Reload timer if stopped
         if ((state & CIAT_LOAD) != 0 || (state & CIAT_CR_START) == 0)
             timer = latch;

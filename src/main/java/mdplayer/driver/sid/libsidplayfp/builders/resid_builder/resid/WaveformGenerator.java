@@ -288,7 +288,7 @@ public class WaveformGenerator {
                 ((waveformOutput & 0x010) >> 4);   // Bit  4 -> bit  0
 
         noiseOutput &= (short) waveformOutput;
-        noNoiseOrNoiseOutput = (short) (noNoise | noiseOutput);
+        noNoiseOrNoiseOutput = (short) (noNoise | (noiseOutput & 0xffff));
     }
 
     protected void resetShiftRegister() {
@@ -310,7 +310,7 @@ public class WaveformGenerator {
                         ((shiftRegister & 0x000004) << 3) |
                         ((shiftRegister & 0x000001) << 4));
 
-        noNoiseOrNoiseOutput = (short) (noNoise | noiseOutput);
+        noNoiseOrNoiseOutput = (short) (noNoise | (noiseOutput & 0xffff));
     }
 
     /**
@@ -400,14 +400,14 @@ public class WaveformGenerator {
             // calculation of the Output value.
             int ix = (accumulator ^ (~syncSource.accumulator & ringMsbMask)) >> 12;
 
-            waveformOutput = wave[ix] & (noPulse | pulseOutput) & noNoiseOrNoiseOutput;
+            waveformOutput = (wave[ix] & 0xffff) & (noPulse | pulseOutput) & (noNoiseOrNoiseOutput & 0xffff);
 
             // Triangle/Sawtooth Output instanceof delayed half cycle on 8580.
             // This will appear as a one cycle delay on OSC3 as it is
             // latched : the first phase of the clock.
             if ((waveform & 3) != 0 && (sidModel == SidDefs.ChipModel.MOS8580)) {
-                osc3 = triSawPipeline & (noPulse | pulseOutput) & noNoiseOrNoiseOutput;
-                triSawPipeline = wave[ix];
+                osc3 = triSawPipeline & (noPulse | pulseOutput) & (noNoiseOrNoiseOutput & 0xffff);
+                triSawPipeline = (wave[ix] & 0xffff);
             } else {
                 osc3 = waveformOutput;
             }
@@ -439,9 +439,9 @@ public class WaveformGenerator {
         // The result of the pulse width compare instanceof delayed one cycle.
         // Push next pulse level into pulse level pipeline.
         if ((accumulator >> 12) >= pw) {
-            pulseOutput = -1 & 0xfff;
+            pulseOutput = (short) 0xfff;
         } else {
-            pulseOutput = 0 & 0xfff;
+            pulseOutput = 0;
         }
     }
 
@@ -451,7 +451,7 @@ public class WaveformGenerator {
             // The bit masks no_pulse and no_noise are used to achieve branch-free
             // calculation of the Output value.
             int ix = (accumulator ^ (~syncSource.accumulator & ringMsbMask)) >> 12;
-            waveformOutput = wave[ix] & (noPulse | pulseOutput) & noNoiseOrNoiseOutput;
+            waveformOutput = (wave[ix] & 0xffff) & (noPulse | pulseOutput) & (noNoiseOrNoiseOutput & 0xffff);
             // Triangle/Sawtooth Output delay for the 8580 instanceof not modeled
             osc3 = waveformOutput;
             if (waveform > 0x8 && test == 0) {
@@ -508,8 +508,8 @@ public class WaveformGenerator {
 //#endif // RESID_INLINING || defined(RESID_WAVE_CC)
 
     // Waveform lookup tables.
-    public short[][][] modelWave = new short[][][] {
-            new short[][] {
+    public static short[][][] modelWave = {
+            {
                     new short[1 << 12],
                     new short[1 << 12],
                     new short[1 << 12],
@@ -519,7 +519,7 @@ public class WaveformGenerator {
                     new short[1 << 12], // data3
                     new short[1 << 12] // data4
             },
-            new short[][] {
+            {
                     new short[1 << 12],
                     new short[1 << 12],
                     new short[1 << 12],
@@ -527,15 +527,15 @@ public class WaveformGenerator {
                     new short[1 << 12],
                     new short[1 << 12], // data6
                     new short[1 << 12], // data7
-                    new short[1 << 12] // data7
+                    new short[1 << 12] // data8
             }
     };
 
-    {
+    static {
         try {
-            int[][] x = new int[][] {
-                    new int[] {0, 3},new int[] {0, 5},new int[] {0, 6},new int[] {0, 7},
-                    new int[] {1, 3},new int[] {1, 5},new int[] {1, 6},new int[] {1, 7}
+            int[][] x = {
+                    {0, 3}, {0, 5}, {0, 6}, {0, 7},
+                    {1, 3}, {1, 5}, {1, 6}, {1, 7}
             };
             for (int i = 0; i < 8; i++) {
                 Scanner s = new Scanner(WaveformGenerator.class.getResourceAsStream("data" + (i + 1) + ".txt")).useDelimiter("[ ,]*");
@@ -544,43 +544,45 @@ public class WaveformGenerator {
                     String l = s.nextLine();
                     String[] ps = l.split("[\\s,]+");
                     for (String p : ps) {
+                        if (p.isEmpty()) continue;
                         modelWave[x[i][0]][x[i][1]][c++] = (short) (Integer.parseInt(p, 16) & 0xffff);
                     }
-//if (c - 1 > 4000)
-// logger.log(Level.TRACE, "[%d] %04x".formatted(c - 1, modelWave[x[i][0]][x[i][1]][c-1]));
                 }
             }
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
+            throw new ExceptionInInitializerError(e);
         }
     }
+
     // DAC lookup tables.
-    protected short[][] modelDac = new short[][] {
+    protected static short[][] modelDac = {
             new short[1 << 12],
             new short[1 << 12]
     };
+
+    private static boolean classInit = false;
 
     /**
      * Constructor.
      */
     public WaveformGenerator() {
-        boolean classInit = false;
 
         if (!classInit) {
             // Calculate tables for normal waveforms.
-            accumulator = 0;
+            int accumulatorOrig = 0;
             for (int i = 0; i < (1 << 12); i++) {
-                int msb = accumulator & 0x80_0000;
+                int msb = accumulatorOrig & 0x80_0000;
 
                 // Noise mask, triangle, sawtooth, pulse mask.
                 // The triangle calculation instanceof made branch-free, just for the hell of it.
-                modelWave[0][0][i] = modelWave[1][0][i] = 0xfff;
+                modelWave[0][0][i] = modelWave[1][0][i] = (short) 0xfff;
                 //model_wave[0][1][i] = model_wave[1][1][i] = ((accumulator ^ -!!msb) >> 11) & 0xffe;
-                modelWave[0][1][i] = modelWave[1][1][i] = (short) (((accumulator ^ -(msb != 0 ? 1 : 0)) >> 11) & 0xffe);
-                modelWave[0][2][i] = modelWave[1][2][i] = (short) (accumulator >> 12);
-                modelWave[0][4][i] = modelWave[1][4][i] = 0xfff;
+                modelWave[0][1][i] = modelWave[1][1][i] = (short) (((accumulatorOrig ^ -(msb != 0 ? 1 : 0)) >> 11) & 0xffe);
+                modelWave[0][2][i] = modelWave[1][2][i] = (short) (accumulatorOrig >> 12);
+                modelWave[0][4][i] = modelWave[1][4][i] = (short) 0xfff;
 
-                accumulator += 0x1000;
+                accumulatorOrig += 0x1000;
             }
 
             // Build DAC lookup tables for 12-bit DACs.
@@ -665,7 +667,7 @@ public class WaveformGenerator {
         noPulse = (short) ((waveform & 0x4) != 0 ? 0x000 : 0xfff);
 
         // Test bit rising.
-        // The accumulator instanceof cleared, while the the shift register instanceof prepared for
+        // The accumulator instanceof cleared, while the shift register instanceof prepared for
         // shifting by interconnecting the register bits. The private SRAM cells
         // start to slowly rise up towards one. The SRAM cells reach one within
         // approximately $8000 cycles, yielding a shift register value of

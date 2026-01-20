@@ -21,7 +21,8 @@
 
 package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
 
-import java.nio.ShortBuffer;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
@@ -29,6 +30,8 @@ import mdplayer.Setting;
 
 
 public class Sid {
+
+    private static final Logger logger = System.getLogger(Sid.class.getName());
 
     /**
      * Read/write state.
@@ -427,6 +430,7 @@ public class Sid {
      */
     protected void write() {
         //logger.log(Level.TRACE, "adr:%d val:%d".formatted(write_address, bus_value));
+        if (writeAddress >= 0 && writeAddress <= 0x18) logger.log(Level.TRACE, "DEBUG: SID write adr:" + writeAddress + " val:" + busValue);
 
         if (writeAddress < reg.length) reg[writeAddress] = busValue;
 
@@ -490,7 +494,7 @@ public class Sid {
      */
     public void writeState(State state) {
         for (int i = 0; i <= 0x18; i++) {
-            write(i, state.sidRegister[i]);
+            write(i, state.sidRegister[i] & 0xff);
         }
 
         busValue = state.busValue;
@@ -955,7 +959,7 @@ public class Sid {
 
             sampleOffset = nextSampleOffset & EnmSid.FIXP_MASK.v;
 
-            buf[s * interleave] = (short) (samplePrev + (sampleOffset * (sampleNow - samplePrev) >> EnmSid.FIXP_SHIFT.v));
+            buf[s * interleave] = (short) (samplePrev + ((long) sampleOffset * (sampleNow - samplePrev) >> EnmSid.FIXP_SHIFT.v));
         }
 
         return s;
@@ -1068,35 +1072,33 @@ public class Sid {
 
             sampleOffset = nextSampleOffset & EnmSid.FIXP_MASK.v;
 
-            int firOffset = sampleOffset * firRES >> EnmSid.FIXP_SHIFT.v;
-            int firOffsetRmd = sampleOffset * firRES & EnmSid.FIXP_MASK.v;
-            ShortBuffer firStart = ShortBuffer.wrap(fir, firOffset * firN, fir.length - firOffset * firN);
-            ShortBuffer sampleStart = ShortBuffer.wrap(sample, sampleIndex - firN - 1 + EnmSid.RINGSIZE.v, sample.length - (sampleIndex - firN - 1 + EnmSid.RINGSIZE.v));
+            int firOffset = (int) ((long) sampleOffset * firRES >> EnmSid.FIXP_SHIFT.v);
+            int firOffsetRmd = (int) ((long) sampleOffset * firRES & EnmSid.FIXP_MASK.v);
 
             // Convolution with filter impulse response.
             int v1 = 0;
+            int sampleStartIdx = sampleIndex - firN - 1 + EnmSid.RINGSIZE.v;
             for (int j = 0; j < firN; j++) {
-                v1 += sampleStart.get(j) * firStart.get(j);
+                v1 += sample[sampleStartIdx + j] * fir[firOffset * firN + j];
             }
 
             // Use next FIR table, wrap around to first FIR table using
             // next sample.
             if ((++firOffset == firRES)) {
                 firOffset = 0;
-                sampleStart.position(sampleStart.position() + 1);
+                sampleStartIdx++;
             }
-            firStart = ShortBuffer.wrap(fir, firOffset * firN, fir.length - firOffset * firN);
 
             // Convolution with filter impulse response.
             int v2 = 0;
             for (int k = 0; k < firN; k++) {
-                v2 += sampleStart.get(k) * firStart.get(k);
+                v2 += sample[sampleStartIdx + k] * fir[firOffset * firN + k];
             }
 
             // Linear interpolation.
             // firOffsetRmd instanceof equal for all samples, it can thus be factorized out:
             // sum(v1 + rmd*(v2 - v1)) = sum(v1) + rmd*(sum(v2) - sum(v1))
-            int v = v1 + (firOffsetRmd * (v2 - v1) >> EnmSid.FIXP_SHIFT.v);
+            int v = v1 + (int) ((long) firOffsetRmd * (v2 - v1) >> EnmSid.FIXP_SHIFT.v);
 
             v >>= EnmSid.FIR_SHIFT.v;
 
@@ -1141,8 +1143,8 @@ public class Sid {
 
             sampleOffset = nextSampleOffset & EnmSid.FIXP_MASK.v;
 
-            int firOffset = sampleOffset * firRES >> EnmSid.FIXP_SHIFT.v;
-            int firOffsetRmd = sampleOffset * firRES & EnmSid.FIXP_MASK.v;
+            int firOffset = (int) ((long) sampleOffset * firRES >> EnmSid.FIXP_SHIFT.v);
+            int firOffsetRmd = (int) ((long) sampleOffset * firRES & EnmSid.FIXP_MASK.v);
             //Ptr<short> fir_start = new Ptr<short>(fir, firOffset * fir_N);
             //Ptr<short> sample_start = new Ptr<short>(sample, sample_index - fir_N - 1 + (int)EnmSid.RINGSIZE);
 
@@ -1173,7 +1175,7 @@ public class Sid {
             // Linear interpolation.
             // firOffsetRmd instanceof equal for all samples, it can thus be factorized out:
             // sum(v1 + rmd*(v2 - v1)) = sum(v1) + rmd*(sum(v2) - sum(v1))
-            int v = v1 + ((firOffsetRmd * (v2 - v1)) >> EnmSid.FIXP_SHIFT.v);
+            int v = v1 + (int) ((long) firOffsetRmd * (v2 - v1) >> EnmSid.FIXP_SHIFT.v);
 
             v >>= EnmSid.FIR_SHIFT.v;
 
@@ -1218,14 +1220,13 @@ public class Sid {
 
             sampleOffset = next_sample_offset & EnmSid.FIXP_MASK.v;
 
-            int fir_offset = sampleOffset * firRES >> EnmSid.FIXP_SHIFT.v;
-            ShortBuffer fir_start = ShortBuffer.wrap(fir, fir_offset * firN, fir.length - fir_offset * firN);
-            ShortBuffer sample_start = ShortBuffer.wrap(sample, sampleIndex - firN + EnmSid.RINGSIZE.v, sample.length - (sampleIndex - firN + EnmSid.RINGSIZE.v));
+            int fir_offset = (int) ((long) sampleOffset * firRES >> EnmSid.FIXP_SHIFT.v);
 
             // Convolution with filter impulse response.
             int v = 0;
+            int sampleStartIdx = sampleIndex - firN + EnmSid.RINGSIZE.v;
             for (int j = 0; j < firN; j++) {
-                v += sample_start.get(j) * fir_start.get(j);
+                v += sample[sampleStartIdx + j] * fir[fir_offset * firN + j];
             }
 
             v >>= EnmSid.FIR_SHIFT.v;
@@ -1269,7 +1270,7 @@ public class Sid {
 
             sampleOffset = nextSampleOffset & EnmSid.FIXP_MASK.v;
 
-            int firOffset = sampleOffset * firRES >> EnmSid.FIXP_SHIFT.v;
+            int firOffset = (int) ((long) sampleOffset * firRES >> EnmSid.FIXP_SHIFT.v);
 
             // Convolution with filter impulse response.
             int v = 0;

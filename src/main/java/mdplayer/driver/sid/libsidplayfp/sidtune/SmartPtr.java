@@ -22,8 +22,9 @@ class SmartPtrBase<T> {
 
         if ((buffer != null) && (bufferLen != 0)) {
             bufBegin = ByteBuffer.wrap(buffer);
-            pBufCurrent = ByteBuffer.wrap(buffer);
-            bufEnd = bufBegin; bufEnd.position((int) bufferLen);
+            pBufCurrent = bufBegin.duplicate();
+            bufEnd = bufBegin.duplicate();
+            bufEnd.position((int) bufferLen);
             bufLen = bufferLen;
             status = true;
         }

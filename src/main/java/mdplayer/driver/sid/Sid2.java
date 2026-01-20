@@ -81,7 +81,8 @@ public class Sid2 extends BaseDriver implements SidDriver {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            gd3.trackName = gd3.trackName.substring(0, gd3.trackName.indexOf((char) 0) + 1);
+            int idx = gd3.trackName.indexOf((char) 0);
+            if (idx != -1) gd3.trackName = gd3.trackName.substring(0, idx);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -91,7 +92,8 @@ public class Sid2 extends BaseDriver implements SidDriver {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            gd3.composer = gd3.composer.substring(0, gd3.composer.indexOf((char) 0) + 1);
+            int idx = gd3.composer.indexOf((char) 0);
+            if (idx != -1) gd3.composer = gd3.composer.substring(0, idx);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -101,7 +103,8 @@ public class Sid2 extends BaseDriver implements SidDriver {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            gd3.notes = gd3.notes.substring(0, gd3.notes.indexOf((char) 0) + 1);
+            int idx = gd3.notes.indexOf((char) 0);
+            if (idx != -1) gd3.notes = gd3.notes.substring(0, idx);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }

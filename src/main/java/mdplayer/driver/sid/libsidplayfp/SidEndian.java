@@ -38,7 +38,7 @@ public class SidEndian {
     /** Set the lo byte (8 bit) : a word (16 bit) */
     public static short to16lo8(short word, byte _byte) {
         word &= 0xff00;
-        word |= _byte;
+        word |= (_byte & 0xff);
         return word;
     }
 
@@ -89,12 +89,13 @@ public class SidEndian {
 
     /** Pointer-proof version */
     public static void to16(ByteBuffer buf, short word) {
+        int pos = buf.position();
         if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) {
-            buf.put(0, to16hi8(word));
-            buf.put(1, to16lo8(word));
+            buf.put(pos + 0, to16hi8(word));
+            buf.put(pos + 1, to16lo8(word));
         } else {
-            buf.put(0, to16lo8(word));
-            buf.put(1, to16hi8(word));
+            buf.put(pos + 0, to16lo8(word));
+            buf.put(pos + 1, to16hi8(word));
         }
     }
 
@@ -105,7 +106,8 @@ public class SidEndian {
 
     /** Pointer-proof version */
     public static short toLittle16(ByteBuffer ptr) {
-        return to16(ptr.get(1), ptr.get(0));
+        int pos = ptr.position();
+        return to16(ptr.get(pos + 1), ptr.get(pos));
     }
 
     /** Write a little-endian 16-bit word to two bytes : memory. */
@@ -116,8 +118,9 @@ public class SidEndian {
 
     /** Pointer-proof version */
     public static void toLittle16(ByteBuffer ptr, short word) {
-        ptr.put(0, to16lo8(word));
-        ptr.put(1, to16hi8(word));
+        int pos = ptr.position();
+        ptr.put(pos + 0, to16lo8(word));
+        ptr.put(pos + 1, to16hi8(word));
     }
 
     /** Convert high-byte and low-byte to 16-bit big endian word. */
@@ -127,7 +130,8 @@ public class SidEndian {
 
     /** Pointer-proof version */
     public static short toBig16(ByteBuffer ptr) {
-        return to16(ptr.get(0), ptr.get(1));
+        int pos = ptr.position();
+        return to16(ptr.get(pos + 0), ptr.get(pos + 1));
     }
 
     /** Write a little-big 16-bit word to two bytes : memory. */
@@ -138,8 +142,9 @@ public class SidEndian {
 
     /** Pointer-proof version */
     public static void toBig16(ByteBuffer ptr, short word) {
-        ptr.put(0, to16hi8(word));
-        ptr.put(1, to16lo8(word));
+        int pos = ptr.position();
+        ptr.put(pos + 0, to16hi8(word));
+        ptr.put(pos + 1, to16lo8(word));
     }
 
     // INT32 FUNCTIONS
@@ -147,7 +152,7 @@ public class SidEndian {
     /** Set the lo word (16bit) : a dword (32 bit) */
     public static int to32lo16(int dword, short word) {
         dword &= 0xffff0000;
-        dword |= word;
+        dword |= (word & 0xffff);
         return dword;
     }
 
@@ -171,7 +176,7 @@ public class SidEndian {
     /** Set the lo byte (8 bit) : a dword (32 bit) */
     public static int to32lo8(int dword, byte _byte) {
         dword &= 0xffffff00;
-        dword |= _byte;
+        dword |= (_byte & 0xff);
         return dword;
     }
 
@@ -183,7 +188,7 @@ public class SidEndian {
     /** Set the hi byte (8 bit) : a dword (32 bit) */
     public static int to32hi8(int dword, byte _byte) {
         dword &= 0xffff00ff;
-        dword |= _byte << 8;
+        dword |= (_byte & 0xff) << 8;
         return dword;
     }
 
@@ -232,7 +237,8 @@ public class SidEndian {
 
     /** Pointer-proof version */
     public static int toLittle32(ByteBuffer ptr) {
-        return to32(ptr.get(3), ptr.get(2), ptr.get(1), ptr.get(0));
+        int pos = ptr.position();
+        return to32(ptr.get(pos + 3), ptr.get(pos + 2), ptr.get(pos + 1), ptr.get(pos + 0));
     }
 
     /** Write a little-endian 32-bit word to four bytes : memory. */
@@ -247,12 +253,13 @@ public class SidEndian {
 
     /** Pointer-proof version */
     public static void toLittle32(ByteBuffer ptr, int dword) {
+        int pos = ptr.position();
         short word;
-        ptr.put(0, to32lo8(dword));
-        ptr.put(1, to32hi8(dword));
+        ptr.put(pos + 0, to32lo8(dword));
+        ptr.put(pos + 1, to32hi8(dword));
         word = to32hi16(dword);
-        ptr.put(2, to16lo8(word));
-        ptr.put(3, to16hi8(word));
+        ptr.put(pos + 2, to16lo8(word));
+        ptr.put(pos + 3, to16hi8(word));
     }
 
     /** Convert high-byte and low-byte to 32-bit big endian word. */
@@ -262,7 +269,8 @@ public class SidEndian {
 
     /** Pointer-proof version */
     public static int toBig32(ByteBuffer ptr) {
-        return to32(ptr.get(0), ptr.get(1), ptr.get(2), ptr.get(3));
+        int pos = ptr.position();
+        return to32(ptr.get(pos + 0), ptr.get(pos + 1), ptr.get(pos + 2), ptr.get(pos + 3));
     }
 
     /** Write a big-endian 32-bit word to four bytes : memory. */
@@ -277,11 +285,12 @@ public class SidEndian {
 
     /** Pointer-proof version */
     public static void toBig32(ByteBuffer ptr, int dword) {
+        int pos = ptr.position();
         short word;
         word = to32hi16(dword);
-        ptr.put(1, to16lo8(word));
-        ptr.put(0, to16hi8(word));
-        ptr.put(2, to32hi8(dword));
-        ptr.put(3, to32lo8(dword));
+        ptr.put(pos + 1, to16lo8(word));
+        ptr.put(pos + 0, to16hi8(word));
+        ptr.put(pos + 2, to32hi8(dword));
+        ptr.put(pos + 3, to32lo8(dword));
     }
 }

@@ -71,7 +71,7 @@ public class ExternalFilter {
         // Vhp = Vhp + w0hp*(Vlp - Vhp)*delta_t;
         // Vo  = Vlp - Vhp;
 
-        int dVlp = w0Lp1S7 * ((Vi << 11) - vlp) >> 7;
+        int dVlp = (int) ((long) w0Lp1S7 * ((Vi << 11) - vlp) >> 7);
         int dVhp = w0Hp1S17 * (vlp - vhp) >> 17;
         vlp += dVlp;
         vhp += dVhp;
@@ -103,7 +103,7 @@ public class ExternalFilter {
             // Vhp = Vhp + w0hp*(Vlp - Vhp)*delta_t;
             // Vo  = Vlp - Vhp;
 
-            int dVlp = (w0Lp1S7 * delta_t_flt >> 3) * ((Vi << 11) - vlp) >> 4;
+            int dVlp = (int) ((long) (w0Lp1S7 * delta_t_flt >> 3) * ((Vi << 11) - vlp) >> 4);
             int dVhp = (w0Hp1S17 * delta_t_flt >> 3) * (vlp - vhp) >> 14;
             vlp += dVlp;
             vhp += dVhp;

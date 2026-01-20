@@ -84,10 +84,10 @@ public class MD5 {
         return y ^ (x | ~z);
     }
 
-    private int set(Md5Func func, int a, int b, int c, int d, int k, int s, int Ti) {
-        int t = a + func.apply(b, c, d) + x[k] + Ti;
-        a = rotateLeft(t, s) + b;
-        return a;
+    private int set(Md5Func func, int[] a, int[] b, int[] c, int[] d, int k, int s, int Ti) {
+        int t = a[0] + func.apply(b[0], c[0], d[0]) + x[k] + Ti;
+        a[0] = rotateLeft(t, s) + b[0];
+        return a[0];
     }
 
     private static final int T1 = 0xd76aa478;
@@ -172,7 +172,7 @@ public class MD5 {
     }
 
     private void process(ByteBuffer data) {
-        int a = abcd[0], b = abcd[1], c = abcd[2], d = abcd[3];
+        int[] a = {abcd[0]}, b = {abcd[1]}, c = {abcd[2]}, d = {abcd[3]};
 
         if (ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN) {
 
@@ -208,93 +208,93 @@ public class MD5 {
         //    Let [abcd k s i] denote the operation
         //       a = b + ((a + F(b,c,d) + x[k] + T[i]) <<< s).
         // Do the following 16 operations.
-        a = set(MD5::f, a, b, c, d, 0, 7, T1);
-        d = set(MD5::f, d, a, b, c, 1, 12, T2);
-        c = set(MD5::f, c, d, a, b, 2, 17, T3);
-        b = set(MD5::f, b, c, d, a, 3, 22, T4);
-        a = set(MD5::f, a, b, c, d, 4, 7, T5);
-        d = set(MD5::f, d, a, b, c, 5, 12, T6);
-        c = set(MD5::f, c, d, a, b, 6, 17, T7);
-        b = set(MD5::f, b, c, d, a, 7, 22, T8);
-        a = set(MD5::f, a, b, c, d, 8, 7, T9);
-        d = set(MD5::f, d, a, b, c, 9, 12, T10);
-        c = set(MD5::f, c, d, a, b, 10, 17, T11);
-        b = set(MD5::f, b, c, d, a, 11, 22, T12);
-        a = set(MD5::f, a, b, c, d, 12, 7, T13);
-        d = set(MD5::f, d, a, b, c, 13, 12, T14);
-        c = set(MD5::f, c, d, a, b, 14, 17, T15);
-        b = set(MD5::f, b, c, d, a, 15, 22, T16);
+        a[0] = set(MD5::f, a, b, c, d, 0, 7, T1);
+        d[0] = set(MD5::f, d, a, b, c, 1, 12, T2);
+        c[0] = set(MD5::f, c, d, a, b, 2, 17, T3);
+        b[0] = set(MD5::f, b, c, d, a, 3, 22, T4);
+        a[0] = set(MD5::f, a, b, c, d, 4, 7, T5);
+        d[0] = set(MD5::f, d, a, b, c, 5, 12, T6);
+        c[0] = set(MD5::f, c, d, a, b, 6, 17, T7);
+        b[0] = set(MD5::f, b, c, d, a, 7, 22, T8);
+        a[0] = set(MD5::f, a, b, c, d, 8, 7, T9);
+        d[0] = set(MD5::f, d, a, b, c, 9, 12, T10);
+        c[0] = set(MD5::f, c, d, a, b, 10, 17, T11);
+        b[0] = set(MD5::f, b, c, d, a, 11, 22, T12);
+        a[0] = set(MD5::f, a, b, c, d, 12, 7, T13);
+        d[0] = set(MD5::f, d, a, b, c, 13, 12, T14);
+        c[0] = set(MD5::f, c, d, a, b, 14, 17, T15);
+        b[0] = set(MD5::f, b, c, d, a, 15, 22, T16);
 
         // Round 2.
         //   Let [abcd k s i] denote the operation
         //      a = b + ((a + G(b,c,d) + x[k] + T[i]) <<< s).
         // Do the following 16 operations.
-        a = set(MD5::g, a, b, c, d, 1, 5, T17);
-        d = set(MD5::g, d, a, b, c, 6, 9, T18);
-        c = set(MD5::g, c, d, a, b, 11, 14, T19);
-        b = set(MD5::g, b, c, d, a, 0, 20, T20);
-        a = set(MD5::g, a, b, c, d, 5, 5, T21);
-        d = set(MD5::g, d, a, b, c, 10, 9, T22);
-        c = set(MD5::g, c, d, a, b, 15, 14, T23);
-        b = set(MD5::g, b, c, d, a, 4, 20, T24);
-        a = set(MD5::g, a, b, c, d, 9, 5, T25);
-        d = set(MD5::g, d, a, b, c, 14, 9, T26);
-        c = set(MD5::g, c, d, a, b, 3, 14, T27);
-        b = set(MD5::g, b, c, d, a, 8, 20, T28);
-        a = set(MD5::g, a, b, c, d, 13, 5, T29);
-        d = set(MD5::g, d, a, b, c, 2, 9, T30);
-        c = set(MD5::g, c, d, a, b, 7, 14, T31);
-        b = set(MD5::g, b, c, d, a, 12, 20, T32);
+        a[0] = set(MD5::g, a, b, c, d, 1, 5, T17);
+        d[0] = set(MD5::g, d, a, b, c, 6, 9, T18);
+        c[0] = set(MD5::g, c, d, a, b, 11, 14, T19);
+        b[0] = set(MD5::g, b, c, d, a, 0, 20, T20);
+        a[0] = set(MD5::g, a, b, c, d, 5, 5, T21);
+        d[0] = set(MD5::g, d, a, b, c, 10, 9, T22);
+        c[0] = set(MD5::g, c, d, a, b, 15, 14, T23);
+        b[0] = set(MD5::g, b, c, d, a, 4, 20, T24);
+        a[0] = set(MD5::g, a, b, c, d, 9, 5, T25);
+        d[0] = set(MD5::g, d, a, b, c, 14, 9, T26);
+        c[0] = set(MD5::g, c, d, a, b, 3, 14, T27);
+        b[0] = set(MD5::g, b, c, d, a, 8, 20, T28);
+        a[0] = set(MD5::g, a, b, c, d, 13, 5, T29);
+        d[0] = set(MD5::g, d, a, b, c, 2, 9, T30);
+        c[0] = set(MD5::g, c, d, a, b, 7, 14, T31);
+        b[0] = set(MD5::g, b, c, d, a, 12, 20, T32);
 
         // Round 3.
         //    Let [abcd k s t] denote the operation
         //       a = b + ((a + H(b,c,d) + x[k] + T[i]) <<< s).
         // Do the following 16 operations.
-        a = set(MD5::h, a, b, c, d, 5, 4, T33);
-        d = set(MD5::h, d, a, b, c, 8, 11, T34);
-        c = set(MD5::h, c, d, a, b, 11, 16, T35);
-        b = set(MD5::h, b, c, d, a, 14, 23, T36);
-        a = set(MD5::h, a, b, c, d, 1, 4, T37);
-        d = set(MD5::h, d, a, b, c, 4, 11, T38);
-        c = set(MD5::h, c, d, a, b, 7, 16, T39);
-        b = set(MD5::h, b, c, d, a, 10, 23, T40);
-        a = set(MD5::h, a, b, c, d, 13, 4, T41);
-        d = set(MD5::h, d, a, b, c, 0, 11, T42);
-        c = set(MD5::h, c, d, a, b, 3, 16, T43);
-        b = set(MD5::h, b, c, d, a, 6, 23, T44);
-        a = set(MD5::h, a, b, c, d, 9, 4, T45);
-        d = set(MD5::h, d, a, b, c, 12, 11, T46);
-        c = set(MD5::h, c, d, a, b, 15, 16, T47);
-        b = set(MD5::h, b, c, d, a, 2, 23, T48);
+        a[0] = set(MD5::h, a, b, c, d, 5, 4, T33);
+        d[0] = set(MD5::h, d, a, b, c, 8, 11, T34);
+        c[0] = set(MD5::h, c, d, a, b, 11, 16, T35);
+        b[0] = set(MD5::h, b, c, d, a, 14, 23, T36);
+        a[0] = set(MD5::h, a, b, c, d, 1, 4, T37);
+        d[0] = set(MD5::h, d, a, b, c, 4, 11, T38);
+        c[0] = set(MD5::h, c, d, a, b, 7, 16, T39);
+        b[0] = set(MD5::h, b, c, d, a, 10, 23, T40);
+        a[0] = set(MD5::h, a, b, c, d, 13, 4, T41);
+        d[0] = set(MD5::h, d, a, b, c, 0, 11, T42);
+        c[0] = set(MD5::h, c, d, a, b, 3, 16, T43);
+        b[0] = set(MD5::h, b, c, d, a, 6, 23, T44);
+        a[0] = set(MD5::h, a, b, c, d, 9, 4, T45);
+        d[0] = set(MD5::h, d, a, b, c, 12, 11, T46);
+        c[0] = set(MD5::h, c, d, a, b, 15, 16, T47);
+        b[0] = set(MD5::h, b, c, d, a, 2, 23, T48);
 
         // Round 4.
         //    Let [abcd k s t] denote the operation
         //       a = b + ((a + I(b,c,d) + x[k] + T[i]) <<< s).
         // Do the following 16 operations.
-        a = set(MD5::i, a, b, c, d, 0, 6, T49);
-        d = set(MD5::i, d, a, b, c, 7, 10, T50);
-        c = set(MD5::i, c, d, a, b, 14, 15, T51);
-        b = set(MD5::i, b, c, d, a, 5, 21, T52);
-        a = set(MD5::i, a, b, c, d, 12, 6, T53);
-        d = set(MD5::i, d, a, b, c, 3, 10, T54);
-        c = set(MD5::i, c, d, a, b, 10, 15, T55);
-        b = set(MD5::i, b, c, d, a, 1, 21, T56);
-        a = set(MD5::i, a, b, c, d, 8, 6, T57);
-        d = set(MD5::i, d, a, b, c, 15, 10, T58);
-        c = set(MD5::i, c, d, a, b, 6, 15, T59);
-        b = set(MD5::i, b, c, d, a, 13, 21, T60);
-        a = set(MD5::i, a, b, c, d, 4, 6, T61);
-        d = set(MD5::i, d, a, b, c, 11, 10, T62);
-        c = set(MD5::i, c, d, a, b, 2, 15, T63);
-        b = set(MD5::i, b, c, d, a, 9, 21, T64);
+        a[0] = set(MD5::i, a, b, c, d, 0, 6, T49);
+        d[0] = set(MD5::i, d, a, b, c, 7, 10, T50);
+        c[0] = set(MD5::i, c, d, a, b, 14, 15, T51);
+        b[0] = set(MD5::i, b, c, d, a, 5, 21, T52);
+        a[0] = set(MD5::i, a, b, c, d, 12, 6, T53);
+        d[0] = set(MD5::i, d, a, b, c, 3, 10, T54);
+        c[0] = set(MD5::i, c, d, a, b, 10, 15, T55);
+        b[0] = set(MD5::i, b, c, d, a, 1, 21, T56);
+        a[0] = set(MD5::i, a, b, c, d, 8, 6, T57);
+        d[0] = set(MD5::i, d, a, b, c, 15, 10, T58);
+        c[0] = set(MD5::i, c, d, a, b, 6, 15, T59);
+        b[0] = set(MD5::i, b, c, d, a, 13, 21, T60);
+        a[0] = set(MD5::i, a, b, c, d, 4, 6, T61);
+        d[0] = set(MD5::i, d, a, b, c, 11, 10, T62);
+        c[0] = set(MD5::i, c, d, a, b, 2, 15, T63);
+        b[0] = set(MD5::i, b, c, d, a, 9, 21, T64);
 
         // Then perform the following additions. (That instanceof increment each
         // of the four registers by the value it had before this block
         // was started.)
-        abcd[0] += a;
-        abcd[1] += b;
-        abcd[2] += c;
-        abcd[3] += d;
+        abcd[0] += a[0];
+        abcd[1] += b[0];
+        abcd[2] += c[0];
+        abcd[3] += d[0];
     }
 
     /** Append a String to the message. */

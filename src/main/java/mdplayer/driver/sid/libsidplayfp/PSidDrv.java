@@ -67,7 +67,7 @@ public class PSidDrv {
     private static final String ERR_PSIDDRV_NO_SPACE = "ERROR: No space to install psid driver : C64 ram";
     private static final String ERR_PSIDDRV_RELOC = "ERROR: Failed whilst relocating psid driver";
 
-    private static final byte[] psidDriver = new byte[] {
+    private static final byte[] psidDriver = {
             0x01, 0x00, 0x6f, 0x36, 0x35, 0x00, 0x00, 0x00,
             0x00, 0x10, (byte) 0xcf, 0x00, 0x00, 0x04, 0x00, 0x00,
             0x00, 0x40, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00,
@@ -107,7 +107,7 @@ public class PSidDrv {
             0x00, 0x00,
     };
 
-    private static final byte[] POWER_ON = new byte[] {
+    private static final byte[] POWER_ON = {
             /* addr,   off,  rle, values */
             /*$0003*/ (byte) 0x83, 0x04, (byte) 0xaa, (byte) 0xb1, (byte) 0x91, (byte) 0xb3, 0x22,
             /*$000b*/ 0x03, 0x4c,
@@ -276,16 +276,21 @@ public class PSidDrv {
         // Place psid driver into ram
         short relocationAddress = (short) (relocationStartPage << 8);
 
-        relocationDriver = psidDriver;
+        relocationDriver = psidDriver.clone();
         relocationSize = psidDriver.length;
 
         O65Relocator relocator = new O65Relocator();
         relocator.setReloc(O65Relocator.Segment.TEXT, relocationAddress - 10);
         relocator.setExtract(O65Relocator.Segment.TEXT);
-        if (!relocator.relocate(relocationDriver, relocationSize)) {
+        int[] tmp = {relocationSize};
+        byte[] relocated = relocator.relocate(relocationDriver, tmp);
+        relocationSize = tmp[0];
+        if (relocated == null) {
             errorString = ERR_PSIDDRV_RELOC;
             return false;
         }
+        relocationDriver = relocated;
+        relocationSize = relocated.length;
 
         // Adjust size to not included initialisation data.
         relocationSize -= 10;
@@ -316,7 +321,7 @@ public class PSidDrv {
         // Set PAL/NTSC switch
         mem.writeMemByte((short) 0x02a6, video);
 
-        mem.installResetHook(SidEndian.toLittle16(relocationDriver));
+        mem.installResetHook((short) (driverAddress + 17));
 
         // If not a basic tune then the PSidDrv must install
         // Interrupt hooks and trap programs trying to restart basic

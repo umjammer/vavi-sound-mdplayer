@@ -74,13 +74,13 @@ public class Ptr {
     }
 
     public static ByteBuffer strstr(ByteBuffer src, String s) {
-        String str = new String(src.array(), src.arrayOffset(), src.capacity() - src.position(), StandardCharsets.US_ASCII);
+        String str = new String(src.array(), src.arrayOffset() + src.position(), src.capacity() - src.position(), StandardCharsets.US_ASCII);
         int ind = str.indexOf(s);
         if (ind == -1)
             return null;
 
         ByteBuffer r = src.duplicate();
-        r.position(ind);
+        r.position(src.position() + ind);
         return r.slice();
     }
 

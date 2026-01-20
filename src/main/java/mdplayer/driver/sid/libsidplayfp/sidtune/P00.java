@@ -136,7 +136,7 @@ public class P00 extends SidTuneBase {
         X00Header pHeader = new X00Header();
         Mem.memcpy(pHeader.id, dataBuf, X00_ID_LEN);
         ByteBuffer p = ByteBuffer.wrap(pHeader.name);
-        Mem.memcpy(p, ByteBuffer.wrap(dataBuf, 0, X00_ID_LEN), X00_NAME_LEN);
+        Mem.memcpy(p, ByteBuffer.wrap(dataBuf, X00_ID_LEN, X00_NAME_LEN), X00_NAME_LEN);
         pHeader.length = dataBuf[X00_ID_LEN + X00_NAME_LEN];
 
         if (new String(pHeader.id, StandardCharsets.US_ASCII).equals(P00_ID))

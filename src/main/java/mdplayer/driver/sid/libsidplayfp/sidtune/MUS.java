@@ -50,7 +50,7 @@ public class MUS extends SidTuneBase {
         return null;
     }
 
-    private static final byte[] sidPlayer1 = new byte[] {
+    private static final byte[] sidPlayer1 = {
             0x01, 0x00, 0x6f, 0x36, 0x35, 0x00, 0x00, 0x00,
             0x00, 0x10, (byte) (byte) 0x91, 0x0c, 0x00, 0x04, 0x00, 0x00,
             0x00, 0x40, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00,
@@ -460,7 +460,7 @@ public class MUS extends SidTuneBase {
             0x00, 0x00,
     };
 
-    private static final byte[] sidPlayer2 = new byte[] {
+    private static final byte[] sidPlayer2 = {
             0x01, 0x00, 0x6f, 0x36, 0x35, 0x00, 0x00, 0x00,
             0x00, 0x10, (byte) 0x9e, 0x0c, 0x00, 0x04, 0x00, 0x00,
             0x00, 0x40, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00,
@@ -890,7 +890,7 @@ public class MUS extends SidTuneBase {
     private final int player1Size = sidPlayer1.length - o65HeaderSize;
     private final int player2Size = sidPlayer2.length - o65HeaderSize;
 
-    private boolean detect(byte[] buffer, int voice3Index) { // TODO OUT
+    private boolean detect(byte[] buffer, int[] voice3Index) {
         if (buffer == null) return false;
 
         // Skip load address and 3x length entry.
@@ -900,14 +900,14 @@ public class MUS extends SidTuneBase {
         // Add length of voice 2 data.
         int voice2Index = voice1Index + toLittle16(ByteBuffer.wrap(buffer, 4, 2));
         // Add length of voice 3 data.
-        voice3Index = voice2Index + toLittle16(ByteBuffer.wrap(buffer, 6, 2));
+        voice3Index[0] = voice2Index + toLittle16(ByteBuffer.wrap(buffer, 6, 2));
 
         return ((toBig16(ByteBuffer.wrap(buffer, voice1Index - 2, 2)) == SIDTUNE_MUS_HLT_CMD)
                 && (toBig16(ByteBuffer.wrap(buffer, voice2Index - 2, 2)) == SIDTUNE_MUS_HLT_CMD)
-                && (toBig16(ByteBuffer.wrap(buffer, voice3Index - 2, 2)) == SIDTUNE_MUS_HLT_CMD));
+                && (toBig16(ByteBuffer.wrap(buffer, voice3Index[0] - 2, 2)) == SIDTUNE_MUS_HLT_CMD));
     }
 
-    private boolean detect(ByteBuffer buffer, int voice3Index) { // TODO OUT
+    private boolean detect(ByteBuffer buffer, int[] voice3Index) {
         if (buffer == null) return false;
 
         // Skip load address and 3x length entry.
@@ -917,11 +917,11 @@ public class MUS extends SidTuneBase {
         // Add length of voice 2 data.
         int voice2Index = voice1Index + toLittle16(ByteBuffer.wrap(buffer.array(), buffer.position() + 4, 2));
         // Add length of voice 3 data.
-        voice3Index = voice2Index + toLittle16(ByteBuffer.wrap(buffer.array(), buffer.position() + 6, 2));
+        voice3Index[0] = voice2Index + toLittle16(ByteBuffer.wrap(buffer.array(), buffer.position() + 6, 2));
 
         return ((toBig16(ByteBuffer.wrap(buffer.array(), buffer.position() + (voice1Index - 2), 2)) == SIDTUNE_MUS_HLT_CMD)
                 && (toBig16(ByteBuffer.wrap(buffer.array(), buffer.position() + (voice2Index - 2), 2)) == SIDTUNE_MUS_HLT_CMD)
-                && (toBig16(ByteBuffer.wrap(buffer.array(), buffer.position() + (voice3Index - 2), 2)) == SIDTUNE_MUS_HLT_CMD));
+                && (toBig16(ByteBuffer.wrap(buffer.array(), buffer.position() + (voice3Index[0] - 2), 2)) == SIDTUNE_MUS_HLT_CMD));
     }
 
     private void setPlayerAddress() {
@@ -1007,7 +1007,7 @@ public class MUS extends SidTuneBase {
     }
 
     public SidTuneBase load(byte[] musBuf, byte[] strBuf, int fileOffset, boolean init/* = false*/) {
-        int voice3Index = 0;
+        int[] voice3Index = {0};
         if (!detect(ByteBuffer.wrap(musBuf, fileOffset, musBuf.length - fileOffset), voice3Index))
             return null;
 
@@ -1018,7 +1018,7 @@ public class MUS extends SidTuneBase {
         return tune;
     }
 
-    private void tryLoad(byte[] musBuf, byte[] strBuf, int fileOffset, int voice3Index, boolean init) {
+    private void tryLoad(byte[] musBuf, byte[] strBuf, int fileOffset, int[] voice3Index, boolean init) {
         if (init) {
             info.songs = 1;
             info.startSong = 1;
@@ -1050,7 +1050,7 @@ public class MUS extends SidTuneBase {
         SmartPtrBase.SmartPtr spPet = new SmartPtrBase.SmartPtr(musBuf, musBuf.length - fileOffset, false);
 
         // Voice3Index now instanceof offset to text lines (uppercase Pet-Strings).
-        spPet.opePlusEquel(voice3Index);
+        spPet.opePlusEquel(voice3Index[0]);
 
         // Extract credits
         while (spPet.opePtr() != null) {
@@ -1081,7 +1081,7 @@ public class MUS extends SidTuneBase {
 
         if (stereo) {
             // Voice3Index now instanceof offset to text lines (uppercase Pet-Strings).
-            spPet.opePlusEquel(voice3Index);
+            spPet.opePlusEquel(voice3Index[0]);
 
             // Extract credits
             while (spPet.opePtr() != null) {

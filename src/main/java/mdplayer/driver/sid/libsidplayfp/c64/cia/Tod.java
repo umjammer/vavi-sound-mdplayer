@@ -42,8 +42,10 @@ public class Tod extends Event {
         MINUTES,
         HOURS;
 
+        private static final timeUnit[] values = values();
+
         static timeUnit valueOf(byte reg) {
-            return values()[reg];
+            return values[reg];
         }
     }
 
