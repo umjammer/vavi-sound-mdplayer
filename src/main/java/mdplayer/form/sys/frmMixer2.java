@@ -48,7 +48,7 @@ import mdplayer.chips.NesChip.DmcChip;
 import mdplayer.chips.NesChip.FdsChip;
 import mdplayer.chips.NesChip.Fme7Chip;
 import mdplayer.chips.NesChip.Mmc5Chip;
-import mdplayer.chips.NesChip.N160Chip;
+import mdplayer.chips.NesChip.N163Chip;
 import mdplayer.chips.NesChip.Vrc6Chip;
 import mdplayer.chips.NesChip.Vrc7Chip;
 import mdplayer.form.kb.wf.frmHuC6280;
@@ -229,7 +229,7 @@ public class frmMixer2 extends JFrame {
         newParam.DMC.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, DmcChip.class);
         newParam.FDS.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, FdsChip.class);
         newParam.MMC5.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Mmc5Chip.class);
-        newParam.N160.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, N160Chip.class);
+        newParam.N160.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, N163Chip.class);
         newParam.VRC6.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Vrc6Chip.class);
         newParam.VRC7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Vrc7Chip.class);
         newParam.FME7.Volume = parent.setting.getBalance().getVolume(MAIN_TAG, Fme7Chip.class);
@@ -1165,7 +1165,7 @@ public class frmMixer2 extends JFrame {
             new Tuple<>(MAIN_TAG, DmcChip.class),
             new Tuple<>(MAIN_TAG, FdsChip.class),
             new Tuple<>(MAIN_TAG, Mmc5Chip.class),
-            new Tuple<>(MAIN_TAG, N160Chip.class),
+            new Tuple<>(MAIN_TAG, N163Chip.class),
             new Tuple<>(MAIN_TAG, Vrc6Chip.class),
             new Tuple<>(MAIN_TAG, Vrc7Chip.class),
             new Tuple<>(MAIN_TAG, Fme7Chip.class),

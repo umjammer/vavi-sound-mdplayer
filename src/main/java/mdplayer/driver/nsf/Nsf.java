@@ -2,7 +2,6 @@ package mdplayer.driver.nsf;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 

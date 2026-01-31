@@ -13,6 +13,13 @@ mdplayer.chips.K053260Chip
 mdplayer.chips.K054539Chip
 mdplayer.chips.MultiPcmChip
 mdplayer.chips.NesChip
+mdplayer.chips.NesChip$DmcChip
+mdplayer.chips.NesChip$FdsChip
+mdplayer.chips.NesChip$N163Chip
+mdplayer.chips.NesChip$Mmc5Chip
+mdplayer.chips.NesChip$Vrc7Chip
+mdplayer.chips.NesChip$Vrc6Chip
+mdplayer.chips.NesChip$Fme7Chip
 mdplayer.chips.OkiM6258Chip
 mdplayer.chips.OkiM6295Chip
 mdplayer.chips.P86Chip

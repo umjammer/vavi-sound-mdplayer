@@ -110,7 +110,7 @@ public class frmMMC5 extends frmBase {
         final double LOG_2 = 0.69314718055994530941723212145818;
         final int NOTE_440HZ = 12 * 4 + 9;
 
-        byte[] reg = audio.chipRegister.chip(NesChip.class).readMmc5(chipId);
+        byte[] reg = audio.chipRegister.chip(NesChip.Mmc5Chip.class).readMmc5(chipId);
         int freq;
         int vol;
         int note;

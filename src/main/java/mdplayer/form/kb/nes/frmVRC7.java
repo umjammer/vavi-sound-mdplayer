@@ -107,11 +107,11 @@ public class frmVRC7 extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[] vrc7Register = audio.chipRegister.chip(NesChip.class).readVrc7(chipId);
+        int[] vrc7Register = audio.chipRegister.chip(NesChip.Vrc7Chip.class).readVrc7(chipId);
         if (vrc7Register == null) return;
 
         // Get whether there was a key-on (one-shot)
-        ChipKeyInfo ki = audio.chipRegister.chip(NesChip.class).getVRC7KeyInfo(chipId);
+        ChipKeyInfo ki = audio.chipRegister.chip(NesChip.Vrc7Chip.class).getVRC7KeyInfo(chipId);
 
         for (int ch = 0; ch < 6; ch++) {
             MDChipParams.Channel nyc = newParam.channels[ch];
