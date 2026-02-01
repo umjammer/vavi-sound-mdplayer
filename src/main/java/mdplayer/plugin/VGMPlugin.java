@@ -13,12 +13,14 @@ import mdplayer.chips.NesChip.DmcChip;
 import mdplayer.chips.NesChip.FdsChip;
 import mdplayer.driver.Vgm;
 import mdplayer.format.FileFormat;
+import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.chips.C352;
 import mdsound.chips.Ym3438Const;
 import mdsound.instrument.C140Inst;
 import mdsound.instrument.C352Inst;
 import mdsound.instrument.MameAy8910Inst;
+import mdsound.instrument.NesInst;
 import mdsound.instrument.OkiM6258Inst;
 import mdsound.instrument.OkiM6295Inst;
 import mdsound.instrument.Sn76496Inst;
@@ -835,9 +837,12 @@ logger.log(Level.WARNING, "cannot start: " + this);
         if (((Vgm) audio.driverVirtual).nesClockValue != 0) {
 
             for (int i = 0; i < (((Vgm) audio.driverVirtual).nesDualChipFlag ? 2 : 1); i++) {
+
+                Instrument nes = audio.chipRegister.chip(NesChip.class).instrument(i);
+
                 MDSound.Chip chip = new MDSound.Chip();
                 chip.id = i;
-                chip.instrument = audio.chipRegister.chip(NesChip.class).instrument(i);
+                chip.instrument = nes;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
                 chip.volume = setting.getBalance().getVolume(MAIN_TAG, NesChip.class);
                 chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
@@ -849,10 +854,11 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 chip = new MDSound.Chip();
                 chip.id = i;
-                chip.instrument = audio.chipRegister.chip(NesChip.class).instrument(i);
+                chip.instrument = nes;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume(MAIN_TAG, DmcChip.class);
+                chip.volume = setting.getBalance().getVolume("DMC", NesChip.class);
                 chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
+                chip.setVolumes.put("DMC", chip.mainWrappedSetVolume(((NesInst) nes)::setVolume));
                 chip.option = null;
                 if (i == 0) audio.chipLED.put("PriDMC", 1);
                 else audio.chipLED.put("SecDMC", 1);
@@ -861,10 +867,11 @@ logger.log(Level.WARNING, "cannot start: " + this);
 
                 chip = new MDSound.Chip();
                 chip.id = i;
-                chip.instrument = audio.chipRegister.chip(NesChip.class).instrument(i);
+                chip.instrument = nes;
                 chip.samplingRate = setting.getOutputDevice().getSampleRate();
-                chip.volume = setting.getBalance().getVolume(MAIN_TAG, FdsChip.class);
+                chip.volume = setting.getBalance().getVolume("FDS", NesChip.class);
                 chip.clock = ((Vgm) audio.driverVirtual).nesClockValue;
+                chip.setVolumes.put("DMC", chip.mainWrappedSetVolume(((NesInst) nes)::setVolume));
                 chip.option = null;
                 if (i == 0) audio.chipLED.put("PriFDS", 1);
                 else audio.chipLED.put("SecFDS", 1);

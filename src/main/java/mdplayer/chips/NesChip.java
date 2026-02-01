@@ -323,6 +323,7 @@ public class NesChip implements Chip {
             context.mds.inst(NesInst.FDS.class).resetFDSMask(chipId);
         }
     }
+
     public static class Fme7Chip extends NesChip {
 
         private final byte[] s5bRegs = new byte[0x20];
@@ -468,7 +469,7 @@ public class NesChip implements Chip {
             context.chipLED.put("SecNES", 2);
 
         if (model == EnmModel.VirtualModel)
-            context.mds.inst(NesInst.class).writeRam(chipId, stAdr, dataSize, vgmBuf, vgmAdr);
+            context.mds.inst(NesInst.class).writePcm(chipId, vgmBuf, vgmAdr, dataSize, stAdr);
     }
 
     public int[] readApu(int chipId) {
