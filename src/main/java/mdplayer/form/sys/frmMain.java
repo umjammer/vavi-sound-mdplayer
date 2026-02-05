@@ -4004,7 +4004,7 @@ public class frmMain extends JFrame {
             DrawBuff.drawFont8(screen.mainScreen, 0, 24, 0, "PROC TIME  : %12d ".formatted(plugin.audio.procTimePer1Frame));
         }
 
-        screen.Refresh(null);
+        screen.refresh(null);
 
         plugin.updateVol();
 

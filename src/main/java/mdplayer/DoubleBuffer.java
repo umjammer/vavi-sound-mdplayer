@@ -33,10 +33,10 @@ public class DoubleBuffer implements Closeable {
     }
 
     private void paint(Graphics g) {
-        Refresh(g);
+        refresh(g);
     }
 
-    public void Refresh(Graphics g) {
+    public void refresh(Graphics g) {
         try {
             if (mainScreen != null) {
                 try {

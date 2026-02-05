@@ -17,7 +17,6 @@ import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
 
 import dotnet4j.threading.SynchronizationContext;
-import dotnet4j.util.compat.TriFunction;
 
 import static java.lang.System.getLogger;
 import static vavi.sound.SoundUtil.volume;

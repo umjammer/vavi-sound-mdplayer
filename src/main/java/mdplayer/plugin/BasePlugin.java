@@ -350,7 +350,7 @@ logger.log(Level.DEBUG, "driver: " + audio.driverVirtual.getClass().getSimpleNam
 
     public void startTrdVgmReal() {
         if (setting.getOutputDevice().getDeviceType() == Common.DEV_Null) {
-logger.log(Level.INFO, "dev null:" + getClass().getName());
+logger.log(Level.INFO, "dev null: " + getClass().getName());
             return;
         }
 
