@@ -91,7 +91,7 @@ public class DevOpnEmu {
      */
     public void _fme_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
-        //_fmec:
+//_fmec:
         switch (reg.getD0_W() / 2) {
         case 0x00:
             break;
@@ -516,7 +516,7 @@ public class DevOpnEmu {
         if (f != 0) {
             devopm._ch_opm_HLFO();
         }
-        //_ch_fme_p1:
+//_ch_fme_p1:
         if (mm.readByte(reg.a6 + Dw.LFO_FLAG) < 0) {
             _ch_fme_lfo_extend();
             return;
@@ -675,7 +675,7 @@ public class DevOpnEmu {
     public void _ch_fme_p_com_exec() {
         reg.setD0_B(reg.getD0_B() + (int) (byte) reg.getD1_B());
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
-        //_pe_pattern:
+//_pe_pattern:
         switch (reg.getD0_W() / 2) {
         case 1:
             _ch_fme_p_0();

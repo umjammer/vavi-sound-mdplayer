@@ -157,38 +157,37 @@ public class Player {
         info.credits.add(c64.vicCredits());
     }
 
-    /** @param desc TODO OUT ? */
-    public void checkRomByKernalChecker(byte[] rom, String desc) {
-
+    /** @return rom info */
+    public String checkRomByKernalChecker(byte[] rom) {
         if (rom != null) {
             KernalChecker romChecker = new KernalChecker(rom);
-            desc = romChecker.info();
+            return romChecker.info();
         } else
-            desc = "";
+            return "";
     }
 
-    /** @param desc TODO OUT ? */
-    public void checkRomByBasicChecker(byte[] rom, String desc) {
+    /** @return rom info */
+    public String checkRomByBasicChecker(byte[] rom) {
         if (rom != null) {
             BasicChecker romChecker = new BasicChecker(rom);
-            desc = romChecker.info();
+            return romChecker.info();
         } else
-            desc = "";
+            return "";
     }
 
-    /** @param desc TODO OUT ? */
-    public void checkRomByChargenChecker(byte[] rom, String desc) {
+    /** @return rom info */
+    public String checkRomByChargenChecker(byte[] rom) {
         if (rom != null) {
             ChargenChecker romChecker = new ChargenChecker(rom);
-            desc = romChecker.info();
+            return romChecker.info();
         } else
-            desc = "";
+            return "";
     }
 
     public void setRoms(byte[] kernal, byte[] basic, byte[] character) {
-        checkRomByKernalChecker(kernal, info.kernalDesc);
-        checkRomByBasicChecker(basic, info.basicDesc);
-        checkRomByChargenChecker(character, info.chargenDesc);
+        info.kernalDesc = checkRomByKernalChecker(kernal);
+        info.basicDesc = checkRomByBasicChecker(basic);
+        info.chargenDesc = checkRomByChargenChecker(character);
 
         c64.setRoms(kernal, basic, character);
     }

@@ -90,12 +90,12 @@ public final class MMU implements SidMemory, IPLA {
     // RAM access methods
     @Override
     public byte readMemByte(short addr) {
-        return ramBank.peek(addr);
+        return ramBank.peek(addr & 0xffff);
     }
 
     @Override
     public short readMemWord(short addr) {
-        return SidEndian.toLittle16(ByteBuffer.wrap(ramBank.ram, addr, ramBank.ram.length - addr));
+        return SidEndian.toLittle16(ByteBuffer.wrap(ramBank.ram, addr & 0xffff, ramBank.ram.length - (addr & 0xffff)));
     }
 
     @Override
@@ -105,23 +105,23 @@ public final class MMU implements SidMemory, IPLA {
 
     @Override
     public void writeMemWord(short addr, short value) {
-        SidEndian.toLittle16(ByteBuffer.wrap(ramBank.ram, addr, ramBank.ram.length - addr), value);
+        SidEndian.toLittle16(ByteBuffer.wrap(ramBank.ram, addr & 0xffff, ramBank.ram.length - (addr & 0xffff)), value);
     }
 
     @Override
     public void fillRam(short start, byte value, int size) {
-        ByteBuffer buf = ByteBuffer.wrap(ramBank.ram, start, size);
+        ByteBuffer buf = ByteBuffer.wrap(ramBank.ram, start & 0xffff, size);
         Mem.memset(buf, value, size);
     }
 
     @Override
     public void fillRam(short start, ByteBuffer value, int size) {
-        System.arraycopy(value.array(), value.arrayOffset(), ramBank.ram, start, size);
+        System.arraycopy(value.array(), value.arrayOffset() + value.position(), ramBank.ram, start & 0xffff, size);
     }
 
     @Override
     public void fillRam(short start, byte[] source, int size) {
-        ByteBuffer buf = ByteBuffer.wrap(ramBank.ram, start, ramBank.ram.length - start);
+        ByteBuffer buf = ByteBuffer.wrap(ramBank.ram, start & 0xffff, ramBank.ram.length - (start & 0xffff));
         Mem.memcpy(buf, source, size);
     }
 
@@ -148,7 +148,7 @@ public final class MMU implements SidMemory, IPLA {
      * @return value at address
      */
     public byte cpuRead(short addr) {
-        return cpuReadMap[addr >> 12].peek(addr);
+        return cpuReadMap[(addr & 0xffff) >> 12].peek(addr & 0xffff);
     }
 
     /**
@@ -158,7 +158,7 @@ public final class MMU implements SidMemory, IPLA {
      * @param data the value to write
      */
     public void cpuWrite(short addr, byte data) {
-        cpuWriteMap[addr >> 12].poke(addr, data);
+        cpuWriteMap[(addr & 0xffff) >> 12].poke(addr & 0xffff, data);
     }
 
     public MMU(EventScheduler scheduler, IOBank ioBank) {

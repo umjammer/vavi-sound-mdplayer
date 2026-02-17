@@ -16,6 +16,7 @@ public class DevMPcm {
     //
     //	part of MPCM
     //
+
     /** */
     public void _mpcm_note_set() {
         mm.write(reg.a5 + W.key, (byte) reg.getD0_B());
@@ -44,7 +45,6 @@ public class DevMPcm {
     }
 
     /** */
-    //
     public void _init_lfo_mpcm() {
         if (mm.readByte(reg.a6 + Dw.FADEFLAG) == 0) {
             reg.D5_L = 0x70;
@@ -79,7 +79,6 @@ public class DevMPcm {
     }
 
     /** */
-    //
     public void _mpcm_freq() {
         mm.write(reg.a5 + W.keycode, (short) reg.getD2_W());
         reg.setD1_W(reg.getD2_W());
@@ -91,9 +90,7 @@ public class DevMPcm {
         }
     }
 
-    /** */
-    //	NOTE KEY ON
-    //
+    /** NOTE KEY ON */
     public void _mpcm_note_keyon_pdx() {
         reg.D5_L = mm.readInt(reg.a6 + Dw.PCMBUFADR);
         if (reg.D5_L == 0) {
@@ -545,7 +542,7 @@ public class DevMPcm {
             reg.a0 = reg.a5 + W.voltable;
             reg.setD4_B(mm.readByte(reg.a0 + (int) (short) reg.getD4_W()) & 0xff);
         }
-// _mpcm_echo_ret_atv:
+//_mpcm_echo_ret_atv:
 
         _MPCM_F2_softenv();
 
@@ -569,7 +566,7 @@ public class DevMPcm {
     public void _mpcm_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
 
-        //_mpcmc:
+//_mpcmc:
         switch (reg.getD0_W() / 2) {
         case 0x00: //
             break;
@@ -1043,11 +1040,11 @@ public class DevMPcm {
         if (reg.getD0_B() != 0) { // break _MPCM_A2_8;
             reg.setD0_B(reg.getD0_B() + 1);
             if (reg.getD0_B() == 0) { // break _MPCM_A2_16;
-// _MPCM_A2_16:
+//_MPCM_A2_16:
                 mm.write(reg.a5 + W.pcmmode, 1);
             }
         } else {
-// _MPCM_A2_8:
+//_MPCM_A2_8:
             mm.write(reg.a5 + W.pcmmode, 2);
         }
     }
@@ -1089,10 +1086,10 @@ public class DevMPcm {
         reg.setD4_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
 
-// _mpcm_a7_ana_loop:
+//_mpcm_a7_ana_loop:
         while (true) {
-            if (reg.getD1_B() - mm.readByte(reg.a2 + 2) == 0) {
-                if (reg.getD5_B() - mm.readByte(reg.a2 + 3) == 0) break; // _mpcm_a7_set;
+            if (reg.getD1_B() - (mm.readByte(reg.a2 + 2) & 0xff) == 0) {
+                if (reg.getD5_B() - (mm.readByte(reg.a2 + 3) & 0xff) == 0) break; // _mpcm_a7_set;
             }
 
             reg.setD4_W(reg.getD4_W() - 1);
@@ -1102,7 +1099,7 @@ public class DevMPcm {
             reg.a2 = reg.a2 + (int) (short) reg.getD0_W();
 //            break _mpcm_a7_ana_loop;
         }
-// _mpcm_a7_set:
+//_mpcm_a7_set:
         reg.a2 += 4;
         int e = reg.a1;
         reg.a1 = reg.a2;
@@ -1412,7 +1409,7 @@ L1:
     /** */
     public void _ch_mpcm_lfo_job() {
         comwave._ch_effect();
-        //_ch_mpcm_lfo:
+//_ch_mpcm_lfo:
         reg.setD0_B(mm.readByte(reg.a5 + W.lfo) & 0xff);
         if (reg.getD0_B() == 0) return;
         mm.write(reg.a5 + W.addkeycode, (short) 0);
@@ -1514,7 +1511,7 @@ L1:
                 _MPCM_F2_lfo();
             }
         } else {
-// _ch_mpcm_lfo_a_minus:
+//_ch_mpcm_lfo_a_minus:
             reg.D4_L = 0;
             reg.setD4_B(mm.readByte(reg.a5 + W.vol) & 0xff);
             reg.setD4_W(reg.getD4_W() + (int) (short) reg.getD0_W());

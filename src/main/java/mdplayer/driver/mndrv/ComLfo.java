@@ -303,7 +303,7 @@ public class ComLfo {
 
                 mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
                 reg.setD1_W(mm.readShort(reg.a4 + W_L.henka_work) & 0xffff);
-                mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) + (reg.getD1_W() & 0xffff)));
+                mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) + /* signed */ (short) reg.getD1_W()));
 
                 mm.write(reg.a4 + W_L.count_work, (byte) ((mm.readByte(reg.a4 + W_L.count_work) - 1) & 0xff));
                 if (mm.readByte(reg.a4 + W_L.count_work) == 0) { // break _com_lfo_oneshot_end;

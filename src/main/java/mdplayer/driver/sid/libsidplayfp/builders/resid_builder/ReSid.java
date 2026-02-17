@@ -107,7 +107,7 @@ public class ReSid extends SidEmu {
     public void write(byte addr, byte data) {
         //logger.log(Level.TRACE, "[%010d]write accessClock[%02x] data[%02x]".formatted(accessClock, addr,data));
         clock();
-        sid.write(addr, data);
+        sid.write(addr, data & 0xff);
     }
 
     @Override

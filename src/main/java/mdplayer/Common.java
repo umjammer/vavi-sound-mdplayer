@@ -25,7 +25,6 @@ import java.util.function.Consumer;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
-import bsh.commands.dir;
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileShare;

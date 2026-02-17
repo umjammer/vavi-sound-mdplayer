@@ -37,9 +37,11 @@ public class Sid extends BaseDriver implements SidDriver {
     private static final int FCC_PSID = 0x44495350;
     private static final int FCC_RSID = 0x44495352;
     public int songs;
-    private int song;
+    private int song = 1;
 
     private playSidFp engine;
+    private SidTune tune;
+    private short[] blockBuffer;
     private boolean initial = false;
 
     private SidConfig cfg;
@@ -62,7 +64,8 @@ public class Sid extends BaseDriver implements SidDriver {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            gd3.trackName = gd3.trackName.substring(0, gd3.trackName.indexOf((char) 0) + 1);
+            int idx = gd3.trackName.indexOf((char) 0);
+            if (idx != -1) gd3.trackName = gd3.trackName.substring(0, idx);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -72,7 +75,8 @@ public class Sid extends BaseDriver implements SidDriver {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            gd3.composer = gd3.composer.substring(0, gd3.composer.indexOf((char) 0) + 1);
+            int idx = gd3.composer.indexOf((char) 0);
+            if (idx != -1) gd3.composer = gd3.composer.substring(0, idx);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -82,7 +86,8 @@ public class Sid extends BaseDriver implements SidDriver {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
         try {
-            gd3.notes = gd3.notes.substring(0, gd3.notes.indexOf((char) 0) + 1);
+            int idx = gd3.notes.indexOf((char) 0);
+            if (idx != -1) gd3.notes = gd3.notes.substring(0, idx);
         } catch (Exception e) {
             logger.log(Level.ERROR, e.getMessage(), e);
         }
@@ -151,19 +156,30 @@ public class Sid extends BaseDriver implements SidDriver {
         if (!initial) {
             return length;
         }
-//        vstDelta = 0;
-
         if (vgmFrameCounter < 0) {
             vgmFrameCounter += length / 2;
             return length;
         }
+//        vstDelta = 0;
 
         plugin.audio.chipRegister.chip(SidChip.class).sid = this;
         engine.fastForward(100);
-        engine.play(b, length);
+
+        if (blockBuffer == null || blockBuffer.length < length) {
+            blockBuffer = new short[length];
+        }
+
+        int produced = Math.max(0, engine.play(blockBuffer, length));
+        int toCopy = Math.min(length, produced);
+        if (toCopy > 0) {
+            System.arraycopy(blockBuffer, 0, b, offset, toCopy);
+        }
+        for (int i = toCopy; i < length; i++) {
+            b[offset + i] = 0;
+        }
         for (int i = 0; i < length / 2; i++) {
             processOneFrame();
-            visWB.enq(b[i * 2 + 0], b[i * 2 + 1]);
+            if (i * 2 + 1 < length) visWB.enq(b[offset + i * 2], b[offset + i * 2 + 1]);
         }
 
         return length;
@@ -175,67 +191,68 @@ public class Sid extends BaseDriver implements SidDriver {
         byte[] aryKernel = null;
         byte[] aryBasic = null;
         byte[] aryCharacter = null;
-        if (File.exists(setting.getSid().romKernalPath))
+        if (File.exists(setting.getSid().romKernalPath)) {
             try (FileStream fs = new FileStream(setting.getSid().romKernalPath, FileMode.Open, FileAccess.Read)) {
                 aryKernel = new byte[(int) fs.getLength()];
                 fs.read(aryKernel, 0, aryKernel.length);
             }
-        if (File.exists(setting.getSid().romBasicPath))
+        }
+        if (File.exists(setting.getSid().romBasicPath)) {
             try (FileStream fs = new FileStream(setting.getSid().romBasicPath, FileMode.Open, FileAccess.Read)) {
                 aryBasic = new byte[(int) fs.getLength()];
                 fs.read(aryBasic, 0, aryBasic.length);
             }
-        if (File.exists(setting.getSid().romCharacterPath))
+        }
+        if (File.exists(setting.getSid().romCharacterPath)) {
             try (FileStream fs = new FileStream(setting.getSid().romCharacterPath, FileMode.Open, FileAccess.Read)) {
                 aryCharacter = new byte[(int) fs.getLength()];
                 fs.read(aryCharacter, 0, aryCharacter.length);
             }
+        }
 
-        engine = new playSidFp(setting.getOutputDevice().getSampleRate());
+        int sampleRate = setting.getOutputDevice().getSampleRate();
+        engine = new playSidFp(sampleRate);
         engine.debug(false, null);
         engine.setRoms(aryKernel, aryBasic, aryCharacter);
 
         ReSidBuilder rs = new ReSidBuilder("ReSid", setting);
+        rs.create(engine.info().maxsids());
 
-        int maxSids = (engine.info()).maxsids();
-        rs.create(maxSids);
-
-        SidTune tune = new SidTune(vgmBuf, vgmBuf.length);
+        tune = new SidTune(vgmBuf, vgmBuf.length);
         tune.selectSong(song);
+        tuneInfo = tune.getInfo();
 
         if (!engine.load(tune)) {
             logger.log(Level.TRACE, "Error: " + engine.error());
             return;
         }
 
-        // Get tune details
-        tuneInfo = tune.getInfo();
-//        if (!m_track.single)
-//            m_track.songs = (short)tuneInfo.songs();
-//        if (!createOutput(m_driver.Output, tuneInfo))
-//            return false;
-//        if (!createSidEmu(m_driver.Sid))
-//            return false;
-
-        cfg = new SidConfig(setting.getOutputDevice().getSampleRate());
-        cfg.frequency = setting.getOutputDevice().getSampleRate();
-        cfg.samplingMethod = (setting.getSid().quality & 2) == 0 ? SidConfig.SamplingMethod.INTERPOLATE : SidConfig.SamplingMethod.RESAMPLE_INTERPOLATE;
+        cfg = new SidConfig(sampleRate);
+        cfg.frequency = sampleRate;
+        cfg.samplingMethod = (setting.getSid().quality & 2) == 0
+                ? SidConfig.SamplingMethod.INTERPOLATE
+                : SidConfig.SamplingMethod.RESAMPLE_INTERPOLATE;
         cfg.fastSampling = (setting.getSid().quality & 1) == 0;
         cfg.playback = SidConfig.Playback.STEREO;
-        cfg.defaultC64Model = setting.getSid().c64model == 0 ? SidConfig.C64Model.PAL : (
-                setting.getSid().c64model == 1 ? SidConfig.C64Model.NTSC : (
-                        setting.getSid().c64model == 2 ? SidConfig.C64Model.OLD_NTSC : (
-                                setting.getSid().c64model == 3 ? SidConfig.C64Model.DREAN : SidConfig.C64Model.PAL)));
-        cfg.defaultSidModel = setting.getSid().sidModel == 0 ? SidConfig.SidModel.MOS6581 : (
-                setting.getSid().sidModel == 1 ? SidConfig.SidModel.MOS8580 : SidConfig.SidModel.MOS6581);
-        cfg.forceC64Model = setting.getSid().c64modelForce; // Force use of defaultC64Model
-        cfg.forceSidModel = setting.getSid().sidmodelForce; // Whether to force the use of defaultSidModel
+        cfg.defaultC64Model = switch (setting.getSid().c64model) {
+            case 1 -> SidConfig.C64Model.NTSC;
+            case 2 -> SidConfig.C64Model.OLD_NTSC;
+            case 3 -> SidConfig.C64Model.DREAN;
+            default -> SidConfig.C64Model.PAL;
+        };
+        cfg.defaultSidModel = setting.getSid().sidModel == 1
+                ? SidConfig.SidModel.MOS8580
+                : SidConfig.SidModel.MOS6581;
+        cfg.forceC64Model = setting.getSid().c64modelForce;
+        cfg.forceSidModel = setting.getSid().sidmodelForce;
 
         cfg.sidEmulation = rs;
 
         if (!engine.config(cfg)) {
             logger.log(Level.TRACE, "Error: " + engine.error());
         }
+
+        blockBuffer = null;
     }
 
     VisWaveBuffer visWB = new VisWaveBuffer();
@@ -248,6 +265,7 @@ public class Sid extends BaseDriver implements SidDriver {
 
     @Override
     public Map<String, Object> getInfo() {
+        if (tuneInfo == null) return Map.of();
         Function<Integer, Model> f = i -> tuneInfo.sidModel(i);
         return Map.of(
             "LoadAddr", tuneInfo.loadAddr(),
@@ -263,6 +281,13 @@ public class Sid extends BaseDriver implements SidDriver {
     @Override
     public void setSong(int songNo) {
         this.song = songNo;
+        if (tune != null) {
+            tune.selectSong(song);
+            tuneInfo = tune.getInfo();
+            if (engine != null) {
+                engine.load(tune);
+            }
+        }
     }
 
     @Override

@@ -50,6 +50,8 @@ public class MDChipParams {
         public int nfrq = -1; // OotakeHuC6280
         public boolean loopFlg = false; // YMZ280B
         public int echo = -1;
+        public int utp = 0;
+        public int utl = 0;
 
         public int[] inst = new int[48];
         public int[] typ = new int[48];

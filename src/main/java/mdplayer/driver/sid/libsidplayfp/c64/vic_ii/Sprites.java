@@ -32,16 +32,14 @@ import mdplayer.driver.sid.Mem;
 public class Sprites {
 
     public static final int SPRITES = 8;
-    private final byte enable;
-    private final byte yExpansion;
+    private final byte[] regs;
     private byte expFlop;
     private byte dma;
     private final byte[] mcBase = new byte[SPRITES];
     private final byte[] mc = new byte[SPRITES];
 
     public Sprites(byte[] regs) {
-        enable = regs[0x15];
-        yExpansion = regs[0x17];
+        this.regs = regs;
     }
 
     public void reset() {
@@ -81,7 +79,7 @@ public class Sprites {
      * Calculate sprite expansion.
      */
     public void checkExp() {
-        expFlop ^= (byte) (dma & yExpansion);
+        expFlop ^= (byte) (dma & regs[0x17]);
     }
 
     /**
@@ -100,6 +98,7 @@ public class Sprites {
     public void checkDma(int rasterY, byte[] regs) {
         byte y = (byte) (rasterY & 0xff);
         byte mask = 1;
+        byte enable = regs[0x15];
         for (int i = 0; i < SPRITES; i++, mask <<= 1) {
             if ((enable & mask) != 0 && (y == regs[(i << 1) + 1]) && (dma & mask) == 0) {
                 dma |= mask;

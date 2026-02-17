@@ -40,7 +40,7 @@ public class SidTune {
 
     public static final int MD5_LENGTH = 32;
 
-    private SidTuneBase tune = new SidTuneBase(null);
+    private SidTuneBase tune = new SidTuneBase();
     private String statusString;
     private boolean status;
 

@@ -45,7 +45,7 @@ public class FMTimer {
             if (timerACounter >= timerA) {
                 flag_set |= ((timerReg >> 2) & 0x01);
                 timerACounter -= timerA;
-                if ((timerReg & 0x80) != 0) csmKeyOn.run();
+                if ((timerReg & 0x80) != 0 && csmKeyOn != null) csmKeyOn.run();
             }
         }
 

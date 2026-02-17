@@ -97,7 +97,7 @@ public class DevPsgEmu {
     public void _psge_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
 
-        //_psgec:
+//_psgec:
         switch (reg.getD0_W() / 2) {
         case 0x00:
             break;
@@ -511,7 +511,7 @@ public class DevPsgEmu {
     /** */
     public void _ch_psge_lfo_job() {
         comwave._ch_effect();
-        //_ch_psge_lfo:
+//_ch_psge_lfo:
         mm.write(reg.a5 + W.addkeycode, (short) 0);
         mm.write(reg.a5 + W.addvolume, (short) 0);
 
@@ -546,7 +546,7 @@ public class DevPsgEmu {
             }
         }
 
-        //_ch_psge_lfo_end:
+//_ch_psge_lfo_end:
         if ((mm.readByte(reg.a6 + Dw.DRV_FLAG2) & 1) == 0) { // break _ch_psge_lfo_end2;
 
             reg.setD0_W(mm.readShort(reg.a5 + W.freqbase) & 0xffff);
@@ -557,7 +557,7 @@ public class DevPsgEmu {
             _emu_set_psg_bend();
 //            return;
         } else {
-// _ch_psge_lfo_end2:
+//_ch_psge_lfo_end2:
             reg.setD0_W(mm.readShort(reg.a5 + W.makotune) & 0xffff);
             reg.D1_L = 0;
             reg.setD1_B(mm.readByte(reg.a5 + W.octave) & 0xff);
@@ -574,7 +574,7 @@ public class DevPsgEmu {
     /** */
     public void _ch_psge_mml_job() {
         comanalyze._track_analyze();
-        //_ch_psge_bend_job:
+//_ch_psge_bend_job:
         reg.setD0_B(mm.readByte(reg.a5 + W.lfo) & 0xff);
         if ((byte) reg.getD0_B() >= 0) return;
         if ((mm.readByte(reg.a5 + W.flag2) & 2) != 0) {
@@ -608,7 +608,7 @@ public class DevPsgEmu {
                 return;
             }
         } else {
-// _ch_psge_bend_minus:
+//_ch_psge_bend_minus:
             mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) - reg.getD2_W()));
             reg.setD0_W(reg.getD0_W() - (int) (short) reg.getD2_W());
             mm.write(reg.a5 + W.freqbase, (short) reg.getD0_W());
@@ -618,7 +618,7 @@ public class DevPsgEmu {
                 return;
             }
         }
-// _ch_psge_bend_end:
+//_ch_psge_bend_end:
         mm.write(reg.a4 + W_L.bendwork, (short) 0);
         mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
 
@@ -639,12 +639,12 @@ public class DevPsgEmu {
             reg.setD2_W(mm.readShort(reg.a4 + W_L.henka) & 0xffff);
 //            break L1;
         } else {
-// _ch_psge_porta_end:
+//_ch_psge_porta_end:
             mm.write(reg.a5 + W.lfo, (byte) (mm.readByte(reg.a5 + W.lfo) & 0x7f));
             mm.write(reg.a5 + W.flag2, (byte) (mm.readByte(reg.a5 + W.flag2) & 0xfd));
             reg.setD2_W(mm.readShort(reg.a4 + W_L.henka_work) & 0xffff);
         }
-// L1:
+//L1:
         reg.setD0_W(mm.readShort(reg.a5 + W.keycode) & 0xffff);
         mm.write(reg.a4 + W_L.bendwork, (short) ((mm.readShort(reg.a4 + W_L.bendwork) & 0xffff) + (short) reg.getD2_W()));
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD2_W());

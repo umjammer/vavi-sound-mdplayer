@@ -23,6 +23,8 @@
 
 package mdplayer.driver.sid.libsidplayfp.c64.cia;
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.Arrays;
 
 import mdplayer.driver.sid.libsidplayfp.EventCallback;
@@ -39,6 +41,8 @@ import mdplayer.driver.sid.libsidplayfp.c64.cia.InterruptSource.INTERRUPT;
  * @author alankila
  */
 public class Mos6526 {
+
+    private static final Logger logger = System.getLogger(Mos6526.class.getName());
 
     enum Reg {
         PRA,
@@ -59,8 +63,10 @@ public class Mos6526 {
         CRA,
         CRB;
 
+        private static final Reg[] values = values();
+
         static Reg valueOf(int v) {
-            return Arrays.stream(values()).filter(e -> e.ordinal() == v).findFirst().get();
+            return values[v];
         }
     }
 
@@ -405,6 +411,7 @@ public class Mos6526 {
      */
     protected void write(byte addr, byte data) {
         addr &= 0x0f;
+        if (addr != 0x0C && addr != 0x0D) logger.log(Level.DEBUG, "DEBUG: CIA write adr:" + addr + " val:" + (data & 0xff));
 
         timerA.syncWithCpu();
         timerB.syncWithCpu();

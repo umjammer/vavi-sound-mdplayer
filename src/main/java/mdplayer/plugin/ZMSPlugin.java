@@ -159,7 +159,7 @@ public class ZMSPlugin extends BasePlugin {
             else if (useCompiler.equals("zmusic v3")) compilePriority = 2; // 2: v3 only
         }
         // Loading/compiling support files
-        List<Tuple<byte[], String>> supportFileBinaly = new ArrayList<>();
+        List<Tuple<byte[], String>> supportFileBinary = new ArrayList<>();
         if (supportFile != null) {
             for (String sf : supportFile) {
                 byte[] buf;
@@ -190,17 +190,17 @@ public class ZMSPlugin extends BasePlugin {
                             else throw new IllegalArgumentException("Compile Error.Check console log.");
                             break;
                     }
-                    supportFileBinaly.add(new Tuple<>(buf, Path.getFileName(sf)));
+                    supportFileBinary.add(new Tuple<>(buf, Path.getFileName(sf)));
                     continue;
                 }
                 buf = File.readAllBytes(sf);
-                supportFileBinaly.add(new Tuple<>(buf, Path.getFileName(sf)));
+                supportFileBinary.add(new Tuple<>(buf, Path.getFileName(sf)));
             }
         }
 
-        ((Zms) audio.driverVirtual).supportFileBinaryAndName = supportFileBinaly;
-        if (audio.driverReal != null) ((Zms) audio.driverReal).supportFileBinaryAndName = supportFileBinaly;
-//        if (audio.driverPianoRoll != null) ((Zms) audio.driverPianoRoll).supportFileBinaryAndName = supportFileBinaly;
+        ((Zms) audio.driverVirtual).supportFileBinaryAndName = supportFileBinary;
+        if (audio.driverReal != null) ((Zms) audio.driverReal).supportFileBinaryAndName = supportFileBinary;
+//        if (audio.driverPianoRoll != null) ((Zms) audio.driverPianoRoll).supportFileBinaryAndName = supportFileBinary;
 
         // In the case of ZMS, compilation is performed in advance
         if (isExt(playingFileName, ".ZMS")) {

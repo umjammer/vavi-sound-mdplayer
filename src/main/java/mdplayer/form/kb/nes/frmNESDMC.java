@@ -133,7 +133,7 @@ public class frmNESDMC extends frmBase {
             }
         }
 
-        int[] reg2 = audio.chipRegister.chip(NesChip.class).readDmc(chipId);
+        int[] reg2 = audio.chipRegister.chip(NesChip.DmcChip.class).readDmc(chipId);
         if (reg2 == null) return;
 
         int tri = reg2[0x10];

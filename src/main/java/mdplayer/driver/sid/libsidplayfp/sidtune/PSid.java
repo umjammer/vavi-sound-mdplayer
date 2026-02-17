@@ -32,10 +32,8 @@ import mdplayer.driver.sid.libsidplayfp.SidMd5;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import vavi.util.ByteUtil;
-import vavi.util.Debug;
 
 import static java.lang.System.getLogger;
-import static mdplayer.driver.sid.libsidplayfp.SidEndian.toBig16;
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toBig32;
 import static mdplayer.driver.sid.libsidplayfp.SidEndian.toLittle16;
 
@@ -246,7 +244,7 @@ public class PSid extends SidTuneBase {
 
         // Require a valid ID and version number.
         if (pHeader.id == PSID_ID) {
-Debug.printf("id: %d, ver: %d%n", pHeader.id, pHeader.version);
+logger.log(Level.DEBUG, "id: %d, ver: %d".formatted(pHeader.id, pHeader.version));
             switch (pHeader.version) {
             case 1:
                 compatibility = SidTuneInfo.Compatibility.PSID;

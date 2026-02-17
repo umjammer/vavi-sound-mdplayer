@@ -61,20 +61,19 @@ public class SidDatabase {
         errorString = ERR_NO_DATABASE_LOADED;
     }
 
-    /** @param result TODO OUT? */
-    public String parseTime(String str, long result) {
+    public String parseTime(String str, int[] result) {
         String[] end = new String[1];
         long minutes = strtol(str, end, 10);
 
-        if (end[0].charAt(0) != ':') {
+        if (end[0].isEmpty() || end[0].charAt(0) != ':') {
             throw new IllegalArgumentException("ParseError");
         }
 
         end[0] = end[0].substring(1);
         long seconds = strtol(end[0], end, 10);
-        result = (minutes * 60) + seconds;
+        result[0] = (int) ((minutes * 60) + seconds);
 
-        while (end[0].charAt(0) != ' ') {
+        while (!end[0].isEmpty() && end[0].charAt(0) != ' ') {
             end[0] = end[0].substring(1);
         }
 
@@ -170,7 +169,7 @@ public class SidDatabase {
         }
 
         String str = timeStamp;
-        int time = 0;
+        int[] time = new int[1];
 
         for (int i = 0; i < song; i++) {
             // Validate Time
@@ -183,6 +182,6 @@ public class SidDatabase {
             }
         }
 
-        return time;
+        return time[0];
     }
 }

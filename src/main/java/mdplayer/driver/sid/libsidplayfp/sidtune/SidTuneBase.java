@@ -271,7 +271,7 @@ public class SidTuneBase {
         }
     }
 
-    protected SidTuneBase() {
+    public SidTuneBase() {
         info = new SidTuneInfoImpl();
         fileOffset = 0;
         // Initialize the Object with some safe defaults.
@@ -605,24 +605,22 @@ public class SidTuneBase {
     protected String petsciiToAscii(ByteBuffer spPet) {
         List<Byte> buffer = new ArrayList<>();
 
-        do {
-            byte petsciiChar = spPet.array()[spPet.arrayOffset()];
-            spPet.position(spPet.position() + 1);
+        while (spPet.hasRemaining()) {
+            byte petsciiChar = spPet.get();
 
             if ((petsciiChar == 0x00) || (petsciiChar == 0x0d))
                 break;
 
             // If character instanceof 0x9d (left arrow key) then move back.
-            if ((petsciiChar == (byte) 0x9d) && !buffer.isEmpty()) {
-                buffer.remove(buffer.size() - 1);
+            if (petsciiChar == (byte) 0x9d) {
+                if (!buffer.isEmpty()) buffer.remove(buffer.size() - 1);
             } else {
                 // ASCII CHR$ conversion
-                byte asciiChar = CHR_tab[petsciiChar];
+                byte asciiChar = CHR_tab[petsciiChar & 0xff];
                 if ((asciiChar >= 0x20) && (buffer.size() <= 31))
                     buffer.add(asciiChar);
             }
         }
-        while (spPet.array().length > spPet.arrayOffset());
 
         return new String(toByteArray(buffer), StandardCharsets.US_ASCII);
     }

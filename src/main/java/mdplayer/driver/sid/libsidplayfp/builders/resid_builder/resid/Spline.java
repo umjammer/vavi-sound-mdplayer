@@ -172,40 +172,36 @@ public class Spline {
      */
     public static void interpolate(double[][] sp0, int sptrPn, int[] splot, double res) {
         double k1, k2;
-        DoubleBuffer p0 = DoubleBuffer.wrap(sp0[0]);
-        DoubleBuffer pn = DoubleBuffer.wrap(sp0[sptrPn]);
-        DoubleBuffer p1 = DoubleBuffer.wrap(sp0[1]);
-        DoubleBuffer p2 = DoubleBuffer.wrap(sp0[2]);
-        DoubleBuffer p3 = DoubleBuffer.wrap(sp0[3]);
+        int p0 = 0;
+        int pn = sptrPn;
+        int p1 = 1;
+        int p2 = 2;
+        int p3 = 3;
 
         // Draw each curve segment.
-        for (; p2.position() != pn.position();
-             p0.position(p0.position() + 1),
-                     p1.position(p1.position() + 1),
-                     p2.position(p2.position() + 1),
-                     p3.position(p3.position() + 1)) {
-            if (x(p1) == x(p2)) {
+        for (; p2 != pn; p0++, p1++, p2++, p3++) {
+            if (sp0[p1][0] == sp0[p2][0]) {
                 // p1 and p2 equal; single point.
                 continue;
             }
-            if (x(p0) == x(p1) && x(p2) == x(p3)) {
+            if (sp0[p0][0] == sp0[p1][0] && sp0[p2][0] == sp0[p3][0]) {
                 // Both end points repeated; straight line.
-                k1 = k2 = (y(p2) - y(p1)) / (x(p2) - x(p1));
-            } else if (x(p0) == x(p1)) {
+                k1 = k2 = (sp0[p2][1] - sp0[p1][1]) / (sp0[p2][0] - sp0[p1][0]);
+            } else if (sp0[p0][0] == sp0[p1][0]) {
                 // p0 and p1 equal; use f''(x1) = 0.
-                k2 = (y(p3) - y(p1)) / (x(p3) - x(p1));
-                k1 = (3 * (y(p2) - y(p1)) / (x(p2) - x(p1)) - k2) / 2;
-            } else if (x(p2) == x(p3)) {
+                k2 = (sp0[p3][1] - sp0[p1][1]) / (sp0[p3][0] - sp0[p1][0]);
+                k1 = (3 * (sp0[p2][1] - sp0[p1][1]) / (sp0[p2][0] - sp0[p1][0]) - k2) / 2;
+            } else if (sp0[p2][0] == sp0[p3][0]) {
                 // p2 and p3 equal; use f''(x2) = 0.
-                k1 = (y(p2) - y(p0)) / (x(p2) - x(p0));
-                k2 = (3 * (y(p2) - y(p1)) / (x(p2) - x(p1)) - k1) / 2;
+                k1 = (sp0[p2][1] - sp0[p0][1]) / (sp0[p2][0] - sp0[p0][0]);
+                k2 = (3 * (sp0[p2][1] - sp0[p1][1]) / (sp0[p2][0] - sp0[p1][0]) - k1) / 2;
             } else {
                 // Normal curve.
-                k1 = (y(p2) - y(p0)) / (x(p2) - x(p0));
-                k2 = (y(p3) - y(p1)) / (x(p3) - x(p1));
+                k1 = (sp0[p2][1] - sp0[p0][1]) / (sp0[p2][0] - sp0[p0][0]);
+                k2 = (sp0[p3][1] - sp0[p1][1]) / (sp0[p3][0] - sp0[p1][0]);
             }
 
-            interpolateForwardDifference(x(p1), y(p1), x(p2), y(p2), k1, k2, splot, res);
+            interpolateForwardDifference(sp0[p1][0], sp0[p1][1], sp0[p2][0], sp0[p2][1], k1, k2, splot, res);
         }
     }
 }

@@ -86,6 +86,7 @@ public class SidTuneInfoImpl extends SidTuneInfo {
         sidModels.add(Model.SID_UNKNOWN);
         sidChipAddresses = new ArrayList<>();
         sidChipAddresses.add((short) 0xd400);
+        commentString = new ArrayList<>();
     }
 
     @Override

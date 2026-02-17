@@ -485,10 +485,10 @@ public class ComCmds {
         reg.setD4_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
 
-        //_com_a3_ana_loop:
+//_com_a3_ana_loop:
         while (true) {
-            if (mm.readByte(reg.a2 + 2) == reg.getD1_B()) {
-                if (mm.readByte(reg.a2 + 3) == reg.getD5_B()) {
+            if ((mm.readByte(reg.a2 + 2) & 0xff) == reg.getD1_B()) {
+                if ((mm.readByte(reg.a2 + 3) & 0xff) == reg.getD5_B()) {
                     _com_a3_set();
                     return;
                 }
@@ -614,16 +614,16 @@ public class ComCmds {
     }
 
     public void _COM_BF() {
-        byte b = (byte) ((mm.readByte(reg.a6 & 0xff) + Dw.DRV_STATUS) & 0x10);
+        byte b = (byte) (mm.readByte(reg.a6 + Dw.DRV_STATUS) & 0x10);
         mm.write(reg.a6 + Dw.DRV_STATUS, (byte) (mm.readByte(reg.a6 + Dw.DRV_STATUS) | 0x10));
         if (b != 0) {
             _COM_BF_exit();
             return;
         }
-        mm.write(reg.a6 + Dw.FADESPEED, 1);
-        mm.write(reg.a6 + Dw.FADESPEED_WORK, 3);
+        mm.write(reg.a6 + Dw.FADESPEED, (byte) 1);
+        mm.write(reg.a6 + Dw.FADESPEED_WORK, (byte) 3);
 
-        b = (byte) ((mm.readByte(reg.a6 & 0xff) + Dw.DRV_FLAG) & 0x01);
+        b = (byte) (mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x01);
         if (b != 0) {
             _COM_BF_no_opn();
             return;
@@ -710,8 +710,8 @@ public class ComCmds {
 
         reg.setD1_B(mm.readByte(reg.a5 + W.envbank) & 0xff);
         while (true) {
-            if (mm.readByte(reg.a2 + 2) == reg.getD1_B()) {
-                if (mm.readByte(reg.a2 + 3) == reg.getD5_B()) {
+            if ((mm.readByte(reg.a2 + 2) & 0xff) == reg.getD1_B()) {
+                if ((mm.readByte(reg.a2 + 3) & 0xff) == reg.getD5_B()) {
                     _COM_C4_set();
                     return;
                 }
@@ -757,8 +757,8 @@ public class ComCmds {
         reg.setD4_W(mm.readShort(reg.a6 + Dw.ENVNUM) & 0xffff);
         if (reg.getD4_W() == 0) return;
         while (true) {
-            if (mm.readByte(reg.a2 + 2) == reg.getD1_B()) {
-                if (mm.readByte(reg.a2 + 3) == reg.getD5_B()) {
+            if ((mm.readByte(reg.a2 + 2) & 0xff) == reg.getD1_B()) {
+                if ((mm.readByte(reg.a2 + 3) & 0xff) == reg.getD5_B()) {
                     _COM_C5_set();
                     return;
                 }
@@ -1020,7 +1020,7 @@ public class ComCmds {
 //        _com_e2_wm10:
         while (true) {
             reg.setD2_W(mm.readShort(reg.a2) & 0xffff);
-            reg.D2_L = (reg.D2_L << 16) + (reg.D2_L >> 16);
+            reg.D2_L = (reg.D2_L << 16) + (reg.D2_L >>> 16);
             reg.setD2_W(mm.readShort(reg.a2 + 2) & 0xffff);
             if (mm.readShort(reg.a2 + 4) != 0) {
                 reg.a2 = (reg.a2 + reg.D2_L) & 0xff_ffff;
@@ -1045,7 +1045,7 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >> 16);
+        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >>> 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
@@ -1053,7 +1053,7 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >> 16);
+        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >>> 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
@@ -1061,7 +1061,7 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >> 16);
+        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >>> 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
@@ -1069,14 +1069,14 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >> 16);
+        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >>> 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         mm.write(reg.a3 + W_W.loop_count, reg.D0_L);
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >> 16);
+        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >>> 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
@@ -1084,7 +1084,7 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >> 16);
+        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >>> 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
@@ -1092,7 +1092,7 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >> 16);
+        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >>> 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         reg.D0_L += reg.D5_L;
@@ -1100,7 +1100,7 @@ public class ComCmds {
 
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
-        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >> 16);
+        reg.D0_L = (reg.D0_L << 16) + (reg.D0_L >>> 16);
         reg.setD0_W(mm.readShort(reg.a2) & 0xffff);
         reg.a2 += 2;
         mm.write(reg.a3 + W_W.ko_loop_count, reg.D0_L);
@@ -2098,7 +2098,7 @@ public class ComCmds {
     public void _com_ed_wm10() {
         do {
             reg.setD2_W(mm.readShort(reg.a2) & 0xffff);
-            reg.D2_L = (reg.D2_L >> 16) + (reg.D2_L << 16);
+            reg.D2_L = (reg.D2_L >>> 16) + (reg.D2_L << 16);
             reg.setD2_W(mm.readShort(reg.a2 + 2) & 0xffff);
             if (reg.getD0_W() - (mm.readShort(reg.a2 + 4) & 0xffff) == 0) {
                 _com_ed_wm20();
@@ -2116,7 +2116,7 @@ public class ComCmds {
         reg.setD1_B(reg.getD0_B());
         reg.setD1_B(reg.getD1_B() & 0xf);
         mm.write(reg.a3 + W_We.count, (byte) reg.getD1_B());
-        reg.setD0_B(reg.getD1_B() >> 4);
+        reg.setD0_B(reg.getD0_B() >> 4);
         mm.write(reg.a3 + W_We.ko_flag, (byte) reg.getD1_B());
 
         reg.setD0_B(mm.readByte(reg.a2++) & 0xff);

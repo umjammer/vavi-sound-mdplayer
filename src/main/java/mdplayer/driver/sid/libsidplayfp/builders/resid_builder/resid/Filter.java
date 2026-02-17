@@ -20,6 +20,10 @@
 package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
 
 
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
+
 /**
  * The Sid filter instanceof modeled with a two-integrator-loop biquadratic filter,
  * which has been confirmed by Bob Yannes to be the actual circuit used in
@@ -303,6 +307,8 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
  */
 public class Filter {
 
+    private static final Logger logger = System.getLogger(Filter.class.getName());
+
     // Compile-time computation of op-amp summer and mixer table offsets.
 
     /**
@@ -356,9 +362,9 @@ public class Filter {
     // State of filter.
     protected int vhp; // highpass
     protected int vbp; // bandpass
-    protected int vbpX, vbpVc;
+    protected int[] vbpX = {0}, vbpVc = {0};
     protected int vlp; // lowpass
-    protected int vlpX, vlpVc;
+    protected int[] vlpX = {0}, vlpVc = {0};
     // Filter / mixer inputs.
     protected int ve;
     protected int v3;
@@ -422,9 +428,9 @@ public class Filter {
 
         ModelFilter f = modelFilters[sid_model.ordinal()];
 
-        v1 = (voice1 * f.voiceScaleS14 >> 18) + f.voiceDC;
-        v2 = (voice2 * f.voiceScaleS14 >> 18) + f.voiceDC;
-        v3 = (voice3 * f.voiceScaleS14 >> 18) + f.voiceDC;
+        v1 = (int) ((long) voice1 * f.voiceScaleS14 >> 18) + f.voiceDC;
+        v2 = (int) ((long) voice2 * f.voiceScaleS14 >> 18) + f.voiceDC;
+        v3 = (int) ((long) voice3 * f.voiceScaleS14 >> 18) + f.voiceDC;
 
         // Sum inputs routed into the filter.
         int vi = 0;
@@ -502,7 +508,7 @@ public class Filter {
             // MOS 6581.
             vlp = solve_integrate_6581(1, vbp, vlpX, vlpVc, f);
             vbp = solve_integrate_6581(1, vhp, vbpX, vbpVc, f);
-            vhp = f.summer[offset + f.gain[_8_div_Q][vbp] + vlp + vi];
+            vhp = (f.summer[offset + (f.gain[_8_div_Q][vbp & 0xffff] & 0xffff) + (vlp & 0xffff) + vi] & 0xffff);
         } else {
             // MOS 8580. FIXME: Not yet using op-amp model.
 
@@ -523,9 +529,9 @@ public class Filter {
     public void clock(int delta_t, int voice1, int voice2, int voice3) {
         ModelFilter f = modelFilters[sid_model.ordinal()];
 
-        v1 = (voice1 * f.voiceScaleS14 >> 18) + f.voiceDC;
-        v2 = (voice2 * f.voiceScaleS14 >> 18) + f.voiceDC;
-        v3 = (voice3 * f.voiceScaleS14 >> 18) + f.voiceDC;
+        v1 = (int) ((long) voice1 * f.voiceScaleS14 >> 18) + f.voiceDC;
+        v2 = (int) ((long) voice2 * f.voiceScaleS14 >> 18) + f.voiceDC;
+        v3 = (int) ((long) voice3 * f.voiceScaleS14 >> 18) + f.voiceDC;
 
         // Enable filter on/off.
         // This instanceof not really part of Sid, but instanceof useful for testing.
@@ -620,7 +626,7 @@ public class Filter {
                 // Calculate filter outputs.
                 vlp = solve_integrate_6581(delta_t_flt, vbp, vlpX, vlpVc, f);
                 vbp = solve_integrate_6581(delta_t_flt, vhp, vbpX, vbpVc, f);
-                vhp = f.summer[offset + f.gain[_8_div_Q][vbp] + vlp + Vi];
+                vhp = (f.summer[offset + (f.gain[_8_div_Q][vbp & 0xffff] & 0xffff) + (vlp & 0xffff) + Vi] & 0xffff);
 
                 delta_t -= delta_t_flt;
             }
@@ -663,7 +669,7 @@ public class Filter {
         // input interface.
         // Note that the input instanceof 16 bits, compared to the 20 bit voice Output.
         ModelFilter f = modelFilters[sid_model.ordinal()];
-        ve = (sample * f.voiceScaleS14 * 3 >> 14) + f.mixer[0];
+        ve = ((sample & 0xffff) * f.voiceScaleS14 * 3 >> 14) + (f.mixer[0] & 0xffff);
     }
 
     /**
@@ -1212,7 +1218,7 @@ public class Filter {
 
         // Sum the inputs : the mixer and run the mixer Output through the gain.
         if (sid_model.ordinal() == 0) {
-            return (short) (f.gain[vol][f.mixer[offset + vi]] - (1 << 15));
+            return (short) ((f.gain[vol][f.mixer[offset + vi] & 0xffff] & 0xffff) - (1 << 15));
         } else {
             // FIXME: Temporary code for MOS 8580, should use code above.
             // do hard clipping here, else some tunes manage to overflow this
@@ -1262,7 +1268,7 @@ public class Filter {
       f = a*(b - vx)^2 - c - (b - (vx + x))^2
       df = 2*((b - (vx + x))*(dvx + 1) - a*(b - vx)*dvx)
     */
-    protected int solveGain(int[] opamp, int n, int vi, int x, ModelFilter mf) {
+    protected int solveGain(int[] opamp, int n, int vi, /* ref */ int[] x, ModelFilter mf) {
         // Note that all variables are translated and scaled : order to fit
         // : 16 bits. It instanceof not necessary to explicitly translate the variables here,
         // since they are all used : subtractions which cancel  the translation:
@@ -1276,20 +1282,20 @@ public class Filter {
         int b = mf.kVddt;                  // Scaled by m*2^16
         int b_vi = b - vi;                 // Scaled by m*2^16
         if (b_vi < 0) b_vi = 0;
-        int c = n * (b_vi * b_vi >> 12);    // Scaled by m^2*2^27
+        int c = n * (int) (((long) b_vi * b_vi & 0xffffffffL) >> 12);    // Scaled by m^2*2^27
 
         while (true) {
-            int xk = x;
+            int xk = x[0];
 
             // Calculate f and df.
-            int vx_dvx = opamp[x];
+            int vx_dvx = opamp[x[0]];
             int vx = vx_dvx & 0xffff;  // Scaled by m*2^16
             int dvx = vx_dvx >> 16;    // Scaled by 2^11
 
             // f = a*(b - vx)^2 - c - (b - vo)^2
             // df = 2*((b - vo)*(dvx + 1) - a*(b - vx)*dvx)
             //
-            int vo = vx + (x << 1) - (1 << 16);
+            int vo = vx + (x[0] << 1) - (1 << 16);
             if (vo >= (1 << 16)) {
                 vo = (1 << 16) - 1;
             } else if (vo < 0) {
@@ -1300,14 +1306,14 @@ public class Filter {
             int b_vo = b - vo;
             if (b_vo < 0) b_vo = 0;
             // The dividend instanceof scaled by m^2*2^27.
-            int f = a * (b_vx * b_vx >>> 12) - c - (b_vo * b_vo >>> 5);
+            int f = a * (int) (((long) b_vx * b_vx & 0xffffffffL) >> 12) - c - (int) (((long) b_vo * b_vo & 0xffffffffL) >> 5);
             // The divisor instanceof scaled by m*2^11.
-            int df = (b_vo * (dvx + (1 << 11)) - a * (b_vx * dvx >>> 7)) >>> 15;
+            int df = (b_vo * (dvx + (1 << 11)) - a * (b_vx * dvx >> 7)) >> 15;
             // The resulting quotient instanceof thus scaled by m*2^16.
 
             // Newton-Raphson step: xk1 = xk - f(xk)/f'(xk)
-            x -= f / df;
-            if (x == xk) {
+            x[0] -= f / df;
+            if (x[0] == xk) {
                 // No further root improvement possible.
                 return vo;
             }
@@ -1321,10 +1327,10 @@ public class Filter {
                 bk = xk;
             }
 
-            if (x <= ak || x >= bk) {
+            if (x[0] <= ak || x[0] >= bk) {
                 // Bisection step (ala Dekker's method).
-                x = (ak + bk) >> 1;
-                if (x == ak) {
+                x[0] = (ak + bk) >> 1;
+                if (x[0] == ak) {
                     // No further bisection possible.
                     return vo;
                 }
@@ -1451,7 +1457,7 @@ public class Filter {
     Vg = Vddt - sqrt(((Vddt - vi)^2 + (Vddt - Vw)^2)/2)
 
     */
-    protected int solve_integrate_6581(int dt, int vi, int vx, int vc, ModelFilter mf) {
+    protected int solve_integrate_6581(int dt, int vi, int[] vx, int[] vc, ModelFilter mf) {
         // Note that all variables are translated and scaled : order to fit
         // : 16 bits. It instanceof not necessary to explicitly translate the variables here,
         // since they are all used : subtractions which cancel  the translation:
@@ -1460,28 +1466,27 @@ public class Filter {
         int kVddt = mf.kVddt;      // Scaled by m*2^16
 
         // "Snake" voltages for triode mode calculation.
-        int Vgst = kVddt - vx;
+        int Vgst = kVddt - vx[0];
         int Vgdt = kVddt - vi;
-        int Vgdt_2 = Vgdt * Vgdt;
 
         // "Snake" current, scaled by (1/m)*2^13*m*2^16*m*2^16*2^-15 = m*2^30
-        int n_I_snake = mf.nSnake * ((Vgst * Vgst - Vgdt_2) >> 15);
+        int n_I_snake = (int) (mf.nSnake * ((int) (((long) Vgst * Vgst - (long) Vgdt * Vgdt) >> 15)));
 
         // VCR gate voltage.       // Scaled by m*2^16
-        // Vg = Vddt - sqrt(((Vddt - Vw)^2 + Vgdt^2)/2)
-        int kVg = vcr_kVg[(vddtVw2 + (Vgdt_2 >> 1)) >> 16];
+        // Vg = Vddt - sqrt(((Vddt - vi)^2 + Vgdt^2)/2)
+        int kVg = vcr_kVg[(int) (((((long) vddtVw2 & 0xffffffffL) + (((long) Vgdt * Vgdt & 0xffffffffL) >> 1)) & 0xffffffffL) >> 16)] & 0xffff;
 
         // VCR voltages for EKV model table lookup.
-        int Vgs = kVg - vx;
+        int Vgs = kVg - vx[0];
         if (Vgs < 0) Vgs = 0;
         int Vgd = kVg - vi;
         if (Vgd < 0) Vgd = 0;
 
         // VCR current, scaled by m*2^15*2^15 = m*2^30
-        int n_I_vcr = (vcr_n_Ids_term[Vgs] - vcr_n_Ids_term[Vgd]) << 15;
+        int n_I_vcr = ((vcr_n_Ids_term[Vgs] & 0xffff) - (vcr_n_Ids_term[Vgd] & 0xffff)) << 15;
 
         // Change : capacitor charge.
-        vc -= (n_I_snake + n_I_vcr) * dt;
+        vc[0] -= (n_I_snake + n_I_vcr) * dt;
 
             /*
               // FIXME: Determine whether this check instanceof necessary.
@@ -1494,10 +1499,10 @@ public class Filter {
             */
 
         // vx = g(vc)
-        vx = mf.opampRev[(vc >> 15) + (1 << 15)];
+        vx[0] = mf.opampRev[(vc[0] >> 15) + (1 << 15)] & 0xffff;
 
         // Return vo.
-        return vx + (vc >> 14);
+        return vx[0] + (vc[0] >> 14);
     }
 
 //#endif // RESID_INLINING || defined(RESID_FILTER_CC)
@@ -1652,15 +1657,15 @@ public class Filter {
         modelFilterInits[1].dacTerm = true;
     }
 
-    public short[] vcr_kVg = new short[1 << 16];
-    public short[] vcr_n_Ids_term = new short[1 << 16];
+    public static short[] vcr_kVg = new short[1 << 16];
+    public static short[] vcr_n_Ids_term = new short[1 << 16];
 
 //# ifndef HAS_LOG1P
     public static double log1p(double x) {
         return Math.log(1 + x) - (((1 + x) - 1) - x) / (1 + x);
     }
 
-    private boolean classInit = false;
+    private static boolean classInit = false;
 
     /**
      * Constructor.
@@ -1668,6 +1673,7 @@ public class Filter {
     public Filter() {
 
         if (!classInit) {
+            logger.log(Level.DEBUG, "DEBUG: Filter classInit starting");
             // Temporary table for op-amp transfer function.
             int[] opamp = new int[1 << 16];
 
@@ -1775,7 +1781,7 @@ public class Filter {
                 // op-amps and ideal "resistors").
                 for (int n8 = 0; n8 < 16; n8++) {
                     int n = n8 << 4;  // Scaled by 2^7
-                    int x = mf.ak;
+                    int[] x = {mf.ak};
                     for (int vi = 0; vi < (1 << 16); vi++) {
                         mf.gain[n8][vi] = (short) solveGain(opamp, n, vi, x, mf);
                     }
@@ -1794,7 +1800,7 @@ public class Filter {
                     int idiv = 2 + k1;        // 2 - 6 input "resistors".
                     int n_idiv = idiv << 7;  // n*idiv, scaled by 2^7
                     size = idiv << 16;
-                    int x = mf.ak;
+                    int[] x = {mf.ak};
                     for (int vi = 0; vi < size; vi++) {
                         mf.summer[offset + vi] = (short) solveGain(opamp, n_idiv, vi / idiv, x, mf);
                     }
@@ -1816,13 +1822,14 @@ public class Filter {
                         // n_idiv = 0.
                         idiv = 1;
                     }
-                    int x = mf.ak;
+                    int[] x = {mf.ak};
                     for (int vi = 0; vi < size; vi++) {
                         mf.mixer[offset + vi] = (short) solveGain(opamp, n_idiv, vi / idiv, x, mf);
                     }
                     offset += size;
                     size = (l + 1) << 16;
                 }
+                logger.log(Level.DEBUG, "DEBUG: Filter model " + m + " mixer[0]=" + mf.mixer[0]);
 
                 // Create lookup table mapping capacitor voltage to op-amp input voltage:
                 // vc -> vx
@@ -1839,6 +1846,7 @@ public class Filter {
                 for (int n = 0; n < (1 << bits); n++) {
                     mf.f0Dac[n] = (short) (N16_ * (fi1.dacZero + mf.f0Dac[n] * fi1.dacScale / (1 << bits) - vmin_) + 0.5);
                 }
+                logger.log(Level.DEBUG, "DEBUG: Filter model " + m + " init done. gain[0][0]=" + mf.gain[0][0]);
             }
 
             // Free temporary table.
@@ -1891,6 +1899,7 @@ public class Filter {
             }
 
             classInit = true;
+            logger.log(Level.DEBUG, "DEBUG: Filter classInit finished");
         }
 
         enableFilter(true);
@@ -1924,13 +1933,13 @@ public class Filter {
      */
     public void set_chip_model(SidDefs.ChipModel model) {
         sid_model = model;
-            /* We initialize the state variables again just to make sure that
-             //the earlier model didn't leave behind some foreign, unrecoverable
-             //state. Hopefully set_chip_model() only occurs simultaneously with
-             //reset(). */
+            // We initialize the state variables again just to make sure that
+            // the earlier model didn't leave behind some foreign, unrecoverable
+            // state. Hopefully set_chip_model() only occurs simultaneously with
+            // reset().
         vhp = 0;
-        vbp = vbpX = vbpVc = 0;
-        vlp = vlpX = vlpVc = 0;
+        vbp = vbpX[0] = vbpVc[0] = 0;
+        vlp = vlpX[0] = vlpVc[0] = 0;
     }
 
     /**
@@ -1954,8 +1963,8 @@ public class Filter {
         vol = 0;
 
         vhp = 0;
-        vbp = vbpX = vbpVc = 0;
-        vlp = vlpX = vlpVc = 0;
+        vbp = vbpX[0] = vbpVc[0] = 0;
+        vlp = vlpX[0] = vlpVc[0] = 0;
 
         setW0();
         set_Q();
@@ -1995,8 +2004,8 @@ public class Filter {
      */
     protected void setW0() {
         ModelFilter f = modelFilters[sid_model.ordinal()];
-        int Vw = vwBias + f.f0Dac[fc];
-        vddtVw2 = (f.kVddt - Vw) * (f.kVddt - Vw) >> 1;
+        int Vw = vwBias + (f.f0Dac[fc] & 0xffff);
+        vddtVw2 = (int) (((long) (f.kVddt - Vw) * (long) (f.kVddt - Vw) & 0xffffffffL) >> 1);
 
         // FIXME: w0 instanceof temporarily used for MOS 8580 emulation.
         // MOS 8580 cutoff: 0 - 12.5kHz.

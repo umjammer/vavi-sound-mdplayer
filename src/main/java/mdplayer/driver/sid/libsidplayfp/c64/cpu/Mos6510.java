@@ -131,12 +131,12 @@ public class Mos6510 {
 
 //#if DEBUG
     // Debug info
-//        private short instrStartPC;
-//        private short instrOperand;
+//    private short instrStartPC;
+//    private short instrOperand;
 
     //private FileStream m_fdbg;
 
-//        private boolean dodump;
+//    private boolean dodump;
 //#endif
 
     /** Table of CPU opcode implementations */
@@ -175,7 +175,7 @@ public class Mos6510 {
     /**
      * CHR$ conversion table (0x01 = no Output)
      */
-    public static final byte[] CHRtab = new byte[] {
+    public static final byte[] CHRtab = {
             0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x0d, 0x01, 0x01,
             0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
             0x20, 0x21, 0x01, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
@@ -329,7 +329,7 @@ public class Mos6510 {
 
     private void interruptsAndNextOpcode() {
         if (cycleCount > interruptCycle + 2) {
-//# if DEBUG
+//#if DEBUG
             //long cycles = eventScheduler.getTime(EventPhase.EVENT_CLOCK_PHI2);
             //logger.log(Level.TRACE, "****************************************************\n");
             //logger.log(Level.TRACE, " Interrupt (%d)".formatted(cycles));
@@ -346,13 +346,13 @@ public class Mos6510 {
     }
 
     private void fetchNextOpcode() {
-//            DumpState((long)eventScheduler.getTime(EventPhase.EVENT_CLOCK_PHI2), this);
-//            instrStartPC = Register_ProgramCounter;
+//        DumpState((long)eventScheduler.getTime(EventPhase.EVENT_CLOCK_PHI2), this);
+//        instrStartPC = Register_ProgramCounter;
 
-//# if CORRECT_SH_INSTRUCTIONS
+//#if CORRECT_SH_INSTRUCTIONS
         rdyOnThrowAwayRead = true;
 //#endif
-        cycleCount = cpuRead(registerProgramCounter) << 3;
+        cycleCount = (cpuRead(registerProgramCounter) & 0xff) << 3;
         registerProgramCounter++;
 
         if (!rstFlag && !nmiFlag && !(!flags.getI() && irqAssertedOnPin)) {
@@ -365,10 +365,10 @@ public class Mos6510 {
 
     /**
      * Evaluate when to execute an Interrupt. Calling this method can also
-     * result : the decision that no Interrupt at all needs to be scheduled.
+     * result: the decision that no Interrupt at all needs to be scheduled.
      */
     private void calculateInterruptTriggerCycle() {
-        /* Interrupt cycle not going to trigger? */
+        // Interrupt cycle not going to trigger?
         if (interruptCycle == MAX) {
             if (rstFlag || nmiFlag || (!flags.getI() && irqAssertedOnPin)) {
                 interruptCycle = cycleCount;
@@ -381,7 +381,7 @@ public class Mos6510 {
     }
 
     private void irqHiRequest() {
-        to16hi8(registerProgramCounter, cpuRead((short) (cycleEffectiveAddress + 1)));
+        registerProgramCounter = to16hi8(registerProgramCounter, cpuRead((short) (cycleEffectiveAddress + 1)));
     }
 
     /**
@@ -414,7 +414,7 @@ public class Mos6510 {
             registerProgramCounter++;
         }
 
-//# if DEBUG
+//#if DEBUG
 //            instrOperand = Cycle_Data;
 //#endif
     }
@@ -434,7 +434,7 @@ public class Mos6510 {
         cycleEffectiveAddress = cpuRead(registerProgramCounter);
         registerProgramCounter++;
 
-//# if DEBUG
+//#if DEBUG
 //            instrOperand = Cycle_EffectiveAddress;
 //#endif
     }
@@ -447,7 +447,7 @@ public class Mos6510 {
      */
     private void fetchLowAddrX() {
         fetchLowAddr();
-        cycleEffectiveAddress = (short) ((cycleEffectiveAddress + registerX) & 0xff);
+        cycleEffectiveAddress = (short) ((cycleEffectiveAddress + (registerX & 0xff)) & 0xff);
     }
 
     /**
@@ -458,7 +458,7 @@ public class Mos6510 {
      */
     private void fetchLowAddrY() {
         fetchLowAddr();
-        cycleEffectiveAddress = (short) ((cycleEffectiveAddress + registerY) & 0xff);
+        cycleEffectiveAddress = (short) ((cycleEffectiveAddress + (registerY & 0xff)) & 0xff);
     }
 
     /**
@@ -472,7 +472,7 @@ public class Mos6510 {
         cycleEffectiveAddress = to16hi8(cycleEffectiveAddress, cpuRead(registerProgramCounter));
         registerProgramCounter++;
 
-//# if DEBUG
+//#if DEBUG
 //            SidEndian.endian_16hi8( instrOperand, SidEndian.endian_16hi8(Cycle_EffectiveAddress));
 //#endif
     }
@@ -485,8 +485,8 @@ public class Mos6510 {
      * - Absolute Indexed
      */
     private void fetchHighAddrX() {
-        cycleEffectiveAddress += registerX;
-        adlCarry = cycleEffectiveAddress > 0xff;
+        cycleEffectiveAddress = (short) ((cycleEffectiveAddress & 0xff) + (registerX & 0xff));
+        adlCarry = (cycleEffectiveAddress & 0xffff) > 0xff;
         fetchHighAddr();
     }
 
@@ -507,8 +507,8 @@ public class Mos6510 {
      * - Absolute Indexed
      */
     private void fetchHighAddrY() {
-        cycleEffectiveAddress += registerY;
-        adlCarry = cycleEffectiveAddress > 0xff;
+        cycleEffectiveAddress = (short) ((cycleEffectiveAddress & 0xff) + (registerY & 0xff));
+        adlCarry = (cycleEffectiveAddress & 0xffff) > 0xff;
         fetchHighAddr();
     }
 
@@ -532,7 +532,7 @@ public class Mos6510 {
         cyclePointer = cpuRead(registerProgramCounter);
         registerProgramCounter++;
 
-//# if DEBUG
+//#if DEBUG
 //            instrOperand = Cycle_Pointer;
 //#endif
     }
@@ -544,7 +544,7 @@ public class Mos6510 {
      * - Indexed Indirect (pre x)
      */
     private void fetchLowPointerX() {
-        cyclePointer = to16lo8(cyclePointer, (byte) ((cyclePointer + registerX) & 0xff));
+        cyclePointer = to16lo8(cyclePointer, (byte) (((cyclePointer & 0xff) + (registerX & 0xff)) & 0xff));
     }
 
     /**
@@ -554,10 +554,10 @@ public class Mos6510 {
      * - Absolute Indirect
      */
     private void fetchHighPointer() {
-        to16hi8(cyclePointer, cpuRead(registerProgramCounter));
+        cyclePointer = to16hi8(cyclePointer, cpuRead(registerProgramCounter));
         registerProgramCounter++;
 
-//# if DEBUG
+//#if DEBUG
 //            SidEndian.endian_16hi8( instrOperand, SidEndian.endian_16hi8(Cycle_Pointer));
 //#endif
     }
@@ -582,8 +582,8 @@ public class Mos6510 {
      * - Indexed Indirect (pre x)
      */
     private void fetchHighEffAddr() {
-        cyclePointer = to16lo8(cyclePointer, (byte) ((cyclePointer + 1) & 0xff));
-        to16hi8(cycleEffectiveAddress, cpuRead(cyclePointer));
+        cyclePointer = to16lo8(cyclePointer, (byte) (((cyclePointer & 0xff) + 1) & 0xff));
+        cycleEffectiveAddress = to16hi8(cycleEffectiveAddress, cpuRead(cyclePointer));
     }
 
     /**
@@ -593,8 +593,8 @@ public class Mos6510 {
      * - Indirect indexed (post y)
      */
     private void fetchHighEffAddrY() {
-        cycleEffectiveAddress += registerY;
-        adlCarry = cycleEffectiveAddress > 0xff;
+        cycleEffectiveAddress = (short) ((cycleEffectiveAddress & 0xff) + (registerY & 0xff));
+        adlCarry = (cycleEffectiveAddress & 0xffff) > 0xff;
         fetchHighEffAddr();
     }
 
@@ -656,7 +656,7 @@ public class Mos6510 {
     private void PopHighPC() {
         registerStackPointer++;
         short addr = to16(SP_PAGE, registerStackPointer);
-        to16hi8(cycleEffectiveAddress, cpuRead(addr));
+        cycleEffectiveAddress = to16hi8(cycleEffectiveAddress, cpuRead(addr));
     }
 
     private void wasteCycle() {
@@ -817,7 +817,7 @@ public class Mos6510 {
         // When the addressing/indexing causes a page boundary crossing
         // the highbyte of the target address becomes equal to the value stored.
         if (adlCarry)
-            to16hi8(cycleEffectiveAddress, tmp);
+            cycleEffectiveAddress = to16hi8(cycleEffectiveAddress, tmp);
         putEffAddrDataByte();
     }
 
@@ -973,12 +973,13 @@ public class Mos6510 {
             // issue the spurious read for next insn here.
             cpuRead(registerProgramCounter);
 
-            cycleEffectiveAddress = to16lo8(registerProgramCounter);
-            cycleEffectiveAddress += cycleData;
-            adlCarry = ((cycleEffectiveAddress & 0xffff) > 0xff) != ((cycleData & 0xff) > 0x7f);
-            cycleEffectiveAddress = to16hi8(cycleEffectiveAddress, to16hi8(registerProgramCounter));
+            int lowByte = to16lo8(registerProgramCounter) & 0xff;
+            int offset = cycleData & 0xff;
+            cycleEffectiveAddress = (short) (lowByte + offset);
+            adlCarry = (cycleEffectiveAddress & 0xffff) > 0xff != offset > 0x7f;
+            cycleEffectiveAddress = to16hi8((short) cycleEffectiveAddress, to16hi8(registerProgramCounter));
 
-            registerProgramCounter = cycleEffectiveAddress;
+            registerProgramCounter = (short) (cycleEffectiveAddress & 0xffff);
 
             // Check for page boundary crossing
             if (!adlCarry) {
@@ -1045,23 +1046,23 @@ public class Mos6510 {
     }
 
     private void cmpInstr() {
-        short tmp = (short) ((registerAccumulator & 0xff) - (cycleData & 0xff));
+        int tmp = (registerAccumulator & 0xff) - (cycleData & 0xff);
         flags.setNZ((byte) tmp);
-        flags.setC(tmp < 0x100);
+        flags.setC((tmp & 0xffff) < 0x100);
         interruptsAndNextOpcode();
     }
 
     private void cpxInstr() {
-        short tmp = (short) ((registerX & 0xff) - (cycleData & 0xff));
+        int tmp = (registerX & 0xff) - (cycleData & 0xff);
         flags.setNZ((byte) tmp);
-        flags.setC(tmp < 0x100);
+        flags.setC((tmp & 0xffff) < 0x100);
         interruptsAndNextOpcode();
     }
 
     private void cpyInstr() {
-        short tmp = (short) ((registerY & 0xff) - (cycleData & 0xff));
+        int tmp = (registerY & 0xff) - (cycleData & 0xff);
         flags.setNZ((byte) tmp);
-        flags.setC(tmp < 0x1009);
+        flags.setC((tmp & 0xffff) < 0x100);
         interruptsAndNextOpcode();
     }
 
@@ -1314,9 +1315,9 @@ public class Mos6510 {
     private void dcmInstr() {
         putEffAddrDataByte();
         cycleData--;
-        short tmp = (short) (registerAccumulator - cycleData);
+        int tmp = (registerAccumulator & 0xff) - (cycleData & 0xff);
         flags.setNZ((byte) tmp);
-        flags.setC(tmp < 0x100);
+        flags.setC((tmp & 0xffff) < 0x100);
     }
 
     /**
@@ -1422,7 +1423,7 @@ public class Mos6510 {
 
         cycleEffectiveAddress = 0;
         cycleData = 0;
-//# if DEBUG
+//#if DEBUG
 //            dodump = false;
 //#endif
         initialise();

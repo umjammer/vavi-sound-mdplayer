@@ -13,8 +13,9 @@ public class Mem {
     }
 
     public static void memset(ByteBuffer des, byte val, int length) {
+        int pos = des.position();
         for (int i = 0; i < length; i++)
-            des.put(i,  val);
+            des.put(pos + i, val);
     }
 
     public static void memcpy(byte[] des, byte[] src, int length) {
@@ -22,18 +23,22 @@ public class Mem {
     }
 
     public static void memcpy(byte[] des, ByteBuffer src, int length) {
+        int pos = src.position();
         for (int i = 0; i < length; i++)
-            des[i] = src.get(i);
+            des[i] = src.get(pos + i);
     }
 
     public static void memcpy(ByteBuffer des, byte[] src, int length) {
+        int pos = des.position();
         for (int i = 0; i < length; i++)
-            des.put(i, src[i]);
+            des.put(pos + i, src[i]);
     }
 
     public static void memcpy(ByteBuffer des, ByteBuffer src, int length) {
+        int dpos = des.position();
+        int spos = src.position();
         for (int i = 0; i < length; i++)
-            des.put(i, src.get(i));
+            des.put(dpos + i, src.get(spos + i));
     }
 
     public static int memcmp(byte[] srcA, byte[] srcB, int len) {
