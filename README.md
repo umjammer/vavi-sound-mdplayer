@@ -18,7 +18,7 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | VGM/VGZ                         | video game music |       ✅️ ️       | built-in             | vavi-sound-emu                                                       |                                                                               |
 | XGM                             | mega drive       |        ✅️        | built-in             |                                                                      |                                                                               |
 | XGM2                            | mega drive       |        ✅️        | built-in             |                                                                      |                                                                               |
-| MDS                             | mega drive       |  ✅️<sup>*</sup>  |                      | [vavi-sound-mdsdrv](https://github.com/umjammer/vavi-sound-mdsdrv)   | (*) [pcm has problem](https://github.com/umjammer/vavi-sound-mdsdrv/issues/1) |
+| MDS                             | mega drive       |  ✅️<sup>*</sup>  | driver               | [vavi-sound-mdsdrv](https://github.com/umjammer/vavi-sound-mdsdrv)   | (*) [pcm has problem](https://github.com/umjammer/vavi-sound-mdsdrv/issues/1) |
 | ZGM                             | mml2vgm          |       n/a        | built-in             |                                                                      | currently support only YM2609                                                 |
 | S98                             | PC98             |        ✅️        | built-in             |                                                                      |                                                                               |
 | MUC/MUB                         | PC88 MUCOM88     |  ✅️<sup>*</sup>  | driver               | [vavi-sound-mucom88](https://github.com/umjammer/vavi-sound-mucom88) | (*) compiler wip                                                              |
@@ -26,7 +26,7 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | MPZ/OPI</br>MVI/OVI</br>MZI/OZI | PC98 FMP         |        ✅️        | built-in*            |                                                                      | for freeware<br/> (*) compiler wip                                            |
 | MUS/O/OX/OY                     | PC98 muap98      |  ✅<sup>*</sup>   | driver               | [vavi-sound-muap](https://github.com/umjammer/vavi-sound-muap)       | (*) compiler wip                                                              |
 | MDX                             | X68k MXDRV       |        ✅️        | built-in             |                                                                      |                                                                               |
-| MND                             | X68k MNDRV       |        ⏳️        | built-in             |                                                                      |                                                                               |
+| MND                             | X68k MNDRV       |       ✅️ ️       | built-in             |                                                                      |                                                                               |
 | ZMD/ZMS                         | X68k ZMusic      |  ✅️<sup>*</sup>  | built-in*            |                                                                      | (*) compiler wip                                                              |
 | NRD                             | X1 NRTDRV        |        ✅️        | built-in             |                                                                      |                                                                               |
 | MDR                             | MSX MoonDriver   |  ✅️<sup>*</sup>  | ~~built-in~~, driver | [vavi-sound-moon](https://github.com/umjammer/vavi-sound-moon)       | (*) compiler wip                                                              |
@@ -39,9 +39,9 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | HES                             | PC Engine        |       ✅️?        | built-in             | libgme                                                               |                                                                               |
 | GBS                             | Game Boy         |        →         | built-in             | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                               |
 | GYM                             | Sega Genesis     |       n/a        |                      | libgme                                                               |                                                                               |
-| KSS                             | MSX              |       n/a        |                      | libgme                                                               |                                                                               |
+| KSS                             | MSX              |       ✅️ →       |                      | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                               |
 | SAP                             | Atari            |       n/a        |                      | libgme                                                               |                                                                               |
-| SPC                             | SNES             |      n/a ️→      |                      | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                               |
+| SPC                             | SNES             |      n/a →       |                      | [vavi-sound-emu](https://github.com/umjammer/vavi-sound-emu)         |                                                                               |
 | YM                              | Atari ST         |     n/a    ️     |                      | [FastTracker_2](https://en.wikipedia.org/wiki/FastTracker_2)         |                                                                               |
 | HVL                             | Hively Tracker   |     n/a   ️      |                      | [Hively Tracker](https://github.com/pete-gordon/hivelytracker)       |                                                                               |
 | AHX                             | AHX Clone        |     n/a    ️     |                      | [AHX](http://amigascne.org/abyss/ahx/)                               |                                                                               |
@@ -52,9 +52,9 @@ this is a fork of [MDPlayer](https://github.com/kuma4649/MDPlayer)
 | MP3                             |                  |        ️→        | built-in             | [mp3spi](https://github.com/umjammer/mp3spi)                         |                                                                               |
 | AIF                             |                  |        ️→        | built-in             | javax.sound.sampled.spi                                              |                                                                               |
 
-<sub>1. use NsfPlayer instead of built-in np library</sub><br/>
- <sub>2. use JSIDPlay2 instead of built-in sid library</sub><br/>
- <sub>* at type: driver uses emulator</sub>
+<sub>1. use NsfPlayer instead of built-in np library (mdsound:np library works now)</sub><br/>
+<sub>2. use JSIDPlay2 instead of built-in sid library (built-in sid library mostly works now)</sub><br/>
+<sub>* at type: driver uses emulator</sub>
 
 ## Install
 
@@ -120,11 +120,14 @@ you can select a chip implementation variant by number.
 * https://github.com/myon98/98fmplayer (fmp, pmd)
 * https://ndp.squares.net/web/ (ndp)
 * http://retropc.net/saya/x68000/ (mndrv)
+* https://github.com/asma-atari-org/asma.atari.org (sap)
+* https://github.com/Manicsteiner/VGMToolbox (kss, xa, xma, xsf)
 * s98
   * https://www.zophar.net/music/s98.html (s98)
   * https://github.com/niara3/s98txt/blob/master/src/com/niara3/s98txt/Main.java (s98)
   * http://www.vesta.dti.ne.jp/~tsato/soft_s98v3.html (s98v3)
 * samples
+  * https://vgmrips.net/ (vgm)
   * https://gimic.jp/index.php?%E3%83%86%E3%82%B9%E3%83%88%E3%83%87%E3%83%BC%E3%82%BF (test data)
   * https://github.com/BouKiCHi/HuSIC (hes)
   * https://www.zophar.net/music/hes.html (hes download)
@@ -136,6 +139,7 @@ you can select a chip implementation variant by number.
   * http://retropc.net/x68000/software/sound/zmusic/zmusic2 (zms v2)
   * https://archive.org/details/sound_canvas_midi_collection (rcp)
   * http://www.os.rim.or.jp/~terada/contents/data.htm (zms)
+  * https://nfggames.com/X68000/index.php/Mirrors/Groundzero%20Organization/x68tools/music/mndrv/ (mndrv) ... google censorship
 * processor
   * z80 
     * https://github.com/trekawek/coffee-gb (z80)
@@ -165,10 +169,11 @@ you can select a chip implementation variant by number.
     * hes: volume related???
     * ay: zxbeep ???
     * ~~fmp: fmp not resident~~
-    * mmd: i can't find .mnd samples
+    * ~~mnd: no .mnd samples on the internet~~
     * zms: wip signed byte related ... ???
     * rcs: wip
     * rcp: wip, how to treat midi plugin as chip?
+    * nsf: sp library works. `render_()` is not work, `mul` related. (replace `render_()` to vavi-sound-mdplayer:NsfTestPlayer's one, it works)
  
 ---
 
