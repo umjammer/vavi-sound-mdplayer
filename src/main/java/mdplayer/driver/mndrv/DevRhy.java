@@ -28,7 +28,7 @@ public class DevRhy {
 
         if ((mm.readByte(reg.a5 + W.flag) & 0x40) == 0) { // break _rhythm_next;
 
-            if (reg.getD4_B() - mm.readByte(reg.a5 + W.at_q) != 0) {
+            if (reg.getD4_B() - (mm.readByte(reg.a5 + W.at_q) & 0xff) != 0) {
                 reg.D1_L = 0x98;
                 mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & reg.getD1_B()));
             }
@@ -86,7 +86,7 @@ public class DevRhy {
                     mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) | 0x20));
                     mm.write(reg.a5 + W.flag, (byte) (mm.readByte(reg.a5 + W.flag) & 0xfb));
                     mm.write(reg.a5 + W.at_q_work, mm.readByte(reg.a5 + W.at_q));
-                    if ((mm.readByte(reg.a5 + W.ch) - 0x41) != 0) { // break _slave_rhythm;
+                    if (((mm.readByte(reg.a5 + W.ch) & 0xff) - 0x41) != 0) { // break _slave_rhythm;
                         mm.write(reg.a6 + Dw.RHY_DAT, (byte) (mm.readByte(reg.a6 + Dw.RHY_DAT) | reg.getD0_B()));
 
                         mm.write(reg.a5 + W.len, mm.readByte(reg.a1++));
@@ -94,11 +94,11 @@ public class DevRhy {
                         mm.write(reg.a5 + W.dataptr, reg.a1);
                         return;
                     }
-// _slave_rhythm:
+//_slave_rhythm:
                     mm.write(reg.a6 + Dw.RHY_DAT2, (byte) (mm.readByte(reg.a6 + Dw.RHY_DAT2) | reg.getD0_B()));
                 }
             }
-// _rhythm_exit:
+//_rhythm_exit:
             mm.write(reg.a5 + W.len, mm.readByte(reg.a1++));
             if (mm.readByte(reg.a5 + W.len) == 0) continue; // break _rhythm_loop;
 
@@ -113,7 +113,7 @@ public class DevRhy {
     public void _rhythm_command() {
         reg.setD0_W(reg.getD0_W() + (int) (short) reg.getD0_W());
 
-        //_rhyc:
+//_rhyc:
         switch (reg.getD0_W() / 2) {
         case 0x00:
             break;
@@ -601,7 +601,7 @@ public class DevRhy {
         reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD2_B(mm.readByte(reg.a1++) & 0xff);
         reg.a0 = reg.a6 + Dw.M_BD;
-        if (mm.readByte(reg.a5 + W.ch) - 0x40 != 0) {
+        if (((mm.readByte(reg.a5 + W.ch) & 0xff) - 0x40) != 0) {
             reg.a0 = reg.a6 + Dw.S_BD;
         }
         reg.a0 = reg.a0 + (int) (short) reg.getD1_W();
@@ -622,7 +622,7 @@ public class DevRhy {
         reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD2_B(mm.readByte(reg.a1++) & 0xff);
         reg.a0 = reg.a6 + Dw.M_BD;
-        if (mm.readByte(reg.a5 + W.ch) - 0x40 != 0) {
+        if (((mm.readByte(reg.a5 + W.ch) & 0xff) - 0x40) != 0) {
             reg.a0 = reg.a6 + Dw.S_BD;
         }
         reg.a0 = reg.a0 + (int) (short) reg.getD1_W();
@@ -643,7 +643,7 @@ public class DevRhy {
         reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD2_B(mm.readByte(reg.a1++) & 0xff);
         reg.a0 = reg.a6 + Dw.M_BD;
-        if (mm.readByte(reg.a5 + W.ch) - 0x40 != 0) {
+        if (((mm.readByte(reg.a5 + W.ch) & 0xff) - 0x40) != 0) {
             reg.a0 = reg.a6 + Dw.S_BD;
         }
         reg.a0 = reg.a0 + (int) (short) reg.getD1_W();
@@ -670,7 +670,7 @@ public class DevRhy {
         reg.setD1_B(mm.readByte(reg.a1++) & 0xff);
         reg.setD2_B(mm.readByte(reg.a1++) & 0xff);
         reg.a0 = reg.a6 + Dw.M_BD;
-        if (mm.readByte(reg.a5 + W.ch) - 0x40 != 0) {
+        if (((mm.readByte(reg.a5 + W.ch) & 0xff) - 0x40) != 0) {
             reg.a0 = reg.a6 + Dw.S_BD;
         }
         reg.a0 = reg.a0 + (short) reg.getD1_W();

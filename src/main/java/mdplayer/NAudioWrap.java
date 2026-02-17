@@ -160,8 +160,10 @@ logger.log(Level.DEBUG, "line: " + e.getType());
         sb.rewind();
 // os.write(bb.array());
 //logger.log(Level.TRACE, "write to line\n" + StringUtil.getDump(bb.array()));
-        return dsOut.write(bb.array(), 0, count * Short.BYTES);
-//        return count * Short.BYTES;
+        if (dsOut != null)
+            return dsOut.write(bb.array(), 0, count * Short.BYTES);
+        else
+            return count * Short.BYTES;
 //} catch (IOException e) {
 //    throw new UncheckedIOException(e);
 //}

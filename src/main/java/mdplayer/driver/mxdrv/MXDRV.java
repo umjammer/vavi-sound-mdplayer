@@ -327,8 +327,8 @@ logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], p
         for (int i = 0; i < mdxSize[0]; i++) mm.write(mdxPtr + i, mdx[0][i]);
         for (int i = 0; i < pdxSize[0]; i++) mm.write(pdxPtr + i, pdx[0][i]);
 
-        mdxPCM.chips[0].mountMemory(mm.mm);
-        pcm8pp.writePcm(0, mm.mm, 0, mm.mm.length);
+        if (mdxPCM != null) mdxPCM.chips[0].mountMemory(mm.mm);
+        if (pcm8pp != null) pcm8pp.writePcm(0, mm.mm, 0, mm.mm.length);
 
         int playtime = MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr, 1, Depend.TRUE);
 //logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
@@ -767,9 +767,11 @@ logger.log(Level.DEBUG, "extendFiles is null");
         if (opmmode < 0) opmmode = 0;
 
         if (betw != 0) {
-            ret = mdxPCM.chips[0].start(samprate, opmmode + 1, 1, betw, pcmbuf, late, 1.0);
+            if (mdxPCM != null)
+                ret = mdxPCM.chips[0].start(samprate, opmmode + 1, 1, betw, pcmbuf, late, 1.0);
         } else {
-            ret = mdxPCM.chips[0].startPcm(samprate, opmflag, adpcmflag, pcmbuf);
+            if (mdxPCM != null)
+                ret = mdxPCM.chips[0].startPcm(samprate, opmflag, adpcmflag, pcmbuf);
         }
         if (ret != 0) {
             switch (ret) {
@@ -780,7 +782,7 @@ logger.log(Level.DEBUG, "extendFiles is null");
             }
         }
 
-        mdxPCM.soundIocs[0].init();
+        if (mdxPCM != null) mdxPCM.soundIocs[0].init();
         ret = initialize(mdxbuf, pdxbuf, memInd);
         if (ret != 0) {
             return MXDRV_ERR.MEMORY.ordinal();
@@ -790,20 +792,22 @@ logger.log(Level.DEBUG, "extendFiles is null");
     }
 
     private void MXDRV_End() {
-        mdxPCM.chips[0].opmInt(null);
+        if (mdxPCM != null) mdxPCM.chips[0].opmInt(null);
         MXCALLBACK_OPMINT = null;
         OPMINT_FUNC = null;
 
         DisposeStack_L00122e = null;
 
-        mdxPCM.chips[0].free();
+        if (mdxPCM != null) mdxPCM.chips[0].free();
     }
 
     private int MXDRV_GetPCM(short[] buf, int len) {
+        if (mdxPCM == null) return 0;
         return mdxPCM.chips[0].getPcm(buf, 0, len);
     }
 
     private int MXDRV_TotalVolume(int vol) {
+        if (mdxPCM == null) return 0;
         return mdxPCM.chips[0].totalVolume(vol);
     }
 
@@ -903,7 +907,7 @@ logger.log(Level.DEBUG, "extendFiles is null");
         X68Reg reg = new X68Reg();
         Runnable opmIntBack;
 
-        mdxPCM.chips[0].opmInt(null);
+        if (mdxPCM != null) mdxPCM.chips[0].opmInt(null);
 
         measurePlayTime = true;
         terminatePlay = false;
@@ -939,7 +943,7 @@ logger.log(Level.DEBUG, "extendFiles is null");
 
         MXCALLBACK_OPMINT = opmIntBack;
         measurePlayTime = false;
-        mdxPCM.chips[0].opmInt(this::OPMINTFUNC);
+        if (mdxPCM != null) mdxPCM.chips[0].opmInt(this::OPMINTFUNC);
 
         return (int) (mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) * (long) 1024 / 4000. + (1 - Math.ulp(1.0))) + 2000;
     }
@@ -955,7 +959,7 @@ logger.log(Level.DEBUG, "extendFiles is null");
         short chMaskBack;
         int opmWaitBack;
 
-        mdxPCM.chips[0].opmInt(null);
+        if (mdxPCM != null) mdxPCM.chips[0].opmInt(null);
 
         terminatePlay = false;
         loopCount = 0;
@@ -973,17 +977,18 @@ logger.log(Level.DEBUG, "extendFiles is null");
         reg.d1 = 0xffff_ffff;
         MXDRV_(reg);
 
-        opmWaitBack = mdxPCM.chips[0].opmWait(-1);
-        mdxPCM.chips[0].opmWait(1);
+        if (mdxPCM == null) opmWaitBack = 0;
+        else opmWaitBack = mdxPCM.chips[0].opmWait(-1);
+        if (mdxPCM != null) mdxPCM.chips[0].opmWait(1);
         while (mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) < playat) {
             if (terminatePlay) break;
             OPMINTFUNC();
         }
-        mdxPCM.chips[0].opmWait(opmWaitBack);
+        if (mdxPCM != null) mdxPCM.chips[0].opmWait(opmWaitBack);
 
         mm.write(G + MXWORK_GLOBAL.L001e1c, chMaskBack);
         MXCALLBACK_OPMINT = opmIntBack;
-        mdxPCM.chips[0].opmInt(this::OPMINTFUNC);
+        if (mdxPCM != null) mdxPCM.chips[0].opmInt(this::OPMINTFUNC);
     }
 
     // 
@@ -995,8 +1000,8 @@ logger.log(Level.DEBUG, "extendFiles is null");
 
         switch (D0 & 0xfff0) {
         case 0x0000:
-            if (pcm8type == 0) mdxPCM.chips[0].pcm8Out(D0 & 0xff, null, A1, D1, D2); // Start of specified channel sound
-            else pcm8pp.keyOn(0, D0 & 0xff, A1, D1 + 0x0800, D2); // Start of specified channel sound
+            if (pcm8type == 0) if (mdxPCM != null) mdxPCM.chips[0].pcm8Out(D0 & 0xff, null, A1, D1, D2); // Start of specified channel sound
+            else if (pcm8pp != null) pcm8pp.keyOn(0, D0 & 0xff, A1, D1 + 0x0800, D2); // Start of specified channel sound
             ch = (D0 & 0xff) % 8;
             pcm8St[ch].tablePtr = A1;
             pcm8St[ch].mode = D1;
@@ -1006,11 +1011,16 @@ logger.log(Level.DEBUG, "extendFiles is null");
         case 0x0100:
             switch (D0 & 0xffff) {
             case 0x0100:
-                if (pcm8type == 0) mdxPCM.chips[0].pcm8Out(D0 & 0xff, null, 0, 0, 0); // Stop the specified channel
-                else pcm8pp.keyOff(0, D0 & 0xff); // Stop the specified channel
+                ch = (D0 & 0xff) % 8;
+                pcm8St[ch].tablePtr = 0;
+                pcm8St[ch].mode = 0;
+                pcm8St[ch].length = 0;
+                pcm8St[ch].Keyon = false;
+                if (pcm8type == 0) if (mdxPCM != null) mdxPCM.chips[0].pcm8Out(D0 & 0xff, null, 0, 0, 0); // Stop the specified channel
+                else if (pcm8pp != null) pcm8pp.keyOff(0, D0 & 0xff); // Stop the specified channel
                 break;
             case 0x0101:
-                mdxPCM.chips[0].pcm8Abort();
+                if (mdxPCM != null) mdxPCM.chips[0].pcm8Abort(); // Stop all channels
                 break;
             }
             break;
@@ -1021,6 +1031,8 @@ logger.log(Level.DEBUG, "extendFiles is null");
                 break;
             }
             break;
+        default:
+            break;
         }
     }
 
@@ -1030,7 +1042,7 @@ logger.log(Level.DEBUG, "extendFiles is null");
 
         //logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
 
-        mdxPCM.soundIocs[0].opmSet(D1 & 0xff, D2 & 0xff);
+        if (mdxPCM != null) mdxPCM.soundIocs[0].opmSet(D1 & 0xff, D2 & 0xff);
         plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, D1, D2, model, ym2151Hosei[0], vgmFrameCounter);
 
         if (D1 == 0x10) {
@@ -1046,18 +1058,18 @@ logger.log(Level.DEBUG, "extendFiles is null");
 
     // 
     private void ADPCMOUT() {
-        if (pcm8type == 0) mdxPCM.soundIocs[0].adpcmOut(A1, D1, D2);
-        else pcm8pp.keyOn(0, 0, A1, D1 + 0x0c00, D2);
+        if (pcm8type == 0) if (mdxPCM != null) mdxPCM.soundIocs[0].adpcmOut(A1, D1, D2);
+        else if (pcm8pp != null) pcm8pp.keyOn(0, 0, A1, D1 + 0x0c00, D2);
     }
 
     private void ADPCMMOD_STOP() {
-        if (pcm8type == 0) mdxPCM.soundIocs[0].adpcmMod(1);
-        else pcm8pp.keyOff(0, 0);
+        if (pcm8type == 0) if (mdxPCM != null) mdxPCM.soundIocs[0].adpcmMod(1);
+        else if (pcm8pp != null) pcm8pp.keyOff(0, 0);
     }
 
     private void ADPCMMOD_END() {
-        if (pcm8type == 0) mdxPCM.soundIocs[0].adpcmMod(0);
-        else pcm8pp.keyOff(0, 0);
+        if (pcm8type == 0) if (mdxPCM != null) mdxPCM.soundIocs[0].adpcmMod(0);
+        else if (pcm8pp != null) pcm8pp.keyOff(0, 0);
     }
 
     // 
@@ -1076,7 +1088,7 @@ logger.log(Level.DEBUG, "extendFiles is null");
 
     private void SETOPMINT(Runnable func) {
         OPMINT_FUNC = func;
-        mdxPCM.chips[0].opmInt(this::OPMINTFUNC);
+        if (mdxPCM != null) mdxPCM.chips[0].opmInt(this::OPMINTFUNC);
     }
 
     // 

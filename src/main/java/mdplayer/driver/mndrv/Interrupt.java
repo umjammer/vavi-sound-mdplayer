@@ -102,7 +102,7 @@ _opn_recall:
             reg.setD4_W(sp);
 
             reg.setD0_B(mm.readByte(reg.a6 + Dw.TEMPO3) & 0xff);
-            if (mm.readByte(reg.a6 + Dw.TEMPO2) - reg.getD0_B() != 0) {
+            if ((mm.readByte(reg.a6 + Dw.TEMPO2) & 0xff) - reg.getD0_B() != 0) {
                 mm.write(reg.a6 + Dw.TEMPO2, (byte) reg.getD0_B());
                 reg.D7_L = 0;
                 reg.D1_L = 0x26;
@@ -141,7 +141,7 @@ _opn_recall:
             }
             break;
         }
-// _opn_entry_exit:
+//_opn_entry_exit:
 
         reg.D0_L = spReg.D0_L;
         reg.D1_L = spReg.D1_L;
@@ -239,7 +239,7 @@ _opm_recall:
             reg.setD4_W(sp);
 
             reg.setD0_B(mm.readByte(reg.a6 + Dw.TEMPO3) & 0xff);
-            if (mm.readByte(reg.a6 + Dw.TEMPO2) - reg.getD0_B() != 0) {
+            if ((mm.readByte(reg.a6 + Dw.TEMPO2) & 0xff) - reg.getD0_B() != 0) {
                 mm.write(reg.a6 + Dw.TEMPO2, (byte) reg.getD0_B());
                 reg.D1_L = 0x12;
                 mndrv._OPM_WRITE();
@@ -276,6 +276,7 @@ _opm_recall:
                     reg.a6 = spReg2.a6;
                 } while (reg.getAndDecD7_W() != 0);
             }
+            break;
         }
 //_opm_entry_exit:
 
@@ -731,8 +732,9 @@ _opm_recall:
     private void _ch_fade() {
         reg.setD7_W(mm.readShort(reg.a6 + Dw.USE_TRACK) & 0xffff);
         reg.a5 = reg.a6 + Dw.TRACKWORKADR;
+
 //_ch_fade_loop:
-        do {
+        while (true) {
             reg.setD0_B(mm.readByte(reg.a5 + W.ch) & 0xff);
             if ((byte) reg.getD0_B() >= 0) { // break _ch_fade_loop_check;
 
@@ -784,8 +786,7 @@ _opm_recall:
                 }
 //_ch_fade_next:
                 reg.a5 = reg.a5 + W._track_work_size;
-                reg.setD7_W(reg.getD7_W() - 1);
-                if (reg.getD7_W() != 0) continue; // break _ch_fade_loop;
+                if (reg.getAndDecD7_W() != 0) continue; // break _ch_fade_loop;
                 return;
             }
 //_ch_fade_loop_check:
@@ -829,7 +830,9 @@ _opm_recall:
             }
 //L9:
             reg.a5 = reg.a5 + W._track_work_size;
-        } while (reg.getAndDecD7_W() != 0); // break _ch_fade_loop;
+                if (reg.getAndDecD7_W() != 0) continue; // break _ch_fade_loop;
+                return;
+            }
     }
 
     /** */
@@ -856,9 +859,7 @@ _opm_recall:
                 }
             }
             reg.a5 = reg.a5 + W._track_work_size; // Dw._trackworksize;
-
-            reg.setD7_W(reg.getD7_W() - 1);
-        } while (reg.getD7_W() != 0); // break _ch_ana_loop;
+        } while (reg.getAndDecD7_W() != 0); // break _ch_ana_loop;
     }
 
     /**
@@ -873,8 +874,7 @@ _opm_recall:
             reg.a0 = mm.readInt(reg.a5 + W.lfojob_adrs);
             ab.hlw_lfojob_adrs.get(reg.a5).run();
             reg.a5 = reg.a5 + W._track_work_size;
-            reg.setD7_W(reg.getD7_W() - 1);
-        } while (reg.getD7_W() != 0); // break _ch_ana_tma_lfo_loop;
+        } while (reg.getAndDecD7_W() != 0); // break _ch_ana_tma_lfo_loop;
     }
 
     /**
@@ -892,7 +892,6 @@ _opm_recall:
                 }
             }
             reg.a5 = reg.a5 + W._track_work_size; // Dw._trackworksize;
-            reg.setD7_W(reg.getD7_W() - 1);
-        } while (reg.getD7_W() != 0); // break _ch_ana_tma_env_loop;
+        } while (reg.getAndDecD7_W() != 0); // break _ch_ana_tma_env_loop;
     }
 }

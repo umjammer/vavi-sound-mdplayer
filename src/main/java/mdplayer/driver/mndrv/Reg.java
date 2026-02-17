@@ -225,7 +225,7 @@ public class Reg {
         D1_L = v;
     }
 
-    public void setD2L(int v) {
+    public void setD2_L(int v) {
         D2_L = v;
     }
 

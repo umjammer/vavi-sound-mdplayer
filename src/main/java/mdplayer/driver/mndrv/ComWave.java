@@ -86,6 +86,7 @@ public class ComWave {
         val = mm.readByte(reg.a3 + W_W.use_flag);
         if (val != 0) {
             _wave_init_kon_common_a(val);
+            return;
         }
     }
 
@@ -605,7 +606,7 @@ public class ComWave {
                 reg.a0 = mm.readInt(reg.a3 + W_W.adrs_work);
                 reg.D0_L = 0;
                 reg.setD0_B(mm.readByte(reg.a3 + W_W.depth) & 0xff);
-                reg.D0_L = (short) (/* signed */ mm.readShort(reg.a0) * (short) reg.getD0_W()); // For CPUs less than 68020, only w*W=l?
+                reg.D0_L = ((short) mm.readShort(reg.a0) * (short) reg.getD0_W()) & 0xffff; // (UInt16)(Int16*Int16) For CPUs less than 68020, only w*W=l?
 
                 if (reg.a0 - mm.readInt(reg.a3 + W_W.end_adrs_work) == 0) { // break _com_w10;
 
