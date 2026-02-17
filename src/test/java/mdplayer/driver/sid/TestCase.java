@@ -49,7 +49,7 @@ Debug.print("volume: " + volume);
     }
 
     @Test
-    //@EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test1() throws Exception {
 Debug.println(sid);
         SidTestProgram.main(new String[]{sid});
