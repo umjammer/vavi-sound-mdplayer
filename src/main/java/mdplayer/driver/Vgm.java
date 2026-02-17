@@ -447,7 +447,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         vgmCmdTbl[0xa8] = this::vcYM2610Port0;
         vgmCmdTbl[0xa9] = this::vcYM2610Port1;
         vgmCmdTbl[0xaa] = this::vcYM3812;
-        vgmCmdTbl[0xab] = this::vcDummy2Ope;
+        vgmCmdTbl[0xab] = this::vcYM3526;
         vgmCmdTbl[0xac] = this::vcY8950;
         vgmCmdTbl[0xad] = this::vcYMZ280B;
         vgmCmdTbl[0xae] = this::vcYMF262Port0;
@@ -459,7 +459,7 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
         vgmCmdTbl[0xb3] = this::vcDMG;
         vgmCmdTbl[0xb4] = this::vcNES;
         vgmCmdTbl[0xb5] = this::vcMultiPCM;
-        vgmCmdTbl[0xb6] = this::vcDummy2Ope;
+        vgmCmdTbl[0xb6] = this::vcuPD7759;
         vgmCmdTbl[0xb7] = this::vcOKIM6258;
 
         vgmCmdTbl[0xb8] = this::vcOKIM6295;
@@ -591,6 +591,12 @@ logger.log(Level.WARNING, "[%s]:unknown command: adr: 0x%x cmd: 0x%x".formatted(
 
     private void vcMultiPCM() {
         plugin.audio.chipRegister.chip(MultiPcmChip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
+        vgmAdr += 3;
+    }
+
+    private void vcuPD7759() {
+        //if(model== EnmModel.VirtualModel) logger.log(Level.TRACE, "adr:%d data:%02x".formatted(vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2]));
+        plugin.audio.chipRegister.chip(Upd7759Chip.class).write((vgmBuf[vgmAdr + 1] & 0x80) == 0 ? 0 : 1, vgmBuf[vgmAdr + 1] & 0x7f, vgmBuf[vgmAdr + 2] & 0xff, model);
         vgmAdr += 3;
     }
 
