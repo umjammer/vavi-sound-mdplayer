@@ -18,7 +18,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * MonDriver (MSX, Local) Plugin.
+ * MoonDriver (MSX, Local) Plugin.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>

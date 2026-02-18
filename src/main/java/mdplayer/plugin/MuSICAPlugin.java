@@ -83,6 +83,7 @@ public class MuSICAPlugin extends BasePlugin {
                 trkOffsets[3] + trkOffsets[4] + trkOffsets[5] +
                 trkOffsets[6] + trkOffsets[7] + trkOffsets[8]
         ) != 0);
+logger.log(Level.INFO, "MuSICA: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useSCC, useOPLL));
 
         startTrdVgmReal();
 

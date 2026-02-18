@@ -89,7 +89,7 @@ public class Nise98 {
     }
 
     public void init(Function<String, Object[]> msgWrite, Consumer<ChipDatum> opnaWrite, FileTemp fileTemp, OngenBoardType ongen /* = enmOngenBoardType.PC9801_86B */) {
-        logger.log(Level.DEBUG, "<Nise98>Init");
+        logger.log(Level.TRACE, "<Nise98>Init");
 
         this.opnaWrite = opnaWrite;
         this.fileTemp = fileTemp;
@@ -236,7 +236,7 @@ public class Nise98 {
                  //        ~~~~ Here, FMP is completely ignored (however, if it is 0xff, the judgment process ends.
                 //              It is likely that further investigation will be carried out in subsequent processes).
 
-logger.log(Level.INFO, "fmReg188.ongen: " + fmReg188.ongen);
+logger.log(Level.TRACE, "fmReg188.ongen: " + fmReg188.ongen);
                 if (fmReg188.ongen == OngenBoardType.None) return (byte) 0xff;
                 else if (fmReg188.ongen == OngenBoardType.PC9801_26K) return (byte) 0xff;
                 else if (fmReg188.ongen == OngenBoardType.PC9801_86B) return (byte) 0b0100_0001;
@@ -253,7 +253,7 @@ logger.log(Level.INFO, "fmReg188.ongen: " + fmReg188.ongen);
     }
 
     public short inpW(short port) {
-        logger.log(Level.DEBUG, "<Nise98>IN  Port:$%04x".formatted(port & 0xffff));
+        logger.log(Level.TRACE, "<Nise98>IN  Port:$%04x".formatted(port & 0xffff));
         switch (port & 0xffff) {
 //            case 0xa460:
 //                return IsOPNA ? 0x00 : 0xff; // 0xFF:not OPNA
@@ -513,8 +513,8 @@ logger.log(Level.INFO, "fmReg188.ongen: " + fmReg188.ongen);
             }
         }
 
-        logger.log(Level.DEBUG, "Terminate program. return code=$%02x".formatted(dos.getReturnCode() & 0xff));
-//        logger.log(Level.DEBUG, "");
+        logger.log(Level.TRACE, "Terminate program. return code=$%02x".formatted(dos.getReturnCode() & 0xff));
+//        logger.log(Level.TRACE, "");
 
         return dos.getReturnCode();
     }

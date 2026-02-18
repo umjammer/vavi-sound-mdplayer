@@ -86,7 +86,6 @@ public class TestCase {
 //        System.setProperty("muap.dir.udp", muapDirUdp);
 //        System.setProperty("muap.dir.sud", muapDirSud);
 
-        System.setProperty("mdplayer.zms.dir", zmsDir);
         System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
 Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("mdplayer.volume") + ", cwd: " + System.getProperty("user.dir") + ", time: " + time);
 Debug.println("mdplayer.fmp.dir: " + System.getProperty("mdplayer.fmp.dir"));
@@ -126,6 +125,7 @@ Debug.println("not on ide");
 }
     }
 
+    // ^N to next song
     @Test
     @DisplayName("play random one in local.properties")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
@@ -134,7 +134,7 @@ Debug.println("not on ide");
         Files.readAllLines(Paths.get("local.properties")).forEach(line -> {
             if (line.matches("^#?file\\s*?=.*$")) {
                 String file = line.substring(line.indexOf("=") + 1);
-System.err.println(file);
+//System.err.println(file);
                 Path path = Path.of(file);
                 if (Files.exists(path) && !Files.isDirectory(path))
                     files.add(file);
@@ -147,7 +147,7 @@ System.err.println(file);
         GlobalScreen.addNativeKeyListener(new NativeKeyListener() {
             @Override public void nativeKeyReleased(NativeKeyEvent event) {
                 int keyCode = event.getKeyCode();
-Debug.println("keyTyped: " + keyCode);
+//Debug.println("keyTyped: " + keyCode);
                 if ((event.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0 && keyCode == NativeKeyEvent.VC_N) {
                     plugin.stop();
                     plugin.close(); // TODO doesn't work well

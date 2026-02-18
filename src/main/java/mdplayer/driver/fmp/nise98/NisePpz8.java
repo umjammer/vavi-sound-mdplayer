@@ -88,7 +88,7 @@ public class NisePpz8 {
         regs[0].setCL((byte) 0x00); // TASK_ASIN
         nise98.callRunFunctionCall((byte) 0xd2, true, true, true, 10_000_000_000L, 0_000);
 
-        logger.log(Level.INFO, "set the fake PPZ8 to the FMP task.");
+        logger.log(Level.TRACE, "set the fake PPZ8 to the FMP task.");
     }
 
     public void int7F() {

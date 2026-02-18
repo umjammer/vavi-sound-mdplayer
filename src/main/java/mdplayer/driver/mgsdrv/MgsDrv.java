@@ -150,11 +150,13 @@ public class MgsDrv extends BaseDriver {
         // Switch to the segment where MGSDRV exists
         ((MsxMemory) z80.getMemory()).changePage(3, 1, 1); // slot3-1 to Page1
         ((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1]).setSegmentToPage(4, 1); // Set segment 0x4 to Page1 of slot3-1
+        //((MsxMemory) z80.Memory).ChangePage(3, 1, 2);
+        //((MapperRAMCartridge) ((MsxMemory) z80.getMemory'().slot.slots[3][1]).setSegmentToPage(0x1a, 2);
 
         logger.log(Level.DEBUG, "\n_SYSCK(0010H)");
         z80.getRegisters().setPC((short) 0x6010);
         z80.continue_();
-        //DebugRegisters(z80);
+        //debugRegisters(z80);
 
         logger.log(Level.DEBUG, "MSX-MUSIC slot %02x".formatted(z80.getRegisters().getD() & 0xff));
         logger.log(Level.DEBUG, "SCC       slot %02x".formatted(z80.getRegisters().getA() & 0xff));
@@ -163,7 +165,7 @@ public class MgsDrv extends BaseDriver {
         logger.log(Level.DEBUG, "\n_INITM(0013H)");
         z80.getRegisters().setPC((short) 0x6013);
         z80.continue_();
-        //DebugRegisters(z80);
+        //debugRegisters(z80);
 
         byte[] mgsdata = vgmBuf;
         MapperRamCartridge cart = ((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1]);
@@ -177,7 +179,7 @@ public class MgsDrv extends BaseDriver {
         z80.getRegisters().setPC((short) 0x6028);
         z80.getRegisters().setHL((short) 0x8000);
         z80.continue_();
-        //DebugRegisters(z80);
+        //debugRegisters(z80);
 
         logger.log(Level.DEBUG, "\n_PLYST(0016H)");
         z80.getRegisters().setPC((short) 0x6016);
@@ -185,20 +187,21 @@ public class MgsDrv extends BaseDriver {
         z80.getRegisters().setHL((short) 0xffff);
         z80.getRegisters().setB((byte) 0xff);
         z80.continue_();
-        //DebugRegisters(z80);
+        //debugRegisters(z80);
     }
 
     public String getPlayingFileName() {
-        return PlayingFileName;
+        return playingFileName;
     }
 
     public void setPlayingFileName(String value) {
-        PlayingFileName = value;
+        playingFileName = value;
     }
 
-    private String PlayingFileName;
+    private String playingFileName;
 
     private void Z80OnBeforeInstructionFetch(BeforeInstructionFetchEvent args) {
+        // Absolutely minimum implementation of CP/M for ZEXALL and ZEXDOC to work
 
         Z80Processor z80 = (Z80Processor) args.getSource();
 
@@ -237,12 +240,16 @@ public class MgsDrv extends BaseDriver {
             throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x0090) {
             logger.log(Level.DEBUG, "Call GICINI (0090H/MAIN)");
+            //throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x0093) {
             logger.log(Level.DEBUG, "Call WRTPSG (0093H/MAIN)");
+            //throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x0096) {
             logger.log(Level.DEBUG, "Call RDPSG (0096H/MAIN)");
+            //throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x0138 || z80.getRegisters().getPC() == 0x013B || z80.getRegisters().getPC() == 0x015C || z80.getRegisters().getPC() == 0x015f) {
             logger.log(Level.DEBUG, "Call InterSlot");
+            //throw new UnsupportedOperationException();
         } else if (z80.getRegisters().getPC() == 0x4601) {
             logger.log(Level.DEBUG, "JP NEWSTT(0x4601) Reg.HL=%04x".formatted(z80.getRegisters().getHL()));
             String msg = getAsciiZ(z80, z80.getRegisters().getHL() & 0xffff);

@@ -63,6 +63,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
                 trkOffsets[14] + trkOffsets[15] + trkOffsets[16] +
                 trkOffsets[17]
                 != 0);
+logger.log(Level.INFO, "MGSDRV: AY: %b, SCC: %b, OPLL: %b".formatted(useAY, useSCC, useOPLL));
 
         startTrdVgmReal();
 

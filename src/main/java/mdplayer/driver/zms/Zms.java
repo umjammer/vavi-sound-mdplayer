@@ -48,7 +48,7 @@ import static mdplayer.Common.charset;
  * sampling data |  CNF   |   ZPD
  * </pre>
  * system property
- * <li>"mdplayer.zms.zpd" ...  </li>
+ * <li>"mdplayer.zms.zpd" ... zpd file location</li>
  */
 public class Zms extends BaseDriver {
 
@@ -373,7 +373,7 @@ logger.log(Level.TRACE, "Zms Version Detected: " + version);
     private int waitNextPlay = 0;
     private int rc;
 
-    private void play() throws URISyntaxException, IOException {
+    private void play() throws IOException {
         String fn = playingFileName;
         String withoutExtFn;
         String dn = Path.getDirectoryName(fn);
