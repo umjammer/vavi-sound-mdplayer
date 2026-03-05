@@ -399,7 +399,7 @@ public class NiseDos {
                     cnt++;
                 } while (true);
 
-                filename = new String(ByteUtil.toByteArray(msg), charset);
+                filename = new String(ByteUtil.toByteArray(msg), charset).replace("\\", File.separator);
                 logger.log(Level.DEBUG, filename);
 
                 String[] fndFilename = new String[1];
@@ -636,7 +636,7 @@ logger.log(Level.TRACE, "error message from program");
         }
 
         if (!searchPath.isEmpty()) {
-            String f = fn.getFileName().toString();
+            String f = fn.getFileName().toString().replace("\\", File.separator);
             for (String fp : searchPath) {
                 Path sfn = Path.of(fp, f);
                 logger.log(Level.INFO, "Search File: %s".formatted(sfn));
@@ -694,7 +694,7 @@ logger.log(Level.TRACE, "error message from program");
 
     public byte[] loadData(String fn) {
         try {
-            Path p = filePath.resolve(fn);
+            Path p = filePath.resolve(fn.replace("\\", File.separator));
             if (fileTemp.existTemp(p.toString()))
                 return fileTemp.ReadTemp(fn);
 
