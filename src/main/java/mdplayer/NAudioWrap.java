@@ -117,9 +117,10 @@ logger.log(Level.DEBUG, "line: " + e.getType());
      * Do not call it from within a callback (it will hang)
      */
     public void stop() {
+logger.log(Level.INFO, "stop enter");
         if (dsOut != null) {
             try {
-                dsOut.drain();
+//                dsOut.drain(); // TODO this blocks to stop
                 dsOut.stop();
                 dsOut.close();
             } catch (Exception e) {

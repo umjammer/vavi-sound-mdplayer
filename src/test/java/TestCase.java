@@ -4,13 +4,20 @@
  * Programmed by Naohide Sano
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
@@ -141,27 +148,45 @@ Debug.println("not on ide");
             }
         });
 
+        playMulti(files);
+    }
+
+    /** */
+    void playMulti(List<String> files) throws Exception {
+        AtomicReference<CountDownLatch> cdl = new AtomicReference<>();
         Random random = new Random(System.currentTimeMillis());
 
         GlobalScreen.registerNativeHook();
         GlobalScreen.addNativeKeyListener(new NativeKeyListener() {
-            @Override public void nativeKeyReleased(NativeKeyEvent event) {
+            @Override
+            public void nativeKeyReleased(NativeKeyEvent event) {
                 int keyCode = event.getKeyCode();
-//Debug.println("keyTyped: " + keyCode);
+//Debug.println("keyTyped: " + keyCode + ", " + ((event.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0));
                 if ((event.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0 && keyCode == NativeKeyEvent.VC_N) {
-                    plugin.stop();
-                    plugin.close(); // TODO doesn't work well
+Debug.print("countdown");
+                    cdl.get().countDown();
                 }
             }
         });
 
         while (true) {
             this.file = files.get(random.nextInt(files.size()));
-            play();
+            cdl.set(new CountDownLatch(1));
+Debug.print("play: " + file + " ---------------------------------------------------------------------");
+            ExecutorService es = Executors.newSingleThreadExecutor();
+            es.submit(() -> { try { play(); } catch (Exception e) { Debug.printStackTrace(e); }});
+Debug.print("await");
+            cdl.get().await();
+Debug.println("await: broke");
+            es.shutdownNow();
+Debug.println("stop");
+            plugin.stop();
+            plugin.close(); // TODO doesn't work well
         }
     }
 
     @Test
+    @DisplayName("show meta data in the dir filtered by ext")
     @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
     void test3() throws Exception {
         List<Path> paths = Files.walk(Paths.get(dir))
@@ -177,6 +202,22 @@ Debug.println(music);
             } catch (Exception e) {
             }
         });
+    }
+
+    @Test
+    @DisplayName("play random one in the dir filtered by ext")
+    @EnabledIfSystemProperty(named = "vavi.test", matches = "ide")
+    void test4() throws Exception {
+        List<String> paths = Arrays.stream(dir.split(File.pathSeparator)).flatMap(d -> {
+            try {
+                return Files.walk(Paths.get(d))
+                            .filter(p -> Arrays.stream(ext.split(",")).anyMatch(e -> p.getFileName().toString().toUpperCase().endsWith(e)))
+                            .map(Path::toString);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }).toList();
+        playMulti(paths);
     }
 
     /**

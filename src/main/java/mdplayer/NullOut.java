@@ -9,7 +9,8 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 import javax.sound.sampled.LineEvent;
 
-
+// use {@link vavi.sound.sampled.misc.NullSourceDataLine}
+@Deprecated
 public class NullOut implements Closeable {
     private final boolean isNoWaitMode;
 

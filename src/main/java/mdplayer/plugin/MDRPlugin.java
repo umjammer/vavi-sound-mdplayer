@@ -36,6 +36,7 @@ public class MDRPlugin extends BasePlugin {
 //            audio.driverReal = new MoonDriverJava();
 //            ((MoonDriverJava) audio.driverReal).extendFiles = (extendFiles != null && !extendFiles.isEmpty()) ? extendFiles.get(0) : null;
 //        }
+        prepare();
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

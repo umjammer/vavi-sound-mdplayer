@@ -38,6 +38,7 @@ public class NDPPlugin extends BasePlugin {
 //            audio.driverReal = new Ndp();
 //            ((Ndp) audio.driverReal).setPlayingFileName(playingFileName);
 //        }
+        prepare();
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

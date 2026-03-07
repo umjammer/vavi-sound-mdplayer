@@ -48,6 +48,7 @@ public class S98Plugin extends BasePlugin {
 //            audio.driverReal = new S98();
 //        }
 
+        prepare();
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

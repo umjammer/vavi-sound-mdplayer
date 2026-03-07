@@ -40,6 +40,7 @@ public class PMDPlugin extends BasePlugin {
             audio.driverReal = new PMDJava();
             ((PMDJava) audio.driverReal).setPlayingFileName(playingFileName);
         }
+        prepare();
         boolean r = _play(format instanceof MMLFileFormat ? 0 : 1);
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

@@ -53,6 +53,7 @@ public class NSFPlugin extends BasePlugin {
 //        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
 //            driverReal = new Nsf();
 //        }
+        prepare();
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

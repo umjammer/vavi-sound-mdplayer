@@ -30,6 +30,7 @@ public class ZGMPlugin extends BasePlugin {
             audio.driverReal = new Zgm();
         }
 
+        prepare();
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

@@ -36,6 +36,7 @@ public class MGSPlugin extends BasePlugin {
             audio.driverReal = new MgsDrv();
             ((MgsDrv) audio.driverReal).setPlayingFileName(playingFileName);
         }
+        prepare();
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

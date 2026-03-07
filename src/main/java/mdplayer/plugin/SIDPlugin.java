@@ -31,6 +31,7 @@ public class SIDPlugin extends BasePlugin {
 //        if (setting.getoutputDevice().deviceType != Common.DEV_Null) {
 //            driverReal = new Sid.Sid();
 //        }
+        prepare();
         boolean r = sidPlay();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

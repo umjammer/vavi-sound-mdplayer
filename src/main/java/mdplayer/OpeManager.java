@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+// for gui
 public class OpeManager {
 
     private static final List<Request> reqToAudio = new ArrayList<>();

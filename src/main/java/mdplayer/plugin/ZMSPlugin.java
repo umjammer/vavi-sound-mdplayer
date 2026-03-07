@@ -49,6 +49,7 @@ public class ZMSPlugin extends BasePlugin {
 //            audio.driverReal = new Zms();
         }
         try {
+            prepare();
             boolean r = _play();
             if (!r) {
                 logger.log(Level.WARNING, "cannot start: " + this);

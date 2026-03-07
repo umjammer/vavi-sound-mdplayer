@@ -31,6 +31,7 @@ public class RCPPlugin extends BasePlugin {
 //            audio.driverReal = new RCP();
 //            ((RCP) audio.driverReal).extendFile = extendFiles;
 //        }
+        prepare();
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

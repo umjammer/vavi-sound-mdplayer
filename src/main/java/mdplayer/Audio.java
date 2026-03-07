@@ -101,11 +101,6 @@ public class Audio {
         return cnt;
     }
 
-    private static int limit(int v, int max, int min) {
-        return Math.min(max, Math.max(v, min));
-    }
-
-//int CC;
     protected int trdVgmVirtualMainFunction(short[] buffer, int offset, int sampleCount) {
         if (buffer == null || buffer.length < 1 || sampleCount == 0) return 0;
         if (driverVirtual == null) return sampleCount;
@@ -113,7 +108,6 @@ public class Audio {
         try {
             //stwh.Reset(); stwh.Start();
 
-//if (CC++ > 100) { System.exit(1); }
 //logger.log(Level.TRACE, "stop: " + stopped + ", " + hashCode());
             if (stopped || paused) {
                 if (driverVirtual.isNotRenderingOnPause()) {
@@ -133,7 +127,7 @@ public class Audio {
 
             for (int i = 0; i < sampleCount; i++) {
                 int mul = (int) (16384.0 * Math.pow(10.0, masterVolume / 40.0));
-                buffer[offset + i] = (short) limit((buffer[offset + i] * mul) >> 13, 0x7fff, -0x8000);
+                buffer[offset + i] = (short) Math.clamp((buffer[offset + i] * mul) >> 13, -0x8000, 0x7fff);
 
                 if (!vgmFadeout) continue;
 
@@ -217,7 +211,7 @@ logger.log(Level.DEBUG, "stop: " + stopped);
     }
 
     public void stop() {
-
+logger.log(Level.INFO, "stop enter");
         try {
             if (paused) pause();
 
@@ -254,8 +248,12 @@ logger.log(Level.DEBUG, "stop: " + stopped);
                 return;
             }
 
+try {
             chipRegister.softReset(EnmModel.VirtualModel);
             chipRegister.softReset(EnmModel.RealModel);
+} catch (Exception e) {
+ logger.log(Level.ERROR, e.toString()); // usually chip 1 is null
+}
 
             int timeout = 5000;
             while (!_trdStopped) {
@@ -272,8 +270,12 @@ logger.log(Level.DEBUG, "stop: " + stopped);
 //new Exception().printStackTrace();
 //logger.log(Level.DEBUG, "stop: " + stopped + ", " + hashCode());
 
+try {
             chipRegister.softReset(EnmModel.VirtualModel);
             chipRegister.softReset(EnmModel.RealModel);
+} catch (Exception e) {
+ logger.log(Level.ERROR, e.toString()); // usually chip 1 is null
+}
 
             //chipRegister.outMIDIData_Close();
             if (setting.getOther().getWavSwitch()) {
@@ -320,6 +322,7 @@ logger.log(Level.DEBUG, "stop: " + stopped);
     public WaveWriter waveWriter = null;
 
     public void close() {
+logger.log(Level.INFO, "close enter");
         try {
             chipRegister.plugin(MidiPlugin.class).midiClose();
             chipRegister.plugin(RealChipPlugin.class).close();

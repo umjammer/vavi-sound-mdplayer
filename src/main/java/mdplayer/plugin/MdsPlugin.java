@@ -44,6 +44,7 @@ public class MdsPlugin extends BasePlugin {
 //            audio.driverReal = new MdsDrv();
 //            ((MdsDrv) audio.driverReal).setPlayingFileName(playingFileName);
 //        }
+        prepare();
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

@@ -55,6 +55,7 @@ public class MuapPlugin extends BasePlugin {
 //
 //            ((MuapJava) driverPianoRoll).playingFileName = playingFileName;
 //        }
+        prepare();
         boolean r = _play(setting, audio.playingFileFormat);
         super.play();
         return r;

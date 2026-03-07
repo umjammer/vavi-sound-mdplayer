@@ -39,6 +39,7 @@ public class MDLPlugin extends BasePlugin {
             ((MoonDriverJava) audio.driverReal).setPlayingFileName(playingFileName);
         }
 
+        prepare();
         boolean r = _play(MoonDriverFileType.MDL);
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

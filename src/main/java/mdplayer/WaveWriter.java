@@ -13,7 +13,8 @@ import dotnet4j.io.Path;
 import dotnet4j.io.SeekOrigin;
 import vavi.util.ByteUtil;
 
-
+// use {@link vavi.sound.sampled.misc.WaveOutSourceDataLine}
+@Deprecated
 public class WaveWriter {
 
     private static final Logger logger = System.getLogger(WaveWriter.class.getName());

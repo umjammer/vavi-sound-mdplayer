@@ -43,6 +43,7 @@ public class MNDPlugin extends BasePlugin {
 //            audio.driverReal = new MnDrv();
 //            ((MnDrv) audio.driverReal).extendFile = extendFiles;
 //        }
+        prepare();
         boolean r = _play();
         if (!r) {
             throw new IllegalStateException("cannot start: " + audio.errMsg);

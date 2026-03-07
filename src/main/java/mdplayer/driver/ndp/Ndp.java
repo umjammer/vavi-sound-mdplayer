@@ -317,7 +317,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
     }
 
     private static void debugRegisters(Z80Processor z80) {
-        String nimo = Z80Opcode.GetNimo(z80.getMemory().get(z80.getRegisters().getPC() & 0xffff), z80.getMemory().get((z80.getRegisters().getPC() & 0xffff) + 1), z80.getMemory().get((z80.getRegisters().getPC() & 0xffff) + 2));
+        String nimo = Z80Opcode.getNimo(z80.getMemory().get(z80.getRegisters().getPC() & 0xffff), z80.getMemory().get((z80.getRegisters().getPC() & 0xffff) + 1), z80.getMemory().get((z80.getRegisters().getPC() & 0xffff) + 2));
         logger.log(Level.TRACE, "nimo:%7s Reg PC:%04x AF:%04x BC:%04x DE:%04x HL:%04x IX:%04x IY:%04x".formatted(nimo,
                 z80.getRegisters().getPC() & 0xffff,
                 z80.getRegisters().getAF() & 0xffff, z80.getRegisters().getBC() & 0xffff, z80.getRegisters().getDE() & 0xffff, z80.getRegisters().getHL() & 0xffff,

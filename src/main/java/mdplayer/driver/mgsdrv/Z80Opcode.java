@@ -523,7 +523,7 @@ public final class Z80Opcode {
             "set 7,(iy+d),h", "set 7,(iy+d),l", "set 7,(hl)", "set 7,(iy+d),a",
     };
 
-    public static String GetNimo(byte n1, byte n2 /* = 0 */, byte n3 /* = 0 */) {
+    public static String getNimo(byte n1, byte n2 /* = 0 */, byte n3 /* = 0 */) {
         if (n1 == (byte) 0xed)
             return opcodeTableED[n2];
 

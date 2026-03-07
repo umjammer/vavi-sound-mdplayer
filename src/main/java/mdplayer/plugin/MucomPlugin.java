@@ -42,6 +42,7 @@ public class MucomPlugin extends BasePlugin {
             audio.driverReal = new MucomJava();
             ((MucomJava) audio.driverReal).setPlayingFileName(playingFileName);
         }
+        prepare();
         boolean r = _play(MUCOMFileType.MUB); // MucomDotNET.MUCOMFileType.MUC
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

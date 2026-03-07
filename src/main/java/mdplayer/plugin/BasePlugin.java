@@ -128,6 +128,7 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
         audio.naudioWrap.start();
     }
 
+    // for gui
     protected void trdIF() {
         while (true) {
             Request req = OpeManager.getRequestToAudio();
@@ -318,11 +319,11 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
 
         oneTimeReset = false;
 
-        if (trd == null) {
-            trd = new Thread(this::trdIF);
-            trd.setPriority(Thread.NORM_PRIORITY);
-            trd.start();
-        }
+//        if (trd == null) {
+//            trd = new Thread(this::trdIF);
+//            trd.setPriority(Thread.NORM_PRIORITY);
+//            trd.start();
+//        }
 
         go();
 
@@ -388,8 +389,10 @@ logger.log(Level.INFO, "dev null: " + getClass().getName());
 
     @Override
     public void stop() {
-        if (!audio.stopped)
+logger.log(Level.INFO, "stop enter: " + audio.stopped);
+        if (!audio.stopped) {
             audio.stop();
+        }
     }
 
     protected void resetFadeOutParam() {
@@ -479,6 +482,7 @@ logger.log(Level.INFO, "dev null: " + getClass().getName());
 
     @Override
     public void close() {
+logger.log(Level.INFO, "close enter");
         stop();
         audio.close();
     }
