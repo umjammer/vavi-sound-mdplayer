@@ -38,6 +38,11 @@ public interface FileFormat {
     /** for insert TODO index might not use */
     List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry /* = null */) throws IOException;
 
+    /**
+     * Loads audio file data w/ related files also.
+     *
+     * @return item1: file data bytes, item2: extend file data list
+     */
     Tuple<byte[], List<Tuple<String, byte[]>>> load(String archive, String fn) throws IOException;
 
     interface SampledFileFormat {}

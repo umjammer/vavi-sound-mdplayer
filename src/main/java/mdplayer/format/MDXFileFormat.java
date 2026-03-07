@@ -1,6 +1,8 @@
 package mdplayer.format;
 
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +27,8 @@ import vavi.util.archive.Entry;
  * @version 0.00 2022-07-07 nsano initial version <br>
  */
 public class MDXFileFormat extends BaseFileFormat {
+
+    private static final Logger logger = System.getLogger(MDXFileFormat.class.getName());
 
     @Override
     public String[] getExtensions() {
@@ -64,10 +68,19 @@ public class MDXFileFormat extends BaseFileFormat {
         if (PDX[0] != null && !PDX[0].isEmpty()) {
             buf = getExtendFileAllBytes(fn, PDX[0], archive, entry);
             if (buf == null) {
-                buf = getExtendFileAllBytes(fn, PDX[0] + ".PDX", archive, entry);
+                buf = getExtendFileAllBytes(fn, Path.changeExtension(PDX[0], ".PDX"), archive, entry);
+if (buf != null) { logger.log(Level.TRACE, "found pdx: " + Path.changeExtension(PDX[0], ".PDX")); }
                 if (buf == null) {
-                    // TODO try lower case also?
-                    buf = getExtendFileAllBytes(fn, PDX[0].toUpperCase() + ".PDX", archive, entry);
+                    buf = getExtendFileAllBytes(fn, Path.changeExtension(PDX[0], ".pdx"), archive, entry);
+if (buf != null) { logger.log(Level.TRACE, "found pdx: " + Path.changeExtension(PDX[0], ".pdx")); }
+                }
+                if (buf == null) {
+                    buf = getExtendFileAllBytes(fn, Path.changeExtension(PDX[0].toUpperCase(), ".PDX"), archive, entry);
+if (buf != null) { logger.log(Level.TRACE, "found pdx: " + Path.changeExtension(PDX[0].toUpperCase(), ".PDX")); }
+                }
+                if (buf == null) {
+                    buf = getExtendFileAllBytes(fn, Path.changeExtension(PDX[0].toLowerCase(), ".pdx"), archive, entry);
+if (buf != null) { logger.log(Level.TRACE, "found pdx: " + Path.changeExtension(PDX[0].toLowerCase(), ".pdx")); }
                 }
             }
             if (buf != null) ret.add(new Tuple<>(".PDX", buf));
@@ -89,6 +102,9 @@ public class MDXFileFormat extends BaseFileFormat {
         return Plugin.getPlugin(MDXPlugin.class);
     }
 
+    /**
+     * @throws IllegalArgumentException sampling late must be set as 44.1kHz.
+     */
     @Override
     public Tuple<byte[], List<Tuple<String, byte[]>>> load(String archive, String fn) throws IOException {
         var r = super.load(archive, fn);

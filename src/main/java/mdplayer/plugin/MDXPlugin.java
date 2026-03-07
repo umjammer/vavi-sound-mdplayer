@@ -23,6 +23,8 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 /**
  * MDXDRV (X68000) Plugin.
+ * <p>
+ * extendFiles[0]: pdx data bytes
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
@@ -40,6 +42,7 @@ public class MDXPlugin extends BasePlugin {
 //            audio.driverReal = new MXDRV();
 //            ((MXDRV) audio.driverReal).extendFiles = (extendFiles != null && !extendFiles.isEmpty()) ? extendFiles.get(0) : null;
 //        }
+        prepare();
         boolean r = _play();
         if (!r) {
 logger.log(Level.WARNING, "cannot start: " + this);

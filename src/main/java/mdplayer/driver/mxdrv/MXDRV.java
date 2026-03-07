@@ -387,15 +387,15 @@ logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], p
         }
         int ret = mdxPCM.chips[0].getPcm(buffer, offset, sampleCount, this::oneFrameProc2);
 
-        //logger.log(Level.TRACE, "0:%08x".formatted(mm.Readint(MXWORK_CHBUF_FM[8] + MXWORK_CH.S0012)));
-        //logger.log(Level.TRACE, "1:%04x".formatted(mm.Readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0012) >> 6));
-        //logger.log(Level.TRACE, "1a:%04x".formatted(mm.Readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0014) >> 6));
-        //logger.log(Level.TRACE, "2:%d".formatted(mm.Readint(MXWORK_CHBUF_PCM[1] + MXWORK_CH.S0004)));
-        //logger.log(Level.TRACE, "3:%d".formatted(mm.Readint(MXWORK_CHBUF_PCM[2] + MXWORK_CH.S0004)));
-        //logger.log(Level.TRACE, "4:%d".formatted(mm.Readint(MXWORK_CHBUF_PCM[3] + MXWORK_CH.S0004)));
-        //logger.log(Level.TRACE, "5:%d".formatted(mm.Readint(MXWORK_CHBUF_PCM[4] + MXWORK_CH.S0004)));
-        //logger.log(Level.TRACE, "6:%d".formatted(mm.Readint(MXWORK_CHBUF_PCM[5] + MXWORK_CH.S0004)));
-        //logger.log(Level.TRACE, "7:%d".formatted(mm.Readint(MXWORK_CHBUF_PCM[6] + MXWORK_CH.S0004)));
+        //logger.log(Level.TRACE, "0:%08x".formatted(mm.readint(MXWORK_CHBUF_FM[8] + MXWORK_CH.S0012)));
+        //logger.log(Level.TRACE, "1:%04x".formatted(mm.readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0012) >> 6));
+        //logger.log(Level.TRACE, "1a:%04x".formatted(mm.readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0014) >> 6));
+        //logger.log(Level.TRACE, "2:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[1] + MXWORK_CH.S0004)));
+        //logger.log(Level.TRACE, "3:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[2] + MXWORK_CH.S0004)));
+        //logger.log(Level.TRACE, "4:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[3] + MXWORK_CH.S0004)));
+        //logger.log(Level.TRACE, "5:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[4] + MXWORK_CH.S0004)));
+        //logger.log(Level.TRACE, "6:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[5] + MXWORK_CH.S0004)));
+        //logger.log(Level.TRACE, "7:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[6] + MXWORK_CH.S0004)));
 
         return ret;
     }

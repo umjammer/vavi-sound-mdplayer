@@ -99,6 +99,7 @@ public abstract class BaseFileFormat implements FileFormat {
     protected byte[] getExtendFileAllBytes(String srcFn, String extFn, Archive archive, Entry entry) {
         try {
             if (entry == null) {
+logger.log(Level.DEBUG, "try: " + extFn);
                 return BaseFileFormat.getFileSearchPathList(srcFn).stream()
                         .map(dirPath -> dirPath.resolve(extFn))
                         .filter(Files::exists).findFirst()
@@ -129,6 +130,7 @@ public abstract class BaseFileFormat implements FileFormat {
                 .filter(path -> path != null && !path.isEmpty())
                 .map(java.nio.file.Path::of)
                 .forEach(result::add);
+logger.log(Level.DEBUG, result);
         return result;
     }
 
