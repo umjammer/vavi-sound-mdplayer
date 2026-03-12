@@ -44,6 +44,11 @@ import musicDriverInterface.Tag;
 import static java.lang.System.getLogger;
 
 
+/**
+ * environment variable
+ * <li>{@code mdplayer.pmd.dir} ... </li>
+ * <li>{@code mdplayer.pmd.opt} ... </li>
+ */
 public class PMDJava extends BaseDriver {
 
     private static final Logger logger = getLogger(PMDJava.class.getName());
@@ -82,10 +87,10 @@ public class PMDJava extends BaseDriver {
 
         if (mtype == PMDFileType.MML) {
             EnvironmentE env = new EnvironmentE();
-            env.addEnv("pmd");
-            env.addEnv("pmdopt");
-            envPmd = env.getEnvVal("pmd");
-            envPmdOpt = env.getEnvVal("pmdopt");
+            env.addEnv("mdplayer.pmd.dir");
+            env.addEnv("mdplayer.pmd.opt");
+            envPmd = env.getEnvVal("mdplayer.pmd.dir");
+            envPmdOpt = env.getEnvVal("mdplayer.pmd.opt");
 
             pmdCompiler = ICompiler.factory("pmd.compiler.Compiler");
             pmdCompiler.setCompileSwitch((Function<String, Stream>) this::appendFileReaderCallback);
@@ -249,7 +254,7 @@ public class PMDJava extends BaseDriver {
         envPmd = env.getEnvVal("pmd");
         envPmdOpt = env.getEnvVal("pmdopt");
 
-        Object[] additionalPDDDotNETOption = new Object[] {
+        Object[] additionalPDDDotNETOption = {
                 isLoadADPCM, // bool
                 loadADPCMOnly, // bool
                 setting.getPmd().isAuto, // boolean isAUTO;
@@ -365,10 +370,10 @@ public class PMDJava extends BaseDriver {
         usePPZ = setting.getPmd().usePPZ8;
 
         EnvironmentE env = new EnvironmentE();
-        env.addEnv("pmd");
-        env.addEnv("pmdopt");
-        envPmd = env.getEnvVal("pmd");
-        envPmdOpt = env.getEnvVal("pmdopt");
+        env.addEnv("mdplayer.pmd.dir");
+        env.addEnv("mdplayer.pmd.opt");
+        envPmd = env.getEnvVal("mdplayer.pmd.dir");
+        envPmdOpt = env.getEnvVal("mdplayer.pmd.opt");
 
         Object[] additionalPDDDotNETOption = new Object[] {
             isLoadADPCM, // bool
@@ -474,22 +479,24 @@ public class PMDJava extends BaseDriver {
     }
 
     private Stream appendFileReaderCallback(String arg) {
+logger.log(Level.DEBUG, "find pmd additional file: " + arg);
         String fileName;
         fileName = arg;
         String dir = Path.getDirectoryName(arg);
         if (dir == null || dir.isEmpty())
-            fileName = Path.combine(Path.getDirectoryName(playingFileName), fileName);
+            fileName = Path.combine(Path.getDirectoryName(playingFileName.replace(java.io.File.separator, "\\")), fileName);
 
         if (envPmd != null) {
             int i = 0;
-            while (!File.exists(fileName) && i < envPmd.length) {
+            while (!File.exists(fileName.replace("\\", java.io.File.separator)) && i < envPmd.length) {
                 fileName = Path.combine(envPmd[i++], Path.getFileName(arg));
             }
         }
 
         FileStream stream;
         try {
-            stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+logger.log(Level.DEBUG, "found pmd additional file: " + fileName.replace("\\", java.io.File.separator));
+            stream = new FileStream(fileName.replace("\\", java.io.File.separator), FileMode.Open, FileAccess.Read, FileShare.Read);
         } catch (IOException e) {
             logger.log(Level.ERROR, e.getMessage(), e);
             stream = null;
@@ -521,7 +528,7 @@ public class PMDJava extends BaseDriver {
         }
 
         public void addEnv(String envName) {
-            String env = System.getenv(envName);
+            String env = System.getProperty(envName);
             if (env != null && !env.isEmpty()) {
                 envs.add("%s=%s".formatted(envName, env));
             }
