@@ -9,103 +9,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
+import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
-import mdplayer.Chip;
-import mdplayer.Common;
-import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
-import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
 
 
-public class MgsDrv extends BaseDriver {
+/**
+ * @author kumatan
+ */
+public class MgsDrv {
 
     private static final Logger logger = getLogger(MgsDrv.class.getName());
-
-    @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        Gd3 ret = new Vgm.Gd3();
-        if (buf != null && buf.length > 8) {
-            vgmGd3[0] = 8;
-            ret.trackName = Common.getNRDString(buf, vgmGd3);
-            ret.trackNameJ = ret.trackName;
-        }
-
-        return ret;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.plugin = plugin;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        this.model = model;
-        vgmFrameCounter = -latency - waitTime;
-
-        try {
-            run(vgmBuf);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void processOneFrame() {
-        try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    oneFrameMain();
-                } else {
-                    vgmFrameCounter++;
-                }
-            }
-            //Stopped = !IsPlaying();
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    private void oneFrameMain() {
-        try {
-            counter++;
-            vgmFrameCounter++;
-
-            if (vgmFrameCounter % (Common.VGMProcSampleRate / 60) == 0) {
-                interrupt();
-            }
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    private void interrupt() {
-        //logger.log(Level.TRACE, "\n_INTER(001FH)");
-        z80.getRegisters().setPC((short) 0x601f);
-        z80.getRegisters().setSP((short) 0x000a);
-        z80.continue_();
-        //DebugRegisters(z80);
-
-        byte PLAYFG = z80.getRegisters().getA();
-        if (PLAYFG == 0) stopped = true;
-        vgmCurLoop = z80.getRegisters().getD();
-    }
 
     private static byte[] program = null;
     private static final byte DollarCode = '$';
@@ -115,14 +35,32 @@ public class MgsDrv extends BaseDriver {
     public static int baseClockYM2413 = 3579545;
     public static int baseClockK051649 = 1789773;
 
-    private void run(byte[] vgmBuf) throws IOException, URISyntaxException {
+    TriConsumer<Integer, Integer, Integer> k051649Write;
+    BiConsumer<Integer, Integer> ay8910Write;
+    BiConsumer<Integer, Integer> ym2413Write;
+
+    public int interrupt() {
+        //logger.log(Level.TRACE, "\n_INTER(001FH)");
+        z80.getRegisters().setPC((short) 0x601f);
+        z80.getRegisters().setSP((short) 0x000a);
+        z80.continue_();
+        //DebugRegisters(z80);
+
+        return z80.getRegisters().getA() & 0xff;
+    }
+
+    public int getD() {
+        return z80.getRegisters().getD() & 0xff;
+    }
+
+    void run(byte[] vgmBuf) throws IOException, URISyntaxException {
         Path fileName = Path.of(MgsDrv.class.getResource("MGSDRV.COM").toURI());
 
         z80 = new Z80ProcessorImpl();
         z80.setClockSynchronizer(null);
         z80.setAutoStopOnRetWithStackEmpty(true);
-        z80.setMemory(new MsxMemory(plugin.audio.chipRegister, model));
-        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, plugin.audio.chipRegister, null, model));
+        z80.setMemory(new MsxMemory(k051649Write));
+        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, null, ay8910Write, ym2413Write));
         z80.beforeInstructionFetch().addListener(this::Z80OnBeforeInstructionFetch);
 
         mapper = new Mapper((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1], (MsxMemory) z80.getMemory());
@@ -190,15 +128,7 @@ public class MgsDrv extends BaseDriver {
         //debugRegisters(z80);
     }
 
-    public String getPlayingFileName() {
-        return playingFileName;
-    }
-
-    public void setPlayingFileName(String value) {
-        playingFileName = value;
-    }
-
-    private String playingFileName;
+    String playingFileName;
 
     private void Z80OnBeforeInstructionFetch(BeforeInstructionFetchEvent args) {
         // Absolutely minimum implementation of CP/M for ZEXALL and ZEXDOC to work

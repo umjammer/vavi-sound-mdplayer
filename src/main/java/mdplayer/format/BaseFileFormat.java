@@ -1,15 +1,19 @@
 package mdplayer.format;
 
 import java.io.BufferedInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.lang.reflect.Field;
+import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
@@ -17,6 +21,7 @@ import dotnet4j.util.compat.Tuple;
 import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
+import mdplayer.driver.VgmDriver;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Archives;
@@ -24,6 +29,7 @@ import vavi.util.archive.Entry;
 import vavi.util.archive.zip.JdkZipEntry;
 
 import static dotnet4j.io.Path.getDirectoryName;
+import static java.lang.System.Logger.Level.DEBUG;
 import static java.lang.System.getLogger;
 
 
@@ -56,7 +62,7 @@ public abstract class BaseFileFormat implements FileFormat {
                 musics.add(music);
                 return musics;
             }
-            gd3 = (new Vgm()).getGD3Info(buf, vgmGd3);
+            gd3 = (new VgmDriver()).getGD3Info(buf, vgmGd3);
         }
 
         int totalCounter = ByteUtil.readLeInt(buf, 0x18);
@@ -260,5 +266,42 @@ logger.log(Level.DEBUG, result);
     public Tuple<byte[], List<Tuple<String, byte[]>>> load(String archive, String fn) throws IOException {
         byte[] srcBuf = getAllBytes(fn);
         return new Tuple<>(srcBuf, getExtendFile(fn, srcBuf, null, null));
+    }
+
+    @Override
+    public Tuple<byte[], List<Tuple<String, byte[]>>> load(InputStream is, String fn) throws IOException {
+        byte[] srcBuf = is.readAllBytes();
+        return new Tuple<>(srcBuf, getExtendFile(fn, srcBuf, null, null));
+    }
+
+    /** for SPI */
+    public Encoding getEncoding() {
+        return null;
+    }
+
+    /** for SPI */
+    protected static boolean isCompressedStream(Object object) {
+        Class<?> c = object.getClass();
+        try {
+            do {
+                if (object instanceof BufferedInputStream) {
+                    Field pathField = FilterInputStream.class.getDeclaredField("in");
+                    pathField.setAccessible(true);
+                    object = pathField.get(object);
+                }
+                if (object instanceof java.util.zip.GZIPInputStream) {
+                    return true;
+                }
+                if (object.getClass().getName().equals("sun.nio.ch.ChannelInputStream")) { // because it's package private
+                    Field pathField = object.getClass().getDeclaredField("ch");
+                    pathField.setAccessible(true);
+                    object = pathField.get(object);
+                }
+                c = c.getSuperclass();
+            } while (c.getSuperclass() != null);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, e.getMessage(), e);
+        }
+        return false;
     }
 }

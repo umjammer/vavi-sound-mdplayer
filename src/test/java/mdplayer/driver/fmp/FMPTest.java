@@ -62,11 +62,12 @@ class FMPTest {
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     Setting setting;
 
-    FMP driver;
+    FmpDriver driver;
 
     @BeforeEach
     void setUp() throws Exception {
-        driver = new FMP(fileTemp);
+        driver = new FmpDriver();
+        driver.setFileTemp(fileTemp);
 
         // Inject mock Nise98
         Field niseField = FMP.class.getDeclaredField("nise98");
@@ -111,9 +112,8 @@ class FMPTest {
             return null;
         }).when(nisePPZ8).fmpRegisterPPZ8(any(), any());
 
-        boolean result = driver.init(vgmBuf, plugin, EnmModel.VirtualModel, null, 0, 0);
+        driver.init(vgmBuf, plugin, EnmModel.VirtualModel, null, 0, 0);
 
-        assertTrue(result);
         verify(nise98).init(any(), any(), eq(fileTemp), any());
         verify(nise98).loadRun(contains("FMP.COM"), anyString(), eq(0x2000));
         verify(nisePPZ8).setCallBack(any(), any());

@@ -127,10 +127,10 @@ public class frmYM2203 extends frmBase {
 
     public void screenChangeParams() {
         boolean isFmEx;
-        int[] ym2203Register = audio.chipRegister.chip(Ym2203Chip.class).read(chipId);
-        int[] fmKeyYM2203 = audio.chipRegister.chip(Ym2203Chip.class).getKeyOn(chipId);
-        int[] ym2203Vol = audio.chipRegister.chip(Ym2203Chip.class).getVolume(chipId);
-        int[] ym2203Ch3SlotVol = audio.chipRegister.chip(Ym2203Chip.class).getCh3SlotVolume(chipId);
+        int[] ym2203Register = audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId);
+        int[] fmKeyYM2203 = audio.plugin.chipRegister.chip(Ym2203Chip.class).getKeyOn(chipId);
+        int[] ym2203Vol = audio.plugin.chipRegister.chip(Ym2203Chip.class).getVolume(chipId);
+        int[] ym2203Ch3SlotVol = audio.plugin.chipRegister.chip(Ym2203Chip.class).getCh3SlotVolume(chipId);
 
         isFmEx = (ym2203Register[0x27] & 0x40) > 0;
         newParam.channels[2].ex = isFmEx;
@@ -138,9 +138,9 @@ public class frmYM2203 extends frmBase {
         int defaultMasterClock = 7987200 / 2;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        if (audio.mds.getChipInfo(YmFmYm2203Inst.class).clock != 0) {
-            ssgMul = audio.mds.getChipInfo(YmFmYm2203Inst.class).clock / (float) defaultMasterClock;
-            masterClock = audio.mds.getChipInfo(YmFmYm2203Inst.class).clock;
+        if (audio.plugin.mds.getChipInfo(YmFmYm2203Inst.class).clock != 0) {
+            ssgMul = audio.plugin.mds.getChipInfo(YmFmYm2203Inst.class).clock / (float) defaultMasterClock;
+            masterClock = audio.plugin.mds.getChipInfo(YmFmYm2203Inst.class).clock;
         }
 
         int divInd = ym2203Register[0x2d];

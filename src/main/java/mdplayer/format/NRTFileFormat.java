@@ -1,15 +1,21 @@
 package mdplayer.format;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.sound.sampled.AudioFormat.Encoding;
+
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.nrtdrv.NRTDRV;
+import mdplayer.driver.nrtdrv.NrtDriver;
 import mdplayer.plugin.NRTPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
+import vavi.sound.SoundUtil;
+import vavi.sound.sampled.md.MdEncoding;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -32,7 +38,7 @@ public class NRTFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
         int index = 42;
-        Vgm.Gd3 gd3 = (new NRTDRV()).getGD3Info(buf, index);
+        Vgm.Gd3 gd3 = (new NrtDriver()).getGD3Info(buf, index);
         music.title = gd3.trackName;
         music.titleJ = gd3.trackNameJ;
         music.game = gd3.gameName;
@@ -48,12 +54,11 @@ public class NRTFileFormat extends BaseFileFormat {
 
     @Override
     public List<PlayList.Music> getMusic(PlayList.Music ms, byte[] buf, String zipFile /* = null */) {
-        List<PlayList.Music> musics = new ArrayList<>();
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
         int index = 42;
-        Vgm.Gd3 gd3 = (new NRTDRV()).getGD3Info(buf, index);
+        Vgm.Gd3 gd3 = (new NrtDriver()).getGD3Info(buf, index);
         music.title = gd3.trackName;
         music.titleJ = gd3.trackNameJ;
         music.game = gd3.gameName;
@@ -65,8 +70,7 @@ public class NRTFileFormat extends BaseFileFormat {
         music.converted = gd3.converted;
         music.notes = gd3.notes;
 
-        musics.add(music);
-        return musics;
+        return Collections.singletonList(music);
     }
 
     @Override
@@ -80,5 +84,21 @@ public class NRTFileFormat extends BaseFileFormat {
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(NRTPlugin.class);
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return MdEncoding.NRTDRV;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

@@ -116,7 +116,7 @@ public class frmAY8910 extends frmChipBase {
 
     @Override
     public void screenChangeParams() {
-        int[] AY8910Register = audio.chipRegister.chip(Ay8910Chip.class).read(chipId);
+        int[] AY8910Register = audio.plugin.chipRegister.chip(Ay8910Chip.class).read(chipId);
 
         for (int ch = 0; ch < 3; ch++) { // SSG
 
@@ -145,7 +145,7 @@ public class frmAY8910 extends frmChipBase {
                 int tp = (ct << 8) | ft;
                 if (tp == 0)
                     tp = 1;
-                float fTone = audio.mds.getChipInfo(Ay8910Inst.class).clock / (8.0f * (float) tp);
+                float fTone = audio.plugin.mds.getChipInfo(Ay8910Inst.class).clock / (8.0f * (float) tp);
                 channel.note = searchSSGNote(fTone);
             }
         }

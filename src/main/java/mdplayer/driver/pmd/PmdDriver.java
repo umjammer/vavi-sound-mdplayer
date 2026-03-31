@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.swing.JOptionPane;
 
 import dotnet4j.io.File;
 import dotnet4j.io.FileAccess;
@@ -31,6 +30,8 @@ import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
+import mdplayer.format.FileFormat;
+import mdplayer.format.MMLFileFormat;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
@@ -45,13 +46,17 @@ import static java.lang.System.getLogger;
 
 
 /**
+ * PMD
+ * <p>
  * environment variable
  * <li>{@code mdplayer.pmd.dir} ... </li>
  * <li>{@code mdplayer.pmd.opt} ... </li>
+ *
+ * @author kumatan
  */
-public class PMDJava extends BaseDriver {
+public class PmdDriver extends BaseDriver {
 
-    private static final Logger logger = getLogger(PMDJava.class.getName());
+    private static final Logger logger = getLogger(PmdDriver.class.getName());
 
     private ICompiler pmdCompiler = null;
 
@@ -79,7 +84,7 @@ public class PMDJava extends BaseDriver {
 
     private PMDFileType mtype;
 
-    public PMDJava() {
+    public PmdDriver() {
     }
 
     public Gd3 getGD3Info(byte[] buf, int vgmGd3, PMDFileType mtype) {
@@ -112,15 +117,13 @@ public class PMDJava extends BaseDriver {
         return g;
     }
 
+    /**
+     * @param args 0: FileFormat
+     */
     @Override
-    public boolean init(byte[] vgmBuf,
-                        int fileType,
-                        BasePlugin plugin,
-                        EnmModel model,
-                        Class<? extends Chip>[] useChip,
-                        int latency,
-                        int waitTime) {
-        mtype = fileType == 0 ? PMDFileType.MML : PMDFileType.M;
+    public void init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+        FileFormat fileFormat = (FileFormat) args[0];
+        mtype = fileFormat instanceof MMLFileFormat ? PMDFileType.MML : PMDFileType.M;
         gd3 = getGD3Info(vgmBuf, 0, mtype);
 
         this.vgmBuf = vgmBuf;
@@ -141,13 +144,13 @@ public class PMDJava extends BaseDriver {
 //#if DEBUG
         // The actual chip thread skips processing (for debugging)
         if (model == EnmModel.RealModel)
-            return true;
+            return;
 //#endif
 
         if (mtype == PMDFileType.MML)
-            return initMML();
+            initMML();
         else
-            return initM();
+            initM();
     }
 
     @Override
@@ -208,7 +211,7 @@ public class PMDJava extends BaseDriver {
         return PMDFileType.MML;
     }
 
-    private boolean initMML() {
+    private void initMML() {
         pmdCompiler.init();
 
         MmlDatum[] ret;
@@ -223,17 +226,14 @@ public class PMDJava extends BaseDriver {
             info = pmdCompiler.getCompilerInfo();
 
         } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            ret = null;
-            info = null;
+            throw new IllegalStateException("error in compiling", e);
         }
 
-        if (ret == null || info == null) return false;
         if (!info.errorList.isEmpty()) {
-            if (model == EnmModel.VirtualModel) {
-                JOptionPane.showMessageDialog(null, "Compile error");
-            }
-            return false;
+//            if (model == EnmModel.VirtualModel) {
+//                JOptionPane.showMessageDialog(null, "Compile error");
+//            }
+            throw new IllegalArgumentException("Compile error: " + info.errorList);
         }
 
         if (pmdDriver == null) pmdDriver = IDriver.factory("pmd.driver.Driver");
@@ -292,7 +292,6 @@ public class PMDJava extends BaseDriver {
 
         pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
         pmdDriver.startMusic(0);
-        return true;
     }
 
     private void writeOPNA1(ChipDatum cd) {
@@ -305,7 +304,7 @@ public class PMDJava extends BaseDriver {
         if (cd.port == -1 || cd.port == 10000) // vavi
             return;
 
-        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, cd.port, cd.address, cd.data, model);
+        plugin.chipRegister.chip(Ym2608Chip.class).write(0, cd.port, cd.address, cd.data, model);
     }
 
     private void sendOPNAWait(long size, int elapsed) {
@@ -318,7 +317,7 @@ public class PMDJava extends BaseDriver {
 
         // Add additional weight based on size and elapsed time.
         int m = Math.max((int) (size / 20 - elapsed), 0); // 20 Threshold (magic number)
-        try { Thread.sleep(m); } catch (InterruptedException e) {}
+        try { Thread.sleep(m); } catch (InterruptedException _) {}
     }
 
     public static class PMDChipAction implements ChipAction {
@@ -352,7 +351,7 @@ public class PMDJava extends BaseDriver {
         }
     }
 
-    private boolean initM() {
+    private void initM() {
         if (pmdDriver == null)
             pmdDriver = IDriver.factory("pmd.driver.Driver");
 
@@ -408,8 +407,6 @@ public class PMDJava extends BaseDriver {
 
         pmdDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("YM2608", baseClock));
         pmdDriver.startMusic(0);
-
-        return true;
     }
 
     private void chipWaitSend(long elapsed, int size) {
@@ -435,7 +432,7 @@ public class PMDJava extends BaseDriver {
         if (dat.port == -1)
             return;
 
-        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, dat.port, dat.address, dat.data, model);
+        plugin.chipRegister.chip(Ym2608Chip.class).write(0, dat.port, dat.address, dat.data, model);
         //logger.log(Level.TRACE, "%d %d".formatted(dat.address, dat.data));
     }
 
@@ -444,9 +441,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x05) {
-            plugin.audio.chipRegister.chip(PpsChip.class).writePcm(0, (byte[]) arg.additionalData, model);
+            plugin.chipRegister.chip(PpsChip.class).writePcm(0, (byte[]) arg.additionalData, model);
         } else {
-            plugin.audio.chipRegister.chip(PpsChip.class).write(0, arg.port, arg.address, arg.data, model);
+            plugin.chipRegister.chip(PpsChip.class).write(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -457,9 +454,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x00) {
-            plugin.audio.chipRegister.chip(P86Chip.class).writePcm(0, arg.address, arg.data, (byte[]) arg.additionalData, model);
+            plugin.chipRegister.chip(P86Chip.class).writePcm(0, arg.address, arg.data, (byte[]) arg.additionalData, model);
         } else {
-            plugin.audio.chipRegister.chip(P86Chip.class).write(0, arg.port, arg.address, arg.data, model);
+            plugin.chipRegister.chip(P86Chip.class).write(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -470,9 +467,9 @@ public class PMDJava extends BaseDriver {
             return 0;
 
         if (arg.port == 0x03) {
-            plugin.audio.chipRegister.chip(Ppz8Chip.class).writePcm(0, arg.address, arg.data, (byte[][]) arg.additionalData, model);
+            plugin.chipRegister.chip(Ppz8Chip.class).writePcm(0, arg.address, arg.data, (byte[][]) arg.additionalData, model);
         } else {
-            plugin.audio.chipRegister.chip(Ppz8Chip.class).write(0, arg.port, arg.address, arg.data, model);
+            plugin.chipRegister.chip(Ppz8Chip.class).write(0, arg.port, arg.address, arg.data, model);
         }
 
         return 0;
@@ -507,16 +504,6 @@ logger.log(Level.DEBUG, "found pmd additional file: " + fileName.replace("\\", j
 
     @Override
     public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf,
-                        BasePlugin plugin,
-                        EnmModel model,
-                        Class<? extends Chip>[] useChip,
-                        int latency,
-                        int waitTime) {
         throw new UnsupportedOperationException();
     }
 

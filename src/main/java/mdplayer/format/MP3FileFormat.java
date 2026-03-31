@@ -1,5 +1,8 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -7,6 +10,7 @@ import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.SampledPlugin;
+import vavi.sound.SoundUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -45,5 +49,17 @@ public class MP3FileFormat extends BaseFileFormat implements FileFormat.SampledF
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(SampledPlugin.class);
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+//        if (isCompressedStream(is)) return false;
+//        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        return false;
     }
 }

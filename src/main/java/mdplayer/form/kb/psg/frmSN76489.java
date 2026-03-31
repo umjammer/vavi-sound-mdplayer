@@ -112,12 +112,12 @@ public class frmSN76489 extends frmBase {
 
 
     public void screenChangeParams() {
-        int[] psgRegister = audio.chipRegister.chip(Sn76489Chip.class).read(chipId);
+        int[] psgRegister = audio.plugin.chipRegister.chip(Sn76489Chip.class).read(chipId);
         int[] psgRegister1 = null;
-        int psgRegisterPan = audio.chipRegister.chip(Sn76489Chip.class).getPan(chipId);
-        int[][] psgVol = audio.chipRegister.chip(Sn76489Chip.class).getVolumes(chipId);
+        int psgRegisterPan = audio.plugin.chipRegister.chip(Sn76489Chip.class).getPan(chipId);
+        int[][] psgVol = audio.plugin.chipRegister.chip(Sn76489Chip.class).getVolumes(chipId);
         int[][] psgVol1 = null;
-        boolean NGPFlag = audio.chipRegister.chip(Sn76489Chip.class).getFlag();
+        boolean NGPFlag = audio.plugin.chipRegister.chip(Sn76489Chip.class).getFlag();
 
         if (NGPFlag && chipId == 1) {
             for (int ch = 0; ch < 4; ch++) {
@@ -132,13 +132,13 @@ public class frmSN76489 extends frmBase {
         } else {
             if (psgRegister != null) {
                 if (NGPFlag) {
-                    psgVol1 = audio.chipRegister.chip(Sn76489Chip.class).getVolumes(1);
-                    psgRegister1 = audio.chipRegister.chip(Sn76489Chip.class).read(1);
+                    psgVol1 = audio.plugin.chipRegister.chip(Sn76489Chip.class).getVolumes(1);
+                    psgRegister1 = audio.plugin.chipRegister.chip(Sn76489Chip.class).read(1);
 
                     //Tone Ch
                     for (int ch = 0; ch < 3; ch++) {
                         if (psgRegister[ch * 2 + 1] != 15) {
-                            float fTone = audio.mds.getChipInfo(Sn76489Inst.class).clock / (2.0f * psgRegister[ch * 2] * 16.0f);
+                            float fTone = audio.plugin.mds.getChipInfo(Sn76489Inst.class).clock / (2.0f * psgRegister[ch * 2] * 16.0f);
 
                             newParam.channels[ch].note = searchSSGNote(fTone);
                         } else {
@@ -191,7 +191,7 @@ public class frmSN76489 extends frmBase {
         int tp = SN76489Type ? 1 : 0;
         MDChipParams.Channel osc;
         MDChipParams.Channel nsc;
-        boolean NGPFlag = audio.chipRegister.chip(Sn76489Chip.class).getFlag();
+        boolean NGPFlag = audio.plugin.chipRegister.chip(Sn76489Chip.class).getFlag();
 
         for (int c = 0; c < 3; c++) {
             osc = oldParam.channels[c];
@@ -266,7 +266,7 @@ public class frmSN76489 extends frmBase {
                 int ch = (py / 8) - 1;
                 if (ch < 0) return;
 
-                boolean NGPFlag = audio.chipRegister.chip(Sn76489Chip.class).getFlag();
+                boolean NGPFlag = audio.plugin.chipRegister.chip(Sn76489Chip.class).getFlag();
 
                 if (ev.getButton() == MouseEvent.BUTTON1) {
                     // Mask.

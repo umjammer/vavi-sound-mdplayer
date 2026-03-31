@@ -2,14 +2,10 @@ package mdplayer.driver;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.function.IntConsumer;
 
-import mdplayer.Chip;
+import dotnet4j.util.compat.TriConsumer;
 import mdplayer.Common;
-import mdplayer.Common.EnmModel;
-import mdplayer.Setting;
-import mdplayer.chips.Sn76489Chip;
-import mdplayer.chips.Ym2612Chip;
-import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -18,14 +14,12 @@ import static java.lang.System.getLogger;
 /**
  * MegaDrive SGDK XGM
  */
-public class Xgm extends BaseDriver {
+public class Xgm {
 
     private static final Logger logger = getLogger(Xgm.class.getName());
 
     public Xgm() {
-        this.setting = Setting.getInstance();
         musicStep = Common.VGMProcSampleRate / 60.0; // setting.getoutputDevice().SampleRate / 60.0;
-        pcmStep = setting.getOutputDevice().getSampleRate() / 14000.0;
     }
 
     public static final int FCC_XGM = 0x204d4758; // "XGM "
@@ -44,98 +38,37 @@ public class Xgm extends BaseDriver {
     private int versionInformation = 0;
     private int dataInformation = 0;
     private boolean isNTSC = false;
-    private boolean existGD3 = false;
+    boolean existGD3 = false;
     private boolean multiTrackFile = false;
-    private int gd3InfoStartAddr = 0;
+    int gd3InfoStartAddr = 0;
 
-    @Override
-    public boolean init(byte[] xgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.vgmBuf = xgmBuf;
-        this.plugin = plugin;
-        this.model = model;
-        this.useChip = useChip;
-        this.latency = latency;
-        this.waitTime = waitTime;
+    byte[] vgmBuf;
+    Runnable stop;
+    Runnable tag;
+    Runnable loop;
+    TriConsumer<Integer, Integer, Integer> ym2612Write;
+    IntConsumer sn76489Write;
 
-        counter = 0;
-        totalCounter = 0;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
-
-        if (!getXGMInfo(vgmBuf)) {
-logger.log(Level.WARNING, "getXGMInfo");
-            return false;
-        }
-
-        if (model == EnmModel.RealModel) {
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 0, 1);
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 1, 1);
-        }
-
-        // Initializing the Driver
+    void init() {
         musicPtr = musicDataBlockAddr;
         xgmpcm = new XgmPcm[] {new XgmPcm(), new XgmPcm(), new XgmPcm(), new XgmPcm()};
         DACEnable = 0;
-
-        return true;
     }
 
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("This driver does not require this method");
-    }
-
-    @Override
-    public void processOneFrame() {
-        try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    oneFrameMain();
-                } else {
-                    vgmFrameCounter++;
-                }
-            }
-
-            pcmSpeedCounter++; // = (double)Common.VGMProcSampleRate / setting.getoutputDevice().SampleRate * vgmSpeed;
-            while (pcmSpeedCounter >= 1.0 && !stopped) {
-                pcmSpeedCounter -= 1.0;
-                onePCMFrameMain();
-            }
-
-            //Stopped = !IsPlaying();
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
+    void clock(boolean stopped) {
+        pcmSpeedCounter++; // = (double)Common.VGMProcSampleRate / setting.getoutputDevice().SampleRate * vgmSpeed;
+        while (pcmSpeedCounter >= 1.0 && !stopped) {
+            pcmSpeedCounter -= 1.0;
+            onePCMFrameMain();
         }
     }
 
-    @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        getXGMInfo(buf);
-        return gd3;
-    }
-
-    @Override
-    public Vgm.Gd3 getGD3Info(byte[] vgmBuf) {
-
-        if (!existGD3) return new Vgm.Gd3();
-
-        Vgm.Gd3 gd3 = Common.getGD3Info(vgmBuf, gd3InfoStartAddr + 12);
-        gd3.usedChips = usedChips;
-
-        return gd3;
-    }
-
-    private boolean getXGMInfo(byte[] vgmBuf) {
-        if (vgmBuf == null) return false;
+    /** @throws IllegalArgumentException parse error */
+    void getXGMInfo(byte[] vgmBuf) {
+        if (vgmBuf == null) throw new IllegalArgumentException("null buffer");
 
         try {
-            if (ByteUtil.readLeInt(vgmBuf, 0) != FCC_XGM) return false;
+            if (ByteUtil.readLeInt(vgmBuf, 0) != FCC_XGM) throw new IllegalArgumentException("not xgm data");
 
             for (int i = 0; i < 63; i++) {
                 sampleID[i] = new XGMSampleID();
@@ -163,17 +96,14 @@ logger.log(Level.WARNING, "getXGMInfo");
 
             gd3InfoStartAddr = musicDataBlockAddr + musicDataBlockSize;
 
-            gd3 = getGD3Info(vgmBuf);
+            tag.run();
 
             if (musicDataBlockSize == 0) {
-                return false;
+                throw new IllegalArgumentException("illegal block size");
             }
         } catch (Exception e) {
-            logger.log(Level.DEBUG, "An exception occurred while getting XGM information: " + e.getMessage(), e);
-            return false;
+            throw new IllegalArgumentException("An exception occurred while getting XGM information: " + e.getMessage(), e);
         }
-
-        return true;
     }
 
     public boolean isPlaying() {
@@ -181,18 +111,15 @@ logger.log(Level.WARNING, "getXGMInfo");
     }
 
     private double musicStep;// setting.getoutputDevice().SampleRate / 60.0;
-    private final double pcmStep;// setting.getoutputDevice().SampleRate / 14000.0;
+    double pcmStep;// setting.getoutputDevice().SampleRate / 14000.0;
     private double musicDownCounter = 0.0;
     private double pcmDownCounter = 0.0;
     private int musicPtr = 0;
     private int DACEnable = 0;
 
-    private void oneFrameMain() {
+    void oneFrameMain() {
         try {
             //if (model == EnmModel.RealModel) return;
-
-            counter++;
-            vgmFrameCounter++;
 
             musicStep = Common.VGMProcSampleRate / (isNTSC ? 60.0 : 50.0);
 
@@ -240,13 +167,13 @@ logger.log(Level.WARNING, "getXGMInfo");
             // loop command
             if (cmd == 0x7e) {
                 musicPtr = musicDataBlockAddr + ByteUtil.readLe24(vgmBuf, musicPtr);
-                vgmCurLoop++;
+                loop.run();
                 continue;
             }
 
             // end command
             if (cmd == 0x7f) {
-                stopped = true;
+                stop.run();
                 break;
             }
 
@@ -275,7 +202,7 @@ logger.log(Level.WARNING, "getXGMInfo");
     private void writePSG(int X) {
         for (int i = 0; i < X + 1; i++) {
             int data = vgmBuf[musicPtr++] & 0xff;
-            plugin.audio.chipRegister.chip(Sn76489Chip.class).write(0, data, model);
+            sn76489Write.accept(data);
         }
     }
 
@@ -284,7 +211,7 @@ logger.log(Level.WARNING, "getXGMInfo");
             int adr = vgmBuf[musicPtr++] & 0xff;
             int val = vgmBuf[musicPtr++] & 0xff;
             if (adr == 0x2b) DACEnable = val & 0x80;
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, 0, adr, val, model, vgmFrameCounter);
+            ym2612Write.accept(0, adr, val);
         }
     }
 
@@ -292,14 +219,14 @@ logger.log(Level.WARNING, "getXGMInfo");
         for (int i = 0; i < X + 1; i++) {
             int adr = vgmBuf[musicPtr++] & 0xff;
             int val = vgmBuf[musicPtr++] & 0xff;
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, 1, adr, val, model, vgmFrameCounter);
+            ym2612Write.accept(1, adr, val);
         }
     }
 
     private void writeYM2612Key(int X) {
         for (int i = 0; i < X + 1; i++) {
             int val = vgmBuf[musicPtr++] & 0xff;
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, 0, 0x28, val, model, vgmFrameCounter);
+            ym2612Write.accept(0, 0x28, val);
         }
     }
 
@@ -360,6 +287,6 @@ logger.log(Level.WARNING, "getXGMInfo");
         o = (short) Math.min(Math.max(o, Byte.MIN_VALUE + 1), Byte.MAX_VALUE);
         o += 0x80;
 
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, 0, 0x2a, o, model, vgmFrameCounter);
+        ym2612Write.accept(0, 0x2a, o);
     }
 }

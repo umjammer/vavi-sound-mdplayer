@@ -106,7 +106,7 @@ public class frmRf5c68 extends frmBase {
     };
 
     public void screenChangeParams() {
-        Rf5C68 rf5c68Register = audio.chipRegister.chip(Rf5C68Chip.class).read(chipId);
+        Rf5C68 rf5c68Register = audio.plugin.chipRegister.chip(Rf5C68Chip.class).read(chipId);
         if (rf5c68Register != null) {
             //int[][] rf5c164Vol = audio.GetRf5c164Volume(chipId);
             for (int ch = 0; ch < 8; ch++) {

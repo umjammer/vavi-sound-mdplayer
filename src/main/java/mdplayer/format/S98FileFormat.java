@@ -1,16 +1,22 @@
 package mdplayer.format;
 
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.s98.S98;
+import mdplayer.driver.s98.S98Driver;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.S98Plugin;
 import mdplayer.properties.Resources;
+import vavi.sound.SoundUtil;
+import vavi.sound.sampled.md.MdEncoding;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -32,7 +38,7 @@ public class S98FileFormat extends BaseFileFormat {
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
-        Vgm.Gd3 gd3 = new S98().getGD3Info(buf);
+        Vgm.Gd3 gd3 = new S98Driver().getGD3Info(buf);
         if (gd3 != null) {
             music.title = gd3.trackName;
             music.titleJ = gd3.trackNameJ;
@@ -56,7 +62,7 @@ public class S98FileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        Vgm.Gd3 gd3 = new S98().getGD3Info(buf);
+        Vgm.Gd3 gd3 = new S98Driver().getGD3Info(buf);
         if (gd3 != null) {
             music.title = gd3.trackName;
             music.titleJ = gd3.trackNameJ;
@@ -87,5 +93,21 @@ public class S98FileFormat extends BaseFileFormat {
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(S98Plugin.class);
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return MdEncoding.S98;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) {
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

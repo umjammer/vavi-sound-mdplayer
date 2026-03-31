@@ -1,6 +1,9 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,5 +50,20 @@ public class WAVFileFormat extends BaseFileFormat implements FileFormat.SampledF
     @Override
     public Plugin getPlugin() {
         return new SampledPlugin();
+    }
+
+    private static final byte[] magic = {0x52, 0x49, 0x46, 0x46, 0x57, 0x41, 0x56, 0x45};
+
+    @Override
+    public int getMarkSize() {
+        return magic.length;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+//        byte[] buf = new byte[getMarkSize()];
+//        is.readNBytes(buf, 0, buf.length);
+//        return Arrays.equals(magic, buf);
+        return false;
     }
 }

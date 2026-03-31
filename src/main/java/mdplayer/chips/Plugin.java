@@ -8,6 +8,7 @@ package mdplayer.chips;
 
 import mdplayer.Audio;
 import mdplayer.Setting;
+import mdplayer.plugin.BasePlugin;
 
 
 /**
@@ -20,7 +21,7 @@ public interface Plugin {
 
     Setting setting = Setting.getInstance();
 
-    void init(Audio context);
+    void init(BasePlugin context);
 
     void close();
 }

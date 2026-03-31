@@ -8,13 +8,19 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
+import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.Ay8910Chip;
+import mdplayer.chips.K051649Chip;
+import mdplayer.chips.Ym2413Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.mgsdrv.Mapper;
@@ -27,84 +33,30 @@ import vavi.util.ByteUtil;
 import static java.lang.System.getLogger;
 
 
-// BGM
-public class MuSICA extends BaseDriver {
+/**
+ * MuSICA BGM (
+ *
+ * @author kumatan
+ */
+public class MuSICA {
 
     private static final Logger logger = getLogger(MuSICA.class.getName());
 
-    @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        Vgm.Gd3 ret = new Vgm.Gd3();
-        if (buf != null && buf.length > 8) {
-            try {
-                run(buf);
-            } catch (Exception ex) {
-                logger.log(Level.ERROR, ex.getMessage(), ex);
-                return null;
-            }
-            ret.trackName = gd3.trackName;
-            ret.trackNameJ = gd3.trackNameJ;
-            ret.notes = gd3.notes;
-        }
+    private static byte[] program = null;
+    private static final byte DollarCode = '$';
+    private Z80Processor z80;
+    private Mapper mapper;
+    public static int baseClockAY8910 = 1789773;
+    public static int baseClockYM2413 = 3579545;
+    public static int baseClockK051649 = 1789773;
 
-        return ret;
-    }
+    TriConsumer<Integer, Integer, Integer> k051649Write;
+    BiConsumer<Integer, Integer> ay8910Write;
+    BiConsumer<Integer, Integer> ym2413Write;
+    Consumer<String> updateTrackName;
+    Consumer<String> updateNote;
 
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.plugin = plugin;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        this.model = model;
-        vgmFrameCounter = -latency - waitTime;
-
-        try {
-            run(vgmBuf);
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void processOneFrame() {
-        try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    oneFrameMain();
-                } else {
-                    vgmFrameCounter++;
-                }
-            }
-            //stopped = !isPlaying();
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    private void oneFrameMain() {
-        try {
-            counter++;
-            vgmFrameCounter++;
-
-            if (vgmFrameCounter % (Common.VGMProcSampleRate / 60) == 0) {
-                interrupt();
-            }
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    private void interrupt() {
+    public int interrupt() {
         //logger.log(Level.TRACE, "\r\n_INTER(001FH)");
         z80.getRegisters().setPC((short) 0x6029);
         z80.getRegisters().setSP((short) 0xf380);
@@ -115,27 +67,21 @@ public class MuSICA extends BaseDriver {
         z80.getRegisters().setSP((short) 0xf380);
         z80.continue_();
 
-        byte playFg = (byte) (z80.getRegisters().getA() & 0x1);
-        if (playFg == 0) stopped = true;
-        vgmCurLoop = z80.getRegisters().getHL() & 0xffff;
+        return z80.getRegisters().getA() & 0x1;
     }
 
-    private static byte[] program = null;
-    private static final byte DollarCode = '$';
-    private Z80Processor z80;
-    private Mapper mapper;
-    public static int baseClockAY8910 = 1789773;
-    public static int baseClockYM2413 = 3579545;
-    public static int baseClockK051649 = 1789773;
+    public int getHL() {
+        return z80.getRegisters().getHL() & 0xffff;
+    }
 
-    private void run(byte[] vgmBuf) throws IOException, URISyntaxException {
+    void run(byte[] vgmBuf) throws IOException, URISyntaxException {
         Path fileName = Path.of(MuSICA.class.getResource("KINROU5.DRV").toURI());
 
         z80 = new Z80ProcessorImpl();
         z80.setClockSynchronizer(null);
         z80.setAutoStopOnRetWithStackEmpty(true);
-        z80.setMemory(new MsxMemory(plugin.audio.chipRegister, model));
-        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, plugin.audio.chipRegister, null, model));
+        z80.setMemory(new MsxMemory(k051649Write));
+        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, null, ay8910Write, ym2413Write));
         z80.beforeInstructionFetch().addListener(this::z80OnBeforeInstructionFetch);
 
         mapper = new Mapper((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1], (MsxMemory) z80.getMemory());
@@ -184,8 +130,7 @@ public class MuSICA extends BaseDriver {
         z80.continue_();
         if (z80.getRegisters().getCF().intValue() == 0) {
             index[0] = z80.getRegisters().getHL() & 0xffff;
-            gd3.trackName = Common.getNRDString(z80.getMemory().getContents(0, z80.getMemory().getSize()), /* ref */ index);
-            gd3.trackNameJ = gd3.trackName;
+            updateTrackName.accept(Common.getNRDString(z80.getMemory().getContents(0, z80.getMemory().getSize()), /* ref */ index));
         }
 
         //logger.log(Level.TRACE, "_GETPAR(6047H)");
@@ -196,15 +141,8 @@ public class MuSICA extends BaseDriver {
         z80.continue_();
         if (z80.getRegisters().getCF().intValue() == 0) {
             index[0] = z80.getRegisters().getHL() & 0xffff;
-            gd3.notes = Common.getNRDString(z80.getMemory().getContents(0, z80.getMemory().getSize()), /* ref */ index);
+            updateNote.accept(Common.getNRDString(z80.getMemory().getContents(0, z80.getMemory().getSize()), /* ref */ index));
         }
-logger.log(Level.INFO, gd3);
-    }
-
-    private String playingFileName;
-
-    public String getPlayingFileName() {
-        return playingFileName;
     }
 
     private void z80OnBeforeInstructionFetch(BeforeInstructionFetchEvent args) {

@@ -79,7 +79,7 @@ public class frmInfo extends JFrame {
         rtbLyrics.setText(null);
 
         Audio audio = Audio.getInstance();
-        Vgm.Gd3 gd3 = (audio.driverVirtual != null) ? audio.driverVirtual.gd3 : null;
+        Vgm.Gd3 gd3 = (audio.plugin.driverVirtual != null) ? audio.plugin.driverVirtual.gd3 : null;
         if (gd3 == null) return;
 
         lblTitle.setText(gd3.trackName);
@@ -144,7 +144,7 @@ public class frmInfo extends JFrame {
     private void timer_Tick(ActionEvent ev) {
         if (lyrics == null || lyrics.isEmpty()) return;
 
-        long cnt = Audio.getInstance().getDriverCounter();
+        long cnt = Audio.getInstance().plugin.getDriverCounter();
 
         try {
             if (cnt >= lyrics.get(lyricsIndex).getItem1()) {

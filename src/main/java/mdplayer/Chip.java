@@ -7,6 +7,7 @@
 package mdplayer;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 
 
@@ -47,7 +48,7 @@ public interface Chip {
     default int activeIndex(int chipId) { return 0; }
 
     /** */
-    void init(Audio context);
+    void init(BasePlugin context);
 
     /** */
     void reset();

@@ -129,7 +129,7 @@ public class frmYMF262 extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[][] ymf262Register = audio.chipRegister.chip(YmF262Chip.class).read(chipId);
+        int[][] ymf262Register = audio.plugin.chipRegister.chip(YmF262Chip.class).read(chipId);
         MDChipParams.Channel nyc;
         int slot;
         int slotP;
@@ -218,7 +218,7 @@ public class frmYMF262 extends frmBase {
             }
         }
 
-        int ko = audio.chipRegister.chip(YmF262Chip.class).getFmKeyON(chipId);
+        int ko = audio.plugin.chipRegister.chip(YmF262Chip.class).getFmKeyON(chipId);
 
         for (int c = 0; c < 18; c++) {
             nyc = newParam.channels[c];
@@ -282,9 +282,9 @@ public class frmYMF262 extends frmBase {
 
         }
 
-//#region リズム情報の取得
+//#region Acquisition of rhythm information
 
-        int r = audio.chipRegister.chip(YmF262Chip.class).getRhythmKeyON(chipId);
+        int r = audio.plugin.chipRegister.chip(YmF262Chip.class).getRhythmKeyON(chipId);
 
         //slot14 TL 0x51 HH
         //slot15 TL 0x52 TOM

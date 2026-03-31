@@ -107,7 +107,7 @@ public class frmS5B extends frmBase {
     };
 
     public void screenChangeParams() {
-        byte[] S5BRegister = audio.chipRegister.chip(NesChip.Fme7Chip.class).readS5B(chipId);
+        byte[] S5BRegister = audio.plugin.chipRegister.chip(NesChip.Fme7Chip.class).readS5B(chipId);
         if (S5BRegister == null) return;
 
         for (int ch = 0; ch < 3; ch++) { //SSG

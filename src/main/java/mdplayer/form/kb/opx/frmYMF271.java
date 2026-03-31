@@ -145,7 +145,7 @@ public class frmYMF271 extends frmBase {
     }
 
     public void screenChangeParams() {
-        YmF271 reg = audio.chipRegister.chip(YmF271Chip.class).read(chipId);
+        YmF271 reg = audio.plugin.chipRegister.chip(YmF271Chip.class).read(chipId);
         if (reg != null) {
             for (int i = 0; i < 48; i++) {
                 int slot = slotTbl[i];

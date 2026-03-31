@@ -1,15 +1,21 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.sound.sampled.AudioFormat.Encoding;
+
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.ndp.Ndp;
-import mdplayer.plugin.MGSPlugin;
+import mdplayer.driver.ndp.NdpDriver;
 import mdplayer.plugin.NDPPlugin;
 import mdplayer.plugin.Plugin;
+import vavi.sound.SoundUtil;
+import vavi.sound.sampled.md.MdEncoding;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -33,7 +39,7 @@ public class NDPFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
         int index = 8;
-        Vgm.Gd3 gd3 = (new Ndp()).getGD3Info(buf, index);
+        Vgm.Gd3 gd3 = (new NdpDriver()).getGD3Info(buf, index);
         music.title = gd3.trackName;
         music.titleJ = gd3.trackNameJ;
         music.game = "";
@@ -54,7 +60,7 @@ public class NDPFileFormat extends BaseFileFormat {
 
         music.format = this;
         int index = 8;
-        Vgm.Gd3 gd3 = (new Ndp()).getGD3Info(buf, index);
+        Vgm.Gd3 gd3 = (new NdpDriver()).getGD3Info(buf, index);
         music.title = gd3.trackName;
         music.titleJ = gd3.trackNameJ;
         music.game = "";
@@ -73,5 +79,21 @@ public class NDPFileFormat extends BaseFileFormat {
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(NDPPlugin.class);
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return MdEncoding.NDP;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

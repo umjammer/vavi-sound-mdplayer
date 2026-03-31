@@ -1,16 +1,13 @@
 package mdplayer.plugin;
 
 import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.OkiM6258Chip;
-import mdplayer.driver.rcp.RCP;
-import mdplayer.driver.rcp.RCS;
-import mdplayer.driver.zms.Zms;
-import mdplayer.format.FileFormat;
+import mdplayer.driver.rcp.RcsDriver;
+import mdplayer.driver.zms.ZmsDriver;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.Pcm8PPInst;
@@ -31,28 +28,24 @@ public class RCSPlugin extends BasePlugin {
     private static final Logger logger = getLogger(RCSPlugin.class.getName());
 
     @Override
-    public boolean play(String playingFileName, FileFormat format) {
-        audio.driverVirtual = new RCS();
-        ((RCP) audio.driverVirtual).extendFile = extendFiles;
-        audio.driverReal = null;
+    public void prepare() {
+        driverVirtual = new RcsDriver();
+        ((RcsDriver) driverVirtual).setExtendFile(extendFiles);
+
+        driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new RCS();
-            ((RCP) audio.driverReal).extendFile = extendFiles;
+            driverReal = new RcsDriver();
+            ((RcsDriver) driverReal).setExtendFile(extendFiles);
         }
-        prepare();
-        boolean r = _play();
-        if (!r) {
-logger.log(Level.WARNING, "cannot start: " + this);
-            return false;
-        }
-        super.play();
-        return true;
+
+        prepareInternal();
+        initChips();
     }
 
-    private String[] supportFile = null;
+    private String[] supportFile = null; // TODO
 
-    /** */
-    private boolean _play() {
+    @Override
+    protected void initChips() {
         startTrdVgmReal();
 
         if (setting.getRcs().pcm8type == 0) {
@@ -66,8 +59,7 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.samplingRate = 4_000_000 / 64;
             chip.option = new Object[] { 0, 1, 0 };
             put(OkiM6258Chip.class, chip); // not use mds, via driver direct
-            ((Zms) audio.driverVirtual).opmPCM = opmPCM;
-            ((Zms) audio.driverVirtual).pcm8type = 0;
+            ((ZmsDriver) driverVirtual).setOpmPCM(opmPCM);
         } else {
             Pcm8PPInst pcm8pp = Instrument.getInstrument(Pcm8PPInst.class);
             MDSound.Chip chip = new MDSound.Chip();
@@ -78,34 +70,29 @@ logger.log(Level.WARNING, "cannot start: " + this);
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.option = new Object[] {setting.getZMusic().pcm8ppsOption};
             put(OkiM6258Chip.class, chip); // not use mds, via driver direct
-            ((Zms) audio.driverVirtual).pcm8pp = pcm8pp;
-            ((Zms) audio.driverVirtual).pcm8type = 1;
+            ((ZmsDriver) driverVirtual).setPcm8pp(pcm8pp);
         }
 
         hiyorimiNecessary = setting.getHiyorimiMode();
 
-        audio.chipLED.put("PriMID", 1);
-        audio.chipLED.put("SecMID", 1);
-        audio.chipLED.put("PriPCM8", 1);
+        chipLED.put("PriMID", 1);
+        chipLED.put("SecMID", 1);
+        chipLED.put("PriPCM8", 1);
 
-        audio.chipRegister.plugin(MidiPlugin.class).releaseAll();
-        audio.chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
-        audio.chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
+        chipRegister.plugin(MidiPlugin.class).releaseAll();
+        chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
+        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
 
-        ((RCS) audio.driverVirtual).supportFileName = (supportFile == null || supportFile.length < 1) ? null : supportFile[0];
-        ((RCS) audio.driverReal).supportFileName = (supportFile == null || supportFile.length < 1) ? null : supportFile[0];
+        ((RcsDriver) driverVirtual).setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);
+        ((RcsDriver) driverReal).setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);
 
-        if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
+        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
-                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-            return false;
-        if (audio.driverReal != null) {
-            if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
+                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
+        if (driverReal != null) {
+            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
-                    setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-                return false;
+                    setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }
-
-        return true;
     }
 }

@@ -6,13 +6,10 @@
 
 package mdplayer.chips;
 
-import java.util.Arrays;
-
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
-import mdsound.instrument.Es5503Inst;
 import mdsound.instrument.Upd7759Inst;
 
 
@@ -24,7 +21,7 @@ import mdsound.instrument.Upd7759Inst;
  */
 public class Upd7759Chip implements Chip {
 
-    private Audio context;
+    private BasePlugin context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -33,7 +30,7 @@ public class Upd7759Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         this.context = context;
     }
 

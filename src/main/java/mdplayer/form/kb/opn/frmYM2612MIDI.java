@@ -124,7 +124,7 @@ public class frmYM2612MIDI extends frmBase {
     };
 
     public void screenChangeParams() {
-        int[][] fmRegister = audio.chipRegister.plugin(MidiPlugin.class).readYM2612();
+        int[][] fmRegister = audio.plugin.chipRegister.plugin(MidiPlugin.class).readYM2612();
         //int[] fmKey = audio.GetFMKeyOn();
 
         newParam.IsMONO = parent.setting.getMidiKbd().isMono();

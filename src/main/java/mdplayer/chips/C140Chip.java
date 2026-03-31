@@ -11,6 +11,7 @@ import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
 import mdsound.chips.C140;
@@ -41,7 +42,7 @@ public class C140Chip implements Chip {
                     false, false, false, false, false, false, false, false}
     };
 
-    private Audio context;
+    private BasePlugin context;
 
     @SuppressWarnings("unchecked")
     private Class<? extends PcmEnabledInstrument> _inst(int chipId) {
@@ -60,7 +61,7 @@ public class C140Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {

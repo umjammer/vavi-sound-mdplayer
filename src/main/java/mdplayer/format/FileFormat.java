@@ -1,9 +1,14 @@
 package mdplayer.format;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
+
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.util.compat.Tuple;
 import mdplayer.PlayList;
@@ -13,6 +18,8 @@ import vavi.util.archive.Entry;
 
 
 public interface FileFormat {
+
+    Logger logger = System.getLogger(FileFormat.class.getName());
 
     FileFormat unknown = new UnknownFileFormat();
 
@@ -51,17 +58,50 @@ public interface FileFormat {
         return this instanceof SampledFileFormat;
     }
 
+    /** for SPI */
+    Tuple<byte[], List<Tuple<String, byte[]>>> load(InputStream is, String fn) throws IOException;
+
+    /** for SPI */
+    boolean isSupported(InputStream is) throws IOException;
+
+    /** for SPI */
+    Encoding getEncoding();
+
     /**
      * @return {@link UnknownFileFormat} when not found
      */
     static FileFormat getFileFormat(String filename) {
         assert filename != null : "specify file name";
         ServiceLoader<FileFormat> loader = ServiceLoader.load(FileFormat.class);
-        for (FileFormat e : loader) {
-            if (e.getExtensions() != null) {
-                if (Arrays.stream(e.getExtensions()).anyMatch(ex -> filename.toLowerCase().endsWith(ex))) {
-                    return e;
+        for (FileFormat fileFormat : loader) {
+            if (fileFormat.getExtensions() != null) {
+                if (Arrays.stream(fileFormat.getExtensions()).anyMatch(ex -> filename.toLowerCase().endsWith(ex))) {
+                    return fileFormat;
                 }
+            }
+        }
+        return unknown; // TODO check
+    }
+
+    /** for SPI */
+    int getMarkSize();
+
+    /**
+     * for SPI
+     * @return {@link UnknownFileFormat} when not found
+     */
+    static FileFormat getFileFormat(InputStream is) throws IOException {
+        ServiceLoader<FileFormat> loader = ServiceLoader.load(FileFormat.class);
+        for (FileFormat fileFormat : loader) {
+logger.log(Level.TRACE, "FORMAT: " + fileFormat.getClass().getName());
+            try {
+                is.mark(fileFormat.getMarkSize());
+                if (fileFormat.isSupported(is)) {
+                    return fileFormat;
+                }
+            } finally {
+                is.reset();
+logger.log(Level.TRACE, "input stream A: " + is + ", " + is.available());
             }
         }
         return unknown; // TODO check

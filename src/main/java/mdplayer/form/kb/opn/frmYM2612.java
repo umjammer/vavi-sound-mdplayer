@@ -21,7 +21,7 @@ import mdplayer.DrawBuff;
 import mdplayer.FrameBuffer;
 import mdplayer.MDChipParams;
 import mdplayer.chips.Ym2612Chip;
-import mdplayer.driver.Xgm;
+import mdplayer.driver.XgmDriver;
 import mdplayer.form.frmBase;
 import mdplayer.form.sys.frmMain;
 import mdplayer.format.XGMFileFormat;
@@ -128,10 +128,10 @@ public class frmYM2612 extends frmBase {
             };
 
     public void screenChangeParams() {
-        int[][] fmRegister = audio.chipRegister.chip(Ym2612Chip.class).read(chipId);
-        int[] fmVol = audio.chipRegister.chip(Ym2612Chip.class).getVolume(chipId);
-        int[] fmCh3SlotVol = audio.chipRegister.chip(Ym2612Chip.class).getCh3SlotVolume(chipId);
-        int[] fmKey = audio.chipRegister.chip(Ym2612Chip.class).getKeyOn(chipId);
+        int[][] fmRegister = audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId);
+        int[] fmVol = audio.plugin.chipRegister.chip(Ym2612Chip.class).getVolume(chipId);
+        int[] fmCh3SlotVol = audio.plugin.chipRegister.chip(Ym2612Chip.class).getCh3SlotVolume(chipId);
+        int[] fmKey = audio.plugin.chipRegister.chip(Ym2612Chip.class).getKeyOn(chipId);
 
         boolean isFmEx = (fmRegister[0][0x27] & 0x40) != 0;
         newParam.channels[2].ex = isFmEx;
@@ -150,7 +150,7 @@ public class frmYM2612 extends frmBase {
         int defaultMasterClock = 8000000;
         float ssgMul = 1.0f;
         int masterClock = defaultMasterClock;
-        int clock = audio.mds.getChipInfo(Ym2610Inst.class).clock;
+        int clock = audio.plugin.mds.getChipInfo(Ym2610Inst.class).clock;
         if (clock != 0) {
             ssgMul = clock / (float) defaultMasterClock;
             masterClock = clock;
@@ -282,13 +282,13 @@ public class frmYM2612 extends frmBase {
             newParam.channels[5].volumeR = Math.min(Math.max(fmVol[5] / 80, 0), 19);
         }
 
-        if (newParam.fileFormat instanceof XGMFileFormat && audio.driverVirtual instanceof Xgm) {
+        if (newParam.fileFormat instanceof XGMFileFormat && audio.plugin.driverVirtual instanceof XgmDriver) {
 
-            if (audio.driverVirtual != null && ((Xgm) audio.driverVirtual).xgmpcm != null) {
+            if (audio.plugin.driverVirtual != null && ((XgmDriver) audio.plugin.driverVirtual).getXgmPcm() != null) {
                 for (int i = 0; i < 4; i++) {
-                    if (((Xgm) audio.driverVirtual).xgmpcm[i].isPlaying) {
-                        newParam.xpcmInst[i] = ((Xgm) audio.driverVirtual).xgmpcm[i].inst;
-                        int d = (((Xgm) audio.driverVirtual).xgmpcm[i].data / 6);
+                    if (((XgmDriver) audio.plugin.driverVirtual).getXgmPcm()[i].isPlaying) {
+                        newParam.xpcmInst[i] = ((XgmDriver) audio.plugin.driverVirtual).getXgmPcm()[i].inst;
+                        int d = (((XgmDriver) audio.plugin.driverVirtual).getXgmPcm()[i].data / 6);
                         d = Math.min(d, 19);
                         newParam.xpcmVolL[i] = d;
                         newParam.xpcmVolR[i] = d;

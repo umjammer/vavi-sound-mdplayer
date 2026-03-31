@@ -6,9 +6,9 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.chips.PPZ8;
 import mdsound.instrument.Ppz8Inst;
@@ -27,7 +27,7 @@ public class Ppz8Chip implements Chip {
             {false, false, false, false, false, false, false, false}
     };
 
-    private Audio context;
+    private BasePlugin context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -36,7 +36,7 @@ public class Ppz8Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         this.context = context;
     }
 

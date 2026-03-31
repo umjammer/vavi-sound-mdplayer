@@ -76,7 +76,7 @@ public class MdsDrv extends BaseDriver {
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
+    public void init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
         gd3 = getGD3Info(vgmBuf);
 
         this.vgmBuf = vgmBuf;
@@ -94,12 +94,7 @@ public class MdsDrv extends BaseDriver {
         vgmFrameCounter = -latency - waitTime;
         vgmSpeed = 1;
 
-        return initMds();
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("This driver does not require this method");
+        initMds();
     }
 
     @Override
@@ -131,7 +126,7 @@ public class MdsDrv extends BaseDriver {
         }
     }
 
-    private boolean initMds() {
+    private void initMds() {
         if (mdsDriver == null) mdsDriver = new mucom88.driver.Driver();
 
         List<MmlDatum> buf = new ArrayList<>();
@@ -147,8 +142,6 @@ public class MdsDrv extends BaseDriver {
 
         mdsDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("", opmBaseClock));
         mdsDriver.startMusic(0);
-
-        return true;
     }
 
     private void writeOPM1(ChipDatum cd) {
@@ -157,7 +150,7 @@ public class MdsDrv extends BaseDriver {
         if (cd.data == -1) return;
 
 // logger.log(Level.INFO, "chipData: %02x, %02x, %02x".formatted(cd.port, cd.address, cd.data));
-        plugin.audio.chipRegister.chip(Ym2612Chip.class).write(0, cd.port, cd.address, cd.data, model, 0);
+        plugin.chipRegister.chip(Ym2612Chip.class).write(0, cd.port, cd.address, cd.data, model, 0);
     }
 
     private void writePSG(ChipDatum cd) {
@@ -166,7 +159,7 @@ public class MdsDrv extends BaseDriver {
         if (cd.data == -1) return;
 
 // logger.log(Level.INFO, "chipData: %02x, %02x, %02x".formatted(cd.port, cd.address, cd.data));
-        plugin.audio.chipRegister.chip(Sn76489Chip.class).write(0, cd.data, model);
+        plugin.chipRegister.chip(Sn76489Chip.class).write(0, cd.data, model);
     }
 
     public static class MdsChipAction implements ChipAction {

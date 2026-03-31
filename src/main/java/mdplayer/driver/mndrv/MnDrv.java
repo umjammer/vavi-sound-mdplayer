@@ -4,33 +4,23 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
+import dotnet4j.util.compat.QuadConsumer;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
-import mdplayer.Common;
-import mdplayer.Common.EnmModel;
-import mdplayer.chips.Ym2151Chip;
-import mdplayer.chips.Ym2608Chip;
-import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mxdrv.XMemory;
 import mdplayer.driver.zms.Zms.MPCMSt;
-import mdplayer.plugin.BasePlugin;
 import mdsound.chips.MPcm;
 import mdsound.chips.MPcmPP;
 import mdsound.instrument.MPcmPPInst;
 import mdsound.instrument.X68kMPcmInst;
-import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
 // MnDrv is MXDRV (SHARP X68000 series) for YMF288
-public class MnDrv extends BaseDriver {
+public class MnDrv {
 
     private static final Logger logger = getLogger(MnDrv.class.getName());
 
@@ -42,153 +32,6 @@ public class MnDrv extends BaseDriver {
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt()
     };
-
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.vgmBuf = vgmBuf;
-        this.plugin = plugin;
-        this.model = model;
-        this.useChip = useChip;
-        this.latency = latency;
-        this.waitTime = waitTime;
-
-        gd3 = getGD3Info(vgmBuf);
-        counter = 0;
-        totalCounter = 0;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-
-        for (int chipId = 0; chipId < 2; chipId++) {
-            ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
-            if (model == EnmModel.RealModel) {
-                ym2151Hosei[chipId] = 0;
-                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getClock(chipId);
-                if (clock != -1) {
-                    ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
-                }
-            }
-        }
-
-        int memPtr = 0x03_0000;
-        mm.alloc(memPtr + vgmBuf.length * 2 + 4);
-        for (int i = 0; i < vgmBuf.length; i++) {
-            mm.write(memPtr + vgmBuf.length + i, vgmBuf[i]);
-        }
-
-        // For debugging
-        //if (model == enmModel.RealModel) return true;
-
-        // Starting mndrv
-        start();
-
-        reg.setD0_B(0x01); // MND Data Transfer
-        reg.a1 = memPtr + vgmBuf.length;
-        reg.D1_L = vgmBuf.length;
-        _trap4_entry();
-        if (reg.D0_L < 0) {
-            stopped = true;
-logger.log(Level.WARNING, "trap4: 0x01");
-            return false;
-        }
-        memPtr += vgmBuf.length;
-
-        // pcm transfer
-        if (extendFile != null && model != EnmModel.RealModel) {
-            for (Tuple<String, byte[]> stringTuple : extendFile) {
-                mm.realloc(memPtr + stringTuple.getItem2().length * 2 + 4);
-                // Copy pcm file to x68 memory
-                for (int i = 0; i < stringTuple.getItem2().length; i++) {
-                    mm.write(memPtr + stringTuple.getItem2().length + i, stringTuple.getItem2()[i]);
-                }
-                reg.setD0_B(0x02); // PCM Data Transfer
-                reg.a1 = memPtr + stringTuple.getItem2().length;
-                reg.D1_L = stringTuple.getItem2().length;
-                _trap4_entry();
-                if (reg.D0_L < 0) {
-                    stopped = true;
-logger.log(Level.WARNING, "trap4: 0x02");
-                    return false;
-                }
-                memPtr += stringTuple.getItem2().length;
-            }
-        }
-
-        mpcmSt = new MPCMSt[] {
-                new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
-                new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
-                new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
-                new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt()
-        };
-
-        reg.setD0_B(0x03); // MND begins playing
-        _trap4_entry();
-        if (reg.D0_L < 0) {
-            stopped = true;
-logger.log(Level.WARNING, "trap4: 0x03");
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("This driver does not require this method");
-    }
-
-    @Override
-    public void processOneFrame() {
-        // For debugging
-        //if (model == enmModel.RealModel) return;
-
-        if (mm.mm == null) {
-            return;
-        }
-
-        try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-
-                if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x20) == 0) {
-                    timerOPN.timer();
-                    if ((timerOPN.readStatus() & 3) != 0) interrupt._opn_entry();
-                } else {
-                    timerOPM.timer();
-                    if ((timerOPM.readStatus() & 3) != 0) interrupt._opm_entry();
-                }
-                counter++;
-                vgmFrameCounter++;
-            }
-
-            if ((mm.readByte(reg.a6 + Dw.DRV_STATUS) & 0x20) != 0) {
-                stopped = true;
-            }
-            vgmCurLoop = mm.readShort(reg.a6 + Dw.LOOP_COUNTER) & 0xffff;
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        Vgm.Gd3 gd3 = new Vgm.Gd3();
-
-        int i = (buf[6] & 0xff) * 0x100 + (buf[7] & 0xff);
-        List<Byte> lst = new ArrayList<>();
-        while (i < buf.length && buf[i] != 0x0 && i + 1 < buf.length && buf[i + 1] != 0x0) {
-            lst.add(buf[i]);
-            i++;
-        }
-        String n = new String(ByteUtil.toByteArray(lst), charset);
-        gd3.trackName = n;
-        gd3.trackNameJ = n;
-
-        return gd3;
-    }
 
     public MnDrv() {
         reg = new Reg();
@@ -315,9 +158,84 @@ logger.log(Level.WARNING, "trap4: 0x03");
     public MPcmPPInst mpcmpp;
     public int mpcmType = 0;
 
+    QuadConsumer<Integer, Integer, Integer, Integer> ym2608Write;
+    BiConsumer<Integer, Integer> ym2151Write;
+    private boolean isRealModel;
+    Runnable stop;
+
+    void clock() {
+        if ((mm.readByte(reg.a6 + Dw.DRV_FLAG) & 0x20) == 0) {
+            timerOPN.timer();
+            if ((timerOPN.readStatus() & 3) != 0) interrupt._opn_entry();
+        } else {
+            timerOPM.timer();
+            if ((timerOPM.readStatus() & 3) != 0) interrupt._opm_entry();
+        }
+    }
+
+    void init(byte[] data, boolean isRealModel) {
+        this.isRealModel = isRealModel;
+
+        int memPtr = 0x03_0000;
+        mm.alloc(memPtr + data.length * 2 + 4);
+        for (int i = 0; i < data.length; i++) {
+            mm.write(memPtr + data.length + i, data[i]);
+        }
+
+        // For debugging
+        //if (model == enmModel.RealModel) return true;
+
+        // Starting mndrv
+        start();
+
+        reg.setD0_B(0x01); // MND Data Transfer
+        reg.a1 = memPtr + data.length;
+        reg.D1_L = data.length;
+        _trap4_entry();
+        if (reg.D0_L < 0) {
+            stop.run();
+            throw new IllegalStateException("trap4: 0x01");
+        }
+        memPtr += data.length;
+
+        // pcm transfer
+        if (extendFile != null && isRealModel) {
+            for (Tuple<String, byte[]> stringTuple : extendFile) {
+                mm.realloc(memPtr + stringTuple.getItem2().length * 2 + 4);
+                // Copy pcm file to x68 memory
+                for (int i = 0; i < stringTuple.getItem2().length; i++) {
+                    mm.write(memPtr + stringTuple.getItem2().length + i, stringTuple.getItem2()[i]);
+                }
+                reg.setD0_B(0x02); // PCM Data Transfer
+                reg.a1 = memPtr + stringTuple.getItem2().length;
+                reg.D1_L = stringTuple.getItem2().length;
+                _trap4_entry();
+                if (reg.D0_L < 0) {
+                    stop.run();
+                    throw new IllegalStateException("trap4: 0x02");
+                }
+                memPtr += stringTuple.getItem2().length;
+            }
+        }
+
+        mpcmSt = new MPCMSt[] {
+                new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
+                new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
+                new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
+                new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt()
+        };
+
+        reg.setD0_B(0x03); // MND begins playing
+        _trap4_entry();
+        if (reg.D0_L < 0) {
+            stop.run();
+            throw new IllegalStateException("trap4: 0x03");
+        }
+    }
+
     // Trap processing (effectively MPCM control)
     public void trap(int n) {
-        if (model == EnmModel.RealModel) return;
+        if (isRealModel) return;
 
         int ch = reg.getD0_B() & 0xf;
 
@@ -2818,7 +2736,7 @@ logger.log(Level.WARNING, "trap4: 0x03");
 //            if ((reg.getD1_B() & 0xff) == 0x27) {
 //                logger.log(Level.INFO, "Timer A Write: %02x".formatted(reg.getD0_B() & 0xff));
 //            }
-            plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, 0, reg.getD1_B(), reg.getD0_B(), model);
+            ym2608Write.accept(0, 0, reg.getD1_B(), reg.getD0_B());
             timerOPN.writeReg((byte) reg.getD1_B(), (byte) reg.getD0_B());
             //logger.log(Level.TRACE, "DEV:0 PRT:0 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             //if (reg.getD1_B() < 0x10) {
@@ -2826,15 +2744,15 @@ logger.log(Level.WARNING, "trap4: 0x03");
             //}
             break;
         case 0xe_cc0c5:
-            plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, 1, reg.getD1_B() & 0xff, reg.getD0_B() & 0xff, model);
+            ym2608Write.accept(0, 1, reg.getD1_B() & 0xff, reg.getD0_B() & 0xff);
             //logger.log(Level.TRACE, "DEV:0 PRT:1 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             break;
         case 0xe_cc0c9:
-            plugin.audio.chipRegister.chip(Ym2608Chip.class).write(1, 0, reg.getD1_B() & 0xff, reg.getD0_B() & 0xff, model);
+            ym2608Write.accept(1, 0, reg.getD1_B() & 0xff, reg.getD0_B() & 0xff);
             //logger.log(Level.TRACE, "DEV:1 PRT:0 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B())));
             break;
         case 0xe_cc0cd:
-            plugin.audio.chipRegister.chip(Ym2608Chip.class).write(1, 1, reg.getD1_B() & 0xff, reg.getD0_B() & 0xff, model);
+            ym2608Write.accept(1, 1, reg.getD1_B() & 0xff, reg.getD0_B() & 0xff);
             //logger.log(Level.TRACE, "DEV:1 PRT:1 radr:%x rdat:%x".formatted(reg.getD1_B(), reg.getD0_B()));
             break;
         }
@@ -2937,7 +2855,7 @@ logger.log(Level.WARNING, "trap4: 0x03");
         //while ((byte)mm.readByte(Reg.a0) < 0) ; //wait?
         //mm.write(Reg.a0, (byte)reg.getD0_B());
         //logger.log(Level.TRACE, "adr:%x dat:%x".formatted(Reg.a0, reg.getD0_B())));
-        plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, reg.getD1_B() & 0xff, reg.getD0_B() & 0xff, model, ym2151Hosei[0], 0);
+        ym2151Write.accept(reg.getD1_B() & 0xff, reg.getD0_B() & 0xff);
         timerOPM.writeReg((byte) reg.getD1_B(), (byte) reg.getD0_B());
     }
 
@@ -4123,9 +4041,4 @@ logger.log(Level.WARNING, "trap4: 0x03");
             	-k	Key control disabled
             	-r	Cancel residency
             """;
-
-    @Override
-    public long getDriverCounter() {
-        return counter;
-    }
 }

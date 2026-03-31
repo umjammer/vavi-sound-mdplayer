@@ -3,32 +3,26 @@ package mdplayer.driver.zms;
 import java.io.IOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
 
 import dotnet4j.io.File;
 import dotnet4j.io.FileNotFoundException;
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmModel;
 import mdplayer.UnZDF;
-import mdplayer.chips.MidiPlugin;
-import mdplayer.chips.Ym2151Chip;
-import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mndrv.FMTimer;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
 import mdplayer.driver.zms.nise68.FileMng;
 import mdplayer.driver.zms.nise68.MemMng;
 import mdplayer.driver.zms.nise68.Nise68;
-import mdplayer.plugin.BasePlugin;
 import mdsound.chips.MPcm;
 import mdsound.chips.MPcmPP.SETPCM;
 import mdsound.instrument.MPcmPPInst;
@@ -37,7 +31,6 @@ import mdsound.instrument.X68kMPcmInst;
 import mdsound.instrument.X68kYm2151Inst;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
 /**
@@ -50,7 +43,7 @@ import static mdplayer.Common.charset;
  * system property
  * <li>"mdplayer.zms.zpd" ... zpd file location</li>
  */
-public class Zms extends BaseDriver {
+public class Zms {
 
     private static final Logger logger = getLogger(Zms.class.getName());
 
@@ -97,233 +90,101 @@ public class Zms extends BaseDriver {
         public float base_ = 0;
     }
 
-    private String playingFileName;
+    String playingFileName;
 
-    public String getPlayingFileName() {
-        return playingFileName;
-    }
-
-    public void setPlayingFileName(String value) {
-        playingFileName = value;
-    }
-
-    private String playingArcFileName;
-
-    public String getPlayingArcFileName() {
-        return playingArcFileName;
-    }
-
-    public void setPlayingArcFileName(String value) {
-        playingArcFileName = value;
-    }
+    String playingArcFileName;
 
     public List<Tuple<byte[], String>> supportFileBinaryAndName;
-    private byte[] compiledData;
+    byte[] compiledData;
 
-    public byte[] getCompiledData() {
-        return compiledData;
-    }
+    Runnable stop;
+    IntConsumer loop;
+    IntSupplier wait;
+    BiConsumer<Integer, Integer> ym2151Write;
+    BiConsumer<Integer, byte[]> midiSend;
 
-    public void setCompiledData(byte[] value) {
-        compiledData = value;
-    }
-
-    @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        if (playingFileName.toUpperCase().endsWith(".ZMS")) {
-            return getGD3InfoZMS(buf);
-        } else if (playingFileName.toUpperCase().endsWith(".ZMD")) {
-            return getGD3InfoZMD(buf);
-        } else {
-            return new Gd3();
-        }
-    }
-
-    private Gd3 getGD3InfoZMS(byte[] buf) {
-        String text = new String(buf, charset);
-        String[] texts = text.split("\r\n");
-        String cmt = "";
-        String comment = ".COMMENT";
-        for (String s : texts) {
-            if (!s.toUpperCase().trim().contains(comment)) continue;
-            cmt = s.trim().substring(s.toUpperCase().trim().indexOf(comment) + comment.length()).trim();
-            break;
-        }
-        Gd3 gd3 = new Gd3();
-        if (cmt != null && !cmt.isEmpty()) {
-            gd3.trackName = cmt;
-            gd3.trackNameJ = cmt;
-        }
-        return gd3;
-    }
-
-    private Gd3 getGD3InfoZMD(byte[] buf) {
-        Gd3 gd3 = new Gd3();
-
-        if (buf.length < 8) {
-            throw new IllegalArgumentException("Unknown zmd file");
-        } else {
-            int chkID1 = (buf[0] & 0xFF) * 0x100_0000 + (buf[1] & 0xFF) * 0x1_0000 + (buf[2] & 0xFF) * 0x100 + (buf[3] & 0xFF);
-            int chkID2 = (buf[4] & 0xFF) * 0x100_0000 + (buf[5] & 0xFF) * 0x1_0000 + (buf[6] & 0xFF) * 0x100 + (buf[7] & 0xFF);
-logger.log(Level.TRACE, "Zms Version Check: chkID1=%08x, chkID2=%08x%n".formatted(chkID1, chkID2));
-            if (chkID1 == 0x1a5a_6d75 && chkID2 == 0x5369_4330) version = 3;
-            if (chkID1 == 0x105a_6d75 && chkID2 != 0x5369_4330) version = 2;
-logger.log(Level.TRACE, "Zms Version Detected: " + version);
-
-            if (version == 0) {
-                throw new IllegalArgumentException("Version check error");
+    void trap() {
+        if (version == 2) {
+            timerOPM.timer();
+            while ((timerOPM.readStatus() & 3) != 0) {
+                nise68.trapOPM(); // true, true, true);
             }
-        }
-
-        String cmt = "";
-        try {
-            if (version == 3) {
-                int ptr = (buf[9 * 4 + 0] & 0xFF) * 0x100_0000 + (buf[9 * 4 + 1] & 0xFF) * 0x1_0000 +
-                        (buf[9 * 4 + 2] & 0xFF) * 0x100 + (buf[9 * 4 + 3] & 0xFF) + 40;
-                int ePtr = ptr;
-                while (buf[ePtr] != 0x00) {
-                    if (buf[ePtr] == 0x0d && buf[ePtr + 1] == 0x0a) break;
-                    ePtr++;
-                }
-
-                cmt = new String(buf, ptr, ePtr - ptr, charset);
-            }
-        } catch (Exception e) {
-            // Do nothing
-        }
-
-        if (cmt != null && !cmt.isEmpty()) {
-            gd3.trackName = cmt;
-            gd3.trackNameJ = cmt;
-        }
-        return gd3;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        gd3 = getGD3Info(vgmBuf, 0);
-        this.plugin = plugin;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        this.model = model;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-        setZPDSearchPath();
-
-        try {
-            run(vgmBuf);
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            throw new IllegalStateException(e);
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void processOneFrame() {
-        try {
-            if (waitNextPlay-- > 0) return;
-
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-
-                if (vgmFrameCounter > -1) {
-                    counter++;
-
-                    if (version == 2) {
-                        timerOPM.timer();
-                        while ((timerOPM.readStatus() & 3) != 0) {
-                            nise68.trapOPM(); // true, true, true);
-                        }
-                    } else {
-                        //virtualFrameCounter++;
-                        while (nise68.intTimer()) {
+        } else {
+            //virtualFrameCounter++;
+            while (nise68.intTimer()) {
 //#if DEBUG
-                            //if (model != EnmModel.RealModel)
-                            //    nise68.Trap(0x8e, true, true, true);
+                //if (model != EnmModel.RealModel)
+                //    nise68.Trap(0x8e, true, true, true);
 //                            nise68.Trap(0x8e);
 //#else
-                            nise68.trap(0x8e);
+                nise68.trap(0x8e);
 //#endif
-                        }
-                    }
-                }
-                vgmFrameCounter++;
             }
-
-//            if (SkipSwitchPianoRoll) return;
-            checkCounter--;
-            if (checkCounter < 0) {
-                checkCounter = 100;
-                if (version == 2) {
-                    // Check if playing
-                    nise68.reg.setDl(1, 0x09); // m_stat
-                    nise68.reg.setDl(2, 0); // Check mode (0: Check all channels)
-                    nise68.trap(3 + 32);
-                    int d0 = nise68.reg.getDl(0);
-                    if (d0 == 0) {
-                        if (preData.isEmpty()) stopped = true;
-                        else {
-                            preData.remove(0);
-                            byte[] zmd = null;
-                            if (preData.isEmpty()) {
-                                //if (nise68.hmn.fb.containsKey(fnZMD)) zmd = nise68.hmn.fb[fnZMD];
-                                if (fileMng.existsFile(fnZMD)) zmd = fileMng.vReadAllBytes(fnZMD);
-                            } else {
-                                //if (nise68.hmn.fb.containsKey(preData[0])) zmd = nise68.hmn.fb[preData[0]];
-                                if (fileMng.existsFile(preData.get(0))) zmd = fileMng.vReadAllBytes(preData.get(0));
-                            }
-                            int fileSize = zmd.length;
-                            int filePtr = nise68.hmn.memMng.malloc(fileSize);
-                            for (int i = 0; i < zmd.length; i++) {
-                                nise68.mem.pokeB(filePtr + i, zmd[i]);
-                            }
-
-                            nise68.reg.setDl(1, 0x11); // play_cnv_data
-                            nise68.reg.setDl(2, zmd.length - 7);
-                            nise68.reg.setAl(1, filePtr + 7);
-                            nise68.trap(trp); // , true, true, true);
-                            waitNextPlay = (int) (setting.getOutputDevice().getSampleRate() * (double) setting.getZMusic().waitNextPlay / 1000.0);
-                        }
-                    }
-
-                    // Loop count check
-                    nise68.reg.setDl(1, 0x4d); // get_loop_time
-                    nise68.trap(3 + 32);
-                    d0 = nise68.reg.getDl(0);
-                    vgmCurLoop = d0 - 1;
-                } else {
-                    // Check if playing
-                    nise68.reg.setDl(0, 0x0b); // ZM_PLAY_STATUS
-                    nise68.reg.setDl(1, 0); // Check mode (0: Check all channels)
-                    nise68.reg.setAl(1, 0); // Inspection result storage buffer address (set to 0 to return simplified inspection results)
-                    nise68.trap(3 + 32);
-                    int d0 = nise68.reg.getDl(0);
-                    if (d0 == 0)
-                        stopped = true;
-
-                    // Loop count check
-                    nise68.reg.setDl(0, 0x59); // ZM_LOOP_CONTROL
-                    nise68.reg.setDl(1, 0xffff_ffff); // Control mode (-1 = get loop count)
-                    nise68.trap(3 + 32);
-                    d0 = nise68.reg.getDl(0);
-                    vgmCurLoop = d0 - 1;
-                }
-            }
-            //vgmCurLoop = mm.readShort(reg.a6 + dw.LOOP_COUNTER);
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
         }
     }
 
-    private void run(byte[] vgmBuf) throws Exception {
+    void clock() {
+        checkCounter--;
+        if (checkCounter < 0) {
+            checkCounter = 100;
+            if (version == 2) {
+                // Check if playing
+                nise68.reg.setDl(1, 0x09); // m_stat
+                nise68.reg.setDl(2, 0); // Check mode (0: Check all channels)
+                nise68.trap(3 + 32);
+                int d0 = nise68.reg.getDl(0);
+                if (d0 == 0) {
+                    if (preData.isEmpty()) stop.run();
+                    else {
+                        preData.remove(0);
+                        byte[] zmd = null;
+                        if (preData.isEmpty()) {
+                            //if (nise68.hmn.fb.containsKey(fnZMD)) zmd = nise68.hmn.fb[fnZMD];
+                            if (fileMng.existsFile(fnZMD)) zmd = fileMng.vReadAllBytes(fnZMD);
+                        } else {
+                            //if (nise68.hmn.fb.containsKey(preData[0])) zmd = nise68.hmn.fb[preData[0]];
+                            if (fileMng.existsFile(preData.get(0))) zmd = fileMng.vReadAllBytes(preData.get(0));
+                        }
+                        int fileSize = zmd.length;
+                        int filePtr = nise68.hmn.memMng.malloc(fileSize);
+                        for (int i = 0; i < zmd.length; i++) {
+                            nise68.mem.pokeB(filePtr + i, zmd[i]);
+                        }
+
+                        nise68.reg.setDl(1, 0x11); // play_cnv_data
+                        nise68.reg.setDl(2, zmd.length - 7);
+                        nise68.reg.setAl(1, filePtr + 7);
+                        nise68.trap(trp); // , true, true, true);
+                        waitNextPlay = wait.getAsInt();
+                    }
+                }
+
+                // Loop count check
+                nise68.reg.setDl(1, 0x4d); // get_loop_time
+                nise68.trap(3 + 32);
+                d0 = nise68.reg.getDl(0);
+                loop.accept(d0 - 1);
+            } else {
+                // Check if playing
+                nise68.reg.setDl(0, 0x0b); // ZM_PLAY_STATUS
+                nise68.reg.setDl(1, 0); // Check mode (0: Check all channels)
+                nise68.reg.setAl(1, 0); // Inspection result storage buffer address (set to 0 to return simplified inspection results)
+                nise68.trap(3 + 32);
+                int d0 = nise68.reg.getDl(0);
+                if (d0 == 0)
+                    stop.run();
+
+                // Loop count check
+                nise68.reg.setDl(0, 0x59); // ZM_LOOP_CONTROL
+                nise68.reg.setDl(1, 0xffff_ffff); // Control mode (-1 = get loop count)
+                nise68.trap(3 + 32);
+                d0 = nise68.reg.getDl(0);
+                loop.accept(d0 - 1);
+            }
+        }
+    }
+
+    void run(byte[] data) throws Exception {
         //if (model == EnmModel.RealModel) { return; }
 
         String fn = playingFileName;
@@ -351,7 +212,7 @@ logger.log(Level.TRACE, "Zms Version Detected: " + version);
         }
         nise68.init(envZPDs, version == 2, fileMng);
 
-        fileMng.setVFile(Path.getFileName(fnZMD), vgmBuf);
+        fileMng.setVFile(Path.getFileName(fnZMD), data);
         //nise68.hmn.fb.add(fnZMD, vgmBuf);
         //if (format == EnmFileFormat.ZMD) nise68.hmn.fb.add(fnZMD, vgmBuf);
         //else {
@@ -370,7 +231,7 @@ logger.log(Level.TRACE, "Zms Version Detected: " + version);
     private final List<String> preData = new ArrayList<>();
     private String fnZMD;
     private int trp = 3 + 32;
-    private int waitNextPlay = 0;
+    int waitNextPlay = 0;
     private int rc;
 
     private void play() throws IOException {
@@ -462,8 +323,8 @@ logger.log(Level.TRACE, "Zms Version Detected: " + version);
                 //if (nise68.hmn.fb.containsKey(preData[0])) {
                 //    zmd = nise68.hmn.fb[preData[0]];
                 //}
-                if (fileMng.existsFile(preData.get(0))) {
-                    zmd = fileMng.vReadAllBytes(preData.get(0));
+                if (fileMng.existsFile(preData.getFirst())) {
+                    zmd = fileMng.vReadAllBytes(preData.getFirst());
                 }
             }
             if (zmd == null) {
@@ -549,7 +410,7 @@ logger.log(Level.TRACE, "Zms Version Detected: " + version);
         }
     }
 
-    public boolean compile(byte[] vgmBuf, String fn) throws URISyntaxException {
+    public boolean compile(byte[] vgmBuf, String fn) {
         String withoutExtFn;
         String dn = Path.getDirectoryName(fn);
         if (dn != null && !dn.isEmpty()) withoutExtFn = Path.combine(dn, Path.getFileNameWithoutExtension(fn));
@@ -590,7 +451,7 @@ logger.log(Level.TRACE, "Zms Version Detected: " + version);
         return true;
     }
 
-    public boolean compileV2(byte[] vgmBuf, String fn) throws URISyntaxException {
+    public boolean compileV2(byte[] vgmBuf, String fn) {
         //String fn = playingFileName;
         String withoutExtFn;
         String dn = Path.getDirectoryName(fn);
@@ -786,7 +647,7 @@ logger.log(Level.TRACE, "Zms Version Detected: " + version);
     }
 
     private int opmCallBack(int adr, int dat) {
-        plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, adr, dat, model, plugin.audio.chipRegister.chip(Ym2151Chip.class).hosei[0], vgmFrameCounter);
+        ym2151Write.accept(adr, dat);
         if (timerOPM != null) timerOPM.writeReg((byte) adr, (byte) dat);
         return 0;
     }
@@ -797,7 +658,7 @@ logger.log(Level.TRACE, "Zms Version Detected: " + version);
 
         //midiOutsBuff[n].add(dat);
         //midiOutsFrame[n].add(virtualFrameCounter);
-        plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, n, new byte[] {dat}, 0);
+        midiSend.accept(n, new byte[] {dat});
         return 0;
     }
 
@@ -807,18 +668,14 @@ logger.log(Level.TRACE, "Zms Version Detected: " + version);
 
         //midiOutsBuff[2 + n].add(dat);
         //midiOutsFrame[2 + n].add(virtualFrameCounter);
-        plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, 2 + n, new byte[] {dat}, 0);
+        midiSend.accept(2 + n, new byte[] {dat});
         return 0;
     }
 
-    private void setZPDSearchPath() {
+    void setZPDSearchPath() {
         try {
             // Get the environment variable "ZPD"
-            String envZPD = "";
-            try {
-                envZPD = System.getProperty("mdplayer.zms.zpd");
-            } catch (Exception e) {
-            }
+            String envZPD = System.getProperty("mdplayer.zms.zpd");
             if (envZPD != null && !envZPD.isEmpty()) {
                 envZPDs = Arrays.asList(envZPD.split(";"));
             }

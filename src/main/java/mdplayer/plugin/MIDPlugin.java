@@ -1,13 +1,11 @@
 package mdplayer.plugin;
 
 import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.chips.MidiPlugin;
-import mdplayer.driver.mid.MID;
-import mdplayer.format.FileFormat;
+import mdplayer.driver.mid.MidiDriver;
 
 import static java.lang.System.getLogger;
 
@@ -23,44 +21,36 @@ public class MIDPlugin extends BasePlugin {
     private static final Logger logger = getLogger(MIDPlugin.class.getName());
 
     @Override
-    public boolean play(String playingFileName, FileFormat format) {
-        audio.driverVirtual = new MID();
-        audio.driverReal = null;
+    public void prepare() {
+        driverVirtual = new MidiDriver();
+
+        driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-            audio.driverReal = new MID();
+            driverReal = new MidiDriver();
         }
-        prepare();
-        boolean r = _play();
-        if (!r) {
-logger.log(Level.WARNING, "cannot start: " + this);
-            return false;
-        }
-        super.play();
-        return true;
+
+        prepareInternal();
+        initChips();
     }
 
-    /** */
-    private boolean _play() {
+    @Override
+    protected void initChips() {
         startTrdVgmReal();
 
-        audio.chipLED.put("PriMID", 1);
-        audio.chipLED.put("SecMID", 1);
+        chipLED.put("PriMID", 1);
+        chipLED.put("SecMID", 1);
 
-        audio.chipRegister.plugin(MidiPlugin.class).releaseAll();
-        audio.chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
-        audio.chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
+        chipRegister.plugin(MidiPlugin.class).releaseAll();
+        chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
+        chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
 
-        if (!audio.driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
+        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
-                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-            return false;
-        if (audio.driverReal != null) {
-            if (!audio.driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
+                setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
+        if (driverReal != null) {
+            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
-                    setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000))
-                return false;
+                    setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }
-
-        return true;
     }
 }

@@ -6,6 +6,7 @@
 
 package mdplayer.driver.nsf;
 
+import mdplayer.driver.Vgm.Gd3;
 import mdsound.MDSound.Chip;
 
 
@@ -46,4 +47,8 @@ public interface NsfDriver {
     void setVrc7(Chip chip);
 
     void setFme7(Chip chip);
+
+    Gd3 getGD3Info(byte[] buf, int[] vgmGd3);
+
+    int getSongs();
 }

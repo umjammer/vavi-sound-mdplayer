@@ -6,9 +6,9 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.X1_010Inst;
 
@@ -21,7 +21,7 @@ import mdsound.instrument.X1_010Inst;
  */
 public class X1_010Chip implements Chip {
 
-    private Audio context;
+    private BasePlugin context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -30,7 +30,7 @@ public class X1_010Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         this.context = context;
     }
 

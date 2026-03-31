@@ -148,7 +148,7 @@ public class frmHuC6280 extends frmBase {
 
     public void screenChangeParams() {
 
-        OotakeHuC6280 chip = audio.chipRegister.chip(HuC6280Chip.class).getChip(chipId);
+        OotakeHuC6280 chip = audio.plugin.chipRegister.chip(HuC6280Chip.class).getChip(chipId);
         if (chip == null) return;
 
         //logger.log(Level.TRACE, "%d  %d".formatted(chips.MainVolumeL,chips.MainVolumeR));

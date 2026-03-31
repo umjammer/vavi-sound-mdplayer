@@ -1,17 +1,25 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.rcp.RCP;
-import mdplayer.driver.rcp.RCS;
+import mdplayer.driver.rcp.RcpDriver;
+import mdplayer.driver.rcp.RcsDriver;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.RCSPlugin;
+import vavi.sound.SoundUtil;
+import vavi.sound.sampled.md.MdEncoding;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -33,7 +41,7 @@ public class RCSFileFormat extends BaseFileFormat {
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
-        Vgm.Gd3 gd3 = new RCS().getGD3Info(buf);
+        Vgm.Gd3 gd3 = new RcsDriver().getGD3Info(buf);
         if (gd3 != null) {
             music.title = gd3.trackName;
             music.titleJ = gd3.trackNameJ;
@@ -61,7 +69,7 @@ public class RCSFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        Vgm.Gd3 gd3 = new RCP().getGD3Info(buf);
+        Vgm.Gd3 gd3 = new RcpDriver().getGD3Info(buf);
         if (gd3 != null) {
             music.title = gd3.trackName;
             music.titleJ = gd3.trackNameJ;
@@ -111,5 +119,21 @@ public class RCSFileFormat extends BaseFileFormat {
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(RCSPlugin.class);
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return MdEncoding.RCS;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

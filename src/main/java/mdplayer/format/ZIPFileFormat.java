@@ -2,7 +2,9 @@ package mdplayer.format;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -203,5 +205,17 @@ public class ZIPFileFormat extends BaseFileFormat {
         } else {
             throw new FileNotFoundException(fn);
         }
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 2;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        byte[] buf = new byte[getMarkSize()];
+        is.readNBytes(buf, 0, buf.length);
+        return Arrays.equals(new byte[] {'P', 'K'}, buf);
     }
 }

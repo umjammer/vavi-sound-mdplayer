@@ -1,0 +1,163 @@
+package mdplayer.driver.hes;
+
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+
+import mdplayer.Chip;
+import mdplayer.Common;
+import mdplayer.Common.EnmModel;
+import mdplayer.driver.BaseDriver;
+import mdplayer.driver.Vgm;
+import mdplayer.driver.hes.Hes.HESDetector;
+import mdplayer.plugin.BasePlugin;
+import vavi.util.ByteUtil;
+
+import static java.lang.System.getLogger;
+
+
+/**
+ * @author kumatan
+ */
+public class HesDriver extends BaseDriver {
+
+    private static final Logger logger = getLogger(HesDriver.class.getName());
+
+    private final Hes hes;
+
+    public mdsound.MDSound.Chip c6280;
+
+    public HesDriver() {
+        hes = new Hes();
+    }
+
+    @Override
+    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
+        if (ByteUtil.readLeInt(buf, 0) != Hes.FCC_HES) {
+            return null;
+        }
+
+        if (buf.length < 0x20) // no header?
+            return null;
+
+        hes.version = buf[0x04] & 0xff;
+        hes.songs = 255;
+        hes.start = (buf[0x05] & 0xff) + 1;
+        hes.load_address = 0;
+        hes.init_address = (buf[0x06] & 0xff) | ((buf[0x07] & 0xff) << 8);
+        hes.play_address = 0;
+
+        // There is almost no information on HES songs?
+        return null;
+    }
+
+    /**
+     * @param args 0: [int] song number
+     */
+    @Override
+    public void init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+
+        this.vgmBuf = vgmBuf;
+        this.plugin = plugin;
+        this.model = model;
+        this.useChip = useChip;
+        this.latency = latency;
+        this.waitTime = waitTime;
+
+        int song = (int) args[0];
+
+        if (model == EnmModel.RealModel) {
+            stopped = true;
+            vgmCurLoop = 9999;
+            return;
+        }
+
+        counter = 0;
+        totalCounter = 0;
+        loopCounter = 0;
+        vgmCurLoop = 0;
+        stopped = false;
+        vgmFrameCounter = -latency - waitTime;
+        vgmSpeed = 1;
+        vgmSpeedCounter = 0;
+
+        hes.silent_length = 0;
+        hes.playtime_detected = false;
+
+        hes.ld = new HESDetector();
+        hes.ld.reset();
+
+        gd3 = getGD3Info(vgmBuf);
+
+        hes.nez_play = new M_Hes.NEZ_PLAY();
+        if (hes.nez_play.HESLoad(vgmBuf, vgmBuf.length) != 0)
+            throw new IllegalArgumentException("invalid hes data");
+        hes.nez_play.heshes.chipRegister = plugin.chipRegister;
+        hes.nez_play.heshes.ld = hes.ld;
+        hes.nez_play.song.songno = song + 1;
+        hes.nez_play.HESHESReset();
+    }
+
+    @Override
+    public void processOneFrame() {
+        try {
+            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
+            while (vgmSpeedCounter >= 1.0 && !stopped) {
+                vgmSpeedCounter -= 1.0;
+                if (vgmFrameCounter > -1) {
+                    hes.nez_play.ExecuteHES();
+                    counter++;
+                } else {
+                    vgmFrameCounter++;
+                }
+            }
+            //Stopped = !IsPlaying();
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+    }
+
+    public void additionalUpdate(mdsound.MDSound.Chip sender, int chipId, int[][] buffer, int length) {
+        if (plugin.isStopped()) {
+            return;
+        }
+        try {
+            for (int i = 0; i < length; i++) {
+
+                int m = buffer[0][i] + buffer[1][i];
+                if (m == hes.last_out && vgmFrameCounter >= 0) hes.silent_length++;
+                else hes.silent_length = 0;
+                hes.last_out = m;
+
+                if (hes.nez_play != null && hes.nez_play.heshes != null) {
+                    hes.buf[0] = 0;
+                    hes.buf[1] = 0;
+                    hes.nez_play.heshes.synth(hes.buf);
+                    buffer[0][i] += hes.buf[0];
+                    buffer[1][i] += hes.buf[1];
+                }
+            }
+
+            if (!hes.playtime_detected && hes.silent_length > setting.getOutputDevice().getSampleRate() * 3) {
+                hes.playtime_detected = true;
+                loopCounter = 0;
+                stopped = true;
+            }
+
+            hes.time_in_ms += (1000 * length / (double) setting.getOutputDevice().getSampleRate() * vgmSpeed);// ((* config)["MULT_SPEED"].GetInt()) / 256);
+            if (!hes.playtime_detected && hes.ld.isLooped((int) hes.time_in_ms, 30000, 5000)) {
+                hes.playtime_detected = true;
+                totalCounter = (long) hes.ld.getLoopEnd() * (long) setting.getOutputDevice().getSampleRate() / 1000L;
+                if (totalCounter == 0) totalCounter = counter;
+                loopCounter = ((long) hes.ld.getLoopEnd() - (long) hes.ld.getLoopStart()) * (long) setting.getOutputDevice().getSampleRate() / 1000L;
+            }
+
+            if (!hes.playtime_detected) vgmCurLoop = 0;
+            else {
+                if (totalCounter != 0) vgmCurLoop = (int) (counter / totalCounter);
+                else stopped = true;
+            }
+        } catch (Exception ex) {
+            logger.log(Level.ERROR, ex.getMessage(), ex);
+        }
+    }
+}

@@ -2,11 +2,11 @@ package mdplayer.chips;
 
 import java.util.List;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip;
 import mdplayer.Setting;
+import mdplayer.plugin.BasePlugin;
 
 
 /**
@@ -18,6 +18,8 @@ import mdplayer.Setting;
 public class RealChipPlugin implements Plugin {
 
     public RealChip realChip;
+
+    BasePlugin context;
 
     public RealChipPlugin() {
 //                , SoundChip.realChip
@@ -53,7 +55,9 @@ public class RealChipPlugin implements Plugin {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
+        this.context = context;
+
 //        if (SoundChip.realChip == null && !getemuOnly()) {
 //            Log.forcedWrite("Audio:Init:STEP 04");
 //            SoundChip.realChip = new RealChip(!setting.getUnuseRealChip());

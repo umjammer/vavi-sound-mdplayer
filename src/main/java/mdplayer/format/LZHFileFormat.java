@@ -2,7 +2,9 @@ package mdplayer.format;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -201,5 +203,19 @@ public class LZHFileFormat extends BaseFileFormat {
         } else {
             throw new FileNotFoundException(fn);
         }
+    }
+
+    private static final byte[] magic = {0x2D, 0x6C, 0x68}; // TODO more?
+
+    @Override
+    public int getMarkSize() {
+        return magic.length;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        byte[] buf = new byte[getMarkSize()];
+        is.readNBytes(buf, 0, buf.length);
+        return Arrays.equals(magic, buf);
     }
 }

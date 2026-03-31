@@ -1,21 +1,16 @@
 
 package mdplayer.driver.mgsdrv;
 
+import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.interfaces.Memory;
-import mdplayer.ChipRegister;
-import mdplayer.Common.EnmModel;
 
 
 public class MsxMemory implements Memory {
 
-    private final mdplayer.ChipRegister chipRegister;
-    private final EnmModel model;
     public MsxSlot slot;
 
-    public MsxMemory(ChipRegister chipRegister, EnmModel model) {
-        this.chipRegister = chipRegister;
-        this.model = model;
-        this.slot = new MsxSlot(chipRegister, model);
+    public MsxMemory(TriConsumer<Integer, Integer, Integer> chipWrite) {
+        this.slot = new MsxSlot(chipWrite);
     }
 
     @Override

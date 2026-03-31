@@ -6,10 +6,10 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
 import mdsound.instrument.CtrQSoundInst;
@@ -33,7 +33,7 @@ public class QSoundChip implements Chip {
                     false, false, false,}
     };
 
-    private Audio context;
+    private BasePlugin context;
 
     @SuppressWarnings("unchecked")
     private Class<? extends PcmEnabledInstrument> _inst(int chipId) {
@@ -52,8 +52,7 @@ public class QSoundChip implements Chip {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         this.context = context;
     }
 

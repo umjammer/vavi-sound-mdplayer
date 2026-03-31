@@ -27,6 +27,7 @@ import mdplayer.properties.Resources;
 
 
 public class frmYM2151 extends frmBase {
+
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
@@ -58,7 +59,6 @@ public class frmYM2151 extends frmBase {
         frameBuffer.refresh(null);
     }
 
-//    @Override
     protected boolean getShowWithoutActivation() {
         return true;
     }
@@ -97,6 +97,7 @@ public class frmYM2151 extends frmBase {
             prefs.putInt("x", e.getComponent().getX());
             prefs.putInt("y", e.getComponent().getY());
         }
+
         @Override
         public void componentResized(ComponentEvent e) {
         }
@@ -111,9 +112,9 @@ public class frmYM2151 extends frmBase {
 
             int ch;
 
-             // For top label row, do nothing
+            // For top label row, do nothing
             if (py < 1 * 8) {
-                 // However, if you click on ch, the mask will be inverted.
+                // However, if you click on ch, the mask will be inverted.
                 if (px < 8) {
                     for (ch = 0; ch < 8; ch++) {
                         if (newParam.channels[ch].mask)
@@ -146,7 +147,7 @@ public class frmYM2151 extends frmBase {
             int instCh = h * 3 + w;
 
             if (instCh < 8) {
-                 // Copying a tone to the clipboard
+                // Copying a tone to the clipboard
                 parent.getInstCh(Ym2151Chip.class, instCh, chipId);
             }
         }
@@ -184,22 +185,21 @@ public class frmYM2151 extends frmBase {
     // 7  6   5   4   3   2  1  0
     // x, C2, M2, C1, M1, x, x, x
 
-    private static final byte[] md = new byte[]
-            {
-                    0x40,
-                    0x40,
-                    0x40,
-                    0x40,
-                    0x50,
-                    0x70,
-                    0x70,
-                    0x78,
-            };
+    private static final byte[] md = {
+            0x40,
+            0x40,
+            0x40,
+            0x40,
+            0x50,
+            0x70,
+            0x70,
+            0x78,
+    };
 
     public void screenChangeParams() {
-        int[] ym2151Register = audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
-        int[] fmKeyYM2151 = audio.chipRegister.chip(Ym2151Chip.class).getKeyOn(chipId);
-        int[] fmYM2151Vol = audio.chipRegister.chip(Ym2151Chip.class).getVolume(chipId);
+        int[] ym2151Register = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
+        int[] fmKeyYM2151 = audio.plugin.chipRegister.chip(Ym2151Chip.class).getKeyOn(chipId);
+        int[] fmYM2151Vol = audio.plugin.chipRegister.chip(Ym2151Chip.class).getVolume(chipId);
 
         for (int ch = 0; ch < 8; ch++) {
             for (int i = 0; i < 4; i++) {
@@ -228,8 +228,8 @@ public class frmYM2151 extends frmBase {
             int oct = ((ym2151Register[0x28 + ch] & 0x70) >> 4);
             //newParam.ym2151[chipId].channels[ch].note = (fmKeyYM2151[ch] > 0) ? (oct * 12 + note + audio.vgmReal.YM2151Hosei + 1 + 9) : -1;
             int hosei = 0;
-            if (audio.driverVirtual != null) { // is Vgm)
-                hosei = (audio.driverVirtual).ym2151Hosei[chipId];
+            if (audio.plugin.driverVirtual != null) { // is Vgm)
+                hosei = audio.plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[chipId];
             }
             newParam.channels[ch].note = ((fmKeyYM2151[ch] & 1) != 0) ? (oct * 12 + note + hosei) : -1;
 
@@ -239,29 +239,27 @@ public class frmYM2151 extends frmBase {
 
             byte carrierOp = (byte) (con & m);
 
-             // OP1 M1
+            // OP1 M1
             v = (((carrierOp & 0x08) != 0) && v > (ym2151Register[0x60 + ch] & 0x7f)) ? (ym2151Register[0x60 + ch] & 0x7f) : v;
-             // OP3 C1
+            // OP3 C1
             v = (((carrierOp & 0x10) != 0) && v > (ym2151Register[0x68 + ch] & 0x7f)) ? (ym2151Register[0x68 + ch] & 0x7f) : v;
-             // OP2 M2
+            // OP2 M2
             v = (((carrierOp & 0x20) != 0) && v > (ym2151Register[0x70 + ch] & 0x7f)) ? (ym2151Register[0x70 + ch] & 0x7f) : v;
-             // OP4 C2
+            // OP4 C2
             v = (((carrierOp & 0x40) != 0) && v > (ym2151Register[0x78 + ch] & 0x7f)) ? (ym2151Register[0x78 + ch] & 0x7f) : v;
 
-            newParam.channels[ch].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * ((ym2151Register[0x20 + ch] & 0x80) != 0 ? 1 : 0) * fmYM2151Vol[ch] / 80.0), 0), 19);
-            newParam.channels[ch].volumeR = Math.min(Math.max((int) ((127 - v) / 127.0 * ((ym2151Register[0x20 + ch] & 0x40) != 0 ? 1 : 0) * fmYM2151Vol[ch] / 80.0), 0), 19);
+            newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((ym2151Register[0x20 + ch] & 0x80) != 0 ? 1 : 0) * fmYM2151Vol[ch] / 80.0), 0, 19);
+            newParam.channels[ch].volumeR = Math.clamp((int) ((127 - v) / 127.0 * ((ym2151Register[0x20 + ch] & 0x40) != 0 ? 1 : 0) * fmYM2151Vol[ch] / 80.0), 0, 19);
 
             newParam.channels[ch].kf = ((ym2151Register[0x30 + ch] & 0xfc) >> 2);
-
         }
         newParam.ne = ((ym2151Register[0x0f] & 0x80) >> 7);
         newParam.nfrq = ((ym2151Register[0x0f] & 0x1f) >> 0);
         newParam.lfrq = ((ym2151Register[0x18] & 0xff) >> 0);
-        newParam.pmd = audio.chipRegister.chip(Ym2151Chip.class).getPmd(chipId);
-        newParam.amd = audio.chipRegister.chip(Ym2151Chip.class).getAmd(chipId);
+        newParam.pmd = audio.plugin.chipRegister.chip(Ym2151Chip.class).getPmd(chipId);
+        newParam.amd = audio.plugin.chipRegister.chip(Ym2151Chip.class).getAmd(chipId);
         newParam.waveform = ((ym2151Register[0x1b] & 0x3) >> 0);
         newParam.lfosync = ((ym2151Register[0x01] & 0x02) >> 1);
-
     }
 
     public void screenDrawParams() {
@@ -297,13 +295,10 @@ public class frmYM2151 extends frmBase {
         DrawBuff.PmdYM2151(frameBuffer, oldParam.pmd, newParam.pmd);
         DrawBuff.WaveFormYM2151(frameBuffer, oldParam.waveform, newParam.waveform);
         DrawBuff.LfoSyncYM2151(frameBuffer, oldParam.lfosync, newParam.lfosync);
-
     }
 
     private void initializeComponent() {
-//            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmYM2151));
         this.pbScreen = new JPanel();
-        //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).BeginInit();
 
         //
         // pbScreen
@@ -318,8 +313,8 @@ public class frmYM2151 extends frmBase {
         //
         // frmYM2151
         //
-//            this.AutoScaleDimensions = new DimensionF(6F, 12F);
-//            this.AutoScaleMode = JAutoScaleMode.Font;
+//        this.AutoScaleDimensions = new DimensionF(6F, 12F);
+//        this.AutoScaleMode = JAutoScaleMode.Font;
         //this.setBackground(Color.ControlDarkDark);
         this.setPreferredSize(new Dimension(320, 216));
         this.getContentPane().add(this.pbScreen);
@@ -331,10 +326,9 @@ public class frmYM2151 extends frmBase {
         this.addWindowListener(this.windowListener);
         this.addComponentListener(this.componentListener);
         //((System.ComponentModel.ISupportInitialize)(this.pbScreen)).EndInit();
-//            this.ResumeLayout(false);
+//        this.ResumeLayout(false);
     }
 
     BufferedImage image;
     public JPanel pbScreen;
-
 }

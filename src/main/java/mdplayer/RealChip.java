@@ -152,7 +152,7 @@ public class RealChip implements Closeable {
 //        }
     }
 
-    public void WaitOPNADPCMData(boolean isGIMIC) {
+    public void waitOpnAdpcmData(boolean isGIMIC) {
 //        if (nScci != null)
 //            NScci.NSoundInterfaceManager().sendData();
 //        if (nc86ctl != null && isGIMIC) {

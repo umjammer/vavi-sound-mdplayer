@@ -2,6 +2,7 @@ package mdplayer.driver.ay;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.function.BiConsumer;
 
 import konamiman.z80.interfaces.Memory;
 import konamiman.z80.interfaces.Z80Registers;
@@ -13,13 +14,13 @@ import mdplayer.chips.ZxBeepChip;
 import static java.lang.System.getLogger;
 
 
-public class Port implements Memory {
+class Port implements Memory {
 
     private static final Logger logger = getLogger(Port.class.getName());
 
     Z80Registers registers;
-    Audio audio;
-    EnmModel model;
+    BiConsumer<Integer, Integer> ayWrite;
+    Runnable zxWrite;
     public AY cpu;
 
     private byte ayReg = 0;
@@ -73,7 +74,7 @@ public class Port implements Memory {
             ayReg = value;
         } else if ((address & 0xc002) == 0x8000) {
             ayDat = value;
-            audio.chipRegister.chip(Ay8910Chip.class).write(0, ayReg & 0xff, ayDat & 0xff, model);
+            ayWrite.accept(ayReg & 0xff, ayDat & 0xff);
             ayRegMap[ayReg & 0xff] = ayDat;
             //logger.log(Level.TRACE, "AY Reg:%02x Dat:%02x".formatted(ayReg, ayDat));
         } else if ((address & 0x0001) == 0) {
@@ -82,7 +83,7 @@ public class Port implements Memory {
             else
                 bn = 0;
             if (bn != bp) {
-                audio.chipRegister.chip(ZxBeepChip.class).write(0, -1, -1, -1, model);
+                zxWrite.run();
                 bp = bn;
             }
         } else {
@@ -114,7 +115,7 @@ public class Port implements Memory {
         }
 
         if (cpcSw == (byte) 0x80) {
-            if (ayReg < 14) audio.chipRegister.chip(Ay8910Chip.class).write(0, ayReg & 0xff, ayDat & 0xff, model);
+            if (ayReg < 14) ayWrite.accept(ayReg & 0xff, ayDat & 0xff);
             cpcSw = 0;
         }
     }

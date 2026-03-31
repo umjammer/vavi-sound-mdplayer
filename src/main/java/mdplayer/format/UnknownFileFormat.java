@@ -2,16 +2,19 @@ package mdplayer.format;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
+import mdplayer.driver.VgmDriver;
 import mdplayer.plugin.Plugin;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
@@ -103,7 +106,7 @@ public class UnknownFileFormat extends BaseFileFormat {
                 musics.add(music);
                 return musics;
             }
-            gd3 = (new Vgm()).getGD3Info(buf, vgmGd3);
+            gd3 = (new VgmDriver()).getGD3Info(buf, vgmGd3);
         }
 
         int TotalCounter = ByteUtil.readLeInt(buf, 0x18);
@@ -161,5 +164,15 @@ public class UnknownFileFormat extends BaseFileFormat {
     @Override
     public List<PlayList.Music> addFileLoop(int index, PlayList.Music mc, Archive archive, Entry entry) {
         return null;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        return false;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
     }
 }

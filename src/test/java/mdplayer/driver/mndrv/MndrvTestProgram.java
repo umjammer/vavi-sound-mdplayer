@@ -1,7 +1,5 @@
 package mdplayer.driver.mndrv;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.SourceDataLine;
@@ -10,7 +8,6 @@ import mdplayer.Audio;
 import mdplayer.Setting;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
-import vavi.util.Debug;
 
 import static vavi.sound.SoundUtil.volume;
 
@@ -43,11 +40,11 @@ public class MndrvTestProgram {
         int samplingRate = setting.getOutputDevice().getSampleRate();
 
         FileFormat format = FileFormat.getFileFormat(filename);
-        var r = format.load(null, filename);
+        var r = format.load((String) null, filename);
         BasePlugin plugin = (BasePlugin) format.getPlugin();
-        plugin.setVGMBuffer(format, r.getItem1(), filename, null, 0, 0, r.getItem2());
+        plugin.setBuffer(format, r.getItem1(), filename, null, 0, 0, r.getItem2());
         
-        plugin.play(filename, format);
+        plugin.play();
 
         audioOutput = AudioSystem.getSourceDataLine(new AudioFormat(samplingRate, 16, 2, true, false));
         audioOutput.open();

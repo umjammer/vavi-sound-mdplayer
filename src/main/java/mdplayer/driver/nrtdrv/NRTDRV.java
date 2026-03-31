@@ -2,32 +2,19 @@ package mdplayer.driver.nrtdrv;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.function.BiConsumer;
+import java.util.function.IntConsumer;
 
-import dotnet4j.util.compat.Tuple3;
-import mdplayer.Chip;
-import mdplayer.Common;
-import mdplayer.Common.EnmModel;
-import mdplayer.chips.Ay8910Chip;
-import mdplayer.chips.Ym2151Chip;
-import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.plugin.BasePlugin;
+import dotnet4j.util.compat.TriConsumer;
 
 import static java.lang.System.getLogger;
 
 
-public class NRTDRV extends BaseDriver {
+public class NRTDRV {
 
     private static final Logger logger = getLogger(NRTDRV.class.getName());
 
-    public NRTDRV() {
-        ctcStep = 4000000.0f / setting.getOutputDevice().getSampleRate();
-        ctc1Step = 4000000.0f / setting.getOutputDevice().getSampleRate();
-    }
-
-    private byte[] ram;
+    byte[] ram;
     public Work work = new Work();
 
     private static final byte[] KTABLE = {
@@ -113,115 +100,12 @@ public class NRTDRV extends BaseDriver {
             (byte) 214, 0                         // +2
     };
 
-    @Override
-    public boolean init(byte[] nrdFileData, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.vgmBuf = nrdFileData;
-        this.plugin = plugin;
-        this.model = model;
-        this.useChip = useChip;
-        this.latency = latency;
-        this.waitTime = waitTime;
+    boolean isRealModel;
+    IntConsumer loop;
 
-        gd3 = getGD3Info(nrdFileData, 42);
-        counter = 0;
-        totalCounter = 0;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-
-        try {
-            ram = new byte[65536];
-            Arrays.fill(ram, (byte) 0);
-
-            System.arraycopy(vgmBuf, 0, ram, 0x4000, Math.min(vgmBuf.length, 0xfeff - 0x4000));
-        } catch (Exception ex) {
-            throw new IllegalStateException("Driver initialization failed.", ex);
-        }
-
-        for (int chipId = 0; chipId < 2; chipId++) {
-            ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
-            if (model == EnmModel.RealModel) {
-                ym2151Hosei[chipId] = 0;
-                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getClock(chipId);
-                if (clock != -1) {
-                    ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
-                }
-            }
-        }
-
-        // Initializing the Driver
-        call(0);
-
-        if (model == EnmModel.RealModel) {
-            plugin.audio.chipRegister.chip(Ym2151Chip.class).sendData((byte) 0, model);
-            plugin.audio.chipRegister.chip(Ym2151Chip.class).setSyncWait((byte) 0, 1);
-            plugin.audio.chipRegister.chip(Ym2151Chip.class).sendData((byte) 1, model);
-            plugin.audio.chipRegister.chip(Ym2151Chip.class).setSyncWait((byte) 1, 1);
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("This driver does not require this method");
-    }
-
-    @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        Vgm.Gd3 gd3 = new Vgm.Gd3();
-        gd3.trackName = Common.getNRDString(buf, vgmGd3);
-        gd3.trackNameJ = Common.getNRDString(buf, vgmGd3);
-        gd3.composer = Common.getNRDString(buf, vgmGd3);
-        gd3.composerJ = gd3.composer;
-        gd3.vgmBy = Common.getNRDString(buf, vgmGd3);
-        gd3.notes = Common.getNRDString(buf, vgmGd3);
-
-        if ((buf[2] & 0x08) != 0) {
-            gd3.lyrics = new ArrayList<>();
-            int adr = vgmGd3[0];
-            while (buf[adr] != (byte) 0xff || buf[adr + 1] != (byte) 0xff) {
-                int cnt = (buf[adr] & 0xff) + (buf[adr + 1] & 0xff) * 0x100;
-                int[] sAdr = new int[] {(buf[adr + 2] & 0xff) + (buf[adr + 3] & 0xff) * 0x100};
-                String msg = Common.getNRDString(buf, sAdr);
-                gd3.lyrics.add(new Tuple3<>(cnt, sAdr[0], msg));
-                adr += 4;
-            }
-        }
-
-        if ((((buf[2] & (byte) 0x80) != 0) && buf[41] != 2) || (buf[2] & 0x80) == 0) {
-            gd3.notes = "!!Warning!! This data version instanceof older/newer.";
-        }
-
-        int r = checkUseChip(buf);
-
-        switch (r) {
-        case 0:
-            gd3.usedChips = "";
-            break;
-        case 1:
-        case 2:
-            gd3.usedChips = "YM2151";
-            break;
-        case 3:
-            gd3.usedChips = "YM2151x2";
-            break;
-        case 4:
-            gd3.usedChips = "AY8910";
-            break;
-        case 5:
-        case 6:
-            gd3.usedChips = "YM2151 , AY8910";
-            break;
-        case 7:
-            gd3.usedChips = "YM2151x2 , AY8910";
-            break;
-        }
-
-        return gd3;
-    }
+    TriConsumer<Integer, Integer, Integer> ym2151WriteV;
+    TriConsumer<Integer, Integer, Integer> ym2151WriteR;
+    BiConsumer<Integer, Integer> ay8910WriteV;
 
     public int checkUseChip(byte[] buf) {
         int trkPtr = 3;
@@ -428,7 +312,7 @@ public class NRTDRV extends BaseDriver {
             flg = true;
         }
 
-        vgmCurLoop = loop;
+        this.loop.accept(loop);
         return flg;
     }
 
@@ -441,32 +325,11 @@ public class NRTDRV extends BaseDriver {
     private float ctc3DownCounter = 0.0f;
     private float ctc3DownCounterMAX = 0.0f;
     //private boolean ctc3Paluse = false;
-    private final float ctcStep; // sampleRate;
-    private final float ctc1Step; // sampleRate;
+    float ctcStep; // sampleRate;
+    float ctc1Step; // sampleRate;
 
-    @Override
-    public void processOneFrame() {
+    void oneFrameMain() {
         try {
-            vgmSpeedCounter += vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    oneFrameMain();
-                } else {
-                    vgmFrameCounter++;
-                }
-            }
-            stopped = !isPlaying();
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    private void oneFrameMain() {
-        try {
-            counter++;
-            vgmFrameCounter++;
-
             // KUMA: (CTC0 & 0x40)==0 is always true
             //ctc0DownCounterMAX = (work.ctc0TimeConstant == 0 ? 0x100 : work.ctc0TimeConstant & 0xff) * ((work.ctc0 & 0x40) == 0 ? ((work.ctc0 & 0x20) != 0 ? 256.0f : 16.0f) : 1);
             ctc0DownCounterMAX = (work.ctc0TimeConstant == 0 ? 0x100 : work.ctc0TimeConstant & 0xff) * ((work.ctc0 & 0x20) != 0 ? 256.0f : 16.0f);
@@ -572,7 +435,7 @@ public class NRTDRV extends BaseDriver {
         // EI at the end of interrupt routine is invalid
 
         work.imain();
-        if (model == EnmModel.RealModel) {
+        if (isRealModel) {
             //plugin.audio.chipRegister.sendDataYM2151(0, model);
             //plugin.audio.chipRegister.setYM2151SyncWait(0, 1);
             //plugin.audio.chipRegister.sendDataYM2151(1, model);
@@ -745,42 +608,42 @@ public class NRTDRV extends BaseDriver {
     }
 
     private void wopm(byte d, byte a) {
-        if (model == EnmModel.VirtualModel) {
+        if (!isRealModel) {
             if (work.opmIo == 0x701) {
                 // Write to a virtual register
                 work.opm1VReg[d & 0xff] = a;
                 // Write to real register
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d & 0xff, a & 0xff, EnmModel.VirtualModel, 0, 0);
-                // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
+                ym2151WriteV.accept(0, d & 0xff, a & 0xff);
+                //logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
                 // Write to a virtual register
                 work.opm2VReg[d & 0xff] = a;
                 // Write to real register
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d & 0xff, a & 0xff, EnmModel.VirtualModel, 0, 0);
-                // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
+                ym2151WriteV.accept(1, d & 0xff, a & 0xff);
+                //logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         } else {
             if (work.opmIo == 0x701) {
                 // Write to a virtual register
                 work.opm1VReg[d & 0xff] = a;
                 // Write to real register
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d & 0xff, a & 0xff, EnmModel.RealModel, ym2151Hosei[0], 0);
-                // logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
+                ym2151WriteR.accept(0, d & 0xff, a & 0xff);
+                //logger.log(Level.TRACE, "OPM1 Reg%02x Dat%02x".formatted(d, a));
             } else {
                 // Write to a virtual register
                 work.opm2VReg[d & 0xff] = a;
                 // Write to real register
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d & 0xff, a & 0xff, EnmModel.RealModel, ym2151Hosei[1], 0);
-                // logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
+                ym2151WriteR.accept(1, d & 0xff, a & 0xff);
+                //logger.log(Level.TRACE, "OPM2 Reg%02x Dat%02x".formatted(d, a));
             }
         }
     }
 
     private void wpsg(byte d, byte a) {
-        if (model == EnmModel.VirtualModel) {
+        if (!isRealModel) {
             //out(0x1c00, d); // Psg register
             //out(0x1b00, a); // Psg data
-            plugin.audio.chipRegister.chip(Ay8910Chip.class).write(0, d & 0xff, a & 0xff, EnmModel.VirtualModel);
+            ay8910WriteV.accept(d & 0xff, a & 0xff);
 //        } else {
         }
     }
@@ -1529,14 +1392,14 @@ public class NRTDRV extends BaseDriver {
                 if (work.opmFlg != 0) {
                     // Weight
                 }
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, d & 0xff, a & 0xff, EnmModel.VirtualModel, 0, 0);
+                ym2151WriteV.accept(0, d & 0xff, a & 0xff);
             } else {
                 // OPM2
                 work.opm2VReg[d] = a;
                 if (work.opmFlg != 0) {
                     // Weight
                 }
-                plugin.audio.chipRegister.chip(Ym2151Chip.class).write(1, 0, d & 0xff, a & 0xff, EnmModel.VirtualModel, 0, 0);
+                ym2151WriteV.accept(1, d & 0xff, a & 0xff);
             }
         }
 
@@ -3178,15 +3041,5 @@ PMAINL:
             Ch wch = chs[e];
             wch.pmain(e);
         }
-    }
-
-    @Override
-    public long getDriverCounter() {
-        return work.totalCount;
-    }
-
-    @Override
-    public long whichCounter(long real, long virtual) {
-        return Math.max(virtual, real);
     }
 }

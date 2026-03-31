@@ -1,5 +1,8 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -9,8 +12,8 @@ import mdplayer.driver.Vgm;
 import mdplayer.driver.zgm.Zgm;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.ZGMPlugin;
-import mdplayer.plugin.ZMSPlugin;
 import mdplayer.properties.Resources;
+import vavi.sound.SoundUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -66,5 +69,16 @@ public class ZGMFileFormat extends BaseFileFormat {
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(ZGMPlugin.class);
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

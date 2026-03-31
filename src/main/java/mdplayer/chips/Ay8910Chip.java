@@ -12,6 +12,7 @@ import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RC86ctlSoundChip;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Ay8910Inst;
 import mdsound.instrument.MameAy8910Inst;
@@ -44,7 +45,7 @@ public class Ay8910Chip implements Chip {
 
     public int clock;
 
-    private Audio context;
+    private BasePlugin context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -58,7 +59,7 @@ public class Ay8910Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {

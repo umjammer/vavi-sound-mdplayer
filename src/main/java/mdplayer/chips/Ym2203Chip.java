@@ -6,12 +6,12 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RC86ctlSoundChip;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Ym2203Inst;
 import mdsound.instrument.YmFmYm2203Inst;
@@ -41,7 +41,7 @@ public class Ym2203Chip implements Chip {
 
     public int clock;
 
-    private Audio context;
+    private BasePlugin context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -55,7 +55,7 @@ public class Ym2203Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -334,7 +334,7 @@ public class Ym2203Chip implements Chip {
 
     public int[] getCh3SlotVolume(int chipId) {
 //        if (ctYM2612.UseScci) {
-            return fmCh3SlotVolume[chipId];
+        return fmCh3SlotVolume[chipId];
 //        }
 //        return context.mds.inst(inst[chipId]).readFMCh3SlotVolume();
     }

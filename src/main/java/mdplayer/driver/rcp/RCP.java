@@ -9,21 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.IntSupplier;
 
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
 import mdplayer.Common;
-import mdplayer.Common.EnmModel;
-import mdplayer.MidiOutInfo;
-import mdplayer.chips.MidiPlugin;
-import mdplayer.chips.Ym2612Chip;
-import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.rcp.MIDIEvent.MIDIEventType;
 import mdplayer.driver.rcp.MIDIEvent.MIDISpEventType;
-import mdplayer.driver.rcp.RCS.CtlSysex;
-import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 import vavi.util.StringUtil;
 
@@ -31,7 +24,7 @@ import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
 
 
-public class RCP extends BaseDriver {
+public class RCP {
 
     private static final Logger logger = getLogger(RCP.class.getName());
 
@@ -43,9 +36,9 @@ public class RCP extends BaseDriver {
     private double musicStep;
     private double musicDownCounter = 0.0;
 
-    private List<CtlSysex>[] beforeSend = null;
-    private int[] sendControlDelta = null;
-    private int[] sendControlIndex = null;
+    List<CtlSysex>[] beforeSend = null;
+    int[] sendControlDelta = null;
+    int[] sendControlIndex = null;
 
     public static class MIDIRhythm {
         private String name = "";
@@ -150,107 +143,6 @@ public class RCP extends BaseDriver {
         }
     }
 
-    @Override
-    public Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        if (buf == null) return null;
-        Boolean ret = checkHeadString(buf);
-        if (ret == null) return null;
-        boolean isG36 = ret;
-
-        Gd3 gd3 = new Gd3();
-        int ptr = 32;
-        StringBuilder str;
-
-        List<Byte> title = new ArrayList<>();
-        for (int i = 0; i < 64; i++) {
-            if (buf[ptr + i] == 0) break;
-            title.add(buf[ptr + i]);
-        }
-        str = new StringBuilder(new String(ByteUtil.toByteArray(title), charset).trim());
-        ptr += 64;
-        gd3.trackName = str.toString();
-        gd3.trackNameJ = str.toString();
-
-        if (isG36) {
-            ptr += 64;
-            str = new StringBuilder("%s\n".formatted(new String(buf, ptr, 360, charset).replace("\0", "")));
-        } else {
-            str = new StringBuilder();
-            for (int i = 0; i < 12; i++) {
-                str.append("%s\n".formatted(new String(buf, ptr + i * 28, 28, charset).replace("\0", "")));
-            }
-        }
-        gd3.notes = str.toString();
-
-        return gd3;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.vgmBuf = vgmBuf;
-        this.plugin = plugin;
-        this.model = model;
-        this.useChip = useChip;
-        this.latency = latency;
-        this.waitTime = waitTime;
-
-        counter = 0;
-        totalCounter = 0;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        stopped = false;
-        // Set 0 here to wait after sending control.
-        //vgmFrameCounter = -latency - waitTime;
-        vgmFrameCounter = 0;
-        vgmSpeed = 1;
-        vgmSpeedCounter = 0;
-
-        gd3 = getGD3Info(vgmBuf);
-        //if (Gd3 == null) return false;
-
-        if (!getInformationHeader()) {
-logger.log(Level.INFO, "getInformationHeader");
-            return false;
-        }
-
-        // Create a command to send in advance for each port
-        if (!makeBeforeSendCommand()) {
-logger.log(Level.INFO, "makeBeforeSendCommand");
-            return false;
-        }
-
-        if (model == EnmModel.RealModel) {
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 0, 1);
-            plugin.audio.chipRegister.chip(Ym2612Chip.class).setSyncWait((byte) 1, 1);
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("This driver does not require this method");
-    }
-
-    @Override
-    public void processOneFrame() {
-        try {
-            vstDelta++;
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    oneFrameMain();
-                } else {
-                    vgmFrameCounter++;
-                }
-            }
-            //stopped = !isPlaying();
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
     private boolean isG36 = false;
     private int ptr = 0;
     private int trkLen = 0;
@@ -282,6 +174,13 @@ logger.log(Level.INFO, "makeBeforeSendCommand");
     private final byte[] msgBuf3 = new byte[3];
     private final byte[] msgBuf = new byte[256];
 
+    byte[] data;
+    BiConsumer<Integer, byte[]> midiSend;
+    Consumer<String> lyric;
+    Runnable counter;
+    IntSupplier midiCount;
+    Runnable stop;
+
     interface EventHandler extends BiConsumer<MIDITrack, MIDIEvent> {
     }
 
@@ -292,7 +191,7 @@ logger.log(Level.INFO, "makeBeforeSendCommand");
     private boolean relativeTempoChangeSW = false;
 
     /** @return tri-state (nullable boolean) */
-    private static Boolean checkHeadString(byte[] buf) {
+    static Boolean checkHeadString(byte[] buf) {
         if (buf == null || buf.length < 32) {
 logger.log(Level.INFO, "buf is null or buf.length < 32");
             return null;
@@ -313,8 +212,8 @@ logger.log(Level.INFO, "rcp v3");
         return false;
     }
 
-    private boolean getInformationHeader() {
-        Boolean ret = checkHeadString(vgmBuf);
+    boolean getInformationHeader() {
+        Boolean ret = checkHeadString(data);
         if (ret == null) {
 logger.log(Level.INFO, "checkHeadString");
             return false;
@@ -430,28 +329,28 @@ logger.log(Level.INFO, "checkHeadString");
         // Memo
         ptr += 360;
         // Number of tracks
-        trkLen = vgmBuf[ptr++] & 0xff;
+        trkLen = data[ptr++] & 0xff;
         if (trkLen != 18 && trkLen != 36) trkLen = 18;
         // dummy Skip
         ptr++;
         // Timebase
-        timeBase = (vgmBuf[ptr] & 0xff) + (vgmBuf[ptr + 1] & 0xff) * 0x100;
+        timeBase = (data[ptr] & 0xff) + (data[ptr + 1] & 0xff) * 0x100;
         timeBase = timeBase == 0 ? 1 : timeBase;
         ptr += 2;
         // Tempo
-        nowTempo = vgmBuf[ptr++] & 0xff;
+        nowTempo = data[ptr++] & 0xff;
         if (nowTempo < 8 || nowTempo > 250) nowTempo = 120;
         tempo = nowTempo;
         // dummy Skip
         ptr++;
         // Beat (numerator)
-        beatDen = vgmBuf[ptr++] & 0xff;
+        beatDen = data[ptr++] & 0xff;
         // Beat (Denominator)
-        beatMol = vgmBuf[ptr++] & 0xff;
+        beatMol = data[ptr++] & 0xff;
         // key
-        key = vgmBuf[ptr++] & 0xff;
+        key = data[ptr++] & 0xff;
         // Play BIAS
-        playBIAS = vgmBuf[ptr++] & 0xff;
+        playBIAS = data[ptr++] & 0xff;
         // dummy Skip
         ptr += 6;
         // dummy Skip
@@ -459,17 +358,17 @@ logger.log(Level.INFO, "checkHeadString");
         // dummy Skip
         ptr += 112;
         // .GSD
-        controlFileGSD = new String(vgmBuf, ptr, 12, charset).replace("\0", "");
+        controlFileGSD = new String(data, ptr, 12, charset).replace("\0", "");
         ptr += 12;
         // dummy Skip
         ptr += 4;
         // .GSD
-        controlFileGSD2 = new String(vgmBuf, ptr, 12, charset).replace("\0", "");
+        controlFileGSD2 = new String(data, ptr, 12, charset).replace("\0", "");
         ptr += 12;
         // dummy Skip
         ptr += 4;
         // .CM6
-        controlFileCM6 = new String(vgmBuf, ptr, 12, charset).replace("\0", "");
+        controlFileCM6 = new String(data, ptr, 12, charset).replace("\0", "");
         ptr += 12;
         // dummy Skip
         ptr += 4;
@@ -484,30 +383,30 @@ logger.log(Level.INFO, "checkHeadString");
         // dummy Skip
         ptr += 16;
         // Timebase Lower
-        timeBase = vgmBuf[ptr++] & 0xff;
+        timeBase = data[ptr++] & 0xff;
         // Tempo
-        nowTempo = vgmBuf[ptr++] & 0xff;
+        nowTempo = data[ptr++] & 0xff;
         tempo = nowTempo;
         // Beat (numerator)
-        beatDen = vgmBuf[ptr++] & 0xff;
+        beatDen = data[ptr++] & 0xff;
         // Beat (Denominator)
-        beatMol = vgmBuf[ptr++] & 0xff;
+        beatMol = data[ptr++] & 0xff;
         // key
-        key = vgmBuf[ptr++] & 0xff;
+        key = data[ptr++] & 0xff;
         // Play BIAS
-        playBIAS = vgmBuf[ptr++] & 0xff;
+        playBIAS = data[ptr++] & 0xff;
         // .CM6
-        controlFileCM6 = new String(vgmBuf, ptr, 12, charset).replace("\0", "");
+        controlFileCM6 = new String(data, ptr, 12, charset).replace("\0", "");
         ptr += 12;
         // dummy Skip
         ptr += 4;
         // .GSD
-        controlFileGSD = new String(vgmBuf, ptr, 12, charset).replace("\0", "");
+        controlFileGSD = new String(data, ptr, 12, charset).replace("\0", "");
         ptr += 12;
         // dummy Skip
         ptr += 4;
         // Number of tracks
-        trkLen = vgmBuf[ptr++] & 0xff;
+        trkLen = data[ptr++] & 0xff;
         switch (trkLen) {
         case 0:
             trkLen = 36;
@@ -521,7 +420,7 @@ logger.log(Level.INFO, "checkHeadString");
             break;
         }
         // Timebase Upper
-        timeBase += (vgmBuf[ptr++] & 0xff) * 0x100;
+        timeBase += (data[ptr++] & 0xff) * 0x100;
         timeBase = timeBase == 0 ? 1 : timeBase;
         // dummy Skip
         // ignore
@@ -537,10 +436,10 @@ logger.log(Level.INFO, "checkHeadString");
 
         for (int i = 0; i < n; i++) {
             MIDIRhythm r = new MIDIRhythm();
-            r.setName(new String(vgmBuf, ptr, 14, charset).replace("\0", ""));
+            r.setName(new String(data, ptr, 14, charset).replace("\0", ""));
             ptr += 14;
-            r.key = vgmBuf[ptr++] & 0xff;
-            r.gt = vgmBuf[ptr++] & 0xff;
+            r.key = data[ptr++] & 0xff;
+            r.gt = data[ptr++] & 0xff;
             rythms.add(r);
         }
     }
@@ -549,13 +448,13 @@ logger.log(Level.INFO, "checkHeadString");
         userExclusives = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             MIDIUserExclusive ux = new MIDIUserExclusive();
-            ux.setName(new String(vgmBuf, ptr, 24, charset).replace("\0", ""));
+            ux.setName(new String(data, ptr, 24, charset).replace("\0", ""));
             ux.memo = ux.name;
             ptr += 24;
             ux.exclusive = new byte[25];
             ux.exclusive[0] = (byte) 0xf0;
             for (int j = 1; j < 25; j++) {
-                ux.exclusive[j] = vgmBuf[ptr++];
+                ux.exclusive[j] = data[ptr++];
             }
             userExclusives.add(ux);
         }
@@ -565,10 +464,10 @@ logger.log(Level.INFO, "checkHeadString");
         initTrkPrt(); // Preparing tracks and bars
 
         for (int i = 0; i < trkLen; i++) {
-            if (ptr >= vgmBuf.length) continue;
+            if (ptr >= data.length) continue;
 
             int vgmBufptr = ptr;
-            int trkSize = (vgmBuf[ptr++] & 0xff) * 0x100 + (vgmBuf[ptr++] & 0xff);
+            int trkSize = (data[ptr++] & 0xff) * 0x100 + (data[ptr++] & 0xff);
 
             // size dummy(?) skip
             if (isG36) ptr += 2;
@@ -583,10 +482,10 @@ logger.log(Level.INFO, "checkHeadString");
                 if (trkNumber < 0)
                     trkNumber = i;
             }
-            tracks[trkNumber].setRythmMode((vgmBuf[ptr++] & 0xff) == 0x80);
-            int ch = vgmBuf[ptr++] & 0xff;
+            tracks[trkNumber].setRythmMode((data[ptr++] & 0xff) == 0x80);
+            int ch = data[ptr++] & 0xff;
             if (ch != 255) {
-                int mc = plugin.audio.chipRegister.plugin(MidiPlugin.class).getCount();
+                int mc = midiCount.getAsInt();
                 if (mc == 0) mc = 1;
                 int n = (stDevNum + (ch / 16)) % mc;
                 tracks[trkNumber].setOutDeviceName("dummy");
@@ -608,26 +507,26 @@ logger.log(Level.INFO, "checkHeadString");
             tracks[trkNumber].setInUserDeviceName("Null Device");
             tracks[trkNumber].setInChannel(null);
 
-            tracks[trkNumber].setKey(vgmBuf[ptr++] & 0xff);
+            tracks[trkNumber].setKey(data[ptr++] & 0xff);
 
             if ((tracks[trkNumber].getKey() & 0x80) == 0x80) {
                 tracks[trkNumber].setKey(0);
             } else {
                 tracks[trkNumber].setKey((tracks[trkNumber].getKey() > 63) ? tracks[trkNumber].getKey() - 128 : tracks[trkNumber].getKey());
             }
-            tracks[trkNumber].setSt(vgmBuf[ptr++] & 0xff);
+            tracks[trkNumber].setSt(data[ptr++] & 0xff);
             if (rcpVer > 0) {
                 tracks[trkNumber].setSt((tracks[trkNumber].getSt() > 127) ? tracks[trkNumber].getSt() - 256 : tracks[trkNumber].getSt());
             }
-            tracks[trkNumber].setMute(vgmBuf[ptr++] == 1);
-            tracks[trkNumber].setName((new String(vgmBuf, ptr, 36, charset)).replace("\0", ""));
+            tracks[trkNumber].setMute(data[ptr++] == 1);
+            tracks[trkNumber].setName((new String(data, ptr, 36, charset)).replace("\0", ""));
             ptr += 36;
 
             // trkTick = 0;
             taiDic = new HashMap<>();
             // meaTick = 0;
             meaInd = 0;
-            musData(tracks[trkNumber], vgmBuf);
+            musData(tracks[trkNumber], data);
             extractSame(tracks[trkNumber]);
         }
     }
@@ -1056,12 +955,8 @@ logger.log(Level.INFO, "checkHeadString");
         //MIDIClock.Start();
     }
 
-    private void oneFrameMain() {
+    void oneFrameMain() {
         try {
-
-            counter++;
-            vgmFrameCounter++;
-
             musicStep = Common.VGMProcSampleRate * oneSyncTime;
 
             if (musicDownCounter <= 0.0) {
@@ -1111,7 +1006,7 @@ logger.log(Level.INFO, "checkHeadString");
 //        }
 
         if (endMark) {
-            stopped = true;
+            stop.run();
         }
     }
 
@@ -1192,7 +1087,7 @@ logger.log(Level.INFO, "checkHeadString");
             dat.add(pMIDIMessage[i]);
 //            plugin.audio.chipRegister.sendMIDIout(model, n, vv, vstDelta);
         }
-        plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, n, ByteUtil.toByteArray(dat), vstDelta);
+        midiSend.accept(n, ByteUtil.toByteArray(dat));
     }
 
     /**
@@ -1622,7 +1517,7 @@ logger.log(Level.INFO, "checkHeadString");
 
     void sefCommentStart(MIDITrack trk, MIDIEvent eve) {
         trk.setComment(new String(eve.getMIDIMessages()[0], charset).replace("\0", ""));
-        plugin.audio.chipRegister.plugin(MidiPlugin.class).params[0].Lyric = trk.getComment();
+        lyric.accept(trk.getComment());
     }
 
     void sefLoopEnd(MIDITrack trk, MIDIEvent eve) {
@@ -2222,7 +2117,7 @@ logger.log(Level.INFO, "checkHeadString");
 
                 CtlSysex csx = beforeSend[i].get(sendControlIndex[i]);
                 sendControlDelta[i] = csx.delta;
-                plugin.audio.chipRegister.plugin(MidiPlugin.class).send(model, 0, csx.data, vstDelta);
+                midiSend.accept(0, csx.data);
 
                 sendControlIndex[i]++;
             } else {
@@ -2233,53 +2128,11 @@ logger.log(Level.INFO, "checkHeadString");
         if (endFlg == beforeSend.length) {
             beforeSend = null;
             oneSyncTime = 60.0 / nowTempo / timeBase;
-            vgmFrameCounter = -latency - waitTime;
+            counter.run();
         }
     }
 
-    private boolean makeBeforeSendCommand() {
-        try {
-            MidiOutInfo[] infos = plugin.audio.chipRegister.plugin(MidiPlugin.class).get();
-            if (infos == null || infos.length < 1) return true;
-
-            beforeSend = new List[infos.length];
-            sendControlIndex = new int[infos.length];
-            sendControlDelta = new int[infos.length];
-            for (int i = 0; i < beforeSend.length; i++) {
-                beforeSend[i] = new ArrayList<>();
-
-                // Generate Reset
-                switch (infos[i].beforeSendType) {
-                case 0: // None
-                    break;
-                case 1: // GM Reset
-                    getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getGMReset());
-                    break;
-                case 2: // XG Reset
-                    getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getXGReset());
-                    break;
-                case 3: // GS Reset
-                    getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getGSReset());
-                    break;
-                case 4: // Custom
-                    getCtlSysexFromText(beforeSend[i], setting.getMidiOut().getCustom());
-                    break;
-                }
-
-                // If the file path is set, the process to read the control file is performed.
-                if (extendFile != null) {
-                    getControlFile(beforeSend[i], infos[i].type);
-                }
-            }
-
-            return true;
-        } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            return false;
-        }
-    }
-
-    private void getCtlSysexFromText(List<CtlSysex> buf, String text) {
+    void getCtlSysexFromText(List<CtlSysex> buf, String text) {
         if (text == null || text.isEmpty()) return;
 
         String[] cmds = text.split(";");
@@ -2296,7 +2149,7 @@ logger.log(Level.INFO, "checkHeadString");
         }
     }
 
-    private void getControlFile(List<CtlSysex> buf, int instType) {
+    void getControlFile(List<CtlSysex> buf, int instType) {
 
         // GM / XG / GS / LA / GS(SC - 55_1) / GS(SC - 55_2)
         switch (instType) {

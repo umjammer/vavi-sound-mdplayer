@@ -13,16 +13,10 @@ import java.lang.System.Logger.Level;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import dotnet4j.util.compat.Tuple;
-import mdplayer.Chip;
-import mdplayer.Common;
-import mdplayer.Common.EnmModel;
-import mdplayer.chips.Ym2151Chip;
-import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
-import mdplayer.plugin.BasePlugin;
 import mdsound.instrument.Pcm8PPInst;
 import mdsound.instrument.X68kYm2151Inst;
 import mdsound.x68sound.X68Sound;
@@ -46,7 +40,7 @@ import static mdplayer.Common.charset;
 // Command Line D:\FTOOL\dis.x -C2 --overwrite -7 -m 68040 -M -s8192 -e -g mxdrv17.x mxdrv17.dis
 //         DIS version 2.75
 // 
-public class MXDRV extends BaseDriver {
+public class MXDRV {
 
     private static final Logger logger = getLogger(MXDRV.class.getName());
 
@@ -239,61 +233,11 @@ public class MXDRV extends BaseDriver {
         MXDRV_Call_2(0x0c, a);
     }
 
-    @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        Gd3 gd3 = new Gd3();
+    BiConsumer<Integer, Integer> ym2151Write;
+    BiConsumer<Runnable, Boolean> clock;
+    Consumer<Long> counter;
 
-        List<Byte> lst = new ArrayList<>();
-        int i = 0;
-        while (i < buf.length && (buf[i] != 0xd && buf[i] != 0xa)) {
-            lst.add(buf[i]);
-            i++;
-        }
-        String n = new String(ByteUtil.toByteArray(lst), charset);
-        gd3.trackName = n;
-        gd3.trackNameJ = n;
-        byte[][] mdx = new byte[1][];
-        int[] mdxSize = new int[1];
-        String[] pdxFileName = new String[1];
-        makeMdxBuf(buf, mdx, mdxSize, pdxFileName);
-
-        return gd3;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.vgmBuf = vgmBuf;
-        this.plugin = plugin;
-        this.model = model;
-        this.useChip = useChip;
-        this.latency = latency;
-        this.waitTime = waitTime;
-
-        gd3 = getGD3Info(vgmBuf);
-        counter = 0;
-        totalCounter = 0;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        stopped = false;
-        vgmFrameCounter = -latency - waitTime;
-        vgmSpeed = 1;
-
-        for (int chipId = 0; chipId < 2; chipId++) {
-            ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, 3579545);
-            if (model == EnmModel.RealModel) {
-                ym2151Hosei[chipId] = 0;
-                int clock = plugin.audio.chipRegister.chip(Ym2151Chip.class).getClock(chipId);
-                if (clock != -1) {
-                    ym2151Hosei[chipId] = Common.getYM2151Hosei(4000000, clock);
-                }
-            }
-        }
-
-        return true;
-    }
-
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, X68kYm2151Inst mdxPCM, Pcm8PPInst pcm8pp) {
-        init(vgmBuf, plugin, model, useChip, latency, waitTime);
+    void init(Pcm8PPInst pcm8pp, X68kYm2151Inst mdxPCM, byte[] vgmBuf, boolean isVirtualModel, int sampleRate) {
         this.pcm8pp = pcm8pp;
         this.mdxPCM = mdxPCM;
 
@@ -307,17 +251,17 @@ public class MXDRV extends BaseDriver {
         makeMdxBuf(vgmBuf, mdx, mdxSize, pdxFileName);
         makePdxBuf(pdxFileName[0], pdx, pdxSize);
         if ((pdxFileName[0] != null && !pdxFileName[0].isEmpty()) && pdx[0] == null) {
-logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], pdx[0]));
-            errMsg = "Failed to load PCM file [%s].".formatted(pdxFileName[0]);
-            return false;
+            logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], pdx[0]));
+            throw new IllegalStateException("Failed to load PCM file [%s].".formatted(pdxFileName[0]));
         }
 
         int ret;
-        if (model == EnmModel.VirtualModel) {
-            ret = MXDRV_Start(setting.getOutputDevice().getSampleRate(), 0, 0, 0, mdxSize[0], pdxSize[0], 0, -1, 1);
+        if (isVirtualModel) {
+            ret = MXDRV_Start(sampleRate, 0, 0, 0, mdxSize[0], pdxSize[0], 0, -1, 1);
         } else {
-            ret = MXDRV_Start(setting.getOutputDevice().getSampleRate(), 0, 0, 0, mdxSize[0], pdxSize[0], 0, -1, -1);
+            ret = MXDRV_Start(sampleRate, 0, 0, 0, mdxSize[0], pdxSize[0], 0, -1, -1);
         }
+logger.log(Level.TRACE, "MXDRV_Start: " + ret);
         int memind = mm.mm.length;
         mdxPtr = memind;
         memind += mdxSize[0];
@@ -332,60 +276,16 @@ logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], p
 
         int playtime = MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr, 1, Depend.TRUE);
 //logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
-        totalCounter = (long) playtime * setting.getOutputDevice().getSampleRate() / 1000;
+        counter.accept((long) playtime * sampleRate / 1000);
         terminatePlay = false;
         MXDRV_Play(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr);
-
-//logger.log(Level.TRACE, "********************");
-
-        return true;
     }
 
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("This driver does not require this method");
-    }
-
-    short[] dummyBuf = new short[2];
-
-    @Override
-    public void processOneFrame() {
-        render(dummyBuf, 0, 2);
-    }
-
-    public void oneFrameProc2(Runnable timer, boolean firstFlg) {
-
-        try {
-            vgmSpeedCounter += vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    timer.run();
-                    if (firstFlg) {
-                        counter++;
-                        vgmFrameCounter++;
-                    }
-                } else {
-                    if (firstFlg)
-                        vgmFrameCounter++;
-                }
-            }
-
-            MXDRV_MeasurePlayTime_OPMINT();
-            vgmCurLoop = loopCount;
-            if (terminatePlay) {
-                stopped = true;
-            }
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    public int render_(short[] buffer, int offset, int sampleCount) {
+    public int render(short[] buffer, int offset, int sampleCount) {
         if (mdxPCM == null) {
             return 0;
         }
-        int ret = mdxPCM.chips[0].getPcm(buffer, offset, sampleCount, this::oneFrameProc2);
+        int ret = mdxPCM.chips[0].getPcm(buffer, offset, sampleCount, clock);
 
         //logger.log(Level.TRACE, "0:%08x".formatted(mm.readint(MXWORK_CHBUF_FM[8] + MXWORK_CH.S0012)));
         //logger.log(Level.TRACE, "1:%04x".formatted(mm.readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0012) >> 6));
@@ -409,7 +309,7 @@ logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], p
      * @param mdxSize OUT
      * @param pdxFileName OUT
      */
-    private void makeMdxBuf(byte[] buf, byte[][] mdx, int[] mdxSize, String[] pdxFileName) {
+    void makeMdxBuf(byte[] buf, byte[][] mdx, int[] mdxSize, String[] pdxFileName) {
         // Skip title
         int p = 8;
         int c;
@@ -473,7 +373,7 @@ logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], p
      */
     private void makePdxBuf(String pdxFileName, byte[][] pdx, int[] pdxSize) {
         if (extendFile == null) {
-logger.log(Level.DEBUG, "extendFiles is null");
+logger.log(Level.DEBUG, "extendFile is null");
             return;
         }
 
@@ -516,7 +416,7 @@ logger.log(Level.DEBUG, "extendFiles is null");
     public Tuple<String, byte[]> extendFile = null;
     private int timerA = 0, timerB = 0;
     private X68kYm2151Inst mdxPCM = null;
-    private Pcm8PPInst pcm8pp;
+    Pcm8PPInst pcm8pp;
     public int pcm8type = 0;
 
     // Contents of OPM register $1B
@@ -864,13 +764,13 @@ logger.log(Level.DEBUG, "extendFiles is null");
 
     // 
 
-    private boolean terminatePlay;
-    private int loopCount;
+    boolean terminatePlay;
+    int loopCount;
     private int loopLimit;
     private boolean fadeoutStart;
     private boolean reqFadeout;
 
-    private void MXDRV_MeasurePlayTime_OPMINT() {
+    void MXDRV_MeasurePlayTime_OPMINT() {
         if ((mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) & 0xffff_ffffL) >= (mm.readInt(G + MXWORK_GLOBAL.MEASURETIMELIMIT) & 0xffff_ffffL)) {
             terminatePlay = true;
         }
@@ -1043,7 +943,7 @@ logger.log(Level.DEBUG, "extendFiles is null");
         //logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
 
         if (mdxPCM != null) mdxPCM.soundIocs[0].opmSet(D1 & 0xff, D2 & 0xff);
-        plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, 0, D1, D2, model, ym2151Hosei[0], vgmFrameCounter);
+        ym2151Write.accept(D1, D2);
 
         if (D1 == 0x10) {
             timerA = ((D2 & 0xff) << 2) + (timerA & 0x3);
@@ -3824,21 +3724,5 @@ exit:   {
         }
 
         return 0;
-    }
-
-    // TODO separate from implementation
-
-    @Override
-    public int render(short[] buffer, int offset, int sampleCount) {
-        plugin.audio.mds.setIncFlag();
-//        vstDelta = 0;
-        int cnt;
-        for (int i = 0; i < sampleCount; i += 2) {
-            cnt = render_(buffer, offset + i, 1);
-            plugin.audio.mds.update(buffer, offset + i, 2, null);
-        }
-        //cnt = (int)((MXDRV.MXDRV) driverVirtual).render(buffer, offset , sampleCount);
-        //mds.update(buffer, offset , sampleCount, null);
-        return sampleCount;
     }
 }

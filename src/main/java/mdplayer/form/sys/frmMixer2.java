@@ -104,14 +104,14 @@ public class frmMixer2 extends JFrame {
 
     private void setVolume(int i, boolean isAbs, int delta) {
         if (i == 0) {
-            audio.setMasterVolume(isAbs, delta);
+            audio.plugin.setMasterVolume(isAbs, delta);
         } else if (i == setVolume.length) {
-            audio.chipRegister.plugin(RealChipPlugin.class).setGimicOPNVolume(false, delta);
+            audio.plugin.chipRegister.plugin(RealChipPlugin.class).setGimicOPNVolume(false, delta);
         } else if (i == setVolume.length + 1) {
-            audio.chipRegister.plugin(RealChipPlugin.class).setGimicOPNAVolume(false, delta);
+            audio.plugin.chipRegister.plugin(RealChipPlugin.class).setGimicOPNAVolume(false, delta);
         } else if (i > 0 && i < setVolume.length) {
             var t = setVolume[chipn];
-            audio.setVolume(t.getItem1(), t.getItem2(), isAbs, delta);
+            audio.plugin.setVolume(t.getItem1(), t.getItem2(), isAbs, delta);
         }
     }
 

@@ -1,28 +1,17 @@
 package mdplayer.driver.ay;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.enums.MemoryAccessMode;
 import konamiman.z80.impls.PlainMemory;
-import mdplayer.Chip;
-import mdplayer.Common;
-import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 
-import static java.lang.System.getLogger;
 
-
-public class AY extends BaseDriver {
-
-    private static final Logger logger = getLogger(AY.class.getName());
+public class AY {
 
     public static class Information {
 
@@ -68,64 +57,13 @@ public class AY extends BaseDriver {
     public Information information;
     private Z80Processor z80;
     public int song = 0;
-    private static final int zxClock = 3_546_900; // 3.54690MHz
+    public static final int zxClock = 3_546_900; // 3.54690MHz
     private static final int cpcClock = 4_000_000; // 4.000000MHz
     private static final double PAL = 50.0;
     private double clkElp = 0.0;
     private double palElp = 0.0;
     private int clock = zxClock;
-
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.plugin = plugin;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        this.model = model;
-        vgmFrameCounter = -latency - waitTime;
-        clock = zxClock;
-
-        try {
-            run(vgmBuf);
-            setup(song);
-        } catch (Exception e) {
-logger.log(Level.ERROR, e.getMessage(), e);
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void processOneFrame() {
-        try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0 && !stopped) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    oneFrame();
-                    counter++;
-                } else {
-                    vgmFrameCounter++;
-                }
-            }
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        getInformation(buf);
-        Vgm.Gd3 ret = new Vgm.Gd3();
-        ret.trackName = information.songsStructures.get(0).pSongName;
-        ret.trackNameJ = information.songsStructures.get(0).pSongName;
-        return ret;
-    }
+    private int sampleRate;
 
     public void run(byte[] buf) {
         this.buf = buf;
@@ -140,7 +78,11 @@ logger.log(Level.ERROR, e.getMessage(), e);
         clock = zxClock;
     }
 
-    private void getInformation(byte[] buf) {
+    public void setSampleRate(int sampleRate) {
+        this.sampleRate = sampleRate;
+    }
+
+    void getInformation(byte[] buf) {
         // FileID 'ZXAY'
         if (ByteUtil.readLeInt(buf, 0) != 0x5941_585a) {
             throw new UnsupportedOperationException();
@@ -218,7 +160,7 @@ logger.log(Level.ERROR, e.getMessage(), e);
         return new String(ByteUtil.toByteArray(dat));
     }
 
-    public void setup(int songNum) {
+    public void setup(int songNum, BiConsumer<Integer, Integer> ayWrite, Runnable zxWrite) {
         Port port = new Port();
         z80 = new Z80ProcessorImpl();
         z80.setPortsSpace(port);
@@ -229,8 +171,8 @@ logger.log(Level.ERROR, e.getMessage(), e);
         z80.setAutoStopOnDiPlusHalt(false);
         z80.setMemory(new PlainMemory(0x1_0000));
         port.registers = z80.getRegisters();
-        port.audio = plugin.audio;
-        port.model = model;
+        port.ayWrite = ayWrite;
+        port.zxWrite = zxWrite;
         port.cpu = this;
 
         // a) Fill #0000-#00FF range with #C9 value
@@ -324,8 +266,8 @@ logger.log(Level.ERROR, e.getMessage(), e);
             old = z80.getTStatesElapsedSinceReset();
 
             clkElp += step;
-            if (clock / setting.getOutputDevice().getSampleRate() <= clkElp) {
-                clkElp -= (clock / setting.getOutputDevice().getSampleRate());
+            if (clock / sampleRate <= clkElp) {
+                clkElp -= (clock / sampleRate);
                 brk = true;
             }
 

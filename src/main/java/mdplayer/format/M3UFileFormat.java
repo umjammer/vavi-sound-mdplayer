@@ -1,6 +1,9 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -8,6 +11,7 @@ import dotnet4j.io.Path;
 import mdplayer.M3U;
 import mdplayer.PlayList;
 import mdplayer.plugin.Plugin;
+import vavi.sound.SoundUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -69,5 +73,17 @@ public class M3UFileFormat extends BaseFileFormat {
         List<PlayList.Music> musics = new ArrayList<>();
         for (PlayList.Music m : pl.getMusics()) musics.addAll(addFileLoop(index, m, archive, entry));
         return musics;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+//        if (isCompressedStream(is)) return false;
+//        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        return false;
     }
 }

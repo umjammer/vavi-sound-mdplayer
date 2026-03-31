@@ -110,11 +110,11 @@ Debug.println("mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant
 Debug.println("filename: " + file);
         FileFormat format = FileFormat.getFileFormat(file);
 Debug.println("format: " + format.getClass().getSimpleName());
-        var r = format.load(null, file);
+        var r = format.load((String) null, file);
         plugin = (BasePlugin) format.getPlugin();
-        plugin.setVGMBuffer(format, r.getItem1(), file, null, 0, 0, r.getItem2());
+        plugin.setBuffer(format, r.getItem1(), file, null, 0, 0, r.getItem2());
 Debug.println("plugin: " +plugin.getClass().getSimpleName());
-        plugin.play(file, format);
+        plugin.play();
     }
 
     @Test
@@ -196,7 +196,7 @@ Debug.println("stop");
             try {
                 FileFormat format = FileFormat.getFileFormat(p.toString());
 Debug.println(p);
-                var r = format.load(null, p.toString());
+                var r = format.load((String) null, p.toString());
                 Music music = format.getMusic(null, r.getItem1(), null, null, null).get(0);
 Debug.println(music);
             } catch (Exception e) {

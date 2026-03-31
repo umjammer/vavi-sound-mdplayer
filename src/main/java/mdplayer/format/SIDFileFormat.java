@@ -3,16 +3,19 @@ package mdplayer.format;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import dotnet4j.io.File;
 import mdplayer.Common.EnmArcType;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.sid.Sid;
+import mdplayer.driver.sid.SidDriver;
+import mdplayer.driver.sid.SidMdDriver2;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.SIDPlugin;
 import mdplayer.properties.Resources;
+import vavi.sound.SoundUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -33,10 +36,10 @@ public class SIDFileFormat extends BaseFileFormat {
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         List<PlayList.Music> musics = new ArrayList<>();
-        Sid sid = new Sid();
-        Vgm.Gd3 gd3 = sid.getGD3Info(buf);
+        SidDriver sid = new SidMdDriver2();
+        Vgm.Gd3 gd3 = sid.getGD3Info(buf, null);
 
-        for (int s = 0; s < sid.songs; s++) {
+        for (int s = 0; s < sid.getSongs(); s++) {
             PlayList.Music music = new PlayList.Music();
             music.format = this;
             music.fileName = file;
@@ -119,7 +122,7 @@ public class SIDFileFormat extends BaseFileFormat {
             buf = File.readAllBytes(mc.fileName);
         } else {
             try (InputStream reader = archive.getInputStream(entry)) {
-                buf =   reader.readAllBytes();
+                buf = reader.readAllBytes();
             }
         }
 
@@ -130,7 +133,7 @@ public class SIDFileFormat extends BaseFileFormat {
         if (mc.songNo != -1) {
             PlayList.Music music;
             if (!musics.isEmpty()) {
-                music = musics.get(0);
+                music = musics.getFirst();
                 music.songNo = mc.songNo;
                 music.title = mc.title;
                 music.titleJ = mc.titleJ;
@@ -143,5 +146,17 @@ public class SIDFileFormat extends BaseFileFormat {
         }
 
         return musics;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+//        if (isCompressedStream(is)) return false;
+//        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
+        return false;
     }
 }

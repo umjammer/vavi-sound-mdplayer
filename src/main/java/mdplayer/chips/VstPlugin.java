@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mdplayer.Audio;
 import mdplayer.MidiOutInfo;
+import mdplayer.plugin.BasePlugin;
 import mdplayer.vst.VstInfo;
 import mdplayer.vst.VstMng;
 import mdplayer.vst.VstMng.VstInfo2;
@@ -44,7 +44,7 @@ public class VstPlugin implements Plugin {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         logger.log(Level.TRACE, "Audio:Init:VST:STEP 01");
 
         vstMng.vstparse();

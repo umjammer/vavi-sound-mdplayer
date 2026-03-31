@@ -6,17 +6,21 @@
 
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
+
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
 import mdplayer.PlayList.Music;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
-import mdplayer.driver.fmp.FMP;
-import mdplayer.plugin.AyPlugin;
+import mdplayer.driver.fmp.FmpDriver;
 import mdplayer.plugin.FMPPlugin;
 import mdplayer.plugin.Plugin;
-import moonDriver.common.GD3;
+import vavi.sound.SoundUtil;
+import vavi.sound.sampled.md.MdEncoding;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -39,7 +43,7 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
         Music music = new Music();
         music.format = this;
         int index = 0;
-        Vgm.Gd3 gd3 = new FMP(null).getGD3Info(buf, index);
+        Vgm.Gd3 gd3 = new FmpDriver().getGD3Info(buf, index);
         music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
         music.titleJ = gd3.trackNameJ.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
         music.game = gd3.gameName;
@@ -62,5 +66,21 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(FMPPlugin.class);
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return MdEncoding.FMP;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

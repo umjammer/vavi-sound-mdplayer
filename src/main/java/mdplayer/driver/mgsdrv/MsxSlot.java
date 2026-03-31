@@ -1,12 +1,15 @@
 package mdplayer.driver.mgsdrv;
 
+import dotnet4j.util.compat.QuadConsumer;
+import dotnet4j.util.compat.TriConsumer;
+import mdplayer.Chip;
 import mdplayer.ChipRegister;
 import mdplayer.Common.EnmModel;
 
 
 public class MsxSlot extends Slot {
 
-    public MsxSlot(ChipRegister chipRegister, EnmModel model) {
+    public MsxSlot(TriConsumer<Integer, Integer, Integer> chipWrite) {
         slots = new Cartridge[][] {
             // Slot0 MapperROM 64k
             new Cartridge[] {
@@ -21,7 +24,7 @@ public class MsxSlot extends Slot {
             // extSlot2-2 MapperROM 64k
             // extSlot2-3 MapperROM 64k
             new Cartridge[] {
-                new SCCCartridge(chipRegister, model), new MapperRamCartridge(4), new MapperRamCartridge(4),
+                new SCCCartridge(chipWrite), new MapperRamCartridge(4), new MapperRamCartridge(4),
                 new MapperRamCartridge(4)
             },
             // extSlot3-0 MSX Music(Ym2413)

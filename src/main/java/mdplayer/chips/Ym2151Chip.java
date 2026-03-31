@@ -6,11 +6,12 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
+import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.MameYm2151Inst;
 import mdsound.instrument.X68kYm2151Inst;
@@ -45,13 +46,17 @@ public class Ym2151Chip implements Chip {
     public final int[] amd = {-1, -1};
     public final int[] pmd = {-1, -1};
 
-    private final boolean[] use4MYM2151scci = { false, false };
+    private final boolean[] use4MYM2151scci = {false, false};
 
-    public boolean[] getUse4MYM2151scci() { return use4MYM2151scci; };
+    public boolean[] getUse4MYM2151scci() {
+        return use4MYM2151scci;
+    }
 
-    public int[] hosei = new int[] { 0, 0 };
+    ;
 
-    private Audio context;
+    public int[] hosei = new int[] {0, 0};
+
+    private BasePlugin context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -65,7 +70,7 @@ public class Ym2151Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -367,5 +372,22 @@ public class Ym2151Chip implements Chip {
     public void clearFadeout() {
         setFadeout(0, 0);
         setFadeout(1, 0);
+    }
+
+    public final int[] ym2151Hosei = new int[] {
+            0, 0
+    };
+
+    public void setYm2151Hosei(EnmModel model, float ym2151ClockValue) {
+        for (int chipId = 0; chipId < 2; chipId++) {
+            ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, 3579545);
+            if (model == EnmModel.RealModel) {
+                ym2151Hosei[chipId] = 0;
+                int clock = context.chipRegister.chip(Ym2151Chip.class).getClock(chipId);
+                if (clock != -1) {
+                    ym2151Hosei[chipId] = Common.getYM2151Hosei(ym2151ClockValue, clock);
+                }
+            }
+        }
     }
 }

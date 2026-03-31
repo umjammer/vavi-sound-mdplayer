@@ -10,6 +10,7 @@ import mdplayer.Setting;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 
+import static mdplayer.plugin.BasePlugin.BUFFER_SIZE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -57,13 +58,13 @@ public class MndrvWavTestProgram {
         setting.getOther().setWavPath(outDirFile.getPath());
 
         FileFormat format = FileFormat.getFileFormat(filename);
-        var r = format.load(null, filename);
+        var r = format.load((String) null, filename);
         BasePlugin plugin = (BasePlugin) format.getPlugin();
-        plugin.setVGMBuffer(format, r.getItem1(), filename, null, 0, 0, r.getItem2());
+        plugin.setBuffer(format, r.getItem1(), filename, null, 0, 0, r.getItem2());
 
         // Initialize driver and chips without starting the infinite loop in BasePlugin.play()
-        audio.driverVirtual = new MnDrv();
-        ((MnDrv) audio.driverVirtual).extendFile = r.getItem2();
+        plugin.driverVirtual = new MnDriver();
+        ((MnDriver) plugin.driverVirtual).setExtendFile(r.getItem2());
         java.lang.reflect.Method _play = plugin.getClass().getDeclaredMethod("_play");
         _play.setAccessible(true);
         _play.invoke(plugin);
@@ -80,7 +81,7 @@ public class MndrvWavTestProgram {
         audio.vgmFadeout = false;
         audio.vgmFadeoutCounter = 1.0;
         audio.vgmFadeoutCounterV = 0.00001;
-        audio.masterVolume = setting.getBalance().getMasterVolume();
+        audio.plugin.masterVolume = setting.getBalance().getMasterVolume();
 
         audio.waveWriter.open(filename);
 
@@ -88,10 +89,10 @@ public class MndrvWavTestProgram {
         long timeout = (long) (RENDER_DURATION * 1000) + 10000; // duration + 10s buffer
 
         while (!audio.stopped) {
-            short[] buffer = new short[Audio.BUFFER_SIZE];
+            short[] buffer = new short[BUFFER_SIZE];
             int ret = audio.update(buffer, 0, buffer.length);
             if (ret == -1) break;
-            if (audio.driverVirtual.getDriverCounter() % 1000 == 0) System.err.println("Frame: " + audio.driverVirtual.getDriverCounter());
+            if (plugin.driverVirtual.getDriverCounter() % 1000 == 0) System.err.println("Frame: " + plugin.driverVirtual.getDriverCounter());
 
             File out = new File(actualOutWavFile);
             if (out.exists() && refWavFile != null && out.length() >= new File(refWavFile).length()) {
@@ -104,7 +105,7 @@ public class MndrvWavTestProgram {
                 break;
             }
 
-            if (audio.driverVirtual != null && audio.driverVirtual.stopped) {
+            if (plugin.driverVirtual != null && plugin.driverVirtual.stopped) {
                 System.err.println("Driver signaled stop, stopping...");
                 break;
             }

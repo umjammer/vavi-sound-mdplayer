@@ -1,17 +1,24 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.mndrv.MnDrv;
+import mdplayer.driver.mndrv.MnDriver;
 import mdplayer.plugin.MNDPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
+import vavi.sound.SoundUtil;
+import vavi.sound.sampled.md.MdEncoding;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -33,7 +40,7 @@ public class MNDFileFormat extends BaseFileFormat {
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
-        Vgm.Gd3 gd3 = (new MnDrv()).getGD3Info(buf);
+        Vgm.Gd3 gd3 = (new MnDriver()).getGD3Info(buf);
         music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
         music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
         music.game = gd3.gameName;
@@ -84,5 +91,21 @@ public class MNDFileFormat extends BaseFileFormat {
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(MNDPlugin.class);
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return MdEncoding.MNDRV;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

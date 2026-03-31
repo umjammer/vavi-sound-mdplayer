@@ -2,11 +2,9 @@ package mdplayer.plugin;
 
 import java.io.IOException;
 import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
+import java.nio.file.Path;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
-
-import mdplayer.format.FileFormat;
 
 import static java.lang.System.getLogger;
 
@@ -22,13 +20,15 @@ public class SampledPlugin extends BasePlugin {
     private static final Logger logger = getLogger(SampledPlugin.class.getName());
 
     @Override
-    public boolean play(String playingFileName, FileFormat format) {
+    public void prepare() {
         try {
-            audio.naudioFileReader = AudioSystem.getAudioInputStream(new java.io.File(audio.naudioFileName));
-            return true;
+            audio.naudioFileReader = AudioSystem.getAudioInputStream(Path.of(audio.naudioFileName).toFile());
         } catch (UnsupportedAudioFileException | IOException e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            return false;
+            throw new IllegalArgumentException(e);
         }
+    }
+
+    @Override
+    protected void initChips() {
     }
 }

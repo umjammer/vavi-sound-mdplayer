@@ -142,7 +142,7 @@ public class frmC140 extends frmBase {
     private int searchC140Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = audio.mds.getChipInfo(C140Inst.class).clock;
+        int clock = audio.plugin.mds.getChipInfo(C140Inst.class).clock;
         if (clock >= 1000000)
             clock = clock / 384;
 
@@ -186,8 +186,8 @@ public class frmC140 extends frmBase {
     }
 
     public void screenChangeParams() {
-        byte[] c140State = audio.chipRegister.chip(C140Chip.class).read(chipId);
-        boolean[] c140KeyOn = audio.chipRegister.chip(C140Chip.class).getKeyOn(chipId);
+        byte[] c140State = audio.plugin.chipRegister.chip(C140Chip.class).read(chipId);
+        boolean[] c140KeyOn = audio.plugin.chipRegister.chip(C140Chip.class).getKeyOn(chipId);
         if (c140State != null) {
             for (int ch = 0; ch < 24; ch++) {
                 int frequency = c140State[ch * 16 + 2] * 256 + c140State[ch * 16 + 3];

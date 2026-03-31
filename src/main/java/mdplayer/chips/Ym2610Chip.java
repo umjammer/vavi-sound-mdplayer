@@ -6,11 +6,11 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.Instrument.AdpcmEnabledInstrument;
 import mdsound.instrument.Ym2610Inst;
@@ -50,7 +50,7 @@ public class Ym2610Chip implements Chip {
             {new int[2], new int[2], new int[2], new int[2], new int[2], new int[2]}
     };
 
-    public final  int[][] adpcmVolume = {new int[2], new int[2]};
+    public final int[][] adpcmVolume = {new int[2], new int[2]};
 
     public final int[] adpcmPan = {0, 0};
 
@@ -63,7 +63,7 @@ public class Ym2610Chip implements Chip {
 
     public int clock;
 
-    private Audio context;
+    private BasePlugin context;
 
     @SuppressWarnings("unchecked")
     private Class<? extends AdpcmEnabledInstrument> _inst(int chipId) {
@@ -82,7 +82,7 @@ public class Ym2610Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {
@@ -592,7 +592,7 @@ public class Ym2610Chip implements Chip {
 
     public int[] getCh3SlotVolume(int chipId) {
 //        if (ctYM2612.UseScci) {
-            return ch3SlotVolume[chipId];
+        return ch3SlotVolume[chipId];
 //        }
 //        return context.mds.inst(_inst(chipId)).readFMCh3SlotVolume();
     }

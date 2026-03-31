@@ -11,9 +11,9 @@ import java.util.Map;
 
 import dotnet4j.util.compat.Tuple;
 import mdplayer.Audio;
+import mdplayer.ChipLEDs;
+import mdplayer.ChipRegister;
 import mdplayer.Common;
-import mdplayer.OpeManager;
-import mdplayer.Request;
 import mdplayer.Setting;
 import mdplayer.WaveWriter;
 import mdplayer.chips.Ay8910Chip;
@@ -28,7 +28,8 @@ import mdplayer.chips.Ym2612Chip;
 import mdplayer.chips.Ym3526Chip;
 import mdplayer.chips.Ym3812Chip;
 import mdplayer.chips.YmF262Chip;
-import mdplayer.driver.Vgm;
+import mdplayer.driver.BaseDriver;
+import mdplayer.driver.VgmDriver;
 import mdplayer.format.AIFFFileFormat;
 import mdplayer.format.FileFormat;
 import mdplayer.format.MP3FileFormat;
@@ -54,28 +55,40 @@ public abstract class BasePlugin implements Plugin {
 
     public Audio audio = Audio.getInstance();
 
+    public MDSound mds;
+
+    public ChipRegister chipRegister;
+
+    // TODO driver should be one, instruments should be separated virtual and real
+    public BaseDriver driverVirtual = null;
+
+    public BaseDriver driverReal = null;
+
+    // view
+    public final ChipLEDs chipLED = new ChipLEDs();
+
     protected byte[] vgmBuf = null;
     protected double vgmSpeed;
 
     protected boolean oneTimeReset = false;
 
+    protected FileFormat fileFormat;
     protected String playingFileName;
     protected String playingArcFileName;
     protected int midiMode = 0;
     protected int songNo = 0;
     protected List<Tuple<String, byte[]>> extendFiles = null;
 
-    protected final long stwh = System.currentTimeMillis();
-
     public boolean flgReinit = false;
-
-    private Thread trd;
 
     protected int vgmRealFadeoutVol = 0;
     protected int vgmRealFadeoutVolWait = 4;
 
     protected int hiyorimiEven = 0;
     public boolean hiyorimiNecessary = false;
+
+    // TODO variable?
+    public static final int BUFFER_SIZE = 1024;
 
     protected static void sleep(int i) {
         try { Thread.sleep(i); } catch (InterruptedException ignore) {}
@@ -109,11 +122,17 @@ public abstract class BasePlugin implements Plugin {
     }
 
     protected BasePlugin() {
+        mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
+
+        chipRegister = new ChipRegister();
+        chipRegister.init(this);
+
         init();
     }
 
     @Override
     public void init() {
+        audio.plugin = this;
         audio.waveWriter = new WaveWriter();
 
         audio.paused = false;
@@ -123,37 +142,14 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
         oneTimeReset = false;
 
         // midi out released
-        audio.chipRegister.plugin(MidiPlugin.class).releaseAll();
+        chipRegister.plugin(MidiPlugin.class).releaseAll();
 
         audio.naudioWrap.start();
     }
 
-    // for gui
-    protected void trdIF() {
-        while (true) {
-            Request req = OpeManager.getRequestToAudio();
-            if (req == null) {
-                Thread.yield(); // TODO this should not be a thread, use event system or blocking queue
-                continue;
-            }
-
-            switch (req.request) {
-                case Die: // Please kill yourself
-                    seqDie();
-                    req.setEnd(true);
-                    return;
-                case Stop:
-                    stop();
-                    req.setEnd(true);
-                    OpeManager.completeRequestToAudio(req);
-                    break;
-            }
-        }
-    }
-
     protected void trdVgmRealFunction() {
 
-        if (audio.driverReal == null) { // first time, driverReal must be null
+        if (driverReal == null) { // first time, driverReal must be null
             audio.trdClosed = true;
             audio.setTrdStopped(true);
             return;
@@ -184,36 +180,36 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
 //                    }
                     continue;
                 }
-                if (hiyorimiNecessary && audio.driverVirtual.isDataBlock) {
+                if (hiyorimiNecessary && driverVirtual.isDataBlock) {
                     continue;
                 }
 
                 if (audio.vgmFadeout) {
                     if (vgmRealFadeoutVol != 1000) vgmRealFadeoutVolWait--;
                     if (vgmRealFadeoutVolWait == 0) {
-                        if (contains(Ym2151Chip.class, 0)) audio.chipRegister.chip(Ym2151Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym2203Chip.class, 0)) audio.chipRegister.chip(Ym2203Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ay8910Chip.class, 0)) audio.chipRegister.chip(Ay8910Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym2413Chip.class, 0)) audio.chipRegister.chip(Ym2413Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym2608Chip.class, 0)) audio.chipRegister.chip(Ym2608Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym2610Chip.class, 0)) audio.chipRegister.chip(Ym2610Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym2612Chip.class, 0)) audio.chipRegister.chip(Ym2612Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym3526Chip.class, 0)) audio.chipRegister.chip(Ym3526Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Ym3812Chip.class, 0)) audio.chipRegister.chip(Ym3812Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(Sn76489Chip.class, 0)) audio.chipRegister.chip(Sn76489Chip.class).setFadeout(0, vgmRealFadeoutVol);
-                        if (contains(YmF262Chip.class, 0)) audio.chipRegister.chip(YmF262Chip.class).setFadeout(0, vgmRealFadeoutVol);
+                        if (contains(Ym2151Chip.class, 0)) chipRegister.chip(Ym2151Chip.class).setFadeout(0, vgmRealFadeoutVol);
+                        if (contains(Ym2203Chip.class, 0)) chipRegister.chip(Ym2203Chip.class).setFadeout(0, vgmRealFadeoutVol);
+                        if (contains(Ay8910Chip.class, 0)) chipRegister.chip(Ay8910Chip.class).setFadeout(0, vgmRealFadeoutVol);
+                        if (contains(Ym2413Chip.class, 0)) chipRegister.chip(Ym2413Chip.class).setFadeout(0, vgmRealFadeoutVol);
+                        if (contains(Ym2608Chip.class, 0)) chipRegister.chip(Ym2608Chip.class).setFadeout(0, vgmRealFadeoutVol);
+                        if (contains(Ym2610Chip.class, 0)) chipRegister.chip(Ym2610Chip.class).setFadeout(0, vgmRealFadeoutVol);
+                        if (contains(Ym2612Chip.class, 0)) chipRegister.chip(Ym2612Chip.class).setFadeout(0, vgmRealFadeoutVol);
+                        if (contains(Ym3526Chip.class, 0)) chipRegister.chip(Ym3526Chip.class).setFadeout(0, vgmRealFadeoutVol);
+                        if (contains(Ym3812Chip.class, 0)) chipRegister.chip(Ym3812Chip.class).setFadeout(0, vgmRealFadeoutVol);
+                        if (contains(Sn76489Chip.class, 0)) chipRegister.chip(Sn76489Chip.class).setFadeout(0, vgmRealFadeoutVol);
+                        if (contains(YmF262Chip.class, 0)) chipRegister.chip(YmF262Chip.class).setFadeout(0, vgmRealFadeoutVol);
 
-                        if (contains(Ym2151Chip.class, 1)) audio.chipRegister.chip(Ym2151Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym2203Chip.class, 1)) audio.chipRegister.chip(Ym2203Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ay8910Chip.class, 1)) audio.chipRegister.chip(Ay8910Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym2413Chip.class, 1)) audio.chipRegister.chip(Ym2413Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym2608Chip.class, 1)) audio.chipRegister.chip(Ym2608Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym2610Chip.class, 1)) audio.chipRegister.chip(Ym2610Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym2612Chip.class, 1)) audio.chipRegister.chip(Ym2612Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym3526Chip.class, 1)) audio.chipRegister.chip(Ym3526Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Ym3812Chip.class, 1)) audio.chipRegister.chip(Ym3812Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(Sn76489Chip.class, 1)) audio.chipRegister.chip(Sn76489Chip.class).setFadeout(1, vgmRealFadeoutVol);
-                        if (contains(YmF262Chip.class, 1)) audio.chipRegister.chip(YmF262Chip.class).setFadeout(1, vgmRealFadeoutVol);
+                        if (contains(Ym2151Chip.class, 1)) chipRegister.chip(Ym2151Chip.class).setFadeout(1, vgmRealFadeoutVol);
+                        if (contains(Ym2203Chip.class, 1)) chipRegister.chip(Ym2203Chip.class).setFadeout(1, vgmRealFadeoutVol);
+                        if (contains(Ay8910Chip.class, 1)) chipRegister.chip(Ay8910Chip.class).setFadeout(1, vgmRealFadeoutVol);
+                        if (contains(Ym2413Chip.class, 1)) chipRegister.chip(Ym2413Chip.class).setFadeout(1, vgmRealFadeoutVol);
+                        if (contains(Ym2608Chip.class, 1)) chipRegister.chip(Ym2608Chip.class).setFadeout(1, vgmRealFadeoutVol);
+                        if (contains(Ym2610Chip.class, 1)) chipRegister.chip(Ym2610Chip.class).setFadeout(1, vgmRealFadeoutVol);
+                        if (contains(Ym2612Chip.class, 1)) chipRegister.chip(Ym2612Chip.class).setFadeout(1, vgmRealFadeoutVol);
+                        if (contains(Ym3526Chip.class, 1)) chipRegister.chip(Ym3526Chip.class).setFadeout(1, vgmRealFadeoutVol);
+                        if (contains(Ym3812Chip.class, 1)) chipRegister.chip(Ym3812Chip.class).setFadeout(1, vgmRealFadeoutVol);
+                        if (contains(Sn76489Chip.class, 1)) chipRegister.chip(Sn76489Chip.class).setFadeout(1, vgmRealFadeoutVol);
+                        if (contains(YmF262Chip.class, 1)) chipRegister.chip(YmF262Chip.class).setFadeout(1, vgmRealFadeoutVol);
 
                         vgmRealFadeoutVol++;
 
@@ -223,7 +219,7 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
 //                                softReset(EnmModel.RealModel);
 //                            }
                             vgmRealFadeoutVolWait = 1000;
-                            audio.chipRegister.plugin(MidiPlugin.class).resetAll();
+                            chipRegister.plugin(MidiPlugin.class).resetAll();
                         } else {
                             vgmRealFadeoutVolWait = 700 - vgmRealFadeoutVol * 2;
                         }
@@ -246,31 +242,31 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
 
                     double dEMU = setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000.0;
                     double dSCCI = setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000.0;
-                    double abs = Math.abs((audio.driverReal.vgmFrameCounter - dSCCI) - (audio.driverVirtual.vgmFrameCounter - dEMU));
+                    double abs = Math.abs((driverReal.vgmFrameCounter - dSCCI) - (driverVirtual.vgmFrameCounter - dEMU));
                     int m = 0;
                     long l = getLatency() / 10;
                     if (abs >= l) {
-                        m = ((audio.driverReal.vgmFrameCounter - dSCCI) > (audio.driverVirtual.vgmFrameCounter - dEMU)) ? 1 : 2;
+                        m = ((driverReal.vgmFrameCounter - dSCCI) > (driverVirtual.vgmFrameCounter - dEMU)) ? 1 : 2;
                     }
 
                     switch (m) {
                     case 0: // x1
-                        audio.driverReal.processOneFrame();
+                        driverReal.processOneFrame();
                         break;
                     case 1: // x1/2
                         hiyorimiEven++;
                         if (hiyorimiEven > 1) {
-                            audio.driverReal.processOneFrame();
+                            driverReal.processOneFrame();
                             hiyorimiEven = 0;
                         }
                         break;
                     case 2: // x2
-                        audio.driverReal.processOneFrame();
-                        audio.driverReal.processOneFrame();
+                        driverReal.processOneFrame();
+                        driverReal.processOneFrame();
                         break;
                     }
                 } else {
-                    audio.driverReal.processOneFrame();
+                    driverReal.processOneFrame();
                 }
             }
         } catch (Exception e) {
@@ -287,7 +283,7 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
     }
 
     /** prepare to play */
-    protected void prepare() {
+    protected void prepareInternal() {
         audio.vgmFadeout = false;
         audio.vgmFadeoutCounter = 1.0;
         audio.vgmFadeoutCounterV = 0.00001;
@@ -299,14 +295,15 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
         hiyorimiNecessary = setting.getHiyorimiMode();
         resetFadeOutParam();
 
-        audio.chipRegister.reset();
-        audio.chipRegister.clearFadeoutVolume();
-        audio.chipLED.clear();
-        audio.masterVolume = setting.getBalance().getMasterVolume();
+        chipRegister.reset();
+        chipRegister.clearFadeoutVolume();
+        chipLED.clear();
+        masterVolume = setting.getBalance().getMasterVolume();
     }
 
     /** */
     public boolean play() {
+        prepare();
 //logger.log(Level.TRACE, "play: " + audio.stopped + ", " + audio.hashCode());
         audio.errMsg = "";
 
@@ -335,7 +332,7 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
             return false;
         }
 
-logger.log(Level.DEBUG, "driver: " + audio.driverVirtual.getClass().getSimpleName());
+logger.log(Level.DEBUG, "driver: " + driverVirtual.getClass().getSimpleName());
         while (true) {
 //logger.log(Level.TRACE, "loop HERE");
             short[] buffer = new short[4];
@@ -403,25 +400,26 @@ logger.log(Level.INFO, "stop enter: " + audio.stopped);
         vgmRealFadeoutVol = 0;
         vgmRealFadeoutVolWait = 4;
 
-        audio.chipRegister.clearFadeoutVolume();
+        chipRegister.clearFadeoutVolume();
 
-        audio.chipRegister.reset();
+        chipRegister.reset();
     }
 
-    protected void seqDie() {
+    public void seqDie() {
         close();
         realChipClose();
     }
 
-    public void setVGMBuffer(FileFormat format, byte[] srcBuf, String playingFileName, String playingArcFileName, int midiMode, int songNo, List<Tuple<String, byte[]>> extFile) {
+    public void setBuffer(FileFormat format, byte[] srcBuf, String playingFileName, String playingArcFileName, int midiMode, int songNo, List<Tuple<String, byte[]>> extFile) {
         //stop();
+        this.fileFormat = format;
         audio.playingFileFormat = format;
         vgmBuf = srcBuf;
         this.playingFileName = playingFileName; // for WaveWriter
         this.playingArcFileName = playingArcFileName;
         this.midiMode = midiMode;
         this.songNo = songNo;
-        audio.chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
+        chipRegister.plugin(MidiPlugin.class).setFileName(playingFileName); // for ExportMIDI
         extendFiles = extFile; // Additional files
         Common.playingFilePath = Path.of(playingFileName).getParent();
 
@@ -438,22 +436,22 @@ logger.log(Level.INFO, "stop enter: " + audio.stopped);
 
     @Override
     public void ff() {
-        if (audio.driverVirtual == null) return;
+        if (driverVirtual == null) return;
         vgmSpeed = (vgmSpeed == 1) ? 4 : 1;
-        audio.driverVirtual.vgmSpeed = vgmSpeed;
-        if (audio.driverReal != null) audio.driverReal.vgmSpeed = vgmSpeed;
+        driverVirtual.vgmSpeed = vgmSpeed;
+        if (driverReal != null) driverReal.vgmSpeed = vgmSpeed;
     }
 
     public void slow() {
         vgmSpeed = (vgmSpeed == 1) ? 0.25 : 1;
-        audio.driverVirtual.vgmSpeed = vgmSpeed;
-        if (audio.driverReal != null) audio.driverReal.vgmSpeed = vgmSpeed;
+        driverVirtual.vgmSpeed = vgmSpeed;
+        if (driverReal != null) driverReal.vgmSpeed = vgmSpeed;
     }
 
     public void resetSlow() {
         vgmSpeed = 1;
-        audio.driverVirtual.vgmSpeed = vgmSpeed;
-        if (audio.driverReal != null) audio.driverReal.vgmSpeed = vgmSpeed;
+        driverVirtual.vgmSpeed = vgmSpeed;
+        if (driverReal != null) driverReal.vgmSpeed = vgmSpeed;
     }
 
     public boolean isStopped() {
@@ -488,53 +486,53 @@ logger.log(Level.INFO, "close enter");
     }
 
     public void resetTimeCounter() {
-        if (audio.driverVirtual == null && audio.driverReal == null) return;
-        if (audio.driverVirtual != null) {
-            audio.driverVirtual.counter = 0;
-            audio.driverVirtual.totalCounter = 0;
-            audio.driverVirtual.loopCounter = 0;
+        if (driverVirtual == null && driverReal == null) return;
+        if (driverVirtual != null) {
+            driverVirtual.counter = 0;
+            driverVirtual.totalCounter = 0;
+            driverVirtual.loopCounter = 0;
         }
 
-        if (audio.driverReal != null) {
-            audio.driverReal.counter = 0;
-            audio.driverReal.totalCounter = 0;
-            audio.driverReal.loopCounter = 0;
+        if (driverReal != null) {
+            driverReal.counter = 0;
+            driverReal.totalCounter = 0;
+            driverReal.loopCounter = 0;
         }
     }
 
     public long getCounter() {
-        if (audio.driverVirtual == null && audio.driverReal == null) return -1;
+        if (driverVirtual == null && driverReal == null) return -1;
 
-        if (audio.driverVirtual == null) return audio.driverReal.counter;
-        if (audio.driverReal == null) return audio.driverVirtual.counter;
+        if (driverVirtual == null) return driverReal.counter;
+        if (driverReal == null) return driverVirtual.counter;
 
-        return Math.max(audio.driverVirtual.counter, audio.driverReal.counter);
+        return Math.max(driverVirtual.counter, driverReal.counter);
     }
 
     public long getTotalCounter() {
-        if (audio.driverVirtual == null) return -1;
+        if (driverVirtual == null) return -1;
 
-        return audio.driverVirtual.totalCounter;
+        return driverVirtual.totalCounter;
     }
 
     public long getLoopCounter() {
-        if (audio.driverVirtual == null) return -1;
+        if (driverVirtual == null) return -1;
 
-        return audio.driverVirtual.loopCounter;
+        return driverVirtual.loopCounter;
     }
 
     public void updateVol() {
-        audio.chipRegister.updateVol();
+        chipRegister.updateVol();
     }
 
     public int getVgmCurLoopCounter() {
         int cnt = 0;
 
-        if (audio.driverVirtual != null) {
-            cnt = audio.driverVirtual.vgmCurLoop;
+        if (driverVirtual != null) {
+            cnt = driverVirtual.vgmCurLoop;
         }
-        if (audio.driverReal != null) {
-            cnt = Math.min(audio.driverReal.vgmCurLoop, cnt);
+        if (driverReal != null) {
+            cnt = Math.min(driverReal.vgmCurLoop, cnt);
         }
 
         return cnt;
@@ -544,41 +542,78 @@ logger.log(Level.INFO, "close enter");
         boolean v;
         boolean r;
 
-        v = audio.driverVirtual == null || audio.driverVirtual.stopped;
-        r = audio.driverReal == null || audio.driverReal.stopped;
+        v = driverVirtual == null || driverVirtual.stopped;
+        r = driverReal == null || driverReal.stopped;
         return v && r;
     }
 
     public boolean getIsDataBlock(Common.EnmModel model) {
 
         if (model == Common.EnmModel.VirtualModel) {
-            if (audio.driverVirtual == null) return false;
-            return audio.driverVirtual.isDataBlock;
+            if (driverVirtual == null) return false;
+            return driverVirtual.isDataBlock;
         } else {
-            if (audio.driverReal == null) return false;
-            return audio.driverReal.isDataBlock;
+            if (driverReal == null) return false;
+            return driverReal.isDataBlock;
         }
     }
 
     public boolean getIsPcmRAMWrite(Common.EnmModel model) {
         if (model == Common.EnmModel.VirtualModel) {
-            if (audio.driverVirtual == null) return false;
-            if (!(audio.driverVirtual instanceof Vgm)) return false;
-            return ((Vgm) audio.driverVirtual).isPcmRAMWrite;
+            if (driverVirtual == null) return false;
+            if (!(driverVirtual instanceof VgmDriver)) return false;
+            return ((VgmDriver) driverVirtual).isPcmRAMWrite();
         } else {
-            if (audio.driverReal == null) return false;
-            if (!(audio.driverReal instanceof Vgm)) return false;
-            return ((Vgm) audio.driverReal).isPcmRAMWrite;
+            if (driverReal == null) return false;
+            if (!(driverReal instanceof VgmDriver)) return false;
+            return ((VgmDriver) driverReal).isPcmRAMWrite();
         }
     }
 
     public long getVirtualFrameCounter() {
-        if (audio.driverVirtual == null) return -1;
-        return audio.driverVirtual.vgmFrameCounter;
+        if (driverVirtual == null) return -1;
+        return driverVirtual.vgmFrameCounter;
     }
 
     public long getRealFrameCounter() {
-        if (audio.driverReal == null) return -1;
-        return audio.driverReal.vgmFrameCounter;
+        if (driverReal == null) return -1;
+        return driverReal.vgmFrameCounter;
+    }
+
+    @Override
+    public BaseDriver getDriver() {
+        return driverVirtual;
+    }
+
+    protected abstract void initChips();
+
+    public long getDriverCounter() {
+        if (driverVirtual == null && driverReal == null) return -1;
+
+        if (driverVirtual == null) {
+            return driverReal.getDriverCounter();
+        }
+        if (driverReal == null) {
+            return driverVirtual.getDriverCounter();
+        }
+
+        return driverVirtual.whichCounter(driverReal.getDriverCounter(), driverVirtual.getDriverCounter());
+    }
+
+    public void setVolume(String tag, Class<? extends mdplayer.Chip> c, boolean isAbs, int volume) {
+        try {
+            int v = Common.range((isAbs ? 0 : setting.getBalance().getVolume(tag, c)) + volume, -192, 20);
+            mds.setVolume(tag, chipRegister.chip(c).inst(0), v); // TODO vavi
+            setting.getBalance().setVolume(tag, c, v);
+        } catch (Exception e) {
+            logger.log(Level.ERROR, e.getMessage(), e);
+        }
+    }
+
+    public int masterVolume = 0;
+
+    public void setMasterVolume(boolean isAbs, int volume) {
+        masterVolume = Common.range((isAbs ? 0 : setting.getBalance().getMasterVolume()) + volume, -192, 20);
+        setting.getBalance().setMasterVolume(masterVolume);
     }
 }

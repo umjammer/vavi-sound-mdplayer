@@ -1,8 +1,12 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.lang.System.Logger;
 import java.util.Collections;
 import java.util.List;
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
@@ -14,6 +18,7 @@ import mdplayer.PlayList;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.VGMPlugin;
 import mdplayer.properties.Resources;
+import vavi.sound.sampled.md.MdEncoding;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
@@ -27,17 +32,17 @@ import vavi.util.archive.Entry;
  */
 public class VGMFileFormat extends BaseFileFormat {
 
+    private static final Logger logger = System.getLogger(VGMFileFormat.class.getName());
+
     @Override
-    public String[] getExtensions() { return new String[] { ".vgm", ".vgz" }; }
+    public String[] getExtensions() {
+        return new String[] {".vgm", ".vgz"};
+    }
 
     @Override
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
         return Collections.singletonList(music);
-    }
-
-    static boolean isX() {
-        return false;
     }
 
     @Override
@@ -92,5 +97,24 @@ public class VGMFileFormat extends BaseFileFormat {
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(VGMPlugin.class);
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return MdEncoding.VGM;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 128;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+//logger.log(Level.INFO, "\n" + StringUtil.getDump(is, 0, 32));
+        byte[] buf = new byte[getMarkSize()];
+        is.readNBytes(buf, 0, buf.length);
+//logger.log(Level.INFO, "%x, %x, %s".formatted(FCC_VGM, ByteUtil.readLeInt(buf), StringUtil.getDump(buf)));
+        return FCC_VGM == ByteUtil.readLeInt(buf);
     }
 }

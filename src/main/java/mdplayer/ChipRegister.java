@@ -11,6 +11,7 @@ import mdplayer.Common.EnmModel;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.Plugin;
 import mdplayer.chips.RealChipPlugin;
+import mdplayer.plugin.BasePlugin;
 
 import static java.lang.System.getLogger;
 
@@ -58,7 +59,7 @@ logger.log(Level.INFO, "plugins: " + plugins.size());
     }
 
     /** for all chips and plugins */
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         chips.values().forEach(c -> c.init(context));
         plugins.values().forEach(c -> c.init(context));
     }

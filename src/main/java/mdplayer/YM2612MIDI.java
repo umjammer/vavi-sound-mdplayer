@@ -162,7 +162,7 @@ public class YM2612MIDI {
     }
 
     private void voiceCopy() {
-        int[][] reg = audio.chipRegister.chip(Ym2612Chip.class).read(0); // chipRegister.register[0];
+        int[][] reg = audio.plugin.chipRegister.chip(Ym2612Chip.class).read(0); // chipRegister.register[0];
         if (reg == null) return;
 
         for (int i = 0; i < 6; i++) {
@@ -309,13 +309,13 @@ public class YM2612MIDI {
         if (chip == Ym2612Chip.class || chip == Ym2608Chip.class || chip == Ym2610Chip.class || chip == Ym2203Chip.class) {
             int[][] srcRegs = null;
             if (chip == Ym2612Chip.class) {
-                srcRegs = audio.chipRegister.chip(Ym2612Chip.class).read(chipId);
+                srcRegs = audio.plugin.chipRegister.chip(Ym2612Chip.class).read(chipId);
             } else if (chip == Ym2608Chip.class) {
-                srcRegs = audio.chipRegister.chip(Ym2608Chip.class).read(chipId);
+                srcRegs = audio.plugin.chipRegister.chip(Ym2608Chip.class).read(chipId);
             } else if (chip == Ym2610Chip.class) {
-                srcRegs = audio.chipRegister.chip(Ym2610Chip.class).read(chipId);
+                srcRegs = audio.plugin.chipRegister.chip(Ym2610Chip.class).read(chipId);
             } else if (chip == Ym2203Chip.class) {
-                int[] sReg = audio.chipRegister.chip(Ym2203Chip.class).read(chipId);
+                int[] sReg = audio.plugin.chipRegister.chip(Ym2203Chip.class).read(chipId);
                 srcRegs = new int[][] {sReg, null};
             }
             for (int i = 0; i < 6; i++) {
@@ -324,7 +324,7 @@ public class YM2612MIDI {
                 }
             }
         } else if (chip == Ym2151Chip.class) {
-            int[] reg = audio.chipRegister.chip(Ym2151Chip.class).read(chipId);
+            int[] reg = audio.plugin.chipRegister.chip(Ym2151Chip.class).read(chipId);
             for (int i = 0; i < 6; i++) {
                 if (setting.getMidiKbd().getUseChannel()[i]) {
                     voiceCopyChFromOPM(ch, i, reg);

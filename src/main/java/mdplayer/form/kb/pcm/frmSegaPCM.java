@@ -192,8 +192,8 @@ public class frmSegaPCM extends frmBase {
 //            }
 //        }
 
-        byte[] segapcmReg = audio.chipRegister.chip(SegaPcmChip.class).read(chipId);
-        boolean[] segapcmKeyOn = audio.chipRegister.chip(SegaPcmChip.class).getKeyOn(chipId);
+        byte[] segapcmReg = audio.plugin.chipRegister.chip(SegaPcmChip.class).read(chipId);
+        boolean[] segapcmKeyOn = audio.plugin.chipRegister.chip(SegaPcmChip.class).getKeyOn(chipId);
         if (segapcmReg != null) {
             for (int ch = 0; ch < 16; ch++) {
                 int l = segapcmReg[ch * 8 + 2] & 0x7f;

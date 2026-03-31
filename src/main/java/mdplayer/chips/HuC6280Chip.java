@@ -10,6 +10,7 @@ import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.chips.OotakeHuC6280;
 import mdsound.instrument.HuC6280Inst;
@@ -34,7 +35,7 @@ public class HuC6280Chip implements Chip {
             0, 0
     };
 
-    private Audio context;
+    private BasePlugin context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -43,7 +44,7 @@ public class HuC6280Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         this.context = context;
     }
 

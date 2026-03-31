@@ -1,13 +1,16 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import dotnet4j.io.Path;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.mid.MID;
+import mdplayer.driver.mid.MidiDriver;
 import mdplayer.plugin.MIDPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.util.archive.Archive;
@@ -31,7 +34,7 @@ public class MIDFileFormat extends BaseFileFormat {
     public List<PlayList.Music> getMusic(String file, byte[] buf, String zipFile /* = null */, Archive archive, Entry entry /* = null */) {
         PlayList.Music music = new PlayList.Music();
         music.format = this;
-        Vgm.Gd3 gd3 = new MID().getGD3Info(buf);
+        Vgm.Gd3 gd3 = new MidiDriver().getGD3Info(buf);
         if (gd3 != null) {
             music.title = gd3.trackName;
             music.titleJ = gd3.trackNameJ;
@@ -59,7 +62,7 @@ public class MIDFileFormat extends BaseFileFormat {
         PlayList.Music music = new PlayList.Music();
 
         music.format = this;
-        Vgm.Gd3 gd3 = new MID().getGD3Info(buf);
+        Vgm.Gd3 gd3 = new MidiDriver().getGD3Info(buf);
         if (gd3 != null) {
             music.title = gd3.trackName;
             music.titleJ = gd3.trackNameJ;
@@ -86,5 +89,20 @@ public class MIDFileFormat extends BaseFileFormat {
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(MIDPlugin.class);
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    private static final byte[] magic = {0x4D, 0x54, 0x68, 0x64};
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+//        byte[] buf = new byte[getMarkSize()];
+//        is.readNBytes(buf, 0, buf.length);
+//        return Arrays.equals(magic, buf);
+        return false;
     }
 }

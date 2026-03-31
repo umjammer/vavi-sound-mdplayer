@@ -162,7 +162,7 @@ public class frmC352 extends frmBase {
     private int searchC352Note(int freq) {
         double m = Double.MAX_VALUE;
 
-        int clock = audio.mds.getChipInfo(C352Inst.class).clock;
+        int clock = audio.plugin.mds.getChipInfo(C352Inst.class).clock;
 
         int n = 0;
         for (int i = 0; i < 12 * 8; i++) {
@@ -182,8 +182,8 @@ public class frmC352 extends frmBase {
     }
 
     public void screenChangeParams() {
-        int[] c352Register = audio.chipRegister.chip(C352Chip.class).getChip(chipId);
-        int[] c352key = audio.chipRegister.chip(C352Chip.class).getKeyOn(chipId);
+        int[] c352Register = audio.plugin.chipRegister.chip(C352Chip.class).getChip(chipId);
+        int[] c352key = audio.plugin.chipRegister.chip(C352Chip.class).getKeyOn(chipId);
 
         for (int ch = 0; ch < 32; ch++) {
             newParam.channels[ch].note = searchC352Note(c352Register[ch * 8 + 2]);

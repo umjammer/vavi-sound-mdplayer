@@ -125,12 +125,12 @@ public class frmYM3812 extends frmBase {
     private static final byte[] rhythmAdr = new byte[] {0x53, 0x54, 0x52, 0x55, 0x51};
 
     public void screenChangeParams() {
-        int[] ym3812Register = audio.chipRegister.chip(Ym3812Chip.class).read(chipId);
+        int[] ym3812Register = audio.plugin.chipRegister.chip(Ym3812Chip.class).read(chipId);
         MDChipParams.Channel nyc;
         int slot;
-        ChipKeyInfo ki = audio.chipRegister.chip(Ym3812Chip.class).getKeyInfo(chipId);
+        ChipKeyInfo ki = audio.plugin.chipRegister.chip(Ym3812Chip.class).getKeyInfo(chipId);
 
-        mdsound.MDSound.Chip chipInfo = audio.mds.getChipInfo(Ym3812Inst.class);
+        mdsound.MDSound.Chip chipInfo = audio.plugin.mds.getChipInfo(Ym3812Inst.class);
         int masterClock = chipInfo == null ? 3579545 : chipInfo.clock; // 3579545 -> Default master clock
 
         // FM

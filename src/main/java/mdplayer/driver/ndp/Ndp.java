@@ -8,115 +8,40 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.function.BiConsumer;
 
+import dotnet4j.util.compat.TriConsumer;
 import konamiman.z80.Z80Processor;
 import konamiman.z80.Z80ProcessorImpl;
 import konamiman.z80.events.BeforeInstructionFetchEvent;
-import mdplayer.Chip;
-import mdplayer.Common;
-import mdplayer.Common.EnmModel;
-import mdplayer.driver.BaseDriver;
-import mdplayer.driver.Vgm;
-import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mgsdrv.Mapper;
 import mdplayer.driver.mgsdrv.MapperRamCartridge;
 import mdplayer.driver.mgsdrv.MsxMemory;
 import mdplayer.driver.mgsdrv.MsxPort;
 import mdplayer.driver.mgsdrv.Z80Opcode;
-import mdplayer.plugin.BasePlugin;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
 
 
-public class Ndp extends BaseDriver {
+// MSX NDP
+public class Ndp {
 
     private static final Logger logger = getLogger(Ndp.class.getName());
 
-    @Override
-    public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        Gd3 ret = new Gd3();
-        if (buf != null && buf.length > 8) {
-            if (buf.length > 7 + 0x0b && (buf[7 + 0x0b] & 2) != 0) {
-                int[] index = new int[] {7 + 0xe};
-                String TITLE = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
-                gd3.trackName = gd3.trackNameJ = TITLE;
-                String COMPOSER = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
-                gd3.composer = gd3.composerJ = COMPOSER;
-                String ARRANGER = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
-                gd3.systemName = ARRANGER;
-                String PROGRAMMER = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
-                gd3.converted = PROGRAMMER;
-                String MEMO = Common.getNRDString(buf, /* ref */ index, (byte) 0xff);
-                gd3.notes = MEMO;
-            }
-            ret.trackName = gd3.trackName;
-            ret.trackNameJ = gd3.trackNameJ;
-            ret.composer = gd3.composer;
-            ret.composerJ = gd3.composerJ;
-            ret.systemName = gd3.systemName;
-            ret.converted = gd3.converted;
-            ret.notes = gd3.notes;
-        }
+    private static byte[] program = null;
+    private static final byte DollarCode = '$';
+    private Z80Processor z80;
+    private Mapper mapper;
+    public static final int baseClockAY8910 = 1789773;
+    public static final int baseClockYM2413 = 3579545;
+    public static final int baseClockK051649 = 1789773;
 
-        return ret;
-    }
+    TriConsumer<Integer, Integer, Integer> k051649Write;
+    BiConsumer<Integer, Integer> ay8910Write;
+    BiConsumer<Integer, Integer> ym2413Write;
 
-    @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        this.plugin = plugin;
-        loopCounter = 0;
-        vgmCurLoop = 0;
-        this.model = model;
-        vgmFrameCounter = -latency - waitTime;
-
-        try {
-            run(vgmBuf);
-        } catch (Exception e) {
-logger.log(Level.ERROR, e.getMessage(), e);
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void processOneFrame() {
-        try {
-            vgmSpeedCounter += (double) Common.VGMProcSampleRate / setting.getOutputDevice().getSampleRate() * vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    oneFrameMain();
-                } else {
-                    vgmFrameCounter++;
-                }
-            }
-            //stopped = !isPlaying();
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    private void oneFrameMain() {
-        try {
-            counter++;
-            vgmFrameCounter++;
-
-            if (vgmFrameCounter % (Common.VGMProcSampleRate / 60) == 0) {
-                interrupt();
-            }
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
-    }
-
-    private void interrupt() {
+    public int interrupt(Runnable stop) {
         byte playFG = 0;
         try {
             z80.getRegisters().setPC((short) 0xc009);
@@ -127,46 +52,38 @@ logger.log(Level.ERROR, e.getMessage(), e);
             z80.getRegisters().setSP((short) 0xf380);
             z80.continue_();
             playFG = (byte) (z80.getRegisters().getA() & 0xf);
-            if (playFG == 0x0) stopped = true;
+            if (playFG == 0x0) stop.run();
 
             z80.getRegisters().setPC((short) 0xc036);
             z80.getRegisters().setSP((short) 0xf380);
             z80.continue_();
             playFG = (byte) (z80.getRegisters().getA() & 0xf);
             playFG = (byte) ((((z80.getMemory().get(0x4000) & 0xff) | (z80.getMemory().get(0x4001) & 0xff)) == 0 ? 1 : (playFG & 1)) |
-                            (((z80.getMemory().get(0x4002) & 0xff) | (z80.getMemory().get(0x4003) & 0xff)) == 0 ? 2 : (playFG & 2)) |
-                            (((z80.getMemory().get(0x4004) & 0xff) | (z80.getMemory().get(0x4005) & 0xff)) == 0 ? 4 : (playFG & 4)) |
-                            (((z80.getMemory().get(0x4006) & 0xff) | (z80.getMemory().get(0x4007) & 0xff)) == 0 ? 8 : (playFG & 8))
+                    (((z80.getMemory().get(0x4002) & 0xff) | (z80.getMemory().get(0x4003) & 0xff)) == 0 ? 2 : (playFG & 2)) |
+                    (((z80.getMemory().get(0x4004) & 0xff) | (z80.getMemory().get(0x4005) & 0xff)) == 0 ? 4 : (playFG & 4)) |
+                    (((z80.getMemory().get(0x4006) & 0xff) | (z80.getMemory().get(0x4007) & 0xff)) == 0 ? 8 : (playFG & 8))
             );
-            if (playFG == 0xf) stopped = true;
+            if (playFG == 0xf) stop.run();
 
             z80.getRegisters().setPC((short) 0xc039);
             z80.getRegisters().setSP((short) 0xf380);
             z80.continue_();
             int a = z80.getRegisters().getA() & 0xff;
-            vgmCurLoop = (a == 255) ? 0 : a;
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, "Exception in interrupt: " + ex.getMessage(), ex);
-            stopped = true;
+            return (a == 255) ? 0 : a;
+        } catch (RuntimeException ex) {
+            stop.run();
+            throw ex;
         }
     }
 
-    private static byte[] program = null;
-    private static final byte DollarCode = '$';
-    private Z80Processor z80;
-    private Mapper mapper;
-    public static final int baseClockAY8910 = 1789773;
-    public static final int baseClockYM2413 = 3579545;
-    public static final int baseClockK051649 = 1789773;
-
-    private void run(byte[] vgmBuf) throws IOException, URISyntaxException {
+    void run(byte[] vgmBuf) throws IOException, URISyntaxException {
         Path fileName = Path.of(Ndp.class.getResource("NDP.BIN").toURI());
 
         z80 = new Z80ProcessorImpl();
         z80.setClockSynchronizer(null);
         z80.setAutoStopOnRetWithStackEmpty(true);
-        z80.setMemory(new MsxMemory(plugin.audio.chipRegister, model));
-        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, plugin.audio.chipRegister, null, model));
+        z80.setMemory(new MsxMemory(k051649Write));
+        z80.setPortsSpace(new MsxPort(((MsxMemory) z80.getMemory()).slot, null, ay8910Write, ym2413Write));
         z80.beforeInstructionFetch().addListener(this::z80OnBeforeInstructionFetch);
 
         mapper = new Mapper((MapperRamCartridge) ((MsxMemory) z80.getMemory()).slot.slots[3][1], (MsxMemory) z80.getMemory());

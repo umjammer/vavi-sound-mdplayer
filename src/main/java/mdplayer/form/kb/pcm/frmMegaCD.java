@@ -107,7 +107,7 @@ public class frmMegaCD extends frmBase {
     };
 
     public void screenChangeParams() {
-        ScdPcm rf5c164Register = audio.chipRegister.chip(Rf5C164Chip.class).read(chipId);
+        ScdPcm rf5c164Register = audio.plugin.chipRegister.chip(Rf5C164Chip.class).read(chipId);
         if (rf5c164Register != null) {
             for (int ch = 0; ch < 8; ch++) {
                 if (rf5c164Register.getChannel(ch).enable != 0) {

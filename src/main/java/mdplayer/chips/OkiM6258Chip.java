@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.chips.OkiM6258;
 import mdsound.instrument.OkiM6258Inst;
@@ -26,7 +27,7 @@ public class OkiM6258Chip implements Chip {
 
     public final boolean[] keyOn = {false, false};
 
-    private Audio context;
+    private BasePlugin context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -35,7 +36,7 @@ public class OkiM6258Chip implements Chip {
     }
 
     @Override
-    public void init(Audio context) {
+    public void init(BasePlugin context) {
         this.context = context;
     }
 

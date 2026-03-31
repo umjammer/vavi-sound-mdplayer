@@ -49,7 +49,7 @@ public class frmVisWave extends frmBase {
     }
 
     private void timer1_Tick(ActionEvent ev) {
-        audio.driverVirtual.copyWaveBuffer(buf);
+        audio.plugin.driverVirtual.copyWaveBuffer(buf);
 
         g.setColor(Color.black);
         g.fillRect(0, 0, bmp.getWidth(), bmp.getHeight());

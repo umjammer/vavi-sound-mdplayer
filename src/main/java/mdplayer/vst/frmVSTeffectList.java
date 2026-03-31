@@ -89,7 +89,7 @@ public class frmVSTeffectList extends JFrame {
         while (!audio.getTrdStopped()) {
             Thread.yield();
         }
-        audio.chipRegister.plugin(VstPlugin.class).addVSTeffect(ofd.getSelectedFile().getName());
+        audio.plugin.chipRegister.plugin(VstPlugin.class).addVSTeffect(ofd.getSelectedFile().getName());
         dispPluginList();
 
     }
@@ -124,7 +124,7 @@ public class frmVSTeffectList extends JFrame {
     public void dispPluginList() {
         model.setRowCount(0);
 
-        vstInfos = audio.chipRegister.plugin(VstPlugin.class).getVSTInfos();
+        vstInfos = audio.plugin.chipRegister.plugin(VstPlugin.class).getVSTInfos();
 
         int i = 0;
         for (VstMng.VstInfo2 vi : vstInfos) {
@@ -142,7 +142,7 @@ public class frmVSTeffectList extends JFrame {
             Thread.yield();
         }
         int row = dgvList.getSelectionModel().getSelectedIndices()[0];
-        audio.chipRegister.plugin(VstPlugin.class).delVSTeffect((String) model.getValueAt(row, 1 /* clmKey */));
+        audio.plugin.chipRegister.plugin(VstPlugin.class).delVSTeffect((String) model.getValueAt(row, 1 /* clmKey */));
         dispPluginList();
     }
 
@@ -155,7 +155,7 @@ public class frmVSTeffectList extends JFrame {
         while (!audio.trdClosed) {
             Thread.yield();
         }
-        audio.chipRegister.plugin(VstPlugin.class).delVSTeffect("");
+        audio.plugin.chipRegister.plugin(VstPlugin.class).delVSTeffect("");
         dispPluginList();
     }
 

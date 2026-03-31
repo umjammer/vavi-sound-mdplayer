@@ -142,7 +142,7 @@ public class frmK051649 extends frmBase {
     };
 
     public void screenChangeParams() {
-        K051649 chip = audio.chipRegister.chip(K051649Chip.class).getChip(chipId);
+        K051649 chip = audio.plugin.chipRegister.chip(K051649Chip.class).getChip(chipId);
         if (chip == null) return;
 
         for (int ch = 0; ch < 5; ch++) {
@@ -151,7 +151,7 @@ public class frmK051649 extends frmBase {
 
             MDChipParams.Channel channel = newParam.channels[ch];
             for (int i = 0; i < 32; i++) channel.inst[i] = chip.getWaveRam(ch, i);
-            float fTone = audio.mds.getChipInfo(K051649Inst.class).clock / (8.0f * (float) psg.frequency);
+            float fTone = audio.plugin.mds.getChipInfo(K051649Inst.class).clock / (8.0f * (float) psg.frequency);
             channel.freq = psg.frequency;
             channel.volume = psg.key != 0 ? (int) (psg.volume * 1.33) : 0;
             channel.volumeL = psg.volume;

@@ -1,6 +1,9 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,5 +50,20 @@ public class AIFFFileFormat extends BaseFileFormat implements FileFormat.Sampled
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(SampledPlugin.class);
+    }
+
+    private static final byte[] magic = {0x46, 0x4F, 0x52, 0x4D};
+
+    @Override
+    public int getMarkSize() {
+        return magic.length;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+//        byte[] buf = new byte[getMarkSize()];
+//        is.readNBytes(buf, 0, buf.length);
+//        return Arrays.equals(magic, buf);
+        return false;
     }
 }

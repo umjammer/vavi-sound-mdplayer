@@ -43,9 +43,12 @@ import vavi.util.StringUtil;
 import static java.lang.System.getLogger;
 
 
-public class MucomJava extends BaseDriver {
+/**
+ * @author kumatan
+ */
+public class MucomDriver extends BaseDriver {
 
-    private static final Logger logger = getLogger(MucomJava.class.getName());
+    private static final Logger logger = getLogger(MucomDriver.class.getName());
 
     private ICompiler mucomCompiler = null;
     private IDriver mucomDriver = null;
@@ -117,8 +120,7 @@ public class MucomJava extends BaseDriver {
                 buf[2] != 'P' ||
                 buf[3] != 'b') {
             // Unknown files
-logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
-            return null;
+            throw new IllegalArgumentException("Extended mub file?\n" + StringUtil.getDump(buf, 4));
         }
 
         int chipsCount = buf[0x0009];
@@ -213,7 +215,7 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
     }
 
     @Override
-    public boolean init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
+    public void init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
         gd3 = getGD3Info(vgmBuf);
 
         this.vgmBuf = vgmBuf;
@@ -236,13 +238,8 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
         //if (model == EnmModel.RealModel) return true;
 //#endif
 
-        if (mType == MUCOMFileType.MUC) return initMUC();
-        else return initMUB();
-    }
-
-    @Override
-    public boolean init(byte[] vgmBuf, int fileType, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime) {
-        throw new UnsupportedOperationException("This driver does not require this method");
+        if (mType == MUCOMFileType.MUC) initMUC();
+        else initMUB();
     }
 
     @Override
@@ -363,17 +360,14 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
             info = mucomCompiler.getCompilerInfo();
 
         } catch (Exception e) {
-            logger.log(Level.ERROR, e.getMessage(), e);
-            ret = null;
-            info = null;
+            throw new IllegalStateException("error in compiling", e);
         }
 
-        if (ret == null || info == null) return false;
         if (!info.errorList.isEmpty()) {
-            if (model == EnmModel.VirtualModel) {
-                JOptionPane.showMessageDialog(null, "Compile error");
-            }
-            return false;
+//            if (model == EnmModel.VirtualModel) {
+//                JOptionPane.showMessageDialog(null, "Compile error");
+//            }
+            throw new IllegalArgumentException("Compile error: " + info.errorList);
         }
 
         if (mucomDriver == null) mucomDriver = IDriver.factory("mucom88.driver.Driver");
@@ -403,7 +397,7 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
         return true;
     }
 
-    private boolean initMUB() {
+    private void initMUB() {
         if (mucomDriver == null) mucomDriver = new mucom88.driver.Driver();
 
         boolean notSoundBoard2 = false;
@@ -429,8 +423,6 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
 
         mucomDriver.startRendering(Common.VGMProcSampleRate, new Tuple<>("", opnaBaseClock));
         mucomDriver.startMusic(0);
-
-        return true;
     }
 
     private void writeOPNA1(ChipDatum cd) {
@@ -439,7 +431,7 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(0, cd.port, cd.address, cd.data, model);
+        plugin.chipRegister.chip(Ym2608Chip.class).write(0, cd.port, cd.address, cd.data, model);
     }
 
     private void writeOPNA2(ChipDatum cd) {
@@ -448,7 +440,7 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        plugin.audio.chipRegister.chip(Ym2608Chip.class).write(1, cd.port, cd.address, cd.data, model);
+        plugin.chipRegister.chip(Ym2608Chip.class).write(1, cd.port, cd.address, cd.data, model);
     }
 
     private void writeOPNB1(ChipDatum cd) {
@@ -457,7 +449,7 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        plugin.audio.chipRegister.chip(Ym2610Chip.class).write(0, cd.port, cd.address, cd.data, model);
+        plugin.chipRegister.chip(Ym2610Chip.class).write(0, cd.port, cd.address, cd.data, model);
     }
 
     private void writeOPNB2(ChipDatum cd) {
@@ -466,7 +458,7 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
         if (cd.data == -1) return;
         if (cd.port == -1) return;
 
-        plugin.audio.chipRegister.chip(Ym2610Chip.class).write(1, cd.port, cd.address, cd.data, model);
+        plugin.chipRegister.chip(Ym2610Chip.class).write(1, cd.port, cd.address, cd.data, model);
     }
 
     private void writeOPM1(ChipDatum cd) {
@@ -474,21 +466,21 @@ logger.log(Level.WARNING, "Extended mub file?\n" + StringUtil.getDump(buf, 4));
         if (cd.address == -1) return;
         if (cd.data == -1) return;
 
-        plugin.audio.chipRegister.chip(Ym2151Chip.class).write(0, cd.port, cd.address, cd.data, model, 0, 0);
+        plugin.chipRegister.chip(Ym2151Chip.class).write(0, cd.port, cd.address, cd.data, model, 0, 0);
     }
 
     private void writeOPNB1PCMData(byte[] dat, int v, int v2) {
         if (v == 0)
-            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmA(0, dat, EnmModel.VirtualModel);
+            plugin.chipRegister.chip(Ym2610Chip.class).writeAdpcmA(0, dat, EnmModel.VirtualModel);
         else
-            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmB(0, dat, EnmModel.VirtualModel);
+            plugin.chipRegister.chip(Ym2610Chip.class).writeAdpcmB(0, dat, EnmModel.VirtualModel);
     }
 
     private void writeOPNB2PCMData(byte[] dat, int v, int v2) {
         if (v == 0)
-            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmA(1, dat, EnmModel.VirtualModel);
+            plugin.chipRegister.chip(Ym2610Chip.class).writeAdpcmA(1, dat, EnmModel.VirtualModel);
         else
-            plugin.audio.chipRegister.chip(Ym2610Chip.class).writeAdpcmB(1, dat, EnmModel.VirtualModel);
+            plugin.chipRegister.chip(Ym2610Chip.class).writeAdpcmB(1, dat, EnmModel.VirtualModel);
     }
 
     private void sendOPNAWait(long size, int elapsed) {

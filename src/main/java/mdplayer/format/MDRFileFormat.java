@@ -1,17 +1,24 @@
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.PlayList;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.moonDriver.MoonDriver;
-import mdplayer.plugin.MDRPlugin;
+import mdplayer.plugin.MDLPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
+import vavi.sound.SoundUtil;
+import vavi.sound.sampled.md.MdEncoding;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -73,6 +80,22 @@ public class MDRFileFormat extends BaseFileFormat {
 
     @Override
     public Plugin getPlugin() {
-        return Plugin.getPlugin(MDRPlugin.class);
+        return Plugin.getPlugin(MDLPlugin.class);
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return MdEncoding.MOONDRV;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }

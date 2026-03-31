@@ -6,16 +6,23 @@
 
 package mdplayer.format;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
+
+import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.PlayList.Music;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.musica.MuSICA;
-import mdplayer.driver.musica.MuSICA_K4;
+import mdplayer.driver.musica.MusicaDriver;
+import mdplayer.driver.musica.MusicaK4Driver;
 import mdplayer.plugin.MuSICAPlugin;
 import mdplayer.plugin.Plugin;
+import vavi.sound.SoundUtil;
+import vavi.sound.sampled.md.MdEncoding;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -39,7 +46,7 @@ public class MuSICAFormat extends BaseFileFormat implements FileFormat.SampledFi
         String ext = file.substring(file.lastIndexOf('.'));
         if (ext.equalsIgnoreCase(".bgm")) {
             music.format = this;
-            Vgm.Gd3 gd3 = (new MuSICA()).getGD3Info(buf, null);
+            Vgm.Gd3 gd3 = (new MusicaDriver()).getGD3Info(buf, null);
             music.title = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackName;
             music.titleJ = gd3.trackName.isEmpty() ? Path.getFileName(file) : gd3.trackNameJ;
             music.game = "";
@@ -57,7 +64,7 @@ public class MuSICAFormat extends BaseFileFormat implements FileFormat.SampledFi
             if (File.exists(vcd)) {
                 vcdBuf = File.readAllBytes(vcd);
             }
-            Vgm.Gd3 gd3 = (new MuSICA_K4()).getGD3Info(buf, vcdBuf);
+            Vgm.Gd3 gd3 = (new MusicaK4Driver()).getGD3Info(buf, vcdBuf);
             if (gd3 == null) {
                 //logger.log(Level.WARNING, ".MSD compilation failed", "PlayList", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 music.title = Path.getFileName(file);
@@ -86,5 +93,21 @@ public class MuSICAFormat extends BaseFileFormat implements FileFormat.SampledFi
     @Override
     public Plugin getPlugin() {
         return Plugin.getPlugin(MuSICAPlugin.class);
+    }
+
+    @Override
+    public Encoding getEncoding() {
+        return MdEncoding.MUSICA;
+    }
+
+    @Override
+    public int getMarkSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isSupported(InputStream is) throws IOException {
+        if (isCompressedStream(is)) return false;
+        return Arrays.stream(getExtensions()).anyMatch(e -> java.nio.file.Path.of(SoundUtil.getSource(is)).toString().toLowerCase().endsWith(e));
     }
 }
