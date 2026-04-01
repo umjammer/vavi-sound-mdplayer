@@ -362,9 +362,11 @@ public class Filter {
     // State of filter.
     protected int vhp; // highpass
     protected int vbp; // bandpass
-    protected int[] vbpX = {0}, vbpVc = {0};
+    protected final int[] vbpX = {0};
+    protected final int[] vbpVc = {0};
     protected int vlp; // lowpass
-    protected int[] vlpX = {0}, vlpVc = {0};
+    protected final int[] vlpX = {0};
+    protected final int[] vlpVc = {0};
     // Filter / mixer inputs.
     protected int ve;
     protected int v3;
@@ -394,23 +396,23 @@ public class Filter {
         public int vcMax;
 
         // Reverse op-amp transfer function.
-        public short[] opampRev = new short[1 << 16];
+        public final short[] opampRev = new short[1 << 16];
         // Lookup tables for gain and summer op-amps : Output stage / filter.
-        public short[] summer = new short[SummerOffset.intI(5)]; // <5>::value];
-        public short[][] gain = new short[][] {new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
+        public final short[] summer = new short[SummerOffset.intI(5)]; // <5>::value];
+        public final short[][] gain = new short[][] {new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
                 new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
                 new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16],
                 new short[1 << 16], new short[1 << 16], new short[1 << 16], new short[1 << 16]};
-        public short[] mixer = new short[MixerOffset.intI(8)]; // <8>::value];
+        public final short[] mixer = new short[MixerOffset.intI(8)]; // <8>::value];
         // Cutoff frequency DAC Output voltage table. FC instanceof an 11 bit register.
-        public short[] f0Dac = new short[1 << 11];
+        public final short[] f0Dac = new short[1 << 11];
     }
 
     // VCR - 6581 only.
 
     // Common parameters.
 
-    protected static ModelFilter[] modelFilters = new ModelFilter[] {new ModelFilter(), new ModelFilter()};
+    protected static final ModelFilter[] modelFilters = new ModelFilter[] {new ModelFilter(), new ModelFilter()};
 
     //
     // Inline functions.
@@ -1608,7 +1610,7 @@ public class Filter {
         public boolean dacTerm;
     }
 
-    public static ModelFilterInit[] modelFilterInits = new ModelFilterInit[] {
+    public static final ModelFilterInit[] modelFilterInits = new ModelFilterInit[] {
             new ModelFilterInit(), new ModelFilterInit()
     };
 
@@ -1657,8 +1659,8 @@ public class Filter {
         modelFilterInits[1].dacTerm = true;
     }
 
-    public static short[] vcr_kVg = new short[1 << 16];
-    public static short[] vcr_n_Ids_term = new short[1 << 16];
+    public static final short[] vcr_kVg = new short[1 << 16];
+    public static final short[] vcr_n_Ids_term = new short[1 << 16];
 
 //# ifndef HAS_LOG1P
     public static double log1p(double x) {

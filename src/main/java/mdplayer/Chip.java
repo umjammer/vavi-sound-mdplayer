@@ -24,9 +24,9 @@ public interface Chip {
     /** */
     class ChipKeyInfo {
 
-        public boolean[] on;
+        public final boolean[] on;
 
-        public boolean[] off;
+        public final boolean[] off;
 
         public ChipKeyInfo(int n) {
             on = new boolean[n];

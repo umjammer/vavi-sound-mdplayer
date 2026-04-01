@@ -29,7 +29,7 @@ public class K051649Chip implements Chip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    private K051649 scc_k051649 = new K051649();
+    private final K051649 scc_k051649 = new K051649();
 
     private int sccR_port;
 

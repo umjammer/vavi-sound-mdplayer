@@ -28,7 +28,7 @@ public class frmChipBase extends frmBase {
     protected MDChipParams.AY8910 newParam = null;
     protected MDChipParams.AY8910 oldParam = null;
 
-    protected FrameBuffer frameBuffer = new FrameBuffer();
+    protected final FrameBuffer frameBuffer = new FrameBuffer();
 
     private void initializeComponent() {
         //

@@ -15,7 +15,7 @@ public class NRTDRV {
     private static final Logger logger = getLogger(NRTDRV.class.getName());
 
     byte[] ram;
-    public Work work = new Work();
+    public final Work work = new Work();
 
     private static final byte[] KTABLE = {
             // C     C+    D     D +   E     F     F+    G     G+    a     a+    B
@@ -672,12 +672,12 @@ public class NRTDRV {
         public byte fSpeed = 5;
         public byte ver = 2;
 
-        public Ch[] opm1Chs = new Ch[] {new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch()};
-        public Ch[] opm2Chs = new Ch[] {new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch()};
-        public Ch[] psgChs = new Ch[] {new Ch(), new Ch(), new Ch()};
+        public final Ch[] opm1Chs = new Ch[] {new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch()};
+        public final Ch[] opm2Chs = new Ch[] {new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch(), new Ch()};
+        public final Ch[] psgChs = new Ch[] {new Ch(), new Ch(), new Ch()};
 
-        public byte[] opm1VReg = new byte[256];
-        public byte[] opm2VReg = new byte[256];
+        public final byte[] opm1VReg = new byte[256];
+        public final byte[] opm2VReg = new byte[256];
 
         public byte amd1 = 0;
         public byte pmd1 = 0;
@@ -843,7 +843,7 @@ public class NRTDRV {
         public byte psgRrCounter = 0; // IX+54
         public byte psgRrVolOffset = 0; // IX+55
 
-        public RepBuf[] repBuf = new RepBuf[] {
+        public final RepBuf[] repBuf = new RepBuf[] {
                 new RepBuf(), new RepBuf(), new RepBuf(), new RepBuf(), new RepBuf(), new RepBuf()
         };
 

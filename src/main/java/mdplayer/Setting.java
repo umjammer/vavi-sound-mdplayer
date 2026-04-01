@@ -1595,15 +1595,15 @@ public class Setting implements Serializable, Cloneable {
 
     private MxDrv mxDrv = new MxDrv();
 
-    public MxDrv getMxDrv() { return mxDrv; };
+    public MxDrv getMxDrv() { return mxDrv; }
 
-    public void setMxDrv(MxDrv value) { mxDrv = value; };
+    public void setMxDrv(MxDrv value) { mxDrv = value; }
 
     private Mndrv mnDrv = new Mndrv();
 
-    public Mndrv getMnDrv() { return mnDrv; };
+    public Mndrv getMnDrv() { return mnDrv; }
 
-    public void setMnDrv(Mndrv value) { mnDrv = value; };
+    public void setMnDrv(Mndrv value) { mnDrv = value; }
 
     private Rcs rcs = new Rcs();
 
@@ -2152,8 +2152,9 @@ public class Setting implements Serializable, Cloneable {
         }
 
         private boolean saveCompiledFile = false;
-        public boolean getSaveCompiledFile() { return saveCompiledFile; };
-        public void setSaveCompiledFile(boolean value) { saveCompiledFile = value; };
+        public boolean getSaveCompiledFile() { return saveCompiledFile; }
+
+        public void setSaveCompiledFile(boolean value) { saveCompiledFile = value; }
 
         @Override
         public Other clone() {

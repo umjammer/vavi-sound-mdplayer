@@ -38,7 +38,7 @@ public class frmDMG extends frmBase {
     private final MDChipParams.DMG newParam;
     private final MDChipParams.DMG oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
-    static Preferences prefs = Preferences.userNodeForPackage(frmDMG.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmDMG.class);
 
     public frmDMG(frmMain frm, int chipId, int zoom, MDChipParams.DMG newParam, MDChipParams.DMG oldParam) {
         super(frm);

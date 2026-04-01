@@ -41,7 +41,7 @@ public class frmYMF271 extends frmBase {
     private final MDChipParams.YMF271 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYMF271.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYMF271.class);
 
     private static final int[] slotTbl = new int[] {
             0, 24, 12, 36,

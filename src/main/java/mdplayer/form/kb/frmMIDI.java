@@ -40,7 +40,7 @@ public class frmMIDI extends frmBase {
     private final FrameBuffer frameBuffer = new FrameBuffer();
     private String notes = "";
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmMIDI.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmMIDI.class);
 
     public frmMIDI(frmMain frm, int chipId, int zoom, MIDIParam newParam) {
         super(frm);

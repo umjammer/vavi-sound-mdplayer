@@ -40,7 +40,7 @@ public class frmS5B extends frmBase {
     private final MDChipParams.S5B newParam;
     private final MDChipParams.S5B oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
-    static Preferences prefs = Preferences.userNodeForPackage(frmS5B.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmS5B.class);
 
     public frmS5B(frmMain frm, int chipId, int zoom, MDChipParams.S5B newParam, MDChipParams.S5B oldParam) {
         super(frm);

@@ -282,19 +282,19 @@ public class C64 extends C64Env {
         /**
          * Colorburst frequency : Herz
          */
-        public double colorBurst;
+        public final double colorBurst;
         /**
          * .Clock frequency divider
          */
-        public double divider;
+        public final double divider;
         /**
          * Power line frequency : Herz
          */
-        public double powerFreq;
+        public final double powerFreq;
         /**
          * Video chips model
          */
-        public Mos656X.Model vicModel;
+        public final Mos656X.Model vicModel;
 
         public Model(double colorBurst, double divider, double powerFreq, Mos656X.Model vicModel) {
             this.colorBurst = colorBurst;
@@ -312,7 +312,7 @@ public class C64 extends C64Env {
      * PAL-M - 3.57561149 MHz
      * PAL-N - 3.58205625 MHz
      */
-    public Model[] modelData;
+    public final Model[] modelData;
 
     public double getCpuFreq(Clock model) {
         // The crystal clock that drives the VIC II chips instanceof four times

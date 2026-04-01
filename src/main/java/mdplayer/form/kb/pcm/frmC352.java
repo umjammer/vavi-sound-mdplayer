@@ -40,7 +40,7 @@ public class frmC352 extends frmBase {
     private MDChipParams.C352 oldParam = new MDChipParams.C352();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmC352.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmC352.class);
 
     public frmC352(frmMain frm, int chipId, int zoom, MDChipParams.C352 newParam, MDChipParams.C352 oldParam) {
         super(frm);

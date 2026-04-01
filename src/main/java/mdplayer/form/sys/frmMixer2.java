@@ -65,7 +65,7 @@ public class frmMixer2 extends JFrame {
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
-    public frmMain parent;
+    public final frmMain parent;
     private int frameSizeW = 0;
     private int frameSizeH = 0;
     private final int zoom;
@@ -75,8 +75,8 @@ public class frmMixer2 extends JFrame {
     private final MDChipParams.Mixer oldParam = new MDChipParams.Mixer();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmHuC6280.class);
-    Audio audio = Audio.getInstance();
+    static final Preferences prefs = Preferences.userNodeForPackage(frmHuC6280.class);
+    final Audio audio = Audio.getInstance();
 
     public frmMixer2(frmMain frm, int zoom, MDChipParams.Mixer newParam) {
         parent = frm;

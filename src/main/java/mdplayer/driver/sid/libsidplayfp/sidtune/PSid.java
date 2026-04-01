@@ -88,11 +88,11 @@ public class PSid extends SidTuneBase {
         public int speed;
         // bit: 0=50 Hz, 1=CIA 1 Timer a (default: 60 Hz)
         // ASCII Strings, 31 characters long and
-        public byte[] name = new byte[PSID_MAXSTRLEN];
+        public final byte[] name = new byte[PSID_MAXSTRLEN];
         // terminated by a trailing zero
-        public byte[] author = new byte[PSID_MAXSTRLEN];
+        public final byte[] author = new byte[PSID_MAXSTRLEN];
         //
-        public byte[] released = new byte[PSID_MAXSTRLEN];
+        public final byte[] released = new byte[PSID_MAXSTRLEN];
 
         // only version >= 2
         public short flags;

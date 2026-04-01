@@ -52,8 +52,6 @@ public class Ym2151Chip implements Chip {
         return use4MYM2151scci;
     }
 
-    ;
-
     public int[] hosei = new int[] {0, 0};
 
     private BasePlugin context;

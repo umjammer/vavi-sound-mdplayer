@@ -190,7 +190,7 @@ public class frmMain extends JFrame {
 
     private static final Logger logger = getLogger(frmMain.class.getName());
 
-    ResourceBundle rb = ResourceBundle.getBundle("mdplayer/form/sys/frmMain", Locale.getDefault());
+    final ResourceBundle rb = ResourceBundle.getBundle("mdplayer/form/sys/frmMain", Locale.getDefault());
 
     static final Point empty = new Point(0, 0);
 
@@ -262,7 +262,7 @@ public class frmMain extends JFrame {
     private byte[] srcBuf;
 
     public Setting setting = Setting.load();
-    public TonePallet tonePallet = TonePallet.load(null);
+    public final TonePallet tonePallet = TonePallet.load(null);
 
     private int frameSizeW = 0;
     private int frameSizeH = 0;
@@ -7293,7 +7293,7 @@ public class frmMain extends JFrame {
         }
     }
 
-    Receiver midiIn_MessageReceived = new Receiver() {
+    final Receiver midiIn_MessageReceived = new Receiver() {
         @Override
         public void send(MidiMessage message, long timeStamp) {
             if (!setting.getMidiKbd().getUseMIDIKeyboard()) return;
@@ -7512,7 +7512,7 @@ public class frmMain extends JFrame {
 
     public static Consumer<NativeKeyEvent> keyHookMeth = null;
 
-    NativeKeyListener keyboardHook1_KeyboardHooked = new NativeKeyListener() {
+    final NativeKeyListener keyboardHook1_KeyboardHooked = new NativeKeyListener() {
         @Override
         public void nativeKeyPressed(NativeKeyEvent e) {
             logger.log(Level.TRACE, "Key Pressed: " + NativeKeyEvent.getKeyText(e.getKeyCode()));
@@ -7865,7 +7865,7 @@ public class frmMain extends JFrame {
         RedrawButton(opeButtonZoom, setting.getOther().getZoom(), lstOpeButtonLeaveImage[17]);
     }
 
-    MouseListener opeButton_Mouse = new MouseAdapter() {
+    final MouseListener opeButton_Mouse = new MouseAdapter() {
         @Override
         public void mouseEntered(MouseEvent ev) {
             JButton btn = (JButton) ev.getSource();

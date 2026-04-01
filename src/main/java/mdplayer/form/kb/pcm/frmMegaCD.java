@@ -40,7 +40,7 @@ public class frmMegaCD extends frmBase {
     private final MDChipParams.RF5C164 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmMegaCD.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmMegaCD.class);
 
     public frmMegaCD(frmMain frm, int chipId, int zoom, MDChipParams.RF5C164 newParam, MDChipParams.RF5C164 oldParam) {
         super(frm);

@@ -511,7 +511,7 @@ logger.log(Level.DEBUG, "rhythm file: " + ffn);
         clip.setContents(ss, ss);
     }
 
-    static Robot robot;
+    static final Robot robot;
 
     static {
         try {

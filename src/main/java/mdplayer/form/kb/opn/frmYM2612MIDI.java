@@ -59,7 +59,7 @@ public class frmYM2612MIDI extends frmBase {
     private final MDChipParams.YM2612MIDI oldParam = new MDChipParams.YM2612MIDI();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYM2612MIDI.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYM2612MIDI.class);
 
     public frmYM2612MIDI(frmMain frm, int zoom, MDChipParams.YM2612MIDI newParam) {
         super(frm);

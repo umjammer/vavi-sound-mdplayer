@@ -16,13 +16,13 @@ public class MidiBoard {
     private static final Logger logger = getLogger(MidiBoard.class.getName());
 
     private int num = 0; // Interface Number
-    private BiFunction<Integer, Byte, Integer> midi;
+    private final BiFunction<Integer, Byte, Integer> midi;
     private byte group = 0;
     private byte interrupt = 0;
     private byte vect = 0;
     private byte intMask = (byte) 0xff;
 
-    private byte[] reg = new byte[0x100];
+    private final byte[] reg = new byte[0x100];
     private Consumer<Byte>[] cmdw = null;
     private Supplier<Byte>[] cmdr = null;
     private int generalTimerValue = 0;
@@ -138,7 +138,6 @@ public class MidiBoard {
             return dat;
 //            throw new Exception(); // R01 is write only.
         } else if (c == 0x7) { //
-            ;
         } else if (c > 0x8) {
             // R04,14,24,34,44,54,64,74,84,94 grp4
             // R05,15,25,35,45,55,65,75,85,95

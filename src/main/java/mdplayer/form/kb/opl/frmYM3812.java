@@ -41,7 +41,7 @@ public class frmYM3812 extends frmBase {
     private final MDChipParams.YM3812 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYM3812.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYM3812.class);
 
     public frmYM3812(frmMain frm, int chipId, int zoom, MDChipParams.YM3812 newParam, MDChipParams.YM3812 oldParam) {
         super(frm);

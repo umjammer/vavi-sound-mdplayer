@@ -58,7 +58,7 @@ public class Mixer {
 
     private MixerFunction[] mix = new MixerFunction[1];
 
-    Random random = new Random(System.currentTimeMillis());
+    final Random random = new Random(System.currentTimeMillis());
 
     private int oldRandomValue;
 

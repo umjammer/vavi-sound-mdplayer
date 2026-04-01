@@ -39,7 +39,7 @@ public class frmOKIM6295 extends frmBase {
     private final MDChipParams.OKIM6295 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmOKIM6295.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmOKIM6295.class);
 
     public frmOKIM6295(frmMain frm, int chipId, int zoom, MDChipParams.OKIM6295 newParam, MDChipParams.OKIM6295 oldParam) {
         super(frm);

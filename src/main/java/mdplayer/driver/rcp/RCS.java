@@ -133,7 +133,7 @@ public class RCS {
     private int rcsControlNoteNumber = 0;
     private int rcsControlMode = 0;
     private int rcsPolyphonicMode = 3;
-    public Pcm8St[] pcm8St = new Pcm8St[] {
+    public final Pcm8St[] pcm8St = new Pcm8St[] {
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
@@ -373,7 +373,7 @@ public class RCS {
     private int skipPtr = 4;
     private byte[] msgBuf2 = new byte[2];
     private byte[] msgBuf3 = new byte[3];
-    private byte[] msgBuf = new byte[256];
+    private final byte[] msgBuf = new byte[256];
 
     byte[] vgmBuf;
     boolean isVirtualModel;
@@ -382,8 +382,8 @@ public class RCS {
 
     }
 
-    private efd[] EventFunc = new efd[256];
-    private efd[] SpecialEventFunc = new efd[256];
+    private final efd[] EventFunc = new efd[256];
+    private final efd[] SpecialEventFunc = new efd[256];
     private int RelativeTempoChangeTargetTempo;
     private double RelativeTempoChangeTickSlice;
     private boolean RelativeTempoChangeSW = false;

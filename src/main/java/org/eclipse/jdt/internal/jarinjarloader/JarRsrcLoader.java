@@ -22,7 +22,7 @@ public class JarRsrcLoader {
 
    private static final Logger logger = getLogger(JarRsrcLoader.class.getName());
 
-   public static void main(String[] args) throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException, IOException {
+   static void main(String[] args) throws ClassNotFoundException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, SecurityException, NoSuchMethodException, IOException {
       ManifestInfo mi = getManifestInfo();
       ClassLoader cl = Thread.currentThread().getContextClassLoader();
       URL.setURLStreamHandlerFactory(new RsrcURLStreamHandlerFactory(cl));

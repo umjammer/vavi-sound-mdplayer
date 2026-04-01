@@ -160,7 +160,7 @@ public class MuapDriver extends BaseDriver {
         }
 
         if (ret == null && info == null) return null;
-        if (info != null && info.errorList.size() > 0) {
+        if (info != null && !info.errorList.isEmpty()) {
             for (var error : info.errorList) {
                 logger.log(Level.ERROR, error.getItem3());
             }

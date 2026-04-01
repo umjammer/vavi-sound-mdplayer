@@ -11,7 +11,7 @@ import mdplayer.plugin.BasePlugin;
 
 public abstract class BaseDriver {
 
-    protected static Setting setting = Setting.getInstance();
+    protected static final Setting setting = Setting.getInstance();
 
     public double vgmSpeed = 1;
 

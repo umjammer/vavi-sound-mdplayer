@@ -40,7 +40,7 @@ public class frmMMC5 extends frmBase {
     private final MDChipParams.MMC5 oldParam = new MDChipParams.MMC5();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmMMC5.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmMMC5.class);
 
     public frmMMC5(frmMain frm, int chipId, int zoom, MDChipParams.MMC5 newParam) {
         super(frm);

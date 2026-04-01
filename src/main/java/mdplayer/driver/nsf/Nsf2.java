@@ -55,7 +55,7 @@ public class Nsf2 {
     // NSFe only
     private int text_len;
     private int speedNtsc;
-    private byte[] bankSwitch = new byte[8];
+    private final byte[] bankSwitch = new byte[8];
     private int speedPal;
     private int palNtsc;
     private int soundChip;
@@ -65,7 +65,7 @@ public class Nsf2 {
     public boolean useFme7;
     public boolean useMmc5;
     public boolean useN106;
-    private byte[] extra = new byte[4];
+    private final byte[] extra = new byte[4];
     private byte[] body;
     private int bodySize;
     private byte[] nsfeImage;

@@ -80,7 +80,7 @@ public class frmHuC6280 extends frmBase {
     private final MDChipParams.HuC6280 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmHuC6280.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmHuC6280.class);
 
     public frmHuC6280(frmMain frm, int chipId, int zoom, MDChipParams.HuC6280 newParam, MDChipParams.HuC6280 oldParam) {
         super(frm);

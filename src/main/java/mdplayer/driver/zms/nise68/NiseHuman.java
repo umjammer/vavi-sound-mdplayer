@@ -21,7 +21,7 @@ public class NiseHuman {
 
     private static final Logger logger = getLogger(NiseHuman.class.getName());
 
-    public static int mpcmPtr = 0xfe_9000; // MPCM permanent location (tentative)
+    public static final int mpcmPtr = 0xfe_9000; // MPCM permanent location (tentative)
 
     private final Memory68 mem;
     private final Register68 reg;
@@ -32,9 +32,9 @@ public class NiseHuman {
     private int ctrlCAbortAddress = 0;
     private int errorAbortAddress = 0;
     private int cmdLineAddress = 0;
-    private int pspSize = 16 + 240;
-    public int defUSP = 0xfe_0000;
-    public int defSSP = 0xff_0000;
+    private final int pspSize = 16 + 240;
+    public final int defUSP = 0xfe_0000;
+    public final int defSSP = 0xff_0000;
     private Runnable[] tblFunc = new Runnable[256];
     private Runnable[] tblFEFunc = new Runnable[256];
 

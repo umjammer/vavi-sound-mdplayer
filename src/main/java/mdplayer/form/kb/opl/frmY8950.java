@@ -41,7 +41,7 @@ public class frmY8950 extends frmBase {
     private final MDChipParams.Y8950 oldParam = new MDChipParams.Y8950();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmY8950.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmY8950.class);
 
     public frmY8950(frmMain frm, int chipId, int zoom, MDChipParams.Y8950 newParam) {
         super(frm);

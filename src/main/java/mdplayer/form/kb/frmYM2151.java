@@ -40,7 +40,7 @@ public class frmYM2151 extends frmBase {
     private final MDChipParams.YM2151 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYM2151.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYM2151.class);
 
     public frmYM2151(frmMain frm, int chipId, int zoom, MDChipParams.YM2151 newParam, MDChipParams.YM2151 oldParam) {
         super(frm);

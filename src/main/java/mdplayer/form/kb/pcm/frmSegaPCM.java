@@ -40,7 +40,7 @@ public class frmSegaPCM extends frmBase {
     private MDChipParams.SegaPcm oldParam = null;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmSegaPCM.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmSegaPCM.class);
 
     public frmSegaPCM(frmMain frm, int chipId, int zoom, MDChipParams.SegaPcm newParam, MDChipParams.SegaPcm oldParam) {
         super(frm);

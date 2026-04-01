@@ -1658,8 +1658,8 @@ logger.log(Level.INFO, "checkHeadString");
             data = dat;
         }
 
-        public int delta;
-        public byte[] data;
+        public final int delta;
+        public final byte[] data;
     }
 
     private byte[] getSysEx(byte[] buf) {

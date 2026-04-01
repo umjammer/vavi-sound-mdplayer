@@ -40,7 +40,7 @@ public class frmVisWave extends frmBase {
     private double dispHeight = 1.0;
     private boolean fft = false;
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmVisWave.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmVisWave.class);
 
     public frmVisWave(frmMain frm) {
         parent = frm;

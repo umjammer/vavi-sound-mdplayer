@@ -56,12 +56,12 @@ public class frmRegTest extends frmChipBase {
 
     static class ChipData {
 
-        public String chipName;
-        public int baseIndex;
+        public final String chipName;
+        public final int baseIndex;
         /** GetRegisterDelegate */
-        public Function<Integer, Object> register;
-        public int maxRegisterSize;
-        public int regWind;
+        public final Function<Integer, Object> register;
+        public final int maxRegisterSize;
+        public final int regWind;
 
         public ChipData(String chipName, int baseIndex, int maxRegisterSize, int regWindow, Function<Integer, Object> register) {
             this.chipName = chipName;
@@ -75,7 +75,7 @@ public class frmRegTest extends frmChipBase {
     class RegisterManager {
         int select;
         public boolean needRefresh = false;
-        List<ChipData> chipData = new ArrayList<>();
+        final List<ChipData> chipData = new ArrayList<>();
 
         public RegisterManager() {
             addChip("YMF278B", 3, 0x100, select -> { // 0
@@ -182,14 +182,14 @@ public class frmRegTest extends frmChipBase {
         }
     }
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmRegTest.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmRegTest.class);
 
     private final int formWidth;
     private final int formHeight;
 
     //private FrameBuffer frameBuffer = new FrameBuffer();
 
-    RegisterManager regMan = new RegisterManager();
+    final RegisterManager regMan = new RegisterManager();
 
     private final Map<Class<? extends Chip>, Integer> pageDict = new HashMap<>() {{
         put(YmF278BChip.class, 0);

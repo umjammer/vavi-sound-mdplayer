@@ -39,13 +39,13 @@ public class frmInfo extends JFrame {
     public boolean isClosed = false;
     public int x = -1;
     public int y = -1;
-    public frmMain parent;
+    public final frmMain parent;
     public Setting setting = null;
     public List<Tuple3<Integer, Integer, String>> lyrics = null;
     public int lyricsIndex = 0;
     private Color culColor = new Color(192, 192, 255);
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmInfo.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmInfo.class);
 
     public frmInfo(frmMain frm) {
         parent = frm;

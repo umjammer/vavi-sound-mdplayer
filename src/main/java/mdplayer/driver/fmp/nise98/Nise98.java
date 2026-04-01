@@ -54,13 +54,13 @@ public class Nise98 {
         // bit76:10 int 4(IRQ10)
         // bit76:01 int 6(IRQ13)
         // bit76:00 int 0(IRQ03)
-        public byte int_ = (byte) 0b1100_0000;
+        public final byte int_ = (byte) 0b1100_0000;
         public byte p88lastAdr = 0;
         public byte p8clastAdr = 0;
         public boolean isBusy = false;
         public boolean isTimerBOverFlow = true;
         public boolean isTimerAOverFlow = false;
-        public byte[] regs;
+        public final byte[] regs;
         public byte[] adpcmMem;
         public byte adpcmPtr = 0;
         public boolean adpcmReadMode = false;

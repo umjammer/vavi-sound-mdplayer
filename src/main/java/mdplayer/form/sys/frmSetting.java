@@ -76,9 +76,9 @@ public class frmSetting extends JDialog {
 
     private final boolean asioSupported = true;
     private final boolean wasapiSupported = true;
-    public Setting setting;
+    public final Setting setting;
     private boolean IsInitialOpenFolder;
-    JTable[] dgv;
+    final JTable[] dgv;
 
     private int dialogResult;
 

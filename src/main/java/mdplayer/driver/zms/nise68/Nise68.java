@@ -175,7 +175,6 @@ public class Nise68 {
             //}
 
             if (run > 0 && (reg.pc == 0x0002_e9fe)) {
-                ;
             }
 
             //// For command-by-command debugging

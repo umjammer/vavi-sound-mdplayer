@@ -31,9 +31,9 @@ public class C140Chip implements Chip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    public byte[][] pcmRegister = {null, null};
+    public final byte[][] pcmRegister = {null, null};
 
-    public boolean[][] pcmKeyOn = {null, null};
+    public final boolean[][] pcmKeyOn = {null, null};
 
     private static final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,

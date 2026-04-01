@@ -40,7 +40,7 @@ public class frmRf5c68 extends frmBase {
     private final MDChipParams.RF5C68 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmRf5c68.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmRf5c68.class);
 
     public frmRf5c68(frmMain frm, int chipId, int zoom, MDChipParams.RF5C68 newParam, MDChipParams.RF5C68 oldParam) {
         super(frm);

@@ -40,7 +40,7 @@ public class frmVRC7 extends frmBase {
     private final MDChipParams.VRC7 oldParam = new MDChipParams.VRC7();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmVRC7.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmVRC7.class);
 
     public frmVRC7(frmMain frm, int chipId, int zoom, MDChipParams.VRC7 newParam) {
         super(frm);

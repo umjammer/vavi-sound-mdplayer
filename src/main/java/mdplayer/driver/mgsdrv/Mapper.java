@@ -15,8 +15,8 @@ public class Mapper {
     private static final Logger logger = getLogger(Mapper.class.getName());
 
     private byte freeSegment;
-    public int tableAddress = 0xf200; // Copycat Nextor
-    public int jumpAddress = 0xecb2; // Copycat Nextor
+    public final int tableAddress = 0xf200; // Copycat Nextor
+    public final int jumpAddress = 0xecb2; // Copycat Nextor
     private final MapperRamCartridge crt;
 
     public Mapper(MapperRamCartridge crt, MsxMemory memory) {

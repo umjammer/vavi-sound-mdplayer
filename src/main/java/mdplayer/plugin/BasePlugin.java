@@ -51,13 +51,13 @@ public abstract class BasePlugin implements Plugin {
 
     private static final Logger logger = getLogger(BasePlugin.class.getName());
 
-    protected Setting setting = Setting.getInstance();
+    protected final Setting setting = Setting.getInstance();
 
-    public Audio audio = Audio.getInstance();
+    public final Audio audio = Audio.getInstance();
 
-    public MDSound mds;
+    public final MDSound mds;
 
-    public ChipRegister chipRegister;
+    public final ChipRegister chipRegister;
 
     // TODO driver should be one, instruments should be separated virtual and real
     public BaseDriver driverVirtual = null;
@@ -95,7 +95,7 @@ public abstract class BasePlugin implements Plugin {
     }
 
     /** used chips */
-    protected Map<Class<? extends mdplayer.Chip>, List<Chip>> chips = new HashMap<>();
+    protected final Map<Class<? extends mdplayer.Chip>, List<Chip>> chips = new HashMap<>();
 
     /** put used chips */
     protected void put(Class<? extends mdplayer.Chip> chip, Chip info) {
@@ -155,14 +155,14 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
             return;
         }
 
-        double o = System.currentTimeMillis() / audio.swFreq;
+        double o = System.currentTimeMillis() / Audio.swFreq;
         double step = 1 / (double) setting.getOutputDevice().getSampleRate();
         audio.setTrdStopped(false);
         try {
             while (!audio.trdClosed) {
                 Thread.sleep(0);
 
-                double el1 = System.currentTimeMillis() / audio.swFreq;
+                double el1 = System.currentTimeMillis() / Audio.swFreq;
                 if (el1 - o < step) continue;
                 if (el1 - o >= step * setting.getOutputDevice().getSampleRate() / 100.0) { // Threshold 10ms
                     do {

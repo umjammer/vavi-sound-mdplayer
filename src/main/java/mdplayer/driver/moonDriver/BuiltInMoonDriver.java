@@ -309,7 +309,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
             public int damp = 0x00;
             public int lfo = 0x00;
             public int lfo_vib = 0x00;
-            public byte[] ol = new byte[4];
+            public final byte[] ol = new byte[4];
 //            public int ar_d1r = 0x00;
 //            public int dl_d2r = 0x00;
 //            public int rc_rr = 0x00;

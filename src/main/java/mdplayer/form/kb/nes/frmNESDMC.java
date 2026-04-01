@@ -40,7 +40,7 @@ public class frmNESDMC extends frmBase {
     private final MDChipParams.NESDMC oldParam = new MDChipParams.NESDMC();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmNESDMC.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmNESDMC.class);
 
     public frmNESDMC(frmMain frm, int chipId, int zoom, MDChipParams.NESDMC newParam) {
         super(frm);

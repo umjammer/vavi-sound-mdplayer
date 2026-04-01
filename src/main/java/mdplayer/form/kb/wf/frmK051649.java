@@ -81,7 +81,7 @@ public class frmK051649 extends frmBase {
     private final MDChipParams.K051649 oldParam = new MDChipParams.K051649();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmK051649.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmK051649.class);
 
     public frmK051649(frmMain frm, int chipId, int zoom, MDChipParams.K051649 newParam) {
         super(frm);

@@ -34,7 +34,7 @@ public class KmEvent {
 
     public static class Event {
         // Direct access to members prohibited
-        public Item[] item = new Item[KMEVENT_ITEM_MAX + 1];
+        public final Item[] item = new Item[KMEVENT_ITEM_MAX + 1];
     }
 
     private enum Flag {

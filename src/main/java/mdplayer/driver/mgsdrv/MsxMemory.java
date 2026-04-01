@@ -7,7 +7,7 @@ import konamiman.z80.interfaces.Memory;
 
 public class MsxMemory implements Memory {
 
-    public MsxSlot slot;
+    public final MsxSlot slot;
 
     public MsxMemory(TriConsumer<Integer, Integer, Integer> chipWrite) {
         this.slot = new MsxSlot(chipWrite);

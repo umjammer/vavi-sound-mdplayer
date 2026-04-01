@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class MemMng {
 
-    public Map<Integer, Integer> dicMng = new HashMap<>();
+    public final Map<Integer, Integer> dicMng = new HashMap<>();
     private int startPtr = 0;
     int address = 0x2000;
 

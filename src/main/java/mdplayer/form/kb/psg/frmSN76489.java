@@ -42,7 +42,7 @@ public class frmSN76489 extends frmBase {
     private final MDChipParams.SN76489 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmSN76489.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmSN76489.class);
 
     public frmSN76489(frmMain frm, int chipId, int zoom, MDChipParams.SN76489 newParam, MDChipParams.SN76489 oldParam) {
         super(frm);

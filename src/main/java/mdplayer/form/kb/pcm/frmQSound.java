@@ -39,7 +39,7 @@ public class frmQSound extends frmBase {
     private final MDChipParams.QSound oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmQSound.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmQSound.class);
 
     public frmQSound(frmMain frm, int chipId, int zoom, MDChipParams.QSound newParam, MDChipParams.QSound oldParam) {
         super(frm);

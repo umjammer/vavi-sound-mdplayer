@@ -308,7 +308,7 @@ try {
 
 //    public frmMain frmMain = null;
 
-    public NAudioWrap naudioWrap;
+    public final NAudioWrap naudioWrap;
     public WaveWriter waveWriter = null;
 
     public void close() {

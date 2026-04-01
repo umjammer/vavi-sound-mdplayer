@@ -133,27 +133,27 @@ public class MnDrv {
         interrupt.timerOPN = timerOPN;
     }
 
-    public Reg reg;
-    public XMemory mm;
-    public ComAnalyze comanalyze;
-    public ComCmds comcmds;
-    public ComLfo comlfo;
-    public ComWave comwave;
-    public DevMPcm devmpcm;
-    public DevOpm devopm;
-    public DevOpn devopn;
-    public DevOpnEmu devopnemu;
-    public DevPsg devpsg;
-    public DevPsgEmu devpsgemu;
-    public DevRhy devrhy;
-    public Interrupt interrupt;
-    public Ab ab;
-    public FMTimer timerOPM;
-    public FMTimer timerOPN;
+    public final Reg reg;
+    public final XMemory mm;
+    public final ComAnalyze comanalyze;
+    public final ComCmds comcmds;
+    public final ComLfo comlfo;
+    public final ComWave comwave;
+    public final DevMPcm devmpcm;
+    public final DevOpm devopm;
+    public final DevOpn devopn;
+    public final DevOpnEmu devopnemu;
+    public final DevPsg devpsg;
+    public final DevPsgEmu devpsgemu;
+    public final DevRhy devrhy;
+    public final Interrupt interrupt;
+    public final Ab ab;
+    public final FMTimer timerOPM;
+    public final FMTimer timerOPN;
 
-    MPcm.PCM tbl = new MPcm.PCM();
-    MPcmPP.SETPCM ptr = new MPcmPP.SETPCM();
-    byte[] vtbl = new byte[128 * 2];
+    final MPcm.PCM tbl = new MPcm.PCM();
+    final MPcmPP.SETPCM ptr = new MPcmPP.SETPCM();
+    final byte[] vtbl = new byte[128 * 2];
     public X68kMPcmInst mpcm;
     public MPcmPPInst mpcmpp;
     public int mpcmType = 0;
@@ -3519,7 +3519,7 @@ public class MnDrv {
     }
 
     /** */
-    public byte[] _psg_env_pattern = new byte[] {
+    public final byte[] _psg_env_pattern = new byte[] {
             0x00, 0x01, (byte) 0xff, (byte) 0xff, 0x00, (byte) 0x81, 0x00, 0x00, 0x00, (byte) 0x81, 0x00, 0x00, (byte) 0xff, (byte) 0x81, 0x00, 0x00
     };
 

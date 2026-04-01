@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class Nise68Test {
 
-    String testSuite = "Test_Suite.bin";
+    final String testSuite = "Test_Suite.bin";
 
     @Test
     @Disabled

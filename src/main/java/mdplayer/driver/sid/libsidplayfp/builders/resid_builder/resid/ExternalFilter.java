@@ -43,8 +43,8 @@ public class ExternalFilter {
     protected int vhp; // highpass
 
     // Cutoff frequencies.
-    protected int w0Lp1S7;
-    protected int w0Hp1S17;
+    protected final int w0Lp1S7;
+    protected final int w0Hp1S17;
 
     //
     // Inline functions.

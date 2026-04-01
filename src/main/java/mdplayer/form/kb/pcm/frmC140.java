@@ -39,7 +39,7 @@ public class frmC140 extends frmBase {
     private MDChipParams.C140 oldParam = new MDChipParams.C140();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmC140.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmC140.class);
 
     public frmC140(frmMain frm, int chipId, int zoom, MDChipParams.C140 newParam, MDChipParams.C140 oldParam) {
         super(frm);

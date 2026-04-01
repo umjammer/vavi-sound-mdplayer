@@ -42,7 +42,7 @@ public class RCSPlugin extends BasePlugin {
         initChips();
     }
 
-    private String[] supportFile = null; // TODO
+    private final String[] supportFile = null; // TODO
 
     @Override
     protected void initChips() {

@@ -52,7 +52,7 @@ class Md2PcmAudioInputStream extends AudioInputStream {
         /** target */
         private OutputStream out;
 
-        Plugin plugin;
+        final Plugin plugin;
 
         /** */
         public MdOutputEngine(Plugin plugin, Map<String, Object> props) throws IOException {

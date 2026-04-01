@@ -39,7 +39,7 @@ public class frmMultiPCM extends frmBase {
     private MDChipParams.MultiPCM oldParam = new MDChipParams.MultiPCM();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmMultiPCM.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmMultiPCM.class);
 
     public frmMultiPCM(frmMain frm, int chipId, int zoom, MDChipParams.MultiPCM newParam, MDChipParams.MultiPCM oldParam) {
         super(frm);

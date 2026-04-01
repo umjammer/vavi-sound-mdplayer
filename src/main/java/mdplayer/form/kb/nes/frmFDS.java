@@ -39,7 +39,7 @@ public class frmFDS extends frmBase {
     private final MDChipParams.FDS oldParam = new MDChipParams.FDS();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmFDS.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmFDS.class);
 
     public frmFDS(frmMain frm, int chipId, int zoom, MDChipParams.FDS newParam) {
         super(frm);

@@ -40,7 +40,7 @@ public class frmYMF278B extends frmBase {
     private final MDChipParams.YMF278B oldParam = new MDChipParams.YMF278B();
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYMF278B.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYMF278B.class);
 
     public frmYMF278B(frmMain frm, int chipId, int zoom, MDChipParams.YMF278B newParam) {
         super(frm);

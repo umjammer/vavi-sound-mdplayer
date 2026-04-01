@@ -39,7 +39,7 @@ public class frmN106 extends frmBase {
     private final MDChipParams.N106 newParam;
     private final MDChipParams.N106 oldParam;
     private final FrameBuffer frameBuffer = new FrameBuffer();
-    static Preferences prefs = Preferences.userNodeForPackage(frmN106.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmN106.class);
 
     public frmN106(frmMain frm, int chipId, int zoom, MDChipParams.N106 newParam, MDChipParams.N106 oldParam) {
         super(frm);

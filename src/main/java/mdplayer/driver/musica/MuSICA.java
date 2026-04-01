@@ -46,9 +46,9 @@ public class MuSICA {
     private static final byte DollarCode = '$';
     private Z80Processor z80;
     private Mapper mapper;
-    public static int baseClockAY8910 = 1789773;
-    public static int baseClockYM2413 = 3579545;
-    public static int baseClockK051649 = 1789773;
+    public static final int baseClockAY8910 = 1789773;
+    public static final int baseClockYM2413 = 3579545;
+    public static final int baseClockK051649 = 1789773;
 
     TriConsumer<Integer, Integer, Integer> k051649Write;
     BiConsumer<Integer, Integer> ay8910Write;

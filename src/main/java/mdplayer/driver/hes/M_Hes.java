@@ -45,7 +45,7 @@ public class M_Hes {
         }
 
         public HESHES heshes;
-        public SongInfo song = new SongInfo();
+        public final SongInfo song = new SongInfo();
 
         public static class SongInfoData {
             public String title;
@@ -123,7 +123,7 @@ public class M_Hes {
         public Km6280.K6280Context ctx;
         //public KMIF_SOUND_DEVICE hessnd;
         public KMIF_SOUND_DEVICE hespcm;
-        public Event kme = new Event();
+        public final Event kme = new Event();
         public int vsync;
         public int timer;
 
@@ -141,13 +141,13 @@ public class M_Hes {
         /** total played cycles */
         public int totalCycles;
 
-        public byte[] mpr = new byte[0x8];
-        public byte[] firstMpr = new byte[0x8];
+        public final byte[] mpr = new byte[0x8];
+        public final byte[] firstMpr = new byte[0x8];
         public byte[][] memMap = new byte[0x100][];
         public int initAddr;
 
         public int playerRomAddr;
-        public byte[] playerRom = new byte[0x10];
+        public final byte[] playerRom = new byte[0x10];
 
         /** IO $C01 ($C00)*/
         public int hestimReload;

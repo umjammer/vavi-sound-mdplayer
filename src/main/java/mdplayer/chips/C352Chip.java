@@ -22,9 +22,9 @@ import mdsound.instrument.C352Inst;
  */
 public class C352Chip implements Chip {
 
-    public int[][] register = {null, null};
+    public final int[][] register = {null, null};
 
-    public int[][] keyOn = {null, null};
+    public final int[][] keyOn = {null, null};
 
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,

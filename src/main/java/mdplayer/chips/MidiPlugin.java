@@ -43,7 +43,7 @@ public class MidiPlugin implements Plugin {
 
     private static final Logger logger = getLogger(MidiPlugin.class.getName());
 
-    public MIDIParam[] params = {null, null};
+    public final MIDIParam[] params = {null, null};
 
     public MIDIExport export;
 

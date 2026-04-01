@@ -43,11 +43,11 @@ public class frmVSTeffectList extends JFrame {
 
     private final frmMain parent;
     public boolean isClosed = false;
-    public Setting setting;
+    public final Setting setting;
     private final boolean isInitialOpenFolder = true;
-    Audio audio = Audio.getInstance();
+    final Audio audio = Audio.getInstance();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmVSTeffectList.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmVSTeffectList.class);
 
     public frmVSTeffectList(frmMain parent, Setting setting) {
         initializeComponent();
@@ -159,7 +159,7 @@ public class frmVSTeffectList extends JFrame {
         dispPluginList();
     }
 
-    private MouseAdapter dgvList_CellMouseClick = new MouseAdapter() {
+    private final MouseAdapter dgvList_CellMouseClick = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
             int row = dgvList.rowAtPoint(e.getPoint());

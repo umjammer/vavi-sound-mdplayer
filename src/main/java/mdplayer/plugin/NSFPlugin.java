@@ -68,7 +68,7 @@ public class NSFPlugin extends BasePlugin {
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            ((NsfDriver) driverReal).setSong(songNo);;
+            ((NsfDriver) driverReal).setSong(songNo);
             driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);

@@ -41,7 +41,7 @@ public class frmYM2610 extends frmBase {
     private MDChipParams.YM2610 oldParam = null;
     private final FrameBuffer frameBuffer = new FrameBuffer();
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmYM2610.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmYM2610.class);
 
     public frmYM2610(frmMain frm, int chipId, int zoom, MDChipParams.YM2610 newParam, MDChipParams.YM2610 oldParam) {
         super(frm);

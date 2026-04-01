@@ -68,8 +68,8 @@ class M68kHarteTest {
     };
 
     static class NameResult {
-        public int ptr;
-        public String name;
+        public final int ptr;
+        public final String name;
 
         public NameResult(int ptr, String name) {
             this.ptr = ptr;
@@ -78,9 +78,9 @@ class M68kHarteTest {
     }
 
     static class TransactionResult {
-        public int ptr;
-        public List<Object> transactions;
-        public int numCycles;
+        public final int ptr;
+        public final List<Object> transactions;
+        public final int numCycles;
 
         public TransactionResult(int ptr, List<Object> transactions, int numCycles) {
             this.ptr = ptr;
@@ -90,8 +90,8 @@ class M68kHarteTest {
     }
 
     static class StateResult {
-        public int ptr;
-        public Map<String, Object> state;
+        public final int ptr;
+        public final Map<String, Object> state;
 
         public StateResult(int ptr, Map<String, Object> state) {
             this.ptr = ptr;
@@ -100,8 +100,8 @@ class M68kHarteTest {
     }
 
     static class TestResult {
-        public int ptr;
-        public Map<String, Object> test;
+        public final int ptr;
+        public final Map<String, Object> test;
 
         public TestResult(int ptr, Map<String, Object> test) {
             this.ptr = ptr;

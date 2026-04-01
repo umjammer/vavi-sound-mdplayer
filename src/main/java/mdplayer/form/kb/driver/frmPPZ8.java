@@ -40,7 +40,7 @@ public class frmPPZ8 extends frmBase {
     private MDChipParams.PPZ8 newParam = null;
     private MDChipParams.PPZ8 oldParam = new MDChipParams.PPZ8();
     private final FrameBuffer frameBuffer = new FrameBuffer();
-    static Preferences prefs = Preferences.userNodeForPackage(frmPPZ8.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmPPZ8.class);
 
     public frmPPZ8(frmMain frm, int chipId, int zoom, MDChipParams.PPZ8 newParam, MDChipParams.PPZ8 oldParam) {
         super(frm);

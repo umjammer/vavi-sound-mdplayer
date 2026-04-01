@@ -16,6 +16,6 @@ class WaveformGeneratorTest {
     @Test
     void test1() {
         WaveformGenerator wg = new WaveformGenerator();
-        assertEquals(0x3c0, wg.modelWave[0][3][4087]);
+        assertEquals(0x3c0, WaveformGenerator.modelWave[0][3][4087]);
     }
 }

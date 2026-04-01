@@ -90,7 +90,7 @@ public class frmPlayList extends JFrame {
     private final Random rand = new Random();
     private boolean IsInitialOpenFolder = true;
 
-    static Preferences prefs = Preferences.userNodeForPackage(frmPlayList.class);
+    static final Preferences prefs = Preferences.userNodeForPackage(frmPlayList.class);
 
     private static final String[] sext = ".vgm;.vgz;.zip;.lzh;.nrd;.xgm;.zgm;.s98;.nsf;.hes;.sid;.mnd;.mgs;.mdr;.mdx;.mub;.muc;.m;.m2;.mz;.mml;.mid;.rcp;.wav;.mp3;.aiff;.m3u".split(";");
 
@@ -157,7 +157,7 @@ public class frmPlayList extends JFrame {
         return true;
     }
 
-    public List<Tuple<String, String>> randomStack = new ArrayList<>();
+    public final List<Tuple<String, String>> randomStack = new ArrayList<>();
 
 //    @Override
 //    protected void WndProc(Message m) {
@@ -953,7 +953,7 @@ loopEx:
 
     String ofn = "";
     String oafn = "";
-    String[][] exts = new String[3][];
+    final String[][] exts = new String[3][];
     String text = "";
     String mml = "";
     String img = "";
