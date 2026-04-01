@@ -25,7 +25,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class XGMPlugin extends BasePlugin {
+public class XGMPlugin extends BasePlugin<XgmDriver> {
 
     private static final Logger logger = getLogger(XGMPlugin.class.getName());
 
@@ -41,7 +41,7 @@ public class XGMPlugin extends BasePlugin {
 //            audio.driverReal = new Xgm();
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 

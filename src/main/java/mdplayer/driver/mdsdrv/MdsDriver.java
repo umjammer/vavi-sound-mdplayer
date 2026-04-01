@@ -39,9 +39,9 @@ import static java.lang.System.getLogger;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-01-08 nsano initial version <br>
  */
-public class MdsDrv extends BaseDriver {
+public class MdsDriver extends BaseDriver {
 
-    private static final Logger logger = getLogger(MdsDrv.class.getName());
+    private static final Logger logger = getLogger(MdsDriver.class.getName());
 
     private IDriver mdsDriver = null;
 

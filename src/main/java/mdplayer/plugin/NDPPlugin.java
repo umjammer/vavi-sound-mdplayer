@@ -2,7 +2,6 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 
-import mdplayer.Audio;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
@@ -24,22 +23,22 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-07-10 nsano initial version <br>
  */
-public class NDPPlugin extends BasePlugin {
+public class NDPPlugin extends BasePlugin<NdpDriver> {
 
     private static final Logger logger = getLogger(NDPPlugin.class.getName());
 
     @Override
     public void prepare() {
         driverVirtual = new NdpDriver();
-//        ((NdpDriver) driverVirtual).setPlayingFileName(playingFileName);
+//        driverVirtual.setPlayingFileName(playingFileName);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
 //            driverReal = new NdpDriver();
-//            ((NdpDriver) driverReal).setPlayingFileName(playingFileName);
+//            driverReal.setPlayingFileName(playingFileName);
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 

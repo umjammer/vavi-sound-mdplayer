@@ -6,7 +6,6 @@ import mdplayer.Chip.Unused;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Pcm8Chip;
-import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.mxdrv.MxDriver;
 import mdsound.Instrument;
@@ -28,22 +27,23 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class MDXPlugin extends BasePlugin {
+public class MDXPlugin extends BasePlugin<MxDriver> {
 
     private static final Logger logger = getLogger(MDXPlugin.class.getName());
 
     @Override
     public void prepare() {
         driverVirtual = new MxDriver();
-        ((MxDriver) driverVirtual).setExtendFile((extendFiles != null && !extendFiles.isEmpty()) ? extendFiles.getFirst() : null);
+        driverVirtual.setExtendFile((extendFiles != null && !extendFiles.isEmpty()) ? extendFiles.getFirst() : null);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
 //            driverReal = new MxDriver();
-//            ((MxDriver) driverReal).extendFile = (extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null;
+//            driverReal.setExtendFile((extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null);
 //        }
 
-        prepareInternal();
+        super.prepare();
+        initChips();
     }
 
     @Override
@@ -83,7 +83,7 @@ public class MDXPlugin extends BasePlugin {
         mdxPCM_P.soundIocs[0] = new SoundIocs(mdxPCM_P.chips[0]);
 
         Pcm8PPInst pcm8pp = Instrument.getInstrument(Pcm8PPInst.class);
-        ((MxDriver) driverVirtual).setPcm8type(0);
+        driverVirtual.setPcm8type(0);
         if (setting.getMxDrv().pcm8Type == 0) {
             // mxdrv is special and requires PCM8
         } else {
@@ -95,7 +95,7 @@ public class MDXPlugin extends BasePlugin {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.option = new Object[] {setting.getMxDrv().pcm8ppsOption};
             put(Pcm8Chip.class, chip);
-            ((MxDriver) driverVirtual).setPcm8type(1);
+            driverVirtual.setPcm8type(1);
         }
 
         chipLED.put("PriOPM", 1);
@@ -124,19 +124,13 @@ public class MDXPlugin extends BasePlugin {
 //        chipRegister.chip(Ym2203Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 //        chipRegister.chip(Ym2203Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
-        driverVirtual.init(
-                vgmBuf,
-                this,
-                Common.EnmModel.VirtualModel,
+        driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel,
                 new Class[] {Unused.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
                 mdxPCM_V, pcm8pp);
         if (driverReal != null) {
-            driverReal.init(
-                    vgmBuf,
-                    this,
-                    Common.EnmModel.RealModel,
+            driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
                     new Class[] {Unused.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,

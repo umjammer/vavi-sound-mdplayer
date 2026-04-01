@@ -33,27 +33,25 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-12-29 nsano initial version <br>
  */
-public class MuapPlugin extends BasePlugin {
+public class MuapPlugin extends BasePlugin<MuapDriver> {
 
     @Override
     public void prepare() {
         driverVirtual = new MuapDriver();
-        ((MuapDriver) driverVirtual).playingFileName = playingFileName;
+        driverVirtual.playingFileName = playingFileName;
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
 //            driverReal = new MuapJava();
-//
-//            ((MuapJava) driverReal).playingFileName = playingFileName;
+//            driverReal.playingFileName = playingFileName;
 //        }
 //        driverPianoRoll = null;
 //        if (setting.pianoRoll.usePianoRoll) {
 //            driverPianoRoll = new MuapJava();
-//
-//            ((MuapJava) driverPianoRoll).playingFileName = playingFileName;
+//            driverPianoRoll.playingFileName = playingFileName;
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 
@@ -61,13 +59,13 @@ public class MuapPlugin extends BasePlugin {
     protected void initChips() {
 
         // Share tone table
-        byte[] toneBuff = ((MuapDriver) driverVirtual).toneBuff;
-//        ((MuapJava) driverReal).toneBuff = toneBuff;
-//        ((MuapJava) driverPianoRoll).toneBuff = toneBuff;
+        byte[] toneBuff = driverVirtual.toneBuff;
+//        driverReal.toneBuff = toneBuff;
+//        driverPianoRoll.toneBuff = toneBuff;
         // Share label table
-        int[] labelAdr = ((MuapDriver) driverVirtual).labelAdr;
-//        ((MuapJava) driverReal).labelAdr = labelAdr;
-//        ((MuapJava) driverPianoRoll).labelAdr = labelAdr;
+        int[] labelAdr = driverVirtual.labelAdr;
+//        driverReal.labelAdr = labelAdr;
+//        driverPianoRoll.labelAdr = labelAdr;
 
         startTrdVgmReal();
 

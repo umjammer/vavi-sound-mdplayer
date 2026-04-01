@@ -16,7 +16,7 @@ import static java.lang.System.getLogger;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class MIDPlugin extends BasePlugin {
+public class MIDPlugin extends BasePlugin<MidiDriver> {
 
     private static final Logger logger = getLogger(MIDPlugin.class.getName());
 
@@ -29,7 +29,7 @@ public class MIDPlugin extends BasePlugin {
             driverReal = new MidiDriver();
         }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 

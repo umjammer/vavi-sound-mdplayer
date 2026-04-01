@@ -9,15 +9,13 @@ import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.MPcmChip;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.OkiM6258Chip;
+import mdplayer.chips.Pcm8Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.zms.ZmsDriver;
-import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.MPcmPPInst;
-import mdsound.instrument.Pcm8PPInst;
-import mdsound.instrument.X68kMPcmInst;
 import mdsound.instrument.X68kYm2151Inst;
 import mdsound.x68sound.SoundIocs;
 
@@ -31,22 +29,22 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-07-12 nsano initial version <br>
  */
-public class ZMSPlugin extends BasePlugin {
+public class ZMSPlugin extends BasePlugin<ZmsDriver> {
 
     private static final Logger logger = getLogger(ZMSPlugin.class.getName());
 
     @Override
     public void prepare() {
         driverVirtual = new ZmsDriver();
-        ((ZmsDriver) driverVirtual).setPlayingFileName(playingFileName);
-        ((ZmsDriver) driverVirtual).setPlayingArcFileName(playingArcFileName);
+        driverVirtual.setPlayingFileName(playingFileName);
+        driverVirtual.setPlayingArcFileName(playingArcFileName);
 
         driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
 //            driverReal = new ZmsDriver();
         }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 
@@ -70,56 +68,31 @@ public class ZMSPlugin extends BasePlugin {
 
         chipLED.put("PriOPM", 1);
 
-        if (setting.getZMusic().mpcmType == 0) {
-            X68kMPcmInst mpcm = Instrument.getInstrument(X68kMPcmInst.class);
-            chip = new MDSound.Chip();
-            chip.id = 0;
-            chip.instrument = mpcm;
-            chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.clock = 15600;
-            chip.volume = 0;
-            chip.option = null;
-            //audio.chipLED.put("PriMPCM", 1);
-            put(OkiM6258Chip.class, chip); // not use mds, via driver direct
-            ((ZmsDriver) driverVirtual).setMpcm(mpcm);
-        } else {
-            MPcmPPInst mpcmpp = Instrument.getInstrument(MPcmPPInst.class);
-            chip = new MDSound.Chip();
-            chip.id = 0;
-            chip.instrument = mpcmpp;
-            chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.clock = 15600;
-            chip.volume = 0;
-            chip.option = null;
-            //audio.chipLED.put("PriMPCM", 1);
-            put(OkiM6258Chip.class, chip); // not use mds, via driver direct
-            ((ZmsDriver) driverVirtual).setMpcmpp(mpcmpp);
-        }
+        chip = new MDSound.Chip();
+        chip.id = 0;
+        chip.instrument = chipRegister.chip(MPcmChip.class).instrument(setting.getZMusic().mpcmType);
+        chip.samplingRate = setting.getOutputDevice().getSampleRate();
+        chip.clock = 15600;
+        chip.volume = 0;
+        chip.option = null;
+        put(MPcmChip.class, chip);
 
-        if (setting.getZMusic().pcm8Type == 0) {
-            X68kYm2151Inst opmPCM = Instrument.getInstrument(X68kYm2151Inst.class);
+        //audio.chipLED.put("PriMPCM", 1);
+
+        chip = new MDSound.Chip();
+        chip.id = 0;
+        chip.instrument = chipRegister.chip(Pcm8Chip.class).instrument(setting.getZMusic().pcm8Type);
+        chip.volume = 0;
+        chip.clock = 4_000_000;
+        if (chip.instrument instanceof X68kYm2151Inst opmPCM) {
             opmPCM.soundIocs[0] = new SoundIocs(opmPCM.chips[0]);
-            chip = new MDSound.Chip();
-            chip.id = 0;
-            chip.instrument = opmPCM;
-            chip.volume = 0;
-            chip.clock = 4_000_000;
             chip.samplingRate = 4_000_000 / 64;
             chip.option = new Object[] { 0, 1, 0 };
-            put(OkiM6258Chip.class, chip); // not use mds, via driver direct
-            ((ZmsDriver) driverVirtual).setOpmPCM(opmPCM);
         } else {
-            Pcm8PPInst pcm8pp = Instrument.getInstrument(Pcm8PPInst.class);
-            chip = new MDSound.Chip();
-            chip.id = 0;
-            chip.instrument = pcm8pp;
-            chip.volume = 0;
-            chip.clock = 4_000_000;
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.option = new Object[] {setting.getZMusic().pcm8ppsOption};
-            put(OkiM6258Chip.class, chip); // not use mds, via driver direct
-            ((ZmsDriver) driverVirtual).setPcm8pp(pcm8pp);
         }
+        put(Pcm8Chip.class, chip);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 
@@ -152,25 +125,25 @@ public class ZMSPlugin extends BasePlugin {
                     switch (compilePriority) {
                         case 0:
                             // Version 3 is preferred
-                            if (((ZmsDriver) driverVirtual).compile(buf, sf)) buf = ((ZmsDriver) driverVirtual).getCompiledData();
-                            else if (((ZmsDriver) driverVirtual).compileV2(buf, sf)) buf = ((ZmsDriver) driverVirtual).getCompiledData();
+                            if (driverVirtual.compile(buf, sf)) buf = driverVirtual.getCompiledData();
+                            else if (driverVirtual.compileV2(buf, sf)) buf = driverVirtual.getCompiledData();
                             else throw new IllegalArgumentException("Compile Error.Check console log.");
                             break;
                         case 1:
                             // Version 2 is preferred
-                            if (((ZmsDriver) driverVirtual).compileV2(buf, sf)) buf = ((ZmsDriver) driverVirtual).getCompiledData();
-                            else if (((ZmsDriver) driverVirtual).compile(vgmBuf, sf))
-                                buf = ((ZmsDriver) driverVirtual).getCompiledData();
+                            if (driverVirtual.compileV2(buf, sf)) buf = driverVirtual.getCompiledData();
+                            else if (driverVirtual.compile(vgmBuf, sf))
+                                buf = driverVirtual.getCompiledData();
                             else throw new IllegalArgumentException("Compile Error.Check console log.");
                             break;
                         case 2:
                             // Version 3 only
-                            if (((ZmsDriver) driverVirtual).compile(buf, sf)) buf = ((ZmsDriver) driverVirtual).getCompiledData();
+                            if (driverVirtual.compile(buf, sf)) buf = driverVirtual.getCompiledData();
                             else throw new IllegalArgumentException("Compile Error.Check console log.");
                             break;
                         case 3:
                             // Version 2 only
-                            if (((ZmsDriver) driverVirtual).compileV2(buf, sf)) buf = ((ZmsDriver) driverVirtual).getCompiledData();
+                            if (driverVirtual.compileV2(buf, sf)) buf = driverVirtual.getCompiledData();
                             else throw new IllegalArgumentException("Compile Error.Check console log.");
                             break;
                     }
@@ -182,19 +155,19 @@ public class ZMSPlugin extends BasePlugin {
             }
         }
 
-        ((ZmsDriver) driverVirtual).setSupportFileBinaryAndName(supportFileBinary);
-        if (driverReal != null) ((ZmsDriver) driverReal).setSupportFileBinaryAndName(supportFileBinary);
-//        if (audio.driverPianoRoll != null) ((ZmsDriver) audio.driverPianoRoll).supportFileBinaryAndName = supportFileBinary;
+        driverVirtual.setSupportFileBinaryAndName(supportFileBinary);
+        if (driverReal != null) driverReal.setSupportFileBinaryAndName(supportFileBinary);
+//        if (driverPianoRoll != null) (driverPianoRoll).supportFileBinaryAndName = supportFileBinary;
 
         // In the case of ZMS, compilation is performed in advance
         if (isExt(playingFileName, ".ZMS")) {
             switch (compilePriority) {
                 case 0:
                     // Version 3 is preferred
-                    if (((ZmsDriver) driverVirtual).compile(vgmBuf, playingFileName)) {
+                    if (driverVirtual.compile(vgmBuf, playingFileName)) {
                         setVgmBufV3();
                         chipLED.put("PriMPCMX68k", 1);
-                    } else if (((ZmsDriver) driverVirtual).compileV2(vgmBuf, playingFileName)) {
+                    } else if (driverVirtual.compileV2(vgmBuf, playingFileName)) {
                         setVgmBufV2();
                         chipLED.put("PriPCM8", 1);
                     } else {
@@ -204,10 +177,10 @@ public class ZMSPlugin extends BasePlugin {
                     break;
                 case 1:
                     // Version 2 is preferred
-                    if (((ZmsDriver) driverVirtual).compileV2(vgmBuf, playingFileName)) {
+                    if (driverVirtual.compileV2(vgmBuf, playingFileName)) {
                         setVgmBufV2();
                         chipLED.put("PriPCM8", 1);
-                    } else if (((ZmsDriver) driverVirtual).compile(vgmBuf, playingFileName)) {
+                    } else if (driverVirtual.compile(vgmBuf, playingFileName)) {
                         setVgmBufV3();
                         chipLED.put("PriMPCMX68k", 1);
                     } else {
@@ -217,7 +190,7 @@ public class ZMSPlugin extends BasePlugin {
                     break;
                 case 2:
                     // Version 3 only
-                    if (((ZmsDriver) driverVirtual).compile(vgmBuf, playingFileName)) {
+                    if (driverVirtual.compile(vgmBuf, playingFileName)) {
                         setVgmBufV3();
                         chipLED.put("PriMPCMX68k", 1);
                         //logger.log("c:\\temp\\ge.zmd", vgmBuf);
@@ -228,7 +201,7 @@ public class ZMSPlugin extends BasePlugin {
                     break;
                 case 3:
                     // Version 2 only
-                    if (((ZmsDriver) driverVirtual).compileV2(vgmBuf, playingFileName)) {
+                    if (driverVirtual.compileV2(vgmBuf, playingFileName)) {
                         setVgmBufV2();
                         chipLED.put("PriPCM8", 1);
                     } else {
@@ -241,7 +214,7 @@ public class ZMSPlugin extends BasePlugin {
             driverVirtual.getGD3Info(vgmBuf, 0);
         }
 
-        if (((ZmsDriver) driverVirtual).getVersion() != 2) {
+        if (driverVirtual.getVersion() != 2) {
             // Check the sound source composition used from ZMD
             boolean useFM = vgmBuf[0x48] != 0;
             boolean useMPCM = vgmBuf[0x49] != 0;
@@ -272,21 +245,21 @@ public class ZMSPlugin extends BasePlugin {
     }
 
     private void setVgmBufV3() {
-        vgmBuf = ((ZmsDriver) driverVirtual).getCompiledData();
-        if (driverReal != null) ((ZmsDriver) driverReal).setCompiledData(vgmBuf);
-//        if (driverPianoRoll != null) ((Zms) driverPianoRoll).compiledData = vgmBuf;
+        vgmBuf = driverVirtual.getCompiledData();
+        if (driverReal != null) driverReal.setCompiledData(vgmBuf);
+//        if (driverPianoRoll != null) (driverPianoRoll).compiledData = vgmBuf;
     }
 
     private void setVgmBufV2() {
-        vgmBuf = ((ZmsDriver) driverVirtual).getCompiledData();
-        ((ZmsDriver) driverVirtual).setVersion(2);
+        vgmBuf = driverVirtual.getCompiledData();
+        driverVirtual.setVersion(2);
         if (driverReal != null) {
-            ((ZmsDriver) driverReal).setCompiledData(vgmBuf);
-            ((ZmsDriver) driverReal).setVersion(2);
+            driverReal.setCompiledData(vgmBuf);
+            driverReal.setVersion(2);
         }
 //        if (driverPianoRoll != null) {
-//            ((Zms) driverPianoRoll).compiledData = vgmBuf;
-//            ((Zms) driverPianoRoll).version = 2;
+//            driverPianoRoll.compiledData = vgmBuf;
+//            driverPianoRoll.setVersion(2);
 //        }
     }
 

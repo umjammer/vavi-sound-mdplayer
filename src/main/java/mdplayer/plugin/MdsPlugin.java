@@ -11,7 +11,7 @@ import java.lang.System.Logger;
 import mdplayer.Common;
 import mdplayer.chips.Sn76489Chip;
 import mdplayer.chips.Ym2612Chip;
-import mdplayer.driver.mdsdrv.MdsDrv;
+import mdplayer.driver.mdsdrv.MdsDriver;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.chips.Ym3438Const;
@@ -28,22 +28,22 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-01-08 nsano initial version <br>
  */
-public class MdsPlugin extends BasePlugin {
+public class MdsPlugin extends BasePlugin<MdsDriver> {
 
     private static final Logger logger = getLogger(MdsPlugin.class.getName());
 
     @Override
     public void prepare() {
-        driverVirtual = new MdsDrv();
-        ((MdsDrv) driverVirtual).setPlayingFileName(playingFileName);
+        driverVirtual = new MdsDriver();
+        driverVirtual.setPlayingFileName(playingFileName);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
 //            driverReal = new MdsDrv();
-//            ((MdsDrv) driverReal).setPlayingFileName(playingFileName);
+//            driverReal.setPlayingFileName(playingFileName);
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 
@@ -58,7 +58,7 @@ public class MdsPlugin extends BasePlugin {
         if (chip.instrument instanceof Ym2612Inst) {
             chip.option = new Object[] {
                     (setting.getNukedOPN2().gensDACHPF ? 0x01 : 0x00) |
-                            (setting.getNukedOPN2().gensSSGEG ? 0x02 : 0x00)
+                    (setting.getNukedOPN2().gensSSGEG ? 0x02 : 0x00)
             };
         } else if (chip.instrument instanceof Ym3438Inst ym3438) {
             switch (setting.getNukedOPN2().emuType) {

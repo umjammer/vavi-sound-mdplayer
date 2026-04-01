@@ -16,22 +16,22 @@ import static java.lang.System.getLogger;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class RCPPlugin extends BasePlugin {
+public class RCPPlugin extends BasePlugin<RcpDriver> {
 
     private static final Logger logger = getLogger(RCPPlugin.class.getName());
 
     @Override
     public void prepare() {
         driverVirtual = new RcpDriver();
-        ((RcpDriver) driverVirtual).setExtendFile(extendFiles);
+        driverVirtual.setExtendFile(extendFiles);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
 //            driverReal = new RcpDriver();
-//            ((RcpDriver) driverReal).extendFile = extendFile;
+//            driverReal.setExtendFile(extendFile);
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 

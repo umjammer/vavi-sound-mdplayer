@@ -34,7 +34,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>
  */
-public class FMPPlugin extends BasePlugin {
+public class FMPPlugin extends BasePlugin<FmpDriver> {
 
     private static final Logger logger = getLogger(FMPPlugin.class.getName());
 
@@ -53,24 +53,25 @@ public class FMPPlugin extends BasePlugin {
                 playingFileName = Path.changeExtension(
                         playingFileName,
                         ext.equals(".mpi") ? ".opi" : (ext.equals(".mvi") ? ".ovi" : ".ozi"));
-                vgmBuf = ft.ReadTemp(playingFileName);
-                //vgmBuf = File.ReadAllBytes(PlayingFileName);
+                vgmBuf = ft.readTemp(playingFileName);
+                //vgmBuf = File.readAllBytes(PlayingFileName);
             }
         }
 
-        FmpDriver fmp = new FmpDriver();
-        fmp.setPlayingFileName(playingFileName);
-        fmp.setPlayingArcFileName(playingArcFileName);
-        driverVirtual = fmp;
+        driverVirtual = new FmpDriver();
+        driverVirtual.setFileTemp(ft);
+        driverVirtual.setPlayingFileName(playingFileName);
+        driverVirtual.setPlayingArcFileName(playingArcFileName);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0]) {
-//            audio.driverReal = new FMP(ft);
-//            ((FMP)audio.driverReal).PlayingFileName = playingFileName;
-//            ((FMP)audio.driverReal).PlayingArcFileName = playingArcFileName;
+//            driverReal = new FmpDriver();
+//            driverReal.setFileTemp(ft);
+//            driverReal.setPlayingFileName(playingFileName);
+//            driverReal.setPlayingArcFileName(playingArcFileName);
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 
@@ -132,9 +133,9 @@ public class FMPPlugin extends BasePlugin {
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(0, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
         chipRegister.chip(Ym2608Chip.class).setSsgVolume(1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
 
-        ((FmpDriver) driverVirtual).setSearchPath(setting.getFileSearchPathList());
+        driverVirtual.setSearchPath(setting.getFileSearchPathList());
         if (driverReal != null) {
-            ((FmpDriver) driverReal).setSearchPath(setting.getFileSearchPathList());
+            driverReal.setSearchPath(setting.getFileSearchPathList());
         }
 
         driverVirtual.init(vgmBuf, this, EnmModel.VirtualModel,

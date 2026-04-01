@@ -29,7 +29,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class NSFPlugin extends BasePlugin {
+public class NSFPlugin extends BasePlugin<NsfMdDriver2> {
 
     private static final Logger logger = getLogger(NSFPlugin.class.getName());
 
@@ -52,7 +52,7 @@ public class NSFPlugin extends BasePlugin {
 //            driverReal = new Nsf();
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 
@@ -63,7 +63,7 @@ public class NSFPlugin extends BasePlugin {
         chipLED.put("PriNES", 1);
         chipLED.put("PriDMC", 1);
 
-        ((NsfDriver) driverVirtual).setSong(songNo);
+        driverVirtual.setSong(songNo);
         driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
@@ -74,12 +74,12 @@ public class NSFPlugin extends BasePlugin {
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }
 
-        if (((NsfDriver) driverVirtual).useFds())  chipLED.put("PriFDS", 1);
-        if (((NsfDriver) driverVirtual).useFme7()) chipLED.put("PriFME7", 1);
-        if (((NsfDriver) driverVirtual).useMmc5()) chipLED.put("PriMMC5", 1);
-        if (((NsfDriver) driverVirtual).useN106()) chipLED.put("PriN106", 1);
-        if (((NsfDriver) driverVirtual).useVrc6()) chipLED.put("PriVRC6", 1);
-        if (((NsfDriver) driverVirtual).useVrc7()) chipLED.put("PriVRC7", 1);
+        if (driverVirtual.useFds())  chipLED.put("PriFDS", 1);
+        if (driverVirtual.useFme7()) chipLED.put("PriFME7", 1);
+        if (driverVirtual.useMmc5()) chipLED.put("PriMMC5", 1);
+        if (driverVirtual.useN106()) chipLED.put("PriN106", 1);
+        if (driverVirtual.useVrc6()) chipLED.put("PriVRC6", 1);
+        if (driverVirtual.useVrc7()) chipLED.put("PriVRC7", 1);
 
         NesInst apu = Instrument.getInstrument(NesInst.class);
         MDSound.Chip chip = new MDSound.Chip();
@@ -91,7 +91,7 @@ public class NSFPlugin extends BasePlugin {
         chip.setVolumes.put("APU", chip.mainWrappedSetVolume(apu::setVolume));
         chip.option = null;
         put(NesChip.class, chip);
-        ((NsfDriver) driverVirtual).setApu(chip);
+        driverVirtual.setApu(chip);
 
         NesInst.DMC dmc = new NesInst.DMC();
         chip = new MDSound.Chip();
@@ -103,7 +103,7 @@ public class NSFPlugin extends BasePlugin {
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, DmcChip.class);
         put(DmcChip.class, chip);
-        ((NsfDriver) driverVirtual).setDmc(chip);
+        driverVirtual.setDmc(chip);
 
         NesInst.FDS fds = new NesInst.FDS();
         chip = new MDSound.Chip();
@@ -115,7 +115,7 @@ public class NSFPlugin extends BasePlugin {
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, FdsChip.class);
         put(FdsChip.class, chip);
-        ((NsfDriver) driverVirtual).setFds(chip);
+        driverVirtual.setFds(chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -125,7 +125,7 @@ public class NSFPlugin extends BasePlugin {
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Mmc5Chip.class);
         put(Mmc5Chip.class, chip);
-        ((NsfDriver) driverVirtual).setMmc5(chip);
+        driverVirtual.setMmc5(chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -135,7 +135,7 @@ public class NSFPlugin extends BasePlugin {
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, N163Chip.class);
         put(N163Chip.class, chip);
-        ((NsfDriver) driverVirtual).setN160(chip);
+        driverVirtual.setN160(chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -145,7 +145,7 @@ public class NSFPlugin extends BasePlugin {
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Vrc6Chip.class);
         put(Vrc6Chip.class, chip);
-        ((NsfDriver) driverVirtual).setVrc6(chip);
+        driverVirtual.setVrc6(chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -155,7 +155,7 @@ public class NSFPlugin extends BasePlugin {
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Vrc7Chip.class);
         put(Vrc7Chip.class, chip);
-        ((NsfDriver) driverVirtual).setVrc7(chip);
+        driverVirtual.setVrc7(chip);
 
         chip = new MDSound.Chip();
         chip.id = 0;
@@ -165,7 +165,7 @@ public class NSFPlugin extends BasePlugin {
         chip.option = null;
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Fme7Chip.class);
         put(Fme7Chip.class, chip);
-        ((NsfDriver) driverVirtual).setFme7(chip);
+        driverVirtual.setFme7(chip);
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 

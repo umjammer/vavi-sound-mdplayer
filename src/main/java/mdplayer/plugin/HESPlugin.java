@@ -18,7 +18,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class HESPlugin extends BasePlugin {
+public class HESPlugin extends BasePlugin<HesDriver> {
 
     private static final Logger logger = getLogger(HESPlugin.class.getName());
 
@@ -31,7 +31,7 @@ public class HESPlugin extends BasePlugin {
 //            driverReal = new HesDriver();
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 
@@ -44,13 +44,13 @@ public class HESPlugin extends BasePlugin {
         MDSound.Chip chip = new MDSound.Chip();
         chip.id = 0;
         chip.instrument = chipRegister.chip(HuC6280Chip.class).instrument(0);
-        chip.additionalUpdate = ((HesDriver) driverVirtual)::additionalUpdate;
+        chip.additionalUpdate = driverVirtual::additionalUpdate;
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, HuC6280Chip.class);
         chip.clock = 3579545;
         chip.option = null;
         put(HuC6280Chip.class, chip);
-        ((HesDriver) driverVirtual).c6280 = chip;
+        driverVirtual.c6280 = chip;
 
         mds.init(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, flatten());
 

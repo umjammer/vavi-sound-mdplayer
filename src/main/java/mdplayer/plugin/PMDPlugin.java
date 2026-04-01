@@ -23,22 +23,22 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class PMDPlugin extends BasePlugin {
+public class PMDPlugin extends BasePlugin<PmdDriver> {
 
     private static final Logger logger = getLogger(PMDPlugin.class.getName());
 
     @Override
     public void prepare() {
         driverVirtual = new PmdDriver();
-        ((PmdDriver) driverVirtual).setPlayingFileName(playingFileName);
+        driverVirtual.setPlayingFileName(playingFileName);
 
         driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0] && !setting.getYM2608Type()[0].getUseEmu()[1]) {
             driverReal = new PmdDriver();
-            ((PmdDriver) driverReal).setPlayingFileName(playingFileName);
+            driverReal.setPlayingFileName(playingFileName);
         }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 

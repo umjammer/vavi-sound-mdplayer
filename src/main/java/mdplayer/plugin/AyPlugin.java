@@ -25,7 +25,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-19 nsano initial version <br>
  */
-public class AyPlugin extends BasePlugin {
+public class AyPlugin extends BasePlugin<AyDriver> {
 
     private static final Logger logger = getLogger(AyPlugin.class.getName());
 
@@ -39,7 +39,7 @@ public class AyPlugin extends BasePlugin {
 //            audio.driverReal.setting = setting;
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 

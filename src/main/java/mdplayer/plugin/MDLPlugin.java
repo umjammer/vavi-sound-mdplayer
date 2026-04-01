@@ -21,29 +21,29 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class MDLPlugin extends BasePlugin {
+public class MDLPlugin extends BasePlugin<MoonDriver> {
 
     private static final Logger logger = getLogger(MDLPlugin.class.getName());
 
     @Override
     public void prepare() {
         driverVirtual = new MoonDriver();
-        ((MoonDriver) driverVirtual).setPlayingFileName(playingFileName);
+        driverVirtual.setPlayingFileName(playingFileName);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
 //            driverReal = new MoonDriverJava();
-//            ((MoonDriverJava) driverReal).setExtendFile((extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null);
+//            driverReal.setExtendFile((extendFile != null && !extendFile.isEmpty()) ? extendFile.get(0) : null);
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 
     @Override
     protected void initChips() {
         if (fileFormat instanceof MDLFileFormat) {
-            vgmBuf = ((MoonDriver) driverVirtual).compile(vgmBuf);
+            vgmBuf = driverVirtual.compile(vgmBuf);
         }
 
         chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);

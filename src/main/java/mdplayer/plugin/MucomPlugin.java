@@ -4,7 +4,6 @@ import java.lang.System.Logger;
 import java.util.function.Function;
 
 import dotnet4j.io.Stream;
-import mdplayer.Audio;
 import mdplayer.Chip;
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
@@ -12,7 +11,6 @@ import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.chips.Ym2610Chip;
 import mdplayer.driver.mucom.MucomDriver;
-import mdplayer.driver.mucom.MucomDriver.MUCOMFileType;
 import mdplayer.format.MUCFileFormat;
 import mdsound.MDSound;
 import mdsound.instrument.Ym2608Inst;
@@ -28,29 +26,29 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class MucomPlugin extends BasePlugin {
+public class MucomPlugin extends BasePlugin<MucomDriver> {
 
     private static final Logger logger = getLogger(MucomPlugin.class.getName());
 
     @Override
     public void prepare() {
         driverVirtual = new MucomDriver();
-        ((MucomDriver) driverVirtual).setPlayingFileName(playingFileName);
+        driverVirtual.setPlayingFileName(playingFileName);
 
         driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null && !setting.getYM2608Type()[0].getUseEmu()[0] && !setting.getYM2608Type()[0].getUseEmu()[1]) {
             driverReal = new MucomDriver();
-            ((MucomDriver) driverReal).setPlayingFileName(playingFileName);
+            driverReal.setPlayingFileName(playingFileName);
         }
 
-        prepareInternal();
-        initChips(); // MucomDotNET.MUCOMFileType.MUC
+        super.prepare();
+        initChips();
     }
 
     @Override
     protected void initChips() {
         if (fileFormat instanceof MUCFileFormat) {
-            vgmBuf = ((MucomDriver) driverVirtual).compile(vgmBuf);
+            vgmBuf = driverVirtual.compile(vgmBuf);
         }
         Class<? extends Chip>[] useChipFromMub = MucomDriver.useChipsFromMub(vgmBuf);
 

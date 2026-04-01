@@ -47,7 +47,7 @@ import static mdplayer.chips.RealChipPlugin.realChipClose;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public abstract class BasePlugin implements Plugin {
+public abstract class BasePlugin<T extends BaseDriver> implements Plugin {
 
     private static final Logger logger = getLogger(BasePlugin.class.getName());
 
@@ -60,9 +60,9 @@ public abstract class BasePlugin implements Plugin {
     public final ChipRegister chipRegister;
 
     // TODO driver should be one, instruments should be separated virtual and real
-    public BaseDriver driverVirtual = null;
+    public T driverVirtual = null;
 
-    public BaseDriver driverReal = null;
+    public T driverReal = null;
 
     // view
     public final ChipLEDs chipLED = new ChipLEDs();
@@ -282,8 +282,7 @@ logger.log(Level.TRACE, "stop: " + audio.stopped + ", " + audio.hashCode());
         return 0; // naudioWrap.getAsioLatency(); TODO
     }
 
-    /** prepare to play */
-    protected void prepareInternal() {
+    public void prepare() {
         audio.vgmFadeout = false;
         audio.vgmFadeoutCounter = 1.0;
         audio.vgmFadeoutCounterV = 0.00001;

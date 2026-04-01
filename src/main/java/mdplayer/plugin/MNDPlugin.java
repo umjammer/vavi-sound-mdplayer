@@ -7,7 +7,6 @@ import dotnet4j.io.Stream;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.OkiM6258Chip;
-import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
@@ -29,22 +28,22 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class MNDPlugin extends BasePlugin {
+public class MNDPlugin extends BasePlugin<MnDriver> {
 
     private static final Logger logger = getLogger(MNDPlugin.class.getName());
 
     @Override
     public void prepare() {
         driverVirtual = new MnDriver();
-        ((MnDriver) driverVirtual).setExtendFile(extendFiles);
+        driverVirtual.setExtendFile(extendFiles);
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            audio.driverReal = new MnDriver();
-//            ((MnDriver) audio.driverReal).extendFile = extendFile;
+//            driverReal = new MnDriver();
+//            driverReal.setExtendFile(extendFile);
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 

@@ -3,10 +3,8 @@ package mdplayer.plugin;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
-import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.nrtdrv.NrtDriver;
 import mdsound.MDSound;
@@ -16,7 +14,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /** NRTDRV (X1) Plugin. */
-public class NRTPlugin extends BasePlugin {
+public class NRTPlugin extends BasePlugin<NrtDriver> {
 
     private static final Logger logger = getLogger(NRTPlugin.class.getName());
 
@@ -29,7 +27,7 @@ public class NRTPlugin extends BasePlugin {
 //            driverReal = new NrtDriver();
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 
@@ -106,20 +104,20 @@ logger.log(Level.DEBUG, "used chip: %02x".formatted(r));
                 new Class[] {Ym2151Chip.class, Ay8910Chip.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
-        ((NrtDriver) driverVirtual).call(0); //
+        driverVirtual.call(0); //
 
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, EnmModel.RealModel,
                     new Class[] {Ym2151Chip.class, Ay8910Chip.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
-            ((NrtDriver) driverReal).call(0); //
+            driverReal.call(0); //
         }
 
-        ((NrtDriver) driverVirtual).call(1); // MPLAY
+        driverVirtual.call(1); // MPLAY
 
         if (driverReal != null) {
-            ((NrtDriver) driverReal).call(1); // MPLAY
+            driverReal.call(1); // MPLAY
         }
     }
 }

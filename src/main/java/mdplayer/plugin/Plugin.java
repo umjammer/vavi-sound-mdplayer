@@ -32,6 +32,6 @@ public interface Plugin {
     /** for SPI */
     BaseDriver getDriver();
 
-    /** for SPI */
+    /** prepare to play */
     void prepare();
 }

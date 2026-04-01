@@ -615,7 +615,7 @@ logger.log(Level.TRACE, "error message from program");
         try {
             Path fn = fs.path.resolve(fs.name);
             if (fileTemp.existTemp(fn.toString()))
-                return fileTemp.ReadTemp(fn.toString());
+                return fileTemp.readTemp(fn.toString());
             if (Files.exists(fn))
                 return Files.readAllBytes(fn);
         } catch (Exception e) {
@@ -696,7 +696,7 @@ logger.log(Level.TRACE, "error message from program");
         try {
             Path p = filePath.resolve(fn.replace("\\", File.separator));
             if (fileTemp.existTemp(p.toString()))
-                return fileTemp.ReadTemp(fn);
+                return fileTemp.readTemp(fn);
 
             if (Files.exists(p))
                 return Files.readAllBytes(p);

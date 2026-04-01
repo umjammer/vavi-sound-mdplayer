@@ -87,6 +87,9 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
         return gd3;
     }
 
+    /**
+     * @param args 0: songNo
+     */
     @Override
     public void init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
         this.vgmBuf = vgmBuf;
@@ -113,6 +116,7 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
 
         gd3 = getGD3Info(vgmBuf);
 
+        sid.song = (int) args[0];
         sid.init(vgmBuf, setting);
 
         plugin.chipRegister.chip(SidChip.class).setDriver(this);
@@ -145,11 +149,6 @@ public class SidMdDriver2 extends BaseDriver implements SidDriver {
     @Override
     public Map<String, Object> getInfo() {
         return Map.of();
-    }
-
-    @Override
-    public void setSong(int songNo) {
-        sid.song = songNo;
     }
 
     @Override

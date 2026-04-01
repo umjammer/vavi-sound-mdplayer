@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 by Naohide Sano, All rights reserved.
+ * Copyright (c) 2026 by Naohide Sano, All rights reserved.
  *
  * Programmed by Naohide Sano
  */
@@ -11,17 +11,17 @@ import mdplayer.Common.EnmModel;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
-import mdsound.instrument.Pcm8PPInst;
-import mdsound.instrument.X68kYm2151Inst;
+import mdsound.instrument.MPcmPPInst;
+import mdsound.instrument.X68kMPcmInst;
 
 
 /**
- * Pcm8 (MSX).
+ * MPcm (MSX).
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
- * @version 0.00 2025-02-09 nsano initial version <br>
+ * @version 0.00 2026-04-01 nsano initial version <br>
  */
-public class Pcm8Chip implements Chip {
+public class MPcmChip implements Chip {
 
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
@@ -33,7 +33,7 @@ public class Pcm8Chip implements Chip {
     @Override
     @SuppressWarnings("unchecked")
     public Class<? extends Instrument>[] implementations() {
-        return new Class[] {X68kYm2151Inst.class, Pcm8PPInst.class};
+        return new Class[] {X68kMPcmInst.class, MPcmPPInst.class};
     }
 
     @Override
@@ -54,9 +54,9 @@ public class Pcm8Chip implements Chip {
             return;
 
         if (chipId == 0)
-            context.chipLED.put("PriPCM8", 2);
+            context.chipLED.put("PriMPCM", 2);
         else
-            context.chipLED.put("SecPCM8", 2);
+            context.chipLED.put("SecMPCM", 2);
 
         context.mds.inst((Class<PcmEnabledInstrument>) inst(chipId)).writePcm(chipId, pcmData, 0, pcmData.length);
     }
@@ -66,9 +66,9 @@ public class Pcm8Chip implements Chip {
             return;
 
         if (chipId == 0)
-            context.chipLED.put("PriPCM8", 2);
+            context.chipLED.put("PriMPCM", 2);
         else
-            context.chipLED.put("SecPCM8", 2);
+            context.chipLED.put("SecMPCM", 2);
 
         if (dPort == -1 && dAddr == -1 && dData == -1)
             return;

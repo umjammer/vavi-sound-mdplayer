@@ -15,7 +15,7 @@ import static java.lang.System.getLogger;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class ZGMPlugin extends BasePlugin {
+public class ZGMPlugin extends BasePlugin<Zgm> {
 
     private static final Logger logger = getLogger(ZGMPlugin.class.getName());
 
@@ -28,7 +28,7 @@ public class ZGMPlugin extends BasePlugin {
             driverReal = new Zgm();
         }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 

@@ -26,6 +26,8 @@ public class SampledPlugin extends BasePlugin {
         } catch (UnsupportedAudioFileException | IOException e) {
             throw new IllegalArgumentException(e);
         }
+
+        super.prepare();
     }
 
     @Override

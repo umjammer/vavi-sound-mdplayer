@@ -31,7 +31,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-20 nsano initial version <br>
  */
-public class MuSICAPlugin extends BasePlugin {
+public class MuSICAPlugin extends BasePlugin<MusicaDriver> {
 
     private static final Logger logger = getLogger(MuSICAPlugin.class.getName());
 
@@ -45,22 +45,22 @@ public class MuSICAPlugin extends BasePlugin {
                 vcdBuf = File.readAllBytes(vcd);
             }
 
-            driverVirtual = new MusicaK4Driver();
+            MusicaK4Driver driverVirtual = new MusicaK4Driver();
             driverVirtual.init(vgmBuf, this, null, null, -1, -1);
-            ((MusicaK4Driver) driverVirtual).compile(vgmBuf, vcdBuf);
+            driverVirtual.compile(vgmBuf, vcdBuf);
 
-            vgmBuf = ((MusicaK4Driver) driverVirtual).getBgmBin();
+            vgmBuf = driverVirtual.getBgmBin();
         }
 
         driverVirtual = new MusicaDriver();
 
         driverReal = null;
 //        if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
-//            audio.driverReal = new MuSICA();
-//            ((MuSICA) audio.driverReal).setPlayingFileName(playingFileName);
+//            driverReal = new MuSICA();
+//            driverReal.setPlayingFileName(playingFileName);
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 

@@ -35,7 +35,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class S98Plugin extends BasePlugin {
+public class S98Plugin extends BasePlugin<S98Driver> {
 
     private static final Logger logger = getLogger(S98Plugin.class.getName());
 
@@ -48,7 +48,7 @@ public class S98Plugin extends BasePlugin {
 //            driverReal = new S98Driver();
 //        }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 
@@ -347,7 +347,7 @@ public class S98Plugin extends BasePlugin {
         chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.VirtualModel, YM2151ClockValue);
         if (driverReal != null) chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(EnmModel.RealModel, YM2151ClockValue);
 
-        if (driverReal == null || ((S98Driver) driverReal).getSSGVolumeFromTAG() == -1) {
+        if (driverReal == null || driverReal.getSSGVolumeFromTAG() == -1) {
             if (contains(Ym2203Chip.class, 0))
                 chipRegister.chip(Ym2203Chip.class).setSsgVolume((byte) 0, setting.getBalance().getGimicOPNVolume(), EnmModel.RealModel);
             if (contains(Ym2203Chip.class, 1))
@@ -358,13 +358,13 @@ public class S98Plugin extends BasePlugin {
                 chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 1, setting.getBalance().getGimicOPNAVolume(), EnmModel.RealModel);
         } else {
             if (contains(Ym2203Chip.class, 0))
-                chipRegister.chip(Ym2203Chip.class).setSsgVolume((byte) 0, ((S98Driver) driverReal).getSSGVolumeFromTAG(), EnmModel.RealModel);
+                chipRegister.chip(Ym2203Chip.class).setSsgVolume((byte) 0, driverReal.getSSGVolumeFromTAG(), EnmModel.RealModel);
             if (contains(Ym2203Chip.class, 1))
-                chipRegister.chip(Ym2203Chip.class).setSsgVolume((byte) 1, ((S98Driver) driverReal).getSSGVolumeFromTAG(), EnmModel.RealModel);
+                chipRegister.chip(Ym2203Chip.class).setSsgVolume((byte) 1, driverReal.getSSGVolumeFromTAG(), EnmModel.RealModel);
             if (contains(Ym2608Chip.class, 0))
-                chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 0, ((S98Driver) driverReal).getSSGVolumeFromTAG(), EnmModel.RealModel);
+                chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 0, driverReal.getSSGVolumeFromTAG(), EnmModel.RealModel);
             if (contains(Ym2608Chip.class, 1))
-                chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 1, ((S98Driver) driverReal).getSSGVolumeFromTAG(), EnmModel.RealModel);
+                chipRegister.chip(Ym2608Chip.class).setSsgVolume((byte) 1, driverReal.getSSGVolumeFromTAG(), EnmModel.RealModel);
         }
     }
 }

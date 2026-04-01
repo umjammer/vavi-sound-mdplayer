@@ -7,7 +7,6 @@ import mdplayer.Common;
 import mdplayer.chips.MidiPlugin;
 import mdplayer.chips.OkiM6258Chip;
 import mdplayer.driver.rcp.RcsDriver;
-import mdplayer.driver.zms.ZmsDriver;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.instrument.Pcm8PPInst;
@@ -23,22 +22,22 @@ import static java.lang.System.getLogger;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-07-12 nsano initial version <br>
  */
-public class RCSPlugin extends BasePlugin {
+public class RCSPlugin extends BasePlugin<RcsDriver> {
 
     private static final Logger logger = getLogger(RCSPlugin.class.getName());
 
     @Override
     public void prepare() {
         driverVirtual = new RcsDriver();
-        ((RcsDriver) driverVirtual).setExtendFile(extendFiles);
+        driverVirtual.setExtendFile(extendFiles);
 
         driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             driverReal = new RcsDriver();
-            ((RcsDriver) driverReal).setExtendFile(extendFiles);
+            driverReal.setExtendFile(extendFiles);
         }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 
@@ -59,7 +58,6 @@ public class RCSPlugin extends BasePlugin {
             chip.samplingRate = 4_000_000 / 64;
             chip.option = new Object[] { 0, 1, 0 };
             put(OkiM6258Chip.class, chip); // not use mds, via driver direct
-            ((ZmsDriver) driverVirtual).setOpmPCM(opmPCM);
         } else {
             Pcm8PPInst pcm8pp = Instrument.getInstrument(Pcm8PPInst.class);
             MDSound.Chip chip = new MDSound.Chip();
@@ -70,7 +68,6 @@ public class RCSPlugin extends BasePlugin {
             chip.samplingRate = setting.getOutputDevice().getSampleRate();
             chip.option = new Object[] {setting.getZMusic().pcm8ppsOption};
             put(OkiM6258Chip.class, chip); // not use mds, via driver direct
-            ((ZmsDriver) driverVirtual).setPcm8pp(pcm8pp);
         }
 
         hiyorimiNecessary = setting.getHiyorimiMode();
@@ -83,8 +80,8 @@ public class RCSPlugin extends BasePlugin {
         chipRegister.plugin(MidiPlugin.class).make(setting, midiMode);
         chipRegister.plugin(MidiPlugin.class).set(setting.getMidiOut().getMidiOutInfos().get(midiMode));
 
-        ((RcsDriver) driverVirtual).setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);
-        ((RcsDriver) driverReal).setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);
+        driverVirtual.setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);
+        driverReal.setSupportFileName((supportFile == null || supportFile.length < 1) ? null : supportFile[0]);
 
         driverVirtual.init(vgmBuf, this, Common.EnmModel.VirtualModel, new Class[] {Unused.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,

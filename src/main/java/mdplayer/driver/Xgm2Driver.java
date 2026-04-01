@@ -18,7 +18,7 @@ import static java.lang.System.getLogger;
  *
  * @author kumatan
  */
-public class Xgm2Driver extends BaseDriver {
+public class Xgm2Driver extends XgmDriver {
 
     private static final Logger logger = getLogger(Xgm2Driver.class.getName());
 

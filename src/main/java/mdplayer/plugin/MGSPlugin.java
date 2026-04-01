@@ -22,22 +22,22 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-08 nsano initial version <br>
  */
-public class MGSPlugin extends BasePlugin {
+public class MGSPlugin extends BasePlugin<MgsDriver> {
 
     private static final Logger logger = getLogger(MGSPlugin.class.getName());
 
     @Override
     public void prepare() {
         driverVirtual = new MgsDriver();
-        ((MgsDriver) driverVirtual).setPlayingFileName(playingFileName);
+        driverVirtual.setPlayingFileName(playingFileName);
 
         driverReal = null;
         if (setting.getOutputDevice().getDeviceType() != Common.DEV_Null) {
             driverReal = new MgsDriver();
-            ((MgsDriver) driverReal).setPlayingFileName(playingFileName);
+            driverReal.setPlayingFileName(playingFileName);
         }
 
-        prepareInternal();
+        super.prepare();
         initChips();
     }
 
