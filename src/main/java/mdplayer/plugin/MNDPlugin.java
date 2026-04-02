@@ -6,15 +6,12 @@ import java.util.function.Function;
 import dotnet4j.io.Stream;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.chips.OkiM6258Chip;
+import mdplayer.chips.MPcmChip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.mndrv.MnDriver;
-import mdsound.Instrument;
 import mdsound.MDSound;
-import mdsound.instrument.MPcmPPInst;
-import mdsound.instrument.X68kMPcmInst;
 import mdsound.instrument.X68kYm2151Inst;
 import mdsound.instrument.Ym2608Inst;
 
@@ -105,31 +102,15 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
             chipRegister.chip(Ym2608Chip.class).clock = 8000000;
         }
 
-        if (setting.getMnDrv().mpcmType == 0) {
-            X68kMPcmInst mpcm = Instrument.getInstrument(X68kMPcmInst.class);
-            chip = new MDSound.Chip();
-            chip.id = 0;
-            chip.instrument = mpcm;
-            chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.clock = 15600;
-            chip.volume = 0;
-            chip.option = null;
-            //audio.chipLED.put("PriMPCM", 1);
-            put(OkiM6258Chip.class, chip); // not use mds, via driver direct
-            ((MnDriver) driverVirtual).setMpcm(mpcm);
-        } else {
-            MPcmPPInst mpcmpp = Instrument.getInstrument(MPcmPPInst.class);
-            chip = new MDSound.Chip();
-            chip.id = 0;
-            chip.instrument = mpcmpp;
-            chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.clock = 15600;
-            chip.volume = 0;
-            chip.option = null;
-            //audio.chipLED.put("PriMPCM", 1);
-            put(OkiM6258Chip.class, chip); // not use mds, via driver direct
-            ((MnDriver) driverVirtual).setMpcmpp(mpcmpp);
-        }
+        chip = new MDSound.Chip();
+        chip.id = 0;
+        chip.instrument = chipRegister.chip(MPcmChip.class).instrument(setting.getMnDrv().mpcmType);
+        chip.samplingRate = setting.getOutputDevice().getSampleRate();
+        chip.clock = 15600;
+        chip.volume = 0;
+        chip.option = null;
+        put(MPcmChip.class, chip);
+        //audio.chipLED.put("PriMPCM", 1);
 
         chipLED.put("PriOPM", 1);
         chipLED.put("PriOPNA", 1);

@@ -2,8 +2,6 @@ package mdplayer.driver.mndrv;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
-import java.nio.ByteBuffer;
-import java.nio.ShortBuffer;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -11,10 +9,7 @@ import dotnet4j.util.compat.QuadConsumer;
 import dotnet4j.util.compat.Tuple;
 import mdplayer.driver.mxdrv.XMemory;
 import mdplayer.driver.zms.Zms.MPCMSt;
-import mdsound.chips.MPcm;
-import mdsound.chips.MPcmPP;
-import mdsound.instrument.MPcmPPInst;
-import mdsound.instrument.X68kMPcmInst;
+import mdplayer.driver.zms.Zms.MPcmInterface;
 
 import static java.lang.System.getLogger;
 
@@ -151,12 +146,8 @@ public class MnDrv {
     public final FMTimer timerOPM;
     public final FMTimer timerOPN;
 
-    final MPcm.PCM tbl = new MPcm.PCM();
-    final MPcmPP.SETPCM ptr = new MPcmPP.SETPCM();
     final byte[] vtbl = new byte[128 * 2];
-    public X68kMPcmInst mpcm;
-    public MPcmPPInst mpcmpp;
-    public int mpcmType = 0;
+    MPcmInterface mpcm;
 
     QuadConsumer<Integer, Integer, Integer, Integer> ym2608Write;
     BiConsumer<Integer, Integer> ym2151Write;
@@ -239,98 +230,37 @@ public class MnDrv {
 
         int ch = reg.getD0_B() & 0xf;
 
-        if (mpcm == null && mpcmpp == null) return;
-
         switch ((reg.getD0_W() >> 8) & 0xff) {
         case 0x00:
-            if (mpcmType == 0) { if (mpcm != null) mpcm.keyOn(0, ch); }
-            else { if (mpcmpp != null) mpcmpp.keyOn(0, ch); }
+            mpcm.keyOn(ch);
             mpcmSt[ch].keyOn = true;
             break;
         case 0x01:
-            if (mpcmType == 0) { if (mpcm != null) mpcm.keyOff(0, ch); }
-            else { if (mpcmpp != null) mpcmpp.keyOff(0, ch); }
+            mpcm.keyOff(ch);
             mpcmSt[ch].keyOff = true;
             break;
         case 0x02:
-            if (mpcmType == 0) {
-                tbl.adrsBuf = mm.mm;
-                mpcmSt[ch].type = tbl.type = mm.readByte(0x00 + reg.a1);
-                mpcmSt[ch].orig = tbl.orig = mm.readByte(0x01 + reg.a1);
-                mpcmSt[ch].adrs_ptr = tbl.adrsPtr = mm.readInt(0x04 + reg.a1);
-                mpcmSt[ch].size = tbl.size = mm.readInt(0x08 + reg.a1);
-                mpcmSt[ch].start = tbl.start = mm.readInt(0x0c + reg.a1);
-                mpcmSt[ch].end = tbl.end = mm.readInt(0x10 + reg.a1);
-                mpcmSt[ch].count = tbl.count = mm.readInt(0x14 + reg.a1);
-                mpcmSt[ch].frq = (mpcmSt[ch].type & 0xff) == 0xff ? 4 : (mpcmSt[ch].type == 1 ? 8 : (mpcmSt[ch].type == 2 ? 0x10 : 0));
-                if (mpcm != null) {
-                    mpcmSt[n & 0xf].rate = mpcm.chips[0].rate;
-                    mpcmSt[n & 0xf].base_ = mpcm.chips[0].base;
-                }
-                if (mpcm != null) mpcm.writePcm(0, ch, tbl);
-            } else {
-                ptr.adrs_buf = mm.mm;
-                mpcmSt[ch].type = ptr.type = mm.readByte(0x00 + reg.a1);
-                mpcmSt[ch].orig = ptr.orig = mm.readByte(0x01 + reg.a1);
-                mpcmSt[ch].adrs_ptr = ptr.adrs_ptr = mm.readInt(0x04 + reg.a1);
-                mpcmSt[ch].size = ptr.size = mm.readInt(0x08 + reg.a1);
-                mpcmSt[ch].start = ptr.start = mm.readInt(0x0c + reg.a1);
-                mpcmSt[ch].end = ptr.end = mm.readInt(0x10 + reg.a1);
-                mpcmSt[ch].count = ptr.count = mm.readInt(0x14 + reg.a1);
-                if (mpcmpp != null) {
-                    mpcmSt[ch].rate = mpcmpp.chips[0].rate;
-                    mpcmSt[ch].base_ = mpcmpp.chips[0].base;
-                }
-                mpcmSt[ch].frq = (mpcmSt[ch].type & 0xff) == 0xff ? 4 : (mpcmSt[ch].type == 1 ? 8 : (mpcmSt[ch].type == 2 ? 0x10 : 0));
-                //nise68.DumpMemory((uint)ptr.adrs_ptr, (uint)(ptr.adrs_ptr + ptr.size));
-                if (mpcmpp != null) mpcmpp.setFreq(0, ch, mpcmSt[ch].frq);
-                if (mpcmpp != null) mpcmpp.setPcm(0, ch, ptr);
-            }
+            mpcm.writePcm(ch, mpcmSt[ch], mm, reg, n);
             break;
         case 0x04:
-            if (mpcmType == 0) {
-                if (mpcm != null) mpcm.setPitch(0, ch, reg.D1_L);
-            } else {
-                if (mpcmpp != null) mpcmpp.setPitch(0, ch, reg.D1_L);
-            }
+            mpcm.setPitch(ch, reg.D1_L);
             mpcmSt[ch].pitch = reg.D1_L;
             break;
         case 0x05:
-            if (mpcmType == 0) {
-                if (mpcm != null) mpcm.setVol(0, ch, reg.getD1_B());
-            } else {
-                if (mpcmpp != null) mpcmpp.setVol(0, ch, reg.getD1_B());
-            }
+            mpcm.setVol(ch, reg.getD1_B());
             mpcmSt[ch].volume = reg.getD1_B() & 0xff;
             break;
         case 0x06:
-            if (mpcmType == 0) {
-                if (mpcm != null) mpcm.setPan(0, ch, reg.getD1_B());
-            } else {
-                if (mpcmpp != null) mpcmpp.setPan(0, ch, reg.getD1_B());
-            }
+            mpcm.setPan(ch, reg.getD1_B());
             mpcmSt[ch].pan = reg.getD1_B() & 0xff;
             break;
         case 0x80:
             switch (reg.getD0_B()) {
             case 0x02:
-                if (mpcmType == 0) {
-                    if (mpcm != null) mpcm.reset(0);
-                } else {
-                    if (mpcmpp != null) mpcmpp.reset(0);
-                }
+                mpcm.reset();
                 break;
             case 0x05:
-                ByteBuffer bb = ByteBuffer.wrap(vtbl);
-                ShortBuffer sb = bb.asShortBuffer();
-                for (int i = 0; i < 128; i++) {
-                    sb.put(i, mm.readShort(reg.a1 + (i * 2)));
-                }
-                if (mpcmType == 0) {
-                    if (mpcm != null) mpcm.setVolTable(0, reg.D1_L, bb);
-                } else {
-                    if (mpcmpp != null) mpcmpp.setVolTable(0, reg.D1_L, vtbl);
-                }
+                mpcm.setVolTable(reg.D1_L);
                 break;
             }
             break;

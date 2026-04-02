@@ -6,6 +6,8 @@
 
 package mdplayer.chips;
 
+import java.lang.System.Logger;
+
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.plugin.BasePlugin;
@@ -22,6 +24,8 @@ import mdsound.instrument.X68kYm2151Inst;
  * @version 0.00 2025-02-09 nsano initial version <br>
  */
 public class Pcm8Chip implements Chip {
+
+    private static final Logger logger = System.getLogger(Pcm8Chip.class.getName());
 
     private final boolean[][] mask = {
             {false, false, false, false, false, false, false, false},
@@ -85,5 +89,29 @@ public class Pcm8Chip implements Chip {
 
     public void resetMask(int chipId, int ch) {
         setMask(chipId, ch, false);
+    }
+
+    public void keyOn(int chipId, int c, int adrsPtr, int mode, int len) {
+        switch (context.mds.inst(inst(chipId))) {
+            case X68kYm2151Inst opmPCM -> opmPCM.chips[chipId].pcm8Out(c, null, adrsPtr, mode, len);
+            case Pcm8PPInst pcm8pp -> pcm8pp.keyOn(0, c, adrsPtr, mode, len);
+            default -> {assert false;}
+        }
+    }
+
+    public void keyOff(int chipId, int c) {
+        switch (context.mds.inst(inst(chipId))) {
+            case X68kYm2151Inst opmPCM -> opmPCM.chips[chipId].pcm8Out(c, null, 0, 0, 0);
+            case Pcm8PPInst pcm8pp -> pcm8pp.keyOff(0, c);
+            default -> {assert false;}
+        }
+    }
+
+    public void abort(int chipId) {
+        switch (context.mds.inst(inst(chipId))) {
+            case X68kYm2151Inst opmPCM -> opmPCM.chips[0].pcm8Abort();
+            case Pcm8PPInst pcm8pp -> {}
+            default -> {assert false;}
+        }
     }
 }

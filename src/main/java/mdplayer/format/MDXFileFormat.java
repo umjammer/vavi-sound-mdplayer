@@ -13,6 +13,7 @@ import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
 import dotnet4j.util.compat.Tuple;
+import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
@@ -71,7 +72,7 @@ public class MDXFileFormat extends BaseFileFormat {
         byte[] buf;
 
         String[] PDX = new String[1];
-        MXDRV.getPDXFileName(srcBuf, PDX);
+        MXDRV.getPDXFileName(srcBuf, PDX, Common.charset);
         if (PDX[0] != null && !PDX[0].isEmpty()) {
             buf = getExtendFileAllBytes(fn, PDX[0], archive, entry);
             if (buf == null) {

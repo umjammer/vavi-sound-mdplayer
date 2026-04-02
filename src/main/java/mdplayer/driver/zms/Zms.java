@@ -19,29 +19,19 @@ import dotnet4j.util.compat.Tuple;
 import mdplayer.Common;
 import mdplayer.UnZDF;
 import mdplayer.driver.mndrv.FMTimer;
+import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8St;
 import mdplayer.driver.zms.nise68.FileMng;
 import mdplayer.driver.zms.nise68.MemMng;
 import mdplayer.driver.zms.nise68.Nise68;
-import mdsound.chips.MPcm;
-import mdsound.chips.MPcmPP.SETPCM;
-import mdsound.instrument.MPcmPPInst;
-import mdsound.instrument.Pcm8PPInst;
-import mdsound.instrument.X68kMPcmInst;
-import mdsound.instrument.X68kYm2151Inst;
 
 import static java.lang.System.getLogger;
 
 
 /**
- * <pre>
- *               | source | compiled
- * --------------+--------+----------
- * play data	 |  ZMS   |   ZMD
- * sampling data |  CNF   |   ZPD
- * </pre>
- * system property
- * <li>"mdplayer.zms.zpd" ... zpd file location</li>
+ * ZMUSIC
+ *
+ * @author kumatan
  */
 public class Zms {
 
@@ -49,12 +39,21 @@ public class Zms {
 
     private Nise68 nise68;
     private FileMng fileMng = new FileMng(System.getProperty("user.dir"), "C:");
-    public X68kMPcmInst mpcm;
-    public MPcmPPInst mpcmpp;
-    public int mpcmType = 0;
-    public X68kYm2151Inst opmPCM;
-    public Pcm8PPInst pcm8pp;
-    public int pcm8type = 0;
+    Pcm8Interface pcm8;
+    MPcmInterface mpcm;
+
+    public interface MPcmInterface {
+        void keyOn(int ch);
+        void keyOff(int ch);
+        void writePcm(int ch, Object pcm, Object mem, Object reg, int n);
+        void setFreq(int ch, int value);
+        void setPitch(int ch, int value);
+        void setVol(int ch, int value);
+        void setPan(int ch, int value);
+        void reset();
+        void setVolTable(int type);
+        void setVolTable(int type, int[] vtbl);
+    }
 
     private int checkCounter = 0;
     private List<String> envZPDs = new ArrayList<>();
@@ -297,8 +296,7 @@ public class Zms {
                     100_000_000, 0
             )) != 0) throw new IllegalStateException("zmusic resident Error: " + rc);
 
-            if (pcm8type == 0) if (opmPCM != null) opmPCM.chips[0].mountMemory(nise68.mem.mem);
-            else if (pcm8pp != null) pcm8pp.writePcm(0, nise68.mem.mem, 0, nise68.mem.mem.length);
+            pcm8.writePcm(nise68.mem.mem, 0, nise68.mem.mem.length);
 
             // play
             byte[] zmd = null;
@@ -501,78 +499,36 @@ public class Zms {
         switch (n & 0xfff0) {
             case 0x0000:
                 //logger.log(Level.TRACE, "MPCM #M_KEY_ON($%04x)".formatted(n));
-                if (mpcmType == 0) { if (mpcm != null) mpcm.keyOn(0, ch); }
-                else { if (mpcmpp != null) mpcmpp.keyOn(0, ch); }
+                mpcm.keyOn(ch);
                 mpcmSt[ch].keyOn = true;
                 break;
             case 0x0100:
                 //logger.log(Level.TRACE, "MPCM #M_KEY_OFF($%04x)".formatted(n));
-                if (mpcmType == 0){  if (mpcm != null) mpcm.keyOff(0, ch); }
-                else { if (mpcmpp != null) mpcmpp.keyOff(0, ch); }
+                mpcm.keyOff(ch);
                 mpcmSt[ch].keyOff = true;
                 break;
             case 0x0200:
                 //logger.log(Level.TRACE, "MPCM #M_SET_PCM($%04x)".formatted(n));
-                if (mpcmType == 0) {
-                    MPcm.PCM ptr = new MPcm.PCM();
-                    ptr.adrsBuf = nise68.mem.mem;
-                    mpcmSt[ch].type = ptr.type = nise68.mem.peekB(0x00 + nise68.reg.getAl(1));
-                    mpcmSt[ch].orig = ptr.orig = nise68.mem.peekB(0x01 + nise68.reg.getAl(1));
-                    mpcmSt[ch].adrs_ptr = ptr.adrsPtr = nise68.mem.peekL(0x04 + nise68.reg.getAl(1));
-                    mpcmSt[ch].size = ptr.size = nise68.mem.peekL(0x08 + nise68.reg.getAl(1));
-                    mpcmSt[ch].start = ptr.start = nise68.mem.peekL(0x0c + nise68.reg.getAl(1));
-                    mpcmSt[ch].end = ptr.end = nise68.mem.peekL(0x10 + nise68.reg.getAl(1));
-                    mpcmSt[ch].count = ptr.count = nise68.mem.peekL(0x14 + nise68.reg.getAl(1));
-                    //mpcmSt[ch].frq = mpcmSt[ch].type == 0xff ? 4 : (mpcmSt[ch].type == 1 ? 8 : (mpcmSt[ch].type == 2 ? 0x10 : 0));
-                    if (mpcm != null) {
-                        mpcmSt[ch].rate = mpcm.chips[0].rate;
-                        mpcmSt[ch].base_ = mpcm.chips[0].base;
-                    }
-
-                    //nise68.dumpMemory((int) ptr.adrs_ptr, (int) (ptr.adrs_ptr + ptr.size));
-                    if (mpcm != null) mpcm.writePcm(0, ch, ptr);
-                } else {
-                    SETPCM ptr = new SETPCM();
-                    ptr.adrs_buf = nise68.mem.mem;
-                    mpcmSt[ch].type = ptr.type = nise68.mem.peekB(0x00 + nise68.reg.getAl(1));
-                    mpcmSt[ch].orig = ptr.orig = nise68.mem.peekB(0x01 + nise68.reg.getAl(1));
-                    mpcmSt[ch].adrs_ptr = ptr.adrs_ptr = nise68.mem.peekL(0x04 + nise68.reg.getAl(1));
-                    mpcmSt[ch].size = ptr.size = nise68.mem.peekL(0x08 + nise68.reg.getAl(1));
-                    mpcmSt[ch].start = ptr.start = nise68.mem.peekL(0x0c + nise68.reg.getAl(1));
-                    mpcmSt[ch].end = ptr.end = nise68.mem.peekL(0x10 + nise68.reg.getAl(1));
-                    mpcmSt[ch].count = ptr.count = nise68.mem.peekL(0x14 + nise68.reg.getAl(1));
-                    //mpcmSt[ch].frq = mpcmSt[ch].type == 0xff ? 4 : (mpcmSt[ch].type == 1 ? 8 : (mpcmSt[ch].type == 2 ? 0x10 : 0));
-                    if (mpcmpp != null) {
-                        mpcmSt[ch].rate = mpcmpp.chips[0].rate;
-                        mpcmSt[ch].base_ = mpcmpp.chips[0].base;
-                    }
-
-                    //nise68.dumpMemory((int) ptr.adrs_ptr, (int) (ptr.adrs_ptr + ptr.size));
-                    if (mpcmpp != null) mpcmpp.setPcm(0, ch, ptr);
-                }
+                mpcm.writePcm(ch, mpcmSt[ch], nise68.mem, nise68.reg, n);
                 break;
             case 0x0300:
                 //logger.log(Level.TRACE, "MPCM #M_SET_FRQ($%04x) D1$%08x".formatted(n, nise68.reg.GetDl(1)));
-                if (mpcmType == 0) { if (mpcm != null) mpcm.setFreq(0, ch, nise68.reg.getDl(1) & 0xff); }
-                else { if (mpcmpp != null) mpcmpp.setFreq(0, ch, nise68.reg.getDl(1) & 0xff); }
-                mpcmSt[ch].frq = nise68.reg.getDl(1);
+                mpcm.setFreq(ch, nise68.reg.getDl(1) & 0xff);
+                mpcmSt[ch].frq = nise68.reg.getDl(1) & 0xff;
                 break;
             case 0x0400:
                 //logger.log(Level.TRACE, "MPCM #M_SET_PITCH($%04x) D1$%04x".formatted(n, nise68.reg.GetDl(1)));
-                if (mpcmType == 0) { if (mpcm != null) mpcm.setPitch(0, ch, nise68.reg.getDl(1) & 0xff); }
-                else { if (mpcmpp != null) mpcmpp.setPitch(0, ch, nise68.reg.getDl(1) & 0xff); }
-                mpcmSt[ch].pitch = nise68.reg.getDl(1);
+                mpcm.setPitch(ch, nise68.reg.getDl(1) & 0xff);
+                mpcmSt[ch].pitch = nise68.reg.getDl(1) & 0xff;
                 break;
             case 0x0500:
                 //logger.log(Level.TRACE, "MPCM #M_SET_VOL($%04x) = $%02x".formatted(n, nise68.reg.GetDb(1)));
-                if (mpcmType == 0) { if (mpcm != null) mpcm.setVol(0, ch, nise68.reg.getDb(1) & 0xff); }
-                else { if (mpcmpp != null) mpcmpp.setVol(0, ch, nise68.reg.getDb(1) & 0xff); }
+                mpcm.setVol(ch, nise68.reg.getDb(1) & 0xff);
                 mpcmSt[n & 0xf].volume = nise68.reg.getDb(1) & 0xff;
                 break;
             case 0x0600:
                 //logger.log(Level.TRACE, "MPCM #M_SET_PAN($%04x) = $%02x".formatted(n, nise68.reg.GetDb(1)));
-                if (mpcmType == 0) { if (mpcm != null) mpcm.setPan(0, ch, nise68.reg.getDb(1) & 0xff); }
-                else { if (mpcmpp != null) mpcmpp.setPan(0, ch, nise68.reg.getDb(1) & 0xff); }
+                mpcm.setPan(ch, nise68.reg.getDb(1) & 0xff);
                 mpcmSt[n & 0xf].pan = nise68.reg.getDb(1) & 0xff;
                 break;
             case 0x8000: //
@@ -582,8 +538,7 @@ public class Zms {
                         break;
                     case 0x2: //
                         //logger.log(Level.TRACE, "MPCM #M_INIT($%04x)".formatted(n));
-                        if (mpcmType == 0) { if (mpcm != null) mpcm.reset(0); }
-                        else { if (mpcmpp != null) mpcmpp.reset(0); }
+                        mpcm.reset();
                         break;
                     case 0x5: //
                         //logger.log(Level.TRACE, "MPCM #M_SET_VOLTBL($%04x)".formatted(n));
@@ -591,8 +546,7 @@ public class Zms {
                         for (int i = 0; i < 128; i++) {
                             vtbl[i] = nise68.mem.peekW(nise68.reg.getAl(1) + (i * 2)) & 0xffff;
                         }
-                        if (mpcmType == 0) { if (mpcm != null) mpcm.setVolTableZms(0, nise68.reg.getDl(1), vtbl); }
-                        else { if (mpcmpp != null) mpcmpp.setVolTableZms(0, (int) nise68.reg.getDl(1), vtbl); }
+                        mpcm.setVolTable(nise68.reg.getDl(1), vtbl);
                         break;
                 }
                 break;
@@ -608,8 +562,7 @@ public class Zms {
         switch (n & 0xfff0) {
             case 0x0000:
                 //File.WriteAllBytes("c:\\temp\\test.bin", nise68.mem.mem);
-                if (pcm8type == 0) if (opmPCM != null) opmPCM.chips[0].pcm8Out(n & 0xff, null, nise68.reg.getAl(1), nise68.reg.getDl(1), nise68.reg.getDl(2)); // Start of specified channel sound
-                else if (pcm8pp != null) pcm8pp.keyOn(0, n & 0xff, nise68.reg.getAl(1), nise68.reg.getDl(1), nise68.reg.getDl(2)); // Start of specified channel sound // TODO vavi check args
+                pcm8.keyOn(n & 0xff, nise68.reg.getAl(1), nise68.reg.getDl(1), nise68.reg.getDl(2)); // Start of specified channel sound
                 //logger.log(Level.TRACE, "%d adrsPtr = 0x%08x;  mode = 0x%08x; len = 0x%08x;".formatted(n & 0xff, nise68.reg.getAl(1), nise68.reg.getDl(1), nise68.reg.getDl(2)));
                 ch = (n & 0xff) % 8;
                 pcm8St[ch].tablePtr = nise68.reg.getAl(1);
@@ -625,18 +578,17 @@ public class Zms {
                         pcm8St[ch].mode = 0;
                         pcm8St[ch].length = 0;
                         pcm8St[ch].Keyon = false;
-                        if (pcm8type == 0) if (opmPCM != null) opmPCM.chips[0].pcm8Out(n & 0xff, null, 0, 0, 0); // Stop the specified channel
-                        else if (pcm8pp != null) pcm8pp.keyOff(0, n & 0xff); // Stop the specified channel
+                        pcm8.keyOff(n & 0xff); // Stop the specified channel
                         break;
                     case 0x0101:
-                        if (opmPCM != null) opmPCM.chips[0].pcm8Abort(); // Stop all channels
+                        pcm8.abort();
                         break;
                 }
                 break;
             case 0x01f0:
                 switch (n & 0xffff) {
                     case 0x01FC:
-                        nise68.reg.setDl(0, 1);
+                        nise68.reg.setDl(0, 1); // Stop all channels
                         break;
                 }
                 break;

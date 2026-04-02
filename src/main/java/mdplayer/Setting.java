@@ -421,8 +421,8 @@ public class Setting implements Serializable, Cloneable {
 
     public static class ZMusic implements Serializable, Cloneable {
         public int compilePriority = 0;
-        public int pcm8Type = 1;
-        public int mpcmType = 1;
+        public int pcm8Type = Integer.getInteger("mdplayer.variant.pcm8", 1);
+        public int mpcmType = Integer.getInteger("mdplayer.variant.mpcm", 1);
         public int waitNextPlay = 1000;
         public int pcm8ppsOption = -1;
 

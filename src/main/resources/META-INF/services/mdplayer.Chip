@@ -49,3 +49,4 @@ mdplayer.chips.Es5503Chip
 mdplayer.chips.Pcm8Chip
 mdplayer.chips.ZxBeepChip
 mdplayer.chips.Cs4231Chip
+mdplayer.chips.MPcmChip

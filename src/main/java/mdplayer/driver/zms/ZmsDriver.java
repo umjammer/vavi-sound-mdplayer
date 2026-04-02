@@ -8,16 +8,16 @@ import dotnet4j.util.compat.Tuple;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.MPcmChip;
 import mdplayer.chips.MidiPlugin;
+import mdplayer.chips.Pcm8Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
+import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
+import mdplayer.driver.zms.Zms.MPcmInterface;
 import mdplayer.plugin.BasePlugin;
-import mdsound.instrument.MPcmPPInst;
-import mdsound.instrument.Pcm8PPInst;
-import mdsound.instrument.X68kMPcmInst;
-import mdsound.instrument.X68kYm2151Inst;
 
 import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
@@ -25,6 +25,14 @@ import static mdplayer.Common.charset;
 
 /**
  * ZMUSIC
+ * <pre>
+ *               | source | compiled
+ * --------------+--------+----------
+ * play data	 |  ZMS   |   ZMD
+ * sampling data |  CNF   |   ZPD
+ * </pre>
+ * system property
+ * <li>"mdplayer.zms.zpd" ... zpd file location</li>
  *
  * @author kumatan
  */
@@ -41,6 +49,78 @@ public class ZmsDriver extends BaseDriver {
         zms.loop = l -> vgmCurLoop = l;
         zms.stop = () -> stopped = true;
         zms.wait = () -> (int) (setting.getOutputDevice().getSampleRate() * (double) setting.getZMusic().waitNextPlay / 1000.0);
+        zms.pcm8 = new Pcm8Interface() {
+            @Override
+            public void writePcm(byte[] pcm, int offset, int length) {
+                plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, pcm, model);
+            }
+
+            @Override
+            public void keyOn(int ch, int d1, int d2, int d3) {
+                plugin.chipRegister.chip(Pcm8Chip.class).keyOn(0, ch, d1, d2, d3);
+            }
+
+            @Override
+            public void keyOff(int ch) {
+                plugin.chipRegister.chip(Pcm8Chip.class).keyOff(0, ch);
+            }
+
+            @Override
+            public void abort() {
+                plugin.chipRegister.chip(Pcm8Chip.class).abort(0);
+            }
+        };
+        zms.mpcm = new MPcmInterface() {
+            @Override
+            public void keyOn(int ch) {
+                plugin.chipRegister.chip(MPcmChip.class).keyOn(0, ch);
+            }
+
+            @Override
+            public void keyOff(int ch) {
+                plugin.chipRegister.chip(MPcmChip.class).keyOff(0, ch);
+            }
+
+            @Override
+            public void writePcm(int ch, Object pcm, Object mem, Object reg, int n) {
+                plugin.chipRegister.chip(MPcmChip.class).writePcm(0, ch, pcm, mem, n, n);
+            }
+
+            @Override
+            public void setFreq(int ch, int value) {
+                plugin.chipRegister.chip(MPcmChip.class).setFreq(0, ch, value);
+            }
+
+            @Override
+            public void setPitch(int ch, int value) {
+                plugin.chipRegister.chip(MPcmChip.class).setPitch(0, ch, value);
+            }
+
+            @Override
+            public void setVol(int ch, int value) {
+                plugin.chipRegister.chip(MPcmChip.class).setVol(0, ch, value);
+            }
+
+            @Override
+            public void setPan(int ch, int value) {
+                plugin.chipRegister.chip(MPcmChip.class).setPan(0, ch, value);
+            }
+
+            @Override
+            public void reset() {
+                plugin.chipRegister.chip(MPcmChip.class).reset(0);
+            }
+
+            @Override
+            public void setVolTable(int type) {
+                plugin.chipRegister.chip(MPcmChip.class).setVolTable(0, type);
+            }
+
+            @Override
+            public void setVolTable(int type, int[] vtbl) {
+                plugin.chipRegister.chip(MPcmChip.class).setVolTable(0, type, vtbl);
+            }
+        };
     }
 
     public int getVersion() {
@@ -49,26 +129,6 @@ public class ZmsDriver extends BaseDriver {
 
     public void setVersion(int version) {
         zms.version = version;
-    }
-
-    public void setOpmPCM(X68kYm2151Inst opmPCM) {
-        zms.opmPCM = opmPCM;
-        zms.pcm8type = 0;
-    }
-
-    public void setPcm8pp(Pcm8PPInst pcm8pp) {
-        zms.pcm8pp = pcm8pp;
-        zms.pcm8type = 1;
-    }
-
-    public void setMpcm(X68kMPcmInst mpcm) {
-        zms.mpcm = mpcm;
-        zms.mpcmType = 0;
-    }
-
-    public void setMpcmpp(MPcmPPInst mpcmpp) {
-        zms.mpcmpp = mpcmpp;
-        zms.mpcmType = 1;
     }
 
     public void setSupportFileBinaryAndName(List<Tuple<byte[], String>> supportFileBinary) {

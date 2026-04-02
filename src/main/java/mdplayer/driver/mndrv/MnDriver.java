@@ -9,14 +9,13 @@ import dotnet4j.util.compat.Tuple;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
-import mdplayer.chips.RealChipPlugin;
+import mdplayer.chips.MPcmChip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2608Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm.Gd3;
+import mdplayer.driver.zms.Zms.MPcmInterface;
 import mdplayer.plugin.BasePlugin;
-import mdsound.instrument.MPcmPPInst;
-import mdsound.instrument.X68kMPcmInst;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -37,20 +36,61 @@ public class MnDriver extends BaseDriver {
         mndrv.ym2608Write = (c, p, a, d) -> plugin.chipRegister.chip(Ym2608Chip.class).write(c, p, a, d, model);
         mndrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[0], 0);
         mndrv.stop = () -> stopped = true;
+        mndrv.mpcm = new MPcmInterface() {
+            @Override
+            public void keyOn(int ch) {
+                plugin.chipRegister.chip(MPcmChip.class).keyOn(0, ch);
+            }
+
+            @Override
+            public void keyOff(int ch) {
+                plugin.chipRegister.chip(MPcmChip.class).keyOff(0, ch);
+            }
+
+            @Override
+            public void writePcm(int ch, Object pcm, Object mem, Object reg, int n) {
+                plugin.chipRegister.chip(MPcmChip.class).writePcm(0, ch, pcm, mem, reg, n);
+            }
+
+            @Override
+            public void setFreq(int ch, int value) {
+                plugin.chipRegister.chip(MPcmChip.class).setFreq(0, ch, value);
+            }
+
+            @Override
+            public void setPitch(int ch, int value) {
+                plugin.chipRegister.chip(MPcmChip.class).setPitch(0, ch, value);
+            }
+
+            @Override
+            public void setVol(int ch, int value) {
+                plugin.chipRegister.chip(MPcmChip.class).setVol(0, ch, value);
+            }
+
+            @Override
+            public void setPan(int ch, int value) {
+                plugin.chipRegister.chip(MPcmChip.class).setPan(0, ch, value);
+            }
+
+            @Override
+            public void reset() {
+                plugin.chipRegister.chip(MPcmChip.class).reset(0);
+            }
+
+            @Override
+            public void setVolTable(int type) {
+
+            }
+
+            @Override
+            public void setVolTable(int type, int[] vtbl) {
+                plugin.chipRegister.chip(MPcmChip.class).setVolTable(0, type, vtbl);
+            }
+        };
     }
 
     public void setExtendFile(List<Tuple<String,byte[]>> extendFile) {
         mndrv.extendFile = extendFile;
-    }
-
-    public void setMpcm(X68kMPcmInst mpcm) {
-        mndrv.mpcm = mpcm;
-        mndrv.mpcmType = 0;
-    }
-
-    public void setMpcmpp(MPcmPPInst mpcmpp) {
-        mndrv.mpcmpp = mpcmpp;
-        mndrv.mpcmType = 1;
     }
 
     @Override

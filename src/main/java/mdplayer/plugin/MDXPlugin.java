@@ -11,7 +11,6 @@ import mdplayer.driver.mxdrv.MxDriver;
 import mdsound.Instrument;
 import mdsound.MDSound;
 import mdsound.MDSound.Chip;
-import mdsound.instrument.Pcm8PPInst;
 import mdsound.instrument.X68kYm2151Inst;
 import mdsound.x68sound.SoundIocs;
 
@@ -20,7 +19,7 @@ import static mdsound.MDSound.Chip.MAIN_TAG;
 
 
 /**
- * MDXDRV (X68000) Plugin.
+ * MXDRV (X68000) Plugin.
  * <p>
  * extendFile[0]: pdx data bytes
  *
@@ -75,28 +74,22 @@ public class MDXPlugin extends BasePlugin<MxDriver> {
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
         chip.clock = 4000000;
         chip.samplingRate = setting.getOutputDevice().getSampleRate(); // TODO vavi
-        put(Ym2151Chip.class, chip);
+//        put(Pcm8Chip.class, chip); // used directly
 
         X68kYm2151Inst mdxPCM_R = Instrument.getInstrument(X68kYm2151Inst.class); // real
         mdxPCM_R.soundIocs[0] = new SoundIocs(mdxPCM_R.chips[0]);
         X68kYm2151Inst mdxPCM_P = Instrument.getInstrument(X68kYm2151Inst.class); // piano roll
         mdxPCM_P.soundIocs[0] = new SoundIocs(mdxPCM_P.chips[0]);
 
-        Pcm8PPInst pcm8pp = Instrument.getInstrument(Pcm8PPInst.class);
-        driverVirtual.setPcm8type(0);
-        if (setting.getMxDrv().pcm8Type == 0) {
-            // mxdrv is special and requires PCM8
-        } else {
-            chip = new MDSound.Chip();
-            chip.id = 0;
-            chip.instrument = pcm8pp;
-            chip.volume = 0;
-            chip.clock = 4_000_000;
-            chip.samplingRate = setting.getOutputDevice().getSampleRate();
-            chip.option = new Object[] {setting.getMxDrv().pcm8ppsOption};
-            put(Pcm8Chip.class, chip);
-            driverVirtual.setPcm8type(1);
-        }
+        chip = new MDSound.Chip();
+        chip.id = 0;
+        // mxdrv is special and requires PCM8
+        chip.instrument = setting.getMxDrv().pcm8Type == 0 ? mdxPCM_V : chipRegister.chip(Pcm8Chip.class).instrument(1);
+        chip.volume = 0;
+        chip.clock = 4_000_000;
+        chip.samplingRate = setting.getOutputDevice().getSampleRate();
+        chip.option = new Object[] {setting.getMxDrv().pcm8ppsOption};
+        put(Pcm8Chip.class, chip);
 
         chipLED.put("PriOPM", 1);
         chipLED.put("PriOKI5", 1);
@@ -128,13 +121,13 @@ public class MDXPlugin extends BasePlugin<MxDriver> {
                 new Class[] {Unused.class},
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
-                mdxPCM_V, pcm8pp);
+                mdxPCM_V);
         if (driverReal != null) {
             driverReal.init(vgmBuf, this, Common.EnmModel.RealModel,
                     new Class[] {Unused.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000,
-                    mdxPCM_R, pcm8pp);
+                    mdxPCM_R);
         }
     }
 }

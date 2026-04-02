@@ -32,6 +32,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static vavi.sound.SoundUtil.volume;
@@ -57,6 +58,19 @@ class SpiTest {
     @Property(name = "vgm")
     String inFile = "src/test/resources/test.vgm";
 
+    @Property
+    String fmpDir;
+    @Property
+    String fmpPvi;
+
+    @Property
+    String zmsDir;
+
+    @Property(name = "muap.dir.dta")
+    String muapDirDta;
+    @Property(name = "muap.dir.pcm")
+    String muapDirPcm;
+
     @Property(name = "vavi.test.volume")
     double volume = 0.2;
 
@@ -66,13 +80,27 @@ class SpiTest {
             PropsEntity.Util.bind(this);
         }
 
+        // disable other vgm conversion spi
+        System.setProperty("vavi.sound.sampled.spi.emu", "false");
+        System.setProperty("vavi.sound.sampled.spi.ymfm", "false");
+
+        // fmp
+        System.setProperty("mdplayer.fmp.dir", fmpDir);
+        System.setProperty("mdplayer.fmp.pvi", fmpPvi);
+        // zms
+        System.setProperty("mdplayer.zms.dir", zmsDir);
+        // muap
+        System.setProperty("muap.dir.dta", muapDirDta);
+        System.setProperty("muap.dir.pcm", muapDirPcm);
+//        System.setProperty("muap.dir.udp", muapDirUdp);
+//        System.setProperty("muap.dir.sud", muapDirSud);
 Debug.println("volume: " + volume);
     }
 
     @Test
     @DisplayName("directly")
     public void test0() throws Exception {
-        //
+Debug.println(inFile);
         Path path = Paths.get(inFile);
         AudioInputStream sourceAis = new MdAudioFileReader().getAudioInputStream(new BufferedInputStream(Files.newInputStream(path)));
 
@@ -113,12 +141,15 @@ Debug.println("OUT: " + outAudioFormat);
     @Test
     @DisplayName("by spi")
     public void test1() throws Exception {
-        //
+Debug.println(inFile);
         Path path = Paths.get(inFile);
         AudioInputStream sourceAis = AudioSystem.getAudioInputStream(new BufferedInputStream(Files.newInputStream(path)));
 
         AudioFormat inAudioFormat = sourceAis.getFormat();
 Debug.println("IN: " + inAudioFormat + ", " + inAudioFormat.getEncoding().getClass().getName());
+
+        assertInstanceOf(MdEncoding.class, inAudioFormat.getEncoding());
+
         AudioFormat outAudioFormat = new AudioFormat(
                 44100,
                 16,
@@ -127,13 +158,13 @@ Debug.println("IN: " + inAudioFormat + ", " + inAudioFormat.getEncoding().getCla
                 false);
 Debug.println("OUT: " + outAudioFormat);
 
-        assertTrue(AudioSystem.isConversionSupported(outAudioFormat, inAudioFormat));
-
 for(var codec : ServiceLoader.load(FormatConversionProvider.class)) {
- if (codec.isConversionSupported(outAudioFormat, inAudioFormat) ) {
+ if (codec.isConversionSupported(outAudioFormat, inAudioFormat)) {
 Debug.println("converter: " + codec.getClass().getName());
+  break;
  }
 }
+        assertTrue(AudioSystem.isConversionSupported(outAudioFormat, inAudioFormat));
 
         AudioInputStream secondAis = AudioSystem.getAudioInputStream(outAudioFormat, sourceAis);
         DataLine.Info info = new DataLine.Info(SourceDataLine.class, secondAis.getFormat());
