@@ -82,7 +82,8 @@ logger.log(Level.DEBUG, "type: " + mtype);
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
         gd3 = getGD3Info(vgmBuf, 0);
 
         this.vgmBuf = vgmBuf;

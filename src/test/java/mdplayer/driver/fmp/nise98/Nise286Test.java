@@ -7,13 +7,11 @@
 package mdplayer.driver.fmp.nise98;
 
 import mdplayer.driver.fmp.nise98.Nise98.OngenBoardType;
-import musicDriverInterface.ChipDatum;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
@@ -35,6 +33,6 @@ class Nise286Test {
         assertEquals(0, r);
     }
 
-    private void nop(ChipDatum dat) {
+    private void nop(int p, int a, int d) {
     }
 }

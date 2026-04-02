@@ -2,10 +2,8 @@
 package mdplayer.driver;
 
 import mdplayer.Chip;
-import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
-import mdplayer.chips.Ym2151Chip;
 import mdplayer.plugin.BasePlugin;
 
 
@@ -42,7 +40,7 @@ public abstract class BaseDriver {
 
     protected byte[] vgmBuf = null;
 
-    protected BasePlugin plugin;
+    protected BasePlugin<? extends BaseDriver> plugin;
 
     protected EnmModel model = EnmModel.VirtualModel;
 
@@ -55,7 +53,7 @@ public abstract class BaseDriver {
     protected int waitTime = 0;
 
     public abstract void init(byte[] vgmBuf,
-                              BasePlugin plugin,
+                              BasePlugin<? extends BaseDriver> plugin,
                               EnmModel model,
                               Class<? extends Chip>[] useChip,
                               int latency,

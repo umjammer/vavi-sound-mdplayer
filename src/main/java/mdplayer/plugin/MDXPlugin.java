@@ -74,7 +74,7 @@ public class MDXPlugin extends BasePlugin<MxDriver> {
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
         chip.clock = 4000000;
         chip.samplingRate = setting.getOutputDevice().getSampleRate(); // TODO vavi
-//        put(Pcm8Chip.class, chip); // used directly
+//        put(MdxPcmChip.class, chip); // used directly
 
         X68kYm2151Inst mdxPCM_R = Instrument.getInstrument(X68kYm2151Inst.class); // real
         mdxPCM_R.soundIocs[0] = new SoundIocs(mdxPCM_R.chips[0]);
@@ -84,7 +84,7 @@ public class MDXPlugin extends BasePlugin<MxDriver> {
         chip = new MDSound.Chip();
         chip.id = 0;
         // mxdrv is special and requires PCM8
-        chip.instrument = setting.getMxDrv().pcm8Type == 0 ? mdxPCM_V : chipRegister.chip(Pcm8Chip.class).instrument(1);
+        chip.instrument = setting.getMxDrv().pcm8Type == 0 ? mdxPCM_V : chipRegister.chip(Pcm8Chip.class).instrument(0);
         chip.volume = 0;
         chip.clock = 4_000_000;
         chip.samplingRate = setting.getOutputDevice().getSampleRate();

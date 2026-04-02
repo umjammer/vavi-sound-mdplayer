@@ -50,7 +50,8 @@ public class Xgm2Driver extends XgmDriver {
     }
 
     @Override
-    public void init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
         this.vgmBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;

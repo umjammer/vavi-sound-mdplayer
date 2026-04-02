@@ -8,19 +8,16 @@ package mdplayer.driver.sid;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.SourceDataLine;
 
 import mdplayer.Setting;
 import mdplayer.driver.sid.libsidplayfp.builders.resid_builder.ReSidBuilder;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTune;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import vavi.util.Debug;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;

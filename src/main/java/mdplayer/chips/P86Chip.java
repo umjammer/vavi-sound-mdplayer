@@ -15,7 +15,7 @@ import mdsound.instrument.P86Inst;
 
 
 /**
- * P86Chip.
+ * PMD.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>

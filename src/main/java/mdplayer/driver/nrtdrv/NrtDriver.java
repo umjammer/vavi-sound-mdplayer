@@ -49,7 +49,8 @@ public class NrtDriver extends BaseDriver {
     }
 
     @Override
-    public void init(byte[] nrdFileData, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+    public void init(byte[] nrdFileData, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
         this.vgmBuf = nrdFileData;
         this.plugin = plugin;
         this.model = model;

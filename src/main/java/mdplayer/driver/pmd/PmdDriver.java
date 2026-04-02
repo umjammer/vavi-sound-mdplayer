@@ -121,7 +121,9 @@ public class PmdDriver extends BaseDriver {
      * @param args 0: FileFormat
      */
     @Override
-    public void init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model,
+                     Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+
         FileFormat fileFormat = (FileFormat) args[0];
         mtype = fileFormat instanceof MMLFileFormat ? PMDFileType.MML : PMDFileType.M;
         gd3 = getGD3Info(vgmBuf, 0, mtype);

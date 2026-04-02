@@ -104,7 +104,7 @@ public class MNDPlugin extends BasePlugin<MnDriver> {
 
         chip = new MDSound.Chip();
         chip.id = 0;
-        chip.instrument = chipRegister.chip(MPcmChip.class).instrument(setting.getMnDrv().mpcmType);
+        chip.instrument = chipRegister.chip(MPcmChip.class).instrument(0);
         chip.samplingRate = setting.getOutputDevice().getSampleRate();
         chip.clock = 15600;
         chip.volume = 0;
