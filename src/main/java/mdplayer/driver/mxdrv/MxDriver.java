@@ -9,13 +9,16 @@ import dotnet4j.util.compat.Tuple;
 import mdplayer.Chip;
 import mdplayer.Common;
 import mdplayer.Common.EnmModel;
+import mdplayer.chips.Pcm8Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.Vgm.Gd3;
+import mdplayer.driver.mxdrv.MXDRV.MdxPcmInterface;
+import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.plugin.BasePlugin;
-import mdsound.instrument.Pcm8PPInst;
 import mdsound.instrument.X68kYm2151Inst;
+import mdsound.x68sound.X68Sound;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -33,19 +36,158 @@ public class MxDriver extends BaseDriver {
 
     private final MXDRV mxdrv;
 
+    private X68kYm2151Inst mdxPCM;
+
     public MxDriver() {
         this.mxdrv = new MXDRV();
+        mxdrv.charset = Common.charset;
         mxdrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[0], vgmFrameCounter);
-        mxdrv.clock = this::clock;
         mxdrv.counter = l -> totalCounter = l;
+        mxdrv.mdxPCM = new MdxPcmInterface() {
+
+            private Runnable terminator;
+
+            @Override
+            public void writePcm(byte[] pcm, int offset, int length) {
+                mdxPCM.chips[0].mountMemory(pcm);
+            }
+
+            @Override
+            public int getPcm(short[] buffer, int offset, int length, Runnable terminator) {
+                this.terminator = terminator;
+                return mdxPCM.chips[0].getPcm(buffer, offset, length, this::clock);
+            }
+
+            @Override
+            public int getPcm(short[] buffer, int offset, int length) {
+                return mdxPCM.chips[0].getPcm(buffer, offset, length);
+            }
+
+            @Override
+            public int start(int sampleRate, int opmFlag, int adpcmFlag, int betw, int pcmBuf, int late, double rev) {
+                return mdxPCM.chips[0].start(sampleRate, opmFlag, adpcmFlag, betw, pcmBuf, late, rev);
+            }
+
+            @Override
+            public int startPcm(int sampleRate, int opmFlag, int adpcmFlag, int pcmBuf) {
+                return mdxPCM.chips[0].startPcm(sampleRate, opmFlag, adpcmFlag, pcmBuf);
+            }
+
+            @Override
+            public void initIocs() {
+                mdxPCM.soundIocs[0].init();
+            }
+
+            @Override
+            public void opmInt(Runnable func) {
+                mdxPCM.chips[0].opmInt(func);
+            }
+
+            @Override
+            public int opmWait(int wait) {
+                return mdxPCM.chips[0].opmWait(wait);
+            }
+
+            @Override
+            public int totalVolume(int vol) {
+                return mdxPCM.chips[0].totalVolume(vol);
+            }
+
+            @Override
+            public void free() {
+                mdxPCM.chips[0].free();
+            }
+
+            @Override
+            public void abort() {
+                mdxPCM.chips[0].pcm8Abort();
+            }
+
+            @Override
+            public void opmSetIocs(int addr, int data) {
+                mdxPCM.soundIocs[0].opmSet(addr, data);
+            }
+
+            @Override
+            public void keyOnAdpcm(int addr, int mode, int len) {
+                if (plugin.chipRegister.chip(Pcm8Chip.class).inst(0) == X68kYm2151Inst.class)
+                    mdxPCM.soundIocs[0].adpcmOut(addr, mode, len);
+                else
+                    plugin.chipRegister.chip(Pcm8Chip.class).keyOn(0, 0, addr, mode + 0x0c00, len);
+            }
+
+            @Override
+            public void adpcmMod(int mode) {
+                if (plugin.chipRegister.chip(Pcm8Chip.class).inst(0) == X68kYm2151Inst.class)
+                    mdxPCM.soundIocs[0].adpcmMod(mode);
+                else
+                    plugin.chipRegister.chip(Pcm8Chip.class).keyOff(0, 0);
+            }
+
+            private void clock(Runnable timer, boolean firstFlg) {
+                try {
+                    vgmSpeedCounter += vgmSpeed;
+                    while (vgmSpeedCounter >= 1.0) {
+                        vgmSpeedCounter -= 1.0;
+                        if (vgmFrameCounter > -1) {
+                            timer.run();
+                            if (firstFlg) {
+                                counter++;
+                                vgmFrameCounter++;
+                            }
+                        } else {
+                            if (firstFlg)
+                                vgmFrameCounter++;
+                        }
+                    }
+
+                    terminator.run();
+                    vgmCurLoop = mxdrv.loopCount;
+                    if (mxdrv.terminatePlay) {
+                        stopped = true;
+                    }
+                } catch (Exception ex) {
+                    logger.log(Level.ERROR, ex.getMessage(), ex);
+                }
+            }
+        };
+        mxdrv.pcm8pp = new Pcm8Interface() {
+            @Override
+            public void writePcm(byte[] pcm, int offset, int length) {
+                plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, pcm, model);
+            }
+
+            @Override
+            public void keyOn(int ch, int d1, int d2, int d3) {
+                plugin.chipRegister.chip(Pcm8Chip.class).keyOn(0, ch, d1, d2, d3);
+            }
+
+            @Override
+            public void keyOff(int ch) {
+                plugin.chipRegister.chip(Pcm8Chip.class).keyOff(0, ch);
+            }
+
+            @Override
+            public void abort() {
+                plugin.chipRegister.chip(Pcm8Chip.class).abort(0);
+            }
+        };
+        //noinspection ConstantValue
+        mxdrv.isFromDF = v -> switch (v) {
+            case X68Sound.SNDERR_DLL,
+                 X68Sound.SNDERR_FUNC -> true;
+            default -> true; // original is so
+        };
+        mxdrv.isFromPTM = v -> switch (v) {
+            case X68Sound.SNDERR_PCMOUT,
+                 X68Sound.SNDERR_TIMER,
+                 X68Sound.SNDERR_MEMORY -> true;
+            default -> false;
+        };
     }
 
     public void setExtendFile(Tuple<String,byte[]> extendFile) {
         mxdrv.extendFile = extendFile;
-    }
-
-    public void setPcm8type(int type) {
-        mxdrv.pcm8type = type;
     }
 
     @Override
@@ -70,10 +212,10 @@ public class MxDriver extends BaseDriver {
     }
 
     /**
-     * @param args 0: Pcm8PPInst, 1: X68kYm2151Inst
+     * @param args 0: X68kYm2151Inst
      */
     @Override
-    public void init(byte[] vgmBuf, BasePlugin plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
+    public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
         this.vgmBuf = vgmBuf;
         this.plugin = plugin;
         this.model = model;
@@ -92,13 +234,9 @@ public class MxDriver extends BaseDriver {
 
         plugin.chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(model, 4000000);
 
-        mxdrv.init(
-                (Pcm8PPInst) args[0],
-                (X68kYm2151Inst) args[1],
-                vgmBuf,
-                model == EnmModel.VirtualModel,
-                setting.getOutputDevice().getSampleRate()
-        );
+        mdxPCM = (X68kYm2151Inst) args[0];
+
+        mxdrv.init(vgmBuf, model == EnmModel.VirtualModel, setting.getOutputDevice().getSampleRate());
     }
 
     private final short[] dummyBuf = new short[2];
@@ -106,33 +244,6 @@ public class MxDriver extends BaseDriver {
     @Override
     public void processOneFrame() {
         render(dummyBuf, 0, 2);
-    }
-
-    private void clock(Runnable timer, boolean firstFlg) {
-        try {
-            vgmSpeedCounter += vgmSpeed;
-            while (vgmSpeedCounter >= 1.0) {
-                vgmSpeedCounter -= 1.0;
-                if (vgmFrameCounter > -1) {
-                    timer.run();
-                    if (firstFlg) {
-                        counter++;
-                        vgmFrameCounter++;
-                    }
-                } else {
-                    if (firstFlg)
-                        vgmFrameCounter++;
-                }
-            }
-
-            mxdrv.MXDRV_MeasurePlayTime_OPMINT();
-            vgmCurLoop = mxdrv.loopCount;
-            if (mxdrv.terminatePlay) {
-                stopped = true;
-            }
-        } catch (Exception ex) {
-            logger.log(Level.ERROR, ex.getMessage(), ex);
-        }
     }
 
     @Override

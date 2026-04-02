@@ -10,39 +10,65 @@ package mdplayer.driver.mxdrv;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.IntFunction;
 
 import dotnet4j.util.compat.Tuple;
-import mdsound.instrument.Pcm8PPInst;
-import mdsound.instrument.X68kYm2151Inst;
-import mdsound.x68sound.X68Sound;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
-import static mdplayer.Common.charset;
 
 
-// 
-// Filename mxdrv17.x
-// Time Stamp Sun Mar 15 11:52:06 1998
-// 
-// Base address 000000
-// Exec address 0017ea
-// Text size    001ba6 bytes
-// data size    000000 byte(s)
-// Bss  size    0006a2 byte(s)
-// 438 Labels
-// Code Generate date Wed May 06 12:59:13 1998
-// Command Line D:\FTOOL\dis.x -C2 --overwrite -7 -m 68040 -M -s8192 -e -g mxdrv17.x mxdrv17.dis
-//         DIS version 2.75
-// 
+/**
+ * MXDRV X68000
+ *
+ * <pre>
+ * Filename mxdrv17.x
+ * Time Stamp Sun Mar 15 11:52:06 1998
+ *
+ * Base address 000000
+ * Exec address 0017ea
+ * Text size    001ba6 bytes
+ * data size    000000 byte(s)
+ * Bss  size    0006a2 byte(s)
+ * 438 Labels
+ * Code Generate date Wed May 06 12:59:13 1998
+ * Command Line D:\FTOOL\dis.x -C2 --overwrite -7 -m 68040 -M -s8192 -e -g mxdrv17.x mxdrv17.dis
+ *         DIS version 2.75
+ * </pre>
+ */
 public class MXDRV {
 
     private static final Logger logger = getLogger(MXDRV.class.getName());
+
+    interface MdxPcmInterface {
+        void writePcm(byte[] pcm, int offset, int length);
+        int getPcm(short[] buffer, int offset, int length, Runnable terminator);
+        int getPcm(short[] buffer, int offset, int length);
+        int start(int sampleRate, int opmFlag, int adpcmFlag, int betw, int pcmBuf, int late, double rev);
+        int startPcm(int sampleRate, int opmFlag, int adpcmFlag, int pcmBuf);
+        void initIocs();
+        void opmInt(Runnable func);
+        int opmWait(int wait);
+        int totalVolume(int vol);
+        void free();
+        void abort();
+        void opmSetIocs(int addr, int data);
+        void keyOnAdpcm(int addr, int mode, int len);
+        void adpcmMod(int mode);
+    }
+
+    public interface Pcm8Interface {
+        void writePcm(byte[] pcm, int offset, int length);
+        void keyOn(int ch, int d1, int d2, int d3);
+        void keyOff(int ch);
+        void abort();
+    }
 
     public static class Pcm8St {
         public int tablePtr = 0;
@@ -170,9 +196,6 @@ public class MXDRV {
         int Length = 256;
     }
 
-    public interface MXCALLBACK_OPMINTFUNC extends Runnable {
-    }
-
     public enum MXDRV_WORK {
         FM, // FM8ch+PCM1ch
         PCM, // PCM7ch
@@ -233,13 +256,7 @@ public class MXDRV {
         MXDRV_Call_2(0x0c, a);
     }
 
-    BiConsumer<Integer, Integer> ym2151Write;
-    BiConsumer<Runnable, Boolean> clock;
-    Consumer<Long> counter;
-
-    void init(Pcm8PPInst pcm8pp, X68kYm2151Inst mdxPCM, byte[] vgmBuf, boolean isVirtualModel, int sampleRate) {
-        this.pcm8pp = pcm8pp;
-        this.mdxPCM = mdxPCM;
+    void init(byte[] vgmBuf, boolean isVirtualModel, int sampleRate) {
 
         byte[][] mdx = new byte[1][];
         int[] mdxSize = new int[1];
@@ -271,8 +288,8 @@ logger.log(Level.TRACE, "MXDRV_Start: " + ret);
         for (int i = 0; i < mdxSize[0]; i++) mm.write(mdxPtr + i, mdx[0][i]);
         for (int i = 0; i < pdxSize[0]; i++) mm.write(pdxPtr + i, pdx[0][i]);
 
-        if (mdxPCM != null) mdxPCM.chips[0].mountMemory(mm.mm);
-        if (pcm8pp != null) pcm8pp.writePcm(0, mm.mm, 0, mm.mm.length);
+        mdxPCM.writePcm(mm.mm, 0, mm.mm.length);
+        pcm8pp.writePcm(mm.mm, 0, mm.mm.length);
 
         int playtime = MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr, 1, Depend.TRUE);
 //logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
@@ -282,10 +299,7 @@ logger.log(Level.TRACE, "MXDRV_Start: " + ret);
     }
 
     public int render(short[] buffer, int offset, int sampleCount) {
-        if (mdxPCM == null) {
-            return 0;
-        }
-        int ret = mdxPCM.chips[0].getPcm(buffer, offset, sampleCount, clock);
+        int ret = mdxPCM.getPcm(buffer, offset, sampleCount, this::MXDRV_MeasurePlayTime_OPMINT);
 
         //logger.log(Level.TRACE, "0:%08x".formatted(mm.readint(MXWORK_CHBUF_FM[8] + MXWORK_CH.S0012)));
         //logger.log(Level.TRACE, "1:%04x".formatted(mm.readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0012) >> 6));
@@ -393,7 +407,7 @@ logger.log(Level.DEBUG, "extendFile is null");
         pdxSize[0] = pdx[0].length;
     }
 
-    public static void getPDXFileName(byte[] buf, String[] pdx) {
+    public static void getPDXFileName(byte[] buf, String[] pdx, Charset charset) {
         int p = 0;
         int c;
         while (true) {
@@ -410,14 +424,20 @@ logger.log(Level.DEBUG, "extendFile is null");
         pdx[0] = new String(ByteUtil.toByteArray(lstPdxFileName), charset);
     }
 
+    Charset charset;
+
     // private double deltaCnt = 0;
     private XMemory mm = null;
-    private String playingFileName = "";
     public Tuple<String, byte[]> extendFile = null;
     private int timerA = 0, timerB = 0;
-    private X68kYm2151Inst mdxPCM = null;
-    Pcm8PPInst pcm8pp;
-    public int pcm8type = 0;
+
+    MdxPcmInterface mdxPCM = null;
+    Pcm8Interface pcm8pp;
+
+    BiConsumer<Integer, Integer> ym2151Write;
+    Consumer<Long> counter;
+    IntFunction<Boolean> isFromDF;
+    IntFunction<Boolean> isFromPTM;
 
     // Contents of OPM register $1B
     private byte opmReg1B;
@@ -614,6 +634,7 @@ logger.log(Level.DEBUG, "extendFile is null");
         };
     }
 
+    /** @return 0 ok */
     private int MXDRV_Start(
             int samprate,
             int betw,
@@ -655,10 +676,7 @@ logger.log(Level.DEBUG, "extendFile is null");
 
         ret = 0; // x68Sound.Load();
         if (ret != 0) {
-            switch (ret) {
-            case X68Sound.SNDERR_DLL:
-            case X68Sound.SNDERR_FUNC:
-            default:
+            if (isFromDF.apply(ret)) {
                 return 10000 + ret;
             }
         }
@@ -667,22 +685,17 @@ logger.log(Level.DEBUG, "extendFile is null");
         if (opmmode < 0) opmmode = 0;
 
         if (betw != 0) {
-            if (mdxPCM != null)
-                ret = mdxPCM.chips[0].start(samprate, opmmode + 1, 1, betw, pcmbuf, late, 1.0);
+            ret = mdxPCM.start(samprate, opmmode + 1, 1, betw, pcmbuf, late, 1.0);
         } else {
-            if (mdxPCM != null)
-                ret = mdxPCM.chips[0].startPcm(samprate, opmflag, adpcmflag, pcmbuf);
+            ret = mdxPCM.startPcm(samprate, opmflag, adpcmflag, pcmbuf);
         }
         if (ret != 0) {
-            switch (ret) {
-            case X68Sound.SNDERR_PCMOUT:
-            case X68Sound.SNDERR_TIMER:
-            case X68Sound.SNDERR_MEMORY:
+            if (isFromPTM.apply(ret)) {
                 return 10100 + ret;
             }
         }
 
-        if (mdxPCM != null) mdxPCM.soundIocs[0].init();
+        mdxPCM.initIocs();
         ret = initialize(mdxbuf, pdxbuf, memInd);
         if (ret != 0) {
             return MXDRV_ERR.MEMORY.ordinal();
@@ -692,23 +705,21 @@ logger.log(Level.DEBUG, "extendFile is null");
     }
 
     private void MXDRV_End() {
-        if (mdxPCM != null) mdxPCM.chips[0].opmInt(null);
+        mdxPCM.opmInt(null);
         MXCALLBACK_OPMINT = null;
         OPMINT_FUNC = null;
 
         DisposeStack_L00122e = null;
 
-        if (mdxPCM != null) mdxPCM.chips[0].free();
+        mdxPCM.free();
     }
 
     private int MXDRV_GetPCM(short[] buf, int len) {
-        if (mdxPCM == null) return 0;
-        return mdxPCM.chips[0].getPcm(buf, 0, len);
+        return mdxPCM.getPcm(buf, 0, len);
     }
 
     private int MXDRV_TotalVolume(int vol) {
-        if (mdxPCM == null) return 0;
-        return mdxPCM.chips[0].totalVolume(vol);
+        return mdxPCM.totalVolume(vol);
     }
 
     private void MXDRV_Play(
@@ -770,7 +781,7 @@ logger.log(Level.DEBUG, "extendFile is null");
     private boolean fadeoutStart;
     private boolean reqFadeout;
 
-    void MXDRV_MeasurePlayTime_OPMINT() {
+    private void MXDRV_MeasurePlayTime_OPMINT() {
         if ((mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) & 0xffff_ffffL) >= (mm.readInt(G + MXWORK_GLOBAL.MEASURETIMELIMIT) & 0xffff_ffffL)) {
             terminatePlay = true;
         }
@@ -807,7 +818,7 @@ logger.log(Level.DEBUG, "extendFile is null");
         X68Reg reg = new X68Reg();
         Runnable opmIntBack;
 
-        if (mdxPCM != null) mdxPCM.chips[0].opmInt(null);
+        mdxPCM.opmInt(null);
 
         measurePlayTime = true;
         terminatePlay = false;
@@ -843,7 +854,7 @@ logger.log(Level.DEBUG, "extendFile is null");
 
         MXCALLBACK_OPMINT = opmIntBack;
         measurePlayTime = false;
-        if (mdxPCM != null) mdxPCM.chips[0].opmInt(this::OPMINTFUNC);
+        mdxPCM.opmInt(this::OPMINTFUNC);
 
         return (int) (mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) * (long) 1024 / 4000. + (1 - Math.ulp(1.0))) + 2000;
     }
@@ -859,7 +870,7 @@ logger.log(Level.DEBUG, "extendFile is null");
         short chMaskBack;
         int opmWaitBack;
 
-        if (mdxPCM != null) mdxPCM.chips[0].opmInt(null);
+        mdxPCM.opmInt(null);
 
         terminatePlay = false;
         loopCount = 0;
@@ -877,18 +888,17 @@ logger.log(Level.DEBUG, "extendFile is null");
         reg.d1 = 0xffff_ffff;
         MXDRV_(reg);
 
-        if (mdxPCM == null) opmWaitBack = 0;
-        else opmWaitBack = mdxPCM.chips[0].opmWait(-1);
-        if (mdxPCM != null) mdxPCM.chips[0].opmWait(1);
+        opmWaitBack = mdxPCM.opmWait(-1);
+        mdxPCM.opmWait(1);
         while (mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) < playat) {
             if (terminatePlay) break;
             OPMINTFUNC();
         }
-        if (mdxPCM != null) mdxPCM.chips[0].opmWait(opmWaitBack);
+        mdxPCM.opmWait(opmWaitBack);
 
         mm.write(G + MXWORK_GLOBAL.L001e1c, chMaskBack);
         MXCALLBACK_OPMINT = opmIntBack;
-        if (mdxPCM != null) mdxPCM.chips[0].opmInt(this::OPMINTFUNC);
+        mdxPCM.opmInt(this::OPMINTFUNC);
     }
 
     // 
@@ -900,8 +910,7 @@ logger.log(Level.DEBUG, "extendFile is null");
 
         switch (D0 & 0xfff0) {
         case 0x0000:
-            if (pcm8type == 0) if (mdxPCM != null) mdxPCM.chips[0].pcm8Out(D0 & 0xff, null, A1, D1, D2); // Start of specified channel sound
-            else if (pcm8pp != null) pcm8pp.keyOn(0, D0 & 0xff, A1, D1 + 0x0800, D2); // Start of specified channel sound
+            pcm8pp.keyOn(D0 & 0xff, A1, D1 + 0x0800, D2); // Start of specified channel sound
             ch = (D0 & 0xff) % 8;
             pcm8St[ch].tablePtr = A1;
             pcm8St[ch].mode = D1;
@@ -916,11 +925,10 @@ logger.log(Level.DEBUG, "extendFile is null");
                 pcm8St[ch].mode = 0;
                 pcm8St[ch].length = 0;
                 pcm8St[ch].Keyon = false;
-                if (pcm8type == 0) if (mdxPCM != null) mdxPCM.chips[0].pcm8Out(D0 & 0xff, null, 0, 0, 0); // Stop the specified channel
-                else if (pcm8pp != null) pcm8pp.keyOff(0, D0 & 0xff); // Stop the specified channel
+                pcm8pp.keyOff(D0 & 0xff); // Stop the specified channel
                 break;
             case 0x0101:
-                if (mdxPCM != null) mdxPCM.chips[0].pcm8Abort(); // Stop all channels
+                mdxPCM.abort(); // Stop all channels
                 break;
             }
             break;
@@ -940,9 +948,9 @@ logger.log(Level.DEBUG, "extendFile is null");
     private void OPM_SUB() {
         if (measurePlayTime) return;
 
-        //logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
+        logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
 
-        if (mdxPCM != null) mdxPCM.soundIocs[0].opmSet(D1 & 0xff, D2 & 0xff);
+        mdxPCM.opmSetIocs(D1 & 0xff, D2 & 0xff);
         ym2151Write.accept(D1, D2);
 
         if (D1 == 0x10) {
@@ -958,18 +966,15 @@ logger.log(Level.DEBUG, "extendFile is null");
 
     // 
     private void ADPCMOUT() {
-        if (pcm8type == 0) if (mdxPCM != null) mdxPCM.soundIocs[0].adpcmOut(A1, D1, D2);
-        else if (pcm8pp != null) pcm8pp.keyOn(0, 0, A1, D1 + 0x0c00, D2);
+        mdxPCM.keyOnAdpcm(A1, D1 + 0x0c00, D2);
     }
 
     private void ADPCMMOD_STOP() {
-        if (pcm8type == 0) if (mdxPCM != null) mdxPCM.soundIocs[0].adpcmMod(1);
-        else if (pcm8pp != null) pcm8pp.keyOff(0, 0);
+        mdxPCM.adpcmMod(1);
     }
 
     private void ADPCMMOD_END() {
-        if (pcm8type == 0) if (mdxPCM != null) mdxPCM.soundIocs[0].adpcmMod(0);
-        else if (pcm8pp != null) pcm8pp.keyOff(0, 0);
+        mdxPCM.adpcmMod(0);
     }
 
     // 
@@ -988,7 +993,7 @@ logger.log(Level.DEBUG, "extendFile is null");
 
     private void SETOPMINT(Runnable func) {
         OPMINT_FUNC = func;
-        if (mdxPCM != null) mdxPCM.chips[0].opmInt(this::OPMINTFUNC);
+        mdxPCM.opmInt(this::OPMINTFUNC);
     }
 
     // 
@@ -2539,7 +2544,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
             }
             mm.write(A6 + MXWORK_CH.S0020, (byte) ((mm.readByte(A6 + MXWORK_CH.S0020) - 1) & 0xff));
         }
-        if (/* signed */ (byte) mm.readByte(A6 + MXWORK_CH.S0018) >= 0) {
+        if (/* signed */ mm.readByte(A6 + MXWORK_CH.S0018) >= 0) {
             L000cdc();
             L000dfe();
         }

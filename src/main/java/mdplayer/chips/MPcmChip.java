@@ -45,6 +45,11 @@ public class MPcmChip implements Chip {
     }
 
     @Override
+    public int activeIndex(int chipId) {
+        return setting.getMnDrv().mpcmType;
+    }
+
+    @Override
     public void init(BasePlugin context) {
         this.context = context;
     }
@@ -69,7 +74,7 @@ public class MPcmChip implements Chip {
         context.mds.inst((Class<PcmEnabledInstrument>) inst(chipId)).writePcm(chipId, pcmData, 0, pcmData.length);
     }
 
-    public void write(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -78,9 +83,9 @@ public class MPcmChip implements Chip {
         else
             context.chipLED.put("SecMPCM", 2);
 
-        if (dPort == -1 && dAddr == -1 && dData == -1)
+        if (port == -1 && addr == -1 && data == -1)
             return;
-        context.mds.inst(inst(chipId)).write(chipId, dPort, dAddr, dData);
+        context.mds.inst(inst(chipId)).write(chipId, port, addr, data);
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
@@ -131,7 +136,7 @@ public class MPcmChip implements Chip {
                     //nise68.dumpMemory((int) ptr.adrs_ptr, (int) (ptr.adrs_ptr + ptr.size));
                     mpcm.writePcm(0, ch, ptr);
                 } else if (pcm instanceof mdplayer.driver.zms.Zms.MPCMSt[] mpcmSt && mem instanceof mdplayer.driver.mxdrv.XMemory mm && reg instanceof mdplayer.driver.mndrv.Reg reg68) {
-                    final MPcm.PCM tbl = new MPcm.PCM();
+                    MPcm.PCM tbl = new MPcm.PCM();
                     tbl.adrsBuf = mm.mm;
                     mpcmSt[ch].type = tbl.type = mm.readByte(0x00 + reg68.a1);
                     mpcmSt[ch].orig = tbl.orig = mm.readByte(0x01 + reg68.a1);
@@ -145,7 +150,7 @@ public class MPcmChip implements Chip {
                     mpcmSt[n & 0xf].base_ = mpcm.chips[0].base;
                     mpcm.writePcm(0, ch, tbl);
                 } else {
-logger.log(Level.WARNING, "unhandled type: {0}, {1}", pcm.getClass().getName(), mem.getClass().getName());
+logger.log(Level.WARNING, "unhandled type: {0}, {1}, {2}", pcm.getClass().getName(), mem.getClass().getName(), reg.getClass().getName());
                 }
             }
             case MPcmPPInst mpcmpp -> {
@@ -166,7 +171,7 @@ logger.log(Level.WARNING, "unhandled type: {0}, {1}", pcm.getClass().getName(), 
                     //nise68.dumpMemory((int) ptr.adrs_ptr, (int) (ptr.adrs_ptr + ptr.size));
                     mpcmpp.setPcm(0, ch, ptr);
                 } else if (pcm instanceof mdplayer.driver.zms.Zms.MPCMSt[] mpcmSt && mem instanceof mdplayer.driver.mxdrv.XMemory mm && reg instanceof mdplayer.driver.mndrv.Reg reg68) {
-                    final MPcmPP.SETPCM ptr = new MPcmPP.SETPCM();
+                    SETPCM ptr = new SETPCM();
                     ptr.adrs_buf = mm.mm;
                     mpcmSt[ch].type = ptr.type = mm.readByte(0x00 + reg68.a1);
                     mpcmSt[ch].orig = ptr.orig = mm.readByte(0x01 + reg68.a1);
@@ -182,7 +187,7 @@ logger.log(Level.WARNING, "unhandled type: {0}, {1}", pcm.getClass().getName(), 
                     mpcmpp.setFreq(0, ch, mpcmSt[ch].frq);
                     mpcmpp.setPcm(0, ch, ptr);
                 } else {
-logger.log(Level.WARNING, "unhandled type: {0}, {1}", pcm.getClass().getName(), mem.getClass().getName());
+logger.log(Level.WARNING, "unhandled type: {0}, {1}, {2}", pcm.getClass().getName(), mem.getClass().getName(), reg.getClass().getName());
                 }
             }
             default -> {assert false;}

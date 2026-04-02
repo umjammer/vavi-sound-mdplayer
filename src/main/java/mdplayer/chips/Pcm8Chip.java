@@ -41,6 +41,11 @@ public class Pcm8Chip implements Chip {
     }
 
     @Override
+    public int activeIndex(int chipId) {
+        return setting.getZMusic().pcm8Type;
+    }
+
+    @Override
     public void init(BasePlugin context) {
         this.context = context;
     }
@@ -65,7 +70,7 @@ public class Pcm8Chip implements Chip {
         context.mds.inst((Class<PcmEnabledInstrument>) inst(chipId)).writePcm(chipId, pcmData, 0, pcmData.length);
     }
 
-    public void write(int chipId, int dPort, int dAddr, int dData, EnmModel model) {
+    public void write(int chipId, int port, int addr, int data, EnmModel model) {
         if (model != EnmModel.VirtualModel)
             return;
 
@@ -74,9 +79,9 @@ public class Pcm8Chip implements Chip {
         else
             context.chipLED.put("SecPCM8", 2);
 
-        if (dPort == -1 && dAddr == -1 && dData == -1)
+        if (port == -1 && addr == -1 && data == -1)
             return;
-        context.mds.inst(inst(chipId)).write(chipId, dPort, dAddr, dData);
+        context.mds.inst(inst(chipId)).write(chipId, port, addr, data);
     }
 
     public void setMask(int chipId, int ch, boolean mask) {
@@ -91,18 +96,18 @@ public class Pcm8Chip implements Chip {
         setMask(chipId, ch, false);
     }
 
-    public void keyOn(int chipId, int c, int adrsPtr, int mode, int len) {
+    public void keyOn(int chipId, int ch, int addr, int mode, int len) {
         switch (context.mds.inst(inst(chipId))) {
-            case X68kYm2151Inst opmPCM -> opmPCM.chips[chipId].pcm8Out(c, null, adrsPtr, mode, len);
-            case Pcm8PPInst pcm8pp -> pcm8pp.keyOn(0, c, adrsPtr, mode, len);
+            case X68kYm2151Inst opmPCM -> opmPCM.chips[chipId].pcm8Out(ch, null, addr, mode, len);
+            case Pcm8PPInst pcm8pp -> pcm8pp.keyOn(0, ch, addr, mode, len);
             default -> {assert false;}
         }
     }
 
-    public void keyOff(int chipId, int c) {
+    public void keyOff(int chipId, int ch) {
         switch (context.mds.inst(inst(chipId))) {
-            case X68kYm2151Inst opmPCM -> opmPCM.chips[chipId].pcm8Out(c, null, 0, 0, 0);
-            case Pcm8PPInst pcm8pp -> pcm8pp.keyOff(0, c);
+            case X68kYm2151Inst opmPCM -> opmPCM.chips[chipId].pcm8Out(ch, null, 0, 0, 0);
+            case Pcm8PPInst pcm8pp -> pcm8pp.keyOff(0, ch);
             default -> {assert false;}
         }
     }
