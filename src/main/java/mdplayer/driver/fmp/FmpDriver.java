@@ -12,7 +12,6 @@ import mdplayer.driver.BaseDriver;
 import mdplayer.driver.Vgm;
 import mdplayer.driver.fmp.nise98.FileTemp;
 import mdplayer.plugin.BasePlugin;
-import musicDriverInterface.ChipDatum;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -130,12 +129,12 @@ public class FmpDriver extends BaseDriver {
         plugin.chipRegister.chip(Ppz8Chip.class).write(0, port, adr, data, model);
     }
 
-    private void opnaWrite(ChipDatum dat) {
-        byte cn = (byte) (dat.port >> 8);
-        int port = (dat.port & 0xff) == 0x8a ? 0 : 1;
-        plugin.chipRegister.chip(Ym2608Chip.class).write(0, port, dat.address, dat.data, model);
+    private void opnaWrite(int p, int a, int d) {
+        int cn = p >> 8;
+        int port = (p & 0xff) == 0x8a ? 0 : 1;
+        plugin.chipRegister.chip(Ym2608Chip.class).write(0, port, a, d, model);
 
-        if (port == 1 && dat.address == 0x8 && model == EnmModel.RealModel) {
+        if (port == 1 && a == 0x8 && model == EnmModel.RealModel) {
             this.isDataBlock = true;
             fmp.pcmDataSendCount++;
             plugin.chipRegister.chip(Ym2608Chip.class).setSyncWait(0, 1);

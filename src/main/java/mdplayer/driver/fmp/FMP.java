@@ -19,7 +19,6 @@ import mdplayer.driver.fmp.nise98.Nise98;
 import mdplayer.driver.fmp.nise98.Nise98.OngenBoardType;
 import mdplayer.driver.fmp.nise98.NiseDos;
 import mdplayer.driver.fmp.nise98.Register286;
-import musicDriverInterface.ChipDatum;
 
 import static java.lang.System.getLogger;
 import static mdplayer.Common.charset;
@@ -34,7 +33,7 @@ public class FMP {
 
     TriConsumer<Integer, Integer, byte[][]> setPPZ8PCMData;
     TriConsumer<Integer, Integer, Integer> setPPZ8Data;
-    Consumer<ChipDatum> opnaWrite;
+    TriConsumer<Integer, Integer, Integer> opnaWrite;
     Consumer<Boolean> blockWrite;
 
     public static final int baseClock = 7987200;
