@@ -11,6 +11,7 @@ import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.MameYm2151Inst;
@@ -21,7 +22,10 @@ import mdsound.instrument.YmFmYm2151Inst;
 
 /**
  * Ym2151Chip.
- *
+ * <p>
+ * system property
+ * <li>{@code mdplayer.variant.ym2151} ... active chip index</li>
+ * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -54,7 +58,7 @@ public class Ym2151Chip implements Chip {
 
     public int[] hosei = new int[] {0, 0};
 
-    private BasePlugin context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -68,7 +72,7 @@ public class Ym2151Chip implements Chip {
     }
 
     @Override
-    public void init(BasePlugin context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {

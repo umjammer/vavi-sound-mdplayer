@@ -6,8 +6,8 @@
 
 package mdplayer.chips;
 
-import mdplayer.Audio;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 
 
@@ -21,7 +21,7 @@ public interface Plugin {
 
     Setting setting = Setting.getInstance();
 
-    void init(BasePlugin context);
+    void init(BasePlugin<? extends BaseDriver> context);
 
     void close();
 }

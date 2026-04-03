@@ -441,7 +441,7 @@ public class Setting implements Serializable, Cloneable {
 
     public static class MxDrv implements Serializable, Cloneable {
 
-        public int pcm8Type = 1;
+        public int pcm8Type = Integer.getInteger("mdplayer.variant.pcm8", 1);
         public int pcm8ppsOption = -1;
 
         @Override
@@ -455,7 +455,7 @@ public class Setting implements Serializable, Cloneable {
     }
 
     public static class Mndrv implements Serializable, Cloneable {
-        public int mpcmType = 1;
+        public int mpcmType = Integer.getInteger("mdplayer.variant.mpcm", 1);
 
         @Override
         public Mndrv clone() {
@@ -467,7 +467,7 @@ public class Setting implements Serializable, Cloneable {
     }
 
     public static class Rcs implements Serializable, Cloneable {
-        public int pcm8type = 1; // PCM8PP is the default
+        public int pcm8type = Integer.getInteger("mdplayer.variant.pcm8", 1); // PCM8PP is the default
 
         @Override
         public Rcs clone() {

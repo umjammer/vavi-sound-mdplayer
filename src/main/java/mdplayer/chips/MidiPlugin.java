@@ -22,6 +22,7 @@ import mdplayer.MIDIExport;
 import mdplayer.MIDIParam;
 import mdplayer.MidiOutInfo;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.MDSound;
@@ -56,14 +57,14 @@ public class MidiPlugin implements Plugin {
 
     protected short[] bufVirtualFunction_MIDIKeyboard = null;
 
-    private BasePlugin context;
+    private BasePlugin<? extends BaseDriver> context;
 
     public MidiPlugin() {
         mds = new MDSound(setting.getOutputDevice().getSampleRate(), BUFFER_SIZE, null);
     }
 
     @Override
-    public void init(BasePlugin context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
 
         mdsInit();

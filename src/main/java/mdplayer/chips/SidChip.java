@@ -7,6 +7,7 @@
 package mdplayer.chips;
 
 import mdplayer.Chip;
+import mdplayer.driver.BaseDriver;
 import mdplayer.driver.sid.SidDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
@@ -29,7 +30,7 @@ public class SidChip implements Chip {
     }
 
     @Override
-    public void init(BasePlugin context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
     }
 
     @Override

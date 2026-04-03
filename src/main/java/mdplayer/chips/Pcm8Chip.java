@@ -10,6 +10,7 @@ import java.lang.System.Logger;
 
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
@@ -18,8 +19,11 @@ import mdsound.instrument.X68kYm2151Inst;
 
 
 /**
- * Pcm8 (MSX).
- *
+ * PCM8 (X68000).
+ * <p>
+ * system property
+ * <li>{@code mdplayer.variant.pcm8} ... active chip index</li>
+ * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-09 nsano initial version <br>
  */
@@ -32,7 +36,7 @@ public class Pcm8Chip implements Chip {
             {false, false, false, false, false, false, false, false}
     };
 
-    private BasePlugin context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -46,7 +50,7 @@ public class Pcm8Chip implements Chip {
     }
 
     @Override
-    public void init(BasePlugin context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
     }
 

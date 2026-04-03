@@ -11,19 +11,22 @@ import java.lang.System.Logger.Level;
 
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
 import mdsound.chips.MPcm;
-import mdsound.chips.MPcmPP;
 import mdsound.chips.MPcmPP.SETPCM;
 import mdsound.instrument.MPcmPPInst;
 import mdsound.instrument.X68kMPcmInst;
 
 
 /**
- * MPcm (MSX).
- *
+ * MPcm (X68000).
+ * <p>
+ * system property
+ * <li>{@code mdplayer.variant.mpcm} ... active chip index</li>
+ * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2026-04-01 nsano initial version <br>
  */
@@ -36,7 +39,7 @@ public class MPcmChip implements Chip {
             {false, false, false, false, false, false, false, false}
     };
 
-    private BasePlugin context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -50,7 +53,7 @@ public class MPcmChip implements Chip {
     }
 
     @Override
-    public void init(BasePlugin context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
     }
 
@@ -116,6 +119,7 @@ public class MPcmChip implements Chip {
         }
     }
 
+    /** TODO use common object type instead of Object */
     public void writePcm(int chipId, int ch, Object pcm, Object mem, Object reg, int n) {
         switch (context.mds.inst(inst(chipId))) {
             case X68kMPcmInst mpcm -> {

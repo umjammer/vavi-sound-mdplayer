@@ -25,7 +25,9 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.sound.sampled.spi.AudioFileReader;
 
+import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
+import mdplayer.format.UnknownFileFormat;
 import mdplayer.plugin.BasePlugin;
 import vavi.sound.SoundUtil;
 import vavi.util.archive.Archives;
@@ -51,7 +53,7 @@ public class MdAudioFileReader extends AudioFileReader {
     @Override
     public AudioFileFormat getAudioFileFormat(File file) throws UnsupportedAudioFileException, IOException {
         try (InputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()), 8192)) {
-            return getAudioFileFormat(inputStream, (int) file.length());
+            return getAudioFileFormat(inputStream, Math.toIntExact(file.length()));
         }
     }
 
@@ -83,7 +85,7 @@ logger.log(DEBUG, "enter: available: " + bitStream.available() + ", " + bitStrea
         if (!bitStream.markSupported()) {
             throw new IllegalArgumentException("input stream not supported mark");
         }
-        BasePlugin plugin;
+        BasePlugin<? extends BaseDriver> plugin;
         Encoding encoding;
         float samplingRate = 44100;
         int channels = 2;
@@ -97,12 +99,13 @@ logger.log(Level.TRACE, "input stream M: " + in + ", " + in.available());
 
             FileFormat fileFormat = FileFormat.getFileFormat(in);
 logger.log(DEBUG, "format: " + fileFormat.getClass().getSimpleName());
+            if (fileFormat instanceof UnknownFileFormat) throw new UnsupportedAudioFileException("not supported format");
 
             URI source = SoundUtil.getSource(bitStream);
             String fn = source != null && source.getScheme().equals("file") ? source.getPath() : null;
             encoding = fileFormat.getEncoding();
             var r = fileFormat.load(in, fn);
-            plugin = (BasePlugin) fileFormat.getPlugin();
+            plugin = (BasePlugin<? extends BaseDriver>) fileFormat.getPlugin();
 logger.log(DEBUG, "plugin: " + plugin);
 logger.log(DEBUG, "filename: " + fn);
             plugin.setBuffer(fileFormat, r.getItem1(), fn, null, 0, 0, r.getItem2());

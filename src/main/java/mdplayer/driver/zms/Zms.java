@@ -29,7 +29,7 @@ import static java.lang.System.getLogger;
 
 
 /**
- * ZMUSIC
+ * ZMUSIC X68000
  *
  * @author kumatan
  */
@@ -42,6 +42,7 @@ public class Zms {
     Pcm8Interface pcm8;
     MPcmInterface mpcm;
 
+    /** abstraction for mpcm chip implementation */
     public interface MPcmInterface {
         void keyOn(int ch);
         void keyOff(int ch);
@@ -135,14 +136,14 @@ public class Zms {
                 if (d0 == 0) {
                     if (preData.isEmpty()) stop.run();
                     else {
-                        preData.remove(0);
+                        preData.removeFirst();
                         byte[] zmd = null;
                         if (preData.isEmpty()) {
                             //if (nise68.hmn.fb.containsKey(fnZMD)) zmd = nise68.hmn.fb[fnZMD];
                             if (fileMng.existsFile(fnZMD)) zmd = fileMng.vReadAllBytes(fnZMD);
                         } else {
                             //if (nise68.hmn.fb.containsKey(preData[0])) zmd = nise68.hmn.fb[preData[0]];
-                            if (fileMng.existsFile(preData.get(0))) zmd = fileMng.vReadAllBytes(preData.get(0));
+                            if (fileMng.existsFile(preData.getFirst())) zmd = fileMng.vReadAllBytes(preData.getFirst());
                         }
                         int fileSize = zmd.length;
                         int filePtr = nise68.hmn.memMng.malloc(fileSize);

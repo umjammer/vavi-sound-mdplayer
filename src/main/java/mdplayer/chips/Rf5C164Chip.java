@@ -8,6 +8,7 @@ package mdplayer.chips;
 
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.chips.ScdPcm;
@@ -27,7 +28,7 @@ public class Rf5C164Chip implements Chip {
             {false, false, false, false, false, false, false, false}
     };
 
-    private BasePlugin context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -36,7 +37,7 @@ public class Rf5C164Chip implements Chip {
     }
 
     @Override
-    public void init(BasePlugin context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
     }
 

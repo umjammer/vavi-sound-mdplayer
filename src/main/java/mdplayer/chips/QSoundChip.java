@@ -9,6 +9,7 @@ package mdplayer.chips;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.Instrument.PcmEnabledInstrument;
@@ -18,7 +19,10 @@ import mdsound.instrument.QSoundInst;
 
 /**
  * QSoundChip.
- *
+ * <p>
+ * system property
+ * <li>{@code mdplayer.variant.qsound} ... active chip index</li>
+ * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -33,7 +37,7 @@ public class QSoundChip implements Chip {
                     false, false, false,}
     };
 
-    private BasePlugin context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @SuppressWarnings("unchecked")
     private Class<? extends PcmEnabledInstrument> _inst(int chipId) {
@@ -52,7 +56,7 @@ public class QSoundChip implements Chip {
     }
 
     @Override
-    public void init(BasePlugin context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
     }
 

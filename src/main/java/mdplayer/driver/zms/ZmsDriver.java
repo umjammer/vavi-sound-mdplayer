@@ -24,7 +24,7 @@ import static mdplayer.Common.charset;
 
 
 /**
- * ZMUSIC
+ * ZMUSIC X68000
  * <pre>
  *               | source | compiled
  * --------------+--------+----------

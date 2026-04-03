@@ -7,12 +7,13 @@
 package mdplayer;
 
 import mdplayer.Common.EnmModel;
+import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 
 
 /**
- * Chip.
+ * Chip. mdsound.Instrument abstraction.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
@@ -48,7 +49,7 @@ public interface Chip {
     default int activeIndex(int chipId) { return 0; }
 
     /** */
-    void init(BasePlugin context);
+    void init(BasePlugin<? extends BaseDriver> context);
 
     /** */
     void reset();
@@ -62,12 +63,12 @@ public interface Chip {
     /** */
     default void softReset(EnmModel model) {}
 
-    /** */
+    /** get active instruction for chipId */
     default Class<? extends Instrument> inst(int chipId) {
         return implementations()[activeIndex(chipId)];
     }
 
-    /** */
+    /** instantiate an instrument */
     default Instrument instrument(int chipId) {
         return Instrument.getInstrument(inst(chipId));
     }

@@ -6,6 +6,7 @@ import mdplayer.Common;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 
 
@@ -19,7 +20,7 @@ public class RealChipPlugin implements Plugin {
 
     public RealChip realChip;
 
-    BasePlugin context;
+    BasePlugin<? extends BaseDriver> context;
 
     public RealChipPlugin() {
 //                , SoundChip.realChip
@@ -55,7 +56,7 @@ public class RealChipPlugin implements Plugin {
     }
 
     @Override
-    public void init(BasePlugin context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
 
 //        if (SoundChip.realChip == null && !getemuOnly()) {

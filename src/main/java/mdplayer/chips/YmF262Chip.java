@@ -10,6 +10,7 @@ import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.RealChip.RSoundChip;
 import mdplayer.Setting;
+import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.CozYmF262Inst;
@@ -22,7 +23,10 @@ import static mdplayer.chips.YmF278BChip.channel;
 
 /**
  * YmF262Chip.
- *
+ * <p>
+ * system property
+ * <li>{@code mdplayer.variant.ymf262} ... active chip index</li>
+ * </p>
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-01-19 nsano initial version <br>
  */
@@ -52,7 +56,7 @@ public class YmF262Chip implements Chip {
 
     private final int[] fadeout = {0, 0};
 
-    private BasePlugin context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -66,7 +70,7 @@ public class YmF262Chip implements Chip {
     }
 
     @Override
-    public void init(BasePlugin context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
 
         for (int chipId = 0; chipId < 2; chipId++) {

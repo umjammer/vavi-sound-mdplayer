@@ -8,6 +8,7 @@ package mdplayer.chips;
 
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
+import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
 import mdsound.instrument.Saa1099Inst;
@@ -21,7 +22,7 @@ import mdsound.instrument.Saa1099Inst;
  */
 public class Saa1099Chip implements Chip {
 
-    private BasePlugin context;
+    private BasePlugin<? extends BaseDriver> context;
 
     @Override
     @SuppressWarnings("unchecked")
@@ -30,7 +31,7 @@ public class Saa1099Chip implements Chip {
     }
 
     @Override
-    public void init(BasePlugin context) {
+    public void init(BasePlugin<? extends BaseDriver> context) {
         this.context = context;
     }
 

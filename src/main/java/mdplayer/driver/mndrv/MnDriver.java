@@ -23,6 +23,8 @@ import static mdplayer.Common.charset;
 
 
 /**
+ * MNDRV X68000
+ *
  * @author kumatan
  */
 public class MnDriver extends BaseDriver {
@@ -79,7 +81,6 @@ public class MnDriver extends BaseDriver {
 
             @Override
             public void setVolTable(int type) {
-
             }
 
             @Override
