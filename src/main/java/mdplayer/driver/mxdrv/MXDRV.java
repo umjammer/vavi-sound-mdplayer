@@ -46,6 +46,7 @@ public class MXDRV {
 
     private static final Logger logger = getLogger(MXDRV.class.getName());
 
+    /** abstraction for pcm8 mxd special chip implementation */
     interface MdxPcmInterface {
         void writePcm(byte[] pcm, int offset, int length);
         int getPcm(short[] buffer, int offset, int length, Runnable terminator);
@@ -63,6 +64,7 @@ public class MXDRV {
         void adpcmMod(int mode);
     }
 
+    /** abstraction for pcm8 chip implementation */
     public interface Pcm8Interface {
         void writePcm(byte[] pcm, int offset, int length);
         void keyOn(int ch, int d1, int d2, int d3);
@@ -948,7 +950,7 @@ logger.log(Level.DEBUG, "extendFile is null");
     private void OPM_SUB() {
         if (measurePlayTime) return;
 
-        logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
+        //logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
 
         mdxPCM.opmSetIocs(D1 & 0xff, D2 & 0xff);
         ym2151Write.accept(D1, D2);

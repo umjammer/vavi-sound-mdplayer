@@ -7,15 +7,16 @@
 package mdplayer.chips;
 
 import java.lang.System.Logger;
+import java.util.function.BiConsumer;
 
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.driver.BaseDriver;
 import mdplayer.plugin.BasePlugin;
 import mdsound.Instrument;
-import mdsound.Instrument.PcmEnabledInstrument;
 import mdsound.instrument.Pcm8PPInst;
 import mdsound.instrument.X68kYm2151Inst;
+import mdsound.x68sound.X68Sound;
 
 
 /**
@@ -71,7 +72,8 @@ public class Pcm8Chip implements Chip {
         else
             context.chipLED.put("SecPCM8", 2);
 
-        context.mds.inst((Class<PcmEnabledInstrument>) inst(chipId)).writePcm(chipId, pcmData, 0, pcmData.length);
+        Pcm8PPInst pcm8 = context.mds.inst(Pcm8PPInst.class, chipId);
+        if (pcm8 != null) pcm8.writePcm(chipId, pcmData, 0, pcmData.length);
     }
 
     public void write(int chipId, int port, int addr, int data, EnmModel model) {
@@ -101,26 +103,111 @@ public class Pcm8Chip implements Chip {
     }
 
     public void keyOn(int chipId, int ch, int addr, int mode, int len) {
-        switch (context.mds.inst(inst(chipId))) {
-            case X68kYm2151Inst opmPCM -> opmPCM.chips[chipId].pcm8Out(ch, null, addr, mode, len);
-            case Pcm8PPInst pcm8pp -> pcm8pp.keyOn(0, ch, addr, mode, len);
-            default -> {assert false;}
+        Instrument inst = context.mds.inst(inst(chipId), chipId);
+        if (inst != null) { // for mxdrv
+            switch (inst) {
+                case X68kYm2151Inst opmPCM -> opmPCM.keyOn(chipId, ch, addr, mode, len);
+                case Pcm8PPInst pcm8pp -> pcm8pp.keyOn(chipId, ch, addr, mode, len);
+                default -> { assert false; }
+            }
         }
     }
 
     public void keyOff(int chipId, int ch) {
-        switch (context.mds.inst(inst(chipId))) {
-            case X68kYm2151Inst opmPCM -> opmPCM.chips[chipId].pcm8Out(ch, null, 0, 0, 0);
-            case Pcm8PPInst pcm8pp -> pcm8pp.keyOff(0, ch);
-            default -> {assert false;}
+        Instrument inst = context.mds.inst(inst(chipId), chipId);
+        if (inst != null) { // for mxdrv
+            switch (inst) {
+                case X68kYm2151Inst opmPCM -> opmPCM.keyOff(chipId, ch);
+                case Pcm8PPInst pcm8pp -> pcm8pp.keyOff(chipId, ch);
+                default -> { assert false; }
+            }
         }
     }
 
     public void abort(int chipId) {
-        switch (context.mds.inst(inst(chipId))) {
-            case X68kYm2151Inst opmPCM -> opmPCM.chips[0].pcm8Abort();
-            case Pcm8PPInst pcm8pp -> {}
+        Instrument inst = context.mds.inst(inst(chipId), chipId);
+        if (inst != null) { // for mxdrv
+            switch (inst) {
+                case X68kYm2151Inst opmPCM -> opmPCM.abort(chipId);
+                case Pcm8PPInst _ -> {}
+                default -> { assert false; }
+            }
+        }
+    }
+
+    // mxd
+
+    public int getPcm(int chipId, short[] buffer, int offset, int length, BiConsumer<Runnable, Boolean> clock) {
+        return context.mds.inst(X68kYm2151Inst.class).getPcm(chipId, buffer, offset, length, clock);
+    }
+
+    public int getPcm(int chipId, short[] buffer, int offset, int length) {
+        return context.mds.inst(X68kYm2151Inst.class).getPcm(chipId, buffer, offset, length);
+    }
+
+    public int start(int chipId, int sampleRate, int opmFlag, int adpcmFlag, int betw, int pcmBuf, int late, double rev) {
+        return context.mds.inst(X68kYm2151Inst.class).start(chipId, sampleRate, opmFlag, adpcmFlag, betw, pcmBuf, late, rev);
+    }
+
+    public int startPcm(int chipId, int sampleRate, int opmFlag, int adpcmFlag, int pcmBuf) {
+        return context.mds.inst(X68kYm2151Inst.class).startPcm(chipId, sampleRate, opmFlag, adpcmFlag, pcmBuf);
+    }
+
+    public void initIocs(int chipId) {
+        context.mds.inst(X68kYm2151Inst.class).initIocs(chipId);
+    }
+
+    public void opmInt(int chipId, Runnable func) {
+        context.mds.inst(X68kYm2151Inst.class).opmInt(chipId, func);
+    }
+
+    public int opmWait(int chipId, int wait) {
+        return context.mds.inst(X68kYm2151Inst.class).opmWait(chipId, wait);
+    }
+
+    public int totalVolume(int chipId, int vol) {
+        return context.mds.inst(X68kYm2151Inst.class).totalVolume(chipId, vol);
+    }
+
+    public void free(int chipId) {
+        context.mds.inst(X68kYm2151Inst.class).free(chipId);
+    }
+
+    public void opmSetIocs(int chipId, int addr, int data) {
+        context.mds.inst(X68kYm2151Inst.class).opmSetIocs(chipId, addr, data);
+    }
+
+    public void keyOnAdpcm(int chipId, int addr, int mode, int len) {
+        switch (context.mds.inst(inst(chipId), chipId)) {
+            case X68kYm2151Inst opmPCM -> opmPCM.keyOnAdpcm(chipId, addr, mode, len);
+            case Pcm8PPInst pcm8pp -> pcm8pp.keyOn(0, 0, addr, mode + 0x0c00, len);
             default -> {assert false;}
         }
+    }
+
+    public void adpcmMod(int chipId, int mode) {
+        switch (context.mds.inst(inst(chipId), chipId)) {
+            case X68kYm2151Inst opmPCM -> opmPCM.adpcmMod(chipId, mode);
+            case Pcm8PPInst pcm8pp -> pcm8pp.keyOff(0, 0);
+            default -> {assert false;}
+        }
+    }
+
+    public static boolean isFromDF(int v) {
+        //noinspection ConstantValue
+        return switch (v) {
+            case X68Sound.SNDERR_DLL,
+                 X68Sound.SNDERR_FUNC -> true;
+            default -> true; // original is so
+        };
+    }
+
+    public static boolean isFromPTM(int v) {
+        return switch (v) {
+            case X68Sound.SNDERR_PCMOUT,
+                 X68Sound.SNDERR_TIMER,
+                 X68Sound.SNDERR_MEMORY -> true;
+            default -> false;
+        };
     }
 }

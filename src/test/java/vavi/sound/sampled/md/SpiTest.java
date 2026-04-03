@@ -95,9 +95,9 @@ class SpiTest {
 //        System.setProperty("muap.dir.udp", muapDirUdp);
 //        System.setProperty("muap.dir.sud", muapDirSud);
 
-        System.setProperty("mdplayer.variant.pcm8", "1");
+        System.setProperty("mdplayer.variant.pcm8", "0");
 //        System.setProperty("mdplayer.variant.mpcm", "0");
-        System.setProperty("mdplayer.variant.ym2151", "1");
+//        System.setProperty("mdplayer.variant.ym2151", "1");
 
 Debug.println("volume: " + volume);
     }

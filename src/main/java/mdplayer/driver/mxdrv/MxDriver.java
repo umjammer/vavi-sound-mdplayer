@@ -17,8 +17,6 @@ import mdplayer.driver.Vgm.Gd3;
 import mdplayer.driver.mxdrv.MXDRV.MdxPcmInterface;
 import mdplayer.driver.mxdrv.MXDRV.Pcm8Interface;
 import mdplayer.plugin.BasePlugin;
-import mdsound.instrument.X68kYm2151Inst;
-import mdsound.x68sound.X68Sound;
 import vavi.util.ByteUtil;
 
 import static java.lang.System.getLogger;
@@ -36,92 +34,86 @@ public class MxDriver extends BaseDriver {
 
     private final MXDRV mxdrv;
 
-    private X68kYm2151Inst mdxPCM;
-
     public MxDriver() {
         this.mxdrv = new MXDRV();
         mxdrv.charset = Common.charset;
         mxdrv.ym2151Write = (a, d) -> plugin.chipRegister.chip(Ym2151Chip.class).write(0, 0, a, d, model, plugin.chipRegister.chip(Ym2151Chip.class).ym2151Hosei[0], vgmFrameCounter);
         mxdrv.counter = l -> totalCounter = l;
+        mxdrv.isFromDF = Pcm8Chip::isFromDF;
+        mxdrv.isFromPTM = Pcm8Chip::isFromPTM;
         mxdrv.mdxPCM = new MdxPcmInterface() {
 
             private Runnable terminator;
 
             @Override
             public void writePcm(byte[] pcm, int offset, int length) {
-                mdxPCM.chips[0].mountMemory(pcm);
+                plugin.chipRegister.chip(Pcm8Chip.class).writePcm(0, 0, 0, pcm, model);
             }
 
             @Override
             public int getPcm(short[] buffer, int offset, int length, Runnable terminator) {
                 this.terminator = terminator;
-                return mdxPCM.chips[0].getPcm(buffer, offset, length, this::clock);
+                return plugin.chipRegister.chip(Pcm8Chip.class).getPcm(0, buffer, offset, length, this::clock);
             }
 
             @Override
             public int getPcm(short[] buffer, int offset, int length) {
-                return mdxPCM.chips[0].getPcm(buffer, offset, length);
+                return plugin.chipRegister.chip(Pcm8Chip.class).getPcm(0, buffer, offset, length);
             }
 
             @Override
             public int start(int sampleRate, int opmFlag, int adpcmFlag, int betw, int pcmBuf, int late, double rev) {
-                return mdxPCM.chips[0].start(sampleRate, opmFlag, adpcmFlag, betw, pcmBuf, late, rev);
+                return plugin.chipRegister.chip(Pcm8Chip.class).start(0, sampleRate, opmFlag, adpcmFlag, betw, pcmBuf, late, rev);
             }
 
             @Override
             public int startPcm(int sampleRate, int opmFlag, int adpcmFlag, int pcmBuf) {
-                return mdxPCM.chips[0].startPcm(sampleRate, opmFlag, adpcmFlag, pcmBuf);
+                return plugin.chipRegister.chip(Pcm8Chip.class).startPcm(0, sampleRate, opmFlag, adpcmFlag, pcmBuf);
             }
 
             @Override
             public void initIocs() {
-                mdxPCM.soundIocs[0].init();
+                plugin.chipRegister.chip(Pcm8Chip.class).initIocs(0);
             }
 
             @Override
             public void opmInt(Runnable func) {
-                mdxPCM.chips[0].opmInt(func);
+                plugin.chipRegister.chip(Pcm8Chip.class).opmInt(0, func);
             }
 
             @Override
             public int opmWait(int wait) {
-                return mdxPCM.chips[0].opmWait(wait);
+                return plugin.chipRegister.chip(Pcm8Chip.class).opmWait(0, wait);
             }
 
             @Override
             public int totalVolume(int vol) {
-                return mdxPCM.chips[0].totalVolume(vol);
+                return plugin.chipRegister.chip(Pcm8Chip.class).totalVolume(0, vol);
             }
 
             @Override
             public void free() {
-                mdxPCM.chips[0].free();
+                plugin.chipRegister.chip(Pcm8Chip.class).free(0);
             }
 
             @Override
             public void abort() {
-                mdxPCM.chips[0].pcm8Abort();
+                plugin.chipRegister.chip(Pcm8Chip.class).abort(0);
             }
 
             @Override
             public void opmSetIocs(int addr, int data) {
-                mdxPCM.soundIocs[0].opmSet(addr, data);
+                plugin.chipRegister.chip(Pcm8Chip.class).opmSetIocs(0, addr, data);
             }
 
             @Override
             public void keyOnAdpcm(int addr, int mode, int len) {
-                if (plugin.chipRegister.chip(Pcm8Chip.class).inst(0) == X68kYm2151Inst.class)
-                    mdxPCM.soundIocs[0].adpcmOut(addr, mode, len);
-                else
-                    plugin.chipRegister.chip(Pcm8Chip.class).keyOn(0, 0, addr, mode + 0x0c00, len);
+                plugin.chipRegister.chip(Pcm8Chip.class).keyOnAdpcm(0, addr, mode, len);
             }
 
             @Override
             public void adpcmMod(int mode) {
-                if (plugin.chipRegister.chip(Pcm8Chip.class).inst(0) == X68kYm2151Inst.class)
-                    mdxPCM.soundIocs[0].adpcmMod(mode);
-                else
-                    plugin.chipRegister.chip(Pcm8Chip.class).keyOff(0, 0);
+                plugin.chipRegister.chip(Pcm8Chip.class).adpcmMod(0, mode);
             }
 
             private void clock(Runnable timer, boolean firstFlg) {
@@ -172,18 +164,6 @@ public class MxDriver extends BaseDriver {
                 plugin.chipRegister.chip(Pcm8Chip.class).abort(0);
             }
         };
-        //noinspection ConstantValue
-        mxdrv.isFromDF = v -> switch (v) {
-            case X68Sound.SNDERR_DLL,
-                 X68Sound.SNDERR_FUNC -> true;
-            default -> true; // original is so
-        };
-        mxdrv.isFromPTM = v -> switch (v) {
-            case X68Sound.SNDERR_PCMOUT,
-                 X68Sound.SNDERR_TIMER,
-                 X68Sound.SNDERR_MEMORY -> true;
-            default -> false;
-        };
     }
 
     public void setExtendFile(Tuple<String,byte[]> extendFile) {
@@ -211,9 +191,6 @@ public class MxDriver extends BaseDriver {
         return gd3;
     }
 
-    /**
-     * @param args 0: X68kYm2151Inst
-     */
     @Override
     public void init(byte[] vgmBuf, BasePlugin<? extends BaseDriver> plugin, EnmModel model, Class<? extends Chip>[] useChip, int latency, int waitTime, Object... args) {
         this.vgmBuf = vgmBuf;
@@ -233,8 +210,6 @@ public class MxDriver extends BaseDriver {
         vgmSpeed = 1;
 
         plugin.chipRegister.chip(Ym2151Chip.class).setYm2151Hosei(model, 4000000);
-
-        mdxPCM = (X68kYm2151Inst) args[0];
 
         mxdrv.init(vgmBuf, model == EnmModel.VirtualModel, setting.getOutputDevice().getSampleRate());
     }
