@@ -8,7 +8,6 @@ import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.lang.reflect.Field;
-import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +28,6 @@ import vavi.util.archive.Entry;
 import vavi.util.archive.zip.JdkZipEntry;
 
 import static dotnet4j.io.Path.getDirectoryName;
-import static java.lang.System.Logger.Level.DEBUG;
 import static java.lang.System.getLogger;
 
 

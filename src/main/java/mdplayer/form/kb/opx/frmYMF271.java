@@ -152,8 +152,8 @@ public class frmYMF271 extends frmBase {
 
                 MDChipParams.Channel nrc = newParam.channels[slot];
                 YmF271.Slot slt = reg.getSlot(slot);
-                nrc.volumeL = Math.min(Math.max((slt.volume * slt.ch0Level) >> 23, 0), 19);
-                nrc.volumeR = Math.min(Math.max((slt.volume * slt.ch1Level) >> 23, 0), 19);
+                nrc.volumeL = Math.clamp((slt.volume * slt.ch0Level) >> 23, 0, 19);
+                nrc.volumeR = Math.clamp((slt.volume * slt.ch1Level) >> 23, 0, 19);
                 nrc.pan = (slt.ch1Level << 4) | (slt.ch0Level & 0xf);
                 nrc.pantp = (slt.ch3Level & 0xf0) | ((slt.ch2Level >> 4) & 0xf);
                 nrc.inst[0] = slt.ar;
@@ -189,8 +189,8 @@ public class frmYMF271 extends frmBase {
 
                 //note
                 if (slt.active != 0) {
-                    nrc.volumeL = Math.min(Math.max((slt.volume * slt.ch0Level) >> 23, 0), 19);
-                    nrc.volumeR = Math.min(Math.max((slt.volume * slt.ch1Level) >> 23, 0), 19);
+                    nrc.volumeL = Math.clamp((slt.volume * slt.ch0Level) >> 23, 0, 19);
+                    nrc.volumeR = Math.clamp((slt.volume * slt.ch1Level) >> 23, 0, 19);
                     nrc.note = Common.searchSSGNote(nrc.inst[14]) + (((nrc.inst[13] + 8) & 0xf) - 11) * 12 - 7;
                 } else {
                     nrc.volumeL += nrc.volumeL > 0 ? -1 : 0;

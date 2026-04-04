@@ -83,9 +83,6 @@ import mdplayer.DoubleBuffer;
 import mdplayer.DrawBuff;
 import mdplayer.KeyboardHook;
 import mdplayer.MDChipParams;
-import mdplayer.MDChipParams.RF5C164;
-import mdplayer.MDChipParams.RF5C68;
-import mdplayer.MDChipParams.YM2413;
 import mdplayer.MIDIParam;
 import mdplayer.MmfControl;
 import mdplayer.OpeManager;
@@ -177,8 +174,6 @@ import mdplayer.plugin.BasePlugin;
 import mdplayer.properties.Resources;
 import mdsound.chips.K051649;
 import mdsound.chips.OotakeHuC6280;
-import mdsound.chips.PPZ8;
-import mdsound.instrument.Vrc6Inst;
 import mdsound.np.chip.NesN106;
 
 import static java.lang.System.getLogger;
@@ -268,7 +263,7 @@ public class frmMain extends JFrame {
     private int frameSizeH = 0;
 
     private Transmitter midiin = null;
-    private final boolean forcedExit = false;
+    private boolean forcedExit = false;
     private final YM2612MIDI ym2612MIDI;
     private boolean flgReinit = false;
     public boolean reqAllScreenInit = true;
@@ -290,7 +285,7 @@ public class frmMain extends JFrame {
     //private FileSystemWatcher watcher = null;
     private MmfControl mmf = null;
     private long now = 0;
-    private final String opeFolder = "";
+    private String opeFolder = "";
     private final Object remoteLockObj = new Object();
     private boolean remoteBusy = false;
     private final List<String[]> remoteReq = new ArrayList<>();
@@ -1083,7 +1078,7 @@ public class frmMain extends JFrame {
             frmPlayList.stop();
 
             PlayList pl = frmPlayList.getPlayList();
-            if (pl.getMusics().isEmpty() || !pl.getMusics().get(pl.getMusics().size() - 1).fileName.equals(args[1])) {
+            if (pl.getMusics().isEmpty() || !pl.getMusics().getLast().fileName.equals(args[1])) {
                 pl.addFile(args[1]);
                 //frmPlayList.AddList(args[1]);
             }
@@ -3645,7 +3640,7 @@ public class frmMain extends JFrame {
 //    }
 
     private void pbScreen_DragDrop(List<java.io.File> files) {
-        String filename = files.get(0).getPath();
+        String filename = files.getFirst().getPath();
 
         try {
             // 曲を停止
@@ -3955,7 +3950,7 @@ public class frmMain extends JFrame {
         for (int i = 0; i < lstOpeButtonActive.length; i++) {
             if (lstOpeButtonActive[i] != lstOpeButtonActiveOld[i]) {
                 lstOpeButtonActiveOld[i] = lstOpeButtonActive[i];
-                RedrawButton(lstOpeButtonControl[i], setting.getOther().getZoom(),
+                redrawButton(lstOpeButtonControl[i], setting.getOther().getZoom(),
                         lstOpeButtonActive[i] ? lstOpeButtonActiveImage[i] : lstOpeButtonLeaveImage[i]
                 );
             }
@@ -5516,9 +5511,7 @@ public class frmMain extends JFrame {
             int[] r = plugin.chipRegister.chip(NesChip.Vrc7Chip.class).readVrc7(chipId);
             if (r == null) return;
             register = new int[r.length];
-            for (int i = 0; i < r.length; i++) {
-                register[i] = r[i];
-            }
+            System.arraycopy(r, 0, register, 0, r.length);
         } else if (chip == K051649Chip.class) {
             getInstChForMGSCSCC(ch, chipId);
             return;
@@ -6602,7 +6595,7 @@ public class frmMain extends JFrame {
                 plugin.chipRegister.chip(C140Chip.class).resetMask(chipId, ch);
             }
             newParam.c140[chipId].channels[ch].mask = !newParam.c140[chipId].channels[ch].mask;
-        } else if (chip.equals(PPZ8.class)) {
+        } else if (chip.equals(Ppz8Chip.class)) {
             if (!newParam.ppz8[chipId].channels[ch].mask || newParam.ppz8[chipId].channels[ch].mask == null) {
                 plugin.chipRegister.chip(Ppz8Chip.class).setMask(chipId, ch);
             } else {
@@ -6786,7 +6779,7 @@ public class frmMain extends JFrame {
                     newParam.ym2203[chipId].channels[8].mask = false;
                 }
             }
-        } else if (chip.equals(YM2413.class)) {
+        } else if (chip.equals(Ym2413Chip.class)) {
             newParam.ym2413[chipId].channels[ch].mask = false;
             plugin.chipRegister.chip(Ym2413Chip.class).resetMask(chipId, ch);
         } else if (chip.equals(Vrc7Chip.class)) {
@@ -6972,14 +6965,14 @@ public class frmMain extends JFrame {
                 plugin.chipRegister.chip(HuC6280Chip.class).resetMask(chipId, ch);
             newParam.huc6280[chipId].channels[ch].mask = mask;
             oldParam.huc6280[chipId].channels[ch].mask = !mask;
-        } else if (chip.equals(RF5C164.class)) {
+        } else if (chip.equals(Rf5C164Chip.class)) {
             if (mask)
                 plugin.chipRegister.chip(Rf5C164Chip.class).setMask(chipId, ch);
             else
                 plugin.chipRegister.chip(Rf5C164Chip.class).resetMask(chipId, ch);
             newParam.rf5c164[chipId].channels[ch].mask = mask;
             oldParam.rf5c164[chipId].channels[ch].mask = !mask;
-        } else if (chip.equals(RF5C68.class)) {
+        } else if (chip.equals(Rf5C68Chip.class)) {
             if (mask)
                 plugin.chipRegister.chip(Rf5C68Chip.class).setMask(chipId, ch);
             else
@@ -7179,7 +7172,7 @@ public class frmMain extends JFrame {
                 plugin.chipRegister.chip(DmgChip.class).resetMask(chipId, ch);
             newParam.dmg[chipId].channels[ch].mask = mask;
             oldParam.dmg[chipId].channels[ch].mask = !mask;
-        } else if (chip.equals(Vrc6Inst.class)) {
+        } else if (chip.equals(Vrc6Chip.class)) {
             if (mask)
                 plugin.chipRegister.chip(NesChip.Vrc6Chip.class).setVrc6Mask(chipId, ch);
             else
@@ -7844,25 +7837,25 @@ public class frmMain extends JFrame {
         opeButtonMIDIKBD.setLocation(new Point((17 + 16 * 16) * zoom, 9 * zoom));
         opeButtonZoom.setLocation(new Point((17 + 16 * 17) * zoom, 9 * zoom));
 
-        RedrawButton(opeButtonSetting, setting.getOther().getZoom(), lstOpeButtonLeaveImage[0]);
-        RedrawButton(opeButtonStop, setting.getOther().getZoom(), lstOpeButtonLeaveImage[1]);
-        RedrawButton(opeButtonPause, setting.getOther().getZoom(), lstOpeButtonLeaveImage[2]);
-        RedrawButton(opeButtonFadeout, setting.getOther().getZoom(), lstOpeButtonLeaveImage[3]);
-        RedrawButton(opeButtonPrevious, setting.getOther().getZoom(), lstOpeButtonLeaveImage[4]);
-        RedrawButton(opeButtonSlow, setting.getOther().getZoom(), lstOpeButtonLeaveImage[5]);
-        RedrawButton(opeButtonPlay, setting.getOther().getZoom(), lstOpeButtonLeaveImage[6]);
-        RedrawButton(opeButtonFast, setting.getOther().getZoom(), lstOpeButtonLeaveImage[7]);
-        RedrawButton(opeButtonNext, setting.getOther().getZoom(), lstOpeButtonLeaveImage[8]);
+        redrawButton(opeButtonSetting, setting.getOther().getZoom(), lstOpeButtonLeaveImage[0]);
+        redrawButton(opeButtonStop, setting.getOther().getZoom(), lstOpeButtonLeaveImage[1]);
+        redrawButton(opeButtonPause, setting.getOther().getZoom(), lstOpeButtonLeaveImage[2]);
+        redrawButton(opeButtonFadeout, setting.getOther().getZoom(), lstOpeButtonLeaveImage[3]);
+        redrawButton(opeButtonPrevious, setting.getOther().getZoom(), lstOpeButtonLeaveImage[4]);
+        redrawButton(opeButtonSlow, setting.getOther().getZoom(), lstOpeButtonLeaveImage[5]);
+        redrawButton(opeButtonPlay, setting.getOther().getZoom(), lstOpeButtonLeaveImage[6]);
+        redrawButton(opeButtonFast, setting.getOther().getZoom(), lstOpeButtonLeaveImage[7]);
+        redrawButton(opeButtonNext, setting.getOther().getZoom(), lstOpeButtonLeaveImage[8]);
         int m = newButtonMode[9] == 0 ? 9 : (newButtonMode[9] == 1 ? 18 : (newButtonMode[9] == 2 ? 19 : 20));
-        RedrawButton(opeButtonMode, setting.getOther().getZoom(), lstOpeButtonLeaveImage[m]);
-        RedrawButton(opeButtonOpen, setting.getOther().getZoom(), lstOpeButtonLeaveImage[10]);
-        RedrawButton(opeButtonPlayList, setting.getOther().getZoom(), lstOpeButtonLeaveImage[11]);
-        RedrawButton(opeButtonInformation, setting.getOther().getZoom(), lstOpeButtonLeaveImage[12]);
-        RedrawButton(opeButtonMixer, setting.getOther().getZoom(), lstOpeButtonLeaveImage[13]);
-        RedrawButton(opeButtonKBD, setting.getOther().getZoom(), lstOpeButtonLeaveImage[14]);
-        RedrawButton(opeButtonVST, setting.getOther().getZoom(), lstOpeButtonLeaveImage[15]);
-        RedrawButton(opeButtonMIDIKBD, setting.getOther().getZoom(), lstOpeButtonLeaveImage[16]);
-        RedrawButton(opeButtonZoom, setting.getOther().getZoom(), lstOpeButtonLeaveImage[17]);
+        redrawButton(opeButtonMode, setting.getOther().getZoom(), lstOpeButtonLeaveImage[m]);
+        redrawButton(opeButtonOpen, setting.getOther().getZoom(), lstOpeButtonLeaveImage[10]);
+        redrawButton(opeButtonPlayList, setting.getOther().getZoom(), lstOpeButtonLeaveImage[11]);
+        redrawButton(opeButtonInformation, setting.getOther().getZoom(), lstOpeButtonLeaveImage[12]);
+        redrawButton(opeButtonMixer, setting.getOther().getZoom(), lstOpeButtonLeaveImage[13]);
+        redrawButton(opeButtonKBD, setting.getOther().getZoom(), lstOpeButtonLeaveImage[14]);
+        redrawButton(opeButtonVST, setting.getOther().getZoom(), lstOpeButtonLeaveImage[15]);
+        redrawButton(opeButtonMIDIKBD, setting.getOther().getZoom(), lstOpeButtonLeaveImage[16]);
+        redrawButton(opeButtonZoom, setting.getOther().getZoom(), lstOpeButtonLeaveImage[17]);
     }
 
     final MouseListener opeButton_Mouse = new MouseAdapter() {
@@ -7874,7 +7867,7 @@ public class frmMain extends JFrame {
             if (m == 9) {
                 m = newButtonMode[9] == 0 ? 9 : (newButtonMode[9] == 1 ? 18 : (newButtonMode[9] == 2 ? 19 : 20));
             }
-            RedrawButton(btn, setting.getOther().getZoom(), lstOpeButtonEnterImage[m]);
+            redrawButton(btn, setting.getOther().getZoom(), lstOpeButtonEnterImage[m]);
         }
 
         @Override
@@ -7886,11 +7879,11 @@ public class frmMain extends JFrame {
                 m = newButtonMode[9] == 0 ? 9 : (newButtonMode[9] == 1 ? 18 : (newButtonMode[9] == 2 ? 19 : 20));
             }
 
-            RedrawButton(btn, setting.getOther().getZoom(), lstOpeButtonActive[m] ? lstOpeButtonActiveImage[m] : lstOpeButtonLeaveImage[m]);
+            redrawButton(btn, setting.getOther().getZoom(), lstOpeButtonActive[m] ? lstOpeButtonActiveImage[m] : lstOpeButtonLeaveImage[m]);
         }
     };
 
-    private void RedrawButton(JButton button, int zoom, BufferedImage image) {
+    private static void redrawButton(JButton button, int zoom, BufferedImage image) {
         try {
             final int size = 16;
             if (button.getSize().width != size * zoom) button.setPreferredSize(new Dimension(size * zoom, size * zoom));

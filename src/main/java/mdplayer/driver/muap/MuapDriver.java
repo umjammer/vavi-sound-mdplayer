@@ -129,7 +129,7 @@ public class MuapDriver extends BaseDriver {
 
             int lp = muapDriver.getNowLoopCounter();
             lp = lp < 0 ? 0 : lp;
-            vgmCurLoop = (int) lp;
+            vgmCurLoop = lp;
 
             if (muapDriver.getStatus() < 1) {
                 //if (mucomDriver.GetStatus() == 0 && !Stopped) {

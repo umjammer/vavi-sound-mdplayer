@@ -977,7 +977,7 @@ public class Mos6510 {
             int offset = cycleData & 0xff;
             cycleEffectiveAddress = (short) (lowByte + offset);
             adlCarry = (cycleEffectiveAddress & 0xffff) > 0xff != offset > 0x7f;
-            cycleEffectiveAddress = to16hi8((short) cycleEffectiveAddress, to16hi8(registerProgramCounter));
+            cycleEffectiveAddress = to16hi8(cycleEffectiveAddress, to16hi8(registerProgramCounter));
 
             registerProgramCounter = (short) (cycleEffectiveAddress & 0xffff);
 
@@ -1239,7 +1239,7 @@ public class Mos6510 {
     /**
      * @throws haltInstruction
      */
-    private void invalidOpcode() {
+    private static void invalidOpcode() {
         throw new haltInstruction();
     }
 
@@ -2418,7 +2418,7 @@ public class Mos6510 {
             // These are normally called HLT instructions. In the hardware, the
             // CPU state machine locks up and will never recover.
             if (!(legalMode && legalInstr)) {
-                instrTable[buildCycle++].func = this::invalidOpcode;
+                instrTable[buildCycle++].func = Mos6510::invalidOpcode;
             }
 
             // check for IRQ triggers or fetch next opcode...

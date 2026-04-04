@@ -660,7 +660,7 @@ public class MIDIExport {
         }
     }
 
-    private int searchFMNote(int freq) {
+    private static int searchFMNote(int freq) {
         int m = Integer.MAX_VALUE;
         int n = 0;
         for (int i = 0; i < 12 * 5; i++) {
@@ -673,7 +673,7 @@ public class MIDIExport {
         return n - 12 * 3;
     }
 
-    private int searchOPMNote(int freq) {
+    private static int searchOPMNote(int freq) {
         int note = freq & 0xf;
         note = (note < 3) ? note : (note < 7 ? note - 1 : (note < 11 ? note - 2 : note - 3));
 

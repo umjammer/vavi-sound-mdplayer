@@ -95,7 +95,7 @@ public class MidiBoard {
                 // 0x40-
                 null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
                 // 0x50-
-                null, null, null, null, this::getFIFI_TxStatus, null, null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, MidiBoard::getFIFI_TxStatus, null, null, null, null, null, null, null, null, null, null, null,
                 // 0x60-
                 null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
                 // 0x70-
@@ -302,7 +302,7 @@ public class MidiBoard {
         // Ignore for now
     }
 
-    private byte getFIFI_TxStatus() {
+    private static byte getFIFI_TxStatus() {
         // bit 7: 1 Transmit FIFO is empty
         // bit 6: 1 Transmit FIFO is free
         return (byte) 0b1100_0000;

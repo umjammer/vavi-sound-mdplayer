@@ -4,9 +4,9 @@ public class Slot {
 
     public Cartridge[][] slots;
 
-    public Cartridge[] pages = new Cartridge[4];
-    public SlotPos[] pagesSlotPos = new SlotPos[] {new SlotPos(), new SlotPos(), new SlotPos(), new SlotPos()};
-    public int[] currentExtSlotPos = new int[] {0, 0, 0, 0};
+    public final Cartridge[] pages = new Cartridge[4];
+    public final SlotPos[] pagesSlotPos = new SlotPos[] {new SlotPos(), new SlotPos(), new SlotPos(), new SlotPos()};
+    public final int[] currentExtSlotPos = new int[] {0, 0, 0, 0};
 
     public void setPageFromSlot(int page, int basic) {
         pages[page] = slots[basic][currentExtSlotPos[basic]];

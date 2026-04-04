@@ -27,7 +27,7 @@ public class MemHook {
     }
 
     public int readL(int adr) {
-        return (int) read.apply(adr);
+        return read.apply(adr);
     }
 
     public boolean writeB(int adr, byte dat) {

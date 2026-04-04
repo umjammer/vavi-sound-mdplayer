@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.zip.GZIPInputStream;
 
 import javax.sound.sampled.AudioFormat.Encoding;
 

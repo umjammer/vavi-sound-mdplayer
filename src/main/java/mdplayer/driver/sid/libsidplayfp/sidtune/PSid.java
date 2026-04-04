@@ -51,7 +51,7 @@ public class PSid extends SidTuneBase {
     PSid(PSid p) {
     }
 
-    private PSid opeEquel(PSid p) {
+    private static PSid opeEquel(PSid p) {
         return null;
     }
 
@@ -171,7 +171,7 @@ public class PSid extends SidTuneBase {
     /**
      * Check if extra Sid addres instanceof valid for PSid specs.
      */
-    private boolean validateAddress(byte address) {
+    private static boolean validateAddress(byte address) {
         // Only even values are valid.
         if ((address & 1) != 0)
             return false;

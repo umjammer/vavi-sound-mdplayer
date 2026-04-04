@@ -20,6 +20,9 @@
 
 package mdplayer.driver.sid.libsidplayfp;
 
+import java.util.Objects;
+
+
 public class StringUtils {
 
     /**
@@ -35,7 +38,7 @@ public class StringUtils {
      * @return true if Strings are equal.
      */
     public static boolean equal(String s1, String s2) {
-        if (s1 == null || s2 == null) return s1 == s2;
+        if (s1 == null || s2 == null) return Objects.equals(s1, s2);
         return s1.equalsIgnoreCase(s2);
     }
 

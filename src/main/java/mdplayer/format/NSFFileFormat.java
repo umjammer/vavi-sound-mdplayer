@@ -3,10 +3,7 @@ package mdplayer.format;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
@@ -18,8 +15,6 @@ import mdplayer.driver.nsf.NsfMdDriver2;
 import mdplayer.plugin.NSFPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
-import vavi.sound.SoundUtil;
-import vavi.sound.sampled.md.MdEncoding;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 

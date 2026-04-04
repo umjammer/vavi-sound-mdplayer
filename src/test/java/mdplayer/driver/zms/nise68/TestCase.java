@@ -43,7 +43,7 @@ public class TestCase {
                 if (i + 1 < msg.length) {
                     int next = msg[++i] & 0xFF;
                     String base = new String(new byte[] {(byte) next}, sjis);
-                    out.append("").append(base);
+                    out.append(base);
                 }
             } else {
                 out.append(new String(new byte[] {(byte) b}, sjis));

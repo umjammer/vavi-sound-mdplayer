@@ -256,12 +256,12 @@ public class frmMIDI extends frmBase {
             oldParam.cc[ch][11] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 72, ch * 16 + 16, oldParam.cc[ch][11], newParam.cc[ch][11]); // Expression
             oldParam.bend[ch] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 0, 76, ch * 16 + 16, oldParam.bend[ch], newParam.bend[ch]); // Pitch Bend
             oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 80, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][1]); // Modulation
-            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 84, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][91]); // Reverb
-            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 88, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][93]); // Chorus
-            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 92, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][94]); // Variation(Delay)
-            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 96, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][64]); // Hold(DumperPedal)
-            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 100, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][67]); // Soft
-            oldParam.cc[ch][1] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 104, ch * 16 + 16, oldParam.cc[ch][1], newParam.cc[ch][66]); // Sostenuto
+            oldParam.cc[ch][91] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 84, ch * 16 + 16, oldParam.cc[ch][91], newParam.cc[ch][91]); // Reverb
+            oldParam.cc[ch][93] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 88, ch * 16 + 16, oldParam.cc[ch][93], newParam.cc[ch][93]); // Chorus
+            oldParam.cc[ch][94] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 92, ch * 16 + 16, oldParam.cc[ch][94], newParam.cc[ch][94]); // Variation(Delay)
+            oldParam.cc[ch][64] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 96, ch * 16 + 16, oldParam.cc[ch][64], newParam.cc[ch][64]); // Hold(DumperPedal)
+            oldParam.cc[ch][67] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 100, ch * 16 + 16, oldParam.cc[ch][67], newParam.cc[ch][67]); // Soft
+            oldParam.cc[ch][66] = DrawBuff.drawMIDILCD_Fader(frameBuffer, module, 1, 104, ch * 16 + 16, oldParam.cc[ch][66], newParam.cc[ch][66]); // Sostenuto
 
             notes = "";
             for (int n = 0; n < 120; n++) {

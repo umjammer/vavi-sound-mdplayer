@@ -111,15 +111,16 @@ public class NiseM68 {
 
         int size = (n & 0x00c0) >> 6;
 
-        switch (size) {
-            case 0: // byte
-                return corib(n);
-            case 1: // word
-                return coriw(n);
-            case 2: // long
-                return coril(n);
-        }
-        throw new UnsupportedOperationException("Invalid ORI size %d at PC: %08x, opcode: %04x".formatted(size, reg.pc - 2, n & 0xffff));
+        return switch (size) {
+            case 0 -> // byte
+                    corib(n);
+            case 1 -> // word
+                    coriw(n);
+            case 2 -> // long
+                    coril(n);
+            default ->
+                    throw new UnsupportedOperationException("Invalid ORI size %d at PC: %08x, opcode: %04x".formatted(size, reg.pc - 2, n & 0xffff));
+        };
     }
 
     private int corib(short n) {
@@ -224,7 +225,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr & 0xffff);
 //#endif
@@ -362,7 +363,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -499,7 +500,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr & 0xffff);
 //#endif
@@ -571,15 +572,16 @@ public class NiseM68 {
 
     private int candi(short n) {
         int size = (n & 0x00c0) >> 6;
-        switch (size) {
-            case 0: // byte
-                return candib(n);
-            case 1: // word
-                return candiw(n);
-            case 2: // long
-                return candil(n);
-        }
-        throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+        return switch (size) {
+            case 0 -> // byte
+                    candib(n);
+            case 1 -> // word
+                    candiw(n);
+            case 2 -> // long
+                    candil(n);
+            default ->
+                    throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+        };
     }
 
     private int candib(short n) {
@@ -684,7 +686,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -822,7 +824,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -960,7 +962,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -1008,21 +1010,22 @@ public class NiseM68 {
         }
 
         int size = (n & 0x01c0) >> 6;
-        switch (size) {
-            case 0: // byte
-                return candbEADn(n);
-            case 1: // word
-                return candwEADn(n);
-            case 2: // long
-                return candlEADn(n);
-            case 4: // byte
-                return candbDnEA(n);
-            case 5: // word
-                return candwDnEA(n);
-            case 6: // long
-                return candlDnEA(n);
-        }
-        throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+        return switch (size) {
+            case 0 -> // byte
+                    candbEADn(n);
+            case 1 -> // word
+                    candwEADn(n);
+            case 2 -> // long
+                    candlEADn(n);
+            case 4 -> // byte
+                    candbDnEA(n);
+            case 5 -> // word
+                    candwDnEA(n);
+            case 6 -> // long
+                    candlDnEA(n);
+            default ->
+                    throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+        };
     }
 
     private int candbDnEA(short n) {
@@ -1120,7 +1123,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -1254,7 +1257,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -1358,9 +1361,9 @@ public class NiseM68 {
                 break;
             case 5: // d16(An)
                 short d16 = fetchW(); // signed
-                before = mem.peekL((int) (reg.getA().get(r) + d16));
+                before = mem.peekL(reg.getA().get(r) + d16);
                 after = val & before;
-                mem.pokeL((int) (reg.getA().get(r) + d16), after);
+                mem.pokeL(reg.getA().get(r) + d16, after);
 //#if DEBUG
                 nimo += "$%04x(A%d)".formatted(d16, r);
 //#endif
@@ -1377,8 +1380,8 @@ public class NiseM68 {
                 nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff));
-                else ptr = (int) (reg.getA().get(r) + (byte) vw + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 before = mem.peekL(ptr);
                 after = val & before;
                 mem.pokeL(ptr, after);
@@ -1387,7 +1390,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -1527,7 +1530,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x,D%d".formatted(ptr, sr);
 //#endif
@@ -1549,7 +1552,7 @@ public class NiseM68 {
                         cycle = Cycle.And_bEADn[7];
                         break;
                     case 2: // d16(PC)
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x(PC),D%d".formatted(ptr, sr);
 //#endif
@@ -1707,7 +1710,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x,D%d".formatted(ptr, sr);
 //#endif
@@ -1729,7 +1732,7 @@ public class NiseM68 {
                         cycle = Cycle.And_wEADn[7];
                         break;
                     case 2: // d16(PC)
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x(PC),D%d".formatted(ptr, sr);
 //#endif
@@ -1888,7 +1891,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x,D%d".formatted(ptr, sr);
 //#endif
@@ -1910,7 +1913,7 @@ public class NiseM68 {
                         cycle = Cycle.And_lEADn[7];
                         break;
                     case 2: // d16(PC)
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x(PC),D%d".formatted((short) ptr, sr);
 //#endif
@@ -2129,7 +2132,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -2257,7 +2260,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -2428,17 +2431,18 @@ public class NiseM68 {
             return ccmp(n);
 
         int size = (n & 0x00c0) >> 6;
-        switch (size) {
-            case 0: // byte
-                return ceorb(n);
-            case 1: // word
-                return ceorw(n);
-            case 2: // long
-                return ceorl(n);
-            case 3: // cmpa.l
-                return ccmpa_l(n);
-        }
-        throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+        return switch (size) {
+            case 0 -> // byte
+                    ceorb(n);
+            case 1 -> // word
+                    ceorw(n);
+            case 2 -> // long
+                    ceorl(n);
+            case 3 -> // cmpa.l
+                    ccmpa_l(n);
+            default ->
+                    throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+        };
     }
 
     private int ceorb(short n) {
@@ -2542,7 +2546,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -2681,7 +2685,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -2820,7 +2824,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -2863,15 +2867,16 @@ public class NiseM68 {
         if ((n & 0x00c0) == 0x00c0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
 
         int size = (n & 0x00c0) >> 6;
-        switch (size) {
-            case 0: // byte
-                return ceorib(n);
-            case 1: // word
-                return ceoriw(n);
-            case 2: // long
-                return ceoril(n);
-        }
-        throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+        return switch (size) {
+            case 0 -> // byte
+                    ceorib(n);
+            case 1 -> // word
+                    ceoriw(n);
+            case 2 -> // long
+                    ceoril(n);
+            default ->
+                    throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+        };
     }
 
     private int ceorib(short n) {
@@ -2971,13 +2976,13 @@ public class NiseM68 {
                 else ptr = reg.getA().get(dr) + (byte) vw + IX;
                 dst = mem.peekW(ptr);
                 ans = (short) (src ^ dst);
-                mem.pokeW(ptr, (short) ans);
+                mem.pokeW(ptr, ans);
                 cycle = Cycle.Eori_w[5];
                 break;
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -3122,15 +3127,15 @@ public class NiseM68 {
                 nimo += "$%02x(A%d,%s%d.%s)".formatted(vw & 0xff, r, isA ? "A" : "D", ni, isL ? "l" : "w");
 //#endif
 
-                if (!isL) ptr = (int) (reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff));
-                else ptr = (int) (reg.getA().get(r) + (byte) vw + IX);
+                if (!isL) ptr = reg.getA().get(r) + (byte) vw + (short) (IX & 0xffff);
+                else ptr = reg.getA().get(r) + (byte) vw + IX;
                 dst = mem.peekB(ptr) & 0xff;
                 cycle = Cycle.Btst08[5];
                 break;
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -3326,7 +3331,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -3348,7 +3353,7 @@ public class NiseM68 {
                         cycle = Cycle.Btst[7];
                         break;
                     case 2: // d16(PC)
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x(PC)".formatted(ptr);
 //#endif
@@ -3517,7 +3522,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -3673,7 +3678,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -3723,7 +3728,7 @@ public class NiseM68 {
 //#endif
 
         int sr = (n & 0x0e00) >> 9;
-        int data = (int) reg.getDl(sr);
+        int data = reg.getDl(sr);
         int m = (n & 0x0038) >> 3;
         int r = (n & 0x0007);
 
@@ -3831,7 +3836,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -3987,7 +3992,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -4032,15 +4037,12 @@ public class NiseM68 {
 
     private int ccmpi(short n) {
         int size = (n & 0x00c0) >> 6;
-        switch (size) {
-            case 0:
-                return ccmpib(n);
-            case 1:
-                return ccmpiw(n);
-            case 2:
-                return ccmpil(n);
-        }
-        throw new UnsupportedOperationException("dummy");
+        return switch (size) {
+            case 0 -> ccmpib(n);
+            case 1 -> ccmpiw(n);
+            case 2 -> ccmpil(n);
+            default -> throw new UnsupportedOperationException("dummy");
+        };
     }
 
     private int ccmpib(short n) {
@@ -4112,7 +4114,7 @@ public class NiseM68 {
                 break;
             case 5: // d16(An)
                 short d16 = fetchW(); // signed
-                before = (short) (mem.peekB((int) (reg.getA().get(r) + d16)) & 0xff);
+                before = (short) (mem.peekB(reg.getA().get(r) + d16) & 0xff);
                 after = (short) ((before - val) & 0xffff);
 //#if DEBUG
                 nimo += "$%04x(A%d)".formatted(d16, r);
@@ -4139,7 +4141,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -4271,7 +4273,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -4403,7 +4405,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -4444,15 +4446,12 @@ public class NiseM68 {
 
     private int csubi(short n) {
         int size = (n & 0x00c0) >> 6;
-        switch (size) {
-            case 0:
-                return csubib(n);
-            case 1:
-                return csubiw(n);
-            case 2:
-                return csubil(n);
-        }
-        throw new UnsupportedOperationException("dummy");
+        return switch (size) {
+            case 0 -> csubib(n);
+            case 1 -> csubiw(n);
+            case 2 -> csubil(n);
+            default -> throw new UnsupportedOperationException("dummy");
+        };
     }
 
     private int csubib(short n) {
@@ -4556,7 +4555,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -4694,7 +4693,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -4832,7 +4831,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (r) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -4873,14 +4872,14 @@ public class NiseM68 {
 
     private int cmovea(short n) {
         int size = (n & 0x3000) >> 12;
-        switch (size) {
-            case 2: // long
-                return cmoveal(n);
-            case 3: // word
-                return cmoveaw(n);
-        }
+        return switch (size) {
+            case 2 -> // long
+                    cmoveal(n);
+            case 3 -> // word
+                    cmoveaw(n);
+            default -> throw new UnsupportedOperationException("dummy");
+        };
 
-        throw new UnsupportedOperationException("dummy");
     }
 
     private int cmoveaw(short n) {
@@ -5030,7 +5029,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -5111,16 +5110,16 @@ public class NiseM68 {
             throw new UnsupportedOperationException("Not implemented!! [%04x]".formatted(n));
         }
 
-        switch (size) {
-            case 1: // byte
-                return cmoveb(n);
-            case 2: // long
-                return cmovel(n);
-            case 3: // word
-                return cmovew(n);
-        }
+        return switch (size) {
+            case 1 -> // byte
+                    cmoveb(n);
+            case 2 -> // long
+                    cmovel(n);
+            case 3 -> // word
+                    cmovew(n);
+            default -> throw new UnsupportedOperationException("dummy");
+        };
 
-        throw new UnsupportedOperationException("dummy");
     }
 
     private int cmoveb(short n) {
@@ -5190,7 +5189,7 @@ public class NiseM68 {
                 break;
             case 5: // d16(An)
                 short d16 = fetchW(); // signed
-                mem.pokeB((int) (reg.getA().get(dr) + d16), val);
+                mem.pokeB(reg.getA().get(dr) + d16, val);
 //#if DEBUG
                 nimo[0] += "$%04x(A%d)".formatted(d16, dr);
 //#endif
@@ -5215,7 +5214,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo[0] += "$%04x".formatted(ptr);
 //#endif
@@ -5339,7 +5338,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo [0]+= "$%04x".formatted(ptr);
 //#endif
@@ -5463,7 +5462,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo[0] += "($%04x)".formatted(ptr);
 //#endif
@@ -5554,7 +5553,7 @@ public class NiseM68 {
                 break;
             case 7: // etc
                 if (r == 0) { // Abs.W
-                    ptr = (short) fetchW();
+                    ptr = fetchW();
 //#if DEBUG
                     logger.log(Level.TRACE, "LEA $%08x,A%s".formatted(ptr, a));
 //#endif
@@ -5568,7 +5567,7 @@ public class NiseM68 {
                     reg.getA().set(a, ptr);
                     cycle = 12;
                 } else if (r == 2) { // d16(PC)
-                    ptr = (short) fetchW();
+                    ptr = fetchW();
 //#if DEBUG
                     logger.log(Level.TRACE, "LEA $%04x(PC),A%s ; d16+PC=$%08x", ptr, a, ptr + reg.pc);
 //#endif
@@ -5602,16 +5601,14 @@ public class NiseM68 {
 
     private int cnot(short n) {
         int size = (n & 0x00c0) >> 6;
-        switch (size) {
-            case 0x0:
-                return cnot_b(n);
-            case 0x1:
-                return cnot_w(n);
-            case 0x2:
-                return cnot_l(n);
-        }
+        return switch (size) {
+            case 0x0 -> cnot_b(n);
+            case 0x1 -> cnot_w(n);
+            case 0x2 -> cnot_l(n);
+            default ->
+                    throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+        };
 
-        throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
     }
 
     private int cnot_b(short n) {
@@ -5710,7 +5707,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -5759,16 +5756,13 @@ public class NiseM68 {
 
     private int cclr(short n) {
         int size = (n & 0x00c0) >> 6;
-        switch (size) {
-            case 0x0:
-                return cclr_b(n);
-            case 0x1:
-                return cclr_w(n);
-            case 0x2:
-                return cclr_l(n);
-        }
+        return switch (size) {
+            case 0x0 -> cclr_b(n);
+            case 0x1 -> cclr_w(n);
+            case 0x2 -> cclr_l(n);
+            default -> throw new IndexOutOfBoundsException("CLR-handled range error");
+        };
 
-        throw new IndexOutOfBoundsException("CLR-handled range error");
     }
 
     private int cclr_b(short n) {
@@ -5853,7 +5847,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -5968,7 +5962,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -6083,7 +6077,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -6399,7 +6393,7 @@ public class NiseM68 {
                     switch (dr) {
                         case 0: // Abs.W
                             if (!ff) {
-                                ptr = (short) fetchW();
+                                ptr = fetchW();
                                 ff = true;
                             }
 //#if DEBUG
@@ -6562,7 +6556,7 @@ public class NiseM68 {
                     switch (dr) {
                         case 0: // Abs.W
                             if (!ff) {
-                                ptr = (short) fetchW();
+                                ptr = fetchW();
                                 ff = true;
                             }
 //#if DEBUG
@@ -6698,16 +6692,16 @@ public class NiseM68 {
     private int cneg(short n) {
         int size = (n & 0x00c0) >> 6;
 
-        switch (size) {
-            case 0: // byte
-                return cnegb(n);
-            case 1: // word
-                return cnegw(n);
-            case 2: // long
-                return cnegl(n);
-        }
+        return switch (size) {
+            case 0 -> // byte
+                    cnegb(n);
+            case 1 -> // word
+                    cnegw(n);
+            case 2 -> // long
+                    cnegl(n);
+            default -> throw new UnsupportedOperationException("dummy");
+        };
 
-        throw new UnsupportedOperationException("dummy");
     }
 
     private int cnegb(short n) {
@@ -6808,7 +6802,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "($%04x)".formatted(ptr);
 //#endif
@@ -6943,7 +6937,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "($%04x)".formatted(ptr);
 //#endif
@@ -7071,7 +7065,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "($%04x)".formatted(ptr);
 //#endif
@@ -7210,7 +7204,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "($%04x)".formatted(ptr);
 //#endif
@@ -7326,7 +7320,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "($%04x)".formatted(ptr);
 //#endif
@@ -7442,7 +7436,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "($%04x)".formatted(ptr);
 //#endif
@@ -7568,7 +7562,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "($%04x)".formatted(ptr);
 //#endif
@@ -7702,7 +7696,7 @@ public class NiseM68 {
         return 34; // cycle
     }
 
-    private int cnop(short n) {
+    private static int cnop(short n) {
 //#if DEBUG
         logger.log(Level.TRACE, "NOP");
 //#endif
@@ -7847,7 +7841,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "($%04x)".formatted(ptr);
 //#endif
@@ -7882,16 +7876,16 @@ public class NiseM68 {
 
         if (data == 0) data = 8;
 
-        switch (size) {
-            case 0: // byte
-                return caddqb(n, data);
-            case 1: // word
-                return caddqw(n, data);
-            case 2: // long
-                return caddql(n, data);
-        }
+        return switch (size) {
+            case 0 -> // byte
+                    caddqb(n, data);
+            case 1 -> // word
+                    caddqw(n, data);
+            case 2 -> // long
+                    caddql(n, data);
+            default -> throw new UnsupportedOperationException("dummy");
+        };
 
-        throw new UnsupportedOperationException("dummy");
     }
 
     private int caddqb(short n, int data) {
@@ -7994,7 +7988,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -8053,7 +8047,7 @@ public class NiseM68 {
         int ptr;
 
         int src = 0; // signed
-        int dst = (int) data;
+        int dst = data;
         int ans = 0;
 
         // dst
@@ -8141,7 +8135,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -8200,7 +8194,7 @@ public class NiseM68 {
         int ptr;
 
         int src = 0;
-        int dst = (int) data;
+        int dst = data;
         int ans = 0;
 
         // dst
@@ -8288,7 +8282,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -8333,16 +8327,14 @@ public class NiseM68 {
     private int csubq(short n) {
 
         int size = (n & 0x00c0) >> 6;
-        switch (size) {
-            case 0:
-                return csubqb(n);
-            case 1:
-                return csubqw(n);
-            case 2:
-                return csubql(n);
-        }
+        return switch (size) {
+            case 0 -> csubqb(n);
+            case 1 -> csubqw(n);
+            case 2 -> csubql(n);
+            default ->
+                    throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+        };
 
-        throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
     }
 
     private int csubqb(short n) {
@@ -8446,7 +8438,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -8594,7 +8586,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -8742,7 +8734,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -8856,7 +8848,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "($%04x)".formatted(ptr);
 //#endif
@@ -8976,7 +8968,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "($%04x)".formatted(ptr);
 //#endif
@@ -9078,27 +9070,18 @@ public class NiseM68 {
     private int csub(short n) {
         int opMode = (n & 0x01c0) >> 6;
 
-        switch (opMode) {
-            case 0x00:
-                return csubb(n);
-            case 0x01:
-                return csubw(n);
-            case 0x02:
-                return csubl(n);
-            case 0x03:
-                return csubaw(n);
-            case 0x04:
-                return csubbDn(n);
-            case 0x05:
-                return csubwDn(n);
-            case 0x06:
-                return csublDn(n);
-            case 0x07:
-                return csubal(n);
-            default:
-                // It looks like a command other than SUBA
-                throw new UnsupportedOperationException("Not implemented!! [%04x]".formatted(n));
-        }
+        // It looks like a command other than SUBA
+        return switch (opMode) {
+            case 0x00 -> csubb(n);
+            case 0x01 -> csubw(n);
+            case 0x02 -> csubl(n);
+            case 0x03 -> csubaw(n);
+            case 0x04 -> csubbDn(n);
+            case 0x05 -> csubwDn(n);
+            case 0x06 -> csublDn(n);
+            case 0x07 -> csubal(n);
+            default -> throw new UnsupportedOperationException("Not implemented!! [%04x]".formatted(n));
+        };
     }
 
     private int csubbDn(short n) {
@@ -9135,8 +9118,8 @@ public class NiseM68 {
                 nimo += "(A%d)".formatted(sr);
 //#endif
 
-                dst = (int) (short) mem.peekB(reg.getA().get(sr));
-                ans = (int) ((int) (byte) (byte) dst - (int) (byte) (byte) src);
+                dst = (short) mem.peekB(reg.getA().get(sr));
+                ans = (int) (byte) dst - (int) (byte) src;
                 mem.pokeB(reg.getA().get(sr), (byte) ans);
                 break;
             case 3: // (An)+
@@ -9190,7 +9173,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -9318,7 +9301,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -9579,26 +9562,19 @@ public class NiseM68 {
     private int ccmp(short n) {
         int opmode = (n & 0x1c0) >> 6;
 
-        switch (opmode) {
-            case 0:
-                return ccmp_b(n);
-            case 1:
-                return ccmp_w(n);
-            case 2:
-                return ccmp_l(n);
-            case 3:
-                return ccmpa_w(n);
-            case 4:
-                return ccmpm_b(n);
-            case 5:
-                return ccmpm_w(n);
-            case 6:
-                return ccmpm_l(n);
-            case 7:
-                return ccmpa_l(n);
-        }
+        return switch (opmode) {
+            case 0 -> ccmp_b(n);
+            case 1 -> ccmp_w(n);
+            case 2 -> ccmp_l(n);
+            case 3 -> ccmpa_w(n);
+            case 4 -> ccmpm_b(n);
+            case 5 -> ccmpm_w(n);
+            case 6 -> ccmpm_l(n);
+            case 7 -> ccmpa_l(n);
+            default ->
+                    throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+        };
 
-        throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
     }
 
     private int ccmp_b(short n) {
@@ -9690,7 +9666,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "($%04x)".formatted(ptr);
 //#endif
@@ -9709,7 +9685,7 @@ public class NiseM68 {
                         break;
                     case 2:
                         int ed16 = fetchW(); // signed
-                        src = (short) (mem.peekB((int) (reg.pc + ed16 - 2)) & 0xff);
+                        src = (short) (mem.peekB(reg.pc + ed16 - 2) & 0xff);
 //#if DEBUG
                         nimo += "$%04x(PC)".formatted((short) ed16);
 //#endif
@@ -9861,7 +9837,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "($%04x)".formatted((short) ptr);
 //#endif
@@ -9872,7 +9848,7 @@ public class NiseM68 {
                     case 1: // Abs.L
                         ptr = fetchL();
 //#if DEBUG
-                        nimo += "($%08x)".formatted((int) ptr);
+                        nimo += "($%08x)".formatted(ptr);
 //#endif
 
                         src = mem.peekW(ptr);
@@ -10030,7 +10006,7 @@ public class NiseM68 {
         byte vald = mem.peekB(reg.getAl(dr));
         byte src = mem.peekB(reg.getAl(sr));
 
-        dst = (short) (short) (byte) vald;
+        dst = (short) vald;
 //#if DEBUG
         String nimo = "CMPM.b (A%d)+,(A%d)+".formatted(sr, dr);
 //#endif
@@ -10184,7 +10160,7 @@ public class NiseM68 {
 //#endif
 
         // dst
-        int dval = (int) reg.getD()[dr];
+        int dval = reg.getD()[dr];
 
         // check TBD
         if (sval == 0) {
@@ -10198,7 +10174,7 @@ public class NiseM68 {
             return Cycle.Divs_w[cycle[0]];
         }
 
-        reg.getD()[dr] = (int) ((ans & 0xffff) | ((mod & 0xffff) * 0x10000));
+        reg.getD()[dr] = (ans & 0xffff) | ((mod & 0xffff) * 0x10000);
 
 //#if DEBUG
         nimo[0] += "D%d".formatted(dr);
@@ -10280,16 +10256,16 @@ public class NiseM68 {
 
     private int caddi(short n) {
         int m = (n & 0x00c0) >> 6;
-        switch (m) {
-            case 0: // byte
-                return caddib(n);
-            case 1: // word
-                return caddiw(n);
-            case 2: // long
-                return caddil(n);
-        }
+        return switch (m) {
+            case 0 -> // byte
+                    caddib(n);
+            case 1 -> // word
+                    caddiw(n);
+            case 2 -> // long
+                    caddil(n);
+            default -> throw new UnsupportedOperationException("dummy");
+        };
 
-        throw new UnsupportedOperationException("dummy");
     }
 
     private int caddib(short n) {
@@ -10393,7 +10369,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -10442,7 +10418,7 @@ public class NiseM68 {
         int dm = (n & 0x0038) >> 3;
         int dr = (n & 0x0007);
 
-        short src = (short) fetchW();
+        short src = fetchW();
 //#if DEBUG
         nimo += "#$%04x,".formatted(src);
 //#endif
@@ -10531,7 +10507,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -10669,7 +10645,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -10746,26 +10722,26 @@ public class NiseM68 {
         }
 
         int m = (n & 0x01c0) >> 6;
-        switch (m) {
-            case 0: // byte
-                return cadd0B(n);
-            case 1: // word
-                return cadd0w(n);
-            case 2: // long
-                return cadd0l(n);
-            case 3: // word Cadda
-                return caddaw(n);
-            case 4: // byte
-                return cadd1b(n);
-            case 5: // word
-                return cadd1w(n);
-            case 6: // long
-                return cadd1l(n);
-            case 7: // long Cadda
-                return caddal(n);
-        }
+        return switch (m) {
+            case 0 -> // byte
+                    cadd0B(n);
+            case 1 -> // word
+                    cadd0w(n);
+            case 2 -> // long
+                    cadd0l(n);
+            case 3 -> // word Cadda
+                    caddaw(n);
+            case 4 -> // byte
+                    cadd1b(n);
+            case 5 -> // word
+                    cadd1w(n);
+            case 6 -> // long
+                    cadd1l(n);
+            case 7 -> // long Cadda
+                    caddal(n);
+            default -> throw new UnsupportedOperationException("dummy");
+        };
 
-        throw new UnsupportedOperationException("dummy");
     }
 
     private int caddxb_dd(short n) {
@@ -11046,7 +11022,7 @@ public class NiseM68 {
 
                 dval = mem.peekB(reg.getA().get(sr) + d16);
                 ans = (byte) (dval + sval);
-                mem.pokeB((int) (reg.getA().get(sr) + d16), ans);
+                mem.pokeB(reg.getA().get(sr) + d16, ans);
                 cycle = 3;
                 break;
             case 6: // d8(An,IX)
@@ -11069,7 +11045,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -11205,7 +11181,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -11318,7 +11294,7 @@ public class NiseM68 {
 
                 dval = mem.peekL(reg.getA().get(sr) + d16);
                 ans = dval + sval;
-                mem.pokeL(reg.getA().get(sr) + d16, (int) ans);
+                mem.pokeL(reg.getA().get(sr) + d16, ans);
                 cycle = 3;
                 break;
             case 6: // d8(An,IX)
@@ -11335,13 +11311,13 @@ public class NiseM68 {
                 else ptr = reg.getA().get(sr) + (byte) vw + IX;
                 dval = mem.peekL(ptr);
                 ans = dval + sval;
-                mem.pokeL(ptr, (int) ans);
+                mem.pokeL(ptr, ans);
                 cycle = 4;
                 break;
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -11706,7 +11682,7 @@ public class NiseM68 {
         int cycle = 8;
         int sr = (n & 0x0e00) >> 9;
         int dr = (n & 0x0007);
-        int cnt = (int) (reg.getDl(sr) % 64);
+        int cnt = reg.getDl(sr) % 64;
 
 //#if DEBUG
         nimo = "ASL.l D%d,D%d".formatted(sr, dr);
@@ -11844,7 +11820,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (dr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo += "$%04x".formatted(ptr);
 //#endif
@@ -11900,7 +11876,7 @@ public class NiseM68 {
         cycle += 2 * cnt;
         byte bv = reg.getDb(dr); // Arithmetic shifts are done on signed types
         byte av = (byte) (bv >> cnt);
-        reg.setDb(dr, (byte) av);
+        reg.setDb(dr, av);
 
         reg.setC((bv & (0x01 << (cnt - 1))) != 0);
         if (cnt != 0) reg.setX(reg.getC());
@@ -12150,7 +12126,7 @@ public class NiseM68 {
         int cycle = 6;
         int sr = (n & 0x0e00) >> 9;
         int dr = (n & 0x0007);
-        int cnt = (int) (reg.getDl(sr) % 64);
+        int cnt = reg.getDl(sr) % 64;
 
 //#if DEBUG
         nimo = "LSL.w D%d,D%d".formatted(sr, dr);
@@ -12935,7 +12911,7 @@ public class NiseM68 {
                 if (nimoSw) nimo[0] += "(A%d)".formatted(sr);
 //#endif
 
-                val = (byte) mem.peekB(reg.getA().get(sr));
+                val = mem.peekB(reg.getA().get(sr));
                 break;
             case 3: // (An)+
                 if ((support & (1 << 3)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
@@ -12943,7 +12919,7 @@ public class NiseM68 {
                 if (nimoSw) nimo[0] += "(A%d)+".formatted(sr);
 //#endif
 
-                val = (byte) mem.peekB(reg.getA().get(sr));
+                val = mem.peekB(reg.getA().get(sr));
                 reg.getA().set(sr, reg.getA().get(sr) + 1);
                 if (sr == 7) reg.getA().set(sr, reg.getA().get(sr) + 1);
                 break;
@@ -12986,7 +12962,7 @@ public class NiseM68 {
                 switch (sr) {
                     case 0: // Abs.W
                         if ((support & (1 << 7)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         if (nimoSw) nimo[0] += "$%04x".formatted(ptr);
 //#endif
@@ -13005,7 +12981,7 @@ public class NiseM68 {
                         break;
                     case 2: // d16(PC)
                         if ((support & (1 << 9)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         if (nimoSw) nimo[0] += "$%04x(PC)".formatted(ptr & 0xffff);
 //#endif
@@ -13132,7 +13108,7 @@ public class NiseM68 {
                 switch (sr) {
                     case 0: // Abs.W
                         if ((support & (1 << 7)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         if (nimoSw) nimo[0] += "$%04x".formatted(ptr & 0xffff);
 //#endif
@@ -13151,7 +13127,7 @@ public class NiseM68 {
                         break;
                     case 2: // d16(PC)
                         if ((support & (1 << 9)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         if (nimoSw) nimo[0] += "$%04x(PC)".formatted(ptr & 0xffff);
 //#endif
@@ -13182,7 +13158,7 @@ public class NiseM68 {
                         break;
                     case 4: // #Imm
                         if ((support & (1 << 11)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
-                        val = (short) fetchW();
+                        val = fetchW();
 //#if DEBUG
                         if (nimoSw) nimo[0] += "#$%04x".formatted(val);
 //#endif
@@ -13278,7 +13254,7 @@ public class NiseM68 {
                 switch (sr) {
                     case 0: // Abs.W
                         if ((support & (1 << 7)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         if (nimoSw) nimo[0] += "($%04x)".formatted(ptr & 0xffff);
 //#endif
@@ -13297,7 +13273,7 @@ public class NiseM68 {
                         break;
                     case 2: // d16(PC)
                         if ((support & (1 << 9)) == 0) throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         if (nimoSw) nimo[0] += "$%04x(PC)".formatted(ptr & 0xffff);
 //#endif
@@ -13390,7 +13366,7 @@ public class NiseM68 {
             case 7: // etc.
                 switch (sr) {
                     case 0: // Abs.W
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo[0] += "$%04x".formatted(ptr & 0xffff);
 //#endif
@@ -13407,7 +13383,7 @@ public class NiseM68 {
                         cycle[0] = 8;
                         break;
                     case 2: // d16(PC)
-                        ptr = (short) fetchW();
+                        ptr = fetchW();
 //#if DEBUG
                         nimo[0] += "$%04x(PC)".formatted(ptr & 0xffff);
 //#endif
@@ -13478,56 +13454,73 @@ public class NiseM68 {
     }
 
     private boolean getCond(int cnd, /* out */ String[] cs) {
-        switch (cnd) {
-            case 0: // true
+        return switch (cnd) {
+            case 0 -> {
                 cs[0] = "t";
-                return true;
-            case 1: // false
+                yield true;
+            }
+            case 1 -> {
                 cs[0] = "f";
-                return false;
-            case 2:// hi
+                yield false;
+            }
+            case 2 -> {
                 cs[0] = "hi";
-                return (!reg.getC() && !reg.getZ());
-            case 3:// ls
+                yield (!reg.getC() && !reg.getZ());
+            }
+            case 3 -> {
                 cs[0] = "ls";
-                return (reg.getC() || reg.getZ());
-            case 4:// cc
+                yield (reg.getC() || reg.getZ());
+            }
+            case 4 -> {
                 cs[0] = "cc";
-                return !reg.getC();
-            case 5:// cs
+                yield !reg.getC();
+            }
+            case 5 -> {
                 cs[0] = "cs";
-                return reg.getC();
-            case 6:// ne
+                yield reg.getC();
+            }
+            case 6 -> {
                 cs[0] = "ne";
-                return !reg.getZ();
-            case 7:// eq
+                yield !reg.getZ();
+            }
+            case 7 -> {
                 cs[0] = "eq";
-                return reg.getZ();
-            case 8:// vc
+                yield reg.getZ();
+            }
+            case 8 -> {
                 cs[0] = "vc";
-                return !reg.getV();
-            case 9:// vs
+                yield !reg.getV();
+            }
+            case 9 -> {
                 cs[0] = "vs";
-                return reg.getV();
-            case 0xa:// pl
+                yield reg.getV();
+            }
+            case 0xa -> {
                 cs[0] = "pl";
-                return !reg.getN();
-            case 0xb:// mi
+                yield !reg.getN();
+            }
+            case 0xb -> {
                 cs[0] = "mi";
-                return reg.getN();
-            case 0xc:// ge
+                yield reg.getN();
+            }
+            case 0xc -> {
                 cs[0] = "ge";
-                return (reg.getN() && reg.getV()) || (!reg.getN() && !reg.getV());
-            case 0xd:// lt
+                yield (reg.getN() && reg.getV()) || (!reg.getN() && !reg.getV());
+            }
+            case 0xd -> {
                 cs[0] = "lt";
-                return (reg.getN() && !reg.getV()) || (!reg.getN() && reg.getV());
-            case 0xe:// gt
+                yield (reg.getN() && !reg.getV()) || (!reg.getN() && reg.getV());
+            }
+            case 0xe -> {
                 cs[0] = "gt";
-                return !reg.getZ() && ((reg.getN() && reg.getV()) || (!reg.getN() && !reg.getV()));
-            case 0xf:// le
+                yield !reg.getZ() && ((reg.getN() && reg.getV()) || (!reg.getN() && !reg.getV()));
+            }
+            case 0xf -> {
                 cs[0] = "le";
-                return reg.getZ() || (reg.getN() && !reg.getV()) || (!reg.getN() && reg.getV());
-        }
-        throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+                yield reg.getZ() || (reg.getN() && !reg.getV()) || (!reg.getN() && reg.getV());
+            }
+            default ->
+                    throw new UnsupportedOperationException("Not implemented at PC: %08x, opcode: %04x".formatted(reg.pc - 2, mem.peekW(reg.pc - 2) & 0xffff));
+        };
     }
 }

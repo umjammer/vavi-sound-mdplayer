@@ -438,7 +438,7 @@ public class C64 extends C64Env {
         }
         if (!found) {
             extraSidBanks.add(new Tuple<>(index, new ExtraSidBank()));
-            ExtraSidBank extraSidBank = extraSidBanks.get(extraSidBanks.size() - 1).getItem2();
+            ExtraSidBank extraSidBank = extraSidBanks.getLast().getItem2();
             extraSidBank.resetSIDMapper(ioBank.getBank(index));
             ioBank.setBank(index, extraSidBank);
             extraSidBank.addSID(s, address);

@@ -67,7 +67,7 @@ public class S98Plugin extends BasePlugin<S98Driver> {
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         }
 
-        List<S98.S98DevInfo> s98DInfo = ((S98Driver) driverVirtual).getDeviceInfos();
+        List<S98.S98DevInfo> s98DInfo = driverVirtual.getDeviceInfos();
 
         int YM2151ClockValue = 4000000;
         int YM2203ClockValue = 4000000;

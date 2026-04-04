@@ -190,7 +190,7 @@ public class AY {
         if (songNum >= information.songsStructures.size()) songNum = 0;
         int init = information.songsStructures.get(songNum).songData.points.init;
         if (init == 0) {
-            init = information.songsStructures.get(songNum).songData.addresses.get(0).address;
+            init = information.songsStructures.get(songNum).songData.addresses.getFirst().address;
         }
         int inter = information.songsStructures.get(songNum).songData.points.inter;
         if (inter == 0) {

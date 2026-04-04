@@ -46,7 +46,7 @@ public class Audio {
 
     private Thread trd;
 
-    public BasePlugin plugin;
+    public BasePlugin<? extends BaseDriver> plugin;
 
     private static byte[] ensure(byte[] buffer, int bytesRequired) {
         if (buffer == null || buffer.length < bytesRequired) {

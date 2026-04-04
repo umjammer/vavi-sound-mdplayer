@@ -23,6 +23,7 @@ import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import mdplayer.PlayList.Music;
+import mdplayer.driver.BaseDriver;
 import mdplayer.format.FileFormat;
 import mdplayer.plugin.BasePlugin;
 import vavi.util.Debug;
@@ -103,7 +104,7 @@ Debug.println("muap.dir.pcm: " + System.getProperty("muap.dir.pcm"));
 Debug.println("mdplayer.variant.ymf262: " + System.getProperty("mdplayer.variant.ymf262"));
     }
 
-    private BasePlugin plugin;
+    private BasePlugin<? extends BaseDriver> plugin;
 
     /** */
     void play() throws Exception {
@@ -197,7 +198,7 @@ Debug.println("stop");
                 FileFormat format = FileFormat.getFileFormat(p.toString());
 Debug.println(p);
                 var r = format.load((String) null, p.toString());
-                Music music = format.getMusic(null, r.getItem1(), null, null, null).get(0);
+                Music music = format.getMusic(null, r.getItem1(), null, null, null).getFirst();
 Debug.println(music);
             } catch (Exception e) {
             }

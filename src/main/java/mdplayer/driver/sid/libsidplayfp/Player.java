@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dotnet4j.io.FileStream;
-import mdplayer.Setting;
 import mdplayer.driver.sid.libsidplayfp.c64.C64;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidInfo;
@@ -502,17 +501,10 @@ public class Player {
             }
         }
 
-        SidConfig.SidModel newModel;
-
-        switch (tuneModel) {
-        default:
-        case SID_6581:
-            newModel = SidConfig.SidModel.MOS6581;
-            break;
-        case SID_8580:
-            newModel = SidConfig.SidModel.MOS8580;
-            break;
-        }
+        SidConfig.SidModel newModel = switch (tuneModel) {
+            default -> SidConfig.SidModel.MOS6581;
+            case SID_8580 -> SidConfig.SidModel.MOS8580;
+        };
 
         return newModel;
     }

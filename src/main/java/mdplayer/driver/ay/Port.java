@@ -6,10 +6,6 @@ import java.util.function.BiConsumer;
 
 import konamiman.z80.interfaces.Memory;
 import konamiman.z80.interfaces.Z80Registers;
-import mdplayer.Audio;
-import mdplayer.Common.EnmModel;
-import mdplayer.chips.Ay8910Chip;
-import mdplayer.chips.ZxBeepChip;
 
 import static java.lang.System.getLogger;
 

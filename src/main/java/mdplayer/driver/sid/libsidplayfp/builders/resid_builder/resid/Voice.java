@@ -22,8 +22,8 @@ package mdplayer.driver.sid.libsidplayfp.builders.resid_builder.resid;
 
 public class Voice {
 
-    public WaveformGenerator wave = new WaveformGenerator();
-    public EnvelopeGenerator envelope = new EnvelopeGenerator();
+    public final WaveformGenerator wave = new WaveformGenerator();
+    public final EnvelopeGenerator envelope = new EnvelopeGenerator();
 
     // Waveform D/a zero level.
     protected short waveZero;

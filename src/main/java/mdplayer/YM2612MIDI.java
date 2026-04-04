@@ -38,7 +38,7 @@ public class YM2612MIDI {
 
     private final Setting setting;
     private final MDSound mdsMIDI;
-    public MDChipParams newParam;
+    public final MDChipParams newParam;
     private final Audio audio = Audio.getInstance();
 
     public Runnable fadeout;
@@ -90,7 +90,7 @@ public class YM2612MIDI {
     private int noteONMONO(int noteNumber) {
         int fnum = Tables.FmFNum[(noteNumber % 12) + 36];
         int oct = noteNumber / 12 - 1;
-        oct = Math.min(Math.max(oct, 0), 7);
+        oct = Math.clamp(oct, 0, 7);
 
         int ch = setting.getMidiKbd().getUseMonoChannel();
         if (ch < 0 || ch > 5) return -1;
@@ -120,7 +120,7 @@ public class YM2612MIDI {
 
         int fnum = Tables.FmFNum[(noteNumber % 12) + 36];
         int oct = noteNumber / 12 - 1;
-        oct = Math.min(Math.max(oct, 0), 7);
+        oct = Math.clamp(oct, 0, 7);
 
         boolean sw = false;
         int ch = 0;
@@ -279,7 +279,7 @@ public class YM2612MIDI {
         return tone;
     }
 
-    private Tone voiceCopyToneToTone(Tone src, String name) {
+    private static Tone voiceCopyToneToTone(Tone src, String name) {
         Tone des = new Tone();
 
         for (int i = 0; i < 4; i++) {
@@ -510,7 +510,7 @@ public class YM2612MIDI {
 
                 if (ch != -1) {
                     int n = (noe.getData1() % 12) + (noe.getData1() / 12 - 1) * 12;
-                    n = Math.max(Math.min(n, 12 * 8 - 1), 0);
+                    n = Math.clamp(n, 0, 12 * 8 - 1);
                     _noteLog[ch][_noteLogPtr[ch]] = n;
                     int p = _noteLogPtr[ch] - 9;
                     if (p < 0) p += 100;
@@ -611,24 +611,14 @@ public class YM2612MIDI {
             int n = 0;
             int row = 10;
             for (Tone t : tonePallet.getLstTone()) {
-                String[] toneText = null;
-                switch (tp) {
-                case 2:
-                    toneText = makeToneTextForMml2vgm(t, n++);
-                    break;
-                case 3:
-                    toneText = makeToneTextForFMP7(t, n++);
-                    break;
-                case 4:
-                    toneText = makeToneTextForNRTDRV(t, n++);
-                    break;
-                case 5:
-                    toneText = makeToneTextForMXDRV(t, n++);
-                    break;
-                case 6:
-                    toneText = makeToneTextForMUSICLALF(t, n++);
-                    break;
-                }
+                String[] toneText = switch (tp) {
+                    case 2 -> makeToneTextForMml2vgm(t, n++);
+                    case 3 -> makeToneTextForFMP7(t, n++);
+                    case 4 -> makeToneTextForNRTDRV(t, n++);
+                    case 5 -> makeToneTextForMXDRV(t, n++);
+                    case 6 -> makeToneTextForMUSICLALF(t, n++);
+                    default -> null;
+                };
 
                 if (tp != 6) {
                     for (String text : toneText) {
@@ -813,7 +803,7 @@ public class YM2612MIDI {
                 if (stage > 47) {
                     if (stage == 48) {
                         Tone t = new Tone();
-                        t.name = "No.%d(From MML2VGM)".formatted(toneBuf.get(0));
+                        t.name = "No.%d(From MML2VGM)".formatted(toneBuf.getFirst());
                         t.ops = new Tone.Op[4];
                         for (int i = 0; i < 4; i++) {
                             t.ops[i] = new Tone.Op();
@@ -833,7 +823,7 @@ public class YM2612MIDI {
                         t.al = toneBuf.get(45);
                         t.fb = toneBuf.get(46);
 
-                        tonePallet.getLstTone().set(toneBuf.get(0), t);
+                        tonePallet.getLstTone().set(toneBuf.getFirst(), t);
                     }
 
                     stage = 0;
@@ -884,7 +874,7 @@ public class YM2612MIDI {
                     if (stage == 40) {
                         // Compatibility
                         Tone t = new Tone();
-                        t.name = "No.%d(From FMP7 compatible)".formatted(toneBuf.get(0));
+                        t.name = "No.%d(From FMP7 compatible)".formatted(toneBuf.getFirst());
                         t.ops = new Tone.Op[4];
                         for (int i = 0; i < 4; i++) {
                             t.ops[i] = new Tone.Op();
@@ -904,7 +894,7 @@ public class YM2612MIDI {
                         t.al = toneBuf.get(37);
                         t.fb = toneBuf.get(38);
 
-                        tonePallet.getLstTone().set(toneBuf.get(0), t);
+                        tonePallet.getLstTone().set(toneBuf.getFirst(), t);
                     }
 
                     stage = 0;
@@ -915,7 +905,7 @@ public class YM2612MIDI {
                     if (stage == 44) {
                         // OPNA
                         Tone t = new Tone();
-                        t.name = "No.%d(From FMP7 OPNA)".formatted(toneBuf.get(0));
+                        t.name = "No.%d(From FMP7 OPNA)".formatted(toneBuf.getFirst());
                         t.ops = new Tone.Op[4];
                         for (int i = 0; i < 4; i++) {
                             t.ops[i] = new Tone.Op();
@@ -935,7 +925,7 @@ public class YM2612MIDI {
                         t.al = toneBuf.get(41);
                         t.fb = toneBuf.get(42);
 
-                        tonePallet.getLstTone().set(toneBuf.get(0), t);
+                        tonePallet.getLstTone().set(toneBuf.getFirst(), t);
                     }
 
                     stage = 0;
@@ -946,7 +936,7 @@ public class YM2612MIDI {
                     if (stage == 48) {
                         // OPM
                         Tone t = new Tone();
-                        t.name = "No.%d(From FMP7 OPM)".formatted(toneBuf.get(0));
+                        t.name = "No.%d(From FMP7 OPM)".formatted(toneBuf.getFirst());
                         t.ops = new Tone.Op[4];
                         for (int i = 0; i < 4; i++) {
                             t.ops[i] = new Tone.Op();
@@ -966,7 +956,7 @@ public class YM2612MIDI {
                         t.al = toneBuf.get(45);
                         t.fb = toneBuf.get(46);
 
-                        tonePallet.getLstTone().set(toneBuf.get(0), t);
+                        tonePallet.getLstTone().set(toneBuf.getFirst(), t);
                     }
 
                     stage = 0;
@@ -1172,7 +1162,7 @@ public class YM2612MIDI {
                         t.al = toneBuf.get(46);
                         t.fb = toneBuf.get(47);
 
-                        tonePallet.getLstTone().set(toneBuf.get(0), t);
+                        tonePallet.getLstTone().set(toneBuf.getFirst(), t);
                         break;
                     case 2:
                         t.ops = new Tone.Op[4];
@@ -1216,7 +1206,7 @@ public class YM2612MIDI {
                         t.al = toneBuf.get(45);
                         t.fb = toneBuf.get(46);
 
-                        tonePallet.getLstTone().set(toneBuf.get(0), t);
+                        tonePallet.getLstTone().set(toneBuf.getFirst(), t);
                         break;
                     case 4:
                         t.ops = new Tone.Op[4];
@@ -1361,7 +1351,7 @@ public class YM2612MIDI {
 
                     if (toneBuf.size() == 48) {
                         Tone t = new Tone();
-                        t.name = "No.%d(From MXDRV)".formatted(toneBuf.get(0));
+                        t.name = "No.%d(From MXDRV)".formatted(toneBuf.getFirst());
 
                         t.ops = new Tone.Op[4];
                         for (int i = 0; i < 4; i++) {
@@ -1382,7 +1372,7 @@ public class YM2612MIDI {
                         t.al = toneBuf.get(45);
                         t.fb = toneBuf.get(46);
 
-                        tonePallet.getLstTone().set(toneBuf.get(0), t);
+                        tonePallet.getLstTone().set(toneBuf.getFirst(), t);
                     }
                     stage = 0;
                     line = line.substring(1);
@@ -1500,7 +1490,7 @@ public class YM2612MIDI {
 
                     if (toneBuf.size() == 39) {
                         Tone t = new Tone();
-                        t.name = nm.isEmpty() ? "No.%d(From MusicLALF)".formatted(toneBuf.get(0)) : nm;
+                        t.name = nm.isEmpty() ? "No.%d(From MusicLALF)".formatted(toneBuf.getFirst()) : nm;
 
                         t.ops = new Tone.Op[4];
                         for (int i = 0; i < 4; i++) {
@@ -1537,7 +1527,7 @@ public class YM2612MIDI {
         } while (!line.isEmpty());
     }
 
-    private int[] numSplit(String line) {
+    private static int[] numSplit(String line) {
         List<Integer> ret = new ArrayList<>();
 
         line = line.trim();

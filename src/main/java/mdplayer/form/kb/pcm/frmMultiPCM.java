@@ -157,7 +157,7 @@ public class frmMultiPCM extends frmBase {
         }
     }
 
-    private int searchMultiPCMNote(int freq) {
+    private static int searchMultiPCMNote(int freq) {
         //double m = Double.MAX_VALUE;
 
         //int clock = audio.clockMultiPCM;
@@ -190,7 +190,7 @@ public class frmMultiPCM extends frmBase {
             oct = oct + 4; // The fundamental tone is o5.
             int pitch = ((multiPCMRegister.getSlot(ch).regs[3] & 0xf) << 6) | (multiPCMRegister.getSlot(ch).regs[2] >> 2);
 
-            int nt = Math.max(Math.min(oct * 12 + pitch / 85, 7 * 12), 0);
+            int nt = Math.clamp(oct * 12 + pitch / 85, 0, 7 * 12);
             newParam.channels[ch].note = nt;
 
             int d = multiPCMRegister.getSlot(ch).pan;

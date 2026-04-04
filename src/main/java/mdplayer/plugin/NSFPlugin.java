@@ -13,7 +13,6 @@ import mdplayer.chips.NesChip.Mmc5Chip;
 import mdplayer.chips.NesChip.N163Chip;
 import mdplayer.chips.NesChip.Vrc6Chip;
 import mdplayer.chips.NesChip.Vrc7Chip;
-import mdplayer.driver.nsf.NsfDriver;
 import mdplayer.driver.nsf.NsfMdDriver2;
 import mdsound.Instrument;
 import mdsound.MDSound;
@@ -68,7 +67,7 @@ public class NSFPlugin extends BasePlugin<NsfMdDriver2> {
                 setting.getOutputDevice().getSampleRate() * setting.getLatencyEmulation() / 1000,
                 setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);
         if (driverReal != null) {
-            ((NsfDriver) driverReal).setSong(songNo);
+            driverReal.setSong(songNo);
             driverReal.init(vgmBuf, this, Common.EnmModel.RealModel, new Class[] {Unused.class},
                     setting.getOutputDevice().getSampleRate() * setting.getLatencySCCI() / 1000,
                     setting.getOutputDevice().getSampleRate() * setting.getOutputDevice().getWaitTime() / 1000);

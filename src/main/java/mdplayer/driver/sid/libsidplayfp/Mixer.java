@@ -88,7 +88,7 @@ public class Mixer {
 
     // Mono mixing
     private int mono1() {
-        return samples.get(0);
+        return samples.getFirst();
     }
 
     private int mono2() {
@@ -102,11 +102,11 @@ public class Mixer {
     // Stereo mixing
 
     private int stereo_OneChip() {
-        return samples.get(0);
+        return samples.getFirst();
     }
 
     private int stereo_ch1_TwoChips() {
-        return samples.get(0);
+        return samples.getFirst();
     }
 
     private int stereo_ch2_TwoChips() {
@@ -213,7 +213,7 @@ public class Mixer {
         // extract buffer info now that the Sid instanceof updated.
         // clock() may update bufferpos.
         // NB: if more than one chips exists, their bufferpos instanceof identical to first chips's.
-        int sampleCount = chips.get(0).bufferPos();
+        int sampleCount = chips.getFirst().bufferPos();
 
         int i = 0;
         int channels = stereo ? 2 : 1;

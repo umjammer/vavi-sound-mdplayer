@@ -44,7 +44,7 @@ public class frmVSTeffectList extends JFrame {
     private final frmMain parent;
     public boolean isClosed = false;
     public final Setting setting;
-    private final boolean isInitialOpenFolder = true;
+    private static final boolean isInitialOpenFolder = true;
     final Audio audio = Audio.getInstance();
 
     static final Preferences prefs = Preferences.userNodeForPackage(frmVSTeffectList.class);

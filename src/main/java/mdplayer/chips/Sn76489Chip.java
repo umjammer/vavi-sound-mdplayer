@@ -42,7 +42,7 @@ public class Sn76489Chip implements Chip {
 
     public final int[] fadeout = {0, 0};
 
-    public boolean[][] mask = {
+    public final boolean[][] mask = {
             {false, false, false, false},
             {false, false, false, false}
     };

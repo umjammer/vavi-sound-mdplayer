@@ -210,7 +210,7 @@ public class frmYM2608 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKeyYM2608[ch] & 1) != 0)
-                    n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
 
                 byte con = (byte) (fmKeyYM2608[ch]);
                 int v = 127;
@@ -223,8 +223,8 @@ public class frmYM2608 extends frmBase {
                 v = (((con & 0x40) != 0) && ((m & 0x40) != 0) && v > (ym2608Register[p][0x48 + c] & 0x7f)) ? (ym2608Register[p][0x48 + c] & 0x7f) : v;
                 //OP4
                 v = (((con & 0x80) != 0) && ((m & 0x80) != 0) && v > (ym2608Register[p][0x4c + c] & 0x7f)) ? (ym2608Register[p][0x4c + c] & 0x7f) : v;
-                newParam.channels[ch].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * ((ym2608Register[p][0xb4 + c] & 0x80) != 0 ? 1 : 0) * ym2608Vol[ch] / 80.0), 0), 19);
-                newParam.channels[ch].volumeR = Math.min(Math.max((int) ((127 - v) / 127.0 * ((ym2608Register[p][0xb4 + c] & 0x40) != 0 ? 1 : 0) * ym2608Vol[ch] / 80.0), 0), 19);
+                newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((ym2608Register[p][0xb4 + c] & 0x80) != 0 ? 1 : 0) * ym2608Vol[ch] / 80.0), 0, 19);
+                newParam.channels[ch].volumeR = Math.clamp((int) ((127 - v) / 127.0 * ((ym2608Register[p][0xb4 + c] & 0x40) != 0 ? 1 : 0) * ym2608Vol[ch] / 80.0), 0, 19);
 
             } else {
                 int m = md[ym2608Register[0][0xb0 + 2] & 7];
@@ -236,11 +236,11 @@ public class frmYM2608 extends frmBase {
                 ff /= 1038f;
 
                 if ((fmKeyYM2608[2] & 0x10) > 0 && ((m & 0x10) != 0))
-                    n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
 
                 int v = ((m & 0x10) != 0) ? ym2608Register[p][0x40 + c] : 127;
-                newParam.channels[2].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * ((ym2608Register[0][0xb4 + 2] & 0x80) != 0 ? 1 : 0) * ym2608Ch3SlotVol[0] / 80.0), 0), 19);
-                newParam.channels[2].volumeR = Math.min(Math.max((int) ((127 - v) / 127.0 * ((ym2608Register[0][0xb4 + 2] & 0x40) != 0 ? 1 : 0) * ym2608Ch3SlotVol[0] / 80.0), 0), 19);
+                newParam.channels[2].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ((ym2608Register[0][0xb4 + 2] & 0x80) != 0 ? 1 : 0) * ym2608Ch3SlotVol[0] / 80.0), 0, 19);
+                newParam.channels[2].volumeR = Math.clamp((int) ((127 - v) / 127.0 * ((ym2608Register[0][0xb4 + 2] & 0x40) != 0 ? 1 : 0) * ym2608Ch3SlotVol[0] / 80.0), 0, 19);
             }
             newParam.channels[ch].note = n;
 
@@ -266,12 +266,12 @@ public class frmYM2608 extends frmBase {
                 if ((fmKeyYM2608[2] & (0x10 << (ch - 5))) != 0 && ((m & (0x10 << op)) != 0)) {
                     float ff = freq / ((2 << 20) / (masterClock / (24 * fmDiv))) * (2 << (octav + 2));
                     ff /= 1038f;
-                    n = Math.min(Math.max(Common.searchYM2608Adpcm(ff) - 1, 0), 95);
+                    n = Math.clamp(Common.searchYM2608Adpcm(ff) - 1, 0, 95);
                 }
                 newParam.channels[ch].note = n;
 
                 int v = ((m & (0x10 << op)) != 0) ? ym2608Register[0][0x42 + op * 4] : 127;
-                newParam.channels[ch].volumeL = Math.min(Math.max((int) ((127 - v) / 127.0 * ym2608Ch3SlotVol[ch - 5] / 80.0), 0), 19);
+                newParam.channels[ch].volumeL = Math.clamp((int) ((127 - v) / 127.0 * ym2608Ch3SlotVol[ch - 5] / 80.0), 0, 19);
             } else {
                 newParam.channels[ch].note = -1;
                 newParam.channels[ch].volumeL = 0;
@@ -313,8 +313,8 @@ public class frmYM2608 extends frmBase {
 
         //ADPCM
         newParam.channels[12].pan = (ym2608Register[1][0x01] & 0xc0) >> 6; // ((ym2608Register[1][0x01] & 0xc0) >> 6) != 0 ? ((ym2608Register[1][0x01] & 0xc0) >> 6) : newParam.channels[12].pan;
-        newParam.channels[12].volumeL = Math.min(Math.max(ym2608AdpcmVol[0] / 80, 0), 19);
-        newParam.channels[12].volumeR = Math.min(Math.max(ym2608AdpcmVol[1] / 80, 0), 19);
+        newParam.channels[12].volumeL = Math.clamp(ym2608AdpcmVol[0] / 80, 0, 19);
+        newParam.channels[12].volumeR = Math.clamp(ym2608AdpcmVol[1] / 80, 0, 19);
         int delta = (ym2608Register[1][0x0a] << 8) | ym2608Register[1][0x09];
         newParam.channels[12].freq = delta;
         float frq = delta / 9447.0f;
@@ -325,8 +325,8 @@ public class frmYM2608 extends frmBase {
 
         for (int ch = 13; ch < 19; ch++) { // RHYTHM
             newParam.channels[ch].pan = (ym2608Register[0][0x18 + ch - 13] & 0xc0) >> 6;
-            newParam.channels[ch].volumeL = Math.min(Math.max(ym2608Rhythm[ch - 13][0] / 80, 0), 19);
-            newParam.channels[ch].volumeR = Math.min(Math.max(ym2608Rhythm[ch - 13][1] / 80, 0), 19);
+            newParam.channels[ch].volumeL = Math.clamp(ym2608Rhythm[ch - 13][0] / 80, 0, 19);
+            newParam.channels[ch].volumeR = Math.clamp(ym2608Rhythm[ch - 13][1] / 80, 0, 19);
             newParam.channels[ch].volumeRL = ym2608Register[0][ch - 13 + 0x18] & 0x1f;
         }
     }

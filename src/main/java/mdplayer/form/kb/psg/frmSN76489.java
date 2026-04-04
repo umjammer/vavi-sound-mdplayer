@@ -145,19 +145,19 @@ public class frmSN76489 extends frmBase {
                             newParam.channels[ch].note = -1;
                         }
 
-                        newParam.channels[ch].volumeL = Math.min(Math.max((int) ((psgVol[ch][0]) / (15.0 / 19.0)), 0), 19);
-                        newParam.channels[ch].volumeR = Math.min(Math.max((int) ((psgVol1[ch][0]) / (15.0 / 19.0)), 0), 19);
-                        newParam.channels[ch].pan = Math.min(Math.max(newParam.channels[ch].volumeR, 0), 15) * 0x10 +
-                                Math.min(Math.max(newParam.channels[ch].volumeL, 0), 15);
+                        newParam.channels[ch].volumeL = Math.clamp((int) ((psgVol[ch][0]) / (15.0 / 19.0)), 0, 19);
+                        newParam.channels[ch].volumeR = Math.clamp((int) ((psgVol1[ch][0]) / (15.0 / 19.0)), 0, 19);
+                        newParam.channels[ch].pan = Math.clamp(newParam.channels[ch].volumeR, 0, 15) * 0x10 +
+                                Math.clamp(newParam.channels[ch].volumeL, 0, 15);
                     }
 
                     //Noise Ch
                     newParam.channels[3].note = psgRegister1[6];
                     newParam.channels[3].freq = psgRegister1[4];//ch3Freq
-                    newParam.channels[3].volumeL = Math.min(Math.max((int) ((psgVol[3][0]) / (15.0 / 19.0)), 0), 19);
-                    newParam.channels[3].volumeR = Math.min(Math.max((int) ((psgVol1[3][0]) / (15.0 / 19.0)), 0), 19);
-                    newParam.channels[3].pan = Math.min(Math.max(newParam.channels[3].volumeR, 0), 15) * 0x10 +
-                            Math.min(Math.max(newParam.channels[3].volumeL, 0), 15);
+                    newParam.channels[3].volumeL = Math.clamp((int) ((psgVol[3][0]) / (15.0 / 19.0)), 0, 19);
+                    newParam.channels[3].volumeR = Math.clamp((int) ((psgVol1[3][0]) / (15.0 / 19.0)), 0, 19);
+                    newParam.channels[3].pan = Math.clamp(newParam.channels[3].volumeR, 0, 15) * 0x10 +
+                            Math.clamp(newParam.channels[3].volumeL, 0, 15);
                 } else {
                     //Tone Ch
                     for (int ch = 0; ch < 3; ch++) {
@@ -167,8 +167,8 @@ public class frmSN76489 extends frmBase {
                             newParam.channels[ch].note = -1;
                         }
 
-                        newParam.channels[ch].volumeL = Math.min(Math.max((int) ((psgVol[ch][0]) / (15.0 / 19.0)), 0), 19);
-                        newParam.channels[ch].volumeR = Math.min(Math.max((int) ((psgVol[ch][1]) / (15.0 / 19.0)), 0), 19);
+                        newParam.channels[ch].volumeL = Math.clamp((int) ((psgVol[ch][0]) / (15.0 / 19.0)), 0, 19);
+                        newParam.channels[ch].volumeR = Math.clamp((int) ((psgVol[ch][1]) / (15.0 / 19.0)), 0, 19);
                         newParam.channels[ch].pan = (psgRegisterPan >> ch) & 0x11;
                         newParam.channels[ch].pan = ((newParam.channels[ch].pan) & 0x1) | (newParam.channels[ch].pan >> 3);
                     }
@@ -176,8 +176,8 @@ public class frmSN76489 extends frmBase {
                     //Noise Ch
                     newParam.channels[3].note = psgRegister[6];
                     newParam.channels[3].freq = psgRegister[4];//ch3Freq
-                    newParam.channels[3].volumeL = Math.min(Math.max((int) ((psgVol[3][0]) / (15.0 / 19.0)), 0), 19);
-                    newParam.channels[3].volumeR = Math.min(Math.max((int) ((psgVol[3][1]) / (15.0 / 19.0)), 0), 19);
+                    newParam.channels[3].volumeL = Math.clamp((int) ((psgVol[3][0]) / (15.0 / 19.0)), 0, 19);
+                    newParam.channels[3].volumeR = Math.clamp((int) ((psgVol[3][1]) / (15.0 / 19.0)), 0, 19);
                     newParam.channels[3].pan = (psgRegisterPan >> 3) & 0x11;
                     newParam.channels[3].pan = ((newParam.channels[3].pan) & 0x1) | (newParam.channels[3].pan >> 3);
                 }
@@ -284,7 +284,7 @@ public class frmSN76489 extends frmBase {
         }
     };
 
-    private int searchPSGNote(int freq) {
+    private static int searchPSGNote(int freq) {
         int m = Integer.MAX_VALUE;
         int n = 0;
 

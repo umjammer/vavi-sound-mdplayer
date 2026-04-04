@@ -56,8 +56,8 @@ public class ZmsDriver extends BaseDriver {
             }
 
             @Override
-            public void keyOn(int ch, int d1, int d2, int d3) {
-                plugin.chipRegister.chip(Pcm8Chip.class).keyOn(0, ch, d1, d2, d3);
+            public void keyOn(int ch, int addr, int mode, int len) {
+                plugin.chipRegister.chip(Pcm8Chip.class).keyOn(0, ch, addr, mode, len);
             }
 
             @Override
@@ -170,7 +170,7 @@ public class ZmsDriver extends BaseDriver {
         }
     }
 
-    private Gd3 getGD3InfoZMS(byte[] buf) {
+    private static Gd3 getGD3InfoZMS(byte[] buf) {
         String text = new String(buf, charset);
         String[] texts = text.split("\r\n");
         String cmt = "";

@@ -177,26 +177,19 @@ class M68kHarteTest {
             int bw = UDS + LDS;
             ptr += 20;
 
-            String tws;
-            switch (tw) {
-                case 1: // write
-                    tws = "w";
-                    break;
-                case 2: // read
-                    tws = "r";
-                    break;
-                case 3: // TAS cycle
-                    tws = "t";
-                    break;
-                case 4: // read address error (no AS assert)
-                    tws = "re";
-                    break;
-                case 5: // write address error (no AS assert)
-                    tws = "we";
-                    break;
-                default:
-                    throw new RuntimeException("BAD KIND");
-            }
+            String tws = switch (tw) {
+                case 1 -> // write
+                        "w";
+                case 2 -> // read
+                        "r";
+                case 3 -> // TAS cycle
+                        "t";
+                case 4 -> // read address error (no AS assert)
+                        "re";
+                case 5 -> // write address error (no AS assert)
+                        "we";
+                default -> throw new RuntimeException("BAD KIND");
+            };
 
             transactions.add(Arrays.asList(
                     tws, cycles, fc, addrBus,

@@ -25,7 +25,7 @@ public class MsxMemory implements Memory {
         slot.pages[page].set(address, value);
     }
 
-    private final int size = 65536;
+    private static final int size = 65536;
 
     @Override
     public int getSize() {

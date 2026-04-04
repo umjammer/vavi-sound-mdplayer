@@ -21,6 +21,7 @@
 package mdplayer.driver.sid.libsidplayfp.c64.banks;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import mdplayer.driver.sid.libsidplayfp.c64.C64Sid;
@@ -60,8 +61,7 @@ public class ExtraSidBank implements IBank {
     }
 
     public void resetSIDMapper(IBank bank) {
-        for (int i = 0; i < MAPPER_SIZE; i++)
-            mapper[i] = bank;
+        Arrays.fill(mapper, bank);
     }
 
     @Override

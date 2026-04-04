@@ -151,5 +151,5 @@ logger.log(Level.TRACE, "audioDriver: " + audioDriver);
         }
     }
 
-    VisWaveBuffer visWB = new VisWaveBuffer();
+    final VisWaveBuffer visWB = new VisWaveBuffer();
 }

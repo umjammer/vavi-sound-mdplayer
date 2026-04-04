@@ -216,11 +216,11 @@ public class Register68 {
     }
 
     public void setAb(int n, byte val) {
-        a.set(n, (int) val);
+        a.set(n, val);
     }
 
     public void setAw(int n, short val) {
-        a.set(n, (int) val);
+        a.set(n, val);
     }
 
     public void setAl(int n, int val) {
@@ -367,7 +367,7 @@ public class Register68 {
     public static class A {
 
         /** field for Items property */
-        private int[] items = new int[8];
+        private final int[] items = new int[8];
         public int usp;
         public int ssp;
         public short sr;

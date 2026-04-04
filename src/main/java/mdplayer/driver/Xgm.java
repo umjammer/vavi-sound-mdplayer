@@ -284,7 +284,7 @@ public class Xgm {
                 xgmpcm[i].data = 0;
             }
         }
-        o = (short) Math.min(Math.max(o, Byte.MIN_VALUE + 1), Byte.MAX_VALUE);
+        o = (short) Math.clamp(o, Byte.MIN_VALUE + 1, Byte.MAX_VALUE);
         o += 0x80;
 
         ym2612Write.accept(0, 0x2a, o);

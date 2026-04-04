@@ -28,7 +28,7 @@ public class YmF278BChip implements Chip {
 
     private final RSoundChip[] realChips = {null, null};
 
-    public int[][][] register = {
+    public final int[][][] register = {
             {null, null},
             {null, null}
     };

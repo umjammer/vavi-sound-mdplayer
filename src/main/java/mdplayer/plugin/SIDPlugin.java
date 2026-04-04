@@ -4,7 +4,6 @@ import java.lang.System.Logger;
 
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
-import mdplayer.driver.sid.SidDriver;
 import mdplayer.driver.sid.SidMdDriver2;
 
 import static java.lang.System.getLogger;

@@ -33,7 +33,7 @@ public class NRTPlugin extends BasePlugin<NrtDriver> {
 
     @Override
     protected void initChips() {
-        int r = ((NrtDriver) driverVirtual).checkUseChip(vgmBuf);
+        int r = driverVirtual.checkUseChip(vgmBuf);
 logger.log(Level.DEBUG, "used chip: %02x".formatted(r));
 
         chipRegister.chip(Ym2151Chip.class).setFadeout(0, 0);

@@ -3632,7 +3632,7 @@ public class DevOpn {
         mm.write(reg.a4 + W_L.delay_work, (byte) ((mm.readByte(reg.a4 + W_L.delay_work) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_L.delay_work) != 0) return;
 
-        mm.write(reg.a4 + W_L.delay_work, (byte) mm.readByte(reg.a4 + W_L.lfo_sp));
+        mm.write(reg.a4 + W_L.delay_work, mm.readByte(reg.a4 + W_L.lfo_sp));
         reg.setD2_W(mm.readShort(reg.a5 + W.keycode) & 0xffff);
         reg.setD1_W(mm.readShort(reg.a4 + W_L.henka_work) & 0xffff);
         if ((short) reg.getD1_W() < 0) { // break _ch_fm_p_5_plus;
@@ -3661,7 +3661,7 @@ public class DevOpn {
         _set_fnum2();
         mm.write(reg.a4 + W_L.count_work, (byte) ((mm.readByte(reg.a4 + W_L.count_work) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_L.count_work) == 0) {
-            mm.write(reg.a4 + W_L.count_work, (byte) mm.readByte(reg.a4 + W_L.count));
+            mm.write(reg.a4 + W_L.count_work, mm.readByte(reg.a4 + W_L.count));
             mm.write(reg.a4 + W_L.henka_work, (short) (-(short) mm.readShort(reg.a4 + W_L.henka_work)));
         }
     }
@@ -3855,7 +3855,7 @@ public class DevOpn {
         mm.write(reg.a4 + W_Ww.delay_work, (byte) ((mm.readByte(reg.a4 + W_Ww.delay_work) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_Ww.delay_work) != 0) return;
 
-        mm.write(reg.a4 + W_Ww.delay_work, (byte) mm.readByte(reg.a4 + W_Ww.speed));
+        mm.write(reg.a4 + W_Ww.delay_work, mm.readByte(reg.a4 + W_Ww.speed));
         reg.setD4_B(mm.readByte(reg.a4 + W_Ww.work) & 0xff);
         reg.setD4_B(reg.getD4_B() + (mm.readByte(reg.a4 + W_Ww.rate_work) & 0xff));
         mm.write(reg.a4 + W_Ww.work, (byte) reg.getD4_B());
@@ -3881,7 +3881,7 @@ public class DevOpn {
 
         mm.write(reg.a4 + W_Ww.depth_work, (byte) ((mm.readByte(reg.a4 + W_Ww.depth_work) & 0xff) - 1));
         if (mm.readByte(reg.a4 + W_Ww.depth_work) != 0) return;
-        mm.write(reg.a4 + W_Ww.depth_work, (byte) mm.readByte(reg.a4 + W_Ww.depth));
+        mm.write(reg.a4 + W_Ww.depth_work, mm.readByte(reg.a4 + W_Ww.depth));
         mm.write(reg.a4 + W_Ww.rate_work, (byte) (-(byte) mm.readByte(reg.a4 + W_Ww.rate_work)));
     }
 

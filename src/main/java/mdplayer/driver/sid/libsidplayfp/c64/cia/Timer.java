@@ -76,7 +76,7 @@ public class Timer extends Event {
     private byte lastControlValue;
 
     // Pointer to the Mos6526 which this Timer belongs to. */
-    protected Mos6526 parent;
+    protected final Mos6526 parent;
 
     // CRA/CRB control register / state. */
     protected int state;

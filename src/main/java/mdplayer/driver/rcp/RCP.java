@@ -167,7 +167,7 @@ public class RCP {
     private int meaInd = 0;
     private boolean endTrack = false;
     private Map<Byte, Byte> taiDic = null;
-    private final int stDevNum = 0;
+    private int stDevNum = 0;
     private int pt = 0;
     private int skipPtr = 4;
     private final byte[] msgBuf2 = new byte[2];
@@ -532,7 +532,7 @@ logger.log(Level.INFO, "checkHeadString");
     }
 
     private void extractSame(MIDITrack trk) {
-        MIDIEvent evt = trk.getPart().get(0).getStartEvent();
+        MIDIEvent evt = trk.getPart().getFirst().getStartEvent();
         while (evt != null) {
             if (evt.getEventType() == MIDIEventType.MetaSequencerSpecific && evt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.ordinal()) {
 
@@ -547,12 +547,12 @@ logger.log(Level.INFO, "checkHeadString");
                 }
                 int Mea = 0;
                 int MeaS;
-                MIDIEvent mEvt = trk.getPart().get(0).getStartEvent();
+                MIDIEvent mEvt = trk.getPart().getFirst().getStartEvent();
                 if (ofsMea != 0) {
                     while (mEvt != null) {
                         MeaS = 0;
                         if (mEvt.getEventType() == MIDIEventType.MetaSequencerSpecific) {
-                            MIDIEvent nEvt = trk.getPart().get(0).getNextEvent(mEvt);
+                            MIDIEvent nEvt = trk.getPart().getFirst().getNextEvent(mEvt);
                             int s;
                             if (nEvt.getEventType() == MIDIEventType.MetaSequencerSpecific
                                     && nEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.ordinal()) {
@@ -569,7 +569,7 @@ logger.log(Level.INFO, "checkHeadString");
                                 MeaS = s;
                             }
                         }
-                        mEvt = trk.getPart().get(0).getNextEvent(mEvt);
+                        mEvt = trk.getPart().getFirst().getNextEvent(mEvt);
                         Mea += MeaS;
                         if (ofsMea == Mea) break;
                     }
@@ -580,7 +580,7 @@ logger.log(Level.INFO, "checkHeadString");
                 }
             }
 
-            evt = trk.getPart().get(0).getNextEvent(evt);
+            evt = trk.getPart().getFirst().getNextEvent(evt);
         }
     }
 
@@ -1350,24 +1350,17 @@ logger.log(Level.INFO, "checkHeadString");
 
         while (j < eve.getMIDIMessages()[0].length - 2) {
             Byte n = eve.getMIDIMessages()[0][j];
-            switch (n & 0xff) {
-            case 0x80:
-                n = eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 2];
-                break;
-            case 0x81:
-                n = eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 1];
-                break;
-            case 0x82:
-                n = (byte) (int) trk.getOutChannel();
-                break;
-            case 0x83:
-                chksum = 0;
-                n = null;
-                break;
-            case 0x84:
-                n = (byte) (128 - (chksum % 128));
-                break;
-            }
+            n = switch (n & 0xff) {
+                case 0x80 -> eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 2];
+                case 0x81 -> eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 1];
+                case 0x82 -> (byte) (int) trk.getOutChannel();
+                case 0x83 -> {
+                    chksum = 0;
+                    yield null;
+                }
+                case 0x84 -> (byte) (128 - (chksum % 128));
+                default -> n;
+            };
             if (n != null) {
                 msgBuf[i] = n;
                 chksum += n;
@@ -1619,24 +1612,17 @@ logger.log(Level.INFO, "checkHeadString");
 
         while (j < userExclusives.get(num).getExclusive().length) {
             Byte n = userExclusives.get(num).getExclusive()[j];
-            switch (n & 0xff) {
-            case 0x80:
-                n = eve.getMIDIMessages()[0][0];
-                break;
-            case 0x81:
-                n = eve.getMIDIMessages()[0][1];
-                break;
-            case 0x82:
-                n = (byte) (int) trk.getOutChannel();
-                break;
-            case 0x83:
-                chksum = 0;
-                n = null;
-                break;
-            case 0x84:
-                n = (byte) ((128 - (chksum % 128)) & 0x7f);
-                break;
-            }
+            n = switch (n & 0xff) {
+                case 0x80 -> eve.getMIDIMessages()[0][0];
+                case 0x81 -> eve.getMIDIMessages()[0][1];
+                case 0x82 -> (byte) (int) trk.getOutChannel();
+                case 0x83 -> {
+                    chksum = 0;
+                    yield null;
+                }
+                case 0x84 -> (byte) ((128 - (chksum % 128)) & 0x7f);
+                default -> n;
+            };
             if (n != null) {
                 msgBuf[i] = n;
                 chksum += n;
@@ -1670,18 +1656,17 @@ logger.log(Level.INFO, "checkHeadString");
 
         for (Byte b : buf) {
             Byte n = b;
-            switch (n & 0xff) {
-            // case 0x82:
-            //  n = (byte)trk.OutChannel;
-            // break;
-            case 0x83:
-                chksum = 0;
-                n = null;
-                break;
-            case 0x84:
-                n = (byte) ((128 - (chksum % 128)) & 0x7f);
-                break;
-            }
+            n = switch (n & 0xff) {
+                // case 0x82:
+                //  n = (byte)trk.OutChannel;
+                // break;
+                case 0x83 -> {
+                    chksum = 0;
+                    yield null;
+                }
+                case 0x84 -> (byte) ((128 - (chksum % 128)) & 0x7f);
+                default -> n;
+            };
             if (n != null) {
                 ret.add(n);
                 chksum += n;

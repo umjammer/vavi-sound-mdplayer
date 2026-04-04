@@ -198,7 +198,7 @@ public class PmdDriver extends BaseDriver {
         M
     }
 
-    private PMDFileType checkFileType(byte[] buf) {
+    private static PMDFileType checkFileType(byte[] buf) {
         if (buf == null || buf.length < 4) {
             return PMDFileType.unknown;
         }
@@ -548,7 +548,7 @@ logger.log(Level.DEBUG, "found pmd additional file: " + fileName.replace("\\", j
         }
     }
 
-    private String[] getPMDOption() {
+    private static String[] getPMDOption() {
         List<String> op = new ArrayList<>();
 
         // envPMDOpt

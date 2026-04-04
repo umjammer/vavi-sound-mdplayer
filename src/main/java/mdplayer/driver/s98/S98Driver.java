@@ -9,7 +9,6 @@ import java.util.List;
 import mdplayer.Chip;
 import mdplayer.Common.EnmModel;
 import mdplayer.chips.Ay8910Chip;
-import mdplayer.chips.RealChipPlugin;
 import mdplayer.chips.Sn76489Chip;
 import mdplayer.chips.Ym2151Chip;
 import mdplayer.chips.Ym2203Chip;

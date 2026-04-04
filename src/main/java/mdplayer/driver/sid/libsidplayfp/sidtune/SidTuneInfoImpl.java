@@ -53,7 +53,7 @@ public class SidTuneInfoImpl extends SidTuneInfo {
     public String infoFileName;
     public List<Model> sidModels;
     public List<Short> sidChipAddresses;
-    public List<String> infoString = new ArrayList<>();
+    public final List<String> infoString = new ArrayList<>();
     public List<String> commentString;
     public boolean fixLoad;
 
@@ -61,7 +61,7 @@ public class SidTuneInfoImpl extends SidTuneInfo {
     private SidTuneInfoImpl(SidTuneInfoImpl s) {
     }
 
-    private SidTuneInfoImpl opeEquel(SidTuneInfoImpl s) {
+    private static SidTuneInfoImpl opeEquel(SidTuneInfoImpl s) {
         return null;
     }
 

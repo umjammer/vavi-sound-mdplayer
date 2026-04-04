@@ -53,7 +53,7 @@ public class Nise98 {
         // bit76:10 int 4(IRQ10)
         // bit76:01 int 6(IRQ13)
         // bit76:00 int 0(IRQ03)
-        public final byte int_ = (byte) 0b1100_0000;
+        public static final byte int_ = (byte) 0b1100_0000;
         public byte p88lastAdr = 0;
         public byte p8clastAdr = 0;
         public boolean isBusy = false;
@@ -565,7 +565,7 @@ logger.log(Level.TRACE, "fmReg188.ongen: " + fmReg188.ongen);
         //logger.log(Level.DEBUG, "");
     }
 
-    private void dispRegs(Register286 regs) {
+    private static void dispRegs(Register286 regs) {
         logger.log(Level.TRACE, Objects.requireNonNull(regs, regs.toString()));
     }
 }

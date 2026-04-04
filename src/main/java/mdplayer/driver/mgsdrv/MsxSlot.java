@@ -1,10 +1,6 @@
 package mdplayer.driver.mgsdrv;
 
-import dotnet4j.util.compat.QuadConsumer;
 import dotnet4j.util.compat.TriConsumer;
-import mdplayer.Chip;
-import mdplayer.ChipRegister;
-import mdplayer.Common.EnmModel;
 
 
 public class MsxSlot extends Slot {

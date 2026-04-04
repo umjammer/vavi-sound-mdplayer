@@ -269,17 +269,12 @@ public class frmYMF278B extends frmBase {
                         int tl = tl4;
 
                         int cnt = (n << 1) + cnt2;
-                        switch (cnt) {
-                        case 1:
-                            tl = Math.min(tl2, tl4);
-                            break;
-                        case 2:
-                            tl = Math.min(tl1, tl4);
-                            break;
-                        case 3:
-                            tl = Math.min(tl1, Math.min(tl3, tl4));
-                            break;
-                        }
+                        tl = switch (cnt) {
+                            case 1 -> Math.min(tl2, tl4);
+                            case 2 -> Math.min(tl1, tl4);
+                            case 3 -> Math.min(tl1, Math.min(tl3, tl4));
+                            default -> tl;
+                        };
 
                         nyc.volumeL = (nyc.inst[36] & 2) != 0 ? (19 * (64 - tl) / 64) : 0;
                         nyc.volumeR = (nyc.inst[36] & 1) != 0 ? (19 * (64 - tl) / 64) : 0;

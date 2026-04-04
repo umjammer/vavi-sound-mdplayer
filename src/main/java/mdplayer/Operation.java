@@ -45,7 +45,7 @@ public class Operation {
 
             Tuple<Ope, Object[]> cmd;
             synchronized (lockObj) {
-                cmd = cmdBuf.get(0);
+                cmd = cmdBuf.getFirst();
                 if (cmd == null)
                     continue;
                 if (cmd.getItem1() == Ope.END)
@@ -72,14 +72,14 @@ public class Operation {
                     continue;
 
                 synchronized (lockObj) {
-                    cmd = cmdBuf.get(0);
+                    cmd = cmdBuf.getFirst();
                     if (cmd == null)
                         continue;
                     if (cmd.getItem1() == Ope.RELEASE) {
                         cmdBuf.clear();
                         break;
                     }
-                    cmdBuf.remove(0);
+                    cmdBuf.removeFirst();
                 }
             }
         }

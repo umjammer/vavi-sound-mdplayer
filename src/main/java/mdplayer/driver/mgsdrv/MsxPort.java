@@ -5,10 +5,6 @@ import java.lang.System.Logger.Level;
 import java.util.function.BiConsumer;
 
 import konamiman.z80.interfaces.Memory;
-import mdplayer.ChipRegister;
-import mdplayer.Common;
-import mdplayer.chips.Ay8910Chip;
-import mdplayer.chips.Ym2413Chip;
 
 import static java.lang.System.getLogger;
 

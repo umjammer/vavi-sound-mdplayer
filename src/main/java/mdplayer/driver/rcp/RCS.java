@@ -93,7 +93,7 @@ public class RCS {
 
         Boolean ret = checkHeadString(rcpBuf[0]);
         if (ret == null) return;
-        boolean IsG36 = (boolean) ret;
+        boolean IsG36 = ret;
         int ptr = 96;
         if (IsG36) {
             ptr += 568;
@@ -284,12 +284,12 @@ public class RCS {
                     int length = pcmInfos[key].length;
                     if (rcsPolyphonicMode == 0) length = (int) (length * Math.min(eve.getGate(), 100) * 0.01);
                     if (pcm8type == 0) if (opmPCM != null)
-                        opmPCM.chips[0].pcm8Out(ch, null, (int) pcmInfos[0][key].ptr, mode, length); // Start of specified channel sound
+                        opmPCM.chips[0].pcm8Out(ch, null, pcmInfos[0][key].ptr, mode, length); // Start of specified channel sound
                     else if (pcm8pp != null)
-                        pcm8pp.keyOn(0, ch, (int) pcmInfos[0][key].ptr, mode, length); // Start of specified channel sound
-                    pcm8St[ch].tablePtr = (int) pcmInfos[0][key].ptr;
-                    pcm8St[ch].mode = (int) mode;
-                    pcm8St[ch].length = (int) pcmInfos[key].length;
+                        pcm8pp.keyOn(0, ch, pcmInfos[0][key].ptr, mode, length); // Start of specified channel sound
+                    pcm8St[ch].tablePtr = pcmInfos[0][key].ptr;
+                    pcm8St[ch].mode = mode;
+                    pcm8St[ch].length = pcmInfos[key].length;
                     pcm8St[ch].Keyon = true;
                 }
             }
@@ -337,10 +337,12 @@ public class RCS {
     }
 
     private void keyOffPCM8(int key) {
-        for (int i = 0; i < useCh.size(); i++) {
-            if (useCh.get(i).getItem2() != key) continue;
-            freeCh.add(useCh.get(i).getItem1());
-            useCh.remove(i);
+        var i = useCh.iterator();
+        while (i.hasNext()) {
+            var u = i.next();
+            if (u.getItem2() != key) continue;
+            freeCh.add(u.getItem1());
+            i.remove();
         }
     }
 
@@ -424,7 +426,7 @@ public class RCS {
         vgmBuf = rcpBuf;
         Boolean ret = checkHeadString(vgmBuf);
         if (ret == null) return false;
-        isG36 = (boolean) ret;
+        isG36 = ret;
 
         ptr = 32;
         ptr += 64;
@@ -738,7 +740,7 @@ public class RCS {
     }
 
     private void extractSame(MIDITrack trk) {
-        MIDIEvent evt = trk.getPart().get(0).getStartEvent();
+        MIDIEvent evt = trk.getPart().getFirst().getStartEvent();
         while (evt != null) {
             if (evt.getEventType() == MIDIEventType.MetaSequencerSpecific && evt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.v) {
 
@@ -753,12 +755,12 @@ public class RCS {
                 }
                 int Mea = 0;
                 int MeaS = 0;
-                MIDIEvent mEvt = trk.getPart().get(0).getStartEvent();
+                MIDIEvent mEvt = trk.getPart().getFirst().getStartEvent();
                 if (ofsMea != 0) {
                     while (mEvt != null) {
                         MeaS = 0;
                         if (mEvt.getEventType() == MIDIEventType.MetaSequencerSpecific) {
-                            MIDIEvent nEvt = trk.getPart().get(0).getNextEvent(mEvt);
+                            MIDIEvent nEvt = trk.getPart().getFirst().getNextEvent(mEvt);
                             int s = 0;
                             if (nEvt.getEventType() == MIDIEventType.MetaSequencerSpecific
                                     && nEvt.getMIDIMessage()[0] == (byte) MIDISpEventType.SameMeasure.v) {
@@ -775,7 +777,7 @@ public class RCS {
                                 MeaS = s;
                             }
                         }
-                        mEvt = trk.getPart().get(0).getNextEvent(mEvt);
+                        mEvt = trk.getPart().getFirst().getNextEvent(mEvt);
                         Mea += MeaS;
                         if (ofsMea == Mea) break;
                     }
@@ -786,7 +788,7 @@ public class RCS {
                 }
             }
 
-            evt = trk.getPart().get(0).getNextEvent(evt);
+            evt = trk.getPart().getFirst().getNextEvent(evt);
         }
     }
 
@@ -1258,7 +1260,7 @@ public class RCS {
                     else if (key > 127) key = 127;
                     if (trk.getOutChannel() != null) {
                         if (rcsTrackNumber != trk.getNumber()) {
-                            msgBuf[0] = (byte) ((int) MIDIEventType.NoteOff.v + trk.getOutChannel());
+                            msgBuf[0] = (byte) (MIDIEventType.NoteOff.v + trk.getOutChannel());
                             msgBuf[1] = (byte) key;
                             msgBuf[2] = 127;
                             putMIDIMessage(trk.getOutDeviceNumber(), msgBuf, 3);
@@ -1523,24 +1525,17 @@ public class RCS {
 
         while (j < eve.getMIDIMessages()[0].length - 2) {
             Byte n = eve.getMIDIMessages()[0][j];
-            switch (n & 0xff) {
-                case 0x80:
-                    n = eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 2];
-                    break;
-                case 0x81:
-                    n = eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 1];
-                    break;
-                case 0x82:
-                    n = (byte) (int) trk.getOutChannel();
-                    break;
-                case 0x83:
+            n = switch (n & 0xff) {
+                case 0x80 -> eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 2];
+                case 0x81 -> eve.getMIDIMessages()[0][eve.getMIDIMessages()[0].length - 1];
+                case 0x82 -> (byte) (int) trk.getOutChannel();
+                case 0x83 -> {
                     chksum = 0;
-                    n = null;
-                    break;
-                case 0x84:
-                    n = (byte) (128 - (chksum % 128));
-                    break;
-            }
+                    yield null;
+                }
+                case 0x84 -> (byte) (128 - (chksum % 128));
+                default -> n;
+            };
             if (n != null) {
                 msgBuf[i] = n;
                 chksum += n & 0xff;
@@ -1597,8 +1592,8 @@ public class RCS {
             oneSyncTime = 60.0 / nowTempo / timeBase;
         } else {
             // Ritardando
-            int Tempo = (int) ((double) this.Tempo * mul);
-            double s = (double) (Tempo - this.Tempo) * 256.0 / ((256.0 - (eve.getMIDIMessages()[0][1] & 0xff)) * timeBase);
+            int Tempo = (int) (this.Tempo * mul);
+            double s = (Tempo - this.Tempo) * 256.0 / ((256.0 - (eve.getMIDIMessages()[0][1] & 0xff)) * timeBase);
             RelativeTempoChangeTargetTempo = Tempo;
             RelativeTempoChangeTickSlice = (nowTempo < Tempo) ? s : -s;
             RelativeTempoChangeSW = true;
@@ -1793,27 +1788,20 @@ public class RCS {
 
         while (j < userExclusives.get(num).exclusive.length) {
             Byte n = userExclusives.get(num).exclusive[j];
-            switch (n & 0xff) {
-                case 0x80:
-                    n = eve.getMIDIMessages()[0][0];
-                    break;
-                case 0x81:
-                    n = eve.getMIDIMessages()[0][1];
-                    break;
-                case 0x82:
-                    n = (byte) (int) trk.getOutChannel();
-                    break;
-                case 0x83:
+            n = switch (n & 0xff) {
+                case 0x80 -> eve.getMIDIMessages()[0][0];
+                case 0x81 -> eve.getMIDIMessages()[0][1];
+                case 0x82 -> (byte) (int) trk.getOutChannel();
+                case 0x83 -> {
                     chksum = 0;
-                    n = null;
-                    break;
-                case 0x84:
-                    n = (byte) ((128 - (chksum % 128)) & 0x7f);
-                    break;
-            }
+                    yield null;
+                }
+                case 0x84 -> (byte) ((128 - (chksum % 128)) & 0x7f);
+                default -> n;
+            };
             if (n != null) {
-                msgBuf[i] = (byte) n;
-                chksum += (byte) n;
+                msgBuf[i] = n;
+                chksum += n;
                 i++;
             }
             j++;
@@ -1843,23 +1831,22 @@ public class RCS {
 
         ret.add((byte) 0xf0);
 
-        for (int i = 0; i < buf.length; i++) {
-            Byte n = buf[i];
-            switch (n & 0xff) {
+        for (Byte b : buf) {
+            Byte n = b;
+            n = switch (n & 0xff) {
                 //case 0x82:
                 //  n = (byte)trk.OutChannel;
                 //break;
-                case 0x83:
+                case 0x83 -> {
                     chksum = 0;
-                    n = null;
-                    break;
-                case 0x84:
-                    n = (byte) ((128 - (chksum % 128)) & 0x7f);
-                    break;
-            }
+                    yield null;
+                }
+                case 0x84 -> (byte) ((128 - (chksum % 128)) & 0x7f);
+                default -> n;
+            };
             if (n != null) {
-                ret.add((byte) n);
-                chksum += (byte) n;
+                ret.add(n);
+                chksum += n;
             }
         }
 
@@ -1912,7 +1899,7 @@ public class RCS {
         }
 
         // Master Pan
-        DBuf.add(new CtlSysex(1, getSysEx((byte) 0x41, (byte) 0x10, (byte) (byte) 0x42, (byte) 0x12, (byte) 0x83, (byte) 0x40, (byte) 0x00, (byte) 0x06, buf[0x26], (byte) 0x84)));
+        DBuf.add(new CtlSysex(1, getSysEx((byte) 0x41, (byte) 0x10, (byte) 0x42, (byte) 0x12, (byte) 0x83, (byte) 0x40, (byte) 0x00, (byte) 0x06, buf[0x26], (byte) 0x84)));
         // Master Balance
         DBuf.add(new CtlSysex(1, getSysEx((byte) 0x7f, (byte) 0x7f, (byte) 0x04, (byte) 0x02, (byte) ((buf[0x26] * 0x80) & 0x7F), (byte) (((buf[0x26] * 0x80) >> 7) & 0x7f))));
 

@@ -134,7 +134,7 @@ public class ZeroRAMBank implements IBank {
     // not emulated
     private static final boolean tapeSense = false;
 
-    public IPLA pla;
+    public final IPLA pla;
 
     // C64 RAM area
     private final SystemRAMBank ramBank;

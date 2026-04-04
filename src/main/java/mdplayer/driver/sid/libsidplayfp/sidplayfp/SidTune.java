@@ -47,7 +47,7 @@ public class SidTune {
     private SidTune(SidTune s) {
     }
 
-    private SidTune opeEquel(SidTune s) {
+    private static SidTune opeEquel(SidTune s) {
         return null;
     }
 

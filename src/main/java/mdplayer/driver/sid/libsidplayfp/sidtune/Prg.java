@@ -33,7 +33,7 @@ public class Prg extends SidTuneBase {
     Prg(Prg p) {
     }
 
-    private Prg opeEquel(Prg p) {
+    private static Prg opeEquel(Prg p) {
         return null;
     }
 

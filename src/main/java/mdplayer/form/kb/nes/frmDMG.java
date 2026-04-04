@@ -200,7 +200,7 @@ public class frmDMG extends frmBase {
             newParam.channels[i].note = -1;
             if (newParam.channels[i].volumeL != 0 || newParam.channels[i].volumeR != 0) {
                 ftone = 4194304.0f / (4 * 2 * (2048.0f - (float) newParam.channels[i].freq));
-                newParam.channels[i].note = Math.max(Math.min(searchSSGNote(ftone), 8 * 12), 0);
+                newParam.channels[i].note = Math.clamp(searchSSGNote(ftone), 0, 8 * 12);
             }
         }
     }
@@ -324,7 +324,7 @@ public class frmDMG extends frmBase {
         }
     };
 
-    private int searchSSGNote(float freq) {
+    private static int searchSSGNote(float freq) {
         float m = Float.MAX_VALUE;
         int n = 0;
         for (int i = 0; i < 12 * 9; i++) {

@@ -135,7 +135,7 @@ public class Vgm {
     public boolean uPD7759DualChipFlag;
     public boolean pokeyDualChipFlag;
 
-    public DacControl dacControl;
+    public final DacControl dacControl;
     public boolean isPcmRAMWrite = false;
     public boolean useChipYM2612Ch6 = false;
     public int es5503Ch = 2;
@@ -1485,28 +1485,24 @@ public class Vgm {
                     outBit += bitReadVal;
                 }
 
-                switch (cmpSubType) {
-                case 0x00:  // Copy
-                    outVal = inVal + addVal;
-                    break;
-                case 0x01:  // Shift Left
-                    outVal = (inVal << outShift) + addVal;
-                    break;
-                case 0x02:  // Table
-                    switch (valSize) {
-                    case 0x01:
-                        outVal = pcmTbl.entries[ent1B + inVal] & 0xff;
-                        break;
-                    case 0x02:
+                outVal = switch (cmpSubType) {
+                    case 0x00 ->  // Copy
+                            inVal + addVal;
+                    case 0x01 ->  // Shift Left
+                            (inVal << outShift) + addVal;
+                    case 0x02 ->  // Table
+                        //#endif
+                            switch (valSize) {
+                                case 0x01 -> pcmTbl.entries[ent1B + inVal] & 0xff;
+                                case 0x02 ->
 //#ifndef BIG_ENDIAN
 //                        outVal = ent2B[inVal];
 //#else
-                        outVal = (pcmTbl.entries[ent2B + inVal * 2] & 0xff) + (pcmTbl.entries[ent2B + inVal * 2 + 1] & 0xff) * 0x100;
-//#endif
-                        break;
-                    }
-                    break;
-                }
+                                        (pcmTbl.entries[ent2B + inVal * 2] & 0xff) + (pcmTbl.entries[ent2B + inVal * 2 + 1] & 0xff) * 0x100;
+                                default -> outVal;
+                            };
+                    default -> outVal;
+                };
 
 //#ifndef BIG_ENDIAN
 //                //memcpy(outPos, &outVal, valSize);
@@ -2267,7 +2263,7 @@ logger.log(Level.INFO, "usedChips: " + getUsedChips.get());
 
     static class VgmPcmBank {
         public int bankCount;
-        public List<VgmPcmData> bank = new ArrayList<>();
+        public final List<VgmPcmData> bank = new ArrayList<>();
         public int dataSize;
         public byte[] data;
         public int dataPos;

@@ -196,8 +196,8 @@ public class frmC140 extends frmBase {
 
                 newParam.channels[ch].note = searchC140Note(frequency) + 1;
                 if (c140KeyOn[ch]) {
-                    newParam.channels[ch].volumeL = Math.min(Math.max((int) (l / 13.4) * 3, 0), 19);
-                    newParam.channels[ch].volumeR = Math.min(Math.max((int) (r / 13.4) * 3, 0), 19);
+                    newParam.channels[ch].volumeL = Math.clamp((int) (l / 13.4) * 3, 0, 19);
+                    newParam.channels[ch].volumeR = Math.clamp((int) (r / 13.4) * 3, 0, 19);
                 } else {
                     newParam.channels[ch].volumeL -= newParam.channels[ch].volumeL > 0 ? 1 : 0;
                     newParam.channels[ch].volumeR -= newParam.channels[ch].volumeR > 0 ? 1 : 0;

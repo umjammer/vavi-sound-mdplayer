@@ -80,7 +80,7 @@ public class SidDatabase {
         return end[0];
     }
 
-    private long strtol(String src, String[] des, int p) {
+    private static long strtol(String src, String[] des, int p) {
         long ret = 0, n;
         int i;
         for (i = 0; i < src.length(); i++) {

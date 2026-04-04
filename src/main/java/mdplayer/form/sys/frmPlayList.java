@@ -344,7 +344,7 @@ public class frmPlayList extends JFrame {
 
                 randomStack.add(new Tuple<>(fn, zfn));
                 while (randomStack.size() > 1000)
-                    randomStack.remove(0);
+                    randomStack.removeFirst();
             }
 
             pi = rand.nextInt(dgvList.getRowCount());
@@ -405,9 +405,9 @@ public class frmPlayList extends JFrame {
 loopEx:
             if (!randomStack.isEmpty()) {
                 while (true) {
-                    String hfn = randomStack.get(randomStack.size() - 1).getItem1();
-                    String hzfn = randomStack.get(randomStack.size() - 1).getItem2();
-                    randomStack.remove(randomStack.size() - 1);
+                    String hfn = randomStack.getLast().getItem1();
+                    String hzfn = randomStack.getLast().getItem2();
+                    randomStack.removeLast();
 
                     for (; pi < dgvList.getRowCount(); pi++) {
                         fn = (String) dgvList.getValueAt(pi, cols.clmFileName.ordinal());
@@ -921,7 +921,7 @@ loopEx:
         }
     };
 
-    private void getTrueFileNameList(List<String> res, List<String> files) {
+    private static void getTrueFileNameList(List<String> res, List<String> files) {
         for (String f : files) {
             if (File.exists(f)) {
                 if (!res.contains(f)) {
@@ -967,7 +967,7 @@ loopEx:
 
         Audio.getInstance().getPlayingFileName(fn, arcFn);
 
-        if (fn.equals(ofn) && arcFn.equals(oafn)) return;
+        if (fn[0].equals(ofn) && arcFn[0].equals(oafn)) return;
         ofn = fn[0];
         oafn = arcFn[0];
 

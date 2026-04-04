@@ -195,7 +195,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private double ntscStep = 0.0;
     private double ntscCounter = 0.0;
     private boolean nextFlg = false;
-    public Tuple<String, byte[]> extendFile = null;
+    public final Tuple<String, byte[]> extendFile = null;
     private final int[] pcmKeyon = {
             -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1,
@@ -1978,7 +1978,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
                 drumnote_fnum(); // set Fnum for drums
                 b = (byte) bb;
                 c = (byte) cb;
-                a = (byte) af;
+                a = af;
             }
             b--;
         } while (b > 0);
@@ -3534,10 +3534,10 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     private void moon_check_rom() {
         a = 0;
 
-        MDB_BASE[MDB_ADRHI] = (byte) a;
-        MDB_BASE[MDB_ADRLO] = (byte) a;
+        MDB_BASE[MDB_ADRHI] = a;
+        MDB_BASE[MDB_ADRLO] = a;
         a = 0x12;
-        MDB_BASE[MDB_ADRMI] = (byte) a;
+        MDB_BASE[MDB_ADRMI] = a;
 
         // a<- (001200h)
         moon_set_sram_adrs();
@@ -3568,7 +3568,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
     }
 
     // check SRAM
-    private boolean moon_check_sram() {
+    private static boolean moon_check_sram() {
         // skip
         return false;
         // $77-> ($200000)
@@ -3640,7 +3640,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         // instanceof PCM packed song file?
         a = (byte) (readMemory(MDR_PACKED) & 0xff);
         // Output status for debug
-        MDB_BASE[MDB_LDFLAG] = (byte) a;
+        MDB_BASE[MDB_LDFLAG] = a;
 
         if (a == 0) return;
 
@@ -3799,7 +3799,7 @@ logger.log(Level.DEBUG, ex.getMessage(), ex);
         moon_wave_out();
     }
 
-    private byte inport(int adr) {
+    private static byte inport(int adr) {
         return 0;
     }
 

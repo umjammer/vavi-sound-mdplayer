@@ -107,5 +107,5 @@ public class Sid {
         blockBuffer = null;
     }
 
-    VisWaveBuffer visWB = new VisWaveBuffer();
+    final VisWaveBuffer visWB = new VisWaveBuffer();
 }

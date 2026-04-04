@@ -17,7 +17,6 @@ import java.util.Map;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 
-import mdplayer.format.FileFormat;
 import mdplayer.plugin.Plugin;
 import vavi.io.OutputEngine;
 import vavi.io.OutputEngineInputStream;

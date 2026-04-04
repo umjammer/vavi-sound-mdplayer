@@ -192,7 +192,7 @@ logger.log(Level.DEBUG, "type: " + mtype);
         MDL
     }
 
-    private MoonDriverFileType checkFileType(byte[] buf) {
+    private static MoonDriverFileType checkFileType(byte[] buf) {
         if (buf == null || buf.length < 4) {
             return MoonDriverFileType.unknown;
         }

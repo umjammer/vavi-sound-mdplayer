@@ -200,7 +200,7 @@ public class M_Hes {
             _this.hesvdcStatus = 1;
         }
 
-        private void timerEvent(Event _event, int curid, HESHES _this) {
+        private static void timerEvent(Event _event, int curid, HESHES _this) {
             if (_this.hestimStart != 0 && _this.hestimCounter-- == 0) {
                 _this.hestimCounter = _this.hestimReload;
                 _this.ctx.iRequest |= Km6280.K6280Context.IRQ.TIMER.v;
@@ -314,17 +314,12 @@ public class M_Hes {
                 if (a >= 0 && a < 0x10) return this.playerRom[a] & 0xff; // TODO vavi
                 return 0xff;
             case 6: // CDROM
-                switch (a & 15) {
-                case 0x0a:
-                case 0x0b:
-                case 0x0c:
-                case 0x0d:
-                case 0x0e: // for debug
-                case 0x0f: // for debug
-                    return this.hespcm.read.apply(a & 0xf);
-                }
-                return 0xff;
-            default:
+                return switch (a & 15) { // for debug
+                    case 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f -> // for debug
+                            this.hespcm.read.apply(a & 0xf);
+                    default -> 0xff;
+                };
+                default:
             case 1: // VCE
             case 4: // PAD
                 return 0xff;
@@ -433,12 +428,12 @@ public class M_Hes {
         }
 
         @Deprecated
-        private int getWordLE(byte[] p) {
+        private static int getWordLE(byte[] p) {
             return ByteUtil.readLeShort(p);
         }
 
         @Deprecated
-        private int getDwordLE(byte[] p) {
+        private static int getDwordLE(byte[] p) {
             return ByteUtil.readLeInt(p);
         }
 
@@ -542,7 +537,7 @@ public class M_Hes {
             this.vsync = this.kmEvent.alloc(this.kme);
             this.timer = this.kmEvent.alloc(this.kme);
             this.kmEvent.setEvent(this.kme, this.vsync, this::vsyncEvent, this);
-            this.kmEvent.setEvent(this.kme, this.timer, this::timerEvent, this);
+            this.kmEvent.setEvent(this.kme, this.timer, HESHES::timerEvent, this);
 
             this.bp = this.playerRomAddr + 3;
             for (i = 0; i < 8; i++) this.mpr[i] = this.firstMpr[i];
@@ -719,12 +714,13 @@ public class M_Hes {
 
     private int dump_MEM_PCE_bf(int menu, byte[] mem) {
         int i;
-        switch (menu) {
-        case 1: // Memory
-            for (i = 0; i < 0x10000; i++)
-                mem[i] = (byte) memview_memread_hes(i);
-            return i;
-        }
-        return 0xffff_fffe;// (-2);
+        return switch (menu) {
+            case 1 -> {
+                for (i = 0; i < 0x10000; i++)
+                    mem[i] = (byte) memview_memread_hes(i);
+                yield i;
+            }
+            default -> 0xffff_fffe;
+        };
     }
 }

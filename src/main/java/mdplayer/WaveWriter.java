@@ -10,7 +10,6 @@ import dotnet4j.io.FileAccess;
 import dotnet4j.io.FileMode;
 import dotnet4j.io.FileStream;
 import dotnet4j.io.Path;
-import dotnet4j.io.SeekOrigin;
 import vavi.util.ByteUtil;
 
 // use {@link vavi.sound.sampled.misc.WaveOutSourceDataLine}

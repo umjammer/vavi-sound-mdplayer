@@ -3,7 +3,6 @@ package mdplayer.format;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import dotnet4j.io.File;
@@ -15,7 +14,6 @@ import mdplayer.driver.sid.SidMdDriver2;
 import mdplayer.plugin.Plugin;
 import mdplayer.plugin.SIDPlugin;
 import mdplayer.properties.Resources;
-import vavi.sound.SoundUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -100,7 +98,7 @@ public class SIDFileFormat extends BaseFileFormat {
         if (mc.songNo != -1) {
             PlayList.Music music;
             if (!musics.isEmpty()) {
-                music = musics.get(0);
+                music = musics.getFirst();
                 music.songNo = mc.songNo;
                 music.title = mc.title;
                 music.titleJ = mc.titleJ;

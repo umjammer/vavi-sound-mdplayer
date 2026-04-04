@@ -29,7 +29,7 @@ public class OpeManager {
             if (reqToAudio.isEmpty())
                 return null;
 
-            Request req = reqToAudio.get(reqToAudio.size() - 1);
+            Request req = reqToAudio.getLast();
             reqToAudio.remove(req); // .clear();
 
             return req;

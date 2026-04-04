@@ -37,7 +37,7 @@ public class P00 extends SidTuneBase {
     private P00(P00 p) {
     }
 
-    private P00 opeEquel(P00 p) {
+    private static P00 opeEquel(P00 p) {
         return null;
     }
 

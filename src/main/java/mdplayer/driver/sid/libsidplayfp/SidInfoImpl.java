@@ -37,7 +37,7 @@ public class SidInfoImpl extends SidInfo {
 
     public String version;
 
-    public List<String> credits = new ArrayList<>();
+    public final List<String> credits = new ArrayList<>();
 
     public String speedString;
 
@@ -59,7 +59,7 @@ public class SidInfoImpl extends SidInfo {
     private SidInfoImpl(SidInfoImpl s) {
     }
 
-    private SidInfoImpl opeEquel(SidInfoImpl s) {
+    private static SidInfoImpl opeEquel(SidInfoImpl s) {
         return null;
     }
 

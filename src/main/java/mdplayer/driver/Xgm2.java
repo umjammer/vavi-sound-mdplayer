@@ -64,7 +64,7 @@ public class Xgm2 {
             {new byte[4], new byte[4], new byte[4]},
             {new byte[4], new byte[4], new byte[4]}
     };
-    private byte[][][] fmSLRR = {
+    private final byte[][][] fmSLRR = {
             {new byte[4], new byte[4], new byte[4]},
             {new byte[4], new byte[4], new byte[4]}
     };
@@ -284,7 +284,7 @@ public class Xgm2 {
                 xgm2pcm[i].data = 0;
             }
         }
-        o = (short) Math.min(Math.max(o, Byte.MIN_VALUE + 1), Byte.MAX_VALUE);
+        o = (short) Math.clamp(o, Byte.MIN_VALUE + 1, Byte.MAX_VALUE);
         o += 0x80;
 
         ym2612Write.accept(0, 0x2a, o);

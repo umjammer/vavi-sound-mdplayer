@@ -159,7 +159,7 @@ public class PSidDrv {
      * - data (single byte) or quantity represented by uncompressed count
      * all counts and offsets are 1 less than they should be
      */
-    private void copyPowerOnPattern(SidMemory mem) {
+    private static void copyPowerOnPattern(SidMemory mem) {
         int addr = 0;
         for (int i = 0; i < POWER_ON.length; ) {
             int off = POWER_ON[i++] & 0xff;

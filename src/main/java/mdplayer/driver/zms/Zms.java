@@ -60,11 +60,11 @@ public class Zms {
     private List<String> envZPDs = new ArrayList<>();
     public int version = 0;
     private FMTimer timerOPM;
-    public Pcm8St[] pcm8St = {
+    public final Pcm8St[] pcm8St = {
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St()
     };
-    public MPCMSt[] mpcmSt = {
+    public final MPCMSt[] mpcmSt = {
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
             new MPCMSt(), new MPCMSt(), new MPCMSt(), new MPCMSt(),
@@ -332,11 +332,11 @@ public class Zms {
             int fileSize = zmd.length;
             int filePtr = nise68.hmn.memMng.malloc(fileSize);
             for (int i = 0; i < zmd.length; i++) {
-                nise68.mem.pokeB((int) (filePtr + i), zmd[i]);
+                nise68.mem.pokeB(filePtr + i, zmd[i]);
             }
 
             nise68.reg.setDl(1, 0x11); // play_cnv_data
-            nise68.reg.setDl(2, (int) (zmd.length - 7));
+            nise68.reg.setDl(2, zmd.length - 7);
             nise68.reg.setAl(1, filePtr + 7);
             nise68.trap(trp); // , true, true, true);
 
@@ -392,7 +392,7 @@ public class Zms {
             int fileSize = zmd.length;
             int filePtr = nise68.hmn.memMng.malloc(fileSize);
             for (int i = 0; i < zmd.length; i++) {
-                nise68.mem.pokeB((int) (filePtr + i), zmd[i]);
+                nise68.mem.pokeB(filePtr + i, zmd[i]);
             }
             nise68.reg.setDl(0, 0x10); // ZM_PLAY_ZMD
             nise68.reg.setDl(2, fileSize);

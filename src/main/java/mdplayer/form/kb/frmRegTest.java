@@ -43,11 +43,7 @@ import mdplayer.chips.YmF262Chip;
 import mdplayer.chips.YmF278BChip;
 import mdplayer.chips.YmZ280BChip;
 import mdplayer.driver.sid.SidDriver;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidConfig;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidInfo;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo;
 import mdplayer.driver.sid.libsidplayfp.sidplayfp.SidTuneInfo.Model;
-import mdplayer.driver.sid.libsidplayfp.sidplayfp.playSidFp;
 import mdplayer.form.sys.frmMain;
 import mdplayer.properties.Resources;
 
