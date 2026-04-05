@@ -8,20 +8,8 @@
 
 package mdplayer.driver.mxdrv;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.IntFunction;
-
-import dotnet4j.util.compat.Tuple;
-import vavi.util.ByteUtil;
-
-import static java.lang.System.getLogger;
 
 
 /**
@@ -44,12 +32,8 @@ import static java.lang.System.getLogger;
  */
 public class MXDRV {
 
-    private static final Logger logger = getLogger(MXDRV.class.getName());
-
     /** abstraction for pcm8 mxd special chip implementation */
     interface MdxPcmInterface {
-        void writePcm(byte[] pcm, int offset, int length);
-        int getPcm(short[] buffer, int offset, int length, Runnable terminator);
         int getPcm(short[] buffer, int offset, int length);
         int start(int sampleRate, int opmFlag, int adpcmFlag, int betw, int pcmBuf, int late, double rev);
         int startPcm(int sampleRate, int opmFlag, int adpcmFlag, int pcmBuf);
@@ -79,7 +63,7 @@ public class MXDRV {
         public boolean Keyon = false;
     }
 
-    final Pcm8St[] pcm8St = {
+    private final Pcm8St[] pcm8St = {
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St(),
             new Pcm8St(), new Pcm8St(), new Pcm8St(), new Pcm8St()
     };
@@ -218,7 +202,7 @@ public class MXDRV {
         }
     }
 
-    private void MXDRV_Call(int a) {
+    public void MXDRV_Call(int a) {
         X68Reg reg = new X68Reg();
 
         reg.d0 = a;
@@ -226,7 +210,7 @@ public class MXDRV {
         MXDRV_(reg);
     }
 
-    private void MXDRV_Call_2(int a, int b) {
+    public void MXDRV_Call_2(int a, int b) {
         X68Reg reg = new X68Reg();
 
         reg.d0 = a;
@@ -234,210 +218,42 @@ public class MXDRV {
         MXDRV_(reg);
     }
 
-    private void MXDRV_Replay() {
+    public void MXDRV_Replay() {
         MXDRV_Call(0x0f);
     }
 
-    private void MXDRV_Stop() {
+    public void MXDRV_Stop() {
         MXDRV_Call(0x05);
     }
 
-    private void MXDRV_Pause() {
+    public void MXDRV_Pause() {
         MXDRV_Call(0x06);
     }
 
-    private void MXDRV_Cont() {
+    public void MXDRV_Cont() {
         MXDRV_Call(0x07);
     }
 
-    private void MXDRV_Fadeout() {
+    public void MXDRV_Fadeout() {
         MXDRV_Call_2(0x0c, 19);
     }
 
-    private void MXDRV_Fadeout2(int a) {
+    public void MXDRV_Fadeout2(int a) {
         MXDRV_Call_2(0x0c, a);
-    }
-
-    void init(byte[] vgmBuf, boolean isVirtualModel, int sampleRate) {
-
-        byte[][] mdx = new byte[1][];
-        int[] mdxSize = new int[1];
-        int mdxPtr;
-        byte[][] pdx = new byte[1][];
-        int[] pdxSize = new int[1];
-        int pdxPtr;
-        String[] pdxFileName = new String[1];
-        makeMdxBuf(vgmBuf, mdx, mdxSize, pdxFileName);
-        makePdxBuf(pdxFileName[0], pdx, pdxSize);
-        if ((pdxFileName[0] != null && !pdxFileName[0].isEmpty()) && pdx[0] == null) {
-            logger.log(Level.WARNING, "pdxFileName: %s, pdx: %s".formatted(pdxFileName[0], pdx[0]));
-            throw new IllegalStateException("Failed to load PCM file [%s].".formatted(pdxFileName[0]));
-        }
-
-        int ret;
-        if (isVirtualModel) {
-            ret = MXDRV_Start(sampleRate, 0, 0, 0, mdxSize[0], pdxSize[0], 0, -1, 1);
-        } else {
-            ret = MXDRV_Start(sampleRate, 0, 0, 0, mdxSize[0], pdxSize[0], 0, -1, -1);
-        }
-logger.log(Level.TRACE, "MXDRV_Start: " + ret);
-        int memind = mm.mm.length;
-        mdxPtr = memind;
-        memind += mdxSize[0];
-        pdxPtr = memind;
-        memind += pdxSize[0];
-        mm.realloc(memind);
-        for (int i = 0; i < mdxSize[0]; i++) mm.write(mdxPtr + i, mdx[0][i]);
-        for (int i = 0; i < pdxSize[0]; i++) mm.write(pdxPtr + i, pdx[0][i]);
-
-        mdxPCM.writePcm(mm.mm, 0, mm.mm.length);
-        pcm8pp.writePcm(mm.mm, 0, mm.mm.length);
-
-        int playtime = MXDRV_MeasurePlayTime(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr, 1, Depend.TRUE);
-//logger.log(Level.TRACE, "(%d:%02d) %d".formatted(playtime / 1000 / 60, playtime / 1000 % 60, ""));
-        counter.accept((long) playtime * sampleRate / 1000);
-        terminatePlay = false;
-        MXDRV_Play(mdx[0], mdxSize[0], mdxPtr, pdx[0], pdxSize[0], pdxPtr);
-    }
-
-    public int render(short[] buffer, int offset, int sampleCount) {
-        int ret = mdxPCM.getPcm(buffer, offset, sampleCount, this::MXDRV_MeasurePlayTime_OPMINT);
-
-        //logger.log(Level.TRACE, "0:%08x".formatted(mm.readint(MXWORK_CHBUF_FM[8] + MXWORK_CH.S0012)));
-        //logger.log(Level.TRACE, "1:%04x".formatted(mm.readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0012) >> 6));
-        //logger.log(Level.TRACE, "1a:%04x".formatted(mm.readshort(MXWORK_CHBUF_PCM[0] + MXWORK_CH.S0014) >> 6));
-        //logger.log(Level.TRACE, "2:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[1] + MXWORK_CH.S0004)));
-        //logger.log(Level.TRACE, "3:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[2] + MXWORK_CH.S0004)));
-        //logger.log(Level.TRACE, "4:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[3] + MXWORK_CH.S0004)));
-        //logger.log(Level.TRACE, "5:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[4] + MXWORK_CH.S0004)));
-        //logger.log(Level.TRACE, "6:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[5] + MXWORK_CH.S0004)));
-        //logger.log(Level.TRACE, "7:%d".formatted(mm.readint(MXWORK_CHBUF_PCM[6] + MXWORK_CH.S0004)));
-
-        return ret;
     }
 
     public MXDRV() {
         ini();
     }
 
-    /**
-     * @param mdx OUT
-     * @param mdxSize OUT
-     * @param pdxFileName OUT
-     */
-    void makeMdxBuf(byte[] buf, byte[][] mdx, int[] mdxSize, String[] pdxFileName) {
-        // Skip title
-        int p = 8;
-        int c;
-        mdxSize[0] = buf.length;
-        mdx[0] = new byte[buf.length + 8];
-        System.arraycopy(buf, 0, mdx[0], 8, mdxSize[0]);
-
-        while (true) {
-            c = mdx[0][p++] & 0xff;
-            if (c == 0x0d) break;
-            if (c == 0x0a) break;
-            if (c < 0x20) {
-                if (c != 0x1b) throw new IllegalArgumentException("illegal char: " + Integer.toHexString(c));
-            }
-        }
-        p--;
-        mdx[0][p++] = 0x00;
-        if ((p & 0x01) != 0) {
-            mdx[0][p++] = 0x00;
-        }
-        int p2 = p;
-        if (c != 0x0d) {
-            while (mdx[0][p2++] != 0x0d) ;
-        }
-
-        // Load PDX
-        byte havePdx = (byte) 0xff;
-        List<Byte> lstPdxFileName;
-        while (mdx[0][p2++] != 0x1a) ;
-        if (mdx[0][p2] != 0) {
-            havePdx = 0x00;
-            lstPdxFileName = new ArrayList<>();
-            while (mdx[0][p2] != 0x00) {
-                lstPdxFileName.add(mdx[0][p2]);
-                p2++;
-            }
-            pdxFileName[0] = new String(ByteUtil.toByteArray(lstPdxFileName), charset);
-        }
-        p2++;
-
-        // Process MDX so that it can be passed to MXDRV
-        int mdxBodyPtr = p;
-        while (p2 < mdx[0].length) {
-            mdx[0][p++] = mdx[0][p2++];
-        }
-        mdxSize[0] = p;
-
-        mdx[0][0] = 0x00;
-        mdx[0][1] = 0x00;
-        mdx[0][2] = havePdx;
-        mdx[0][3] = havePdx;
-        mdx[0][4] = (byte) ((mdxBodyPtr & 0xffff) >>> 8);
-        mdx[0][5] = (byte) (mdxBodyPtr & 0xff);
-        mdx[0][6] = 0x00;
-        mdx[0][7] = 0x08;
-    }
-
-    /**
-     * @param pdx OUT
-     * @param pdxSize OUT
-     */
-    private void makePdxBuf(String pdxFileName, byte[][] pdx, int[] pdxSize) {
-        if (extendFile == null) {
-logger.log(Level.DEBUG, "extendFile is null");
-            return;
-        }
-
-        pdx[0] = new byte[extendFile.getItem2().length + pdxFileName.length() + 8 + 1];
-        System.arraycopy(pdxFileName.getBytes(StandardCharsets.US_ASCII), 0, pdx[0], 8, pdxFileName.length());
-        System.arraycopy(extendFile.getItem2(), 0, pdx[0], 8 + pdxFileName.length() + 1, extendFile.getItem2().length);
-        pdx[0][0] = 0x00;
-        pdx[0][1] = 0x00;
-        pdx[0][2] = 0x00;
-        pdx[0][3] = 0x00;
-        pdx[0][4] = (byte) (((8 + pdxFileName.length() + 2) & 0xffff_fffe) >>> 8);
-        pdx[0][5] = (byte) ((8 + pdxFileName.length() + 2) & 0xffff_fffe);
-        pdx[0][4] = (byte) (((8 + pdxFileName.length() + 1) & 0xffff) >>> 8);
-        pdx[0][5] = (byte) ((8 + pdxFileName.length() + 1) & 0xff);
-        pdx[0][6] = (byte) (((pdxFileName.length() + 1) & 0xff00) >>> 8);
-        pdx[0][7] = (byte) ((pdxFileName.length() + 1) & 0xff);
-        pdxSize[0] = pdx[0].length;
-    }
-
-    public static void getPDXFileName(byte[] buf, String[] pdx, Charset charset) {
-        int p = 0;
-        int c;
-        while (true) {
-            c = buf[p++] & 0xff;
-            if (c == 0x0d || c == 0x0a) break;
-            if (c < 0x20 && c != 0x1b) throw new IllegalArgumentException("illegal char: " + Integer.toHexString(c));
-        }
-        if ((p & 0x01) != 0) p++;
-        if (c != 0x0d) while (buf[p++] != 0x0d) ;
-        while (buf[p++] != 0x1a) ;
-        if (buf[p] == 0) return;
-        List<Byte> lstPdxFileName = new ArrayList<>();
-        while (buf[p] != 0x00) lstPdxFileName.add(buf[p++]);
-        pdx[0] = new String(ByteUtil.toByteArray(lstPdxFileName), charset);
-    }
-
-    Charset charset;
-
     // private double deltaCnt = 0;
     private XMemory mm = null;
-    public Tuple<String, byte[]> extendFile = null;
     private int timerA = 0, timerB = 0;
 
     MdxPcmInterface mdxPCM = null;
     Pcm8Interface pcm8pp;
 
     BiConsumer<Integer, Integer> ym2151Write;
-    Consumer<Long> counter;
     IntFunction<Boolean> isFromDF;
     IntFunction<Boolean> isFromPTM;
 
@@ -531,11 +347,15 @@ logger.log(Level.DEBUG, "extendFile is null");
     };
 
     private int L0019b2;
-    Runnable[] L001252;
-    Runnable[] jumpTable;
-    Runnable[] L0016aa;
-    Runnable[] L0010b4_Table;
-    Runnable[] L001116Table;
+    private Runnable[] L001252;
+    private Runnable[] jumpTable;
+    private Runnable[] L0016aa;
+    private Runnable[] L0010b4_Table;
+    private Runnable[] L001116Table;
+
+    public XMemory getMemory() {
+        return mm;
+    }
 
     private void ini() {
 
@@ -637,7 +457,7 @@ logger.log(Level.DEBUG, "extendFile is null");
     }
 
     /** @return 0 ok */
-    private int MXDRV_Start(
+    public int MXDRV_Start(
             int samprate,
             int betw,
             int pcmbuf,
@@ -686,10 +506,10 @@ logger.log(Level.DEBUG, "extendFile is null");
         if (opmmode > 1) opmmode = 0;
         if (opmmode < 0) opmmode = 0;
 
-        if (betw != 0) {
+        if (betw != 0) { // always 0
             ret = mdxPCM.start(samprate, opmmode + 1, 1, betw, pcmbuf, late, 1.0);
         } else {
-            ret = mdxPCM.startPcm(samprate, opmflag, adpcmflag, pcmbuf);
+            ret = mdxPCM.startPcm(samprate, opmflag, adpcmflag, pcmbuf); // this is done at mds.start
         }
         if (ret != 0) {
             if (isFromPTM.apply(ret)) {
@@ -706,7 +526,7 @@ logger.log(Level.DEBUG, "extendFile is null");
         return 0;
     }
 
-    private void MXDRV_End() {
+    public void MXDRV_End() {
         mdxPCM.opmInt(null);
         MXCALLBACK_OPMINT = null;
         OPMINT_FUNC = null;
@@ -716,15 +536,15 @@ logger.log(Level.DEBUG, "extendFile is null");
         mdxPCM.free();
     }
 
-    private int MXDRV_GetPCM(short[] buf, int len) {
+    public int MXDRV_GetPCM(short[] buf, int len) {
         return mdxPCM.getPcm(buf, 0, len);
     }
 
-    private int MXDRV_TotalVolume(int vol) {
+    public int MXDRV_TotalVolume(int vol) {
         return mdxPCM.totalVolume(vol);
     }
 
-    private void MXDRV_Play(
+    public void MXDRV_Play(
             byte[] mdx,
             int mdxsize,
             int mdxPtr,
@@ -753,26 +573,17 @@ logger.log(Level.DEBUG, "extendFile is null");
         MXDRV_(reg);
     }
 
-    private Object MXDRV_GetWork(int i) {
-        switch (MXDRV_WORK.values()[i]) {
-        case FM:
-            return MXWORK_CHBUF_FM[0];
-        case PCM:
-            return MXWORK_CHBUF_PCM[0];
-        case GLOBAL:
-            return G; // MXWORK_GLOBALBUF;
-        case KEY:
-            return KEY; // MXWORK_KEYBUF;
-        case OPM:
-            return OPMBUF; // MXWORK_OPMBUF;
-        case PCM8:
-            return PCM8; // MXWORK_PCM8;
-        case CREDIT:
-            return MXWORK_CREDIT;
-        case CALLBACK_OPMINT:
-            return MXCALLBACK_OPMINT;
-        }
-        return null;
+    public Object MXDRV_GetWork(int i) {
+        return switch (MXDRV_WORK.values()[i]) {
+            case FM -> MXWORK_CHBUF_FM[0];
+            case PCM -> MXWORK_CHBUF_PCM[0];
+            case GLOBAL -> G; // MXWORK_GLOBALBUF;
+            case KEY -> KEY; // MXWORK_KEYBUF;
+            case OPM -> OPMBUF; // MXWORK_OPMBUF;
+            case PCM8 -> PCM8; // MXWORK_PCM8;
+            case CREDIT -> MXWORK_CREDIT;
+            case CALLBACK_OPMINT -> MXCALLBACK_OPMINT;
+        };
     }
 
     // 
@@ -783,14 +594,14 @@ logger.log(Level.DEBUG, "extendFile is null");
     private boolean fadeoutStart;
     private boolean reqFadeout;
 
-    private void MXDRV_MeasurePlayTime_OPMINT() {
+    public void MXDRV_MeasurePlayTime_OPMINT() {
         if ((mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) & 0xffff_ffffL) >= (mm.readInt(G + MXWORK_GLOBAL.MEASURETIMELIMIT) & 0xffff_ffffL)) {
             terminatePlay = true;
         }
         if (mm.readByte(G + MXWORK_GLOBAL.L001e13) != 0) {
             terminatePlay = true;
         }
-        if (mm.readShort(G + MXWORK_GLOBAL.L002246) == (short) 65535) {
+        if ((mm.readShort(G + MXWORK_GLOBAL.L002246) & 0xffff) == 65535) {
             terminatePlay = true;
         } else {
             loopCount = mm.readShort(G + MXWORK_GLOBAL.L002246) & 0xffff;
@@ -807,7 +618,7 @@ logger.log(Level.DEBUG, "extendFile is null");
         }
     }
 
-    private int MXDRV_MeasurePlayTime(
+    public int MXDRV_MeasurePlayTime(
             byte[] mdx,
             int mdxsize,
             int mdxPtr,
@@ -858,11 +669,11 @@ logger.log(Level.DEBUG, "extendFile is null");
         measurePlayTime = false;
         mdxPCM.opmInt(this::OPMINTFUNC);
 
-        return (int) (mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) * (long) 1024 / 4000. + (1 - Math.ulp(1.0))) + 2000;
+        return (int) (((mm.readInt(G + MXWORK_GLOBAL.PLAYTIME) & 0xffff_ffffL) * 1024 + 3999) / 4000) + 2000;
     }
 
     // 
-    private void MXDRV_PlayAt(
+    public void MXDRV_PlayAt(
             int playat,
             int loop,
             int fadeout
@@ -904,7 +715,6 @@ logger.log(Level.DEBUG, "extendFile is null");
     }
 
     // 
-
     private void PCM8_SUB() {
         if (measurePlayTime) return;
 
@@ -912,7 +722,7 @@ logger.log(Level.DEBUG, "extendFile is null");
 
         switch (D0 & 0xfff0) {
         case 0x0000:
-            pcm8pp.keyOn(D0 & 0xff, A1, D1 + 0x0800, D2); // Start of specified channel sound
+            pcm8pp.keyOn(D0 & 0xff, A1, D1, D2); // Start of specified channel sound
             ch = (D0 & 0xff) % 8;
             pcm8St[ch].tablePtr = A1;
             pcm8St[ch].mode = D1;
@@ -953,7 +763,7 @@ logger.log(Level.DEBUG, "extendFile is null");
         //logger.log(Level.TRACE, "%02x %02x".formatted(D1 & 0xff, D2 & 0xff));
 
         mdxPCM.opmSetIocs(D1 & 0xff, D2 & 0xff);
-        ym2151Write.accept(D1, D2);
+        ym2151Write.accept(D1 & 0xff, D2 & 0xff);
 
         if (D1 == 0x10) {
             timerA = ((D2 & 0xff) << 2) + (timerA & 0x3);
@@ -968,7 +778,7 @@ logger.log(Level.DEBUG, "extendFile is null");
 
     // 
     private void ADPCMOUT() {
-        mdxPCM.keyOnAdpcm(A1, D1 + 0x0c00, D2);
+        mdxPCM.keyOnAdpcm(A1, D1, D2);
     }
 
     private void ADPCMMOD_STOP() {
@@ -2518,7 +2328,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
     private void L000c66() {
         if ((mm.readByte(A6 + MXWORK_CH.S0016) & (1 << 0)) != 0) {
             if (mm.readByte(A6 + MXWORK_CH.S0020) == 0) {
-                if (/* signed */ (byte) mm.readByte(A6 + MXWORK_CH.S0018) >= 0) {
+                if (/* signed */ mm.readByte(A6 + MXWORK_CH.S0018) >= 0) {
                     L000d84(); // Tone Transmission
                     L000e66(); // Tone Transmission (PAN　FB CON)
                     if ((mm.readByte(A6 + MXWORK_CH.S0016) & (1 << 3)) == 0) {
@@ -2704,7 +2514,7 @@ IL_6F4: { // btw dnSpy is discontinued, why every free decompiler get trouble?
         if ((mm.readByte(A6 + MXWORK_CH.S0016) & (1 << 4)) != 0) {
             L000ff6();
         }
-        if (/* signed */ (byte) mm.readByte(A6 + MXWORK_CH.S0018) >= 0) {
+        if (/* signed */ mm.readByte(A6 + MXWORK_CH.S0018) >= 0) {
             D2 = mm.readByte(A6 + MXWORK_CH.S001d) & 0xff;
             A2 = G + MXWORK_GLOBAL.L00223c;
             mm.write(A2 + D7, (byte) D2);

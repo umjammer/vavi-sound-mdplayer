@@ -72,7 +72,7 @@ public class MDXFileFormat extends BaseFileFormat {
         byte[] buf;
 
         String[] PDX = new String[1];
-        MXDRV.getPDXFileName(srcBuf, PDX, Common.charset);
+        MxDriver.getPDXFileName(srcBuf, PDX, Common.charset);
         if (PDX[0] != null && !PDX[0].isEmpty()) {
             buf = getExtendFileAllBytes(fn, PDX[0], archive, entry);
             if (buf == null) {

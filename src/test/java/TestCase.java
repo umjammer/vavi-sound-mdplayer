@@ -94,6 +94,8 @@ public class TestCase {
 //        System.setProperty("muap.dir.udp", muapDirUdp);
 //        System.setProperty("muap.dir.sud", muapDirSud);
 
+        System.setProperty("mdplayer.variant.pcm8", "0");
+
         System.setProperty("mdplayer.volume", "%4.2f".formatted(volume));
 Debug.println("volume: " + volume + ", player.volume: " + System.getProperty("mdplayer.volume") + ", cwd: " + System.getProperty("user.dir") + ", time: " + time);
 Debug.println("mdplayer.fmp.dir: " + System.getProperty("mdplayer.fmp.dir"));

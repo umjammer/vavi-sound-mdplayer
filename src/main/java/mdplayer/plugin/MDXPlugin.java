@@ -2,6 +2,7 @@ package mdplayer.plugin;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.function.BiConsumer;
 
 import mdplayer.Chip.Unused;
 import mdplayer.Common;
@@ -14,7 +15,6 @@ import mdsound.MDSound;
 import mdsound.MDSound.Chip;
 import mdsound.instrument.Pcm8PPInst;
 import mdsound.instrument.X68kYm2151Inst;
-import mdsound.x68sound.SoundIocs;
 
 import static java.lang.System.getLogger;
 import static mdsound.MDSound.Chip.MAIN_TAG;
@@ -57,6 +57,7 @@ public class MDXPlugin extends BasePlugin<MxDriver> {
 
         int hiyorimiDeviceFlag = 3;
 
+        boolean isFirstOpmX68 = false;
         Chip chip = new MDSound.Chip();
         chip.id = 0;
         chip.instrument = chipRegister.chip(Ym2151Chip.class).instrument(0);
@@ -64,24 +65,23 @@ public class MDXPlugin extends BasePlugin<MxDriver> {
         chip.clock = 4000000;
         if (chip.instrument instanceof X68kYm2151Inst) {
             chip.option = new Object[] {1, 0, 0};
+            isFirstOpmX68 = true; // TODO this causes pcm8 off (maybe because of global is singleton)
         }
         chip.samplingRate = chip.clock / 64;
         put(Ym2151Chip.class, chip);
 
-        X68kYm2151Inst mdxPCM_V = Instrument.getInstrument(X68kYm2151Inst.class); // virtual
-        mdxPCM_V.soundIocs[0] = new SoundIocs(mdxPCM_V.chips[0]);
         chip = new MDSound.Chip();
-        chip.id = 0;
-        chip.instrument = mdxPCM_V;
+        chip.id = isFirstOpmX68 ? 1 : 0;
+        chip.instrument = Instrument.getInstrument(X68kYm2151Inst.class);
         chip.volume = setting.getBalance().getVolume(MAIN_TAG, Ym2151Chip.class);
         chip.clock = 4000000;
-        chip.samplingRate = setting.getOutputDevice().getSampleRate(); // TODO vavi
-        put(Pcm8Chip.class, chip);
+        chip.samplingRate = chip.clock / 64;
+        BiConsumer<Runnable, Boolean> clock = driverVirtual::clock;
+        chip.option = new Object[] { -1, 1, 0, clock };
+        put(Pcm8Chip.class, chip); // this is different from the original c#, using proper mds way
 
-        X68kYm2151Inst mdxPCM_R = Instrument.getInstrument(X68kYm2151Inst.class); // real
-        mdxPCM_R.soundIocs[0] = new SoundIocs(mdxPCM_R.chips[0]);
-        X68kYm2151Inst mdxPCM_P = Instrument.getInstrument(X68kYm2151Inst.class); // piano roll
-        mdxPCM_P.soundIocs[0] = new SoundIocs(mdxPCM_P.chips[0]);
+//        X68kYm2151Inst mdxPCM_R = Instrument.getInstrument(X68kYm2151Inst.class); // real
+//        X68kYm2151Inst mdxPCM_P = Instrument.getInstrument(X68kYm2151Inst.class); // piano roll
 
         if (setting.getMxDrv().pcm8Type == 0) {
             // mxdrv is special and requires PCM8
