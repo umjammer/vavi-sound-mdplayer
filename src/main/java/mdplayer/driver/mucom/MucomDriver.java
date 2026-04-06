@@ -32,11 +32,11 @@ import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
-import musicDriverInterface.GD3Tag;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
+import musicDriverInterface.MetaData.Tag;
 import musicDriverInterface.MmlDatum;
-import musicDriverInterface.Tag;
 import vavi.util.ByteUtil;
 import vavi.util.StringUtil;
 
@@ -71,23 +71,23 @@ public class MucomDriver extends BaseDriver {
     @Override
     public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
         mType = checkFileType(buf);
-        GD3Tag tag;
+        MetaData metaData;
 
         if (mType == MUCOMFileType.MUC) {
             mucomCompiler = ICompiler.factory("mucom88.compiler.Compiler");
-            tag = mucomCompiler.getGD3TagInfo(buf);
+            metaData = mucomCompiler.getGD3TagInfo(buf);
         } else {
             mucomDriver = IDriver.factory("mucom88.driver.Driver");
-            tag = mucomDriver.getGD3TagInfo(buf);
+            metaData = mucomDriver.getGD3TagInfo(buf);
         }
 
         Vgm.Gd3 g = new Vgm.Gd3();
-        g.trackName = tag.items.containsKey(Tag.Title) ? tag.items.get(Tag.Title)[0] : "";
-        g.trackNameJ = tag.items.containsKey(Tag.TitleJ) ? tag.items.get(Tag.TitleJ)[0] : "";
-        g.composer = tag.items.containsKey(Tag.Composer) ? tag.items.get(Tag.Composer)[0] : "";
-        g.composerJ = tag.items.containsKey(Tag.ComposerJ) ? tag.items.get(Tag.ComposerJ)[0] : "";
-        g.vgmBy = tag.items.containsKey(Tag.Artist) ? tag.items.get(Tag.Artist)[0] : "";
-        g.converted = tag.items.containsKey(Tag.ReleaseDate) ? tag.items.get(Tag.ReleaseDate)[0] : "";
+        g.trackName = metaData.getFirst(Tag.Title);
+        g.trackNameJ = metaData.getFirst(Tag.TitleJ);
+        g.composer = metaData.getFirst(Tag.Composer);
+        g.composerJ = metaData.getFirst(Tag.ComposerJ);
+        g.vgmBy = metaData.getFirst(Tag.Artist);
+        g.converted = metaData.getFirst(Tag.ReleaseDate);
 
         return g;
     }

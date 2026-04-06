@@ -36,11 +36,11 @@ import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
 import musicDriverInterface.CompilerInfo;
-import musicDriverInterface.GD3Tag;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.ICompiler;
 import musicDriverInterface.IDriver;
+import musicDriverInterface.MetaData.Tag;
 import musicDriverInterface.MmlDatum;
-import musicDriverInterface.Tag;
 
 import static java.lang.System.getLogger;
 
@@ -88,7 +88,7 @@ public class PmdDriver extends BaseDriver {
     }
 
     public Gd3 getGD3Info(byte[] buf, int vgmGd3, PMDFileType mtype) {
-        GD3Tag gt;
+        MetaData metaData;
 
         if (mtype == PMDFileType.MML) {
             EnvironmentE env = new EnvironmentE();
@@ -99,20 +99,20 @@ public class PmdDriver extends BaseDriver {
 
             pmdCompiler = ICompiler.factory("pmd.compiler.Compiler");
             pmdCompiler.setCompileSwitch((Function<String, Stream>) this::appendFileReaderCallback);
-            gt = pmdCompiler.getGD3TagInfo(buf);
+            metaData = pmdCompiler.getGD3TagInfo(buf);
         } else {
             pmdDriver = IDriver.factory("pmd.driver.Driver");
             // pmdDriver.SetDriverSwitch((Func<String, Stream>)appendFileReaderCallback);
-            gt = pmdDriver.getGD3TagInfo(buf);
+            metaData = pmdDriver.getGD3TagInfo(buf);
         }
 
         Vgm.Gd3 g = new Gd3();
-        g.trackName = gt.items.containsKey(Tag.Title) ? gt.items.get(Tag.Title)[0] : "";
-        g.trackNameJ = gt.items.containsKey(Tag.TitleJ) ? gt.items.get(Tag.TitleJ)[0] : "";
-        g.composer = gt.items.containsKey(Tag.Composer) ? gt.items.get(Tag.Composer)[0] : "";
-        g.composerJ = gt.items.containsKey(Tag.ComposerJ) ? gt.items.get(Tag.ComposerJ)[0] : "";
-        g.vgmBy = gt.items.containsKey(Tag.Artist) ? gt.items.get(Tag.Artist)[0] : "";
-        g.converted = gt.items.containsKey(Tag.ReleaseDate) ? gt.items.get(Tag.ReleaseDate)[0] : "";
+        g.trackName = metaData.getFirst(Tag.Title);
+        g.trackNameJ = metaData.getFirst(Tag.TitleJ);
+        g.composer = metaData.getFirst(Tag.Composer);
+        g.composerJ = metaData.getFirst(Tag.ComposerJ);
+        g.vgmBy = metaData.getFirst(Tag.Artist);
+        g.converted = metaData.getFirst(Tag.ReleaseDate);
 
         return g;
     }

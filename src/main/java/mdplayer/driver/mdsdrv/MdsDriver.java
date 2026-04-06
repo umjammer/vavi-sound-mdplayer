@@ -25,10 +25,10 @@ import mdplayer.driver.Vgm;
 import mdplayer.plugin.BasePlugin;
 import musicDriverInterface.ChipAction;
 import musicDriverInterface.ChipDatum;
-import musicDriverInterface.GD3Tag;
+import musicDriverInterface.MetaData;
 import musicDriverInterface.IDriver;
+import musicDriverInterface.MetaData.Tag;
 import musicDriverInterface.MmlDatum;
-import musicDriverInterface.Tag;
 
 import static java.lang.System.getLogger;
 
@@ -59,18 +59,18 @@ public class MdsDriver extends BaseDriver {
 
     @Override
     public Vgm.Gd3 getGD3Info(byte[] buf, int[] vgmGd3) {
-        GD3Tag tag;
+        MetaData metaData;
 
         mdsDriver = IDriver.factory("vavi.sound.mdsdrv.driver.MdsDriver");
-        tag = mdsDriver.getGD3TagInfo(buf);
+        metaData = mdsDriver.getGD3TagInfo(buf);
 
         Vgm.Gd3 g = new Vgm.Gd3();
-        g.trackName = tag.items.containsKey(Tag.Title) ? tag.items.get(Tag.Title)[0] : "";
-        g.trackNameJ = tag.items.containsKey(Tag.TitleJ) ? tag.items.get(Tag.TitleJ)[0] : "";
-        g.composer = tag.items.containsKey(Tag.Composer) ? tag.items.get(Tag.Composer)[0] : "";
-        g.composerJ = tag.items.containsKey(Tag.ComposerJ) ? tag.items.get(Tag.ComposerJ)[0] : "";
-        g.vgmBy = tag.items.containsKey(Tag.Artist) ? tag.items.get(Tag.Artist)[0] : "";
-        g.converted = tag.items.containsKey(Tag.ReleaseDate) ? tag.items.get(Tag.ReleaseDate)[0] : "";
+        g.trackName = metaData.getFirst(Tag.Title);
+        g.trackNameJ = metaData.getFirst(Tag.TitleJ);
+        g.composer = metaData.getFirst(Tag.Composer);
+        g.composerJ = metaData.getFirst(Tag.ComposerJ);
+        g.vgmBy = metaData.getFirst(Tag.Artist);
+        g.converted = metaData.getFirst(Tag.ReleaseDate);
 
         return g;
     }
