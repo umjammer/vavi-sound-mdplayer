@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
@@ -16,12 +17,13 @@ import mdplayer.plugin.PMDPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
 
 /**
- * PMD .M File Format.
+ * PC98 PMD .M File Format.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-07 nsano initial version <br>
@@ -64,7 +66,12 @@ public class MFileFormat extends BaseFileFormat {
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.PMD;
+        return new MdEncoding("PMD", "m,m2,mz");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("PMD", "m,m2,mz");
     }
 
     @Override

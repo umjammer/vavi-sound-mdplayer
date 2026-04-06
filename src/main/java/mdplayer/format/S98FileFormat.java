@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
@@ -17,12 +18,13 @@ import mdplayer.plugin.S98Plugin;
 import mdplayer.properties.Resources;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
 
 /**
- * S98FileFormat.
+ * PC98 S98FileFormat.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-07 nsano initial version <br>
@@ -97,7 +99,12 @@ public class S98FileFormat extends BaseFileFormat {
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.S98;
+        return new MdEncoding("S98", "s98");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("S98", "s98");
     }
 
     @Override

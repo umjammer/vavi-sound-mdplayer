@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
@@ -21,6 +22,7 @@ import mdplayer.plugin.FMPPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -70,7 +72,12 @@ public class FMPFormat extends BaseFileFormat implements FileFormat.SampledFileF
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.FMP;
+        return new MdEncoding("FMP", "mpi,opi,mvi,ovi,mzi,ozi");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("FMP", "mpi,opi,mvi,ovi,mzi,ozi");
     }
 
     @Override

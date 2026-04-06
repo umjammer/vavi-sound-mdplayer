@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
@@ -22,12 +23,13 @@ import mdplayer.plugin.MuapPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
 
 /**
- * Muap Compiled.
+ * MUAP98 Compiled.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-12-29 nsano initial version <br>
@@ -70,7 +72,12 @@ public class OFileFormat extends BaseFileFormat {
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.MUAP;
+        return new MdEncoding("MUAP", "o,ox,oy");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("MUAP", "o,ox,oy");
     }
 
     @Override

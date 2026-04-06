@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
@@ -22,6 +23,7 @@ import mdplayer.plugin.MuapPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -70,7 +72,12 @@ public class MusFileFormat extends BaseFileFormat {
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.MUAP;
+        return new MdEncoding("MUAP", "mus");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("MUAP", "mus");
     }
 
     @Override

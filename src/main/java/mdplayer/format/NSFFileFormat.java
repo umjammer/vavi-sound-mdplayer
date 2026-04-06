@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
+
 import dotnet4j.io.File;
 import dotnet4j.io.Path;
 import mdplayer.Common.EnmArcType;

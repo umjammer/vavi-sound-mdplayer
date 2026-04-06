@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
@@ -17,13 +17,13 @@ import mdplayer.Common;
 import mdplayer.PlayList;
 import mdplayer.Setting;
 import mdplayer.driver.Vgm;
-import mdplayer.driver.mxdrv.MXDRV;
 import mdplayer.driver.mxdrv.MxDriver;
 import mdplayer.plugin.MDXPlugin;
 import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -134,7 +134,12 @@ public class MDXFileFormat extends BaseFileFormat {
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.MXDRV;
+        return new MdEncoding("MXDRV", "mdx");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("MXDRV", "mdx");
     }
 
     @Override

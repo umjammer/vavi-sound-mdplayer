@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
 
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.util.compat.Tuple;
@@ -66,6 +68,9 @@ public interface FileFormat {
 
     /** for SPI */
     Encoding getEncoding();
+
+    /** for SPI */
+    Type getType();
 
     /**
      * @return {@link UnknownFileFormat} when not found

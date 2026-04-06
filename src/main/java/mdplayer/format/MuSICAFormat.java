@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.File;
@@ -23,6 +24,7 @@ import mdplayer.plugin.MuSICAPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -97,7 +99,12 @@ public class MuSICAFormat extends BaseFileFormat implements FileFormat.SampledFi
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.MUSICA;
+        return new MdEncoding("MUSICA", "bgm,msd");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("MUSICA", "bgm,msd");
     }
 
     @Override

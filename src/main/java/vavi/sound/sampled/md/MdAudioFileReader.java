@@ -39,7 +39,7 @@ import static javax.sound.sampled.AudioSystem.NOT_SPECIFIED;
 
 
 /**
- * Provider for emulator audio file reading services. This implementation can parse
+ * Provider for mdplayer audio file reading services. This implementation can parse
  * the format information from emulator audio file, and can produce audio input
  * streams from files of this type.
  *
@@ -89,7 +89,7 @@ logger.log(DEBUG, "enter: available: " + bitStream.available() + ", " + bitStrea
         Encoding encoding;
         float samplingRate = 44100;
         int channels = 2;
-        AudioFileFormat.Type type = MdFileFormatType.VGM;
+        AudioFileFormat.Type type;
         try {
             InputStream in = Archives.getInputStream(bitStream); // TODO 2nd time doesn't work well
 logger.log(Level.TRACE, "input stream M: " + in + ", " + in.available());
@@ -104,6 +104,7 @@ logger.log(DEBUG, "format: " + fileFormat.getClass().getSimpleName());
             URI source = SoundUtil.getSource(bitStream);
             String fn = source != null && source.getScheme().equals("file") ? source.getPath() : null;
             encoding = fileFormat.getEncoding();
+            type = fileFormat.getType();
             var r = fileFormat.load(in, fn);
             plugin = (BasePlugin<? extends BaseDriver>) fileFormat.getPlugin();
 logger.log(DEBUG, "plugin: " + plugin);

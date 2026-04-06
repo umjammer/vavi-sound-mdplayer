@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import mdplayer.PlayList;
@@ -16,6 +17,7 @@ import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -88,7 +90,12 @@ public class NRTFileFormat extends BaseFileFormat {
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.NRTDRV;
+        return new MdEncoding("NRTDRV", "nrd");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("NRTDRV", "nrd");
     }
 
     @Override

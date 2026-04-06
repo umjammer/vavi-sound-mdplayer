@@ -6,11 +6,12 @@
 
 package vavi.sound.sampled.md;
 
-import java.lang.System.Logger;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ServiceLoader;
 import javax.sound.sampled.AudioFileFormat;
 
-import static java.lang.System.getLogger;
+import mdplayer.format.BaseFileFormat;
 
 
 /**
@@ -23,26 +24,27 @@ import static java.lang.System.getLogger;
  */
 public class MdFileFormatType extends AudioFileFormat.Type {
 
-    private static final Logger logger = getLogger(MdFileFormatType.class.getName());
-
-    /**
-     * Specifies an MDPlayer audio file.
-     */
-    public static final MdFileFormatType VGM = new MdFileFormatType("VGM", "vgm,vgz");
-
     /**
      * Constructs a file type.
      *
      * @param name      the name of the MDPlayer audio File Format.
      * @param extension the file extension for this MDPlayer audio File Format.
      */
-    private MdFileFormatType(String name, String extension) {
+    public MdFileFormatType(String name, String extension) {
         super(name, extension);
     }
 
-    private static final MdFileFormatType[] types = {VGM};
+    private static final List<MdFileFormatType> types = new ArrayList<>();
+
+    static {
+        for (var fileFormat : ServiceLoader.load(BaseFileFormat.class)) {
+            if (fileFormat.getType() != null) {
+                types.add((MdFileFormatType) fileFormat.getType());
+            }
+        }
+    }
 
     public static MdFileFormatType valueOf(String name) {
-        return Arrays.stream(types).filter(t -> name.equalsIgnoreCase(t.toString())).findFirst().orElseThrow();
+        return types.stream().filter(t -> name.equalsIgnoreCase(t.toString())).findFirst().orElseThrow();
     }
 }

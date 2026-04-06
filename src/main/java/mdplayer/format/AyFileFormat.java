@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import mdplayer.Common.EnmArcType;
@@ -14,12 +15,13 @@ import mdplayer.plugin.AyPlugin;
 import mdplayer.plugin.Plugin;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
 
 /**
- * AyFileFormat.
+ * ZX Spectrum (AY) FileFormat.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-02-19 nsano initial version <br>
@@ -52,7 +54,12 @@ public class AyFileFormat extends BaseFileFormat implements FileFormat.SampledFi
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.AY;
+        return new MdEncoding("AY", "ay");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("AY", "ay");
     }
 
     @Override

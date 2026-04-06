@@ -209,7 +209,7 @@ Debug.println(originalAudioFormat);
     void test2() throws Exception {
         URL url = Paths.get(inFile).toUri().toURL();
         AudioInputStream ais = AudioSystem.getAudioInputStream(url);
-        assertEquals(MdEncoding.VGM, ais.getFormat().getEncoding());
+        assertInstanceOf(MdEncoding.class, ais.getFormat().getEncoding());
     }
 
     @Test
@@ -217,7 +217,7 @@ Debug.println(originalAudioFormat);
     void test3() throws Exception {
         File file = Paths.get(inFile).toFile();
         AudioInputStream ais = AudioSystem.getAudioInputStream(file);
-        assertEquals(MdEncoding.VGM, ais.getFormat().getEncoding());
+        assertInstanceOf(MdEncoding.class, ais.getFormat().getEncoding());
     }
 
     // com.sun.media.sound.SoftMidiAudioFileReader consumes 4byte unexpectedly.

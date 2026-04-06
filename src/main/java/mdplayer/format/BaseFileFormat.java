@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.File;
@@ -272,8 +273,13 @@ logger.log(Level.DEBUG, result);
         return new Tuple<>(srcBuf, getExtendFile(fn, srcBuf, null, null));
     }
 
-    /** for SPI */
+    @Override
     public Encoding getEncoding() {
+        return null;
+    }
+
+    @Override
+    public Type getType() {
         return null;
     }
 

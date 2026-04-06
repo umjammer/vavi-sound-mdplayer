@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
@@ -20,12 +21,13 @@ import mdplayer.plugin.Plugin;
 import mdplayer.plugin.RCSPlugin;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
 
 /**
- * RCSFileFormat.
+ * RCS (Recomposer + PCM8) FileFormat.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-07-12 nsano initial version <br>
@@ -123,7 +125,12 @@ public class RCSFileFormat extends BaseFileFormat {
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.RCS;
+        return new MdEncoding("RCS", "rcs");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("RCS", "rcs");
     }
 
     @Override

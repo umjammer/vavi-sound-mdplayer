@@ -6,6 +6,7 @@ import java.io.UncheckedIOException;
 import java.lang.System.Logger;
 import java.util.Collections;
 import java.util.List;
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.FileAccess;
@@ -19,6 +20,7 @@ import mdplayer.plugin.Plugin;
 import mdplayer.plugin.VGMPlugin;
 import mdplayer.properties.Resources;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.ByteUtil;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
@@ -101,7 +103,13 @@ public class VGMFileFormat extends BaseFileFormat {
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.VGM;
+        return new MdEncoding("VGM", "vgm,zgm");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("VGM", "vgm");
+//        return new MdFileFormatType("VGZ", "vgz");
     }
 
     @Override

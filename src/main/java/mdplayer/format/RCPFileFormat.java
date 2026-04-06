@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
@@ -19,12 +20,13 @@ import mdplayer.plugin.Plugin;
 import mdplayer.plugin.RCPPlugin;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
 
 /**
- * RCP (Recopon) FileFormat.
+ * RCP (Recomposer) FileFormat.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2022-07-07 nsano initial version <br>
@@ -122,7 +124,12 @@ public class RCPFileFormat extends BaseFileFormat {
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.RCP;
+        return new MdEncoding("RCP", "rcp");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("RCP", "rcp");
     }
 
     @Override

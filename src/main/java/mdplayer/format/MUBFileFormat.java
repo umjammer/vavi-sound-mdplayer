@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
@@ -17,6 +18,7 @@ import mdplayer.plugin.Plugin;
 import mdplayer.properties.Resources;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
@@ -72,7 +74,12 @@ public class MUBFileFormat extends BaseFileFormat {
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.MUCOM88;
+        return new MdEncoding("MUCOM88", "mub");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("MUCOM88", "mub");
     }
 
     @Override

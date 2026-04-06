@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.sound.sampled.AudioFileFormat.Type;
 import javax.sound.sampled.AudioFormat.Encoding;
 
 import dotnet4j.io.Path;
@@ -16,12 +17,13 @@ import mdplayer.plugin.Plugin;
 import mdplayer.plugin.ZMSPlugin;
 import vavi.sound.SoundUtil;
 import vavi.sound.sampled.md.MdEncoding;
+import vavi.sound.sampled.md.MdFileFormatType;
 import vavi.util.archive.Archive;
 import vavi.util.archive.Entry;
 
 
 /**
- * ZMS (X68000) FileFormat.
+ * ZMUSIC (X68000) FileFormat.
  *
  * @author <a href="mailto:umjammer@gmail.com">Naohide Sano</a> (nsano)
  * @version 0.00 2025-07-11 nsano initial version <br>
@@ -80,7 +82,12 @@ public class ZMSFileFormat extends BaseFileFormat {
 
     @Override
     public Encoding getEncoding() {
-        return MdEncoding.ZMUSIC;
+        return new MdEncoding("ZMUSIC", "zmd,zms");
+    }
+
+    @Override
+    public Type getType() {
+        return new MdFileFormatType("ZMUSIC", "zmd,zms");
     }
 
     @Override

@@ -7,7 +7,6 @@
 package vavi.sound.sampled.md;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.stream.Stream;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioFormat.Encoding;
@@ -29,20 +28,20 @@ public class MdFormatConversionProvider extends FormatConversionProvider {
 
     @Override
     public Encoding[] getSourceEncodings() {
-        return Stream.concat(Arrays.stream(encodings), Stream.of(PCM_SIGNED))
+        return Stream.concat(encodings.stream(), Stream.of(PCM_SIGNED))
                 .toArray(Encoding[]::new);
     }
 
     @Override
     public Encoding[] getTargetEncodings() {
-        return Stream.concat(Arrays.stream(encodings), Stream.of(PCM_SIGNED))
+        return Stream.concat(encodings.stream(), Stream.of(PCM_SIGNED))
                 .toArray(Encoding[]::new);
         }
 
     @Override
     public Encoding[] getTargetEncodings(AudioFormat sourceFormat) {
         if (sourceFormat.getEncoding().equals(PCM_SIGNED)) {
-            return Arrays.stream(encodings).toArray(Encoding[]::new);
+            return encodings.toArray(Encoding[]::new);
         } else if (sourceFormat.getEncoding() instanceof MdEncoding) {
             return new Encoding[] {PCM_SIGNED};
         } else {
